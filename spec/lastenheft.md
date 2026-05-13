@@ -1,6 +1,6 @@
 # Lastenheft - grid-gym
 
-Version: 0.5
+Version: 0.6
 Status: Draft
 Projekt: `grid-gym`
 
@@ -244,6 +244,116 @@ Replay und Live-Simulation MUESSEN dieselbe Simulationspipeline verwenden.
 
 Akzeptanz: Replay- und Live-Laeufe benutzen denselben Tick-Prozessor und dieselbe
 Geraetemodell-API. Unterschiede liegen nur in den Eingabe-Adaptern.
+
+## 5.1 Architektur- und Entwicklungsprinzipien
+
+### GG-PRINC-001
+
+Das System MUSS nach SOLID-Prinzipien entwickelt werden.
+
+Akzeptanz: Architekturentscheidungen und Code-Reviews pruefen
+Einzelverantwortung, Erweiterbarkeit, Austauschbarkeit, kleine Schnittstellen
+und Abhaengigkeiten gegen Abstraktionen fuer geaenderte Kernmodule.
+
+### GG-PRINC-002
+
+Klassen, Module und Services MUESSEN eine klare Einzelverantwortung besitzen.
+
+Akzeptanz: Ein Modul hat einen fachlich benennbaren Grund fuer Aenderungen.
+Vermischungen von Domain-Logik, Persistenz, Transport und UI-Logik werden durch
+Architekturtests, Code-Review oder dokumentierte Ausnahme erkannt.
+
+### GG-PRINC-003
+
+Erweiterungen SOLLTEN ohne Aenderung bestehender Kernlogik moeglich sein.
+
+Akzeptanz: Neue Geraetemodelle, Szenario-Adapter und Persistenzadapter koennen
+ueber definierte Ports, Registries oder Konfiguration ergaenzt werden, ohne den
+Simulationskern fachlich zu veraendern.
+
+### GG-PRINC-004
+
+Implementierungen MUESSEN ueber ihre definierten Schnittstellen austauschbar
+sein.
+
+Akzeptanz: Mindestens ein Port des Simulationskerns hat im Test eine alternative
+Implementierung, die ohne Aenderung der Domain-Logik eingesetzt werden kann.
+
+### GG-PRINC-005
+
+Schnittstellen MUESSEN klein und fachlich getrennt sein.
+
+Akzeptanz: Ports fuer Zeit, Eingaben, Ausgaben, Persistenz, Telemetrie und
+Steuerbefehle sind getrennt dokumentiert. Adapter implementieren nur die Ports,
+die sie fachlich benoetigen.
+
+### GG-PRINC-006
+
+Abhaengigkeiten MUESSEN gegen Abstraktionen gerichtet sein.
+
+Akzeptanz: Domain-Module haengen nicht direkt von Infrastruktur-, Framework-,
+Transport- oder Datenbankpaketen ab. Diese Regel wird durch Architekturtests
+oder statische Importpruefungen validiert.
+
+### GG-CC-001
+
+Methoden und Funktionen SOLLTEN kurz und fokussiert sein.
+
+Akzeptanz: Produktionscode ueberschreitet 30 logische Zeilen pro Methode oder
+Funktion nur mit fachlicher Begruendung, z. B. fuer klar strukturierte Parser,
+Tabellen oder generierten Code.
+
+### GG-CC-002
+
+Infrastruktur-Adapter DUERFEN KEINE Businesslogik enthalten.
+
+Akzeptanz: Adapter uebersetzen Protokolle, Datenformate und technische Fehler in
+Ports und Domain-Typen. Fachliche Entscheidungen liegen im Simulationskern oder
+in Geraetemodellen.
+
+### GG-CC-003
+
+Domain-Module DUERFEN KEINE Framework-Abhaengigkeiten enthalten.
+
+Akzeptanz: Domain-Code importiert keine Web-, Datenbank-, Messaging-,
+Container- oder UI-Frameworks.
+
+### GG-CC-004
+
+Module DUERFEN KEINE zyklischen Abhaengigkeiten besitzen.
+
+Akzeptanz: Eine automatisierte Modul- oder Importanalyse meldet Zyklen als
+Architekturverletzung.
+
+### GG-CC-005
+
+Fachliche Namen MUESSEN eindeutig und sprechend sein.
+
+Akzeptanz: Oeffentliche Typen, Ports, Events, Commands, Metriken und
+Qualitaetszustaende verwenden Begriffe aus Szenarioformat, Datenmodell oder
+Dokumentation konsistent.
+
+### GG-CC-006
+
+Statische Utility-God-Classes DUERFEN NICHT eingefuehrt werden.
+
+Akzeptanz: Wiederverwendbare Logik wird fachlich verortet oder als kleine,
+zweckgebundene Funktion bzw. Komponente implementiert.
+
+### GG-CC-007
+
+Immutable Domain-Objekte SOLLTEN bevorzugt werden.
+
+Akzeptanz: Events, Commands, Telemetriepunkte, Snapshots und Szenario-Modelle
+sind unveraenderlich oder behandeln Mutation explizit und lokal begrenzt.
+
+### GG-CC-008
+
+Fehlerbehandlung MUSS explizit erfolgen.
+
+Akzeptanz: Fehlerpfade liefern typisierte Fehler, Statuswerte oder dokumentierte
+Exceptions. Fehler werden nicht stillschweigend verschluckt und nicht nur ueber
+unklassifizierte Strings signalisiert.
 
 ---
 
@@ -1227,9 +1337,364 @@ unterstuetzen.
 Akzeptanz: Golden-Files werden kanonisch erzeugt und koennen in CI gegen neue
 Simulationsergebnisse verglichen werden.
 
+## 21.1 Teststrategie
+
+### GG-TEST-009
+
+Automatisierte Tests MUESSEN verpflichtender Bestandteil der Entwicklung sein.
+
+Akzeptanz: Der dokumentierte Abnahmebefehl fuehrt automatisierte Tests aus und
+liefert einen maschinenlesbaren Status.
+
+### GG-TEST-010
+
+Unit-Tests MUESSEN unabhaengig ausfuehrbar sein.
+
+Akzeptanz: Unit-Tests benoetigen keine Datenbank, keine Netzwerkdienste und
+keine externen Live-Systeme.
+
+### GG-TEST-011
+
+Integrationstests MUESSEN containerisiert ausfuehrbar sein.
+
+Akzeptanz: Integrationstests fuer API, Persistenz und Telemetriepfad laufen in
+der lokalen Container-Umgebung oder einer dokumentierten aequivalenten
+CI-Umgebung.
+
+### GG-TEST-012
+
+Architekturtests MUESSEN Modulgrenzen pruefen.
+
+Akzeptanz: Architekturtests pruefen mindestens Domain-zu-Adapter-Abhaengigkeiten,
+Framework-Freiheit der Domain und zyklische Modulabhaengigkeiten.
+
+### GG-TEST-013
+
+Replay-Funktionalitaeten MUESSEN testbar sein.
+
+Akzeptanz: Replay-Start, Replay-Diff, Golden-File-Vergleich,
+Zeitmultiplikatoren und volatile Feldklassifikation sind durch Tests oder
+Abnahmepruefungen abgedeckt.
+
+### GG-TEST-014
+
+Sicherheitsrelevante Funktionen MUESSEN getestet werden.
+
+Akzeptanz: Validierung externer Eingaben, NaN-Behandlung, stale Daten,
+Kommunikationsausfaelle und Trennung von Simulations- und Produktivkontexten
+sind durch automatisierte Tests oder reproduzierbare Abnahmepruefungen belegt.
+
+### GG-TEST-015
+
+Event-Processing MUSS getestet werden.
+
+Akzeptanz: Tests pruefen Event-Sortierung, Tie-Breaking, Sequenznummern,
+Tick-Commit-Reihenfolge und deterministisches Replay.
+
+### GG-TEST-016
+
+Fehlerfaelle MUESSEN getestet werden.
+
+Akzeptanz: Tests decken ungueltige Szenarien, unbekannte Geraete, ungueltige
+Einheiten, Adapterfehler, Persistenzfehler und abgelehnte Steuerbefehle ab.
+
+### GG-TEST-017
+
+Datenschutz-, Maskierungs- und Aufbewahrungsregeln SOLLTEN getestet werden.
+
+Akzeptanz: Wenn solche Regeln implementiert sind, pruefen Tests Maskierung,
+Export, Loeschung, Aufbewahrungsfristen und Ausschluss volatiler oder sensibler
+Felder aus kanonischen Vergleichsartefakten.
+
+### GG-TEST-018
+
+Replay-Freigaben, Whitelists, Dry-Run und Rate-Limits SOLLTEN getestet werden.
+
+Akzeptanz: Wenn diese Schutzfunktionen implementiert sind, pruefen Tests
+Freigabelogik, erlaubte Ziele, Dry-Run ohne Zustandsaenderung und deterministisch
+behandelte Rate-Limits.
+
+## 21.2 Testarten
+
+### GG-TESTTYPE-001
+
+Die Plattform MUSS Unit-Tests unterstuetzen.
+
+Akzeptanz: Unit-Tests koennen lokal ohne Container gestartet werden.
+
+### GG-TESTTYPE-002
+
+Die Plattform MUSS Integrationstests unterstuetzen.
+
+Akzeptanz: Integrationstests pruefen mindestens API, Persistenz und Telemetrie
+ueber reale Adapter- oder Containergrenzen.
+
+### GG-TESTTYPE-003
+
+Die Plattform MUSS Architekturtests unterstuetzen.
+
+Akzeptanz: Architekturtests pruefen Modulgrenzen und Abhaengigkeitsrichtung.
+
+### GG-TESTTYPE-004
+
+Die Plattform SOLLTE Contract-Tests unterstuetzen.
+
+Akzeptanz: Wenn Contract-Tests implementiert sind, pruefen sie OpenAPI-Schemas,
+WebSocket-Nachrichten und implementierte Adaptervertraege.
+
+### GG-TESTTYPE-005
+
+Die Plattform MUSS End-to-End-Tests fuer die Demo unterstuetzen.
+
+Akzeptanz: Ein E2E-Test startet die Demo, prueft Healthcheck, Szenarioausfuehrung,
+Telemetrie, Persistenz und Replay-Diff.
+
+### GG-TESTTYPE-006
+
+Die Plattform SOLLTE Performance-Tests unterstuetzen.
+
+Akzeptanz: Wenn Performance-Tests implementiert sind, pruefen sie die
+Referenzumgebung, Tick-Dauer, Jitter, Telemetriepunkte/s und Replay-Diff-Status.
+
+### GG-TESTTYPE-007
+
+Die Plattform SOLLTE Security-Tests unterstuetzen.
+
+Akzeptanz: Wenn Security-Tests implementiert sind, pruefen sie
+Dependency-Scanning, bekannte kritische Schwachstellen und Eingabevalidierung.
+
+## 21.3 Coverage-Anforderungen
+
+### GG-COV-001
+
+Die Plattform SOLLTE eine Mindest-Testabdeckung von 90 Prozent erreichen.
+
+Akzeptanz: Der Coverage-Report weist die Gesamt-Coverage aus und dokumentiert
+Abweichungen.
+
+### GG-COV-002
+
+Die Plattform SOLLTE mindestens 85 Prozent Branch-Coverage erreichen.
+
+Akzeptanz: Der Coverage-Report weist Branch-Coverage separat aus.
+
+### GG-COV-003
+
+Kritische Domaenenlogik MUSS fuer den MVP mindestens 90 Prozent Coverage
+erreichen.
+
+Akzeptanz: Simulationskern, Scheduler, Replay-Diff, Szenario-Validierung und
+Batteriemodell werden als kritische Domaenenlogik klassifiziert und im
+Coverage-Report separat ausgewiesen. Zielwert fuer spaetere Releases ist 95
+Prozent.
+
+### GG-COV-004
+
+Coverage DARF NICHT kuenstlich erzeugt werden.
+
+Akzeptanz: Tests ohne fachliche Assertion, reine Getter-/Setter-Ausfuehrung und
+Snapshots ohne Verhaltenspruefung gelten nicht als Qualitaetsnachweis.
+
+### GG-COV-005
+
+Getter/Setter-only-Tests gelten NICHT als ausreichender Qualitaetsnachweis.
+
+Akzeptanz: Tests fuer Domain-Objekte pruefen Invarianten, Validierung,
+Serialisierung oder fachliches Verhalten.
+
+## 21.4 Quality Gates
+
+### GG-QG-001
+
+Der Build SOLLTE bei unterschrittener Coverage fehlschlagen.
+
+Akzeptanz: Wenn Coverage-Gates aktiviert sind, bricht der CI-Build bei
+Unterschreitung der dokumentierten Schwellwerte ab oder verlangt eine
+dokumentierte Ausnahme.
+
+### GG-QG-002
+
+Der Build DARF bei kritischen oder hohen Security-Issues ohne dokumentierte
+Ausnahme nicht erfolgreich sein.
+
+Akzeptanz: Security-Scanning liefert Severity, betroffene Komponente und
+Ausnahmeentscheidung. Kritische und hohe Befunde blockieren den Build, sofern
+keine dokumentierte Ausnahme existiert.
+
+### GG-QG-003
+
+Der Build DARF bei Architekturverletzungen nicht erfolgreich sein.
+
+Akzeptanz: Verletzungen von hexagonalen Modulgrenzen, Framework-Freiheit der
+Domain oder zyklischen Abhaengigkeiten blockieren den Build.
+
+### GG-QG-004
+
+Der Build DARF bei fehlschlagenden Tests nicht erfolgreich sein.
+
+Akzeptanz: Unit-, Integrations-, Architektur- und Demo-Abnahmetests liefern
+einen nicht erfolgreichen CI-Status, wenn sie fehlschlagen.
+
+### GG-QG-005
+
+Der Build SOLLTE bei statischen Analysefehlern fehlschlagen.
+
+Akzeptanz: Wenn statische Analyse aktiviert ist, blockieren Fehler oberhalb der
+dokumentierten Severity-Schwelle den Build.
+
+### GG-QG-006
+
+Der Build DARF bei fehlgeschlagener OpenAPI-Validierung nicht erfolgreich sein.
+
+Akzeptanz: OpenAPI-Spezifikation, Request-Schemas und Response-Schemas werden in
+CI validiert.
+
+### GG-QG-007
+
+Der Build SOLLTE bei fehlgeschlagenen Datenschutz- und
+Replay-Sicherheitspruefungen fehlschlagen.
+
+Akzeptanz: Wenn Datenschutz- oder Replay-Sicherheitsregeln implementiert sind,
+blockieren fehlgeschlagene Pruefungen den Build oder verlangen eine dokumentierte
+Ausnahme.
+
+## 21.5 Codeanalyse und Architekturvalidierung
+
+### GG-QA-001
+
+Statische Codeanalyse MUSS fuer Produktionscode verfuegbar sein.
+
+Akzeptanz: Ein dokumentierter Befehl fuehrt statische Analyse lokal oder in CI
+aus.
+
+### GG-QA-002
+
+SonarQube-Unterstuetzung SOLLTE bereitgestellt werden.
+
+Akzeptanz: Wenn SonarQube genutzt wird, sind Projektkonfiguration,
+Coverage-Import und Quality-Gate-Anbindung dokumentiert.
+
+### GG-QA-003
+
+Code-Smell-Pruefungen SOLLTEN Teil der statischen Analyse sein.
+
+Akzeptanz: Die Analyse meldet Code Smells mit Datei, Regel und Severity.
+
+### GG-QA-004
+
+Duplication-Pruefungen SOLLTEN Teil der statischen Analyse sein.
+
+Akzeptanz: Die Analyse weist duplizierte Bloecke aus und dokumentiert
+Schwellwerte.
+
+### GG-QA-005
+
+Pruefungen auf Sicherheitsluecken MUESSEN fuer Abhaengigkeiten verfuegbar sein.
+
+Akzeptanz: Ein dokumentierter Befehl oder CI-Schritt prueft direkte und
+transitive Abhaengigkeiten auf bekannte Schwachstellen.
+
+### GG-QA-006
+
+Zyklische Abhaengigkeiten MUESSEN automatisiert erkannt werden.
+
+Akzeptanz: Die Architekturvalidierung meldet Zyklen zwischen Modulen oder
+Paketen als Build-Artefakt.
+
+### GG-ARCHTEST-001
+
+Hexagonale Modulgrenzen MUESSEN automatisiert geprueft werden.
+
+Akzeptanz: Architekturtests stellen sicher, dass Domain-Module keine Adapter und
+Adapter die Domain nur ueber Ports verwenden.
+
+### GG-ARCHTEST-002
+
+Infrastruktur DARF NICHT von konkreter Domain-Implementierung abhaengen, wenn
+ein Port definiert ist.
+
+Akzeptanz: Infrastrukturmodule importieren Port-Definitionen und DTOs, aber
+keine internen Domain-Services oder konkreten Geraetemodell-Implementierungen,
+sofern ein Port existiert.
+
+### GG-ARCHTEST-003
+
+Adapter DUERFEN KEINE Domaenenlogik enthalten.
+
+Akzeptanz: Architekturtests und Code-Review pruefen, dass Adapter nur
+Protokoll-, Format-, Transport- und Fehleruebersetzung enthalten.
+
+### GG-ARCHTEST-004
+
+Ports MUESSEN framework-unabhaengig bleiben.
+
+Akzeptanz: Port-Definitionen importieren keine Web-, Persistenz-, Messaging-
+oder UI-Frameworks.
+
+### GG-ARCHTEST-005
+
+Architekturtests MUESSEN Teil der CI-Pipeline sein.
+
+Akzeptanz: Die CI-Pipeline fuehrt Architekturtests aus und veroeffentlicht den
+Status als Build-Ergebnis.
+
 ---
 
-# 22. Deployment
+# 22. CI/CD-Anforderungen
+
+## GG-CICD-001
+
+Die Plattform MUSS eine automatisierte Build-Pipeline bereitstellen.
+
+Akzeptanz: Die Pipeline baut alle produktiven Artefakte reproduzierbar aus dem
+Repository.
+
+## GG-CICD-002
+
+Die Pipeline MUSS Tests automatisch ausfuehren.
+
+Akzeptanz: Unit-, Integrations-, Architektur- und Demo-Abnahmetests laufen in
+der Pipeline oder sind dort als getrennte, dokumentierte Jobs verfuegbar.
+
+## GG-CICD-003
+
+Die Pipeline MUSS Quality Gates automatisch auswerten.
+
+Akzeptanz: Teststatus, Architekturtests, OpenAPI-Validierung und Security-Scan
+werden als maschinenlesbare Gate-Ergebnisse ausgewiesen.
+
+## GG-CICD-004
+
+Builds SOLLTEN containerisiert ausfuehrbar sein.
+
+Akzeptanz: Die Pipeline kann Build- und Testschritte in dokumentierten
+Container-Images ausfuehren.
+
+## GG-CICD-005
+
+Security-Scanning MUSS in der Pipeline verfuegbar sein.
+
+Akzeptanz: Die Pipeline kann Abhaengigkeiten und Container-Images auf bekannte
+Schwachstellen pruefen.
+
+## GG-CICD-006
+
+Dependency-Scanning MUSS in der Pipeline verfuegbar sein.
+
+Akzeptanz: Die Pipeline erzeugt eine Liste direkter und transitiver
+Abhaengigkeiten und meldet bekannte Schwachstellen oder Lizenzkonflikte.
+
+## GG-CICD-007
+
+Die Pipeline SOLLTE Artefakte automatisiert erzeugen.
+
+Akzeptanz: Wenn Artefakterzeugung aktiviert ist, veroeffentlicht die Pipeline
+Container-Images, Testberichte, Coverage-Berichte, OpenAPI-Spezifikation und
+Demo-Abnahmeartefakte.
+
+---
+
+# 23. Deployment
 
 ## GG-DEPLOY-001
 
@@ -1266,9 +1731,41 @@ Die Plattform MUSS Healthchecks fuer lokale Dienste bereitstellen.
 Akzeptanz: API, UI, Datenbank und Simulationsdienst melden `healthy`,
 `degraded` oder `unhealthy` mit kurzer Ursache.
 
+## GG-DEPLOY-007
+
+Die Plattform SOLLTE Kubernetes-faehig deploybar sein.
+
+Akzeptanz: Wenn Kubernetes-Deployment unterstuetzt wird, sind Manifeste oder
+Helm/Kustomize-Artefakte fuer API, UI, Simulationsdienst und Persistenzadapter
+dokumentiert.
+
+## GG-DEPLOY-008
+
+Rolling Updates SOLLTEN fuer spaetere verteilte Deployments unterstuetzt werden.
+
+Akzeptanz: Wenn verteiltes Deployment implementiert ist, dokumentiert die
+Plattform Update-Strategie, Healthcheck-Gating und Verhalten laufender
+Simulationen.
+
+## GG-DEPLOY-009
+
+Zero-Downtime-Deployment KANN fuer nicht laufkritische Dienste unterstuetzt
+werden.
+
+Akzeptanz: Wenn Zero-Downtime-Deployment implementiert ist, sind betroffene
+Dienste, Einschraenkungen und Ausschluss laufender Simulationen dokumentiert.
+
+## GG-DEPLOY-010
+
+Rollback-Unterstuetzung SOLLTE fuer verteilte Deployments bereitgestellt werden.
+
+Akzeptanz: Wenn verteiltes Deployment implementiert ist, dokumentiert die
+Plattform Rollback fuer API, UI, Simulationsdienst und Datenbankschema inklusive
+Grenzen bei migrationsbedingten Datenmodell-Aenderungen.
+
 ---
 
-# 23. Demo-System
+# 24. Demo-System
 
 ## GG-DEMO-001
 
@@ -1311,7 +1808,7 @@ Fault Injection, Replay und Export in reproduzierbaren Schritten.
 
 ---
 
-# 24. Abnahmeartefakte
+# 25. Abnahmeartefakte
 
 ## GG-ACCEPT-001
 
@@ -1337,7 +1834,7 @@ Alarmexport, Replay-Diff und Healthcheck-Ausgabe.
 
 ---
 
-# 25. Roadmap, keine MVP-Anforderungen
+# 26. Roadmap, keine MVP-Anforderungen
 
 Die folgenden Punkte sind Zukunftserweiterungen. Sie sind nicht normativ fuer die
 MVP-Abnahme und duerfen nicht als `MUSS`- oder `SOLLTE`-Scope interpretiert
