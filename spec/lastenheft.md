@@ -1,6 +1,6 @@
 # Lastenheft - grid-gym
 
-Version: 0.3  
+Version: 0.4  
 Status: Draft  
 Projekt: `grid-gym`
 
@@ -78,9 +78,63 @@ Real-Time-Anforderungen.
 Akzeptanz: Die Plattform dokumentiert Tick-Dauer, Jitter-Messung und
 Backpressure-Verhalten fuer die Demo-Konfiguration.
 
+## GG-TERM-005
+
+MVP bezeichnet den ersten abnahmefaehigen Stand der Plattform. Der MVP umfasst
+nur Anforderungen mit MUSS-Status sowie die Demo- und Testartefakte, die zur
+Abnahme dieser MUSS-Anforderungen notwendig sind.
+
+Akzeptanz: Das Repository enthaelt eine Requirements-Matrix, die jedes
+MUSS-Requirement einem Test, einer Demo-Funktion oder einem Architekturentscheid
+zuordnet.
+
+## GG-TERM-006
+
+Fachliche Ausgaben sind kanonisch serialisierte Simulationsergebnisse ohne
+volatile Laufzeitfelder wie Wall-Clock-Zeit, Prozess-ID, zufaellige UUIDs oder
+Hostnamen.
+
+Akzeptanz: Der Replay-Diff ignoriert ausschliesslich dokumentierte volatile
+Felder und meldet jede fachliche Abweichung.
+
 ---
 
-# 3. Nicht-Ziele und Scope-Grenzen
+# 3. MVP-Abnahmescope
+
+## GG-MVP-001
+
+Der MVP MUSS einen lokalen Single-Node-Betrieb bereitstellen.
+
+Akzeptanz: API, UI, Simulationskern, Persistenz und Demo-Szenario laufen auf
+einem Entwicklerrechner ueber Docker Compose.
+
+## GG-MVP-002
+
+Der MVP MUSS mindestens ein End-to-End-Szenario mit Netzanschlusspunkt, PV,
+Lastprofil, Smart Meter und Batteriespeicher enthalten.
+
+Akzeptanz: Das Szenario startet ueber API, erzeugt Live-Telemetrie, persistiert
+Zeitreihen und laesst sich deterministisch replayen.
+
+## GG-MVP-003
+
+Der MVP MUSS eine CLI oder ein Script fuer Abnahmepruefungen bereitstellen.
+
+Akzeptanz: Ein einzelner Befehl fuehrt deterministische Replay-Pruefung,
+Szenario-Validierung und Demo-Healthcheck aus und liefert einen maschinenlesbaren
+Status.
+
+## GG-MVP-004
+
+Der MVP DARF NICHT verlangen, dass externe Cloud-Dienste, reale Feldgeraete oder
+Internet-Zugriff zur Laufzeit verfuegbar sind.
+
+Akzeptanz: Nach Bereitstellung der Container-Images ist die Demo offline
+ausfuehrbar.
+
+---
+
+# 4. Nicht-Ziele und Scope-Grenzen
 
 ## GG-NONGOAL-001
 
@@ -126,7 +180,7 @@ des Kernsystems sein.
 
 ---
 
-# 4. Architektur
+# 5. Architektur
 
 ## GG-ARCH-001
 
@@ -190,7 +244,7 @@ Geraetemodell-API. Unterschiede liegen nur in den Eingabe-Adaptern.
 
 ---
 
-# 5. Simulationskern
+# 6. Simulationskern
 
 ## GG-SIM-001
 
@@ -256,7 +310,7 @@ Alarme in einem dokumentierten Format.
 
 ---
 
-# 6. Echtzeit und Zeitmodell
+# 7. Echtzeit und Zeitmodell
 
 Referenzumgebung fuer Performance-Akzeptanz:
 
@@ -313,7 +367,48 @@ konfigurierbar.
 
 ---
 
-# 7. Geraetemodelle
+# 8. Datenmodell, Einheiten und Qualitaet
+
+## GG-DATA-001
+
+Die Plattform MUSS ein einheitliches Telemetrie-Datenmodell verwenden.
+
+Akzeptanz: Jeder Telemetriepunkt enthaelt `run_id`, `tick`, `simulation_time`,
+`device_id`, `metric`, `value`, `unit`, `quality`, `source` und `sequence`.
+
+## GG-DATA-002
+
+Die Plattform MUSS SI-nahe Einheiten und explizite Einheitenfelder verwenden.
+
+Akzeptanz: Leistung wird in `kW`, Energie in `kWh`, Frequenz in `Hz`, Spannung in
+`V`, Strom in `A`, Temperatur in `degC`, Zeit in `ms` oder `s` und SOC in `pct`
+ausgegeben.
+
+## GG-DATA-003
+
+Die Plattform MUSS Datenqualitaet standardisiert markieren.
+
+Akzeptanz: Der Qualitaetsstatus unterstuetzt mindestens `valid`, `stale`,
+`estimated`, `limited`, `invalid`, `nan`, `missing` und `fault_injected`.
+
+## GG-DATA-004
+
+Die Plattform MUSS Kommandoergebnisse standardisiert markieren.
+
+Akzeptanz: Jeder Steuerbefehl endet in genau einem Status aus `accepted`,
+`rejected`, `limited`, `expired`, `failed` oder `ignored`.
+
+## GG-DATA-005
+
+Die Plattform MUSS kanonische Serialisierung fuer Vergleich und Replay
+bereitstellen.
+
+Akzeptanz: JSON-Ausgaben verwenden stabile Feldreihenfolge, stabile Sortierung,
+explizite Dezimalpraezision und keine nichtdeterministischen IDs.
+
+---
+
+# 9. Geraetemodelle
 
 ## GG-DEV-001
 
@@ -336,7 +431,7 @@ Geraete SOLLTEN Steuerbefehle akzeptieren koennen.
 Akzeptanz: Steuerbefehle enthalten Command-ID, Simulationszeit, Zielgeraet,
 Befehlstyp, Payload und Validierungsstatus.
 
-## 7.1 Unterstuetzte Geraete
+## 9.1 Unterstuetzte Geraete
 
 ### GG-DEV-010
 
@@ -380,13 +475,15 @@ Smoke-Test.
 
 ---
 
-# 8. Batteriemodell
+# 10. Batteriemodell
 
 ## GG-BESS-001
 
 Das Batteriemodell MUSS SOC simulieren.
 
-Akzeptanz: SOC wird in Prozent und als Energieinhalt in kWh gefuehrt.
+Akzeptanz: SOC wird in Prozent und als Energieinhalt in kWh gefuehrt. Die
+Fortschreibung erfolgt tick-basiert aus Leistung, Tick-Dauer, Kapazitaet und
+konfiguriertem Wirkungsgrad.
 
 ## GG-BESS-002
 
@@ -429,9 +526,17 @@ Das Batteriemodell SOLLTE Zellspannungsabweichungen simulieren koennen.
 Akzeptanz: Zellspannungsabweichungen koennen als aggregierte Metrik
 `cell_voltage_delta_v` exportiert werden.
 
+## GG-BESS-008
+
+Das Batteriemodell MUSS Initialparameter validieren.
+
+Akzeptanz: Kapazitaet, SOC-Grenzen, Initial-SOC, Leistungsgrenzen,
+Wirkungsgrade und Ramp-Limits werden vor Simulationsstart validiert; ungueltige
+Konfigurationen verhindern den Start des Szenarios.
+
 ---
 
-# 9. Netzmodell
+# 11. Netzmodell
 
 ## GG-GRID-001
 
@@ -439,13 +544,15 @@ Die Plattform MUSS Frequenzabweichungen simulieren koennen.
 
 Akzeptanz: Das MVP enthaelt mindestens ein vereinfachtes Leistungsbilanzmodell,
 das Frequenzabweichungen aus Erzeugung, Last und Speicherleistung ableitet.
+Das Modell dokumentiert Annahmen, Grenzen und Parametrisierung.
 
 ## GG-GRID-002
 
 Die Plattform MUSS Spannungsabweichungen simulieren koennen.
 
 Akzeptanz: Das MVP enthaelt mindestens ein vereinfachtes Spannungsmodell je
-Netzanschlusspunkt.
+Netzanschlusspunkt. Das Modell muss kenntlich machen, ob es ein vereinfachtes
+Ersatzmodell oder einen Power-Flow-Adapter verwendet.
 
 ## GG-GRID-003
 
@@ -478,7 +585,7 @@ eigenes Modell aktivierbar und erzeugt dokumentierte Telemetrie.
 
 ---
 
-# 10. Szenariosystem
+# 12. Szenariosystem
 
 ## GG-SCN-001
 
@@ -518,7 +625,15 @@ Szenarien SOLLTEN Fault Injection unterstuetzen.
 
 Szenarien SOLLTEN Replay-Verweise unterstuetzen.
 
-## 10.1 Beispiel
+## GG-SCN-008
+
+Die Plattform MUSS Szenarien vor Ausfuehrung validieren.
+
+Akzeptanz: Schemafehler, unbekannte Geraetetypen, doppelte IDs, ungueltige
+Einheiten, fehlende Pflichtfelder und Events auf unbekannte Ziele werden vor dem
+ersten Tick als Validierungsfehler gemeldet.
+
+## 12.1 Beispiel
 
 ```yaml
 schema_version: "grid-gym.scenario.v1"
@@ -566,7 +681,7 @@ events:
 
 ---
 
-# 11. Replay-System
+# 13. Replay-System
 
 ## GG-REPLAY-001
 
@@ -604,9 +719,16 @@ Replay-Systeme SOLLTEN Delta-Analysen ermoeglichen.
 Akzeptanz fuer GG-REPLAY-004 bis GG-REPLAY-006: Die Funktion ist ueber API und CLI
 ausloesbar und erzeugt einen dokumentierten Status.
 
+## GG-REPLAY-007
+
+Replay-Diffs MUESSEN fachliche und volatile Felder unterscheiden.
+
+Akzeptanz: Diff-Ausgaben enthalten Pfad, erwarteten Wert, tatsaechlichen Wert,
+Tick, Geraete-ID und Klassifikation der Abweichung.
+
 ---
 
-# 12. Fault Injection
+# 14. Fault Injection
 
 ## GG-FAULT-001
 
@@ -648,9 +770,17 @@ Akzeptanz fuer GG-FAULT-001 bis GG-FAULT-009: Jeder Fault-Typ kann im Szenario m
 Startzeit, Dauer, Ziel, Intensitaet und Recovery-Verhalten definiert werden und
 erzeugt Telemetrie sowie einen Alarm.
 
+## GG-FAULT-010
+
+Fault Injection MUSS deterministisch replaybar sein.
+
+Akzeptanz: Faults werden als Events mit Simulationszeit und Sequenznummer in den
+Laufmetadaten protokolliert und erzeugen bei Replay dieselben fachlichen
+Auswirkungen.
+
 ---
 
-# 13. Multi-Agent-System
+# 15. Multi-Agent-System
 
 ## GG-AGENT-001
 
@@ -691,7 +821,7 @@ veraendern.
 
 ---
 
-# 14. Kommunikationsschnittstellen
+# 16. Kommunikationsschnittstellen
 
 ## GG-API-001
 
@@ -707,6 +837,20 @@ Die Plattform MUSS WebSocket-Telemetrie fuer Live-Ansichten unterstuetzen.
 
 Akzeptanz: WebSocket-Nachrichten enthalten Lauf-ID, Simulationszeit,
 Sequenznummer und Telemetrie-Payload.
+
+## GG-API-003
+
+Die Plattform MUSS einen maschinenlesbaren API-Vertrag bereitstellen.
+
+Akzeptanz: REST-Endpunkte sind per OpenAPI dokumentiert; Request- und
+Response-Schemas enthalten Fehlerformate und Statuscodes.
+
+## GG-API-004
+
+Die Plattform MUSS API-Fehler standardisiert ausgeben.
+
+Akzeptanz: Fehlerantworten enthalten `code`, `message`, `details`, `run_id`
+falls vorhanden und einen stabilen HTTP-Status.
 
 ## GG-MQTT-001
 
@@ -734,7 +878,7 @@ versprechen.
 
 ---
 
-# 15. Visualisierung
+# 17. Visualisierung
 
 ## GG-UI-001
 
@@ -771,9 +915,16 @@ Das UI SOLLTE Simulationszustaende visualisieren koennen.
 Akzeptanz: Das MVP-UI zeigt mindestens Laufstatus, aktuelle Simulationszeit,
 Geraeteliste, Live-Telemetrie, Alarmtabelle und Replay-Steuerung.
 
+## GG-UI-009
+
+Das UI MUSS Datenqualitaet sichtbar machen.
+
+Akzeptanz: Telemetriepunkte mit `stale`, `invalid`, `nan`, `missing` oder
+`fault_injected` werden in Tabellen und Zeitreihen unterscheidbar dargestellt.
+
 ---
 
-# 16. Persistenz
+# 18. Persistenz
 
 ## GG-PERSIST-001
 
@@ -807,9 +958,24 @@ Akzeptanz: Persistierte Datensaetze enthalten Lauf-ID, Simulationszeit,
 Erfassungszeit, Quelle, Payload und Schema-Version. PostgreSQL ist der
 verpflichtende MVP-Speicher; TimescaleDB und InfluxDB sind optionale Adapter.
 
+## GG-PERSIST-008
+
+Die Plattform MUSS Datenbankmigrationen versionieren.
+
+Akzeptanz: Schemaaenderungen sind migrationsbasiert nachvollziehbar und koennen
+in einer leeren lokalen Datenbank reproduzierbar angewendet werden.
+
+## GG-PERSIST-009
+
+Die Plattform MUSS Laufdaten eindeutig loeschen koennen.
+
+Akzeptanz: Ein Lauf kann inklusive Telemetrie, Alarme, Snapshots und Metadaten
+ueber eine dokumentierte Operation entfernt werden, ohne andere Laeufe zu
+veraendern.
+
 ---
 
-# 17. Telemetrie
+# 19. Telemetrie
 
 ## GG-OTEL-001
 
@@ -841,7 +1007,7 @@ tracebar sein.
 
 ---
 
-# 18. Sicherheitsanforderungen
+# 20. Sicherheitsanforderungen
 
 ## GG-SAFE-001
 
@@ -871,9 +1037,24 @@ Akzeptanz: Validierungsfehler, NaN-Werte, stale Daten und Kommunikationsausfaell
 erzeugen einen Qualitaetsstatus und mindestens einen Alarm. Fallback-Zustaende
 werden pro Geraetetyp dokumentiert.
 
+## GG-SAFE-007
+
+Die Plattform MUSS Simulations- und Produktivkontexte klar trennen.
+
+Akzeptanz: UI, API-Dokumentation und Adapterkonfiguration kennzeichnen
+Simulationsadapter als nicht fuer produktive Anlagensteuerung freigegeben.
+
+## GG-SAFE-008
+
+Die Plattform MUSS Eingaben an externen Schnittstellen validieren.
+
+Akzeptanz: REST-, WebSocket-, MQTT- und Modbus-Eingaben werden gegen Schema,
+Wertebereiche und Zielressourcen validiert, bevor sie in den Simulationskern
+gelangen.
+
 ---
 
-# 19. Testbarkeit
+# 21. Testbarkeit
 
 ## GG-TEST-001
 
@@ -903,9 +1084,24 @@ Akzeptanz: Der CI-Testumfang enthaelt mindestens Unit-Tests fuer
 Geraetemodelle, deterministische Replay-Tests fuer das Referenzszenario und
 Integrationstests fuer API, Persistenz und Telemetrie.
 
+## GG-TEST-007
+
+Die Plattform MUSS eine Requirements-Matrix fuer MUSS-Anforderungen pflegen.
+
+Akzeptanz: Jede MUSS-Anforderung verweist auf mindestens einen Test,
+Architekturentscheid oder eine Demo-Abnahmepruefung.
+
+## GG-TEST-008
+
+Die Plattform MUSS Golden-Files fuer deterministische Referenzszenarien
+unterstuetzen.
+
+Akzeptanz: Golden-Files werden kanonisch erzeugt und koennen in CI gegen neue
+Simulationsergebnisse verglichen werden.
+
 ---
 
-# 20. Deployment
+# 22. Deployment
 
 ## GG-DEPLOY-001
 
@@ -935,9 +1131,16 @@ docker compose up
 Akzeptanz: Nach erfolgreichem Start sind API, UI, Persistenz und Demo-Simulation
 lokal erreichbar und der Systemstatus meldet `healthy`.
 
+## GG-DEPLOY-006
+
+Die Plattform MUSS Healthchecks fuer lokale Dienste bereitstellen.
+
+Akzeptanz: API, UI, Datenbank und Simulationsdienst melden `healthy`,
+`degraded` oder `unhealthy` mit kurzer Ursache.
+
 ---
 
-# 21. Demo-System
+# 23. Demo-System
 
 ## GG-DEMO-001
 
@@ -971,9 +1174,42 @@ Akzeptanz: Die Demo kann ohne externe Dienste gestartet werden und erzeugt nach
 spaetestens 30 s sichtbare Telemetrie, mindestens einen exportierbaren Lauf und
 einen reproduzierbaren Replay-Test.
 
+## GG-DEMO-008
+
+Die Demo MUSS eine klare Abnahmereihenfolge dokumentieren.
+
+Akzeptanz: Die Dokumentation beschreibt Start, Healthcheck, Szenarioausfuehrung,
+Fault Injection, Replay und Export in reproduzierbaren Schritten.
+
 ---
 
-# 22. Roadmap, keine MVP-Anforderungen
+# 24. Abnahmeartefakte
+
+## GG-ACCEPT-001
+
+Die Plattform MUSS eine Abnahmedokumentation fuer den MVP bereitstellen.
+
+Akzeptanz: Die Dokumentation listet Umgebung, Startkommandos, erwartete
+Ergebnisse, bekannte Einschraenkungen und Verweise auf Tests.
+
+## GG-ACCEPT-002
+
+Die Plattform MUSS bekannte Modellgrenzen dokumentieren.
+
+Akzeptanz: Batterie-, PV-, Last- und Netzmodelle nennen Annahmen,
+Gueltigkeitsbereich und bewusst nicht modellierte Effekte.
+
+## GG-ACCEPT-003
+
+Die Plattform MUSS Beispielartefakte fuer einen erfolgreichen Demo-Lauf
+bereitstellen.
+
+Akzeptanz: Beispielartefakte umfassen Laufmetadaten, Telemetrieexport,
+Alarmexport, Replay-Diff und Healthcheck-Ausgabe.
+
+---
+
+# 25. Roadmap, keine MVP-Anforderungen
 
 Die folgenden Punkte sind Zukunftserweiterungen. Sie sind nicht normativ fuer die
 MVP-Abnahme und duerfen nicht als `MUSS`- oder `SOLLTE`-Scope interpretiert
