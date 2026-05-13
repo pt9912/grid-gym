@@ -1,7 +1,7 @@
 # Lastenheft - grid-gym
 
-Version: 0.4  
-Status: Draft  
+Version: 0.5
+Status: Draft
 Projekt: `grid-gym`
 
 ---
@@ -19,7 +19,7 @@ Die Plattform dient der Entwicklung, Evaluierung und Validierung von:
 - Batteriespeicherstrategien
 - Smart-Grid-Regelungen
 - Replay- und HIL-Testsystemen
-- MPC- und RL-Regelungen
+- perspektivisch MPC- und RL-Regelungen
 - Demand-Response-Systemen
 
 Der Fokus liegt auf:
@@ -81,8 +81,9 @@ Backpressure-Verhalten fuer die Demo-Konfiguration.
 ## GG-TERM-005
 
 MVP bezeichnet den ersten abnahmefaehigen Stand der Plattform. Der MVP umfasst
-nur Anforderungen mit MUSS-Status sowie die Demo- und Testartefakte, die zur
-Abnahme dieser MUSS-Anforderungen notwendig sind.
+Anforderungen mit MUSS-Status sowie die Demo- und Testartefakte, die zur
+Abnahme dieser MUSS-Anforderungen notwendig sind. SOLLTE- und KANN-Anforderungen
+duerfen implementiert sein, sind aber nicht abnahmeblockierend.
 
 Akzeptanz: Das Repository enthaelt eine Requirements-Matrix, die jedes
 MUSS-Requirement einem Test, einer Demo-Funktion oder einem Architekturentscheid
@@ -92,7 +93,9 @@ zuordnet.
 
 Fachliche Ausgaben sind kanonisch serialisierte Simulationsergebnisse ohne
 volatile Laufzeitfelder wie Wall-Clock-Zeit, Prozess-ID, zufaellige UUIDs oder
-Hostnamen.
+Hostnamen. Float-Werte werden fuer Vergleichsartefakte auf eine dokumentierte
+Dezimalpraezision gerundet; NaN-, Inf- und fehlende Werte werden als
+dokumentierte Qualitaetszustaende serialisiert.
 
 Akzeptanz: Der Replay-Diff ignoriert ausschliesslich dokumentierte volatile
 Felder und meldet jede fachliche Abweichung.
@@ -326,7 +329,9 @@ Referenzumgebung fuer Performance-Akzeptanz:
 Die Plattform MUSS Simulationszyklen von 10 ms bis 1 s konfigurieren koennen.
 
 Akzeptanz: Die Demo-Konfiguration startet erfolgreich mit 10 ms, 100 ms und 1 s
-Tick-Groesse.
+Tick-Groesse. Fuer 100 ms und 1 s Tick-Groesse verarbeitet die Demo 1.000 Ticks
+ohne Backpressure. Fuer 10 ms Tick-Groesse dokumentiert der Healthcheck
+Tick-Dauer, p95-Jitter, verpasste Ticks und Backpressure-Status.
 
 ## GG-RT-002
 
@@ -404,7 +409,10 @@ Die Plattform MUSS kanonische Serialisierung fuer Vergleich und Replay
 bereitstellen.
 
 Akzeptanz: JSON-Ausgaben verwenden stabile Feldreihenfolge, stabile Sortierung,
-explizite Dezimalpraezision und keine nichtdeterministischen IDs.
+explizite Dezimalpraezision und keine nichtdeterministischen IDs. Fuer den MVP
+werden Zeitstempel als ISO-8601-UTC oder als ganzzahlige Simulationszeit in ms,
+Sequenzen als Integer und Messwerte mit maximal sechs Nachkommastellen
+kanonisiert.
 
 ---
 
@@ -437,21 +445,36 @@ Befehlstyp, Payload und Validierungsstatus.
 
 Die Plattform MUSS Batteriespeicher simulieren koennen.
 
+Akzeptanz: Der Geraetetyp `battery` hat ein Minimalmodell, ein Beispiel im
+Szenarioformat und einen deterministischen Smoke-Test.
+
 ### GG-DEV-011
 
 Die Plattform MUSS PV-Anlagen simulieren koennen.
+
+Akzeptanz: Der Geraetetyp `pv` hat ein Minimalmodell, ein Beispiel im
+Szenarioformat und einen deterministischen Smoke-Test.
 
 ### GG-DEV-012
 
 Die Plattform MUSS Netzanschlusspunkte simulieren koennen.
 
+Akzeptanz: Der Geraetetyp `grid_connection` hat ein Minimalmodell, ein Beispiel
+im Szenarioformat und einen deterministischen Smoke-Test.
+
 ### GG-DEV-013
 
 Die Plattform MUSS Lastprofile simulieren koennen.
 
+Akzeptanz: Der Geraetetyp `load` hat ein Minimalmodell, ein Beispiel im
+Szenarioformat und einen deterministischen Smoke-Test.
+
 ### GG-DEV-014
 
 Die Plattform MUSS Smart Meter simulieren koennen.
+
+Akzeptanz: Der Geraetetyp `smart_meter` hat ein Minimalmodell, ein Beispiel im
+Szenarioformat und einen deterministischen Smoke-Test.
 
 ### GG-DEV-015
 
@@ -469,9 +492,9 @@ Die Plattform SOLLTE Windkraftanlagen simulieren koennen.
 
 Die Plattform SOLLTE Dieselgeneratoren simulieren koennen.
 
-Akzeptanz fuer GG-DEV-010 bis GG-DEV-018: Jeder unterstuetzte Geraetetyp hat ein
-Minimalmodell, ein Beispiel im Szenarioformat und einen deterministischen
-Smoke-Test.
+Akzeptanz fuer SOLLTE-Geraetetypen: Sobald ein optionaler Geraetetyp
+implementiert wird, hat er ein Minimalmodell, ein Beispiel im Szenarioformat und
+einen deterministischen Smoke-Test.
 
 ---
 
@@ -490,7 +513,11 @@ konfiguriertem Wirkungsgrad.
 Das Batteriemodell MUSS Lade- und Entladegrenzen beruecksichtigen.
 
 Akzeptanz: Befehle ausserhalb `max_charge_kw`, `max_discharge_kw`, `min_soc_pct`
-und `max_soc_pct` werden begrenzt oder abgelehnt und als Alarm markiert.
+und `max_soc_pct` werden deterministisch behandelt: Leistungsbefehle innerhalb
+der SOC-Grenzen werden auf die zulaessige Leistung begrenzt und erhalten den
+Status `limited`; Befehle, die eine SOC-Grenze verletzen wuerden, werden
+abgelehnt und erhalten den Status `rejected`. In beiden Faellen wird ein Alarm
+mit Zielgeraet, Grenzwert und resultierendem Status erzeugt.
 
 ## GG-BESS-003
 
@@ -664,6 +691,15 @@ devices:
       initial_soc_pct: 50
       max_charge_kw: 500
       max_discharge_kw: 500
+  - id: "meter-1"
+    type: "smart_meter"
+    params:
+      measured_device_ids:
+        - "grid-1"
+        - "pv-1"
+        - "load-1"
+        - "battery-1"
+      sample_interval_ms: 100
 events:
   - at_s: 10
     target: "pv-1"
@@ -734,41 +770,76 @@ Tick, Geraete-ID und Klassifikation der Abweichung.
 
 Die Plattform MUSS Kommunikationsausfaelle simulieren koennen.
 
+Akzeptanz: Ein Kommunikationsausfall kann im Szenario mit Startzeit, Dauer,
+Ziel, betroffenen Ein- oder Ausgangskanaelen und Recovery-Verhalten definiert
+werden. Waehrend des Ausfalls werden betroffene Werte als `missing` oder
+`stale` markiert und mindestens ein Alarm erzeugt.
+
 ## GG-FAULT-002
 
 Die Plattform MUSS Stale Data simulieren koennen.
+
+Akzeptanz: Ein Stale-Data-Fault kann fuer ein Ziel und eine Metrik aktivieren,
+dass der letzte gueltige Wert weitergeliefert wird, bis `max_age` ueberschritten
+ist. Danach wird der Qualitaetsstatus `stale` gesetzt.
 
 ## GG-FAULT-003
 
 Die Plattform MUSS NaN-Werte simulieren koennen.
 
+Akzeptanz: Ein NaN-Fault kann fuer ein Ziel und eine Metrik einen nicht
+numerischen Eingangswert erzeugen. Der Wert wird nicht ungeprueft in den
+Geraetezustand uebernommen, sondern mit Qualitaetsstatus `nan` und Alarm
+protokolliert.
+
 ## GG-FAULT-004
 
 Die Plattform MUSS Frequenzabfaelle simulieren koennen.
+
+Akzeptanz: Ein Frequenzabfall kann mit Startzeit, Dauer, Zielnetz,
+Frequenzwert oder Delta und Recovery-Verhalten definiert werden und erzeugt
+Grid-Telemetrie sowie einen Alarm.
 
 ## GG-FAULT-005
 
 Die Plattform MUSS Spannungseinbrueche simulieren koennen.
 
+Akzeptanz: Ein Spannungseinbruch kann mit Startzeit, Dauer, Zielnetz,
+Spannungswert oder Delta und Recovery-Verhalten definiert werden und erzeugt
+Grid-Telemetrie sowie einen Alarm.
+
 ## GG-FAULT-006
 
-Die Plattform MUSS Modbus-Timeouts simulieren koennen.
+Die Plattform SOLLTE Modbus-Timeouts simulieren koennen.
+
+Akzeptanz: Wenn der Modbus-Adapter implementiert ist, kann ein Timeout mit
+Startzeit, Dauer, Zielregister und Recovery-Verhalten definiert werden. Der
+Adapter liefert einen dokumentierten Fehlerstatus und erzeugt einen Alarm.
 
 ## GG-FAULT-007
 
 Die Plattform MUSS Geraeteausfaelle simulieren koennen.
 
+Akzeptanz: Ein Geraeteausfall kann mit Startzeit, Dauer, Zielgeraet,
+Ausfallmodus und Recovery-Verhalten definiert werden. Das Zielgeraet liefert
+waehrend des Ausfalls dokumentierte Qualitaetszustaende und erzeugt einen Alarm.
+
 ## GG-FAULT-008
 
 Die Plattform SOLLTE SOC-Spruenge simulieren koennen.
+
+Akzeptanz: Wenn SOC-Spruenge implementiert sind, koennen Sprunghoehe, Startzeit,
+Zielbatterie und Recovery-Verhalten im Szenario definiert werden. Der Sprung
+wird als Fault-Telemetrie und Alarm protokolliert.
 
 ## GG-FAULT-009
 
 Die Plattform SOLLTE Netzwerkpartitionen simulieren koennen.
 
-Akzeptanz fuer GG-FAULT-001 bis GG-FAULT-009: Jeder Fault-Typ kann im Szenario mit
-Startzeit, Dauer, Ziel, Intensitaet und Recovery-Verhalten definiert werden und
-erzeugt Telemetrie sowie einen Alarm.
+Akzeptanz: Wenn Netzwerkpartitionen implementiert sind, koennen betroffene
+Adapter, Startzeit, Dauer und Recovery-Verhalten im Szenario definiert werden.
+Betroffene Nachrichten werden deterministisch verworfen, verzoegert oder als
+fehlgeschlagen markiert.
 
 ## GG-FAULT-010
 
@@ -854,11 +925,21 @@ falls vorhanden und einen stabilen HTTP-Status.
 
 ## GG-MQTT-001
 
-Die Plattform MUSS MQTT als Simulationsadapter unterstuetzen.
+Die Plattform SOLLTE MQTT als Simulationsadapter unterstuetzen.
+
+Akzeptanz: Wenn MQTT implementiert ist, dokumentiert der Adapter Topic-Schema,
+Payload-Format, QoS-Annahmen, Publish-/Subscribe-Richtung, Fehlerverhalten und
+Zuordnung zu Simulationszeit. Ein deterministischer Adapter-Smoke-Test weist
+Nachrichtenannahme und Telemetrieausgabe nach.
 
 ## GG-MODB-001
 
-Die Plattform MUSS Modbus TCP als Simulationsadapter unterstuetzen.
+Die Plattform SOLLTE Modbus TCP als Simulationsadapter unterstuetzen.
+
+Akzeptanz: Wenn Modbus TCP implementiert ist, dokumentiert der Adapter
+Register-Mapping, Datentypen, Byte-Reihenfolge, Lese-/Schreiboperationen,
+Timeout-Verhalten und Zuordnung zu Simulationszeit. Ein deterministischer
+Adapter-Smoke-Test weist mindestens einen Lese- und einen Schreibpfad nach.
 
 ## GG-OPCUA-001
 
@@ -872,7 +953,7 @@ Die Plattform SOLLTE DNP3 als Simulationsadapter unterstuetzen.
 
 Die Plattform SOLLTE IEC61850 als Simulationsadapter unterstuetzen.
 
-Akzeptanz fuer Protokolladapter: Adapter muessen klar als Simulations- und
+Akzeptanz fuer alle Protokolladapter: Adapter muessen klar als Simulations- und
 Testadapter dokumentiert sein und duerfen keine produktive Anlagensteuerung
 versprechen.
 
@@ -884,21 +965,38 @@ versprechen.
 
 Die Plattform MUSS ein Web-UI fuer lokale Demo- und Testumgebungen bereitstellen.
 
+Akzeptanz: Das UI ist nach `docker compose up` lokal erreichbar und zeigt den
+Systemstatus der Demo-Umgebung an.
+
 ## GG-UI-002
 
 Das UI MUSS Live-Telemetrie visualisieren koennen.
+
+Akzeptanz: Das UI zeigt waehrend eines laufenden Demo-Szenarios aktuelle
+Telemetriepunkte mit Geraet, Metrik, Wert, Einheit, Simulationszeit und
+Qualitaetsstatus an.
 
 ## GG-UI-003
 
 Das UI MUSS Zeitreihen visualisieren koennen.
 
+Akzeptanz: Das UI zeigt fuer mindestens eine Leistungsmetrik und eine SOC-Metrik
+einen zeitlich sortierten Verlauf aus persistierten oder live gepufferten
+Telemetriedaten an.
+
 ## GG-UI-004
 
 Das UI MUSS Replay-Steuerung unterstuetzen.
 
+Akzeptanz: Das UI bietet fuer einen vorhandenen Lauf mindestens Start, Pause,
+Resume, Stop und Anzeige des Replay-Status an.
+
 ## GG-UI-005
 
 Das UI MUSS Alarme visualisieren koennen.
+
+Akzeptanz: Das UI zeigt Alarmzeit, Ziel, Schweregrad, Code, Nachricht und
+aktuellen Status in einer aktualisierbaren Tabelle an.
 
 ## GG-UI-006
 
@@ -912,8 +1010,9 @@ Das UI SOLLTE Fault Injection ausloesen koennen.
 
 Das UI SOLLTE Simulationszustaende visualisieren koennen.
 
-Akzeptanz: Das MVP-UI zeigt mindestens Laufstatus, aktuelle Simulationszeit,
-Geraeteliste, Live-Telemetrie, Alarmtabelle und Replay-Steuerung.
+Akzeptanz: Wenn diese Funktion implementiert ist, zeigt das UI mindestens
+Laufstatus, aktuelle Simulationszeit, Tick-Zaehler und Zustand des
+Simulationsdienstes.
 
 ## GG-UI-009
 
@@ -930,21 +1029,38 @@ Akzeptanz: Telemetriepunkte mit `stale`, `invalid`, `nan`, `missing` oder
 
 Die Plattform MUSS Zeitreihen speichern koennen.
 
+Akzeptanz: Telemetriepunkte koennen mit Lauf-ID, Simulationszeit, Geraet, Metrik,
+Wert, Einheit, Qualitaetsstatus, Quelle und Sequenz persistiert und fuer einen
+Lauf wieder abgefragt werden.
+
 ## GG-PERSIST-002
 
 Die Plattform MUSS Replay-Daten speichern koennen.
+
+Akzeptanz: Importierte Replay-Samples werden mit Originalzeitstempel,
+Simulationszeit, Quelle, Geraet, Metrik, Wert, Einheit und Import-Sequenz
+persistiert.
 
 ## GG-PERSIST-003
 
 Die Plattform MUSS Szenariodaten speichern koennen.
 
+Akzeptanz: Ein gestartetes Szenario wird mit Schema-Version, kanonischem
+Szenario-Hash und kanonischer Szenario-Repraesentation gespeichert.
+
 ## GG-PERSIST-004
 
 Die Plattform MUSS Alarmhistorien speichern koennen.
 
+Akzeptanz: Alarme werden mit Lauf-ID, Simulationszeit, Ziel, Code, Schweregrad,
+Nachricht, Status und optionaler Fault-ID gespeichert und laufbezogen abgefragt.
+
 ## GG-PERSIST-005
 
 Die Plattform MUSS PostgreSQL unterstuetzen.
+
+Akzeptanz: Der Docker-Compose-Stack startet PostgreSQL als verpflichtenden
+MVP-Speicher, wendet Migrationen an und besteht einen Healthcheck.
 
 ## GG-PERSIST-006
 
@@ -954,9 +1070,11 @@ Die Plattform SOLLTE TimescaleDB unterstuetzen.
 
 Die Plattform SOLLTE InfluxDB unterstuetzen.
 
-Akzeptanz: Persistierte Datensaetze enthalten Lauf-ID, Simulationszeit,
-Erfassungszeit, Quelle, Payload und Schema-Version. PostgreSQL ist der
-verpflichtende MVP-Speicher; TimescaleDB und InfluxDB sind optionale Adapter.
+Akzeptanz fuer optionale Speicheradapter: Persistierte Datensaetze enthalten
+Lauf-ID, Simulationszeit, Erfassungszeit, Quelle, Payload und Schema-Version.
+PostgreSQL ist der verpflichtende MVP-Speicher; TimescaleDB und InfluxDB sind
+optionale Adapter. Erfassungszeit ist ein persistiertes Betriebsmetadatum und
+wird in kanonischen Replay- und Golden-File-Vergleichen als volatil behandelt.
 
 ## GG-PERSIST-008
 
@@ -979,10 +1097,11 @@ veraendern.
 
 ## GG-OTEL-001
 
-Die Plattform MUSS OpenTelemetry fuer Traces und Metriken unterstuetzen.
+Die Plattform SOLLTE OpenTelemetry fuer Traces und Metriken unterstuetzen.
 
-Akzeptanz: Die Demo exportiert OTLP-kompatible Traces und Metriken oder stellt
-einen konfigurierbaren OTLP-Exporter bereit.
+Akzeptanz: Wenn OpenTelemetry implementiert ist, exportiert die Demo
+OTLP-kompatible Traces und Metriken oder stellt einen konfigurierbaren
+OTLP-Exporter bereit.
 
 ## GG-OTEL-002
 
@@ -1000,10 +1119,10 @@ verarbeitete Telemetriepunkte/s, Fehleranzahl und Replay-Diff-Status.
 
 ## GG-OTEL-004
 
-Die Plattform MUSS Traces exportieren koennen.
+Die Plattform SOLLTE Traces exportieren koennen.
 
-Akzeptanz: Ein Tick kann ueber Scheduler, Geraetemodell, Adapter und Persistenz
-tracebar sein.
+Akzeptanz: Wenn Tracing implementiert ist, kann ein Tick ueber Scheduler,
+Geraetemodell, Adapter und Persistenz tracebar sein.
 
 ---
 
@@ -1048,9 +1167,9 @@ Simulationsadapter als nicht fuer produktive Anlagensteuerung freigegeben.
 
 Die Plattform MUSS Eingaben an externen Schnittstellen validieren.
 
-Akzeptanz: REST-, WebSocket-, MQTT- und Modbus-Eingaben werden gegen Schema,
-Wertebereiche und Zielressourcen validiert, bevor sie in den Simulationskern
-gelangen.
+Akzeptanz: REST-, WebSocket- und alle implementierten Adapter-Eingaben werden
+gegen Schema, Wertebereiche und Zielressourcen validiert, bevor sie in den
+Simulationskern gelangen.
 
 ---
 
@@ -1060,13 +1179,23 @@ gelangen.
 
 Die Plattform MUSS Replay-basierte Tests unterstuetzen.
 
+Akzeptanz: Ein automatisierter Test kann einen gespeicherten oder importierten
+Lauf erneut ausfuehren und einen Replay-Diff als maschinenlesbares Ergebnis
+erzeugen.
+
 ## GG-TEST-002
 
 Die Plattform MUSS deterministische Tests unterstuetzen.
 
+Akzeptanz: Ein automatisierter Test fuehrt dasselbe Referenzszenario zweimal mit
+gleichem Seed aus und vergleicht kanonische Ergebnisartefakte.
+
 ## GG-TEST-003
 
 Die Plattform MUSS Integrationstests unterstuetzen.
+
+Akzeptanz: Der CI- oder Abnahmebefehl enthaelt Integrationstests fuer API,
+Persistenz und Telemetriepfad der Demo.
 
 ## GG-TEST-004
 
@@ -1080,9 +1209,8 @@ Die Plattform SOLLTE Property-basierte Tests unterstuetzen.
 
 Replay-Diffs SOLLTEN automatisiert vergleichbar sein.
 
-Akzeptanz: Der CI-Testumfang enthaelt mindestens Unit-Tests fuer
-Geraetemodelle, deterministische Replay-Tests fuer das Referenzszenario und
-Integrationstests fuer API, Persistenz und Telemetrie.
+Akzeptanz: Wenn automatisierte Replay-Diff-Vergleiche implementiert sind, liefern
+sie Exit-Code, maschinenlesbaren Status und eine Liste fachlicher Abweichungen.
 
 ## GG-TEST-007
 
