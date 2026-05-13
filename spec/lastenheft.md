@@ -40,10 +40,14 @@ Der Fokus liegt auf:
 
 Die Begriffe MUSS, DARF NICHT, SOLLTE und KANN sind normativ zu verstehen:
 
-- MUSS: verpflichtend fuer den MVP-Abnahmestand
-- DARF NICHT: verboten fuer den MVP-Abnahmestand
-- SOLLTE: geplant, aber nicht blockierend fuer MVP-Abnahme
+- MUSS: verpflichtend fuer den jeweils zugeordneten Abnahmestand
+- DARF NICHT: verboten fuer den jeweils zugeordneten Abnahmestand
+- SOLLTE: geplant, aber nicht blockierend fuer den jeweiligen Abnahmestand
 - KANN: optionale Erweiterung ohne Abnahmeverpflichtung
+
+MVP-blockierend sind nur Anforderungen, die in Kapitel 3 explizit dem
+MVP-Abnahmescope zugeordnet sind, in ihrer Formulierung den MVP nennen oder in
+der Requirements-Matrix als `mvp` klassifiziert werden.
 
 Akzeptanz: Ein Requirement gilt nur dann als erfuellt, wenn ein automatisierter
 Test, ein reproduzierbarer manueller Test oder ein dokumentierter
@@ -81,13 +85,17 @@ Backpressure-Verhalten fuer die Demo-Konfiguration.
 ## GG-TERM-005
 
 MVP bezeichnet den ersten abnahmefaehigen Stand der Plattform. Der MVP umfasst
-Anforderungen mit MUSS-Status sowie die Demo- und Testartefakte, die zur
-Abnahme dieser MUSS-Anforderungen notwendig sind. SOLLTE- und KANN-Anforderungen
-duerfen implementiert sein, sind aber nicht abnahmeblockierend.
+die in Kapitel 3 definierten Anforderungen, explizit als MVP gekennzeichnete
+Anforderungen sowie die Demo-, Test- und Abnahmeartefakte, die zur Abnahme
+dieser Anforderungen notwendig sind. Weitere MUSS-Anforderungen beschreiben
+verpflichtende Anforderungen fuer spaetere Abnahmestaende, sofern sie nicht in
+der Requirements-Matrix dem MVP zugeordnet sind. SOLLTE- und
+KANN-Anforderungen duerfen implementiert sein, sind aber nicht
+abnahmeblockierend.
 
 Akzeptanz: Das Repository enthaelt eine Requirements-Matrix, die jedes
-MUSS-Requirement einem Test, einer Demo-Funktion oder einem Architekturentscheid
-zuordnet.
+Requirement einer Abnahmestufe, einem Status und mindestens einem Test, einer
+Demo-Funktion oder einem Architekturentscheid zuordnet.
 
 ## GG-TERM-006
 
@@ -99,6 +107,14 @@ dokumentierte Qualitaetszustaende serialisiert.
 
 Akzeptanz: Der Replay-Diff ignoriert ausschliesslich dokumentierte volatile
 Felder und meldet jede fachliche Abweichung.
+
+## GG-SEED-001
+
+Alle Zufallsquellen MUESSEN explizit seedbar sein.
+
+Akzeptanz: Zufallsquellen ohne dokumentierten Seed verhindern die
+Determinismus-Abnahme. Seeds werden in Laufmetadaten exportiert und bei Replay
+wiederverwendet.
 
 ---
 
@@ -212,8 +228,10 @@ Modbus-, OPC-UA-, DNP3- oder IEC61850-Adapterpakete.
 
 Geraetemodelle MUESSEN austauschbar sein.
 
-Akzeptanz: Ein Szenario kann zwischen mindestens zwei Implementierungen eines
-Geraetetyps wechseln, ohne den Simulationskern zu aendern.
+Akzeptanz: Ein Szenario kann fuer mindestens einen Geraetetyp zwischen zwei
+Implementierungen wechseln, ohne den Simulationskern zu aendern. Fuer den MVP
+darf eine der Implementierungen eine dokumentierte Test- oder Minimalvariante
+sein; es ist nicht erforderlich, jeden MVP-Geraetetyp doppelt zu implementieren.
 
 ## GG-ARCH-005
 
@@ -416,10 +434,12 @@ ausgeloest wird.
 
 ## GG-SIM-009
 
-Simulationslaeufe SOLLTEN exportierbar sein.
+Simulationslaeufe MUESSEN exportierbar sein.
 
 Akzeptanz: Export umfasst mindestens Metadaten, Szenario-Hash, Telemetrie und
-Alarme in einem dokumentierten Format.
+Alarme in einem dokumentierten Format. Fuer MVP-Referenzlaeufe muss der Export
+alle Daten enthalten, die fuer deterministisches Replay und Golden-File-Vergleich
+notwendig sind.
 
 ---
 
@@ -441,7 +461,8 @@ Die Plattform MUSS Simulationszyklen von 10 ms bis 1 s konfigurieren koennen.
 Akzeptanz: Die Demo-Konfiguration startet erfolgreich mit 10 ms, 100 ms und 1 s
 Tick-Groesse. Fuer 100 ms und 1 s Tick-Groesse verarbeitet die Demo 1.000 Ticks
 ohne Backpressure. Fuer 10 ms Tick-Groesse dokumentiert der Healthcheck
-Tick-Dauer, p95-Jitter, verpasste Ticks und Backpressure-Status.
+Tick-Dauer, p95-Jitter, verpasste Ticks und Backpressure-Status; 10 ms ist fuer
+den MVP ein Mess- und Diagnosemodus, kein garantierter Echtzeitbetrieb.
 
 ## GG-RT-002
 
@@ -590,21 +611,33 @@ Szenarioformat und einen deterministischen Smoke-Test.
 
 Die Plattform SOLLTE EV-Ladepunkte simulieren koennen.
 
+Akzeptanz: Wenn der Geraetetyp `ev_charger` implementiert wird, hat er ein
+Minimalmodell, ein Beispiel im Szenarioformat und einen deterministischen
+Smoke-Test.
+
 ### GG-DEV-016
 
 Die Plattform SOLLTE Transformatoren simulieren koennen.
+
+Akzeptanz: Wenn der Geraetetyp `transformer` implementiert wird, hat er ein
+Minimalmodell, ein Beispiel im Szenarioformat und einen deterministischen
+Smoke-Test.
 
 ### GG-DEV-017
 
 Die Plattform SOLLTE Windkraftanlagen simulieren koennen.
 
+Akzeptanz: Wenn der Geraetetyp `wind_turbine` implementiert wird, hat er ein
+Minimalmodell, ein Beispiel im Szenarioformat und einen deterministischen
+Smoke-Test.
+
 ### GG-DEV-018
 
 Die Plattform SOLLTE Dieselgeneratoren simulieren koennen.
 
-Akzeptanz fuer SOLLTE-Geraetetypen: Sobald ein optionaler Geraetetyp
-implementiert wird, hat er ein Minimalmodell, ein Beispiel im Szenarioformat und
-einen deterministischen Smoke-Test.
+Akzeptanz: Wenn der Geraetetyp `diesel_generator` implementiert wird, hat er ein
+Minimalmodell, ein Beispiel im Szenarioformat und einen deterministischen
+Smoke-Test.
 
 ---
 
@@ -709,16 +742,24 @@ definieren.
 
 Die Plattform SOLLTE Inselnetzmodi unterstuetzen.
 
+Akzeptanz: Wenn Inselnetzmodi implementiert sind, sind sie ueber ein eigenes
+Modell aktivierbar und erzeugen dokumentierte Telemetrie zu Netzstatus,
+Frequenz und Versorgungsbilanz.
+
 ## GG-GRID-006
 
 Die Plattform SOLLTE Transformatorgrenzen simulieren koennen.
+
+Akzeptanz: Wenn Transformatorgrenzen implementiert sind, erzeugt das Modell
+Telemetrie zu Auslastung, Grenzwerten und Qualitaetsstatus.
 
 ## GG-GRID-007
 
 Die Plattform SOLLTE Blindleistungsfluesse simulieren koennen.
 
-Akzeptanz fuer GG-GRID-005 bis GG-GRID-007: Die jeweilige Funktion ist ueber ein
-eigenes Modell aktivierbar und erzeugt dokumentierte Telemetrie.
+Akzeptanz: Wenn Blindleistungsfluesse implementiert sind, exportiert das Modell
+mindestens Wirk-, Blind- und Scheinleistung mit dokumentierten Einheiten und
+Annahmen.
 
 ---
 
@@ -752,15 +793,27 @@ Akzeptanz: Ein geladenes Szenario kann kanonisch serialisiert werden.
 
 ## GG-SCN-005
 
-Szenarien SOLLTEN zeitbasierte Ereignisse unterstuetzen.
+Szenarien MUESSEN zeitbasierte Ereignisse unterstuetzen.
+
+Akzeptanz: Ereignisse koennen mit Simulationszeit, Ziel, Typ, Payload und
+optionalem Wiederherstellungsverhalten definiert werden und werden vor dem ersten
+Tick validiert.
 
 ## GG-SCN-006
 
-Szenarien SOLLTEN Fault Injection unterstuetzen.
+Szenarien MUESSEN Fault Injection unterstuetzen.
+
+Akzeptanz: Das Szenarioformat kann Faults mit Startzeit, Dauer, Ziel, Fault-Typ,
+Payload und Recovery-Verhalten ausdruecken; ungueltige Fault-Definitionen werden
+vor dem ersten Tick als Validierungsfehler gemeldet.
 
 ## GG-SCN-007
 
 Szenarien SOLLTEN Replay-Verweise unterstuetzen.
+
+Akzeptanz: Wenn Replay-Verweise implementiert sind, enthalten sie Quelle,
+Format, Zeitabbildung und Validierungsstatus und koennen vor Simulationsstart
+auf Existenz und Schema-Kompatibilitaet geprueft werden.
 
 ## GG-SCN-008
 
@@ -854,16 +907,23 @@ Import-Reihenfolge sortiert.
 
 Replay-Systeme SOLLTEN beschleunigte Wiedergabe unterstuetzen.
 
+Akzeptanz: Wenn beschleunigte Wiedergabe implementiert ist, kann der Faktor ueber
+API und CLI gesetzt werden und erzeugt einen dokumentierten Status.
+
 ## GG-REPLAY-005
 
 Replay-Systeme SOLLTEN Pause/Resume unterstuetzen.
+
+Akzeptanz: Wenn Pause/Resume fuer Replay implementiert ist, kann ein Replay ueber
+API und CLI pausiert und fortgesetzt werden, ohne Tick-Reihenfolge oder
+Replay-Diff zu veraendern.
 
 ## GG-REPLAY-006
 
 Replay-Systeme SOLLTEN Delta-Analysen ermoeglichen.
 
-Akzeptanz fuer GG-REPLAY-004 bis GG-REPLAY-006: Die Funktion ist ueber API und CLI
-ausloesbar und erzeugt einen dokumentierten Status.
+Akzeptanz: Wenn Delta-Analysen implementiert sind, liefern sie ueber API oder CLI
+einen maschinenlesbaren Status und eine Liste fachlicher Abweichungen.
 
 ## GG-REPLAY-007
 
@@ -967,29 +1027,51 @@ Auswirkungen.
 
 Die Plattform SOLLTE agentenbasierte Steuerungsmodelle unterstuetzen.
 
+Akzeptanz: Wenn agentenbasierte Steuerung implementiert ist, kann mindestens ein
+Agent ueber eine dokumentierte Schnittstelle Steuerentscheidungen erzeugen.
+
 ## GG-AGENT-002
 
 Agenten SOLLTEN isoliert testbar sein.
+
+Akzeptanz: Wenn Agenten implementiert sind, koennen sie ohne laufende
+Gesamtsimulation mit deterministischen Eingaben getestet werden.
 
 ## GG-AGENT-003
 
 Agenten SOLLTEN deterministisch replaybar sein.
 
+Akzeptanz: Wenn Agenten Replay unterstuetzen, erzeugt derselbe Eingabeverlauf mit
+gleichem Seed dieselben Nachrichten und Steuerbefehle.
+
 ## GG-AGENT-004
 
 Agenten SOLLTEN standardisierte Nachrichten verwenden.
+
+Akzeptanz: Wenn Agentennachrichten implementiert sind, enthalten sie
+Simulationszeit, Sender, Empfaenger, Nachrichtentyp, Payload und Sequenznummer.
 
 ## GG-AGENT-005
 
 Die Plattform SOLLTE konkurrierende Regelstrategien unterstuetzen.
 
+Akzeptanz: Wenn konkurrierende Regelstrategien implementiert sind, ist die
+Priorisierung oder Konfliktaufloesung dokumentiert und deterministisch getestet.
+
 ## GG-AGENT-006
 
 Agenten SOLLTEN lokale Zustaende verwalten koennen.
 
+Akzeptanz: Wenn Agentenzustaende implementiert sind, koennen sie exportiert,
+snapshot-basiert wiederhergestellt und im Replay verglichen werden.
+
 ## GG-AGENT-007
 
 Agenten SOLLTEN Zeitrestriktionen unterstuetzen.
+
+Akzeptanz: Wenn Zeitrestriktionen implementiert sind, werden Deadlines,
+abgelaufene Entscheidungen und resultierende Statuswerte deterministisch
+behandelt.
 
 ## GG-AGENT-008
 
@@ -1055,13 +1137,24 @@ Adapter-Smoke-Test weist mindestens einen Lese- und einen Schreibpfad nach.
 
 Die Plattform SOLLTE OPC-UA als Simulationsadapter unterstuetzen.
 
+Akzeptanz: Wenn OPC-UA implementiert ist, dokumentiert der Adapter Node-IDs,
+Datentypen, Lese-/Schreibpfade, Fehlerverhalten und Zuordnung zu
+Simulationszeit.
+
 ## GG-DNP3-001
 
 Die Plattform SOLLTE DNP3 als Simulationsadapter unterstuetzen.
 
+Akzeptanz: Wenn DNP3 implementiert ist, dokumentiert der Adapter Points,
+Variations, Qualitaetsflags, Fehlerverhalten und Zuordnung zu Simulationszeit.
+
 ## GG-IEC-001
 
 Die Plattform SOLLTE IEC61850 als Simulationsadapter unterstuetzen.
+
+Akzeptanz: Wenn IEC61850 implementiert ist, dokumentiert der Adapter Logical
+Nodes, Datenattribute, Report-/Control-Verhalten, Fehlerverhalten und Zuordnung
+zu Simulationszeit.
 
 Akzeptanz fuer alle Protokolladapter: Adapter muessen klar als Simulations- und
 Testadapter dokumentiert sein und duerfen keine produktive Anlagensteuerung
@@ -1112,9 +1205,17 @@ aktuellen Status in einer aktualisierbaren Tabelle an.
 
 Das UI SOLLTE Geraete grafisch darstellen koennen.
 
+Akzeptanz: Wenn grafische Geraetedarstellung implementiert ist, zeigt das UI
+mindestens die MVP-Geraetetypen mit ID, Typ, aktuellem Zustand und
+Qualitaetsstatus an.
+
 ## GG-UI-007
 
 Das UI SOLLTE Fault Injection ausloesen koennen.
+
+Akzeptanz: Wenn Fault Injection im UI implementiert ist, koennen Fault-Typ, Ziel,
+Startzeit, Dauer und Recovery-Verhalten eingegeben und vor Ausloesung validiert
+werden.
 
 ## GG-UI-008
 
@@ -1176,15 +1277,20 @@ MVP-Speicher, wendet Migrationen an und besteht einen Healthcheck.
 
 Die Plattform SOLLTE TimescaleDB unterstuetzen.
 
+Akzeptanz: Wenn TimescaleDB implementiert ist, dokumentiert der Adapter Schema,
+Hypertables oder Indizes, Migrationspfad und Abfrageverhalten fuer Laufdaten.
+
 ## GG-PERSIST-007
 
 Die Plattform SOLLTE InfluxDB unterstuetzen.
 
-Akzeptanz fuer optionale Speicheradapter: Persistierte Datensaetze enthalten
-Lauf-ID, Simulationszeit, Erfassungszeit, Quelle, Payload und Schema-Version.
-PostgreSQL ist der verpflichtende MVP-Speicher; TimescaleDB und InfluxDB sind
-optionale Adapter. Erfassungszeit ist ein persistiertes Betriebsmetadatum und
-wird in kanonischen Replay- und Golden-File-Vergleichen als volatil behandelt.
+Akzeptanz: Wenn InfluxDB implementiert ist, dokumentiert der Adapter Buckets,
+Measurements, Tags, Retention-Annahmen und Abfrageverhalten fuer Laufdaten.
+Persistierte Datensaetze enthalten Lauf-ID, Simulationszeit, Erfassungszeit,
+Quelle, Payload und Schema-Version. PostgreSQL ist der verpflichtende
+MVP-Speicher; TimescaleDB und InfluxDB sind optionale Adapter. Erfassungszeit
+ist ein persistiertes Betriebsmetadatum und wird in kanonischen Replay- und
+Golden-File-Vergleichen als volatil behandelt.
 
 ## GG-PERSIST-008
 
@@ -1242,29 +1348,47 @@ Geraetemodell, Adapter und Persistenz tracebar sein.
 
 Ungueltige Daten MUESSEN erkannt werden.
 
+Akzeptanz: Schema-, Wertebereichs- und Einheitenfehler werden vor Uebernahme in
+den Simulationskern als Validierungsfehler oder Qualitaetsstatus `invalid`
+gemeldet und erzeugen einen nachvollziehbaren Fehler- oder Alarmdatensatz.
+
 ## GG-SAFE-002
 
 NaN-Werte DUERFEN NICHT ungeprueft verarbeitet werden.
+
+Akzeptanz: NaN-Werte werden vor Zustandsfortschreibung erkannt, als
+Qualitaetsstatus `nan` serialisiert und erzeugen mindestens einen Alarm oder
+einen typisierten Fehler.
 
 ## GG-SAFE-003
 
 Kommunikationsausfaelle MUESSEN erkannt werden.
 
+Akzeptanz: Kommunikationsausfaelle erzeugen einen dokumentierten Fehlerstatus,
+betroffene Telemetrie wird als `missing` oder `stale` markiert und ein Alarm mit
+Ziel, Startzeit und Ursache wird erzeugt.
+
 ## GG-SAFE-004
 
 Veraltete Daten MUESSEN markiert werden.
+
+Akzeptanz: Werte, deren Simulationszeitstempel die konfigurierte `max_age`
+ueberschreiten, erhalten deterministisch den Qualitaetsstatus `stale`.
 
 ## GG-SAFE-005
 
 Die Plattform SOLLTE sichere Fallback-Zustaende unterstuetzen.
 
+Akzeptanz: Wenn Fallback-Zustaende implementiert sind, dokumentiert jeder
+betroffene Geraetetyp Ausloeser, Zielzustand, Telemetrie und Recovery-Verhalten.
+
 ## GG-SAFE-006
 
 Nichtdeterministische Simulationslaeufe SOLLTEN erkannt werden.
 
-Akzeptanz: Validierungsfehler, NaN-Werte, stale Daten und Kommunikationsausfaelle
-erzeugen einen Qualitaetsstatus und mindestens einen Alarm. Fallback-Zustaende
-werden pro Geraetetyp dokumentiert.
+Akzeptanz: Wenn Erkennung nichtdeterministischer Laeufe implementiert ist,
+meldet die Plattform Replay-Diff, volatile Felder, betroffene Ticks und
+Abweichungsklassifikation maschinenlesbar.
 
 ## GG-SAFE-007
 
@@ -1311,9 +1435,17 @@ Persistenz und Telemetriepfad der Demo.
 
 Die Plattform SOLLTE HIL-Tests unterstuetzen.
 
+Akzeptanz: Wenn HIL-Tests implementiert sind, sind Testgrenzen,
+Simulationsadapter, erwartete Signale und deterministisches Replay-Verhalten
+dokumentiert.
+
 ## GG-TEST-005
 
 Die Plattform SOLLTE Property-basierte Tests unterstuetzen.
+
+Akzeptanz: Wenn Property-basierte Tests implementiert sind, pruefen sie
+Invarianten fuer Scheduler, Szenario-Validierung, Replay-Diff oder
+Geraetemodelle mit reproduzierbaren Seeds.
 
 ## GG-TEST-006
 
@@ -1700,18 +1832,31 @@ Demo-Abnahmeartefakte.
 
 Die Plattform MUSS Docker Compose unterstuetzen.
 
+Akzeptanz: Das Repository enthaelt eine dokumentierte Compose-Konfiguration, die
+API, UI, Simulationsdienst und verpflichtende Persistenz lokal startet.
+
 ## GG-DEPLOY-002
 
 Die Plattform MUSS offline lokal lauffaehig sein, nachdem Images und
 Abhaengigkeiten bereitgestellt wurden.
 
+Akzeptanz: Nach lokalem Bereitstellen der benoetigten Images und Abhaengigkeiten
+kann die Demo ohne Internetzugriff gestartet und abgenommen werden.
+
 ## GG-DEPLOY-003
 
 Die Plattform MUSS Linux-basiert deploybar sein.
 
+Akzeptanz: Die dokumentierte Referenzumgebung basiert auf Linux x86_64 und ein
+Healthcheck weist die lauffaehigen Dienste dort nach.
+
 ## GG-DEPLOY-004
 
 Die Plattform SOLLTE DevContainer unterstuetzen.
+
+Akzeptanz: Wenn DevContainer-Unterstuetzung bereitgestellt wird, enthaelt das
+Repository eine dokumentierte DevContainer-Konfiguration mit Build-, Test- und
+Abnahmebefehlen.
 
 ## GG-DEPLOY-005
 
@@ -1763,6 +1908,15 @@ Akzeptanz: Wenn verteiltes Deployment implementiert ist, dokumentiert die
 Plattform Rollback fuer API, UI, Simulationsdienst und Datenbankschema inklusive
 Grenzen bei migrationsbedingten Datenmodell-Aenderungen.
 
+## GG-DEPLOY-011
+
+Simulations- und Abnahmelaeufe MUESSEN ohne externe Netzwerkverbindungen
+ausfuehrbar sein.
+
+Akzeptanz: Ein vollstaendiger Demo- oder Abnahmelauf inklusive Replay, Fault
+Injection und Persistenz kann ohne aktive Netzwerkverbindungen ausserhalb des
+lokalen Host- oder Container-Netzwerks durchgefuehrt werden.
+
 ---
 
 # 24. Demo-System
@@ -1771,33 +1925,51 @@ Grenzen bei migrationsbedingten Datenmodell-Aenderungen.
 
 Die Plattform MUSS eine Demo-Umgebung bereitstellen.
 
+Akzeptanz: Die Demo-Umgebung ist lokal startbar, dokumentiert und Teil des
+Abnahmebefehls oder einer reproduzierbaren Demo-Abnahmepruefung.
+
 ## GG-DEMO-002
 
 Die Demo MUSS ein simuliertes Netz enthalten.
+
+Akzeptanz: Die Demo enthaelt mindestens einen Netzanschlusspunkt mit Frequenz-
+und Spannungstelemetrie.
 
 ## GG-DEMO-003
 
 Die Demo MUSS eine simulierte Batterie enthalten.
 
+Akzeptanz: Die Demo enthaelt mindestens einen Batteriespeicher mit Leistungs- und
+SOC-Telemetrie.
+
 ## GG-DEMO-004
 
 Die Demo MUSS Live-Telemetrie enthalten.
+
+Akzeptanz: Nach Start der Demo werden innerhalb von 30 s aktuelle
+Telemetriepunkte ueber API oder WebSocket bereitgestellt.
 
 ## GG-DEMO-005
 
 Die Demo MUSS mindestens ein Replay-Szenario enthalten.
 
+Akzeptanz: Das Demo-Replay kann ueber den Abnahmebefehl oder die API gestartet
+werden und liefert einen maschinenlesbaren Replay-Status.
+
 ## GG-DEMO-006
 
 Die Demo SOLLTE Fault Injection enthalten.
+
+Akzeptanz: Wenn Fault Injection in der Demo enthalten ist, kann mindestens ein
+Fault reproduzierbar ausgeloest werden und erzeugt Telemetrie mit
+Qualitaetsstatus sowie einen Alarm.
 
 ## GG-DEMO-007
 
 Die Demo SOLLTE mindestens einen Agenten enthalten.
 
-Akzeptanz: Die Demo kann ohne externe Dienste gestartet werden und erzeugt nach
-spaetestens 30 s sichtbare Telemetrie, mindestens einen exportierbaren Lauf und
-einen reproduzierbaren Replay-Test.
+Akzeptanz: Wenn ein Agent in der Demo enthalten ist, erzeugt er dokumentierte
+Steuerbefehle oder Nachrichten, die deterministisch replaybar sind.
 
 ## GG-DEMO-008
 
@@ -1844,24 +2016,46 @@ werden, solange sie nicht in einen vorherigen Abschnitt verschoben werden.
 
 Die Plattform KANN MPC-Regelung unterstuetzen.
 
+Akzeptanz: Wenn MPC-Regelung in einen Abnahmescope verschoben wird, sind Modell,
+Optimierungsziel, Nebenbedingungen, Determinismusannahmen und Tests dokumentiert.
+
 ## GG-FUTURE-002
 
 Die Plattform KANN RL-/ML-Agenten unterstuetzen.
+
+Akzeptanz: Wenn RL-/ML-Agenten in einen Abnahmescope verschoben werden, sind
+Trainingsartefakte, Seeds, Modellversionen, Inferenzschnittstelle und
+Replay-Grenzen dokumentiert.
 
 ## GG-FUTURE-003
 
 Die Plattform KANN pandapower integrieren.
 
+Akzeptanz: Wenn pandapower in einen Abnahmescope verschoben wird, sind
+Modellabbildung, Version, Eingabe-/Ausgabeformate und deterministische
+Vergleichsartefakte dokumentiert.
+
 ## GG-FUTURE-004
 
 Die Plattform KANN verteilte Simulation unterstuetzen.
+
+Akzeptanz: Wenn verteilte Simulation in einen Abnahmescope verschoben wird, sind
+Partitionierung, Zeitkoordination, Fehlermodell und Replay-Grenzen dokumentiert.
 
 ## GG-FUTURE-005
 
 Die Plattform KANN GPU-basierte Simulation unterstuetzen.
 
+Akzeptanz: Wenn GPU-basierte Simulation in einen Abnahmescope verschoben wird,
+sind Hardwareannahmen, numerische Toleranzen, deterministische Grenzen und
+Fallback-Verhalten dokumentiert.
+
 ## GG-FUTURE-006
 
 Die Plattform KANN Co-Simulation unterstuetzen.
+
+Akzeptanz: Wenn Co-Simulation in einen Abnahmescope verschoben wird, sind
+gekoppelte Simulatoren, Zeitkoordination, Datenvertraege und Replay-Grenzen
+dokumentiert.
 
 ---
