@@ -1,46 +1,67 @@
 # grid-gym
 
-`grid-gym` ist eine geplante modulare Plattform zur deterministischen Simulation,
+`grid-gym` ist eine geplante modulare Open-Source-Plattform zur Simulation,
 Validierung und Analyse elektrischer Energiesysteme.
 
-Der Fokus liegt auf reproduzierbaren Replay-Simulationen, Fault Injection,
-Echtzeit-Telemetrie und Integrationstests fuer EMS- und Smart-Grid-Anwendungen.
+Der Fokus liegt auf deterministischer Ausfuehrung, reproduzierbaren Ergebnissen,
+Replaybarkeit, Fault Injection, simulierter Echtzeitfaehigkeit und
+Integrationsfaehigkeit fuer Test- und Forschungsumgebungen.
+
 Das Projekt richtet sich an Entwickler, Forschungseinrichtungen und
-Systemintegratoren, die testbare Energiesystem-Szenarien ohne proprietaere
-Werkzeuge modellieren wollen.
+Systemintegratoren, die Energy-Management-Strategien, Smart-Grid-Regelungen,
+Batteriespeicherstrategien, Replay-Systeme und HIL-nahe Tests in einer
+lokalen, nachvollziehbaren Umgebung modellieren wollen.
 
 ## Status
 
 Dieses Repository befindet sich in einer fruehen Spezifikationsphase. Aktuell
-enthaelt es das Lastenheft und diese Projektuebersicht; eine lauffaehige
-Implementierung ist noch nicht enthalten.
+enthaelt es das Lastenheft, diese Projektuebersicht und Basis-Metadaten. Eine
+lauffaehige Implementierung ist noch nicht enthalten.
 
-## Geplante Funktionen
+## MVP-Scope
 
-- Deterministischer Simulationskern mit diskreten Zeitschritten
-- Replay- und beschleunigte Simulationsmodi
-- Austauschbare Modelle fuer Batteriespeicher, PV-Anlagen, Lastprofile,
+Der erste abnahmefaehige Stand soll lokal auf einem Entwicklerrechner laufen und
+keine externen Cloud-Dienste, realen Feldgeraete oder Internetzugriff zur
+Laufzeit benoetigen. Nach Bereitstellung der Container-Images soll die Demo
+offline ausfuehrbar sein.
+
+Der MVP umfasst laut Lastenheft mindestens:
+
+- lokalen Single-Node-Betrieb ueber Docker Compose
+- ein End-to-End-Szenario mit Netzanschlusspunkt, PV, Lastprofil, Smart Meter
+  und Batteriespeicher
+- Live-Telemetrie, Zeitreihenpersistenz und deterministisches Replay
+- eine CLI oder ein Script fuer Abnahmepruefungen
+- maschinenlesbare Abnahmeergebnisse fuer Replay-Pruefung,
+  Szenario-Validierung und Demo-Healthcheck
+
+## Geplante Funktionsbereiche
+
+- Simulationskern mit diskreten Zeitschritten, zentralem Zeitmodell und
+  deterministischem Event Scheduler
+- Szenario-, Snapshot-, Export- und Replay-System
+- Kanonische Serialisierung fuer Replay-Diff und Golden-File-Vergleiche
+- Geraetemodelle fuer Batteriespeicher, PV-Anlagen, Lastprofile,
   Netzanschlusspunkte und Smart Meter
-- Fault Injection fuer Kommunikations-, Sensor- und Geraetefehler
-- Agentenbasierte Steuerung fuer EMS-, MPC-, RL- und Demand-Response-Szenarien
-- Telemetrie-Export fuer Analyse, Monitoring und Integrationstests
-- Adapter fuer Integrationen wie MQTT, Modbus TCP und containerbasierte
-  Testumgebungen
+- Vereinfachte Netzmodelle fuer Frequenz-, Spannungs- und Lastverhalten
+- Fault Injection fuer Kommunikationsausfaelle, stale Daten, NaN-Werte,
+  Frequenzabfaelle, Spannungseinbrueche und Geraeteausfaelle
+- REST-API, WebSocket-Telemetrie und lokales Web-UI fuer Demo- und Testbetrieb
+- PostgreSQL-basierte Persistenz im MVP; weitere Speicheradapter optional
+- Architektur-, Integrations-, Replay- und Demo-Abnahmetests
+- Optionale Adapter und Erweiterungen wie MQTT, Modbus TCP, OPC-UA, DNP3,
+  IEC61850, TimescaleDB, InfluxDB, Agenten, HIL, MPC und RL
 
 ## Projektstruktur
 
 ```text
 .
+├── CHANGELOG.md
+├── LICENSE
 ├── README.md
 └── spec/
     └── lastenheft.md
 ```
-
-## Spezifikation
-
-Die fachlichen und technischen Anforderungen sind im Lastenheft dokumentiert:
-
-- [`spec/lastenheft.md`](spec/lastenheft.md)
 
 ## Lizenz
 
