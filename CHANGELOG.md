@@ -182,3 +182,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `architecture.md`) und sind als Klammer-Lesehilfen gekennzeichnet.
 
 ### Fixed
+
+- A-2 in ADR 0002: `json.JSONEncoder`-Subklassen-Ansatz konnte
+  verschachtelte `Decimal`-Werte nicht serialisieren
+  (`json.dumps`/`default()`-Mechanik laesst rohe JSON-Zahlen aus
+  `default` nicht zu). Ersetzt durch einen kleinen Custom-Emitter
+  (~60 Zeilen, stdlib-only) mit deterministischer Reihenfolge,
+  Fixed-Point-`Decimal`-Ausgabe und explizitem `float`-Verbot.
+- Lifecycle-Sprache in ADR 0002 an ADR 0003 angeglichen: Vor
+  Acceptance scheitert Spike-0 nach `Rejected`; nach Acceptance
+  unhaltbare A-1/A-2 fuehren zu `Superseded` durch Nachfolge-ADR
+  (nicht „zurueckgezogen", was per ADR 0003 nur als `Withdrawn`
+  und nur pre-Beschluss zulaessig waere).
+- Spike-0-Vertrag von drei auf vier Gates erweitert
+  (`lint-imports`, `ruff check`, `arch_check.py`, `mypy --strict`).
+  ADR 0005 ist damit synchroner Bestandteil der Acceptance, nicht
+  optionale Folge-Entscheidung.
+- ADR 0002 von `Proposed` auf `Provisional` gehoben — die
+  Spike-0-Artefakte (`Dockerfile`, `Makefile`) liegen vor und
+  bilden den validierten Pfad gemaess ADR 0003 §2.1. ADR 0005
+  ebenfalls auf `Provisional` (synchron). Status-Header beider
+  ADRs um `Status geaendert am` und `Letzte inhaltliche Aenderung`
+  ergaenzt.
+- Dockerfile- und Makefile-Header als Spike-0-Pfad gekennzeichnet
+  (ADR 0003 §2.1).
+- `GG-AR-OPEN-001`-Eintrag in `architecture.md` an den neuen
+  Provisional-Status angepasst („Vorgeschlagen, Spike-0 laufend",
+  Status-Spalte „Offen (Spike-0 laeuft)") gemaess ADR 0003 §4
+  Formelhilfe.
+- §7 Offene Folge-Punkte in ADR 0002: Kanonische-Serialisierung-
+  Eintrag von „Formatdetails verfeinern" auf „Performance-/
+  Implementierungs-Alternativen" umgestellt — die Format-Details
+  sind durch A-2 jetzt fix, eine Folge-ADR darf nur die
+  Umsetzungsroute aendern und muss Byte-Gleichheit nachweisen.

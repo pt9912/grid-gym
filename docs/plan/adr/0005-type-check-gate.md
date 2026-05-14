@@ -1,15 +1,26 @@
 # ADR 0005 — Type-Check-Gate (mypy --strict)
 
-**Status:** Proposed — Entscheidung bedingt
+**Status:** Provisional — Spike-0-Gate live, Acceptance an ADR 0002 gekoppelt
 **Datum:** 2026-05-14
+**Status geaendert am:** 2026-05-14 — `Proposed → Provisional` synchron
+zu ADR 0002; Operative Artefakte (Dockerfile-Stage `typecheck`,
+Makefile-Target `make typecheck`, `[tool.mypy]`-Konfiguration im
+Spike-0-Skelett) sind als validierter Pfad gemaess ADR 0003 §2.1
+gekennzeichnet.
+**Letzte inhaltliche Aenderung:** 2026-05-14 — Status-Header an ADR 0003
+Felder angepasst; Einordnung als vierter Spike-0-Gate praezisiert
+(synchron-Acceptance mit ADR 0002, keine Folge-Entscheidung).
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
 [ADR 0002](0002-language-and-build-stack.md) (Sprach-Stack),
 [ADR 0003](0003-adr-lifecycle.md) (Status-Werte),
 [ADR 0004](0004-identifier-based-cross-references.md)
-**Bedingt durch:** `ADR 0002` `Accepted`. Solange `ADR 0002` auf
-`Proposed`/`Provisional` steht, ist auch diese ADR nicht aktivierbar;
-sie wandert zeitgleich mit `ADR 0002` auf `Accepted`.
+**Bedingt durch:** `ADR 0002` `Accepted`. Diese ADR ist Teil des
+Spike-0-Pflichtnachweises in `ADR 0002`: der Spike-0-CI-Workflow
+laeuft mit vier Gates (`lint-imports`, `ruff check`, `arch_check.py`,
+`mypy --strict`); diese ADR liefert die Konfiguration des vierten
+Gates. Acceptance erfolgt synchron mit `ADR 0002` — keine
+Reihenfolgen-Ambiguitaet, keine optionale Folge-Entscheidung.
 
 ---
 

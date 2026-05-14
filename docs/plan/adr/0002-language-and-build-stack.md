@@ -1,11 +1,20 @@
 # ADR 0002 — Sprach- und Build-Stack
 
-**Status:** Proposed — Entscheidung steht aus
+**Status:** Provisional — Empfehlung getragen, Spike-0 freigegeben
 **Datum:** 2026-05-14
+**Status geaendert am:** 2026-05-14 — `Proposed → Provisional` mit
+Freigabe des Spike-0-Vertrags; Operative Artefakte (`Dockerfile`,
+`Makefile`) liegen als Spike-0-Pfad vor (vgl. ADR 0003 §2.1).
+**Letzte inhaltliche Aenderung:** 2026-05-14 — A-2 von
+`json.JSONEncoder`-Subklasse auf Custom-Emitter umgestellt;
+Lifecycle-Sprache an ADR 0003 angepasst (`Rejected` vor Acceptance,
+`Superseded` post-Acceptance); `mypy --strict` als vierter Spike-0-Gate
+verankert.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
 [ADR 0001](0001-documentation-and-planning-structure.md),
-[ADR 0003](0003-adr-lifecycle.md) (Statuswerte und Uebergaenge)
+[ADR 0003](0003-adr-lifecycle.md) (Statuswerte und Uebergaenge),
+[ADR 0005](0005-type-check-gate.md) (Type-Check als vierter Gate)
 **Schliesst (bei Annahme):**
 [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
 
@@ -232,19 +241,29 @@ ausgefuehrtes Spike-Projekt. Es liefert:
   (`pyproject.toml`, `tests/arch/`, `tools/arch_check.py` inkl.
   `grimp`-SCC-Check),
 - die `ruff`-Konfiguration aus §A-1 inklusive der Per-File-Ignores,
-- A-2 als kanonische Serialisierungsfunktion plus
-  `hypothesis`-Property-Tests,
-- einen CI-Workflow, der `lint-imports`, `ruff check` und
-  `python tools/arch_check.py` als drei Gates ausfuehrt,
+- A-2 als kanonische Serialisierungsfunktion (Custom-Emitter, keine
+  `json.JSONEncoder`-Subklasse) plus `hypothesis`-Property-Tests,
+- die `mypy --strict`-Konfiguration aus
+  [ADR 0005](0005-type-check-gate.md) (`[tool.mypy]` in
+  `pyproject.toml`) als vierten Gate — ADR 0005 wird gemeinsam mit
+  dieser ADR `Accepted`, der Type-Check ist deshalb Teil des
+  Spike-0-Pflichtnachweises,
+- einen CI-Workflow, der `lint-imports`, `ruff check`,
+  `python tools/arch_check.py` und `mypy --strict` als **vier
+  Gates** ausfuehrt,
 - pro Contract einen bewusst eingefuegten Verstoss in einem
   separaten Branch, der den jeweiligen Gate rot werden laesst.
 
 Spike-0 ist erfolgreich, wenn:
 
-1. alle drei Gates auf `main` (sauberes Skelett) gruen sind,
-2. jeder der fuenfzehn Verstoss-Branches genau seinen erwarteten
-   Gate rot werden laesst und keinen anderen, und
-3. `ruff check --no-cache` erkennt die in dieser ADR gezeigte
+1. alle vier Gates (`lint-imports`, `ruff check`, `arch_check.py`,
+   `mypy --strict`) auf `main` (sauberes Skelett) gruen sind,
+2. jeder der fuenfzehn A-1-Verstoss-Branches genau seinen erwarteten
+   Gate rot werden laesst und keinen anderen,
+3. mindestens ein bewusst herbeigefuehrter LSP-/Protocol-Variance-
+   Verstoss im Test-Branch laesst `mypy --strict` rot werden
+   (Nachweis fuer das ADR-0005-Gate), und
+4. `ruff check --no-cache` erkennt die in dieser ADR gezeigte
    `pyproject.toml`-Konfiguration ohne Warnung — insbesondere
    `[tool.ruff.lint.flake8-tidy-imports]` mit
    `banned-module-level-imports` und `[tool.ruff.lint.flake8-tidy-imports.banned-api]`
@@ -253,8 +272,10 @@ Spike-0 ist erfolgreich, wenn:
    Folge-ADR angepasst, nicht Spike-0 umgangen.
 
 Wird Spike-0 nicht erfolgreich abgeschlossen, ist Python nicht
-haltbar und die ADR wird zurueckgezogen (siehe Fallback-Trigger
-„A-1 nicht erfuellbar").
+haltbar; die ADR geht **vor Acceptance** auf `Rejected` (siehe
+ADR 0003 Lifecycle-Tabelle: vor-Beschluss-Zustand), eine Folge-ADR
+fuer einen anderen Stack tritt an die Stelle. Der Fallback-Trigger
+„A-1 nicht erfuellbar" weiter unten beschreibt denselben Fall.
 
 **Slice-M1-Abnahme (nach Acceptance):**
 
@@ -525,84 +546,163 @@ Tabu-Abdeckungs-Matrix:
      darf voraussetzen, dass numerische Felder bereits `int`, `Decimal` oder
      `bool` sind. Ein `float`, der den Kern erreicht, ist ein Verstoss gegen die
      Domain-Validierung, nicht ein Serialisierungsproblem.
-  2. **Vor-Normalisierung der Eingabe** (rekursiv, vor jedem Encoder):
-     - `Decimal`-Werte werden als JSON-Zahl in fixed-point-Notation ohne
-       wissenschaftliche Schreibweise emittiert. Da `json.dumps` `Decimal`
-       nicht nativ unterstuetzt, wird ein **`CanonicalEncoder`** als
-       `json.JSONEncoder`-Subklasse bereitgestellt, der in
-       `iterencode` die `Decimal`-Knoten erkennt und ueber `format(value, "f")`
-       direkt in den Output-Stream schreibt (kein Umweg ueber `float`).
-       Tail-Nullen werden NICHT abgeschnitten — die Quantisierung auf 6
-       Nachkommastellen erzeugt stabil `kw=1.500000` statt `kw=1.5`.
-     - `NaN` und `±Infinity` sind in kanonischen Ausgaben **nicht erlaubt**
-       (`GG-DATA-003` markiert solche Werte als Qualitaetsstatus `nan`/`invalid`;
-       sie tauchen in Telemetrie als Qualitaetsfeld auf, nicht als numerischer
-       Wert). Treffen sie dennoch ein, wirft `canonical_json` einen typisierten
-       `CanonicalSerializationError`. `Decimal("NaN")`/`Decimal("Infinity")`
-       fallen unter dieselbe Regel.
-     - Wall-Clock-Zeitstempel werden auf `datetime` mit `tzinfo=UTC`
-       normalisiert und als ISO-8601-UTC-String serialisiert (`...Z`-Suffix);
-       Sub-Sekunden mit max. 6 Stellen.
-     - Simulationszeit wird als ganzzahlige Millisekunde (`int`) serialisiert.
-     - `bytes` werden als Base64-String mit Praefix `b64:` serialisiert, sofern
+  2. **Wertebereich und Verbote** (Eingabe-Vertrag von `canonical_json`):
+     - Erlaubte Typen: `None`, `bool`, `int`, `Decimal`, `str`, `dict[str, …]`,
+       `list[…]`, `tuple[…]`. Alle anderen Typen — insbesondere `float` —
+       loesen `CanonicalSerializationError` aus.
+     - `Decimal("NaN")`/`Decimal("Infinity")`/`Decimal("-Infinity")` sind in
+       kanonischen Ausgaben **nicht erlaubt** (`GG-DATA-003` markiert solche
+       Werte als Qualitaetsstatus `nan`/`invalid`; sie tauchen in Telemetrie
+       als Qualitaetsfeld auf, nicht als numerischer Wert). Treffen sie
+       dennoch ein, wirft `canonical_json` einen typisierten
+       `CanonicalSerializationError`.
+     - Dictionary-Schluessel MUESSEN `str` sein; numerische oder Tuple-Keys
+       sind verboten (entsprechen nicht dem JSON-Datenmodell).
+     - Wall-Clock-Zeitstempel werden vor dem Aufruf auf `datetime` mit
+       `tzinfo=UTC` normalisiert und als ISO-8601-UTC-String uebergeben
+       (`...Z`-Suffix); Sub-Sekunden mit max. 6 Stellen. Diese Normalisierung
+       gehoert nicht in `canonical_json`, sondern in die Domain-Eingangsgrenze.
+     - Simulationszeit wird als ganzzahlige Millisekunde (`int`) uebergeben.
+     - `bytes` werden als Base64-String mit Praefix `b64:` uebergeben, sofern
        sie ueberhaupt im Domain-Modell vorkommen (heute nicht — Reserve fuer
        Snapshot-Payloads).
-  3. **Encoder-Aufruf** (Standard-Implementierung):
+  3. **Custom-Emitter** (Standard-Implementierung). `json.dumps` ist **nicht**
+     verwendbar, weil `Decimal` weder von der Standard-Bibliothek noch
+     ueber `default=` als JSON-Zahl emittiert werden kann (`default=` darf
+     nur JSON-Native-Werte zurueckgeben, und ein Rueckgabewert `str(decimal)`
+     wuerde als JSON-String serialisiert, nicht als Zahl). Stattdessen
+     implementiert `canonical.py` einen kleinen, vollstaendig kontrollierten
+     JSON-Emitter:
 
      ```python
      # core/serialization/canonical.py — einzige AC-NO-JSON-Ausnahme
+     from decimal import Decimal
 
-     class CanonicalEncoder(json.JSONEncoder):
-         def iterencode(self, o, _one_shot=False):
-             # Decimal-Werte als fixed-point-Zahl direkt in den Stream
-             # schreiben; alles andere uebernimmt der Standard-Encoder.
-             if isinstance(o, Decimal):
-                 if not o.is_finite():
-                     raise CanonicalSerializationError(
-                         "NaN/Infinity not allowed in canonical output"
-                     )
-                 yield format(o, "f")
-                 return
-             yield from super().iterencode(o, _one_shot=_one_shot)
+     _ESCAPE = {
+         '"': '\\"', "\\": "\\\\",
+         "\b": "\\b", "\f": "\\f", "\n": "\\n", "\r": "\\r", "\t": "\\t",
+     }
 
      def canonical_json(value: object) -> bytes:
-         normalized = _normalize(value)  # rekursiv, gemaess Punkt 2
-         return json.dumps(
-             normalized,
-             cls=CanonicalEncoder,
-             sort_keys=True,
-             separators=(",", ":"),
-             ensure_ascii=False,
-             allow_nan=False,            # GG-DATA-005
-             check_circular=True,
-         ).encode("utf-8")
+         parts: list[str] = []
+         _emit(value, parts)
+         return "".join(parts).encode("utf-8")
+
+     def _emit(value: object, out: list[str]) -> None:
+         if value is None:
+             out.append("null")
+         elif value is True:
+             out.append("true")
+         elif value is False:
+             out.append("false")
+         elif isinstance(value, int):
+             # `bool` ist Subtyp von int; oben bereits behandelt.
+             out.append(str(value))
+         elif isinstance(value, Decimal):
+             if not value.is_finite():
+                 raise CanonicalSerializationError(
+                     "NaN/Infinity not allowed in canonical output"
+                 )
+             # Fixed-point, ohne wissenschaftliche Schreibweise, Tail-
+             # Nullen bleiben erhalten (Quantisierung erfolgt an der
+             # Domain-Eingangsgrenze, nicht hier).
+             out.append(format(value, "f"))
+         elif isinstance(value, str):
+             out.append(_emit_string(value))
+         elif isinstance(value, dict):
+             if not all(isinstance(k, str) for k in value):
+                 raise CanonicalSerializationError("dict keys must be str")
+             out.append("{")
+             for i, key in enumerate(sorted(value)):
+                 if i:
+                     out.append(",")
+                 out.append(_emit_string(key))
+                 out.append(":")
+                 _emit(value[key], out)
+             out.append("}")
+         elif isinstance(value, (list, tuple)):
+             out.append("[")
+             for i, item in enumerate(value):
+                 if i:
+                     out.append(",")
+                 _emit(item, out)
+             out.append("]")
+         elif isinstance(value, float):
+             raise CanonicalSerializationError(
+                 "float not allowed in canonical output — convert to Decimal "
+                 "at domain ingress (GG-DATA-005)"
+             )
+         else:
+             raise CanonicalSerializationError(
+                 f"unsupported type: {type(value).__name__}"
+             )
+
+     def _emit_string(s: str) -> str:
+         buf = ['"']
+         for ch in s:
+             if ch in _ESCAPE:
+                 buf.append(_ESCAPE[ch])
+             elif ord(ch) < 0x20:
+                 buf.append(f"\\u{ord(ch):04x}")
+             else:
+                 buf.append(ch)
+         buf.append('"')
+         return "".join(buf)
      ```
 
-     `allow_nan=False` und `check_circular=True` sind Pflicht; `ensure_ascii=False`
-     ist gewollt, weil die Ausgabe als UTF-8-Bytes erfolgt (Encoding ist Teil
-     des Vertrags). `cls=CanonicalEncoder` macht `Decimal` ueberhaupt erst
-     serialisierbar.
+     Eigenschaften des Emitters:
+     - Deterministisch by-construction: Reihenfolge ueber `sorted(value)`,
+       keine impliziten Konvertierungen, keine Drittpartei-Heuristiken.
+     - `Decimal` wird direkt als JSON-Zahl in Fixed-Point-Notation
+       emittiert (`format(value, "f")`). Tail-Nullen bleiben erhalten —
+       Quantisierung auf max. 6 Stellen passiert an der Domain-Eingangs-
+       grenze (Pydantic-Validator, Scenario-Loader, Adapter-Mapping)
+       ueber `Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_EVEN)`,
+       nicht hier.
+     - `float` ist verboten (`CanonicalSerializationError`).
+     - JSON-Strings folgen RFC 8259: doppelte Anfuehrungszeichen, Backslash-
+       Escape, Steuerzeichen als `\u00XX`. `ensure_ascii`-Verhalten ist
+       implizit aus.
+     - Encoding: UTF-8-Bytes; kein Umweg ueber `str` an Konsumenten.
   4. **Ergebnistyp** ist `bytes` (UTF-8). Alle Schreibpfade (Persistenz,
      Replay-Diff, WebSocket-Frame) konsumieren `bytes` direkt; ein Round-Trip
      ueber `str` ist verboten, um implizite Re-Encodings auszuschliessen.
 
-  Als deterministischer Alternativ-Encoder ist `orjson` zulaessig, sofern (a)
-  die Vor-Normalisierung aus Punkt 2 unveraendert davor laeuft, (b) `Decimal`
-  vor dem `orjson.dumps`-Aufruf in die fixed-point-Zahl-Repraesentation
-  konvertiert wird (z. B. ueber ein `default=`-Callback, das `Decimal` als
-  `int` * Skala emittiert, oder ueber eine eigene `rapidjson`-Schicht) und (c)
-  die Tests bytes-identische Ausgabe zwischen `json+CanonicalEncoder` und der
-  Alternativ-Implementierung nachweisen. Wahl des Alternativ-Encoders ist
-  eine Folge-ADR; A-2 fixiert nur den Vertrag und die Standard-Implementierung.
+  Als deterministischer Alternativ-Encoder ist `orjson` mit
+  `OPT_SORT_KEYS | OPT_PASSTHROUGH_SUBCLASS` plus einer
+  `default=`-Bridge zulaessig, sofern (a) die Decimal-Bridge
+  Fixed-Point-Notation als JSON-Zahl emittiert (orjson kann das ueber
+  einen Custom-Stream-Adapter, nicht ueber `default=` allein — eine
+  Wrapper-Implementierung muss das nachweisen), (b) die Vor-Normalisierung
+  aus Punkt 2 unveraendert davor laeuft und (c) die Tests bytes-identische
+  Ausgabe zwischen der Standard-Implementierung (Custom-Emitter, oben) und
+  der Alternativ-Implementierung nachweisen. Wahl des Alternativ-Encoders
+  ist eine eigene Folge-ADR fuer Performance-/Implementierungs-Alternativen;
+  A-2 fixiert den **Vertrag** (Format-Details aus Punkt 2) und die
+  **Standard-Implementierung** (Custom-Emitter aus Punkt 3) verbindlich —
+  Alternativen muessen beides erfuellen, nicht nur das Erste.
 
 - Contract AC-NO-JSON aus A-1 erzwingt die Nutzung an allen anderen
   Stellen.
 
 #### Beide Auflagen
 
-Werden A-1 oder A-2 zur Slice-M1-Abnahme nicht erfuellt, ist die
-Python-Wahl gescheitert; ADR 0002 wird zurueckgezogen und ein
-Folge-ADR (vermutlich Option D, Kotlin/JVM) tritt an die Stelle.
+Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
+(gemaess ADR 0003):
+
+- **Spike-0 rot (vor Acceptance):** A-1 oder A-2 lassen sich im
+  Skelett nicht gruen konfigurieren. ADR 0002 geht auf `Rejected`;
+  `GG-AR-OPEN-001` bleibt offen; eine Folge-ADR (vermutlich Option
+  D, Kotlin/JVM) tritt an die Stelle.
+- **A-1/A-2 unhaltbar nach Acceptance:** Die Contracts oder der
+  Custom-Emitter erweisen sich im Hauptprojekt als nicht haltbar
+  (z. B. eine wesentliche Bibliothek verletzt einen Contract
+  reproduzierbar, ohne dass eine Anpassung moeglich ist). In
+  diesem Fall wird ADR 0002 nicht „zurueckgezogen" — das verbietet
+  ADR 0003 fuer Accepted-ADRs — sondern durch eine Nachfolge-ADR
+  `Superseded`. Die Nachfolge-ADR dokumentiert: welchen
+  Contract/Vertrag sie ersetzt, welche Migrationsstrategie greift
+  und ob `GG-AR-OPEN-001` wieder geoeffnet wird.
 
 ### Wann Option D (Kotlin/JVM) gezogen wird
 
@@ -655,17 +755,20 @@ ADR-Annahme):
 
 1. **Proposed → Provisional:** Projektowner stimmt der Empfehlung
    (Option A mit Auflagen A-1/A-2) zu, gibt Spike-0 frei. ADR
-   wird auf `Provisional` gesetzt; `GG-AR-OPEN-001` bleibt offen,
-   wird in `GG-AR-OPEN-001` in `architecture.md` mit Verweis auf diese ADR
-   versehen.
-2. **Provisional → Accepted:** Spike-0 wird gegen den
-   Spike-0-Vertrag aus den Auflagen-Sektionen dieser ADR abgeschlossen.
-   Erst dann wird ADR auf
-   `Accepted` gesetzt und `GG-AR-OPEN-001` in
-   `GG-AR-OPEN-001` in `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
-3. **Spike-0 rot:** ADR wird zurueckgezogen; `GG-AR-OPEN-001`
-   bleibt offen; ein Folge-ADR (Option D oder anderer Stack) tritt
-   an die Stelle.
+   wird auf `Provisional` gesetzt; der Eintrag fuer `GG-AR-OPEN-001`
+   in `architecture.md` erhaelt einen Verweis auf diese ADR, wird
+   aber nicht als geschlossen markiert.
+2. **Provisional → Accepted:** Spike-0 wird gegen den Spike-0-Vertrag
+   aus den Auflagen-Sektionen dieser ADR abgeschlossen. Erst dann
+   wird ADR auf `Accepted` gesetzt und `GG-AR-OPEN-001` in
+   `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
+3. **Spike-0 rot (Proposed/Provisional → Rejected):** Vor Acceptance
+   wird die ADR auf `Rejected` gesetzt (ADR-0003-Lifecycle); ein
+   Folge-ADR (Option D oder anderer Stack) tritt an die Stelle.
+4. **Nach Acceptance unhaltbar (Accepted → Superseded):** Wenn A-1
+   oder A-2 nach Acceptance im Hauptprojekt nicht haltbar sind, wird
+   ADR 0002 durch eine Nachfolge-ADR `Superseded` (ADR-0003-Lifecycle:
+   `Withdrawn` ist Vor-Beschluss, `Superseded` post-Acceptance).
 
 _Aktueller Status: `Proposed` — kein Beschluss._
 
@@ -743,5 +846,9 @@ Davon unberuehrt bleibt offen:
 - ADR fuer `RandomPort`-Implementierung (gebondeter PRNG,
   Seeding-Kette) — Folgearbeit, schliesst keinen `GG-AR-OPEN-*`,
   aber materiell wichtig fuer `GG-SIM-001`.
-- ADR fuer kanonische Serialisierung (Formatdetails: Dezimalstellen,
-  Zeitstempel-Repraesentation, Sequenznumerik) — verfeinert A-2.
+- ADR fuer Performance-/Implementierungs-Alternativen der kanonischen
+  Serialisierung (`orjson`-Bridge, `msgspec`, Rust-Backend) — die
+  Format-Details aus A-2 (Punkt 2) und die Standard-Implementierung
+  (Custom-Emitter aus A-2 Punkt 3) sind durch diese ADR fix; eine
+  Folge-ADR darf nur die Umsetzungsroute aendern und muss
+  Byte-Gleichheit gegenueber dem Standard-Emitter nachweisen.

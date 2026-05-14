@@ -2,11 +2,14 @@
 #
 # grid-gym multi-stage Dockerfile.
 #
-# Stages implementieren die Spike-0-Gates aus ADR 0002 (Auflage A-1):
-# Lint, Format, Architektur-Imports, Architektur-Custom (AST), Tests,
-# Coverage-Gate, Runtime. Jeder Stage ist ein eigenstaendiges Build-
-# Ziel und wird vom Makefile per `--target` einzeln gebaut. Aggregierte
-# CI-Lauefe ueber `make ci` / `make gates`.
+# Spike-0-Pfad fuer ADR 0002 (`Provisional` per ADR 0003 §2.1):
+# Stages implementieren die Spike-0-Gates aus ADR 0002 (Auflage A-1)
+# und ADR 0005 (Type-Check): Lint, Format, Typecheck, Architektur-Imports,
+# Architektur-Custom (AST), Tests, Coverage-Gate, Runtime. Jeder Stage
+# ist ein eigenstaendiges Build-Ziel und wird vom Makefile per `--target`
+# einzeln gebaut. Aggregierte CI-Lauefe ueber `make ci` / `make gates`.
+# Bis zur Acceptance von ADR 0002 und ADR 0005 bleibt diese Datei der
+# validierte Spike-0-Pfad — kein verbindlicher Stack-Beschluss.
 #
 # Bezug:
 # - GG-AR-OPEN-001 / ADR 0002 (Sprach-Stack: Python 3.13+ Floor,

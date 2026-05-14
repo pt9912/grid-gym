@@ -6,8 +6,8 @@
 [ADR 0003](0003-adr-lifecycle.md),
 [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md)
-**Aenderungstyp:** Ergaenzung — `ADR 0001 §4` (Pflege-Regeln)
-wird durch eine zusaetzliche Konvention ergaenzt; ADR 0001
+**Aenderungstyp:** Ergaenzung — die Pflege-Regeln in `ADR 0001`
+werden durch eine zusaetzliche Konvention ergaenzt; ADR 0001
 bleibt inhaltlich unveraendert.
 
 ---
@@ -33,8 +33,9 @@ Querverweise wie `architecture.md §4.2`, `§19`, `§17` oder
 - **semantisch arm:** `§4.2` sagt nicht, *was* gemeint ist;
   Leser muessen die Zielsektion lesen, um den Bezug zu verstehen.
 - **renderer-abhaengig:** Anker in Markdown sind nicht stabil
-  (`#421-hexagonale-sicht-driving--driven-ports` haengt am Titel
-  und kippt bei jeder Umbenennung).
+  (`#42-hexagonale-sicht-driving--driven-ports` haengt am Titel
+  und kippt bei jeder Umbenennung; zudem variiert der Slug
+  zwischen Renderern).
 
 Die etablierten Kennungen sind dagegen positionsunabhaengig,
 selbst-beschreibend und werden bereits in
@@ -60,7 +61,7 @@ Beispiele:
 | Statt                              | Besser                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------ |
 | „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie `GG-AR-TABU-001..008`" (optional: „in §4.2 architecture.md") |
-| „`architecture.md §19`"              | „`GG-AR-OPEN-001`" (oder die konkret gemeinte Kennung)                          |
+| „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „`GG-AR-OPEN-007` (UI-Architektur)" — §19 listet `GG-AR-OPEN-001..010`, ein pauschaler §19-Verweis ist mehrdeutig |
 | „`Lastenheft §27.1`"                 | „`GG-TRACE-001` (§27.1-Tabelle)"                                                |
 | „Komponente in §5"                   | „`GG-AR-COMP-DEVICES`"                                                          |
 | „Driving-Port in §4.2"               | „`GG-AR-PORT-DRV-003` (`ReplayPort`)"                                            |
@@ -71,10 +72,11 @@ Hat das Referenzziel keine etablierte Kennung (z. B.
 architecture.md §17 „Testarchitektur"), gilt folgende Reihenfolge:
 
 1. **Bevorzugt:** Eine Kennung im passenden Raum **anlegen**
-   (z. B. `GG-AR-TEST-001` fuer Testarchitektur als Ganzes).
-   Das ist im Rahmen der naechsten inhaltlichen Aenderung des
-   betroffenen Dokuments zu erledigen — nicht als eigener
-   Big-Bang.
+   (Beispielname: `GG-AR-TEST-001` fuer Testarchitektur als
+   Ganzes — die konkrete Familie und Nummerierung wird beim
+   erstmaligen Anlegen in `architecture.md` normiert). Das ist im
+   Rahmen der naechsten inhaltlichen Aenderung des betroffenen
+   Dokuments zu erledigen — nicht als eigener Big-Bang.
 2. **Uebergangsweise:** Inhaltliche Beschreibung plus
    Abschnittsnummer als Klammer-Hilfe: „die Testarchitektur in
    `architecture.md` (§17)". Diese Form ist nur fuer Sektionen
@@ -94,8 +96,12 @@ ADR-zu-ADR-Verweise nutzen die ADR-Nummer (`ADR 0002`) als
 Kennung. Bezugnahmen auf Unterabschnitte einer ADR werden
 inhaltlich benannt („Status-Pfad in ADR 0002") statt
 positionsabhaengig („ADR 0002 §4"). Kommen mehrere Verweise auf
-denselben Unterabschnitt vor, kann die Ziel-ADR einen
-inhaltlichen Anker einfuehren (z. B. `<!-- anchor:status-pfad -->`).
+denselben Unterabschnitt vor, kann die Ziel-ADR optional einen
+inhaltlichen Anker einfuehren (z. B. `<!-- anchor:status-pfad -->`
+unmittelbar vor der Zielzeile). Diese Anker-Konvention wird hier
+neu eingefuehrt; sie ist Konvention, kein Tooling-Vertrag, und
+nur dort sinnvoll, wo der inhaltliche Name allein nicht eindeutig
+ist.
 
 ### 2.5 Externe Links
 
@@ -123,12 +129,13 @@ ersetzt. Statt dessen gilt:
   `§…`-Verweise werden im Zuge des Spike-0-Schliff umgestellt,
   spaetestens vor `Accepted`.
 - ADR 0001 und ADR 0003 sind `Accepted` und werden nicht
-  nachtraeglich umgestellt — `ADR 0001 §4` verbietet inhaltliche
-  Ueberschreibung; diese ADR 0004 ist die definitive Stelle, an
-  der die Regel lebt.
-- Lastenheft und Architektur werden bei der naechsten
-  Versions-Hebung (`lastenheft.md` 0.8 → 0.9, `architecture.md`
-  0.1.0 → 0.2.0) auf die neue Konvention umgestellt.
+  nachtraeglich umgestellt — die Pflege-Regeln in `ADR 0001`
+  verbieten inhaltliche Ueberschreibung; diese ADR 0004 ist die
+  definitive Stelle, an der die Regel lebt.
+- Lastenheft und Architektur werden mit jeder inhaltlichen
+  Aenderung gemaess obiger Regel sukzessive umgestellt,
+  spaetestens jeweils bei der naechsten Minor-Versions-Hebung
+  (heute `lastenheft.md` 0.8, `architecture.md` 0.1.0).
 
 ---
 
@@ -143,8 +150,9 @@ ersetzt. Statt dessen gilt:
   `tools/check_refs.py` als Folgearbeit) kann spaeter ueber die
   Kennungen einen Index erzeugen und nicht aufgeloeste Verweise
   melden.
-- ADR 0001 §4 bleibt unveraendert; diese ADR fuegt eine
-  spezialisierte Pflege-Regel hinzu, ueberschreibt aber nichts.
+- Die Pflege-Regeln in `ADR 0001` bleiben unveraendert; diese
+  ADR fuegt eine spezialisierte Pflege-Regel hinzu,
+  ueberschreibt aber nichts.
 
 ---
 
