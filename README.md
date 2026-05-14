@@ -57,11 +57,32 @@ Der MVP umfasst laut Lastenheft mindestens:
 ```text
 .
 ├── CHANGELOG.md
+├── Dockerfile                   ← Multi-Stage (Lint, Arch-Check, Test, Runtime)
 ├── LICENSE
+├── Makefile                     ← Build-/Test-Gates pro Dockerfile-Stage
 ├── README.md
-└── spec/
-    └── lastenheft.md
+├── spec/
+│   ├── lastenheft.md            ← normative Anforderungen (GG-*)
+│   └── architecture.md          ← Architektur (GG-AR-*)
+└── docs/
+    ├── plan/
+    │   ├── adr/                 ← Architecture Decision Records
+    │   └── planning/
+    │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
+    │       ├── next/            ← geplant, aber noch nicht aktiv
+    │       ├── in-progress/     ← aktive Roadmap und Slice-Plaene
+    │       └── done/            ← Closure-Notizen
+    ├── user/                    ← anwender-/betreibernah (geplant)
+    └── archive/                 ← verworfene/historische Skizzen
 ```
+
+Quelltext, Tests und Tooling-Skripte (`src/grid_gym/`, `tests/`,
+`tools/`) werden im Rahmen von Spike-0 zu ADR 0002 (`GG-AR-OPEN-001`)
+angelegt; `Dockerfile` und `Makefile` sind das Geruest dafuer.
+
+Die Dokumentations- und Planungsstruktur ist in
+[`docs/plan/adr/0001-documentation-and-planning-structure.md`](docs/plan/adr/0001-documentation-and-planning-structure.md)
+festgelegt.
 
 ## Lizenz
 

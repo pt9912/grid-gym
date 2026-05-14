@@ -1,0 +1,747 @@
+# ADR 0002 — Sprach- und Build-Stack
+
+**Status:** Proposed — Entscheidung steht aus
+**Datum:** 2026-05-14
+**Bezug:** [Lastenheft](../../../spec/lastenheft.md),
+[Architektur](../../../spec/architecture.md),
+[ADR 0001](0001-documentation-and-planning-structure.md),
+[ADR 0003](0003-adr-lifecycle.md) (Statuswerte und Uebergaenge)
+**Schliesst (bei Annahme):**
+[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+
+---
+
+## 1. Kontext
+
+Die Architektur (`spec/architecture.md`) ist sprachunabhaengig
+formuliert; die Modulgrenzen (`core/`, `ports/`, `adapters/`, `ui/`)
+sind durch Dependency Rule und Architektur-Tabus festgelegt
+(`GG-AR-TABU-001..008`). Diese Entscheidung legt fest, in welcher
+Sprache, mit welchem Build-Stack und mit welchen Querschnittsbibliotheken
+der Simulationskern und die Driving-Adapter geliefert werden.
+
+Sie betrifft **nicht** das Web-UI (`ui/`); dessen Stack wird in einer
+spaeteren ADR adressiert (vgl. `GG-AR-OPEN-007`).
+
+---
+
+## 2. Bewertungskriterien
+
+Abgeleitet aus dem Lastenheft. Gewichtung: P0 (Knock-out) > P1 > P2.
+
+| Kennung   | Kriterium                                                                       | Bezug                                          | Gewicht |
+| --------- | ------------------------------------------------------------------------------- | ---------------------------------------------- | ------- |
+| K-DET     | Determinismus per Default; Tie-Breaking, kanonische Serialisierung machbar      | GG-SIM-001..004, GG-ARCH-006, GG-DATA-005      | P0      |
+| K-REPRO   | Reproduzierbare Builds (Lockfiles, Container)                                   | GG-DEPLOY-002, GG-CICD-001                     | P0      |
+| K-TICK    | Tick-Dauer 100ms/1s zuverlaessig; 10ms als Diagnosemodus laufbar                 | GG-RT-001, GG-RT-004/005                       | P0      |
+| K-ARCH    | Architekturtest-Tooling fuer Modulgrenzen und Tabus verfuegbar                  | GG-ARCHTEST-001..005, GG-AR-TABU-001..008      | P0      |
+| K-OAS     | OpenAPI-Generierung oder -Validierung; WebSocket-Vertraege testbar              | GG-API-003, GG-TESTTYPE-004                    | P1      |
+| K-DB      | Stabile PostgreSQL-Treiber + Migrationswerkzeug; Timescale/Influx-Adapter moeglich | GG-PERSIST-001..009                           | P1      |
+| K-OBS     | Strukturierte Logs, Metriken, OpenTelemetry-Exporter                            | GG-OTEL-001..004                               | P1      |
+| K-TEST    | Unit/Integration/Architekturtest-Stack reif; Coverage-Reports                   | GG-TESTTYPE-001..007, GG-COV-001..005          | P1      |
+| K-CONTAIN | Container-Image klein und reproduzierbar; offline-faehig                        | GG-DEPLOY-001/002/011                          | P1      |
+| K-ECO     | Energie-/Power-Flow-Domaene: Bibliotheken oder Bindings verfuegbar               | GG-GRID-001/002/007, GG-FUTURE-* (MPC/RL)      | P2      |
+| K-DEV     | Entwicklungs-Velocity; Hexagonal-Idiome; Team-Erfahrung                          | (Projekt-extern)                               | P2      |
+
+---
+
+## 3. Optionen
+
+Jede Option wird gegen die Kriterien bewertet (`+` gut, `o` neutral,
+`-` schlecht / Risiko, `??` projektabhaengig).
+
+### Option A: Python 3.13+ mit FastAPI + Pydantic + uv
+
+Versions-Anker (Stand 2026-05-14, gemaess [python.org status](https://devguide.python.org/versions/)):
+
+- Python 3.12 ist im Security-Only-Modus (kein Bugfix mehr). Nicht
+  als Minimum waehlen, weil EOL 2028-10 schon naeher rueckt.
+- Python 3.13 ist Bugfix-Release (EOL 2029-10) — Minimum-Floor fuer
+  Production.
+- Python 3.14 ist Bugfix-Release (Erstrelease 2025-10-07, EOL 2030-10)
+  — empfohlene Referenz-Runtime fuer Container-Image und Reference-
+  Benchmarks. CI testet beide Versionen.
+- Python 3.15 ist Prerelease, kein Production-Ziel; spaetere Aufnahme
+  in die CI-Matrix als Folgearbeit.
+
+| Kriterium  | Bewertung | Bemerkung                                                                                     |
+| ---------- | --------- | --------------------------------------------------------------------------------------------- |
+| K-DET      | o         | Dict-Iteration seit 3.7 stabil; Sortierung ist stabil; GC nicht-deterministisch — irrelevant fuer fachliche Outputs solange `RandomPort` gebondet ist. Floating-Point ist plattformabhaengig — gleiche `decimal`/`fractions` einsetzbar. |
+| K-REPRO    | +         | `uv.lock`/`poetry.lock` reproduzierbar.                                                       |
+| K-TICK     | o         | 100ms/1s problemlos. 10ms bei 100 Geraeten knapp; CPython-GIL limitiert Parallelitaet im Tick. |
+| K-ARCH     | -         | Schwaechstes Glied: kein etabliertes „NetArchTest"-Pendant. Workarounds: `import-linter`, eigener AST-Walker. |
+| K-OAS      | +         | FastAPI generiert OpenAPI; `pydantic` validiert.                                              |
+| K-DB       | +         | `psycopg`, `asyncpg`, `alembic` ausgereift; Timescale/Influx-Clients verfuegbar.              |
+| K-OBS      | +         | `structlog`, `prometheus-client`, `opentelemetry-python` reif.                                |
+| K-TEST     | +         | `pytest`, `pytest-cov`, `hypothesis` (property-based).                                        |
+| K-CONTAIN  | o         | `python:3.14-slim` als Basis ~125 MB; mit MVP-Stack (FastAPI, pydantic, psycopg, alembic, structlog, opentelemetry) realistisch 250–400 MB. Mit `pandapower`/`pypsa`/`scipy`/ML weitere ~600–900 MB. Imagegroesse wird als CI-Messpunkt gefuehrt; offline-faehig ist sie unabhaengig davon. |
+| K-ECO      | ++        | Mit Abstand staerkstes Energie-Oekosystem fuer SOLLTE-/Folgearbeit: `pandapower`/`pypsa`/`OpenDSS`-Bindings adressieren `GG-GRID-002` (Power-Flow-Adapter), `GG-GRID-005..007` (Inselnetz/Trafo/Blindleistung), `GG-FUTURE-003`. ML/RL fuer `GG-FUTURE-001/002` zusaetzlich. |
+| K-DEV      | +         | Hoher Output, Hexagonal idiomatisch ueber Protokolle + DI.                                     |
+
+**Hauptrisiko:** K-ARCH (Architekturtests) und K-TICK bei 10ms.
+
+### Option B: Go 1.22+ mit Echo/Chi + sqlc + Goose
+
+| Kriterium  | Bewertung | Bemerkung                                                                                     |
+| ---------- | --------- | --------------------------------------------------------------------------------------------- |
+| K-DET      | +         | Map-Iteration ist randomisiert (Sprachvorgabe!) — muss bewusst ueber Slices+Sort geloest werden, dann sehr deterministisch. |
+| K-REPRO    | +         | `go.sum` reproduzierbar, Single-Binary.                                                        |
+| K-TICK     | ++        | GC sehr schnell (< 1ms typisch), goroutine pro Geraet machbar, 10ms realistisch.              |
+| K-ARCH     | o         | `go-arch-lint`, eigene Importtests; weniger reif als NetArchTest.                              |
+| K-OAS      | o         | `oapi-codegen` reif; WebSocket-Vertraege manuell.                                              |
+| K-DB       | +         | `pgx`, `sqlc`, `goose` ausgereift; Timescale ist Postgres-kompatibel.                          |
+| K-OBS      | +         | `slog`, `otelgo`, `prometheus` reif.                                                            |
+| K-TEST     | o         | `go test` reif; Coverage einfach; weniger ergonomisches Test-DSL als pytest/JUnit.            |
+| K-CONTAIN  | ++        | Single-Binary, scratch-Image moeglich; < 30 MB.                                                |
+| K-ECO      | -         | Sehr wenig Energie-Oekosystem; alles selbst.                                                   |
+| K-DEV      | o         | Boilerplate fuer Domain-Modelle; Generics seit 1.18 helfen, aber kein `sealed`-Pendant.        |
+
+**Hauptrisiko:** K-ECO (Energiedomaene) und Modell-Boilerplate.
+
+### Option C: Rust (stable) mit Axum + sqlx + sqlx-cli
+
+| Kriterium  | Bewertung | Bemerkung                                                                                     |
+| ---------- | --------- | --------------------------------------------------------------------------------------------- |
+| K-DET      | ++        | Kein GC, kein Hidden-Allocation-Jitter, starke Typgarantien fuer Sequenzierung.                |
+| K-REPRO    | ++        | `Cargo.lock` reproduzierbar; deterministische Builds mit `RUSTFLAGS=...`.                      |
+| K-TICK     | ++        | 10ms machbar; geringste Jitter-Risiken aller Optionen.                                         |
+| K-ARCH     | -         | Sehr wenig Tooling fuer Architekturregeln auf Modulebene; eigene Crate-Boundaries der Mainline-Hebel. |
+| K-OAS      | -         | `utoipa` reift; weniger ergonomisch als FastAPI/Spring-Tooling.                                |
+| K-DB       | +         | `sqlx` reif (compile-time-checked queries); Timescale ueber Postgres.                          |
+| K-OBS      | +         | `tracing`, `opentelemetry`-Crates reif.                                                        |
+| K-TEST     | o         | Reife Unit-Tests; Integration mit Test-DB ergonomisch ueber `testcontainers`.                  |
+| K-CONTAIN  | ++        | Sehr klein, scratch-faehig.                                                                    |
+| K-ECO      | --        | Praktisch null Energie-Oekosystem im Open-Source; ML/RL ueber FFI moeglich, aber umstaendlich.  |
+| K-DEV      | -         | Steilste Lernkurve; langsamere Iteration; hoechste Code-Komplexitaet pro Feature.              |
+
+**Hauptrisiko:** K-DEV (Tempo) und K-ECO; lohnt sich nur bei harten Performance-/Determinismus-Anforderungen, die in `grid-gym` MVP-seitig nicht zwingend sind.
+
+### Option D: Kotlin 2.x auf JVM 21 mit Ktor + jOOQ/Exposed + Gradle Multi-Module
+
+| Kriterium  | Bewertung | Bemerkung                                                                                     |
+| ---------- | --------- | --------------------------------------------------------------------------------------------- |
+| K-DET      | +         | JVM ist gut beherrschbar; ZGC/Generational ZGC mit < 1ms Pausen praxistauglich; Floating-Point IEEE-754-konform. |
+| K-REPRO    | +         | Gradle + version catalog + lockfiles.                                                          |
+| K-TICK     | +         | 100ms/1s einfach; 10ms machbar mit ZGC, aber JIT-Warmup zu beachten.                          |
+| K-ARCH     | ++        | `ArchUnit` ist Goldstandard fuer Architekturtests (Modulgrenzen, Tabus, zyklenfrei).           |
+| K-OAS      | +         | OpenAPI Generator reif; `kotlinx.serialization` deterministisch.                               |
+| K-DB       | +         | `jOOQ`, `Exposed`, Flyway/Liquibase reif; Timescale/Influx-Treiber verfuegbar.                 |
+| K-OBS      | +         | Micrometer, OpenTelemetry-Java-Agent, structured-logging-Setups vorhanden.                     |
+| K-TEST     | ++        | JUnit5 + Kotest + Testcontainers; sehr starkes Test-Oekosystem.                                |
+| K-CONTAIN  | o         | Mit GraalVM Native Image klein (< 80 MB); ohne grosser (> 200 MB JRE).                          |
+| K-ECO      | o         | Wenig Energie-Oekosystem, aber gute Java-Bindings (`OpenDSS`, JADE fuer Multi-Agent).          |
+| K-DEV      | ++        | Starkes Hexagonal-Idiom (sealed classes, value classes, Result-Typen); Gradle-Multi-Module passt 1:1 zum geplanten Layout. |
+
+**Hauptrisiko:** K-CONTAIN ohne Native Image; K-DEV bei Native-Image-Toolchain.
+
+### Option E: C# / .NET 9 mit ASP.NET Minimal APIs + EF Core/Dapper + DbUp
+
+| Kriterium  | Bewertung | Bemerkung                                                                                     |
+| ---------- | --------- | --------------------------------------------------------------------------------------------- |
+| K-DET      | +         | Modernes .NET-GC mit Server-GC < 1ms typisch.                                                  |
+| K-REPRO    | +         | `packages.lock.json`, deterministische Builds.                                                 |
+| K-TICK     | +         | 100ms/1s einfach; 10ms machbar mit AOT.                                                        |
+| K-ARCH     | ++        | `NetArchTest` (in bess-ems im Einsatz, `AR-OPEN-009` geschlossen) — vermutlich identischer Stack. |
+| K-OAS      | +         | `Microsoft.OpenApi`, `Swashbuckle`.                                                            |
+| K-DB       | +         | `Npgsql`, `Dapper`, `DbUp` (analog bess-ems).                                                  |
+| K-OBS      | +         | `OpenTelemetry .NET`, `Serilog`.                                                                |
+| K-TEST     | +         | xUnit/NUnit + Testcontainers.NET.                                                              |
+| K-CONTAIN  | o         | Mit Native AOT klein; ohne 100–200 MB.                                                          |
+| K-ECO      | -         | Sehr wenig Energie-Oekosystem im Open-Source-Bereich.                                          |
+| K-DEV      | +         | Starkes Hexagonal-Idiom, sehr nahe an bess-ems — Risiko: Projekt-Verwechslung mit bess-ems.    |
+
+**Hauptrisiko:** K-ECO und Wahrnehmung „bess-ems-Klon" trotz unterschiedlicher Domaene.
+
+---
+
+## 4. Empfehlung
+
+**Empfohlen: Option A (Python 3.13+, Referenz-Runtime 3.14) mit zwei
+harten Auflagen, fallback Option D (Kotlin/JVM mit ArchUnit + ZGC).**
+
+Begruendung (MVP-getrieben — Future-Punkte sind Zusatznutzen, nicht
+Entscheidungsgrundlage):
+
+- **Schema- und Szenariovalidierung (MVP).** `GG-SCN-001/008` verlangt
+  YAML-Schema-Validierung vor erstem Tick; `GG-DATA-001..004` verlangt
+  ein einheitliches Telemetriemodell mit Wertebereichs- und
+  Einheitenpruefung; `GG-BESS-008` Initialparameter-Validierung. Pydantic
+  v2 ist hier deutlich vor jedem anderen Option-Stack.
+- **OpenAPI als Vertrag (MVP).** `GG-API-003` fordert maschinenlesbaren
+  Vertrag fuer alle REST-Endpunkte. FastAPI generiert OpenAPI direkt aus
+  pydantic-Modellen — Schema und Implementierung koennen nicht
+  auseinanderdriften.
+- **Determinismus- und Property-basierte Tests (MVP).** `GG-SIM-001..004`
+  und `GG-DATA-005` sind property-basiert pruefbar. `hypothesis` ist
+  hier Industriestandard. Replay-Diff-Klassifikation (`GG-REPLAY-007`)
+  laesst sich als reine Python-Funktion mit `hypothesis`-Tests umsetzen.
+- **MVP-Geraete- und Netzmodelle (MVP).** `GG-GRID-001..004`
+  (vereinfachtes Leistungs-/Spannungsmodell) sind ohne externes
+  Power-Flow-Tool erreichbar; `numpy` reicht. `GG-GRID-002` erlaubt
+  optional einen Power-Flow-Adapter — Python's `pandapower` ist der
+  natuerliche Pfad, wenn das aus SOLLTE in MUSS wandert.
+- **Persistenz- und Migrationskette (MVP).** `psycopg` 3 (async) und
+  `alembic` decken `GG-PERSIST-001..009` vollstaendig ab; Timescale-
+  und Influx-Adapter sind dort produktionsreif.
+- **Observability (MVP).** `structlog`, `prometheus-client` und
+  `opentelemetry-python` decken `GG-OTEL-001..004` ohne Eigenbau.
+- **Tick-Charakteristik (MVP).** `GG-RT-001` fordert fuer 100ms/1s
+  Backpressure-Freiheit und macht 10ms zum Mess-/Diagnosemodus, nicht
+  zum Echtzeitpfad. `GG-RT-004/005` (100 Geraete, 10.000 Tick-Lauf,
+  10.000 Punkte/s) ist in CPython 3.13/3.14 ohne C-Extension messbar
+  erreichbar; Risiko bleibt, wird aber durch Slice-M1-Benchmark
+  geprueft (siehe Fallback-Trigger unten).
+
+Zusatznutzen ueber den MVP hinaus (nicht entscheidungstragend):
+ML/RL-Toolchain fuer `GG-FUTURE-001/002`, `pandapower`-Integration
+fuer `GG-FUTURE-003`, Co-Simulation-Bindings fuer `GG-FUTURE-006`.
+
+Schwaechstes Glied bleibt **K-ARCH** (P0): Python hat kein
+NetArchTest/ArchUnit-Pendant. Das wird durch eine konkrete und
+nachweisbare Auflage A-1 kompensiert (siehe unten). Wird A-1 nicht
+erfuellbar, ist Python nicht haltbar.
+
+### Auflagen bei Python-Annahme
+
+A-1 schliesst das K-ARCH-Gate (P0); A-2 schliesst die
+Determinismusluecke durch Serialisierung.
+
+**Pflicht-Pfad zur ADR-Annahme (Spike-0 vor `Accepted`):**
+
+K-ARCH ist ein P0-Knock-out-Kriterium, in dem Python die Bewertung
+`-` traegt. Solange A-1 nicht nachweislich konfigurierbar ist,
+darf diese ADR weder als `Accepted` gefuehrt noch `GG-AR-OPEN-001`
+als geschlossen markiert werden. Der Status-Pfad nutzt die in
+[ADR 0003](0003-adr-lifecycle.md) definierten Lifecycle-Stufen und
+ist hier konkret:
+
+| ADR-Status     | Bedingung                                                                 | Wirkung auf `GG-AR-OPEN-001`         |
+| -------------- | ------------------------------------------------------------------------- | ------------------------------------ |
+| `Proposed`     | aktueller Stand: Empfehlung samt Auflagen, ohne ausgefuehrten Nachweis    | bleibt offen                          |
+| `Provisional`  | Projektowner bestaetigt Empfehlung; Spike-0 ist freigegeben               | bleibt offen, mit Verweis auf ADR    |
+| `Accepted`     | Spike-0 ist gruen abgeschlossen (siehe Spike-0-Vertrag unten)              | wird mit „Geschlossen mit ADR 0002" in `GG-AR-OPEN-001` in `architecture.md` markiert |
+
+**Spike-0-Vertrag (Pre-Acceptance):**
+
+Spike-0 ist ein zeitlich begrenztes (Empfehlung: max. 5
+Personentage), gegen einen leeren oder minimalen `grid-gym`-Skeleton
+ausgefuehrtes Spike-Projekt. Es liefert:
+
+- ein funktionierendes Repository-Skelett (`src/grid_gym/{core,ports,adapters}`),
+- alle fuenfzehn A-1-Contracts konfiguriert
+  (`pyproject.toml`, `tests/arch/`, `tools/arch_check.py` inkl.
+  `grimp`-SCC-Check),
+- die `ruff`-Konfiguration aus §A-1 inklusive der Per-File-Ignores,
+- A-2 als kanonische Serialisierungsfunktion plus
+  `hypothesis`-Property-Tests,
+- einen CI-Workflow, der `lint-imports`, `ruff check` und
+  `python tools/arch_check.py` als drei Gates ausfuehrt,
+- pro Contract einen bewusst eingefuegten Verstoss in einem
+  separaten Branch, der den jeweiligen Gate rot werden laesst.
+
+Spike-0 ist erfolgreich, wenn:
+
+1. alle drei Gates auf `main` (sauberes Skelett) gruen sind,
+2. jeder der fuenfzehn Verstoss-Branches genau seinen erwarteten
+   Gate rot werden laesst und keinen anderen, und
+3. `ruff check --no-cache` erkennt die in dieser ADR gezeigte
+   `pyproject.toml`-Konfiguration ohne Warnung — insbesondere
+   `[tool.ruff.lint.flake8-tidy-imports]` mit
+   `banned-module-level-imports` und `[tool.ruff.lint.flake8-tidy-imports.banned-api]`
+   werden vom installierten ruff akzeptiert. Falls eine kuenftige
+   ruff-Version diese Schluessel umbenennt, wird die ADR per
+   Folge-ADR angepasst, nicht Spike-0 umgangen.
+
+Wird Spike-0 nicht erfolgreich abgeschlossen, ist Python nicht
+haltbar und die ADR wird zurueckgezogen (siehe Fallback-Trigger
+„A-1 nicht erfuellbar").
+
+**Slice-M1-Abnahme (nach Acceptance):**
+
+Sobald die ADR `Accepted` ist, sind A-1 und A-2 nicht nur
+konfiguriert, sondern werden im Hauptprojekt fortlaufend gegen
+echten Code gepflegt. Slice-M1-Abnahme verlangt zusaetzlich, dass
+die ersten Domain- und Adapter-Module die Contracts ohne
+Ausnahmen erfuellen.
+
+#### A-1 — Architekturtests verbindlich automatisiert
+
+`import-linter` allein deckt nur Import- und Zyklusregeln; mehrere
+Tabus aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` sind Aufruf-, Immutability- oder
+Fehlerstilregeln und brauchen eine **AST-basierte** Pruefung. A-1
+ist deshalb eine Drei-Tool-Suite, deren CI-Job nur dann gruen ist,
+wenn alle drei Tools sauber laufen.
+
+Tool-Suite (Pflicht), mit ehrlicher Rollenverteilung:
+
+| Tool                              | Rolle                                                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `import-linter`                   | Modul- und Layer-Importgrenzen (`forbidden`-Contracts).                                              |
+| `ruff` (Regelgruppen `BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904` + `flake8-tidy-imports.banned-api`/`banned-module-level-imports`) | (a) Datetime-tz-Verstoesse (`DTZ`), (b) Blind-Except und try/except-Anti-Patterns (`BLE`, `TRY`, `B904`), (c) Banned-Imports (`random`, `secrets`, `numpy.random`) auf Modulebene in `core/*` ueber `flake8-tidy-imports.banned-module-level-imports`, (d) Banned-API-Aufrufe (`datetime.datetime.utcnow`) ueber `flake8-tidy-imports.banned-api`, (e) Test-Security-Subset (`S`). **Nicht** durch ruff abgedeckt: `time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, Aufrufe wie `random.random()` nach einem Re-Export — diese laufen ueber `tools/arch_check.py`. |
+| `tools/arch_check.py` (eigenes AST-Skript) | (a) Zykluscheck (SCC via `grimp`), (b) Zeitfunktions-Calls in `core/*` (`time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, transitive Re-Exports), (c) Zufallsfunktions-Calls in `core/*` (Aufruf-Site, nicht nur Import), (d) `json.dumps`/`json.dump`-Aufrufe ausserhalb der Whitelist, (e) Immutability fuer `core.domain.*`, (f) God-Utility-Modul-/Klassenmuster, (g) `GridGymError`-Vererbung fuer Domain-/Application-Exceptions. |
+
+Konfiguration und Contracts liegen versioniert unter `tests/arch/`
+und `pyproject.toml`. Die Contracts sind:
+
+| Contract-ID         | Tool          | Inhalt | Bezug |
+| ------------------- | ------------- | ------ | ----- |
+| AC-CORE-NO-ADAPTERS | import-linter `forbidden` | `core.*` darf NICHT `adapters.*` importieren. | GG-AR-TABU-001, GG-ARCH-003 |
+| AC-CORE-NO-DRIVING  | import-linter `forbidden` | `core.*` darf NICHT `ports.driving.*` importieren (Driving-Ports werden vom Kern angeboten, nicht aufgerufen). | GG-AR-TABU-001 |
+| AC-PORTS-NO-OUT     | import-linter `forbidden` | `ports.*` darf NICHT `adapters.*` UND NICHT `core.simulation`, `core.devices`, `core.scenario`, `core.replay`, `core.faults`, `core.agents` importieren — Ports kennen nur `core.domain`. | GG-AR-TABU-001 |
+| AC-PORTS-NO-FW      | import-linter `forbidden` | `ports.*` darf KEINE Web-, Persistenz-, Messaging-, Datenbank- oder UI-Frameworks importieren: dieselbe Verbotsliste wie `AC-NO-FW`, ergaenzt um stdlib-IO (`socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client`). | GG-ARCHTEST-004 |
+| AC-ADAPTER-PURE     | import-linter `forbidden` | `adapters.*` darf NICHT `core.simulation`, `core.devices`, `core.scenario`, `core.replay`, `core.faults`, `core.agents` importieren — Adapter sehen nur `core.domain` und `ports.*`. **Reichweite: Import-Grenze** (siehe `AC-ADAPTER-LIGHTWEIGHT` fuer die Logik-Reichweite). | GG-AR-TABU-003, GG-CC-002 |
+| AC-ADAPTER-LIGHTWEIGHT | `tools/arch_check.py` (AST, heuristisch) | Module unter `adapters.driven.protocol_*`, `adapters.driven.persistence_*` und `adapters.driving.*` MUESSEN strukturell schlank bleiben: pro Modul max. eine zyklomatische Komplexitaet von 8 je Funktion, keine `if/elif`-Ketten ueber Domain-Enums (`Quality`, `CommandResult`), keine arithmetischen Operationen ueber Telemetriewerten (`+`, `-`, `*`, `/` auf Feldern von `TelemetryPoint`/`Command`). Heuristisch, **kein vollstaendiger Nachweis** — siehe Reststeuerung unter Code-Review. | GG-AR-TABU-003 (heuristischer Anteil), GG-CC-002 |
+| AC-NO-FW            | import-linter `forbidden` | `core.*` darf KEINE Module aus `fastapi`, `uvicorn`, `psycopg`, `sqlalchemy`, `alembic`, `httpx`, `paho.mqtt`, `pymodbus`, `asyncua` u. ae. importieren. | GG-AR-TABU-002, GG-CC-003 |
+| AC-NO-IO-MOD        | import-linter `forbidden` | `core.*` darf NICHT `socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client` als Modul importieren (rein zur Typannotation ueber `TYPE_CHECKING` erlaubt). | GG-AR-TABU-002 |
+| AC-NO-CYCLES        | `tools/arch_check.py` (Graph-Analyse via `grimp`) | Keine zyklischen Importpfade. Pruefung: `grimp.build_graph("grid_gym")`, dann Strongly-Connected-Components der Modul-Import-Kanten — jede SCC mit > 1 Knoten ist ein Verstoss. Bewusst **kein** `import-linter`-`independence`-Contract: `independence` verbietet jeden gegenseitigen Import (auch erlaubte Richtungen wie `adapters → ports`) und ist kein Zykluscheck. | GG-AR-TABU-004, GG-CC-004 |
+| AC-NO-TIME          | **Aufgeteilt:** `ruff` deckt `DTZ001`–`DTZ012` (tz-naive `datetime`-Calls) plus `flake8-tidy-imports.banned-api` fuer `datetime.datetime.utcnow`. `tools/arch_check.py` deckt `time.time`, `time.monotonic`, `time.perf_counter`, `time.perf_counter_ns`, `time.process_time`, `asyncio.get_event_loop().time` als Aufrufe in `core.*`. | `core.*` darf keine Wall-Clock-/Monotonic-Quelle direkt verwenden. Zeit kommt aus `ClockPort`. | GG-AR-TABU-005, GG-ARCH-007 |
+| AC-NO-RAND          | **Aufgeteilt:** `ruff` `flake8-tidy-imports.banned-module-level-imports` verbietet Module-Level-Imports von `random`, `secrets`, `numpy.random` in `core.*`. `tools/arch_check.py` faengt zusaetzlich Aufruf-Sites ab (z. B. nach Re-Export oder lokalem Import). | `core.*` darf weder `random.*`, `secrets.*`, `numpy.random.*` noch transitive Re-Exports davon aufrufen. Zufall kommt aus `RandomPort`. | GG-SIM-001, GG-SCN-002, GG-AR-PORT-DRN-010 |
+| AC-NO-JSON          | `tools/arch_check.py` (AST) | Produktionscode unter `src/grid_gym/**` darf `json.dumps`/`json.dump` nicht direkt aufrufen, **ausser** in einem einzigen explizit gewhitelisteten Modul: `src/grid_gym/core/serialization/canonical.py` — dies ist die Implementierung von `canonical_json` aus A-2 und die einzige erlaubte `json.dumps`-Aufrufstelle. Die Whitelist ist namentlich in `tools/arch_check.py` und in `pyproject.toml` hinterlegt; jede Erweiterung erfordert ADR-Verweis. | GG-DATA-005 |
+| AC-DOMAIN-FROZEN    | `tools/arch_check.py` (AST) | Klassen in `core.domain.*` MUESSEN entweder `@dataclass(frozen=True, slots=True)` sein oder von einer `FrozenModel`-Basisklasse (Pydantic mit `model_config = ConfigDict(frozen=True)`) erben. | GG-AR-TABU-006, GG-CC-007 |
+| AC-NO-GOD-UTILS     | `tools/arch_check.py` (AST) | Verboten: Modulnamen `*_utils.py`, `helpers.py`, `common.py`, `misc.py`; Klassen, deren Name auf `Utils`/`Helper`/`Manager`/`Misc` endet; statische Module mit > 5 oeffentlichen freien Funktionen ausserhalb `core.domain` und `core.serialization`. | GG-AR-TABU-007, GG-CC-006 |
+| AC-TYPED-ERRORS     | ruff `BLE001` + `TRY002`/`TRY003` + `tools/arch_check.py` | Verbot von `raise Exception(...)`/`raise BaseException(...)`; `except Exception:` nur in deklarierten Adapter-Boundary-Modulen (siehe `ruff per-file-ignores` unten) erlaubt. Alle Domain-/Application-Fehler erben von `core.errors.GridGymError`. | GG-AR-TABU-008, GG-CC-008 |
+
+Operative Anforderung:
+
+- Im CI laufen drei Jobs: `lint-imports`, `ruff check`, `python tools/arch_check.py`.
+  Jeder Job mit Exit-Code != 0 bricht den Build (`GG-CICD-003`, `GG-QG-001`,
+  `GG-ARCHTEST-005`).
+- Jeder Verstoss erzeugt eine maschinenlesbare Ausgabe mit
+  Contract-ID, betroffenem Modul/Symbol und Verletzungsgrund
+  (`GG-QG-002`).
+- Hinzufuegen eines neuen Top-Level-Adapter- oder Core-Pakets ohne
+  Pflege der Contract-Listen in `pyproject.toml` bricht den Build
+  (Whitelist-Pflicht).
+- Slice-M1-Abnahmekriterium: alle fuenfzehn Contracts oben sind
+  konfiguriert, alle drei CI-Jobs sind gruen, **und** je Contract
+  ist mindestens ein bewusst herbeigefuehrter Verstoss in einem
+  Test-Branch als rot nachgewiesen.
+
+#### `ruff`-Konfiguration (Scope und Per-File-Ignores)
+
+`ruff` wird zentral in `pyproject.toml` konfiguriert. Globale Regelgruppen:
+
+```toml
+[tool.ruff.lint]
+select = [
+    # AC-TYPED-ERRORS / GG-CC-008 — Fehlerstil
+    "BLE",     # blind-except
+    "TRY",     # try/except patterns
+    "B904",    # raise-from in except
+    "B",       # flake8-bugbear (Design-Bugs: mutable defaults, etc.)
+    # AC-NO-TIME / GG-AR-TABU-005
+    "DTZ",     # tz-naive datetime calls (Teilabdeckung)
+    # Sicherheit
+    "S",       # bandit security; subset relevant
+    # AC-NO-RAND / GG-AR-TABU-005 (Aufruf-Site ergaenzend in arch_check.py)
+    "TID",     # banned imports / banned-api
+    # GG-CC-001 — Methoden klein und fokussiert
+    "C901",    # mccabe complexity
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments
+    "PLR0915", # too-many-statements (max. 30 logische Zeilen)
+    "PLR0916", # too-many-boolean-expressions
+    "PLR2004", # magic-value-comparison
+    # GG-PRINC-002 / GG-PRINC-005 / GG-CC-006 — SRP/ISP-Heuristiken (Klassen-Ebene)
+    "PLR0902", # too-many-instance-attributes (SRP-Signal: fette Klassen)
+    "PLR0903", # too-few-public-methods (Faux-Klassen / Data-Bag-Verdacht)
+    "PLR0904", # too-many-public-methods (SRP/ISP-Signal: zu breite API)
+    # GG-CC-005 — sprechende Namen (heuristisch)
+    "N",       # pep8-naming (Klassen, Funktionen, Konstanten)
+    # Code-Hygiene
+    "RET",     # flake8-return (sauberer Kontrollfluss)
+    "SIM",     # flake8-simplify (Refaktorisierungs-Hinweise)
+    "ARG",     # flake8-unused-arguments (unbenutzte Parameter sind oft Smell)
+    "RUF",     # ruff-spezifisch (Async, mutable class attrs etc.)
+]
+
+[tool.ruff.lint.mccabe]
+# GG-CC-001: Methoden klein und fokussiert. McCabe-Komplexitaet 10 ist
+# der etablierte Industrie-Standard fuer „lesbar/testbar".
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+# GG-CC-001: max. 30 logische Zeilen pro Methode/Funktion.
+# Akzeptanzkriterium aus dem Lastenheft 1:1 abgebildet.
+max-statements = 30
+max-branches = 12
+max-args = 5
+max-returns = 6
+max-bool-expr = 4
+# GG-PRINC-002 / GG-PRINC-005 — SRP/ISP-Heuristiken auf Klassen-Ebene.
+# Schwellen liegen am ergonomischen Ende der Empfehlung (vergleichbar
+# mit detekt-Defaults `LargeClass.threshold` und `TooManyFunctions`).
+max-public-methods = 12
+max-attributes = 7
+# PLR0903 (too-few-public-methods) braucht keinen Wert — ruff meldet
+# Klassen mit weniger als 2 oeffentlichen Methoden; Dataclasses und
+# Pydantic-Modelle sind automatisch ausgenommen.
+
+[tool.ruff.lint.flake8-tidy-imports]
+# AC-NO-RAND: Modulimport-Verbot global (Aufruf-Site-Check ergaenzend
+# in tools/arch_check.py). Per Per-File-Ignore unten ("src/grid_gym/adapters/**" =
+# ["TID"]) wird derselbe Import in adapters/* zugelassen, wo er fachlich
+# erlaubt ist. Tests sind ueber "tests/**" = ["TID"] ebenfalls ausgenommen.
+banned-module-level-imports = ["random", "secrets", "numpy.random"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# AC-NO-TIME: datetime.datetime.utcnow ist von DTZ nicht erfasst.
+"datetime.datetime.utcnow" = { msg = "Use ClockPort.now(tz=UTC) — GG-AR-TABU-005" }
+
+[tool.ruff.lint.per-file-ignores]
+# Tests duerfen assert, fixture-eigene Patterns und blind-except verwenden;
+# DTZ/BLE/TRY/S sind in tests/** auf das jeweils sinnvolle Minimum reduziert.
+"tests/**" = [
+    "S101", "S104", "S105", "S106", "S311",   # asserts und fixture-Patterns
+    "BLE001", "TRY003",                          # Fehler-Boilerplate in Tests
+    "DTZ", "TID",                                # Zeit/Import-Tabus
+    "C901",                                       # Komplexitaet in Tests OK
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR0916", "PLR2004",  # zu-viel-*
+    "PLR0902", "PLR0903", "PLR0904",             # SRP/ISP-Heuristiken (Tests duerfen Helper-Klassen)
+    "N802", "N803", "N806",                      # Test-Naming (z. B. snake_case-Tests)
+    "ARG001", "ARG002",                          # ungenutzte Fixture-Parameter
+    "RUF012",                                    # mutable class attrs in Tests
+]
+# Adapter-Boundary-Module duerfen externe Exceptions zu Domain-Fehlern
+# uebersetzen und brauchen dazu `except Exception:`. Die Liste ist
+# abschliessend; jede Erweiterung erfordert ADR-Verweis.
+"src/grid_gym/adapters/driving/http_api/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/driven/protocol_*/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/driven/persistence_*/error_translation.py" = ["BLE001"]
+# DTZ ist nur in core fachlich verboten; Adapter duerfen `datetime.now(tz=...)`
+# fuer Wall-Clock-Zeitstempel verwenden, wenn der Wert ausschliesslich an
+# Telemetrie-/Audit-Metadaten geht und nicht in Domain-Entscheidungen einfliesst.
+"src/grid_gym/adapters/**" = ["DTZ", "TID"]
+```
+
+Zusaetzlich definiert `pyproject.toml` eine eigene Sektion fuer
+`tools/arch_check.py`, ueber die alle nicht-ruff-Whitelists
+zentral und maschinenlesbar gefuehrt werden:
+
+```toml
+[tool.grid_gym.arch_check]
+# AC-NO-JSON: einzige Pfade, in denen `json.dumps`/`json.dump`-Aufrufe
+# erlaubt sind. tools/arch_check.py liest diese Liste und meldet jede
+# Aufruf-Site ausserhalb als Verstoss. Erweiterung erfordert ADR-Verweis.
+json-dumps-whitelist = [
+    "src/grid_gym/core/serialization/canonical.py",
+]
+
+# AC-DOMAIN-FROZEN: zusaetzliche Module, die wie core.domain.* immutable
+# sein muessen (z. B. Snapshot-Datenklassen, die ausserhalb core.domain leben).
+domain-frozen-extra = []
+
+# AC-TYPED-ERRORS: Module, in denen `except Exception:` zugelassen ist
+# (deckungsgleich mit den ruff-Per-File-Ignores oben, aber als
+# einziger Single-Source-of-Truth fuer arch_check.py konsumierbar).
+typed-errors-exempt = [
+    "src/grid_gym/adapters/driving/http_api/error_translation.py",
+    "src/grid_gym/adapters/driven/protocol_*/error_translation.py",
+    "src/grid_gym/adapters/driven/persistence_*/error_translation.py",
+]
+```
+
+Das frueher hier vorgeschlagene leere ruff-Per-File-Ignore
+`"src/grid_gym/core/serialization/canonical.py" = []` wurde
+entfernt — ein leerer Ignore-Eintrag ist fuer ruff ein No-Op und
+ergab keine wirksame Whitelist. Die Whitelist fuer AC-NO-JSON
+lebt jetzt ausschliesslich in `[tool.grid_gym.arch_check]` und
+wird von `tools/arch_check.py` ausgewertet.
+
+`ruff`-Reichweite ist damit konkret nachvollziehbar; was ruff
+nicht erfassen kann (`time.time`/`time.monotonic`-Calls, JSON-
+Aufruf-Sites, Frozen-Klassen, God-Utility-Heuristik,
+`GridGymError`-Vererbung, Zykluscheck), faengt `tools/arch_check.py`
+ab.
+
+Reichweiten-Vertrag fuer ruff-Regeln:
+
+| Regelgruppe       | Wirksamer Scope                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| `DTZ` (AC-NO-TIME)| `src/grid_gym/core/**` und `src/grid_gym/ports/**` (Adapter ausgenommen, siehe oben)              |
+| `BLE`/`TRY`/`B904`| `src/grid_gym/**` ausser explizit gelisteten Error-Translation-Modulen                            |
+| `S`               | `src/grid_gym/**`; in `tests/**` nur ohne `S101/S104/S105/S106/S311`                              |
+| `TID`             | `src/grid_gym/**`; ergaenzt `import-linter` um schnelle Per-File-Banned-Imports                   |
+
+#### Code-Review-Auflage (Reststeuerung fuer TABU-003)
+
+`AC-ADAPTER-PURE` + `AC-ADAPTER-LIGHTWEIGHT` decken **nur Import-
+und strukturelle Aspekte** von `GG-AR-TABU-003`. Fachliche
+Entscheidungen direkt im Adaptercode (z. B. ein Adapter, der
+Wertebereiche prueft, statt das dem Kern zu ueberlassen) sind
+statisch nicht voll erkennbar.
+
+Verbindliche Reststeuerung:
+
+- Jede Adapter-PR enthaelt ein Review-Checklisten-Item „keine fachlichen
+  Entscheidungen im Adapter" mit konkreter Begruendung der gewaehlten
+  Mapping-Funktionen.
+- Diese Review-Anforderung ist in `docs/user/code-review.md` (Folgearbeit)
+  und im PR-Template verankert.
+- `GG-AR-TABU-003` gilt damit als **automatisierbar verifiziert (Import-Grenze
+  und Komplexitaets-Heuristik)** und **review-pflichtig (Logik-Grenze)**.
+
+Tabu-Abdeckungs-Matrix:
+
+| Tabu              | Abgedeckt durch                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| GG-AR-TABU-001    | AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT                                      |
+| GG-AR-TABU-002    | AC-NO-FW, AC-NO-IO-MOD; in `ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`)           |
+| GG-AR-TABU-003    | AC-ADAPTER-PURE (Imports) + AC-ADAPTER-LIGHTWEIGHT (Heuristik) + Code-Review-Auflage (Logik)  |
+| GG-AR-TABU-004    | AC-NO-CYCLES (SCC-Analyse via `grimp`)                                                        |
+| GG-AR-TABU-005    | AC-NO-TIME                                                                                    |
+| GG-AR-TABU-006    | AC-DOMAIN-FROZEN                                                                              |
+| GG-AR-TABU-007    | AC-NO-GOD-UTILS                                                                               |
+| GG-AR-TABU-008    | AC-TYPED-ERRORS                                                                               |
+
+#### A-2 — Kanonische Serialisierung als getestete Library-Funktion
+
+- `grid_gym.core.serialization.canonical.canonical_json(value) -> bytes`
+  ist die einzige erlaubte JSON-Serialisierungsstelle im Produktionscode
+  (gewhitelistet in AC-NO-JSON). Vertrag:
+  - festgelegte Feldreihenfolge (lexikographisch),
+  - Float-Praezision (max. 6 Nachkommastellen, banker's rounding),
+  - Integer-Sequenzen,
+  - ISO-8601-UTC fuer Wall-Clock-Zeitstempel,
+  - ganzzahlige Millisekunden fuer Simulationszeit
+  (`GG-DATA-005`).
+- Property-basierte Tests via `hypothesis` in
+  `tests/unit/core/serialization/test_canonical.py` weisen nach: zwei
+  semantisch identische Inputs erzeugen identische Bytes; Roundtrip
+  Lesen → Schreiben ist stabil; alle Telemetry/Command/Event-Domain-
+  Objekte aus `GG-AR-COMP-DOMAIN` sind roundtrip-stabil.
+- `canonical_json` ist intern als einziges Modul von der AC-NO-JSON-
+  Regel ausgenommen. Die Implementierung MUSS folgende Vor-Normalisierung
+  und Encoder-Optionen einhalten:
+
+  1. **Numerisches Repraesentations-Modell.** Numerische Domain-Werte (Leistung,
+     Energie, Frequenz, Spannung, Strom, Temperatur, SOC, …) werden intern als
+     `Decimal` mit maximal 6 Nachkommastellen gefuehrt. Eingaben des Typs `float`
+     werden an der Domain-Eingangsgrenze (Pydantic-Validator, Scenario-Loader,
+     Adapter-Mapping) durch
+     `Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_EVEN)`
+     normalisiert. **Innerhalb des Kerns existiert kein `float`** — `canonical_json`
+     darf voraussetzen, dass numerische Felder bereits `int`, `Decimal` oder
+     `bool` sind. Ein `float`, der den Kern erreicht, ist ein Verstoss gegen die
+     Domain-Validierung, nicht ein Serialisierungsproblem.
+  2. **Vor-Normalisierung der Eingabe** (rekursiv, vor jedem Encoder):
+     - `Decimal`-Werte werden als JSON-Zahl in fixed-point-Notation ohne
+       wissenschaftliche Schreibweise emittiert. Da `json.dumps` `Decimal`
+       nicht nativ unterstuetzt, wird ein **`CanonicalEncoder`** als
+       `json.JSONEncoder`-Subklasse bereitgestellt, der in
+       `iterencode` die `Decimal`-Knoten erkennt und ueber `format(value, "f")`
+       direkt in den Output-Stream schreibt (kein Umweg ueber `float`).
+       Tail-Nullen werden NICHT abgeschnitten — die Quantisierung auf 6
+       Nachkommastellen erzeugt stabil `kw=1.500000` statt `kw=1.5`.
+     - `NaN` und `±Infinity` sind in kanonischen Ausgaben **nicht erlaubt**
+       (`GG-DATA-003` markiert solche Werte als Qualitaetsstatus `nan`/`invalid`;
+       sie tauchen in Telemetrie als Qualitaetsfeld auf, nicht als numerischer
+       Wert). Treffen sie dennoch ein, wirft `canonical_json` einen typisierten
+       `CanonicalSerializationError`. `Decimal("NaN")`/`Decimal("Infinity")`
+       fallen unter dieselbe Regel.
+     - Wall-Clock-Zeitstempel werden auf `datetime` mit `tzinfo=UTC`
+       normalisiert und als ISO-8601-UTC-String serialisiert (`...Z`-Suffix);
+       Sub-Sekunden mit max. 6 Stellen.
+     - Simulationszeit wird als ganzzahlige Millisekunde (`int`) serialisiert.
+     - `bytes` werden als Base64-String mit Praefix `b64:` serialisiert, sofern
+       sie ueberhaupt im Domain-Modell vorkommen (heute nicht — Reserve fuer
+       Snapshot-Payloads).
+  3. **Encoder-Aufruf** (Standard-Implementierung):
+
+     ```python
+     # core/serialization/canonical.py — einzige AC-NO-JSON-Ausnahme
+
+     class CanonicalEncoder(json.JSONEncoder):
+         def iterencode(self, o, _one_shot=False):
+             # Decimal-Werte als fixed-point-Zahl direkt in den Stream
+             # schreiben; alles andere uebernimmt der Standard-Encoder.
+             if isinstance(o, Decimal):
+                 if not o.is_finite():
+                     raise CanonicalSerializationError(
+                         "NaN/Infinity not allowed in canonical output"
+                     )
+                 yield format(o, "f")
+                 return
+             yield from super().iterencode(o, _one_shot=_one_shot)
+
+     def canonical_json(value: object) -> bytes:
+         normalized = _normalize(value)  # rekursiv, gemaess Punkt 2
+         return json.dumps(
+             normalized,
+             cls=CanonicalEncoder,
+             sort_keys=True,
+             separators=(",", ":"),
+             ensure_ascii=False,
+             allow_nan=False,            # GG-DATA-005
+             check_circular=True,
+         ).encode("utf-8")
+     ```
+
+     `allow_nan=False` und `check_circular=True` sind Pflicht; `ensure_ascii=False`
+     ist gewollt, weil die Ausgabe als UTF-8-Bytes erfolgt (Encoding ist Teil
+     des Vertrags). `cls=CanonicalEncoder` macht `Decimal` ueberhaupt erst
+     serialisierbar.
+  4. **Ergebnistyp** ist `bytes` (UTF-8). Alle Schreibpfade (Persistenz,
+     Replay-Diff, WebSocket-Frame) konsumieren `bytes` direkt; ein Round-Trip
+     ueber `str` ist verboten, um implizite Re-Encodings auszuschliessen.
+
+  Als deterministischer Alternativ-Encoder ist `orjson` zulaessig, sofern (a)
+  die Vor-Normalisierung aus Punkt 2 unveraendert davor laeuft, (b) `Decimal`
+  vor dem `orjson.dumps`-Aufruf in die fixed-point-Zahl-Repraesentation
+  konvertiert wird (z. B. ueber ein `default=`-Callback, das `Decimal` als
+  `int` * Skala emittiert, oder ueber eine eigene `rapidjson`-Schicht) und (c)
+  die Tests bytes-identische Ausgabe zwischen `json+CanonicalEncoder` und der
+  Alternativ-Implementierung nachweisen. Wahl des Alternativ-Encoders ist
+  eine Folge-ADR; A-2 fixiert nur den Vertrag und die Standard-Implementierung.
+
+- Contract AC-NO-JSON aus A-1 erzwingt die Nutzung an allen anderen
+  Stellen.
+
+#### Beide Auflagen
+
+Werden A-1 oder A-2 zur Slice-M1-Abnahme nicht erfuellt, ist die
+Python-Wahl gescheitert; ADR 0002 wird zurueckgezogen und ein
+Folge-ADR (vermutlich Option D, Kotlin/JVM) tritt an die Stelle.
+
+### Wann Option D (Kotlin/JVM) gezogen wird
+
+Die Fallback-Trigger sind direkt an Lastenheft-Akzeptanzkriterien
+gekoppelt, nicht an externe Schwellwerte. Tritt einer der folgenden
+Punkte ein, wird Option D aktiviert.
+
+**Hinweis zur Stufenhochstufung:** `GG-RT-001` ist `MUSS` und damit
+ein Hard-Fail-Trigger ohne Auslegungsspielraum. `GG-RT-004` und
+`GG-RT-005` sind im Lastenheft `SOLLTE`. Diese ADR stuft beide
+fuer die Sprachwahl bewusst zu **Go/No-Go-Triggern** hoch: ein
+Verstoss in der Referenzumgebung waere zwar lastenheftkonform mit
+dokumentierter Abweichung machbar, ist aber als Signal fuer
+strukturelle Sprach-/Runtime-Untauglichkeit zu werten. Wer diese
+Hochstufung nicht mittragen will, muss diese ADR aendern, bevor
+sie als `Accepted` gefuehrt wird.
+
+Trigger:
+
+- **GG-RT-001-Verstoss bei 100 ms/1 s** (`MUSS`-Hard-Fail). Demo-
+  Konfiguration mit 100 ms oder 1 s Tick-Groesse zeigt im Healthcheck
+  Backpressure-Status `true` oder verpasste Ticks ueber 1.000 Ticks.
+- **GG-RT-004-Verstoss im Benchmark-Szenario** (`SOLLTE`,
+  hochgestuft). Benchmark mit 100 Geraeten und 10.000 Ticks erzeugt
+  verlorene Events oder nichtdeterministischen Replay-Diff
+  (`GG-REPLAY-007`, `GG-SAFE-006`).
+- **GG-RT-005-Verstoss im Telemetriepfad** (`SOLLTE`, hochgestuft).
+  Telemetrieport-Messung unterschreitet 10.000 Punkte/s mit
+  256-Byte-Payload in der Referenzumgebung dauerhaft, auch mit
+  gepuffertem Persistenzpfad.
+- **A-1 nicht erfuellbar / Spike-0 rot.** Die fuenfzehn Contracts aus
+  A-1 (`import-linter`, `ruff`, `tools/arch_check.py` inkl. `grimp`-
+  Zykluscheck) lassen sich nicht so konfigurieren, dass `GG-AR-TABU-001..008`
+  reproduzierbar erfasst werden — etwa weil AST-Pruefung wesentliche
+  Verletzungen verfehlt, die `grimp`-SCC-Analyse falsche Positive
+  produziert oder die Whitelist-Pflege im CI nicht haltbar ist. In
+  diesem Fall scheitert bereits Spike-0 (siehe §A-1, Status-Pfad),
+  bevor die ADR `Accepted` werden kann.
+- **Lastenheft-Aenderung.** Eine spaetere Aenderung normiert
+  < 10 ms-Tick im Produktionspfad (heute explizit nicht;
+  `GG-RT-001` macht 10 ms zum Diagnose-/Messmodus).
+
+---
+
+## 5. Entscheidung
+
+Der Akzeptanzbeschluss verlaeuft entlang des dreistufigen
+Status-Pfads aus den Auflagen-Sektionen dieser ADR (Pflicht-Pfad zur
+ADR-Annahme):
+
+1. **Proposed → Provisional:** Projektowner stimmt der Empfehlung
+   (Option A mit Auflagen A-1/A-2) zu, gibt Spike-0 frei. ADR
+   wird auf `Provisional` gesetzt; `GG-AR-OPEN-001` bleibt offen,
+   wird in `GG-AR-OPEN-001` in `architecture.md` mit Verweis auf diese ADR
+   versehen.
+2. **Provisional → Accepted:** Spike-0 wird gegen den
+   Spike-0-Vertrag aus den Auflagen-Sektionen dieser ADR abgeschlossen.
+   Erst dann wird ADR auf
+   `Accepted` gesetzt und `GG-AR-OPEN-001` in
+   `GG-AR-OPEN-001` in `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
+3. **Spike-0 rot:** ADR wird zurueckgezogen; `GG-AR-OPEN-001`
+   bleibt offen; ein Folge-ADR (Option D oder anderer Stack) tritt
+   an die Stelle.
+
+_Aktueller Status: `Proposed` — kein Beschluss._
+
+---
+
+## 6. Konsequenzen (bei Acceptance von Option A)
+
+**Bei Acceptance** (d. h. nach gruenem Spike-0; siehe Status-Pfad in den
+Auflagen- und Entscheidungs-Sektionen dieser ADR) schliesst diese ADR
+`GG-AR-OPEN-001` mit den folgenden
+konkreten Wahlen. Solange die ADR auf `Proposed` oder `Provisional`
+steht, sind diese Wahlen die **Absicht** der Empfehlung, aber kein
+verbindlicher Stack-Beschluss; insbesondere darf `GG-AR-OPEN-001` in `architecture.md`
+`GG-AR-OPEN-001` bis dahin **nicht** als geschlossen markieren.
+
+Es verbleibt **keine** „Paketmanager- oder Layout-Frage" als
+Folgearbeit; spaetere Wechsel benoetigen eine eigene ADR, die diese
+hier abloest.
+
+### 6.1 Sprache, Runtime, Build-Stack (verbindlich)
+
+| Aspekt              | Wahl                                              | Begruendung                                                                              |
+| ------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Sprache             | Python — Minimum 3.13, Referenz-Runtime 3.14       | Option A aus den Bewertungs-/Empfehlungs-Sektionen dieser ADR. Versions-Auswahl per Lifecycle-Stand (2026-05-14: 3.13 Bugfix bis 2029-10, 3.14 Bugfix bis 2030-10; 3.12 nur noch Security; 3.15 Prerelease, kein Production-Ziel). |
+| Paketmanager + Lock | `uv` mit `uv.lock`                                 | Rust-Implementierung, schnelle CI-Resolves, lockfile-first, eingebauter Python-Toolchain-Manager. Passt zu `GG-DEPLOY-002/011` (offline, reproduzierbar) und `GG-CICD-001` (reproduzierbarer Build). |
+| Dependency Groups   | `[dependency-groups]` in `pyproject.toml` nach PEP 735 (Gruppen `dev`, `test`, `lint`, `docs`) | Trennt produktive Laufzeit-Abhaengigkeiten von Test-/Lint-/Build-Toolchain (`GG-CICD-002/005/006`), ohne mehrere `pyproject.toml`-Dateien anlegen zu muessen. |
+| uv-Workspaces       | NICHT verwendet                                      | Modulgrenzen aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` werden durch Import-Contracts (A-1) erzwungen, nicht durch separate Distribution-Pakete. uv-Workspaces sind trigger-basierte Folgearbeit, falls einzelne `grid-gym`-Pakete extern konsumiert werden sollen. |
+| Repository-Layout   | Monolith mit `src/grid_gym/`-Layout und `import-linter`-Layern | Eine Distribution, eine Lock-Datei; klare Trennung `src/` (Produktion) vs. `tests/` (Tests, von A-1-Tabus teilweise ausgenommen).                          |
+| Project-Definition  | Ein `pyproject.toml` im Root                       | Eine Lock-Datei, eine CI-Resolve, ein Distribution-Punkt                                  |
+| Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; CI-Matrix laeuft gegen `3.13` und `3.14` | reproduzierbarer Build (`GG-CICD-001`); Floor und Referenz-Runtime sind explizit getestet |
+| HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code (`GG-API-003`), WebSocket nativ (`GG-API-002`)                            |
+| Validierung         | Pydantic v2                                        | Schema- und Wertebereichspruefung (`GG-SCN-008`, `GG-SAFE-001/008`, `GG-DATA-002/003`)     |
+| Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | `GG-PERSIST-001..009`, Migrationen (`GG-PERSIST-008`); Repository-Pattern (kein ORM) bleibt offen unter `GG-AR-OPEN-003` |
+| Strukturierte Logs  | `structlog` + stdlib `logging`                     | `GG-OTEL-002`                                                                              |
+| Metriken            | `prometheus-client`                                | `GG-OTEL-003`                                                                              |
+| Tracing (optional)  | `opentelemetry-python` mit OTLP-Exporter           | `GG-OTEL-001/004`                                                                          |
+| Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | `GG-TESTTYPE-001/002`, `GG-COV-001..005`                                                   |
+| Property-Tests      | `hypothesis`                                       | `GG-SIM-001..004`, `GG-DATA-005`                                                           |
+| Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | `GG-TESTTYPE-002`, `GG-PERSIST-005`                                                        |
+| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit fuenfzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | `GG-ARCHTEST-001..005`, `GG-AR-TABU-001..008`                                              |
+
+### 6.2 Wirkung auf andere Dokumente
+
+Die folgenden Dokument-Aenderungen werden **erst bei `Accepted`**
+ausgefuehrt, nicht bei `Proposed`/`Provisional`:
+
+- die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` (Verzeichnisstruktur) wird mit
+  Python-Paketnamen aktualisiert (`src/grid_gym/core/...`,
+  `src/grid_gym/ports/...`, `src/grid_gym/adapters/...`).
+- `GG-AR-OPEN-001` in `architecture.md` markiert `GG-AR-OPEN-001` als „Geschlossen
+  mit ADR 0002".
+- `roadmap.md` Vorbedingung 1 (`GG-AR-OPEN-001`) ist erledigt.
+
+Bereits bei `Provisional` (Spike-0 freigegeben) erlaubt sind:
+
+- Eintrag in `GG-AR-OPEN-001` in `architecture.md` als „Verweis auf ADR 0002 (Spike-0
+  laufend)" — schliesst den Punkt **nicht**, signalisiert nur den
+  laufenden Beschluss.
+
+Davon unberuehrt bleibt offen:
+
+- `GG-AR-OPEN-003` (ORM vs. leichter Treiber) — diese ADR fixiert
+  `psycopg` 3 als Treiber, aber nicht das Repository-/ORM-Muster.
+
+---
+
+## 7. Offene Folge-Punkte (nicht durch diese ADR geschlossen)
+
+- **`GG-AR-OPEN-002`** API/Simulation als ein oder zwei Prozesse —
+  Composition-Root-Entscheidung; eigener ADR.
+- **`GG-AR-OPEN-003`** Persistenzzugriffsmuster (Repository-Pattern
+  vs. SQLAlchemy-Core vs. SQLAlchemy-ORM) — eigener ADR. `psycopg` 3
+  als Treiber ist hier gesetzt, die Schicht darueber nicht.
+- **`GG-AR-OPEN-004..010`** unveraendert offen.
+- ADR fuer `RandomPort`-Implementierung (gebondeter PRNG,
+  Seeding-Kette) — Folgearbeit, schliesst keinen `GG-AR-OPEN-*`,
+  aber materiell wichtig fuer `GG-SIM-001`.
+- ADR fuer kanonische Serialisierung (Formatdetails: Dezimalstellen,
+  Zeitstempel-Repraesentation, Sequenznumerik) — verfeinert A-2.

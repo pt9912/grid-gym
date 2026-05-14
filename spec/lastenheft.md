@@ -1,6 +1,6 @@
 # Lastenheft - grid-gym
 
-Version: 0.6
+Version: 0.8
 Status: Draft
 Projekt: `grid-gym`
 
@@ -2004,6 +2004,22 @@ bereitstellen.
 Akzeptanz: Beispielartefakte umfassen Laufmetadaten, Telemetrieexport,
 Alarmexport, Replay-Diff und Healthcheck-Ausgabe.
 
+## GG-TRACE-001
+
+Das Lastenheft MUSS eine V-Modell-aehnliche Rueckverfolgbarkeitsmatrix
+Anforderung→Design→Implementierung→Test fuehren.
+
+Akzeptanz: Das Lastenheft fuehrt drei Tabellen — Anforderung→Design,
+Anforderung→Implementierung (inkl. Status-Marker und Meilensteinverweis)
+und Anforderung→Test (Testtyp gemaess `GG-TESTTYPE-001..007`). Jede
+normative `GG-…`-Anforderung (`MUSS`/`SOLLTE`) ist spaetestens zur Abnahme
+ihres Scopes in der Implementierungs-Tabelle mit einem
+Implementierungsartefakt und in der Test-Tabelle mit einem Testtyp
+verknuepft; offene Eintraege sind als `🔲` mit Verweis auf die Folgearbeit
+markiert. Die drei Tabellen liegen in §27.1, §27.2 und §27.3 dieses
+Dokuments (Lesehilfe — `GG-TRACE-001` ist die ID, die diese Matrix
+benennt).
+
 ---
 
 # 26. Roadmap, keine MVP-Anforderungen
@@ -2057,5 +2073,206 @@ Die Plattform KANN Co-Simulation unterstuetzen.
 Akzeptanz: Wenn Co-Simulation in einen Abnahmescope verschoben wird, sind
 gekoppelte Simulatoren, Zeitkoordination, Datenvertraege und Replay-Grenzen
 dokumentiert.
+
+---
+
+# 27. V-Modell-aehnliche Rueckverfolgbarkeit
+
+Dieser Abschnitt verbindet jede Lastenheft-Anforderung mit ihrem Design-,
+Implementierungs- und Testartefakt. Die drei Tabellen werden mit dem
+Projektfortschritt gepflegt:
+
+- Die Design-Tabelle (§27.1) ist gegen `spec/architecture.md` v0.1.0
+  gepflegt (`GG-AR-*`-Kennungen).
+- Die Implementierungs-Tabelle (§27.2) wird befuellt, sobald erste
+  Code-Artefakte und Meilensteine definiert sind. Die Meilensteine
+  `M1..Mn` leben in
+  [`docs/plan/planning/in-progress/roadmap.md`](../docs/plan/planning/in-progress/roadmap.md);
+  die `GG-FUTURE-*`-Anforderungen in diesem Lastenheft sind
+  ausschliesslich `KANN`-Punkte und nicht der Meilenstein-Plan.
+- Die Test-Tabelle (§27.3) ist bereits jetzt aus dem Lastenheft ableitbar.
+
+Status-Marker fuer die Implementierungs-Tabelle:
+
+- ✓ `M[N]` — implementiert (Liefergegenstand des angegebenen Meilensteins)
+- 🔲 — nicht implementiert (mit Verweis auf offene Frage oder Folgearbeit)
+
+---
+
+## 27.1 Anforderung zu Design
+
+Design-Artefakte beziehen sich auf [`spec/architecture.md`](architecture.md);
+`GG-AR-*`-Kennungen sind dort definiert: Prinzipien `GG-AR-P-*`, Ports
+`GG-AR-PORT-DRV-*` / `GG-AR-PORT-DRN-*`, Komponenten `GG-AR-COMP-*`,
+Architektur-Tabus `GG-AR-TABU-*`, offene Punkte `GG-AR-OPEN-*`.
+Querverweise nutzen Kennungen als primaere Referenz (siehe ADR 0004);
+`§…`-Hinweise sind nur Lesehilfen in Klammern, wo eine Sektion noch
+keine eigene Kennung traegt.
+
+| Lastenheft-Kennung | Design-Artefakt                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| GG-ARCH-001        | Schichtenmodell + `GG-AR-COMP-*`-Komponentenfamilie                                              |
+| GG-ARCH-002        | `GG-AR-P-002` Hexagonale Architektur                                                              |
+| GG-ARCH-003        | Dependency Rule + `GG-AR-TABU-001` / `GG-AR-TABU-002`                                             |
+| GG-ARCH-004        | `GG-AR-COMP-DEVICES` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-ARCH-005        | `GG-AR-COMP-CORE` Tick-Loop + Domain-Event (`GG-AR-COMP-DOMAIN`)                                  |
+| GG-ARCH-006        | `GG-AR-COMP-SCHED` Tie-Breaking + `GG-AR-P-008` Determinismus-Invariante                          |
+| GG-ARCH-007        | `GG-AR-PORT-DRN-001` (`ClockPort`) + `GG-AR-TABU-005`                                              |
+| GG-ARCH-008        | `GG-AR-P-007` Live- und Replay-Tick-Loop geteilt                                                  |
+| GG-PRINC-001       | `GG-AR-P-001..014` Architekturprinzipien — SOLID gesamt als Architekturzusicherung; automatisierte Teilabdeckung siehe `GG-PRINC-002..006` |
+| GG-PRINC-002       | SRP — `ruff` `PLR0902` (max-attributes), `PLR0904` (max-public-methods), `C901` (McCabe), `PLR0915` (max-statements); Restanteil bleibt Code-Review |
+| GG-PRINC-003       | OCP — primaer Code-Review; AST-Heuristik (Verbot von `isinstance(x, ConcreteType)` in `core/*`) ist Folgearbeit |
+| GG-PRINC-004       | LSP — `mypy --strict` Type-Check-Gate (ADR 0005) prueft Variance-Verstoesse in Subtypen; Restanteil Code-Review |
+| GG-PRINC-005       | ISP — `ruff` `PLR0904` (max-public-methods, Schwelle 12), `PLR0903` (too-few-public-methods); mypy-Protocol-Konformitaet via ADR 0005; Restanteil Code-Review |
+| GG-PRINC-006       | DIP — `GG-AR-TABU-001/002` + `AC-CORE-NO-ADAPTERS`/`AC-CORE-NO-DRIVING`/`AC-NO-FW`/`AC-PORTS-NO-FW` (vier von fuenfzehn A-1-Contracts in ADR 0002) |
+| GG-CC-002          | `GG-AR-TABU-003` (Adapter-Logikverbot)                                                            |
+| GG-CC-003          | `GG-AR-TABU-002` (Domain ohne Framework-Imports)                                                  |
+| GG-CC-004          | `GG-AR-TABU-004` (keine Zyklen)                                                                    |
+| GG-CC-006          | `GG-AR-TABU-007` (keine God-Utility-Classes)                                                       |
+| GG-CC-007          | `GG-AR-TABU-006` (immutable Domain-Objekte) + `GG-AR-COMP-DOMAIN`                                  |
+| GG-CC-008          | `GG-AR-TABU-008` (explizite Fehlerbehandlung)                                                      |
+| GG-CC-001          | `ruff` `PLR0915`/`PLR0912`/`PLR0913`/`PLR0911`/`C901` mit `max-statements=30`, `max-complexity=10` (ADR 0002, A-1 `ruff`-Konfiguration); Restanteil bleibt Code-Review |
+| GG-CC-005          | `ruff` `N` (pep8-naming, formale Konsistenz von Klassen-/Funktions-/Konstantennamen); fachliche Bedeutung der Namen bleibt Code-Review |
+| GG-SIM-001..004    | `GG-AR-COMP-CORE` Tick-Loop + `GG-AR-P-008` Determinismus-Invariante                              |
+| GG-SIM-005         | `GG-AR-PORT-DRV-005` (`SnapshotPort`)                                                              |
+| GG-SIM-006         | `GG-AR-PORT-DRV-003` (`ReplayPort`) + `GG-AR-P-007` geteilter Tick-Loop                            |
+| GG-SIM-007         | `GG-AR-COMP-CORE` Wall-Clock-Multiplikatoren (Replay-Faktoren)                                    |
+| GG-SIM-008         | `GG-AR-PORT-DRV-001` (`RunControlPort`)                                                            |
+| GG-SIM-009         | `GG-AR-COMP-DOMAIN` `RunMetadata` + `GG-AR-COMP-PERSIST` Schema                                    |
+| GG-RT-001          | `GG-AR-COMP-CORE` Tick-Dauer 10ms–1s, MVP-Modus-Definition                                        |
+| GG-RT-002          | `GG-AR-COMP-CORE` + `GG-AR-P-008` Determinismus-Invarianten                                       |
+| GG-RT-003          | `GG-AR-COMP-DOMAIN` Quality-Markierung (`stale`) + `GG-AR-PORT-DRN-001`                            |
+| GG-RT-004/005      | `GG-AR-COMP-OBS` Metriken + `GG-AR-COMP-CORE` Commit-Pipeline                                      |
+| GG-RT-006          | `GG-AR-COMP-REPLAY` Replay-Faktor-Tabelle                                                          |
+| GG-DATA-001..004   | `GG-AR-COMP-DOMAIN` (TelemetryPoint, Command, Quality)                                            |
+| GG-DATA-005        | `GG-AR-COMP-DOMAIN` + `GG-AR-COMP-SCENARIO` kanonische Serialisierung                              |
+| GG-DEV-001         | `GG-AR-COMP-DEVICES` Geraetemodell-Vertrag                                                         |
+| GG-DEV-002         | `GG-AR-COMP-DOMAIN` `TelemetryPoint`                                                               |
+| GG-DEV-003         | `GG-AR-COMP-DOMAIN` `Command` + REST/WS-API in `GG-AR-COMP-API`                                    |
+| GG-DEV-010..018    | `GG-AR-COMP-DEVICES` (MVP- und SOLLTE-Modelle)                                                     |
+| GG-BESS-001..008   | `GG-AR-COMP-DEVICES` (Batteriemodell) + `GG-AR-P-010` Eingabe-Sicherheit                           |
+| GG-GRID-001..007   | `GG-AR-COMP-DEVICES` (Netzmodell)                                                                  |
+| GG-SCN-001..008    | `GG-AR-COMP-SCENARIO` Validierungs-Pipeline                                                        |
+| GG-REPLAY-001..006 | `GG-AR-COMP-REPLAY` + `GG-AR-PORT-DRV-003`                                                         |
+| GG-REPLAY-007      | `GG-AR-COMP-REPLAY` Diff-Klassifikation                                                            |
+| GG-FAULT-001..010  | `GG-AR-COMP-FAULTS` Fault-Injection-Architektur                                                    |
+| GG-AGENT-001..008  | `GG-AR-COMP-AGENTS` Multi-Agent-Subsystem                                                          |
+| GG-API-001         | `GG-AR-COMP-API` REST-Endpunkte (`/runs`, `/runs/{id}/...`)                                        |
+| GG-API-002         | `GG-AR-COMP-API` WebSocket-Telemetrie                                                              |
+| GG-API-003         | `GG-AR-COMP-API` OpenAPI                                                                            |
+| GG-API-004         | `GG-AR-COMP-API` Fehlerformat                                                                       |
+| GG-MQTT-001        | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-MODB-001        | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-OPCUA-001       | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-DNP3-001        | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-IEC-001         | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-UI-001..009     | `GG-AR-COMP-UI`                                                                                     |
+| GG-PERSIST-001..004 | `GG-AR-COMP-PERSIST` Schema + `GG-AR-PORT-DRN-002`                                                 |
+| GG-PERSIST-005     | `GG-AR-COMP-PERSIST` (PostgreSQL Pflicht)                                                          |
+| GG-PERSIST-006/007 | `GG-AR-COMP-PERSIST` optionale Adapter (Timescale / Influx)                                         |
+| GG-PERSIST-008     | `GG-AR-COMP-PERSIST` Migrations-Schicht                                                             |
+| GG-PERSIST-009     | `GG-AR-PORT-DRN-003` + `GG-AR-COMP-PERSIST` `RunRepositoryPort`                                     |
+| GG-OTEL-001..004   | `GG-AR-COMP-OBS` + `GG-AR-PORT-DRN-008`                                                             |
+| GG-SAFE-001..004   | `GG-AR-P-010` Sicherer Default + `GG-AR-COMP-CORE` Quality-Markierung                               |
+| GG-SAFE-005        | `GG-AR-P-010` Sicherer Default (Fallback-Variante in `GG-AR-COMP-DEVICES`)                          |
+| GG-SAFE-006        | `GG-AR-COMP-REPLAY` Diff + `GG-AR-COMP-OBS` Replay-Diff-Status                                      |
+| GG-SAFE-007        | `GG-AR-P-011` Trennung Simulation/Produktion                                                        |
+| GG-SAFE-008        | `GG-AR-COMP-API` Eingabe-Validierung + `GG-AR-COMP-SCENARIO` Scenario-Validator                     |
+| GG-TESTTYPE-001..007 | Testarchitektur in `architecture.md` (§17 — noch keine eigene Kennung)                            |
+| GG-ARCHTEST-001..005 | `GG-AR-TABU-001..008` + Testarchitektur in `architecture.md` (§17)                                |
+| GG-CICD-001..007   | Testarchitektur in `architecture.md` (§17) + `GG-AR-COMP-DEPLOY`                                   |
+| GG-DEPLOY-001..011 | `GG-AR-COMP-DEPLOY`                                                                                 |
+| GG-DEMO-001..008   | `GG-AR-COMP-DEPLOY` (Compose-Demo) + Testarchitektur in `architecture.md` (§17, E2E/Demo-Abnahme)   |
+| GG-ACCEPT-001..003 | Testarchitektur in `architecture.md` (§17) + `GG-TRACE-001`                                        |
+| GG-TRACE-001       | Rueckverfolgbarkeitstabelle in `architecture.md` (§18) — Quelle fuer diese §27.1-Tabelle             |
+| GG-TEST-001..008   | Testarchitektur in `architecture.md` (§17, Replay-/Fault-/Determinismus-Tests)                      |
+| GG-COV-001..005    | Testarchitektur in `architecture.md` (§17, Coverage-Block und Quality Gates)                       |
+| GG-QG-001..007     | Testarchitektur in `architecture.md` (§17, Quality Gates) + `GG-AR-COMP-DEPLOY` (CI-Gating)         |
+| GG-QA-001..006     | Testarchitektur in `architecture.md` (§17) + `GG-AR-TABU-001..008` (statische Pruefungen)           |
+
+### 27.1.1 Anforderungen ohne Design-Artefakt
+
+Die folgenden Anforderungsfamilien sind **Scope-, Definitions- oder
+Zukunftsanforderungen** und mappen bewusst auf kein
+Design-Artefakt in `architecture.md`:
+
+| Lastenheft-Kennung      | Begruendung                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
+| GG-TERM-001..006        | n/a — normative Begriffsdefinition (Vokabular `MUSS`/`DARF NICHT`/`SOLLTE`/`KANN`) |
+| GG-SEED-001             | n/a — Projekt-Seed-Konvention (Test-Setup-Vorgabe, keine Architektur) |
+| GG-MVP-001..004         | n/a — Scope-Festlegung; Auspraegung lebt in einzelnen `GG-SIM/DEV/...`-IDs |
+| GG-NONGOAL-001..005     | n/a — explizite Scope-Grenzen (negativ definierte Anforderung)     |
+| GG-FUTURE-001..006      | n/a — `KANN`-Zukunftsanforderungen `GG-FUTURE-*`; Design folgt erst bei Aktivierung im Abnahmescope |
+
+---
+
+## 27.2 Anforderung zu Implementierung
+
+> **Hinweis:** Diese Tabelle ist noch leer. Sie wird gepflegt, sobald erste
+> Code-Artefakte existieren und die Meilensteine `M1…Mn` aus
+> [`docs/plan/planning/in-progress/roadmap.md`](../docs/plan/planning/in-progress/roadmap.md)
+> verbindlich sind.
+
+| Lastenheft-Kennung | Implementierung | Status |
+| ------------------ | --------------- | ------ |
+| _(offen)_          | _(offen)_       | 🔲     |
+
+---
+
+## 27.3 Anforderung zu Test
+
+Die Testtypen entsprechen `GG-TESTTYPE-001..007`.
+Die Tabelle deckt diejenigen Anforderungen ab, deren Testtyp bereits aus dem
+Lastenheft ableitbar ist; weitere Eintraege folgen mit der Implementierung.
+
+| Lastenheft-Kennung | Testtyp                          |
+| ------------------ | -------------------------------- |
+| GG-SIM-001         | Unit Test                        |
+| GG-SIM-002         | Unit Test                        |
+| GG-SIM-003         | Unit Test                        |
+| GG-SIM-004         | Unit Test                        |
+| GG-SIM-005         | Unit Test                        |
+| GG-RT-001          | Unit Test                        |
+| GG-RT-002          | Integration Test                 |
+| GG-RT-003          | Unit Test                        |
+| GG-DATA-001        | Unit Test                        |
+| GG-DATA-002        | Unit Test                        |
+| GG-DATA-003        | Unit Test                        |
+| GG-BESS-001        | Unit Test                        |
+| GG-BESS-002        | Unit Test                        |
+| GG-BESS-005        | Unit Test                        |
+| GG-GRID-001        | Unit Test                        |
+| GG-GRID-003        | Unit Test                        |
+| GG-SCN-001         | Validation/Unit Test             |
+| GG-SCN-005         | Validation Test                  |
+| GG-REPLAY-001      | Replay-Diff Test                 |
+| GG-REPLAY-003      | Replay-Diff Test                 |
+| GG-FAULT-001       | Integration Test                 |
+| GG-FAULT-005       | Integration Test                 |
+| GG-AGENT-001       | Unit Test                        |
+| GG-AGENT-004       | Integration Test                 |
+| GG-API-001         | API Contract Test                |
+| GG-API-002         | API Contract Test                |
+| GG-API-003         | API Contract Test                |
+| GG-API-004         | API Contract Test                |
+| GG-MQTT-001        | Integration Test                 |
+| GG-MODB-001        | Integration Test                 |
+| GG-OPCUA-001       | Integration Test                 |
+| GG-DNP3-001        | Integration Test                 |
+| GG-IEC-001         | Integration Test                 |
+| GG-UI-001          | E2E Test                         |
+| GG-UI-005          | E2E Test                         |
+| GG-PERSIST-001     | Persistence Test                 |
+| GG-PERSIST-006     | Persistence/Retention Test       |
+| GG-OTEL-001        | Telemetrie Test                  |
+| GG-OTEL-002        | Telemetrie Test                  |
+| GG-SAFE-001        | Security Test                    |
+| GG-SAFE-004        | Security Test                    |
+| GG-ARCH-001        | Architekturtest                  |
+| GG-ARCH-005        | Architekturtest                  |
+| GG-CICD-001        | CI/CD Verification               |
+| GG-DEPLOY-001      | Container Test                   |
+| GG-DEMO-001        | E2E Test                         |
+| GG-ACCEPT-001      | Acceptance/Documentation Test    |
 
 ---

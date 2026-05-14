@@ -9,6 +9,176 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `spec/architecture.md` v0.1.0 — Architekturbeschreibung mit
+  hexagonaler Sicht, Driving-/Driven-Ports (`GG-AR-PORT-*`),
+  Architektur-Tabus (`GG-AR-TABU-*`), Komponenten (`GG-AR-COMP-*`),
+  offenen Punkten (`GG-AR-OPEN-*`).
+- `spec/lastenheft.md` §27 V-Modell-Rueckverfolgbarkeit mit drei
+  Tabellen (Anforderung → Design / Implementierung / Test) und neuer
+  Anforderung `GG-TRACE-001`.
+- `docs/`-Skelett mit `plan/adr/`, `plan/planning/{open,next,in-progress,done}/`,
+  `user/`, `archive/`.
+- `docs/plan/adr/0001-documentation-and-planning-structure.md` —
+  Dokumentations- und Planungsstruktur.
+- `docs/plan/adr/0003-adr-lifecycle.md` — ADR-Lifecycle als
+  Ergaenzung zu ADR 0001 (Statuswerte
+  `Proposed`/`Provisional`/`Accepted`/`Rejected`/`Withdrawn`/`Superseded`,
+  Uebergangsregeln, Verhaeltnis zu ADR 0001 §3/§4, Pflege-Regeln
+  fuer `architecture.md §19`-Eintraege je Status). Loest den
+  impliziten Konflikt zwischen ADR 0001 (ADRs = Entscheidungen)
+  und ADR 0002 (Spike-getriebener Vorschlag) auf, ohne ADR 0001
+  inhaltlich zu ueberschreiben.
+- `docs/plan/adr/0004-identifier-based-cross-references.md` —
+  Querverweise zwischen Spec-/Planungsartefakten nutzen Kennungen
+  (`GG-*`, `GG-AR-*`, `GG-TRACE-*`, `AC-*`, ADR-Nummern) als
+  primaere Referenz; `§…`-Hinweise sind nur Lesehilfen in Klammern.
+  Retrofit-Regel: bei naechster Beruehrung umstellen.
+- `docs/plan/adr/0005-type-check-gate.md` — `mypy --strict` als
+  Pflicht-Gate fuer `GG-QG-005` Static-Analysis und automatisierte
+  Teilabdeckung von `GG-PRINC-004` (LSP via Variance) und
+  `GG-PRINC-005` (ISP via Protocol-Konformitaet). Status: `Proposed`,
+  Aktivierung gemeinsam mit `ADR 0002` `Accepted`. `pyright` bleibt
+  Developer-Tool ueber Pylance, nicht CI-Gate.
+- ruff-Auswahl in ADR 0002 erweitert um Klassen-Ebene-Heuristiken
+  und Code-Hygiene: `PLR0902/PLR0903/PLR0904` (SRP/ISP-Signale),
+  `PLR0916`/`PLR2004` (Bedingungs- und Magic-Number-Detection),
+  `B`/`RET`/`SIM`/`ARG`/`RUF` (Design-Bugs, Kontrollfluss,
+  Refaktorisierung), `N` (pep8-naming als Heuristik fuer
+  `GG-CC-005`). `[tool.ruff.lint.pylint]` mit
+  `max-public-methods=12`, `max-attributes=7`, `max-bool-expr=4`.
+  `tests/**`-Per-File-Ignore entsprechend gelockert.
+- `Dockerfile`-Stage `typecheck` und Makefile-Target `make typecheck`
+  ergaenzt; Aggregator `gates` enthaelt jetzt `typecheck` zwischen
+  `format-check` und `arch-check`.
+- §27.1-Mapping fuer `GG-PRINC-001..006` in fuenf Einzel-Zeilen
+  aufgespalten (SOLID-Prinzipien einzeln zugeordnet zu ruff-Regeln,
+  ADR 0005, Architektur-Tabus); `GG-CC-005` von „Code-Review" auf
+  ruff `N` plus Code-Review-Rest umgestellt; `GG-CC-001`-Anteil
+  bleibt bei ruff (`PLR0915` etc.).
+- `docs/plan/adr/0002-language-and-build-stack.md` — Entwurf zur
+  Sprach- und Build-Wahl (Status: Proposed; schliesst bei Annahme
+  `GG-AR-OPEN-001`). Begruendung MVP-getrieben; Future-Punkte als
+  Zusatznutzen ausgewiesen. Auflage A-1 als Drei-Tool-Suite
+  (`import-linter` + `ruff` + eigenes AST-Skript `tools/arch_check.py`)
+  (inkl. `grimp`-SCC-Zykluscheck) mit fuenfzehn Contracts:
+  AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT,
+  AC-PORTS-NO-FW (`GG-ARCHTEST-004`), AC-ADAPTER-PURE,
+  AC-ADAPTER-LIGHTWEIGHT (AST-Heuristik), AC-NO-FW, AC-NO-IO-MOD,
+  AC-NO-CYCLES (Graph-SCC statt `independence`), AC-NO-TIME,
+  AC-NO-RAND, AC-NO-JSON, AC-DOMAIN-FROZEN, AC-NO-GOD-UTILS,
+  AC-TYPED-ERRORS. Tabu-Abdeckungs-Matrix ausgewiesen mit
+  Reststeuerung: `GG-AR-TABU-003` Logik-Anteil ist
+  review-pflichtig. `ruff`-Per-File-Ignores normiert (`tests/**`,
+  Error-Translation-Module, Adapter-DTZ-Scope) plus konkrete
+  `flake8-tidy-imports`-Konfiguration (`banned-api` fuer
+  `datetime.datetime.utcnow`, `banned-module-level-imports` fuer
+  `random`/`secrets`/`numpy.random` in `core.*`). Rollenverteilung
+  zwischen `ruff` und `tools/arch_check.py` ehrlich getrennt:
+  `time.time`/`time.monotonic`/`asyncio.get_event_loop().time` und
+  Aufruf-Site-Random sind explizit `tools/arch_check.py`,
+  nicht `ruff`. `AC-NO-JSON` mit Whitelist fuer
+  `src/grid_gym/core/serialization/canonical.py` (loest A-2-
+  Selbstblockade). Auflage A-2 mit hartem Format-/Roundtrip-Vertrag:
+  Vor-Normalisierung via `Decimal.quantize` + `ROUND_HALF_EVEN`,
+  NaN/Infinity-Verbot (`allow_nan=False`), ISO-8601-UTC fuer
+  Wall-Clock-Zeit, ganzzahlige Millisekunden fuer Simulationszeit,
+  UTF-8-Bytes als Vertragsschnittstelle; `orjson` als
+  Alternativ-Encoder mit Bytes-Gleichheits-Test zugelassen.
+  Fallback-Trigger an `GG-RT-001/004/005`, `GG-REPLAY-007`,
+  `GG-SAFE-006` gekoppelt; `GG-RT-004/005` als bewusst zu
+  Go/No-Go hochgestufte `SOLLTE`-Anforderungen ausgewiesen.
+  Konsequenzen (§6) fixieren Paketmanager (`uv` mit `uv.lock`),
+  PEP-735-Dependency-Groups, Repo-Layout (Monolith
+  `src/grid_gym/` mit `import-linter`-Layern; uv-Workspaces nicht
+  verwendet); §6 ausdruecklich als „bei Acceptance" formuliert,
+  §6.2 trennt Acceptance- von Provisional-Wirkung. **Status-Pfad
+  dreistufig** (`Proposed → Provisional → Accepted`) mit
+  Pre-Acceptance-Spike-0-Vertrag; `GG-AR-OPEN-001` wird erst nach
+  gruenem Spike-0 in `architecture.md §19` als geschlossen
+  markiert. `ruff.toml`-Block korrigiert: `banned-module-level-imports`
+  unter `[tool.ruff.lint.flake8-tidy-imports]` platziert (vorher
+  faelschlich eigene Sub-Tabelle); Spike-0 prueft die Konfiguration
+  ueber `ruff check --no-cache`. K-CONTAIN auf `o` korrigiert.
+  A-2-Vertrag implementierbar gemacht: numerisches Repraesentations-
+  Modell (`Decimal` mit max. 6 Nachkommastellen, kein `float` im Kern),
+  eigene `CanonicalEncoder`-Subklasse von `json.JSONEncoder` die
+  `Decimal` ueber `format(value, "f")` emittiert (loest die Luecke,
+  dass `json.dumps` `Decimal` nativ nicht kennt), Standard-Implementierung
+  als konkrete Python-Skizze hinterlegt. AC-NO-JSON-Whitelist von
+  Pseudo-`per-file-ignores`-Eintrag auf echte
+  `[tool.grid_gym.arch_check]`-Konfigurationssektion umgestellt,
+  die `tools/arch_check.py` als Single-Source-of-Truth liest
+  (`json-dumps-whitelist`, `domain-frozen-extra`, `typed-errors-exempt`).
+  Status-Pfad-Tabelle in §4 jetzt auf [ADR 0003](docs/plan/adr/0003-adr-lifecycle.md)
+  als Lifecycle-Definition verweisend.
+- `docs/plan/planning/in-progress/roadmap.md` — Roadmap-Skelett als
+  Quelle fuer §27.2-Meilenstein-Marker.
+- Quality-Gate-Erweiterung in `Dockerfile`/`Makefile`:
+  `coverage-gate` zusaetzlich mit `--cov-branch` und 85%-Branch-Schwelle
+  (`GG-COV-002`); neuer Stage `coverage-gate-critical` mit
+  Modul-Filter `core/{simulation,devices/battery,scenario,replay}`
+  und 90% Line/Branch (`GG-COV-003` MUSS); neuer Stage `dep-audit`
+  mit `pip-audit --strict` gegen die per `uv export` materialisierte
+  Lockfile (`GG-QG-002`/`GG-QA-005`); Makefile-Target `image-audit`
+  mit `trivy image --exit-code 1 --severity HIGH,CRITICAL`
+  (`GG-QG-002` SOLLTE); neuer Stage `openapi-validate` (FastAPI-Spec-
+  Export + `openapi-spec-validator`, `GG-QG-006`). Aggregator
+  `gates` erweitert um `coverage-gate-critical` und `dep-audit`;
+  `ci` erweitert um `openapi-validate` und `image-audit`.
+- ADR 0002 `ruff`-Konfiguration um Methodenlaengen-Gate ergaenzt:
+  `C901`, `PLR0911`, `PLR0912`, `PLR0913`, `PLR0915` mit
+  `max-complexity=10`, `max-statements=30`, `max-branches=12`,
+  `max-args=5`, `max-returns=6` — bildet `GG-CC-001`
+  Methodenlaengen-Akzeptanzkriterium 1:1 auf ruff ab.
+  `tests/**`-Per-File-Ignore um `PLR*`/`C901` erweitert (Tests
+  duerfen lang/komplex sein).
+- `GG-CC-001` in §27.1 von „Code-Review-Gegenstand" auf
+  automatisierten ruff-Check umgestellt; Restanteil bleibt Review.
+- `Dockerfile` (Multi-Stage) und `Makefile` als Spike-0-Geruest zu
+  ADR 0002. Stages: `base`, `deps`, `source`, `lint`, `format-check`,
+  `arch-check`/`arch-check-imports`/`arch-check-custom`,
+  `test-unit`/`test-determinism`/`test-replay`/`test-fault`,
+  `coverage-gate`, `build-app`, `runtime` (non-root, /health
+  HEALTHCHECK, Port 8080). Makefile-Targets pro Stage plus
+  Aggregator (`gates`, `ci`, `fullbuild`) und Maintenance
+  (`lock-refresh`, `sbom`, `clean`). Pattern an
+  `/Development/bess-ems/{Makefile,Dockerfile}` orientiert; Stack
+  gemaess ADR 0002 (Python 3.13+/3.14, `uv`, `ruff`, `import-linter`,
+  `tools/arch_check.py`, `pytest`, `hypothesis`, `testcontainers`).
+  Artefakte greifen die Spike-0-Lieferliste auf und setzen die
+  noch fehlenden Spike-0-Bausteine (`pyproject.toml`,
+  `src/grid_gym/`, `tests/`, `tools/arch_check.py`) als kuenftig
+  voraus. ADR-0002-Status bleibt `Proposed` — Statuswechsel auf
+  `Provisional` ist ein eigener Beschluss.
+
 ### Changed
+
+- `spec/lastenheft.md` Version `0.6` → `0.8` (V-Modell-Abschnitt §27,
+  §27.1 gegen `architecture.md` verknuepft).
+- `spec/lastenheft.md` §27.1 praezisiert: `GG-CC-*`-Zeile in einzelne
+  Tabu-Mappings aufgeteilt; `GG-CC-001/005` als Code-Review-Gegenstand
+  markiert; neue Zeilen fuer `GG-ACCEPT/DEMO/TRACE/TEST/COV/QG/QA`;
+  neuer Unterabschnitt §27.1.1 listet Scope-/Definitions-Anforderungen
+  (`GG-TERM/SEED/MVP/NONGOAL/FUTURE`), die bewusst kein Design-Artefakt haben.
+- Verweise auf „Roadmap §26" praezisiert: aktive Meilensteine leben
+  in `docs/plan/planning/in-progress/roadmap.md`; §26 listet nur
+  `GG-FUTURE-*`.
+- `README.md` Projektstruktur aktualisiert.
+- `GG-AR-OPEN-001`-Beschreibung in `architecture.md` praezisiert:
+  betrifft Sprache und Runtime des Simulationskerns, der Adapter
+  und der Build-Toolchain; Modulgrenzen aus `GG-AR-P-002` und
+  `GG-AR-TABU-001..008` bleiben sprachunabhaengig.
+- ADR 0002 Python-Versions-Anker auf den Lebenszyklus-Stand
+  vom 2026-05-14 aktualisiert: Minimum-Floor von `3.12+` auf
+  `3.13+` gehoben (3.12 ist nur noch Security-Only), Referenz-
+  Runtime und Container-Image auf `3.14` gesetzt (Bugfix bis
+  2030-10), CI-Matrix laeuft gegen `3.13` und `3.14`. Versions-
+  Begruendung als eigener Block in der Option-A-Sektion hinterlegt.
+- Retrofit ADR 0004: alle `§…`-Verweise in ADR 0002,
+  `lastenheft.md` `GG-TRACE-001`-Tabellen, `architecture.md`
+  Rueckverfolgbarkeitstabelle und `roadmap.md` durch
+  Kennungs-Verweise ersetzt. Verbleibende `§…`-Eintraege beziehen
+  sich nur auf Sektionen ohne eigene Kennung (Testarchitektur in
+  `architecture.md`) und sind als Klammer-Lesehilfen gekennzeichnet.
 
 ### Fixed
