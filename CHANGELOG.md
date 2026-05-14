@@ -20,14 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `user/`, `archive/`.
 - `docs/plan/adr/0001-documentation-and-planning-structure.md` —
   Dokumentations- und Planungsstruktur.
-- `docs/plan/adr/0003-adr-lifecycle.md` — ADR-Lifecycle als
+- `docs/plan/adr/0003-adr-lifecycle.md` — historischer ADR-Lifecycle als
   Ergaenzung zu ADR 0001 (Statuswerte
   `Proposed`/`Provisional`/`Accepted`/`Rejected`/`Withdrawn`/`Superseded`,
   Uebergangsregeln, Verhaeltnis zu ADR 0001 §3/§4, Pflege-Regeln
   fuer `architecture.md §19`-Eintraege je Status). Loest den
   impliziten Konflikt zwischen ADR 0001 (ADRs = Entscheidungen)
   und ADR 0002 (Spike-getriebener Vorschlag) auf, ohne ADR 0001
-  inhaltlich zu ueberschreiben.
+  inhaltlich zu ueberschreiben. Inzwischen durch ADR 0006 abgeloest.
+- `docs/plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md`
+  — aktive ADR-Lifecycle-Regel. Supersedes ADR 0003; klaert
+  `Superseded`-Metadaten, Header-Schema, operative Spike-Artefakte,
+  `Rejected` vs. `Withdrawn` und die Einordnung der ADR-0004-
+  Retrofit-Regel fuer Lifecycle-Aenderungen.
 - `docs/plan/adr/0004-identifier-based-cross-references.md` —
   Querverweise zwischen Spec-/Planungsartefakten nutzen Kennungen
   (`GG-*`, `GG-AR-*`, `GG-TRACE-*`, `AC-*`, ADR-Nummern) als
@@ -36,8 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/plan/adr/0005-type-check-gate.md` — `mypy --strict` als
   Pflicht-Gate fuer `GG-QG-005` Static-Analysis und automatisierte
   Teilabdeckung von `GG-PRINC-004` (LSP via Variance) und
-  `GG-PRINC-005` (ISP via Protocol-Konformitaet). Status: `Proposed`,
-  Aktivierung gemeinsam mit `ADR 0002` `Accepted`. `pyright` bleibt
+  `GG-PRINC-005` (ISP via Protocol-Konformitaet). Status:
+  `Provisional`, Acceptance synchron mit `ADR 0002`. `pyright` bleibt
   Developer-Tool ueber Pylance, nicht CI-Gate.
 - ruff-Auswahl in ADR 0002 erweitert um Klassen-Ebene-Heuristiken
   und Code-Hygiene: `PLR0902/PLR0903/PLR0904` (SRP/ISP-Signale),
@@ -56,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ruff `N` plus Code-Review-Rest umgestellt; `GG-CC-001`-Anteil
   bleibt bei ruff (`PLR0915` etc.).
 - `docs/plan/adr/0002-language-and-build-stack.md` — Entwurf zur
-  Sprach- und Build-Wahl (Status: Proposed; schliesst bei Annahme
+  Sprach- und Build-Wahl (Status: Provisional; schliesst bei Annahme
   `GG-AR-OPEN-001`). Begruendung MVP-getrieben; Future-Punkte als
   Zusatznutzen ausgewiesen. Auflage A-1 als Drei-Tool-Suite
   (`import-linter` + `ruff` + eigenes AST-Skript `tools/arch_check.py`)
@@ -109,8 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `[tool.grid_gym.arch_check]`-Konfigurationssektion umgestellt,
   die `tools/arch_check.py` als Single-Source-of-Truth liest
   (`json-dumps-whitelist`, `domain-frozen-extra`, `typed-errors-exempt`).
-  Status-Pfad-Tabelle in §4 jetzt auf [ADR 0003](docs/plan/adr/0003-adr-lifecycle.md)
-  als Lifecycle-Definition verweisend.
+  Status-Pfad verweist jetzt auf ADR 0006 als aktive
+  Lifecycle-Definition.
 - `docs/plan/planning/in-progress/roadmap.md` — Roadmap-Skelett als
   Quelle fuer §27.2-Meilenstein-Marker.
 - Quality-Gate-Erweiterung in `Dockerfile`/`Makefile`:
@@ -148,8 +153,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Artefakte greifen die Spike-0-Lieferliste auf und setzen die
   noch fehlenden Spike-0-Bausteine (`pyproject.toml`,
   `src/grid_gym/`, `tests/`, `tools/arch_check.py`) als kuenftig
-  voraus. ADR-0002-Status bleibt `Proposed` — Statuswechsel auf
-  `Provisional` ist ein eigener Beschluss.
+  voraus. ADR-0002-Status ist `Provisional`; die Artefakte sind als
+  Spike-0-Pfad gemaess ADR 0006 gekennzeichnet.
 
 ### Changed
 
@@ -189,10 +194,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `default` nicht zu). Ersetzt durch einen kleinen Custom-Emitter
   (~60 Zeilen, stdlib-only) mit deterministischer Reihenfolge,
   Fixed-Point-`Decimal`-Ausgabe und explizitem `float`-Verbot.
-- Lifecycle-Sprache in ADR 0002 an ADR 0003 angeglichen: Vor
+- Lifecycle-Sprache in ADR 0002 an ADR 0006 angeglichen: Vor
   Acceptance scheitert Spike-0 nach `Rejected`; nach Acceptance
   unhaltbare A-1/A-2 fuehren zu `Superseded` durch Nachfolge-ADR
-  (nicht „zurueckgezogen", was per ADR 0003 nur als `Withdrawn`
+  (nicht „zurueckgezogen", was per ADR 0006 nur als `Withdrawn`
   und nur pre-Beschluss zulaessig waere).
 - Spike-0-Vertrag von drei auf vier Gates erweitert
   (`lint-imports`, `ruff check`, `arch_check.py`, `mypy --strict`).
@@ -200,16 +205,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   optionale Folge-Entscheidung.
 - ADR 0002 von `Proposed` auf `Provisional` gehoben — die
   Spike-0-Artefakte (`Dockerfile`, `Makefile`) liegen vor und
-  bilden den validierten Pfad gemaess ADR 0003 §2.1. ADR 0005
+  bilden den validierten Pfad gemaess ADR 0006. ADR 0005
   ebenfalls auf `Provisional` (synchron). Status-Header beider
   ADRs um `Status geaendert am` und `Letzte inhaltliche Aenderung`
   ergaenzt.
 - Dockerfile- und Makefile-Header als Spike-0-Pfad gekennzeichnet
-  (ADR 0003 §2.1).
+  (ADR 0006).
 - `GG-AR-OPEN-001`-Eintrag in `architecture.md` an den neuen
   Provisional-Status angepasst („Vorgeschlagen, Spike-0 laufend",
-  Status-Spalte „Offen (Spike-0 laeuft)") gemaess ADR 0003 §4
+  Status-Spalte „Offen (Spike-0 laeuft)") gemaess ADR 0006
   Formelhilfe.
+- ADR 0003 per `Superseded`-Metadaten auf ADR 0006 umgestellt; der
+  historische Entscheidungstext bleibt unveraendert.
 - §7 Offene Folge-Punkte in ADR 0002: Kanonische-Serialisierung-
   Eintrag von „Formatdetails verfeinern" auf „Performance-/
   Implementierungs-Alternativen" umgestellt — die Format-Details

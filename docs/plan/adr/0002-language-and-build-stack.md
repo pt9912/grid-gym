@@ -4,16 +4,16 @@
 **Datum:** 2026-05-14
 **Status geaendert am:** 2026-05-14 — `Proposed → Provisional` mit
 Freigabe des Spike-0-Vertrags; Operative Artefakte (`Dockerfile`,
-`Makefile`) liegen als Spike-0-Pfad vor (vgl. ADR 0003 §2.1).
+`Makefile`) liegen als Spike-0-Pfad vor (vgl. `ADR 0006`).
 **Letzte inhaltliche Aenderung:** 2026-05-14 — A-2 von
 `json.JSONEncoder`-Subklasse auf Custom-Emitter umgestellt;
-Lifecycle-Sprache an ADR 0003 angepasst (`Rejected` vor Acceptance,
+Lifecycle-Sprache an ADR 0006 angepasst (`Rejected` vor Acceptance,
 `Superseded` post-Acceptance); `mypy --strict` als vierter Spike-0-Gate
 verankert.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
 [ADR 0001](0001-documentation-and-planning-structure.md),
-[ADR 0003](0003-adr-lifecycle.md) (Statuswerte und Uebergaenge),
+[ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md) (Statuswerte und Uebergaenge),
 [ADR 0005](0005-type-check-gate.md) (Type-Check als vierter Gate)
 **Schliesst (bei Annahme):**
 [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
@@ -221,7 +221,7 @@ K-ARCH ist ein P0-Knock-out-Kriterium, in dem Python die Bewertung
 `-` traegt. Solange A-1 nicht nachweislich konfigurierbar ist,
 darf diese ADR weder als `Accepted` gefuehrt noch `GG-AR-OPEN-001`
 als geschlossen markiert werden. Der Status-Pfad nutzt die in
-[ADR 0003](0003-adr-lifecycle.md) definierten Lifecycle-Stufen und
+[ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md) definierten Lifecycle-Stufen und
 ist hier konkret:
 
 | ADR-Status     | Bedingung                                                                 | Wirkung auf `GG-AR-OPEN-001`         |
@@ -240,7 +240,7 @@ ausgefuehrtes Spike-Projekt. Es liefert:
 - alle fuenfzehn A-1-Contracts konfiguriert
   (`pyproject.toml`, `tests/arch/`, `tools/arch_check.py` inkl.
   `grimp`-SCC-Check),
-- die `ruff`-Konfiguration aus §A-1 inklusive der Per-File-Ignores,
+- die `ruff`-Konfiguration aus Auflage A-1 inklusive der Per-File-Ignores,
 - A-2 als kanonische Serialisierungsfunktion (Custom-Emitter, keine
   `json.JSONEncoder`-Subklasse) plus `hypothesis`-Property-Tests,
 - die `mypy --strict`-Konfiguration aus
@@ -273,7 +273,7 @@ Spike-0 ist erfolgreich, wenn:
 
 Wird Spike-0 nicht erfolgreich abgeschlossen, ist Python nicht
 haltbar; die ADR geht **vor Acceptance** auf `Rejected` (siehe
-ADR 0003 Lifecycle-Tabelle: vor-Beschluss-Zustand), eine Folge-ADR
+ADR 0006 Lifecycle-Tabelle: vor-Beschluss-Zustand), eine Folge-ADR
 fuer einen anderen Stack tritt an die Stelle. Der Fallback-Trigger
 „A-1 nicht erfuellbar" weiter unten beschreibt denselben Fall.
 
@@ -688,7 +688,7 @@ Tabu-Abdeckungs-Matrix:
 #### Beide Auflagen
 
 Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
-(gemaess ADR 0003):
+(gemaess ADR 0006):
 
 - **Spike-0 rot (vor Acceptance):** A-1 oder A-2 lassen sich im
   Skelett nicht gruen konfigurieren. ADR 0002 geht auf `Rejected`;
@@ -699,7 +699,7 @@ Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
   (z. B. eine wesentliche Bibliothek verletzt einen Contract
   reproduzierbar, ohne dass eine Anpassung moeglich ist). In
   diesem Fall wird ADR 0002 nicht „zurueckgezogen" — das verbietet
-  ADR 0003 fuer Accepted-ADRs — sondern durch eine Nachfolge-ADR
+  ADR 0006 fuer Accepted-ADRs — sondern durch eine Nachfolge-ADR
   `Superseded`. Die Nachfolge-ADR dokumentiert: welchen
   Contract/Vertrag sie ersetzt, welche Migrationsstrategie greift
   und ob `GG-AR-OPEN-001` wieder geoeffnet wird.
@@ -739,7 +739,7 @@ Trigger:
   reproduzierbar erfasst werden — etwa weil AST-Pruefung wesentliche
   Verletzungen verfehlt, die `grimp`-SCC-Analyse falsche Positive
   produziert oder die Whitelist-Pflege im CI nicht haltbar ist. In
-  diesem Fall scheitert bereits Spike-0 (siehe §A-1, Status-Pfad),
+  diesem Fall scheitert bereits Spike-0 (siehe Auflage A-1 und Status-Pfad),
   bevor die ADR `Accepted` werden kann.
 - **Lastenheft-Aenderung.** Eine spaetere Aenderung normiert
   < 10 ms-Tick im Produktionspfad (heute explizit nicht;
@@ -763,11 +763,11 @@ ADR-Annahme):
    wird ADR auf `Accepted` gesetzt und `GG-AR-OPEN-001` in
    `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
 3. **Spike-0 rot (Proposed/Provisional → Rejected):** Vor Acceptance
-   wird die ADR auf `Rejected` gesetzt (ADR-0003-Lifecycle); ein
+   wird die ADR auf `Rejected` gesetzt (ADR-0006-Lifecycle); ein
    Folge-ADR (Option D oder anderer Stack) tritt an die Stelle.
 4. **Nach Acceptance unhaltbar (Accepted → Superseded):** Wenn A-1
    oder A-2 nach Acceptance im Hauptprojekt nicht haltbar sind, wird
-   ADR 0002 durch eine Nachfolge-ADR `Superseded` (ADR-0003-Lifecycle:
+   ADR 0002 durch eine Nachfolge-ADR `Superseded` (ADR-0006-Lifecycle:
    `Withdrawn` ist Vor-Beschluss, `Superseded` post-Acceptance).
 
 _Aktueller Status: `Proposed` — kein Beschluss._

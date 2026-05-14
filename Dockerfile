@@ -2,7 +2,7 @@
 #
 # grid-gym multi-stage Dockerfile.
 #
-# Spike-0-Pfad fuer ADR 0002 (`Provisional` per ADR 0003 §2.1):
+# Spike-0-Pfad fuer ADR 0002 (`Provisional` gemaess ADR 0006):
 # Stages implementieren die Spike-0-Gates aus ADR 0002 (Auflage A-1)
 # und ADR 0005 (Type-Check): Lint, Format, Typecheck, Architektur-Imports,
 # Architektur-Custom (AST), Tests, Coverage-Gate, Runtime. Jeder Stage

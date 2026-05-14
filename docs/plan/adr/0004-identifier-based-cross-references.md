@@ -4,6 +4,7 @@
 **Datum:** 2026-05-14
 **Bezug:** [ADR 0001](0001-documentation-and-planning-structure.md),
 [ADR 0003](0003-adr-lifecycle.md),
+[ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md),
 [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md)
 **Aenderungstyp:** Ergaenzung — die Pflege-Regeln in `ADR 0001`
@@ -21,12 +22,14 @@ Kennungsraeumen:
 - `GG-AR-*` — Architekturartefakte (`GG-AR-P-*`, `GG-AR-PORT-*`,
   `GG-AR-COMP-*`, `GG-AR-TABU-*`, `GG-AR-OPEN-*`)
 - `GG-TRACE-*` — Rueckverfolgbarkeits-Pflichten
-- `AC-*` — Architekturtest-Contracts in ADR 0002
+- `AC-*` — Architekturtest-Contracts in ADR 0002 (Familie wird mit
+  `Accepted` verbindlich)
 - ADR-Nummern (`ADR 0001`, …)
 
 Trotzdem tauchen in den bisherigen Artefakten haeufig
-Querverweise wie `architecture.md §4.2`, `§19`, `§17` oder
-`Lastenheft §27.1` auf. Diese Verweise sind:
+Querverweise wie `architecture.md §4.2`, `architecture.md §19`,
+`architecture.md §17` oder `lastenheft.md §27.1` auf. Diese
+Verweise sind:
 
 - **positionsfragil:** Eine Umnummerierung der Abschnitte (z. B.
   beim Einfuegen eines neuen Kapitels) bricht alle Verweise still.
@@ -60,16 +63,16 @@ Beispiele:
 
 | Statt                              | Besser                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------ |
-| „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie `GG-AR-TABU-001..008`" (optional: „in §4.2 architecture.md") |
+| „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie `GG-AR-TABU-001..008`" (optional: „in `architecture.md` §4.2") |
 | „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „`GG-AR-OPEN-007` (UI-Architektur)" — §19 listet `GG-AR-OPEN-001..010`, ein pauschaler §19-Verweis ist mehrdeutig |
-| „`Lastenheft §27.1`"                 | „`GG-TRACE-001` (§27.1-Tabelle)"                                                |
+| „`lastenheft.md §27.1`"              | „`GG-TRACE-001` (§27.1-Tabelle)"                                                |
 | „Komponente in §5"                   | „`GG-AR-COMP-DEVICES`"                                                          |
 | „Driving-Port in §4.2"               | „`GG-AR-PORT-DRV-003` (`ReplayPort`)"                                            |
 
 ### 2.2 Wenn kein Kennungsraum existiert
 
 Hat das Referenzziel keine etablierte Kennung (z. B.
-architecture.md §17 „Testarchitektur"), gilt folgende Reihenfolge:
+`architecture.md` §17 „Testarchitektur"), gilt folgende Reihenfolge:
 
 1. **Bevorzugt:** Eine Kennung im passenden Raum **anlegen**
    (Beispielname: `GG-AR-TEST-001` fuer Testarchitektur als
@@ -125,13 +128,14 @@ ersetzt. Statt dessen gilt:
 - Beruehrt eine Aenderung ein Dokument inhaltlich, werden die in
   dieser Aenderung sichtbaren `§…`-Verweise auf Kennungen
   umgestellt.
-- ADR 0002 (Status `Proposed`) ist ein laufender Beschluss; seine
-  `§…`-Verweise werden im Zuge des Spike-0-Schliff umgestellt,
+- ADR 0002 (Status `Provisional`) ist ein laufender Beschluss; seine
+  `§…`-Verweise werden im Zuge des Spike-0-Schliffs umgestellt,
   spaetestens vor `Accepted`.
-- ADR 0001 und ADR 0003 sind `Accepted` und werden nicht
-  nachtraeglich umgestellt — die Pflege-Regeln in `ADR 0001`
-  verbieten inhaltliche Ueberschreibung; diese ADR 0004 ist die
-  definitive Stelle, an der die Regel lebt.
+- ADR 0001 und der historische Entscheidungstext von ADR 0003 werden
+  nicht nachtraeglich umgestellt — die Pflege-Regeln in `ADR 0001`
+  verbieten inhaltliche Ueberschreibung. ADR 0003 darf nur per
+  Superseding-Metadaten auf ADR 0006 zeigen; die aktive
+  Lifecycle-Regel lebt ab dann in ADR 0006.
 - Lastenheft und Architektur werden mit jeder inhaltlichen
   Aenderung gemaess obiger Regel sukzessive umgestellt,
   spaetestens jeweils bei der naechsten Minor-Versions-Hebung
@@ -145,7 +149,7 @@ ersetzt. Statt dessen gilt:
   Kennungs-Verweise.
 - Wenn beim Schreiben eines Verweises auffaellt, dass die Ziel-
   Sektion noch keine Kennung hat, wird die Kennung im selben
-  Edit eingefuehrt (siehe §2.2).
+  Edit eingefuehrt (siehe Regel fuer Ziele ohne Kennung).
 - Dokumentations-Tooling (z. B. ein moeglicher
   `tools/check_refs.py` als Folgearbeit) kann spaeter ueber die
   Kennungen einen Index erzeugen und nicht aufgeloeste Verweise
