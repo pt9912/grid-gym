@@ -24,9 +24,11 @@ from hypothesis import strategies as st
 from grid_gym.hexagon.core.errors import GridGymError
 from grid_gym.hexagon.core.serialization.canonical import (
     CanonicalSerializationError,
+    CircularReferenceError,
     FloatNotAllowedError,
     NonFiniteDecimalError,
     NonStringDictKeyError,
+    SurrogateNotAllowedError,
     UnsupportedTypeError,
     canonical_json,
 )
@@ -41,6 +43,19 @@ _decimals = st.decimals(
     allow_nan=False,
     allow_infinity=False,
     places=6,
+)
+
+# String-Strategie ohne Surrogat-Codepoints (U+D800..U+DFFF):
+# `canonical_json` lehnt Surrogate mit `SurrogateNotAllowedError` ab —
+# Property-Tests, die das Roundtrip-Verhalten pruefen, brauchen
+# Eingaben aus dem Wohlgeformt-Unicode-Bereich.
+_text_no_surrogates = st.text(
+    alphabet=st.characters(blacklist_categories=("Cs",)),
+)
+_dict_key_no_surrogates = st.text(
+    alphabet=st.characters(blacklist_categories=("Cs",)),
+    min_size=1,
+    max_size=10,
 )
 
 
@@ -154,10 +169,14 @@ def test_decimal_negative() -> None:
     assert canonical_json(Decimal("-0.123456")) == b"-0.123456"
 
 
-def test_decimal_zero_variants_emit_as_is() -> None:
+def test_decimal_zero_variants_normalize_negative_sign() -> None:
+    """Signed-Zero-Normalisierung: `-0` und `-0.0` werden zu `0`/`0.0`,
+    damit semantisch identische Nullen byte-stabil sind (Determinismus,
+    GG-DATA-005)."""
     assert canonical_json(Decimal("0")) == b"0"
     assert canonical_json(Decimal("0.0")) == b"0.0"
-    assert canonical_json(Decimal("-0")) == b"-0"
+    assert canonical_json(Decimal("-0")) == b"0"
+    assert canonical_json(Decimal("-0.0")) == b"0.0"
 
 
 # ---------------------------------------------------------------------------
@@ -209,6 +228,81 @@ def test_unsupported_custom_type_raises() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Surrogate-Strings
+# ---------------------------------------------------------------------------
+
+
+def test_low_surrogate_raises() -> None:
+    with pytest.raises(SurrogateNotAllowedError):
+        canonical_json("\ud800")
+
+
+def test_high_surrogate_raises() -> None:
+    with pytest.raises(SurrogateNotAllowedError):
+        canonical_json("\udfff")
+
+
+def test_surrogate_in_dict_value_raises() -> None:
+    with pytest.raises(SurrogateNotAllowedError):
+        canonical_json({"key": "\ud800"})
+
+
+def test_surrogate_in_dict_key_raises() -> None:
+    with pytest.raises(SurrogateNotAllowedError):
+        canonical_json({"\ud800": "value"})
+
+
+def test_surrogate_in_list_raises() -> None:
+    with pytest.raises(SurrogateNotAllowedError):
+        canonical_json(["safe", "\udfff"])
+
+
+def test_surrogate_error_is_canonical_error_subclass() -> None:
+    assert issubclass(SurrogateNotAllowedError, CanonicalSerializationError)
+
+
+# ---------------------------------------------------------------------------
+# Circular References
+# ---------------------------------------------------------------------------
+
+
+def test_circular_reference_in_list_raises() -> None:
+    a: list[object] = []
+    a.append(a)
+    with pytest.raises(CircularReferenceError):
+        canonical_json(a)
+
+
+def test_circular_reference_in_dict_raises() -> None:
+    d: dict[str, object] = {}
+    d["self"] = d
+    with pytest.raises(CircularReferenceError):
+        canonical_json(d)
+
+
+def test_circular_reference_indirect_raises() -> None:
+    a: list[object] = []
+    b: list[object] = [a]
+    a.append(b)
+    with pytest.raises(CircularReferenceError):
+        canonical_json(a)
+
+
+def test_circular_reference_error_is_canonical_error_subclass() -> None:
+    assert issubclass(CircularReferenceError, CanonicalSerializationError)
+
+
+def test_repeated_non_cyclic_reference_is_ok() -> None:
+    """Dasselbe Container-Objekt darf mehrfach im Output erscheinen,
+    solange es keinen Zyklus bildet (Diamond-Pattern). `seen` muss
+    nach Verlassen wieder freigegeben werden."""
+    shared = [1, 2, 3]
+    outer = [shared, shared, shared]
+    encoded = canonical_json(outer)
+    assert encoded == b"[[1,2,3],[1,2,3],[1,2,3]]"
+
+
+# ---------------------------------------------------------------------------
 # Property-Tests
 # ---------------------------------------------------------------------------
 
@@ -220,7 +314,9 @@ def test_decimal_output_equals_fixed_point_format(d: Decimal) -> None:
     assert encoded.decode("utf-8") == format(d, "f")
 
 
-@given(st.dictionaries(st.text(min_size=1, max_size=10), _decimals, min_size=2, max_size=8))
+@given(
+    st.dictionaries(_dict_key_no_surrogates, _decimals, min_size=2, max_size=8),
+)
 def test_dict_insertion_order_irrelevant(d: dict[str, Decimal]) -> None:
     """Gleicher Inhalt, andere Einfuegereihenfolge → identische Bytes."""
     items = list(d.items())
@@ -229,10 +325,12 @@ def test_dict_insertion_order_irrelevant(d: dict[str, Decimal]) -> None:
     assert canonical_json(d_forward) == canonical_json(d_reversed)
 
 
-@given(st.text())
+@given(_text_no_surrogates)
 def test_string_roundtrip_through_json_loads(s: str) -> None:
     """`canonical_json`-Output ist gueltiges JSON; `json.loads` ergibt
-    den Original-String zurueck."""
+    den Original-String zurueck. Surrogate-Codepoints sind via
+    Strategie ausgeschlossen — sie lehnt der Encoder mit
+    `SurrogateNotAllowedError` ab (eigener Test)."""
     encoded = canonical_json(s)
     assert json.loads(encoded) == s
 

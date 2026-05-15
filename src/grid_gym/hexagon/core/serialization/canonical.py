@@ -26,6 +26,13 @@ from grid_gym.hexagon.core.errors import GridGymError
 # escaped werden.
 _CONTROL_CHAR_THRESHOLD = 0x20
 
+# Unicode-Surrogat-Bereich (UTF-16-Halbpaare). Unpaarte Surrogate sind
+# weder gueltiges UTF-8 noch gueltiges JSON (`RFC 8259 §7`) und brechen
+# beim `.encode("utf-8")` mit einem ungetypten `UnicodeEncodeError`.
+# Wir lehnen sie deshalb frueh mit typisiertem Fehler ab.
+_SURROGATE_LOW = 0xD800
+_SURROGATE_HIGH = 0xDFFF
+
 # Direkt-Escape-Tabelle fuer JSON (RFC 8259).
 _ESCAPE_MAP: dict[str, str] = {
     '"': '\\"',
@@ -85,6 +92,30 @@ class UnsupportedTypeError(CanonicalSerializationError):
         super().__init__(f"unsupported type: {type_name}")
 
 
+class SurrogateNotAllowedError(CanonicalSerializationError):
+    """Unpaartes Surrogate-Codepoint (U+D800..U+DFFF) im String.
+
+    Weder gueltiges UTF-8 noch gueltiges JSON (`RFC 8259 §7`).
+    Adapter, die rohe Bytes hochheben, muessen Surrogate vorher
+    bereinigen.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("surrogate code points are not allowed in canonical output")
+
+
+class CircularReferenceError(CanonicalSerializationError):
+    """Selbst-referenzierende Datenstruktur (z. B. `a = []; a.append(a)`).
+
+    `canonical_json` ist deterministisch und endlich — Zyklen wuerden
+    in unbegrenzter Rekursion enden. Domain-Code darf solche Strukturen
+    nicht an den Encoder weitergeben.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("circular reference detected in input")
+
+
 def canonical_json(value: object) -> bytes:
     """Serialisiert `value` deterministisch nach UTF-8-Bytes.
 
@@ -94,24 +125,32 @@ def canonical_json(value: object) -> bytes:
     Verboten: `float` (`FloatNotAllowedError`),
     `Decimal("NaN")`/`Decimal("Infinity")` (`NonFiniteDecimalError`),
     `bytes` und andere unbekannte Typen (`UnsupportedTypeError`),
-    Dict-Keys die nicht `str` sind (`NonStringDictKeyError`).
+    Dict-Keys die nicht `str` sind (`NonStringDictKeyError`),
+    Surrogate-Codepoints in Strings (`SurrogateNotAllowedError`),
+    selbst-referenzierende Container (`CircularReferenceError`).
 
     Eigenschaften:
     - Deterministisch by-construction: Dict-Schluessel werden
       lexikographisch sortiert; Listen-/Tuple-Reihenfolge bleibt
-      erhalten.
+      erhalten; `Decimal(-0)` wird zu `Decimal(0)` normalisiert
+      (byte-Stabilitaet ueber Vorzeichen).
     - `Decimal` wird in Fixed-Point-Notation (`format(d, "f")`)
       emittiert; Tail-Nullen bleiben erhalten (Quantisierung
       gehoert an die Domain-Eingangsgrenze).
     - Strings folgen RFC 8259 (Steuerzeichen werden zu `\\u00XX`).
     """
     parts: list[str] = []
-    _emit(value, parts)
+    _emit(value, parts, seen=set())
     return "".join(parts).encode("utf-8")
 
 
-def _emit(value: object, out: list[str]) -> None:
-    """Dispatched recursively auf den Type von `value`."""
+def _emit(value: object, out: list[str], seen: set[int]) -> None:
+    """Dispatched recursively auf den Type von `value`.
+
+    `seen` traegt `id()` der gerade in Bearbeitung befindlichen
+    Container, damit `CircularReferenceError` deterministisch frueh
+    feuert statt am Python-Rekursionslimit zu sterben.
+    """
     if value is None:
         out.append("null")
     elif value is True:
@@ -128,9 +167,9 @@ def _emit(value: object, out: list[str]) -> None:
     elif isinstance(value, str):
         out.append(_emit_string(value))
     elif isinstance(value, dict):
-        _emit_dict(value, out)
+        _emit_dict(value, out, seen)
     elif isinstance(value, list | tuple):
-        _emit_array(value, out)
+        _emit_array(value, out, seen)
     elif isinstance(value, float):
         raise FloatNotAllowedError
     else:
@@ -140,33 +179,55 @@ def _emit(value: object, out: list[str]) -> None:
 def _emit_decimal(value: Decimal, out: list[str]) -> None:
     if not value.is_finite():
         raise NonFiniteDecimalError
+    # Signed-Zero-Normalisierung: `Decimal("-0")` → `Decimal("0")`,
+    # `Decimal("-0.0")` → `Decimal("0.0")`. Verhindert, dass
+    # semantisch identische Nullen byte-distinkt serialisiert werden
+    # (Determinismus-Invariante GG-DATA-005).
+    if value.is_zero():
+        value = value.copy_abs()
     out.append(format(value, "f"))
 
 
-def _emit_dict(value: dict[Any, Any], out: list[str]) -> None:
-    sorted_keys: list[str] = []
-    for key in value:
-        if not isinstance(key, str):
-            raise NonStringDictKeyError
-        sorted_keys.append(key)
-    sorted_keys.sort()
-    out.append("{")
-    for index, key in enumerate(sorted_keys):
-        if index:
-            out.append(",")
-        out.append(_emit_string(key))
-        out.append(":")
-        _emit(value[key], out)
-    out.append("}")
+def _emit_dict(value: dict[Any, Any], out: list[str], seen: set[int]) -> None:
+    container_id = id(value)
+    if container_id in seen:
+        raise CircularReferenceError
+    seen.add(container_id)
+    try:
+        sorted_keys: list[str] = []
+        for key in value:
+            if not isinstance(key, str):
+                raise NonStringDictKeyError
+            sorted_keys.append(key)
+        sorted_keys.sort()
+        out.append("{")
+        for index, key in enumerate(sorted_keys):
+            if index:
+                out.append(",")
+            out.append(_emit_string(key))
+            out.append(":")
+            _emit(value[key], out, seen)
+        out.append("}")
+    finally:
+        seen.discard(container_id)
 
 
-def _emit_array(value: list[Any] | tuple[Any, ...], out: list[str]) -> None:
-    out.append("[")
-    for index, item in enumerate(value):
-        if index:
-            out.append(",")
-        _emit(item, out)
-    out.append("]")
+def _emit_array(
+    value: list[Any] | tuple[Any, ...], out: list[str], seen: set[int]
+) -> None:
+    container_id = id(value)
+    if container_id in seen:
+        raise CircularReferenceError
+    seen.add(container_id)
+    try:
+        out.append("[")
+        for index, item in enumerate(value):
+            if index:
+                out.append(",")
+            _emit(item, out, seen)
+        out.append("]")
+    finally:
+        seen.discard(container_id)
 
 
 def _emit_string(text: str) -> str:
@@ -174,6 +235,8 @@ def _emit_string(text: str) -> str:
     for char in text:
         if char in _ESCAPE_MAP:
             buf.append(_ESCAPE_MAP[char])
+        elif _SURROGATE_LOW <= ord(char) <= _SURROGATE_HIGH:
+            raise SurrogateNotAllowedError
         elif ord(char) < _CONTROL_CHAR_THRESHOLD:
             buf.append(f"\\u{ord(char):04x}")
         else:
