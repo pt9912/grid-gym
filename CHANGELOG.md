@@ -402,6 +402,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     kombinierter Check vor dem XML-Branch-Check. Die XML-Schiene
     ist defense-in-depth, nicht Hauptgate. Befund dokumentiert
     in `spike-0-results.md` §4.2.
+- **Spike-0 Welle 3** — `tools/arch_check.py` Contract-Implementierung:
+  - Framework: `Violation`-Datentyp (`@dataclass(frozen=True, slots=True)`),
+    `ArchCheckConfig` aus `[tool.grid_gym.arch_check]` in
+    `pyproject.toml`, AST-Walker, stderr-Output im Format
+    `{contract_id}\\t{location}\\t{detail}`, Exit-Code 0/1.
+  - Neun Contracts implementiert, die `import-linter` und `ruff`
+    nicht abdecken:
+    - **`AC-HEXAGON-PURE`** (Whitelist): Module unter
+      `src/grid_gym/hexagon/**` duerfen nur stdlib (via
+      `sys.stdlib_module_names`), `grid_gym.*` und explizit
+      whitelistete Dritt-Pakete (`hexagon-import-whitelist` in
+      `[tool.grid_gym.arch_check]`) importieren.
+    - **`AC-NO-JSON`**: `json.dumps`/`json.dump`-Aufrufe ausserhalb
+      der `json-dumps-whitelist` (heute nur
+      `hexagon/core/serialization/canonical.py`).
+    - **`AC-NO-TIME`** (Aufruf-Site): `time.time`/`time.monotonic`/
+      `time.perf_counter`/`time.perf_counter_ns`/`time.process_time`
+      unter `hexagon/core/**`.
+    - **`AC-NO-RAND`** (Aufruf-Site): `random.*`/`secrets.*`/
+      `numpy.random.*` unter `hexagon/core/**`.
+    - **`AC-DOMAIN-FROZEN`**: Klassen in `hexagon/core/domain/**`
+      (plus `domain-frozen-extra`) muessen
+      `@dataclass(frozen=True, ...)` oder von `FrozenModel` erben.
+    - **`AC-NO-GOD-UTILS`**: Modul-Namen (`*_utils.py`, `helpers.py`,
+      `common.py`, `misc.py`), Klassen-Namens-Suffixe
+      (`Utils`/`Helper`/`Manager`/`Misc`), max. 5 oeffentliche
+      Top-Level-Funktionen ausserhalb `hexagon/core/domain` und
+      `hexagon/core/serialization`.
+    - **`AC-TYPED-ERRORS`**: kein `raise Exception(...)` /
+      `raise BaseException(...)`; `except Exception:` nur in
+      `typed-errors-exempt`-Pfaden.
+    - **`AC-NO-CYCLES`**: Importzyklen via `grimp.build_graph`
+      und `find_shortest_chain`-Rueckpfaden zwischen direkten
+      Import-Paaren.
+    - **`AC-ADAPTER-LIGHTWEIGHT`**: zyklomatische Komplexitaet
+      `<= 8` fuer Funktionen unter
+      `adapters/driven/protocol_*`/`persistence_*` und
+      `adapters/driving/**`.
+  - `[tool.grid_gym.arch_check]` um `hexagon-import-whitelist`
+    erweitert.
+  - **Gate-Verifikation (alle gruen via Dockerfile-Stages + make):**
+    - `make arch-check`: 7 import-linter Contracts kept,
+      arch_check.py meldet „all contracts kept" (9 AST-/grimp-
+      Contracts gruen).
+    - `make lint`/`format-check`/`typecheck`: Regression gruen
+      (mypy --strict, 21 source files).
+    - `make test-unit`: 44 tests passed.
+    - `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization`:
+      100 % Line + Branch.
+- `tests/unit/hexagon/core/serialization/test_canonical.py`:
+  Float-Equality-Vergleiche auf `pytest.approx` umgestellt
+  (`RUF069`-Compliance unter ruff 0.15 preview-Mode).
 
 ### Fixed
 

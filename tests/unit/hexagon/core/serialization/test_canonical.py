@@ -291,7 +291,9 @@ def test_command_skizze_with_nested_payload() -> None:
     encoded = canonical_json(cmd)
     parsed = json.loads(encoded)
     assert parsed["command_id"] == "cmd-001"
-    assert parsed["payload"]["value"] == 250.0
+    # `json.loads` gibt float fuer JSON-Zahlen zurueck; nur
+    # Strukturpruefung, deshalb pytest.approx fuer den Wert.
+    assert parsed["payload"]["value"] == pytest.approx(250.0)
 
 
 def test_event_skizze_with_mixed_payload_array() -> None:
@@ -307,7 +309,11 @@ def test_event_skizze_with_mixed_payload_array() -> None:
     }
     encoded = canonical_json(event)
     parsed = json.loads(encoded)
-    assert parsed["payload"] == [1, 2.5, "three", None]
+    payload = parsed["payload"]
+    assert payload[0] == 1
+    assert payload[1] == pytest.approx(2.5)
+    assert payload[2] == "three"
+    assert payload[3] is None
 
 
 def test_skizze_byte_stable_across_runs() -> None:
