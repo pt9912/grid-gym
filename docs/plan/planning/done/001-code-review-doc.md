@@ -1,8 +1,10 @@
 # 001 — `docs/user/code-review.md` + PR-Template
 
-**Status:** Next — Scope skizziert, M1-blockierend
+**Status:** Done — geliefert in `ec809b7` (Welle 0b M1-Tick-Loop-Spine).
 **Datum:** 2026-05-15 (geoeffnet); Move `open/` → `next/`: 2026-05-15
-Post-Acceptance nach Drittem Review.
+Post-Acceptance nach Drittem Review; Move `next/` → `done/`:
+2026-05-15 nach Lieferung von `docs/user/code-review.md` +
+`.github/PULL_REQUEST_TEMPLATE.md`.
 **Quelle:** [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
 A-1 „Code-Review-Auflage (Reststeuerung fuer TABU-003)";
 `pyproject.toml`-Folge-ADR-Pflicht (Post-Acceptance, ADR 0006 §3);
@@ -47,9 +49,21 @@ verlangt deshalb:
 (siehe oben), Slice-Plan kann jederzeit starten. Spaetestens vor der
 ersten Adapter-PR im M1-Slice.
 
+## Lieferung
+
+- `docs/user/code-review.md` (5 Sections: Zweck, Was Tools schon
+  erledigen, Review-Checkliste §3.1..§3.7, Reviewer-Stimmen,
+  Eskalationspfad). §3.5 deckt die `pyproject.toml`-Folge-ADR-
+  Pflicht per `ADR 0006 §3`.
+- `.github/PULL_REQUEST_TEMPLATE.md` mit verlinkter Checkliste,
+  drei Pflicht-Ausgaengen (Nein / Ja+ADR-Link / Unklar) und
+  Test-plan-Section.
+- Commit: `ec809b7 docs(plan): Trigger 001 abgearbeitet —
+  code-review.md + PR-Template`.
+
 ## Wandert nach
 
-- `in-progress/`, sobald aktive Slice-Arbeit beginnt,
-- `done/`, sobald `docs/user/code-review.md` und PR-Template
-  geliefert sind,
+- ~~`in-progress/`, sobald aktive Slice-Arbeit beginnt~~ (uebersprungen,
+  weil reine Doku-Arbeit ohne separaten Slice ausgeliefert).
+- **`done/`** (hier).
 - `archive/`, falls eine Folge-ADR die Reststeuerung ersetzt.

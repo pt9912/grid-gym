@@ -19,7 +19,6 @@ Ein Eintrag wechselt typischerweise:
 | Datei                          | Gegenstand                                                                                                                                          |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `M1-tick-loop-spine.md`        | M1-Slice-Plan: deterministischer Tick-Loop ohne Geraete (Domain-Modelle, ClockPort/RandomPort, Scheduler, Snapshot, Scenario/Replay, FastAPI-Stub, Compose-Smoke). 7 Wellen, `make fullbuild` als Abschluss-Gate. |
-| `001-code-review-doc.md`       | `docs/user/code-review.md` + PR-Template. M1-blockierend (Post-Acceptance aktiviert per Drittes Review, 2026-05-15). Wartet auf Scope-Schliff.       |
 
 Spike-0 selbst ist abgeschlossen und in
 [`done/spike-0.md`](../done/spike-0.md) archiviert. Weitere
