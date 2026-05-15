@@ -329,7 +329,7 @@ dev = [
     { name = "grimp", specifier = ">=3.4" },
     { name = "hypothesis", specifier = ">=6.0" },
     { name = "import-linter", specifier = ">=2.0" },
-    { name = "mypy", specifier = ">=1.13" },
+    { name = "mypy", specifier = ">=2.0,<3.0" },
     { name = "openapi-spec-validator", specifier = ">=0.7" },
     { name = "pip-audit", specifier = ">=2.7" },
     { name = "pytest", specifier = ">=8.0" },
@@ -342,7 +342,7 @@ test = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-cov", specifier = ">=5.0" },
 ]
-typecheck = [{ name = "mypy", specifier = ">=1.13" }]
+typecheck = [{ name = "mypy", specifier = ">=2.0,<3.0" }]
 
 [[package]]
 name = "grimp"

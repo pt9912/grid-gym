@@ -23,7 +23,13 @@ from typing import Any
 from grid_gym.hexagon.core.errors import GridGymError
 
 # JSON RFC 8259: Steuerzeichen unterhalb 0x20 MUESSEN als `\u00XX`
-# escaped werden.
+# escaped werden. RFC-konform werden NICHT escaped:
+# - `0x7F` (DEL)
+# - `U+2028` (line separator) und `U+2029` (paragraph separator)
+# Beide sind RFC-zulaessig als literale Zeichen. Pre-ES2019-JavaScript
+# wuerde an U+2028/U+2029 bei `eval()`-style Parsing scheitern; moderne
+# `JSON.parse` ist davon nicht betroffen. Wenn ein Konsument doch
+# eval-basiert parst, muss er einen modernen JSON-Parser nutzen.
 _CONTROL_CHAR_THRESHOLD = 0x20
 
 # Unicode-Surrogat-Bereich (UTF-16-Halbpaare). Unpaarte Surrogate sind

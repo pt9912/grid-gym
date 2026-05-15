@@ -226,7 +226,11 @@ def _parse(py_file: Path) -> ast.Module:
 
 
 def _rel(repo_root: Path, py_file: Path) -> str:
-    return str(py_file.relative_to(repo_root))
+    """Relativer Pfad als String mit Forward-Slash-Separator,
+    unabhaengig vom OS. Whitelist-Strings in `pyproject.toml` nutzen
+    `/`; Path-Native-Separator auf Windows waere `\\` und wuerde
+    Exakt-Vergleiche brechen."""
+    return str(py_file.relative_to(repo_root)).replace("\\", "/")
 
 
 def _matches_any(rel_path: str, patterns: tuple[str, ...]) -> bool:

@@ -210,6 +210,13 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 #        CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization
 ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay"
 RUN set -eu; \
+    for target in ${CRITICAL_COV_TARGETS}; do \
+        if [ ! -d "${target}" ]; then \
+            echo "[coverage-gate-critical] target dir missing: ${target}" >&2; \
+            echo "[coverage-gate-critical] override via --build-arg CRITICAL_COV_TARGETS=<paths>" >&2; \
+            exit 1; \
+        fi; \
+    done; \
     cov_args=""; \
     for target in ${CRITICAL_COV_TARGETS}; do \
         cov_args="${cov_args} --cov=${target}"; \

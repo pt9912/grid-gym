@@ -57,7 +57,12 @@ arch = [
     "grimp>=3.4",
 ]
 typecheck = [
-    "mypy>=1.13",
+    # `>=2.0,<3.0`: ADR 0005 nennt zwar `>=1.13` als historischen Floor,
+    # aber mypy 2.x ist seit 2026 die aktuelle Major-Version und der Lock
+    # resolved auf 2.1.0. Wir pinnen die Major auf 2 — ein 3.x-Upgrade
+    # braucht eine eigene ADR-Aenderung (`mutable-override` /
+    # `truthy-iterable` koennten dort umbenannt sein).
+    "mypy>=2.0,<3.0",
 ]
 test = [
     "pytest>=8.0",
@@ -92,8 +97,16 @@ src = ["src", "tests", "tools"]
 # Preview-Mode aktiv, weil mehrere fuer GG-CC-001 / GG-PRINC-005
 # relevante Regeln (`PLR0904` too-many-public-methods,
 # `PLR0916` too-many-boolean-expressions) in ruff 0.15 noch hinter
-# dem Preview-Flag stehen. Das fasst keine Preview-Regel jenseits
-# der unten explizit selektierten ein — `select` ist erschoepfend.
+# dem Preview-Flag stehen.
+#
+# CAVEAT: `select` nutzt unten zum Teil Gruppen-Praefixe (`B`, `S`,
+# `N`, `TRY`, `RUF`, etc.). Mit `preview = true` aktivieren diese
+# Praefixe IMPLIZIT auch zukuenftige Preview-Regeln derselben Gruppe
+# bei ruff-Upgrades. Drift-Liste in
+# `docs/plan/planning/next/spike-0-results.md` §5 verfolgt das.
+# Bei ungewollten neuen Findings nach `make lock-refresh`: entweder
+# `select` auf explizite Rule-IDs umstellen oder die neue Regel via
+# Per-File-Ignore deaktivieren — beides mit ADR-Verweis.
 preview = true
 select = [
     # AC-TYPED-ERRORS / GG-CC-008
@@ -323,6 +336,13 @@ json-dumps-whitelist = [
 # AC-DOMAIN-FROZEN: zusaetzliche Module ausserhalb hexagon.core.domain,
 # die wie domain.* immutable sein muessen (z. B. Snapshot-Daten-
 # klassen, die ausserhalb der Domain leben).
+#
+# Akzeptierte Klassen-Formen: `@dataclass(frozen=True, slots=True)`
+# oder Vererbung von einer Klasse mit literalem Namen `FrozenModel`
+# (als ast.Name ODER ast.Attribute). Andere Frozen-Konventionen
+# (`@attrs.frozen`, `pydantic.BaseModel` ohne `FrozenModel`-Alias)
+# muessen entweder als `FrozenModel`-Subklasse re-aliased oder
+# tools/arch_check.py erweitert werden.
 domain-frozen-extra = []
 # AC-TYPED-ERRORS: Module, in denen `except Exception:` zugelassen
 # ist (deckungsgleich mit den ruff-Per-File-Ignores oben, aber als

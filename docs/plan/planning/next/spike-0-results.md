@@ -150,10 +150,47 @@ Wird vor Welle 5 (Acceptance-Hebung) eingearbeitet:
 
 - **ADR 0002 §A-1 `ruff`-Regel-Liste:** `PLR0902`/`PLR0903` entfernen
   (in ruff 0.15 nicht implementiert), `preview = true`-Hinweis fuer
-  `PLR0904`/`PLR0916` aufnehmen, Restanteil als Code-Review-pflichtig
-  markieren.
+  `PLR0904`/`PLR0916` aufnehmen plus Caveat zur impliziten Aktivierung
+  weiterer Preview-Regeln in Gruppen-Praefixen (`B`, `S`, `N`, `TRY`,
+  `RUF`), Restanteil als Code-Review-pflichtig markieren.
 - **ADR 0005 `mypy`-Versions-Floor:** `>=1.13` → `>=2.0` (mypy 2.x
-  ist die aktuelle Major; im Lock 2.1.0).
-- **`tools/arch_check.py` Pfadliste:** `urllib.request`/`http.client`/
-  `logging.handlers` als AC-NO-IO-MOD-Aufruf-Site-Checks
-  dokumentieren (Welle 3 implementiert).
+  ist die aktuelle Major; im Lock 2.1.0). `pyproject.toml` ist bereits
+  auf `mypy>=2.0,<3.0` gepinnt; ADR 0005 muss vor Acceptance synchron
+  ziehen.
+- **ADR 0002 §A-1 `AC-NO-IO-MOD`:** Hinweis ergaenzen, dass
+  `urllib.request`/`http.client`/`logging.handlers` ueber
+  `tools/arch_check.py` (`_check_no_io_mod_nested`) abgedeckt werden,
+  nicht ueber `import-linter` (Subpakete externer Pakete sind dort
+  nicht erlaubt).
+- **ADR 0002 §A-1 `AC-DOMAIN-FROZEN`:** klarstellen, dass `slots=True`
+  zusaetzlich zu `frozen=True` gefordert ist (jetzt im
+  `_has_frozen_dataclass_decorator` enforced) und dass `FrozenModel`
+  als literaler Klassenname erkannt wird (sowohl `ast.Name` als auch
+  `ast.Attribute`).
+
+## 6. Reviews
+
+### 6.1 Code-Review nach Welle 3 — abgearbeitet 2026-05-15
+
+Unabhaengiger Review durch `code-reviewer`-Subagent identifizierte
+4 Blocker, 8 Important, 10 Cosmetic. In vier Commits behoben
+(`9d7a3fb`, `d0c8559`, `facd9aa`, plus Config-Sanity):
+
+| Commit | Befunde | Datei |
+| ------ | ------- | ----- |
+| `9d7a3fb` | B-1 (adapter-path fnmatch), B-2 (NO-CYCLES dedup), B-3 (TYPED-ERRORS Tuple-Form), I-1 (NO-IO-MOD-NESTED), I-8 (raise-Attribute) | `tools/arch_check.py` |
+| `d0c8559` | I-2..I-8 AST-Aliasing-Trio (`import X as Y`, `from X import Y`), I-5 DOMAIN-FROZEN (top-level-only, slots=True, Attribute-base), I-6 NO-GOD-UTILS Doku, I-7 ADAPTER-LIGHTWEIGHT cyclomatic (IfExp/Match/Comprehension) | `tools/arch_check.py` |
+| `facd9aa` | I-13 SurrogateNotAllowedError, I-14 CircularReferenceError, C-5 Signed-Zero-Normalisierung, 11 neue Tests | `canonical.py`, `test_canonical.py` |
+| Config-Sanity | I-9 mypy-Pin `>=2.0,<3.0`, I-10 preview-Caveat dokumentiert, I-11 FrozenModel-Note, I-12 Pfad-Normalisierung, I-15 U+2028/U+2029 RFC-Note, I-17 coverage-gate-critical Pfad-Existenz-Guard | `pyproject.toml`, `Dockerfile`, `arch_check.py`, `canonical.py` |
+
+**Gate-Status nach Fixes:** alle Welle-1/2/3-Gates bleiben gruen
+(`make lint`/`format-check`/`typecheck`/`arch-check`/`test-unit`/
+`coverage-gate-critical` mit `CRITICAL_COV_TARGETS=...serialization`).
+Pfad-Existenz-Guard in `coverage-gate-critical` verifiziert durch
+negativen Test: ohne Override schlaegt der Stage mit
+`target dir missing: src/grid_gym/hexagon/core/devices/battery`
+fail-fast ab.
+
+Restbestand cosmetic (nicht blockierend, kann jederzeit nachgezogen
+werden): C-1, C-2, C-3, C-4, C-7, C-8, C-9, C-10 — siehe Original-
+Review-Findings.
