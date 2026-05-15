@@ -1,19 +1,23 @@
-# Spike-0 Ergebnisse (Living Document)
+# Spike-0 Ergebnisse (Detail-Records)
 
-**Status:** In Progress — wird bis Welle-5-Abschluss fortgeschrieben
-**Datum:** 2026-05-15 (Welle 2 abgeschlossen)
-**Bezug:** [`spike-0.md`](spike-0.md), [`ADR 0002`](../../adr/0002-language-and-build-stack.md),
-[`ADR 0005`](../../adr/0005-type-check-gate.md)
+**Status:** Done — Spike-0 abgeschlossen 2026-05-15
+**Datum:** 2026-05-15
+**Bezug:** [`spike-0.md`](spike-0.md) §0 (Closure-Notiz),
+[`ADR 0002`](../../adr/0002-language-and-build-stack.md) (`Accepted`),
+[`ADR 0005`](../../adr/0005-type-check-gate.md) (`Accepted`)
 
 ---
 
 ## 1. Zweck
 
-Pflicht-Artefakt fuer die Acceptance-Entscheidung zu `ADR 0002` und
+Detail-Records zur Acceptance-Entscheidung von `ADR 0002` und
 `ADR 0005`. Dokumentiert Welle-fuer-Welle den Gate-Status, die
-sechzehn Verstoss-Branches aus Welle 4 (Branch × Gate Matrix) und
-auffaellige Befunde, die aus dem Pre-Acceptance-Schliff erlaubt sind
-(`ADR 0006` §3).
+18 Verstoss-Verifikationen aus Welle 4 (16 A-1-Contracts plus
+AC-NO-IO-MOD-nested plus LSP-Variance via mypy — Branch × Gate
+Matrix in §3) und die Befunde aus drei Reviews (zwei Pre-Acceptance,
+ein Post-Acceptance — §4 und §6). Pre-Acceptance-Schaerfungen sind
+per `ADR 0006` §3 erlaubt; alle Drift-Items wurden vor Acceptance
+eingearbeitet (§5).
 
 ---
 
@@ -26,7 +30,8 @@ auffaellige Befunde, die aus dem Pre-Acceptance-Schliff erlaubt sind
 | 3 — `tools/arch_check.py` Contracts | Neun Contracts implementiert (HEXAGON-PURE, NO-JSON, NO-TIME, NO-RAND, DOMAIN-FROZEN, NO-GOD-UTILS, TYPED-ERRORS, NO-CYCLES, ADAPTER-LIGHTWEIGHT) | `make arch-check` mit allen Contracts gruen | `aed2189` |
 | 3.1 — Review-Fixes (4 Commits) | Blocker B-1/B-2/B-3 + I-1 (Pfad-Matcher, SCC-Dedup, Tuple-Exception, NO-IO-MOD-nested); AST-Aliasing-Trio (I-2..I-8); canonical.py (Surrogate, Cycle, -0); Config-Sanity (mypy-Pin, ruff-preview-Caveat, Pfad-Normalisierung, Pfad-Existenz-Guard) | Alle Gates bleiben gruen; 55 Unit-Tests | `9d7a3fb`, `d0c8559`, `facd9aa`, `0e11ca8` |
 | 4 — Verstoss-Verifikation | 18 verify-and-revert-Zyklen auf main; pro Contract exakt eine Violation, exakt das erwartete Gate rot | siehe §3 Matrix | (kein Commit — temp Files, sauber zurueckgerollt) |
-| 5 — Acceptance-Hebung | offen | offen | — |
+| 5 — Acceptance-Hebung | ADR 0002 + ADR 0005 `Provisional → Accepted`; `architecture.md §19` `GG-AR-OPEN-001` geschlossen; `roadmap.md §4` Vorbedingungen 1+3 abgehakt; Headers (Dockerfile/Makefile/pyproject.toml) auf verbindlichen Stack; Closure-Notiz `done/spike-0.md §0`; `make gates CRITICAL_COV_TARGETS=...serialization` gruen. | `make gates` gruen mit Spike-0-Override | `5763445`, `3645473`, `522ec17`, `5281d15` |
+| 5.1 — Post-Acceptance-Konsistenz | Cross-Ref-Drift (`spec/architecture.md §1/§4.2/§7`, `Makefile`-Count, `README`-Projektstruktur, `roadmap`-Stand, `Dockerfile`-openapi-Kommentar) und Closure-Drift (`spike-0-results.md` Header/§1/§2, `spike-0.md §7`); M1-Vorbereitung (`roadmap §3`-Vorbelegung, `open/README` Trigger-Priorisierung, `Dockerfile` Path-Guard-Hinweis, `tests/arch/` Vollstaendigkeits-Test); Trigger 001 von `open/` → `next/` aktiviert | reine Doku-Edits, Gates bleiben gruen | folgt aus drittem Review |
 
 ---
 

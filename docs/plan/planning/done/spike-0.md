@@ -356,7 +356,7 @@ Gate rot wird und kein anderes.
 | Erfolg                                              | Verifikation (Dockerfile-Stage via `make <target>`)                                          |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Vier A-1-Gates gruen auf `main`                     | `make gates` gruen (Aggregator: `lint`, `format-check`, `typecheck`, `arch-check`, `test-unit`, `coverage-gate`, `coverage-gate-critical`, `dep-audit`) |
-| Sechzehn Verstoss-Branches: je nur ein Gate rot     | `spike-0-results.md` Branch × Gate Matrix; pro Branch `make <gate>`-Aufruf protokolliert     |
+| Sechzehn Verstoss-Branches: je nur ein Gate rot (in Welle 4 auf 18 ausgeweitet — siehe §3 Matrix in `spike-0-results.md`) | `spike-0-results.md` Branch × Gate Matrix; pro Branch `make <gate>`-Aufruf protokolliert     |
 | `ruff` akzeptiert `flake8-tidy-imports`-Schluessel  | `make lint` ohne Warnung (Dockerfile-Stage `lint` mit `ruff check --no-cache`)                |
 | `canonical_json` bytes-stabil                       | `make test-unit` gruen (Dockerfile-Stage `test-unit`, inkl. `hypothesis`-Properties)          |
 | Coverage 90 % auf `serialization`                   | `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization` gruen |
