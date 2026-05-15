@@ -167,9 +167,14 @@ coverage-gate:
 		--build-arg COVERAGE_BRANCH_THRESHOLD=$(COVERAGE_BRANCH_THRESHOLD) \
 		-t $(IMAGE_PREFIX)-coverage-gate:latest
 
+# Override CRITICAL_COV_TARGETS, um nur einen Teilbereich der kritischen
+# Domain zu pruefen — bevor alle Pfade aus GG-COV-003 implementiert sind.
+# Beispiel fuer Spike-0 Welle 2:
+#   make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization
 coverage-gate-critical:
 	$(DOCKER_BUILD) --target coverage-gate-critical \
 		--build-arg CRITICAL_COVERAGE_THRESHOLD=$(CRITICAL_COVERAGE_THRESHOLD) \
+		$(if $(CRITICAL_COV_TARGETS),--build-arg CRITICAL_COV_TARGETS="$(CRITICAL_COV_TARGETS)",) \
 		-t $(IMAGE_PREFIX)-coverage-gate-critical:latest
 
 # --- Security & Spec-Gates -------------------------------------------------

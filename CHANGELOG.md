@@ -337,6 +337,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   alle Python-Caches und die Projekt-Agent-Verzeichnisse aus.
   Beschleunigt jeden `docker build`-Aufruf und stabilisiert
   den Layer-Cache.
+- **Spike-0 Welle 2** — A-2 Custom-Emitter + Property-Tests:
+  - `src/grid_gym/hexagon/core/serialization/canonical.py` mit
+    `canonical_json(value: object) -> bytes` nach ADR 0002 §A-2
+    Punkt 3 (stdlib-only Custom-Emitter, kein `json.dumps`).
+    Eigenschaften: lexikographisch sortierte Dict-Keys,
+    Fixed-Point-Notation fuer `Decimal` (`format(d, "f")`,
+    Tail-Nullen bleiben erhalten), RFC-8259-konformes
+    String-Escape (Steuerzeichen als `\\u00XX`), UTF-8-Bytes
+    als Ergebnistyp.
+  - Vier typisierte Fehlerklassen (AC-TYPED-ERRORS-konform,
+    TRY003-clean): `CanonicalSerializationError` als Wurzel
+    (erbt von `GridGymError`), `FloatNotAllowedError`,
+    `NonFiniteDecimalError` (NaN/Infinity),
+    `NonStringDictKeyError`, `UnsupportedTypeError(type_name)`.
+  - `tests/unit/hexagon/core/serialization/test_canonical.py`
+    mit 42 Tests: Basis-Typen (None/bool/int/str/list/dict),
+    Decimal-Verhalten, Fehler-Faelle, sechs `hypothesis`-
+    Property-Tests (Fixed-Point-Equivalence, Dict-Reihenfolge-
+    Unabhaengigkeit, String-Roundtrip via `json.loads`,
+    Listen-Laenge, Integer-Roundtrip, Decimal-in-Dict),
+    Domain-Skizzen fuer Telemetry/Command/Event mit Roundtrip-
+    Byte-Stabilitaet.
+  - Test-Package-Skelett (`tests/unit/hexagon/__init__.py`,
+    `tests/unit/hexagon/core/__init__.py`,
+    `tests/unit/hexagon/core/serialization/__init__.py`).
+  - **Gate-Verifikation:**
+    - `make test-unit`: 44 tests passed (2 Skelett + 42 canonical).
+    - `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization`:
+      100 % Line + Branch auf 79 Statements / 38 Branches.
+    - `make coverage-gate`: 100 % Branch auf `src/grid_gym`.
+    - Regression: `make lint`, `make typecheck`, `make arch-check`
+      bleiben gruen.
+- `Dockerfile` `coverage-gate-critical`-Stage parametrisiert: neuer
+  `ARG CRITICAL_COV_TARGETS` (Default: kritische Domain laut
+  GG-COV-003 — `simulation`/`devices/battery`/`scenario`/`replay`),
+  ueberschreibbar via `--build-arg` fuer Wellen mit Teilbereich.
+  Shell-Loop expandiert die leerzeichengetrennte Liste zu
+  `--cov=`-Argumenten fuer pytest.
+- `Makefile` `coverage-gate-critical`-Target reicht
+  `CRITICAL_COV_TARGETS` als optionalen Build-Arg-Override durch
+  (`make coverage-gate-critical CRITICAL_COV_TARGETS=...`).
 
 ### Fixed
 

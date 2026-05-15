@@ -201,11 +201,21 @@ EOF
 # ---------------------------------------------------------------------------
 FROM source AS coverage-gate-critical
 ARG CRITICAL_COVERAGE_THRESHOLD
-RUN uv run pytest tests/unit/ \
-        --cov=src/grid_gym/hexagon/core/simulation \
-        --cov=src/grid_gym/hexagon/core/devices/battery \
-        --cov=src/grid_gym/hexagon/core/scenario \
-        --cov=src/grid_gym/hexagon/core/replay \
+# CRITICAL_COV_TARGETS: leerzeichengetrennte Pfade, die als `--cov=`-
+# Argumente an pytest gehen. Default ist die volle kritische Domain
+# (GG-COV-003: Simulation, Battery, Scenario, Replay). Wellen, die
+# nur einen Teilbereich implementieren, ueberschreiben das per
+# `--build-arg`. Beispiel (Welle 2, A-2 Custom-Emitter):
+#   make coverage-gate-critical \
+#        CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization
+ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay"
+RUN set -eu; \
+    cov_args=""; \
+    for target in ${CRITICAL_COV_TARGETS}; do \
+        cov_args="${cov_args} --cov=${target}"; \
+    done; \
+    uv run pytest tests/unit/ \
+        ${cov_args} \
         --cov-branch \
         --cov-report=term-missing \
         --cov-report=xml:/src/coverage/coverage-critical.xml \

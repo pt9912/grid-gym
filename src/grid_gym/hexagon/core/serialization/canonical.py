@@ -1,0 +1,182 @@
+"""Kanonische JSON-Serialisierung fuer grid-gym (ADR 0002 §A-2).
+
+Wurzel-Vertrag (`GG-DATA-005`): deterministische, byte-identische
+Ausgabe fuer semantisch identische Eingaben. Stabile
+(lexikographische) Schluesselreihenfolge, Fixed-Point-Notation fuer
+`Decimal`, kein `float`, kein NaN/Infinity, UTF-8-Bytes als
+Ergebnistyp. Stdlib-only — bewusst kein `json.dumps`, weil dieser
+`Decimal` weder nativ noch zuverlaessig ueber `default=` als
+JSON-Zahl emittieren kann.
+
+`AC-NO-JSON` (ADR 0002 §A-1) whitelistet dieses Modul als einzige
+Stelle, an der direkte `json`-Serialisierung erlaubt waere — die
+heutige Custom-Emitter-Implementierung nutzt das `json`-Modul
+jedoch nicht. Domain-Code MUSS `canonical_json` aufrufen, statt
+`json.dumps` direkt zu verwenden.
+"""
+
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import Any
+
+from grid_gym.hexagon.core.errors import GridGymError
+
+# JSON RFC 8259: Steuerzeichen unterhalb 0x20 MUESSEN als `\u00XX`
+# escaped werden.
+_CONTROL_CHAR_THRESHOLD = 0x20
+
+# Direkt-Escape-Tabelle fuer JSON (RFC 8259).
+_ESCAPE_MAP: dict[str, str] = {
+    '"': '\\"',
+    "\\": "\\\\",
+    "\b": "\\b",
+    "\f": "\\f",
+    "\n": "\\n",
+    "\r": "\\r",
+    "\t": "\\t",
+}
+
+
+class CanonicalSerializationError(GridGymError):
+    """Wurzel der Vertragsverletzungen aus ADR 0002 §A-2."""
+
+
+class FloatNotAllowedError(CanonicalSerializationError):
+    """`float` ist im kanonischen Pfad verboten.
+
+    Float-Werte muessen an der Domain-Eingangsgrenze
+    (Pydantic-Validator, Scenario-Loader, Adapter-Mapping) in
+    `Decimal` mit max. 6 Nachkommastellen quantisiert werden
+    (`GG-DATA-005`).
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "float not allowed in canonical output — convert to Decimal "
+            "at domain ingress (GG-DATA-005)"
+        )
+
+
+class NonFiniteDecimalError(CanonicalSerializationError):
+    """`Decimal("NaN")`/`Decimal("Infinity")` sind in kanonischen
+    Ausgaben nicht erlaubt.
+
+    Solche Werte erscheinen in Telemetrie ausschliesslich als
+    Qualitaetsfeld (`quality = "nan"` / `"invalid"`), nicht als
+    numerischer Wert (`GG-DATA-003`).
+    """
+
+    def __init__(self) -> None:
+        super().__init__("NaN/Infinity not allowed in canonical output")
+
+
+class NonStringDictKeyError(CanonicalSerializationError):
+    """Dict-Schluessel MUESSEN `str` sein."""
+
+    def __init__(self) -> None:
+        super().__init__("dict keys must be str")
+
+
+class UnsupportedTypeError(CanonicalSerializationError):
+    """Typ der Eingabe liegt ausserhalb des erlaubten Wertebereichs."""
+
+    def __init__(self, type_name: str) -> None:
+        super().__init__(f"unsupported type: {type_name}")
+
+
+def canonical_json(value: object) -> bytes:
+    """Serialisiert `value` deterministisch nach UTF-8-Bytes.
+
+    Erlaubte Eingabe-Typen: `None`, `bool`, `int`, `Decimal`, `str`,
+    `dict[str, ...]`, `list[...]`, `tuple[...]`.
+
+    Verboten: `float` (`FloatNotAllowedError`),
+    `Decimal("NaN")`/`Decimal("Infinity")` (`NonFiniteDecimalError`),
+    `bytes` und andere unbekannte Typen (`UnsupportedTypeError`),
+    Dict-Keys die nicht `str` sind (`NonStringDictKeyError`).
+
+    Eigenschaften:
+    - Deterministisch by-construction: Dict-Schluessel werden
+      lexikographisch sortiert; Listen-/Tuple-Reihenfolge bleibt
+      erhalten.
+    - `Decimal` wird in Fixed-Point-Notation (`format(d, "f")`)
+      emittiert; Tail-Nullen bleiben erhalten (Quantisierung
+      gehoert an die Domain-Eingangsgrenze).
+    - Strings folgen RFC 8259 (Steuerzeichen werden zu `\\u00XX`).
+    """
+    parts: list[str] = []
+    _emit(value, parts)
+    return "".join(parts).encode("utf-8")
+
+
+def _emit(value: object, out: list[str]) -> None:
+    """Dispatched recursively auf den Type von `value`."""
+    if value is None:
+        out.append("null")
+    elif value is True:
+        out.append("true")
+    elif value is False:
+        out.append("false")
+    elif isinstance(value, int):
+        # `bool` wird oben per Identitaet behandelt; eigene
+        # Unterklassen von `bool` fallen hier rein und werden als
+        # Integer emittiert (Python-Standard-Verhalten).
+        out.append(str(value))
+    elif isinstance(value, Decimal):
+        _emit_decimal(value, out)
+    elif isinstance(value, str):
+        out.append(_emit_string(value))
+    elif isinstance(value, dict):
+        _emit_dict(value, out)
+    elif isinstance(value, list | tuple):
+        _emit_array(value, out)
+    elif isinstance(value, float):
+        raise FloatNotAllowedError
+    else:
+        raise UnsupportedTypeError(type(value).__name__)
+
+
+def _emit_decimal(value: Decimal, out: list[str]) -> None:
+    if not value.is_finite():
+        raise NonFiniteDecimalError
+    out.append(format(value, "f"))
+
+
+def _emit_dict(value: dict[Any, Any], out: list[str]) -> None:
+    sorted_keys: list[str] = []
+    for key in value:
+        if not isinstance(key, str):
+            raise NonStringDictKeyError
+        sorted_keys.append(key)
+    sorted_keys.sort()
+    out.append("{")
+    for index, key in enumerate(sorted_keys):
+        if index:
+            out.append(",")
+        out.append(_emit_string(key))
+        out.append(":")
+        _emit(value[key], out)
+    out.append("}")
+
+
+def _emit_array(value: list[Any] | tuple[Any, ...], out: list[str]) -> None:
+    out.append("[")
+    for index, item in enumerate(value):
+        if index:
+            out.append(",")
+        _emit(item, out)
+    out.append("]")
+
+
+def _emit_string(text: str) -> str:
+    buf: list[str] = ['"']
+    for char in text:
+        if char in _ESCAPE_MAP:
+            buf.append(_ESCAPE_MAP[char])
+        elif ord(char) < _CONTROL_CHAR_THRESHOLD:
+            buf.append(f"\\u{ord(char):04x}")
+        else:
+            buf.append(char)
+    buf.append('"')
+    return "".join(buf)
