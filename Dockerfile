@@ -214,6 +214,7 @@ RUN set -eu; \
         if [ ! -d "${target}" ]; then \
             echo "[coverage-gate-critical] target dir missing: ${target}" >&2; \
             echo "[coverage-gate-critical] override via --build-arg CRITICAL_COV_TARGETS=<paths>" >&2; \
+            echo "[coverage-gate-critical] Spike-0-Stand: make gates CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization (siehe docs/plan/planning/done/spike-0.md)" >&2; \
             exit 1; \
         fi; \
     done; \

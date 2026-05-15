@@ -14,18 +14,22 @@ Eintraege wandern entweder:
 
 ## Bestand
 
-| Datei                                          | Trigger                                                                  | Aktivierung |
-| ---------------------------------------------- | ------------------------------------------------------------------------ | ----------- |
-| `001-code-review-doc.md`                       | `docs/user/code-review.md` + PR-Template (ADR 0002 A-1 Reststeuerung)     | spaetestens vor erster Adapter-PR (Slice-M1) |
-| `002-check-refs-tool.md`                       | `tools/check_refs.py` als Querverweis-Linter (ADR 0004)                   | wenn Querverweis-Drift beobachtet wird |
-| `003-random-port-adr.md`                       | ADR fuer `RandomPort`-Implementierung (gebondeter PRNG, Seeding-Kette)    | mit erstem Domain-Slice (Scheduler/Devices) |
-| `004-canonical-encoder-alternative-adr.md`     | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec)      | bei messbarem Perf-Druck am Telemetrie-Pfad |
-| `005-pyright-vs-mypy-reeval.md`                | Re-Eval mypy vs. pyright bei generischen Protocols                        | sobald `ports/*` Generic-Protocols einfuehrt |
-| `006-mypy-strict-bytes.md`                     | `--strict-bytes`-Aktivierung (ADR 0005)                                   | nach Konsolidierung des `GG-DATA-005`-Bytes-Vertrags |
-| `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
-| `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
-| `009-tests-integration-compose.md`             | `tests/integration/compose.yml` (testcontainers)                          | mit erstem Persistenz-Adapter-Slice |
-| `010-deploy-compose.md`                        | `deploy/compose.yml` (Compose-Smoke + Demo)                                | mit erstem Deploy-Slice (`GG-DEPLOY-001/005`) |
+Spalte „Prioritaet": `M1-blockierend` = muss vor / waehrend M1-Slice
+1-2 abgearbeitet sein; `M1-koppelbar` = bietet sich an, ist aber kein
+Block; `Post-M1` = nach M1-Abschluss.
+
+| Prioritaet           | Datei                                          | Trigger                                                                  | Aktivierung |
+| -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------ | ----------- |
+| **M1-blockierend**   | `001-code-review-doc.md`                       | `docs/user/code-review.md` + PR-Template (ADR 0002 A-1 Reststeuerung; `pyproject.toml`-Folge-ADR-Pflicht) | jetzt — Post-Acceptance aktiviert (per Drittes Review), Move nach `next/` |
+| **M1-blockierend**   | `003-random-port-adr.md`                       | ADR fuer `RandomPort`-Implementierung (gebondeter PRNG, Seeding-Kette)    | M1-Slice 1 (Tick-Loop-Spine braucht `GG-AR-PORT-DRN-010`) |
+| **M1-blockierend**   | `009-tests-integration-compose.md`             | `tests/integration/compose.yml` (testcontainers)                          | erforderlich fuer `make fullbuild` als M1-Abnahmebedingung |
+| **M1-blockierend**   | `010-deploy-compose.md`                        | `deploy/compose.yml` (Compose-Smoke + Demo)                                | erforderlich fuer `make fullbuild` als M1-Abnahmebedingung |
+| **M1-koppelbar**     | `002-check-refs-tool.md`                       | `tools/check_refs.py` als Querverweis-Linter (ADR 0004)                   | wenn Querverweis-Drift beobachtet wird; ideal mit Trigger 001 |
+| **M1-koppelbar**     | `005-pyright-vs-mypy-reeval.md`                | Re-Eval mypy vs. pyright bei generischen Protocols                        | sobald `ports/*` Generic-Protocols einfuehrt |
+| **M1-koppelbar**     | `006-mypy-strict-bytes.md`                     | `--strict-bytes`-Aktivierung (ADR 0005)                                   | nach Konsolidierung des `GG-DATA-005`-Bytes-Vertrags |
+| **Post-M1**          | `004-canonical-encoder-alternative-adr.md`     | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec)      | bei messbarem Perf-Druck am Telemetrie-Pfad |
+| **Post-M1**          | `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
+| **Post-M1**          | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 
 > Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
 > [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)

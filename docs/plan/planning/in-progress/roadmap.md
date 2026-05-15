@@ -39,13 +39,36 @@ Implementierungs-Slice gefuellt.
 
 ## 3. Meilensteine
 
-### M1 — _(offen, wird mit erster Slice gefuellt)_
+### M1 — Tick-Loop-Spine (Vorbelegung)
 
-- **Lieferziel:** offen
-- **Lastenheft-IDs:** offen
-- **Architekturartefakte:** offen
-- **Abnahmekriterium:** offen
-- **Status:** Pending
+- **Lieferziel:** deterministischer Tick-Loop ohne Geraete:
+  `ClockPort` (Driven), `RandomPort` (Driven, eigener ADR),
+  Scheduler mit stabiler Tie-Breaking-Regel, leere Domain-Modelle
+  (`Telemetry`, `Command`, `Event` als Frozen-Dataclasses),
+  `canonical_json`-Anbindung an Snapshot-Pfad. Geraetemodelle
+  (Battery, PV, Load, ...) folgen in M2+.
+- **Lastenheft-IDs:** `GG-SIM-001..004` (Determinismus, Tick,
+  Reproduzierbarkeit, parallele Geraete), `GG-SIM-005` (Snapshot),
+  `GG-DATA-001..005` (Telemetry-Modell + kanonische
+  Serialisierung), `GG-ARCH-005..008` (Event-Scheduler,
+  Tie-Breaking, ClockPort, Replay-/Live-Spine geteilt),
+  `GG-PRINC-001..006` (SOLID-Restanteil ueber `make arch-check`).
+- **Architekturartefakte:** `GG-AR-COMP-CORE`
+  (`hexagon/core/simulation`), `GG-AR-COMP-DOMAIN`
+  (`hexagon/core/domain`), `GG-AR-COMP-SCHED`
+  (`hexagon/core/simulation/scheduler`), `GG-AR-PORT-DRN-001`
+  (`ClockPort`), `GG-AR-PORT-DRN-010` (`RandomPort` — via
+  Folge-ADR aus Trigger `003-random-port-adr.md`).
+- **Abnahmekriterium:** `make fullbuild` gruen (impliziert
+  Triggers 009 `tests/integration/compose.yml` und 010
+  `deploy/compose.yml`) **und** `make gates` ohne
+  `CRITICAL_COV_TARGETS`-Override gruen (Default-kritische
+  Domain `simulation/scenario/replay/devices/battery` hat
+  jeweils mindestens ein produktives Modul, Coverage ≥ 90 %
+  Line + Branch).
+- **Status:** Pending — Slice-Plan wird in
+  `docs/plan/planning/next/M1-tick-loop-spine.md` skizziert,
+  sobald M1-Start-Termin steht.
 
 ---
 
