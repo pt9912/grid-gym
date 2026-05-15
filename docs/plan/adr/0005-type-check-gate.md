@@ -8,11 +8,14 @@ Makefile-Target `make typecheck`, `[tool.mypy]`-Konfiguration im
 Spike-0-Skelett) sind als validierter Pfad gemaess der
 Provisional-Stufe der Lifecycle-Tabelle in `ADR 0006`
 gekennzeichnet.
-**Letzte inhaltliche Aenderung:** 2026-05-14 — Spike-Vertrag lokal
-ergaenzt, `[tool.mypy]`-Vertrag verschaerft (`mutable-override`,
-expliziter `files`-Scope), Wirkungsabschnitt in
-Provisional/Accepted aufgeteilt, Sachkorrektur Option C
-(`pyrefly`), Querverweise gemaess `ADR 0004` auf Kennungen
+**Letzte inhaltliche Aenderung:** 2026-05-15 — Pre-Acceptance-Schliff
+nach dem zweiten Review (`ADR 0006` §3): mypy-Floor von `>=1.13` auf
+`>=2.0,<3.0` gehoben (mypy 2.x ist die aktuelle Major; Lock-resolved
+auf `2.1.0`). 3.x-Upgrade benoetigt Nachfolge-ADR. Inhaltlich vorher:
+2026-05-14 — Spike-Vertrag lokal ergaenzt, `[tool.mypy]`-Vertrag
+verschaerft (`mutable-override`, expliziter `files`-Scope),
+Wirkungsabschnitt in Provisional/Accepted aufgeteilt, Sachkorrektur
+Option C (`pyrefly`), Querverweise gemaess `ADR 0004` auf Kennungen
 umgestellt.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
@@ -171,13 +174,17 @@ selbst ist davon nicht zwingend betroffen — nur dieses vierte Gate.
 
 - `mypy` und benoetigte Stubs landen in
   `pyproject.toml` `[dependency-groups]` `typecheck`. Mindestversion
-  `mypy>=1.13` deckt alle hier genutzten error codes inkl.
-  `mutable-override` (seit 1.8) und `truthy-iterable` (seit 1.4) ab:
+  `mypy>=2.0,<3.0`: mypy 2.x ist seit 2026 die aktuelle Major-Version
+  (Lock-resolved auf `2.1.0`). Die 2.x-Reihe behaelt
+  `mutable-override` (seit 1.8) und `truthy-iterable` (seit 1.4) sowie
+  alle weiteren `enable_error_code`-Eintraege aus dieser ADR
+  unveraendert. Ein 3.x-Upgrade erfordert eine eigene Nachfolge-ADR,
+  weil error-code-Renamings dort moeglich sind:
 
   ```toml
   [dependency-groups]
   typecheck = [
-      "mypy>=1.13",
+      "mypy>=2.0,<3.0",
       "psycopg[binary,pool]",      # liefert eigene types
       "types-PyYAML",
       "types-protobuf",            # falls Protobuf im Stack landet

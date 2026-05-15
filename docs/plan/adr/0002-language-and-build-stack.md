@@ -5,18 +5,30 @@
 **Status geaendert am:** 2026-05-14 — `Proposed → Provisional` mit
 Freigabe des Spike-0-Vertrags; Operative Artefakte (`Dockerfile`,
 `Makefile`) liegen als Spike-0-Pfad vor (vgl. `ADR 0006`).
-**Letzte inhaltliche Aenderung:** 2026-05-15 — Repository-Layout und
-A-1-Contracts an `hexagon/`-Gruppierung in `architecture.md` §4.2
-ausgerichtet (Trigger 011 abgearbeitet, Pre-Acceptance-Schliff gemaess
-`ADR 0006` §3): Modul-Muster der fuenfzehn A-1-Contracts auf
-`hexagon.core.*`/`hexagon.ports.*` umgestellt, AC-NO-JSON-Whitelist
-und `[tool.grid_gym.arch_check]`-Pfade auf
-`src/grid_gym/hexagon/core/...`, Coverage-Pfade in Dockerfile
-nachgezogen. Inhaltlich vorher: 2026-05-14 — A-2 von
-`json.JSONEncoder`-Subklasse auf Custom-Emitter umgestellt;
-Lifecycle-Sprache an ADR 0006 angepasst (`Rejected` vor Acceptance,
-`Superseded` post-Acceptance); `mypy --strict` als vierter Spike-0-Gate
-verankert.
+**Letzte inhaltliche Aenderung:** 2026-05-15 — Pre-Acceptance-Schliff
+nach dem zweiten Review (`ADR 0006` §3): AC-HEXAGON-PURE als 16.
+Contract in §A-1 aufgenommen (Whitelist-basiert); §A-1
+„fuenfzehn" → „sechzehn" an sechs Stellen synchronisiert;
+AC-NO-IO-MOD aufgeteilt nach import-linter (Top-Level) /
+`tools/arch_check.py` (Subpakete `urllib.request`/`http.client`/
+`logging.handlers`); AC-DOMAIN-FROZEN um `slots=True`-Pflicht und
+`FrozenModel`-`ast.Attribute`-Akzeptanz praezisiert (nur Top-Level-
+Klassen via `tree.body`); AC-TYPED-ERRORS um Tuple-Form
+`except (Exception, ...):` und Attribute-Form
+`raise builtins.Exception(...)` / `except mod.Exception:` erweitert;
+`[tool.importlinter] include_external_packages = true` als
+Pflicht-Konfiguration in den operativen Anforderungen verankert;
+§6.1 CI-Matrix-Aussage abgeschwaecht (heute Override via
+`make ... PYTHON_VERSION=3.13`, GitHub-Actions-Workflow folgt nach
+M1); §A-2 Custom-Emitter-Snippet auf heutigen Stand gebracht
+(typisierte Fehlerklassen, `seen`-Zyklusabwehr,
+`SurrogateNotAllowedError`, Signed-Zero-Normalisierung,
+RFC-8259-Doku); Alternativ-Encoder-Vertrag um Cycle-Detection /
+Surrogate-Rejection / Signed-Zero verschaerft. Inhaltlich vorher:
+2026-05-15 — Repository-Layout und A-1-Contracts an
+`hexagon/`-Gruppierung ausgerichtet (Trigger 011). 2026-05-14 —
+A-2 Custom-Emitter eingefuehrt; Lifecycle-Sprache an ADR 0006
+angepasst; `mypy --strict` als vierter Spike-0-Gate verankert.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
 [ADR 0001](0001-documentation-and-planning-structure.md),
@@ -244,7 +256,7 @@ Personentage), gegen einen leeren oder minimalen `grid-gym`-Skeleton
 ausgefuehrtes Spike-Projekt. Es liefert:
 
 - ein funktionierendes Repository-Skelett (`src/grid_gym/{hexagon/{core,ports},adapters}`),
-- alle fuenfzehn A-1-Contracts konfiguriert
+- alle sechzehn A-1-Contracts konfiguriert
   (`pyproject.toml`, `tests/arch/`, `tools/arch_check.py` inkl.
   `grimp`-SCC-Check),
 - die `ruff`-Konfiguration aus Auflage A-1 inklusive der Per-File-Ignores,
@@ -265,7 +277,7 @@ Spike-0 ist erfolgreich, wenn:
 
 1. alle vier Gates (`lint-imports`, `ruff check`, `arch_check.py`,
    `mypy --strict`) auf `main` (sauberes Skelett) gruen sind,
-2. jeder der fuenfzehn A-1-Verstoss-Branches genau seinen erwarteten
+2. jeder der sechzehn A-1-Verstoss-Branches genau seinen erwarteten
    Gate rot werden laesst und keinen anderen,
 3. mindestens ein bewusst herbeigefuehrter LSP-/Protocol-Variance-
    Verstoss im Test-Branch laesst `mypy --strict` rot werden
@@ -313,6 +325,7 @@ und `pyproject.toml`. Die Contracts sind:
 
 | Contract-ID         | Tool          | Inhalt | Bezug |
 | ------------------- | ------------- | ------ | ----- |
+| AC-HEXAGON-PURE     | `tools/arch_check.py` (AST, Whitelist) | Module unter `src/grid_gym/hexagon/**` duerfen NUR stdlib (via `sys.stdlib_module_names`), `grid_gym.*` und explizit whitelistete Dritt-Pakete (`[tool.grid_gym.arch_check] hexagon-import-whitelist`, z. B. `pydantic` fuer `FrozenModel`) importieren. Ersetzt die brueckhafte Blacklist-Pflege in `AC-NO-FW`/`AC-PORTS-NO-FW` durch eine robuste Positive-Liste — neue Dritt-Pakete sind by-default verboten, bis sie ADR-fundiert whitelistet werden. | GG-AR-TABU-002, GG-CC-003 |
 | AC-CORE-NO-ADAPTERS | import-linter `forbidden` | `hexagon.core.*` darf NICHT `adapters.*` importieren. | GG-AR-TABU-001, GG-ARCH-003 |
 | AC-CORE-NO-DRIVING  | import-linter `forbidden` | `hexagon.core.*` darf NICHT `hexagon.ports.driving.*` importieren (Driving-Ports werden vom Kern angeboten, nicht aufgerufen). | GG-AR-TABU-001 |
 | AC-PORTS-NO-OUT     | import-linter `forbidden` | `hexagon.ports.*` darf NICHT `adapters.*` UND NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Ports kennen nur `hexagon.core.domain`. | GG-AR-TABU-001 |
@@ -320,27 +333,31 @@ und `pyproject.toml`. Die Contracts sind:
 | AC-ADAPTER-PURE     | import-linter `forbidden` | `adapters.*` darf NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Adapter sehen nur `hexagon.core.domain` und `hexagon.ports.*`. **Reichweite: Import-Grenze** (siehe `AC-ADAPTER-LIGHTWEIGHT` fuer die Logik-Reichweite). | GG-AR-TABU-003, GG-CC-002 |
 | AC-ADAPTER-LIGHTWEIGHT | `tools/arch_check.py` (AST, heuristisch) | Module unter `adapters.driven.protocol_*`, `adapters.driven.persistence_*` und `adapters.driving.*` MUESSEN strukturell schlank bleiben: pro Modul max. eine zyklomatische Komplexitaet von 8 je Funktion, keine `if/elif`-Ketten ueber Domain-Enums (`Quality`, `CommandResult`), keine arithmetischen Operationen ueber Telemetriewerten (`+`, `-`, `*`, `/` auf Feldern von `TelemetryPoint`/`Command`). Heuristisch, **kein vollstaendiger Nachweis** — siehe Reststeuerung unter Code-Review. | GG-AR-TABU-003 (heuristischer Anteil), GG-CC-002 |
 | AC-NO-FW            | import-linter `forbidden` | `hexagon.core.*` darf KEINE Module aus `fastapi`, `uvicorn`, `psycopg`, `sqlalchemy`, `alembic`, `httpx`, `paho.mqtt`, `pymodbus`, `asyncua` u. ae. importieren. | GG-AR-TABU-002, GG-CC-003 |
-| AC-NO-IO-MOD        | import-linter `forbidden` | `hexagon.core.*` darf NICHT `socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client` als Modul importieren (rein zur Typannotation ueber `TYPE_CHECKING` erlaubt). | GG-AR-TABU-002 |
+| AC-NO-IO-MOD        | **Aufgeteilt:** import-linter `forbidden` deckt Top-Level-Module (`socket`, `pathlib`). `tools/arch_check.py` (`_check_no_io_mod_nested`, AST) deckt stdlib-Subpakete, die import-linter strukturell nicht in `forbidden_modules` aufnehmen kann (Subpakete externer Pakete sind dort nicht erlaubt): `urllib.request`, `http.client`, `logging.handlers`. | `hexagon.core.*` darf KEINE dieser Module importieren (rein zur Typannotation ueber `TYPE_CHECKING` erlaubt). | GG-AR-TABU-002 |
 | AC-NO-CYCLES        | `tools/arch_check.py` (Graph-Analyse via `grimp`) | Keine zyklischen Importpfade. Pruefung: `grimp.build_graph("grid_gym")`, dann Strongly-Connected-Components der Modul-Import-Kanten — jede SCC mit > 1 Knoten ist ein Verstoss. Bewusst **kein** `import-linter`-`independence`-Contract: `independence` verbietet jeden gegenseitigen Import (auch erlaubte Richtungen wie `adapters → ports`) und ist kein Zykluscheck. | GG-AR-TABU-004, GG-CC-004 |
 | AC-NO-TIME          | **Aufgeteilt:** `ruff` deckt `DTZ001`–`DTZ012` (tz-naive `datetime`-Calls) plus `flake8-tidy-imports.banned-api` fuer `datetime.datetime.utcnow`. `tools/arch_check.py` deckt `time.time`, `time.monotonic`, `time.perf_counter`, `time.perf_counter_ns`, `time.process_time`, `asyncio.get_event_loop().time` als Aufrufe in `hexagon.core.*`. | `hexagon.core.*` darf keine Wall-Clock-/Monotonic-Quelle direkt verwenden. Zeit kommt aus `ClockPort`. | GG-AR-TABU-005, GG-ARCH-007 |
 | AC-NO-RAND          | **Aufgeteilt:** `ruff` `flake8-tidy-imports.banned-module-level-imports` verbietet Module-Level-Imports von `random`, `secrets`, `numpy.random` in `hexagon.core.*`. `tools/arch_check.py` faengt zusaetzlich Aufruf-Sites ab (z. B. nach Re-Export oder lokalem Import). | `hexagon.core.*` darf weder `random.*`, `secrets.*`, `numpy.random.*` noch transitive Re-Exports davon aufrufen. Zufall kommt aus `RandomPort`. | GG-SIM-001, GG-SCN-002, GG-AR-PORT-DRN-010 |
 | AC-NO-JSON          | `tools/arch_check.py` (AST) | Produktionscode unter `src/grid_gym/**` darf `json.dumps`/`json.dump` nicht direkt aufrufen, **ausser** in einem einzigen explizit gewhitelisteten Modul: `src/grid_gym/hexagon/core/serialization/canonical.py` — dies ist die Implementierung von `canonical_json` aus A-2 und die einzige erlaubte `json.dumps`-Aufrufstelle. Die Whitelist ist namentlich in `tools/arch_check.py` und in `pyproject.toml` hinterlegt; jede Erweiterung erfordert ADR-Verweis. | GG-DATA-005 |
-| AC-DOMAIN-FROZEN    | `tools/arch_check.py` (AST) | Klassen in `hexagon.core.domain.*` MUESSEN entweder `@dataclass(frozen=True, slots=True)` sein oder von einer `FrozenModel`-Basisklasse (Pydantic mit `model_config = ConfigDict(frozen=True)`) erben. | GG-AR-TABU-006, GG-CC-007 |
+| AC-DOMAIN-FROZEN    | `tools/arch_check.py` (AST, nur Top-Level-Klassen via `tree.body`) | Klassen in `hexagon.core.domain.*` MUESSEN entweder `@dataclass(frozen=True, slots=True)` sein — **beide** Keywords als `ast.Constant(value=True)` — oder von einer `FrozenModel`-Basisklasse (Pydantic mit `model_config = ConfigDict(frozen=True)`) erben. `FrozenModel` wird als literaler Klassenname erkannt, sowohl als `ast.Name` als auch als `ast.Attribute` (`mod.FrozenModel`); andere Frozen-Konventionen erfordern Re-Alias oder ADR-Erweiterung. Nested/conditional ClassDefs (in `try`/`if`-Bodies oder Funktionen) sind out-of-scope. | GG-AR-TABU-006, GG-CC-007 |
 | AC-NO-GOD-UTILS     | `tools/arch_check.py` (AST) | Verboten: Modulnamen `*_utils.py`, `helpers.py`, `common.py`, `misc.py`; Klassen, deren Name auf `Utils`/`Helper`/`Manager`/`Misc` endet; statische Module mit > 5 oeffentlichen freien Funktionen ausserhalb `hexagon.core.domain` und `hexagon.core.serialization`. | GG-AR-TABU-007, GG-CC-006 |
-| AC-TYPED-ERRORS     | ruff `BLE001` + `TRY002`/`TRY003` + `tools/arch_check.py` | Verbot von `raise Exception(...)`/`raise BaseException(...)`; `except Exception:` nur in deklarierten Adapter-Boundary-Modulen (siehe `ruff per-file-ignores` unten) erlaubt. Alle Domain-/Application-Fehler erben von `hexagon.core.errors.GridGymError`. | GG-AR-TABU-008, GG-CC-008 |
+| AC-TYPED-ERRORS     | ruff `BLE001` + `TRY002`/`TRY003` + `tools/arch_check.py` | Verbot von `raise Exception(...)`/`raise BaseException(...)`, inkl. Attribute-Form (`raise builtins.Exception(...)` / `raise mod.Exception`); `except Exception:` nur in deklarierten Adapter-Boundary-Modulen (siehe `ruff per-file-ignores` unten) erlaubt — inkl. Tuple-Form `except (Exception, ...):` (rekursiv ueber Tuple-Elements) und Attribute-Form `except mod.Exception:`. Alle Domain-/Application-Fehler erben von `hexagon.core.errors.GridGymError`. | GG-AR-TABU-008, GG-CC-008 |
 
 Operative Anforderung:
 
 - Im CI laufen drei Jobs: `lint-imports`, `ruff check`, `python tools/arch_check.py`.
   Jeder Job mit Exit-Code != 0 bricht den Build (`GG-CICD-003`, `GG-QG-001`,
   `GG-ARCHTEST-005`).
+- `[tool.importlinter]` MUSS `include_external_packages = true` setzen,
+  sobald `forbidden_modules` externe Pakete (z. B. `fastapi`, `socket`)
+  enthaelt — sonst lehnt `lint-imports` die Top-Level-Konfiguration ab.
+  Diese Einstellung ist Pflicht-Bestandteil der A-1-Suite.
 - Jeder Verstoss erzeugt eine maschinenlesbare Ausgabe mit
   Contract-ID, betroffenem Modul/Symbol und Verletzungsgrund
   (`GG-QG-002`).
 - Hinzufuegen eines neuen Top-Level-Adapter- oder Core-Pakets ohne
   Pflege der Contract-Listen in `pyproject.toml` bricht den Build
   (Whitelist-Pflicht).
-- Slice-M1-Abnahmekriterium: alle fuenfzehn Contracts oben sind
+- Slice-M1-Abnahmekriterium: alle sechzehn Contracts oben sind
   konfiguriert, alle drei CI-Jobs sind gruen, **und** je Contract
   ist mindestens ein bewusst herbeigefuehrter Verstoss in einem
   Test-Branch als rot nachgewiesen.
@@ -515,7 +532,7 @@ Tabu-Abdeckungs-Matrix:
 | Tabu              | Abgedeckt durch                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | GG-AR-TABU-001    | AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT                                      |
-| GG-AR-TABU-002    | AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`)           |
+| GG-AR-TABU-002    | AC-HEXAGON-PURE (Whitelist), AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`) |
 | GG-AR-TABU-003    | AC-ADAPTER-PURE (Imports) + AC-ADAPTER-LIGHTWEIGHT (Heuristik) + Code-Review-Auflage (Logik)  |
 | GG-AR-TABU-004    | AC-NO-CYCLES (SCC-Analyse via `grimp`)                                                        |
 | GG-AR-TABU-005    | AC-NO-TIME                                                                                    |
@@ -583,93 +600,156 @@ Tabu-Abdeckungs-Matrix:
 
      ```python
      # hexagon/core/serialization/canonical.py — einzige AC-NO-JSON-Ausnahme
+     # (Skizze; die produktive Implementation in
+     # `src/grid_gym/hexagon/core/serialization/canonical.py` ist der
+     # autoritative Stand.)
      from decimal import Decimal
 
      _ESCAPE = {
          '"': '\\"', "\\": "\\\\",
          "\b": "\\b", "\f": "\\f", "\n": "\\n", "\r": "\\r", "\t": "\\t",
      }
+     _SURROGATE_LOW, _SURROGATE_HIGH = 0xD800, 0xDFFF
+
+
+     class CanonicalSerializationError(GridGymError):
+         """Wurzel der Vertragsverletzungen."""
+
+
+     class FloatNotAllowedError(CanonicalSerializationError):
+         def __init__(self) -> None:
+             super().__init__("float not allowed — convert to Decimal at domain ingress")
+
+
+     class NonFiniteDecimalError(CanonicalSerializationError):
+         def __init__(self) -> None:
+             super().__init__("NaN/Infinity not allowed in canonical output")
+
+
+     class NonStringDictKeyError(CanonicalSerializationError):
+         def __init__(self) -> None:
+             super().__init__("dict keys must be str")
+
+
+     class UnsupportedTypeError(CanonicalSerializationError):
+         def __init__(self, type_name: str) -> None:
+             super().__init__(f"unsupported type: {type_name}")
+
+
+     class SurrogateNotAllowedError(CanonicalSerializationError):
+         def __init__(self) -> None:
+             super().__init__("surrogate code points are not allowed")
+
+
+     class CircularReferenceError(CanonicalSerializationError):
+         def __init__(self) -> None:
+             super().__init__("circular reference detected in input")
+
 
      def canonical_json(value: object) -> bytes:
          parts: list[str] = []
-         _emit(value, parts)
+         _emit(value, parts, seen=set())
          return "".join(parts).encode("utf-8")
 
-     def _emit(value: object, out: list[str]) -> None:
-         if value is None:
-             out.append("null")
-         elif value is True:
-             out.append("true")
-         elif value is False:
-             out.append("false")
-         elif isinstance(value, int):
-             # `bool` ist Subtyp von int; oben bereits behandelt.
-             out.append(str(value))
+
+     def _emit(value: object, out: list[str], seen: set[int]) -> None:
+         # `seen` traegt id() der gerade in Bearbeitung befindlichen
+         # Container — _emit_dict/_emit_array fuegen ihren id hinzu, der
+         # finally-Block entfernt ihn wieder (Diamond-Pattern bleibt OK).
+         if value is None: out.append("null")
+         elif value is True: out.append("true")
+         elif value is False: out.append("false")
+         elif isinstance(value, int): out.append(str(value))
          elif isinstance(value, Decimal):
-             if not value.is_finite():
-                 raise CanonicalSerializationError(
-                     "NaN/Infinity not allowed in canonical output"
-                 )
-             # Fixed-point, ohne wissenschaftliche Schreibweise, Tail-
-             # Nullen bleiben erhalten (Quantisierung erfolgt an der
-             # Domain-Eingangsgrenze, nicht hier).
+             if not value.is_finite(): raise NonFiniteDecimalError
+             # Signed-Zero-Normalisierung: `Decimal("-0")` -> `Decimal("0")`
+             # via copy_abs() — semantisch identische Nullen sind byte-stabil.
+             if value.is_zero(): value = value.copy_abs()
              out.append(format(value, "f"))
-         elif isinstance(value, str):
-             out.append(_emit_string(value))
-         elif isinstance(value, dict):
-             if not all(isinstance(k, str) for k in value):
-                 raise CanonicalSerializationError("dict keys must be str")
+         elif isinstance(value, str): out.append(_emit_string(value))
+         elif isinstance(value, dict): _emit_dict(value, out, seen)
+         elif isinstance(value, list | tuple): _emit_array(value, out, seen)
+         elif isinstance(value, float): raise FloatNotAllowedError
+         else: raise UnsupportedTypeError(type(value).__name__)
+
+
+     def _emit_dict(value: dict, out: list[str], seen: set[int]) -> None:
+         cid = id(value)
+         if cid in seen: raise CircularReferenceError
+         seen.add(cid)
+         try:
+             keys: list[str] = []
+             for k in value:
+                 if not isinstance(k, str): raise NonStringDictKeyError
+                 keys.append(k)
+             keys.sort()
              out.append("{")
-             for i, key in enumerate(sorted(value)):
-                 if i:
-                     out.append(",")
-                 out.append(_emit_string(key))
-                 out.append(":")
-                 _emit(value[key], out)
+             for i, k in enumerate(keys):
+                 if i: out.append(",")
+                 out.append(_emit_string(k)); out.append(":")
+                 _emit(value[k], out, seen)
              out.append("}")
-         elif isinstance(value, (list, tuple)):
+         finally:
+             seen.discard(cid)
+
+
+     def _emit_array(value, out: list[str], seen: set[int]) -> None:
+         cid = id(value)
+         if cid in seen: raise CircularReferenceError
+         seen.add(cid)
+         try:
              out.append("[")
              for i, item in enumerate(value):
-                 if i:
-                     out.append(",")
-                 _emit(item, out)
+                 if i: out.append(",")
+                 _emit(item, out, seen)
              out.append("]")
-         elif isinstance(value, float):
-             raise CanonicalSerializationError(
-                 "float not allowed in canonical output — convert to Decimal "
-                 "at domain ingress (GG-DATA-005)"
-             )
-         else:
-             raise CanonicalSerializationError(
-                 f"unsupported type: {type(value).__name__}"
-             )
+         finally:
+             seen.discard(cid)
+
 
      def _emit_string(s: str) -> str:
          buf = ['"']
          for ch in s:
-             if ch in _ESCAPE:
-                 buf.append(_ESCAPE[ch])
-             elif ord(ch) < 0x20:
-                 buf.append(f"\\u{ord(ch):04x}")
-             else:
-                 buf.append(ch)
+             if ch in _ESCAPE: buf.append(_ESCAPE[ch])
+             elif _SURROGATE_LOW <= ord(ch) <= _SURROGATE_HIGH:
+                 raise SurrogateNotAllowedError
+             elif ord(ch) < 0x20: buf.append(f"\\u{ord(ch):04x}")
+             else: buf.append(ch)
          buf.append('"')
          return "".join(buf)
      ```
 
      Eigenschaften des Emitters:
-     - Deterministisch by-construction: Reihenfolge ueber `sorted(value)`,
+     - **Typisierte Fehlerklassen** (AC-TYPED-ERRORS-konform, TRY003-clean):
+       `CanonicalSerializationError` als Wurzel, plus `FloatNotAllowedError`,
+       `NonFiniteDecimalError`, `NonStringDictKeyError`,
+       `UnsupportedTypeError(type_name)`, `SurrogateNotAllowedError`,
+       `CircularReferenceError`. Messages stehen im Constructor, nicht am
+       Call-Site.
+     - Deterministisch by-construction: Reihenfolge ueber `sorted(keys)`,
        keine impliziten Konvertierungen, keine Drittpartei-Heuristiken.
+     - **Cycle-Detection**: `seen: set[int]` traegt `id()` der gerade
+       in Bearbeitung befindlichen Container; `_emit_dict`/`_emit_array`
+       fangen Rekursion frueh ab und entfernen den `id` im `finally` —
+       Diamond-Patterns (gleicher Container mehrfach an verschiedenen
+       Stellen, kein Zyklus) bleiben zulaessig.
      - `Decimal` wird direkt als JSON-Zahl in Fixed-Point-Notation
        emittiert (`format(value, "f")`). Tail-Nullen bleiben erhalten —
        Quantisierung auf max. 6 Stellen passiert an der Domain-Eingangs-
        grenze (Pydantic-Validator, Scenario-Loader, Adapter-Mapping)
        ueber `Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_EVEN)`,
-       nicht hier.
-     - `float` ist verboten (`CanonicalSerializationError`).
+       nicht hier. **Signed-Zero-Normalisierung**: `Decimal("-0")` →
+       `Decimal("0")` via `.copy_abs()` (byte-stabil ueber Vorzeichen).
+     - `float` ist verboten (`FloatNotAllowedError`).
+     - **Surrogate-Codepoints** (U+D800..U+DFFF) sind verboten
+       (`SurrogateNotAllowedError`) — weder gueltiges UTF-8 noch
+       gueltiges JSON (RFC 8259 §7); Adapter, die rohe Bytes hochheben,
+       muessen Surrogate vorher bereinigen.
      - JSON-Strings folgen RFC 8259: doppelte Anfuehrungszeichen, Backslash-
-       Escape, Steuerzeichen als `\u00XX`. `ensure_ascii`-Verhalten ist
-       implizit aus.
+       Escape, Steuerzeichen `<0x20` als `\u00XX`. U+2028/U+2029
+       (line/paragraph separator) und U+007F (DEL) werden RFC-konform
+       literal emittiert — Pre-ES2019-JavaScript-`eval()`-Konsumenten
+       muessen einen modernen `JSON.parse`-Parser nutzen.
      - Encoding: UTF-8-Bytes; kein Umweg ueber `str` an Konsumenten.
   4. **Ergebnistyp** ist `bytes` (UTF-8). Alle Schreibpfade (Persistenz,
      Replay-Diff, WebSocket-Frame) konsumieren `bytes` direkt; ein Round-Trip
@@ -681,9 +761,12 @@ Tabu-Abdeckungs-Matrix:
   Fixed-Point-Notation als JSON-Zahl emittiert (orjson kann das ueber
   einen Custom-Stream-Adapter, nicht ueber `default=` allein — eine
   Wrapper-Implementierung muss das nachweisen), (b) die Vor-Normalisierung
-  aus Punkt 2 unveraendert davor laeuft und (c) die Tests bytes-identische
+  aus Punkt 2 unveraendert davor laeuft, (c) die Tests bytes-identische
   Ausgabe zwischen der Standard-Implementierung (Custom-Emitter, oben) und
-  der Alternativ-Implementierung nachweisen. Wahl des Alternativ-Encoders
+  der Alternativ-Implementierung nachweisen **inklusive Cycle-Detection
+  (typisierter `CircularReferenceError`), Surrogate-Rejection
+  (`SurrogateNotAllowedError`) und Signed-Zero-Normalisierung**. Wahl
+  des Alternativ-Encoders
   ist eine eigene Folge-ADR fuer Performance-/Implementierungs-Alternativen;
   A-2 fixiert den **Vertrag** (Format-Details aus Punkt 2) und die
   **Standard-Implementierung** (Custom-Emitter aus Punkt 3) verbindlich —
@@ -740,7 +823,7 @@ Trigger:
   Telemetrieport-Messung unterschreitet 10.000 Punkte/s mit
   256-Byte-Payload in der Referenzumgebung dauerhaft, auch mit
   gepuffertem Persistenzpfad.
-- **A-1 nicht erfuellbar / Spike-0 rot.** Die fuenfzehn Contracts aus
+- **A-1 nicht erfuellbar / Spike-0 rot.** Die sechzehn Contracts aus
   A-1 (`import-linter`, `ruff`, `tools/arch_check.py` inkl. `grimp`-
   Zykluscheck) lassen sich nicht so konfigurieren, dass `GG-AR-TABU-001..008`
   reproduzierbar erfasst werden — etwa weil AST-Pruefung wesentliche
@@ -805,7 +888,7 @@ hier abloest.
 | uv-Workspaces       | NICHT verwendet                                      | Modulgrenzen aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` werden durch Import-Contracts (A-1) erzwungen, nicht durch separate Distribution-Pakete. uv-Workspaces sind trigger-basierte Folgearbeit, falls einzelne `grid-gym`-Pakete extern konsumiert werden sollen. |
 | Repository-Layout   | Monolith mit `src/grid_gym/{hexagon/{core,ports},adapters}/`-Layout und `import-linter`-Layern | Eine Distribution, eine Lock-Datei; klare Trennung `src/` (Produktion) vs. `tests/` (Tests, von A-1-Tabus teilweise ausgenommen). `hexagon/` gruppiert fachlichen Kern und Ports gemaess `architecture.md` §4.2. |
 | Project-Definition  | Ein `pyproject.toml` im Root                       | Eine Lock-Datei, eine CI-Resolve, ein Distribution-Punkt                                  |
-| Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; CI-Matrix laeuft gegen `3.13` und `3.14` | reproduzierbarer Build (`GG-CICD-001`); Floor und Referenz-Runtime sind explizit getestet |
+| Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; Override via `make <target> PYTHON_VERSION=3.13` getestet. CI-Matrix gegen `3.13` und `3.14` aktiviert sich mit erstem GitHub-Actions-Workflow (Folgewelle nach M1). | reproduzierbarer Build (`GG-CICD-001`); Floor und Referenz-Runtime sind explizit testbar |
 | HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code (`GG-API-003`), WebSocket nativ (`GG-API-002`)                            |
 | Validierung         | Pydantic v2                                        | Schema- und Wertebereichspruefung (`GG-SCN-008`, `GG-SAFE-001/008`, `GG-DATA-002/003`)     |
 | Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | `GG-PERSIST-001..009`, Migrationen (`GG-PERSIST-008`); Repository-Pattern (kein ORM) bleibt offen unter `GG-AR-OPEN-003` |
@@ -815,7 +898,7 @@ hier abloest.
 | Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | `GG-TESTTYPE-001/002`, `GG-COV-001..005`                                                   |
 | Property-Tests      | `hypothesis`                                       | `GG-SIM-001..004`, `GG-DATA-005`                                                           |
 | Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | `GG-TESTTYPE-002`, `GG-PERSIST-005`                                                        |
-| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit fuenfzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | `GG-ARCHTEST-001..005`, `GG-AR-TABU-001..008`                                              |
+| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit sechzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | `GG-ARCHTEST-001..005`, `GG-AR-TABU-001..008`                                              |
 
 ### 6.2 Wirkung auf andere Dokumente
 
