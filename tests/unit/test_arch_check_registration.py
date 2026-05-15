@@ -1,0 +1,110 @@
+"""Vollstaendigkeits-Test fuer die Contract-Registrierung in
+`tools/arch_check.py main()`.
+
+Faengt den Fall, dass jemand einen `_check_*`-Aufruf in `main()`
+auskommentiert oder entfernt — ohne diesen Test wuerde
+`make arch-check` weiterhin „all contracts kept" zurueckgeben,
+obwohl ein Contract still nicht mehr geprueft wird.
+
+Bezug: drittes Review §3 Operative Folge-Pflichten,
+M1-Vorbereitung. Test liegt unter `tests/unit/`, damit er via
+`make test-unit` mitlaeuft; ein eigener `tests/arch/`-Stage waere
+sauberer, aber ist M1-territory.
+"""
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+# Erwartete `_check_*`-Aufrufe in `arch_check.py main()`. Reihenfolge
+# entspricht der operativen Order. Wenn jemand einen Check entfernt,
+# ergaenzt oder umbenennt, muss diese Konstante mitgezogen werden —
+# und das wiederum triggert eine Folge-ADR fuer ADR 0002 §A-1
+# (per ADR 0006 §3, weil ADR 0002 `Accepted` ist).
+_EXPECTED_CHECK_FUNCTIONS: frozenset[str] = frozenset(
+    {
+        "_check_hexagon_pure",
+        "_check_no_json",
+        "_check_no_time",
+        "_check_no_rand",
+        "_check_no_io_mod_nested",
+        "_check_domain_frozen",
+        "_check_no_god_utils",
+        "_check_typed_errors",
+        "_check_no_cycles",
+        "_check_adapter_lightweight",
+    }
+)
+
+
+def _extract_main_check_calls() -> frozenset[str]:
+    """Parsed `tools/arch_check.py`, findet `main()` und sammelt
+    alle aufgerufenen `_check_*`-Funktions-IDs."""
+    arch_check_path = Path(__file__).resolve().parents[2] / "tools" / "arch_check.py"
+    source = arch_check_path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    main_func: ast.FunctionDef | None = None
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == "main":
+            main_func = node
+            break
+    assert main_func is not None, "arch_check.py main() function not found"
+    calls: set[str] = set()
+    for node in ast.walk(main_func):
+        if not isinstance(node, ast.Call):
+            continue
+        # Pattern: `violations.extend(_check_*(...))` — der aeussere
+        # Call ist `violations.extend(...)`, das Argument enthaelt
+        # den eigentlichen `_check_*`-Call.
+        for arg in node.args:
+            if (
+                isinstance(arg, ast.Call)
+                and isinstance(arg.func, ast.Name)
+                and arg.func.id.startswith("_check_")
+            ):
+                calls.add(arg.func.id)
+        # Pattern: direkter Aufruf `_check_*(...)`
+        if isinstance(node.func, ast.Name) and node.func.id.startswith("_check_"):
+            calls.add(node.func.id)
+    return frozenset(calls)
+
+
+def test_all_expected_checks_are_registered_in_main() -> None:
+    """Jeder erwartete `_check_*` ist in `main()` registriert."""
+    registered = _extract_main_check_calls()
+    missing = _EXPECTED_CHECK_FUNCTIONS - registered
+    assert not missing, (
+        f"missing _check_* in arch_check.py main(): {sorted(missing)} — "
+        "auskommentiert oder entfernt? Verbindlicher Vertrag aus "
+        "ADR 0002 §A-1 (Accepted 2026-05-15)."
+    )
+
+
+def test_no_unexpected_checks_registered_in_main() -> None:
+    """Keine neuen `_check_*`-Aufrufe ohne Update der Erwartungsliste.
+
+    Strikter Spiegel-Assert: ein neuer Contract ohne Update von
+    `_EXPECTED_CHECK_FUNCTIONS` oben ist ein bewusster Trigger,
+    dass die ADR-Tabelle in `ADR 0002 §A-1` mitgepflegt werden muss
+    (Folge-ADR, weil ADR 0002 `Accepted` ist).
+    """
+    registered = _extract_main_check_calls()
+    unexpected = registered - _EXPECTED_CHECK_FUNCTIONS
+    assert not unexpected, (
+        f"new _check_* in arch_check.py main() ohne Update der Test-"
+        f"Konstante: {sorted(unexpected)} — Folge-ADR fuer ADR 0002 "
+        "§A-1 erforderlich."
+    )
+
+
+def test_registered_count_matches_adr_count() -> None:
+    """Die Zahl ist heute genau 10 (siehe `ADR 0002 §A-1` — sechzehn
+    A-1-Contracts insgesamt, davon sechs ueber `import-linter` und
+    zehn ueber `tools/arch_check.py`)."""
+    expected_arch_check_contracts = 10
+    registered = _extract_main_check_calls()
+    assert len(registered) == expected_arch_check_contracts, (
+        f"arch_check.py main() registriert {len(registered)} Contracts, "
+        f"erwartet {expected_arch_check_contracts} (ADR 0002 §A-1)."
+    )

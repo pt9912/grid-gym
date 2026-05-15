@@ -20,7 +20,6 @@ Block; `Post-M1` = nach M1-Abschluss.
 
 | Prioritaet           | Datei                                          | Trigger                                                                  | Aktivierung |
 | -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------ | ----------- |
-| **M1-blockierend**   | `001-code-review-doc.md`                       | `docs/user/code-review.md` + PR-Template (ADR 0002 A-1 Reststeuerung; `pyproject.toml`-Folge-ADR-Pflicht) | jetzt — Post-Acceptance aktiviert (per Drittes Review), Move nach `next/` |
 | **M1-blockierend**   | `003-random-port-adr.md`                       | ADR fuer `RandomPort`-Implementierung (gebondeter PRNG, Seeding-Kette)    | M1-Slice 1 (Tick-Loop-Spine braucht `GG-AR-PORT-DRN-010`) |
 | **M1-blockierend**   | `009-tests-integration-compose.md`             | `tests/integration/compose.yml` (testcontainers)                          | erforderlich fuer `make fullbuild` als M1-Abnahmebedingung |
 | **M1-blockierend**   | `010-deploy-compose.md`                        | `deploy/compose.yml` (Compose-Smoke + Demo)                                | erforderlich fuer `make fullbuild` als M1-Abnahmebedingung |
@@ -31,6 +30,10 @@ Block; `Post-M1` = nach M1-Abschluss.
 | **Post-M1**          | `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | **Post-M1**          | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 
+> Bereits aktiviert: `001-code-review-doc.md` →
+> [`next/`](../next/001-code-review-doc.md) (2026-05-15,
+> Post-Acceptance per Drittes Review).
+>
 > Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
 > [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)
 > (2026-05-15).
