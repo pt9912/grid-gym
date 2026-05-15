@@ -14,7 +14,14 @@ Ein Eintrag wechselt typischerweise:
 `open/` (Trigger entsteht) → `next/` (Scope skizziert) →
 `in-progress/` (Slice-Plan aktiv) → `done/` (geliefert).
 
-Aktuell leer. Erste Eintraege entstehen, sobald nach M1 konkrete
-Folge-Slices skizziert werden — z. B. zusaetzliche Geraetemodelle aus
-§9 Lastenheft, optionale Protokolladapter (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)
-oder die UI-Erweiterungen `GG-UI-006..008`.
+## Bestand
+
+| Datei                  | Gegenstand                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `spike-0.md`           | Spike-0 als Pre-Acceptance-Slice fuer `ADR 0002` und `ADR 0005` (Toolchain, Skelett, A-1/A-2-Contracts, sechzehn Verstoss-Branches). Aktiviert `roadmap.md` Vorbedingung 1. |
+
+Weitere Eintraege entstehen nach Spike-0, sobald M1 das erste
+Domain-Slice (Tick-Loop-Spine) skizziert — und mit jedem Folgeschritt
+fuer Geraetemodelle aus §9 Lastenheft, optionale Protokolladapter
+(`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`) oder UI-Erweiterungen
+`GG-UI-006..008`.

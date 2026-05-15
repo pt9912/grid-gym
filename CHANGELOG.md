@@ -248,6 +248,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `011-hexagon-layout-adr-0002-realign.md` von `open/` nach
   `done/` verschoben (Closure-Notiz mit Lieferumfang); `open/`-
   und `done/`-README-Bestandstabellen entsprechend gepflegt.
+- `docs/plan/planning/next/spike-0.md` — Slice-Plan fuer Spike-0
+  als Pre-Acceptance-Pflichtnachweis fuer `ADR 0002` und
+  `ADR 0005`. Fuenf Wellen (Toolchain/Skelett, A-2 Custom-Emitter,
+  `tools/arch_check.py` Contracts, 16 Verstoss-Branches,
+  Acceptance-Hebung); Erfolgskriterien, Out-of-Scope-Liste,
+  Risiken/Fallback und Verifikationspfad explizit ausgewiesen.
+  `docs/plan/planning/next/README.md` Bestandstabelle ergaenzt.
+- `docs/plan/planning/in-progress/roadmap.md` §4 Vorbedingungen
+  praezisiert: `GG-AR-OPEN-001` verweist auf `next/spike-0.md`;
+  Repository-Layout-Punkt verweist auf `hexagon/`-Gruppierung in
+  `architecture.md` §4.2.
 
 ### Fixed
 

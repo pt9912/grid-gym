@@ -53,7 +53,12 @@ Implementierungs-Slice gefuellt.
 
 Vor M1 muessen folgende Punkte geklaert sein:
 
-- `GG-AR-OPEN-001` Sprach- und Build-Wahl (eigener ADR).
+- `GG-AR-OPEN-001` Sprach- und Build-Wahl — Slice-Plan in
+  [`docs/plan/planning/next/spike-0.md`](../next/spike-0.md);
+  schliesst `GG-AR-OPEN-001` bei gruenem Spike-0 ueber `ADR 0002`
+  (`Provisional`) und `ADR 0005` (`Provisional`).
 - `GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse.
 - Initiales Repository-Layout gemaess der Hexagonalen Sicht
-  (`GG-AR-P-002`, `GG-AR-TABU-001..008`).
+  (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
+  `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert,
+  Python-Paketnamen ueber `ADR 0002` §6.1 nach Acceptance.
