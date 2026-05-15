@@ -114,6 +114,17 @@ lint:
 format-check:
 	$(DOCKER_BUILD) --target format-check -t $(IMAGE_PREFIX)-format-check:latest
 
+# Wendet ruff format auf den Repo an (kein --check, sondern Auto-Fix).
+# Laeuft im base-Stage als aktueller User; Cache geht nach /tmp.
+format:
+	$(DOCKER_BUILD) --target source -t $(IMAGE_PREFIX)-source:latest
+	$(DOCKER) run --rm \
+		--user "$$(id -u):$$(id -g)" \
+		-e UV_CACHE_DIR=/tmp/uv-cache \
+		-v "$$(pwd)":/src -w /src \
+		$(IMAGE_PREFIX)-source:latest \
+		uv run ruff format .
+
 # mypy --strict gegen src/grid_gym + tools/. Configuration in
 # pyproject.toml [tool.mypy] (siehe ADR 0005).
 typecheck:

@@ -234,9 +234,7 @@ def _emit_dict(value: dict[Any, Any], out: list[str], seen: set[int]) -> None:
         seen.discard(container_id)
 
 
-def _emit_array(
-    value: list[Any] | tuple[Any, ...], out: list[str], seen: set[int]
-) -> None:
+def _emit_array(value: list[Any] | tuple[Any, ...], out: list[str], seen: set[int]) -> None:
     container_id = id(value)
     if container_id in seen:
         raise CircularReferenceError

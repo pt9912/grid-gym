@@ -385,6 +385,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   gegenueber ADR 0002 §A-1, import-linter-Subpaket-Limit,
   coverage-gate Build-Arg-Parametrisierung) und Drift-Liste fuer
   den finalen ADR-Schliff vor Acceptance.
+- **Spike-0 Welle 5 — Acceptance-Hebung (Milestone):** `ADR 0002`
+  und `ADR 0005` von `Provisional → Accepted` (Status geaendert am
+  2026-05-15). Per `ADR 0006` §3 sind beide Entscheidungstexte ab
+  jetzt immutable; Aenderungen an A-1-/A-2-Vertraegen oder am
+  mypy-Strict-Gate erfordern Nachfolge-ADRs.
+  - **Pre-Acceptance-Review** (zweiter Review durch `code-reviewer`-
+    Subagent) abgearbeitet: 3 Blocker (B-A asyncio, B-B HEXAGON-PURE-
+    Listung, B-C `make fullbuild`-Reduktion) und 10 Drift-Items
+    (D-1..D-10) eingearbeitet in vier Commits `fb90154`, `201daee`,
+    `658c037`, `46b4ce6`.
+  - **`spec/architecture.md §19`**: `GG-AR-OPEN-001` von „Offen
+    (Spike-0 laeuft)" auf „Geschlossen mit `ADR 0002` (Accepted
+    2026-05-15)" — mit Verweis auf beide Accepted-ADRs.
+  - **`roadmap.md §4`**: Vorbedingungen 1 (`GG-AR-OPEN-001`) und 3
+    (initiales Repository-Layout) mit Haken markiert und mit
+    Closure-Notiz verlinkt; Vorbedingung 2 (`GG-AR-OPEN-002`) bleibt
+    offen — eigene Folge-ADR.
+  - **Headers verbindlich**: `Dockerfile`, `Makefile`, `pyproject.toml`
+    von „Spike-0-Pfad gemaess ADR 0006 (Provisional)" auf
+    „Verbindlicher Stack gemaess ADR 0002 Accepted 2026-05-15"
+    umgestellt. Aenderungen an `pyproject.toml`-Vertraegen brauchen
+    fortan Folge-ADRs.
+  - **Closure-Notiz**: `docs/plan/planning/next/spike-0.md` und
+    `spike-0-results.md` per `git mv` nach `done/` verschoben
+    (100 %-Rename via Zwei-Commit-Pattern, Memory-konform);
+    `done/spike-0.md` §0 traegt Welle-1..5-Tabelle (Commit-Refs),
+    Verweise auf Matrix (§3 in `spike-0-results.md`), Befunde (§4),
+    Review-Trail (§6), Drift-Items-Liste (§5), „was bleibt offen"
+    (`GG-AR-OPEN-002..010`, Triggers 009/010, M1-Vorbereitungen).
+  - **Spike-0-Abschluss-Gate**: `make gates` (Aggregator: `lint`,
+    `format-check`, `typecheck`, `arch-check`, `test-unit`,
+    `coverage-gate`, `coverage-gate-critical
+    CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization`,
+    `dep-audit`) gruen. `make fullbuild` wandert als
+    M1-Abnahmebedingung (siehe Triggers 009/010 in `open/`).
+  - **Commits**: `5763445` (ADRs + arch.md §19 + roadmap.md §4),
+    `3645473` (Headers), `522ec17` (pure rename next/ → done/),
+    plus dieser Commit (Closure-Section + READMEs).
 - **Spike-0 Welle 4** — Verstoss-Verifikation (18 von 18 Contracts mit
   Zaehnen): pro Contract eine Violation auf `main` eingebaut, das
   erwartete Gate als rot bestaetigt, Violation sauber zurueckgerollt.

@@ -1,13 +1,98 @@
 # Slice-Plan — Spike-0 (Pre-Acceptance fuer ADR 0002 + ADR 0005)
 
-**Status:** Next — Scope skizziert, kein aktiver Slice
+**Status:** Done (geschlossen 2026-05-15)
 **Datum:** 2026-05-15
 **Bezug:** [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
-§A-1/§A-2 (`Provisional`),
-[`ADR 0005`](../../adr/0005-type-check-gate.md) (`Provisional`),
+§A-1/§A-2 (`Accepted` 2026-05-15),
+[`ADR 0005`](../../adr/0005-type-check-gate.md) (`Accepted` 2026-05-15),
 [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
-§2 (Lifecycle-Tabelle, `Provisional → Accepted`),
-[`roadmap.md`](../in-progress/roadmap.md) §4 Vorbedingungen.
+§2 (Lifecycle-Tabelle, `Provisional → Accepted` erreicht),
+[`roadmap.md`](../in-progress/roadmap.md) §4 Vorbedingungen 1+3 abgehakt.
+
+---
+
+## 0. Closure-Notiz (2026-05-15)
+
+Spike-0 ist komplett. Alle fuenf Wellen abgeschlossen, alle
+Pflicht-Gates gruen, beide ADRs (`ADR 0002` und `ADR 0005`) per
+`Provisional → Accepted` gehoben. Per `ADR 0006` §3 sind die
+ADR-Entscheidungstexte ab jetzt immutable; Aenderungen an den
+A-1-/A-2-Vertraegen oder am mypy-Strict-Gate erfordern Nachfolge-ADRs.
+
+### Welle-Tabelle
+
+| Welle | Liefergegenstand | Commit |
+| ----- | ---------------- | ------ |
+| 1 — Toolchain + Skelett | `pyproject.toml`, `uv.lock`, `.python-version`, `src/grid_gym/{hexagon/{core,ports},adapters}/`, `tools/arch_check.py`-Skelett, Smoke-Test (44 Tests) | `cb2246a` |
+| 2 — A-2 Custom-Emitter | `hexagon/core/serialization/canonical.py` (Property-Tests, Coverage 100 %) | `5298a0c` |
+| 3 — `tools/arch_check.py` Contracts | 10 Architektur-Contracts (AC-HEXAGON-PURE bis AC-TYPED-ERRORS), erster Review (`aed2189` + Fixes `9d7a3fb`/`d0c8559`/`facd9aa`/`0e11ca8`) | `aed2189` |
+| 4 — Verstoss-Verifikation | 18-fuer-18 Verstoss-Branches verify-and-revert auf main; Matrix in `spike-0-results.md §3` | `96eb8b5` |
+| 5 — Acceptance-Hebung | Pre-Acceptance-Review (`fb90154`/`201daee`/`658c037`/`46b4ce6`), ADR Provisional → Accepted, Headers auf verbindlichen Stack, Move nach done/ | `5763445` / `3645473` / `522ec17` / (dieser Commit) |
+
+### Lastenheft-IDs geschlossen
+
+- `GG-AR-OPEN-001` — Sprach- und Build-Wahl. `spec/architecture.md`
+  §19 traegt jetzt „Geschlossen mit `ADR 0002`".
+- `roadmap.md` §4 Vorbedingung 1 (`GG-AR-OPEN-001`) und Vorbedingung 3
+  (initiales Repository-Layout) abgehakt.
+
+### Verweise auf Detail-Records
+
+- **Verstoss × Gate Matrix**: `spike-0-results.md §3` (alle 18
+  Verifikationen mit Test-Pattern und Violation-Detail).
+- **Befunde Welle 1+2**: `spike-0-results.md §4` (uv-Image-Eigenheiten,
+  hatchling, ruff-0.15-Drift, import-linter-Subpaket-Limit,
+  Coverage-Gate-Schienen-Verifikation, Build-Arg-Parametrisierung).
+- **Review-Trail**: `spike-0-results.md §6` (zwei unabhaengige Reviews
+  durch `code-reviewer`-Subagent: erster Review nach Welle 3 mit
+  4 Blockern, zweiter Review vor Welle 5 mit 3 weiteren Blockern und
+  10 Drift-Items).
+
+### Drift-Items eingearbeitet (D-1..D-10)
+
+Alle zehn Items aus dem zweiten Review wurden vor Welle 5 in
+ADR 0002 (§A-1/§A-2/§6.1) und ADR 0005 (§5.1) eingearbeitet —
+detaillierte Liste in `spike-0-results.md §5`.
+
+### Was bleibt offen
+
+- **`GG-AR-OPEN-002`** (API/Simulation Prozess-Wahl) — eigene
+  Folge-ADR.
+- **`GG-AR-OPEN-003..010`** — unveraendert offen.
+- **Triggers in `docs/plan/planning/open/`**:
+  - `001-code-review-doc.md` (vor erster Adapter-PR)
+  - `002-check-refs-tool.md` (bei Querverweis-Drift)
+  - `003-random-port-adr.md` (mit erstem Domain-Slice)
+  - `004-canonical-encoder-alternative-adr.md` (bei Perf-Druck)
+  - `005-pyright-vs-mypy-reeval.md` (bei Generic-Protocols)
+  - `006-mypy-strict-bytes.md` (nach `GG-DATA-005`-Konsolidierung)
+  - `007-pyright-precommit-adr.md` (bei Editor-Parity-Druck)
+  - `008-sbom-activation.md` (mit erster Release)
+  - `009-tests-integration-compose.md` (mit erstem Persistenz-Adapter)
+  - `010-deploy-compose.md` (mit erstem Deploy-Slice)
+- **Welle-6+/Cosmetic-Items** aus den beiden Reviews
+  (`spike-0-results.md §4.2`, §6.2): nicht-blockierend; werden bei
+  Beruehrung der jeweiligen Bereiche mitgezogen.
+- **`make fullbuild`** als End-to-End-Gate: M1-Abnahmebedingung, nicht
+  Spike-0-Abschluss (`openapi-validate`/`image-audit`/`runtime`-Stages
+  brauchen FastAPI-App und Compose-Files).
+
+### Abschluss-Gate
+
+`make gates` (Aggregator: `lint`, `format-check`, `typecheck`,
+`arch-check`, `test-unit`, `coverage-gate`, `coverage-gate-critical`
+mit `CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization`,
+`dep-audit`) lief gruen auf `main` (Status Stand des letzten
+Welle-5-Commits — siehe `CHANGELOG.md` Unreleased-Sektion fuer den
+finalen Lauf-Hash).
+
+---
+
+## Historischer Slice-Plan (Stand Welle 4)
+
+Der nachfolgende Originaltext stammt aus der Planungsphase (Stand
+nach Welle 4) und ist historisch erhalten. Massgeblich ist die
+Closure-Notiz oben sowie `spike-0-results.md`.
 
 ---
 

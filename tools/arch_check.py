@@ -143,9 +143,7 @@ def _attribute_chain(node: ast.expr) -> tuple[str, ...] | None:
     return None
 
 
-def _resolve_call_chain(
-    call: ast.Call, aliases: ImportAliases
-) -> tuple[str, ...] | None:
+def _resolve_call_chain(call: ast.Call, aliases: ImportAliases) -> tuple[str, ...] | None:
     """Loest die Attribute-Kette einer Funktions-Call auf, indem das
     erste Element via `aliases.module_aliases` ersetzt wird.
 
@@ -212,9 +210,7 @@ def _load_config(repo_root: Path) -> ArchCheckConfig:
     pyproject_path = repo_root / "pyproject.toml"
     with pyproject_path.open("rb") as fh:
         data: dict[str, Any] = tomllib.load(fh)
-    section: dict[str, Any] = (
-        data.get("tool", {}).get("grid_gym", {}).get("arch_check", {})
-    )
+    section: dict[str, Any] = data.get("tool", {}).get("grid_gym", {}).get("arch_check", {})
     return ArchCheckConfig(
         json_dumps_whitelist=tuple(section.get("json-dumps-whitelist", [])),
         domain_frozen_extra=tuple(section.get("domain-frozen-extra", [])),
@@ -307,9 +303,7 @@ def _is_allowed_hexagon_import(module_name: str, whitelist: frozenset[str]) -> b
 _JSON_DUMP_NAMES: frozenset[str] = frozenset({"dumps", "dump"})
 
 
-def _check_no_json(
-    repo_root: Path, src_root: Path, config: ArchCheckConfig
-) -> Iterator[Violation]:
+def _check_no_json(repo_root: Path, src_root: Path, config: ArchCheckConfig) -> Iterator[Violation]:
     whitelist = frozenset(config.json_dumps_whitelist)
     for py_file in _iter_py_files(src_root):
         rel = _rel(repo_root, py_file)
@@ -359,9 +353,7 @@ def _check_no_time(repo_root: Path, src_root: Path) -> Iterator[Violation]:
             yield from _no_time_violations(node, rel, aliases)
 
 
-def _no_time_violations(
-    node: ast.AST, rel: str, aliases: ImportAliases
-) -> Iterator[Violation]:
+def _no_time_violations(node: ast.AST, rel: str, aliases: ImportAliases) -> Iterator[Violation]:
     # `from time import ...` ist im Kern grundsaetzlich verboten —
     # auch wenn die importierte Funktion nicht in _TIME_ATTRS steht,
     # weil `time.sleep`/`time.tzname` etc. ebenfalls Wall-Clock-Logik
@@ -408,9 +400,7 @@ def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
     return None
 
 
-def _is_asyncio_event_loop_time_call(
-    call: ast.Call, aliases: ImportAliases
-) -> bool:
+def _is_asyncio_event_loop_time_call(call: ast.Call, aliases: ImportAliases) -> bool:
     """True wenn `call` der Form `asyncio.get_event_loop().time()` ist
     (auch via Alias auf `asyncio` oder `from asyncio import get_event_loop`).
     """
@@ -432,11 +422,7 @@ def _is_asyncio_event_loop_time_call(
     inner_func = inner_call.func
     if isinstance(inner_func, ast.Name):
         source = aliases.from_imports.get(inner_func.id)
-        if (
-            source is not None
-            and source[0] == "asyncio"
-            and source[1] == "get_event_loop"
-        ):
+        if source is not None and source[0] == "asyncio" and source[1] == "get_event_loop":
             return True
     return False
 
@@ -466,9 +452,7 @@ def _check_no_rand(repo_root: Path, src_root: Path) -> Iterator[Violation]:
             yield from _no_rand_violations(node, rel, aliases)
 
 
-def _no_rand_violations(
-    node: ast.AST, rel: str, aliases: ImportAliases
-) -> Iterator[Violation]:
+def _no_rand_violations(node: ast.AST, rel: str, aliases: ImportAliases) -> Iterator[Violation]:
     # `from random import ...`, `from secrets import ...`,
     # `from numpy.random import ...` sind im Kern grundsaetzlich verboten.
     if isinstance(node, ast.ImportFrom):
@@ -492,16 +476,10 @@ def _rand_call_detail(call: ast.Call, aliases: ImportAliases) -> str | None:
     chain = _resolve_call_chain(call, aliases)
     if chain is not None:
         # `random.X(...)` / `secrets.X(...)` (auch via Alias)
-        if (
-            chain[0] in _RAND_TOP_LEVELS
-            and len(chain) >= _MIN_RESOLVABLE_CHAIN_LEN
-        ):
+        if chain[0] in _RAND_TOP_LEVELS and len(chain) >= _MIN_RESOLVABLE_CHAIN_LEN:
             return f"{chain[0]}.{chain[-1]}() — use RandomPort"
         # `numpy.random.X(...)` (auch via Alias auf `numpy.random`)
-        if (
-            len(chain) >= _NUMPY_RANDOM_CHAIN_MIN_LEN
-            and chain[:2] == _NUMPY_RANDOM_PATH
-        ):
+        if len(chain) >= _NUMPY_RANDOM_CHAIN_MIN_LEN and chain[:2] == _NUMPY_RANDOM_PATH:
             return f"numpy.random.{chain[-1]}() — use RandomPort"
     if isinstance(call.func, ast.Name):
         source = aliases.from_imports.get(call.func.id)
@@ -633,11 +611,7 @@ def _has_keyword_true(decorator: ast.Call, kwarg_name: str) -> bool:
     oder Variable-Rebinds bei Decorator-Kwargs sind dort unueblich.
     """
     for kw in decorator.keywords:
-        if (
-            kw.arg == kwarg_name
-            and isinstance(kw.value, ast.Constant)
-            and kw.value.value is True
-        ):
+        if kw.arg == kwarg_name and isinstance(kw.value, ast.Constant) and kw.value.value is True:
             return True
     return False
 
@@ -672,9 +646,7 @@ def _is_god_util_exempt(rel: str) -> bool:
     `domain_extra/` matched NICHT das `domain/`-Praefix, anders als
     bei naivem Substring-Match (`fragment in rel`).
     """
-    return any(
-        rel.startswith(fragment + "/") for fragment in _GOD_UTIL_EXEMPT_PATH_FRAGMENTS
-    )
+    return any(rel.startswith(fragment + "/") for fragment in _GOD_UTIL_EXEMPT_PATH_FRAGMENTS)
 
 
 def _check_no_god_utils(repo_root: Path, src_root: Path) -> Iterator[Violation]:
@@ -706,9 +678,7 @@ def _class_name_violations(tree: ast.Module, rel: str) -> Iterator[Violation]:
             )
 
 
-def _public_function_count_violations(
-    tree: ast.Module, rel: str
-) -> Iterator[Violation]:
+def _public_function_count_violations(tree: ast.Module, rel: str) -> Iterator[Violation]:
     """ADR 0002 §A-1 zaehlt nur 'oeffentliche freie Funktionen' auf
     Modul-Ebene. Klassen mit vielen oeffentlichen Methoden sind
     out-of-scope hier — ruffs `PLR0904` (`max-public-methods=12`)
@@ -732,8 +702,7 @@ def _public_function_count_violations(
         yield Violation(
             "AC-NO-GOD-UTILS",
             rel,
-            f"{public_funcs} public top-level functions "
-            f"(max {_MAX_PUBLIC_TOPLEVEL_FUNCTIONS})",
+            f"{public_funcs} public top-level functions (max {_MAX_PUBLIC_TOPLEVEL_FUNCTIONS})",
         )
 
 
@@ -756,9 +725,7 @@ def _check_typed_errors(
             yield from _typed_errors_violations(node, rel, is_exempt=is_exempt)
 
 
-def _typed_errors_violations(
-    node: ast.AST, rel: str, *, is_exempt: bool
-) -> Iterator[Violation]:
+def _typed_errors_violations(node: ast.AST, rel: str, *, is_exempt: bool) -> Iterator[Violation]:
     if isinstance(node, ast.Raise):
         name = _raised_exception_name(node)
         if name in _FORBIDDEN_EXCEPTION_NAMES:
@@ -854,8 +821,7 @@ def _check_no_cycles() -> Iterator[Violation]:
                 chain = graph.find_shortest_chain(imported, importer)
             except Exception as exc:  # noqa: BLE001 — siehe oben
                 print(
-                    f"[arch_check] grimp shortest-chain failed "
-                    f"{imported}->{importer}: {exc}",
+                    f"[arch_check] grimp shortest-chain failed {imported}->{importer}: {exc}",
                     file=sys.stderr,
                 )
                 continue
@@ -946,8 +912,7 @@ def _check_adapter_lightweight(repo_root: Path, src_root: Path) -> Iterator[Viol
                 yield Violation(
                     "AC-ADAPTER-LIGHTWEIGHT",
                     f"{rel}:{node.lineno}",
-                    f"function `{node.name}` complexity {complexity} > "
-                    f"{_ADAPTER_MAX_COMPLEXITY}",
+                    f"function `{node.name}` complexity {complexity} > {_ADAPTER_MAX_COMPLEXITY}",
                 )
 
 
@@ -971,9 +936,7 @@ def _cyclomatic_complexity(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
     """
     complexity = 1
     for node in _iter_function_body_skip_nested(func):
-        if isinstance(
-            node, ast.If | ast.For | ast.While | ast.ExceptHandler | ast.IfExp
-        ):
+        if isinstance(node, ast.If | ast.For | ast.While | ast.ExceptHandler | ast.IfExp):
             complexity += 1
         elif isinstance(node, ast.BoolOp):
             complexity += len(node.values) - 1
@@ -994,9 +957,7 @@ def _iter_function_body_skip_nested(
     while stack:
         node = stack.pop()
         yield node
-        if isinstance(
-            node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
-        ):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
             continue
         stack.extend(ast.iter_child_nodes(node))
 
