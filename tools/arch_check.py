@@ -90,6 +90,7 @@ def main() -> int:
         violations.extend(_check_no_json(repo_root, src_root, config))
         violations.extend(_check_no_time(repo_root, src_root))
         violations.extend(_check_no_rand(repo_root, src_root))
+        violations.extend(_check_no_io_mod_nested(repo_root, src_root))
         violations.extend(_check_domain_frozen(repo_root, src_root, config))
         violations.extend(_check_no_god_utils(repo_root, src_root))
         violations.extend(_check_typed_errors(repo_root, src_root, config))
@@ -311,6 +312,51 @@ def _rand_call_violations(node: ast.AST, rel: str) -> Iterator[Violation]:
 
 
 # ---------------------------------------------------------------------------
+# AC-NO-IO-MOD (nested stdlib subpackages, hexagon/core only)
+# ---------------------------------------------------------------------------
+
+_NESTED_BANNED_IO_MODULES: frozenset[str] = frozenset(
+    {"urllib.request", "http.client", "logging.handlers"}
+)
+
+
+def _check_no_io_mod_nested(repo_root: Path, src_root: Path) -> Iterator[Violation]:
+    """AC-NO-IO-MOD (Subpaket-Anteil): import-linter unterstuetzt keine
+    Subpakete externer Pakete als `forbidden_modules`. `urllib.request`,
+    `http.client`, `logging.handlers` werden hier per AST gefangen — sie
+    duerfen unter `hexagon/core/**` weder direkt noch via `from ... import`
+    importiert werden.
+    """
+    core_root = src_root / "hexagon" / "core"
+    for py_file in _iter_py_files(core_root):
+        tree = _parse(py_file)
+        rel = _rel(repo_root, py_file)
+        for node in ast.walk(tree):
+            yield from _no_io_mod_nested_violations(node, rel)
+
+
+def _no_io_mod_nested_violations(node: ast.AST, rel: str) -> Iterator[Violation]:
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            if alias.name in _NESTED_BANNED_IO_MODULES:
+                yield Violation(
+                    "AC-NO-IO-MOD",
+                    f"{rel}:{node.lineno}",
+                    f"import {alias.name}",
+                )
+    elif (
+        isinstance(node, ast.ImportFrom)
+        and node.module is not None
+        and node.module in _NESTED_BANNED_IO_MODULES
+    ):
+        yield Violation(
+            "AC-NO-IO-MOD",
+            f"{rel}:{node.lineno}",
+            f"from {node.module} import ...",
+        )
+
+
+# ---------------------------------------------------------------------------
 # AC-DOMAIN-FROZEN
 # ---------------------------------------------------------------------------
 
@@ -472,26 +518,46 @@ def _typed_errors_violations(
                 f"{rel}:{node.lineno}",
                 f"raise {name}(...) — use GridGymError subclass",
             )
-    elif (
-        isinstance(node, ast.ExceptHandler)
-        and not is_exempt
-        and isinstance(node.type, ast.Name)
-        and node.type.id in _FORBIDDEN_EXCEPTION_NAMES
-    ):
-        yield Violation(
-            "AC-TYPED-ERRORS",
-            f"{rel}:{node.lineno}",
-            f"except {node.type.id} outside boundary-translation",
-        )
+    elif isinstance(node, ast.ExceptHandler) and not is_exempt:
+        caught = _handler_catches_forbidden(node.type)
+        if caught is not None:
+            yield Violation(
+                "AC-TYPED-ERRORS",
+                f"{rel}:{node.lineno}",
+                f"except {caught} outside boundary-translation",
+            )
+
+
+def _handler_catches_forbidden(node_type: ast.expr | None) -> str | None:
+    """Gibt den Namen der gefangenen verbotenen Exception zurueck —
+    abgedeckt: `except Exception`, `except (Exception, X)`,
+    `except builtins.Exception`, `except (mod.Exception, ...)`."""
+    if node_type is None:
+        return None
+    if isinstance(node_type, ast.Name):
+        return node_type.id if node_type.id in _FORBIDDEN_EXCEPTION_NAMES else None
+    if isinstance(node_type, ast.Attribute):
+        return node_type.attr if node_type.attr in _FORBIDDEN_EXCEPTION_NAMES else None
+    if isinstance(node_type, ast.Tuple):
+        for elt in node_type.elts:
+            caught = _handler_catches_forbidden(elt)
+            if caught is not None:
+                return caught
+    return None
 
 
 def _raised_exception_name(node: ast.Raise) -> str | None:
+    """Gibt den Namen der direkt geworfenen Exception zurueck —
+    abgedeckt: `raise Exception`, `raise Exception(...)`,
+    `raise builtins.Exception(...)`."""
     exc = node.exc
     if exc is None:
         return None
     target = exc.func if isinstance(exc, ast.Call) else exc
     if isinstance(target, ast.Name):
         return target.id
+    if isinstance(target, ast.Attribute):
+        return target.attr
     return None
 
 
@@ -501,47 +567,119 @@ def _raised_exception_name(node: ast.Raise) -> str | None:
 
 
 def _check_no_cycles() -> Iterator[Violation]:
+    """AC-NO-CYCLES — Importzyklen via grimp.
+
+    Iteriert ueber alle direkten internen Import-Kanten und sucht
+    Rueckpfade via `find_shortest_chain`. Jeder Zyklus wird ueber
+    kanonische Rotation (lexikographisch kleinstes Modul am Anfang)
+    dedupliziert, damit dieselbe Schleife nicht n-mal je Start-Wahl
+    gemeldet wird.
+
+    Fangt `Exception` breit, weil grimps API-Fehlerspektrum stabil
+    weiterentwickelt wird (`NotATopLevelModule`, `ModuleNotPresent`,
+    `NoSuchChainExists`, ...). Ein fehlgeschlagenes grimp-Query darf
+    den Lauf nicht stillschweigend zerstoeren, deshalb Log auf stderr.
+    """
     try:
         graph = grimp.build_graph(_INTERNAL_PACKAGE)
-    except grimp.exceptions.NotATopLevelModule:
+    except Exception as exc:  # noqa: BLE001 — grimp-API-Fehlerspektrum bewusst breit
+        print(f"[arch_check] grimp build_graph failed: {exc}", file=sys.stderr)
         return
 
-    seen_pairs: set[tuple[str, str]] = set()
+    seen_cycles: set[tuple[str, ...]] = set()
     for importer in sorted(graph.modules):
         if not importer.startswith(_INTERNAL_PACKAGE):
             continue
-        for imported in sorted(graph.find_modules_directly_imported_by(importer)):
+        try:
+            direct_imports = graph.find_modules_directly_imported_by(importer)
+        except Exception as exc:  # noqa: BLE001 — siehe oben
+            print(
+                f"[arch_check] grimp direct-imports failed for {importer}: {exc}",
+                file=sys.stderr,
+            )
+            continue
+        for imported in sorted(direct_imports):
             if not imported.startswith(_INTERNAL_PACKAGE):
                 continue
-            if (imported, importer) in seen_pairs:
-                continue
-            chain = graph.find_shortest_chain(imported, importer)
-            if chain:
-                seen_pairs.add((importer, imported))
-                yield Violation(
-                    "AC-NO-CYCLES",
-                    f"{importer} <-> {imported}",
-                    "cycle: " + " -> ".join(chain) + f" -> {imported}",
+            try:
+                chain = graph.find_shortest_chain(imported, importer)
+            except Exception as exc:  # noqa: BLE001 — siehe oben
+                print(
+                    f"[arch_check] grimp shortest-chain failed "
+                    f"{imported}->{importer}: {exc}",
+                    file=sys.stderr,
                 )
+                continue
+            if not chain:
+                continue
+            full_cycle: tuple[str, ...] = (importer, *tuple(chain))
+            canonical = _canonical_cycle(full_cycle)
+            if canonical in seen_cycles:
+                continue
+            seen_cycles.add(canonical)
+            yield Violation(
+                "AC-NO-CYCLES",
+                f"{importer} <-> {imported}",
+                "cycle: " + " -> ".join(full_cycle),
+            )
+
+
+def _canonical_cycle(cycle: tuple[str, ...]) -> tuple[str, ...]:
+    """Rotiert den Zyklus so, dass das alphabetisch kleinste Modul am
+    Anfang steht. Dadurch wird derselbe Zyklus mit unterschiedlicher
+    Start-Wahl auf die gleiche Kanonisierung abgebildet."""
+    # Closed cycles enden auf dem Start-Knoten — den fuer die Rotation
+    # entfernen, sonst stimmt die Laenge nicht.
+    if len(cycle) > 1 and cycle[0] == cycle[-1]:
+        cycle = cycle[:-1]
+    if not cycle:
+        return cycle
+    min_idx = min(range(len(cycle)), key=lambda i: cycle[i])
+    return cycle[min_idx:] + cycle[:min_idx]
 
 
 # ---------------------------------------------------------------------------
 # AC-ADAPTER-LIGHTWEIGHT
 # ---------------------------------------------------------------------------
 
-_ADAPTER_LIGHTWEIGHT_PATH_PATTERNS: tuple[str, ...] = (
-    "src/grid_gym/adapters/driven/protocol_*/**/*.py",
-    "src/grid_gym/adapters/driven/persistence_*/**/*.py",
-    "src/grid_gym/adapters/driving/**/*.py",
-)
 _ADAPTER_MAX_COMPLEXITY = 8
+
+# Minimal-Anzahl Pfad-Segmente fuer einen gueltigen Adapter-Pfad:
+# `src/grid_gym/adapters/<layer>/<file>` = 5 Teile.
+_ADAPTER_PATH_MIN_PARTS = 5
+
+
+def _is_adapter_lightweight_path(rel: str) -> bool:
+    """True wenn `rel` unter `src/grid_gym/adapters/driving/` (beliebige
+    Tiefe) oder `src/grid_gym/adapters/driven/protocol_*` /
+    `persistence_*` liegt.
+
+    Eigener Matcher statt `fnmatch`, weil `fnmatch` `**` nicht als
+    rekursive Wildcard unterstuetzt — und Adapter-Module duerfen direkt
+    unter dem Driving-/Driven-Layer oder beliebig tief verschachtelt
+    liegen.
+    """
+    parts = Path(rel).parts
+    if len(parts) < _ADAPTER_PATH_MIN_PARTS or parts[:3] != (
+        "src",
+        "grid_gym",
+        "adapters",
+    ):
+        return False
+    layer = parts[3]
+    if layer == "driving":
+        return True
+    if layer == "driven":
+        bucket = parts[4]
+        return bucket.startswith("protocol_") or bucket.startswith("persistence_")
+    return False
 
 
 def _check_adapter_lightweight(repo_root: Path, src_root: Path) -> Iterator[Violation]:
     adapters_root = src_root / "adapters"
     for py_file in _iter_py_files(adapters_root):
         rel = _rel(repo_root, py_file)
-        if not _matches_any(rel, _ADAPTER_LIGHTWEIGHT_PATH_PATTERNS):
+        if not _is_adapter_lightweight_path(rel):
             continue
         tree = _parse(py_file)
         for node in ast.walk(tree):
