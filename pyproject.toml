@@ -1,11 +1,12 @@
 # pyproject.toml — grid-gym
 #
-# Spike-0-Pfad fuer ADR 0002 (`Provisional` gemaess ADR 0006):
-# Konfiguration der vier A-1-Gates (lint-imports, ruff, arch_check.py,
-# mypy --strict) plus Repository-Layout (`src/grid_gym/hexagon/{core,
-# ports}/`, `src/grid_gym/adapters/`). Bis zur Acceptance von ADR 0002
-# und ADR 0005 bleibt dies der validierte Spike-0-Pfad — kein
-# verbindlicher Stack-Beschluss.
+# Verbindlicher Stack gemaess ADR 0002 (Accepted 2026-05-15) und
+# ADR 0005 (Accepted 2026-05-15). Konfiguration der vier A-1-Gates
+# (lint-imports, ruff, arch_check.py, mypy --strict) plus
+# Repository-Layout (`src/grid_gym/hexagon/{core,ports}/`,
+# `src/grid_gym/adapters/`). Aenderungen an diesem File brauchen
+# fortan eine Folge-ADR, sobald sie ADR-0002-§A-1- oder
+# ADR-0005-§5.1-Vertraege beruehren.
 
 [project]
 name = "grid-gym"

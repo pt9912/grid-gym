@@ -1,11 +1,11 @@
 # grid-gym Makefile.
 #
-# Spike-0-Pfad fuer ADR 0002 (`Provisional` gemaess ADR 0006):
-# Targets entsprechen den Stages aus Dockerfile (ADR 0002 Auflage A-1
-# plus ADR 0005 typecheck). Aggregierte Gates ueber `gates` und `ci`;
-# Closure-Lauf ueber `fullbuild`. Bis zur Acceptance von ADR 0002 und
-# ADR 0005 bleibt dies der validierte Spike-0-Pfad — kein verbindlicher
-# Stack-Beschluss.
+# Verbindliche Build-/Test-/Gate-Schicht gemaess ADR 0002
+# (Accepted 2026-05-15) und ADR 0005 (Accepted 2026-05-15). Targets
+# entsprechen den Stages aus Dockerfile (ADR 0002 Auflage A-1 plus
+# ADR 0005 typecheck). Aggregierte Gates ueber `gates` (Spike-0-
+# Abschluss-Gate) und `ci`; Closure-Lauf ueber `fullbuild`
+# (M1-Abnahmebedingung).
 #
 # Bezug:
 # - GG-AR-OPEN-001 / ADR 0002 (Python-Stack)
