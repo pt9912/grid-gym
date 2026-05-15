@@ -322,6 +322,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Dritt-Pakete (z. B. `pydantic` fuer `FrozenModel`)
   importieren — ersetzt brueckhafte Blacklist-Pflege in
   `AC-NO-FW` durch robuste Positive-Liste).
+- `.gitignore` erweitert um Python-Build-/Test-Artefakte
+  (`.venv/`, `__pycache__/`, `*.egg-info/`, `.pytest_cache/`,
+  `.ruff_cache/`, `.mypy_cache/`, `coverage/`, `.hypothesis/`),
+  Build-Output (`build/`, `dist/`) und IDE-Dateien
+  (`.idea/`, `.vscode/`, `*.swp`). Projekt-Policy ist
+  Docker-only — lokale Python-Umgebungen sollen nicht entstehen;
+  die Eintraege fangen versehentliche Artefakte ab.
+- `.dockerignore` neu angelegt. Reduziert den Build-Kontext auf
+  die tatsaechlich per `COPY` referenzierten Pfade
+  (`pyproject.toml`, `uv.lock`, `.python-version`, `src/`,
+  `tests/`, `tools/`, `spec/`, `LICENSE`, `README.md`).
+  Schliesst `.git/`, `.github/`, `docs/`, Editor-/IDE-Dateien,
+  alle Python-Caches und die Projekt-Agent-Verzeichnisse aus.
+  Beschleunigt jeden `docker build`-Aufruf und stabilisiert
+  den Layer-Cache.
 
 ### Fixed
 

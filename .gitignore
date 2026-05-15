@@ -1,3 +1,35 @@
 .agents/
 .codex/
 .claude/
+
+# Python-Build-/Test-Artefakte.
+# Projekt-Policy: alle Builds und Tests laufen ueber das
+# Multi-Stage-Dockerfile, angesprochen via Makefile-Targets
+# (`make lint`, `make typecheck`, `make gates`, ...). Lokale
+# Python-Umgebungen sind ausdruecklich unerwuenscht — `uv sync`
+# darf nur innerhalb der Dockerfile-Stages laufen. Diese Eintraege
+# schuetzen das Repo, falls trotzdem mal eine lokale Toolchain
+# Artefakte hinterlaesst.
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage/
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# IDE / Editor lokal
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,67 @@
+# .dockerignore — alles, was NICHT in den Docker-Build-Kontext muss.
+#
+# Reduziert die Datenmenge, die `docker build` an den Daemon
+# uebertraegt, und vermeidet unnoetige Cache-Invalidierungen
+# (`docker build` haengt am Hash des Kontexts).
+#
+# Was bleibt drin (vom Dockerfile per `COPY` explizit referenziert):
+#   pyproject.toml, uv.lock, .python-version,
+#   src/, tests/, tools/, spec/,
+#   LICENSE, README.md.
+#
+# Alles andere kann hier ausgeschlossen werden.
+
+# --- Git ----------------------------------------------------------------
+.git/
+.gitignore
+.gitattributes
+
+# --- CI / GitHub --------------------------------------------------------
+.github/
+
+# --- Editor / IDE -------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Python-Build-/Test-Artefakte (Defense-in-Depth) --------------------
+# Projekt-Policy ist Docker-only, lokale Umgebungen sollten nicht
+# existieren — die folgenden Eintraege fangen versehentliche
+# Artefakte ab, falls doch mal lokal etwas laeuft.
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage/
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# --- Projekt-Agent-Verzeichnisse ----------------------------------------
+.agents/
+.codex/
+.claude/
+
+# --- Dokumentation und Planungsartefakte --------------------------------
+# Werden im Container nicht referenziert. spec/ ist Pflicht und
+# wird vom Dockerfile explizit per `COPY spec/ spec/` geholt — also
+# NICHT hier ausschliessen.
+docs/
+CHANGELOG.md
+
+# --- Build-Skripte, die nicht ins Image gehoeren ------------------------
+# Dockerfile selbst wird von `docker build` ueber `-f` aufgeloest,
+# nicht aus dem Kontext.
+Dockerfile
+.dockerignore
+Makefile
