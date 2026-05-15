@@ -23,36 +23,48 @@ auffaellige Befunde, die aus dem Pre-Acceptance-Schliff erlaubt sind
 | ----- | ---------------- | ----- | ------ |
 | 1 — Toolchain + Skelett | `pyproject.toml`, `uv.lock`, `.python-version`, `src/grid_gym/{hexagon/{core,ports},adapters}/`, `tools/arch_check.py`-Skelett, Smoke-Test | `make lint`/`format-check`/`typecheck`/`arch-check`/`test-unit`/`dep-audit`: **gruen** | `cb2246a` |
 | 2 — A-2 Custom-Emitter | `hexagon/core/serialization/canonical.py` (79 stmts, 38 Branches), `test_canonical.py` (42 Tests inkl. 6 Property-Tests), `coverage-gate-critical` mit Build-Arg-Scope | `make test-unit` (44 passed), `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization` (**100 % Line + Branch**) | `5298a0c` |
-| 3 — `tools/arch_check.py` Contracts | offen | offen | — |
-| 4 — Verstoss-Branches | offen | offen | — |
+| 3 — `tools/arch_check.py` Contracts | Neun Contracts implementiert (HEXAGON-PURE, NO-JSON, NO-TIME, NO-RAND, DOMAIN-FROZEN, NO-GOD-UTILS, TYPED-ERRORS, NO-CYCLES, ADAPTER-LIGHTWEIGHT) | `make arch-check` mit allen Contracts gruen | `aed2189` |
+| 3.1 — Review-Fixes (4 Commits) | Blocker B-1/B-2/B-3 + I-1 (Pfad-Matcher, SCC-Dedup, Tuple-Exception, NO-IO-MOD-nested); AST-Aliasing-Trio (I-2..I-8); canonical.py (Surrogate, Cycle, -0); Config-Sanity (mypy-Pin, ruff-preview-Caveat, Pfad-Normalisierung, Pfad-Existenz-Guard) | Alle Gates bleiben gruen; 55 Unit-Tests | `9d7a3fb`, `d0c8559`, `facd9aa`, `0e11ca8` |
+| 4 — Verstoss-Verifikation | 18 verify-and-revert-Zyklen auf main; pro Contract exakt eine Violation, exakt das erwartete Gate rot | siehe §3 Matrix | (kein Commit — temp Files, sauber zurueckgerollt) |
 | 5 — Acceptance-Hebung | offen | offen | — |
 
 ---
 
-## 3. Verstoss-Branch × Gate Matrix (Welle 4)
+## 3. Verstoss × Gate Matrix (Welle 4 — abgeschlossen 2026-05-15)
 
-Erwartung: pro Branch bricht **genau ein** Gate; alle anderen
-bleiben gruen.
+Pro Contract eine Violation auf `main` eingebaut, Gate verifiziert,
+Violation sauber zurueckgerollt. `make arch-check` ist die
+Aggregator-Stage `lint-imports` + `arch_check.py`; bei mehrfachem
+Match (z. B. `import fastapi` triggert sowohl `AC-NO-FW` via
+`import-linter` als auch implizit `AC-HEXAGON-PURE` via
+`arch_check.py`) zeigt das `&&`-Shortcut des Aggregator-Stages
+nur den erstausloesenden — beide sind in der Realitaet scharf.
 
-| Branch | Erwartetes rotes Gate | Status |
-| ------ | --------------------- | ------ |
-| `spike0/contract/AC-HEXAGON-PURE` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-CORE-NO-ADAPTERS` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-CORE-NO-DRIVING` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-PORTS-NO-OUT` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-PORTS-NO-FW` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-ADAPTER-PURE` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-ADAPTER-LIGHTWEIGHT` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-NO-FW` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-NO-IO-MOD` | `make arch-check-imports` | offen |
-| `spike0/contract/AC-NO-CYCLES` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-NO-TIME` (Aufruf-Site) | `make arch-check-custom` | offen |
-| `spike0/contract/AC-NO-RAND` (Aufruf-Site) | `make arch-check-custom` | offen |
-| `spike0/contract/AC-NO-JSON` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-DOMAIN-FROZEN` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-NO-GOD-UTILS` | `make arch-check-custom` | offen |
-| `spike0/contract/AC-TYPED-ERRORS` | `make arch-check-custom` | offen |
-| `spike0/lsp-variance` | `make typecheck` | offen |
+| Contract | Erwartetes Gate | Erfolg | Test-Pattern | Violation-Detail |
+| -------- | --------------- | ------ | ------------ | ---------------- |
+| `AC-HEXAGON-PURE` | `arch_check.py` | ✓ | `import requests` in `hexagon/core/__welle4__.py` | `AC-HEXAGON-PURE  __welle4__.py:3  import requests` |
+| `AC-CORE-NO-ADAPTERS` | `import-linter` | ✓ | `from grid_gym.adapters import driving` in `hexagon/core/` | `AC-CORE-NO-ADAPTERS BROKEN` |
+| `AC-CORE-NO-DRIVING` | `import-linter` | ✓ | `from grid_gym.hexagon.ports import driving` in `hexagon/core/` | `AC-CORE-NO-DRIVING BROKEN` |
+| `AC-PORTS-NO-OUT` | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `hexagon/ports/` | `AC-PORTS-NO-OUT BROKEN` |
+| `AC-PORTS-NO-FW` | `import-linter` | ✓ | `import fastapi` in `hexagon/ports/` | `AC-PORTS-NO-FW BROKEN` |
+| `AC-ADAPTER-PURE` | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `adapters/driving/` | `AC-ADAPTER-PURE BROKEN` |
+| `AC-ADAPTER-LIGHTWEIGHT` | `arch_check.py` | ✓ | Funktion mit zyklomatischer Komplexitaet 10 in `adapters/driving/` | `function 'overcomplicated' complexity 10 > 8` |
+| `AC-NO-FW` | `import-linter` | ✓ | `import fastapi` in `hexagon/core/` | `AC-NO-FW BROKEN` |
+| `AC-NO-IO-MOD` (top-level) | `import-linter` | ✓ | `import socket` in `hexagon/core/` | `AC-NO-IO-MOD BROKEN` |
+| `AC-NO-IO-MOD` (nested) | `arch_check.py` | ✓ | `import urllib.request` in `hexagon/core/` | `AC-NO-IO-MOD  __welle4__.py:3  import urllib.request` |
+| `AC-NO-CYCLES` | `arch_check.py` | ✓ | Zwei Module zyklisch in `hexagon/core/` | `AC-NO-CYCLES  __welle4_a__ <-> __welle4_b__  cycle: a -> b -> a` (kanonisch dedupliziert auf 1 Violation) |
+| `AC-NO-TIME` (Aufruf-Site) | `arch_check.py` | ✓ | `time.monotonic()` in `hexagon/core/` | `AC-NO-TIME  __welle4__.py:7  time.monotonic() (via alias or attribute) — use ClockPort` |
+| `AC-NO-RAND` (Aufruf-Site) | `arch_check.py` | ✓ | `random.random()` via function-level import in `hexagon/core/` | `AC-NO-RAND  __welle4__.py:8  random.random() — use RandomPort` |
+| `AC-NO-JSON` | `arch_check.py` | ✓ | `json.dumps(...)` in `hexagon/core/` | `AC-NO-JSON  __welle4__.py:7  json.dumps() — use canonical_json()` |
+| `AC-DOMAIN-FROZEN` | `arch_check.py` | ✓ | Nicht-frozen Klasse `MutableTelemetry` in `hexagon/core/domain/` | `AC-DOMAIN-FROZEN  __welle4__.py:4  class 'MutableTelemetry' is not frozen` |
+| `AC-NO-GOD-UTILS` | `arch_check.py` | ✓ | Modul `string_utils.py` in `hexagon/core/` | `AC-NO-GOD-UTILS  string_utils.py  forbidden module name: string_utils.py` |
+| `AC-TYPED-ERRORS` | `arch_check.py` | ✓ | `except (ValueError, Exception):` Tuple-Form in `hexagon/core/` | `AC-TYPED-ERRORS  __welle4__.py:7  except Exception outside boundary-translation` (validates Welle-3-Fix B-3) |
+| LSP variance | `mypy --strict` | ✓ | Subklasse weitet Return-Typ `int` → `object` | `[override]` + `[explicit-override]` (mypy 2 errors in 1 file) |
+
+**Ergebnis: 18 von 18 Contracts haben Zaehne.** Pro Violation exakt
+das erwartete Gate rot, alle anderen gruen. AC-NO-IO-MOD ist zweimal
+verifiziert (Top-Level via import-linter und nested via
+arch_check.py).
 
 ---
 

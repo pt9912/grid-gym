@@ -385,6 +385,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   gegenueber ADR 0002 §A-1, import-linter-Subpaket-Limit,
   coverage-gate Build-Arg-Parametrisierung) und Drift-Liste fuer
   den finalen ADR-Schliff vor Acceptance.
+- **Spike-0 Welle 4** — Verstoss-Verifikation (18 von 18 Contracts mit
+  Zaehnen): pro Contract eine Violation auf `main` eingebaut, das
+  erwartete Gate als rot bestaetigt, Violation sauber zurueckgerollt.
+  Matrix in `docs/plan/planning/next/spike-0-results.md` §3 vollstaendig.
+  Verify-and-revert ohne persistente Branches (Stay-on-Main-Policy).
+  - 5 Contracts via `import-linter` (`AC-CORE-NO-ADAPTERS`,
+    `AC-CORE-NO-DRIVING`, `AC-PORTS-NO-OUT`, `AC-PORTS-NO-FW`,
+    `AC-ADAPTER-PURE`, `AC-NO-FW`, `AC-NO-IO-MOD` top-level).
+  - 11 Contracts via `tools/arch_check.py` (`AC-HEXAGON-PURE`,
+    `AC-NO-IO-MOD` nested, `AC-ADAPTER-LIGHTWEIGHT`, `AC-NO-CYCLES`,
+    `AC-NO-TIME`, `AC-NO-RAND`, `AC-NO-JSON`, `AC-DOMAIN-FROZEN`,
+    `AC-NO-GOD-UTILS`, `AC-TYPED-ERRORS` (Tuple-Form bestaetigt
+    Welle-3-Fix B-3)).
+  - 1 Contract via `mypy --strict` (LSP variance: `[override]` +
+    `[explicit-override]` bei Return-Typ-Erweiterung `int` → `object`).
+  - `AC-NO-CYCLES` Dedup-Mechanik aus dem B-2-Fix bestaetigt: ein
+    2-Modul-Zyklus erzeugt eine einzige Violation, nicht zwei.
 - **Coverage-Gate Negativ-Verifikation (Welle 2):**
   - **pytest-cov-Schiene** (`--cov-fail-under=90`, kombiniert):
     bewusst eingefuegte ungetestete Funktion drueckte Coverage
