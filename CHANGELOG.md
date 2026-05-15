@@ -378,6 +378,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Makefile` `coverage-gate-critical`-Target reicht
   `CRITICAL_COV_TARGETS` als optionalen Build-Arg-Override durch
   (`make coverage-gate-critical CRITICAL_COV_TARGETS=...`).
+- `docs/plan/planning/next/spike-0-results.md` als Living Document
+  fuer Spike-0 angelegt: Welle-Status, Verstoss-Branch × Gate
+  Matrix (sechzehn Branches), Befunde aus Welle 1+2 (uv-Image-
+  Eigenheiten, hatchling-LICENSE/README-Bedarf, ruff-0.15-Drift
+  gegenueber ADR 0002 §A-1, import-linter-Subpaket-Limit,
+  coverage-gate Build-Arg-Parametrisierung) und Drift-Liste fuer
+  den finalen ADR-Schliff vor Acceptance.
+- **Coverage-Gate Negativ-Verifikation (Welle 2):**
+  - **pytest-cov-Schiene** (`--cov-fail-under=90`, kombiniert):
+    bewusst eingefuegte ungetestete Funktion drueckte Coverage
+    auf 79.73 %, Stage rot mit `FAIL Required test coverage of
+    90% not reached`. Nach Revert wieder 100 %, working tree clean.
+  - **XML-Branch-Schiene** in Isolation: synthetische
+    `coverage-critical.xml` mit `branch-rate="0.5"` an die
+    Python-Check-Logik des Dockerfile-Stages gefuettert; meldet
+    `50.00% < 90.00%`, exit 1. Sanity mit `branch-rate="0.95"`:
+    exit 0.
+  - **Erkenntnis:** coverage.py mit `--cov-branch` decomposiert
+    one-line `if cond: body` nicht in separate Branch-Arcs;
+    Statement-Level-Branches fuehren immer dazu, dass Line- und
+    Branch-Coverage zusammen fallen. Damit feuert pytest-cov's
+    kombinierter Check vor dem XML-Branch-Check. Die XML-Schiene
+    ist defense-in-depth, nicht Hauptgate. Befund dokumentiert
+    in `spike-0-results.md` §4.2.
 
 ### Fixed
 

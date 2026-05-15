@@ -19,6 +19,7 @@ Ein Eintrag wechselt typischerweise:
 | Datei                  | Gegenstand                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------ |
 | `spike-0.md`           | Spike-0 als Pre-Acceptance-Slice fuer `ADR 0002` und `ADR 0005` (Toolchain, Skelett, A-1/A-2-Contracts, sechzehn Verstoss-Branches). Aktiviert `roadmap.md` Vorbedingung 1. |
+| `spike-0-results.md`   | Living Document zu Spike-0: Welle-Status, Verstoss-Branch × Gate Matrix, Befunde / Drift-Liste fuer den finalen ADR-Schliff vor Acceptance. |
 
 Weitere Eintraege entstehen nach Spike-0, sobald M1 das erste
 Domain-Slice (Tick-Loop-Spine) skizziert — und mit jedem Folgeschritt
