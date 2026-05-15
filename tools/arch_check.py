@@ -364,15 +364,25 @@ def _no_time_violations(
     if not isinstance(node, ast.Call):
         return
     attr = _time_call_attr(node, aliases)
-    if attr is not None:
-        yield Violation(
-            "AC-NO-TIME",
-            f"{rel}:{node.lineno}",
-            f"time.{attr}() (via alias or attribute) — use ClockPort",
-        )
+    if attr is None:
+        return
+    if attr.startswith("asyncio."):
+        # asyncio.get_event_loop().time() — bereits voll-qualifiziert
+        detail = f"{attr}() (via alias or attribute) — use ClockPort"
+    else:
+        detail = f"time.{attr}() (via alias or attribute) — use ClockPort"
+    yield Violation("AC-NO-TIME", f"{rel}:{node.lineno}", detail)
 
 
 def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
+    """Erkennt forbidden time-Aufrufe an den Aufruf-Sites:
+
+    - `time.<attr>()` (auch via `import time as t; t.<attr>()`)
+    - `<attr>()` nach `from time import <attr>` (oder `as`)
+    - `asyncio.get_event_loop().time()` (ADR 0002 §A-1 expliziter
+      Bestandteil von AC-NO-TIME; auch via `import asyncio as a` oder
+      `from asyncio import get_event_loop`)
+    """
     chain = _resolve_call_chain(call, aliases)
     if chain is not None and chain[0] == _TIME_MODULE and chain[-1] in _TIME_ATTRS:
         return chain[-1]
@@ -380,7 +390,42 @@ def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
         source = aliases.from_imports.get(call.func.id)
         if source is not None and source[0] == _TIME_MODULE and source[1] in _TIME_ATTRS:
             return source[1]
+    if _is_asyncio_event_loop_time_call(call, aliases):
+        return "asyncio.get_event_loop().time"
     return None
+
+
+def _is_asyncio_event_loop_time_call(
+    call: ast.Call, aliases: ImportAliases
+) -> bool:
+    """True wenn `call` der Form `asyncio.get_event_loop().time()` ist
+    (auch via Alias auf `asyncio` oder `from asyncio import get_event_loop`).
+    """
+    func = call.func
+    if not isinstance(func, ast.Attribute) or func.attr != "time":
+        return False
+    inner_call = func.value
+    if not isinstance(inner_call, ast.Call):
+        return False
+    # Variante A: asyncio.get_event_loop() — attribute call
+    inner_chain = _resolve_call_chain(inner_call, aliases)
+    if (
+        inner_chain is not None
+        and inner_chain[0] == "asyncio"
+        and inner_chain[-1] == "get_event_loop"
+    ):
+        return True
+    # Variante B: get_event_loop() — bare name nach from-import
+    inner_func = inner_call.func
+    if isinstance(inner_func, ast.Name):
+        source = aliases.from_imports.get(inner_func.id)
+        if (
+            source is not None
+            and source[0] == "asyncio"
+            and source[1] == "get_event_loop"
+        ):
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
