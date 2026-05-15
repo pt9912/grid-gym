@@ -198,10 +198,10 @@ EOF
 FROM source AS coverage-gate-critical
 ARG CRITICAL_COVERAGE_THRESHOLD
 RUN uv run pytest tests/unit/ \
-        --cov=src/grid_gym/core/simulation \
-        --cov=src/grid_gym/core/devices/battery \
-        --cov=src/grid_gym/core/scenario \
-        --cov=src/grid_gym/core/replay \
+        --cov=src/grid_gym/hexagon/core/simulation \
+        --cov=src/grid_gym/hexagon/core/devices/battery \
+        --cov=src/grid_gym/hexagon/core/scenario \
+        --cov=src/grid_gym/hexagon/core/replay \
         --cov-branch \
         --cov-report=term-missing \
         --cov-report=xml:/src/coverage/coverage-critical.xml \

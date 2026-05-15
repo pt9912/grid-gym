@@ -5,7 +5,14 @@
 **Status geaendert am:** 2026-05-14 — `Proposed → Provisional` mit
 Freigabe des Spike-0-Vertrags; Operative Artefakte (`Dockerfile`,
 `Makefile`) liegen als Spike-0-Pfad vor (vgl. `ADR 0006`).
-**Letzte inhaltliche Aenderung:** 2026-05-14 — A-2 von
+**Letzte inhaltliche Aenderung:** 2026-05-15 — Repository-Layout und
+A-1-Contracts an `hexagon/`-Gruppierung in `architecture.md` §4.2
+ausgerichtet (Trigger 011 abgearbeitet, Pre-Acceptance-Schliff gemaess
+`ADR 0006` §3): Modul-Muster der fuenfzehn A-1-Contracts auf
+`hexagon.core.*`/`hexagon.ports.*` umgestellt, AC-NO-JSON-Whitelist
+und `[tool.grid_gym.arch_check]`-Pfade auf
+`src/grid_gym/hexagon/core/...`, Coverage-Pfade in Dockerfile
+nachgezogen. Inhaltlich vorher: 2026-05-14 — A-2 von
 `json.JSONEncoder`-Subklasse auf Custom-Emitter umgestellt;
 Lifecycle-Sprache an ADR 0006 angepasst (`Rejected` vor Acceptance,
 `Superseded` post-Acceptance); `mypy --strict` als vierter Spike-0-Gate
@@ -236,7 +243,7 @@ Spike-0 ist ein zeitlich begrenztes (Empfehlung: max. 5
 Personentage), gegen einen leeren oder minimalen `grid-gym`-Skeleton
 ausgefuehrtes Spike-Projekt. Es liefert:
 
-- ein funktionierendes Repository-Skelett (`src/grid_gym/{core,ports,adapters}`),
+- ein funktionierendes Repository-Skelett (`src/grid_gym/{hexagon/{core,ports},adapters}`),
 - alle fuenfzehn A-1-Contracts konfiguriert
   (`pyproject.toml`, `tests/arch/`, `tools/arch_check.py` inkl.
   `grimp`-SCC-Check),
@@ -298,29 +305,29 @@ Tool-Suite (Pflicht), mit ehrlicher Rollenverteilung:
 | Tool                              | Rolle                                                                                                |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `import-linter`                   | Modul- und Layer-Importgrenzen (`forbidden`-Contracts).                                              |
-| `ruff` (Regelgruppen `BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904` + `flake8-tidy-imports.banned-api`/`banned-module-level-imports`) | (a) Datetime-tz-Verstoesse (`DTZ`), (b) Blind-Except und try/except-Anti-Patterns (`BLE`, `TRY`, `B904`), (c) Banned-Imports (`random`, `secrets`, `numpy.random`) auf Modulebene in `core/*` ueber `flake8-tidy-imports.banned-module-level-imports`, (d) Banned-API-Aufrufe (`datetime.datetime.utcnow`) ueber `flake8-tidy-imports.banned-api`, (e) Test-Security-Subset (`S`). **Nicht** durch ruff abgedeckt: `time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, Aufrufe wie `random.random()` nach einem Re-Export — diese laufen ueber `tools/arch_check.py`. |
-| `tools/arch_check.py` (eigenes AST-Skript) | (a) Zykluscheck (SCC via `grimp`), (b) Zeitfunktions-Calls in `core/*` (`time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, transitive Re-Exports), (c) Zufallsfunktions-Calls in `core/*` (Aufruf-Site, nicht nur Import), (d) `json.dumps`/`json.dump`-Aufrufe ausserhalb der Whitelist, (e) Immutability fuer `core.domain.*`, (f) God-Utility-Modul-/Klassenmuster, (g) `GridGymError`-Vererbung fuer Domain-/Application-Exceptions. |
+| `ruff` (Regelgruppen `BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904` + `flake8-tidy-imports.banned-api`/`banned-module-level-imports`) | (a) Datetime-tz-Verstoesse (`DTZ`), (b) Blind-Except und try/except-Anti-Patterns (`BLE`, `TRY`, `B904`), (c) Banned-Imports (`random`, `secrets`, `numpy.random`) auf Modulebene in `hexagon/core/*` ueber `flake8-tidy-imports.banned-module-level-imports`, (d) Banned-API-Aufrufe (`datetime.datetime.utcnow`) ueber `flake8-tidy-imports.banned-api`, (e) Test-Security-Subset (`S`). **Nicht** durch ruff abgedeckt: `time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, Aufrufe wie `random.random()` nach einem Re-Export — diese laufen ueber `tools/arch_check.py`. |
+| `tools/arch_check.py` (eigenes AST-Skript) | (a) Zykluscheck (SCC via `grimp`), (b) Zeitfunktions-Calls in `hexagon/core/*` (`time.time`, `time.monotonic`, `asyncio.get_event_loop().time`, transitive Re-Exports), (c) Zufallsfunktions-Calls in `hexagon/core/*` (Aufruf-Site, nicht nur Import), (d) `json.dumps`/`json.dump`-Aufrufe ausserhalb der Whitelist, (e) Immutability fuer `hexagon.core.domain.*`, (f) God-Utility-Modul-/Klassenmuster, (g) `GridGymError`-Vererbung fuer Domain-/Application-Exceptions. |
 
 Konfiguration und Contracts liegen versioniert unter `tests/arch/`
 und `pyproject.toml`. Die Contracts sind:
 
 | Contract-ID         | Tool          | Inhalt | Bezug |
 | ------------------- | ------------- | ------ | ----- |
-| AC-CORE-NO-ADAPTERS | import-linter `forbidden` | `core.*` darf NICHT `adapters.*` importieren. | GG-AR-TABU-001, GG-ARCH-003 |
-| AC-CORE-NO-DRIVING  | import-linter `forbidden` | `core.*` darf NICHT `ports.driving.*` importieren (Driving-Ports werden vom Kern angeboten, nicht aufgerufen). | GG-AR-TABU-001 |
-| AC-PORTS-NO-OUT     | import-linter `forbidden` | `ports.*` darf NICHT `adapters.*` UND NICHT `core.simulation`, `core.devices`, `core.scenario`, `core.replay`, `core.faults`, `core.agents` importieren — Ports kennen nur `core.domain`. | GG-AR-TABU-001 |
-| AC-PORTS-NO-FW      | import-linter `forbidden` | `ports.*` darf KEINE Web-, Persistenz-, Messaging-, Datenbank- oder UI-Frameworks importieren: dieselbe Verbotsliste wie `AC-NO-FW`, ergaenzt um stdlib-IO (`socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client`). | GG-ARCHTEST-004 |
-| AC-ADAPTER-PURE     | import-linter `forbidden` | `adapters.*` darf NICHT `core.simulation`, `core.devices`, `core.scenario`, `core.replay`, `core.faults`, `core.agents` importieren — Adapter sehen nur `core.domain` und `ports.*`. **Reichweite: Import-Grenze** (siehe `AC-ADAPTER-LIGHTWEIGHT` fuer die Logik-Reichweite). | GG-AR-TABU-003, GG-CC-002 |
+| AC-CORE-NO-ADAPTERS | import-linter `forbidden` | `hexagon.core.*` darf NICHT `adapters.*` importieren. | GG-AR-TABU-001, GG-ARCH-003 |
+| AC-CORE-NO-DRIVING  | import-linter `forbidden` | `hexagon.core.*` darf NICHT `hexagon.ports.driving.*` importieren (Driving-Ports werden vom Kern angeboten, nicht aufgerufen). | GG-AR-TABU-001 |
+| AC-PORTS-NO-OUT     | import-linter `forbidden` | `hexagon.ports.*` darf NICHT `adapters.*` UND NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Ports kennen nur `hexagon.core.domain`. | GG-AR-TABU-001 |
+| AC-PORTS-NO-FW      | import-linter `forbidden` | `hexagon.ports.*` darf KEINE Web-, Persistenz-, Messaging-, Datenbank- oder UI-Frameworks importieren: dieselbe Verbotsliste wie `AC-NO-FW`, ergaenzt um stdlib-IO (`socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client`). | GG-ARCHTEST-004 |
+| AC-ADAPTER-PURE     | import-linter `forbidden` | `adapters.*` darf NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Adapter sehen nur `hexagon.core.domain` und `hexagon.ports.*`. **Reichweite: Import-Grenze** (siehe `AC-ADAPTER-LIGHTWEIGHT` fuer die Logik-Reichweite). | GG-AR-TABU-003, GG-CC-002 |
 | AC-ADAPTER-LIGHTWEIGHT | `tools/arch_check.py` (AST, heuristisch) | Module unter `adapters.driven.protocol_*`, `adapters.driven.persistence_*` und `adapters.driving.*` MUESSEN strukturell schlank bleiben: pro Modul max. eine zyklomatische Komplexitaet von 8 je Funktion, keine `if/elif`-Ketten ueber Domain-Enums (`Quality`, `CommandResult`), keine arithmetischen Operationen ueber Telemetriewerten (`+`, `-`, `*`, `/` auf Feldern von `TelemetryPoint`/`Command`). Heuristisch, **kein vollstaendiger Nachweis** — siehe Reststeuerung unter Code-Review. | GG-AR-TABU-003 (heuristischer Anteil), GG-CC-002 |
-| AC-NO-FW            | import-linter `forbidden` | `core.*` darf KEINE Module aus `fastapi`, `uvicorn`, `psycopg`, `sqlalchemy`, `alembic`, `httpx`, `paho.mqtt`, `pymodbus`, `asyncua` u. ae. importieren. | GG-AR-TABU-002, GG-CC-003 |
-| AC-NO-IO-MOD        | import-linter `forbidden` | `core.*` darf NICHT `socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client` als Modul importieren (rein zur Typannotation ueber `TYPE_CHECKING` erlaubt). | GG-AR-TABU-002 |
+| AC-NO-FW            | import-linter `forbidden` | `hexagon.core.*` darf KEINE Module aus `fastapi`, `uvicorn`, `psycopg`, `sqlalchemy`, `alembic`, `httpx`, `paho.mqtt`, `pymodbus`, `asyncua` u. ae. importieren. | GG-AR-TABU-002, GG-CC-003 |
+| AC-NO-IO-MOD        | import-linter `forbidden` | `hexagon.core.*` darf NICHT `socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client` als Modul importieren (rein zur Typannotation ueber `TYPE_CHECKING` erlaubt). | GG-AR-TABU-002 |
 | AC-NO-CYCLES        | `tools/arch_check.py` (Graph-Analyse via `grimp`) | Keine zyklischen Importpfade. Pruefung: `grimp.build_graph("grid_gym")`, dann Strongly-Connected-Components der Modul-Import-Kanten — jede SCC mit > 1 Knoten ist ein Verstoss. Bewusst **kein** `import-linter`-`independence`-Contract: `independence` verbietet jeden gegenseitigen Import (auch erlaubte Richtungen wie `adapters → ports`) und ist kein Zykluscheck. | GG-AR-TABU-004, GG-CC-004 |
-| AC-NO-TIME          | **Aufgeteilt:** `ruff` deckt `DTZ001`–`DTZ012` (tz-naive `datetime`-Calls) plus `flake8-tidy-imports.banned-api` fuer `datetime.datetime.utcnow`. `tools/arch_check.py` deckt `time.time`, `time.monotonic`, `time.perf_counter`, `time.perf_counter_ns`, `time.process_time`, `asyncio.get_event_loop().time` als Aufrufe in `core.*`. | `core.*` darf keine Wall-Clock-/Monotonic-Quelle direkt verwenden. Zeit kommt aus `ClockPort`. | GG-AR-TABU-005, GG-ARCH-007 |
-| AC-NO-RAND          | **Aufgeteilt:** `ruff` `flake8-tidy-imports.banned-module-level-imports` verbietet Module-Level-Imports von `random`, `secrets`, `numpy.random` in `core.*`. `tools/arch_check.py` faengt zusaetzlich Aufruf-Sites ab (z. B. nach Re-Export oder lokalem Import). | `core.*` darf weder `random.*`, `secrets.*`, `numpy.random.*` noch transitive Re-Exports davon aufrufen. Zufall kommt aus `RandomPort`. | GG-SIM-001, GG-SCN-002, GG-AR-PORT-DRN-010 |
-| AC-NO-JSON          | `tools/arch_check.py` (AST) | Produktionscode unter `src/grid_gym/**` darf `json.dumps`/`json.dump` nicht direkt aufrufen, **ausser** in einem einzigen explizit gewhitelisteten Modul: `src/grid_gym/core/serialization/canonical.py` — dies ist die Implementierung von `canonical_json` aus A-2 und die einzige erlaubte `json.dumps`-Aufrufstelle. Die Whitelist ist namentlich in `tools/arch_check.py` und in `pyproject.toml` hinterlegt; jede Erweiterung erfordert ADR-Verweis. | GG-DATA-005 |
-| AC-DOMAIN-FROZEN    | `tools/arch_check.py` (AST) | Klassen in `core.domain.*` MUESSEN entweder `@dataclass(frozen=True, slots=True)` sein oder von einer `FrozenModel`-Basisklasse (Pydantic mit `model_config = ConfigDict(frozen=True)`) erben. | GG-AR-TABU-006, GG-CC-007 |
-| AC-NO-GOD-UTILS     | `tools/arch_check.py` (AST) | Verboten: Modulnamen `*_utils.py`, `helpers.py`, `common.py`, `misc.py`; Klassen, deren Name auf `Utils`/`Helper`/`Manager`/`Misc` endet; statische Module mit > 5 oeffentlichen freien Funktionen ausserhalb `core.domain` und `core.serialization`. | GG-AR-TABU-007, GG-CC-006 |
-| AC-TYPED-ERRORS     | ruff `BLE001` + `TRY002`/`TRY003` + `tools/arch_check.py` | Verbot von `raise Exception(...)`/`raise BaseException(...)`; `except Exception:` nur in deklarierten Adapter-Boundary-Modulen (siehe `ruff per-file-ignores` unten) erlaubt. Alle Domain-/Application-Fehler erben von `core.errors.GridGymError`. | GG-AR-TABU-008, GG-CC-008 |
+| AC-NO-TIME          | **Aufgeteilt:** `ruff` deckt `DTZ001`–`DTZ012` (tz-naive `datetime`-Calls) plus `flake8-tidy-imports.banned-api` fuer `datetime.datetime.utcnow`. `tools/arch_check.py` deckt `time.time`, `time.monotonic`, `time.perf_counter`, `time.perf_counter_ns`, `time.process_time`, `asyncio.get_event_loop().time` als Aufrufe in `hexagon.core.*`. | `hexagon.core.*` darf keine Wall-Clock-/Monotonic-Quelle direkt verwenden. Zeit kommt aus `ClockPort`. | GG-AR-TABU-005, GG-ARCH-007 |
+| AC-NO-RAND          | **Aufgeteilt:** `ruff` `flake8-tidy-imports.banned-module-level-imports` verbietet Module-Level-Imports von `random`, `secrets`, `numpy.random` in `hexagon.core.*`. `tools/arch_check.py` faengt zusaetzlich Aufruf-Sites ab (z. B. nach Re-Export oder lokalem Import). | `hexagon.core.*` darf weder `random.*`, `secrets.*`, `numpy.random.*` noch transitive Re-Exports davon aufrufen. Zufall kommt aus `RandomPort`. | GG-SIM-001, GG-SCN-002, GG-AR-PORT-DRN-010 |
+| AC-NO-JSON          | `tools/arch_check.py` (AST) | Produktionscode unter `src/grid_gym/**` darf `json.dumps`/`json.dump` nicht direkt aufrufen, **ausser** in einem einzigen explizit gewhitelisteten Modul: `src/grid_gym/hexagon/core/serialization/canonical.py` — dies ist die Implementierung von `canonical_json` aus A-2 und die einzige erlaubte `json.dumps`-Aufrufstelle. Die Whitelist ist namentlich in `tools/arch_check.py` und in `pyproject.toml` hinterlegt; jede Erweiterung erfordert ADR-Verweis. | GG-DATA-005 |
+| AC-DOMAIN-FROZEN    | `tools/arch_check.py` (AST) | Klassen in `hexagon.core.domain.*` MUESSEN entweder `@dataclass(frozen=True, slots=True)` sein oder von einer `FrozenModel`-Basisklasse (Pydantic mit `model_config = ConfigDict(frozen=True)`) erben. | GG-AR-TABU-006, GG-CC-007 |
+| AC-NO-GOD-UTILS     | `tools/arch_check.py` (AST) | Verboten: Modulnamen `*_utils.py`, `helpers.py`, `common.py`, `misc.py`; Klassen, deren Name auf `Utils`/`Helper`/`Manager`/`Misc` endet; statische Module mit > 5 oeffentlichen freien Funktionen ausserhalb `hexagon.core.domain` und `hexagon.core.serialization`. | GG-AR-TABU-007, GG-CC-006 |
+| AC-TYPED-ERRORS     | ruff `BLE001` + `TRY002`/`TRY003` + `tools/arch_check.py` | Verbot von `raise Exception(...)`/`raise BaseException(...)`; `except Exception:` nur in deklarierten Adapter-Boundary-Modulen (siehe `ruff per-file-ignores` unten) erlaubt. Alle Domain-/Application-Fehler erben von `hexagon.core.errors.GridGymError`. | GG-AR-TABU-008, GG-CC-008 |
 
 Operative Anforderung:
 
@@ -446,11 +453,11 @@ zentral und maschinenlesbar gefuehrt werden:
 # erlaubt sind. tools/arch_check.py liest diese Liste und meldet jede
 # Aufruf-Site ausserhalb als Verstoss. Erweiterung erfordert ADR-Verweis.
 json-dumps-whitelist = [
-    "src/grid_gym/core/serialization/canonical.py",
+    "src/grid_gym/hexagon/core/serialization/canonical.py",
 ]
 
-# AC-DOMAIN-FROZEN: zusaetzliche Module, die wie core.domain.* immutable
-# sein muessen (z. B. Snapshot-Datenklassen, die ausserhalb core.domain leben).
+# AC-DOMAIN-FROZEN: zusaetzliche Module, die wie hexagon.core.domain.* immutable
+# sein muessen (z. B. Snapshot-Datenklassen, die ausserhalb hexagon.core.domain leben).
 domain-frozen-extra = []
 
 # AC-TYPED-ERRORS: Module, in denen `except Exception:` zugelassen ist
@@ -464,7 +471,7 @@ typed-errors-exempt = [
 ```
 
 Das frueher hier vorgeschlagene leere ruff-Per-File-Ignore
-`"src/grid_gym/core/serialization/canonical.py" = []` wurde
+`"src/grid_gym/hexagon/core/serialization/canonical.py" = []` wurde
 entfernt — ein leerer Ignore-Eintrag ist fuer ruff ein No-Op und
 ergab keine wirksame Whitelist. Die Whitelist fuer AC-NO-JSON
 lebt jetzt ausschliesslich in `[tool.grid_gym.arch_check]` und
@@ -480,7 +487,7 @@ Reichweiten-Vertrag fuer ruff-Regeln:
 
 | Regelgruppe       | Wirksamer Scope                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
-| `DTZ` (AC-NO-TIME)| `src/grid_gym/core/**` und `src/grid_gym/ports/**` (Adapter ausgenommen, siehe oben)              |
+| `DTZ` (AC-NO-TIME)| `src/grid_gym/hexagon/core/**` und `src/grid_gym/hexagon/ports/**` (Adapter ausgenommen, siehe oben)              |
 | `BLE`/`TRY`/`B904`| `src/grid_gym/**` ausser explizit gelisteten Error-Translation-Modulen                            |
 | `S`               | `src/grid_gym/**`; in `tests/**` nur ohne `S101/S104/S105/S106/S311`                              |
 | `TID`             | `src/grid_gym/**`; ergaenzt `import-linter` um schnelle Per-File-Banned-Imports                   |
@@ -508,7 +515,7 @@ Tabu-Abdeckungs-Matrix:
 | Tabu              | Abgedeckt durch                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | GG-AR-TABU-001    | AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT                                      |
-| GG-AR-TABU-002    | AC-NO-FW, AC-NO-IO-MOD; in `ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`)           |
+| GG-AR-TABU-002    | AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`)           |
 | GG-AR-TABU-003    | AC-ADAPTER-PURE (Imports) + AC-ADAPTER-LIGHTWEIGHT (Heuristik) + Code-Review-Auflage (Logik)  |
 | GG-AR-TABU-004    | AC-NO-CYCLES (SCC-Analyse via `grimp`)                                                        |
 | GG-AR-TABU-005    | AC-NO-TIME                                                                                    |
@@ -518,7 +525,7 @@ Tabu-Abdeckungs-Matrix:
 
 #### A-2 — Kanonische Serialisierung als getestete Library-Funktion
 
-- `grid_gym.core.serialization.canonical.canonical_json(value) -> bytes`
+- `grid_gym.hexagon.core.serialization.canonical.canonical_json(value) -> bytes`
   ist die einzige erlaubte JSON-Serialisierungsstelle im Produktionscode
   (gewhitelistet in AC-NO-JSON). Vertrag:
   - festgelegte Feldreihenfolge (lexikographisch),
@@ -528,7 +535,7 @@ Tabu-Abdeckungs-Matrix:
   - ganzzahlige Millisekunden fuer Simulationszeit
   (`GG-DATA-005`).
 - Property-basierte Tests via `hypothesis` in
-  `tests/unit/core/serialization/test_canonical.py` weisen nach: zwei
+  `tests/unit/hexagon/core/serialization/test_canonical.py` weisen nach: zwei
   semantisch identische Inputs erzeugen identische Bytes; Roundtrip
   Lesen → Schreiben ist stabil; alle Telemetry/Command/Event-Domain-
   Objekte aus `GG-AR-COMP-DOMAIN` sind roundtrip-stabil.
@@ -575,7 +582,7 @@ Tabu-Abdeckungs-Matrix:
      JSON-Emitter:
 
      ```python
-     # core/serialization/canonical.py — einzige AC-NO-JSON-Ausnahme
+     # hexagon/core/serialization/canonical.py — einzige AC-NO-JSON-Ausnahme
      from decimal import Decimal
 
      _ESCAPE = {
@@ -796,7 +803,7 @@ hier abloest.
 | Paketmanager + Lock | `uv` mit `uv.lock`                                 | Rust-Implementierung, schnelle CI-Resolves, lockfile-first, eingebauter Python-Toolchain-Manager. Passt zu `GG-DEPLOY-002/011` (offline, reproduzierbar) und `GG-CICD-001` (reproduzierbarer Build). |
 | Dependency Groups   | `[dependency-groups]` in `pyproject.toml` nach PEP 735 (Gruppen `dev`, `test`, `lint`, `docs`) | Trennt produktive Laufzeit-Abhaengigkeiten von Test-/Lint-/Build-Toolchain (`GG-CICD-002/005/006`), ohne mehrere `pyproject.toml`-Dateien anlegen zu muessen. |
 | uv-Workspaces       | NICHT verwendet                                      | Modulgrenzen aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` werden durch Import-Contracts (A-1) erzwungen, nicht durch separate Distribution-Pakete. uv-Workspaces sind trigger-basierte Folgearbeit, falls einzelne `grid-gym`-Pakete extern konsumiert werden sollen. |
-| Repository-Layout   | Monolith mit `src/grid_gym/`-Layout und `import-linter`-Layern | Eine Distribution, eine Lock-Datei; klare Trennung `src/` (Produktion) vs. `tests/` (Tests, von A-1-Tabus teilweise ausgenommen).                          |
+| Repository-Layout   | Monolith mit `src/grid_gym/{hexagon/{core,ports},adapters}/`-Layout und `import-linter`-Layern | Eine Distribution, eine Lock-Datei; klare Trennung `src/` (Produktion) vs. `tests/` (Tests, von A-1-Tabus teilweise ausgenommen). `hexagon/` gruppiert fachlichen Kern und Ports gemaess `architecture.md` §4.2. |
 | Project-Definition  | Ein `pyproject.toml` im Root                       | Eine Lock-Datei, eine CI-Resolve, ein Distribution-Punkt                                  |
 | Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; CI-Matrix laeuft gegen `3.13` und `3.14` | reproduzierbarer Build (`GG-CICD-001`); Floor und Referenz-Runtime sind explizit getestet |
 | HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code (`GG-API-003`), WebSocket nativ (`GG-API-002`)                            |
@@ -816,8 +823,8 @@ Die folgenden Dokument-Aenderungen werden **erst bei `Accepted`**
 ausgefuehrt, nicht bei `Proposed`/`Provisional`:
 
 - die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` (Verzeichnisstruktur) wird mit
-  Python-Paketnamen aktualisiert (`src/grid_gym/core/...`,
-  `src/grid_gym/ports/...`, `src/grid_gym/adapters/...`).
+  Python-Paketnamen aktualisiert (`src/grid_gym/hexagon/core/...`,
+  `src/grid_gym/hexagon/ports/...`, `src/grid_gym/adapters/...`).
 - `GG-AR-OPEN-001` in `architecture.md` markiert `GG-AR-OPEN-001` als „Geschlossen
   mit ADR 0002".
 - `roadmap.md` Vorbedingung 1 (`GG-AR-OPEN-001`) ist erledigt.

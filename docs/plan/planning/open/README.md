@@ -26,7 +26,10 @@ Eintraege wandern entweder:
 | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 | `009-tests-integration-compose.md`             | `tests/integration/compose.yml` (testcontainers)                          | mit erstem Persistenz-Adapter-Slice |
 | `010-deploy-compose.md`                        | `deploy/compose.yml` (Compose-Smoke + Demo)                                | mit erstem Deploy-Slice (`GG-DEPLOY-001/005`) |
-| `011-hexagon-layout-adr-0002-realign.md`       | ADR-0002-Contracts an `hexagon/`-Gruppierung in architecture.md anpassen   | vor `ADR 0002 Accepted` |
+
+> Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
+> [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)
+> (2026-05-15).
 
 Architektonische offene Punkte (`GG-AR-OPEN-002..010`) leben weiterhin
 in `architecture.md` §19 und sind dort die kanonische Liste. Wenn

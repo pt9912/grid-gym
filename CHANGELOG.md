@@ -227,6 +227,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `spec/lastenheft.md` §27.3 Anforderung-zu-Test um `GG-TRACE-001`
   ergaenzt (Documentation Test — Self-Verification der drei
   Trace-Tabellen; Folgearbeit `tools/check_refs.py`).
+- `docs/plan/adr/0002-language-and-build-stack.md` Pre-Acceptance-
+  Schliff (Trigger 011 abgearbeitet, `ADR 0006` §3-konform):
+  Repository-Layout in §6.1 auf
+  `src/grid_gym/{hexagon/{core,ports},adapters}/` praezisiert;
+  alle fuenfzehn A-1 Contracts auf `hexagon.core.*`/`hexagon.ports.*`
+  umgestellt (AC-CORE-NO-ADAPTERS/CORE-NO-DRIVING/PORTS-NO-OUT/
+  PORTS-NO-FW/ADAPTER-PURE/ADAPTER-LIGHTWEIGHT/NO-FW/NO-IO-MOD/
+  NO-CYCLES/NO-TIME/NO-RAND/NO-JSON/DOMAIN-FROZEN/NO-GOD-UTILS/
+  TYPED-ERRORS); AC-NO-JSON-Whitelist und
+  `[tool.grid_gym.arch_check]` `json-dumps-whitelist`-Pfad auf
+  `src/grid_gym/hexagon/core/serialization/canonical.py`;
+  Spike-0-Skelett-Pfad und A-2 Custom-Emitter-Verweise auf
+  `grid_gym.hexagon.core.serialization.canonical`. Header
+  `Letzte inhaltliche Aenderung` auf 2026-05-15 aktualisiert.
+- `Dockerfile` `coverage-gate-critical`: vier `--cov=`-Pfade
+  auf `src/grid_gym/hexagon/core/{simulation,devices/battery,scenario,replay}`
+  umgestellt (downstream zu Trigger 011).
+- `docs/plan/planning/`: Trigger
+  `011-hexagon-layout-adr-0002-realign.md` von `open/` nach
+  `done/` verschoben (Closure-Notiz mit Lieferumfang); `open/`-
+  und `done/`-README-Bestandstabellen entsprechend gepflegt.
 
 ### Fixed
 

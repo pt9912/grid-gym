@@ -11,4 +11,8 @@ Eine Closure-Notiz fasst zusammen:
   Folge-Meilenstein),
 - Verweis auf Tag/Release im CHANGELOG.
 
-Bisher leer.
+## Bestand
+
+| Datei                                          | Geschlossen | Gegenstand                                                                |
+| ---------------------------------------------- | ----------- | ------------------------------------------------------------------------- |
+| `011-hexagon-layout-adr-0002-realign.md`       | 2026-05-15  | ADR-0002-Contracts an `hexagon/`-Gruppierung ausgerichtet (Pre-Spike-0). |
