@@ -40,7 +40,7 @@ ist (kommt mit M1-Welle-6).
 ### Falls Adapter-Aenderung
 
 - [ ] §3.1 `AC-ADAPTER-PURE`-Reststeuerung: Adapter trifft keine
-      fachlichen Entscheidungen (Wertebereich-Prufung, Routing-
+      fachlichen Entscheidungen (Wertebereich-Pruefung, Routing-
       Logik, Geraete-Spezifisches). Mapping-Funktionen sind im
       Doc-String dokumentiert.
 

@@ -32,7 +32,7 @@ verlangt deshalb:
   - TABU-003-Reststeuerung (fachliche Entscheidung im Adapter),
   - `GG-CC-001` Methoden-/Funktionsgroesse (Restanteil nach ruff),
   - `GG-CC-005` Naming-Konsistenz (Restanteil nach `ruff N`),
-  - `GG-PRINC-002..005` SOLID-Restanteil,
+  - `GG-PRINC-002..006` SOLID-Restanteil (inkl. DIP),
   - **`pyproject.toml`-Folge-ADR-Pflicht**: jede Aenderung an
     `[tool.ruff.lint]`-`select`/`per-file-ignores`,
     `[tool.mypy] enable_error_code`/`files`,

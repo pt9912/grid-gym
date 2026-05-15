@@ -170,11 +170,15 @@ aus `ADR 0006`). Die Durchfuehrung geschieht in M1 Welle 2 (siehe
    dem Parent vorher gemacht wurden.
 5. Snapshot/Resume-Test: `snapshot()` → `from_snapshot(state)` →
    nachfolgende Calls identisch zu einem ununterbrochenen Lauf.
+6. `next_float()`-Determinismus auf CPython: derselbe Seed liefert
+   ueber 10.000 Calls auf CPython 3.13.x und 3.14.x byte-identische
+   `canonical_json`-Decimal-Strings (verifiziert die `repr(float)`-
+   Round-Trip-Annahme aus §5.1).
 
 **Dauer:** Innerhalb des M1-Welle-2-Zeitfensters (1 Personentag);
 diese ADR fuegt keine zusaetzliche Dauer hinzu.
 
-**Erfolgs-Definition:** Alle fuenf Akzeptanzkriterien per
+**Erfolgs-Definition:** Alle sechs Akzeptanzkriterien per
 `make test-unit` (Dockerfile-Stage `test-unit`) gruen → diese ADR
 geht auf `Accepted`.
 
@@ -211,6 +215,14 @@ class RandomPort(Protocol):
         Implementation: `random.random()` liefert float; wird via
         `Decimal(str(x)).quantize(Decimal("0.000001"),
         rounding=ROUND_HALF_EVEN)` an der Port-Grenze quantisiert.
+
+        Stabilitaet: die Quantisierung verlaesst sich darauf, dass
+        `str(float)` plattformuebergreifend stabil ist. CPython
+        garantiert das ueber `repr(float)` (PEP 3101, Round-Trip-
+        Eigenschaft seit CPython 3.1). Auf alternativen Python-
+        Runtimes (PyPy, GraalPy, MicroPython) ist der Vertrag
+        nicht garantiert; Spike-Vertrag AC 5 verifiziert das nur
+        gegen CPython 3.13+/3.14.
         """
         ...
 
@@ -223,13 +235,27 @@ class RandomPort(Protocol):
     def snapshot(self) -> bytes:
         """Serialisiert den internen Zustand als UTF-8-Bytes
         (canonical_json-Format). Enthaelt mindestens: Seed,
-        Sub-Port-Pfad, Mersenne-Twister-State (`getstate()`-Tuple)."""
+        Sub-Port-Pfad, Mersenne-Twister-State (`getstate()`-Tuple).
+
+        Der Snapshot-Envelope traegt einen `version: int`-
+        Discriminator (siehe §5.2), damit `core/simulation/Snapshot`
+        in Welle 4 alle Sub-Snapshots versioniert nebeneinander
+        ablegen kann (Forward-Compat: Sub-Schemata duerfen sich
+        unabhaengig versionieren)."""
         ...
 
-    @classmethod
-    def from_snapshot(cls, state: bytes) -> "RandomPort":
-        """Stellt einen Port aus einem `snapshot()`-Bytes wieder her."""
-        ...
+
+def random_port_from_snapshot(state: bytes) -> RandomPort:
+    """Stellt einen Port aus einem `snapshot()`-Bytes wieder her.
+
+    Als Modul-Funktion modelliert, weil `Protocol` mit
+    `@classmethod` strukturell nicht zuverlaessig typt
+    (mypy --strict prueft Class-Methods auf Protocols nicht voll,
+    und `Type[RandomPort]`-Aufrufe scheitern). Die konkrete
+    Implementation (`MersenneTwisterRandomPort.from_snapshot`,
+    §5.2) ruft diese Funktion bzw. die Klassenfabrik intern auf.
+    """
+    ...
 ```
 
 ### 5.2 Konkrete Implementierung (`MersenneTwisterRandomPort`)
@@ -291,6 +317,12 @@ Bei Acceptance schliesst diese ADR:
   geschlossen ist).
 - `next/M1-tick-loop-spine.md §3 Welle 2` wird zu „Welle 2 fertig,
   ADR 0007 Accepted".
+- `architecture.md §9.x` (Driven-Port-Beschreibung von
+  `GG-AR-PORT-DRN-010`) bekommt einen Backlink-Satz „PRNG-Wahl
+  und Seeding-Kette sind in ADR 0007 spezifiziert". Verhindert
+  die Drift, die im Welle-5-Review beim Spike-0-Abschluss
+  beobachtet wurde (zwei Stellen, an denen `RandomPort`-Vertrag
+  steht, ohne dass eine die andere zitiert).
 
 ### 5.5 Migrations-Pfad
 

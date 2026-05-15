@@ -108,6 +108,16 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
   - `hypothesis`-Property-Tests: Roundtrip via `canonical_json`
     byte-stabil, Frozen-Garantie geprueft (`pytest.raises` bei
     Attribut-Set).
+- **Snapshot-Schema-Vorbereitung** (Pflicht fuer Welle 4):
+  `Snapshot`-Skelett (oder ein Mini-`SnapshotEnvelope`-Wrapper)
+  traegt einen `version: int`-Discriminator. Begruendung: ADR 0007
+  §5.1 schreibt `version: int` fuer `RandomPort.snapshot()` fest;
+  damit M1-Welle-4 nicht zwei inkompatible Versionierungs-Schemata
+  nebeneinander stellt, fixiert Welle 1 die Konvention „jedes
+  Sub-Snapshot-Dokument im Snapshot-Envelope hat einen
+  `version: int`-Schluessel als erstes Feld". `canonical_json`-
+  Sortierung garantiert keine Feld-Reihenfolge, daher kein
+  konkretes JSON-Ordering — nur Anwesenheits-Pflicht.
 - **Gate-Status nach Welle 1**: `make lint`/`format-check`/
   `typecheck`/`arch-check` (AC-DOMAIN-FROZEN faengt jetzt echte
   Domain-Klassen), `make test-unit`, `make coverage-gate-critical

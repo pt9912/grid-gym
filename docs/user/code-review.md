@@ -132,16 +132,21 @@ verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
 
 **Welche `pyproject.toml`-Aenderungen sind ADR-relevant:**
 
-- `[tool.ruff.lint] select` — Aenderung der Regelgruppen aus
-  ADR 0002 §A-1.
+- `[tool.ruff.lint] select` / `extend-select` / `ignore` /
+  `extend-ignore` — Aenderung (oder Aufweichung) der Regelgruppen
+  aus ADR 0002 §A-1. **Auch `extend-ignore = [...]` ist ADR-
+  relevant**, weil eine entfernte Regel den A-1-Vertrag aufweicht
+  ohne `select` zu beruehren.
 - `[tool.ruff.lint.flake8-tidy-imports] banned-module-level-imports`
   / `banned-api` — Aenderung der A-1-Aufruf-Site-Verbote.
 - `[tool.ruff.lint.per-file-ignores]` — Aenderung des Reichweiten-
   Vertrags (z. B. Adapter-Boundary-Modul-Liste).
 - `[tool.ruff.lint.pylint] max-*` — Aenderung des `GG-CC-001`-
   Methodenlaengen-Gates.
-- `[tool.mypy] strict` / `files` / `enable_error_code` — Aenderung
-  des ADR-0005-Strict-Vertrags.
+- `[tool.mypy] strict` / `files` / `enable_error_code` /
+  `disable_error_code` — Aenderung des ADR-0005-Strict-Vertrags.
+  **`disable_error_code = [...]` ist explizit ADR-relevant**, weil
+  es einen erzwungenen Check abschaltet.
 - `[tool.importlinter] contracts` — Aenderung der A-1-Contracts.
 - `[tool.grid_gym.arch_check] *-whitelist` / `*-exempt` — Aenderung
   der A-1-Reichweiten.
