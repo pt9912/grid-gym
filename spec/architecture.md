@@ -27,8 +27,9 @@ Querverweis-Konvention: Kennungen sind primaere Referenz; siehe
 
 Nicht Gegenstand dieses Dokuments:
 
-- konkrete Sprach- und Frameworkwahl: `GG-AR-OPEN-001`
-  (Entwurf in [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md))
+- konkrete Sprach- und Frameworkwahl: `GG-AR-OPEN-001` ist
+  geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
+  (`Accepted` 2026-05-15) — siehe §19 fuer den Closure-Eintrag.
 - konkrete Modul-Versionen oder API-Pfade
 - Roadmap-Meilensteine — siehe
   [`docs/plan/planning/in-progress/roadmap.md`](../docs/plan/planning/in-progress/roadmap.md)
@@ -169,16 +170,14 @@ Persistenz, Telemetrie, HTTP, UI, Dateien, Systemzeit — lebt in Adaptern.
                                                    Metrics, OTEL)
 ```
 
-#### Verzeichnisstruktur (Vorschlag)
+#### Verzeichnisstruktur
 
-Die konkrete Sprach- und Build-Wahl ist offen (`GG-AR-OPEN-001`). Die
-Modulgrenzen sind aber sprachunabhaengig festgelegt:
-
-Sprachspezifische Paketnamen (z. B. `src/grid_gym/{core,ports,adapters}/`
-fuer den Python-Pfad) werden erst mit Acceptance der zugehoerigen
-Sprach-ADR in diese Verzeichnisstruktur uebernommen; vgl.
+Die konkrete Sprach- und Build-Wahl ist mit
 [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
-(Status: `Provisional`).
+(`Accepted` 2026-05-15) geschlossen — Python 3.13+/3.14 ueber `uv`.
+Die Modulgrenzen sind sprachunabhaengig festgelegt; konkrete
+Python-Paketnamen unter `src/grid_gym/{hexagon/{core,ports},adapters}/`
+sind in `ADR 0002` §6.1 verbindlich.
 
 ```text
 grid-gym/
@@ -358,8 +357,10 @@ auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
 ## 7. Domain-Modell (Skizze)
 
 Die folgenden Typen sind die internen Domaenenobjekte. Sie sind
-sprachunabhaengig beschrieben — konkrete Repraesentation richtet sich nach
-der Sprachwahl (`GG-AR-OPEN-001`).
+sprachunabhaengig beschrieben — konkrete Python-Repraesentation
+(Pydantic `FrozenModel` oder `@dataclass(frozen=True, slots=True)`)
+ist via [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
+§A-1 AC-DOMAIN-FROZEN festgelegt.
 
 ```text
 RunMetadata {

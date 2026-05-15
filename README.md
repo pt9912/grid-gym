@@ -60,7 +60,20 @@ Der MVP umfasst laut Lastenheft mindestens:
 ├── Dockerfile                   ← Multi-Stage (Lint, Arch-Check, Test, Runtime)
 ├── LICENSE
 ├── Makefile                     ← Build-/Test-Gates pro Dockerfile-Stage
+├── pyproject.toml               ← Build-/Tool-Konfiguration (ADR 0002 §6.1)
+├── uv.lock                      ← gepinnte Dependencies (uv)
+├── .python-version              ← 3.14 (uv-kompatibel)
 ├── README.md
+├── src/grid_gym/
+│   ├── hexagon/
+│   │   ├── core/                ← fachlicher Kern (Domain, Simulation, ...)
+│   │   └── ports/               ← Driving-/Driven-Port-Interfaces
+│   └── adapters/                ← Driving-/Driven-Adapter
+├── tests/
+│   ├── unit/                    ← pytest-Unit-Tests
+│   └── arch/                    ← Architektur-Tests
+├── tools/
+│   └── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)
 ├── spec/
 │   ├── lastenheft.md            ← normative Anforderungen (GG-*)
 │   └── architecture.md          ← Architektur (GG-AR-*)
@@ -70,15 +83,20 @@ Der MVP umfasst laut Lastenheft mindestens:
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv
-    │       ├── in-progress/     ← aktive Roadmap und Slice-Plaene
-    │       └── done/            ← Closure-Notizen
+    │       ├── in-progress/     ← aktive Roadmap
+    │       └── done/            ← abgeschlossene Slices + Closure-Notizen
     ├── user/                    ← anwender-/betreibernah (geplant)
     └── archive/                 ← verworfene/historische Skizzen
 ```
 
 Quelltext, Tests und Tooling-Skripte (`src/grid_gym/`, `tests/`,
-`tools/`) werden im Rahmen von Spike-0 zu ADR 0002 (`GG-AR-OPEN-001`)
-angelegt; `Dockerfile` und `Makefile` sind das Geruest dafuer.
+`tools/`) wurden mit Spike-0 (Closure: [`docs/plan/planning/done/spike-0.md`](docs/plan/planning/done/spike-0.md),
+2026-05-15) angelegt; `Dockerfile`, `Makefile` und `pyproject.toml`
+sind die verbindliche Build-/Gate-Schicht gemaess
+[`ADR 0002`](docs/plan/adr/0002-language-and-build-stack.md)
+(`Accepted` 2026-05-15) und
+[`ADR 0005`](docs/plan/adr/0005-type-check-gate.md)
+(`Accepted` 2026-05-15).
 
 Die Dokumentations- und Planungsstruktur ist in
 [`docs/plan/adr/0001-documentation-and-planning-structure.md`](docs/plan/adr/0001-documentation-and-planning-structure.md)

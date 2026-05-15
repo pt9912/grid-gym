@@ -264,9 +264,10 @@ RUN uv export --frozen --no-emit-project --no-hashes \
 # ueber den `app.openapi()`-Helper) und prueft sie mit
 # `openapi-spec-validator`. Spec wird zusaetzlich als Artefakt unter
 # `/src/artifacts/openapi.json` abgelegt.
-# Die App muss importierbar sein; bis der API-Slice von Spike-0 dort
-# Code liefert, faellt dieser Stage bewusst rot — er ist Teil des
-# Spike-0-Pflichtnachweises analog `lint`/`arch-check`.
+# Die App muss importierbar sein; bis der API-Slice (M1) Code liefert,
+# faellt dieser Stage bewusst rot. Teil des `make ci`-Aggregator-
+# Vertrags (M1-Abnahmebedingung), NICHT des Spike-0-Abschluss-Gates
+# `make gates`.
 # ---------------------------------------------------------------------------
 FROM source AS openapi-validate
 RUN mkdir -p /src/artifacts \

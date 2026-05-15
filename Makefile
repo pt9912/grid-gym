@@ -72,7 +72,7 @@ help:
 	@echo "  make lint              ruff check (BLE/TRY/B/DTZ/S/TID/C901/PLR*/N/RET/SIM/ARG/RUF + banned-api)"
 	@echo "  make format-check      ruff format --check (kein Auto-Fix)"
 	@echo "  make typecheck         mypy --strict (ADR 0005, GG-QG-005, GG-PRINC-004/005 LSP/ISP)"
-	@echo "  make arch-check        import-linter + tools/arch_check.py (15 A-1-Contracts)"
+	@echo "  make arch-check        import-linter + tools/arch_check.py (16 A-1-Contracts)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
 	@echo ""
@@ -222,7 +222,7 @@ openapi-validate:
 # --- Aggregierte Gates -----------------------------------------------------
 
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit
-	@echo "[gates] mandatory Spike-0/A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (15 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit"
+	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (16 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit"
 
 ci: gates test-integration openapi-validate image-audit
 	@echo "[ci] mandatory gates green + test-integration + openapi-validate + image-audit"

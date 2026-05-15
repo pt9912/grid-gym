@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Skelett
-**Stand:** 2026-05-14
+**Status:** Aktiv — Vorbedingungen 1+3 geschlossen mit Spike-0
+**Stand:** 2026-05-15
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
