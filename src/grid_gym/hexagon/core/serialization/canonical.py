@@ -156,6 +156,12 @@ def _emit(value: object, out: list[str], seen: set[int]) -> None:
     `seen` traegt `id()` der gerade in Bearbeitung befindlichen
     Container, damit `CircularReferenceError` deterministisch frueh
     feuert statt am Python-Rekursionslimit zu sterben.
+
+    Thread-Affinitaet: `seen` wird durch den Call-Stack einer einzelnen
+    `canonical_json`-Invocation gereicht. Gemeinsame Nutzung ueber
+    Threads ist NICHT unterstuetzt — wer `_emit` als privates Sub-API
+    aus mehreren Threads ansprechen will, muss pro Thread ein eigenes
+    `seen`-Set anlegen.
     """
     if value is None:
         out.append("null")
@@ -183,6 +189,16 @@ def _emit(value: object, out: list[str], seen: set[int]) -> None:
 
 
 def _emit_decimal(value: Decimal, out: list[str]) -> None:
+    """Emittiert einen `Decimal` in Fixed-Point-Notation.
+
+    Vor-Bedingung (Domain-Eingangsgrenze, NICHT hier geprueft):
+    Decimals werden auf max. 6 Nachkommastellen quantisiert ueber
+    `Decimal(str(value)).quantize(Decimal("0.000001"),
+    rounding=ROUND_HALF_EVEN)`. Eingaben mit grossem negativem
+    Exponent (z. B. `Decimal("0E-100")`) wuerden hier 100-stellige
+    Strings emittieren — moeglich, aber unter Annahme der
+    Quantisierung nicht erreichbar.
+    """
     if not value.is_finite():
         raise NonFiniteDecimalError
     # Signed-Zero-Normalisierung: `Decimal("-0")` → `Decimal("0")`,
@@ -237,6 +253,13 @@ def _emit_array(
 
 
 def _emit_string(text: str) -> str:
+    """Emittiert einen JSON-String (RFC 8259).
+
+    Wird sowohl fuer Dict-Keys (in `_emit_dict`) als auch fuer
+    String-Werte (in `_emit`) verwendet. Der Surrogate-Check greift in
+    beiden Pfaden — Surrogate-Codepoints in Keys oder Werten werden
+    gleichermassen mit `SurrogateNotAllowedError` abgelehnt.
+    """
     buf: list[str] = ['"']
     for char in text:
         if char in _ESCAPE_MAP:

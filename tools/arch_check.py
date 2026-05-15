@@ -92,6 +92,12 @@ class ImportAliases:
     - `from json import dumps` → `from_imports["dumps"] = ("json", "dumps")`
     - `from time import monotonic as m` → `from_imports["m"] = ("time", "monotonic")`
 
+    Hinweis: `_collect_imports` nutzt `ast.walk`, sammelt also auch
+    nested Imports (in Funktionen / Klassen). Das ist gewollt:
+    `def f(): from time import monotonic` ist syntaktisch lokal,
+    aber `monotonic()`-Aufrufe sollen file-weit als AC-NO-TIME-
+    Verstoss erkannt werden — Re-Export-Tricks rutschen sonst durch.
+
     Wildcard-Imports (`from X import *`) werden NICHT erfasst —
     Aufrufer pruefen das ggf. separat.
     """
@@ -152,6 +158,13 @@ def _resolve_call_chain(
     Bare-name Calls (`monotonic()` nach `from time import monotonic`)
     geben `None` zurueck; Aufrufer muss `aliases.from_imports` separat
     konsultieren.
+
+    Bekannte Schwaeche: rebindings ueber lokale Variablen mit
+    Modul-Namen (`import json; def f(): json = obj; json.foo()`)
+    triggern weiterhin den Modul-Alias-Pfad und erzeugen
+    False-Positives. In der Praxis durch `PLR0915` /
+    `N`-Naming-Conventions gefangen — keine separate AST-Heuristik
+    erforderlich.
     """
     chain = _attribute_chain(call.func)
     if chain is None or len(chain) < _MIN_RESOLVABLE_CHAIN_LEN:
@@ -612,7 +625,13 @@ def _is_dataclass_decorator_target(func: ast.expr) -> bool:
 
 def _has_keyword_true(decorator: ast.Call, kwarg_name: str) -> bool:
     """True wenn `decorator` ein `kwarg_name=True`-Keyword als
-    `ast.Constant(value=True)` hat."""
+    `ast.Constant(value=True)` hat.
+
+    Strikt literal-True: `frozen=True` ja, `frozen=bool(1)` nein,
+    `_FROZEN = True; @dataclass(frozen=_FROZEN)` nein. Konvention
+    in `hexagon.core.domain.**` ist literal-True — `Final`-Aliases
+    oder Variable-Rebinds bei Decorator-Kwargs sind dort unueblich.
+    """
     for kw in decorator.keywords:
         if (
             kw.arg == kwarg_name
@@ -644,6 +663,18 @@ _GOD_UTIL_EXEMPT_PATH_FRAGMENTS: tuple[str, ...] = (
     "src/grid_gym/hexagon/core/serialization",
 )
 _MAX_PUBLIC_TOPLEVEL_FUNCTIONS = 5
+
+
+def _is_god_util_exempt(rel: str) -> bool:
+    """True wenn `rel` als File unter einem der Exempt-Praefixe liegt.
+
+    Strikt `startswith(fragment + "/")`: ein Geschwister-Pfad wie
+    `domain_extra/` matched NICHT das `domain/`-Praefix, anders als
+    bei naivem Substring-Match (`fragment in rel`).
+    """
+    return any(
+        rel.startswith(fragment + "/") for fragment in _GOD_UTIL_EXEMPT_PATH_FRAGMENTS
+    )
 
 
 def _check_no_god_utils(repo_root: Path, src_root: Path) -> Iterator[Violation]:
@@ -684,8 +715,12 @@ def _public_function_count_violations(
     deckt diese Heuristik ab. Wer einen God-Utility-Klassen-Bypass
     versucht (`class Toolkit: def fn1; def fn2; ...`), wird durch
     `PLR0904` aufgefangen.
+
+    Exempt-Pfad-Match nutzt strikt `startswith(fragment + "/")` —
+    Substring-Match wuerde `domain_extra/` faelschlich als „in
+    domain/" zaehlen.
     """
-    if any(fragment in rel for fragment in _GOD_UTIL_EXEMPT_PATH_FRAGMENTS):
+    if _is_god_util_exempt(rel):
         return
     public_funcs = sum(
         1
@@ -841,7 +876,14 @@ def _check_no_cycles() -> Iterator[Violation]:
 def _canonical_cycle(cycle: tuple[str, ...]) -> tuple[str, ...]:
     """Rotiert den Zyklus so, dass das alphabetisch kleinste Modul am
     Anfang steht. Dadurch wird derselbe Zyklus mit unterschiedlicher
-    Start-Wahl auf die gleiche Kanonisierung abgebildet."""
+    Start-Wahl auf die gleiche Kanonisierung abgebildet.
+
+    Selbst-Zyklen (`A → A`) sind in grimp 3.x praktisch nicht
+    erreichbar: `find_shortest_chain(A, A)` liefert in der Regel
+    einen echten Rueckpfad oder `None`. Die `if not cycle: return`
+    Sicherung deckt nur den theoretischen Fall ab, dass nach dem
+    Schluss-Knoten-Strip ein leeres Tupel ueberbleibt.
+    """
     # Closed cycles enden auf dem Start-Knoten — den fuer die Rotation
     # entfernen, sonst stimmt die Laenge nicht.
     if len(cycle) > 1 and cycle[0] == cycle[-1]:
@@ -918,6 +960,14 @@ def _cyclomatic_complexity(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
 
     Geht NICHT in nested `FunctionDef`/`AsyncFunctionDef`/`ClassDef`
     hinein — die haben einen eigenen Komplexitaets-Scope.
+
+    Verhaeltnis zu ruff `C901`: Adapter-Lightweight nutzt Schwelle
+    `> 8`, ruff `C901` ist auf `max-complexity = 10` gesetzt. Damit
+    ist jede ruff-C901-Verletzung automatisch auch ein
+    AC-ADAPTER-LIGHTWEIGHT-Verstoss; Adapter-Lightweight ist
+    strenger. Bei Detail-Unterschieden in der Zaehlung (z. B.
+    `assert`-Statements zaehlt mccabe historisch unterschiedlich)
+    bleibt diese Reihenfolge.
     """
     complexity = 1
     for node in _iter_function_body_skip_nested(func):
