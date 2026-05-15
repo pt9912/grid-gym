@@ -193,16 +193,32 @@ Gate rot wird und kein anderes.
 - `spec/architecture.md` §19: `GG-AR-OPEN-001`-Eintrag schliessen
   („Geschlossen mit `ADR 0002`").
 - `docs/plan/planning/in-progress/roadmap.md` §4 Vorbedingung 1
-  abgehakt; §3 M1-Lieferziel folgt aus dem ersten Domain-Slice.
+  (`GG-AR-OPEN-001`) abgehakt; §4 Vorbedingung 3 (initiales
+  Repository-Layout) ebenfalls (durch `ADR 0002` §6.1 verbindlich
+  fixiert). §3 M1-Lieferziel folgt aus dem ersten Domain-Slice;
+  §4 Vorbedingung 2 (`GG-AR-OPEN-002` API/Simulation Prozess-Wahl)
+  bleibt offen — eigene Folge-ADR.
 - Closure-Notiz `docs/plan/planning/done/spike-0.md` mit
-  Lieferumfang, Branch-Liste und ADR-Verweis.
-- `Dockerfile`-Header von „Spike-0-Pfad" auf „verbindlicher Stack
-  gemaess `ADR 0002 Accepted`" umstellen (entsprechend
-  `Makefile`-Header).
-- **Abschluss-Gate:** `make fullbuild` (CI + Runtime-Image-Build +
-  Compose-Smoke) gruen ist die Acceptance-Bedingung — d. h. die
-  Multi-Stage-Pipeline laeuft End-to-End ueber alle Dockerfile-
-  Stages bis zum non-root-Runtime-Image mit `/health`-HEALTHCHECK.
+  Welle-1..5-Tabelle (Commit-Verweise), Verweis auf 18-Contract-
+  Matrix in `next/spike-0-results.md §3` (Living Document bleibt
+  referenziell), Befunde-Verweis auf §4 und §6, Drift-Items-
+  Eingearbeitet-Liste, „was bleibt offen" (Triggers 009/010,
+  M1-Vorbereitungen).
+- `Dockerfile`-, `Makefile`- **und `pyproject.toml`**-Header von
+  „Spike-0-Pfad" auf „verbindlicher Stack gemaess `ADR 0002
+  Accepted`" umstellen.
+- **Abschluss-Gate:** `make gates` (Aggregator ueber Pflicht-Gates
+  `lint`, `format-check`, `typecheck`, `arch-check`, `test-unit`,
+  `coverage-gate`, `coverage-gate-critical` mit
+  `CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization`,
+  `dep-audit`) gruen ist die Spike-0-Acceptance-Bedingung. Das
+  ehemals geplante `make fullbuild` (CI + Runtime-Image-Build +
+  Compose-Smoke) erfordert die FastAPI-`http_api`-App
+  (`openapi-validate`/`image-audit`/`runtime`-Stages) und
+  `deploy/compose.yml` / `tests/integration/compose.yml`, die alle
+  M1-Slice-Artefakte sind (Triggers 009/010 in `open/`). `make
+  fullbuild` ist deshalb **M1-Abnahmebedingung**, nicht
+  Spike-0-Abschluss.
 
 ## 4. Out-of-Scope (bleibt fuer spaetere Slices)
 
@@ -258,6 +274,6 @@ Gate rot wird und kein anderes.
 | Sechzehn Verstoss-Branches: je nur ein Gate rot     | `spike-0-results.md` Branch × Gate Matrix; pro Branch `make <gate>`-Aufruf protokolliert     |
 | `ruff` akzeptiert `flake8-tidy-imports`-Schluessel  | `make lint` ohne Warnung (Dockerfile-Stage `lint` mit `ruff check --no-cache`)                |
 | `canonical_json` bytes-stabil                       | `make test-unit` gruen (Dockerfile-Stage `test-unit`, inkl. `hypothesis`-Properties)          |
-| Coverage 90 % auf `serialization`                   | `make coverage-gate-critical` mit reduziertem Build-Arg-Scope gruen                          |
-| Multi-Stage-Pipeline end-to-end                     | `make fullbuild` gruen (CI + Runtime-Image + Compose-Smoke)                                  |
+| Coverage 90 % auf `serialization`                   | `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization` gruen |
+| Spike-0-Abschluss-Gate                              | `make gates` gruen (Aggregator-Stage; `make fullbuild` ist M1-Slice-Abnahmebedingung — siehe Welle 5) |
 | `GG-AR-OPEN-001` geschlossen                        | `spec/architecture.md` §19 zeigt „Geschlossen mit `ADR 0002`"                                  |
