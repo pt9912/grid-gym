@@ -16,9 +16,9 @@ Ein Eintrag wechselt typischerweise:
 
 ## Bestand
 
-| Datei                          | Gegenstand                                                                                                                                          |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `M1-tick-loop-spine.md`        | M1-Slice-Plan: deterministischer Tick-Loop ohne Geraete (Domain-Modelle, ClockPort/RandomPort, Scheduler, Snapshot, Scenario/Replay, FastAPI-Stub, Compose-Smoke). 7 Wellen, `make fullbuild` als Abschluss-Gate. |
+(leer — M1-Slice-Plan ist seit 2026-05-15 nach
+[`in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+gewandert; siehe auch [`in-progress/README.md`](../in-progress/README.md).)
 
 Spike-0 selbst ist abgeschlossen und in
 [`done/spike-0.md`](../done/spike-0.md) archiviert. Weitere

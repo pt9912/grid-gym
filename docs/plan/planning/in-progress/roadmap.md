@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3 geschlossen mit Spike-0
-**Stand:** 2026-05-15
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
+**Stand:** 2026-05-15 (M1 Welle 0 abgeschlossen)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -14,9 +14,11 @@ der `GG-TRACE-001`-Implementierungsmatrix
 ([Lastenheft §27.2](../../../../spec/lastenheft.md#272-anforderung-zu-implementierung))
 mit `M[N]`-Markern.
 
-Die Roadmap ist noch ein Skelett. Sie wird mit dem ersten ADR zur
-Sprach- und Build-Wahl (`GG-AR-OPEN-001`) und der ersten
-Implementierungs-Slice gefuellt.
+`GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
+(`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
+2026-05-15 `In Progress` (Welle 0 abgeschlossen) — Details im
+[Slice-Plan](M1-tick-loop-spine.md). M2+ wird mit dem M1-Abschluss
+vorbelegt.
 
 ---
 
@@ -58,7 +60,8 @@ Implementierungs-Slice gefuellt.
   (`hexagon/core/domain`), `GG-AR-COMP-SCHED`
   (`hexagon/core/simulation/scheduler`), `GG-AR-PORT-DRN-001`
   (`ClockPort`), `GG-AR-PORT-DRN-010` (`RandomPort` — via
-  Folge-ADR aus Trigger `003-random-port-adr.md`).
+  [`ADR 0007`](../../adr/0007-random-port.md), `Provisional`
+  seit 2026-05-15, Acceptance synchron mit Welle 2).
 - **Abnahmekriterium:** `make fullbuild` gruen (impliziert
   Triggers 009 `tests/integration/compose.yml` und 010
   `deploy/compose.yml`) **und** `make gates` ohne
@@ -66,9 +69,12 @@ Implementierungs-Slice gefuellt.
   Domain `simulation/scenario/replay/devices/battery` hat
   jeweils mindestens ein produktives Modul, Coverage ≥ 90 %
   Line + Branch).
-- **Status:** Pending — Slice-Plan wird in
-  `docs/plan/planning/next/M1-tick-loop-spine.md` skizziert,
-  sobald M1-Start-Termin steht.
+- **Status:** In Progress — Slice-Plan
+  [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv.
+  Welle 0 abgeschlossen 2026-05-15: ADR 0007 (RandomPort)
+  `Provisional`, Trigger 001 (`docs/user/code-review.md` +
+  PR-Template) geliefert, Lock-Refresh sauber. Welle 1
+  (Domain-Modelle) ist der naechste Schritt.
 
 ---
 
@@ -88,3 +94,10 @@ Vor M1 muessen folgende Punkte geklaert sein:
   Python-Paketnamen (`src/grid_gym/hexagon/{core,ports}/`,
   `src/grid_gym/adapters/`) durch `ADR 0002` §6.1 (`Accepted`
   2026-05-15) verbindlich.
+- ✓ **Trigger 001 (Code-Review-Doku + PR-Template)** — Post-
+  Acceptance-Vorbedingung aus dem Dritten Spike-0-Review
+  ([`done/spike-0-results.md`](../done/spike-0-results.md) §6).
+  Erfuellt 2026-05-15 mit
+  [`docs/user/code-review.md`](../../../user/code-review.md) und
+  `.github/PULL_REQUEST_TEMPLATE.md`; Closure-Notiz in
+  [`done/001-code-review-doc.md`](../done/001-code-review-doc.md).

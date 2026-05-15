@@ -1,15 +1,20 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** Next — Scope skizziert, M1-Slice-Start ausstehend
-**Datum:** 2026-05-15
+**Status:** In Progress — Welle 0 abgeschlossen 2026-05-15
+(ADR 0007 `Provisional`, Trigger 001 geliefert, Lock-Refresh
+sauber). Welle 1 (Domain-Modelle) ist der naechste Schritt.
+**Datum:** 2026-05-15 (geoeffnet als `Next`);
+Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
 [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
 (`Accepted` 2026-05-15),
 [`ADR 0005`](../../adr/0005-type-check-gate.md)
 (`Accepted` 2026-05-15),
+[`ADR 0007`](../../adr/0007-random-port.md) (`Provisional`,
+Acceptance synchron mit Welle 2),
 [`done/spike-0.md`](../done/spike-0.md) §0 (Spike-0-Closure mit
 „M1 — Tick-Loop-Spine"-Verweis),
-[`roadmap.md`](../in-progress/roadmap.md) §3 M1 (Vorbelegung).
+[`roadmap.md`](roadmap.md) §3 M1.
 
 ---
 
