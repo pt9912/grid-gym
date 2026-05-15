@@ -2178,17 +2178,17 @@ keine eigene Kennung traegt.
 | GG-SAFE-006        | `GG-AR-COMP-REPLAY` Diff + `GG-AR-COMP-OBS` Replay-Diff-Status                                      |
 | GG-SAFE-007        | `GG-AR-P-011` Trennung Simulation/Produktion                                                        |
 | GG-SAFE-008        | `GG-AR-COMP-API` Eingabe-Validierung + `GG-AR-COMP-SCENARIO` Scenario-Validator                     |
-| GG-TESTTYPE-001..007 | Testarchitektur in `architecture.md` (§17 — noch keine eigene Kennung)                            |
-| GG-ARCHTEST-001..005 | `GG-AR-TABU-001..008` + Testarchitektur in `architecture.md` (§17)                                |
-| GG-CICD-001..007   | Testarchitektur in `architecture.md` (§17) + `GG-AR-COMP-DEPLOY`                                   |
+| GG-TESTTYPE-001..007 | `GG-AR-TEST-001`                                                                                  |
+| GG-ARCHTEST-001..005 | `GG-AR-TABU-001..008` + `GG-AR-TEST-001`                                                          |
+| GG-CICD-001..007   | `GG-AR-TEST-001` + `GG-AR-COMP-DEPLOY`                                                              |
 | GG-DEPLOY-001..011 | `GG-AR-COMP-DEPLOY`                                                                                 |
-| GG-DEMO-001..008   | `GG-AR-COMP-DEPLOY` (Compose-Demo) + Testarchitektur in `architecture.md` (§17, E2E/Demo-Abnahme)   |
-| GG-ACCEPT-001..003 | Testarchitektur in `architecture.md` (§17) + `GG-TRACE-001`                                        |
+| GG-DEMO-001..008   | `GG-AR-COMP-DEPLOY` (Compose-Demo) + `GG-AR-TEST-001` (E2E/Demo-Abnahme)                            |
+| GG-ACCEPT-001..003 | `GG-AR-TEST-001` + `GG-TRACE-001`                                                                   |
 | GG-TRACE-001       | Rueckverfolgbarkeitstabelle in `architecture.md` (§18) — Quelle fuer diese §27.1-Tabelle             |
-| GG-TEST-001..008   | Testarchitektur in `architecture.md` (§17, Replay-/Fault-/Determinismus-Tests)                      |
-| GG-COV-001..005    | Testarchitektur in `architecture.md` (§17, Coverage-Block und Quality Gates)                       |
-| GG-QG-001..007     | Testarchitektur in `architecture.md` (§17, Quality Gates) + `GG-AR-COMP-DEPLOY` (CI-Gating)         |
-| GG-QA-001..006     | Testarchitektur in `architecture.md` (§17) + `GG-AR-TABU-001..008` (statische Pruefungen)           |
+| GG-TEST-001..008   | `GG-AR-TEST-001` (Replay-/Fault-/Determinismus-Tests)                                               |
+| GG-COV-001..005    | `GG-AR-TEST-001` (Coverage-Block und Quality Gates)                                                 |
+| GG-QG-001..007     | `GG-AR-TEST-001` (Quality Gates) + `GG-AR-COMP-DEPLOY` (CI-Gating)                                   |
+| GG-QA-001..006     | `GG-AR-TEST-001` + `GG-AR-TABU-001..008` (statische Pruefungen)                                     |
 
 ### 27.1.1 Anforderungen ohne Design-Artefakt
 
@@ -2274,5 +2274,6 @@ Lastenheft ableitbar ist; weitere Eintraege folgen mit der Implementierung.
 | GG-DEPLOY-001      | Container Test                   |
 | GG-DEMO-001        | E2E Test                         |
 | GG-ACCEPT-001      | Acceptance/Documentation Test    |
+| GG-TRACE-001       | Documentation Test (Self-Verification — Existenz und Pflege der drei Trace-Tabellen, Folgearbeit: `tools/check_refs.py`) |
 
 ---

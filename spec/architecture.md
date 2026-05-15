@@ -174,22 +174,29 @@ Persistenz, Telemetrie, HTTP, UI, Dateien, Systemzeit — lebt in Adaptern.
 Die konkrete Sprach- und Build-Wahl ist offen (`GG-AR-OPEN-001`). Die
 Modulgrenzen sind aber sprachunabhaengig festgelegt:
 
+Sprachspezifische Paketnamen (z. B. `src/grid_gym/{core,ports,adapters}/`
+fuer den Python-Pfad) werden erst mit Acceptance der zugehoerigen
+Sprach-ADR in diese Verzeichnisstruktur uebernommen; vgl.
+[`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
+(Status: `Provisional`).
+
 ```text
 grid-gym/
 ├── spec/                                  ← normative Spezifikationen
 │   ├── lastenheft.md
 │   └── architecture.md
-├── core/                                  ← Hexagon (fachlicher Kern)
-│   ├── domain/                            ← Telemetry, Command, Event, Quality
-│   ├── simulation/                        ← Scheduler, Tick-Loop, Snapshot
-│   ├── devices/                           ← Device-Model-Interface + MVP-Modelle
-│   ├── scenario/                          ← Loader, Validator, Hash
-│   ├── replay/                            ← Replay-Mapper, Diff-Engine
-│   ├── faults/                            ← Fault-Modell, Recovery
-│   └── agents/                            ← Multi-Agent-Subsystem (optional)
-├── ports/                                 ← Port-Interfaces
-│   ├── driving/                           ← API-Use-Cases, CLI-Use-Cases
-│   └── driven/                            ← Clock, Persistence, Telemetry, Protocols
+├── hexagon/                               ← Hexagon (fachlicher Kern + Ports)
+│   ├── core/                              ← fachlicher Kern
+│   │   ├── domain/                        ← Telemetry, Command, Event, Quality
+│   │   ├── simulation/                    ← Scheduler, Tick-Loop, Snapshot
+│   │   ├── devices/                       ← Device-Model-Interface + MVP-Modelle
+│   │   ├── scenario/                      ← Loader, Validator, Hash
+│   │   ├── replay/                        ← Replay-Mapper, Diff-Engine
+│   │   ├── faults/                        ← Fault-Modell, Recovery
+│   │   └── agents/                        ← Multi-Agent-Subsystem (optional)
+│   └── ports/                             ← Port-Interfaces
+│       ├── driving/                       ← API-Use-Cases, CLI-Use-Cases
+│       └── driven/                        ← Clock, Persistence, Telemetry, Protocols
 ├── adapters/
 │   ├── driving/
 │   │   ├── http-api/                      ← REST + WebSocket + OpenAPI
@@ -210,6 +217,13 @@ grid-gym/
 ├── deploy/                                ← docker-compose, optionale k8s-Manifeste
 └── tests/                                 ← Unit, Integration, Architektur, E2E
 ```
+
+Das `hexagon/`-Verzeichnis gruppiert `core/` (fachlicher Kern) und
+`ports/` (Port-Interfaces) zu einer fachlichen Einheit. Die Dependency
+Rule (`GG-AR-TABU-001..008`) gilt unveraendert: Abhaengigkeiten zeigen
+nach innen, `hexagon/core/*` darf weder `adapters/*` noch
+`hexagon/ports/driving/*` importieren; `hexagon/ports/*` kennt nur
+`hexagon/core/domain`.
 
 #### Driving Ports (vom Kern angeboten)
 
@@ -268,8 +282,8 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 
 | Tabu-ID         | Regel                                                                                   | Bezug             |
 | --------------- | --------------------------------------------------------------------------------------- | ----------------- |
-| GG-AR-TABU-001  | `core/*` darf keine `adapters/*`-Symbole importieren                                    | GG-ARCH-003, GG-PRINC-006 |
-| GG-AR-TABU-002  | `core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren           | GG-CC-003         |
+| GG-AR-TABU-001  | `hexagon/core/*` darf keine `adapters/*`-Symbole importieren                            | GG-ARCH-003, GG-PRINC-006 |
+| GG-AR-TABU-002  | `hexagon/core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren   | GG-CC-003         |
 | GG-AR-TABU-003  | `adapters/*` darf keine fachlichen Entscheidungen treffen (nur Mapping/Transport)        | GG-CC-002         |
 | GG-AR-TABU-004  | Keine zyklischen Modulabhaengigkeiten                                                    | GG-CC-004         |
 | GG-AR-TABU-005  | Fachlogik liest Systemzeit nicht direkt; Zeit kommt aus `ClockPort`                      | GG-ARCH-007       |
@@ -278,8 +292,7 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 | GG-AR-TABU-008  | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt   | GG-CC-008         |
 
 Diese Tabus werden durch Architekturtests erzwungen
-(`GG-ARCHTEST-001..005`; Testarchitektur weiter unten in diesem Dokument,
-§17 — noch keine eigene Kennung).
+(`GG-ARCHTEST-001..005`; siehe `GG-AR-TEST-001` — Testarchitektur).
 
 ---
 
@@ -287,14 +300,14 @@ Diese Tabus werden durch Architekturtests erzwungen
 
 | Komponente               | Modul                              | Verantwortung                                                | Bezug                                    |
 | ------------------------ | ---------------------------------- | ------------------------------------------------------------ | ---------------------------------------- |
-| `GG-AR-COMP-CORE`        | `core/simulation`                  | Deterministischer Tick-Loop, Scheduler, Snapshot, Pause/Resume | GG-SIM-001..009, GG-ARCH-006/007/008    |
-| `GG-AR-COMP-SCHED`       | `core/simulation/scheduler`        | Event-Scheduler mit dokumentiertem Tie-Breaking              | GG-ARCH-005/006                          |
-| `GG-AR-COMP-DEVICES`     | `core/devices`                     | `DeviceModel`-Interface, MVP-Modelle (`battery`, `pv`, `load`, `grid_connection`, `smart_meter`), SOLLTE-Modelle | GG-DEV-001..018, GG-BESS-001..008, GG-GRID-001..007 |
-| `GG-AR-COMP-SCENARIO`    | `core/scenario`                    | YAML-Schema-Validator, Szenario-Hash, kanonische Serialisierung | GG-SCN-001..008, GG-DATA-005             |
-| `GG-AR-COMP-REPLAY`      | `core/replay`                      | Replay-Sample-Import, Zeitabbildung, Diff-Engine             | GG-REPLAY-001..007                       |
-| `GG-AR-COMP-FAULTS`      | `core/faults`                      | Fault-Modell, Aktivierung/Recovery, Determinismus            | GG-FAULT-001..010                        |
-| `GG-AR-COMP-AGENTS`      | `core/agents`                      | optionales Multi-Agent-Subsystem, deterministisches Messaging | GG-AGENT-001..008                        |
-| `GG-AR-COMP-DOMAIN`      | `core/domain`                      | Telemetry, Command, Event, Quality-Status, Run-Metadaten     | GG-DATA-001..005, GG-DEV-002/003         |
+| `GG-AR-COMP-CORE`        | `hexagon/core/simulation`          | Deterministischer Tick-Loop, Scheduler, Snapshot, Pause/Resume | GG-SIM-001..009, GG-ARCH-006/007/008    |
+| `GG-AR-COMP-SCHED`       | `hexagon/core/simulation/scheduler` | Event-Scheduler mit dokumentiertem Tie-Breaking              | GG-ARCH-005/006                          |
+| `GG-AR-COMP-DEVICES`     | `hexagon/core/devices`             | `DeviceModel`-Interface, MVP-Modelle (`battery`, `pv`, `load`, `grid_connection`, `smart_meter`), SOLLTE-Modelle | GG-DEV-001..018, GG-BESS-001..008, GG-GRID-001..007 |
+| `GG-AR-COMP-SCENARIO`    | `hexagon/core/scenario`            | YAML-Schema-Validator, Szenario-Hash, kanonische Serialisierung | GG-SCN-001..008, GG-DATA-005             |
+| `GG-AR-COMP-REPLAY`      | `hexagon/core/replay`              | Replay-Sample-Import, Zeitabbildung, Diff-Engine             | GG-REPLAY-001..007                       |
+| `GG-AR-COMP-FAULTS`      | `hexagon/core/faults`              | Fault-Modell, Aktivierung/Recovery, Determinismus            | GG-FAULT-001..010                        |
+| `GG-AR-COMP-AGENTS`      | `hexagon/core/agents`              | optionales Multi-Agent-Subsystem, deterministisches Messaging | GG-AGENT-001..008                        |
+| `GG-AR-COMP-DOMAIN`      | `hexagon/core/domain`              | Telemetry, Command, Event, Quality-Status, Run-Metadaten     | GG-DATA-001..005, GG-DEV-002/003         |
 | `GG-AR-COMP-API`         | `adapters/driving/http-api`         | REST + WebSocket + OpenAPI                                   | GG-API-001..004, GG-UI-001               |
 | `GG-AR-COMP-UI`          | `ui/`                              | Web-UI fuer Demo, Live-Telemetrie, Alarme, Replay-Steuerung   | GG-UI-001..009                           |
 | `GG-AR-COMP-PERSIST`     | `adapters/driven/persistence-*`    | PostgreSQL (Pflicht), optional Timescale / Influx; Migrationen | GG-PERSIST-001..009                      |
@@ -478,7 +491,7 @@ Echtzeitbetrieb (`GG-RT-001`).
 - Stale-, NaN-, missing- und fault-injected-Werte werden vor
   Zustandsfortschreibung erkannt und markiert (`GG-SAFE-001..004`).
 - Batteriemodell-spezifische Sicherheit (`GG-BESS-002/005`) ist in
-  `core/devices/battery` lokalisiert, nicht im Adapter.
+  `hexagon/core/devices/battery` lokalisiert, nicht im Adapter.
 
 ### 10.2 Sicherer Fallback
 
@@ -590,7 +603,7 @@ Fault.
 ## 14. Multi-Agent-Subsystem (optional)
 
 Agenten sind ein SOLLTE-Feature (`GG-AGENT-001`). Architektonisch sind sie
-ein eigenes Kernmodul `core/agents`, das die folgenden Verbindungen hat:
+ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 
 - liest ueber `ClockPort` und `TelemetryQueryPort`,
 - schreibt ueber `RunControlPort`/`DeviceProtocolPort`-Mapping nur per
@@ -648,6 +661,10 @@ Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
 
 ## 17. Testarchitektur
 
+**Kennung:** `GG-AR-TEST-001` — Testarchitektur als Ganzes (eingefuehrt
+gemaess `ADR 0004` §2.2; loest die zuvor positionsabhaengige
+`§17`-Referenz ab).
+
 | Testart                 | Verortung                              | Bezug                                |
 | ----------------------- | -------------------------------------- | ------------------------------------ |
 | Unit Tests              | je Modul, `tests/unit/...`            | GG-TESTTYPE-001, GG-TEST-006         |
@@ -672,7 +689,7 @@ Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
 
 | Architekturartefakt                                | Lastenheft-Anforderung(en)                                |
 | -------------------------------------------------- | --------------------------------------------------------- |
-| `GG-AR-P-001..014` Architekturprinzipien            | GG-ARCH-001..008, GG-PRINC-001..006, GG-CC-001..008       |
+| `GG-AR-P-001..014` Architekturprinzipien            | GG-ARCH-001..008, GG-PRINC-001..006, GG-CC-001..008 (Detail-Mapping pro `GG-PRINC-*` siehe `GG-TRACE-001` in `lastenheft.md` §27.1) |
 | Schichtenmodell                                    | GG-ARCH-001/002                                           |
 | Hexagonale Sicht (`GG-AR-P-002`)                    | GG-ARCH-002/003, GG-PRINC-003..006                        |
 | `GG-AR-TABU-001..008` Architektur-Tabus             | GG-PRINC-006, GG-CC-002/003/004/006/007/008, GG-ARCHTEST-001..005 |
@@ -692,7 +709,7 @@ Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
 | `GG-AR-COMP-AGENTS` Multi-Agent-Subsystem           | GG-AGENT-001..008                                         |
 | `GG-AR-COMP-OBS` Beobachtbarkeit                    | GG-OTEL-001..004, GG-DEPLOY-006, GG-REPLAY-007            |
 | `GG-AR-COMP-DEPLOY` Deployment-Sicht                | GG-DEPLOY-001..011                                        |
-| Testarchitektur (`architecture.md` §17 — noch keine eigene Kennung) | GG-TESTTYPE-001..007, GG-ARCHTEST-001..005, GG-TEST-001..008 |
+| `GG-AR-TEST-001` Testarchitektur                    | GG-TESTTYPE-001..007, GG-ARCHTEST-001..005, GG-TEST-001..008 |
 
 ---
 

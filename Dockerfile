@@ -88,9 +88,14 @@ RUN uv run ruff format --check .
 # pyproject.toml unter [tool.mypy] mit `strict = true` plus erweiterten
 # error codes. Wird zwischen format-check und arch-check im Aggregator
 # `gates` eingehaengt.
+#
+# Pfade kommen ausschliesslich aus der `files`-Direktive in
+# [tool.mypy] (Single-Source-of-Truth fuer den Scope-Vertrag, ADR 0005
+# §5.1). Kommandozeilen-Pfade wuerden die `files`-Direktive
+# ueberlagern und sind deshalb hier bewusst nicht gesetzt.
 # ---------------------------------------------------------------------------
 FROM source AS typecheck
-RUN uv run mypy --config-file pyproject.toml src/grid_gym tools
+RUN uv run mypy --config-file pyproject.toml
 
 # ---------------------------------------------------------------------------
 # arch-check-imports: import-linter mit den Layer-/Forbidden-Contracts

@@ -44,22 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `GG-PRINC-005` (ISP via Protocol-Konformitaet). Status:
   `Provisional`, Acceptance synchron mit `ADR 0002`. `pyright` bleibt
   Developer-Tool ueber Pylance, nicht CI-Gate.
-- ruff-Auswahl in ADR 0002 erweitert um Klassen-Ebene-Heuristiken
-  und Code-Hygiene: `PLR0902/PLR0903/PLR0904` (SRP/ISP-Signale),
-  `PLR0916`/`PLR2004` (Bedingungs- und Magic-Number-Detection),
-  `B`/`RET`/`SIM`/`ARG`/`RUF` (Design-Bugs, Kontrollfluss,
-  Refaktorisierung), `N` (pep8-naming als Heuristik fuer
-  `GG-CC-005`). `[tool.ruff.lint.pylint]` mit
-  `max-public-methods=12`, `max-attributes=7`, `max-bool-expr=4`.
-  `tests/**`-Per-File-Ignore entsprechend gelockert.
 - `Dockerfile`-Stage `typecheck` und Makefile-Target `make typecheck`
   ergaenzt; Aggregator `gates` enthaelt jetzt `typecheck` zwischen
   `format-check` und `arch-check`.
-- §27.1-Mapping fuer `GG-PRINC-001..006` in fuenf Einzel-Zeilen
-  aufgespalten (SOLID-Prinzipien einzeln zugeordnet zu ruff-Regeln,
-  ADR 0005, Architektur-Tabus); `GG-CC-005` von „Code-Review" auf
-  ruff `N` plus Code-Review-Rest umgestellt; `GG-CC-001`-Anteil
-  bleibt bei ruff (`PLR0915` etc.).
 - `docs/plan/adr/0002-language-and-build-stack.md` — Entwurf zur
   Sprach- und Build-Wahl (Status: Provisional; schliesst bei Annahme
   `GG-AR-OPEN-001`). Begruendung MVP-getrieben; Future-Punkte als
@@ -130,15 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Export + `openapi-spec-validator`, `GG-QG-006`). Aggregator
   `gates` erweitert um `coverage-gate-critical` und `dep-audit`;
   `ci` erweitert um `openapi-validate` und `image-audit`.
-- ADR 0002 `ruff`-Konfiguration um Methodenlaengen-Gate ergaenzt:
-  `C901`, `PLR0911`, `PLR0912`, `PLR0913`, `PLR0915` mit
-  `max-complexity=10`, `max-statements=30`, `max-branches=12`,
-  `max-args=5`, `max-returns=6` — bildet `GG-CC-001`
-  Methodenlaengen-Akzeptanzkriterium 1:1 auf ruff ab.
-  `tests/**`-Per-File-Ignore um `PLR*`/`C901` erweitert (Tests
-  duerfen lang/komplex sein).
-- `GG-CC-001` in §27.1 von „Code-Review-Gegenstand" auf
-  automatisierten ruff-Check umgestellt; Restanteil bleibt Review.
 - `Dockerfile` (Multi-Stage) und `Makefile` als Spike-0-Geruest zu
   ADR 0002. Stages: `base`, `deps`, `source`, `lint`, `format-check`,
   `arch-check`/`arch-check-imports`/`arch-check-custom`,
@@ -155,6 +133,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `src/grid_gym/`, `tests/`, `tools/arch_check.py`) als kuenftig
   voraus. ADR-0002-Status ist `Provisional`; die Artefakte sind als
   Spike-0-Pfad gemaess ADR 0006 gekennzeichnet.
+- `docs/plan/planning/open/` mit elf Trigger-Watch-Dateien
+  (`001-code-review-doc.md` bis `011-hexagon-layout-adr-0002-realign.md`)
+  und aktualisiertem `README.md` mit Bestandstabelle. Macht die
+  bisher impliziten Folgearbeiten aus ADR 0002/0004/0005, Makefile
+  und Dockerfile sichtbar (`docs/user/code-review.md`,
+  `tools/check_refs.py`, `RandomPort`-ADR, Alternativ-Encoder-ADR,
+  mypy/pyright-Re-Eval, `--strict-bytes`, pyright-Pre-Commit-ADR,
+  SBOM-Scharfschaltung, `tests/integration/compose.yml`,
+  `deploy/compose.yml`, ADR-0002-Contract-Anpassung an `hexagon/`).
+  Schliesst die Luecke gegenueber `ADR 0001` §4 („Offene Trigger
+  bleiben in `open/`").
 
 ### Changed
 
@@ -185,6 +174,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Kennungs-Verweise ersetzt. Verbleibende `§…`-Eintraege beziehen
   sich nur auf Sektionen ohne eigene Kennung (Testarchitektur in
   `architecture.md`) und sind als Klammer-Lesehilfen gekennzeichnet.
+- ruff-Auswahl in ADR 0002 erweitert um Klassen-Ebene-Heuristiken
+  und Code-Hygiene: `PLR0902/PLR0903/PLR0904` (SRP/ISP-Signale),
+  `PLR0916`/`PLR2004` (Bedingungs- und Magic-Number-Detection),
+  `B`/`RET`/`SIM`/`ARG`/`RUF` (Design-Bugs, Kontrollfluss,
+  Refaktorisierung), `N` (pep8-naming als Heuristik fuer
+  `GG-CC-005`). `[tool.ruff.lint.pylint]` mit
+  `max-public-methods=12`, `max-attributes=7`, `max-bool-expr=4`.
+  `tests/**`-Per-File-Ignore entsprechend gelockert.
+- §27.1-Mapping fuer `GG-PRINC-001..006` in fuenf Einzel-Zeilen
+  aufgespalten (SOLID-Prinzipien einzeln zugeordnet zu ruff-Regeln,
+  ADR 0005, Architektur-Tabus); `GG-CC-005` von „Code-Review" auf
+  ruff `N` plus Code-Review-Rest umgestellt; `GG-CC-001`-Anteil
+  bleibt bei ruff (`PLR0915` etc.).
+- ADR 0002 `ruff`-Konfiguration um Methodenlaengen-Gate ergaenzt:
+  `C901`, `PLR0911`, `PLR0912`, `PLR0913`, `PLR0915` mit
+  `max-complexity=10`, `max-statements=30`, `max-branches=12`,
+  `max-args=5`, `max-returns=6` — bildet `GG-CC-001`
+  Methodenlaengen-Akzeptanzkriterium 1:1 auf ruff ab.
+  `tests/**`-Per-File-Ignore um `PLR*`/`C901` erweitert (Tests
+  duerfen lang/komplex sein).
+- `GG-CC-001` in §27.1 von „Code-Review-Gegenstand" auf
+  automatisierten ruff-Check umgestellt; Restanteil bleibt Review.
+- `spec/architecture.md` §4.2 Verzeichnisstruktur: `core/` und
+  `ports/` zu einer `hexagon/`-Gruppierungsebene zusammengefasst
+  (`hexagon/core/{domain,simulation,devices,scenario,replay,faults,agents}`,
+  `hexagon/ports/{driving,driven}`). Folge-Updates in derselben
+  Datei: Tabu-Familie `GG-AR-TABU-001/002` referenziert
+  `hexagon/core/*`; Komponentensicht §5 fuehrt `hexagon/core/*`
+  als Modul-Pfade; Prosa-Erwaehnungen `core/devices/battery` und
+  `core/agents` umgestellt. ADR-0002-Contracts und Coverage-Pfade
+  in `Dockerfile`/`Makefile` referenzieren noch `core.*` —
+  Anpassung als Trigger-Watch
+  (`docs/plan/planning/open/011-hexagon-layout-adr-0002-realign.md`)
+  vor `ADR 0002 Accepted` vorgesehen.
+- `spec/architecture.md` §17 Testarchitektur erhaelt die Kennung
+  `GG-AR-TEST-001` (gemaess `ADR 0004` §2.2: Sektion ohne Kennung
+  bei naechster Beruehrung umstellen). `spec/architecture.md` §18
+  Rueckverfolgbarkeitstabelle und `spec/lastenheft.md` §27.1
+  Design-Tabelle (neun Zeilen: `GG-TESTTYPE-*`, `GG-ARCHTEST-*`,
+  `GG-CICD-*`, `GG-DEMO-*`, `GG-ACCEPT-*`, `GG-TEST-*`, `GG-COV-*`,
+  `GG-QG-*`, `GG-QA-*`) verweisen jetzt auf `GG-AR-TEST-001` statt
+  „Testarchitektur in `architecture.md` (§17 — noch keine eigene
+  Kennung)".
+- `spec/architecture.md` §4.2 Verzeichnisstruktur: Hinweis ergaenzt,
+  dass sprachspezifische Paketnamen (z. B. `src/grid_gym/...` fuer
+  Python) erst mit Acceptance von `ADR 0002` in die
+  Verzeichnisstruktur uebernommen werden.
+- `spec/architecture.md` §18 SOLID-Zeile (`GG-AR-P-001..014`) um
+  Hinweis ergaenzt, dass das Detail-Mapping pro `GG-PRINC-*` in
+  `GG-TRACE-001` (`lastenheft.md` §27.1) zu finden ist.
+- `spec/lastenheft.md` §27.3 Anforderung-zu-Test um `GG-TRACE-001`
+  ergaenzt (Documentation Test — Self-Verification der drei
+  Trace-Tabellen; Folgearbeit `tools/check_refs.py`).
 
 ### Fixed
 
@@ -222,3 +264,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Implementierungs-Alternativen" umgestellt — die Format-Details
   sind durch A-2 jetzt fix, eine Folge-ADR darf nur die
   Umsetzungsroute aendern und muss Byte-Gleichheit nachweisen.
+- `Dockerfile` `typecheck`-Stage: `uv run mypy --config-file pyproject.toml`
+  ohne Kommandozeilen-Pfade aufgerufen. Die `[tool.mypy] files`-
+  Direktive (`ADR 0005` §5.1) ist damit alleinige Single-Source-of-
+  Truth fuer den Scope-Vertrag; Kommandozeilen-Pfade haetten die
+  Direktive ueberlagert.
