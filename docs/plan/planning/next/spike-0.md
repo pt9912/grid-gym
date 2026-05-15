@@ -26,19 +26,37 @@ verbindlichen Projektkonvention.
 
 ## 2. Erfolgskriterien (aus ADR 0002 Spike-0-Vertrag)
 
+**Operatives Grundprinzip:** Alle Gates und Tests laufen ueber das
+Multi-Stage-`Dockerfile` (Stages `lint`, `format-check`, `typecheck`,
+`arch-check-imports`, `arch-check-custom`, `test-unit`, `coverage-gate`,
+…), angesprochen ueber die `Makefile`-Targets (`make lint`,
+`make typecheck`, `make arch-check`, `make gates`). Lokale `uv run`-
+Aufrufe sind nur fuer Entwickler-Diagnose erlaubt; der **Gate-Vertrag
+ist die Dockerfile-Stage**. CI ruft `make gates` (Pflicht-Gates) und
+`make ci` (Pflicht-Gates + Integration + OpenAPI + Image-Audit) auf.
+
 Spike-0 ist erfolgreich, wenn:
 
-1. Alle vier Gates auf `main` gruen sind:
-   - `uv run lint-imports`
-   - `uv run ruff check --no-cache`
-   - `uv run python tools/arch_check.py`
-   - `uv run mypy --config-file pyproject.toml`
+1. Alle vier A-1-Pflicht-Gates auf `main` gruen sind, jeweils als
+   Dockerfile-Stage gebaut:
+   - `make arch-check-imports` → Stage `arch-check-imports`
+     (`uv run lint-imports`)
+   - `make lint` → Stage `lint` (`uv run ruff check --no-cache`)
+   - `make arch-check-custom` → Stage `arch-check-custom`
+     (`uv run python tools/arch_check.py`)
+   - `make typecheck` → Stage `typecheck`
+     (`uv run mypy --config-file pyproject.toml`, ADR 0005)
+   `make gates` aggregiert diese plus `format-check`, `test-unit`,
+   `coverage-gate`, `coverage-gate-critical`, `dep-audit` und ist
+   die Single-Source-of-Truth fuer den lokalen Gruen-Lauf.
 2. Pro A-1-Contract (15) und pro `mypy --strict`-LSP-Beispiel (1)
    existiert ein separater Branch mit bewusst eingefuegtem Verstoss,
-   in dem genau das erwartete Gate rot wird und kein anderes.
-3. `ruff check --no-cache` akzeptiert die `[tool.ruff.lint.flake8-tidy-imports]`-
+   in dem genau das erwartete Gate rot wird und kein anderes
+   (gepruft via `make <gate>` und `make gates` pro Branch).
+3. `make lint` akzeptiert die `[tool.ruff.lint.flake8-tidy-imports]`-
    Konfiguration ohne Warnung (Versions-Sanity-Check fuer die in
-   ADR 0002 §A-1 dokumentierten Schluessel).
+   ADR 0002 §A-1 dokumentierten Schluessel; ruff laeuft im
+   Dockerfile-Stage `lint` mit `--no-cache`).
 
 ## 3. Liefer-Reihenfolge
 
@@ -66,9 +84,12 @@ bis dahin aktiven Gates.
   liest `[tool.grid_gym.arch_check]`, gibt heute nur „OK" zurueck
   — Contract-Logik kommt in Welle 3).
 - `tests/unit/__init__.py` plus `tests/arch/__init__.py`.
-- **Gate-Status:** `lint`, `format-check`, `typecheck` (auf leerem
-  Skelett trivial gruen), `arch-check-imports` (keine Module → ok),
-  `arch-check-custom` (Skelett-OK).
+- **Gate-Status nach Welle 1** (alle ueber Dockerfile-Stages, via
+  `make <target>`): `make lint`, `make format-check`,
+  `make typecheck` (auf leerem Skelett trivial gruen),
+  `make arch-check-imports` (keine Module → ok),
+  `make arch-check-custom` (Skelett-OK). `make gates` als
+  Aggregator-Lauf am Ende der Welle gruen.
 
 ### Welle 2 — A-2 Custom-Emitter + Property-Tests (Tag 2)
 
@@ -85,8 +106,10 @@ bis dahin aktiven Gates.
     - `float`-Eingabe → `CanonicalSerializationError`,
     - Roundtrip Lesen → Schreiben byte-stabil fuer
       `Telemetry`/`Command`/`Event`-Domain-Skizzen.
-- **Gate-Status:** `test-unit` plus Coverage-Gate auf
-  `src/grid_gym/hexagon/core/serialization` (90 % Line + Branch).
+- **Gate-Status nach Welle 2:** `make test-unit` (Dockerfile-Stage
+  `test-unit`) gruen; `make coverage-gate` / `make coverage-gate-critical`
+  (Dockerfile-Stages, mit Build-Arg-Scope auf
+  `src/grid_gym/hexagon/core/serialization`, 90 % Line + Branch).
 
 ### Welle 3 — `tools/arch_check.py` Contract-Implementierung (Tag 3)
 
@@ -112,8 +135,11 @@ oder `ruff` allein abgedeckt sind:
 Output-Format: `{contract_id} {module_or_symbol} {reason}` pro
 Verstoss; Exit-Code 0/1.
 
-- **Gate-Status:** `arch-check-custom` gruen, weil das Skelett die
-  Contracts nicht verletzt.
+- **Gate-Status nach Welle 3:** `make arch-check-custom` (Dockerfile-
+  Stage `arch-check-custom`) gruen, weil das Skelett die Contracts
+  nicht verletzt. `make arch-check` (Aggregator-Stage:
+  `lint-imports` + `arch_check.py`) ebenfalls gruen. `make gates`
+  Re-Run zur Sicherheit.
 
 ### Welle 4 — Verstoss-Branches (Tag 4)
 
@@ -143,9 +169,12 @@ Branch-Liste:
 - `spike0/lsp-variance` (LSP-/Protocol-Variance-Verstoss fuer
   `mypy --strict`, ADR 0005 §4a)
 
-CI-Setup laeuft alle vier Gates pro Branch. Erwartete Ergebnisse
-werden in `docs/plan/planning/next/spike-0-results.md`
-dokumentiert (siehe Welle 5).
+CI-Setup ruft pro Branch `make gates` (Aggregator ueber alle
+Dockerfile-Pflicht-Stages) auf. Erwartete Branch × Gate Matrix wird
+in `docs/plan/planning/next/spike-0-results.md` dokumentiert (siehe
+Welle 5). Pro Verstoss-Branch wird zusaetzlich der spezifische
+`make <gate>`-Aufruf protokolliert, um zu zeigen, dass genau dieses
+Gate rot wird und kein anderes.
 
 ### Welle 5 — Spike-0-Abschluss, Acceptance-Hebung (Tag 5)
 
@@ -163,6 +192,10 @@ dokumentiert (siehe Welle 5).
 - `Dockerfile`-Header von „Spike-0-Pfad" auf „verbindlicher Stack
   gemaess `ADR 0002 Accepted`" umstellen (entsprechend
   `Makefile`-Header).
+- **Abschluss-Gate:** `make fullbuild` (CI + Runtime-Image-Build +
+  Compose-Smoke) gruen ist die Acceptance-Bedingung — d. h. die
+  Multi-Stage-Pipeline laeuft End-to-End ueber alle Dockerfile-
+  Stages bis zum non-root-Runtime-Image mit `/health`-HEALTHCHECK.
 
 ## 4. Out-of-Scope (bleibt fuer spaetere Slices)
 
@@ -212,11 +245,12 @@ dokumentiert (siehe Welle 5).
 
 ## 7. Verifikationspfad
 
-| Erfolg                                        | Verifikation                                                |
-| --------------------------------------------- | ----------------------------------------------------------- |
-| Vier Gates gruen auf `main`                   | `make gates` (CI) gruen                                     |
-| Sechzehn Verstoss-Branches je nur ein Gate rot | `spike-0-results.md` zeigt Branch × Gate Matrix          |
-| `ruff` akzeptiert `flake8-tidy-imports`-Schluessel | `ruff check --no-cache` ohne Warnung                       |
-| `canonical_json` bytes-stabil                  | `pytest tests/unit/hexagon/core/serialization` gruen        |
-| Coverage 90 % auf `serialization`             | `coverage-gate-critical` mit reduziertem Scope gruen        |
-| `GG-AR-OPEN-001` geschlossen                  | Architekturdokument zeigt „Geschlossen mit ADR 0002"        |
+| Erfolg                                              | Verifikation (Dockerfile-Stage via `make <target>`)                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Vier A-1-Gates gruen auf `main`                     | `make gates` gruen (Aggregator: `lint`, `format-check`, `typecheck`, `arch-check`, `test-unit`, `coverage-gate`, `coverage-gate-critical`, `dep-audit`) |
+| Sechzehn Verstoss-Branches: je nur ein Gate rot     | `spike-0-results.md` Branch × Gate Matrix; pro Branch `make <gate>`-Aufruf protokolliert     |
+| `ruff` akzeptiert `flake8-tidy-imports`-Schluessel  | `make lint` ohne Warnung (Dockerfile-Stage `lint` mit `ruff check --no-cache`)                |
+| `canonical_json` bytes-stabil                       | `make test-unit` gruen (Dockerfile-Stage `test-unit`, inkl. `hypothesis`-Properties)          |
+| Coverage 90 % auf `serialization`                   | `make coverage-gate-critical` mit reduziertem Build-Arg-Scope gruen                          |
+| Multi-Stage-Pipeline end-to-end                     | `make fullbuild` gruen (CI + Runtime-Image + Compose-Smoke)                                  |
+| `GG-AR-OPEN-001` geschlossen                        | `spec/architecture.md` §19 zeigt „Geschlossen mit `ADR 0002`"                                  |
