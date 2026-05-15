@@ -1,0 +1,352 @@
+# pyproject.toml — grid-gym
+#
+# Spike-0-Pfad fuer ADR 0002 (`Provisional` gemaess ADR 0006):
+# Konfiguration der vier A-1-Gates (lint-imports, ruff, arch_check.py,
+# mypy --strict) plus Repository-Layout (`src/grid_gym/hexagon/{core,
+# ports}/`, `src/grid_gym/adapters/`). Bis zur Acceptance von ADR 0002
+# und ADR 0005 bleibt dies der validierte Spike-0-Pfad — kein
+# verbindlicher Stack-Beschluss.
+
+[project]
+name = "grid-gym"
+version = "0.1.0"
+description = "Modulare Open-Source-Plattform zur Simulation, Validierung und Analyse elektrischer Energiesysteme"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+authors = [{ name = "grid-gym contributors" }]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Scientific/Engineering",
+]
+
+# Runtime-Dependencies werden mit dem ersten produktiven Slice
+# ergaenzt (FastAPI, pydantic, psycopg, alembic, structlog,
+# prometheus-client, opentelemetry-api). Welle 1 hat keine
+# Runtime-Abhaengigkeiten — der Spike-0-Skelett-Test importiert
+# nur stdlib-Code.
+dependencies = []
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/grid_gym"]
+
+# ---------------------------------------------------------------------------
+# Dependency Groups (PEP 735)
+# Trennung von Toolchain-Kategorien; `uv sync --all-groups` im Dockerfile
+# `deps`-Stage installiert alle Gruppen fuer CI-Gates.
+# ---------------------------------------------------------------------------
+
+[dependency-groups]
+lint = [
+    # Floor `>=0.15` weil mehrere fuer GG-CC-001/GG-PRINC-005 relevante
+    # Regeln (`PLR0904`, `PLR0916`) in ruff 0.15 unter dem Preview-Flag
+    # stehen; aeltere Versionen kennen sie nicht zuverlaessig.
+    "ruff>=0.15",
+]
+arch = [
+    "import-linter>=2.0",
+    "grimp>=3.4",
+]
+typecheck = [
+    "mypy>=1.13",
+]
+test = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.0",
+]
+audit = [
+    "pip-audit>=2.7",
+    "openapi-spec-validator>=0.7",
+]
+dev = [
+    { include-group = "lint" },
+    { include-group = "arch" },
+    { include-group = "typecheck" },
+    { include-group = "test" },
+    { include-group = "audit" },
+]
+
+# ---------------------------------------------------------------------------
+# ruff (ADR 0002 §A-1)
+# Regelgruppen decken AC-TYPED-ERRORS, AC-NO-TIME (DTZ-Teil),
+# AC-NO-RAND (Modul-Import-Teil), Security-Subset, SOLID-Heuristiken
+# auf Klassen-Ebene und Methodenlaengen-Gate aus `GG-CC-001`.
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+# Preview-Mode aktiv, weil mehrere fuer GG-CC-001 / GG-PRINC-005
+# relevante Regeln (`PLR0904` too-many-public-methods,
+# `PLR0916` too-many-boolean-expressions) in ruff 0.15 noch hinter
+# dem Preview-Flag stehen. Das fasst keine Preview-Regel jenseits
+# der unten explizit selektierten ein — `select` ist erschoepfend.
+preview = true
+select = [
+    # AC-TYPED-ERRORS / GG-CC-008
+    "BLE",
+    "TRY",
+    "B904",
+    "B",
+    # AC-NO-TIME / GG-AR-TABU-005 (Teilabdeckung)
+    "DTZ",
+    # Security-Subset
+    "S",
+    # AC-NO-RAND / GG-AR-TABU-005 (Modul-Imports)
+    "TID",
+    # GG-CC-001 — Methodenlaengen-Gate
+    "C901",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR0916",
+    "PLR2004",
+    # GG-PRINC-002/005, GG-CC-006 — SRP/ISP-Heuristiken
+    # Hinweis: ruff 0.15 implementiert weder PLR0902 (too-many-instance-
+    # attributes) noch PLR0903 (too-few-public-methods). Diese beiden
+    # Heuristiken bleiben Code-Review-pflichtig (siehe Folge-Trigger
+    # `docs/plan/planning/open/001-code-review-doc.md`). PLR0904
+    # (too-many-public-methods, breite API) ist die einzige aktiv
+    # genutzte SRP/ISP-Heuristik auf Klassen-Ebene.
+    "PLR0904",
+    # GG-CC-005 — sprechende Namen (heuristisch)
+    "N",
+    # Code-Hygiene
+    "RET",
+    "SIM",
+    "ARG",
+    "RUF",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-statements = 30
+max-branches = 12
+max-args = 5
+max-returns = 6
+max-bool-expr = 4
+max-public-methods = 12
+# `max-attributes` waere fuer PLR0902 (too-many-instance-attributes)
+# relevant — in ruff 0.15 nicht implementiert; siehe Hinweis bei
+# der `PLR0904`-Auswahl oben.
+
+[tool.ruff.lint.flake8-tidy-imports]
+# AC-NO-RAND: Modulimport-Verbot global (Aufruf-Site-Check ergaenzend in
+# tools/arch_check.py). Per-File-Ignores unten erlauben Adapter und Tests.
+banned-module-level-imports = ["random", "secrets", "numpy.random"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# AC-NO-TIME: datetime.datetime.utcnow ist von DTZ nicht erfasst.
+"datetime.datetime.utcnow" = { msg = "Use ClockPort.now(tz=UTC) — GG-AR-TABU-005" }
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101", "S104", "S105", "S106", "S311",
+    "BLE001", "TRY003",
+    "DTZ", "TID",
+    "C901",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR0916", "PLR2004",
+    "PLR0904",
+    "N802", "N803", "N806",
+    "ARG001", "ARG002",
+    "RUF012",
+]
+"src/grid_gym/adapters/driving/http_api/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/driven/protocol_*/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/driven/persistence_*/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/**" = ["DTZ", "TID"]
+
+# ---------------------------------------------------------------------------
+# mypy --strict (ADR 0005)
+# Scope kommt ausschliesslich aus der `files`-Direktive — Kommandozeilen-
+# Pfade in CI sind bewusst nicht gesetzt (Single-Source-of-Truth).
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.13"
+files = ["src/grid_gym", "tools"]
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_unreachable = true
+no_implicit_optional = true
+no_implicit_reexport = true
+strict_equality = true
+extra_checks = true
+enable_error_code = [
+    "redundant-self",
+    "possibly-undefined",
+    "truthy-bool",
+    "truthy-iterable",
+    "unused-awaitable",
+    "explicit-override",
+    "mutable-override",
+]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+warn_return_any = false
+
+# ---------------------------------------------------------------------------
+# import-linter (ADR 0002 §A-1, AC-CORE-NO-ADAPTERS bis AC-NO-IO-MOD)
+# Layer- und Forbidden-Contracts; ergaenzt durch tools/arch_check.py
+# fuer Aufruf-Site- und Immutability-Heuristiken.
+# ---------------------------------------------------------------------------
+
+[tool.importlinter]
+root_package = "grid_gym"
+# Pflicht, sobald `forbidden_modules` externe Pakete (z. B. `fastapi`,
+# `socket`) enthaelt — sonst beschwert sich import-linter bei
+# `lint-imports`.
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "AC-CORE-NO-ADAPTERS"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.core"]
+forbidden_modules = ["grid_gym.adapters"]
+
+[[tool.importlinter.contracts]]
+name = "AC-CORE-NO-DRIVING"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.core"]
+forbidden_modules = ["grid_gym.hexagon.ports.driving"]
+
+[[tool.importlinter.contracts]]
+name = "AC-PORTS-NO-OUT"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.ports"]
+forbidden_modules = [
+    "grid_gym.adapters",
+    "grid_gym.hexagon.core.simulation",
+    "grid_gym.hexagon.core.devices",
+    "grid_gym.hexagon.core.scenario",
+    "grid_gym.hexagon.core.replay",
+    "grid_gym.hexagon.core.faults",
+    "grid_gym.hexagon.core.agents",
+]
+
+[[tool.importlinter.contracts]]
+name = "AC-PORTS-NO-FW"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.ports"]
+# Hinweis: import-linter laesst keine Subpakete externer Pakete als
+# `forbidden_modules` zu (`urllib.request`, `http.client`,
+# `logging.handlers`). Die werden in Welle 3 via tools/arch_check.py
+# AST-basiert geprueft. Hier nur Top-Level-Module.
+forbidden_modules = [
+    "fastapi",
+    "uvicorn",
+    "psycopg",
+    "sqlalchemy",
+    "alembic",
+    "httpx",
+    "paho",
+    "pymodbus",
+    "asyncua",
+    "socket",
+    "pathlib",
+]
+
+[[tool.importlinter.contracts]]
+name = "AC-ADAPTER-PURE"
+type = "forbidden"
+source_modules = ["grid_gym.adapters"]
+forbidden_modules = [
+    "grid_gym.hexagon.core.simulation",
+    "grid_gym.hexagon.core.devices",
+    "grid_gym.hexagon.core.scenario",
+    "grid_gym.hexagon.core.replay",
+    "grid_gym.hexagon.core.faults",
+    "grid_gym.hexagon.core.agents",
+]
+
+[[tool.importlinter.contracts]]
+name = "AC-NO-FW"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.core"]
+forbidden_modules = [
+    "fastapi",
+    "uvicorn",
+    "psycopg",
+    "sqlalchemy",
+    "alembic",
+    "httpx",
+    "paho",
+    "pymodbus",
+    "asyncua",
+]
+
+[[tool.importlinter.contracts]]
+name = "AC-NO-IO-MOD"
+type = "forbidden"
+source_modules = ["grid_gym.hexagon.core"]
+# Top-Level-stdlib-IO-Module. Nested-Module wie `urllib.request`,
+# `http.client`, `logging.handlers` faengt die AST-Pruefung in
+# tools/arch_check.py ab (Welle 3).
+forbidden_modules = ["socket", "pathlib"]
+
+# ---------------------------------------------------------------------------
+# grid_gym.arch_check (ADR 0002 §A-1 / A-2)
+# Single-Source-of-Truth fuer Whitelists des tools/arch_check.py.
+# Erweiterung erfordert ADR-Verweis.
+# ---------------------------------------------------------------------------
+
+[tool.grid_gym.arch_check]
+json-dumps-whitelist = [
+    "src/grid_gym/hexagon/core/serialization/canonical.py",
+]
+domain-frozen-extra = []
+typed-errors-exempt = [
+    "src/grid_gym/adapters/driving/http_api/error_translation.py",
+    "src/grid_gym/adapters/driven/protocol_*/error_translation.py",
+    "src/grid_gym/adapters/driven/persistence_*/error_translation.py",
+]
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "determinism: Property-Tests fuer Determinismus (GG-SIM-001..004)",
+    "replay: Replay-Diff- und Golden-File-Tests (GG-REPLAY-007)",
+    "fault: Fault-Injection-Tests (GG-FAULT-001..010)",
+]
+
+# ---------------------------------------------------------------------------
+# coverage.py
+# ---------------------------------------------------------------------------
+
+[tool.coverage.run]
+branch = true
+source = ["src/grid_gym"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]

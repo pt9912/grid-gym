@@ -259,6 +259,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   praezisiert: `GG-AR-OPEN-001` verweist auf `next/spike-0.md`;
   Repository-Layout-Punkt verweist auf `hexagon/`-Gruppierung in
   `architecture.md` §4.2.
+- **Spike-0 Welle 1** — Toolchain und Skelett:
+  - `pyproject.toml` mit `[project]`, `[build-system]`
+    (hatchling), `[dependency-groups]` (lint/arch/typecheck/
+    test/audit/dev), `[tool.ruff.lint]` mit A-1-Regeln und
+    Preview-Mode (`PLR0904`/`PLR0916` brauchen Preview in ruff
+    0.15), `[tool.ruff.lint.flake8-tidy-imports]`,
+    `[tool.ruff.lint.per-file-ignores]`,
+    `[tool.ruff.lint.mccabe]`, `[tool.ruff.lint.pylint]`,
+    `[tool.mypy]` `strict = true` mit Scope `files = ["src/grid_gym", "tools"]`,
+    `[tool.importlinter]` mit `include_external_packages = true`
+    und sieben Forbidden-Contracts (AC-CORE-NO-ADAPTERS,
+    AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT, AC-PORTS-NO-FW,
+    AC-ADAPTER-PURE, AC-NO-FW, AC-NO-IO-MOD),
+    `[tool.grid_gym.arch_check]` mit Whitelists,
+    `[tool.pytest.ini_options]` mit Markern (`determinism`,
+    `replay`, `fault`), `[tool.coverage.*]`.
+  - `.python-version` → `3.14`.
+  - `uv.lock` mit 65 Packages, alle aktuelle Versionen
+    (ruff 0.15.13, mypy 2.1.0, import-linter 2.11, grimp 3.14,
+    pytest 9.0.3, pytest-cov 7.1.0, hypothesis 6.152.7,
+    pip-audit 2.10.0, openapi-spec-validator 0.8.5).
+  - Skelett: `src/grid_gym/__init__.py` plus
+    `hexagon/{__init__.py,core/{__init__.py,errors.py,
+    domain,simulation,devices,scenario,replay,faults,agents,
+    serialization}/__init__.py,ports/{driving,driven}/__init__.py}`
+    und `adapters/{__init__.py,driving/__init__.py,driven/__init__.py}`.
+    Sub-Pakete `domain..serialization` sind als leere Module
+    angelegt, damit import-linter sie als Modulreferenz aufloesen
+    kann.
+  - `hexagon/core/errors.py` mit `GridGymError(Exception)` als
+    Wurzel-Fehlerklasse (AC-TYPED-ERRORS, GG-CC-008).
+  - `tools/arch_check.py` als ausfuehrbares Skelett (laedt
+    `[tool.grid_gym.arch_check]` aus `pyproject.toml`, baut
+    Import-Graph via `grimp`, gibt Zusammenfassung aus —
+    Contract-Logik kommt in Welle 3).
+  - `tests/__init__.py`, `tests/unit/__init__.py`,
+    `tests/arch/__init__.py` plus
+    `tests/unit/test_skeleton.py` mit zwei Smoke-Tests fuer
+    `GridGymError`.
+  - **Gate-Verifikation (alle gruen via Dockerfile-Stage):**
+    `make lint` (ruff check, 23 files), `make format-check`
+    (23 files), `make typecheck` (mypy --strict, 19 source
+    files, 0 issues), `make arch-check` (7 Contracts kept),
+    `make test-unit` (2 tests passed), `make dep-audit`
+    (0 vulnerabilities in 65 packages).
+- `Dockerfile` `source`-Stage: `COPY LICENSE README.md ./`
+  ergaenzt — hatchling braucht beide fuer den editable Install
+  im `uv sync --frozen --all-groups`.
+- `Makefile` `lock-refresh`: Bug behoben. Das distroless
+  `ghcr.io/astral-sh/uv:VERSION`-Image hat `/uv` als ENTRYPOINT
+  und keine Shell — `uv lock` schlug mit ELF-Interpreter-Fehler
+  fehl. Jetzt laeuft `lock-refresh` im projekteigenen
+  `base`-Stage (python:3.14-slim + uv 0.5.31 gepinnt) als
+  aktueller User (`--user $(id -u):$(id -g)` plus
+  `UV_CACHE_DIR=/tmp/uv-cache`), produziert `uv.lock` mit
+  korrekter User-Ownership.
+- `docs/plan/planning/next/spike-0.md` Welle 3: neuer Contract
+  `AC-HEXAGON-PURE` aufgenommen (Whitelist-basiert via
+  `tools/arch_check.py`: Module unter `src/grid_gym/hexagon/**`
+  duerfen nur stdlib, `grid_gym.*` und explizit whitelistete
+  Dritt-Pakete (z. B. `pydantic` fuer `FrozenModel`)
+  importieren — ersetzt brueckhafte Blacklist-Pflege in
+  `AC-NO-FW` durch robuste Positive-Liste).
 
 ### Fixed
 

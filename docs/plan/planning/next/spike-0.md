@@ -113,9 +113,15 @@ bis dahin aktiven Gates.
 
 ### Welle 3 — `tools/arch_check.py` Contract-Implementierung (Tag 3)
 
-Implementiert die sieben Contracts, die nicht von `import-linter`
+Implementiert die acht Contracts, die nicht von `import-linter`
 oder `ruff` allein abgedeckt sind:
 
+- AC-HEXAGON-PURE (Whitelist-basiert: jedes Modul unter
+  `src/grid_gym/hexagon/**` darf NUR stdlib, `grid_gym.*` und
+  explizit whitelistete Dritt-Pakete (z. B. `pydantic` fuer
+  `FrozenModel`) importieren. Jedes andere `import X`/
+  `from X import Y` ist ein Verstoss. Whitelist liegt in
+  `[tool.grid_gym.arch_check] hexagon-import-whitelist`),
 - AC-NO-CYCLES (SCC via `grimp`),
 - AC-NO-TIME (Aufruf-Sites von `time.time`/`time.monotonic`/
   `time.perf_counter`/`time.process_time`/
@@ -151,6 +157,7 @@ einem absichtlich eingefuegten Verstoss. Erwartung:
 
 Branch-Liste:
 
+- `spike0/contract/AC-HEXAGON-PURE`
 - `spike0/contract/AC-CORE-NO-ADAPTERS`
 - `spike0/contract/AC-CORE-NO-DRIVING`
 - `spike0/contract/AC-PORTS-NO-OUT`

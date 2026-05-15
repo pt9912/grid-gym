@@ -64,6 +64,10 @@ COPY src/ src/
 COPY tests/ tests/
 COPY tools/ tools/
 COPY spec/ spec/
+# LICENSE und README.md sind in pyproject.toml ([project].license,
+# [project].readme) referenziert — hatchling braucht beide fuer den
+# editable Install im naechsten `uv sync`.
+COPY LICENSE README.md ./
 RUN uv sync --frozen --all-groups
 
 # ---------------------------------------------------------------------------

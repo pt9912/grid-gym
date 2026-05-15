@@ -243,9 +243,17 @@ test-container: runtime
 # aufloesen. uv.lock MUSS gemeinsam mit der pyproject.toml-Aenderung
 # committet werden, damit `--frozen`-Builds gruen bleiben (Supply-Chain-
 # Defense, analog `packages.lock.json` in bess-ems).
+# Laeuft im projekteigenen `base`-Stage (python:$(PYTHON_VERSION)-slim
+# + uv $(UV_VERSION) gepinnt) — gleiche Toolchain wie CI. Das
+# distroless `ghcr.io/astral-sh/uv:$(UV_VERSION)`-Image taugt nicht
+# fuer `uv lock`, weil dort weder Python noch eine Shell vorhanden ist.
 lock-refresh:
-	$(DOCKER) run --rm -v "$$(pwd)":/src -w /src \
-		ghcr.io/astral-sh/uv:$(UV_VERSION) \
+	$(DOCKER_BUILD) --target base -t $(IMAGE_PREFIX)-base:latest
+	$(DOCKER) run --rm \
+		--user "$$(id -u):$$(id -g)" \
+		-e UV_CACHE_DIR=/tmp/uv-cache \
+		-v "$$(pwd)":/src -w /src \
+		$(IMAGE_PREFIX)-base:latest \
 		uv lock
 
 # SBOM-Erzeugung als Release-Asset. Wird in spaeterer Welle scharf
