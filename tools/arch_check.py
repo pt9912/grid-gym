@@ -79,6 +79,90 @@ class ArchCheckConfig:
     hexagon_import_whitelist: tuple[str, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class ImportAliases:
+    """Pro-Datei-Map: erlaubt Aufloesung aliased Imports auf den
+    tatsaechlichen Modul-Namen.
+
+    - `import json` → `module_aliases["json"] = "json"`
+    - `import json as j` → `module_aliases["j"] = "json"`
+    - `import numpy.random as nr` → `module_aliases["nr"] = "numpy.random"`
+    - `import numpy.random` → `module_aliases["numpy"] = "numpy"` (Python
+      bindet nur das Top-Level)
+    - `from json import dumps` → `from_imports["dumps"] = ("json", "dumps")`
+    - `from time import monotonic as m` → `from_imports["m"] = ("time", "monotonic")`
+
+    Wildcard-Imports (`from X import *`) werden NICHT erfasst —
+    Aufrufer pruefen das ggf. separat.
+    """
+
+    module_aliases: dict[str, str]
+    from_imports: dict[str, tuple[str, str]]
+
+
+def _collect_imports(tree: ast.Module) -> ImportAliases:
+    module_aliases: dict[str, str] = {}
+    from_imports: dict[str, tuple[str, str]] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname:
+                    module_aliases[alias.asname] = alias.name
+                else:
+                    top_level = alias.name.split(".")[0]
+                    module_aliases[top_level] = top_level
+        elif isinstance(node, ast.ImportFrom) and node.module is not None:
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                local = alias.asname or alias.name
+                from_imports[local] = (node.module, alias.name)
+    return ImportAliases(module_aliases=module_aliases, from_imports=from_imports)
+
+
+def _attribute_chain(node: ast.expr) -> tuple[str, ...] | None:
+    """Erweitert eine `ast.Attribute`-Kette zu Namens-Komponenten.
+
+    Gibt `None` zurueck, wenn die Kette nicht in einem `ast.Name` endet
+    (z. B. bei dynamischen Aufrufen ueber Subscripts oder Calls).
+    """
+    parts: list[str] = []
+    current: ast.expr = node
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+    if isinstance(current, ast.Name):
+        parts.append(current.id)
+        return tuple(reversed(parts))
+    return None
+
+
+def _resolve_call_chain(
+    call: ast.Call, aliases: ImportAliases
+) -> tuple[str, ...] | None:
+    """Loest die Attribute-Kette einer Funktions-Call auf, indem das
+    erste Element via `aliases.module_aliases` ersetzt wird.
+
+    Beispiele (jeweils mit den passenden Imports oben):
+    - `time.time()` → `("time", "time")`
+    - `t.time()` nach `import time as t` → `("time", "time")`
+    - `nr.rand()` nach `import numpy.random as nr` → `("numpy", "random", "rand")`
+    - `numpy.random.rand()` nach `import numpy` → `("numpy", "random", "rand")`
+
+    Bare-name Calls (`monotonic()` nach `from time import monotonic`)
+    geben `None` zurueck; Aufrufer muss `aliases.from_imports` separat
+    konsultieren.
+    """
+    chain = _attribute_chain(call.func)
+    if chain is None or len(chain) < _MIN_RESOLVABLE_CHAIN_LEN:
+        return None
+    head = chain[0]
+    resolved_head = aliases.module_aliases.get(head)
+    if resolved_head is None:
+        return None
+    return tuple(resolved_head.split(".")) + chain[1:]
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
     config = _load_config(repo_root)
@@ -203,6 +287,9 @@ def _is_allowed_hexagon_import(module_name: str, whitelist: frozenset[str]) -> b
 # ---------------------------------------------------------------------------
 
 
+_JSON_DUMP_NAMES: frozenset[str] = frozenset({"dumps", "dump"})
+
+
 def _check_no_json(
     repo_root: Path, src_root: Path, config: ArchCheckConfig
 ) -> Iterator[Violation]:
@@ -212,10 +299,11 @@ def _check_no_json(
         if rel in whitelist:
             continue
         tree = _parse(py_file)
+        aliases = _collect_imports(tree)
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):
                 continue
-            attr = _json_dump_attr(node)
+            attr = _json_dump_attr(node, aliases)
             if attr is not None:
                 yield Violation(
                     "AC-NO-JSON",
@@ -224,17 +312,18 @@ def _check_no_json(
                 )
 
 
-def _json_dump_attr(call: ast.Call) -> str | None:
-    """Gibt 'dumps'/'dump' zurueck, falls `call` ein `json.dumps()` /
-    `json.dump()` ist, sonst `None`."""
-    func = call.func
-    if not isinstance(func, ast.Attribute):
-        return None
-    value = func.value
-    if not isinstance(value, ast.Name):
-        return None
-    if value.id == "json" and func.attr in {"dumps", "dump"}:
-        return func.attr
+def _json_dump_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
+    """Gibt 'dumps'/'dump' zurueck, falls `call` direkt oder via
+    Alias / from-import ein `json.dumps()` / `json.dump()` ist."""
+    # Direkt: `json.dumps(...)` oder `j.dumps(...)` nach `import json as j`.
+    chain = _resolve_call_chain(call, aliases)
+    if chain is not None and chain[0] == "json" and chain[-1] in _JSON_DUMP_NAMES:
+        return chain[-1]
+    # Bare: `dumps(...)` nach `from json import dumps`.
+    if isinstance(call.func, ast.Name):
+        source = aliases.from_imports.get(call.func.id)
+        if source is not None and source[0] == "json" and source[1] in _JSON_DUMP_NAMES:
+            return source[1]
     return None
 
 
@@ -248,23 +337,45 @@ def _check_no_time(repo_root: Path, src_root: Path) -> Iterator[Violation]:
     for py_file in _iter_py_files(core_root):
         tree = _parse(py_file)
         rel = _rel(repo_root, py_file)
+        aliases = _collect_imports(tree)
         for node in ast.walk(tree):
-            location = _time_call_location(node, rel)
-            if location is not None:
-                yield Violation("AC-NO-TIME", location[0], location[1])
+            yield from _no_time_violations(node, rel, aliases)
 
 
-def _time_call_location(node: ast.AST, rel: str) -> tuple[str, str] | None:
+def _no_time_violations(
+    node: ast.AST, rel: str, aliases: ImportAliases
+) -> Iterator[Violation]:
+    # `from time import ...` ist im Kern grundsaetzlich verboten —
+    # auch wenn die importierte Funktion nicht in _TIME_ATTRS steht,
+    # weil `time.sleep`/`time.tzname` etc. ebenfalls Wall-Clock-Logik
+    # nahelegen und im Kern nichts zu suchen haben.
+    if isinstance(node, ast.ImportFrom) and node.module == _TIME_MODULE:
+        imported = ", ".join(a.asname or a.name for a in node.names)
+        yield Violation(
+            "AC-NO-TIME",
+            f"{rel}:{node.lineno}",
+            f"from time import {imported} — use ClockPort",
+        )
+        return
     if not isinstance(node, ast.Call):
-        return None
-    func = node.func
-    if not isinstance(func, ast.Attribute):
-        return None
-    value = func.value
-    if not isinstance(value, ast.Name):
-        return None
-    if value.id == _TIME_MODULE and func.attr in _TIME_ATTRS:
-        return (f"{rel}:{node.lineno}", f"{value.id}.{func.attr}()")
+        return
+    attr = _time_call_attr(node, aliases)
+    if attr is not None:
+        yield Violation(
+            "AC-NO-TIME",
+            f"{rel}:{node.lineno}",
+            f"time.{attr}() (via alias or attribute) — use ClockPort",
+        )
+
+
+def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
+    chain = _resolve_call_chain(call, aliases)
+    if chain is not None and chain[0] == _TIME_MODULE and chain[-1] in _TIME_ATTRS:
+        return chain[-1]
+    if isinstance(call.func, ast.Name):
+        source = aliases.from_imports.get(call.func.id)
+        if source is not None and source[0] == _TIME_MODULE and source[1] in _TIME_ATTRS:
+            return source[1]
     return None
 
 
@@ -273,42 +384,71 @@ def _time_call_location(node: ast.AST, rel: str) -> tuple[str, str] | None:
 # ---------------------------------------------------------------------------
 
 
+_NUMPY_RANDOM_PATH: tuple[str, str] = (_NUMPY_MODULE, _NUMPY_RANDOM_ATTR)
+_NUMPY_RANDOM_PATH_DOTTED: str = f"{_NUMPY_MODULE}.{_NUMPY_RANDOM_ATTR}"
+
+# Minimal-Laengen fuer aufgeloeste Attribute-Ketten: ein `head.attr`-Call
+# braucht mindestens 2 Teile (Head + Methoden-Name); fuer `numpy.random.X()`
+# entsprechend 3 (Modul-Praefix + Methode).
+_MIN_RESOLVABLE_CHAIN_LEN = 2
+_NUMPY_RANDOM_CHAIN_MIN_LEN = 3
+
+
 def _check_no_rand(repo_root: Path, src_root: Path) -> Iterator[Violation]:
     core_root = src_root / "hexagon" / "core"
     for py_file in _iter_py_files(core_root):
         tree = _parse(py_file)
         rel = _rel(repo_root, py_file)
+        aliases = _collect_imports(tree)
         for node in ast.walk(tree):
-            yield from _rand_call_violations(node, rel)
+            yield from _no_rand_violations(node, rel, aliases)
 
 
-def _rand_call_violations(node: ast.AST, rel: str) -> Iterator[Violation]:
+def _no_rand_violations(
+    node: ast.AST, rel: str, aliases: ImportAliases
+) -> Iterator[Violation]:
+    # `from random import ...`, `from secrets import ...`,
+    # `from numpy.random import ...` sind im Kern grundsaetzlich verboten.
+    if isinstance(node, ast.ImportFrom):
+        source = node.module
+        if source in _RAND_TOP_LEVELS or source == _NUMPY_RANDOM_PATH_DOTTED:
+            imported = ", ".join(a.asname or a.name for a in node.names)
+            yield Violation(
+                "AC-NO-RAND",
+                f"{rel}:{node.lineno}",
+                f"from {source} import {imported} — use RandomPort",
+            )
+            return
     if not isinstance(node, ast.Call):
         return
-    func = node.func
-    if not isinstance(func, ast.Attribute):
-        return
-    value = func.value
-    # random.X(), secrets.X()
-    if isinstance(value, ast.Name) and value.id in _RAND_TOP_LEVELS:
-        yield Violation(
-            "AC-NO-RAND",
-            f"{rel}:{node.lineno}",
-            f"{value.id}.{func.attr}() — use RandomPort",
-        )
-        return
-    # numpy.random.X()
-    if (
-        isinstance(value, ast.Attribute)
-        and isinstance(value.value, ast.Name)
-        and value.value.id == _NUMPY_MODULE
-        and value.attr == _NUMPY_RANDOM_ATTR
-    ):
-        yield Violation(
-            "AC-NO-RAND",
-            f"{rel}:{node.lineno}",
-            f"numpy.random.{func.attr}() — use RandomPort",
-        )
+    detail = _rand_call_detail(node, aliases)
+    if detail is not None:
+        yield Violation("AC-NO-RAND", f"{rel}:{node.lineno}", detail)
+
+
+def _rand_call_detail(call: ast.Call, aliases: ImportAliases) -> str | None:
+    chain = _resolve_call_chain(call, aliases)
+    if chain is not None:
+        # `random.X(...)` / `secrets.X(...)` (auch via Alias)
+        if (
+            chain[0] in _RAND_TOP_LEVELS
+            and len(chain) >= _MIN_RESOLVABLE_CHAIN_LEN
+        ):
+            return f"{chain[0]}.{chain[-1]}() — use RandomPort"
+        # `numpy.random.X(...)` (auch via Alias auf `numpy.random`)
+        if (
+            len(chain) >= _NUMPY_RANDOM_CHAIN_MIN_LEN
+            and chain[:2] == _NUMPY_RANDOM_PATH
+        ):
+            return f"numpy.random.{chain[-1]}() — use RandomPort"
+    if isinstance(call.func, ast.Name):
+        source = aliases.from_imports.get(call.func.id)
+        if source is None:
+            return None
+        src_mod = source[0]
+        if src_mod in _RAND_TOP_LEVELS or src_mod == _NUMPY_RANDOM_PATH_DOTTED:
+            return f"{src_mod}.{source[1]}() — use RandomPort"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -364,6 +504,16 @@ def _no_io_mod_nested_violations(node: ast.AST, rel: str) -> Iterator[Violation]
 def _check_domain_frozen(
     repo_root: Path, src_root: Path, config: ArchCheckConfig
 ) -> Iterator[Violation]:
+    """AC-DOMAIN-FROZEN: nur Top-Level-Klassen unter `hexagon/core/domain/**`
+    werden geprueft (kein `ast.walk` — verschachtelte Klassen in
+    Funktionen / Tests sind Implementierungsdetail).
+
+    Zulaessig:
+    - `@dataclass(frozen=True, slots=True)` mit beiden Keywords als
+      `ast.Constant(value=True)`.
+    - Vererbung von `FrozenModel` (`ast.Name` oder `ast.Attribute`
+      mit `attr == "FrozenModel"`).
+    """
     domain_root = src_root / "hexagon" / "core" / "domain"
     paths_to_check: list[Path] = list(_iter_py_files(domain_root))
     for extra in config.domain_frozen_extra:
@@ -376,7 +526,7 @@ def _check_domain_frozen(
     for py_file in paths_to_check:
         tree = _parse(py_file)
         rel = _rel(repo_root, py_file)
-        for node in ast.walk(tree):
+        for node in tree.body:
             if isinstance(node, ast.ClassDef) and not _is_frozen_class(node):
                 yield Violation(
                     "AC-DOMAIN-FROZEN",
@@ -394,7 +544,11 @@ def _has_frozen_dataclass_decorator(node: ast.ClassDef) -> bool:
     for dec in node.decorator_list:
         if not isinstance(dec, ast.Call):
             continue
-        if _is_dataclass_decorator_target(dec.func) and _has_frozen_true_keyword(dec):
+        if (
+            _is_dataclass_decorator_target(dec.func)
+            and _has_keyword_true(dec, "frozen")
+            and _has_keyword_true(dec, "slots")
+        ):
             return True
     return False
 
@@ -407,10 +561,12 @@ def _is_dataclass_decorator_target(func: ast.expr) -> bool:
     return False
 
 
-def _has_frozen_true_keyword(decorator: ast.Call) -> bool:
+def _has_keyword_true(decorator: ast.Call, kwarg_name: str) -> bool:
+    """True wenn `decorator` ein `kwarg_name=True`-Keyword als
+    `ast.Constant(value=True)` hat."""
     for kw in decorator.keywords:
         if (
-            kw.arg == "frozen"
+            kw.arg == kwarg_name
             and isinstance(kw.value, ast.Constant)
             and kw.value.value is True
         ):
@@ -419,10 +575,12 @@ def _has_frozen_true_keyword(decorator: ast.Call) -> bool:
 
 
 def _inherits_frozen_model(node: ast.ClassDef) -> bool:
-    return any(
-        isinstance(base, ast.Name) and base.id == "FrozenModel"
-        for base in node.bases
-    )
+    for base in node.bases:
+        if isinstance(base, ast.Name) and base.id == "FrozenModel":
+            return True
+        if isinstance(base, ast.Attribute) and base.attr == "FrozenModel":
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -471,6 +629,13 @@ def _class_name_violations(tree: ast.Module, rel: str) -> Iterator[Violation]:
 def _public_function_count_violations(
     tree: ast.Module, rel: str
 ) -> Iterator[Violation]:
+    """ADR 0002 §A-1 zaehlt nur 'oeffentliche freie Funktionen' auf
+    Modul-Ebene. Klassen mit vielen oeffentlichen Methoden sind
+    out-of-scope hier — ruffs `PLR0904` (`max-public-methods=12`)
+    deckt diese Heuristik ab. Wer einen God-Utility-Klassen-Bypass
+    versucht (`class Toolkit: def fn1; def fn2; ...`), wird durch
+    `PLR0904` aufgefangen.
+    """
     if any(fragment in rel for fragment in _GOD_UTIL_EXEMPT_PATH_FRAGMENTS):
         return
     public_funcs = sum(
@@ -696,13 +861,45 @@ def _check_adapter_lightweight(repo_root: Path, src_root: Path) -> Iterator[Viol
 
 
 def _cyclomatic_complexity(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
+    """Naehert ruffs `C901` McCabe-Komplexitaet an.
+
+    Zaehlt: `If`, `For`, `While`, `ExceptHandler`, `IfExp` (ternaer),
+    `Match`-Cases, `BoolOp` (jede Verkettung jenseits des ersten
+    Operanden), Comprehension-`ifs`.
+
+    Geht NICHT in nested `FunctionDef`/`AsyncFunctionDef`/`ClassDef`
+    hinein — die haben einen eigenen Komplexitaets-Scope.
+    """
     complexity = 1
-    for node in ast.walk(func):
-        if isinstance(node, ast.If | ast.For | ast.While | ast.ExceptHandler):
+    for node in _iter_function_body_skip_nested(func):
+        if isinstance(
+            node, ast.If | ast.For | ast.While | ast.ExceptHandler | ast.IfExp
+        ):
             complexity += 1
         elif isinstance(node, ast.BoolOp):
             complexity += len(node.values) - 1
+        elif isinstance(node, ast.Match):
+            complexity += len(node.cases)
+        elif isinstance(node, ast.comprehension):
+            complexity += len(node.ifs)
     return complexity
+
+
+def _iter_function_body_skip_nested(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> Iterator[ast.AST]:
+    """Iteriert ueber alle AST-Nodes im Funktionskoerper, springt aber
+    nicht in verschachtelte `FunctionDef`/`AsyncFunctionDef`/`ClassDef`
+    hinein."""
+    stack: list[ast.AST] = list(func.body)
+    while stack:
+        node = stack.pop()
+        yield node
+        if isinstance(
+            node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
+        ):
+            continue
+        stack.extend(ast.iter_child_nodes(node))
 
 
 if __name__ == "__main__":
