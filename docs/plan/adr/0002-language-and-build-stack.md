@@ -1,10 +1,18 @@
 # ADR 0002 — Sprach- und Build-Stack
 
-**Status:** Provisional — Empfehlung getragen, Spike-0 freigegeben
+**Status:** Accepted
 **Datum:** 2026-05-14
-**Status geaendert am:** 2026-05-14 — `Proposed → Provisional` mit
-Freigabe des Spike-0-Vertrags; Operative Artefakte (`Dockerfile`,
-`Makefile`) liegen als Spike-0-Pfad vor (vgl. `ADR 0006`).
+**Status geaendert am:** 2026-05-15 — `Provisional → Accepted`.
+Spike-0 abgeschlossen: alle vier Pflicht-Gates (`make lint`,
+`make arch-check`, `make typecheck`, `make test-unit`) gruen auf
+`main`; 18 von 18 Contract-Verstoss-Verifikationen geliefert (siehe
+`docs/plan/planning/done/spike-0-results.md §3`); zweiter
+Pre-Acceptance-Review abgearbeitet (Blocker B-A/B-B/B-C, alle zehn
+Drift-Items D-1..D-10 eingearbeitet); `make gates` als
+Abschluss-Aggregator gruen. Schliesst `GG-AR-OPEN-001`. Vorher:
+2026-05-14 — `Proposed → Provisional` mit Freigabe des
+Spike-0-Vertrags; Operative Artefakte (`Dockerfile`, `Makefile`)
+lagen als Spike-0-Pfad vor (vgl. `ADR 0006`).
 **Letzte inhaltliche Aenderung:** 2026-05-15 — Pre-Acceptance-Schliff
 nach dem zweiten Review (`ADR 0006` §3): AC-HEXAGON-PURE als 16.
 Contract in §A-1 aufgenommen (Whitelist-basiert); §A-1

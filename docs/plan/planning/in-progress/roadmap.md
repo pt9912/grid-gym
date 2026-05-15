@@ -53,12 +53,15 @@ Implementierungs-Slice gefuellt.
 
 Vor M1 muessen folgende Punkte geklaert sein:
 
-- `GG-AR-OPEN-001` Sprach- und Build-Wahl — Slice-Plan in
-  [`docs/plan/planning/next/spike-0.md`](../next/spike-0.md);
-  schliesst `GG-AR-OPEN-001` bei gruenem Spike-0 ueber `ADR 0002`
-  (`Provisional`) und `ADR 0005` (`Provisional`).
-- `GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse.
-- Initiales Repository-Layout gemaess der Hexagonalen Sicht
+- ✓ **`GG-AR-OPEN-001` Sprach- und Build-Wahl** — geschlossen mit
+  `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
+  (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
+  [`docs/plan/planning/done/spike-0.md`](../done/spike-0.md).
+- `GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse —
+  offen, eigene Folge-ADR.
+- ✓ **Initiales Repository-Layout** gemaess der Hexagonalen Sicht
   (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
-  `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert,
-  Python-Paketnamen ueber `ADR 0002` §6.1 nach Acceptance.
+  `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert;
+  Python-Paketnamen (`src/grid_gym/hexagon/{core,ports}/`,
+  `src/grid_gym/adapters/`) durch `ADR 0002` §6.1 (`Accepted`
+  2026-05-15) verbindlich.

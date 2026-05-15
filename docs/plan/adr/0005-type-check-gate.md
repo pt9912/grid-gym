@@ -1,13 +1,17 @@
 # ADR 0005 — Type-Check-Gate (mypy --strict)
 
-**Status:** Provisional — Spike-0-Gate live, Acceptance an ADR 0002 gekoppelt
+**Status:** Accepted
 **Datum:** 2026-05-14
-**Status geaendert am:** 2026-05-14 — `Proposed → Provisional` synchron
-zu ADR 0002; Operative Artefakte (Dockerfile-Stage `typecheck`,
-Makefile-Target `make typecheck`, `[tool.mypy]`-Konfiguration im
-Spike-0-Skelett) sind als validierter Pfad gemaess der
-Provisional-Stufe der Lifecycle-Tabelle in `ADR 0006`
-gekennzeichnet.
+**Status geaendert am:** 2026-05-15 — `Provisional → Accepted`
+synchron zu `ADR 0002` (Spike-0 Welle 5). `mypy --strict` ist damit
+verbindliches CI-Gate (`make typecheck`); ein LSP-Variance-Verstoss
+wurde in Welle-4-Verifikation als `[override]`-Error nachgewiesen
+(siehe `docs/plan/planning/done/spike-0-results.md §3`). Vorher:
+2026-05-14 — `Proposed → Provisional` synchron zu ADR 0002;
+Operative Artefakte (Dockerfile-Stage `typecheck`, Makefile-Target
+`make typecheck`, `[tool.mypy]`-Konfiguration im Spike-0-Skelett)
+lagen als validierter Pfad gemaess der Provisional-Stufe der
+Lifecycle-Tabelle in `ADR 0006`.
 **Letzte inhaltliche Aenderung:** 2026-05-15 — Pre-Acceptance-Schliff
 nach dem zweiten Review (`ADR 0006` §3): mypy-Floor von `>=1.13` auf
 `>=2.0,<3.0` gehoben (mypy 2.x ist die aktuelle Major; Lock-resolved
