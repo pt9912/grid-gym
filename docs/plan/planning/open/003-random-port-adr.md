@@ -1,8 +1,12 @@
 # 003 — ADR fuer `RandomPort`-Implementierung
 
-**Status:** Open — Trigger-Watch
-**Datum:** 2026-05-15
+**Status:** In-Progress — ADR geschrieben (`Provisional`), wartet auf
+Acceptance via M1 Welle 2.
+**Datum:** 2026-05-15 (geoeffnet); 2026-05-15 ADR-Skizze (siehe
+[`ADR 0007`](../../adr/0007-random-port.md)) als `Provisional`.
 **Quelle:** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §7
+**Verlinkt:** [`ADR 0007 RandomPort`](../../adr/0007-random-port.md)
+(`Provisional`); schliesst diesen Trigger bei Acceptance.
 
 ---
 
