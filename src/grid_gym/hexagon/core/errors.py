@@ -324,3 +324,92 @@ class TickLoopSnapshotRandomMismatchError(TickLoopError):
             "random state mismatch on resume: injected RandomPort does "
             "not match the persisted snapshot"
         )
+
+
+# ---------------------------------------------------------------------------
+# Scenario-Vertrag (`hexagon.core.scenario`, M1 Welle 5)
+# ---------------------------------------------------------------------------
+
+
+class ScenarioError(GridGymError):
+    """Wurzel der `Scenario`-Validierungs-Vertragsverletzungen
+    (`GG-SCN-008`)."""
+
+
+class ScenarioSchemaError(ScenarioError):
+    """Wurzel der Schema-Format-Verstoesse beim Loader-Eingang.
+
+    Subklassen tragen den konkreten Verstoss; Aufrufer pruefen
+    typisiert, nicht ueber Message-String-Matching.
+    """
+
+
+class ScenarioMissingKeysError(ScenarioSchemaError):
+    """Pflicht-Keys fehlen im Szenario-Mapping."""
+
+    def __init__(self, path: str, missing: list[str]) -> None:
+        super().__init__(f"scenario {path!r}: missing keys {missing}")
+
+
+class ScenarioWrongTypeError(ScenarioSchemaError):
+    """Ein Szenario-Key hat den falschen Typ."""
+
+    def __init__(self, path: str, expected: str, actual: str) -> None:
+        super().__init__(f"scenario {path!r} must be {expected}, got {actual}")
+
+
+class ScenarioUnsupportedSchemaVersionError(ScenarioError):
+    """`schema_version` ist nicht `grid-gym.scenario.v1` (Welle-5-
+    Stand)."""
+
+    def __init__(self, expected: str, actual: str) -> None:
+        super().__init__(
+            f"unsupported scenario schema_version: expected {expected!r}, got {actual!r}"
+        )
+
+
+class ScenarioDuplicateDeviceIdError(ScenarioError):
+    """`devices`-Liste enthaelt eine doppelte `id` (`GG-SCN-008`).
+
+    Geraete-IDs sind Pflicht-eindeutig, weil Tie-Breaking und
+    Telemetry darauf fussen.
+    """
+
+    def __init__(self, device_id: str) -> None:
+        super().__init__(f"duplicate device id in scenario: {device_id!r}")
+
+
+class ScenarioUnknownEventTargetError(ScenarioError):
+    """Ein Event referenziert eine Geraete-ID, die nicht in
+    `devices` definiert ist (`GG-SCN-008`)."""
+
+    def __init__(self, target: str) -> None:
+        super().__init__(f"scenario event targets unknown device: {target!r}")
+
+
+# ---------------------------------------------------------------------------
+# Replay-Vertrag (`hexagon.core.replay`, M1 Welle 5)
+# ---------------------------------------------------------------------------
+
+
+class ReplayError(GridGymError):
+    """Wurzel der `Replay`-Vertragsverletzungen (`GG-REPLAY-001..007`)."""
+
+
+class ReplayParseError(ReplayError):
+    """Wurzel der Replay-Format-Verstoesse beim Mapper-Eingang."""
+
+
+class ReplayMissingFieldError(ReplayParseError):
+    """Ein Replay-Sample-Eintrag hat ein fehlendes Pflichtfeld
+    (`GG-REPLAY-001`)."""
+
+    def __init__(self, line_index: int, field: str) -> None:
+        super().__init__(f"replay sample at line {line_index}: missing required field {field!r}")
+
+
+class ReplayInvalidValueError(ReplayParseError):
+    """Ein Replay-Sample-Feld hat einen ungueltigen Wert."""
+
+    def __init__(self, line_index: int, field: str, detail: str) -> None:
+        super().__init__(f"replay sample at line {line_index}: field {field!r} invalid ({detail})")
