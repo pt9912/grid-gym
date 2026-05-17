@@ -58,3 +58,89 @@ class NonIntegerSubSnapshotVersionError(SnapshotEnvelopeError):
         super().__init__(
             f"sub-snapshot {sub_snapshot_name!r} has non-int 'version' (got {value_type})"
         )
+
+
+# ---------------------------------------------------------------------------
+# RandomPort-Snapshot-Vertrag (`ADR 0007 §5.2`,
+# `adapters/driven/random_mt`)
+# ---------------------------------------------------------------------------
+
+
+class RandomPortError(GridGymError):
+    """Wurzel der `RandomPort`-Vertragsverletzungen (`ADR 0007`)."""
+
+
+class RandomPortVersionError(RandomPortError):
+    """Snapshot traegt eine unbekannte `version` (`ADR 0007 §5.2`).
+
+    Erwartete und vorgefundene Version werden mitgeschickt, damit
+    Resume-Pfade in Logs / Errors klar erkennen, welches Schema
+    erwartet wurde.
+    """
+
+    def __init__(self, expected: int, found: object) -> None:
+        super().__init__(
+            f"unsupported RandomPort snapshot version: expected {expected}, got {found!r}"
+        )
+
+
+class RandomPortSnapshotFormatError(RandomPortError):
+    """Snapshot-Bytes sind strukturell nicht parsebar oder Pflicht-
+    Keys fehlen / haben falsche Typen.
+
+    Wird vor `RandomPortVersionError` ausgeloest, wenn die Bytes
+    schon nicht als JSON-Objekt durchgehen. Konkrete Auspraegungen
+    folgen als Subklassen — Aufrufer pruefen typisiert, nicht ueber
+    Message-String-Matching.
+    """
+
+
+class RandomPortSnapshotInvalidBytesError(RandomPortSnapshotFormatError):
+    """Snapshot-Bytes sind kein gueltiges UTF-8 oder kein JSON."""
+
+    def __init__(self) -> None:
+        super().__init__("snapshot bytes are not valid utf-8 JSON")
+
+
+class RandomPortSnapshotNotAnObjectError(RandomPortSnapshotFormatError):
+    """Snapshot-JSON ist kein Top-Level-Objekt (dict)."""
+
+    def __init__(self, actual_type: str) -> None:
+        super().__init__(f"snapshot must be a JSON object, got {actual_type}")
+
+
+class RandomPortSnapshotMissingKeysError(RandomPortSnapshotFormatError):
+    """Pflicht-Keys fehlen im Snapshot."""
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(f"missing snapshot keys: {missing}")
+
+
+class RandomPortSnapshotWrongTypeError(RandomPortSnapshotFormatError):
+    """Ein Snapshot-Key hat den falschen Typ."""
+
+    def __init__(self, key: str, expected: str, actual: str) -> None:
+        super().__init__(f"snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class RandomPortSnapshotListItemWrongTypeError(RandomPortSnapshotFormatError):
+    """Ein Element in einer Snapshot-Liste hat den falschen Typ."""
+
+    def __init__(self, key: str, index: int, expected: str, actual: str) -> None:
+        super().__init__(f"snapshot key {key!r}[{index}] must be {expected}, got {actual}")
+
+
+class UnexpectedGaussNextError(RandomPortError):
+    """`random.Random.getstate()` lieferte einen non-`None` `gauss_next`.
+
+    `RandomPort.next_int`/`next_float` rufen niemals `gauss()` auf;
+    ein non-`None`-Wert deutet auf externe Manipulation des
+    Generators hin und wuerde den `canonical_json`-Pfad mit einem
+    `float`-Wert brechen (`FloatNotAllowedError`).
+    """
+
+    def __init__(self, value_type: str) -> None:
+        super().__init__(
+            f"random.Random gauss_next must be None (got {value_type}); "
+            "RandomPort API does not call gauss() — external manipulation?"
+        )
