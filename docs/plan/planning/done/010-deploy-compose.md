@@ -1,51 +1,65 @@
-# 010 — `deploy/compose.yml`
+# 010 — `deploy/compose.yml` — Closure-Notiz
 
-**Status:** Open — Trigger-Watch
-**Datum:** 2026-05-15
-**Quelle:** [`Makefile`](../../../../Makefile) Target `runtime`;
-`GG-DEPLOY-001/005`, `GG-DEMO-001..008`
+**Status:** Done — geschlossen 2026-05-17 mit M1 Welle 6c + 6d
+(Commits `f7b699d` + `b5243fe`).
+**Datum:** 2026-05-15 (geoeffnet); 2026-05-17 Closure mit
+Welle-6c/d-Lieferung.
+**Quelle:** `Makefile`-Target `runtime` (Healthcheck-Polling
+gegen `deploy/compose.yml`).
+**Verlinkt:** [`deploy/compose.yml`](../../../../deploy/compose.yml),
+[`Dockerfile`](../../../../Dockerfile) `runtime`-Stage,
+M1-Slice-Plan
+[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+§3 Welle 6c/6d.
 
 ---
 
-## Trigger
+## Trigger (historisch)
 
-Das Makefile-Target `runtime` setzt eine `deploy/compose.yml`
-voraus und bricht heute ab, wenn sie fehlt:
+`make runtime` startete den `runtime`-Image-Build und sollte das
+Image gegen ein `deploy/compose.yml`-Stack pollen (`/health`-
+Polling, `GG-DEPLOY-001`/`003`). Bis Welle 6 lag das compose-File
+nicht vor, daher fiel `make runtime` graceful aus.
 
-```text
-[runtime] deploy/compose.yml fehlt — wird mit der Deploy-Slice
-angelegt
-```
+## Lieferung
 
-`GG-DEPLOY-001` MUSS Docker Compose; `GG-DEPLOY-005` MUSS
-`docker compose up` als Start-Kommando; `GG-DEMO-001` MUSS lokal
-startbare Demo-Umgebung.
+`deploy/compose.yml` mit drei Services:
 
-## Erwartete Lieferung
+- **`postgres`**: `postgres:16-alpine` mit
+  `pg_isready`-healthcheck. Datenbank `grid_gym`, User
+  `grid_gym`, Password `grid_gym` (Test-/Demo-Setup; produktive
+  Geheimnisse kommen mit `GG-DEPLOY-006` und einer
+  Secrets-ADR).
+- **`api`**: `grid-gym-runtime:latest`-Image,
+  `python -m uvicorn` auf `:8080`, depends-on
+  `postgres: service_healthy`. `GRID_GYM_DATABASE_URL`-Env
+  zeigt auf den `postgres`-Service. Dockerfile-`ENTRYPOINT`
+  per `entrypoint: []` neutralisiert.
+- **`simulation`**: Welle-6c-Stub-Container mit
+  `sleep infinity` als Platzhalter fuer den TickLoop-Runner
+  (M2-Verantwortung). `healthcheck: test: ["NONE"]` deaktiviert
+  den Dockerfile-curl-HEALTHCHECK, weil der Stub keinen
+  Webserver hat.
 
-- `deploy/compose.yml` mit:
-  - `api`-Service (FastAPI, Port 8080, `/health`-Healthcheck),
-  - `simulation`-Service (optional separat, `GG-AR-OPEN-002`),
-  - `ui`-Service (Web-UI, `GG-UI-001`),
-  - `postgres`-Service (Pflicht, `GG-PERSIST-005`),
-  - optionale `timescaledb`/`influxdb`/`otel-collector`-Services.
-- Offline-Faehigkeit: kein Pull aus dem Internet zur Laufzeit
-  (`GG-DEPLOY-002/011`).
-- Healthcheck-Wartepunkt: `docker compose up -d --wait` gruen.
+`make runtime` ist nun gruen: baut das Runtime-Image, startet
+den Stack, pollt `/health` bis `200 OK`, tears down. Welle 6d
+hat zusaetzlich `apt-get upgrade -y` im Runtime-Stage und
+`PYTHONPATH=/app/src` ergaenzt — `make image-audit`
+(trivy --ignore-unfixed) und der Compose-Smoke laufen zusammen
+mit dem `make fullbuild`-Aggregator gruen.
 
-## Aktivierungs-Kriterium
+## Aktivierungs-Kriterium (erfuellt)
 
-Mit dem ersten Deploy-Slice (Compose + API-Slice + Persistenz-
-Migrationspfad).
-
-## Abhaengig von
-
-- `tests/integration/compose.yml` (siehe 009) liefert das
-  Postgres-Setup-Muster.
-- `GG-AR-OPEN-002` (API/Simulation als ein oder zwei Prozesse)
-  beeinflusst die Service-Topologie.
+Mit M1 Welle 6c (FastAPI-Adapter + Postgres-Persistenz)
+aktiviert; abgeschlossen mit Welle 6d (M1-Abschluss-Gate
+`make fullbuild` mit `CRITICAL_COV_TARGETS`-Override).
 
 ## Wandert nach
 
-- `next/`, sobald Deploy-Slice skizziert ist,
-- `in-progress/`, wenn aktiver Slice geplant ist.
+`done/` (jetzt). M2 bringt produktive Geraete + TickLoop-Runner,
+die den `simulation`-Service auf einen echten Entry umstellen.
+M6 (Security/CI-Haertung, Roadmap §3) erweitert um Secrets-
+Management und produktions-taugliche `GRID_GYM_*`-ENV.
+Open-Trigger 015 (Production-Image-Hardening:
+shebang-Rewrite / `uv sync --no-editable`) ist der unmittelbare
+Welle-6d-Erbe.
