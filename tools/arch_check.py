@@ -11,7 +11,10 @@ Welle 3 deckt:
 - AC-NO-RAND — Random-Aufrufe (`random.*`/`secrets.*`/`numpy.random.*`)
   unter `hexagon/core/**` (Aufruf-Site)
 - AC-DOMAIN-FROZEN — Klassen unter `hexagon/core/domain/**` sind
-  frozen
+  frozen (Frozen-Dataclass, `FrozenModel`-Vererbung oder
+  `Enum`-Subklasse — Enum-Member sind by-construction immutable;
+  Enum-Form per `ADR 0008` als dritte zulaessige Frozen-Konvention
+  zu `ADR 0002 §A-1` ergaenzt)
 - AC-NO-GOD-UTILS — Modul-/Klassen-Namens-Heuristik plus
   oeffentliche-Funktionen-Count
 - AC-TYPED-ERRORS — kein `raise Exception(...)` / `except Exception:`
@@ -553,6 +556,14 @@ def _check_domain_frozen(
       `ast.Constant(value=True)`.
     - Vererbung von `FrozenModel` (`ast.Name` oder `ast.Attribute`
       mit `attr == "FrozenModel"`).
+    - Vererbung von `Enum`/`StrEnum`/`IntEnum`/`Flag`/`IntFlag`/
+      `ReprEnum` (Bare-Name oder `enum.*`-Attribute). Begruendung:
+      Enum-Member sind in Python by-construction immutable — die
+      Member-Werte koennen nach Klassenerstellung nicht
+      ueberschrieben werden, `enum.Enum.__init_subclass__`
+      blockiert Re-Definition. Diese Erweiterung ist in `ADR 0008`
+      verankert (Folge-ADR zu `ADR 0002 §A-1`, reine Erweiterung
+      ohne Supersedes per `ADR 0006 §3`).
     """
     domain_root = src_root / "hexagon" / "core" / "domain"
     paths_to_check: list[Path] = list(_iter_py_files(domain_root))
@@ -577,7 +588,37 @@ def _check_domain_frozen(
 
 
 def _is_frozen_class(node: ast.ClassDef) -> bool:
-    return _has_frozen_dataclass_decorator(node) or _inherits_frozen_model(node)
+    return (
+        _has_frozen_dataclass_decorator(node)
+        or _inherits_frozen_model(node)
+        or _inherits_enum(node)
+    )
+
+
+# Enum-Basisklassen, deren Vererbung als AC-DOMAIN-FROZEN-Form gilt.
+# Verankert in `ADR 0008` §2 (Folge-ADR zu `ADR 0002 §A-1`).
+# Erweiterung dieser Liste erfordert eine weitere Folge-ADR.
+_ENUM_BASE_NAMES: frozenset[str] = frozenset(
+    {"Enum", "StrEnum", "IntEnum", "Flag", "IntFlag", "ReprEnum"}
+)
+
+
+def _inherits_enum(node: ast.ClassDef) -> bool:
+    """True wenn `node` von einer `enum`-Basisklasse erbt.
+
+    Erkennt sowohl Bare-Name-Imports (`from enum import StrEnum`
+    → `class Q(StrEnum): ...`) als auch Attribut-Zugriffe
+    (`import enum` → `class Q(enum.StrEnum): ...`). Andere Module,
+    die zufaellig eine `StrEnum`-Klasse re-exportieren, matchen
+    ebenfalls — das ist die etablierte Konvention der
+    `FrozenModel`-Erkennung (literal-Name, kein Import-Resolving).
+    """
+    for base in node.bases:
+        if isinstance(base, ast.Name) and base.id in _ENUM_BASE_NAMES:
+            return True
+        if isinstance(base, ast.Attribute) and base.attr in _ENUM_BASE_NAMES:
+            return True
+    return False
 
 
 def _has_frozen_dataclass_decorator(node: ast.ClassDef) -> bool:
