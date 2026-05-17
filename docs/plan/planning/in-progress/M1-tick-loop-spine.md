@@ -1,11 +1,12 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** In Progress — Welle 0..4 abgeschlossen
-(2026-05-15 / 2026-05-17 ×4). ADR 0007/0010 sind `Accepted`;
-Domain-Modelle, Ports, `Scheduler` und `TickLoop` (`GG-SIM-001/
-002/005`) liegen mit Determinismus- und Snapshot-Resume-Property-
-Tests. Trigger 003 + 012 sind `done`. Welle 5 (Scenario + Replay)
-ist der naechste Schritt.
+**Status:** In Progress — Welle 0..5 abgeschlossen
+(2026-05-15 / 2026-05-17 ×5). ADR 0007/0010 sind `Accepted`;
+Domain-Modelle, Ports, `Scheduler`, `TickLoop` (`GG-SIM-001/002/
+005`) und Scenario+Replay (`GG-SCN-001..008`/`GG-REPLAY-001..003/
+007`) liegen. Trigger 003 + 012 sind `done`. Welle 6 (Integration
++ `make fullbuild`) ist der naechste Schritt — `devices/battery`
+fuer Default-`make gates` kommt mit M2.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
 Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
@@ -253,6 +254,25 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
 - **Gate-Status nach Welle 5**: Default `CRITICAL_COV_TARGETS`
   funktioniert fuer `scenario` und `replay`; `devices/battery`
   bleibt offen (M2).
+- **Abgeschlossen 2026-05-17:** Scenario-Loader
+  (`hexagon/core/scenario/{validator,loader}.py`) + Replay-
+  Mapper/Diff (`hexagon/core/replay/{mapper,diff}.py`) und die
+  zugehoerigen Domain-Dataclasses
+  (`hexagon/core/domain/{scenario,replay}.py`) ausgeliefert.
+  Mapping-input fuer Scenario — YAML-File-Parsing bleibt
+  Adapter-Verantwortung (`AC-HEXAGON-PURE`-konform ohne
+  PyYAML-Whitelist-Erweiterung). Replay nutzt stdlib-only
+  (`csv`, `json`, `datetime`). Erweiterter Critical-Override:
+  `CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/domain
+  src/grid_gym/hexagon/ports/driven
+  src/grid_gym/adapters/driven/random_mt
+  src/grid_gym/hexagon/core/simulation
+  src/grid_gym/hexagon/core/scenario
+  src/grid_gym/hexagon/core/replay"`. Default-`make gates`
+  bleibt rot, weil `devices/battery` erst mit M2-Geraetemodellen
+  kommt. Trigger 013 (generischer Snapshot-Codec) bleibt offen
+  fuer ein viertes Snapshot-Subsystem; Welle 5 hat keinen
+  Snapshot-Pfad (Scenario+Replay sind Lade-/Vergleichs-Module).
 
 ### Welle 6 — Integration + `make fullbuild` (Tag 6)
 

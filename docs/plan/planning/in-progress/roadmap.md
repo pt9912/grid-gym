@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
-**Stand:** 2026-05-17 (M1 Welle 0..4 abgeschlossen)
+**Stand:** 2026-05-17 (M1 Welle 0..5 abgeschlossen)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -71,18 +71,19 @@ vorbelegt.
   Line + Branch).
 - **Status:** In Progress — Slice-Plan
   [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv.
-  Welle 0..4 abgeschlossen (Daten 2026-05-15 / 2026-05-17 ×4):
-  ADR 0007 und ADR 0010 (RandomPort + Snapshot-as-Mapping) sind
-  `Accepted`; Domain-Modelle (`Quality`/`CommandResult`/
-  `RunMetadata`/`TelemetryPoint`/`Command`/`Event`/
-  `SnapshotEnvelope`/`TickResult`), Driven-Ports (`ClockPort`/
-  `RandomPort` + `MersenneTwisterRandomPort`), Scheduler
-  (`GG-ARCH-005`/`006`, Tie-Breaking
-  `(time, priority, source, sequence, event_id)`) und `TickLoop`
-  (`GG-SIM-001/002/005` mit Determinismus- und
-  Snapshot-Resume-Property-Tests) liegen. Trigger 001, 003 und
-  012 sind in `done/`. Welle 5 (Scenario + Replay) ist der
-  naechste Schritt.
+  Welle 0..5 abgeschlossen (Daten 2026-05-15 / 2026-05-17 ×5):
+  ADR 0007/0010 (`Accepted`); Domain-Modelle (`Quality`/
+  `CommandResult`/`RunMetadata`/`TelemetryPoint`/`Command`/
+  `Event`/`SnapshotEnvelope`/`TickResult`/`Scenario`/
+  `ReplaySample`/`ReplayDelta`), Driven-Ports (`ClockPort`/
+  `RandomPort` + `MersenneTwisterRandomPort`), `Scheduler`
+  (`GG-ARCH-006`), `TickLoop` (`GG-SIM-001/002/005`),
+  Scenario-Loader+Validator+Hash (`GG-SCN-001..008`) und
+  Replay-Mapper+Diff (`GG-REPLAY-001..003/007`) liegen mit
+  Property- und Determinismus-Tests. Trigger 001, 003 und 012
+  sind `done`. Welle 6 (Integration + `make fullbuild`) ist
+  der naechste Schritt; Default-`make gates` wird mit
+  M2-Geraetemodellen (`devices/battery`) gruen, nicht in M1.
 
 ---
 
