@@ -24,9 +24,10 @@ historisch.
 | 0004 | [Kennungs-basierte Querverweise](0004-identifier-based-cross-references.md) | Accepted    | 2026-05-13  | —                                                                                                                  |
 | 0005 | [Type-Check-Gate (`mypy --strict`)](0005-type-check-gate.md)    | Accepted    | 2026-05-15  | —                                                                                                                  |
 | 0006 | [ADR-Lifecycle, Superseding und Prozess-Korrekturen](0006-adr-lifecycle-superseding-and-process-corrections.md) | Accepted    | 2026-05-15  | —                                                                                                                  |
-| 0007 | [`RandomPort`-Implementierung](0007-random-port.md)             | Accepted    | 2026-05-15  | **§5.2-Snapshot-Schema** abgeloest durch [`ADR 0009`](0009-randomport-snapshot-schema-rng-version.md): `state`-Feld → `rng_version` + `rng_state`. Reine Erweiterung, kein Supersedes. |
+| 0007 | [`RandomPort`-Implementierung](0007-random-port.md)             | Accepted    | 2026-05-15  | **§5.2-Snapshot-Schema** abgeloest durch [`ADR 0009`](0009-randomport-snapshot-schema-rng-version.md): `state`-Feld → `rng_version` + `rng_state`. **§5.1-Protocol-Erweiterung** durch [`ADR 0010`](0010-randomport-snapshot-as-mapping.md): zusaetzliche Methode `snapshot_as_mapping()`. Beide reine Erweiterungen, kein Supersedes. |
 | 0008 | [Enum-Subklassen als AC-DOMAIN-FROZEN-Form](0008-enum-as-domain-frozen-form.md) | Provisional | 2026-05-17  | Erweitert `ADR 0002 §A-1` AC-DOMAIN-FROZEN; Acceptance synchron zur M1-Welle-1-PR-Mergung                          |
 | 0009 | [`RandomPort`-Snapshot-Schema](0009-randomport-snapshot-schema-rng-version.md) | Accepted    | 2026-05-17  | Erweitert `ADR 0007 §5.2`; reine Erweiterung, kein Supersedes                                                       |
+| 0010 | [`RandomPort.snapshot_as_mapping`](0010-randomport-snapshot-as-mapping.md) | Accepted    | 2026-05-17  | Erweitert `ADR 0007 §5.1` + `ADR 0009`: Composition-API fuer `SnapshotEnvelope`. Single-Source-of-Truth `_build_payload()`. Reine Erweiterung, kein Supersedes. |
 
 ---
 

@@ -1,10 +1,11 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** In Progress — Welle 0, 1, 2 und 3 abgeschlossen
-(2026-05-15 / 2026-05-17 / 2026-05-17 / 2026-05-17). ADR 0007 ist
-`Accepted`, Domain-Modelle, Ports und der deterministische
-`Scheduler` (`GG-ARCH-005`/`006`) liegen, Trigger 003 ist `done`.
-Welle 4 (TickLoop + Snapshot-Envelope) ist der naechste Schritt.
+**Status:** In Progress — Welle 0..4 abgeschlossen
+(2026-05-15 / 2026-05-17 ×4). ADR 0007/0010 sind `Accepted`;
+Domain-Modelle, Ports, `Scheduler` und `TickLoop` (`GG-SIM-001/
+002/005`) liegen mit Determinismus- und Snapshot-Resume-Property-
+Tests. Trigger 003 + 012 sind `done`. Welle 5 (Scenario + Replay)
+ist der naechste Schritt.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
 Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
@@ -209,6 +210,18 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
   `devices/battery`/`scenario`/`replay` noch nicht implementiert.
   Loesung: M1-`gates` mit explizitem Override; volle Default-
   `gates` erst nach Welle 5/6.
+- **Abgeschlossen 2026-05-17:** TickLoop (`tick_loop.py`) und
+  TickResult (`domain/tick_result.py`) ausgeliefert.
+  Snapshot-Composition ueber `RandomPort.snapshot_as_mapping`
+  (`ADR 0010`) — Trigger 012 geschlossen. TickLoop.snapshot()
+  baut SnapshotEnvelope-konformes Mapping mit
+  sub_snapshots={scheduler, random_root}. from_snapshot prueft
+  Clock-/Random-Konsistenz typisiert. Erweiterter Critical-
+  Override unveraendert (gleiche vier Targets wie Welle 3 — der
+  TickLoop liegt in `core/simulation`, ist also schon abgedeckt).
+  Trigger-012-§2/§3/§4-Restpunkte (generischer Snapshot-Codec,
+  Payload-Canonical-Validierung als Free-Function) bleiben bis
+  Welle 5 offen (Folge-Trigger 013 oeffnet sich dort).
 
 ### Welle 5 — Scenario + Replay (Tag 5)
 
