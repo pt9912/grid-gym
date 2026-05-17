@@ -53,15 +53,16 @@ htmlcov/
 .claude/
 
 # --- Dokumentation und Planungsartefakte --------------------------------
-# Werden im Container nicht referenziert. spec/ ist Pflicht und
-# wird vom Dockerfile explizit per `COPY spec/ spec/` geholt — also
-# NICHT hier ausschliessen.
-docs/
-CHANGELOG.md
+# `docs/`, `deploy/`, `CHANGELOG.md`, `Makefile`, `Dockerfile` sind
+# NICHT mehr ausgeschlossen seit Welle 7 — der `docs-check`-Stage
+# (Markdown-Link-Validator `tools/check_refs.py`, Trigger 002)
+# aufloest relative Pfade zwischen `spec/`, `docs/` und Top-Level-
+# Artefakten. Sie muessen im Build-Kontext sein.
 
 # --- Build-Skripte, die nicht ins Image gehoeren ------------------------
-# Dockerfile selbst wird von `docker build` ueber `-f` aufgeloest,
-# nicht aus dem Kontext.
-Dockerfile
+# `.dockerignore` selbst gehoert nicht ins Image. `Dockerfile` und
+# `Makefile` sind seit Welle 7 im Kontext (siehe docs-check oben),
+# weil docs/ sie per Markdown-Ref referenzieren — ihre Pfade
+# duerfen aber nur fuer den docs-check-Stage benutzt werden, nicht
+# als Image-Payload.
 .dockerignore
-Makefile

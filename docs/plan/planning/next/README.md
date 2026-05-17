@@ -16,8 +16,9 @@ Ein Eintrag wechselt typischerweise:
 
 ## Bestand
 
-(leer — M1-Slice-Plan ist seit 2026-05-15 nach
-[`in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+(leer — M1-Slice-Plan ist seit 2026-05-15 nach `in-progress/`
+und am 2026-05-17 weiter nach
+[`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 gewandert; siehe auch [`in-progress/README.md`](../in-progress/README.md).)
 
 Spike-0 selbst ist abgeschlossen und in

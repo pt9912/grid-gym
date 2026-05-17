@@ -6,14 +6,14 @@ in den Simulationsfluss (TickLoop/Scheduler) ist NICHT Teil dieser
 Closure** — siehe Abschnitt
 [„Was diese Closure NICHT abdeckt"](#was-diese-closure-nicht-abdeckt)
 und den Slice-Plan
-[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+[`M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 §3 Welle 3 (Scheduler) und §3 Welle 4 (TickLoop).
 **Datum:** 2026-05-15 (geoeffnet); 2026-05-15 ADR-Skizze als
 `Provisional`; 2026-05-17 ADR-`Accepted` + Trigger-Closure.
 **Quelle:** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §7
 **Verlinkt:** [`ADR 0007 RandomPort`](../../adr/0007-random-port.md)
 (`Accepted`); M1-Slice-Plan
-[`docs/plan/planning/in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 §3 Welle 2.
 
 ---

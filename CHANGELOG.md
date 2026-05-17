@@ -124,8 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `coverage-gate`, `build-app`, `runtime` (non-root, /health
   HEALTHCHECK, Port 8080). Makefile-Targets pro Stage plus
   Aggregator (`gates`, `ci`, `fullbuild`) und Maintenance
-  (`lock-refresh`, `sbom`, `clean`). Pattern an
-  `/Development/bess-ems/{Makefile,Dockerfile}` orientiert; Stack
+  (`lock-refresh`, `sbom`, `clean`). Stack
   gemaess ADR 0002 (Python 3.13+/3.14, `uv`, `ruff`, `import-linter`,
   `tools/arch_check.py`, `pytest`, `hypothesis`, `testcontainers`).
   Artefakte greifen die Spike-0-Lieferliste auf und setzen die

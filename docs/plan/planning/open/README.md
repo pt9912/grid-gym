@@ -31,8 +31,9 @@ Block; `Post-M1` = nach M1-Abschluss.
 | **Post-M1**          | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 
 > Bereits aktiviert: `001-code-review-doc.md` →
-> [`next/`](../next/001-code-review-doc.md) (2026-05-15,
-> Post-Acceptance per Drittes Review).
+> [`done/`](../done/001-code-review-doc.md) (2026-05-15,
+> Post-Acceptance per Drittes Review; weiter nach `done/`
+> nach Lieferung des PR-Templates + Code-Review-Doku).
 >
 > Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
 > [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)

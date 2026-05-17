@@ -17,7 +17,7 @@ Commit `ae20b4f`); Modul-Docstring von
 [`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)
 (Schaerfung — Composition-API),
 M1-Slice-Plan
-[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+[`M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 §3 Welle 4.
 
 ---

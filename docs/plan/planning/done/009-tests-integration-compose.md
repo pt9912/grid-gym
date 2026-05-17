@@ -9,7 +9,7 @@ fallback bis Welle 6).
 **Verlinkt:** [`tests/integration/compose.yml`](../../../../tests/integration/compose.yml),
 [`tests/integration/test_postgres_run_repository.py`](../../../../tests/integration/test_postgres_run_repository.py),
 M1-Slice-Plan
-[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+[`M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 §3 Welle 6c.
 
 ---

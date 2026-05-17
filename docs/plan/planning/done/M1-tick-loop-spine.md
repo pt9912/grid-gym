@@ -22,7 +22,7 @@ Move `in-progress/` → `done/`: 2026-05-17 nach Welle 6d.
 Acceptance synchron mit Welle 2),
 [`done/spike-0.md`](../done/spike-0.md) §0 (Spike-0-Closure mit
 „M1 — Tick-Loop-Spine"-Verweis),
-[`roadmap.md`](roadmap.md) §3 M1.
+[`roadmap.md`](../in-progress/roadmap.md) §3 M1.
 
 ---
 
@@ -387,14 +387,20 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
   Skelett-Test, dass `make arch-check` mit dem leeren `http_api.py`
   gruen bleibt.
 
-## 6. Wandert nach
+## 6. Wandert nach (historisch)
 
-- `in-progress/M1-tick-loop-spine.md`, sobald Welle 0 oder 1
-  startet.
-- `done/M1-tick-loop-spine.md` mit Closure-Notiz nach Welle 7.
-- `archive/`, falls M1 grundlegend umgeplant wird (unwahrscheinlich
-  — Tick-Loop-Spine ist die `ADR 0002 §6.2`-fixierte Spine-
-  Definition).
+- ✓ `in-progress/M1-tick-loop-spine.md`, sobald Welle 0 oder 1
+  startet — vollzogen 2026-05-15 nach Welle 0.
+- ✓ `done/M1-tick-loop-spine.md` mit Closure-Notiz nach Welle 7
+  — vollzogen 2026-05-17 nach Welle 6d.
+- `archive/` ist nicht erfolgt (M1 wurde planmaessig
+  abgeschlossen, nicht umgeplant).
+
+Ein Forwarder-Stub bleibt unter
+[`in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+liegen, weil ADR 0008 und ADR 0009 in ihrer `Bezug:`-Zeile auf
+den `in-progress/`-Pfad zeigen und nach Acceptance per
+`ADR 0006 §3` immutable sind.
 
 ## 7. Verifikationspfad
 

@@ -141,6 +141,27 @@ dieses Stacks bzw. Welle-7-Final-Review-Output). Befunde:
 - **M-3 (must-fix, hier behoben):** `Makefile`-Target `ci`
   liefert bei `coverage-gate-critical`-Fail einen klaren
   M1-Override-Hinweis (siehe Commit-Body).
+- **M-4 (dokumentierter Welle-5-Restposten, nicht Pflicht-Fix
+  vor M2):** Triggers 013 und 014 sind **bewusst aktiv offen**,
+  nicht „nicht-final umgesetzt":
+  - **Trigger 013** (`diff_replay`-tick-ms-Parameter,
+    `docs/plan/planning/open/013-replay-diff-tick-ms-parameter.md`):
+    aktuell `tick = simulation_time // 1000` ist Welle-5-Default
+    fuer `tick_ms=1000`. Aktivierung mit erstem Replay-Diff
+    gegen `tick_ms != 1000` — typisch M2-Geraet mit
+    `tick_ms=10/100`.
+  - **Trigger 014** (`generic-snapshot-format-codec`,
+    `docs/plan/planning/open/014-generic-snapshot-format-codec.md`):
+    fuenffaches `*FormatError`-Pattern (RandomPort, Scheduler,
+    TickLoop, Scenario, Replay) ist heute pre-mature-
+    abstraction-konform belassen. Aktivierung mit sechstem
+    Subsystem (`devices/battery`-Validierung in M2-Welle-0).
+  Beide Triggers haben dokumentierte Aktivierungs-Kriterien und
+  sind **M1-Closure-konform** (Welle 5 Closure-Block in
+  `done/M1-tick-loop-spine.md` §3 Welle 5 listet sie explizit
+  als Welle-5-bewusst-verschobene Restposten). Sie sind **NICHT**
+  M1-Reststeuerung, sondern **M2-Welle-0-Pflicht-Aktivierung**.
+
 - **S-1..S-6 (should-consider, fuer M2-Slice-Plan):**
   - **S-1**: Trigger 014 (`generic-snapshot-format-codec`)
     als M2-Welle-0-Pflicht-Item — sechstes Subsystem

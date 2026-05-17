@@ -64,6 +64,16 @@ COPY src/ src/
 COPY tests/ tests/
 COPY tools/ tools/
 COPY spec/ spec/
+# `docs/` wird vom `tools/check_refs.py`-Markdown-Link-Validator
+# (Welle-7-Audit-Erbe, Trigger 002) gebraucht — er aufloest
+# relative Pfade zwischen spec/ und docs/. `deploy/`, `Makefile`,
+# `Dockerfile` und `CHANGELOG.md` werden ebenfalls per Markdown-
+# Ref aus `docs/` referenziert (Slice-Plan + Trigger-Notes); die
+# `docs-check`-Stage braucht sie im Build-Kontext, damit
+# relative-Pfad-Aufloesung gegen reale Targets prueft.
+COPY docs/ docs/
+COPY deploy/ deploy/
+COPY Makefile Dockerfile CHANGELOG.md ./
 # `alembic.ini` zeigt auf das Postgres-Adapter-Migrations-
 # Verzeichnis (`src/grid_gym/adapters/driven/persistence_postgres/
 # migrations`) und wird vom Integration-Test-Runner programmatisch
@@ -132,6 +142,15 @@ RUN uv run python tools/arch_check.py
 FROM source AS arch-check
 RUN uv run lint-imports \
  && uv run python tools/arch_check.py
+
+# ---------------------------------------------------------------------------
+# docs-check: Markdown-Link-Validator (Trigger 002 Welle 7).
+# Scant docs/ + spec/ nach relativen `[text](path)`-Links und meldet
+# nicht aufloesbare Pfade. Faengt Audit-Lecks wie post-Move-Drift
+# (z. B. `in-progress/ → done/`) automatisiert ab.
+# ---------------------------------------------------------------------------
+FROM source AS docs-check
+RUN uv run python tools/check_refs.py
 
 # ---------------------------------------------------------------------------
 # test-unit: pytest auf tests/unit/. Schliesst hypothesis-Property-Tests

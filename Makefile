@@ -40,7 +40,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 
 .PHONY: help \
 	lint format-check typecheck \
-	arch-check arch-check-imports arch-check-custom \
+	arch-check arch-check-imports arch-check-custom docs-check \
 	test test-unit test-determinism test-replay test-fault \
 	test-integration \
 	coverage-gate coverage-gate-critical \
@@ -75,6 +75,7 @@ help:
 	@echo "  make arch-check        import-linter + tools/arch_check.py (16 A-1-Contracts)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
+	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"
 	@echo ""
 	@echo "Tests:"
 	@echo "  make test-unit         pytest tests/unit/"
@@ -138,6 +139,9 @@ arch-check-imports:
 
 arch-check-custom:
 	$(DOCKER_BUILD) --target arch-check-custom -t $(IMAGE_PREFIX)-arch-check-custom:latest
+
+docs-check:
+	$(DOCKER_BUILD) --target docs-check -t $(IMAGE_PREFIX)-docs-check:latest
 
 # --- Tests -----------------------------------------------------------------
 

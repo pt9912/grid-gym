@@ -8,7 +8,7 @@ sauberen Loesungen brauchen einen eigenen Slice.
 **Verlinkt:** [`Dockerfile`](../../../../Dockerfile)
 `runtime`-Stage, [`deploy/compose.yml`](../../../../deploy/compose.yml),
 M1-Slice-Plan
-[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+[`M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
 §3 Welle 6d.
 
 ---
