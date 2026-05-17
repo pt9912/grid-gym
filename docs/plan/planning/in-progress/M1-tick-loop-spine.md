@@ -1,9 +1,10 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** In Progress — Welle 0, 1 und 2 abgeschlossen
-(2026-05-15 / 2026-05-17 / 2026-05-17). ADR 0007 ist `Accepted`,
-Domain-Modelle und Ports liegen, Trigger 003 ist `done`. Welle 3
-(Scheduler mit Tie-Breaking) ist der naechste Schritt.
+**Status:** In Progress — Welle 0, 1, 2 und 3 abgeschlossen
+(2026-05-15 / 2026-05-17 / 2026-05-17 / 2026-05-17). ADR 0007 ist
+`Accepted`, Domain-Modelle, Ports und der deterministische
+`Scheduler` (`GG-ARCH-005`/`006`) liegen, Trigger 003 ist `done`.
+Welle 4 (TickLoop + Snapshot-Envelope) ist der naechste Schritt.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
 Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
@@ -170,6 +171,23 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
     identische `pop_due`-Reihenfolge.
 - **Gate-Status nach Welle 3**: alle aus Welle 2 plus Coverage
   auf `simulation/scheduler`.
+- **Abgeschlossen 2026-05-17:** `Scheduler` in
+  `hexagon/core/simulation/scheduler.py` mit heap-basierter Queue
+  (Sort-Keys-Only, Events neben dem Heap im `dict`-Index, damit
+  `heapq` nie unordbare `Event`-Instanzen vergleicht).
+  `Scheduler.add`, `pop_due(time <= ...)`, `snapshot()` (Mapping
+  mit `version: int` + `pending_events` in Pop-Reihenfolge) und
+  `from_snapshot()` als classmethod. Typisierte
+  `SchedulerSnapshotFormatError`-Hierarchie in `core/errors.py`.
+  `SchedulerDuplicateEventIdError` schuetzt Sort-Key-Eindeutigkeit.
+  Erweiterter Critical-Override:
+  `CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/domain
+  src/grid_gym/hexagon/ports/driven
+  src/grid_gym/adapters/driven/random_mt
+  src/grid_gym/hexagon/core/simulation"`. TODO(M1-Welle-4):
+  Snapshot-Composition mit `RandomPort.snapshot()` (heute
+  `bytes`-canonical vs. `Mapping[str, object]`) im
+  `SnapshotEnvelope` vereinheitlichen — ggf. Folge-ADR.
 
 ### Welle 4 — Tick-Loop + Snapshot (Tag 4)
 

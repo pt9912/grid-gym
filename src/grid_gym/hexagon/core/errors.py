@@ -171,3 +171,68 @@ class UnexpectedGaussNextError(RandomPortError):
             f"random.Random gauss_next must be None (got {value_type}); "
             "RandomPort API does not call gauss() — external manipulation?"
         )
+
+
+# ---------------------------------------------------------------------------
+# Scheduler-Vertrag (`hexagon.core.simulation.scheduler`, M1 Welle 3)
+# ---------------------------------------------------------------------------
+
+
+class SchedulerError(GridGymError):
+    """Wurzel der `Scheduler`-Vertragsverletzungen (`GG-ARCH-006`)."""
+
+
+class SchedulerDuplicateEventIdError(SchedulerError):
+    """`Scheduler.add` mit einem `event_id`, der bereits in der Queue ist.
+
+    Tie-Breaking `(time, priority, source, sequence, event_id)`
+    haengt davon ab, dass `event_id` eindeutig ist — sonst kollidieren
+    Sort-Keys und Pop-Reihenfolge wird vom Heap-Implementation-Detail
+    abhaengig.
+    """
+
+    def __init__(self, event_id: str) -> None:
+        super().__init__(f"duplicate event_id in scheduler queue: {event_id!r}")
+
+
+class SchedulerSnapshotFormatError(SchedulerError):
+    """Wurzel der Snapshot-Format-Vertragsverletzungen am `Scheduler`.
+
+    Auspraegungen als Subklassen — Aufrufer pruefen typisiert,
+    nicht ueber Message-String-Matching. Spiegelt das Pattern aus
+    `RandomPortSnapshotFormatError` (`ADR 0009`).
+    """
+
+
+class SchedulerSnapshotMissingKeysError(SchedulerSnapshotFormatError):
+    """Pflicht-Keys fehlen im Snapshot-Dict."""
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(f"missing scheduler snapshot keys: {missing}")
+
+
+class SchedulerSnapshotWrongTypeError(SchedulerSnapshotFormatError):
+    """Ein Snapshot-Key hat den falschen Typ."""
+
+    def __init__(self, key: str, expected: str, actual: str) -> None:
+        super().__init__(f"scheduler snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class SchedulerSnapshotEventFieldError(SchedulerSnapshotFormatError):
+    """Ein Event-Eintrag in `pending_events` hat ein fehlendes oder
+    falsch typisiertes Feld."""
+
+    def __init__(self, index: int, field: str, expected: str, actual: str) -> None:
+        super().__init__(
+            f"scheduler snapshot pending_events[{index}] field {field!r} "
+            f"must be {expected}, got {actual}"
+        )
+
+
+class SchedulerSnapshotVersionError(SchedulerError):
+    """Snapshot traegt eine unbekannte `version`."""
+
+    def __init__(self, expected: int, found: object) -> None:
+        super().__init__(
+            f"unsupported scheduler snapshot version: expected {expected}, got {found!r}"
+        )

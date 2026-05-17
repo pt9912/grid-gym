@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
-**Stand:** 2026-05-17 (M1 Welle 0, 1 und 2 abgeschlossen)
+**Stand:** 2026-05-17 (M1 Welle 0, 1, 2 und 3 abgeschlossen)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -71,15 +71,16 @@ vorbelegt.
   Line + Branch).
 - **Status:** In Progress — Slice-Plan
   [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv.
-  Welle 0 (2026-05-15), Welle 1 (2026-05-17) und Welle 2
-  (2026-05-17) abgeschlossen: ADR 0007 (RandomPort) ist
-  `Accepted`; Domain-Modelle (`Quality`/`CommandResult`/
-  `RunMetadata`/`TelemetryPoint`/`Command`/`Event`/
-  `SnapshotEnvelope`) und die Driven-Ports
-  (`ClockPort`/`RandomPort` + `MersenneTwisterRandomPort`)
-  liegen mit hypothesis-Property-Tests. Trigger 001 und
-  Trigger 003 sind in `done/`. Welle 3 (Scheduler mit
-  Tie-Breaking) ist der naechste Schritt.
+  Welle 0..3 abgeschlossen (Daten 2026-05-15 / 2026-05-17 ×3):
+  ADR 0007 (RandomPort) ist `Accepted`; Domain-Modelle
+  (`Quality`/`CommandResult`/`RunMetadata`/`TelemetryPoint`/
+  `Command`/`Event`/`SnapshotEnvelope`), Driven-Ports
+  (`ClockPort`/`RandomPort` + `MersenneTwisterRandomPort`) und
+  der deterministische `Scheduler` (`GG-ARCH-005`/`006`,
+  Tie-Breaking `(time, priority, source, sequence, event_id)`,
+  Snapshot/Resume) liegen mit hypothesis-Property-Tests.
+  Trigger 001 und Trigger 003 sind in `done/`. Welle 4
+  (`TickLoop` + Snapshot-Envelope) ist der naechste Schritt.
 
 ---
 
