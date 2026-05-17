@@ -36,6 +36,7 @@ from typing import Final
 
 from grid_gym.hexagon.core.errors import (
     RandomPortSnapshotInvalidBytesError,
+    RandomPortSnapshotInvalidRngStateLengthError,
     RandomPortSnapshotListItemWrongTypeError,
     RandomPortSnapshotMissingKeysError,
     RandomPortSnapshotNotAnObjectError,
@@ -59,6 +60,14 @@ _SUB_SEED_HEX_DIGITS: Final[int] = 16
 _QUANTUM_6_PLACES: Final[Decimal] = Decimal("0.000001")
 """Quantum fuer `next_float()` (6 Nachkommastellen, `GG-DATA-005`)."""
 
+_RNG_STATE_LENGTH: Final[int] = 625
+"""Mersenne-Twister-Statelaenge aus `random.Random.getstate()`.
+
+624 MT-Werte + 1 Index — `ADR 0007 §5.2`. `from_snapshot` validiert
+diese Laenge typisiert, damit `random.Random.setstate(...)` nicht
+mit unkategorisiertem `ValueError` bricht.
+"""
+
 
 class MersenneTwisterRandomPort:
     """`RandomPort`-Implementation auf `random.Random`-Basis.
@@ -69,6 +78,13 @@ class MersenneTwisterRandomPort:
       Hex-Stellen als `int`.
     - `next_float`: `Decimal(str(rng.random()))
       .quantize(Decimal("0.000001"), ROUND_HALF_EVEN)`.
+
+    TODO(M1-Welle-4): Snapshot-Codec (snapshot/from_snapshot) als
+    eigene Klasse / Modul-Funktion abgrenzen, sobald der TickLoop-
+    Snapshot-Envelope mehrere Sub-Snapshots versioniert
+    zusammenfuehrt. Heute zwei fachliche Aenderungsgruende in einer
+    Klasse (PRNG-Wahl + Snapshot-Schema), bei ~240 LOC noch
+    vertretbar; bei Schema-v2 trennen.
     """
 
     def __init__(self, seed: int, sub_path: Sequence[str] = ()) -> None:
@@ -132,6 +148,11 @@ class MersenneTwisterRandomPort:
     def from_snapshot(cls, state: bytes) -> MersenneTwisterRandomPort:
         """Stellt einen Port aus `snapshot()`-Bytes wieder her.
 
+        `__init__` laeuft durch (mit dem persistierten Seed) — wenn
+        spaetere Wellen dort Invarianten pruefen, greifen sie hier
+        automatisch. Anschliessend ueberschreibt `setstate(...)`
+        den RNG-State auf den persistierten Wert.
+
         Wirft `RandomPortSnapshotFormatError` (oder eine Subklasse)
         bei strukturell kaputten Snapshots und `RandomPortVersionError`
         bei unbekannter `version`.
@@ -139,10 +160,11 @@ class MersenneTwisterRandomPort:
         parsed = _parse_snapshot_payload(state)
         if parsed.version != _SNAPSHOT_VERSION:
             raise RandomPortVersionError(_SNAPSHOT_VERSION, parsed.version)
-        instance = cls.__new__(cls)
-        instance._seed = parsed.seed
-        instance._sub_path = tuple(parsed.sub_path)
-        instance._rng = _random.Random()  # noqa: S311 — Determinismus, nicht Krypto
+        if len(parsed.rng_state) != _RNG_STATE_LENGTH:
+            raise RandomPortSnapshotInvalidRngStateLengthError(
+                _RNG_STATE_LENGTH, len(parsed.rng_state)
+            )
+        instance = cls(parsed.seed, sub_path=parsed.sub_path)
         instance._rng.setstate((parsed.rng_version, tuple(parsed.rng_state), None))
         return instance
 

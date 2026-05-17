@@ -49,6 +49,24 @@ Implementierungs-ADR als Folgearbeit:
   Snapshot/Resume-Bit-Identitaet und den 10.000-Call-
   `canonical_json`-Stabilitaetstest.
 
+## Governance-Klarstellung zur Reihenfolge in Commit `efe6f60`
+
+Commit `efe6f60` traegt atomar (a) den Statuswechsel
+`Provisional → Accepted` an ADR 0007 und (b) die §5.1-Schaerfung
+zum `from_snapshot`-Pfad. Per `ADR 0006 §3` ist der
+Entscheidungstext erst NACH `Accepted` immutable — der
+§5.1-Edit greift in diesem Commit also auf den
+Pre-Commit-Provisional-Text (legal per Lifecycle-Tabelle in
+`ADR 0006 §2`). Status-Flip und Inhaltsedit erscheinen im
+gleichen `git`-Snapshot, weil die Reihenfolge ueber zwei Commits
+keinen zusaetzlichen Audit-Wert haette (der Pre-Acceptance-Stand
+ist im Diff `git show efe6f60^^!` jederzeit rekonstruierbar) und
+die `Letzte inhaltliche Aenderung`-Zeile im ADR-0007-Header die
+Schaerfung explizit als Pre-Acceptance-Akt ausweist
+(`ADR 0006 §4`). Diese Notiz lebt hier, weil ADR-0007-Header
+nach Acceptance pro `ADR 0006 §3` selbst nicht mehr inhaltlich
+angefasst werden darf.
+
 ## Aktivierungs-Kriterium (erfuellt)
 
 Mit M1 Welle 2 (Domain-Slice mit Zufallsverbrauch im Tick-Loop-

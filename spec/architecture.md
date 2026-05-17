@@ -240,7 +240,7 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 
 | Port-ID            | Verantwortung                                                              | Bezug                       |
 | ------------------ | -------------------------------------------------------------------------- | --------------------------- |
-| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant   | GG-ARCH-007, GG-RT-002      |
+| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant. Protocol-Vertrag und `SimulationTime`-Alias sind in M1 Welle 2 (siehe Slice-Plan §3 Welle 2) fixiert. | GG-ARCH-007, GG-RT-002      |
 | GG-AR-PORT-DRN-002 | `TelemetrySinkPort` — Persistenz und Live-Stream von Telemetriepunkten     | GG-DATA-001, GG-PERSIST-001 |
 | GG-AR-PORT-DRN-003 | `RunRepositoryPort` — Laufmetadaten, Szenario-Hash, Lauf-Loeschung         | GG-PERSIST-003/009          |
 | GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                         | GG-PERSIST-004, GG-BESS-002 |
@@ -249,7 +249,7 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 | GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter (MQTT, Modbus, …)          | GG-ARCH-003, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
 | GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability         | GG-OTEL-001..004            |
 | GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                            | GG-PRINC-005                |
-| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf                            | GG-SIM-001, GG-SCN-002      |
+| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert. | GG-SIM-001, GG-SCN-002      |
 
 #### Dependency Rule (verbindlich)
 
@@ -469,7 +469,7 @@ Modulvertrag.
 | Mechanismus                       | Aussage                                                                                  | Bezug                       |
 | --------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------- |
 | Zentraler `ClockPort`             | Einzige Quelle fuer `simulation_time` im Kern; kein direkter Systemzeitzugriff           | GG-ARCH-007, GG-AR-TABU-005 |
-| Seedbarer `RandomPort`            | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar                   | GG-SIM-001, GG-SCN-002      |
+| Seedbarer `RandomPort`            | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar (PRNG-Wahl und Seeding-Kette per [`ADR 0007`](../docs/plan/adr/0007-random-port.md)) | GG-SIM-001, GG-SCN-002      |
 | Stabiles Tie-Breaking             | `(time, priority, source, sequence, event_id)`                                            | GG-ARCH-006                 |
 | Kanonische Serialisierung         | Stabile Feldreihenfolge, festgelegte Numerik                                              | GG-DATA-005                 |
 | Replay-Diff                       | Fachliche vs. volatile Felder werden klassifiziert                                       | GG-REPLAY-007, GG-SAFE-006  |

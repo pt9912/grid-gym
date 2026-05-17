@@ -130,6 +130,19 @@ class RandomPortSnapshotListItemWrongTypeError(RandomPortSnapshotFormatError):
         super().__init__(f"snapshot key {key!r}[{index}] must be {expected}, got {actual}")
 
 
+class RandomPortSnapshotInvalidRngStateLengthError(RandomPortSnapshotFormatError):
+    """`rng_state` hat nicht die fuer Mersenne-Twister erwartete Laenge.
+
+    `random.Random.getstate()` liefert ein 625-Tupel (`ADR 0007 §5.2`):
+    624 MT-Werte + 1 Index. Ein abweichend langer Snapshot wuerde
+    `random.Random.setstate()` mit unkategorisiertem `ValueError`
+    brechen — diese Pruefung faengt das frueh und typisiert.
+    """
+
+    def __init__(self, expected: int, actual: int) -> None:
+        super().__init__(f"snapshot key 'rng_state' must have length {expected}, got {actual}")
+
+
 class UnexpectedGaussNextError(RandomPortError):
     """`random.Random.getstate()` lieferte einen non-`None` `gauss_next`.
 

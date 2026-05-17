@@ -27,8 +27,13 @@ class RandomPort(Protocol):
     - `sub_port(name)` erzeugt einen unabhaengigen Sub-Stream mit
       reproduzierbarem Sub-Seed; gleicher Parent-Seed + gleicher
       Sub-Name → gleicher Sub-Stream, unabhaengig von Parent-Calls.
-    - `snapshot()`/`random_port_from_snapshot()` bilden den
-      Resume-Vertrag (`GG-SIM-005`).
+    - `snapshot()` + adapter-spezifische `from_snapshot`-classmethod
+      bilden den Resume-Vertrag (`GG-SIM-005`); der konkrete
+      Konstruktor lebt am Adapter
+      (`adapters.driven.random_mt.MersenneTwisterRandomPort.
+      from_snapshot`), nicht hier — `AC-PORTS-NO-OUT` verbietet
+      `ports → adapters`-Importe (`ADR 0007 §5.1`, geschaerft
+      2026-05-17 bei Acceptance).
     """
 
     def next_int(self, low: int, high: int) -> int:

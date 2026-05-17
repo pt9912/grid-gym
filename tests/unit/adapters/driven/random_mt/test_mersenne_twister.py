@@ -22,6 +22,7 @@ from hypothesis import strategies as st
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.errors import (
     RandomPortSnapshotInvalidBytesError,
+    RandomPortSnapshotInvalidRngStateLengthError,
     RandomPortSnapshotListItemWrongTypeError,
     RandomPortSnapshotMissingKeysError,
     RandomPortSnapshotNotAnObjectError,
@@ -258,4 +259,15 @@ def test_from_snapshot_rejects_unknown_version() -> None:
     # Vorab: das ist ein 1-Element-rng_state — der eigentliche
     # setstate-Call wird nie erreicht, weil VersionError vorher feuert.
     with pytest.raises(RandomPortVersionError):
+        MersenneTwisterRandomPort.from_snapshot(payload)
+
+
+def test_from_snapshot_rejects_wrong_rng_state_length() -> None:
+    """`rng_state` muss exakt 625 Elemente haben (Mersenne-Twister:
+    624 MT-Werte + 1 Index). Ein 1-Element-Array mit gueltiger
+    `version: 1` faengt der typisierte Laengen-Check vor
+    `random.Random.setstate` ab.
+    """
+    payload = b'{"version": 1, "seed": 0, "sub_path": [], "rng_version": 3, "rng_state": [0]}'
+    with pytest.raises(RandomPortSnapshotInvalidRngStateLengthError):
         MersenneTwisterRandomPort.from_snapshot(payload)
