@@ -1,0 +1,114 @@
+# M1 — Tick-Loop-Spine — Closure-Ergebnisse
+
+**Status:** Done (2026-05-17). M1-Abschluss-Gate
+`make fullbuild` mit explizitem
+`CRITICAL_COV_TARGETS`-Override gruen.
+**Bezug:** Slice-Plan [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md);
+Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
+§3 M1.
+
+---
+
+## 1. Welle-Tabelle
+
+| Welle | Datum       | Lieferung                                                                                           | Commits          |
+| ----- | ----------- | --------------------------------------------------------------------------------------------------- | ---------------- |
+| 0     | 2026-05-15  | ADR 0007 `Provisional`, Trigger 001 (Code-Review-Doku + PR-Template), Lock-Refresh                  | siehe Trigger 001 |
+| 1     | 2026-05-17  | Domain-Modelle: `Quality`/`CommandResult` (StrEnum), `RunMetadata`/`TelemetryPoint`/`Command`/`Event` (Frozen-Dataclasses), `SnapshotEnvelope` mit `version:int`-Konvention | `7d4cee5`, `97dad24` |
+| 2     | 2026-05-17  | Driven-Ports `ClockPort`/`RandomPort`; `MersenneTwisterRandomPort`-Adapter; ADR 0007 `Accepted` + Trigger 003 done | `33d6ec8`, `72ebaa1`, `efe6f60` |
+| 3     | 2026-05-17  | Deterministischer `Scheduler` mit Tie-Breaking `(time, priority, source, sequence, event_id)`       | `75b0940`, `ae20b4f` |
+| 4     | 2026-05-17  | `TickLoop` + `TickResult`; Snapshot-Composition via `RandomPort.snapshot_as_mapping` (ADR 0010); Trigger 012 done; ADR 0011 (Schaerfung ohne Supersedes) | `75804e6`, `28adab0`, `9f595e7`, `d08b5a9` |
+| 5     | 2026-05-17  | Scenario-Loader + Validator + Hash (`GG-SCN-001..008`); Replay-Mapper + Diff (`GG-REPLAY-001..003`/`007`); Triggers 013 + 014 (open) | `d4029e3`, `b2e1517`, `04ce698`, `51bf108`, `b18f3f1` |
+| 6a    | 2026-05-17  | FastAPI-Adapter `adapters/driving/http_api/`; `make openapi-validate` gruen                          | `ffbca2c` |
+| 6b    | 2026-05-17  | `RunRepositoryPort` + `InMemoryRunRepository`; FastAPI-Wiring via `configure_run_repository`        | `395634f` |
+| 6c    | 2026-05-17  | `PostgresRunRepository` + alembic + Integration-Tests via testcontainers; Triggers 009 + 010 done   | `f7b699d` |
+| 6d    | 2026-05-17  | `make fullbuild` gruen (`apt-get upgrade`, `PYTHONPATH=/app/src`, `python -m uvicorn`, healthcheck-disable) | `b5243fe` |
+| 7     | 2026-05-17  | Closure: Triggers 009/010 nach `done/`, Trigger 015 (Production-Image-Hardening) eroeffnet, Slice-Plan nach `done/`, Roadmap M1 → Done | dieser Commit-Stack |
+
+## 2. Abnahme-Belege
+
+- **`make fullbuild`-Override**:
+  ```bash
+  make fullbuild CRITICAL_COV_TARGETS="\
+      src/grid_gym/hexagon/core/domain \
+      src/grid_gym/hexagon/ports/driven \
+      src/grid_gym/adapters/driven/random_mt \
+      src/grid_gym/hexagon/core/simulation \
+      src/grid_gym/hexagon/core/scenario \
+      src/grid_gym/hexagon/core/replay \
+      src/grid_gym/adapters/driving/http_api"
+  ```
+  Letzter Lauf am 2026-05-17 lieferte
+  `[fullbuild] full closure: ci + runtime image + compose
+  smoke green`.
+- **Unit-Tests**: 243 (Welle-7-Stand). Coverage 90+ Line + Branch
+  auf allen kritischen Targets oben.
+- **Integration-Tests**: 5 (`PostgresRunRepository`-Roundtrip
+  via testcontainers).
+- **A-1-Contracts**: alle 16 gruen (`make arch-check` zeigt
+  „Contracts: 7 kept, 0 broken" + „[arch_check] all contracts
+  kept").
+- **`make openapi-validate`**: gruen
+  (`/src/artifacts/openapi.json: OK`).
+- **`make image-audit`**: gruen
+  (`trivy --ignore-unfixed` ohne HIGH/CRITICAL nach
+  `apt-get upgrade -y` im runtime-Stage).
+
+## 3. Welle-7-Erbschaft fuer M2/M6
+
+Diese Items sind explizit als Welle-7-Closure-Restposten in
+Triggers vermerkt:
+
+- **Trigger 005** (`pyright-vs-mypy-reeval`) — bleibt `open`,
+  M1-Code hat keinen Aktivierungs-Trigger.
+- **Trigger 006** (`mypy --strict-bytes`) — bleibt `open`, kein
+  M1-Konflikt.
+- **Trigger 007** (`pyright-precommit-adr`) — bleibt `open`,
+  Pre-Commit-Hooks sind M6-Scope.
+- **Trigger 008** (`sbom-activation`) — bleibt `open`,
+  Aktivierung mit M6 (Security/CI-Haertung).
+- **Trigger 011** (`mlrandomport-subseed-width`) — bleibt
+  `open`, Aktivierung mit `MLRandomPort` (Folge-ADR).
+- **Trigger 013** (`replay-diff-tick-ms-parameter`) — bleibt
+  `open`, Aktivierung mit erstem Replay-Diff `tick_ms != 1000`.
+- **Trigger 014** (`generic-snapshot-format-codec`) — bleibt
+  `open`, „Pattern-Bestaetigung mit Welle-5-Abschluss"
+  (5-faches *FormatError); Refactor mit sechstem Subsystem
+  Pflicht (M2-Geraete).
+- **Trigger 015** (`runtime-image-hardening`) — Welle-6d-
+  Erbe: `uv sync --no-editable`, Shebang-Rewrite oder
+  Pip-Relocate, Base-Image-Patch-Strategie. Aktivierung mit M6.
+
+## 4. Was M1 NICHT geliefert hat
+
+- Geraetemodelle (Battery, PV, Load, Smart Meter, Grid
+  Connection) — `GG-DEV-010..014`, `GG-BESS-001..008`,
+  `GG-GRID-001..007`. **M2**.
+- Fault Injection — `GG-FAULT-001..010`. **M3**.
+- Multi-Agent-Subsystem — `GG-AGENT-001..008`. **M3**.
+- OpenTelemetry-Tracing — `GG-OTEL-001..004`. **M3**.
+- Protokolladapter (MQTT/Modbus/OPC-UA/DNP3/IEC) — **M4**.
+- UI/Demo — `GG-UI-001..009`. **M5**.
+- Performance-Benchmarks (`GG-RT-004/005`),
+  Production-Image-Hardening (Trigger 015), SBOM (Trigger 008),
+  GitHub-Actions-Matrix — **M6**.
+
+## 5. ADRs aus M1
+
+- `ADR 0007` — `RandomPort`-Implementierung (`Accepted`).
+- `ADR 0009` — `RandomPort`-Snapshot-Schema (`Accepted`).
+- `ADR 0010` — `RandomPort.snapshot_as_mapping` Composition-API
+  (`Accepted`).
+- `ADR 0011` — Schaerfung durch parallele ADR ohne Supersedes
+  (`Accepted`, Self-bootstrap).
+- `ADR 0008` — Enum-Subklassen als AC-DOMAIN-FROZEN-Form
+  (`Provisional` → `Accepted` mit M1-Welle-1-PR-Mergung).
+
+## 6. Reviewer-Stempel
+
+M1 ist durch zwei externe Reviewer-Iterationen pro Welle
+gegangen (Welle 1, 2, 3, 4, 5) plus den finalen Welle-6-Review.
+Alle Befunde sind addressiert; `make gates` und
+`make fullbuild` sind gruen.
+
+Datum: 2026-05-17.

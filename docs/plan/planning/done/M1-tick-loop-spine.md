@@ -1,19 +1,18 @@
-# Slice-Plan — M1 Tick-Loop-Spine
+# Slice-Plan — M1 Tick-Loop-Spine — Closure
 
-**Status:** In Progress — Welle 0..6 abgeschlossen
-(2026-05-15 / 2026-05-17 ×6). ADR 0007/0010 sind `Accepted`;
-Domain-Modelle, Ports, `Scheduler`, `TickLoop` (`GG-SIM-001/002/
-005`), Scenario+Replay (`GG-SCN-001..008`/`GG-REPLAY-001..003/
-007`), FastAPI-Adapter (`GG-API-001`/`003`) und Postgres-
-Persistenz (`GG-PERSIST-003`/`009`) liegen. Trigger 003 + 012
-sind `done`. **`make fullbuild` ist mit explizitem
-`CRITICAL_COV_TARGETS`-Override gruen** — M1-Abschluss-Gate
-erreicht (siehe Welle-6-Abgeschlossen-Block). Welle 7 (Closure-
-Notiz, Trigger-Status-Check, ADR-Acceptance-Reste) ist der
-naechste Schritt; `devices/battery` fuer Default-`make gates`
-kommt mit M2.
+**Status:** Done — abgeschlossen 2026-05-17 mit Welle 0..7
+(M1-Abschluss-Gate `make fullbuild` mit
+`CRITICAL_COV_TARGETS`-Override gruen). Die operativen
+Ergebnisse, Override-Pfad und Welle-7-Erbschaft sind in
+[`done/M1-tick-loop-results.md`](M1-tick-loop-results.md)
+zusammengefasst. ADR 0007/0010/0011 `Accepted`; Domain-Modelle,
+Ports, `Scheduler`, `TickLoop`, Scenario+Replay, FastAPI-Adapter
+und Postgres-Persistenz liegen. Trigger 003, 009, 010 und 012
+sind `done`; Trigger 005/006/007/008/011/013/014/015 bleiben
+fuer M2/M6 in `open/`.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
-Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
+Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0;
+Move `in-progress/` → `done/`: 2026-05-17 nach Welle 6d.
 **Bezug:**
 [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
 (`Accepted` 2026-05-15),
