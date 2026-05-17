@@ -32,6 +32,7 @@ from __future__ import annotations
 import heapq
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
+from decimal import Decimal
 from typing import Final
 
 from grid_gym.hexagon.core.domain.event import Event
@@ -81,8 +82,9 @@ class Scheduler:
     def __len__(self) -> int:
         return len(self._queue)
 
-    def is_empty(self) -> bool:
-        return not self._queue
+    def __bool__(self) -> bool:
+        """`bool(scheduler)` ist `True`, solange Events anstehen."""
+        return bool(self._queue)
 
     def add(self, event: Event) -> None:
         """Fuegt `event` in die Queue ein.
@@ -189,9 +191,46 @@ def _validate_snapshot(state: Mapping[str, object]) -> _ParsedSchedulerSnapshot:
 def _event_from_dict(index: int, raw: object) -> Event:
     """Rekonstruiert ein `Event` aus einem dict-Eintrag in
     `pending_events`. Wirft `SchedulerSnapshotEventFieldError` bei
-    fehlendem oder falsch typisiertem Feld."""
+    fehlendem oder falsch typisiertem Feld (Skalar oder Payload).
+
+    Vier-Phasen-Aufbau (Welle-3-Review N1):
+    1. Dict-Form pruefen (`_assert_event_dict_shape`).
+    2. Skalar-Felder typisiert pruefen
+       (`_assert_scalar_fields_typed`).
+    3. Payload als `Mapping[str, canonical-kompatibel]` pruefen
+       (`_assert_payload_canonical`, Welle-3-Review S2 — frueher
+       Stop, damit ein Float-Payload nicht erst beim
+       canonical_json-Encoder in Welle 4 bricht).
+    4. `Event`-Instanz konstruieren.
+    """
+    entry = _assert_event_dict_shape(index, raw)
+    _assert_scalar_fields_typed(index, entry)
+    payload = _assert_payload_canonical(index, entry)
+    return Event(
+        event_id=entry["event_id"],  # type: ignore[arg-type]
+        simulation_time=entry["simulation_time"],  # type: ignore[arg-type]
+        source=entry["source"],  # type: ignore[arg-type]
+        target=entry["target"],  # type: ignore[arg-type]
+        type=entry["type"],  # type: ignore[arg-type]
+        payload=payload,
+        priority=entry["priority"],  # type: ignore[arg-type]
+        sequence=entry["sequence"],  # type: ignore[arg-type]
+    )
+
+
+def _assert_event_dict_shape(index: int, raw: object) -> dict[str, object]:
     if not isinstance(raw, dict):
         raise SchedulerSnapshotEventFieldError(index, "<entry>", "dict", type(raw).__name__)
+    return raw
+
+
+def _assert_scalar_fields_typed(index: int, raw: dict[str, object]) -> None:
+    """Prueft die Skalar-Felder eines Event-Dicts gemaess `_EVENT_FIELDS_TYPED`.
+
+    `bool` wird fuer int-Felder explizit ausgeschlossen (bool ist
+    int-Subklasse, aber Felder wie `simulation_time` sind keine
+    Wahrheitswerte).
+    """
     for field, expected_type in _EVENT_FIELDS_TYPED:
         if field not in raw:
             raise SchedulerSnapshotEventFieldError(index, field, expected_type.__name__, "missing")
@@ -202,18 +241,49 @@ def _event_from_dict(index: int, raw: object) -> Event:
             raise SchedulerSnapshotEventFieldError(
                 index, field, expected_type.__name__, type(value).__name__
             )
+
+
+def _assert_payload_canonical(index: int, raw: dict[str, object]) -> Mapping[str, object]:
+    """Prueft, dass `payload` ein `Mapping[str, ...]` mit
+    canonical_json-kompatiblen Werten ist (Welle-3-Review S2).
+
+    Erlaubte Wertebereich (Spiegel von
+    `serialization/canonical.py::canonical_json`):
+    `None`, `bool`, `int`, `Decimal`, `str`, `dict[str, ...]`,
+    `list`, `tuple`. Verboten: `float`, `complex`, `bytes`,
+    non-`str`-Dict-Keys und alles Andere.
+
+    Wirft `SchedulerSnapshotEventFieldError` mit
+    `field="payload.<pfad>"` bei Verstoss.
+    """
     if "payload" not in raw:
         raise SchedulerSnapshotEventFieldError(index, "payload", "Mapping", "missing")
     payload = raw["payload"]
     if not isinstance(payload, Mapping):
         raise SchedulerSnapshotEventFieldError(index, "payload", "Mapping", type(payload).__name__)
-    return Event(
-        event_id=raw["event_id"],
-        simulation_time=raw["simulation_time"],
-        source=raw["source"],
-        target=raw["target"],
-        type=raw["type"],
-        payload=payload,
-        priority=raw["priority"],
-        sequence=raw["sequence"],
+    _walk_payload(index, "payload", payload)
+    return payload
+
+
+def _walk_payload(index: int, path: str, value: object) -> None:
+    """Rekursiver Walk durch einen Payload-Wert; wirft bei
+    canonical-inkompatiblem Wert."""
+    if value is None or isinstance(value, bool | int | Decimal | str):
+        # `bool` ist `int`-Subklasse — fuer Payload-Werte explizit
+        # erlaubt (`canonical_json` emittiert `true`/`false`).
+        return
+    if isinstance(value, Mapping):
+        for key, sub_value in value.items():
+            if not isinstance(key, str):
+                raise SchedulerSnapshotEventFieldError(
+                    index, f"{path}.<key>", "str", type(key).__name__
+                )
+            _walk_payload(index, f"{path}.{key}", sub_value)
+        return
+    if isinstance(value, list | tuple):
+        for sub_index, sub_value in enumerate(value):
+            _walk_payload(index, f"{path}[{sub_index}]", sub_value)
+        return
+    raise SchedulerSnapshotEventFieldError(
+        index, path, "canonical-compatible", type(value).__name__
     )

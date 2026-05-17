@@ -64,8 +64,15 @@ def _make_event(
 def test_pop_due_returns_empty_for_empty_scheduler() -> None:
     scheduler = Scheduler()
     assert scheduler.pop_due(100) == []
-    assert scheduler.is_empty()
+    assert not scheduler
     assert len(scheduler) == 0
+
+
+def test_scheduler_is_truthy_with_pending_events() -> None:
+    scheduler = Scheduler()
+    scheduler.add(_make_event("e1"))
+    assert scheduler
+    assert len(scheduler) == 1
 
 
 def test_pop_due_returns_events_sorted_by_time() -> None:
@@ -162,22 +169,39 @@ def _event_list(draw: st.DrawFn) -> list[Event]:
     return events
 
 
-@given(events=_event_list())
+@st.composite
+def _events_and_permutation(
+    draw: st.DrawFn,
+) -> tuple[list[Event], list[Event]]:
+    """Zieht eine Event-Liste und eine beliebige Permutation davon.
+
+    `st.permutations` laesst Hypothesis auch ueber Permutationen
+    shrinken (Welle-3-Review N5) — bei einem Property-Fail liefert
+    Hypothesis die minimal-stoerende Permutation, nicht eine
+    festseed-shuffled Variante.
+    """
+    events = draw(_event_list())
+    permutation = draw(st.permutations(events))
+    return events, permutation
+
+
+@given(payload=_events_and_permutation())
 @settings(max_examples=200, suppress_health_check=[HealthCheck.too_slow])
-def test_permutation_of_inputs_yields_identical_pop_order(events: list[Event]) -> None:
+def test_permutation_of_inputs_yields_identical_pop_order(
+    payload: tuple[list[Event], list[Event]],
+) -> None:
     """Zwei Scheduler mit identischen Events in unterschiedlicher
     Eingabe-Reihenfolge liefern die gleiche Pop-Reihenfolge
     (GG-ARCH-006 Tie-Breaking-Stabilitaet)."""
+    events, permutation = payload
+
     scheduler_a = Scheduler()
     for event in events:
         scheduler_a.add(event)
     order_a = [event.event_id for event in scheduler_a.pop_due(10**9)]
 
-    rng = random.Random(42)
-    shuffled = events.copy()
-    rng.shuffle(shuffled)
     scheduler_b = Scheduler()
-    for event in shuffled:
+    for event in permutation:
         scheduler_b.add(event)
     order_b = [event.event_id for event in scheduler_b.pop_due(10**9)]
 
@@ -367,3 +391,77 @@ def test_from_snapshot_rejects_event_with_bool_int_field() -> None:
     }
     with pytest.raises(SchedulerSnapshotEventFieldError):
         Scheduler.from_snapshot(payload)
+
+
+# ---------------------------------------------------------------------------
+# Payload-Canonical-Validierung (Welle-3-Review S2)
+# ---------------------------------------------------------------------------
+
+
+def _event_with_payload(payload: object) -> dict[str, object]:
+    return {
+        "event_id": "e1",
+        "simulation_time": 0,
+        "source": "src",
+        "target": "tgt",
+        "type": "tick",
+        "payload": payload,
+        "priority": 0,
+        "sequence": 0,
+    }
+
+
+def test_from_snapshot_rejects_float_in_payload() -> None:
+    """Float-Wert im Payload bricht spaeter `canonical_json` mit
+    `FloatNotAllowedError` — Boundary-Check faengt das frueh."""
+    snapshot = {
+        "version": 1,
+        "pending_events": [_event_with_payload({"setpoint_kw": 1.5})],
+    }
+    with pytest.raises(SchedulerSnapshotEventFieldError):
+        Scheduler.from_snapshot(snapshot)
+
+
+def test_from_snapshot_rejects_nested_float_in_payload() -> None:
+    """Auch tief verschachtelte Floats werden gefangen."""
+    snapshot = {
+        "version": 1,
+        "pending_events": [_event_with_payload({"nested": {"deep": [1, 2, 3.14]}})],
+    }
+    with pytest.raises(SchedulerSnapshotEventFieldError):
+        Scheduler.from_snapshot(snapshot)
+
+
+def test_from_snapshot_rejects_non_str_dict_key_in_payload() -> None:
+    """`canonical_json` verlangt `str`-Dict-Keys (NonStringDictKeyError)."""
+    snapshot = {
+        "version": 1,
+        "pending_events": [_event_with_payload({"outer": {42: "value"}})],
+    }
+    with pytest.raises(SchedulerSnapshotEventFieldError):
+        Scheduler.from_snapshot(snapshot)
+
+
+def test_from_snapshot_rejects_bytes_value_in_payload() -> None:
+    """`bytes` ist im canonical-Pfad nicht erlaubt
+    (`UnsupportedTypeError`)."""
+    snapshot = {
+        "version": 1,
+        "pending_events": [_event_with_payload({"blob": b"raw"})],
+    }
+    with pytest.raises(SchedulerSnapshotEventFieldError):
+        Scheduler.from_snapshot(snapshot)
+
+
+def test_from_snapshot_accepts_decimal_in_nested_payload() -> None:
+    """Decimals (auch in verschachtelten Listen) bleiben canonical-
+    kompatibel."""
+    snapshot = {
+        "version": 1,
+        "pending_events": [
+            _event_with_payload({"setpoints": [Decimal("1.0"), Decimal("2.5"), Decimal("3.14")]})
+        ],
+    }
+    scheduler = Scheduler.from_snapshot(snapshot)
+    popped = scheduler.pop_due(1000)
+    assert popped[0].payload["setpoints"][2] == Decimal("3.14")  # type: ignore[index]
