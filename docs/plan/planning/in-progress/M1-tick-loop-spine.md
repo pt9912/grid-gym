@@ -152,6 +152,18 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
   ausgeliefert. §5.1 bei Acceptance geschaerft: `from_snapshot`
   ist `classmethod` am Adapter (statt Modul-Funktion im Port),
   weil `AC-PORTS-NO-OUT` `ports → adapters`-Importe verbietet.
+  **Test-Ablage-Konvention:** Tests spiegeln das getestete Modul,
+  nicht das Protocol-Modul. Konkret:
+  `tests/unit/hexagon/ports/driven/_fakes.py` haelt die Test-
+  Doubles (`FakeClock`, `FixedSeedRandom`-Alias) und
+  `tests/unit/hexagon/ports/driven/test_clock.py` testet
+  `FakeClock`-Verhalten; die deterministischen RandomPort-Tests
+  (`§4a` AC1-AC6) liegen in
+  `tests/unit/adapters/driven/random_mt/test_mersenne_twister.py`,
+  weil sie die konkrete Adapter-Implementation pruefen — Slice-
+  Plan-Wortlaut „tests/unit/hexagon/ports/driven/test_*.py"
+  oben ist als Sammelbegriff fuer Port-Verhaltens-Tests zu
+  lesen, nicht als Adapter-Test-Ablage.
   Erweiterter Critical-Override:
   `CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/domain
   src/grid_gym/hexagon/ports/driven
