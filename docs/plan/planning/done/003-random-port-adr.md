@@ -1,8 +1,13 @@
 # 003 — ADR fuer `RandomPort`-Implementierung — Closure-Notiz
 
-**Status:** Done — geschlossen 2026-05-17 mit Acceptance von
-[`ADR 0007`](../../adr/0007-random-port.md) (`Provisional → Accepted`)
-synchron zur M1-Welle-2-Lieferung.
+**Status:** Done — Trigger-Closure abgeschlossen: ADR 0007 ist
+`Accepted`, Port + Adapter + Tests liegen. **Produktive Integration
+in den Simulationsfluss (TickLoop/Scheduler) ist NICHT Teil dieser
+Closure** — siehe Abschnitt
+[„Was diese Closure NICHT abdeckt"](#was-diese-closure-nicht-abdeckt)
+und den Slice-Plan
+[`M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
+§3 Welle 3 (Scheduler) und §3 Welle 4 (TickLoop).
 **Datum:** 2026-05-15 (geoeffnet); 2026-05-15 ADR-Skizze als
 `Provisional`; 2026-05-17 ADR-`Accepted` + Trigger-Closure.
 **Quelle:** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §7
@@ -10,6 +15,38 @@ synchron zur M1-Welle-2-Lieferung.
 (`Accepted`); M1-Slice-Plan
 [`docs/plan/planning/in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
 §3 Welle 2.
+
+---
+
+## Was diese Closure NICHT abdeckt
+
+Diese Closure schliesst ausschliesslich die **ADR-Schreibarbeit
+und den `§4a`-Validierungs-Spike** ab. Sie steht NICHT fuer eine
+produktive Inanspruchnahme des `RandomPort` im Simulationsfluss
+— `src/grid_gym/hexagon/core/simulation/` ist heute (Stand
+Welle 2) nur ein `__init__.py`-Stub, kein Scheduler/TickLoop.
+
+Die produktive Integration ist Welle-3-/Welle-4-Verantwortung
+gemaess Slice-Plan:
+
+- **Welle 3** — `src/grid_gym/hexagon/core/simulation/scheduler.py`
+  baut den Event-Scheduler mit Tie-Breaking
+  `(time, priority, source, sequence, event_id)` (`GG-ARCH-006`).
+  Falls Event-Sources keinen eigenen `sequence`-Zaehler tragen,
+  kann der Scheduler einen `RandomPort.sub_port("scheduler")`-
+  Sub-Stream nutzen.
+- **Welle 4** — `src/grid_gym/hexagon/core/simulation/tick_loop.py`
+  baut den `TickLoop` mit `ClockPort`/`RandomPort`-Injektion
+  und nimmt `RandomPort.snapshot()` als Sub-Snapshot in den
+  `SnapshotEnvelope` auf (`GG-SIM-005`, Welle-1-`version: int`-
+  Konvention + Welle-2-`rng_state`/`rng_version`-Schema aus
+  [`ADR 0009`](../../adr/0009-randomport-snapshot-schema-rng-version.md)).
+- **Welle 5+** — Scenario, Replay und Devices konsumieren
+  Sub-Ports fuer Geraete-Initialisierung und Fault-Injection.
+
+Solange die Tick-Loop-Integration aussteht, gilt: `RandomPort`
+und `MersenneTwisterRandomPort` sind in `src/grid_gym/`
+**vorhanden, aber unbenutzt** — nur Tests rufen sie auf.
 
 ---
 
@@ -72,31 +109,16 @@ angefasst werden darf.
 Aktivierung erfolgte mit M1 Welle 2 durch den
 **Validierungs-Spike-Vertrag aus ADR 0007 §4a** (AC1-AC6
 gruen) — also durch die Bereitstellung von Port-Protocol,
-Adapter-Implementation und Snapshot-Vertrag, nicht durch
-produktive Nutzung im Tick-Loop. Die produktive Inanspruchnahme
-(`RandomPort` im Scheduler-Tie-Breaking, in der Geraete-
-Initialisierung, in Fault-Sequenzen) folgt in:
-
-- **Welle 3** (`Scheduler` mit Tie-Breaking
-  `(time, priority, source, sequence, event_id)`,
-  `GG-ARCH-006`): einer der Tie-Breaking-Inputs (`sequence`)
-  kann aus dem `RandomPort` kommen, sofern Event-Source kein
-  eigenes Counter-Schema mitbringt.
-- **Welle 4** (`TickLoop` + Snapshot, `GG-SIM-005`):
-  `RandomPort.snapshot()` wird als Sub-Snapshot in den
-  `SnapshotEnvelope` aufgenommen — die `version: int`-Konvention
-  aus Welle-1-`SnapshotEnvelope` und das `rng_state`/
-  `rng_version`-Feld-Layout aus `MersenneTwisterRandomPort.
-  snapshot()` greifen dort ineinander.
-- **Welle 5+** (Scenario, Replay, Devices): Verbrauch durch
-  Geraete-Initialisierung und Fault-Injection.
+Adapter-Implementation und Snapshot-Vertrag. ADR-Acceptance
+haengt am Spike-Vertrag, nicht an einer produktiven
+Inanspruchnahme; die Welle-3/4-Integration ist im Abschnitt
+[„Was diese Closure NICHT abdeckt"](#was-diese-closure-nicht-abdeckt)
+oben gelistet.
 
 Frueher in dieser Notiz stand „Mit M1 Welle 2 (Domain-Slice mit
 Zufallsverbrauch im Tick-Loop-Scheduler) aktiviert" — das war
 unpraezise: Welle 2 hat den `RandomPort` bereitgestellt und
-validiert (`§4a`-Spike), aber der Scheduler-Tick-Loop kommt erst
-in Welle 3/4. Die ADR-Acceptance haengt am Spike-Vertrag, nicht
-an einer produktiven Inanspruchnahme.
+validiert, aber der Scheduler-Tick-Loop kommt erst in Welle 3/4.
 
 ## Wandert nach
 

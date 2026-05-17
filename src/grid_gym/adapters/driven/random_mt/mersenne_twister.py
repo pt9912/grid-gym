@@ -4,6 +4,14 @@ Konkrete Driven-Adapter-Implementation des `RandomPort`-Protocols
 auf Basis von `random.Random` (stdlib, Mersenne Twister) mit
 SHA-256-Sub-Seeding und `canonical_json`-Snapshot-Format.
 
+Produktive Konsumenten (Stand M1 Welle 2): **heute keine.**
+`src/grid_gym/hexagon/core/simulation/` ist ein leerer Stub —
+der `TickLoop`, der `ClockPort`/`RandomPort` als injizierte
+Driven-Ports aufnimmt, wird in M1 Welle 4 gebaut
+(`docs/plan/planning/in-progress/M1-tick-loop-spine.md` §3
+Welle 4). Bis dahin laeuft dieser Adapter nur durch die
+Akzeptanz-Tests (`tests/unit/adapters/driven/random_mt/`).
+
 Snapshot-Schema (verbindlich per `ADR 0009`; loest das `state`-
 Feld aus der `ADR 0007 §5.2`-Skizze in `rng_version` + `rng_state`
 auf, weil der CPython-`getstate()`-Versions-Marker explizit

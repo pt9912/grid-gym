@@ -35,6 +35,14 @@ ADR 0007 ist seit 2026-05-17 `Accepted` und damit per
 `ADR 0006 §3` im Entscheidungstext immutable. Eine Schaerfung
 braucht eine Folge-ADR — diese.
 
+**Vorrang:** Wo Code, Tests oder Doku auf einen Snapshot-Schluessel
+referenzieren, gilt **§2 dieser ADR** verbindlich. Die `state`-
+Skizze in `ADR 0007 §5.2` ist historisch und wird durch das
+Zwei-Felder-Layout `rng_version` + `rng_state` ersetzt; der
+Adapter-Code (`mersenne_twister.py` Modul-Docstring) und der
+ADR-Index (`docs/plan/adr/README.md`) zitieren diese Vorrang-
+Beziehung explizit.
+
 ---
 
 ## 2. Entscheidung
