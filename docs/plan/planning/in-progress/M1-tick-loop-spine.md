@@ -1,8 +1,9 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** In Progress — Welle 0 abgeschlossen 2026-05-15
-(ADR 0007 `Provisional`, Trigger 001 geliefert, Lock-Refresh
-sauber). Welle 1 (Domain-Modelle) ist der naechste Schritt.
+**Status:** In Progress — Welle 0, 1 und 2 abgeschlossen
+(2026-05-15 / 2026-05-17 / 2026-05-17). ADR 0007 ist `Accepted`,
+Domain-Modelle und Ports liegen, Trigger 003 ist `done`. Welle 3
+(Scheduler mit Tie-Breaking) ist der naechste Schritt.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
 Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
@@ -143,6 +144,16 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
     (via `hypothesis`-`@given`).
 - **Gate-Status nach Welle 2**: alle aus Welle 1 plus
   `make coverage-gate-critical CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/domain src/grid_gym/hexagon/ports/driven`.
+- **Abgeschlossen 2026-05-17:** ADR 0007 `Accepted` (Validierungs-
+  Spike §4a AC1-AC6 gruen), Trigger 003 nach `done/`,
+  `MersenneTwisterRandomPort` in `adapters/driven/random_mt/`
+  ausgeliefert. §5.1 bei Acceptance geschaerft: `from_snapshot`
+  ist `classmethod` am Adapter (statt Modul-Funktion im Port),
+  weil `AC-PORTS-NO-OUT` `ports → adapters`-Importe verbietet.
+  Erweiterter Critical-Override:
+  `CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/domain
+  src/grid_gym/hexagon/ports/driven
+  src/grid_gym/adapters/driven/random_mt"`.
 
 ### Welle 3 — Scheduler mit Tie-Breaking (Tag 3)
 

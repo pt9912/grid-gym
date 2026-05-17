@@ -1,14 +1,20 @@
 # ADR 0007 — `RandomPort` Implementierung
 
-**Status:** Provisional — Empfehlung getragen, Validierungs-Spike in M1 Welle 2
+**Status:** Accepted
 **Datum:** 2026-05-15
-**Status geaendert am:** 2026-05-15 — `Proposed → Provisional` mit
-Freigabe des Validierungs-Spikes (siehe §4a). Operative Artefakte
-(`hexagon/ports/driven/random.py`, Fake-Implementation, Tests)
-werden im Rahmen von M1 Welle 2 als validierter Pfad gemaess der
-Provisional-Stufe der Lifecycle-Tabelle in [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
-angelegt.
-**Letzte inhaltliche Aenderung:** 2026-05-15 — erste Fassung.
+**Status geaendert am:** 2026-05-17 — `Provisional → Accepted`.
+Validierungs-Spike aus §4a abgeschlossen: `RandomPort`-Protocol
+(`hexagon/ports/driven/random.py`) + `MersenneTwisterRandomPort`
+(`adapters/driven/random_mt/`) sind in M1 Welle 2 geliefert; alle
+sechs Akzeptanzkriterien aus §4a per `make test-unit` gruen
+(`tests/unit/adapters/driven/random_mt/test_mersenne_twister.py`).
+Vorher: 2026-05-15 — `Proposed → Provisional` mit Freigabe des
+Validierungs-Spikes (siehe §4a).
+**Letzte inhaltliche Aenderung:** 2026-05-17 — §5.1 geschaerft:
+`random_port_from_snapshot` lebt nicht im Port-Modul (`AC-PORTS-
+NO-OUT` verbietet `ports → adapters`-Importe), sondern als
+`classmethod` am konkreten Adapter (`MersenneTwisterRandomPort.
+from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
 [`ADR 0002`](0002-language-and-build-stack.md) §A-1 AC-NO-RAND,
@@ -245,17 +251,15 @@ class RandomPort(Protocol):
         ...
 
 
-def random_port_from_snapshot(state: bytes) -> RandomPort:
-    """Stellt einen Port aus einem `snapshot()`-Bytes wieder her.
-
-    Als Modul-Funktion modelliert, weil `Protocol` mit
-    `@classmethod` strukturell nicht zuverlaessig typt
-    (mypy --strict prueft Class-Methods auf Protocols nicht voll,
-    und `Type[RandomPort]`-Aufrufe scheitern). Die konkrete
-    Implementation (`MersenneTwisterRandomPort.from_snapshot`,
-    §5.2) ruft diese Funktion bzw. die Klassenfabrik intern auf.
-    """
-    ...
+# Hinweis (Acceptance-Schaerfung 2026-05-17): der frueher hier
+# skizzierte `random_port_from_snapshot`-Modul-Helper liegt NICHT
+# im Port-Modul, sondern als `classmethod` am konkreten Adapter
+# (`MersenneTwisterRandomPort.from_snapshot`, §5.2). Grund:
+# `AC-PORTS-NO-OUT` (`ADR 0002 §A-1`) verbietet `ports → adapters`-
+# Importe — eine Modul-Funktion im Port-Modul muesste den Adapter
+# importieren und wuerde den Vertrag brechen. Aufrufer mit
+# unbekannter Snapshot-Quelle sprechen den Adapter direkt an:
+# `MersenneTwisterRandomPort.from_snapshot(state_bytes)`.
 ```
 
 ### 5.2 Konkrete Implementierung (`MersenneTwisterRandomPort`)
