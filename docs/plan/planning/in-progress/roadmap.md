@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
-**Stand:** 2026-05-17 (M1 Welle 0..6c abgeschlossen; M2..M6 vorbelegt)
+**Stand:** 2026-05-17 (M1 Welle 0..6d abgeschlossen — M1-Abschluss-Gate erreicht; M2..M6 vorbelegt)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -86,9 +86,10 @@ nach `next/` bzw. `in-progress/`).
         Tests via testcontainers; Triggers 009 + 010
         (`tests/integration/compose.yml` + `deploy/compose.yml`)
         (2026-05-17).
-  - [ ] Welle 6d — `make fullbuild` gruen mit explizitem
+  - [x] Welle 6d — `make fullbuild` gruen mit explizitem
         `CRITICAL_COV_TARGETS`-Override (Default-Gate haengt an
-        M2-`devices/battery`, siehe Abnahme-Hinweis unten).
+        M2-`devices/battery`, siehe Abnahme-Hinweis unten)
+        (2026-05-17).
   - [ ] Welle 7 — Closure-Notiz `done/M1-tick-loop-spine.md`,
         Trigger-Status-Check (005/006/008 aus `open/`), Roadmap-
         Vorbelegung fuer M2 verfeinert.

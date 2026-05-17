@@ -302,14 +302,22 @@ FROM python:${PYTHON_VERSION}-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH=/app/.venv/bin:$PATH \
+    PYTHONPATH=/app/src \
     GRID_GYM_HOST=0.0.0.0 \
     GRID_GYM_PORT=8080 \
     GRID_GYM_ENV=production
+# `PYTHONPATH=/app/src` ueberschreibt den editable-Install-Pfad
+# `/src/src/` (Build-Stage), der im Runtime-Image nicht existiert.
+# Welle-7-Closure: Pip-Relocate / non-editable Install via
+# `uv sync --no-editable` koennte das sauberer loesen.
 
 # curl fuer den HEALTHCHECK. Kein build-essential im Runtime-Image —
 # alle nativen Wheels werden im build-app-Stage aufgeloest und
-# kopiert.
+# kopiert. `apt-get upgrade -y` zieht Debian-Sicherheitspatches
+# fuer Base-Image-Pakete (z. B. libcap2, libsystemd0) — `make
+# image-audit` (trivy mit `--ignore-unfixed`) erwartet das.
 RUN apt-get update \
+ && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --create-home --uid 1001 --shell /usr/sbin/nologin grid-gym

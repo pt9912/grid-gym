@@ -1,12 +1,17 @@
 # Slice-Plan — M1 Tick-Loop-Spine
 
-**Status:** In Progress — Welle 0..5 abgeschlossen
-(2026-05-15 / 2026-05-17 ×5). ADR 0007/0010 sind `Accepted`;
+**Status:** In Progress — Welle 0..6 abgeschlossen
+(2026-05-15 / 2026-05-17 ×6). ADR 0007/0010 sind `Accepted`;
 Domain-Modelle, Ports, `Scheduler`, `TickLoop` (`GG-SIM-001/002/
-005`) und Scenario+Replay (`GG-SCN-001..008`/`GG-REPLAY-001..003/
-007`) liegen. Trigger 003 + 012 sind `done`. Welle 6 (Integration
-+ `make fullbuild`) ist der naechste Schritt — `devices/battery`
-fuer Default-`make gates` kommt mit M2.
+005`), Scenario+Replay (`GG-SCN-001..008`/`GG-REPLAY-001..003/
+007`), FastAPI-Adapter (`GG-API-001`/`003`) und Postgres-
+Persistenz (`GG-PERSIST-003`/`009`) liegen. Trigger 003 + 012
+sind `done`. **`make fullbuild` ist mit explizitem
+`CRITICAL_COV_TARGETS`-Override gruen** — M1-Abschluss-Gate
+erreicht (siehe Welle-6-Abgeschlossen-Block). Welle 7 (Closure-
+Notiz, Trigger-Status-Check, ADR-Acceptance-Reste) ist der
+naechste Schritt; `devices/battery` fuer Default-`make gates`
+kommt mit M2.
 **Datum:** 2026-05-15 (geoeffnet als `Next`);
 Move `next/` → `in-progress/`: 2026-05-15 nach Welle 0.
 **Bezug:**
@@ -300,6 +305,36 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
 - **Gate-Status nach Welle 6**: `make fullbuild` gruen
   (CI + Runtime-Image-Build + Compose-Smoke). M1-Abschluss-Gate
   erreicht.
+- **Abgeschlossen 2026-05-17:** Welle 6a (FastAPI-Adapter +
+  `make openapi-validate`), 6b (`RunRepositoryPort` +
+  `InMemoryRunRepository` + FastAPI-Wiring), 6c
+  (`PostgresRunRepository` + alembic + Triggers 009/010), 6d
+  (`make fullbuild` mit Override gruen). Welle-6d-Erkenntnisse
+  fuer Welle 7:
+  - **`image-audit`**: `python:3.14-slim`-Base-Image traegt
+    HIGH-CVEs (libcap2 CVE-2026-4878, libsystemd0/libudev1
+    CVE-2026-29111). `apt-get upgrade -y` im Runtime-Stage zieht
+    die Debian-Sicherheitspatches ein.
+  - **`runtime`-Compose-Smoke** (`deploy/compose.yml`):
+    Dockerfile-`ENTRYPOINT` per `entrypoint: []` neutralisiert,
+    `python -m uvicorn` statt `uvicorn` direkt (venv-shebangs
+    zeigen auf Build-Pfad `/src/.venv/`).
+    `PYTHONPATH=/app/src` im Runtime-Image ueberschreibt den
+    editable-Install-Pfad.
+    `simulation`-Service mit `healthcheck: test: ["NONE"]`,
+    weil der `sleep infinity`-Stub keinen Webserver fuer den
+    Dockerfile-curl-HEALTHCHECK hat.
+  - **Welle 7 erbt** die Notiz „Pip-Relocate / `uv sync
+    --no-editable`-Strategie pruefen" und „shebang-Rewrite im
+    Runtime-Build".
+  - Override-Pfad fuer M1-DoD:
+    `make fullbuild CRITICAL_COV_TARGETS="src/grid_gym/hexagon/
+    core/domain src/grid_gym/hexagon/ports/driven
+    src/grid_gym/adapters/driven/random_mt
+    src/grid_gym/hexagon/core/simulation
+    src/grid_gym/hexagon/core/scenario
+    src/grid_gym/hexagon/core/replay
+    src/grid_gym/adapters/driving/http_api"`.
 
 ### Welle 7 — Closure (1/2 Tag)
 
