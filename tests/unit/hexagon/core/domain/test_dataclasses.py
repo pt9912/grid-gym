@@ -23,6 +23,7 @@ from grid_gym.hexagon.core.domain.event import Event
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
+from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.serialization.canonical import (
     FloatNotAllowedError,
     canonical_json,
@@ -317,6 +318,45 @@ def test_event_is_frozen() -> None:
     )
     with pytest.raises(FrozenInstanceError):
         event.priority = 1  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
+# TickResult (M1 Welle 4)
+# ---------------------------------------------------------------------------
+
+
+def _make_event(event_id: str, simulation_time: int = 0) -> Event:
+    return Event(
+        event_id=event_id,
+        simulation_time=simulation_time,
+        source="src",
+        target="tgt",
+        type="tick",
+        payload={},
+        priority=0,
+        sequence=0,
+    )
+
+
+def test_tick_result_is_frozen() -> None:
+    result = TickResult(tick=0, simulation_time=0, popped_events=(), emitted_telemetry=())
+    with pytest.raises(FrozenInstanceError):
+        result.tick = 1  # type: ignore[misc]
+
+
+def test_tick_result_canonical_roundtrip_is_stable_with_events() -> None:
+    events = (_make_event("e1", 100), _make_event("e2", 200))
+    a = TickResult(tick=3, simulation_time=200, popped_events=events, emitted_telemetry=())
+    b = TickResult(tick=3, simulation_time=200, popped_events=events, emitted_telemetry=())
+    assert canonical_json(asdict(a)) == canonical_json(asdict(b))
+
+
+def test_tick_result_empty_emitted_telemetry_serialises_as_empty_array() -> None:
+    """Welle 4 emittiert keine Telemetry — Feld bleibt leerer Tupel,
+    `canonical_json` serialisiert das als `[]`."""
+    result = TickResult(tick=0, simulation_time=0, popped_events=(), emitted_telemetry=())
+    raw = canonical_json(asdict(result))
+    assert b'"emitted_telemetry":[]' in raw
 
 
 # ---------------------------------------------------------------------------

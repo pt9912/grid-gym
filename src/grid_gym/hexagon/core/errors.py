@@ -236,3 +236,78 @@ class SchedulerSnapshotVersionError(SchedulerError):
         super().__init__(
             f"unsupported scheduler snapshot version: expected {expected}, got {found!r}"
         )
+
+
+# ---------------------------------------------------------------------------
+# TickLoop-Vertrag (`hexagon.core.simulation.tick_loop`, M1 Welle 4)
+# ---------------------------------------------------------------------------
+
+
+class TickLoopError(GridGymError):
+    """Wurzel der `TickLoop`-Vertragsverletzungen (`GG-SIM-001`)."""
+
+
+class TickLoopSnapshotFormatError(TickLoopError):
+    """Wurzel der TickLoop-Snapshot-Format-Vertragsverletzungen.
+
+    Auspraegungen als Subklassen — Pattern-konsistent zu
+    `SchedulerSnapshotFormatError` und
+    `RandomPortSnapshotFormatError`. Trigger 012 markiert die
+    Generalisierung dieses Patterns als Folgearbeit.
+    """
+
+
+class TickLoopSnapshotMissingKeysError(TickLoopSnapshotFormatError):
+    """Pflicht-Keys fehlen im TickLoop-Snapshot-Dict."""
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(f"missing tick_loop snapshot keys: {missing}")
+
+
+class TickLoopSnapshotWrongTypeError(TickLoopSnapshotFormatError):
+    """Ein TickLoop-Snapshot-Key hat den falschen Typ."""
+
+    def __init__(self, key: str, expected: str, actual: str) -> None:
+        super().__init__(f"tick_loop snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class TickLoopSnapshotVersionError(TickLoopError):
+    """Snapshot traegt eine unbekannte `version`."""
+
+    def __init__(self, expected: int, found: object) -> None:
+        super().__init__(
+            f"unsupported tick_loop snapshot version: expected {expected}, got {found!r}"
+        )
+
+
+class TickLoopSnapshotClockMismatchError(TickLoopError):
+    """Beim Resume zeigt die injizierte `clock` nicht auf
+    `state['simulation_time']`.
+
+    Aufrufer-Pflicht: clock vor `from_snapshot` so vorbereiten,
+    dass `clock.now() == state['simulation_time']`. Ein
+    Mismatch faellt typisiert auf und vermeidet stille
+    Determinismus-Drift.
+    """
+
+    def __init__(self, expected: int, actual: int) -> None:
+        super().__init__(
+            f"clock state mismatch on resume: expected clock.now() == {expected}, got {actual}"
+        )
+
+
+class TickLoopSnapshotRandomMismatchError(TickLoopError):
+    """Beim Resume liefert die injizierte `random` nicht den
+    persistierten Sub-Snapshot.
+
+    Aufrufer-Pflicht: `random` so injizieren, dass
+    `random.snapshot_as_mapping() == state['sub_snapshots']
+    ['random_root']`. Mismatch faellt typisiert auf, damit
+    Resume-Inkonsistenz nicht zu stiller Drift wird.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "random state mismatch on resume: injected RandomPort does "
+            "not match the persisted snapshot"
+        )
