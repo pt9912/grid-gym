@@ -6,12 +6,17 @@ Vergleicht zwei `ReplaySample`-Sequenzen (`expected` vs.
 
 Klassifikations-Regeln:
 - **Volatile Felder** sind Vergleichs-irrelevant fuer fachliche
-  Korrektheit (z. B. `import_sequence`, `timestamp` als
-  Roh-String wenn `simulation_time` schon stimmt). Welle 5
-  fuehrt eine konfigurierbare `volatile_fields`-Liste; der
-  Default ist `frozenset({"import_sequence", "timestamp"})`.
-- **Fachliche Felder** sind alle anderen
-  (`simulation_time`, `device_id`, `metric`, `value`, `unit`).
+  Korrektheit (z. B. `import_sequence` — interner Mapper-
+  Counter). Welle 5 fuehrt eine konfigurierbare
+  `volatile_fields`-Liste; der Default ist
+  `frozenset({"import_sequence"})` (`_VOLATILE_FIELDS_DEFAULT`).
+- **Fachliche Felder** sind alle anderen, inkl. `timestamp`
+  (Welle-5-Review SC-1: `GG-REPLAY-002` verlangt
+  „Originalzeitstempel werden unveraendert gespeichert" —
+  eine Aenderung ist Drift-Indikator, nicht Rauschen).
+  Aufrufer koennen `timestamp` per `volatile_fields`-Override
+  explizit aufweichen, wenn zwei Quellen unterschiedliche
+  ISO-8601-Schreibweisen tragen.
 
 Vergleichs-Pfade (`path`-Feld in `ReplayDelta`):
 - `"sample[i].field"` fuer Werte-Mismatches.

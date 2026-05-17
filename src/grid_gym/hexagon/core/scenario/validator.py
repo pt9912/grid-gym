@@ -33,13 +33,22 @@ from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
     ScenarioMissingKeysError,
     ScenarioUnknownEventTargetError,
+    ScenarioUnsupportedReplayFormatError,
     ScenarioUnsupportedSchemaVersionError,
+    ScenarioUnsupportedTimeMappingError,
     ScenarioWrongTypeError,
 )
 
 SUPPORTED_SCHEMA_VERSION: Final[str] = "grid-gym.scenario.v1"
 """Welle-5-Stand: nur eine Schema-Version unterstuetzt. Bumps
 kommen mit eigener Folge-ADR."""
+
+SUPPORTED_REPLAY_FORMATS: Final[tuple[str, ...]] = ("csv", "jsonl")
+"""`GG-REPLAY-001`-Akzeptanz: CSV und JSON-Lines fuer MVP."""
+
+SUPPORTED_TIME_MAPPINGS: Final[tuple[str, ...]] = ("monotonic", "index")
+"""`hexagon/core/replay/mapper.py`-Strategien: ISO-8601-Deltas
+oder Index-basiert. Erweiterungen brauchen Mapper-Code."""
 
 _REQUIRED_TOP_LEVEL: Final[frozenset[str]] = frozenset(
     {"schema_version", "metadata", "simulation", "devices"}
@@ -187,6 +196,13 @@ def _assert_replay_reference(raw: Mapping[str, object]) -> None:
     _assert_required_keys("replay", replay, _REQUIRED_REPLAY)
     for field in ("source", "format", "time_mapping", "validation_status"):
         _assert_str(replay, f"replay.{field}")
+    # Semantik-Validierung (Welle-5-Review-v2 Befund 2):
+    format_value = replay["format"]
+    if isinstance(format_value, str) and format_value not in SUPPORTED_REPLAY_FORMATS:
+        raise ScenarioUnsupportedReplayFormatError(SUPPORTED_REPLAY_FORMATS, format_value)
+    time_mapping_value = replay["time_mapping"]
+    if isinstance(time_mapping_value, str) and time_mapping_value not in SUPPORTED_TIME_MAPPINGS:
+        raise ScenarioUnsupportedTimeMappingError(SUPPORTED_TIME_MAPPINGS, time_mapping_value)
 
 
 def _assert_fault_list(raw: Mapping[str, object]) -> None:

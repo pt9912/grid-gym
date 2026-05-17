@@ -387,6 +387,30 @@ class ScenarioUnknownEventTargetError(ScenarioError):
         super().__init__(f"scenario event targets unknown device: {target!r}")
 
 
+class ScenarioUnsupportedReplayFormatError(ScenarioError):
+    """`scenario.replay.format` ist kein unterstuetzter Wert.
+
+    `GG-REPLAY-001`-Akzeptanz nennt `csv` und `jsonl` als MVP-
+    Formate. Welle 5 prueft strukturell auf `str`; diese
+    Pruefung schaerft das semantisch.
+    """
+
+    def __init__(self, expected: tuple[str, ...], actual: str) -> None:
+        super().__init__(f"scenario replay.format must be one of {expected}, got {actual!r}")
+
+
+class ScenarioUnsupportedTimeMappingError(ScenarioError):
+    """`scenario.replay.time_mapping` ist kein unterstuetzter Wert.
+
+    `hexagon/core/replay/mapper.py` liefert die Strategien
+    `monotonic` (ISO-8601-Deltas → ms) und `index` (`n * tick_ms`).
+    Weitere Strategien brauchen einen Mapper-Erweiterung.
+    """
+
+    def __init__(self, expected: tuple[str, ...], actual: str) -> None:
+        super().__init__(f"scenario replay.time_mapping must be one of {expected}, got {actual!r}")
+
+
 # ---------------------------------------------------------------------------
 # Replay-Vertrag (`hexagon.core.replay`, M1 Welle 5)
 # ---------------------------------------------------------------------------

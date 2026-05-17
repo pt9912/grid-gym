@@ -18,7 +18,9 @@ from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
     ScenarioMissingKeysError,
     ScenarioUnknownEventTargetError,
+    ScenarioUnsupportedReplayFormatError,
     ScenarioUnsupportedSchemaVersionError,
+    ScenarioUnsupportedTimeMappingError,
     ScenarioWrongTypeError,
 )
 from grid_gym.hexagon.core.scenario.loader import load_scenario
@@ -223,6 +225,49 @@ def test_load_scenario_rejects_non_mapping_replay() -> None:
     mapping["replay"] = "not-a-mapping"
     with pytest.raises(ScenarioWrongTypeError):
         load_scenario(mapping)
+
+
+def test_load_scenario_rejects_unsupported_replay_format() -> None:
+    """Welle-5-Review-v2 Befund 2: `format` muss in {csv, jsonl}
+    (`GG-REPLAY-001`)."""
+    mapping = _full_mapping()
+    replay = mapping["replay"]
+    assert isinstance(replay, dict)
+    replay["format"] = "parquet"
+    with pytest.raises(ScenarioUnsupportedReplayFormatError):
+        load_scenario(mapping)
+
+
+def test_load_scenario_accepts_jsonl_format() -> None:
+    """Sanity-Check: `jsonl` ist gueltig (nicht nur `csv`)."""
+    mapping = _full_mapping()
+    replay = mapping["replay"]
+    assert isinstance(replay, dict)
+    replay["format"] = "jsonl"
+    result = load_scenario(mapping)
+    assert result.scenario.replay is not None
+    assert result.scenario.replay.format == "jsonl"
+
+
+def test_load_scenario_rejects_unsupported_time_mapping() -> None:
+    """Welle-5-Review-v2 Befund 2: `time_mapping` muss in
+    {monotonic, index} (Mapper-API)."""
+    mapping = _full_mapping()
+    replay = mapping["replay"]
+    assert isinstance(replay, dict)
+    replay["time_mapping"] = "ntp-drifted"
+    with pytest.raises(ScenarioUnsupportedTimeMappingError):
+        load_scenario(mapping)
+
+
+def test_load_scenario_accepts_index_time_mapping() -> None:
+    mapping = _full_mapping()
+    replay = mapping["replay"]
+    assert isinstance(replay, dict)
+    replay["time_mapping"] = "index"
+    result = load_scenario(mapping)
+    assert result.scenario.replay is not None
+    assert result.scenario.replay.time_mapping == "index"
 
 
 def test_load_scenario_rejects_fault_missing_recovery() -> None:
