@@ -37,18 +37,21 @@ from grid_gym.hexagon.core.domain.replay import (
     ReplaySample,
 )
 
-_VOLATILE_FIELDS_DEFAULT: Final[frozenset[str]] = frozenset({"import_sequence", "timestamp"})
+_VOLATILE_FIELDS_DEFAULT: Final[frozenset[str]] = frozenset({"import_sequence"})
 """Default-volatile Felder.
 
 `import_sequence` ist ein interner Mapper-Counter, der zwischen
 zwei Laeufen variieren kann, ohne dass das Replay fachlich
 abweicht.
 
-`timestamp` ist der Original-String aus der Quelle; bei
-ISO-8601-Quellen kann derselbe Moment in mehreren Formen
-(`2024-01-01T00:00:00Z` vs. `2024-01-01T00:00:00+00:00`) auftauchen,
-ohne dass das Replay fachlich abweicht. Wenn die Simulationszeit
-korrekt gemappt ist, ist der Roh-String redundant.
+`timestamp` ist bewusst NICHT im Default (Welle-5-Review SC-1):
+`GG-REPLAY-002` verlangt „Originalzeitstempel werden unveraendert
+gespeichert" — eine Aenderung des Roh-Strings ist damit ein
+Drift-Indikator, nicht ein Rauschen. Aufrufer, die zwei Quellen
+mit unterschiedlichen ISO-8601-Schreibweisen
+(`...Z` vs. `...+00:00`) vergleichen wollen, koennen das per
+`volatile_fields=frozenset({"import_sequence", "timestamp"})`
+explizit aufweichen.
 """
 
 

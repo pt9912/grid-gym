@@ -18,6 +18,7 @@ from decimal import Decimal
 import pytest
 
 from grid_gym.hexagon.core.errors import (
+    ReplayInvalidTickMsError,
     ReplayInvalidValueError,
     ReplayMissingFieldError,
 )
@@ -134,10 +135,10 @@ def test_parse_jsonl_accepts_int_value() -> None:
 
 def test_samples_with_same_simulation_time_sort_by_device_metric_sequence() -> None:
     """`GG-REPLAY-003`: stabile Sortierung nach `(simulation_time,
-    device_id, metric, import_sequence)`. Hier alle 4 Samples mit
-    derselben Sim-Zeit (`time_mapping="index"` mit tick_ms=0 wuerde
-    durch 0 dividieren — stattdessen monotonic mit gleichen
-    Timestamps)."""
+    device_id, metric, import_sequence)`. Alle 4 Samples mit
+    derselben Sim-Zeit ueber monotonic-Mapping bei gleichen
+    Timestamps. `tick_ms=0` ist typisiert verboten — siehe
+    `test_parse_csv_rejects_zero_tick_ms_typed`."""
     csv_text = (
         "timestamp,device_id,metric,value,unit\n"
         "2024-01-01T00:00:00Z,bravo,power,1.0,kW\n"
@@ -159,3 +160,27 @@ def test_samples_with_same_simulation_time_sort_by_device_metric_sequence() -> N
 def test_empty_input_returns_empty_tuple() -> None:
     assert parse_csv("timestamp,device_id,metric,value,unit\n", tick_ms=1000) == ()
     assert parse_jsonl("", tick_ms=1000) == ()
+
+
+# ---------------------------------------------------------------------------
+# tick_ms-Guard (Welle-5-Review MF-1)
+# ---------------------------------------------------------------------------
+
+
+def test_parse_csv_rejects_zero_tick_ms_typed() -> None:
+    with pytest.raises(ReplayInvalidTickMsError):
+        parse_csv(_CSV_TEMPLATE, tick_ms=0)
+
+
+def test_parse_csv_rejects_negative_tick_ms_typed() -> None:
+    with pytest.raises(ReplayInvalidTickMsError):
+        parse_csv(_CSV_TEMPLATE, tick_ms=-100)
+
+
+def test_parse_jsonl_rejects_zero_tick_ms_typed() -> None:
+    with pytest.raises(ReplayInvalidTickMsError):
+        parse_jsonl(
+            '{"timestamp": "2024-01-01T00:00:00Z", "device_id": "g",'
+            ' "metric": "m", "value": "1.0", "unit": "kW"}\n',
+            tick_ms=0,
+        )

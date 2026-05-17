@@ -413,3 +413,18 @@ class ReplayInvalidValueError(ReplayParseError):
 
     def __init__(self, line_index: int, field: str, detail: str) -> None:
         super().__init__(f"replay sample at line {line_index}: field {field!r} invalid ({detail})")
+
+
+class ReplayInvalidTickMsError(ReplayError):
+    """`parse_csv`/`parse_jsonl` mit nicht-positivem `tick_ms`.
+
+    Pattern-Parallel zu `TickLoopInvalidTickMsError`
+    (`hexagon/core/simulation/tick_loop.py`): `tick_ms <= 0`
+    wuerde bei `time_mapping="index"` alle Samples auf
+    `simulation_time=0` setzen (stiller Tie-Breaking-Stress)
+    und bei negativen Werten den Scheduler-Vertrag spaeter
+    brechen. Welle-5-Review-MF-1.
+    """
+
+    def __init__(self, value: int) -> None:
+        super().__init__(f"replay tick_ms must be positive, got {value}")

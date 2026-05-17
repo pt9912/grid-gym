@@ -9,6 +9,19 @@ YAML-File-Parsing ist explizit Adapter-Verantwortung — der
 Validator sieht nur strukturelle Maps. Damit bleibt
 `AC-HEXAGON-PURE` ohne PyYAML-Whitelist-Erweiterung
 (`docs/user/code-review.md` §3.5).
+
+**Payload-Vertrag** (`ScenarioDevice.params`, `ScenarioEvent.payload`,
+`ScenarioFault.payload`): Welle 5 prueft hier nur die strukturelle
+`Mapping`-Form, NICHT die Werte rekursiv. `loader.py` hashed das
+Szenario anschliessend per `canonical_json(asdict(scenario))` —
+nicht-canonical-faehige Werte (insbesondere `float`) loesen dort
+`FloatNotAllowedError` aus dem Encoder aus, NICHT eine
+`Scenario*Error`-Subklasse. Aufrufer, die mit unkontrolliertem
+Payload-Input arbeiten (z. B. YAML-Adapter mit `yaml.safe_load`,
+das Floats produziert), MUESSEN am Adapter-Rand Decimal-
+Konvertierung erzwingen. Pattern-Drift zur Scheduler-Boundary
+(Welle-3-Review S2 hat dort eager-canonical eingefuehrt) ist im
+Folge-Trigger 014 als Vereinheitlichungs-Punkt vorgemerkt.
 """
 
 from __future__ import annotations

@@ -245,6 +245,13 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
     bleibt).
   - `loader.py` — YAML laden, Schema-Version pruefen, kanonisches
     Szenarioobjekt + Hash zurueckgeben (`GG-SCN-003`/`004`).
+    *(Architektur-Schaerfung 2026-05-17 per `ADR 0011`-Pattern:*
+    *Mapping-input statt YAML-direct. YAML-File-Parsing wandert*
+    *in `adapters/driven/scenario_yaml/` als spaeterer Slice;*
+    *`hexagon/core/scenario/` bleibt I/O-frei + Format-agnostisch,*
+    *`AC-HEXAGON-PURE` ohne PyYAML-Whitelist-Erweiterung.*
+    *Inhaltlich erfuellt `loader.py` die Akzeptanz `GG-SCN-001..*
+    *008` durch Mapping-input; siehe Closure-Block unten.)*
 - `src/grid_gym/hexagon/core/replay/`:
   - `mapper.py` — CSV/JSON-Lines-Import, Originalzeit → Simulationszeit
     (`GG-REPLAY-001`/`002`).

@@ -35,6 +35,7 @@ from typing import Final
 
 from grid_gym.hexagon.core.domain.replay import ReplaySample
 from grid_gym.hexagon.core.errors import (
+    ReplayInvalidTickMsError,
     ReplayInvalidValueError,
     ReplayMissingFieldError,
 )
@@ -58,8 +59,12 @@ def parse_csv(
     """Parsed CSV-Text mit `timestamp,device_id,metric,value,unit`-
     Spalten in eine sortierte `ReplaySample`-Sequenz.
 
-    `tick_ms` wird nur fuer `time_mapping="index"` genutzt.
+    `tick_ms` wird nur fuer `time_mapping="index"` genutzt. Format-
+    Validierung am Eingang: `tick_ms > 0` wirft sonst
+    `ReplayInvalidTickMsError` (Pattern-Parallel zum TickLoop-
+    Konstruktor; Welle-5-Review-MF-1).
     """
+    _assert_tick_ms_positive(tick_ms)
     reader = csv.DictReader(io.StringIO(text))
     raw_rows = [(index, row) for index, row in enumerate(reader)]
     return _build_samples(raw_rows, tick_ms=tick_ms, time_mapping=time_mapping)
@@ -68,7 +73,11 @@ def parse_csv(
 def parse_jsonl(
     text: str, *, tick_ms: int, time_mapping: str = "monotonic"
 ) -> tuple[ReplaySample, ...]:
-    """Parsed JSON-Lines-Text in eine sortierte `ReplaySample`-Sequenz."""
+    """Parsed JSON-Lines-Text in eine sortierte `ReplaySample`-Sequenz.
+
+    Gleicher `tick_ms`-Vertrag wie `parse_csv`.
+    """
+    _assert_tick_ms_positive(tick_ms)
     raw_rows: list[tuple[int, dict[str, object]]] = []
     for index, line in enumerate(text.splitlines()):
         if not line.strip():
@@ -83,6 +92,11 @@ def parse_jsonl(
             )
         raw_rows.append((index, row))
     return _build_samples(raw_rows, tick_ms=tick_ms, time_mapping=time_mapping)
+
+
+def _assert_tick_ms_positive(tick_ms: int) -> None:
+    if tick_ms <= 0:
+        raise ReplayInvalidTickMsError(tick_ms)
 
 
 def _build_samples(

@@ -67,10 +67,28 @@ def test_import_sequence_mismatch_is_volatil_by_default() -> None:
     assert deltas[0].classification == ReplayDeltaClassification.VOLATIL
 
 
-def test_timestamp_mismatch_is_volatil_by_default() -> None:
+def test_timestamp_mismatch_is_fachlich_by_default() -> None:
+    """Welle-5-Review SC-1: `timestamp` ist NICHT im Default-
+    volatile-Set. `GG-REPLAY-002` macht Original-Timestamps
+    `unveraendert` — eine Aenderung ist ein Drift-Indikator."""
     expected = (_sample(timestamp="2024-01-01T00:00:00Z"),)
     actual = (_sample(timestamp="2024-01-01T00:00:00+00:00"),)
     deltas = diff_replay(expected, actual)
+    assert len(deltas) == 1
+    assert deltas[0].classification == ReplayDeltaClassification.FACHLICH
+
+
+def test_timestamp_mismatch_can_be_marked_volatile_via_override() -> None:
+    """Aufrufer kann `timestamp` explizit zu volatile ergaenzen,
+    z. B. wenn zwei Quellen mit unterschiedlichen ISO-8601-
+    Schreibweisen verglichen werden."""
+    expected = (_sample(timestamp="2024-01-01T00:00:00Z"),)
+    actual = (_sample(timestamp="2024-01-01T00:00:00+00:00"),)
+    deltas = diff_replay(
+        expected,
+        actual,
+        volatile_fields=frozenset({"import_sequence", "timestamp"}),
+    )
     assert len(deltas) == 1
     assert deltas[0].classification == ReplayDeltaClassification.VOLATIL
 
