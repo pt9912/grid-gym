@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
-**Stand:** 2026-05-17 (M1 Welle 0..5 abgeschlossen)
+**Stand:** 2026-05-17 (M1 Welle 0..6c abgeschlossen; M2..M6 vorbelegt)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -16,9 +16,10 @@ mit `M[N]`-Markern.
 
 `GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
 (`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
-2026-05-15 `In Progress` (Welle 0 abgeschlossen) — Details im
-[Slice-Plan](M1-tick-loop-spine.md). M2+ wird mit dem M1-Abschluss
-vorbelegt.
+2026-05-15 `In Progress` — Details im
+[Slice-Plan](M1-tick-loop-spine.md). M2..M6 sind vorbelegt
+(Scope-Skizze hier, aktive Slice-Plaene wandern bei Aktivierung
+nach `next/` bzw. `in-progress/`).
 
 ---
 
@@ -26,64 +27,197 @@ vorbelegt.
 
 - Meilensteine werden fortlaufend numeriert (`M1`, `M2`, …).
 - Jeder Meilenstein hat:
-  - Lieferziel (was wird umgesetzt),
-  - Lastenheft-IDs (`GG-*`),
-  - Architekturartefakte (`GG-AR-*`),
-  - Abnahmekriterium (Verifikationspfad),
-  - Status (Pending / In Progress / Done).
+  - **Lieferziel** (was wird umgesetzt),
+  - **Lastenheft-IDs** (`GG-*`),
+  - **Architekturartefakte** (`GG-AR-*`),
+  - **DoD-Checkliste** (Markdown-Checkboxen, einzeln pruefbar),
+  - **Status** (Pending / In Progress / Done).
 - Abgeschlossene Meilensteine wandern als Closure-Notiz nach
   `docs/plan/planning/done/`.
 - Themes fuer kommende Meilensteine werden in `docs/plan/planning/next/`
-  als Scope-Skizze gefuehrt, bevor sie hier als aktiver Slice aufgenommen
-  werden.
+  als Scope-Skizze gefuehrt, sobald die Vorbelegung hier konkret wird.
+- DoD-Checkboxen werden NICHT in der Roadmap abgehakt, solange der
+  Meilenstein offen ist — die Closure-Notiz in `done/` traegt den
+  finalen Stand.
 
 ---
 
 ## 3. Meilensteine
 
-### M1 — Tick-Loop-Spine (Vorbelegung)
+### M1 — Tick-Loop-Spine
 
 - **Lieferziel:** deterministischer Tick-Loop ohne Geraete:
   `ClockPort` (Driven), `RandomPort` (Driven, eigener ADR),
-  Scheduler mit stabiler Tie-Breaking-Regel, leere Domain-Modelle
-  (`Telemetry`, `Command`, `Event` als Frozen-Dataclasses),
-  `canonical_json`-Anbindung an Snapshot-Pfad. Geraetemodelle
-  (Battery, PV, Load, ...) folgen in M2+.
-- **Lastenheft-IDs:** `GG-SIM-001..004` (Determinismus, Tick,
-  Reproduzierbarkeit, parallele Geraete), `GG-SIM-005` (Snapshot),
-  `GG-DATA-001..005` (Telemetry-Modell + kanonische
-  Serialisierung), `GG-ARCH-005..008` (Event-Scheduler,
-  Tie-Breaking, ClockPort, Replay-/Live-Spine geteilt),
-  `GG-PRINC-001..006` (SOLID-Restanteil ueber `make arch-check`).
-- **Architekturartefakte:** `GG-AR-COMP-CORE`
-  (`hexagon/core/simulation`), `GG-AR-COMP-DOMAIN`
-  (`hexagon/core/domain`), `GG-AR-COMP-SCHED`
-  (`hexagon/core/simulation/scheduler`), `GG-AR-PORT-DRN-001`
-  (`ClockPort`), `GG-AR-PORT-DRN-010` (`RandomPort` — via
-  [`ADR 0007`](../../adr/0007-random-port.md), `Provisional`
-  seit 2026-05-15, Acceptance synchron mit Welle 2).
-- **Abnahmekriterium:** `make fullbuild` gruen (impliziert
-  Triggers 009 `tests/integration/compose.yml` und 010
-  `deploy/compose.yml`) **und** `make gates` ohne
-  `CRITICAL_COV_TARGETS`-Override gruen (Default-kritische
-  Domain `simulation/scenario/replay/devices/battery` hat
-  jeweils mindestens ein produktives Modul, Coverage ≥ 90 %
-  Line + Branch).
+  Scheduler mit stabiler Tie-Breaking-Regel, Domain-Modelle
+  (`Telemetry`, `Command`, `Event`, `Scenario`, `ReplaySample` als
+  Frozen-Dataclasses), `canonical_json`-Anbindung an Snapshot-Pfad,
+  minimaler FastAPI-Adapter + Postgres-Persistenz fuer `runs`.
+  Geraetemodelle (Battery, PV, Load, ...) folgen in M2+.
+- **Lastenheft-IDs:** `GG-SIM-001..005`, `GG-DATA-001..005`,
+  `GG-ARCH-005..008`, `GG-PRINC-001..006`, `GG-SCN-001..008`,
+  `GG-REPLAY-001..003`/`007`, `GG-API-001`/`003`,
+  `GG-PERSIST-003`/`009` (minimaler `runs`-Repository).
+- **Architekturartefakte:** `GG-AR-COMP-CORE`, `GG-AR-COMP-DOMAIN`,
+  `GG-AR-COMP-SCHED`, `GG-AR-PORT-DRN-001` (`ClockPort`),
+  `GG-AR-PORT-DRN-003` (`RunRepositoryPort`),
+  `GG-AR-PORT-DRN-010` (`RandomPort` — via
+  [`ADR 0007`](../../adr/0007-random-port.md)).
+- **DoD-Checkliste:**
+  - [x] Welle 0 — Vorbereitung (ADR 0007 Provisional, Trigger 001,
+        Lock-Refresh) (2026-05-15).
+  - [x] Welle 1 — Domain-Modelle (`Quality`/`CommandResult`/
+        `RunMetadata`/`TelemetryPoint`/`Command`/`Event`/
+        `SnapshotEnvelope`) (2026-05-17).
+  - [x] Welle 2 — Driven-Ports (`ClockPort`/`RandomPort` +
+        `MersenneTwisterRandomPort` Adapter, ADR 0007 Accepted)
+        (2026-05-17).
+  - [x] Welle 3 — Scheduler mit Tie-Breaking
+        `(time, priority, source, sequence, event_id)` (`GG-ARCH-006`)
+        (2026-05-17).
+  - [x] Welle 4 — TickLoop + Snapshot-Envelope-Composition
+        (`GG-SIM-005`, ADR 0010) (2026-05-17).
+  - [x] Welle 5 — Scenario + Replay (`GG-SCN-001..008`,
+        `GG-REPLAY-001..003/007`) (2026-05-17).
+  - [x] Welle 6a — FastAPI-Adapter + `make openapi-validate` gruen
+        (2026-05-17).
+  - [x] Welle 6b — `RunRepositoryPort` + `InMemoryRunRepository`
+        + FastAPI-Wiring (2026-05-17).
+  - [x] Welle 6c — `PostgresRunRepository` + alembic + Integration-
+        Tests via testcontainers; Triggers 009 + 010
+        (`tests/integration/compose.yml` + `deploy/compose.yml`)
+        (2026-05-17).
+  - [ ] Welle 6d — `make fullbuild` gruen mit explizitem
+        `CRITICAL_COV_TARGETS`-Override (Default-Gate haengt an
+        M2-`devices/battery`, siehe Abnahme-Hinweis unten).
+  - [ ] Welle 7 — Closure-Notiz `done/M1-tick-loop-spine.md`,
+        Trigger-Status-Check (005/006/008 aus `open/`), Roadmap-
+        Vorbelegung fuer M2 verfeinert.
+  - [ ] M1 als Ganzes auf Status `Done` gehoben und nach `done/`
+        gewandert.
+- **Abnahme-Hinweis:** Default-`make gates` (ohne
+  `CRITICAL_COV_TARGETS`-Override) bleibt rot, solange
+  `devices/battery` als Default-Critical-Target fehlt. Das ist
+  per Slice-Plan-§3-Welle-4-§3-Welle-5-Doku erwartet — M1-DoD-
+  Box „Welle 6d" akzeptiert den expliziten Override-Pfad als
+  M1-Abschluss. Volle Default-Gruen-Linie schliesst M2 (siehe
+  M2-DoD).
 - **Status:** In Progress — Slice-Plan
-  [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv.
-  Welle 0..5 abgeschlossen (Daten 2026-05-15 / 2026-05-17 ×5):
-  ADR 0007/0010 (`Accepted`); Domain-Modelle (`Quality`/
-  `CommandResult`/`RunMetadata`/`TelemetryPoint`/`Command`/
-  `Event`/`SnapshotEnvelope`/`TickResult`/`Scenario`/
-  `ReplaySample`/`ReplayDelta`), Driven-Ports (`ClockPort`/
-  `RandomPort` + `MersenneTwisterRandomPort`), `Scheduler`
-  (`GG-ARCH-006`), `TickLoop` (`GG-SIM-001/002/005`),
-  Scenario-Loader+Validator+Hash (`GG-SCN-001..008`) und
-  Replay-Mapper+Diff (`GG-REPLAY-001..003/007`) liegen mit
-  Property- und Determinismus-Tests. Trigger 001, 003 und 012
-  sind `done`. Welle 6 (Integration + `make fullbuild`) ist
-  der naechste Schritt; Default-`make gates` wird mit
-  M2-Geraetemodellen (`devices/battery`) gruen, nicht in M1.
+  [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv;
+  Welle 6d und 7 stehen aus.
+
+### M2 — Geraetemodelle (Vorbelegung)
+
+- **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
+  Load, Smart Meter, Grid Connection) als Konsumenten des
+  Tick-Loops. `TickResult.emitted_telemetry` ist dann nicht mehr
+  leer — Geraete emittieren `TelemetryPoint`-Tupel pro Tick.
+  Geraete-Faults (mindestens Schnittstelle) und Snapshot-Versionierung
+  pro Geraet.
+- **Lastenheft-IDs:** `GG-DEV-001..014`, `GG-BESS-001..008`,
+  `GG-GRID-001..007`. Plus Anschluss an
+  `GG-SCN-001` (Geraete-Definitionen im Scenario werden produktiv
+  konsumiert).
+- **Architekturartefakte:** `GG-AR-COMP-DEVICES`, je Geraetetyp
+  ein Submodul unter `hexagon/core/devices/`. `RandomPort.sub_port`-
+  Konventionen fuer Geraete-Fault-Streams.
+- **DoD-Checkliste:**
+  - [ ] `Battery`/BESS-Modell mit Lade-/Entlade-Vertrag
+        (`GG-BESS-001..008`).
+  - [ ] `PV`-Modell mit Generationsprofil-Eingang.
+  - [ ] `Load`-Modell.
+  - [ ] `SmartMeter`-Modell.
+  - [ ] `GridConnection`-Modell (`GG-GRID-001..007`).
+  - [ ] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
+        Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
+        sortiert.
+  - [ ] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
+        Composition (Trigger 014 generischer Codec wird hier
+        relevant — siehe `open/014-generic-snapshot-format-codec.md`).
+  - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
+        gruen — `devices/battery` hat ≥ 90 % Line + Branch.
+  - [ ] M1-DoD-Restposten (M1 Welle 6d/7) sind als
+        `done/M1-tick-loop-spine.md` geschlossen, bevor M2 nach
+        `Done` geht.
+
+### M3 — Faults + Multi-Agent + Observability (Vorbelegung)
+
+- **Lieferziel:** produktive Fault-Injection (`GG-FAULT-001..010`),
+  Multi-Agent-Subsystem (`GG-AGENT-001..008`) und
+  OpenTelemetry-Anbindung (`GG-OTEL-001..004`).
+- **Lastenheft-IDs:** `GG-FAULT-001..010`, `GG-AGENT-001..008`,
+  `GG-OTEL-001..004`, `GG-SAFE-001..006` (sicherheitsrelevante
+  Pfad-Kennzeichnung der Fault-Klassen).
+- **Architekturartefakte:** `GG-AR-COMP-FAULTS`,
+  `GG-AR-COMP-AGENTS`, `GG-AR-PORT-DRN-008`
+  (`LogPort`/`MetricsPort`/`TracePort`).
+- **DoD-Checkliste:**
+  - [ ] Fault-Definitions im Scenario werden vor `tick()` validiert
+        (`GG-SCN-006`) und im Tick-Loop ausgeloest.
+  - [ ] Mindestens ein konkreter Fault-Typ pro
+        `Battery`/`Grid`-Achse implementiert (Beispiel:
+        `voltage_drop`, `cell_failure`).
+  - [ ] Recovery-Verhalten je Fault dokumentiert + getestet.
+  - [ ] Multi-Agent-Bus implementiert (`GG-AGENT-001..008`); RL-
+        Adapter koennen als separater Folge-Slice angehaengt werden
+        (`GG-FUTURE-001/002`).
+  - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
+  - [ ] Property-Tests fuer Fault-Determinismus
+        (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export).
+
+### M4 — Protokolladapter (Vorbelegung)
+
+- **Lieferziel:** produktive Driven-Adapter fuer die in Spec §16
+  genannten Protokolle (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
+- **Lastenheft-IDs:** `GG-MQTT-001..00X`, `GG-MODB-001..00X`,
+  `GG-OPCUA-001..00X`, `GG-DNP3-001..00X`, `GG-IEC-001..00X`.
+- **Architekturartefakte:** `GG-AR-PORT-DRN-007`
+  (`DeviceProtocolPort`), pro Protokoll ein
+  `adapters/driven/protocol_<name>/`-Modul.
+- **DoD-Checkliste:**
+  - [ ] MQTT-Adapter (paho-mqtt) mit Topic-Mapping zu Geraete-
+        Telemetry/Commands.
+  - [ ] Modbus-Adapter (pymodbus).
+  - [ ] OPC-UA-Adapter (asyncua).
+  - [ ] DNP3-Adapter (oder dokumentierter Verzicht via
+        `Out-of-Scope`-Note).
+  - [ ] IEC-61850-Adapter (oder dokumentierter Verzicht).
+  - [ ] AC-ADAPTER-LIGHTWEIGHT bleibt fuer alle protocol_*-Module
+        gruen (kein Fachlogik-Sickern).
+  - [ ] Integration-Tests pro Adapter via testcontainers (analog
+        Welle 6c).
+
+### M5 — UI + Demo (Vorbelegung)
+
+- **Lieferziel:** Visualisierungs- und Demo-Layer
+  (`GG-UI-001..009`, `GG-DEMO-001..00X`).
+- **Lastenheft-IDs:** `GG-UI-001..009`, Demo-System aus Spec §24.
+- **Architekturartefakte:** `GG-AR-COMP-UI`,
+  `GG-AR-PORT-DRG-002` (`UICommandPort`, sofern getrennt vom
+  HTTP-API).
+- **DoD-Checkliste:**
+  - [ ] Web-UI mit Live-Telemetry-Stream
+        (`GG-UI-001..006`).
+  - [ ] Scenario-Editor (`GG-UI-006..008`).
+  - [ ] Demo-Lauf reproduzierbar via `make demo` o. ae.
+  - [ ] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
+        Kern-Zugriff.
+
+### M6 — Performance + Security + CI/CD-Haertung (Vorbelegung)
+
+- **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,
+  Sicherheits-Audit (`GG-SAFE-001..006`,
+  `GG-SBOM-001..00X` ueber Trigger 008), CI/CD-Vollausbau
+  (`GG-CICD-001..00X`).
+- **Lastenheft-IDs:** `GG-RT-001..005`, `GG-SAFE-001..006`,
+  `GG-CICD-001..00X`, `GG-DEPLOY-001..00X`.
+- **DoD-Checkliste:**
+  - [ ] 10.000-Points/s-Benchmark (`GG-RT-005`) reproduzierbar.
+  - [ ] SBOM-Generierung im CI (Trigger 008 nach `done/`).
+  - [ ] GitHub-Actions-Workflow gegen Python 3.13 + 3.14
+        (Spike-0-Closure-D-8 + ADR 0002 §6.1).
+  - [ ] Image-Audit (`make image-audit`) inkl. Vuln-Scan in CI.
+  - [ ] Container-Smoke-Test mit `deploy/compose.yml`
+        (`make runtime` pollt `/health`).
 
 ---
 
@@ -91,22 +225,25 @@ vorbelegt.
 
 Vor M1 muessen folgende Punkte geklaert sein:
 
-- ✓ **`GG-AR-OPEN-001` Sprach- und Build-Wahl** — geschlossen mit
-  `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
-  (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
-  [`docs/plan/planning/done/spike-0.md`](../done/spike-0.md).
-- `GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse —
-  offen, eigene Folge-ADR.
-- ✓ **Initiales Repository-Layout** gemaess der Hexagonalen Sicht
-  (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
-  `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert;
-  Python-Paketnamen (`src/grid_gym/hexagon/{core,ports}/`,
-  `src/grid_gym/adapters/`) durch `ADR 0002` §6.1 (`Accepted`
-  2026-05-15) verbindlich.
-- ✓ **Trigger 001 (Code-Review-Doku + PR-Template)** — Post-
-  Acceptance-Vorbedingung aus dem Dritten Spike-0-Review
-  ([`done/spike-0-results.md`](../done/spike-0-results.md) §6).
-  Erfuellt 2026-05-15 mit
-  [`docs/user/code-review.md`](../../../user/code-review.md) und
-  `.github/PULL_REQUEST_TEMPLATE.md`; Closure-Notiz in
-  [`done/001-code-review-doc.md`](../done/001-code-review-doc.md).
+- [x] **`GG-AR-OPEN-001` Sprach- und Build-Wahl** — geschlossen mit
+      `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
+      (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
+      [`docs/plan/planning/done/spike-0.md`](../done/spike-0.md).
+- [ ] **`GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse**
+      — offen, eigene Folge-ADR. Welle-6c-`deploy/compose.yml`
+      stellt heute `api` + `simulation` als zwei Services bereit,
+      aber ohne ADR-Entscheidung; spaetestens vor M2-Produktiv-Lauf
+      fixiert eine Folge-ADR die Trennung formal.
+- [x] **Initiales Repository-Layout** gemaess der Hexagonalen Sicht
+      (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
+      `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert;
+      Python-Paketnamen (`src/grid_gym/hexagon/{core,ports}/`,
+      `src/grid_gym/adapters/`) durch `ADR 0002` §6.1 (`Accepted`
+      2026-05-15) verbindlich.
+- [x] **Trigger 001 (Code-Review-Doku + PR-Template)** — Post-
+      Acceptance-Vorbedingung aus dem Dritten Spike-0-Review
+      ([`done/spike-0-results.md`](../done/spike-0-results.md) §6).
+      Erfuellt 2026-05-15 mit
+      [`docs/user/code-review.md`](../../../user/code-review.md) und
+      `.github/PULL_REQUEST_TEMPLATE.md`; Closure-Notiz in
+      [`done/001-code-review-doc.md`](../done/001-code-review-doc.md).
