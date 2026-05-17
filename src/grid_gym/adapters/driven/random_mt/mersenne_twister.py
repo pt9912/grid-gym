@@ -1,10 +1,13 @@
-"""Mersenne-Twister-`RandomPort` (`ADR 0007 §5.2`).
+"""Mersenne-Twister-`RandomPort` (`ADR 0007 §5.2` + `ADR 0009`).
 
 Konkrete Driven-Adapter-Implementation des `RandomPort`-Protocols
 auf Basis von `random.Random` (stdlib, Mersenne Twister) mit
 SHA-256-Sub-Seeding und `canonical_json`-Snapshot-Format.
 
-Snapshot-Schema (`version: 1`):
+Snapshot-Schema (verbindlich per `ADR 0009`; loest das `state`-
+Feld aus der `ADR 0007 §5.2`-Skizze in `rng_version` + `rng_state`
+auf, weil der CPython-`getstate()`-Versions-Marker explizit
+auditierbar sein muss):
 
 ```json
 {
