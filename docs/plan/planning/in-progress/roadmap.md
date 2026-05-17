@@ -237,11 +237,14 @@ Vor M1 muessen folgende Punkte geklaert sein:
       `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
       (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
       [`docs/plan/planning/done/spike-0.md`](../done/spike-0.md).
-- [ ] **`GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse**
-      — offen, eigene Folge-ADR. Welle-6c-`deploy/compose.yml`
-      stellt heute `api` + `simulation` als zwei Services bereit,
-      aber ohne ADR-Entscheidung; spaetestens vor M2-Produktiv-Lauf
-      fixiert eine Folge-ADR die Trennung formal.
+- [x] **`GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse**
+      — geschlossen mit
+      [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)
+      (`Accepted` 2026-05-17): zwei Prozesse, Postgres als
+      Persistenz-Bus. Welle-6c-`deploy/compose.yml` hat den
+      Pattern de-facto implementiert; ADR 0012 formalisiert
+      nachtraeglich. `spec/architecture.md` §19
+      `GG-AR-OPEN-002`-Zeile entsprechend auf `Geschlossen`.
 - [x] **Initiales Repository-Layout** gemaess der Hexagonalen Sicht
       (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
       `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert;

@@ -106,9 +106,62 @@ Triggers vermerkt:
 
 ## 6. Reviewer-Stempel
 
-M1 ist durch zwei externe Reviewer-Iterationen pro Welle
-gegangen (Welle 1, 2, 3, 4, 5) plus den finalen Welle-6-Review.
-Alle Befunde sind addressiert; `make gates` und
-`make fullbuild` sind gruen.
+**Pro-Welle-Reviews (committeted Review-Fix-Commits):**
+
+| Welle | Externer Review | Review-Fix-Commit(s) |
+| ----- | --------------- | -------------------- |
+| 0     | ✓ Welle-0-Review (Spike-0-Drittes-Review) | `791af26` |
+| 1     | — (kein separater Sweep — Befunde durch Welle-2-Review-Iteration v1 abgefangen) | n/a |
+| 2     | ✓ Welle-2-Review v1+v2 (intern + extern) | `bacc43b`, `0415b14`, `baef02a` |
+| 3     | ✓ Welle-3-Review | `ae20b4f` |
+| 4     | ✓ Welle-4-Review | `d08b5a9` |
+| 5     | ✓ Welle-5-Review v1+v2 | `51bf108`, `b18f3f1` |
+| 6a–6d | — (keine separaten Reviews; Welle-7-End-to-End-Sweep adressiert die Schicht) | n/a |
+| 7     | ✓ Welle-7-Final-End-to-End-Sweep (siehe §7) | dieser Commit-Stack |
+
+**Korrektur gegenueber dem ersten Closure-Wortlaut:** Wellen 1
+und 6a–6d hatten **keine** separate externe Reviewer-Schleife —
+ihre Befunde sind teils ueber die jeweils naechste Welle
+mitgenommen, teils erst durch den finalen Welle-7-End-to-End-
+Sweep (§7) typisiert aufgefallen. Der ursprueng-lich behauptete
+Satz „zwei externe Reviewer-Iterationen pro Welle" war
+faktisch nicht durch die Git-History gedeckt.
+
+## 7. Welle-7-End-to-End-Sweep
+
+Vor dem M2-Slice-Start ist M1 als Ganzes durch einen
+unabhaengigen End-to-End-Review gegangen (siehe Commit-Body
+dieses Stacks bzw. Welle-7-Final-Review-Output). Befunde:
+
+- **M-1 (must-fix, hier behoben):** Reviewer-Stempel-Satz
+  faktentreu gemacht (siehe §6 oben).
+- **M-2 (must-fix, hier behoben):** dieser §7 als Anker fuer
+  den Welle-7-Sweep angelegt; ohne ihn waere die M1-Bilanz
+  audit-instabil.
+- **M-3 (must-fix, hier behoben):** `Makefile`-Target `ci`
+  liefert bei `coverage-gate-critical`-Fail einen klaren
+  M1-Override-Hinweis (siehe Commit-Body).
+- **S-1..S-6 (should-consider, fuer M2-Slice-Plan):**
+  - **S-1**: Trigger 014 (`generic-snapshot-format-codec`)
+    als M2-Welle-0-Pflicht-Item — sechstes Subsystem
+    (`devices/battery`-Validierung) ist der mechanische
+    Aktivierungs-Trigger.
+  - **S-2**: Sub-Slicing-Heuristik dokumentieren (Welle 6
+    zerfiel in 6a/b/c/d ungeplant — M2 soll das nicht
+    wiederholen ohne dokumentierte Schwelle).
+  - **S-3**: M2-DoD ohne `CRITICAL_COV_TARGETS`-Override
+    formulieren — kein M1-Pivot-Pattern wiederholen.
+  - **S-4**: Trigger 015 (`runtime-image-hardening`,
+    `uv sync --no-editable` + Shebang-Rewrite) als M2-Welle-0-
+    Vorab-Raeumung einplanen, bevor neue Adapter mit den
+    Welle-6d-Pragma-Hacks koppeln.
+  - **S-5**: ADR-0008+0011-Erweiterungs-Pattern strikt
+    fortsetzen (neue Domain-Form → eigene Erweiterungs-ADR,
+    nicht Supersedes).
+  - **S-6**: Lastenheft-Sektionen-6-25-Coverage als
+    M2-Welle-0-Closure-Sweep mechanisch durchdiffen.
+
+**Verdict:** „Approve" nach Behebung von M-1/M-2/M-3 in
+diesem Commit-Stack (vorher „Request Changes").
 
 Datum: 2026-05-17.

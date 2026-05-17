@@ -224,10 +224,51 @@ openapi-validate:
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit
 	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (16 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit"
 
+# M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen
+# heute ein explizites `CRITICAL_COV_TARGETS`-Override, weil der
+# Default-Pfad das M2-`devices/battery`-Target enthaelt, das in M1
+# nicht existiert. M2 schliesst die Default-Linie.
+#
+# Empfohlener Override (M1-Closure-Stand):
+#   make fullbuild CRITICAL_COV_TARGETS="\
+#       src/grid_gym/hexagon/core/domain \
+#       src/grid_gym/hexagon/ports/driven \
+#       src/grid_gym/adapters/driven/random_mt \
+#       src/grid_gym/hexagon/core/simulation \
+#       src/grid_gym/hexagon/core/scenario \
+#       src/grid_gym/hexagon/core/replay \
+#       src/grid_gym/adapters/driving/http_api"
+#
+# Bei `coverage-gate-critical`-Fail druckt der Aggregator den Hinweis
+# noch einmal vor dem Exit, damit Neueinsteiger den Override-Pfad
+# nicht uebersehen.
+
+define M1_OVERRIDE_HINT
+echo ""; \
+echo "[ci] Hinweis (M1-Closure 2026-05-17): default CRITICAL_COV_TARGETS"; \
+echo "[ci] enthaelt 'devices/battery' (M2-Verantwortung). M1-Closure"; \
+echo "[ci] erwartet expliziten Override. Beispiel-Aufruf:"; \
+echo "[ci]   make fullbuild CRITICAL_COV_TARGETS=\"src/grid_gym/hexagon/core/domain \\"; \
+echo "[ci]       src/grid_gym/hexagon/ports/driven \\"; \
+echo "[ci]       src/grid_gym/adapters/driven/random_mt \\"; \
+echo "[ci]       src/grid_gym/hexagon/core/simulation \\"; \
+echo "[ci]       src/grid_gym/hexagon/core/scenario \\"; \
+echo "[ci]       src/grid_gym/hexagon/core/replay \\"; \
+echo "[ci]       src/grid_gym/adapters/driving/http_api\""; \
+echo "[ci] Volle Default-Gruen-Linie kommt mit M2-Geraetemodellen."
+endef
+
 ci: gates test-integration openapi-validate image-audit
 	@echo "[ci] mandatory gates green + test-integration + openapi-validate + image-audit"
 
-fullbuild: ci build runtime
+# `make fullbuild` ohne Override faellt heute ueber `coverage-gate-critical`.
+# Der `|| (...; exit 1)`-Wrapper druckt den M1-Override-Hinweis nach dem
+# Fail-Output, damit der Aggregator-Hint nicht vom Trivy-/Coverage-Output
+# verdraengt wird.
+fullbuild:
+	@$(MAKE) ci || ( $(M1_OVERRIDE_HINT); exit 1 )
+	@$(MAKE) build
+	@$(MAKE) runtime
 	@echo "[fullbuild] full closure: ci + runtime image + compose smoke green"
 
 # --- Runtime ---------------------------------------------------------------

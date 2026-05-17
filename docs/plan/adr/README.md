@@ -29,6 +29,7 @@ historisch.
 | 0009 | [`RandomPort`-Snapshot-Schema](0009-randomport-snapshot-schema-rng-version.md) | Accepted    | 2026-05-17  | Erweitert `ADR 0007 §5.2`; reine Erweiterung, kein Supersedes                                                       |
 | 0010 | [`RandomPort.snapshot_as_mapping`](0010-randomport-snapshot-as-mapping.md) | Accepted    | 2026-05-17  | Erweitert `ADR 0007 §5.1` + `ADR 0009`: Composition-API fuer `SnapshotEnvelope`. Single-Source-of-Truth `_build_payload()`. Reine Erweiterung, kein Supersedes. |
 | 0011 | [Schaerfung durch parallele ADR ohne Supersedes](0011-schaerfung-ohne-abloesung.md) | Accepted    | 2026-05-17  | Schaerft `ADR 0006 §3`: dokumentiert die „Schaerfung ohne Supersedes"-Form, die ADR 0008/0009/0010 bereits implizit nutzen. Self-bootstrap (ist selbst dieses Muster). |
+| 0012 | [API + Simulation als zwei Prozesse](0012-api-simulation-two-processes.md) | Accepted    | 2026-05-17  | Schliesst `GG-AR-OPEN-002` (spec/architecture.md §19): api + simulation als zwei Prozesse, Postgres als Persistenz-Bus. Welle 6c hat den Pattern bereits implementiert; ADR formalisiert nachtraeglich. |
 
 ---
 
