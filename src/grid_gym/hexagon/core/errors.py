@@ -452,3 +452,36 @@ class ReplayInvalidTickMsError(ReplayError):
 
     def __init__(self, value: int) -> None:
         super().__init__(f"replay tick_ms must be positive, got {value}")
+
+
+# ---------------------------------------------------------------------------
+# RunRepository-Vertrag (`hexagon.ports.driven.run_repository`,
+# M1 Welle 6b)
+# ---------------------------------------------------------------------------
+
+
+class RunRepositoryError(GridGymError):
+    """Wurzel der `RunRepositoryPort`-Vertragsverletzungen
+    (`GG-PERSIST-003`/`009`)."""
+
+
+class RunNotFoundError(RunRepositoryError):
+    """`RunRepositoryPort.get_by_id` mit unbekanntem `run_id`."""
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__(f"run not found: {run_id!r}")
+
+
+class RunAlreadyExistsError(RunRepositoryError):
+    """`RunRepositoryPort.save` mit einer `run_id`, die bereits
+    persistiert ist.
+
+    Doppel-Inserts sind ein Programmierfehler — `run_id` ist als
+    UUID4 generiert und kollidiert in der Praxis nicht. Diese
+    Pruefung faengt versehentliche Re-Saves typisiert ab, bevor
+    eine Postgres-`UNIQUE`-Constraint sie erst spaeter sichtbar
+    macht.
+    """
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__(f"run already exists: {run_id!r}")

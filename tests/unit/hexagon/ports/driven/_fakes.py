@@ -1,4 +1,4 @@
-"""Test-Doubles fuer die Driven-Ports (M1 Welle 2).
+"""Test-Doubles fuer die Driven-Ports (M1 Welle 2/6b).
 
 `FakeClock` ist die einzige `ClockPort`-Implementation, die Welle 2
 fuer Tests bereitstellt — eine produktive `SimulationClock` wird in
@@ -9,6 +9,11 @@ Welle 4 mit dem TickLoop gebaut.
 als „FixedSeedRandom"-Test-Helper bezeichnet wird. Wir re-exportieren
 ihn unter dem ADR-Namen, damit Tests dem Akzeptanztext folgen
 koennen, ohne dass es zwei Klassen mit gleichem Verhalten gibt.
+
+`InMemoryRunRepository` ist der Welle-6b-Test-Helper fuer den
+`RunRepositoryPort`. Welle 6c liefert die produktive
+`PostgresRunRepository`-Implementation; bis dahin reicht der
+In-Memory-Fake fuer Unit-Tests + FastAPI-Wiring.
 """
 
 from __future__ import annotations
@@ -16,6 +21,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
+from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.errors import (
+    RunAlreadyExistsError,
+    RunNotFoundError,
+)
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
 
 
@@ -46,3 +56,34 @@ Tests konstruieren `FixedSeedRandom(seed=...)`, die Implementierung
 ist `MersenneTwisterRandomPort`. Verhindert eine zweite Test-Variante
 mit divergentem Verhalten.
 """
+
+
+class InMemoryRunRepository:
+    """`RunRepositoryPort`-Test-Double mit dict-basiertem Store.
+
+    Welle 6b: liefert das Wiring fuer FastAPI-Tests, ohne dass eine
+    Datenbank laufen muss. Welle 6c bringt `PostgresRunRepository`
+    als produktive Implementation; bestehende Tests gegen
+    `RunRepositoryPort` koennen dann gegen beide Implementationen
+    laufen (testcontainers fuer Postgres).
+
+    `frozen=False`/keine Dataclass: explizit zustandsbehaftet,
+    interne `_store`-Mutation. AC-DOMAIN-FROZEN gilt nicht (Test-
+    Code unter `tests/`).
+    """
+
+    def __init__(self) -> None:
+        self._store: dict[str, RunMetadata] = {}
+
+    def save(self, metadata: RunMetadata) -> None:
+        if metadata.run_id in self._store:
+            raise RunAlreadyExistsError(metadata.run_id)
+        self._store[metadata.run_id] = metadata
+
+    def get_by_id(self, run_id: str) -> RunMetadata:
+        if run_id not in self._store:
+            raise RunNotFoundError(run_id)
+        return self._store[run_id]
+
+    def exists(self, run_id: str) -> bool:
+        return run_id in self._store

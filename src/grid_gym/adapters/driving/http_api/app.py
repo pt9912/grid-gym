@@ -1,17 +1,21 @@
-"""FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a).
+"""FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a/6b).
 
-Endpoints (Welle-6a-Scope, Welle-6b liefert Persistenz):
+Endpoints:
 - `GET  /health`  — Liveness-Probe (`HEALTHCHECK` im Dockerfile).
-- `POST /runs`    — `GG-API-001`-Stub: nimmt minimalen Body
-  (`scenario_hash`, `seed`, `tick_ms`) und liefert eine
-  `run_id`. M1-Welle-6a hat noch keine Persistenz — die `run_id`
-  ist `uuid4`-generiert, die Run-Metadaten werden NICHT
-  persistiert. Welle 6b haengt den `RunRepositoryPort` an.
+- `POST /runs`    — `GG-API-001`: persistiert einen neuen Lauf via
+  `RunRepositoryPort` (Welle 6b). Welle 6c haengt
+  `PostgresRunRepository` als Production-Implementation an;
+  Welle-6a/6b nutzt die `InMemoryRunRepository` aus
+  `tests/unit/hexagon/ports/driven/_fakes.py` als Default.
 - `GET  /openapi.json` — automatisch von FastAPI generiert
   (`GG-QG-006`/`GG-API-003`).
 
-Die Title-/Version-/Description-Felder fliessen in die generierte
-OpenAPI-Definition, die der `openapi-validate`-Stage prueft.
+Port-Injektion: `app.state.run_repository` haelt die
+`RunRepositoryPort`-Instanz. Aufrufer (uvicorn-Entry, Tests)
+setzen das vor der ersten Anfrage; `get_run_repository`-Dependency
+liest aus dem State. Standard-Fallback (`set_default_run_
+repository_for_local_use`) bleibt fuer M1-Welle-6a/b in-process
+in Kraft, bis Welle 6c einen Postgres-Adapter konfiguriert.
 """
 
 from __future__ import annotations
@@ -19,8 +23,12 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Final
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Request
 from pydantic import BaseModel, Field
+from typing import cast
+
+from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
 _APP_TITLE: Final[str] = "grid-gym HTTP API"
 _APP_VERSION: Final[str] = "0.1.0"
@@ -72,13 +80,43 @@ app: Final[FastAPI] = FastAPI(
 )
 
 
+def configure_run_repository(repository: RunRepositoryPort) -> None:
+    """Setzt das Run-Repository fuer die laufende App.
+
+    Aufrufer (uvicorn-Entry in Welle 6c, Tests) injizieren die
+    Implementation vor dem ersten Request. Die Funktion ist
+    bewusst global — `app.state` ist die einzige FastAPI-eigene
+    Persistenz-Schicht ueber Request-Grenzen hinweg.
+    """
+    app.state.run_repository = repository
+
+
+def get_run_repository(request: Request) -> RunRepositoryPort:
+    """Dependency-Provider fuer `RunRepositoryPort`.
+
+    Wirft `RuntimeError`, wenn die App nicht konfiguriert ist —
+    Endpoints muessen vor dem ersten Aufruf
+    `configure_run_repository` durchlaufen haben. Verhindert,
+    dass ein nicht konfigurierter Welle-6-Stand stillschweigend
+    nichts persistiert.
+    """
+    repository = getattr(request.app.state, "run_repository", None)
+    if repository is None:
+        raise RuntimeError(  # noqa: TRY003 — Konfigurations-Fehler, kein Domain-Fehler
+            "RunRepositoryPort is not configured. Call "
+            "grid_gym.adapters.driving.http_api.app.configure_run_repository "
+            "before serving requests."
+        )
+    return cast(RunRepositoryPort, repository)
+
+
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
 def get_health() -> HealthResponse:
     """Liveness-Probe.
 
     Antwortet immer mit `{"status": "ok"}`, solange der Prozess
     laeuft. Persistente Backend-Checks (Postgres-Erreichbarkeit
-    etc.) kommen mit Welle 6b als `/ready`-Endpoint dazu.
+    etc.) kommen mit Welle 6c als `/ready`-Endpoint dazu.
     """
     return HealthResponse(status="ok")
 
@@ -91,14 +129,27 @@ def get_health() -> HealthResponse:
 )
 def post_runs(
     request: Annotated[RunCreateRequest, ...],
+    repository: Annotated[RunRepositoryPort, Depends(get_run_repository)],
 ) -> RunCreateResponse:
-    """Legt einen neuen Lauf an (`GG-API-001`-Stub).
+    """Legt einen neuen Lauf an (`GG-API-001`).
 
-    Welle 6a generiert nur eine `run_id` per `uuid4` und echot die
-    Eingangs-Felder. Welle 6b haengt den `RunRepositoryPort` an und
-    persistiert in Postgres.
+    Welle 6b: persistiert die `RunMetadata` ueber den
+    `RunRepositoryPort`. Welle 6c bringt
+    `PostgresRunRepository` + alembic-Migration; bis dahin
+    laeuft der Endpoint gegen die In-Memory-Test-Variante.
     """
     run_id = str(uuid.uuid4())
+    metadata = RunMetadata(
+        run_id=run_id,
+        scenario_hash=request.scenario_hash,
+        schema_version="grid-gym.scenario.v1",
+        seed=request.seed,
+        tick_ms=request.tick_ms,
+        started_at="",
+        ended_at="",
+        tool_version=_APP_VERSION,
+    )
+    repository.save(metadata)
     return RunCreateResponse(
         run_id=run_id,
         scenario_hash=request.scenario_hash,
