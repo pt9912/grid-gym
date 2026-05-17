@@ -1,0 +1,34 @@
+# Integration-Test-Stack (M1 Welle 6c, Trigger 009).
+#
+# `test-runner` baut den `source`-Stage des Dockerfiles und ruft
+# pytest gegen `tests/integration/` auf. testcontainers spawnt
+# Postgres als Sibling-Container ueber den gemounteten
+# Docker-Socket — kein docker-in-docker, kein eigener Postgres-
+# Service hier (siehe `deploy/compose.yml` fuer den Production-
+# Stack).
+#
+# Aufruf: `make test-integration` (Makefile-Target, das `docker
+# compose up --abort-on-container-exit` aufruft).
+
+services:
+  test-runner:
+    build:
+      # `context: ../..` macht das Repo-Root zum Build-Context;
+      # `dockerfile: Dockerfile` ist relativ dazu.
+      context: ../..
+      dockerfile: Dockerfile
+      target: source
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/integration/
+      - -v
+    volumes:
+      # testcontainers braucht Docker-Socket-Zugriff, um ephemere
+      # Container zu spawnen.
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # testcontainers-spezifisch: erzwingt Sibling-Container-
+      # Modus (statt Docker-in-Docker).
+      TESTCONTAINERS_RYUK_DISABLED: "true"

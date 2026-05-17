@@ -64,6 +64,11 @@ COPY src/ src/
 COPY tests/ tests/
 COPY tools/ tools/
 COPY spec/ spec/
+# `alembic.ini` zeigt auf das Postgres-Adapter-Migrations-
+# Verzeichnis (`src/grid_gym/adapters/driven/persistence_postgres/
+# migrations`) und wird vom Integration-Test-Runner programmatisch
+# geladen (M1 Welle 6c).
+COPY alembic.ini ./
 # LICENSE und README.md sind in pyproject.toml ([project].license,
 # [project].readme) referenziert — hatchling braucht beide fuer den
 # editable Install im naechsten `uv sync`.

@@ -1,0 +1,58 @@
+# Production-Stack (M1 Welle 6c, Trigger 010).
+#
+# Drei Services:
+# - `postgres`: Datenbank fuer `RunRepositoryPort`-Persistenz.
+# - `api`: FastAPI-uvicorn-Server; bind auf `:8080`, healthcheck
+#   ueber `/health`.
+# - `simulation`: heute Stub-Container (M2-Geraetemodelle bringen
+#   den TickLoop-Runner). Bleibt vorerst als `sleep infinity`
+#   im Stack, damit die `make runtime`-Smoke-Stage einen
+#   Service mit `restart=on-failure` hat.
+#
+# Aufruf: `make runtime` (baut Image + ruft `docker compose up`
+# auf). `/health` wird vom Makefile gepollt, bis 200 kommt.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: grid_gym
+      POSTGRES_USER: grid_gym
+      POSTGRES_PASSWORD: grid_gym
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grid_gym"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: grid-gym-runtime:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GRID_GYM_DATABASE_URL: postgresql://grid_gym:grid_gym@postgres:5432/grid_gym
+      GRID_GYM_HOST: 0.0.0.0
+      GRID_GYM_PORT: "8080"
+    ports:
+      - "8080:8080"
+    command:
+      - uvicorn
+      - grid_gym.adapters.driving.http_api:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8080"
+
+  simulation:
+    image: grid-gym-runtime:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GRID_GYM_DATABASE_URL: postgresql://grid_gym:grid_gym@postgres:5432/grid_gym
+    # Welle 6c: kein produktiver TickLoop-Runner — M2-Geraete
+    # bringen das. `sleep infinity` haelt den Service am Leben,
+    # damit `make runtime`-Compose-Smoke ihn als running-Container
+    # findet.
+    command: ["sleep", "infinity"]
