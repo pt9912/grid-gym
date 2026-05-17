@@ -35,6 +35,7 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Final
 
 from grid_gym.hexagon.core.errors import (
+    RandomPortRangeError,
     RandomPortSnapshotInvalidBytesError,
     RandomPortSnapshotInvalidRngStateLengthError,
     RandomPortSnapshotListItemWrongTypeError,
@@ -55,7 +56,17 @@ braucht eine Folge-ADR zu `ADR 0007 §5.2`.
 
 _SUB_SEED_HEX_DIGITS: Final[int] = 16
 """Erste 16 Hex-Stellen aus SHA-256 — Sub-Seed-Wertebereich
-`0..2^64-1` (ADR 0007 §5.2)."""
+`0..2^64-1` (ADR 0007 §5.2).
+
+Birthday-Schwelle: 64-bit-Seeds kollidieren bei ~ 2^32 Sub-Ports
+mit 50 % Wahrscheinlichkeit. Realistische M1-Slice-Zahlen
+(`< 10^4` Sub-Ports pro Lauf) bleiben weit darunter
+(Kollisions-Wahrscheinlichkeit `< 10^-11`). Wenn `MLRandomPort`
+oder Multi-Agent-Setups die Sub-Port-Zahl in den Millionenbereich
+treiben, gehoert die Wortbreite in einer Folge-ADR erweitert
+(`docs/plan/planning/open/011-mlrandomport-subseed-width.md` als
+Watch-Notiz).
+"""
 
 _QUANTUM_6_PLACES: Final[Decimal] = Decimal("0.000001")
 """Quantum fuer `next_float()` (6 Nachkommastellen, `GG-DATA-005`)."""
@@ -99,7 +110,14 @@ class MersenneTwisterRandomPort:
         self._rng: _random.Random = _random.Random(seed)  # noqa: S311 — Determinismus, nicht Krypto
 
     def next_int(self, low: int, high: int) -> int:
-        """Integer in `[low, high]` (inklusive)."""
+        """Integer in `[low, high]` (inklusive).
+
+        Wirft `RandomPortRangeError` (typisiert, `AC-TYPED-ERRORS`),
+        wenn `low > high` — statt der unkategorisierten `ValueError`
+        aus `random.randint`.
+        """
+        if low > high:
+            raise RandomPortRangeError(low, high)
         return self._rng.randint(low, high)
 
     def next_float(self) -> Decimal:

@@ -143,6 +143,20 @@ class RandomPortSnapshotInvalidRngStateLengthError(RandomPortSnapshotFormatError
         super().__init__(f"snapshot key 'rng_state' must have length {expected}, got {actual}")
 
 
+class RandomPortRangeError(RandomPortError):
+    """`next_int` mit ungueltigem Intervall (`low > high`).
+
+    Konsistent zur `typed errors`-Linie (`AC-TYPED-ERRORS`): statt
+    der `ValueError` aus `random.randint` faengt der Adapter den
+    Programmierfehler typisiert ab. Untergrenze und Obergrenze
+    werden mitgeschickt, damit Aufrufer in Logs sehen, woher die
+    Vertauschung kam.
+    """
+
+    def __init__(self, low: int, high: int) -> None:
+        super().__init__(f"next_int requires low <= high, got low={low}, high={high}")
+
+
 class UnexpectedGaussNextError(RandomPortError):
     """`random.Random.getstate()` lieferte einen non-`None` `gauss_next`.
 

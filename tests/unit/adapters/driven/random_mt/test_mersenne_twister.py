@@ -21,6 +21,7 @@ from hypothesis import strategies as st
 
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.errors import (
+    RandomPortRangeError,
     RandomPortSnapshotInvalidBytesError,
     RandomPortSnapshotInvalidRngStateLengthError,
     RandomPortSnapshotListItemWrongTypeError,
@@ -70,6 +71,21 @@ def test_same_seed_same_next_float_sequence(seed: int) -> None:
     a = MersenneTwisterRandomPort(seed)
     b = MersenneTwisterRandomPort(seed)
     assert [a.next_float() for _ in range(50)] == [b.next_float() for _ in range(50)]
+
+
+def test_next_int_rejects_inverted_range_typed() -> None:
+    """`low > high` ist Programmierfehler — typisiert via
+    `RandomPortRangeError`, nicht ueber `ValueError` aus
+    `random.randint`."""
+    port = MersenneTwisterRandomPort(seed=42)
+    with pytest.raises(RandomPortRangeError):
+        port.next_int(10, 0)
+
+
+def test_next_int_accepts_equal_low_and_high() -> None:
+    """`low == high` ist gueltig — einziges Ergebnis."""
+    port = MersenneTwisterRandomPort(seed=42)
+    assert port.next_int(7, 7) == 7
 
 
 def test_next_float_is_decimal_with_6_decimal_places() -> None:
