@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 In Progress
-**Stand:** 2026-05-17 (M1 Welle 0..6d abgeschlossen — M1-Abschluss-Gate erreicht; M2..M6 vorbelegt)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 abgeschlossen
+**Stand:** 2026-05-17 (M1 `Done` mit Welle 0..7; M2..M6 vorbelegt, naechster aktiver Slice ist M2)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -16,10 +16,13 @@ mit `M[N]`-Markern.
 
 `GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
 (`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
-2026-05-15 `In Progress` — Details im
-[Slice-Plan](M1-tick-loop-spine.md). M2..M6 sind vorbelegt
-(Scope-Skizze hier, aktive Slice-Plaene wandern bei Aktivierung
-nach `next/` bzw. `in-progress/`).
+2026-05-17 `Done` — Closure-Notiz in
+[`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md) +
+Welle-Tabelle in
+[`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
+M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
+wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
+Naechster aktiver Slice: M2 (Geraetemodelle).
 
 ---
 
@@ -44,7 +47,7 @@ nach `next/` bzw. `in-progress/`).
 
 ## 3. Meilensteine
 
-### M1 — Tick-Loop-Spine
+### M1 — Tick-Loop-Spine (`Done`)
 
 - **Lieferziel:** deterministischer Tick-Loop ohne Geraete:
   `ClockPort` (Driven), `RandomPort` (Driven, eigener ADR),
@@ -90,11 +93,14 @@ nach `next/` bzw. `in-progress/`).
         `CRITICAL_COV_TARGETS`-Override (Default-Gate haengt an
         M2-`devices/battery`, siehe Abnahme-Hinweis unten)
         (2026-05-17).
-  - [ ] Welle 7 — Closure-Notiz `done/M1-tick-loop-spine.md`,
-        Trigger-Status-Check (005/006/008 aus `open/`), Roadmap-
-        Vorbelegung fuer M2 verfeinert.
-  - [ ] M1 als Ganzes auf Status `Done` gehoben und nach `done/`
-        gewandert.
+  - [x] Welle 7 — Closure-Notiz
+        [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
+        + Welle-Tabelle in
+        [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md);
+        Triggers 009 + 010 nach `done/`, Trigger 015 (Production-
+        Image-Hardening) in `open/` (2026-05-17).
+  - [x] M1 als Ganzes auf Status `Done` gehoben und Slice-Plan
+        nach `done/` gewandert (2026-05-17).
 - **Abnahme-Hinweis:** Default-`make gates` (ohne
   `CRITICAL_COV_TARGETS`-Override) bleibt rot, solange
   `devices/battery` als Default-Critical-Target fehlt. Das ist
@@ -102,9 +108,10 @@ nach `next/` bzw. `in-progress/`).
   Box „Welle 6d" akzeptiert den expliziten Override-Pfad als
   M1-Abschluss. Volle Default-Gruen-Linie schliesst M2 (siehe
   M2-DoD).
-- **Status:** In Progress — Slice-Plan
-  [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md) aktiv;
-  Welle 6d und 7 stehen aus.
+- **Status:** Done (2026-05-17) — Closure-Notiz
+  [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md),
+  Welle-Tabelle
+  [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 
 ### M2 — Geraetemodelle (Vorbelegung)
 
