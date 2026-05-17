@@ -181,6 +181,12 @@ class MersenneTwisterRandomPort:
         Wirft `UnexpectedGaussNextError` defensiv — wird sowohl
         von `snapshot()` als auch `snapshot_as_mapping()` durchlaufen,
         sodass beide Pfade gleichermassen geschuetzt sind.
+
+        `sub_path` und `rng_state` werden bewusst als `list[...]`
+        emittiert (nicht `tuple`), damit
+        `random.snapshot_as_mapping() == json.loads(canonical_json(
+        random.snapshot_as_mapping()))` strukturell gilt — Pflicht
+        aus `ADR 0010` §2 (Protocol-Docstring).
         """
         rng_version, rng_state, gauss_next = self._rng.getstate()
         if gauss_next is not None:

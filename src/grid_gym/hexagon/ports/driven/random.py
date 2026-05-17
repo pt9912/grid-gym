@@ -92,6 +92,14 @@ class RandomPort(Protocol):
         port.snapshot()` gilt — d. h. beide Methoden lesen aus
         derselben internen Quelle (`_build_payload()`-Pattern).
 
+        **Sequenz-Felder MUESSEN strukturell als `list[...]`
+        typisiert sein** (nicht `tuple`), damit ein
+        `==`-Vergleich gegen ein per `canonical_json` + `json.
+        loads` rekonstruiertes Mapping symmetrisch bleibt
+        (`TickLoop.from_snapshot` nutzt das fuer
+        `TickLoopSnapshotRandomMismatchError`). `tuple`-Felder
+        wuerden den Mismatch-Check still kollabieren lassen.
+
         Diese Methode ist die Composition-API fuer den
         `SnapshotEnvelope`; `snapshot()` bleibt fuer
         Disk-Persistenz und Resume.

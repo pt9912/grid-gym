@@ -34,6 +34,7 @@ from typing import Final
 
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import (
+    TickLoopInvalidTickMsError,
     TickLoopSnapshotClockMismatchError,
     TickLoopSnapshotMissingKeysError,
     TickLoopSnapshotRandomMismatchError,
@@ -72,6 +73,11 @@ class TickLoop:
         random: RandomPort,
         scheduler: Scheduler,
     ) -> None:
+        if tick_ms <= 0:
+            # Format-Validierung am Konstruktor. Policy-Validierung
+            # (Whitelist 10/100/1000 per `GG-SIM-002`) ist Welle-5-
+            # Scenario-Loader-Verantwortung.
+            raise TickLoopInvalidTickMsError(tick_ms)
         self._run_id: str = run_id
         self._tick_ms: int = tick_ms
         self._clock: ClockPort = clock
@@ -157,6 +163,19 @@ class TickLoop:
 
         Der `Scheduler` wird intern aus
         `state['sub_snapshots']['scheduler']` rekonstruiert.
+
+        Bewusste Asymmetrie zwischen `clock`/`random` (extern
+        injiziert) und `scheduler` (intern rekonstruiert):
+        `clock` und `random` sind **Peer-Ports** mit eigenem
+        Persistenz-Pfad — `MersenneTwisterRandomPort` haelt seinen
+        State auch in Disk-canonical-Bytes, `ClockPort` ist je nach
+        Implementation auf wallclock-/setup-spezifische Restore-
+        Schritte angewiesen. Der `Scheduler` dagegen ist
+        **Sub-Subsystem** des TickLoops: sein Snapshot lebt
+        strukturell in `state['sub_snapshots']['scheduler']` und
+        hat ausser dem TickLoop keinen externen Persistenz-Konsumenten.
+        Composition-intern erspart das Aufrufern einen redundanten
+        Resume-Schritt.
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:

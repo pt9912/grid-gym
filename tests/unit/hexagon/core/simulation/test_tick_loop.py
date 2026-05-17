@@ -20,6 +20,7 @@ import pytest
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.domain.event import Event
 from grid_gym.hexagon.core.errors import (
+    TickLoopInvalidTickMsError,
     TickLoopSnapshotClockMismatchError,
     TickLoopSnapshotMissingKeysError,
     TickLoopSnapshotRandomMismatchError,
@@ -70,6 +71,28 @@ def _build_loop(
 # ---------------------------------------------------------------------------
 # Tick-Semantik
 # ---------------------------------------------------------------------------
+
+
+def test_constructor_rejects_zero_tick_ms_typed() -> None:
+    with pytest.raises(TickLoopInvalidTickMsError):
+        TickLoop(
+            run_id="r",
+            tick_ms=0,
+            clock=FakeClock(),
+            random=MersenneTwisterRandomPort(seed=0),
+            scheduler=Scheduler(),
+        )
+
+
+def test_constructor_rejects_negative_tick_ms_typed() -> None:
+    with pytest.raises(TickLoopInvalidTickMsError):
+        TickLoop(
+            run_id="r",
+            tick_ms=-100,
+            clock=FakeClock(),
+            random=MersenneTwisterRandomPort(seed=0),
+            scheduler=Scheduler(),
+        )
 
 
 def test_tick_count_starts_at_zero_and_increments() -> None:

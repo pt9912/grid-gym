@@ -247,6 +247,19 @@ class TickLoopError(GridGymError):
     """Wurzel der `TickLoop`-Vertragsverletzungen (`GG-SIM-001`)."""
 
 
+class TickLoopInvalidTickMsError(TickLoopError):
+    """`TickLoop.__init__` mit nicht-positivem `tick_ms`.
+
+    `GG-SIM-002` erlaubt 10/100/1000 ms (Policy-Whitelist beim
+    Scenario-Loader); der Konstruktor prueft minimal `tick_ms > 0`,
+    damit `clock.advance(tick_ms)` nicht versehentlich
+    rueckwaerts laeuft.
+    """
+
+    def __init__(self, value: int) -> None:
+        super().__init__(f"tick_ms must be positive, got {value}")
+
+
 class TickLoopSnapshotFormatError(TickLoopError):
     """Wurzel der TickLoop-Snapshot-Format-Vertragsverletzungen.
 
