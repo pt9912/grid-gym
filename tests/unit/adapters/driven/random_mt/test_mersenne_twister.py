@@ -186,6 +186,52 @@ def test_snapshot_is_canonical_json_bytes() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Composition-Methode `snapshot_as_mapping` (`ADR 0010`)
+# ---------------------------------------------------------------------------
+
+
+def test_snapshot_as_mapping_is_dict_with_pflicht_keys() -> None:
+    """`snapshot_as_mapping` liefert ein dict mit dem Pflicht-
+    Schluesselsatz aus `ADR 0009 §2`."""
+    port = MersenneTwisterRandomPort(seed=42)
+    payload = port.snapshot_as_mapping()
+    assert isinstance(payload, dict)
+    assert set(payload.keys()) == {
+        "version",
+        "seed",
+        "sub_path",
+        "rng_version",
+        "rng_state",
+    }
+
+
+def test_snapshot_as_mapping_matches_canonical_json_snapshot() -> None:
+    """`ADR 0010` Single-Source-of-Truth-Invariante:
+    `canonical_json(snapshot_as_mapping()) == snapshot()`."""
+    port = MersenneTwisterRandomPort(seed=42)
+    # Konsumiere ein paar Werte, damit der State nicht trivial ist.
+    for _ in range(7):
+        port.next_int(0, 1000)
+    assert canonical_json(port.snapshot_as_mapping()) == port.snapshot()
+
+
+def test_snapshot_as_mapping_carries_sub_path_for_sub_ports() -> None:
+    parent = MersenneTwisterRandomPort(seed=42)
+    sub = parent.sub_port("scheduler").sub_port("agents")
+    payload = sub.snapshot_as_mapping()
+    assert payload["sub_path"] == ["scheduler", "agents"]
+
+
+def test_snapshot_as_mapping_raises_on_unexpected_gauss_next() -> None:
+    """`_build_payload` ist Shared-Code — `snapshot_as_mapping`
+    erbt die gauss_next-Defensive von `snapshot`."""
+    port = MersenneTwisterRandomPort(seed=42)
+    port._rng.gauss(0.0, 1.0)
+    with pytest.raises(UnexpectedGaussNextError):
+        port.snapshot_as_mapping()
+
+
+# ---------------------------------------------------------------------------
 # AC6 — Hoch-Volumen-Determinismus (canonical-Strings byte-identisch)
 # ---------------------------------------------------------------------------
 

@@ -13,6 +13,7 @@ Welle 2 liefert das Protocol und die konkrete
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from decimal import Decimal
 from typing import Protocol
 
@@ -66,16 +67,33 @@ class RandomPort(Protocol):
 
     def snapshot(self) -> bytes:
         """Serialisiert den internen Zustand als UTF-8-Bytes im
-        `canonical_json`-Format (`ADR 0007 §5.2`).
+        `canonical_json`-Format (`ADR 0007 §5.2`, Snapshot-Schema
+        per `ADR 0009`).
 
         Enthaelt mindestens: `version: int`, `seed`, `sub_path`,
-        `state` (Mersenne-Twister-Tupel). Der `version`-Schluessel
-        folgt der M1-Welle-1-Konvention aus `SnapshotEnvelope`
-        (jedes Sub-Snapshot-Dokument traegt `version: int`).
+        `rng_version`, `rng_state`. Der `version`-Schluessel folgt
+        der M1-Welle-1-Konvention aus `SnapshotEnvelope` (jedes
+        Sub-Snapshot-Dokument traegt `version: int`).
 
         Der Resume-Konstruktor `from_snapshot` lebt am konkreten
         Adapter (`adapters/driven/random_mt`), nicht hier —
         `AC-PORTS-NO-OUT` verbietet `ports → adapters`-Importe. Bei
-        ADR-0007-Acceptance wird §5.1 entsprechend geschaerft.
+        ADR-0007-Acceptance wurde §5.1 entsprechend geschaerft.
+        """
+        ...  # pragma: no cover — Protocol-Stub
+
+    def snapshot_as_mapping(self) -> Mapping[str, object]:
+        """Liefert den State im `SnapshotEnvelope`-tauglichen
+        Mapping-Format (`ADR 0010`).
+
+        Pflicht-Schluesselsatz identisch zu `snapshot()` (siehe
+        `ADR 0009 §2`). Implementations MUESSEN sicherstellen,
+        dass `canonical_json(port.snapshot_as_mapping()) ==
+        port.snapshot()` gilt — d. h. beide Methoden lesen aus
+        derselben internen Quelle (`_build_payload()`-Pattern).
+
+        Diese Methode ist die Composition-API fuer den
+        `SnapshotEnvelope`; `snapshot()` bleibt fuer
+        Disk-Persistenz und Resume.
         """
         ...  # pragma: no cover — Protocol-Stub

@@ -40,7 +40,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random as _random
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Final
@@ -154,24 +154,44 @@ class MersenneTwisterRandomPort:
         return MersenneTwisterRandomPort(sub_seed, sub_path=(*self._sub_path, name))
 
     def snapshot(self) -> bytes:
-        """Serialisiert den State als `canonical_json`-Bytes.
+        """Serialisiert den State als `canonical_json`-Bytes
+        (Disk-Persistenz, Resume; `ADR 0009 §2`-Schema).
 
-        Schema siehe Modul-Docstring. Wirft
-        `UnexpectedGaussNextError`, falls `gauss_next` nicht `None`
-        ist — `next_int`/`next_float` setzen das nie, daher ist
-        ein Non-`None`-Wert ein Hinweis auf externe Manipulation.
+        Wirft `UnexpectedGaussNextError`, falls `gauss_next` nicht
+        `None` ist — `next_int`/`next_float` setzen das nie, daher
+        ist ein Non-`None`-Wert ein Hinweis auf externe
+        Manipulation.
+        """
+        return canonical_json(self._build_payload())
+
+    def snapshot_as_mapping(self) -> Mapping[str, object]:
+        """Liefert den State im `SnapshotEnvelope`-tauglichen
+        Mapping-Format (`ADR 0010`).
+
+        Single-Source-of-Truth-Konstruktion ueber
+        `_build_payload()` — `canonical_json(snapshot_as_mapping())
+        == snapshot()` gilt by-construction.
+        """
+        return self._build_payload()
+
+    def _build_payload(self) -> dict[str, object]:
+        """Einzige Konstruktion des Snapshot-Schemas (`ADR 0010 §3`,
+        Schema-Definition `ADR 0009 §2`).
+
+        Wirft `UnexpectedGaussNextError` defensiv — wird sowohl
+        von `snapshot()` als auch `snapshot_as_mapping()` durchlaufen,
+        sodass beide Pfade gleichermassen geschuetzt sind.
         """
         rng_version, rng_state, gauss_next = self._rng.getstate()
         if gauss_next is not None:
             raise UnexpectedGaussNextError(type(gauss_next).__name__)
-        payload: dict[str, object] = {
+        return {
             "version": _SNAPSHOT_VERSION,
             "seed": self._seed,
             "sub_path": list(self._sub_path),
             "rng_version": rng_version,
             "rng_state": list(rng_state),
         }
-        return canonical_json(payload)
 
     @classmethod
     def from_snapshot(cls, state: bytes) -> MersenneTwisterRandomPort:
