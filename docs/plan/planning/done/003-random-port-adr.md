@@ -69,11 +69,37 @@ angefasst werden darf.
 
 ## Aktivierungs-Kriterium (erfuellt)
 
-Mit M1 Welle 2 (Domain-Slice mit Zufallsverbrauch im Tick-Loop-
-Scheduler) aktiviert; in der gleichen Welle abgearbeitet.
+Aktivierung erfolgte mit M1 Welle 2 durch den
+**Validierungs-Spike-Vertrag aus ADR 0007 §4a** (AC1-AC6
+gruen) — also durch die Bereitstellung von Port-Protocol,
+Adapter-Implementation und Snapshot-Vertrag, nicht durch
+produktive Nutzung im Tick-Loop. Die produktive Inanspruchnahme
+(`RandomPort` im Scheduler-Tie-Breaking, in der Geraete-
+Initialisierung, in Fault-Sequenzen) folgt in:
+
+- **Welle 3** (`Scheduler` mit Tie-Breaking
+  `(time, priority, source, sequence, event_id)`,
+  `GG-ARCH-006`): einer der Tie-Breaking-Inputs (`sequence`)
+  kann aus dem `RandomPort` kommen, sofern Event-Source kein
+  eigenes Counter-Schema mitbringt.
+- **Welle 4** (`TickLoop` + Snapshot, `GG-SIM-005`):
+  `RandomPort.snapshot()` wird als Sub-Snapshot in den
+  `SnapshotEnvelope` aufgenommen — die `version: int`-Konvention
+  aus Welle-1-`SnapshotEnvelope` und das `rng_state`/
+  `rng_version`-Feld-Layout aus `MersenneTwisterRandomPort.
+  snapshot()` greifen dort ineinander.
+- **Welle 5+** (Scenario, Replay, Devices): Verbrauch durch
+  Geraete-Initialisierung und Fault-Injection.
+
+Frueher in dieser Notiz stand „Mit M1 Welle 2 (Domain-Slice mit
+Zufallsverbrauch im Tick-Loop-Scheduler) aktiviert" — das war
+unpraezise: Welle 2 hat den `RandomPort` bereitgestellt und
+validiert (`§4a`-Spike), aber der Scheduler-Tick-Loop kommt erst
+in Welle 3/4. Die ADR-Acceptance haengt am Spike-Vertrag, nicht
+an einer produktiven Inanspruchnahme.
 
 ## Wandert nach
 
-`done/` (jetzt). Keine weiteren Folge-Schritte — `MLRandomPort`
-und `AsyncRandomPort` sind eigene Folge-ADRs in spaeteren Slices
-(siehe `ADR 0007 §6`).
+`done/` (jetzt). Keine weiteren Folge-Schritte zur Acceptance —
+`MLRandomPort` und `AsyncRandomPort` sind eigene Folge-ADRs in
+spaeteren Slices (siehe `ADR 0007 §6`).
