@@ -11,17 +11,16 @@ Validator sieht nur strukturelle Maps. Damit bleibt
 (`docs/user/code-review.md` §3.5).
 
 **Payload-Vertrag** (`ScenarioDevice.params`, `ScenarioEvent.payload`,
-`ScenarioFault.payload`): Welle 5 prueft hier nur die strukturelle
-`Mapping`-Form, NICHT die Werte rekursiv. `loader.py` hashed das
-Szenario anschliessend per `canonical_json(asdict(scenario))` —
-nicht-canonical-faehige Werte (insbesondere `float`) loesen dort
-`FloatNotAllowedError` aus dem Encoder aus, NICHT eine
-`Scenario*Error`-Subklasse. Aufrufer, die mit unkontrolliertem
-Payload-Input arbeiten (z. B. YAML-Adapter mit `yaml.safe_load`,
-das Floats produziert), MUESSEN am Adapter-Rand Decimal-
-Konvertierung erzwingen. Pattern-Drift zur Scheduler-Boundary
-(Welle-3-Review S2 hat dort eager-canonical eingefuehrt) ist im
-Folge-Trigger 014 als Vereinheitlichungs-Punkt vorgemerkt.
+`ScenarioFault.payload`): seit M2 Welle 0a (Trigger 014) prueft der
+Validator rekursiv via
+`hexagon/core/serialization/snapshot_codec.py::assert_payload_canonical_compatible`,
+dass alle Payload-Werte canonical-kompatibel sind. Float-, Bytes- oder
+Komplexzahlen-Injection vom YAML-Adapter wirft jetzt typisiert
+`WrongTypeError(subsystem="scenario", ...)` (Subklasse von
+`SnapshotFormatError` und via `ScenarioSchemaError` auch von
+`ScenarioError`), nicht mehr `FloatNotAllowedError` aus dem
+Hash-Encoder. Pattern-Drift zur Scheduler-Boundary (Welle-3-Review S2)
+ist mit Trigger 014 geschlossen.
 """
 
 from __future__ import annotations
@@ -37,6 +36,9 @@ from grid_gym.hexagon.core.errors import (
     ScenarioUnsupportedSchemaVersionError,
     ScenarioUnsupportedTimeMappingError,
     ScenarioWrongTypeError,
+)
+from grid_gym.hexagon.core.serialization.snapshot_codec import (
+    assert_payload_canonical_compatible,
 )
 
 SUPPORTED_SCHEMA_VERSION: Final[str] = "grid-gym.scenario.v1"
@@ -150,6 +152,11 @@ def _assert_device_list(raw: Mapping[str, object]) -> list[Mapping[str, object]]
             raise ScenarioWrongTypeError(
                 f"devices[{index}].params", "Mapping", type(params).__name__
             )
+        # Payload-Canonical-Check (M2 Welle 0a, Trigger 014): faengt
+        # Float-/Bytes-Injection vom YAML-Adapter typisiert ab, bevor
+        # `canonical_json` in `loader.py::compute_scenario_hash` mit
+        # `FloatNotAllowedError` aus dem Encoder bricht.
+        assert_payload_canonical_compatible(params, "scenario", f"devices[{index}].params")
         device_id = entry["id"]
         # `_assert_str` oben hat den Typ bereits geprueft.
         if not isinstance(device_id, str):  # pragma: no cover
@@ -180,6 +187,7 @@ def _assert_event_list(raw: Mapping[str, object], devices: list[Mapping[str, obj
             raise ScenarioWrongTypeError(
                 f"events[{index}].payload", "Mapping", type(payload).__name__
             )
+        assert_payload_canonical_compatible(payload, "scenario", f"events[{index}].payload")
         target = entry["target"]
         if not isinstance(target, str):  # pragma: no cover
             raise ScenarioWrongTypeError(f"events[{index}].target", "str", type(target).__name__)
@@ -224,4 +232,5 @@ def _assert_fault_list(raw: Mapping[str, object]) -> None:
             raise ScenarioWrongTypeError(
                 f"faults[{index}].payload", "Mapping", type(payload).__name__
             )
+        assert_payload_canonical_compatible(payload, "scenario", f"faults[{index}].payload")
         _assert_str(entry, f"faults[{index}].recovery")

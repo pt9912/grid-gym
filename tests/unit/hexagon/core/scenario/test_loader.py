@@ -22,6 +22,8 @@ from grid_gym.hexagon.core.errors import (
     ScenarioUnsupportedSchemaVersionError,
     ScenarioUnsupportedTimeMappingError,
     ScenarioWrongTypeError,
+    SnapshotFormatError,
+    WrongTypeError,
 )
 from grid_gym.hexagon.core.scenario.loader import load_scenario
 
@@ -279,3 +281,50 @@ def test_load_scenario_rejects_fault_missing_recovery() -> None:
     del fault["recovery"]
     with pytest.raises(ScenarioMissingKeysError):
         load_scenario(mapping)
+
+
+# ---------------------------------------------------------------------------
+# Payload-Canonical-Check (M2 Welle 0a, Trigger 014)
+# ---------------------------------------------------------------------------
+
+
+def test_load_scenario_rejects_float_in_device_params() -> None:
+    mapping = _minimal_mapping()
+    devices = mapping["devices"]
+    assert isinstance(devices, list)
+    device = devices[0]
+    assert isinstance(device, dict)
+    device["params"] = {"soc_pct": 50.5}
+    with pytest.raises(WrongTypeError) as exc_info:
+        load_scenario(mapping)
+    assert exc_info.value.subsystem == "scenario"
+    assert "devices[0].params.soc_pct" in str(exc_info.value)
+    assert "got float" in str(exc_info.value)
+    assert isinstance(exc_info.value, SnapshotFormatError)
+
+
+def test_load_scenario_rejects_float_in_event_payload() -> None:
+    mapping = _full_mapping()
+    events = mapping["events"]
+    assert isinstance(events, list)
+    event = events[0]
+    assert isinstance(event, dict)
+    event["payload"] = {"setpoint_kw": 100.0}
+    with pytest.raises(WrongTypeError) as exc_info:
+        load_scenario(mapping)
+    assert exc_info.value.subsystem == "scenario"
+    assert "events[0].payload.setpoint_kw" in str(exc_info.value)
+
+
+def test_load_scenario_rejects_bytes_in_fault_payload() -> None:
+    mapping = _full_mapping()
+    faults = mapping["faults"]
+    assert isinstance(faults, list)
+    fault = faults[0]
+    assert isinstance(fault, dict)
+    fault["payload"] = {"raw": b"\x00\x01"}
+    with pytest.raises(WrongTypeError) as exc_info:
+        load_scenario(mapping)
+    assert exc_info.value.subsystem == "scenario"
+    assert "faults[0].payload.raw" in str(exc_info.value)
+    assert "got bytes" in str(exc_info.value)

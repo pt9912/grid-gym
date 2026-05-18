@@ -23,6 +23,103 @@ class GridGymError(Exception):
 
 
 # ---------------------------------------------------------------------------
+# Generischer Snapshot-/Format-Codec (M2 Welle 0a, Trigger 014)
+# ---------------------------------------------------------------------------
+#
+# Wurzel-Basis fuer alle strukturellen Format-Fehler (Snapshot, Schema,
+# Replay-Parse) im Repo. Die fuenf M1-Per-Subsystem-Roots
+# (`RandomPortSnapshotFormatError`, `SchedulerSnapshotFormatError`,
+# `TickLoopSnapshotFormatError`, `ScenarioSchemaError`,
+# `ReplayParseError`) erben via Multi-Inheritance von `SnapshotFormatError`,
+# damit Aufrufer typisiert auf der Generic-Ebene catchen koennen, ohne
+# pro Subsystem isinstance-Listen pflegen zu muessen. Bestehende Leaf-
+# Klassen behalten ihre Konstruktor-Signatur und Message-Form
+# byte-identisch — `subsystem` wird in der jeweiligen Per-Subsystem-Root
+# vorbelegt und in der Instanz als `e.subsystem`-Attribut nachgewiesen.
+#
+# Neue Subsysteme (M2-Geraete) erben direkt von den generischen Kategorien
+# (`MissingKeysError`, `WrongTypeError`, ...) oder konstruieren sie
+# direkt mit `subsystem=...`.
+
+
+class SnapshotFormatError(GridGymError):
+    """Generische Wurzel fuer Format-/Strukturfehler in Snapshots, Schemas
+    und Parse-Pfaden.
+
+    `subsystem` traegt den Identifier des Codecs (z. B. `"random_port"`,
+    `"scheduler"`, `"tick_loop"`, `"scenario"`, `"replay"`, neue
+    M2-Geraete-Subsysteme wie `"battery"`, `"grid_model"`). Aufrufer
+    pruefen typisiert (`isinstance(e, SnapshotFormatError)`) oder
+    feingranular ueber Kategorie (`MissingKeysError`, `WrongTypeError`,
+    ...). Welle-Inhalt: M2 Welle 0a (Trigger 014).
+    """
+
+    subsystem: str
+    """Identifier des Codecs/Subsystems, der den Fehler ausgeloest hat."""
+
+    def __init__(self, subsystem: str, message: str) -> None:
+        self.subsystem = subsystem
+        super().__init__(message)
+
+
+class MissingKeysError(SnapshotFormatError):
+    """Pflicht-Keys fehlen in einem Mapping.
+
+    Generic — neue Subsysteme nutzen das direkt. Bestehende M1-Subklassen
+    (`RandomPortSnapshotMissingKeysError`, `SchedulerSnapshotMissingKeysError`,
+    `TickLoopSnapshotMissingKeysError`, `ScenarioMissingKeysError`)
+    bleiben als typisierte Aliasse mit pre-belegtem `subsystem` erhalten.
+    """
+
+    def __init__(self, subsystem: str, missing: list[str]) -> None:
+        super().__init__(subsystem, f"missing snapshot keys: {sorted(missing)}")
+
+
+class WrongTypeError(SnapshotFormatError):
+    """Ein Key hat den falschen Typ.
+
+    Generic — neue Subsysteme nutzen das direkt. Bestehende M1-Subklassen
+    (`RandomPortSnapshotWrongTypeError`, `SchedulerSnapshotWrongTypeError`,
+    `TickLoopSnapshotWrongTypeError`, `ScenarioWrongTypeError`) bleiben
+    erhalten.
+    """
+
+    def __init__(self, subsystem: str, key: str, expected: str, actual: str) -> None:
+        super().__init__(subsystem, f"snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class ListItemWrongTypeError(SnapshotFormatError):
+    """Ein Element in einer Snapshot-Liste hat den falschen Typ.
+
+    Generic; bestehende `RandomPortSnapshotListItemWrongTypeError` bleibt
+    Alias.
+    """
+
+    def __init__(self, subsystem: str, key: str, index: int, expected: str, actual: str) -> None:
+        super().__init__(
+            subsystem,
+            f"snapshot key {key!r}[{index}] must be {expected}, got {actual}",
+        )
+
+
+class VersionError(SnapshotFormatError):
+    """Snapshot/Schema traegt eine unbekannte `version`.
+
+    Generic; bestehende `RandomPortVersionError`, `SchedulerSnapshotVersionError`,
+    `TickLoopSnapshotVersionError`, `ScenarioUnsupportedSchemaVersionError`
+    sind heute Geschwister-Klassen unter ihren Subsystem-Roots — sie
+    bleiben dort, weil ihre Konstruktor-Signaturen voneinander abweichen.
+    Neue M2-Subsysteme nutzen diese Basis direkt.
+    """
+
+    def __init__(self, subsystem: str, expected: object, found: object) -> None:
+        super().__init__(
+            subsystem,
+            f"unsupported {subsystem} snapshot version: expected {expected!r}, got {found!r}",
+        )
+
+
+# ---------------------------------------------------------------------------
 # Snapshot-Envelope-Vertrag (`hexagon.core.domain.snapshot`)
 # ---------------------------------------------------------------------------
 
@@ -84,7 +181,7 @@ class RandomPortVersionError(RandomPortError):
         )
 
 
-class RandomPortSnapshotFormatError(RandomPortError):
+class RandomPortSnapshotFormatError(RandomPortError, SnapshotFormatError):
     """Snapshot-Bytes sind strukturell nicht parsebar oder Pflicht-
     Keys fehlen / haben falsche Typen.
 
@@ -92,7 +189,14 @@ class RandomPortSnapshotFormatError(RandomPortError):
     schon nicht als JSON-Objekt durchgehen. Konkrete Auspraegungen
     folgen als Subklassen — Aufrufer pruefen typisiert, nicht ueber
     Message-String-Matching.
+
+    Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
+    Trigger 014): Aufrufer koennen typisiert auch auf der generischen
+    Ebene catchen. `subsystem` ist auf `"random_port"` vorbelegt.
     """
+
+    def __init__(self, message: str) -> None:
+        SnapshotFormatError.__init__(self, "random_port", message)
 
 
 class RandomPortSnapshotInvalidBytesError(RandomPortSnapshotFormatError):
@@ -195,13 +299,19 @@ class SchedulerDuplicateEventIdError(SchedulerError):
         super().__init__(f"duplicate event_id in scheduler queue: {event_id!r}")
 
 
-class SchedulerSnapshotFormatError(SchedulerError):
+class SchedulerSnapshotFormatError(SchedulerError, SnapshotFormatError):
     """Wurzel der Snapshot-Format-Vertragsverletzungen am `Scheduler`.
 
     Auspraegungen als Subklassen — Aufrufer pruefen typisiert,
     nicht ueber Message-String-Matching. Spiegelt das Pattern aus
     `RandomPortSnapshotFormatError` (`ADR 0009`).
+
+    Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
+    Trigger 014); `subsystem` ist auf `"scheduler"` vorbelegt.
     """
+
+    def __init__(self, message: str) -> None:
+        SnapshotFormatError.__init__(self, "scheduler", message)
 
 
 class SchedulerSnapshotMissingKeysError(SchedulerSnapshotFormatError):
@@ -260,14 +370,18 @@ class TickLoopInvalidTickMsError(TickLoopError):
         super().__init__(f"tick_ms must be positive, got {value}")
 
 
-class TickLoopSnapshotFormatError(TickLoopError):
+class TickLoopSnapshotFormatError(TickLoopError, SnapshotFormatError):
     """Wurzel der TickLoop-Snapshot-Format-Vertragsverletzungen.
 
     Auspraegungen als Subklassen — Pattern-konsistent zu
     `SchedulerSnapshotFormatError` und
-    `RandomPortSnapshotFormatError`. Trigger 012 markiert die
-    Generalisierung dieses Patterns als Folgearbeit.
+    `RandomPortSnapshotFormatError`. Generalisierung als Trigger 014
+    in M2 Welle 0a abgeschlossen — Multi-Inheritance von
+    `SnapshotFormatError`, `subsystem` ist auf `"tick_loop"` vorbelegt.
     """
+
+    def __init__(self, message: str) -> None:
+        SnapshotFormatError.__init__(self, "tick_loop", message)
 
 
 class TickLoopSnapshotMissingKeysError(TickLoopSnapshotFormatError):
@@ -336,12 +450,18 @@ class ScenarioError(GridGymError):
     (`GG-SCN-008`)."""
 
 
-class ScenarioSchemaError(ScenarioError):
+class ScenarioSchemaError(ScenarioError, SnapshotFormatError):
     """Wurzel der Schema-Format-Verstoesse beim Loader-Eingang.
 
     Subklassen tragen den konkreten Verstoss; Aufrufer pruefen
     typisiert, nicht ueber Message-String-Matching.
+
+    Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
+    Trigger 014); `subsystem` ist auf `"scenario"` vorbelegt.
     """
+
+    def __init__(self, message: str) -> None:
+        SnapshotFormatError.__init__(self, "scenario", message)
 
 
 class ScenarioMissingKeysError(ScenarioSchemaError):
@@ -420,8 +540,15 @@ class ReplayError(GridGymError):
     """Wurzel der `Replay`-Vertragsverletzungen (`GG-REPLAY-001..007`)."""
 
 
-class ReplayParseError(ReplayError):
-    """Wurzel der Replay-Format-Verstoesse beim Mapper-Eingang."""
+class ReplayParseError(ReplayError, SnapshotFormatError):
+    """Wurzel der Replay-Format-Verstoesse beim Mapper-Eingang.
+
+    Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
+    Trigger 014); `subsystem` ist auf `"replay"` vorbelegt.
+    """
+
+    def __init__(self, message: str) -> None:
+        SnapshotFormatError.__init__(self, "replay", message)
 
 
 class ReplayMissingFieldError(ReplayParseError):
