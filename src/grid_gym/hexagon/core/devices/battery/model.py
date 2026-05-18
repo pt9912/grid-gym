@@ -81,8 +81,6 @@ _ZERO = Decimal(0)
 _HUNDRED = Decimal(100)
 _QUANTUM = Decimal("0.000001")
 """GG-DATA-005-Soll: max. 6 Nachkommastellen in Telemetrie."""
-_TICK_MS_PER_HOUR = Decimal(1000 * 3600)
-"""1 Stunde = 3 600 000 ms (Decimal-Konstante fuer Energie-Umrechnung)."""
 
 _SUBSYSTEM = "battery"
 _BATTERY_SOURCE = "battery"
@@ -209,9 +207,13 @@ class BatteryDevice:  # noqa: PLR0904 — Protocol-Surface plus Welle-2-Review-H
             return self._tick_in_context(context)
 
     def _tick_in_context(self, context: DeviceTickContext) -> DeviceTickOutcome:
+        # Welle-2-Review L-5: `dt_hours = dt_seconds / 3600` explizit
+        # (statt zwei unabhaengiger Quotienten aus `context.tick_ms`).
+        # Welle 3+ Geraete kopieren das Muster; eine einzige
+        # Definitionsquelle vermeidet Drift.
         config = cast(BatteryConfig, self._config)
         dt_seconds = Decimal(context.tick_ms) / Decimal(1000)
-        dt_hours = Decimal(context.tick_ms) / _TICK_MS_PER_HOUR
+        dt_hours = dt_seconds / Decimal(3600)
 
         # Ramp-Limit (GG-BESS-004)
         max_delta = config.ramp_kw_per_s * dt_seconds
@@ -375,6 +377,7 @@ class BatteryDevice:  # noqa: PLR0904 — Protocol-Surface plus Welle-2-Review-H
             BatteryAlarm(
                 target_device_id=device_id,
                 limit=saturation_limit_pct,
+                limit_unit="pct",
                 result=CommandResult.LIMITED,
                 command_id=_SATURATION_COMMAND_ID,
             )

@@ -42,8 +42,12 @@ class BatteryAlarm:
 
     Felder:
     - `target_device_id` — Zielgeraet (Battery, das den Alarm ausloest).
-    - `limit` — verletzter Grenzwert (z. B. `max_charge_kw` oder
-      `min_soc_pct`).
+    - `limit` — verletzter Grenzwert. Welle-2-Review L-3: das
+      Feld ist typ-ueberladen (kW fuer Power-Clamp, % fuer SOC-
+      Reject). `limit_unit` macht das self-describing.
+    - `limit_unit` — Einheit des `limit`-Werts (`"kW"` fuer
+      Power-Grenze, `"pct"` fuer SOC-Grenze). Welle 3+ Geraete
+      koennen weitere Einheiten ergaenzen (`"kWh"`, `"Hz"`).
     - `result` — `CommandResult` des ausloesenden Befehls
       (`LIMITED` oder `REJECTED`).
     - `command_id` — Bezug zum ausloesenden `Command`.
@@ -51,6 +55,7 @@ class BatteryAlarm:
 
     target_device_id: str
     limit: Decimal
+    limit_unit: str
     result: CommandResult
     command_id: str
 
@@ -166,6 +171,7 @@ def _limited_outcome(
     alarm = BatteryAlarm(
         target_device_id=device_id,
         limit=clamped,
+        limit_unit="kW",
         result=CommandResult.LIMITED,
         command_id=command.command_id,
     )
@@ -182,6 +188,7 @@ def _rejected_outcome(
     alarm = BatteryAlarm(
         target_device_id=device_id,
         limit=soc_limit,
+        limit_unit="pct",
         result=CommandResult.REJECTED,
         command_id=command.command_id,
     )

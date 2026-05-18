@@ -234,6 +234,7 @@ def test_battery_alarm_is_frozen() -> None:
     alarm = BatteryAlarm(
         target_device_id="battery-1",
         limit=Decimal("500"),
+        limit_unit="kW",
         result=CommandResult.LIMITED,
         command_id="cmd-1",
     )

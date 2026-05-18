@@ -126,7 +126,15 @@ def _compare_sample(
     volatile: frozenset[str],
     tick_ms: int,
 ) -> list[ReplayDelta]:
-    """Feld-fuer-Feld-Vergleich; sammelt Deltas pro abweichendem Feld."""
+    """Feld-fuer-Feld-Vergleich; sammelt Deltas pro abweichendem Feld.
+
+    Tick-Quelle (Welle-2-Review I-5): bei abweichenden
+    `simulation_time`-Werten zwischen `expected` und `actual` wird
+    der Tick des **expected**-Samples verwendet. Damit ist die
+    Diff-Sortierung deterministisch an die Erwartungs-Seite
+    gebunden; Aufrufer, die einen unterschiedlichen Mapping
+    brauchen, koennen den Diff post-process.
+    """
     deltas: list[ReplayDelta] = []
     for field in fields(ReplaySample):
         name = field.name

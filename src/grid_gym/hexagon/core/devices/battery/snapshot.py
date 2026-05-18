@@ -200,11 +200,13 @@ def _decimal(mapping: Mapping[str, object], path: str) -> Decimal:
     return value
 
 
+# Welle-2-Review L-4: Error-Klassen NICHT re-exportiert — Aufrufer
+# importieren sie aus `grid_gym.hexagon.core.errors` (kanonischer
+# Pfad). Re-Export aus dem Sub-System-Modul wuerde die Import-
+# Graph-Drift verstaerken; Welle 3+ PV/Load-Snapshots kopieren
+# das Pattern nicht.
 __all__ = [
     "SNAPSHOT_VERSION",
     "SUBSYSTEM",
     "BatterySnapshot",
-    "MissingKeysError",
-    "VersionError",
-    "WrongTypeError",
 ]

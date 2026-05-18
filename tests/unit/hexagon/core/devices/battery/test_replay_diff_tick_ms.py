@@ -101,6 +101,16 @@ def _run_battery_at_tick_ms(tick_ms: int, ticks: int) -> tuple[TelemetryPoint, .
 # ---------------------------------------------------------------------------
 
 
+def test_diff_replay_default_tick_ms_parameter_is_1000() -> None:
+    """Welle-2-Review L-6: pinnt den Default-Wert per
+    `inspect.signature`, damit ein versehentlicher Default-Aenderung
+    nicht still durchrutscht."""
+    import inspect
+
+    sig = inspect.signature(diff_replay)
+    assert sig.parameters["tick_ms"].default == 1000
+
+
 def test_diff_replay_default_tick_ms_is_1000() -> None:
     """Defaultverhalten unveraendert (Welle-5-Kompatibilitaet)."""
     sample = ReplaySample(
