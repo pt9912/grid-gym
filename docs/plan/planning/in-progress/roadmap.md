@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 abgeschlossen
-**Stand:** 2026-05-17 (M1 `Done` mit Welle 0..7; M2..M6 vorbelegt, naechster aktiver Slice ist M2)
+**Stand:** 2026-05-18 (M1 `Done` mit Welle 0..7; M2 Welle 0..3 + Welle-3-Review-Folge abgeschlossen — Battery/PV/Load fertig; Welle 4 SmartMeter/GridConnection als naechster Block)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -24,7 +24,9 @@ M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
 Aktiver Slice: **M2 (Geraetemodelle)** — Slice-Plan
 liegt in [`in-progress/M2-devices.md`](M2-devices.md) (Status
-`In Progress`, Welle 0a seit 2026-05-18 aktiv).
+`In Progress`, Welle 0..3 + Welle-3-Review-Folge abgeschlossen
+seit 2026-05-18; Welle 4 SmartMeter/GridConnection ist der
+naechste aktive Block).
 
 ---
 
@@ -118,9 +120,9 @@ liegt in [`in-progress/M2-devices.md`](M2-devices.md) (Status
 ### M2 — Geraetemodelle (Vorbelegung)
 
 **Slice-Plan:** [`in-progress/M2-devices.md`](M2-devices.md)
-(Status `In Progress` seit 2026-05-18; Welle 0a aktiv,
-Welle 0..7 inkl. S-1..S-6-Items aus M1-Welle-7-End-to-End-
-Sweep, ADR 0013..0015 vorbelegt).
+(Status `In Progress` seit 2026-05-18; Welle 0..3 inkl. Welle-3-
+Review-Folge abgeschlossen, Welle 4..7 ausstehend; ADR 0013/0014/
+0016 `Accepted`, ADR 0015 vorbelegt).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des
@@ -136,23 +138,29 @@ Sweep, ADR 0013..0015 vorbelegt).
   ein Submodul unter `hexagon/core/devices/`. `RandomPort.sub_port`-
   Konventionen fuer Geraete-Fault-Streams.
 - **DoD-Checkliste:**
-  - [ ] `Battery`/BESS-Modell mit Lade-/Entlade-Vertrag
-        (`GG-BESS-001..008`).
-  - [ ] `PV`-Modell mit Generationsprofil-Eingang.
-  - [ ] `Load`-Modell.
-  - [ ] `SmartMeter`-Modell.
-  - [ ] `GridConnection`-Modell (`GG-GRID-001..007`).
+  - [x] `Battery`/BESS-Modell mit Lade-/Entlade-Vertrag
+        (`GG-BESS-001..008`) — M2 Welle 2, ADR 0014 `Accepted`.
+  - [x] `PV`-Modell — M2 Welle 3a, ADR 0016 `Accepted`.
+        Welle-3-Minimum (konstantes `rated_power_kw`-Modell);
+        Generationsprofil-Eingang ist Welle-5-Material.
+  - [x] `Load`-Modell — M2 Welle 3b, ADR 0016 `Accepted`.
+  - [ ] `SmartMeter`-Modell — M2 Welle 4 (ADR 0017 noch nicht
+        erstellt).
+  - [ ] `GridConnection`-Modell (`GG-GRID-001..007`) — M2 Welle 4.
   - [ ] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
         Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
-        sortiert.
+        sortiert — M2 Welle 6.
   - [ ] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
         Composition (Trigger 014 generischer Codec ist in Welle 0a
-        geliefert — siehe `done/014-generic-snapshot-format-codec.md`).
-  - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
-        gruen — `devices/battery` hat ≥ 90 % Line + Branch.
-  - [ ] M1-DoD-Restposten (M1 Welle 6d/7) sind als
-        `done/M1-tick-loop-spine.md` geschlossen, bevor M2 nach
-        `Done` geht.
+        geliefert — siehe `done/014-generic-snapshot-format-codec.md`)
+        — M2 Welle 6.
+  - [x] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
+        gruen — `devices/battery`, `devices/pv`, `devices/load`
+        haben ≥ 90 % Line + Branch (Welle-3-Review-C-1 hat den
+        Default-`CRITICAL_COV_TARGETS` um PV/Load erweitert).
+  - [x] M1-DoD-Restposten (M1 Welle 6d/7) sind als
+        `done/M1-tick-loop-spine.md` geschlossen — M1 ist seit
+        2026-05-17 `Done`.
 
 ### M3 — Faults + Multi-Agent + Observability (Vorbelegung)
 

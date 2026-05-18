@@ -15,6 +15,10 @@ Schaerfung folgt `ADR 0011`-Pattern (parallele Schaerfung ohne
 Supersedes — der urspruengliche Entscheidungs-Kern in §§2.1..2.4
 ist unveraendert; §2.5+ schliessen zuvor implizite Luecken
 explizit).
+**Erneut geschaerft am:** 2026-05-18 (Welle-3-Review-Folge —
+ADR 0016 H-3 Spiegel) — §2.4 ergaenzt um den Post-init-Scope
+des Roundtrip-Vertrags (Pre-init-`snapshot()` ist nicht
+roundtrippable, das ist per Vertrag so gewollt).
 **Bezug:**
 [`ADR 0002`](0002-language-and-build-stack.md) §A-1
 (`AC-HEXAGON-PURE`, `AC-PORTS-NO-OUT`, `AC-DOMAIN-FROZEN`),
@@ -206,6 +210,16 @@ sind die richtigen Sub-Typen.
 **Roundtrip-Test-Pflicht** je Geraet: `from_snapshot(snapshot())
 == device` byte-stabil. Welle-2-Battery zeigt das Pattern; PV/
 Load/SmartMeter/GridConnection in Welle 3/4 kopieren mechanisch.
+
+**Post-init-Scope (Welle-3-Review H-3-Spiegel):** Der Roundtrip-
+Vertrag gilt nur fuer den **post-`initialize()`-Zustand**. Pre-
+init liefert `snapshot()` per §2.6 das Minimum
+`{"version": SNAPSHOT_VERSION}`, das per Codec-Vertrag (Welle 0a
+`MissingKeysError`) NICHT roundtrippable ist — `from_snapshot(
+{"version": 1})` wirft typed. Welle 6 TickLoop ruft `snapshot()`
+nur ueber initialisierte Geraete; M3 Replay-Resume setzt
+initialisierte Geraete voraus. ADR 0016 §2.3 spiegelt den
+Vertrag explizit fuer PV/Load.
 
 ### 2.5 `telemetry()`-vs-`tick()`-Telemetry-Vertrag
 
