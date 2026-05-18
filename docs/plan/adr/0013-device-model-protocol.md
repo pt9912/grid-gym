@@ -7,6 +7,14 @@ einem Unit-Test gegen `NullDevice` verifiziert, der mit dieser
 ADR mitgeliefert wird.
 **Datum:** 2026-05-18
 **Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
+**Geschaerft am:** 2026-05-18 (Welle-1-Review-Folge-Commits) —
+§§2.5/2.6/2.7/2.8 + §8 ergaenzt, `from_snapshot`-Pflicht in das
+Protocol gehoben, Lifecycle-Pre-init-Vertrag fixiert, `device_id`-
+Property hinzugefuegt, Protocol-Evolution-Strategy dokumentiert.
+Schaerfung folgt `ADR 0011`-Pattern (parallele Schaerfung ohne
+Supersedes — der urspruengliche Entscheidungs-Kern in §§2.1..2.4
+ist unveraendert; §2.5+ schliessen zuvor implizite Luecken
+explizit).
 **Bezug:**
 [`ADR 0002`](0002-language-and-build-stack.md) §A-1
 (`AC-HEXAGON-PURE`, `AC-PORTS-NO-OUT`, `AC-DOMAIN-FROZEN`),
@@ -62,23 +70,25 @@ markiert und werden hier entschieden:
 `DeviceModel` lebt als `typing.Protocol` unter
 `hexagon/core/devices/_protocol.py`. Es ist **kein Driving-Port**.
 
-Begruendung:
+Begruendung — primaer konzeptuell, sekundaer architektonisch:
 
-- Geraete sind fachliche Modelle, die der TickLoop konsumiert
-  (`TickLoop.tick()` ruft `device.tick(context)` auf). Ein
-  Driving-Port ist per Definition ein Vertrag, ueber den die
-  Aussenwelt den Core treibt — Devices treiben den Core nicht.
-- `AC-PORTS-NO-OUT` (`ADR 0002 §A-1`) verbietet `hexagon.ports.*`
-  Importe in `hexagon.core.simulation`/`devices`/`scenario`/etc.
-  `DeviceModel` braucht aber `ScenarioDevice` aus
-  `hexagon/core/domain/scenario.py` als Argument-Typ. Ein Port-
-  Placement wuerde diesen Import-Pfad blockieren (Ports duerfen
-  nur `core.domain.*` importieren, nicht im erweiterten
-  Domain-Umfeld).
-- `AC-HEXAGON-PURE` erlaubt `hexagon/core/devices/*` den Import
-  von `hexagon.ports.driven.*` (Core darf Ports konsumieren).
-  Damit kann `_protocol.py` `RandomPort` als Argument-Typ
-  referenzieren, ohne den AC-Vertrag zu brechen.
+- **Konzeptuell:** Geraete sind fachliche Modelle, die der
+  TickLoop konsumiert (`TickLoop.tick()` ruft
+  `device.tick(context)` auf). Ein Driving-Port ist per Definition
+  ein Vertrag, ueber den die *Aussenwelt* den Core treibt — Devices
+  treiben den Core nicht, sie sind seine Fachschicht.
+- **Architektonisch:** `AC-PORTS-NO-OUT` (`ADR 0002 §A-1`)
+  erlaubt `hexagon.ports.* → hexagon.core.domain.*`, verbietet
+  aber `hexagon.ports.* → hexagon.core.simulation/devices/
+  scenario/...`. `DeviceModel` braucht `ScenarioDevice` als
+  Argument-Typ — der liegt in `hexagon/core/domain/scenario.py`,
+  also formal als Port-Import erlaubt. Der hartere Stopper ist
+  also nicht AC-PORTS-NO-OUT, sondern die konzeptuelle Richtung
+  oben.
+- **Erlaubte Richtung:** `AC-HEXAGON-PURE` erlaubt
+  `hexagon/core/devices/* → hexagon.ports.driven.*` (Core darf
+  Ports konsumieren). Damit kann `_protocol.py` `RandomPort` als
+  Argument-Typ referenzieren, ohne den AC-Vertrag zu brechen.
 
 ### 2.2 `DeviceTickContext` ohne `random_sub_port`-Field
 
@@ -102,6 +112,17 @@ Begruendung:
 - Der TickLoop ruft `initialize(scenario_device, root_random
   .sub_port(scenario_device.id))` pro Geraet einmal beim Lauf-
   Start auf (ADR 0007 §5 Sub-Port-Konvention).
+- **ID-Uniqueness-Vorbedingung:** ADR 0007 §5 `sub_port(name)`
+  hashed `f"{parent_seed}:{name}"` zum Sub-Seed; zwei Geraete
+  mit identischer `ScenarioDevice.id` wuerden den selben
+  Random-Stream teilen (stille Determinismus-Verletzung).
+  Diese Bedingung ist NICHT Pflicht der DeviceModel-Implementation;
+  sie wird upstream im Scenario-Loader durchgesetzt
+  (`hexagon/core/scenario/validator.py::_assert_device_list`,
+  Welle-0a-Stand line 142..167, wirft
+  `ScenarioDuplicateDeviceIdError` vor Tick-Start). TickLoop
+  darf voraussetzen, dass alle gelaufenen Scenarios diese
+  Vorbedingung erfuellen.
 
 ### 2.3 Command-Flow: separate `apply_command` + `tick`
 
@@ -123,6 +144,34 @@ Begruendung:
 - Reduziert `DeviceTickContext`-Komplexitaet (drei int-Felder
   statt vier Felder inklusive eines variabel-langen Tuples).
 
+**Ordering und Multiplicity** (Welle-1-Review H-6):
+
+- TickLoop ruft `apply_command(cmd)` in **Scenario-Source-Reihenfolge**
+  (`GG-ARCH-006`-Tie-Breaking auf `(time, priority, source,
+  sequence, event_id)`) auf. Mehrere Commands fuer dasselbe
+  Device im selben Tick werden in dieser Reihenfolge angewendet —
+  Devices duerfen sich darauf verlassen.
+- **Same-Tick-Multiplicity:** das Protocol macht keine Aussage
+  zur Semantik mehrerer Commands desselben Typs im selben Tick
+  (z. B. zwei `set_power_setpoint` an dieselbe Battery). Konkrete
+  Geraete-Implementationen (ADR 0014 fuer Battery in Welle 2,
+  analog fuer PV/Load/SmartMeter/GridConnection) legen die
+  Semantik pro Geraetetyp fest: last-wins, accumulate, oder
+  reject-later. Default-Empfehlung fuer Welle 2: **last-wins**
+  (zweiter Command ueberschreibt den ersten); Welle-2-PR
+  dokumentiert die Wahl in ADR 0014 §2.
+- **Idempotency:** ein `apply_command(cmd)` darf den internen
+  Zustand der Device-Instanz mutieren. Es ist NICHT idempotent
+  per Default; zweimaliges Anwenden desselben Commands MAY zu
+  unterschiedlichen Zustaenden fuehren (z. B. wenn der Command
+  als Rate-Limit-Increment formuliert ist). Welle-2-PR
+  dokumentiert pro Geraetetyp.
+- **`Command.result`-Field:** der TickLoop aktualisiert das
+  `Command.result`-Field NACH dem `apply_command`-Aufruf mit dem
+  Rueckgabewert; `apply_command` selbst muss `Command` nicht
+  mutieren (Command ist `@dataclass(frozen=True)` — TickLoop
+  baut ggf. ein neues Command-Objekt).
+
 ### 2.4 Snapshot-Vertrag fuer Geraete
 
 `DeviceModel.snapshot()` MUSS ein `Mapping[str, object]` mit
@@ -131,16 +180,118 @@ Trigger 014 Konvention). `SnapshotEnvelope.__post_init__` prueft
 das beim Composition-Aufruf — Geraete-Implementationen brauchen
 die Pflicht nicht selbst zu duplizieren.
 
-Zusaetzlich MUSS jede Implementation eine Classmethod
-`from_snapshot(state: Mapping[str, object]) -> Self` anbieten
-(nicht Teil des Protocols, weil Classmethods im
-`typing.Protocol`-Vertrag unhandlich sind). Tests pruefen
-`from_snapshot(snapshot()) == device` byte-stabil je Geraet
-(Welle-1-Konvention fuer Welle 2..5; siehe Slice-Plan §3 Welle 1).
+**Mechanische `from_snapshot`-Pflicht** (Welle-1-Review C-3 hat
+das urspruengliche „nicht Teil des Protocols"-Argument als
+soft-contract aufgedeckt): `from_snapshot` ist jetzt
+**Bestandteil des `DeviceModel`-Protocols** als
+`@classmethod`. Python 3.10+/`@runtime_checkable` unterstuetzt
+Protocol-Classmethods. `isinstance(BatteryDevice(), DeviceModel)`
+schlaegt damit auch bei einer Implementation ohne `from_snapshot`
+fehl — die mechanische Adherence-Pruefung greift.
 
----
+Vertrag der Classmethod:
 
-## 3. Begruendung
+```python
+@classmethod
+def from_snapshot(cls, state: Mapping[str, object]) -> Self: ...
+```
+
+Rueckgabe ist `Self` (typing.Self, Python 3.11+) — eine konkrete
+Battery rekonstruiert sich aus einem Battery-Snapshot, nicht aus
+einem PV-Snapshot. Implementationen MUESSEN typed mit
+`SnapshotFormatError`-Hierarchie (Welle-0a-Codec) auf Mismatch
+reagieren: `MissingKeysError`/`WrongTypeError`/`VersionError`
+sind die richtigen Sub-Typen.
+
+**Roundtrip-Test-Pflicht** je Geraet: `from_snapshot(snapshot())
+== device` byte-stabil. Welle-2-Battery zeigt das Pattern; PV/
+Load/SmartMeter/GridConnection in Welle 3/4 kopieren mechanisch.
+
+### 2.5 `telemetry()`-vs-`tick()`-Telemetry-Vertrag
+
+Beide Pfade liefern `tuple[TelemetryPoint, ...]`. Welle-1-Review
+C-1 hat zu Recht aufgedeckt, dass das Verhaeltnis unklar war.
+Vertrag:
+
+- `tick(context) -> DeviceTickOutcome.telemetry` ist die
+  **kanonische Quelle** der Telemetrie eines Ticks. Hier
+  entsteht der Wert, hier wird er deterministisch sortiert.
+- `telemetry() -> tuple[TelemetryPoint, ...]` ist ein
+  **Pure-Read-Accessor** auf das vom letzten `tick()`
+  emittierte Tuple. Vertrag:
+  - Vor dem ersten Tick: `() ` (leeres Tupel).
+  - Nach `tick(ctx_n)`: gibt **`==`-identisch** das selbe Tupel
+    wie `DeviceTickOutcome.telemetry` zurueck, das `tick(ctx_n)`
+    geliefert hat.
+  - Devices implementieren das via Caching (`self._last_telemetry
+    : tuple[TelemetryPoint, ...] = ()`, am Ende von `tick()`
+    gesetzt).
+- Aufrufer-Ergonomie: Aggregator-Code, der ueber alle Geraete
+  iteriert und Telemetrie ohne Tick-Fortschreibung braucht
+  (z. B. SmartMeter-Aggregation in Welle 4), nutzt
+  `device.telemetry()` als read-only-View.
+
+### 2.6 Lifecycle-Vertrag fuer Pre-`initialize()`-Aufrufe
+
+Welle-1-Review C-2 hat zu Recht aufgedeckt, dass das Protocol
+ueber Pre-init-Verhalten geschwiegen hat. Vertrag:
+
+- `initialize(scenario_device, random)` ist Pflicht-Erstaufruf.
+  Eine **zweite** `initialize()`-Invocation MUSS typed mit
+  `DeviceAlreadyInitializedError` (`hexagon/core/errors.py`)
+  abgelehnt werden — Devices sind nicht resettable per Protocol.
+- `tick(context)` und `apply_command(command)` werfen typed
+  `DeviceNotInitializedError`, wenn `initialize()` noch nicht
+  gelaufen ist.
+- `device_id` (siehe §2.7) wirft `DeviceNotInitializedError`
+  pre-init.
+- `snapshot()` und `telemetry()` sind pre-init zulaessig und
+  liefern minimal:
+  - `snapshot()` → `{"version": cls.SNAPSHOT_VERSION}` ohne
+    weiteren State (testbar, structurally valide).
+  - `telemetry()` → `()` (leeres Tupel).
+
+Die beiden Error-Klassen (`DeviceNotInitializedError`,
+`DeviceAlreadyInitializedError`) gehoeren in `hexagon/core/errors.py`
+und erben von einer neuen Sammel-Klasse
+`DeviceLifecycleError(GridGymError)`.
+
+### 2.7 `device_id`-Access via Protocol-Property
+
+Welle-1-Review H-1 hat zu Recht aufgedeckt, dass der
+`device_id`-Zugriff via `self.scenario_device.id` ein implicit
+contract war. Schaerfung:
+
+`DeviceModel` hat eine **Pflicht-Property** `device_id: str`:
+
+```python
+@property
+def device_id(self) -> str: ...
+```
+
+Die Property muss `scenario_device.id` zurueckgeben (oder
+`DeviceNotInitializedError` pre-init werfen). TickLoop ruft
+`device.device_id` statt `device.scenario_device.id` — das Storage-
+Pattern (wie und ob `scenario_device` als Attribut lebt) bleibt
+Implementation-Sache. Welle 6 Sub-Snapshot-Key
+`devices.<device.device_id>` nutzt diese Property.
+
+### 2.8 Protocol-Evolution-Strategie
+
+Welle-1-Review M-4 hat zu Recht aufgedeckt, dass das Hinzufuegen
+einer sechsten Protocol-Methode in M3 (`inject_fault(...)`) alle
+Welle 2..5 Devices ueber Nacht aus `isinstance(dev, DeviceModel)`
+fallen lassen wuerde. Strategie:
+
+- `DeviceModel` ist **closed** durch M2 (Welle 2..7).
+- Methoden-Erweiterungen fuer Post-MVP-Features (M3 Faults,
+  M4 Protocol-Adapter etc.) kommen als **separate Protocol-
+  Klassen**: `FaultInjectableDevice(DeviceModel)`,
+  `ExternallyAddressableDevice(DeviceModel)` etc.
+- Devices opt-in durch Implementation des erweiterten Protocols.
+  Bestehende M2-Devices bleiben `DeviceModel`-konform.
+- Tests pruefen sowohl `isinstance(dev, DeviceModel)` (base) als
+  auch `isinstance(dev, FaultInjectableDevice)` (extension).
 
 Die Kombination aus 2.1 (Core-Protocol), 2.2 (port-freier
 Context), 2.3 (separater Command-Flow) bewahrt drei load-bearing
@@ -189,25 +340,35 @@ Diese ADR gilt NICHT fuer:
 
 ## 5. Operative Artefakte
 
-Mit Acceptance dieser ADR liegen folgende Module:
+Mit Acceptance dieser ADR (post-Welle-1-Review) liegen folgende
+Module:
 
 - `src/grid_gym/hexagon/core/devices/__init__.py` —
   Re-Export von `DeviceModel` als Top-Level-Symbol des Pakets.
 - `src/grid_gym/hexagon/core/devices/_protocol.py` —
-  `DeviceModel` Protocol mit den fuenf Pflicht-Methoden
-  (`initialize`/`apply_command`/`tick`/`snapshot`/`telemetry`).
+  `DeviceModel` Protocol mit:
+  - fuenf Pflicht-Methoden
+    (`initialize`/`apply_command`/`tick`/`snapshot`/`telemetry`),
+  - `device_id: str`-Pflicht-Property (§2.7),
+  - `from_snapshot`-Pflicht-Classmethod (§2.4, mechanisch via
+    `@runtime_checkable` enforced).
 - `src/grid_gym/hexagon/core/domain/device.py` —
   `DeviceTickContext`/`DeviceTickOutcome` Frozen-Dataclasses,
   port-frei.
+- `src/grid_gym/hexagon/core/errors.py` (erweitert):
+  `DeviceLifecycleError(GridGymError)` Sammel-Klasse plus
+  `DeviceNotInitializedError`/`DeviceAlreadyInitializedError`
+  (§2.6).
 - `tests/unit/hexagon/core/devices/_fakes.py` — `NullDevice`-
   Test-Double, der das Protocol satisfies (wird in Welle 2..5
-  als Baseline fuer per-Device-Adherence-Tests wiederverwendet).
+  als Baseline fuer per-Device-Adherence-Tests wiederverwendet);
+  implementiert `from_snapshot`, `device_id` und Lifecycle-
+  Pre-init-Raises.
 - `tests/unit/hexagon/core/devices/test_protocol_contract.py` —
   Protocol-Adherence-Test: `isinstance(NullDevice(), DeviceModel)`,
-  Methoden-Surface-Check, `snapshot()`-`version`-Erstfeld-Pruefung.
-
-Der gemeinsame `from_snapshot`-Classmethod-Vertrag wird in jedem
-konkreten Geraete-Modul mitgeliefert (Welle 2..5).
+  Methoden-Surface-Check, `snapshot()`-`version`-Erstfeld-Pruefung,
+  Pre-init-Raises, Roundtrip via `from_snapshot`, Wrong-Signature-
+  Negativ-Pfade.
 
 ---
 
@@ -239,7 +400,18 @@ konkreten Geraete-Modul mitgeliefert (Welle 2..5).
   Envelope-v1→v2 → ADR 0015) folgen jeweils mit ihrer Welle.
 - Fault-Injection-Erweiterung des Protocols (`DeviceModel.inject_fault(...)`)
   ist M3; diese ADR sieht das bewusst nicht vor (`GG-FAULT-001..010`-
-  Out-of-Scope-Eintrag im Slice-Plan §4).
+  Out-of-Scope-Eintrag im Slice-Plan §4). Die Erweiterungs-
+  Mechanik (separate Protocol-Klasse via Sub-Typing) ist in
+  §2.8 fixiert.
+- **Per-Device-Snapshot-Version-Strategie** (Welle-1-Review I-2):
+  jedes Geraet bringt seinen eigenen `version: int`-Wert mit
+  (Battery startet mit `version=1` in ADR 0014; PV/Load/etc.
+  analog mit Welle-3/4-PR-ADRs). Wenn ein Folge-Slice ein
+  zusaetzliches Field einfuehrt, BUMPT die ADR die Version (z. B.
+  `Battery v1 → v2`) und `from_snapshot` MUSS typed mit
+  `VersionError(subsystem="battery", expected=2, found=1)`
+  reagieren — Back-Compat-Read ist explizit M6-Material
+  (`GG-PERSIST-*`-Migrations-Slice), kein per-Welle-Pflichtweg.
 
 ---
 
@@ -255,3 +427,54 @@ konkreten Geraete-Modul mitgeliefert (Welle 2..5).
   M4-Slice.
 - **`DeviceTickOutcome`-Erweiterung um Alarme.** Welle 1 liefert
   nur `telemetry`; Alarm-Felder kommen mit M3 Fault-Injection.
+  Die Erweiterungs-Strategie (Default-Tupel hinzufuegen, Frozen-
+  Dataclass-Konstruktion bleibt back-compat) ist trivial — die
+  ADR fixiert sie hier nicht eigens.
+
+---
+
+## 8. Protocol-Evolution-Beispiele (M3+ Vorschau)
+
+Diese Sektion gibt konkrete Beispiele, wie §2.8 in spaeteren
+Meilensteinen angewendet wird. Sie ist **nicht-bindend** — die
+M3-PR-Autoren entscheiden zur Aktivierungszeit, ob das Beispiel
+passt oder ein neues Pattern noetig ist.
+
+**M3 Fault-Injection:**
+
+```python
+@runtime_checkable
+class FaultInjectableDevice(DeviceModel, Protocol):
+    """Erweitert DeviceModel um per-Tick-Fault-Injection."""
+
+    def inject_fault(self, fault: ScenarioFault) -> None: ...
+    def recover_from_fault(self, fault_id: str) -> None: ...
+```
+
+M2-Geraete (Battery/PV/Load/...) bleiben `DeviceModel`-konform —
+sie sind ohne Adjustment auch in M3 lauffaehig, koennen aber kein
+`inject_fault()` annehmen. M3-PR-Autoren entscheiden pro
+Geraetetyp, ob das Sub-Protocol implementiert wird; Fault-Aware-
+TickLoop prueft `isinstance(dev, FaultInjectableDevice)`.
+
+**M4 Protokoll-Adapter:**
+
+```python
+@runtime_checkable
+class ExternallyAddressableDevice(DeviceModel, Protocol):
+    """Erweitert DeviceModel um externe Protokoll-Adressierung
+    (MQTT-Topic, Modbus-Register-Map, etc.)."""
+
+    @property
+    def external_address(self) -> Mapping[str, str]: ...
+```
+
+Auch hier: M2-Devices bleiben konform; M4-PR-Autoren entscheiden,
+welche Geraete extern adressierbar sind.
+
+**Wichtige Konstanz:** `DeviceModel` selbst bleibt **closed** bei
+fuenf Methoden + `device_id`-Property + `from_snapshot`-Classmethod
+durch M2 Welle 7. Erst nach M2-Closure (Roadmap §3 M2 → Done) ist
+eine geschmeidige Welle frei, das Base-Protocol formal um z. B.
+`alarms`-Felder zu erweitern; bis dahin sind Erweiterungen
+ausschliesslich via Sub-Typing.
