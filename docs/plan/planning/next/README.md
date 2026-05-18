@@ -16,13 +16,13 @@ Ein Eintrag wechselt typischerweise:
 
 ## Bestand
 
-(leer — M1-Slice-Plan ist seit 2026-05-15 nach `in-progress/`
-und am 2026-05-17 weiter nach
-[`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
-gewandert; siehe auch [`in-progress/README.md`](../in-progress/README.md).)
+| Datei                  | Gegenstand                                                                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `M2-devices.md`        | M2-Slice-Plan: produktive Geraetemodelle (Battery, PV, Load, SmartMeter, GridConnection) + `grid_model`-Netzbilanz. Welle 0..7, Status `Next` (2026-05-18). |
+| `M1-tick-loop-spine.md` | Forwarder-Stub (Link-Stabilitaet fuer `ADR 0007` Zeile 162). Aktueller Slice-Plan liegt in [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md). |
 
 Spike-0 selbst ist abgeschlossen und in
 [`done/spike-0.md`](../done/spike-0.md) archiviert. Weitere
-Eintraege folgen mit Geraetemodellen aus §9 Lastenheft (M2),
-optionalen Protokolladaptern (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)
-und UI-Erweiterungen `GG-UI-006..008`.
+Eintraege folgen mit optionalen Protokolladaptern
+(`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`) und UI-Erweiterungen
+`GG-UI-006..008`.
