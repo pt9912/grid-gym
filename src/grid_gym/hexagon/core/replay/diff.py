@@ -23,11 +23,10 @@ Vergleichs-Pfade (`path`-Feld in `ReplayDelta`):
 - `"sample[i]"` mit `expected="<sample>"` / `actual="<missing>"`
   fuer Laengen-Mismatches (oder umgekehrt).
 
-`tick`-Feld in `ReplayDelta` ist `simulation_time // 1000` —
-grobes Ticks-pro-Sekunde-Mapping; bei genauerer Tick-ms-
-Zuordnung uebernimmt der Aufrufer den Mapping-Schritt
-(`GG-REPLAY-007` Akzeptanz nennt nur „Tick", die konkrete
-Skala ist Welle-5-Default).
+`tick`-Feld in `ReplayDelta` ist `simulation_time // tick_ms`
+— Aufrufer-Pflicht-Parameter ab M2 Welle 2 (Trigger 013
+Closure). Default `tick_ms=1000` bewahrt Welle-5-Kompatibilitaet
+ohne Backward-Compat-Bruch.
 """
 
 from __future__ import annotations
@@ -41,6 +40,7 @@ from grid_gym.hexagon.core.domain.replay import (
     ReplayDeltaClassification,
     ReplaySample,
 )
+from grid_gym.hexagon.core.errors import ReplayInvalidTickMsError
 
 _VOLATILE_FIELDS_DEFAULT: Final[frozenset[str]] = frozenset({"import_sequence"})
 """Default-volatile Felder.
@@ -64,22 +64,32 @@ def diff_replay(
     expected: Iterable[ReplaySample],
     actual: Iterable[ReplaySample],
     *,
+    tick_ms: int = 1000,
     volatile_fields: frozenset[str] | None = None,
 ) -> tuple[ReplayDelta, ...]:
     """Vergleicht zwei `ReplaySample`-Sequenzen feldweise und liefert
     klassifizierte `ReplayDelta`-Tupel.
 
+    `tick_ms` (M2 Welle 2, Trigger 013 Closure): definiert die
+    Tick-Skala fuer das `tick`-Feld im erzeugten `ReplayDelta`.
+    Default `1000` (Welle-5-Kompatibilitaet, keine Backward-Compat-
+    Aenderung); muss `> 0` sein, sonst `ReplayInvalidTickMsError`.
+
     Wenn `volatile_fields=None`, gilt der Default aus
     `_VOLATILE_FIELDS_DEFAULT`. Per Aufrufer-Override kann die
     Liste je Use-Case verschaerft oder gelockert werden.
     """
+    if tick_ms <= 0:
+        raise ReplayInvalidTickMsError(tick_ms)
     volatile = volatile_fields if volatile_fields is not None else _VOLATILE_FIELDS_DEFAULT
     expected_list = list(expected)
     actual_list = list(actual)
     deltas: list[ReplayDelta] = []
     pair_count = min(len(expected_list), len(actual_list))
     for index in range(pair_count):
-        deltas.extend(_compare_sample(index, expected_list[index], actual_list[index], volatile))
+        deltas.extend(
+            _compare_sample(index, expected_list[index], actual_list[index], volatile, tick_ms)
+        )
     if len(actual_list) > pair_count:
         for index in range(pair_count, len(actual_list)):
             sample = actual_list[index]
@@ -88,7 +98,7 @@ def diff_replay(
                     path=f"sample[{index}]",
                     expected="<missing>",
                     actual="<sample>",
-                    tick=sample.simulation_time // 1000,
+                    tick=sample.simulation_time // tick_ms,
                     device_id=sample.device_id,
                     classification=ReplayDeltaClassification.FACHLICH,
                 )
@@ -101,7 +111,7 @@ def diff_replay(
                     path=f"sample[{index}]",
                     expected="<sample>",
                     actual="<missing>",
-                    tick=sample.simulation_time // 1000,
+                    tick=sample.simulation_time // tick_ms,
                     device_id=sample.device_id,
                     classification=ReplayDeltaClassification.FACHLICH,
                 )
@@ -114,6 +124,7 @@ def _compare_sample(
     expected: ReplaySample,
     actual: ReplaySample,
     volatile: frozenset[str],
+    tick_ms: int,
 ) -> list[ReplayDelta]:
     """Feld-fuer-Feld-Vergleich; sammelt Deltas pro abweichendem Feld."""
     deltas: list[ReplayDelta] = []
@@ -133,7 +144,7 @@ def _compare_sample(
                 path=f"sample[{index}].{name}",
                 expected=str(expected_value),
                 actual=str(actual_value),
-                tick=expected.simulation_time // 1000,
+                tick=expected.simulation_time // tick_ms,
                 device_id=expected.device_id,
                 classification=classification,
             )
