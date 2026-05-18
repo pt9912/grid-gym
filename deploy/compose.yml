@@ -36,23 +36,10 @@ services:
       GRID_GYM_PORT: "8080"
     ports:
       - "8080:8080"
-    # Dockerfile-`ENTRYPOINT` per leerer Liste neutralisieren,
-    # damit `command` das alleinige Kommando ist. `python -m
-    # uvicorn` statt direktem `uvicorn`-Aufruf, weil die venv-
-    # shebangs auf den Build-Pfad `/src/.venv/bin/python` zeigen,
-    # das Runtime-Image aber `/app/.venv/bin/python` traegt
-    # (Welle-7-Closure: shebang-Rewrite oder Pip-relocate kommt
-    # mit Production-Haertung).
-    entrypoint: []
-    command:
-      - python
-      - -m
-      - uvicorn
-      - grid_gym.adapters.driving.http_api:app
-      - --host
-      - "0.0.0.0"
-      - --port
-      - "8080"
+    # Dockerfile-`ENTRYPOINT` startet `uvicorn` direkt (Trigger 015,
+    # M2 Welle 0b: shebang-Rewrite und uv-`--no-editable` haben die
+    # Welle-6d-`entrypoint: []` + `python -m uvicorn`-Indirection
+    # ueberfluessig gemacht). Kein `command:`-Override hier.
 
   simulation:
     image: grid-gym-runtime:latest
@@ -65,7 +52,8 @@ services:
     # bringen das. `sleep infinity` haelt den Service am Leben,
     # damit `make runtime`-Compose-Smoke ihn als running-Container
     # findet. `entrypoint: []` neutralisiert den Dockerfile-
-    # `ENTRYPOINT`, damit `sleep` als Top-Level-Kommando laeuft.
+    # `ENTRYPOINT` (uvicorn) bewusst — das Stub-Modell ist kein
+    # Webserver. M2-Geraete-Runner ersetzen den Stub.
     entrypoint: []
     command: ["sleep", "infinity"]
     # Dockerfile-HEALTHCHECK pollt `/health` ueber curl. Der

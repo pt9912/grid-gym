@@ -47,7 +47,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	dep-audit image-audit openapi-validate \
 	gates ci fullbuild \
 	build runtime test-container \
-	lock-refresh \
+	lock-refresh rebase-base \
 	sbom \
 	clean
 
@@ -104,6 +104,7 @@ help:
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make lock-refresh      uv lock refresh (commit uv.lock alongside pyproject.toml)"
+	@echo "  make rebase-base       docker pull python:\$$(PYTHON_VERSION)-slim + uv-image — Base-Image-Patch-Pull (Trigger 015)"
 	@echo "  make sbom              CycloneDX SBOM (Release-Asset; aktiviert in spaeterer Welle)"
 	@echo "  make clean             Lokale Build-Artefakte loeschen"
 
@@ -316,6 +317,20 @@ lock-refresh:
 		-v "$$(pwd)":/src -w /src \
 		$(IMAGE_PREFIX)-base:latest \
 		uv lock
+
+# Base-Image-Patch-Pull (Trigger 015, M2 Welle 0b).
+# Zieht das pinned `python:$(PYTHON_VERSION)-slim`-Base-Image und das
+# `ghcr.io/astral-sh/uv:$(UV_VERSION)`-Image explizit aus der Registry.
+# Ergaenzt das `apt-get upgrade -y` im runtime-Stage: `rebase-base`
+# refresht den Base-Layer und macht damit `apt-get update` schneller
+# (und gleichzeitig die uv-Toolchain aktuell). Bleibt `make
+# image-audit` (trivy `--ignore-unfixed`) trotz `rebase-base` rot,
+# eskaliert das auf einen Folge-Trigger fuer ein eigenes
+# `grid-gym-base:debian-13-patched`-Image (Trigger 015 Option B, M6).
+rebase-base:
+	$(DOCKER) pull python:$(PYTHON_VERSION)-slim
+	$(DOCKER) pull ghcr.io/astral-sh/uv:$(UV_VERSION)
+	@echo "[rebase-base] base images refreshed — naechster docker build nutzt die aktuellen Layer."
 
 # SBOM-Erzeugung als Release-Asset. Wird in spaeterer Welle scharf
 # geschaltet, sobald GG-CICD-007 (Artefakt-Veroeffentlichung) aktiv

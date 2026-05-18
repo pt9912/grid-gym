@@ -302,13 +302,17 @@ print(json.dumps(app.openapi(), sort_keys=True, indent=2))" \
  && uv run openapi-spec-validator /src/artifacts/openapi.json
 
 # ---------------------------------------------------------------------------
-# build-app: produktive Artefakte. `uv sync --frozen --no-dev` baut ein
-# .venv ohne Test-/Lint-Dependencies; das wird in das Runtime-Image
-# kopiert. Kein Wheel-Build noetig — der Code liegt unter src/ und wird
-# editable installiert.
+# build-app: produktive Artefakte. `uv sync --frozen --no-dev
+# --no-editable` baut ein .venv ohne Test-/Lint-Dependencies und
+# installiert das Projekt als Wheel direkt in site-packages (kein
+# editable-Link auf /src/src/). Damit zeigt der Runtime-PYTHONPATH
+# nicht mehr auf den Build-Pfad und shebangs koennen sauber gerewritet
+# werden.
+# Trigger 015 (M2 Welle 0b): `--no-editable` ersetzt den Welle-6d-
+# `PYTHONPATH=/app/src`-Workaround.
 # ---------------------------------------------------------------------------
 FROM source AS build-app
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-editable
 
 # ---------------------------------------------------------------------------
 # runtime: minimales Image fuer den Produktivlauf. Non-root, /health-
@@ -316,25 +320,37 @@ RUN uv sync --frozen --no-dev
 # (`--no-dev`), nicht die Test-Toolchain.
 #
 # Bezug: GG-DEPLOY-001/003/006, GG-API-001 (/runs), GG-API-002 (/ws).
+#
+# Base-Image-Patch-Strategie (Trigger 015, M2 Welle 0b):
+# `python:${PYTHON_VERSION}-slim` lag bei Welle-0b-Verifikation
+# Debian-Sicherheitspatches hinterher (libcap2 CVE-2026-4878,
+# libsystemd0/libudev1 CVE-2026-29111). Reines `make rebase-base`
+# allein behebt das nicht — Docker Hub veroeffentlicht den slim-Tag
+# nicht mit jedem Debian-Security-Update neu. Welle 0b bleibt
+# deshalb bewusst beim `apt-get upgrade -y`-Pattern aus Welle 6d,
+# erklaert es aber jetzt als die *gewaehlte* Strategie (Option A
+# aus Trigger 015): in-image-Patching ueber `apt-get upgrade`, plus
+# `make rebase-base` zum Refresh des Base-Image-Layers fuer den
+# uv-Cache. Wechsel auf ein eigenes `grid-gym-base:debian-13-patched`
+# (Option B aus Trigger 015) ist M6-Material (Security-Haertung).
 # ---------------------------------------------------------------------------
 FROM python:${PYTHON_VERSION}-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH=/app/.venv/bin:$PATH \
-    PYTHONPATH=/app/src \
     GRID_GYM_HOST=0.0.0.0 \
     GRID_GYM_PORT=8080 \
     GRID_GYM_ENV=production
-# `PYTHONPATH=/app/src` ueberschreibt den editable-Install-Pfad
-# `/src/src/` (Build-Stage), der im Runtime-Image nicht existiert.
-# Welle-7-Closure: Pip-Relocate / non-editable Install via
-# `uv sync --no-editable` koennte das sauberer loesen.
+# `PYTHONPATH=/app/src` (Welle-6d-Workaround) ist hier entfallen,
+# weil `uv sync --no-editable` im build-app-Stage das Projekt direkt
+# als Wheel in `/src/.venv/lib/.../site-packages/` installiert.
 
 # curl fuer den HEALTHCHECK. Kein build-essential im Runtime-Image —
 # alle nativen Wheels werden im build-app-Stage aufgeloest und
 # kopiert. `apt-get upgrade -y` zieht Debian-Sicherheitspatches
-# fuer Base-Image-Pakete (z. B. libcap2, libsystemd0) — `make
-# image-audit` (trivy mit `--ignore-unfixed`) erwartet das.
+# fuer Base-Image-Pakete (libcap2, libsystemd0, libudev1) — siehe
+# Base-Image-Patch-Strategie oben. `make image-audit` (trivy mit
+# `--ignore-unfixed`) bleibt das verbindliche Gate.
 RUN apt-get update \
  && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends curl \
@@ -342,15 +358,29 @@ RUN apt-get update \
  && useradd --create-home --uid 1001 --shell /usr/sbin/nologin grid-gym
 
 WORKDIR /app
-COPY --from=build-app --chown=grid-gym:grid-gym /src/.venv /app/.venv
-COPY --from=build-app --chown=grid-gym:grid-gym /src/src /app/src
-COPY --from=build-app --chown=grid-gym:grid-gym /src/pyproject.toml /app/pyproject.toml
+COPY --from=build-app /src/.venv /app/.venv
+COPY --from=build-app /src/pyproject.toml /app/pyproject.toml
+
+# Shebang-Rewrite (Trigger 015, M2 Welle 0b):
+# venv-Binaries (`uvicorn`, `alembic`, `python` etc.) wurden im
+# build-app-Stage mit Shebangs auf `/src/.venv/bin/python` gebaut.
+# Im Runtime-Image liegt der Interpreter unter `/app/.venv/bin/python`
+# — ohne Rewrite wuerden direkte Binary-Aufrufe mit
+# `exec: no such file or directory` fehlschlagen (Welle-6d-Grund fuer
+# `python -m uvicorn`-Indirection in `deploy/compose.yml`).
+# `pyvenv.cfg` traegt ebenfalls den Build-Pfad und wird mitgerewritet.
+RUN find /app/.venv/bin -type f -exec sed -i '1s|^#!/src/\.venv/bin/python|#!/app/.venv/bin/python|' {} + \
+ && sed -i 's|/src/\.venv|/app/.venv|g' /app/.venv/pyvenv.cfg \
+ && chown -R grid-gym:grid-gym /app
 
 USER grid-gym:grid-gym
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=5 \
     CMD curl --fail --silent --show-error http://localhost:8080/health || exit 1
-ENTRYPOINT ["python", "-m", "grid_gym.adapters.driving.http_api"]
+# ENTRYPOINT laeuft `uvicorn` als direkte Binary (Shebang ist
+# gerewritet, kein `python -m`-Indirection mehr noetig). Host/Port
+# folgen `GRID_GYM_HOST`/`GRID_GYM_PORT` aus der ENV-Sektion oben.
+ENTRYPOINT ["uvicorn", "grid_gym.adapters.driving.http_api:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # ---------------------------------------------------------------------------
 # Image-Audit (`GG-QG-002` SOLLTE) laeuft AUSSERHALB des Dockerfile —
