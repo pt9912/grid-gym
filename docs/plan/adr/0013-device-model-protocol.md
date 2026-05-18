@@ -478,3 +478,28 @@ durch M2 Welle 7. Erst nach M2-Closure (Roadmap §3 M2 → Done) ist
 eine geschmeidige Welle frei, das Base-Protocol formal um z. B.
 `alarms`-Felder zu erweitern; bis dahin sind Erweiterungen
 ausschliesslich via Sub-Typing.
+
+---
+
+## 9. Vertragssicherheit pro Stufe
+
+Welle-1-Review N-2 hat zu Recht angemerkt, dass das DeviceModel-
+Protocol drei Sicherheits-Stufen mit unterschiedlichen
+Reichweiten kombiniert. Diese Sektion fixiert das Mapping
+explizit, damit Welle-2-Implementierer wissen, wo welche
+Pruefung greift.
+
+| Stufe                       | Werkzeug                                | Reichweite                                                                                                  | Wo geprueft                                                                                             |
+| --------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Member-Namen (Stufe 1)      | `@runtime_checkable typing.Protocol` + `isinstance(...)` | Vorhandensein der sieben Pflicht-Member (5 Methoden + Property + Classmethod). Wirft KEINE Signatur-Pruefung. | `tests/unit/hexagon/core/devices/test_protocol_contract.py::test_null_device_satisfies_device_model_protocol` + `test_class_missing_one_method_fails_protocol` + `test_class_missing_device_id_property_fails_protocol` |
+| Signaturen (Stufe 2)        | `mypy --strict` (`ADR 0005`)            | Argument-/Rueckgabe-Typen, Generic-/Self-Konformitaet. mypy ueberprueft das konkrete Geraete gegen den Protocol-Vertrag bei Implementation. | `make typecheck` (Dockerfile-Stage). Faellt rot, wenn z. B. `BatteryDevice.tick(self)` ohne `context` deklariert wird. |
+| Verhalten / Lifecycle (Stufe 3) | Per-Geraete-Unit-Tests + ADR 0013 §§2.3/2.5/2.6 | Determinismus, Pre-init-Raises, Telemetry-Caching, apply_command-Ordering, from_snapshot-Roundtrip. Soft contracts mechanisch via Tests durchgesetzt. | `tests/unit/hexagon/core/devices/<typ>/test_*.py` (Welle 2..5) + `test_protocol_contract.py`-Konventions-Tests. |
+
+**Bekannte Stufe-1-Beschraenkung:** ein Test in Welle 1
+(`test_wrong_signature_still_passes_isinstance`) pinnt das
+Verhalten explizit: eine Implementation mit `tick(self)` (ohne
+`context`-Parameter) passt `isinstance(obj, DeviceModel)`
+trotzdem. Die korrekte Signatur wird erst durch Stufe 2
+(`mypy --strict`) abgefangen. Welle-2-Implementierer duerfen
+sich NICHT allein auf `isinstance` verlassen — der Vertragsweg
+ist isinstance UND mypy UND per-Geraete-Tests.

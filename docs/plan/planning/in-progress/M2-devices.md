@@ -346,15 +346,31 @@ sind in ADR 0013 §2 entschieden:
   `version: int`-Erstfeld, `SnapshotEnvelope`-Composition,
   Frozen-Dataclass-Pflicht, Decimal-Payload-Canonical-OK).
 
+**Was Welle 1 NICHT liefert** (Welle-1-Review-Folge N-1):
+
+- **Keine TickLoop-Integration.** `hexagon/core/simulation/
+  tick_loop.py` zeigt weiterhin den M1-Scheduler-basierten
+  Event-Pfad ohne `device.tick()`-Aufruf. Die produktive
+  Verdrahtung (TickLoop iteriert ueber Geraete, ruft
+  `apply_command(cmd)` pro Pending-Command + `tick(context)` +
+  sammelt `DeviceTickOutcome.telemetry` in
+  `TickResult.emitted_telemetry`) ist Welle-6-Pflichtweg
+  (siehe §3 Welle 6 unten). Welle 1 liefert nur den **Vertrag**,
+  nicht die Laufzeit.
+- **Keine konkreten Geraete-Implementationen.** Battery (Welle 2),
+  PV/Load (Welle 3), SmartMeter/GridConnection (Welle 4),
+  Grid-Bilanz-Modell (Welle 5) folgen sequenziell.
+
 **Konvention fuer Welle 2..5** (ADR 0013 §5):
 
 - Jede konkrete Geraete-Implementation wiederholt die Adherence-
   Pruefung mit ihrer eigenen Klasse als Parameter.
 - Snapshot-Roundtrip `from_snapshot(snapshot()) == device` ist
   byte-stabil je Geraet (Welle-N-DoD-Item, kein Welle-7-Restposten).
-- `from_snapshot` ist Classmethod am konkreten Geraet (nicht Teil
-  des Protocols, weil Classmethods in `typing.Protocol` unhandlich
-  sind).
+- `from_snapshot` ist nach Welle-1-Review-Schaerfung
+  Pflicht-Bestandteil des Protocols (`@classmethod`, ADR 0013
+  §2.4); isinstance-Check faengt fehlende Implementationen
+  mechanisch ab.
 
 **Verifikation:** 303 Unit-Tests gruen nach Welle-1-Review-Folge
 (277 M1+Welle-0-Stand → 290 nach Welle-1-Erstwurf → 303 nach
