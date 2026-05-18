@@ -1,9 +1,11 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
 **Status:** In Progress — Welle 0a (Trigger 014, generic
-snapshot codec) am 2026-05-18 abgeschlossen (Commit `3322cb8`);
-naechster Schritt ist Welle 0b (Trigger 015, runtime-image-
-hardening) oder Welle 0c (Lastenheft-Sweep). M1-Spine
+snapshot codec) am 2026-05-18 abgeschlossen (Commit `3322cb8`)
+und Welle 0b (Trigger 015, runtime-image-hardening) am
+2026-05-18 abgeschlossen (Commit `ee37f36`); naechster Schritt
+ist Welle 0c (Lastenheft-Sweep), danach Welle 1 (DeviceModel-
+Protocol). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -34,7 +36,8 @@ Move `next/` → `in-progress/`: 2026-05-18 mit Welle-0a-Start.
   [`open/013-replay-diff-tick-ms-parameter.md`](../open/013-replay-diff-tick-ms-parameter.md),
   [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md)
   (Welle 0a abgeschlossen 2026-05-18),
-  [`open/015-runtime-image-hardening.md`](../open/015-runtime-image-hardening.md).
+  [`done/015-runtime-image-hardening.md`](../done/015-runtime-image-hardening.md)
+  (Welle 0b abgeschlossen 2026-05-18).
 
 ---
 
@@ -216,20 +219,31 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
   - 268 Unit-Tests gruen; `make gates` mit M1-Override gruen.
   - Closure-Notiz: [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md).
 
-#### Welle 0b — Trigger 015 (`runtime-image-hardening`)
+#### Welle 0b — Trigger 015 (`Done` 2026-05-18, Commit `ee37f36`)
 
-- `uv sync --no-editable` im `build-app`-Stage; entferne den
-  `PYTHONPATH=/app/src`-Workaround aus `Dockerfile`
-  `runtime`-Stage.
-- Shebang-Rewrite (`sed`-Loop) oder Pip-Relocate-Strategie,
-  sodass `uvicorn`/`alembic` als direkte Binaries laufen.
-- `deploy/compose.yml` benutzt direkte Binary-Aufrufe (`uvicorn`,
-  `alembic upgrade head`) statt `python -m`-Indirection;
-  `entrypoint: []`-Hack faellt weg.
-- Base-Image-Patch-Strategie dokumentieren: entweder eigenes
-  `grid-gym-base`-Image oder `--pull always` + `make
-  rebase-base`-Routine. `apt-get upgrade -y` faellt im
-  runtime-Stage weg (oder wandert in `make rebase-base`).
+- **S-4 / Trigger 015** (`runtime-image-hardening`)
+  geschlossen:
+  - `uv sync --frozen --no-dev --no-editable` im `build-app`-
+    Stage; `PYTHONPATH=/app/src`-Workaround entfernt.
+  - Shebang-Rewrite (`sed`-Loop ueber `/app/.venv/bin/*` und
+    `pyvenv.cfg`) — `uvicorn`/`alembic` laufen als direkte
+    Binaries.
+  - Dockerfile-`ENTRYPOINT` umgestellt auf direkten `uvicorn`-
+    Aufruf; `deploy/compose.yml::api` braucht kein
+    `entrypoint: []` und kein `python -m`-Indirection mehr.
+  - Neues `make rebase-base`-Target zieht
+    `python:$(PYTHON_VERSION)-slim` + uv-Image explizit aus
+    der Registry.
+  - **Base-Image-Patch-Strategie:** Welle 0b waehlt
+    Trigger-015-Option-A (in-image `apt-get upgrade -y`)
+    bewusst und dokumentiert das im Dockerfile. Trivy-Lauf zeigt,
+    dass `python:3.14-slim` Debian-Patches hinterherlaeuft —
+    `make rebase-base` alleine reicht nicht. Option B (eigenes
+    `grid-gym-base:debian-13-patched`) eskaliert auf M6, falls
+    persistente HIGHs/CRITICALs auftauchen.
+  - `make fullbuild` cache-frei gruen ohne Pragma-Hacks; 268
+    Unit-Tests gruen.
+  - Closure-Notiz: [`done/015-runtime-image-hardening.md`](../done/015-runtime-image-hardening.md).
 
 #### Welle 0c — S-6 / Lastenheft-Sweep
 
