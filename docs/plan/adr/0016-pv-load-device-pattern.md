@@ -7,12 +7,13 @@ Snapshot-Roundtrip + Determinismus-Property ueber 100 Ticks.
 **Datum:** 2026-05-18
 **Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
 **Geschaerft am:** 2026-05-18 (Welle-3-Review-Folge-Commits) —
-§§2.2/2.3/2.5/2.6 + §7 ergaenzt um Sign-Worked-Example,
+§§2.2/2.3/2.5/2.6 + §3 + §7 ergaenzt um Sign-Worked-Example,
 Pre-init-Snapshot-Asymmetry, Decimal-Context-Forward-Looking-
-Defense, Load-Default-Begruendung, Battery-set_mode-Cross-
-Reference. Schaerfung folgt ADR-0011-Pattern (parallele
-Schaerfung ohne Supersedes — der Entscheidungs-Kern in
-§§2.1/2.4/2.7 ist unveraendert).
+Defense, Load-Default-Begruendung, PV/Load-Duplikations-
+Begruendung (M-1) und Battery-set_mode-Cross-Reference.
+Schaerfung folgt ADR-0011-Pattern (parallele Schaerfung ohne
+Supersedes — der Entscheidungs-Kern in §§2.1/2.4/2.7 ist
+unveraendert).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol),
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Vorlage fuer das
@@ -259,6 +260,20 @@ Replay-Source-Pfad. Welle 5+ Netzbilanzmodell und M3
 Replay-Integration erweitern; aber Welle 3 erfuellt
 `GG-DEV-011`/`013` als „Minimalmodell + Beispiel +
 deterministischer Smoke-Test" vollstaendig.
+
+**PV/Load-Duplikation explizit gehalten (Welle-3-Review M-1):**
+Die beiden `model.py`-Dateien sind in Welle 3 zu ~95 % spiegel-
+gleich (Sign-Konvention, source-Tag und Default-Tick-Output
+sind die einzigen semantischen Unterschiede). Eine gemeinsame
+Basisklasse `_GenerationConsumptionDevice` waere heute moeglich,
+**wuerde aber Welle-5-Divergenz vorgreifen**: PV bekommt
+`forecast_kw`-Telemetrie + Tages-Solarkurve, Load bekommt
+Lastgang-Profile + ggf. Heizungs-Spike-Stochastik. Die Welle-5-
+Ergaenzungen brechen die heutige Symmetrie auf — eine voreilige
+Dedup haette dann den hoechsten Refactor-Aufwand bei minimalem
+Nutzen. Welle 3 traegt die Duplikation bewusst; Welle-5-ADR
+(noch nicht erstellt) entscheidet ueber das endgueltige
+Klassen-Hierarchie-Pattern.
 
 ---
 

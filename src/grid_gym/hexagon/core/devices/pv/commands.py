@@ -45,6 +45,14 @@ class PvAlarm:
     - `result` — `CommandResult` des ausloesenden Befehls
       (`LIMITED` oder `REJECTED`).
     - `command_id` — Bezug zum ausloesenden `Command`.
+
+    **Disambiguation (Welle-3-Review M-2):** Der `limit=0`-Wert ist
+    NICHT mehrdeutig — er erscheint ausschliesslich zusammen mit
+    `result=REJECTED` (Sign-Vertrag-Verstoss). `limit=rated_power_kw`
+    erscheint ausschliesslich mit `result=LIMITED` (Power-Clamp).
+    Welle-6-TickLoop und M3-AlarmSinkPort sollen IMMER `(result,
+    limit)` als Tupel auswerten, nicht `limit` alleine. Welle 4
+    SmartMeter (eigene ADR 0017) kann das Pattern uebernehmen.
     """
 
     target_device_id: str

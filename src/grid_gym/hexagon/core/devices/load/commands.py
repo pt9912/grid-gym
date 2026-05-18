@@ -27,7 +27,12 @@ _PAYLOAD_VALUE_KEY = "value"
 
 @dataclass(frozen=True, slots=True)
 class LoadAlarm:
-    """Load-Alarm-Eintrag (analog `BatteryAlarm`/`PvAlarm`)."""
+    """Load-Alarm-Eintrag (analog `BatteryAlarm`/`PvAlarm`).
+
+    Disambiguation (Welle-3-Review M-2): `limit=0` erscheint nur
+    mit `result=REJECTED` (Sign-Verstoss); `limit=rated_power_kw`
+    nur mit `result=LIMITED` (Power-Clamp). Konsumenten lesen
+    `(result, limit)` als Tupel, nicht `limit` allein."""
 
     target_device_id: str
     limit: Decimal
