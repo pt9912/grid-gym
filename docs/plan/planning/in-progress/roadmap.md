@@ -146,8 +146,8 @@ Sweep, ADR 0013..0015 vorbelegt).
         Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
         sortiert.
   - [ ] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
-        Composition (Trigger 014 generischer Codec wird hier
-        relevant — siehe `open/014-generic-snapshot-format-codec.md`).
+        Composition (Trigger 014 generischer Codec ist in Welle 0a
+        geliefert — siehe `done/014-generic-snapshot-format-codec.md`).
   - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
         gruen — `devices/battery` hat ≥ 90 % Line + Branch.
   - [ ] M1-DoD-Restposten (M1 Welle 6d/7) sind als

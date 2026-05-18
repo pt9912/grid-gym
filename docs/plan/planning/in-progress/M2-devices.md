@@ -1,7 +1,9 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
 **Status:** In Progress — Welle 0a (Trigger 014, generic
-snapshot codec) seit 2026-05-18 aktiv. M1-Spine
+snapshot codec) am 2026-05-18 abgeschlossen (Commit `3322cb8`);
+naechster Schritt ist Welle 0b (Trigger 015, runtime-image-
+hardening) oder Welle 0c (Lastenheft-Sweep). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -28,9 +30,10 @@ Move `next/` → `in-progress/`: 2026-05-18 mit Welle-0a-Start.
 - Lastenheft §9 (`GG-DEV-001..018`), §10 (`GG-BESS-001..008`),
   §11 (`GG-GRID-001..007`), §3 (`GG-MVP-002`: End-to-End-
   Szenario mit Netzanschluss/PV/Load/Smart-Meter/Battery).
-- Open-Triggers
+- Triggers
   [`open/013-replay-diff-tick-ms-parameter.md`](../open/013-replay-diff-tick-ms-parameter.md),
-  [`open/014-generic-snapshot-format-codec.md`](../open/014-generic-snapshot-format-codec.md),
+  [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md)
+  (Welle 0a abgeschlossen 2026-05-18),
   [`open/015-runtime-image-hardening.md`](../open/015-runtime-image-hardening.md).
 
 ---
@@ -184,56 +187,69 @@ der bis dahin aktiven Gates (`make gates` — moeglichst ohne
 Override, sonst mit explizitem Welle-lokalem
 `CRITICAL_COV_TARGETS`).
 
-### Welle 0 — Pflicht-Vorabraeumung (1 Tag)
+### Welle 0 — Pflicht-Vorabraeumung (Sub-gesliced 0a / 0b / 0c)
 
 Diese Welle leistet ausschliesslich Welle-7-Erbschafts-Arbeit
 aus M1; **kein** Geraete-Code, **kein** Verbreitern der
-Domain-Form.
+Domain-Form. Sub-Slicing-Schwelle aus §3 hat gegriffen (drei
+unabhaengige Sub-Items mit verschiedenen `make`-Gates).
 
-- **S-1 / Trigger 014** (`generic-snapshot-format-codec`):
-  - Refactor `hexagon/core/errors.py`: gemeinsame Basis
-    `SnapshotFormatError(GridGymError, subsystem: str)` + Free-
-    Functions `assert_required_keys`, `assert_int`,
-    `assert_mapping`, `assert_payload_canonical_compatible`
-    (siehe `open/014` §„Erwartete Lieferung" Schritt 1-5).
-  - Alle fuenf bestehenden M1-`*SnapshotFormatError`-Subklassen
-    bleiben als Alias erhalten (Welle-1..5-Tests muessen byte-
-    identisch gruen bleiben).
-  - `Scheduler._assert_payload_canonical` wird zur Free-Function
-    `assert_payload_canonical_compatible` befoerdert und im
-    Scenario-Loader nach dem strukturellen Validator aufgerufen
-    (siehe Welle-5-Review MF-3).
-- **S-4 / Trigger 015** (`runtime-image-hardening`):
-  - `uv sync --no-editable` im `build-app`-Stage; entferne den
-    `PYTHONPATH=/app/src`-Workaround aus `Dockerfile`
-    `runtime`-Stage.
-  - Shebang-Rewrite (`sed`-Loop) oder Pip-Relocate-Strategie,
-    sodass `uvicorn`/`alembic` als direkte Binaries laufen.
-  - `deploy/compose.yml` benutzt direkte Binary-Aufrufe (`uvicorn`,
-    `alembic upgrade head`) statt `python -m`-Indirection;
-    `entrypoint: []`-Hack faellt weg.
-  - Base-Image-Patch-Strategie dokumentieren: entweder eigenes
-    `grid-gym-base`-Image oder `--pull always` + `make
-    rebase-base`-Routine. `apt-get upgrade -y` faellt im
-    runtime-Stage weg (oder wandert in `make rebase-base`).
-- **S-6 / Lastenheft-Sweep**:
-  - `spec/lastenheft.md` §6..§25 mechanisch durchdiffen gegen
-    M1-Implementierung; jede `GG-*`-ID ohne Implementierungs-
-    Eintrag in `spec/lastenheft.md §27.2`
-    (`GG-TRACE-001`-Matrix) bekommt entweder einen
-    Implementierungs-Verweis (wenn bereits in M1 erfuellt) oder
-    eine neue Open-Trigger-Notiz (z. B.
-    `016-<short-name>.md`).
-- **Tests** fuer Welle 0:
-  - Welle-0-Tests sind reine Refactor-Tests — bestehende M1-Tests
-    bleiben gruen, neue Generic-Codec-Tests (siehe Trigger 014)
-    decken die Basis ab.
-  - `make fullbuild` ohne Override-Hacks gruen (`PYTHONPATH=
-    /app/src` weg, `apt-get upgrade -y` weg, `entrypoint: []` weg).
-- **Gate-Status nach Welle 0**: `make fullbuild` gruen mit
-  M1-Override-Liste (devices/battery noch leer — Default-Gate
-  bleibt rot bis Welle 2). Trigger 014 nach `done/`,
-  Trigger 015 nach `done/`.
+#### Welle 0a — Trigger 014 (`Done` 2026-05-18, Commit `3322cb8`)
+
+- **S-1 / Trigger 014** (`generic-snapshot-format-codec`)
+  geschlossen:
+  - `SnapshotFormatError(GridGymError)` + Kategorien
+    (`MissingKeysError`, `WrongTypeError`,
+    `ListItemWrongTypeError`, `VersionError`) in `errors.py`.
+  - Fuenf M1-Per-Subsystem-Roots via Multi-Inheritance an die
+    generische Basis gebunden; Leaf-Klassen byte-identisch.
+  - `hexagon/core/serialization/snapshot_codec.py` neu mit
+    Free-Functions `assert_required_keys`, `assert_int`,
+    `assert_mapping`, `assert_payload_canonical_compatible`.
+  - Scenario-Validator ruft Free-Function fuer `params`/
+    `payload`-Felder auf (Float-/Bytes-Injection typisiert).
+  - Item 5 aus `done/014` (`SnapshotEnvelope.__post_init__`
+    zusaetzlich Payload-Canonical) **bewusst auf Welle 6
+    verschoben** (gehoert zum v1→v2-Envelope-Bump).
+  - 265 Unit-Tests gruen; `make gates` mit M1-Override gruen.
+  - Closure-Notiz: [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md).
+
+#### Welle 0b — Trigger 015 (`runtime-image-hardening`)
+
+- `uv sync --no-editable` im `build-app`-Stage; entferne den
+  `PYTHONPATH=/app/src`-Workaround aus `Dockerfile`
+  `runtime`-Stage.
+- Shebang-Rewrite (`sed`-Loop) oder Pip-Relocate-Strategie,
+  sodass `uvicorn`/`alembic` als direkte Binaries laufen.
+- `deploy/compose.yml` benutzt direkte Binary-Aufrufe (`uvicorn`,
+  `alembic upgrade head`) statt `python -m`-Indirection;
+  `entrypoint: []`-Hack faellt weg.
+- Base-Image-Patch-Strategie dokumentieren: entweder eigenes
+  `grid-gym-base`-Image oder `--pull always` + `make
+  rebase-base`-Routine. `apt-get upgrade -y` faellt im
+  runtime-Stage weg (oder wandert in `make rebase-base`).
+
+#### Welle 0c — S-6 / Lastenheft-Sweep
+
+- `spec/lastenheft.md` §6..§25 mechanisch durchdiffen gegen
+  M1-Implementierung; jede `GG-*`-ID ohne Implementierungs-
+  Eintrag in `spec/lastenheft.md §27.2`
+  (`GG-TRACE-001`-Matrix) bekommt entweder einen
+  Implementierungs-Verweis (wenn bereits in M1 erfuellt) oder
+  eine neue Open-Trigger-Notiz (z. B. `016-<short-name>.md`).
+
+#### Welle-0-Gate-Erwartung
+
+- Tests: Welle-0a-Tests sind reine Refactor-Tests; Welle-0b
+  haengt am Dockerfile/Compose; Welle-0c ist reine Doku.
+  `make fullbuild` muss am Ende von Welle 0 ohne Override-Hacks
+  gruen sein (`PYTHONPATH=/app/src` weg, `apt-get upgrade -y`
+  weg, `entrypoint: []` weg) — das ist Welle-0b-Pflicht.
+- **Gate-Status nach Welle 0a**: `make gates` mit M1-Override-
+  Liste + `core/serialization` gruen (devices/battery noch leer
+  — Default-Gate bleibt rot bis Welle 2). Trigger 014 nach
+  `done/`. Welle 0b muss `make fullbuild` ohne Pragma-Hacks
+  gruen liefern.
 
 ### Welle 1 — `DeviceModel`-Protocol + Device-Domain (1/2 Tag)
 
