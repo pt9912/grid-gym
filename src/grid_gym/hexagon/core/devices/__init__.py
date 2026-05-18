@@ -4,6 +4,11 @@ Modul-Struktur (gewachsen ueber M2-Wellen):
 
 - `_protocol.py` (M2 Welle 1) — `DeviceModel`-Protocol, Vertrag fuer
   jede konkrete Geraete-Implementation (`GG-DEV-001..003`).
+  Underscore-Praefix ist forward-looking: sobald Welle 2..5
+  konkrete Geraete-Submodule (`battery/`, `pv/`, ...) liefern,
+  ist `_protocol.py` als Paket-internes Modul gerechtfertigt;
+  Aufrufer benutzen `DeviceModel` ueber den hiesigen Re-Export
+  (siehe unten).
 - `battery/` (M2 Welle 2) — `BatteryDevice` + Snapshot-Schema
   (`GG-DEV-010`, `GG-BESS-001..005,008`).
 - `pv/`, `load/` (M2 Welle 3) — PV- und Last-Geraete

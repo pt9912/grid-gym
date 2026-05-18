@@ -109,8 +109,10 @@ def test_initialize_stores_scenario_device_and_random() -> None:
 
 def test_apply_command_returns_command_result_enum() -> None:
     """`apply_command(cmd)` MUSS einen `CommandResult`-Enum-Wert
-    zurueckgeben (kein bool/None/str)."""
+    zurueckgeben (kein bool/None/str). Post-Welle-1-Review C-2:
+    `initialize()` ist Vorbedingung."""
     device = NullDevice()
+    device.initialize(_make_scenario_device(), FixedSeedRandom(seed=0))
     result = device.apply_command(_make_command())
     assert isinstance(result, CommandResult)
 
@@ -118,8 +120,10 @@ def test_apply_command_returns_command_result_enum() -> None:
 def test_tick_returns_device_tick_outcome() -> None:
     """`tick(context)` liefert `DeviceTickOutcome` mit Telemetrie-
     Tuple. NullDevice gibt leeres Tuple zurueck (keine Telemetrie),
-    aber der Typ-Vertrag steht."""
+    aber der Typ-Vertrag steht. Post-Welle-1-Review C-2:
+    `initialize()` ist Vorbedingung."""
     device = NullDevice()
+    device.initialize(_make_scenario_device(), FixedSeedRandom(seed=0))
     outcome = device.tick(_make_context(tick=5))
     assert isinstance(outcome, DeviceTickOutcome)
     assert outcome.telemetry == ()

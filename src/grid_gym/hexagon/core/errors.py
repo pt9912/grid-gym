@@ -23,6 +23,53 @@ class GridGymError(Exception):
 
 
 # ---------------------------------------------------------------------------
+# DeviceModel-Lifecycle (M2 Welle 1, ADR 0013 §2.6)
+# ---------------------------------------------------------------------------
+
+
+class DeviceLifecycleError(GridGymError):
+    """Wurzel der `DeviceModel`-Lifecycle-Vertragsverletzungen.
+
+    Aufrufer pruefen typisiert ueber `DeviceNotInitializedError`
+    bzw. `DeviceAlreadyInitializedError`.
+    """
+
+
+class DeviceNotInitializedError(DeviceLifecycleError):
+    """`tick(...)`/`apply_command(...)`/`device_id` ohne vorheriges
+    `initialize(...)` aufgerufen.
+
+    Welle-1-Review C-2: Devices implementieren das Lifecycle-Gate;
+    TickLoop ruft `initialize(scenario_device, random)` einmal vor
+    dem ersten Tick. Pre-init-Aufrufe der State-mutierenden
+    Methoden sind ein Programmier-Fehler und werfen typed, statt
+    still no-op zu sein.
+    """
+
+    def __init__(self, method_name: str) -> None:
+        super().__init__(
+            f"DeviceModel.{method_name}() called before initialize(); "
+            "TickLoop must initialize the device before tick/apply_command/"
+            "device_id access"
+        )
+
+
+class DeviceAlreadyInitializedError(DeviceLifecycleError):
+    """`initialize(...)` ein zweites Mal aufgerufen.
+
+    Devices sind nicht resettable per Protocol-Vertrag (ADR 0013
+    §2.6). Reset-Workflow geht ueber Snapshot/Restore
+    (`from_snapshot`-Classmethod), nicht ueber Doppel-`initialize`.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "DeviceModel.initialize() called twice; devices are not "
+            "resettable per ADR 0013 §2.6 — use from_snapshot() for resume"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Generischer Snapshot-/Format-Codec (M2 Welle 0a, Trigger 014)
 # ---------------------------------------------------------------------------
 #
