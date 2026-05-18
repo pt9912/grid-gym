@@ -42,6 +42,9 @@ def _make_snapshot() -> BatterySnapshot:
     )
     return BatterySnapshot(
         version=SNAPSHOT_VERSION,
+        device_id="battery-1",
+        run_id="run-42",
+        sequence=0,
         config=config,
         soc_kwh=Decimal("500"),
         current_power_kw=Decimal("0"),

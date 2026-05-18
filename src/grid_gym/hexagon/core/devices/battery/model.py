@@ -46,9 +46,15 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import (
     DeviceAlreadyInitializedError,
     DeviceNotInitializedError,
+    MissingKeysError,
     WrongTypeError,
 )
 from grid_gym.hexagon.ports.driven.random import RandomPort
+
+_SATURATION_COMMAND_ID = "<saturation>"
+"""Welle-2-Review C-2: spezieller command_id-Marker fuer
+Saturation-Alarme aus dem Hard-Clamp-Pfad (ADR 0014 §2.4).
+Welle 6 TickLoop kann die Alarme per String-Match filtern."""
 
 _ZERO = Decimal(0)
 _HUNDRED = Decimal(100)
@@ -75,7 +81,7 @@ _PARAM_KEYS = (
 )
 
 
-class BatteryDevice:
+class BatteryDevice:  # noqa: PLR0904 — Protocol-Surface plus Welle-2-Review-Hooks (drain_alarms/set_run_id)
     """`DeviceModel`-Implementation fuer den Battery-Geraetetyp.
 
     Lifecycle, Snapshot-Vertrag und Determinismus sind in
@@ -121,8 +127,25 @@ class BatteryDevice:
         """Bisher emittierte Alarme als Tupel-Snapshot
         (ADR 0014 §2.5). Unveraenderlich; Welle 6 TickLoop kann
         die Liste konsumieren, ohne Mutation zu riskieren.
+        Verwende `drain_alarms()` fuer destruktives Auslesen.
         """
         return tuple(self._alarms)
+
+    def drain_alarms(self) -> tuple[BatteryAlarm, ...]:
+        """Liefert alle bisher emittierten Alarme und leert die
+        interne Liste (Welle-2-Review M-3: AlarmSinkPort kommt mit
+        M3; bis dahin braucht der Aufrufer eine Drain-Semantik,
+        damit lange Laeufe nicht unbeschraenkt Speicher binden)."""
+        drained = tuple(self._alarms)
+        self._alarms = []
+        return drained
+
+    def set_run_id(self, run_id: str) -> None:
+        """Setzt `TelemetryPoint.run_id` fuer alle nachfolgenden
+        Tick-Emissions (Welle-2-Review H-2). TickLoop ruft das
+        beim Lauf-Start; Welle 2 hat keinen TickLoop, der das
+        macht — Test-Setup ruft direkt."""
+        self._run_id = run_id
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -183,12 +206,11 @@ class BatteryDevice:
         else:
             energy_delta_kwh = _ZERO
 
-        # SOC-Hard-Clamp (GG-BESS-005)
-        new_soc_kwh = self._soc_kwh + energy_delta_kwh
-        if new_soc_kwh < config.min_soc_kwh:
-            new_soc_kwh = config.min_soc_kwh
-        elif new_soc_kwh > config.max_soc_kwh:
-            new_soc_kwh = config.max_soc_kwh
+        # SOC-Hard-Clamp + Saturation-Power-Reset (GG-BESS-005,
+        # Welle-2-Review C-2).
+        new_soc_kwh, new_power_kw = self._apply_soc_clamp(
+            self._soc_kwh + energy_delta_kwh, new_power_kw, config
+        )
 
         self._soc_kwh = new_soc_kwh
         self._current_power_kw = new_power_kw
@@ -206,11 +228,14 @@ class BatteryDevice:
 
     def snapshot(self) -> Mapping[str, object]:
         config = self._config
-        if config is None:
+        if config is None or self._scenario_device is None:
             # Pre-init: nur `version`-Felder (ADR 0013 §2.6).
             return {"version": SNAPSHOT_VERSION}
         snap = BatterySnapshot(
             version=SNAPSHOT_VERSION,
+            device_id=self._scenario_device.id,
+            run_id=self._run_id,
+            sequence=self._sequence,
             config=config,
             soc_kwh=self._soc_kwh,
             current_power_kw=self._current_power_kw,
@@ -220,12 +245,25 @@ class BatteryDevice:
 
     @classmethod
     def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+        # Welle-2-Review C-1: from_snapshot ist self-sufficient
+        # (ADR 0014 §2.2). Wir synthesizen ein minimales
+        # ScenarioDevice aus device_id + embedded config, damit
+        # die Lifecycle-Pre-init-Raises sofort aufgeloest sind.
+        # `_random` bleibt None — Welle 2 Battery konsumiert es
+        # nicht; Welle 3+ Geraete brauchen separate Loesung.
         snap = BatterySnapshot.from_dict(state)
         device = cls()
+        device._scenario_device = ScenarioDevice(
+            id=snap.device_id,
+            type="battery",
+            params=_config_to_params(snap.config),
+        )
         device._config = snap.config
         device._soc_kwh = snap.soc_kwh
         device._current_power_kw = snap.current_power_kw
         device._pending_power_kw = snap.pending_power_kw
+        device._run_id = snap.run_id
+        device._sequence = snap.sequence
         return device
 
     # ------------------------------------------------------------------
@@ -234,6 +272,11 @@ class BatteryDevice:
 
     @override
     def __eq__(self, other: object) -> bool:
+        # Welle-2-Review M-1: Equality vergleicht persistierten
+        # State (alles, was im Snapshot landet). Run-Segment-lokale
+        # Felder wie `_alarms` und `_last_telemetry`/`_random` sind
+        # bewusst ausgeschlossen — sie sind Effekt der bisherigen
+        # Iteration, nicht des Zustands.
         if not isinstance(other, BatteryDevice):
             return NotImplemented
         return (
@@ -241,6 +284,9 @@ class BatteryDevice:
             and self._soc_kwh == other._soc_kwh
             and self._current_power_kw == other._current_power_kw
             and self._pending_power_kw == other._pending_power_kw
+            and self._device_id_or_none() == other._device_id_or_none()
+            and self._run_id == other._run_id
+            and self._sequence == other._sequence
         )
 
     @override
@@ -251,12 +297,64 @@ class BatteryDevice:
                 self._soc_kwh,
                 self._current_power_kw,
                 self._pending_power_kw,
+                self._device_id_or_none(),
+                self._run_id,
+                self._sequence,
             )
         )
+
+    def _device_id_or_none(self) -> str | None:
+        return None if self._scenario_device is None else self._scenario_device.id
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    def _apply_soc_clamp(
+        self,
+        target_soc_kwh: Decimal,
+        current_power_kw: Decimal,
+        config: BatteryConfig,
+    ) -> tuple[Decimal, Decimal]:
+        """SOC-Hard-Clamp (GG-BESS-005) + Saturation-Power-Reset
+        (Welle-2-Review C-2). Liefert das Tupel
+        `(new_soc_kwh, new_power_kw)` zurueck.
+
+        Bei Saturation:
+        - `new_soc_kwh = clamp(target_soc_kwh, min/max_soc_kwh)`,
+        - `new_power_kw = 0` (kein Ghost-Discharge),
+        - `_pending_power_kw = 0` (kein „auto-resume",
+          `GG-BESS-005`-Akzeptanz),
+        - Saturation-Alarm via `command_id="<saturation>"` in
+          `_alarms` angefuegt.
+        """
+        if target_soc_kwh < config.min_soc_kwh:
+            new_soc_kwh = config.min_soc_kwh
+            saturation_limit_pct: Decimal = config.min_soc_pct
+        elif target_soc_kwh > config.max_soc_kwh:
+            new_soc_kwh = config.max_soc_kwh
+            saturation_limit_pct = config.max_soc_pct
+        else:
+            return target_soc_kwh, current_power_kw
+
+        if current_power_kw == _ZERO:
+            # SOC kommt zwar aus den Grenzen heraus, aber das war
+            # nicht durch eigene Power getrieben (z. B. anfaengliche
+            # Konfiguration genau am Limit) — kein Alarm.
+            return new_soc_kwh, current_power_kw
+
+        # Power+Pending zero + Alarm
+        self._pending_power_kw = _ZERO
+        device_id = cast(ScenarioDevice, self._scenario_device).id
+        self._alarms.append(
+            BatteryAlarm(
+                target_device_id=device_id,
+                limit=saturation_limit_pct,
+                result=CommandResult.LIMITED,
+                command_id=_SATURATION_COMMAND_ID,
+            )
+        )
+        return new_soc_kwh, _ZERO
 
     def _emit_telemetry(
         self,
@@ -308,15 +406,21 @@ def _config_from_params(params: Mapping[str, object]) -> BatteryConfig:
     geprueft. Mismatches werfen `WrongTypeError("battery", key,
     "Decimal", actual)`.
     """
+    missing = [key for key in _PARAM_KEYS if key not in params]
+    if missing:
+        raise MissingKeysError(_SUBSYSTEM, missing)
     fields: dict[str, Decimal] = {}
     for key in _PARAM_KEYS:
-        if key not in params:
-            from grid_gym.hexagon.core.errors import MissingKeysError
-
-            missing = [k for k in _PARAM_KEYS if k not in params]
-            raise MissingKeysError(_SUBSYSTEM, missing)
         value = params[key]
         if not isinstance(value, Decimal):
             raise WrongTypeError(_SUBSYSTEM, f"params.{key}", "Decimal", type(value).__name__)
         fields[key] = value
     return BatteryConfig(**fields)
+
+
+def _config_to_params(config: BatteryConfig) -> Mapping[str, Decimal]:
+    """Inverse von `_config_from_params`: serialisiert
+    `BatteryConfig` zurueck in das Params-Mapping-Form fuer das
+    synthesizte `ScenarioDevice` post-`from_snapshot`
+    (Welle-2-Review C-1)."""
+    return {key: getattr(config, key) for key in _PARAM_KEYS}
