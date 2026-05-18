@@ -105,11 +105,18 @@ M2 ist erfolgreich, wenn:
 2. **`make fullbuild` gruen** auf `main` ohne Welle-6d-Hack-
    Restposten:
    - `deploy/compose.yml` benutzt `uvicorn` und `alembic` direkt
-     (kein `python -m`-Indirection),
-   - `PYTHONPATH=/app/src`-Workaround und
-     `apt-get upgrade -y`-Workaround sind entfernt
-     (`uv sync --no-editable` + shebang-Rewrite oder Pip-Relocate,
-     Base-Image-Patch-Strategie via Trigger 015).
+     (kein `python -m`-Indirection, kein `entrypoint: []`-
+     Override),
+   - `PYTHONPATH=/app/src`-Workaround ist entfernt
+     (`uv sync --no-editable` installiert Wheels direkt in
+     site-packages, plus Shebang-Rewrite fuer Binary-Aufrufe),
+   - Base-Image-Patch-Strategie ist explizit dokumentiert:
+     Welle-0b waehlt Trigger-015-Option-A (in-image
+     `apt-get upgrade -y` bleibt im runtime-Stage), weil trivy
+     `python:3.14-slim` als Debian-laggard sieht; Wechsel auf
+     ein eigenes `grid-gym-base:debian-13-patched`
+     (Trigger-015-Option-B) eskaliert auf M6. Siehe Closure-
+     Notiz [`done/015-runtime-image-hardening.md`](../done/015-runtime-image-hardening.md).
 3. **MVP-Demo-Szenario (`GG-MVP-002`) liegt im Repo**:
    `tests/integration/scenarios/mvp_demo.yaml` oder gleichwertig
    mit Netzanschluss + PV + Load + Smart Meter + Battery,
@@ -249,10 +256,16 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
   - `spec/lastenheft.md §27.2` (`GG-TRACE-001`-Implementierungs-
     Matrix) erstmalig befuellt — vorher nur Placeholder
     `_(offen)_ 🔲`.
-  - Alle ~180 `GG-*`-IDs aus §6..§25 sind als Gruppen-Eintraege
-    abgebildet: M1-Lieferungen mit konkretem Modul-Pfad,
-    M2..M6-Items mit Meilenstein-Marker, SOLLTE-/Post-MVP-Items
-    explizit als `Post-MVP` gekennzeichnet.
+  - Alle `GG-*`-IDs aus §6..§25 mit Implementierungs-Charakter
+    sind als Gruppen-Eintraege abgebildet (M1-Lieferungen mit
+    konkretem Modul-Pfad, M2..M6-Items mit Meilenstein-Marker,
+    SOLLTE-/Post-MVP-Items explizit als `Post-MVP` gekennzeichnet).
+    Einzige Ausnahme ist `GG-TERM-003` (§2 Glossar, „kanonisches
+    Ergebnis") — Glossar-Eintrag ohne Implementierungs-Charakter,
+    behandelt in §27.1.1 als `GG-TERM-001..006 — n/a`.
+  - **Range-Konvention** in §27.2 ist `001..005` (zusammenhaengend)
+    bzw. `001..005, 008` (mit Loch); reine `/`-Trennung ist
+    nicht zugelassen (Review-Befund M-8).
   - **Kein neuer Trigger 016 noetig** — der Sweep hat keine
     echten Implementations-Luecken gefunden, die nicht bereits
     ueber eine Roadmap-Meilenstein-Zuordnung getragen waeren.

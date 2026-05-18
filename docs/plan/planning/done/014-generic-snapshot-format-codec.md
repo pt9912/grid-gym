@@ -9,11 +9,15 @@ SC-4). Erbt + erweitert die Punkte aus
 Function), die Welle 4 explizit als „spaeter" verschoben hatte.
 **Quelle:** Welle-3-Review N1/N2/N4, Welle-4-Review (Trigger 012
 Closure), Welle-5-Review SC-3/SC-4.
-**Verlinkt:** `hexagon/core/errors.py` (Zeilen 87-143
-`RandomPortSnapshotFormatError`, 198-238 `SchedulerSnapshot*`,
-277-330 `TickLoopSnapshot*`, 351-385 `ScenarioSchema*`, 396-430
-`ReplayParse*`), `hexagon/core/scheduler.py::_assert_payload_
-canonical` (Welle-3-Review S2 — heute scheduler-lokal), Welle-5-
+**Verlinkt:** `hexagon/core/errors.py` (Klassen
+`RandomPortSnapshotFormatError`, `SchedulerSnapshotFormatError`,
+`TickLoopSnapshotFormatError`, `ScenarioSchemaError`,
+`ReplayParseError` — Line-Ranges sind nach den Welle-0a-
+Additions nicht mehr stabil und deshalb durch Klassennamen
+ersetzt; siehe Klassen-Hierarchie unter
+`SnapshotFormatError(GridGymError)` ab errors.py-Start),
+`hexagon/core/scheduler.py::_assert_payload_canonical`
+(Welle-3-Review S2 — heute scheduler-lokal), Welle-5-
 Slice-Plan §3 Welle 5 Closure-Block.
 
 ---
