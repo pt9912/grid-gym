@@ -1,11 +1,9 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0a (Trigger 014, generic
-snapshot codec) am 2026-05-18 abgeschlossen (Commit `3322cb8`)
-und Welle 0b (Trigger 015, runtime-image-hardening) am
-2026-05-18 abgeschlossen (Commit `ee37f36`); naechster Schritt
-ist Welle 0c (Lastenheft-Sweep), danach Welle 1 (DeviceModel-
-Protocol). M1-Spine
+**Status:** In Progress — Welle 0 vollstaendig abgeschlossen
+(Welle 0a/0b/0c am 2026-05-18, Commits `3322cb8` / `ee37f36` /
+folgender Welle-0c-Commit). Naechster Schritt ist Welle 1
+(DeviceModel-Protocol). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -245,27 +243,35 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
     Unit-Tests gruen.
   - Closure-Notiz: [`done/015-runtime-image-hardening.md`](../done/015-runtime-image-hardening.md).
 
-#### Welle 0c — S-6 / Lastenheft-Sweep
+#### Welle 0c — S-6 / Lastenheft-Sweep (`Done` 2026-05-18)
 
-- `spec/lastenheft.md` §6..§25 mechanisch durchdiffen gegen
-  M1-Implementierung; jede `GG-*`-ID ohne Implementierungs-
-  Eintrag in `spec/lastenheft.md §27.2`
-  (`GG-TRACE-001`-Matrix) bekommt entweder einen
-  Implementierungs-Verweis (wenn bereits in M1 erfuellt) oder
-  eine neue Open-Trigger-Notiz (z. B. `016-<short-name>.md`).
+- **S-6 / Lastenheft-Sweep** geschlossen:
+  - `spec/lastenheft.md §27.2` (`GG-TRACE-001`-Implementierungs-
+    Matrix) erstmalig befuellt — vorher nur Placeholder
+    `_(offen)_ 🔲`.
+  - Alle ~180 `GG-*`-IDs aus §6..§25 sind als Gruppen-Eintraege
+    abgebildet: M1-Lieferungen mit konkretem Modul-Pfad,
+    M2..M6-Items mit Meilenstein-Marker, SOLLTE-/Post-MVP-Items
+    explizit als `Post-MVP` gekennzeichnet.
+  - **Kein neuer Trigger 016 noetig** — der Sweep hat keine
+    echten Implementations-Luecken gefunden, die nicht bereits
+    ueber eine Roadmap-Meilenstein-Zuordnung getragen waeren.
+    Jeder Eintrag haengt entweder an einer M1-Closure-Notiz,
+    am M2-Slice-Plan oder an einer M3..M6-Roadmap-Sektion.
+  - `make docs-check` cache-frei gruen.
 
 #### Welle-0-Gate-Erwartung
 
 - Tests: Welle-0a-Tests sind reine Refactor-Tests; Welle-0b
-  haengt am Dockerfile/Compose; Welle-0c ist reine Doku.
-  `make fullbuild` muss am Ende von Welle 0 ohne Override-Hacks
-  gruen sein (`PYTHONPATH=/app/src` weg, `apt-get upgrade -y`
-  weg, `entrypoint: []` weg) — das ist Welle-0b-Pflicht.
-- **Gate-Status nach Welle 0a**: `make gates` mit M1-Override-
-  Liste + `core/serialization` gruen (devices/battery noch leer
-  — Default-Gate bleibt rot bis Welle 2). Trigger 014 nach
-  `done/`. Welle 0b muss `make fullbuild` ohne Pragma-Hacks
-  gruen liefern.
+  haengt am Dockerfile/Compose; Welle-0c ist reine Doku
+  (`spec/lastenheft.md §27.2`-Befuellung).
+- **Gate-Status nach Welle 0a/0b/0c**: `make fullbuild`
+  cache-frei gruen mit M1-Override-Liste + `core/serialization`
+  und **ohne Welle-6d-Pragma-Hacks** (`PYTHONPATH`,
+  `entrypoint: []`, `python -m uvicorn`). Default-Critical-Gate
+  bleibt rot, weil `devices/battery` weiter leer ist (Welle-2-
+  Lieferung). 268 Unit-Tests gruen. Triggers 014/015 nach
+  `done/`.
 
 ### Welle 1 — `DeviceModel`-Protocol + Device-Domain (1/2 Tag)
 
