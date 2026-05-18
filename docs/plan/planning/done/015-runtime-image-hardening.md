@@ -35,9 +35,12 @@ M1-Slice-Plan
   `deploy/compose.yml::api` sind weg.
 - Dockerfile-`ENTRYPOINT` umgestellt von dem nicht-aufrufbaren
   `python -m grid_gym.adapters.driving.http_api` (kein
-  `__main__.py`) auf `uvicorn grid_gym.adapters.driving.http_api:app
-  --host 0.0.0.0 --port 8080`. `deploy/compose.yml::api` benutzt
-  diesen ENTRYPOINT direkt.
+  `__main__.py`) auf
+  `exec uvicorn grid_gym.adapters.driving.http_api:app --host
+  "$GRID_GYM_HOST" --port "$GRID_GYM_PORT"` (shell-form mit
+  `exec` fuer Signal-Forwarding; ENV-Vars werden konsumiert,
+  siehe Welle-0-Review H-1 in Commit `d490905`).
+  `deploy/compose.yml::api` benutzt diesen ENTRYPOINT direkt.
 - Neues `make rebase-base`-Target zieht
   `python:$(PYTHON_VERSION)-slim` und das uv-Image explizit aus
   der Registry; refresht den Base-Layer fuer den uv-Cache.
@@ -54,6 +57,13 @@ M1-Slice-Plan
   Trigger-015-Option-B (eigenes
   `grid-gym-base:debian-13-patched`) ist M6 (`GG-CICD`/
   Security-Haertung).
+- `entrypoint: []` am `simulation`-Stub-Service in
+  `deploy/compose.yml` bleibt — der Stub ist kein Webserver
+  und ueberschreibt den Dockerfile-`uvicorn`-ENTRYPOINT bewusst
+  mit `sleep infinity` (Welle-6c-Erbe; M2-Welle-6 ersetzt den
+  Stub durch den Geraete-TickLoop-Runner). Welle-0b hat
+  ausschliesslich den `entrypoint: []`-Override am `api`-Service
+  entfernt.
 
 **Abnahme-Belege:**
 

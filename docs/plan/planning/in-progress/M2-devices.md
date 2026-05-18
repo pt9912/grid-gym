@@ -1,9 +1,11 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
 **Status:** In Progress — Welle 0 vollstaendig abgeschlossen
-(Welle 0a/0b/0c am 2026-05-18, Commits `3322cb8` / `ee37f36` /
-folgender Welle-0c-Commit). Naechster Schritt ist Welle 1
-(DeviceModel-Protocol). M1-Spine
+am 2026-05-18: Welle 0a (Commits `3322cb8`, `1f19996`),
+Welle 0b (Commit `ee37f36`), Welle 0c (Commit `314f853`).
+Welle-0-Review-Fixes in `d490905` / `51a5f4e` / `6d39c7a` /
+`df99d97` (Commits H-1..L-17, M-5). Naechster Schritt ist
+Welle 1 (DeviceModel-Protocol). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -104,9 +106,13 @@ M2 ist erfolgreich, wenn:
      M2-Abschluss-Gate.
 2. **`make fullbuild` gruen** auf `main` ohne Welle-6d-Hack-
    Restposten:
-   - `deploy/compose.yml` benutzt `uvicorn` und `alembic` direkt
-     (kein `python -m`-Indirection, kein `entrypoint: []`-
-     Override),
+   - `deploy/compose.yml::api` benutzt den Dockerfile-`uvicorn`-
+     `ENTRYPOINT` direkt, ohne `python -m`-Indirection und ohne
+     `entrypoint: []`-Override (Welle-6d-Pattern auf api-Service
+     entfernt). Der `simulation`-Stub-Service haelt `entrypoint:
+     []` + `sleep infinity` bewusst — er ist kein Webserver und
+     wird in M2-Welle-6 durch den Geraete-TickLoop-Runner
+     ersetzt.
    - `PYTHONPATH=/app/src`-Workaround ist entfernt
      (`uv sync --no-editable` installiert Wheels direkt in
      site-packages, plus Shebang-Rewrite fuer Binary-Aufrufe),
@@ -280,9 +286,12 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
   (`spec/lastenheft.md §27.2`-Befuellung).
 - **Gate-Status nach Welle 0a/0b/0c**: `make fullbuild`
   cache-frei gruen mit M1-Override-Liste + `core/serialization`
-  und **ohne Welle-6d-Pragma-Hacks** (`PYTHONPATH`,
-  `entrypoint: []`, `python -m uvicorn`). Default-Critical-Gate
-  bleibt rot, weil `devices/battery` weiter leer ist (Welle-2-
+  und **ohne Welle-6d-Pragma-Hacks am api-Service** (`PYTHONPATH`,
+  `entrypoint: []` und `python -m uvicorn` aus `deploy/compose.yml
+  ::api` entfernt). Der `simulation`-Stub behaelt `entrypoint:
+  []` + `sleep infinity` als bewusster Welle-6c-Stub-Override.
+  Default-Critical-Gate bleibt rot, weil `devices/battery`
+  weiter leer ist (Welle-2-
   Lieferung). 268 Unit-Tests gruen. Triggers 014/015 nach
   `done/`.
 
@@ -662,7 +671,7 @@ nach ADR 0006 §3).
 | Erfolg                                                                       | Verifikation (Dockerfile-Stage via `make <target>`)                                                                                  |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Generischer Snapshot-Codec + Alias-Migration                                 | `make test-unit` mit bestehenden M1-`*SnapshotFormatError`-Tests gruen + neue Codec-Tests                                              |
-| Trigger-015-Image-Hardening                                                  | `make fullbuild` ohne `PYTHONPATH`/`apt-get upgrade`/`entrypoint: []`-Hack-Restposten                                                  |
+| Trigger-015-Image-Hardening                                                  | `make fullbuild` ohne `PYTHONPATH`/`python -m`-Indirection am api-Service; `apt-get upgrade -y` bleibt als Trigger-015-Option-A; `entrypoint: []` ist nur am `simulation`-Stub-Service zulaessig (Welle-6c-Erbe). |
 | `DeviceModel`-Protocol-Contract                                              | `make test-unit` mit Protocol-Adherence-Test (`NullDevice`)                                                                          |
 | Battery-Akzeptanz (`GG-BESS-001..005`/`008`)                                  | `make test-unit` + `hypothesis @given(seed=integers())`-Property (seed-stabile SOC-Spur ueber ≥ 100 Ticks)                            |
 | **Default `make gates` ohne `CRITICAL_COV_TARGETS`-Override gruen**          | `make gates` (Default-Liste aus Dockerfile-Default; `devices/battery` ≥ 90 %)                                                         |
