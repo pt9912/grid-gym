@@ -22,7 +22,9 @@ Decimal-Quantisierung: alle Telemetrie-Werte vor Emission auf
 from __future__ import annotations
 
 from collections.abc import Mapping
-from decimal import ROUND_HALF_EVEN, Decimal
+from contextlib import contextmanager
+from collections.abc import Iterator
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Self, cast, override
 
 from grid_gym.hexagon.core.devices.battery.commands import (
@@ -55,6 +57,25 @@ _SATURATION_COMMAND_ID = "<saturation>"
 """Welle-2-Review C-2: spezieller command_id-Marker fuer
 Saturation-Alarme aus dem Hard-Clamp-Pfad (ADR 0014 §2.4).
 Welle 6 TickLoop kann die Alarme per String-Match filtern."""
+
+_BATTERY_DECIMAL_PRECISION = 28
+"""Default-`decimal.getcontext().prec`. Welle-2-Review M-2: das
+Tick-Body wird in `with localcontext() as ctx: ctx.prec = 28;
+ctx.rounding = ROUND_HALF_EVEN` eingeschlossen, damit Tests/
+Adapter, die die globale Decimal-Context mutieren, den
+Determinismus-Vertrag aus ADR 0014 §2.6 nicht brechen."""
+
+
+@contextmanager
+def _battery_decimal_context() -> Iterator[None]:
+    """Decimal-Localcontext-Wrapper fuer die Tick-Berechnung
+    (Welle-2-Review M-2). Pinnt `prec=28` und `rounding=ROUND_HALF_EVEN`
+    fuer die Dauer der Tick-Body-Ausfuehrung."""
+    with localcontext() as ctx:
+        ctx.prec = _BATTERY_DECIMAL_PRECISION
+        ctx.rounding = ROUND_HALF_EVEN
+        yield
+
 
 _ZERO = Decimal(0)
 _HUNDRED = Decimal(100)
@@ -184,7 +205,11 @@ class BatteryDevice:  # noqa: PLR0904 — Protocol-Surface plus Welle-2-Review-H
     def tick(self, context: DeviceTickContext) -> DeviceTickOutcome:
         if self._scenario_device is None or self._config is None:
             raise DeviceNotInitializedError("tick")
-        config = self._config
+        with _battery_decimal_context():
+            return self._tick_in_context(context)
+
+    def _tick_in_context(self, context: DeviceTickContext) -> DeviceTickOutcome:
+        config = cast(BatteryConfig, self._config)
         dt_seconds = Decimal(context.tick_ms) / Decimal(1000)
         dt_hours = Decimal(context.tick_ms) / _TICK_MS_PER_HOUR
 

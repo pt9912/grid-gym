@@ -21,6 +21,7 @@ auf und uebernimmt das Outcome in seinen internen State.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -97,7 +98,16 @@ def validate_set_power_command(
     if command.type != COMMAND_TYPE_SET_POWER_KW:
         return _ignored_outcome()
 
-    raw_value = command.payload.get(_PAYLOAD_VALUE_KEY)
+    # Welle-2-Review M-7: payload ist in Command typisiert als
+    # `Mapping[str, object]`, also nie `None`-by-Type. Aufrufer
+    # mit defektem Adapter koennen es trotzdem als `None`
+    # uebergeben; defensiv abfangen mit lokaler Erweiterung des
+    # Typs.
+    payload: Mapping[str, object] | None = command.payload
+    if payload is None:
+        return _ignored_outcome()
+
+    raw_value = payload.get(_PAYLOAD_VALUE_KEY)
     if not isinstance(raw_value, Decimal):
         # Welle-2-Pragmatik: strukturelle Payload-Validierung gehoert
         # an die Adapter-Grenze; bei fehlendem oder falsch-typisiertem
@@ -105,15 +115,17 @@ def validate_set_power_command(
         # Exception zu werfen. Strikte Adapter koennen das schaerfen.
         return _ignored_outcome()
 
+    # Welle-2-Review M-8: SOC-Grenz-Pruefung VOR Power-Clamp.
+    # Doppelt-verletzender Command (z. B. -700 kW bei SOC-Boden)
+    # geht direkt auf REJECTED, nicht auf LIMITED → Clamp-Drop.
+    soc_limit = _violated_soc_limit(soc_kwh, raw_value, config)
+    if soc_limit is not None:
+        return _rejected_outcome(soc_limit, command, device_id)
+
     # Power-Limit-Pruefung — beide Pole in einer Verzweigung.
     clamped = _clamp_to_power_limits(raw_value, config)
     if clamped is not None:
         return _limited_outcome(clamped, command, device_id)
-
-    # SOC-Grenz-Pruefung — beide Grenzen in einer Verzweigung.
-    soc_limit = _violated_soc_limit(soc_kwh, raw_value, config)
-    if soc_limit is not None:
-        return _rejected_outcome(soc_limit, command, device_id)
 
     return CommandValidationOutcome(
         result=CommandResult.ACCEPTED,

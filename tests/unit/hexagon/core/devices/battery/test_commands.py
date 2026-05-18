@@ -12,7 +12,9 @@ Pinnt:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from decimal import Decimal
+from typing import cast
 
 import pytest
 
@@ -237,3 +239,67 @@ def test_battery_alarm_is_frozen() -> None:
     )
     with pytest.raises(FrozenInstanceError):
         alarm.limit = Decimal("0")  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review M-8: SOC-Reject vor Power-Clamp
+# ---------------------------------------------------------------------------
+
+
+def test_clamped_command_at_soc_floor_rejects_not_limits() -> None:
+    """Doppelt-verletzender Command (-700 kW bei SOC-Boden, max
+    discharge 500) geht direkt auf REJECTED — nicht
+    LIMITED→-500→Clamp-Drop. ADR 0014 §2.3 + Welle-2-Review M-8."""
+    config = _config(min_soc_pct=Decimal("10"), max_discharge_kw=Decimal("500"))
+    outcome = validate_set_power_command(
+        config=config,
+        soc_kwh=Decimal("100"),  # an min_soc_kwh (10% * 1000)
+        command=_command(value=Decimal("-700")),  # ueber discharge-Grenze
+        device_id="battery-1",
+    )
+    assert outcome.result is CommandResult.REJECTED
+    assert outcome.pending_power_kw is None
+    assert outcome.alarm is not None
+    assert outcome.alarm.limit == Decimal("10")  # min_soc_pct
+
+
+def test_clamped_command_at_soc_ceiling_rejects_not_limits() -> None:
+    """Spiegel: +700 kW (max charge 500) bei SOC-Decke geht
+    REJECTED, nicht LIMITED."""
+    config = _config(max_soc_pct=Decimal("90"), max_charge_kw=Decimal("500"))
+    outcome = validate_set_power_command(
+        config=config,
+        soc_kwh=Decimal("900"),  # an max_soc_kwh
+        command=_command(value=Decimal("700")),
+        device_id="battery-1",
+    )
+    assert outcome.result is CommandResult.REJECTED
+    assert outcome.alarm is not None
+    assert outcome.alarm.limit == Decimal("90")  # max_soc_pct
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review M-7: payload=None Defensive
+# ---------------------------------------------------------------------------
+
+
+def test_command_with_none_payload_returns_ignored() -> None:
+    """Defekter Adapter koennte ein Command mit payload=None
+    bauen. Welle-2-Review M-7: defensiv abfangen statt
+    AttributeError zu werfen."""
+    cmd = Command(
+        command_id="cmd-x",
+        simulation_time=0,
+        target_device_id="battery-1",
+        type=COMMAND_TYPE_SET_POWER_KW,
+        payload=cast("Mapping[str, object]", None),
+        validation_status="validated",
+        result=CommandResult.IGNORED,
+    )
+    outcome = validate_set_power_command(
+        config=_config(),
+        soc_kwh=Decimal("500"),
+        command=cmd,
+        device_id="battery-1",
+    )
+    assert outcome.result is CommandResult.IGNORED
