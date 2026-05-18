@@ -1,11 +1,14 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0 vollstaendig abgeschlossen
-am 2026-05-18: Welle 0a (Commits `3322cb8`, `1f19996`),
-Welle 0b (Commit `ee37f36`), Welle 0c (Commit `314f853`).
-Welle-0-Review-Fixes in `d490905` / `51a5f4e` / `6d39c7a` /
-`df99d97` (Commits H-1..L-17, M-5). Naechster Schritt ist
-Welle 1 (DeviceModel-Protocol). M1-Spine
+**Status:** In Progress — Welle 0 + Welle 1 abgeschlossen
+am 2026-05-18. Welle 0a (Commits `3322cb8`, `1f19996`),
+Welle 0b (Commit `ee37f36`), Welle 0c (Commit `314f853`),
+Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
+`df99d97` / `6e108d6`), Welle 1 (folgender Commit:
+`DeviceModel`-Protocol, ADR 0013 `Accepted`, NullDevice +
+Protocol-Adherence-Tests). Naechster Schritt ist
+Welle 2 (Battery, `GG-DEV-010` + `GG-BESS-001..005, 008`).
+M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -295,44 +298,64 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
   Lieferung). 268 Unit-Tests gruen. Triggers 014/015 nach
   `done/`.
 
-### Welle 1 — `DeviceModel`-Protocol + Device-Domain (1/2 Tag)
+### Welle 1 — `DeviceModel`-Protocol + Device-Domain (`Done` 2026-05-18)
 
-- `src/grid_gym/hexagon/core/devices/_protocol.py` (oder
-  `hexagon/ports/driving/device.py`, sobald entschieden):
-  - `DeviceModel`-Protocol mit
-    - `initialize(self, scenario_device: ScenarioDevice,
-       random: RandomPort) -> None`,
-    - `tick(self, context: DeviceTickContext) ->
-       DeviceTickOutcome`,
-    - `apply_command(self, command: Command) -> CommandResult`,
-    - `snapshot(self) -> Mapping[str, object]` (mit
-       `version: int`-Discriminator),
-    - `telemetry(self) -> tuple[TelemetryPoint, ...]`.
-  - `DeviceTickContext` + `DeviceTickOutcome` als Frozen-
-    Dataclasses in `hexagon/core/domain/device.py`. Felder:
-    `tick`, `simulation_time`, `tick_ms`, `pending_commands`,
-    `random_sub_port` (vgl. ADR 0007 §5).
-- ADR 0013 `DeviceModel`-Protocol (`Provisional` → `Accepted`
-  synchron mit Welle 1-Merge); strikt nach ADR-0008+0011-
-  Erweiterungs-Pattern, **kein** Supersedes.
-- Tests:
-  - `tests/unit/hexagon/core/devices/test_protocol_contract.py`
-    — Protocol-Adherence-Test mit Test-Double (`NullDevice`),
-    deckt das Protocol-Surface ab **inkl. der Pflichtpruefung,
-    dass `device.snapshot()` ein Mapping mit `version: int` als
-    Erst-Feld liefert** (ADR 0007/0010-Konvention auf Geraete
-    uebertragen).
-  - **Konvention fuer Folge-Wellen (Welle 2..5):** jede
-    konkrete Geraete-Implementation (Battery, PV, Load,
-    SmartMeter, GridConnection) wiederholt den Protocol-
-    Adherence-Test mit ihrer eigenen Klasse als Parameter und
-    prueft zusaetzlich `from_snapshot(snapshot()) == device`
-    byte-stabil. Diese Pflicht ist Welle-N-DoD-Item und kein
-    Welle-7-Restposten.
-- **Gate-Status nach Welle 1**: erweiterter Override
-  `CRITICAL_COV_TARGETS="… hexagon/core/devices"` gruen
-  (Welle-0-Override-Liste erweitert um `devices`-Pfad ohne
-  `battery`).
+Welle 1 ist abgeschlossen — `DeviceModel`-Protocol + Domain-
+Dataclasses liegen, ADR 0013 ist `Accepted`. Die drei
+Slice-Plan-§5-Risiken (Placement, Context-Felder, Command-Flow)
+sind in ADR 0013 §2 entschieden:
+
+- **Placement** — `DeviceModel` lebt als `typing.Protocol` unter
+  `src/grid_gym/hexagon/core/devices/_protocol.py` (Core-internes
+  Protocol, kein Driving-Port). Begruendung: AC-PORTS-NO-OUT
+  verbietet `ports → core.domain.scenario`-Importe; AC-HEXAGON-PURE
+  erlaubt `core/devices → ports.driven` (RandomPort). Siehe
+  ADR 0013 §2.1.
+- **Context-Felder** — `DeviceTickContext`
+  (`hexagon/core/domain/device.py`) traegt nur `tick`,
+  `simulation_time`, `tick_ms`. **Kein** `random_sub_port`-Field
+  (Domain bleibt port-frei, M1-Pattern erhalten). **Kein**
+  `pending_commands`-Field. Siehe ADR 0013 §2.2.
+- **Command-Flow** — TickLoop ruft `apply_command(cmd)` pro
+  Pending-Command vor `tick(context)`. `apply_command` gibt
+  `CommandResult` zurueck; `tick` liefert
+  `DeviceTickOutcome(telemetry=...)`. Siehe ADR 0013 §2.3 +
+  Architecture §6 Datenfluss-Schritt 5.
+
+**Lieferung im Repo:**
+
+- `src/grid_gym/hexagon/core/domain/device.py` —
+  `DeviceTickContext` + `DeviceTickOutcome` Frozen-Dataclasses,
+  port-frei (kein `RandomPort`-Field).
+- `src/grid_gym/hexagon/core/devices/_protocol.py` —
+  `@runtime_checkable` `DeviceModel`-Protocol mit den fuenf
+  Pflicht-Methoden.
+- `src/grid_gym/hexagon/core/devices/__init__.py` — Re-Export
+  von `DeviceModel`.
+- `docs/plan/adr/0013-device-model-protocol.md` — ADR
+  `Accepted` (direkt `Proposed → Accepted` per `ADR 0006 §2`,
+  kein Validierungs-Spike noetig; Adherence im Unit-Test).
+- `tests/unit/hexagon/core/devices/_fakes.py` — `NullDevice`
+  als Protocol-satisfies-Test-Double; M2 Welle 2..5
+  importieren das fuer Tick-Loop-Integration.
+- `tests/unit/hexagon/core/devices/test_protocol_contract.py` —
+  Adherence-Tests (Protocol-isinstance, Methoden-Surface,
+  `version: int`-Erstfeld, `SnapshotEnvelope`-Composition,
+  Frozen-Dataclass-Pflicht, Decimal-Payload-Canonical-OK).
+
+**Konvention fuer Welle 2..5** (ADR 0013 §5):
+
+- Jede konkrete Geraete-Implementation wiederholt die Adherence-
+  Pruefung mit ihrer eigenen Klasse als Parameter.
+- Snapshot-Roundtrip `from_snapshot(snapshot()) == device` ist
+  byte-stabil je Geraet (Welle-N-DoD-Item, kein Welle-7-Restposten).
+- `from_snapshot` ist Classmethod am konkreten Geraet (nicht Teil
+  des Protocols, weil Classmethods in `typing.Protocol` unhandlich
+  sind).
+
+**Verifikation:** 289 Unit-Tests gruen (277 + 12 neue Welle-1-Tests),
+`make gates` gruen mit erweitertem `CRITICAL_COV_TARGETS` (Welle-0-
+Liste + `hexagon/core/devices`).
 
 ### Welle 2 — Battery (`GG-DEV-010` + `GG-BESS-001..005`/`008`) (2 Tage)
 
