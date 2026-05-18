@@ -501,6 +501,32 @@ PV+Load in separaten Commits, aber **eine ADR**.
   bleibt erhalten).
 - ADR 0016 `Proposed → Accepted` mit Welle-3-Closure-Commit.
 
+**Welle-3-Review-Folge (`Done` 2026-05-18, 5 Commits):**
+
+Independent code-reviewer fand 1 Crit + 3 High + 6 Med + 7 Low
++ 5 Info. Alle Findings adressiert ueber 5 Folge-Commits:
+
+- `6cad963` — C-1 (Dockerfile-Default `CRITICAL_COV_TARGETS` um
+  PV/Load erweitert) + H-1 (Lastenheft §12.1 `power_kw` →
+  `rated_power_kw` Drift-Fix) + L-5 (PLR0904 per-file-ignore in
+  pyproject.toml fuer `devices/*/model.py`).
+- `ea875c3` — ADR 0016 + 0014 Schaerfung: H-2 Sign-Worked-
+  Example, H-3 Pre-init-Snapshot-Asymmetry, M-3 Decimal-Context-
+  Forward-Looking-Defense, L-3 set_mode-Cross-Reference, L-4
+  Load-Default-Begruendung.
+- `60582e7` — L-1 generischer Codec: `assert_str` + `assert_decimal`
+  als Free-Functions; `battery/pv/load/snapshot.py` migriert.
+- `45a9be6` — M-4 `_RUN_ID_UNSET`-Konstante + M-5 `_random`-
+  Forward-Looking-Defense-Doku + M-6 `attach_random`-Methode auf
+  allen drei Geraeten + 6 neue Tests (L-2/I-3).
+- `b4e3ce7` — M-1 PV/Load-Duplikations-Begruendung (Welle-5-
+  Divergenz-Vorgriff) + M-2 Alarm-`(result, limit)`-Tupel-
+  Disambiguation in Docstrings.
+
+`make gates` und `make docs-check` cache-frei gruen nach jedem
+Commit; Test-Anzahl 478 → 484 (+6 Tests fuer attach_random/
+run_id-Defaults).
+
 ### Welle 4 — SmartMeter + GridConnection (`GG-DEV-012`/`014`) (1 Tag)
 
 - `hexagon/core/devices/smart_meter/`:
