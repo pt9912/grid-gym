@@ -1,16 +1,18 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0 + Welle 1 + Welle 2
-abgeschlossen am 2026-05-18. Welle 0a/0b/0c (Commits `3322cb8`,
-`1f19996`, `ee37f36`, `314f853`), Welle-0-Review-Fixes
-(`d490905` / `51a5f4e` / `6d39c7a` / `df99d97` / `6e108d6`),
-Welle 1 Erstwurf (`b927e7a`), Welle-1-Review-Folge (`88252f1` /
-`9a61823` / `129c137` / `a6c912c` / `6e108d6`), Welle 2
-Erstwurf + Determinismus + Trigger-013-Closure (`6247228` /
-`48f0106` / `5866117`). Default-`make gates` cache-frei gruen
-ohne `CRITICAL_COV_TARGETS`-Override (Erfolgskriterium 1
-erreicht). Naechster Schritt ist Welle 3 (PV + Load,
-`GG-DEV-011` + `GG-DEV-013`). M1-Spine
+**Status:** In Progress — Welle 0/1/2/3 abgeschlossen am
+2026-05-18. Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`,
+`314f853`) + Welle-0-Review-Fixes (`d490905` / `51a5f4e` /
+`6d39c7a` / `df99d97` / `6e108d6`), Welle 1 (`b927e7a`) +
+Welle-1-Review-Folge (`88252f1` / `9a61823` / `129c137` /
+`a6c912c` / `6e108d6`), Welle 2 (`6247228` / `48f0106` /
+`5866117` / `9a138c2`) + Welle-2-Review-Folge (`4600e79` /
+`eb09e9b` / `d7bc2d9` / `f4988ff` / `bd13882`), Welle 3a
+(`2abbd12`) + Welle 3b + Closure (folgender Commit).
+Default-`make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override. Naechster Schritt ist
+Welle 4 (SmartMeter + GridConnection, `GG-DEV-012` +
+`GG-DEV-014`). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -458,30 +460,46 @@ Provisional), `48f0106` (Determinismus + Trigger 013),
   Erfolgskriterium 1 erreicht ist. Folgewellen duerfen den
   Default nicht wieder rot machen.
 
-### Welle 3 — PV + Load (`GG-DEV-011`/`013`) (1 Tag)
+### Welle 3 — PV + Load (`GG-DEV-011`/`013`) (`Done` 2026-05-18)
 
-- `hexagon/core/devices/pv/` + `hexagon/core/devices/load/`:
-  - `PvDevice` mit Generationsprofil-Eingang (Zeitreihe oder
-    konstanter Faktor; Welle 5 Replay-Pfad nutzt
-    `csv`/`json`-Mapper aus M1-Welle 5).
-  - `LoadDevice` mit Last-Profil-Eingang (konstant / Zeitreihe /
-    Szenario-Event nach `GG-GRID-003`).
-- Beide Geraete liefern Telemetry (`power_kw`, ggf.
-  `forecast_kw`).
+Welle 3a (PV, Commit `2abbd12`) und Welle 3b (Load + Closure,
+folgender Commit) abgeschlossen. ADR 0016 `Accepted` —
+gemeinsames Generation/Consumption-Pattern fuer beide
+Geraete. Sub-Slicing nach Empfehlung der Welle-3-Praeambel:
+PV+Load in separaten Commits, aber **eine ADR**.
+
+**Lieferung im Repo:**
+
+- `hexagon/core/devices/pv/` (5 Module): `PvConfig`/`PvAlarm`/
+  `PvSnapshot`/`PvDevice` mit konstantem `rated_power_kw`-
+  Erzeugungsmodell + `set_power_kw`-Override.
+- `hexagon/core/devices/load/` (5 Module): Spiegel mit
+  Sign-Konvention „Load verbraucht nicht-negativ" (ADR 0016
+  §2.2).
+- Welle-3-Minimum: kein Generationsprofil, kein Replay-Source-
+  Pfad. Zeitreihen kommen mit Welle 5 (Netzbilanzmodell-
+  Integration) bzw. M3 (Replay-Verkabelung).
+- Beide Geraete emittieren 1 `TelemetryPoint` mit Metric
+  `power_kw` pro Tick (Quantisierung 6 Nachkommastellen).
 - Tests:
-  - Smoke-Tests (`GG-DEV-011`/`013`-Akzeptanz: deterministischer
-    Smoke; gleicher Seed + identisches Profil → byte-identische
-    Telemetry **ueber ≥ 100 Ticks** — einheitlich mit
-    Erfolgskriterium 4, kein Welle-lokaler Sondersatz).
-  - **Protocol-Adherence-Test je Geraet** (Welle-1-Konvention):
-    `PvDevice` und `LoadDevice` durchlaufen den Protocol-Test
-    aus Welle 1 mit ihrer eigenen Klasse; `snapshot()`-Mapping
-    fuehrt `version: int` als Erst-Feld, Snapshot-Roundtrip ist
-    byte-stabil.
-- Sub-Slicing-Check: wenn die Welle den PV-Generations- und
-  den Load-Profil-Loader gleichzeitig anfasst (zwei neue
-  Driving-Pfade), in 3a/3b teilen.
-- **Gate-Status nach Welle 3**: Default-Gate bleibt gruen.
+  - 44 PV-Tests (`tests/unit/hexagon/core/devices/pv/
+    test_pv_device.py`) — Config, Protocol-Adherence, Lifecycle,
+    Param-Parsing, Command-Surface, Telemetry, Snapshot-
+    Roundtrip + Codec-Errors, Alarms + Drain, Multi-Command-
+    last-wins, Determinismus-Property ueber 100 Ticks.
+  - 37 Load-Tests (analog).
+- Welle-2-Review-Patterns mechanisch gespiegelt: self-sufficient
+  `from_snapshot` (C-1), `drain_alarms()` (M-3),
+  `set_run_id`-Hook (H-2), `limit_unit` (L-3), payload-None-
+  defensive (M-7), Sign-Vertrag-vor-Clamp (M-8-Analogie).
+
+**Belege:**
+
+- 478 Unit-Tests gruen (vorher 397 → +44 PV + +37 Load = +81).
+- `make gates` cache-frei gruen **ohne**
+  `CRITICAL_COV_TARGETS`-Override (Welle-2-Erfolgskriterium 1
+  bleibt erhalten).
+- ADR 0016 `Proposed → Accepted` mit Welle-3-Closure-Commit.
 
 ### Welle 4 — SmartMeter + GridConnection (`GG-DEV-012`/`014`) (1 Tag)
 

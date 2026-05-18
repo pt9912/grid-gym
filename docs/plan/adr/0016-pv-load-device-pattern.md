@@ -1,10 +1,12 @@
 # ADR 0016 — PV + Load Generation/Consumption-Device-Pattern (M2 Welle 3)
 
-**Status:** Provisional — Validierung erfolgt mit M2-Welle-3-PR-
-Merge (Smoke-Tests ueber 100 Ticks fuer beide Geraete, Snapshot-
-Roundtrip, Protocol-Adherence). `Provisional → Accepted` synchron
-mit Welle-3-Closure.
+**Status:** Accepted — Validierung mit Welle-3a-PR (`2abbd12`)
+und Welle-3b-PR (folgender Closure-Commit): 44 PV-Tests +
+37 Load-Tests gruen, Snapshot-Roundtrip + Determinismus-Property
+ueber 100 Ticks. `make gates` cache-frei gruen mit
+Default-CRITICAL_COV_TARGETS.
 **Datum:** 2026-05-18
+**Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol),
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Vorlage fuer das
