@@ -14,6 +14,16 @@ des `version`-Schluessels. `__post_init__` validiert sie typisiert,
 damit Welle-4-Implementierer kein zweites Versionierungs-Schema
 einfuehren.
 
+**Payload-Canonical-Check (M2 Welle 0a, Trigger 014 Item 5):**
+seit 2026-05-18 prueft `__post_init__` zusaetzlich rekursiv, dass
+jeder Sub-Snapshot ausschliesslich canonical_json-faehige Werte
+enthaelt (`hexagon/core/serialization/snapshot_codec.py::
+assert_payload_canonical_compatible`). Damit erkennt der Envelope
+einen Float-/Bytes-Smuggler frueh und typisiert
+(`WrongTypeError(subsystem="snapshot_envelope", ...)` — Subklasse
+von `SnapshotFormatError`), nicht erst beim spaeteren
+`canonical_json`-Encoder.
+
 Die Vertragsverletzungs-Klassen leben in `hexagon/core/errors.py`,
 weil AC-DOMAIN-FROZEN unter `domain/**` nur Datenklassen zulaesst
 (Frozen-Dataclasses, `FrozenModel`-Vererbung, `Enum`-Subklassen) —
@@ -28,6 +38,9 @@ from dataclasses import dataclass
 from grid_gym.hexagon.core.errors import (
     MissingSubSnapshotVersionError,
     NonIntegerSubSnapshotVersionError,
+)
+from grid_gym.hexagon.core.serialization.snapshot_codec import (
+    assert_payload_canonical_compatible,
 )
 
 
@@ -70,3 +83,11 @@ class SnapshotEnvelope:
             # (Schema-Versionen sind Ganzzahlen, nicht Wahrheitswerte).
             if isinstance(value, bool) or not isinstance(value, int):
                 raise NonIntegerSubSnapshotVersionError(name, type(value).__name__)
+            # Payload-Canonical-Check (M2 Welle 0a, Trigger 014 Item 5):
+            # rekursive Pruefung, dass der Sub-Snapshot ausschliesslich
+            # canonical_json-faehige Werte enthaelt. Wirft typisiert
+            # WrongTypeError(subsystem="snapshot_envelope", ...) bei
+            # Float-/Bytes-/Complex-/Non-str-Key-Eintraegen.
+            assert_payload_canonical_compatible(
+                payload, "snapshot_envelope", f"sub_snapshots.{name}"
+            )

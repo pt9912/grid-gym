@@ -20,46 +20,51 @@ Slice-Plan §3 Welle 5 Closure-Block.
 
 ## Closure-Notiz (M2 Welle 0a, 2026-05-18)
 
-**Lieferung im Repo:**
+**Lieferung im Repo (alle fuenf Items aus „Erwartete Lieferung"
+unten umgesetzt):**
 
-- `hexagon/core/errors.py` traegt jetzt die generische Wurzel
-  `SnapshotFormatError(GridGymError)` mit `subsystem: str`-
+- Item 1 — `hexagon/core/errors.py` traegt jetzt die generische
+  Wurzel `SnapshotFormatError(GridGymError)` mit `subsystem: str`-
   Attribut, plus die Kategorien `MissingKeysError`,
   `WrongTypeError`, `ListItemWrongTypeError`, `VersionError`.
-- Die fuenf Per-Subsystem-Roots
+- Item 2 — Die fuenf Per-Subsystem-Roots
   (`RandomPortSnapshotFormatError`, `SchedulerSnapshotFormatError`,
   `TickLoopSnapshotFormatError`, `ScenarioSchemaError`,
   `ReplayParseError`) erben via Multi-Inheritance von
   `SnapshotFormatError` und legen `subsystem` ein-fuer-allemal vor.
   Leaf-Klassen-Konstruktoren bleiben byte-identisch.
-- `hexagon/core/serialization/snapshot_codec.py` (neu) liefert die
-  Free-Functions `assert_required_keys`, `assert_int`,
-  `assert_mapping`, `assert_payload_canonical_compatible`. Letztere
+- Item 3 — `hexagon/core/serialization/snapshot_codec.py` (neu)
+  liefert die Free-Functions `assert_required_keys`, `assert_int`,
+  `assert_mapping`. Aufruf-Konvention: Subsystem-Tag als
+  explizites Argument.
+- Item 4 — `assert_payload_canonical_compatible` als Free-Function;
   uebernimmt das Walk-Pattern aus
   `scheduler._assert_payload_canonical`.
-- `hexagon/core/scenario/validator.py` ruft
-  `assert_payload_canonical_compatible` an drei Stellen auf
-  (`devices[].params`, `events[].payload`, `faults[].payload`) —
-  Float-/Bytes-Injection wirft jetzt typisiert
-  `WrongTypeError(subsystem="scenario", ...)` statt
+  `hexagon/core/scenario/validator.py` ruft sie an drei Stellen
+  auf (`devices[].params`, `events[].payload`,
+  `faults[].payload`) — Float-/Bytes-Injection wirft jetzt
+  typisiert `WrongTypeError(subsystem="scenario", ...)` statt
   `FloatNotAllowedError` aus dem Hash-Encoder.
+- Item 5 — `SnapshotEnvelope.__post_init__`
+  (`hexagon/core/domain/snapshot.py`) prueft zusaetzlich
+  rekursiv jeden Sub-Snapshot via
+  `assert_payload_canonical_compatible(payload,
+  "snapshot_envelope", f"sub_snapshots.{name}")`. Float-/Bytes-
+  Werte werden jetzt am Envelope-Konstruktor abgefangen, nicht
+  erst beim `canonical_json`-Encoder.
 
-**Bewusst NICHT umgesetzt:**
+**Bewusst NICHT umgesetzt (auch nach Item 5):**
 
-- Item 5 der „Erwartete Lieferung" unten
-  (`SnapshotEnvelope.__post_init__` zusaetzlich Payload-Canonical
-  pruefen) ist additiv und kein Welle-0a-Pflicht-Punkt. Wird in
-  M2 Welle 6 (TickLoop-Integration / `SnapshotEnvelope`-v1→v2-
-  Bump) mitgenommen.
 - `Scheduler._assert_payload_canonical` bleibt als private
   Helfer-Funktion im Scheduler — die Free-Function ist additiv,
   Scheduler-Tests bleiben byte-identisch gruen. Migration der
-  M1-Module auf die Free-Functions ist ein separater
+  bestehenden M1-Module auf die Free-Functions ist ein separater
   Refactor-Slice, kein Welle-0a-Pflichtweg.
 
 **Abnahme-Belege:**
 
-- 265 Unit-Tests gruen (243 M1 + 22 neue Welle-0a-Tests).
+- 268 Unit-Tests gruen (243 M1 + 22 Welle-0a-Codec-Tests +
+  3 Welle-0a-Envelope-Tests).
 - `make gates` gruen mit M1-Override-Liste + `core/serialization`
   (lint, format-check, typecheck, arch-check, test-unit,
   coverage-gate, coverage-gate-critical, dep-audit).
@@ -70,7 +75,9 @@ Slice-Plan §3 Welle 5 Closure-Block.
 
 - M2 Welle 1+ (DeviceModel-Protocol, Battery, ...) konsumieren
   die generische Basis direkt — `subsystem="battery"`,
-  `subsystem="pv"`, etc.
+  `subsystem="pv"`, etc. Geraete-Sub-Snapshots in
+  `SnapshotEnvelope.sub_snapshots` werden bei der Konstruktion
+  automatisch via Item-5-Pfad canonical-validiert.
 - `SnapshotEnvelope`-Versionsschritt v1 → v2 (M2 Welle 6,
   geplant in Slice-Plan) baut auf dem typisierten
   `VersionError` auf.

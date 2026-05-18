@@ -208,10 +208,12 @@ unabhaengige Sub-Items mit verschiedenen `make`-Gates).
     `assert_mapping`, `assert_payload_canonical_compatible`.
   - Scenario-Validator ruft Free-Function fuer `params`/
     `payload`-Felder auf (Float-/Bytes-Injection typisiert).
-  - Item 5 aus `done/014` (`SnapshotEnvelope.__post_init__`
-    zusaetzlich Payload-Canonical) **bewusst auf Welle 6
-    verschoben** (gehoert zum v1→v2-Envelope-Bump).
-  - 265 Unit-Tests gruen; `make gates` mit M1-Override gruen.
+  - `SnapshotEnvelope.__post_init__` (Item 5) prueft jetzt
+    zusaetzlich rekursiv Payload-Canonical-Kompatibilitaet je
+    Sub-Snapshot; wirft typisiert
+    `WrongTypeError(subsystem="snapshot_envelope", ...)` bei
+    Verstoss.
+  - 268 Unit-Tests gruen; `make gates` mit M1-Override gruen.
   - Closure-Notiz: [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md).
 
 #### Welle 0b — Trigger 015 (`runtime-image-hardening`)
