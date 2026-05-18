@@ -1,12 +1,18 @@
 # ADR 0016 — PV + Load Generation/Consumption-Device-Pattern (M2 Welle 3)
 
 **Status:** Accepted — Validierung mit Welle-3a-PR (`2abbd12`)
-und Welle-3b-PR (folgender Closure-Commit): 44 PV-Tests +
-37 Load-Tests gruen, Snapshot-Roundtrip + Determinismus-Property
-ueber 100 Ticks. `make gates` cache-frei gruen mit
-Default-CRITICAL_COV_TARGETS.
+und Welle-3b-PR (`e5d3c9a`): 44 PV-Tests + 37 Load-Tests gruen,
+Snapshot-Roundtrip + Determinismus-Property ueber 100 Ticks.
+`make gates` cache-frei gruen mit Default-CRITICAL_COV_TARGETS.
 **Datum:** 2026-05-18
 **Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
+**Geschaerft am:** 2026-05-18 (Welle-3-Review-Folge-Commits) —
+§§2.2/2.3/2.5/2.6 + §7 ergaenzt um Sign-Worked-Example,
+Pre-init-Snapshot-Asymmetry, Decimal-Context-Forward-Looking-
+Defense, Load-Default-Begruendung, Battery-set_mode-Cross-
+Reference. Schaerfung folgt ADR-0011-Pattern (parallele
+Schaerfung ohne Supersedes — der Entscheidungs-Kern in
+§§2.1/2.4/2.7 ist unveraendert).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol),
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Vorlage fuer das
@@ -93,8 +99,26 @@ grid_balance_kw = sum(pv.power_kw) - sum(load.power_kw)
                   - sum(battery.power_kw)
 ```
 
-(Battery ist signed; positives Battery-Power = laden = grid-
-Konsum.)
+**Worked Example (Welle-3-Review H-2):** ein Verbrauchsnetz
+mit PV-Erzeugung und entladender Battery:
+
+| Geraet     | `power_kw` | Bedeutung                             |
+| ---------- | ---------- | ------------------------------------- |
+| pv-1       | `+2.0`     | PV erzeugt 2.0 kW (Sign: positiv).    |
+| load-1     | `+1.0`     | Load verbraucht 1.0 kW.               |
+| battery-1  | `-0.5`     | Battery entlaedt 0.5 kW (Sign-Vertrag von Battery: positiv = laden = grid-Konsum; negativ = entladen = grid-Speisung). |
+
+`grid_balance_kw = 2.0 - 1.0 - (-0.5) = 2.0 - 1.0 + 0.5 = +1.5`
+(positive Netto-Export ans Grid; Battery-Entladung addiert zum
+Export).
+
+Spiegel-Beispiel mit ladender Battery: `pv=+2.0`, `load=+1.0`,
+`battery=+0.5` (Laden):
+`grid_balance_kw = 2.0 - 1.0 - 0.5 = +0.5`
+(weniger Export, weil Battery zusaetzlich konsumiert).
+
+Welle 5 implementiert diese Formel im Netzbilanzmodell mit
+exakt diesem Vorzeichen-Vertrag.
 
 ### 2.3 Snapshot-Layout
 
@@ -117,6 +141,21 @@ Config-Reload-Verletzungen als `WrongTypeError` (analog ADR 0014
 `BatteryConfig` traegt 9 Felder; `PvConfig`/`LoadConfig` tragen
 nur `rated_power_kw: Decimal` (positiv). Welle 4+ erweitert
 ggf. um `forecast_kw`-Feld (siehe §7 Out-of-Scope).
+
+**Pre-init-Snapshot-Asymmetry (Welle-3-Review H-3):** Wenn
+`snapshot()` VOR `initialize(...)` aufgerufen wird, liefern PV
+und Load `{"version": SNAPSHOT_VERSION}` (analog Battery,
+ADR 0014 §2.2 fallback path) — d.h. die Pflichtfelder
+`device_id`/`run_id`/`sequence`/`config`/`current_power_kw`/
+`pending_power_kw` fehlen. Dieser Pre-init-Snapshot ist NICHT
+roundtrippable: `from_snapshot({"version": 1})` wirft
+`MissingKeysError` (Welle-0a-Codec). Der Vertrag
+`from_snapshot(device.snapshot()) == device` aus ADR 0013 §2.4
+gilt deshalb nur fuer den **post-init**-Zustand. Pre-init ist
+explizit als „Marker fuer leeres Geraet" gedacht, nicht als
+Resume-Pfad. Welle 6 TickLoop ruft `snapshot()` nur ueber
+initialisierte Geraete; M3-Replay-Resume setzt initialisierte
+Geraete voraus.
 
 ### 2.4 Command-Surface
 
@@ -152,6 +191,18 @@ Welle-3-Minimum (ADR 0014 §2.4-Vereinfachung):
 Decimal-Localcontext-Wrapper (Welle-2-Review M-2) spiegeln —
 Tick-Body in `with _device_decimal_context()`.
 
+**Forward-Looking-Defense (Welle-3-Review M-3):** Der
+Welle-3-Minimum-Tick rechnet nur `new_power_kw =
+self._pending_power_kw` ohne Decimal-Arithmetik, sodass der
+Localcontext-Wrapper in Welle 3 noch keinen sichtbaren Effekt
+hat. Er bleibt **bewusst** erhalten als Forward-Looking-
+Defense: Welle 5 (Lastprofile / Solarkurven) wird Multiplika-
+toren wie `rated_power_kw * profile_factor_t` einbauen, und
+ohne stabilen Decimal-Kontext koennte ein replay-divergentes
+Praezisions-Setting die Determinismus-Property brechen. Der
+Wrapper ist damit der vorgezogene Vertragsschutz fuer Welle 5,
+nicht toter Code.
+
 ### 2.6 Initialisierung
 
 Bei `initialize(scenario_device, random)` startet das Geraet
@@ -159,6 +210,20 @@ mit `pending_power_kw = rated_power_kw` (Default-Output =
 Nennleistung). Damit liefert der erste Tick sofort
 `current_power_kw = rated_power_kw` ohne dass der Aufrufer
 einen Command absetzen muss. Aenderung folgt per `apply_command`.
+
+**Load-Default-Rationale (Welle-3-Review M-6/L-4):** Dass Load
+**bei Default Volllast verbraucht** ist physikalisch
+ungewoehnlich — eine real-world Load haette ihren Default
+typischerweise bei 0 oder bei einem Profil-Anfangswert. Welle 3
+verwendet trotzdem `rated_power_kw` als Default fuer **Pattern-
+Symmetrie mit PV**: beide Geraete starten in einem
+identifizierbaren, deterministischen Zustand, der per
+`set_power_kw` jederzeit ueberschrieben werden kann. Sobald
+Welle 5 die Lastgang-Profile einfuehrt (`load.profile_kw[t]`),
+wird der Profil-Anfangswert die Default-Wahl ersetzen und der
+Welle-3-Default verschwindet. Bis dahin ist der Volllast-Default
+ein **Test-pragmatisches Welle-3-Provisorium**, kein
+Modellaufstand.
 
 ### 2.7 Determinismus
 
@@ -261,7 +326,10 @@ Closure-Notiz verzeichnet.
 
 - **`set_mode`-Command** (z. B. PV-Curtailment-Modi). YAML-
   Beispiel im Lastenheft §12.1 erwaehnt es; Welle 3 unterstuetzt
-  es nicht.
+  es nicht. **Cross-Reference (Welle-3-Review L-3):** Diese
+  Out-of-Scope-Entscheidung gilt spiegelnd zur ADR 0014 §7
+  Battery-`set_mode`-Gap — `set_mode` ist projektweit Welle-5-
+  Material (zusammen mit Lastprofilen / Curtailment-Strategien).
 - **PV-Wirkungsgrad-Modellierung** (DC→AC, Wechselrichter-
   Curve). Welle-3-Minimum ist „rated_power_kw direkt".
 - **Lastprofil-Saettigung** (z. B. „Load springt auf 200 % bei

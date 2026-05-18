@@ -15,6 +15,10 @@ Saturation-Alarm, und last-wins-Test-Pflicht. Schaerfung folgt
 `ADR 0011`-Pattern (parallele Schaerfung ohne Supersedes — der
 Entscheidungs-Kern in §§2.1/2.5/2.6 ist unveraendert; §§2.2-2.4
 schliessen zuvor implizite Luecken).
+**Erneut geschaerft am:** 2026-05-18 (Welle-3-Review-Folge —
+ADR 0016 Cross-Reference) — §§3/7 klargestellt, dass `set_mode`
+projektweit Welle-5-Material ist (nicht Welle-3-Material), spie-
+gelnd zu ADR 0016 §7.
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol,
 das Battery implementiert),
@@ -308,7 +312,8 @@ Alarme bereits einsammeln; M3 fuegt nur die Persistenz hinzu.
 
 **`set_power_kw` als einziger Command-Type in Welle 2:** YAML-
 Beispiel im Lastenheft §12.1 nutzt `set_power_kw` und `set_mode`.
-`set_mode` ist Welle-3-Material (PV/Load-Konfigurations-Commands);
+`set_mode` ist projektweit Welle-5-Material (ADR 0016 §7 Cross-
+Reference; Welle 3 PV/Load liefert ebenfalls nur `set_power_kw`);
 Battery in Welle 2 macht den minimalen Vertrag. Unknown-Type-
 IGNORED ist Protocol-konformer No-Op (ADR 0013 §2.3).
 
@@ -399,7 +404,9 @@ Closure-Notiz verzeichnet.
 
 - **`set_mode`-Command** (`discharge`/`charge`/`idle`). YAML-
   Beispiel im Lastenheft erwaehnt das; Welle 2 unterstuetzt es
-  nicht.
+  nicht. Welle-3-Review-Folge-Klaerstellung: `set_mode` ist
+  projektweit Welle-5-Material (Curtailment/Mode-Switching
+  zusammen mit Lastprofilen) — ADR 0016 §7 spiegelt.
 - **Stoechiometrische BESS-Modellierung.** Welle 2 nutzt das
   Vereinfachungsmodell aus `GG-BESS-001..005` (kein Coulomb-
   Counting, kein OCV-Lookup, keine Stromdynamik unter Ramp).
