@@ -4,11 +4,14 @@
 am 2026-05-18. Welle 0a (Commits `3322cb8`, `1f19996`),
 Welle 0b (Commit `ee37f36`), Welle 0c (Commit `314f853`),
 Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
-`df99d97` / `6e108d6`), Welle 1 (folgender Commit:
+`df99d97` / `6e108d6`), Welle 1 Erstwurf (Commit `b927e7a` —
 `DeviceModel`-Protocol, ADR 0013 `Accepted`, NullDevice +
-Protocol-Adherence-Tests). Naechster Schritt ist
-Welle 2 (Battery, `GG-DEV-010` + `GG-BESS-001..005, 008`).
-M1-Spine
+Protocol-Adherence-Tests), Welle-1-Review-Folge (Commits
+`88252f1` / `9a61823` / `129c137` / folgender §27.2-Commit —
+ADR §§2.5-2.8 + §8, Lifecycle-Errors, device_id-Property +
+from_snapshot in Protocol, +14 Review-Tests). Naechster
+Schritt ist Welle 2 (Battery, `GG-DEV-010` + `GG-BESS-001..005,
+008`). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -353,9 +356,13 @@ sind in ADR 0013 §2 entschieden:
   des Protocols, weil Classmethods in `typing.Protocol` unhandlich
   sind).
 
-**Verifikation:** 289 Unit-Tests gruen (277 + 12 neue Welle-1-Tests),
-`make gates` gruen mit erweitertem `CRITICAL_COV_TARGETS` (Welle-0-
-Liste + `hexagon/core/devices`).
+**Verifikation:** 303 Unit-Tests gruen nach Welle-1-Review-Folge
+(277 M1+Welle-0-Stand → 290 nach Welle-1-Erstwurf → 303 nach
+Welle-1-Review-Schaerfungen: +13 Protocol-/Domain-/Frozen-/
+Decimal-Tests im Erstwurf, +14 Review-Tests fuer Wrong-Signature/
+Lifecycle-Raises/from_snapshot-Roundtrip/Decimal-Boundary).
+`make gates` gruen mit erweitertem `CRITICAL_COV_TARGETS`
+(Welle-0-Liste + `hexagon/core/devices`).
 
 ### Welle 2 — Battery (`GG-DEV-010` + `GG-BESS-001..005`/`008`) (2 Tage)
 
