@@ -8,6 +8,13 @@ byte-stabil, `hypothesis @given(seed=...)`-Property gruen ueber
 `CRITICAL_COV_TARGETS`-Override (Default-Branch-Coverage 92.50%).
 **Datum:** 2026-05-18
 **Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
+**Geschaerft am:** 2026-05-18 (Welle-2-Review-Folge-Commits) —
+§§2.2/2.3/2.4 ergaenzt um Snapshot-Vollstaendigkeit (device_id +
+run_id + sequence), Clamp-Power-Reset-Verhalten,
+Saturation-Alarm, und last-wins-Test-Pflicht. Schaerfung folgt
+`ADR 0011`-Pattern (parallele Schaerfung ohne Supersedes — der
+Entscheidungs-Kern in §§2.1/2.5/2.6 ist unveraendert; §§2.2-2.4
+schliessen zuvor implizite Luecken).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol,
 das Battery implementiert),
@@ -64,11 +71,25 @@ oder analog), nicht durch Supersedes von ADR 0014.
 ### 2.2 Snapshot-Layout
 
 `BatterySnapshot` ist eine Frozen-Dataclass mit folgenden
-Feldern:
+Feldern (Welle-2-Review-Schaerfung C-1/H-1/H-2):
 
 - `version: int` — Schema-Version (`1` in Welle 2). Bumps
   kommen ueber Folge-ADRs (z. B. wenn Welle 3 einen
   Temperatur-Zustand `GG-BESS-006` ergaenzt).
+- `device_id: str` — Identitaet (`ScenarioDevice.id` aus
+  `initialize()`); damit `from_snapshot(state)` einen
+  funktionsfaehigen Device-Vertrag (`device.device_id`,
+  `device.apply_command()`, `device.tick()`) wiederherstellen
+  kann **ohne** Aufrufer-Pflicht zur erneuten `initialize()`-
+  Invokation.
+- `run_id: str` — `TelemetryPoint.run_id`-Wert (`GG-DATA-001`).
+  Pre-init `""`; wird durch einen separaten Lifecycle-Hook
+  gesetzt (siehe §2.6 unten). Persistiert in Snapshot, damit
+  Resume die gleiche `run_id` weiterfuehrt.
+- `sequence: int` — Monoton wachsender `TelemetryPoint.sequence`-
+  Counter (`GG-ARCH-006`-Tie-Breaking). Persistiert in
+  Snapshot, damit Resume nicht bei `0` neu startet und mit
+  bestehenden Sequenzen kollidiert.
 - `config: BatteryConfig` — vollstaendige Konfiguration eingebettet,
   damit `from_snapshot(state)` self-contained ist und keinen
   externen `ScenarioDevice` braucht.
@@ -86,7 +107,23 @@ verwendet die Welle-0a-Codec-Free-Functions
 (`assert_required_keys`, `assert_int`, `assert_mapping`) und wirft
 `MissingKeysError`/`WrongTypeError`/`VersionError` aus dem
 generischen `SnapshotFormatError`-Baum mit
-`subsystem="battery"`.
+`subsystem="battery"`. Welle-2-Review-Schaerfung M-5: wenn die
+in `config` eingebetteten Werte beim Reload die `BatteryConfig`-
+Validierung (`__post_init__`) verletzen, wirft `from_dict`
+nicht den `BatteryConfigError`-Subtyp durch, sondern fangt ihn
+und reraised als `WrongTypeError("battery", "config.<feld>",
+"valid", "invalid")` — Welle-6-Aufrufer fangen typisiert auf
+der `SnapshotFormatError`-Ebene.
+
+**Self-sufficient `from_snapshot`-Vertrag** (Welle-2-Review C-1):
+`BatteryDevice.from_snapshot(state)` liefert eine fertig nutzbare
+Device-Instanz: alle Lifecycle-Pre-init-Raises (ADR 0013 §2.6)
+sind nach `from_snapshot` aufgeloest. Devices, die `RandomPort`
+in `tick()` konsumieren wollen (Welle 3+ Fault-Injection), brauchen
+einen zusaetzlichen `set_random(random: RandomPort)`-Hook *oder*
+fragen `RandomPort` ueber den `DeviceTickContext` ab (offen fuer
+M3-Slice-Diskussion). Welle 2 Battery konsumiert `RandomPort`
+nicht; `_random` bleibt nach `from_snapshot` `None`.
 
 ### 2.3 Command-Surface
 
@@ -116,7 +153,22 @@ Mehrfach-Commands im selben Tick (ADR 0013 §2.3 Ordering):
 **last-wins** — der letzte `set_power_kw` in Scenario-Source-
 Reihenfolge ueberschreibt `pending_power_kw`. Bewusste Wahl;
 ADR 0013 §2.3 nennt `last-wins` als Default-Empfehlung fuer
-Welle 2.
+Welle 2. Welle-2-Review-Schaerfung H-4: ein dedizierter Test
+in `test_commands.py` pinnt die Semantik mechanisch — Welle 3+
+Implementationen koennen die Test-Form kopieren.
+
+**Reihenfolge der Pruefungen** (Welle-2-Review-Schaerfung M-8):
+SOC-Grenz-Pruefung kommt VOR Power-Clamp. Begruendung:
+ein Command mit `value=-700kW` bei SOC am Boden ist semantisch
+ein doppelter Verstoss (gegen Power-Grenze UND gegen SOC-
+Grenze). Der staerkere Verstoss (SOC) gewinnt — das Device
+geht direkt auf `REJECTED`, nicht auf `LIMITED→-500kW→Clamp-
+Drop` (was den Aufrufer im Glauben laesst, der Befehl sei
+clamped akzeptiert, obwohl er in der naechsten Tick gar nicht
+abgearbeitet werden kann). Welle-2-Erstwurf hatte die
+Reihenfolge umgekehrt; Test-Pin
+`test_clamped_command_at_soc_floor_rejects_not_limits` macht
+den korrigierten Pfad mechanisch.
 
 `apply_command` schreibt das Geraet **nicht** unmittelbar fort
 — die tatsaechliche SOC- und Power-Aenderung passiert in
@@ -146,6 +198,30 @@ zeitabhaengige Fortschreibung.
    max_soc_pct * capacity_kwh / 100)`. Damit kommt das Geraet
    nie ueber die konfigurierten SOC-Grenzen, auch wenn Befehle
    sie ueberschreiten wollen.
+
+   **Welle-2-Review-Schaerfung C-2 (Power-Reset bei Sat.):**
+   Wenn das Hard-Clamp greift, war ein Teil der angeforderten
+   Power physikalisch nicht moeglich (Energy-Erhaltung). Battery
+   reagiert mit:
+
+   - **`_current_power_kw = 0`** und **`_pending_power_kw = 0`**
+     setzen — naechster Tick startet bei 0 kW, falls keine neue
+     Befehl kommt. Damit verschwindet die in-Memory-Power-Illusion
+     ("Ghost-Discharge"-Risiko aus dem Welle-2-Review).
+   - **Saturation-Alarm** emittieren:
+     `BatteryAlarm(target=device_id, limit=min_or_max_soc_pct,
+     result=LIMITED, command_id="<saturation>")`. Der spezielle
+     `command_id="<saturation>"` markiert den Alarm als
+     tick-getrieben (nicht command-getrieben); Welle 6 TickLoop-
+     Integration kann das per String-Match filtern.
+
+   Die Sequenz: `Befehl → apply_command (ACCEPTED/LIMITED) →
+   tick(...) → SOC-Clamp greift → Power+Pending zero → Alarm`.
+   Aufrufer, die die Battery weiter laden/entladen wollen,
+   muessen nach dem Saturation-Alarm einen neuen `set_power_kw`-
+   Befehl absetzen (bewusst kein „auto-resume" — `GG-BESS-005`
+   Akzeptanz „nicht ungeprueft uebernommen" verbietet stille
+   Fortschreibung).
 4. **Telemetrie** (`GG-DEV-002`, `GG-DATA-001/002`):
    `TelemetryPoint`-Tupel mit Metriken
    - `("soc_pct", new_soc_kwh / capacity_kwh * 100, "pct")`,
