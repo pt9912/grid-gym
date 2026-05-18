@@ -1,16 +1,17 @@
-# Slice-Plan — M2 Geraetemodelle — Next
+# Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** Next — Scope skizziert, Welle 0 noch nicht gestartet.
-Naechster aktiver Slice nach M1-Closure (2026-05-17). M1-Spine
+**Status:** In Progress — Welle 0a (Trigger 014, generic
+snapshot codec) seit 2026-05-18 aktiv. M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
 Geraetemodellen `battery`, `pv`, `load`, `smart_meter`,
 `grid_connection` und macht `TickResult.emitted_telemetry`
 produktiv.
-**Datum:** 2026-05-18 (in `next/` eroeffnet).
+**Datum:** 2026-05-18 (in `next/` eroeffnet);
+Move `next/` → `in-progress/`: 2026-05-18 mit Welle-0a-Start.
 **Bezug:**
-- [`roadmap.md`](../in-progress/roadmap.md) §3 M2 (Vorbelegung,
+- [`roadmap.md`](roadmap.md) §3 M2 (Vorbelegung,
   „Naechster aktiver Slice: M2").
 - M1-Closure-Notiz
   [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
@@ -582,7 +583,8 @@ ueber den TickLoop.
 
 ## 6. Wandert nach
 
-- `in-progress/M2-devices.md`, sobald Welle 0 oder 1 startet.
+- ✓ `in-progress/M2-devices.md` — vollzogen 2026-05-18 mit
+  Welle-0a-Start (Trigger 014, generic snapshot codec).
 - `done/M2-devices.md` mit Closure-Notiz nach Welle 7.
 - Eventueller `archive/`-Pfad, falls M2 umgeplant wird (z. B.
   vorgezogenes M3 wegen Audit-Befund).

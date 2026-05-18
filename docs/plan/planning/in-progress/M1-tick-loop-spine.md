@@ -19,5 +19,7 @@ broken werden.
 - Roadmap-Status:
   [`in-progress/roadmap.md`](roadmap.md) §3 M1 (`Done`).
 
-Naechster aktiver Slice: M2 (Geraetemodelle) —
+Aktiver Slice: M2 (Geraetemodelle) —
+[`in-progress/M2-devices.md`](M2-devices.md) (Welle 0a seit
+2026-05-18), Roadmap-Block:
 [`roadmap.md`](roadmap.md) §3 M2.

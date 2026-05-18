@@ -22,9 +22,9 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Naechster aktiver Slice: **M2 (Geraetemodelle)** — Slice-Plan
-liegt in [`next/M2-devices.md`](../next/M2-devices.md) (Status
-`Next`, Welle 0 noch nicht gestartet).
+Aktiver Slice: **M2 (Geraetemodelle)** — Slice-Plan
+liegt in [`in-progress/M2-devices.md`](M2-devices.md) (Status
+`In Progress`, Welle 0a seit 2026-05-18 aktiv).
 
 ---
 
@@ -117,9 +117,10 @@ liegt in [`next/M2-devices.md`](../next/M2-devices.md) (Status
 
 ### M2 — Geraetemodelle (Vorbelegung)
 
-**Slice-Plan:** [`next/M2-devices.md`](../next/M2-devices.md)
-(Status `Next` seit 2026-05-18; Welle 0..7 inkl. S-1..S-6-
-Items aus M1-Welle-7-End-to-End-Sweep, ADR 0013..0015 vorbelegt).
+**Slice-Plan:** [`in-progress/M2-devices.md`](M2-devices.md)
+(Status `In Progress` seit 2026-05-18; Welle 0a aktiv,
+Welle 0..7 inkl. S-1..S-6-Items aus M1-Welle-7-End-to-End-
+Sweep, ADR 0013..0015 vorbelegt).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des

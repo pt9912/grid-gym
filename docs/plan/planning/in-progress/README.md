@@ -19,4 +19,5 @@ Ein Eintrag wechselt typischerweise:
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `roadmap.md`              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
-| `M1-tick-loop-spine.md`   | M1-Slice-Plan: deterministischer Tick-Loop ohne Geraete. Welle 0 abgeschlossen 2026-05-15 (ADR 0007 `Provisional`, Trigger 001 geliefert). Welle 1 (Domain-Modelle) ist der naechste Schritt. |
+| `M2-devices.md`           | M2-Slice-Plan: produktive Geraetemodelle (Battery, PV, Load, SmartMeter, GridConnection) + `grid_model`-Netzbilanz. Welle 0a (Trigger 014, generic snapshot codec) seit 2026-05-18 aktiv. |
+| `M1-tick-loop-spine.md`   | Forwarder-Stub (Link-Stabilitaet fuer ADRs 0008/0009 etc., die auf den `in-progress/`-Pfad zeigen). Aktueller Slice-Plan: [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md). |
