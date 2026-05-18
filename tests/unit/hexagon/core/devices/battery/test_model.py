@@ -389,3 +389,178 @@ def test_alarms_is_tuple_snapshot_not_mutable_view() -> None:
     snap2 = device.alarms
     assert len(snap1) == 1
     assert len(snap2) == 2
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review M-3: drain_alarms() destruktiv
+# ---------------------------------------------------------------------------
+
+
+def test_drain_alarms_returns_and_clears() -> None:
+    """`drain_alarms()` liefert das bisherige Tupel und leert
+    die interne Liste. Welle-2-Review M-3 verlangt diese
+    Drain-Semantik, damit lange Laeufe nicht unbeschraenkt
+    Speicher binden (AlarmSinkPort ist erst M3)."""
+    device = _initialize(BatteryDevice())
+    device.apply_command(_set_power_command(Decimal("9999")))
+    device.apply_command(_set_power_command(Decimal("9999")))
+    drained = device.drain_alarms()
+    assert len(drained) == 2
+    # Nach drain: leer
+    assert device.alarms == ()
+    # Erneutes drain → leeres Tupel
+    assert device.drain_alarms() == ()
+
+
+def test_drain_alarms_returns_tuple_not_list() -> None:
+    """Drain-Output ist unveraenderlich (Tupel)."""
+    device = _initialize(BatteryDevice())
+    device.apply_command(_set_power_command(Decimal("9999")))
+    drained = device.drain_alarms()
+    assert isinstance(drained, tuple)
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review C-2: Saturation-Power-Reset + Alarm
+# ---------------------------------------------------------------------------
+
+
+def test_soc_saturation_zeroes_power_and_emits_alarm() -> None:
+    """Welle-2-Review C-2 (ADR 0014 §2.4): Bei SOC-Hard-Clamp
+    werden current_power_kw und pending_power_kw auf 0 gesetzt
+    und ein Saturation-Alarm emittiert."""
+    device = BatteryDevice()
+    sd = _scenario_device(
+        capacity_kwh=Decimal("100"),
+        initial_soc_pct=Decimal("89.99"),  # knapp unter max
+        max_soc_pct=Decimal("90"),
+        ramp_kw_per_s=Decimal("1000"),  # sofort vollladen
+    )
+    device.initialize(sd, FixedSeedRandom(seed=0))
+    device.apply_command(_set_power_command(Decimal("500")))
+    # Erster Tick saettigt: 500 kW * 1 s * 0.95 / 3600 = 0.132 kWh
+    # >> 0.01 kWh (90% - 89.99% von 100 kWh).
+    device.tick(_context(tick=0, tick_ms=1000))
+    # Power muss auf 0 stehen, Alarm muss vorliegen.
+    power_point = next(p for p in device.telemetry() if p.metric == "power_kw")
+    assert power_point.value == Decimal("0.000000")
+    sat_alarms = [a for a in device.alarms if a.command_id == "<saturation>"]
+    assert len(sat_alarms) >= 1
+    assert sat_alarms[0].result is CommandResult.LIMITED
+    assert sat_alarms[0].limit == Decimal("90")  # max_soc_pct
+
+
+def test_soc_saturation_at_floor_alarm_carries_min_soc_pct() -> None:
+    device = BatteryDevice()
+    sd = _scenario_device(
+        capacity_kwh=Decimal("100"),
+        initial_soc_pct=Decimal("10.01"),
+        min_soc_pct=Decimal("10"),
+        max_soc_pct=Decimal("90"),
+        ramp_kw_per_s=Decimal("1000"),
+    )
+    device.initialize(sd, FixedSeedRandom(seed=0))
+    device.apply_command(_set_power_command(Decimal("-500")))
+    device.tick(_context(tick=0, tick_ms=1000))
+    sat_alarms = [a for a in device.alarms if a.command_id == "<saturation>"]
+    assert len(sat_alarms) >= 1
+    assert sat_alarms[0].limit == Decimal("10")  # min_soc_pct
+
+
+def test_soc_saturation_no_alarm_if_power_already_zero() -> None:
+    """Wenn das SOC genau an einer Grenze startet und keine Power
+    aktiv ist, gibt es keinen Saturation-Alarm."""
+    device = BatteryDevice()
+    sd = _scenario_device(
+        capacity_kwh=Decimal("100"),
+        initial_soc_pct=Decimal("90"),  # genau an der Decke
+        max_soc_pct=Decimal("90"),
+    )
+    device.initialize(sd, FixedSeedRandom(seed=0))
+    # KEINE apply_command → pending=0, current=0
+    device.tick(_context(tick=0))
+    sat_alarms = [a for a in device.alarms if a.command_id == "<saturation>"]
+    assert len(sat_alarms) == 0
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review C-1: from_snapshot ist self-sufficient
+# ---------------------------------------------------------------------------
+
+
+def test_from_snapshot_device_id_accessible() -> None:
+    """Welle-2-Review C-1: `device.device_id` MUSS post-
+    `from_snapshot` funktionieren (kein
+    DeviceNotInitializedError)."""
+    original = _initialize(BatteryDevice())
+    state = original.snapshot()
+    restored = BatteryDevice.from_snapshot(state)
+    assert restored.device_id == original.device_id
+
+
+def test_from_snapshot_apply_command_works() -> None:
+    original = _initialize(BatteryDevice())
+    state = original.snapshot()
+    restored = BatteryDevice.from_snapshot(state)
+    result = restored.apply_command(_set_power_command(Decimal("100")))
+    assert result is CommandResult.ACCEPTED
+
+
+def test_from_snapshot_tick_continues_seamlessly() -> None:
+    """Resume-Pfad: nach `from_snapshot` muss `tick()` direkt
+    laufen, ohne Re-init."""
+    original = _initialize(BatteryDevice())
+    original.apply_command(_set_power_command(Decimal("250")))
+    for t in range(3):
+        original.tick(_context(tick=t))
+    state = original.snapshot()
+    restored = BatteryDevice.from_snapshot(state)
+    # Setze run_id wie original (vor Tick gesetzt? Pre-init = "")
+    outcome = restored.tick(_context(tick=3))
+    assert outcome.telemetry  # Telemetrie kommt zurueck, kein Raise
+
+
+def test_set_run_id_propagates_to_telemetry() -> None:
+    """Welle-2-Review H-2: `set_run_id` setzt das `run_id`-Feld
+    auf nachfolgenden Telemetrie-Emissions."""
+    device = _initialize(BatteryDevice())
+    device.set_run_id("run-42")
+    device.tick(_context(tick=0))
+    for point in device.telemetry():
+        assert point.run_id == "run-42"
+
+
+def test_snapshot_preserves_run_id_and_sequence() -> None:
+    """Welle-2-Review H-1/H-2: run_id und sequence ueberleben
+    Snapshot-Roundtrip."""
+    device = _initialize(BatteryDevice())
+    device.set_run_id("run-x")
+    for t in range(2):
+        device.tick(_context(tick=t))
+    state = device.snapshot()
+    assert state["run_id"] == "run-x"
+    assert state["sequence"] == 6  # 2 Ticks * 3 Metriken = 6 Sequenz-Counter
+    restored = BatteryDevice.from_snapshot(state)
+    # Nach Resume: weiteres Tick muss sequence=7 starten.
+    restored.tick(_context(tick=2))
+    last_seq = max(p.sequence for p in restored.telemetry())
+    assert last_seq == 9  # 6 + 3 fuer den naechsten Tick
+
+
+# ---------------------------------------------------------------------------
+# Welle-2-Review H-4: Multi-Command-last-wins-Semantik
+# ---------------------------------------------------------------------------
+
+
+def test_multiple_commands_in_same_tick_last_wins() -> None:
+    """ADR 0014 §2.3 last-wins: bei mehreren apply_command-Aufrufen
+    vor `tick()` setzt der letzte Command den pending_power_kw."""
+    device = _initialize(BatteryDevice())
+    device.apply_command(_set_power_command(Decimal("100"), command_id="cmd-a"))
+    device.apply_command(_set_power_command(Decimal("300"), command_id="cmd-b"))
+    device.apply_command(_set_power_command(Decimal("200"), command_id="cmd-c"))
+    # Ramp = 50 kW/s * 1 s = 50 kW max-delta; pending=200,
+    # current=0 → next_power=50. Aber pending wurde mit "200"
+    # gesetzt (letzter Command), nicht "100" oder "300".
+    state = device.snapshot()
+    assert state["pending_power_kw"] == Decimal("200")
