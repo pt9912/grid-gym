@@ -441,6 +441,32 @@ def test_set_run_id_propagates_to_telemetry() -> None:
         assert point.run_id == "run-pv-1"
 
 
+def test_run_id_default_is_empty_string_pre_set() -> None:
+    """Welle-3-Review M-4: ohne `set_run_id` laeuft das Geraet mit
+    `run_id=""` — TickLoop (Welle 6) muss `set_run_id` vor dem
+    ersten Tick rufen; Welle-3-Test-Setup ist als Welle-6-Anchor
+    explizit dokumentiert."""
+    device = _initialize(PvDevice())
+    device.tick(_context(tick=0))
+    for point in device.telemetry():
+        assert point.run_id == ""
+
+
+def test_attach_random_after_from_snapshot() -> None:
+    """Welle-3-Review M-6: `from_snapshot` rekonstruiert State,
+    `attach_random` reattacht den `RandomPort` fuer Welle-5+
+    stochastische Anteile."""
+    original = _initialize(PvDevice())
+    state = original.snapshot()
+    restored = PvDevice.from_snapshot(state)
+    new_random = FixedSeedRandom(seed=42)
+    restored.attach_random(new_random)
+    # Re-Attach ist No-Op fuer den heutigen Tick (Welle 3 konsumiert
+    # `_random` nicht); Vertragsspiegel ist die Aufrufbarkeit selbst.
+    outcome = restored.tick(_context(tick=1))
+    assert outcome.telemetry
+
+
 # ---------------------------------------------------------------------------
 # Multi-Command + last-wins (ADR 0014 §2.3-Spiegel)
 # ---------------------------------------------------------------------------

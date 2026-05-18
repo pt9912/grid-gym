@@ -86,6 +86,13 @@ _SUBSYSTEM = "battery"
 _BATTERY_SOURCE = "battery"
 """TelemetryPoint.source-Wert; ADR 0007 §5 Sub-Port-Konvention."""
 
+_RUN_ID_UNSET = ""
+"""Welle-3-Review M-4: Marker fuer den Pre-`set_run_id`-Zustand.
+TickLoop (Welle 6) ruft `set_run_id` vor dem ersten Tick;
+Test-Setup ruft direkt. Welle 2 hat keinen TickLoop, der das
+automatisch macht — der Pre-`set_run_id`-Tick laeuft mit
+`""` und ist absichtlich als „Welle-6-Anchor" markiert."""
+
 # Parameter-Schluessel im ScenarioDevice.params-Mapping.
 _PARAM_KEYS = (
     "capacity_kwh",
@@ -121,7 +128,7 @@ class BatteryDevice:
         self._pending_power_kw: Decimal = _ZERO
         self._last_telemetry: tuple[TelemetryPoint, ...] = ()
         self._alarms: list[BatteryAlarm] = []
-        self._run_id: str = ""
+        self._run_id: str = _RUN_ID_UNSET
         # `_sequence` zaehlt monoton ueber alle emittierten
         # `TelemetryPoint.sequence`-Felder — pro Tick werden drei
         # Werte ausgegeben (`power_kw`, `soc_kwh`, `soc_pct`); ohne
@@ -165,6 +172,18 @@ class BatteryDevice:
         beim Lauf-Start; Welle 2 hat keinen TickLoop, der das
         macht — Test-Setup ruft direkt."""
         self._run_id = run_id
+
+    def attach_random(self, random: RandomPort) -> None:
+        """Re-Attach des `RandomPort` (Welle-3-Review M-6).
+
+        `from_snapshot(...)` rekonstruiert State, kann aber keinen
+        `RandomPort` aus dem Snapshot rekonstruieren — Welle 6
+        TickLoop ruft `attach_random` nach `from_snapshot`, sobald
+        Welle 3+ Geraete tatsaechlich stochastische Anteile haben.
+        Welle 2 Battery konsumiert `_random` nicht; die Methode ist
+        symmetrisch zu PV/Load vorgehalten, damit Welle 6 alle drei
+        Geraete-Typen uniform behandelt."""
+        self._random = random
 
     # ------------------------------------------------------------------
     # Lifecycle

@@ -530,6 +530,29 @@ def test_set_run_id_propagates_to_telemetry() -> None:
         assert point.run_id == "run-42"
 
 
+def test_run_id_default_is_empty_string_pre_set() -> None:
+    """Welle-3-Review M-4: ohne `set_run_id` laeuft das Geraet mit
+    `run_id=""` — TickLoop (Welle 6) muss `set_run_id` vor dem
+    ersten Tick rufen."""
+    device = _initialize(BatteryDevice())
+    device.tick(_context(tick=0))
+    for point in device.telemetry():
+        assert point.run_id == ""
+
+
+def test_attach_random_after_from_snapshot() -> None:
+    """Welle-3-Review M-6: `attach_random` reattacht den
+    `RandomPort` nach `from_snapshot`. Welle 2 Battery konsumiert
+    `_random` nicht; die Methode bleibt symmetrisch fuer Welle-6-
+    TickLoop, der alle drei Geraete-Typen uniform behandelt."""
+    original = _initialize(BatteryDevice())
+    state = original.snapshot()
+    restored = BatteryDevice.from_snapshot(state)
+    restored.attach_random(FixedSeedRandom(seed=42))
+    outcome = restored.tick(_context(tick=1))
+    assert outcome.telemetry
+
+
 def test_snapshot_preserves_run_id_and_sequence() -> None:
     """Welle-2-Review H-1/H-2: run_id und sequence ueberleben
     Snapshot-Roundtrip."""

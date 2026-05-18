@@ -359,6 +359,26 @@ def test_set_run_id_propagates_to_telemetry() -> None:
     assert device.telemetry()[0].run_id == "run-load-1"
 
 
+def test_run_id_default_is_empty_string_pre_set() -> None:
+    """Welle-3-Review M-4: ohne `set_run_id` laeuft das Geraet mit
+    `run_id=""` (Welle-6-Anchor; spiegelt Battery/PV)."""
+    device = _initialize(LoadDevice())
+    device.tick(_context(tick=0))
+    assert device.telemetry()[0].run_id == ""
+
+
+def test_attach_random_after_from_snapshot() -> None:
+    """Welle-3-Review M-6: `attach_random` reattacht den
+    `RandomPort` nach `from_snapshot` (Welle-5+ Lastprofil-
+    Stochastik)."""
+    original = _initialize(LoadDevice())
+    state = original.snapshot()
+    restored = LoadDevice.from_snapshot(state)
+    restored.attach_random(FixedSeedRandom(seed=42))
+    outcome = restored.tick(_context(tick=1))
+    assert outcome.telemetry
+
+
 # ---------------------------------------------------------------------------
 # Multi-Command + last-wins
 # ---------------------------------------------------------------------------

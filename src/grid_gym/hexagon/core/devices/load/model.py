@@ -45,6 +45,10 @@ _LOAD_SOURCE = "load"
 _SUBSYSTEM = "load"
 _LOAD_DECIMAL_PRECISION = 28
 
+_RUN_ID_UNSET = ""
+"""Welle-3-Review M-4: Marker fuer den Pre-`set_run_id`-Zustand
+(spiegelt Battery-Pattern)."""
+
 _PARAM_KEYS = ("rated_power_kw",)
 
 
@@ -67,7 +71,7 @@ class LoadDevice:
         self._pending_power_kw: Decimal = _ZERO
         self._last_telemetry: tuple[TelemetryPoint, ...] = ()
         self._alarms: list[LoadAlarm] = []
-        self._run_id: str = ""
+        self._run_id: str = _RUN_ID_UNSET
         self._sequence: int = 0
 
     @property
@@ -87,6 +91,13 @@ class LoadDevice:
 
     def set_run_id(self, run_id: str) -> None:
         self._run_id = run_id
+
+    def attach_random(self, random: RandomPort) -> None:
+        """Re-Attach des `RandomPort` nach `from_snapshot`
+        (Welle-3-Review M-6). Welle 3 Load konsumiert `_random`
+        nicht; Welle 5 (Lastprofil-Spikes / Heizungs-Anschalt-
+        Stochastik) wird es verbrauchen."""
+        self._random = random
 
     def initialize(
         self,
