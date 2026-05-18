@@ -358,29 +358,40 @@ RUN apt-get update \
  && useradd --create-home --uid 1001 --shell /usr/sbin/nologin grid-gym
 
 WORKDIR /app
-COPY --from=build-app /src/.venv /app/.venv
-COPY --from=build-app /src/pyproject.toml /app/pyproject.toml
+COPY --from=build-app --chown=grid-gym:grid-gym /src/.venv /app/.venv
+COPY --from=build-app --chown=grid-gym:grid-gym /src/pyproject.toml /app/pyproject.toml
 
 # Shebang-Rewrite (Trigger 015, M2 Welle 0b):
-# venv-Binaries (`uvicorn`, `alembic`, `python` etc.) wurden im
-# build-app-Stage mit Shebangs auf `/src/.venv/bin/python` gebaut.
+# venv-Binaries (`uvicorn`, `alembic`, console_scripts etc.) wurden
+# im build-app-Stage mit Shebangs auf `/src/.venv/bin/python` gebaut.
 # Im Runtime-Image liegt der Interpreter unter `/app/.venv/bin/python`
 # — ohne Rewrite wuerden direkte Binary-Aufrufe mit
 # `exec: no such file or directory` fehlschlagen (Welle-6d-Grund fuer
 # `python -m uvicorn`-Indirection in `deploy/compose.yml`).
 # `pyvenv.cfg` traegt ebenfalls den Build-Pfad und wird mitgerewritet.
-RUN find /app/.venv/bin -type f -exec sed -i '1s|^#!/src/\.venv/bin/python|#!/app/.venv/bin/python|' {} + \
- && sed -i 's|/src/\.venv|/app/.venv|g' /app/.venv/pyvenv.cfg \
- && chown -R grid-gym:grid-gym /app
+#
+# Welle-0b-Review M-6: `find` filtert `python*`- und `*.so`-Dateien
+# heraus, damit `sed` keinen Binary-Launcher anfasst, sollte ein
+# zukuenftiges uv-Release solche generieren. Der `sed`-Pattern
+# matched nur Erstzeile mit `#!/src/.venv/bin/python`-Praefix; non-
+# matchende Dateien bleiben byte-identisch.
+RUN find /app/.venv/bin -type f ! -name 'python*' ! -name '*.so' \
+        -exec sed -i '1s|^#!/src/\.venv/bin/python|#!/app/.venv/bin/python|' {} + \
+ && sed -i 's|/src/\.venv|/app/.venv|g' /app/.venv/pyvenv.cfg
 
 USER grid-gym:grid-gym
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=5 \
     CMD curl --fail --silent --show-error http://localhost:8080/health || exit 1
 # ENTRYPOINT laeuft `uvicorn` als direkte Binary (Shebang ist
-# gerewritet, kein `python -m`-Indirection mehr noetig). Host/Port
-# folgen `GRID_GYM_HOST`/`GRID_GYM_PORT` aus der ENV-Sektion oben.
-ENTRYPOINT ["uvicorn", "grid_gym.adapters.driving.http_api:app", "--host", "0.0.0.0", "--port", "8080"]
+# gerewritet, kein `python -m`-Indirection mehr noetig).
+# Shell-Form mit `exec` sorgt fuer Signal-Forwarding (SIGTERM aus
+# `docker stop` erreicht uvicorn direkt, nicht den /bin/sh-Wrapper).
+# `GRID_GYM_HOST` und `GRID_GYM_PORT` aus der ENV-Sektion werden hier
+# konsumiert (Welle-0b-Review H-1: Welle-0b-Erst-Wurf hatte sie zwar
+# in ENV gesetzt, aber per exec-form-ENTRYPOINT ignoriert; das war
+# ein dokumentations-naher Lie und ist hier behoben).
+ENTRYPOINT exec uvicorn grid_gym.adapters.driving.http_api:app --host "$GRID_GYM_HOST" --port "$GRID_GYM_PORT"
 
 # ---------------------------------------------------------------------------
 # Image-Audit (`GG-QG-002` SOLLTE) laeuft AUSSERHALB des Dockerfile —
