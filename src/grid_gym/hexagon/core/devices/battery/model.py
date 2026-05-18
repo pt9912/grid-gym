@@ -100,7 +100,7 @@ _PARAM_KEYS = (
 )
 
 
-class BatteryDevice:  # noqa: PLR0904 — Protocol-Surface plus Welle-2-Review-Hooks (drain_alarms/set_run_id)
+class BatteryDevice:
     """`DeviceModel`-Implementation fuer den Battery-Geraetetyp.
 
     Lifecycle, Snapshot-Vertrag und Determinismus sind in

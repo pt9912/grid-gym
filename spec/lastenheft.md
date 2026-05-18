@@ -846,7 +846,7 @@ devices:
   - id: "load-1"
     type: "load"
     params:
-      power_kw: 800
+      rated_power_kw: 800
   - id: "battery-1"
     type: "battery"
     params:

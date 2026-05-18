@@ -65,7 +65,7 @@ def _pv_decimal_context() -> Iterator[None]:
         yield
 
 
-class PvDevice:  # noqa: PLR0904 — Protocol-Surface + Hooks (drain_alarms/set_run_id) wie ADR-0014-Battery
+class PvDevice:
     """`DeviceModel`-Implementation fuer den PV-Geraetetyp."""
 
     def __init__(self) -> None:

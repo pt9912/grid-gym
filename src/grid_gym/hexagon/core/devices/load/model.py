@@ -56,7 +56,7 @@ def _load_decimal_context() -> Iterator[None]:
         yield
 
 
-class LoadDevice:  # noqa: PLR0904 — Protocol-Surface + Hooks (drain_alarms/set_run_id)
+class LoadDevice:
     """`DeviceModel`-Implementation fuer den Load-Geraetetyp."""
 
     def __init__(self) -> None:

@@ -201,6 +201,11 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 "src/grid_gym/adapters/driven/protocol_*/error_translation.py" = ["BLE001"]
 "src/grid_gym/adapters/driven/persistence_*/error_translation.py" = ["BLE001"]
 "src/grid_gym/adapters/**" = ["DTZ", "TID"]
+# DeviceModel-Implementationen tragen die Protocol-Surface (7 Member)
+# plus Welle-2-Review-Hooks (drain_alarms/set_run_id/alarms-Property)
+# — das uebersteigt regelmaessig die `max-public-methods=12`-Schwelle.
+# Per-File-Ignore statt cargo-cult-noqa pro Klasse (Welle-3-Review L-5).
+"src/grid_gym/hexagon/core/devices/*/model.py" = ["PLR0904"]
 
 # ---------------------------------------------------------------------------
 # mypy --strict (ADR 0005)
