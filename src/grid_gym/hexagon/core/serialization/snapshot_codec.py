@@ -67,6 +67,41 @@ def assert_int(value: object, key: str, subsystem: str) -> int:
     return value
 
 
+def assert_str(value: object, key: str, subsystem: str) -> str:
+    """Prueft, dass `value` ein `str` ist.
+
+    Wirft `WrongTypeError(subsystem, key, "str", actual_type)` bei
+    Verstoss. Liefert den Wert als `str` zurueck (ergonomische
+    Verkettung am Aufruferort).
+
+    Welle-3-Review L-1: Vereinheitlicht das `_assert_str`-Pattern,
+    das in Geraete-Snapshot-Modulen (battery/pv/load) dreimal als
+    privater Helfer auftauchte.
+    """
+    if not isinstance(value, str):
+        raise WrongTypeError(subsystem, key, "str", type(value).__name__)
+    return value
+
+
+def assert_decimal(value: object, key: str, subsystem: str) -> Decimal:
+    """Prueft, dass `value` ein `Decimal` ist.
+
+    Wirft `WrongTypeError(subsystem, key, "Decimal", actual_type)`
+    bei Verstoss. Liefert den Wert als `Decimal` zurueck.
+
+    `bool` und `int` werden NICHT akzeptiert — Snapshot-Felder mit
+    physikalischer Bedeutung (Power, SOC, Decimal-Konfig) muessen
+    immer als `Decimal` serialisiert werden (GG-DATA-005 no-float).
+
+    Welle-3-Review L-1: Vereinheitlicht das `_decimal`-Pattern, das
+    in Geraete-Snapshot-Modulen (battery/pv/load) dreimal als
+    privater Helfer auftauchte.
+    """
+    if not isinstance(value, Decimal):
+        raise WrongTypeError(subsystem, key, "Decimal", type(value).__name__)
+    return value
+
+
 def assert_mapping(value: object, key: str, subsystem: str) -> dict[str, object]:
     """Prueft, dass `value` ein `dict[str, object]` ist.
 

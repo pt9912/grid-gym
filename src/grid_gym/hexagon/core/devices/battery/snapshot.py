@@ -26,14 +26,15 @@ from grid_gym.hexagon.core.devices.battery.config import (
     BatteryConfigError,
 )
 from grid_gym.hexagon.core.errors import (
-    MissingKeysError,
     VersionError,
     WrongTypeError,
 )
 from grid_gym.hexagon.core.serialization.snapshot_codec import (
+    assert_decimal,
     assert_int,
     assert_mapping,
     assert_required_keys,
+    assert_str,
 )
 
 SUBSYSTEM: Final[str] = "battery"
@@ -141,23 +142,23 @@ class BatterySnapshot:
         if version != SNAPSHOT_VERSION:
             raise VersionError(SUBSYSTEM, expected=SNAPSHOT_VERSION, found=version)
 
-        device_id = _assert_str(state, "device_id")
-        run_id = _assert_str(state, "run_id")
+        device_id = assert_str(state["device_id"], "device_id", SUBSYSTEM)
+        run_id = assert_str(state["run_id"], "run_id", SUBSYSTEM)
         sequence = assert_int(state["sequence"], "sequence", SUBSYSTEM)
 
         config_state = assert_mapping(state["config"], "config", SUBSYSTEM)
         assert_required_keys(config_state, _CONFIG_KEYS, SUBSYSTEM)
         try:
             config = BatteryConfig(
-                capacity_kwh=_decimal(config_state, "config.capacity_kwh"),
-                initial_soc_pct=_decimal(config_state, "config.initial_soc_pct"),
-                min_soc_pct=_decimal(config_state, "config.min_soc_pct"),
-                max_soc_pct=_decimal(config_state, "config.max_soc_pct"),
-                max_charge_kw=_decimal(config_state, "config.max_charge_kw"),
-                max_discharge_kw=_decimal(config_state, "config.max_discharge_kw"),
-                charge_efficiency=_decimal(config_state, "config.charge_efficiency"),
-                discharge_efficiency=_decimal(config_state, "config.discharge_efficiency"),
-                ramp_kw_per_s=_decimal(config_state, "config.ramp_kw_per_s"),
+                capacity_kwh=_config_decimal(config_state, "capacity_kwh"),
+                initial_soc_pct=_config_decimal(config_state, "initial_soc_pct"),
+                min_soc_pct=_config_decimal(config_state, "min_soc_pct"),
+                max_soc_pct=_config_decimal(config_state, "max_soc_pct"),
+                max_charge_kw=_config_decimal(config_state, "max_charge_kw"),
+                max_discharge_kw=_config_decimal(config_state, "max_discharge_kw"),
+                charge_efficiency=_config_decimal(config_state, "charge_efficiency"),
+                discharge_efficiency=_config_decimal(config_state, "discharge_efficiency"),
+                ramp_kw_per_s=_config_decimal(config_state, "ramp_kw_per_s"),
             )
         except BatteryConfigError as err:
             # Welle-2-Review M-5: BatteryConfigError ist nicht Teil
@@ -165,9 +166,9 @@ class BatterySnapshot:
             # wuerden typisiert nur die generische Familie fangen.
             raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
 
-        soc_kwh = _decimal(state, "soc_kwh")
-        current_power_kw = _decimal(state, "current_power_kw")
-        pending_power_kw = _decimal(state, "pending_power_kw")
+        soc_kwh = assert_decimal(state["soc_kwh"], "soc_kwh", SUBSYSTEM)
+        current_power_kw = assert_decimal(state["current_power_kw"], "current_power_kw", SUBSYSTEM)
+        pending_power_kw = assert_decimal(state["pending_power_kw"], "pending_power_kw", SUBSYSTEM)
 
         return cls(
             version=version,
@@ -181,23 +182,14 @@ class BatterySnapshot:
         )
 
 
-def _assert_str(mapping: Mapping[str, object], key: str) -> str:
-    value = mapping[key]
-    if not isinstance(value, str):
-        raise WrongTypeError(SUBSYSTEM, key, "str", type(value).__name__)
-    return value
+def _config_decimal(config_state: Mapping[str, object], leaf: str) -> Decimal:
+    """Battery-Config-Schluessel-Helper.
 
-
-def _decimal(mapping: Mapping[str, object], path: str) -> Decimal:
-    """Holt `mapping[leaf]`, wo `leaf` der letzte Teil von `path`
-    nach `.` ist (z. B. `"config.capacity_kwh"` → Key `capacity_kwh`).
-    Wirft `WrongTypeError("battery", path, "Decimal", actual)` bei
-    Verstoss."""
-    leaf = path.rsplit(".", 1)[-1]
-    value = mapping[leaf]
-    if not isinstance(value, Decimal):
-        raise WrongTypeError(SUBSYSTEM, path, "Decimal", type(value).__name__)
-    return value
+    Mapt `leaf` → `"config.<leaf>"` als Pfad fuer den
+    `WrongTypeError`-Path (Welle-3-Review L-1 Migration: dedup auf
+    Codec-`assert_decimal` mit Battery-spezifischem Pfad-Prefix).
+    """
+    return assert_decimal(config_state[leaf], f"config.{leaf}", SUBSYSTEM)
 
 
 # Welle-2-Review L-4: Error-Klassen NICHT re-exportiert — Aufrufer

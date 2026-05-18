@@ -19,9 +19,11 @@ from typing import Final, Self
 from grid_gym.hexagon.core.devices.pv.config import PvConfig, PvConfigError
 from grid_gym.hexagon.core.errors import VersionError, WrongTypeError
 from grid_gym.hexagon.core.serialization.snapshot_codec import (
+    assert_decimal,
     assert_int,
     assert_mapping,
     assert_required_keys,
+    assert_str,
 )
 
 SUBSYSTEM: Final[str] = "pv"
@@ -81,21 +83,25 @@ class PvSnapshot:
         if version != SNAPSHOT_VERSION:
             raise VersionError(SUBSYSTEM, expected=SNAPSHOT_VERSION, found=version)
 
-        device_id = _assert_str(state, "device_id")
-        run_id = _assert_str(state, "run_id")
+        device_id = assert_str(state["device_id"], "device_id", SUBSYSTEM)
+        run_id = assert_str(state["run_id"], "run_id", SUBSYSTEM)
         sequence = assert_int(state["sequence"], "sequence", SUBSYSTEM)
 
         config_state = assert_mapping(state["config"], "config", SUBSYSTEM)
         assert_required_keys(config_state, _CONFIG_KEYS, SUBSYSTEM)
         try:
             config = PvConfig(
-                rated_power_kw=_decimal(config_state, "config.rated_power_kw"),
+                rated_power_kw=assert_decimal(
+                    config_state["rated_power_kw"],
+                    "config.rated_power_kw",
+                    SUBSYSTEM,
+                ),
             )
         except PvConfigError as err:
             raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
 
-        current_power_kw = _decimal(state, "current_power_kw")
-        pending_power_kw = _decimal(state, "pending_power_kw")
+        current_power_kw = assert_decimal(state["current_power_kw"], "current_power_kw", SUBSYSTEM)
+        pending_power_kw = assert_decimal(state["pending_power_kw"], "pending_power_kw", SUBSYSTEM)
 
         return cls(
             version=version,
@@ -106,21 +112,6 @@ class PvSnapshot:
             current_power_kw=current_power_kw,
             pending_power_kw=pending_power_kw,
         )
-
-
-def _assert_str(mapping: Mapping[str, object], key: str) -> str:
-    value = mapping[key]
-    if not isinstance(value, str):
-        raise WrongTypeError(SUBSYSTEM, key, "str", type(value).__name__)
-    return value
-
-
-def _decimal(mapping: Mapping[str, object], path: str) -> Decimal:
-    leaf = path.rsplit(".", 1)[-1]
-    value = mapping[leaf]
-    if not isinstance(value, Decimal):
-        raise WrongTypeError(SUBSYSTEM, path, "Decimal", type(value).__name__)
-    return value
 
 
 __all__ = [
