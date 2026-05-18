@@ -1,9 +1,13 @@
 # ADR 0014 — Battery-Snapshot-Schema + Command-Surface (M2 Welle 2)
 
-**Status:** Provisional — Validierung erfolgt mit M2-Welle-2-PR-
-Merge (Snapshot-Roundtrip + Determinismus-Property + Trigger-013-
-Test). `Provisional → Accepted` synchron mit Welle-2-Closure.
+**Status:** Accepted — Validierung erfolgt mit M2-Welle-2-PR-
+Merge (Commits `6247228`/`48f0106`): Snapshot-Roundtrip
+byte-stabil, `hypothesis @given(seed=...)`-Property gruen ueber
+100 Ticks, Trigger-013-Pflicht-Test gruen mit Battery-Trace bei
+`tick_ms=100`. `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override (Default-Branch-Coverage 92.50%).
 **Datum:** 2026-05-18
+**Status geaendert am:** 2026-05-18 — `Proposed → Accepted`.
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol,
 das Battery implementiert),

@@ -1,17 +1,16 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0 + Welle 1 abgeschlossen
-am 2026-05-18. Welle 0a (Commits `3322cb8`, `1f19996`),
-Welle 0b (Commit `ee37f36`), Welle 0c (Commit `314f853`),
-Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
-`df99d97` / `6e108d6`), Welle 1 Erstwurf (Commit `b927e7a` —
-`DeviceModel`-Protocol, ADR 0013 `Accepted`, NullDevice +
-Protocol-Adherence-Tests), Welle-1-Review-Folge (Commits
-`88252f1` / `9a61823` / `129c137` / folgender §27.2-Commit —
-ADR §§2.5-2.8 + §8, Lifecycle-Errors, device_id-Property +
-from_snapshot in Protocol, +14 Review-Tests). Naechster
-Schritt ist Welle 2 (Battery, `GG-DEV-010` + `GG-BESS-001..005,
-008`). M1-Spine
+**Status:** In Progress — Welle 0 + Welle 1 + Welle 2
+abgeschlossen am 2026-05-18. Welle 0a/0b/0c (Commits `3322cb8`,
+`1f19996`, `ee37f36`, `314f853`), Welle-0-Review-Fixes
+(`d490905` / `51a5f4e` / `6d39c7a` / `df99d97` / `6e108d6`),
+Welle 1 Erstwurf (`b927e7a`), Welle-1-Review-Folge (`88252f1` /
+`9a61823` / `129c137` / `a6c912c` / `6e108d6`), Welle 2
+Erstwurf + Determinismus + Trigger-013-Closure (`6247228` /
+`48f0106` / `5866117`). Default-`make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override (Erfolgskriterium 1
+erreicht). Naechster Schritt ist Welle 3 (PV + Load,
+`GG-DEV-011` + `GG-DEV-013`). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -39,7 +38,8 @@ Move `next/` → `in-progress/`: 2026-05-18 mit Welle-0a-Start.
   §11 (`GG-GRID-001..007`), §3 (`GG-MVP-002`: End-to-End-
   Szenario mit Netzanschluss/PV/Load/Smart-Meter/Battery).
 - Triggers
-  [`open/013-replay-diff-tick-ms-parameter.md`](../open/013-replay-diff-tick-ms-parameter.md),
+  [`done/013-replay-diff-tick-ms-parameter.md`](../done/013-replay-diff-tick-ms-parameter.md)
+  (Welle 2 abgeschlossen 2026-05-18),
   [`done/014-generic-snapshot-format-codec.md`](../done/014-generic-snapshot-format-codec.md)
   (Welle 0a abgeschlossen 2026-05-18),
   [`done/015-runtime-image-hardening.md`](../done/015-runtime-image-hardening.md)
@@ -380,9 +380,25 @@ Lifecycle-Raises/from_snapshot-Roundtrip/Decimal-Boundary).
 `make gates` gruen mit erweitertem `CRITICAL_COV_TARGETS`
 (Welle-0-Liste + `hexagon/core/devices`).
 
-### Welle 2 — Battery (`GG-DEV-010` + `GG-BESS-001..005`/`008`) (2 Tage)
+### Welle 2 — Battery (`GG-DEV-010` + `GG-BESS-001..005, 008`) (`Done` 2026-05-18)
 
-**Kritische Welle** — diese Welle macht das Default-Gate gruen.
+**Kritische Welle abgeschlossen.** Default-`make gates` cache-frei
+gruen ohne `CRITICAL_COV_TARGETS`-Override — Erfolgskriterium 1
+(S-3 aus M1-Welle-7-Sweep) erreicht. ADR 0014 `Accepted` in der
+Welle-2-Closure. Commits: `6247228` (Battery-Module + ADR 0014
+Provisional), `48f0106` (Determinismus + Trigger 013),
+`5866117` (Trigger 013 nach `done/`), folgender Closure-Commit.
+
+**Belege:**
+
+- 380 Unit-Tests gruen (vorher 303 → +69 Welle-2-Erstwurf +
+  +8 Determinismus/Trigger-013 = 380).
+- `make coverage-gate-critical` (Default-Liste) liefert
+  **92.50 % Branch-Coverage** gegen 90 %-Schwelle.
+- `make gates` cache-frei gruen.
+- Trigger 013 (`replay-diff-tick-ms-parameter`) nach `done/`
+  gewandert (Commit `5866117`).
+- ADR 0014 `Proposed → Accepted` (Welle-2-Closure-Commit).
 
 - `src/grid_gym/hexagon/core/devices/battery/`:
   - `config.py` — `BatteryConfig` Frozen-Dataclass: `capacity_
