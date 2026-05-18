@@ -193,10 +193,17 @@ class RandomPortSnapshotFormatError(RandomPortError, SnapshotFormatError):
     Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
     Trigger 014): Aufrufer koennen typisiert auch auf der generischen
     Ebene catchen. `subsystem` ist auf `"random_port"` vorbelegt.
+
+    Welle-0b-Review L-12: `super().__init__` folgt der C3-MRO
+    (`RandomPortError` → `SnapshotFormatError` → `GridGymError`).
+    `RandomPortError` definiert kein eigenes `__init__`, also greift
+    `SnapshotFormatError.__init__(subsystem, message)` direkt — und
+    ein zukuenftiger Init-Add an `RandomPortError` wuerde hier laut
+    `TypeError` brechen, statt still uebersprungen zu werden.
     """
 
     def __init__(self, message: str) -> None:
-        SnapshotFormatError.__init__(self, "random_port", message)
+        super().__init__("random_port", message)
 
 
 class RandomPortSnapshotInvalidBytesError(RandomPortSnapshotFormatError):
@@ -315,10 +322,12 @@ class SchedulerSnapshotFormatError(SchedulerError, SnapshotFormatError):
 
     Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
     Trigger 014); `subsystem` ist auf `"scheduler"` vorbelegt.
+    `super().__init__` folgt der C3-MRO — siehe Welle-0b-Review L-12
+    in `RandomPortSnapshotFormatError`.
     """
 
     def __init__(self, message: str) -> None:
-        SnapshotFormatError.__init__(self, "scheduler", message)
+        super().__init__("scheduler", message)
 
 
 class SchedulerSnapshotMissingKeysError(SchedulerSnapshotFormatError):
@@ -389,10 +398,11 @@ class TickLoopSnapshotFormatError(TickLoopError, SnapshotFormatError):
     `RandomPortSnapshotFormatError`. Generalisierung als Trigger 014
     in M2 Welle 0a abgeschlossen — Multi-Inheritance von
     `SnapshotFormatError`, `subsystem` ist auf `"tick_loop"` vorbelegt.
+    `super().__init__` folgt der C3-MRO (siehe Welle-0b-Review L-12).
     """
 
     def __init__(self, message: str) -> None:
-        SnapshotFormatError.__init__(self, "tick_loop", message)
+        super().__init__("tick_loop", message)
 
 
 class TickLoopSnapshotMissingKeysError(TickLoopSnapshotFormatError):
@@ -473,10 +483,11 @@ class ScenarioSchemaError(ScenarioError, SnapshotFormatError):
 
     Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
     Trigger 014); `subsystem` ist auf `"scenario"` vorbelegt.
+    `super().__init__` folgt der C3-MRO (siehe Welle-0b-Review L-12).
     """
 
     def __init__(self, message: str) -> None:
-        SnapshotFormatError.__init__(self, "scenario", message)
+        super().__init__("scenario", message)
 
 
 class ScenarioMissingKeysError(ScenarioSchemaError):
@@ -564,10 +575,11 @@ class ReplayParseError(ReplayError, SnapshotFormatError):
 
     Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
     Trigger 014); `subsystem` ist auf `"replay"` vorbelegt.
+    `super().__init__` folgt der C3-MRO (siehe Welle-0b-Review L-12).
     """
 
     def __init__(self, message: str) -> None:
-        SnapshotFormatError.__init__(self, "replay", message)
+        super().__init__("replay", message)
 
 
 class ReplayMissingFieldError(ReplayParseError):

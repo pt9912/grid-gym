@@ -537,6 +537,19 @@ ueber den TickLoop.
   dokumentiert den Bruch, fixiert den typisierten Fehler-
   Vertrag, verweist auf M6 fuer Lese-Migrations-Pfade. Strikt
   nach ADR-Erweiterungs-Pattern, kein Supersedes.
+- **Bypass-Strategie fuer Trusted-Source-Pfade** (Welle-0b-Review
+  M-5): die Welle-0a-Pflicht-Check `assert_payload_canonical_
+  compatible` in `SnapshotEnvelope.__post_init__` walked rekursiv
+  jeden Sub-Snapshot. Bei tiefen Geraete-Snapshots (z. B. Battery
+  mit langer Command-Historie) summiert sich das auf O(N) je
+  Konstruktor-Aufruf, dazu noch O(N) beim spaeteren
+  `canonical_json`-Encoding. Fuer Trusted-Source-Pfade (Resume
+  aus einem zuvor byte-validierten Snapshot) ist die Pruefung
+  redundant. Welle 6 plant entweder einen optionalen
+  `_skip_payload_check=False`-Kwarg am Konstruktor oder einen
+  separaten `from_validated_mapping`-Classmethod-Pfad. Entscheidung
+  faellt mit ADR 0015; bis dahin bleibt der eager-Check
+  unkonditional.
 - **Gate-Status nach Welle 6**: `make fullbuild` gruen ohne
   jeden Override.
 

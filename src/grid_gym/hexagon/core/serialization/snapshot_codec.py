@@ -42,13 +42,15 @@ def assert_required_keys(
 ) -> None:
     """Prueft, dass `state` alle Keys aus `required` enthaelt.
 
-    Wirft `MissingKeysError(subsystem, sorted(missing))` bei Verstoss.
-    Die sortierte Liste der fehlenden Keys macht die Fehler-Meldung
-    byte-stabil (deterministisch).
+    Wirft `MissingKeysError(subsystem, missing)` bei Verstoss.
+    Welle-0b-Review L-11: die Sortierung der fehlenden Keys ist
+    Aufgabe des `MissingKeysError`-Konstruktors (errors.py),
+    der `sorted(missing)` defensiv vor dem Format ausfuehrt — hier
+    waere ein zweiter `sorted()`-Aufruf redundant.
     """
     missing = required - state.keys()
     if missing:
-        raise MissingKeysError(subsystem, sorted(missing))
+        raise MissingKeysError(subsystem, list(missing))
 
 
 def assert_int(value: object, key: str, subsystem: str) -> int:

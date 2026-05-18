@@ -372,9 +372,16 @@ COPY --from=build-app --chown=grid-gym:grid-gym /src/pyproject.toml /app/pyproje
 #
 # Welle-0b-Review M-6: `find` filtert `python*`- und `*.so`-Dateien
 # heraus, damit `sed` keinen Binary-Launcher anfasst, sollte ein
-# zukuenftiges uv-Release solche generieren. Der `sed`-Pattern
-# matched nur Erstzeile mit `#!/src/.venv/bin/python`-Praefix; non-
-# matchende Dateien bleiben byte-identisch.
+# zukuenftiges uv-Release solche generieren.
+#
+# Welle-0b-Review L-13: der `sed`-Pattern `^#!/src/\.venv/bin/python`
+# ist **bewusst praefix-matching** (kein `$`-Anker). Damit greift
+# der Rewrite gleichermassen fuer
+#   `#!/src/.venv/bin/python`,
+#   `#!/src/.venv/bin/python3`,
+#   `#!/src/.venv/bin/python3.14`
+# (uv-Konsolen-Skripte koennen jede dieser Varianten emittieren).
+# Non-matchende Erstzeilen lassen sed -i die Datei byte-identisch.
 RUN find /app/.venv/bin -type f ! -name 'python*' ! -name '*.so' \
         -exec sed -i '1s|^#!/src/\.venv/bin/python|#!/app/.venv/bin/python|' {} + \
  && sed -i 's|/src/\.venv|/app/.venv|g' /app/.venv/pyvenv.cfg

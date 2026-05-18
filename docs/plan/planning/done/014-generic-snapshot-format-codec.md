@@ -65,6 +65,33 @@ unten umgesetzt):**
   bestehenden M1-Module auf die Free-Functions ist ein separater
   Refactor-Slice, kein Welle-0a-Pflichtweg.
 
+**Architektur-Notiz (Welle-0b-Review L-17):**
+
+Welle 0a fuehrt eine neue Import-Kante ein:
+`hexagon/core/domain/snapshot.py` → `hexagon/core/serialization/
+snapshot_codec.py`. Das ist die erste Stelle, an der ein
+Domain-Modul aktiv eine Free-Function aus einem anderen
+Core-Modul beim `__post_init__`-Aufruf konsumiert. Vertrags-
+Pruefung:
+
+- **AC-HEXAGON-PURE** (`ADR 0002 §A-1`) ist eingehalten: beide
+  Module liegen unterhalb von `hexagon/core/` und importieren
+  nur stdlib + `grid_gym.*`.
+- **AC-DOMAIN-FROZEN** ist eingehalten: die Regel beschraenkt
+  Klassen-*Shapes* in `hexagon/core/domain/**` (Frozen-Dataclass,
+  `FrozenModel`-Vererbung oder `Enum`-Subklasse). Imports werden
+  nicht eingeschraenkt; `SnapshotEnvelope` bleibt frozen.
+- **AC-NO-CYCLES** ist eingehalten: `snapshot_codec.py` importiert
+  nur `errors.py`, das selbst kein Domain-Modul importiert. Kein
+  Zyklus.
+
+Ein eigener ADR ist nicht angesetzt — der Import-Pattern folgt
+denselben Regeln wie die bereits etablierte Import-Kante
+`hexagon/core/domain/*` → `hexagon/core/errors.py` (z. B.
+`domain/snapshot.py` importiert dort `MissingSubSnapshotVersionError`).
+M2-Welle-1+ duerfen das Pattern direkt nachnutzen, ohne neue
+Architektur-Klaerung.
+
 **Abnahme-Belege:**
 
 - 268 Unit-Tests gruen (243 M1 + 22 Welle-0a-Codec-Tests +
