@@ -214,10 +214,17 @@ class RandomPortSnapshotNotAnObjectError(RandomPortSnapshotFormatError):
 
 
 class RandomPortSnapshotMissingKeysError(RandomPortSnapshotFormatError):
-    """Pflicht-Keys fehlen im Snapshot."""
+    """Pflicht-Keys fehlen im Snapshot.
+
+    Welle-0b-Review M-3: `sorted(missing)` ist defensiv — alle M1-
+    Aufrufer geben bereits sortierte Listen, aber die Generic-
+    Variante `MissingKeysError` sortiert ebenfalls; damit bleibt die
+    Message-Form konsistent zwischen Leaf- und Generic-Variante,
+    falls ein zukuenftiger Aufrufer die Sortier-Pflicht vergisst.
+    """
 
     def __init__(self, missing: list[str]) -> None:
-        super().__init__(f"missing snapshot keys: {missing}")
+        super().__init__(f"missing snapshot keys: {sorted(missing)}")
 
 
 class RandomPortSnapshotWrongTypeError(RandomPortSnapshotFormatError):
@@ -315,10 +322,14 @@ class SchedulerSnapshotFormatError(SchedulerError, SnapshotFormatError):
 
 
 class SchedulerSnapshotMissingKeysError(SchedulerSnapshotFormatError):
-    """Pflicht-Keys fehlen im Snapshot-Dict."""
+    """Pflicht-Keys fehlen im Snapshot-Dict.
+
+    Welle-0b-Review M-3: `sorted(missing)` defensiv (siehe
+    `RandomPortSnapshotMissingKeysError`-Begruendung).
+    """
 
     def __init__(self, missing: list[str]) -> None:
-        super().__init__(f"missing scheduler snapshot keys: {missing}")
+        super().__init__(f"missing scheduler snapshot keys: {sorted(missing)}")
 
 
 class SchedulerSnapshotWrongTypeError(SchedulerSnapshotFormatError):
@@ -385,10 +396,14 @@ class TickLoopSnapshotFormatError(TickLoopError, SnapshotFormatError):
 
 
 class TickLoopSnapshotMissingKeysError(TickLoopSnapshotFormatError):
-    """Pflicht-Keys fehlen im TickLoop-Snapshot-Dict."""
+    """Pflicht-Keys fehlen im TickLoop-Snapshot-Dict.
+
+    Welle-0b-Review M-3: `sorted(missing)` defensiv (siehe
+    `RandomPortSnapshotMissingKeysError`-Begruendung).
+    """
 
     def __init__(self, missing: list[str]) -> None:
-        super().__init__(f"missing tick_loop snapshot keys: {missing}")
+        super().__init__(f"missing tick_loop snapshot keys: {sorted(missing)}")
 
 
 class TickLoopSnapshotWrongTypeError(TickLoopSnapshotFormatError):
@@ -465,10 +480,14 @@ class ScenarioSchemaError(ScenarioError, SnapshotFormatError):
 
 
 class ScenarioMissingKeysError(ScenarioSchemaError):
-    """Pflicht-Keys fehlen im Szenario-Mapping."""
+    """Pflicht-Keys fehlen im Szenario-Mapping.
+
+    Welle-0b-Review M-3: `sorted(missing)` defensiv (siehe
+    `RandomPortSnapshotMissingKeysError`-Begruendung).
+    """
 
     def __init__(self, path: str, missing: list[str]) -> None:
-        super().__init__(f"scenario {path!r}: missing keys {missing}")
+        super().__init__(f"scenario {path!r}: missing keys {sorted(missing)}")
 
 
 class ScenarioWrongTypeError(ScenarioSchemaError):

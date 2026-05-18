@@ -165,6 +165,89 @@ def test_payload_canonical_rejects_top_level_float() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Welle-0b-Review M-4: erweiterte Negativ-Pfade
+# (complex, set/frozenset, MappingProxyType — alles, was die
+# Encoder-`dict`-vs-`Mapping`-Diskrepanz schliessen muss).
+# ---------------------------------------------------------------------------
+
+
+def test_payload_canonical_rejects_complex() -> None:
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible({"impedance": complex(1, 2)}, "grid_model")
+    assert exc_info.value.subsystem == "grid_model"
+    assert "got complex" in str(exc_info.value)
+
+
+def test_payload_canonical_rejects_set() -> None:
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible({"flags": {"a", "b"}}, "battery")
+    assert exc_info.value.subsystem == "battery"
+    assert "got set" in str(exc_info.value)
+
+
+def test_payload_canonical_rejects_frozenset() -> None:
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible(frozenset({"a", "b"}), "battery", "tags")
+    assert exc_info.value.subsystem == "battery"
+    assert "got frozenset" in str(exc_info.value)
+
+
+def test_payload_canonical_rejects_mapping_proxy_type() -> None:
+    """`MappingProxyType` ist `Mapping`-Subklasse, aber kein `dict` —
+    der Encoder (`canonical_json`) dispatcht strikt auf `dict`.
+    Welle-0b-Review H-2: Codec wurde von `Mapping` auf `dict` verengt,
+    damit Smuggler hier landen, nicht erst im Encoder."""
+    import types
+
+    proxy = types.MappingProxyType({"version": 1, "value": 42})
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible(proxy, "battery", "snapshot")
+    assert exc_info.value.subsystem == "battery"
+    assert "got mappingproxy" in str(exc_info.value)
+
+
+def test_payload_canonical_rejects_bytearray() -> None:
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible({"raw": bytearray(b"abc")}, "battery")
+    assert exc_info.value.subsystem == "battery"
+    assert "got bytearray" in str(exc_info.value)
+
+
+def test_payload_canonical_accepts_empty_mapping_and_lists() -> None:
+    """Leere Container sind canonical-zulaessig (`{}` und `[]` werden
+    deterministisch emittiert)."""
+    assert_payload_canonical_compatible({}, "battery")
+    assert_payload_canonical_compatible([], "battery")
+    assert_payload_canonical_compatible((), "battery")
+    assert_payload_canonical_compatible({"nested": {"empty": {}}}, "battery")
+
+
+def test_payload_canonical_walks_deeply_nested() -> None:
+    """≥5 Ebenen tiefe Struktur — sicherstellen, dass die Rekursion
+    keine willkuerliche Tiefen-Begrenzung hat und Pfad-Konstruktion
+    konsistent bleibt."""
+    deep = {"a": {"b": {"c": {"d": {"e": [1, 2, 3.14]}}}}}
+    with pytest.raises(WrongTypeError) as exc_info:
+        assert_payload_canonical_compatible(deep, "battery")
+    assert "a.b.c.d.e[2]" in str(exc_info.value)
+    assert "got float" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# Welle-0b-Review M-4: assert_required_keys "alles-fehlt"-Pfad
+# ---------------------------------------------------------------------------
+
+
+def test_assert_required_keys_with_empty_state_lists_all_required_sorted() -> None:
+    """Determinismus-Vertrag: Reihenfolge der fehlenden Keys ist
+    lexikographisch sortiert (byte-stabile Fehler-Message)."""
+    with pytest.raises(MissingKeysError) as exc_info:
+        assert_required_keys({}, frozenset({"c", "a", "b"}), "battery")
+    assert exc_info.value.subsystem == "battery"
+    assert "['a', 'b', 'c']" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
 # Per-Subsystem-Root-Aliasse erben jetzt von SnapshotFormatError
 # (Trigger-014-Generalisierung) — Aufrufer koennen generisch catchen.
 # ---------------------------------------------------------------------------

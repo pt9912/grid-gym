@@ -65,14 +65,20 @@ def assert_int(value: object, key: str, subsystem: str) -> int:
     return value
 
 
-def assert_mapping(value: object, key: str, subsystem: str) -> Mapping[str, object]:
-    """Prueft, dass `value` ein `Mapping[str, object]` ist.
+def assert_mapping(value: object, key: str, subsystem: str) -> dict[str, object]:
+    """Prueft, dass `value` ein `dict[str, object]` ist.
 
     Wirft `WrongTypeError(subsystem, key, "Mapping", actual_type)` bei
     Verstoss. Die Map-Werte werden NICHT rekursiv geprueft; dafuer ist
     `assert_payload_canonical_compatible` da.
+
+    Welle-0b-Review H-2: bewusst eng auf `dict` (nicht beliebige
+    `Mapping`-Subklassen), weil
+    `serialization/canonical.py::canonical_json` ebenfalls nur `dict`
+    akzeptiert. Ein `MappingProxyType`-Smuggler wuerde sonst hier
+    durchgehen und erst im Hash-Encoder typloss kippen.
     """
-    if not isinstance(value, Mapping):
+    if not isinstance(value, dict):
         raise WrongTypeError(subsystem, key, "Mapping", type(value).__name__)
     return value
 
@@ -85,11 +91,18 @@ def assert_payload_canonical_compatible(
     """Prueft rekursiv, dass `payload` ausschliesslich canonical_json-
     faehige Wertetypen enthaelt.
 
-    Erlaubte Wertebereiche (Spiegel von
+    Erlaubte Wertebereiche (1:1-Spiegel von
     `serialization/canonical.py::canonical_json`):
-    `None`, `bool`, `int`, `Decimal`, `str`, `Mapping[str, ...]`,
-    `list`, `tuple`. Verboten: `float`, `bytes`, `complex`, sowie
-    `Mapping`-Keys, die nicht `str` sind, und alles Andere.
+    `None`, `bool`, `int`, `Decimal`, `str`, `dict[str, ...]`, `list`,
+    `tuple`. Verboten: `float`, `bytes`, `complex`, `set`,
+    `frozenset`, `bytearray`, `MappingProxyType` und sonstige
+    `Mapping`-Subklassen ausserhalb von `dict`, sowie `dict`-Keys,
+    die nicht `str` sind, und alles Andere.
+
+    Welle-0b-Review H-2: `dict` (nicht `Mapping`) ist Vertragsspiegel
+    zum Encoder. Ein `types.MappingProxyType` oder eine eigene
+    `Mapping`-Subklasse wuerde sonst hier durchgehen und erst spaeter
+    in `canonical_json` mit `UnsupportedTypeError` brechen.
 
     Bei Verstoss wirft `WrongTypeError(subsystem, "<path>.<key>",
     "canonical-compatible", actual_type)`. Aufrufer (z. B. Scenario-
@@ -105,7 +118,7 @@ def assert_payload_canonical_compatible(
         # `bool` ist `int`-Subklasse — fuer Payload-Werte explizit
         # erlaubt (`canonical_json` emittiert `true`/`false`).
         return
-    if isinstance(payload, Mapping):
+    if isinstance(payload, dict):
         for key, sub_value in payload.items():
             if not isinstance(key, str):
                 raise WrongTypeError(subsystem, f"{path}.<key>", "str", type(key).__name__)
