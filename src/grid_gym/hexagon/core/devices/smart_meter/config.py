@@ -66,6 +66,18 @@ class SmartMeterConfig:
             raise SmartMeterConfigInvalidValueError("aggregate_metric_name", "must be str")
         if self.aggregate_metric_name == "":
             raise SmartMeterConfigInvalidValueError("aggregate_metric_name", "must not be empty")
+        # Welle-4b-Review H-1: Telemetrie-Emission (model.py) hardcoded
+        # auf `aggregated_power_kw` + Unit `kW`. Andere Metric-Namen
+        # wuerden zwar korrekt summiert, aber unter dem falschen
+        # Telemetrie-Label emittiert. Welle 4b verlangt deshalb den
+        # Default; Welle 5 / Post-MVP aktiviert das Forward-Looking-
+        # Feld zusammen mit einer dynamischen `_emit_telemetry`-
+        # Emission.
+        if self.aggregate_metric_name != "power_kw":
+            raise SmartMeterConfigInvalidValueError(
+                "aggregate_metric_name",
+                "must be 'power_kw' in Welle 4b (Welle 5+ activates other metrics)",
+            )
 
 
 __all__ = [

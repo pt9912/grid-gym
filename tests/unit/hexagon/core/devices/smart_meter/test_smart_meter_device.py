@@ -407,27 +407,35 @@ def test_pre_init_source_contributes_zero_silent_skip() -> None:
 
 def test_source_without_matching_metric_contributes_zero() -> None:
     """Quelle existiert + ist initialisiert, aber emittiert keine
-    aggregate_metric_name-Metric → Beitrag 0."""
+    aggregate_metric_name-Metric → Beitrag 0.
+
+    Welle-4b-Review H-1: weil `aggregate_metric_name` in Welle 4b
+    auf `"power_kw"` zwangs-gepinnt ist, simulieren wir die
+    Silent-Skip-Semantik mit einer Quelle, deren `power_kw`-
+    Emission fehlt. Ein PV-Device, das noch nie getickt hat,
+    liefert genau das — `telemetry()` ist `()`."""
     device = _initialize(
         SmartMeterDevice(),
         aggregate_device_ids=("pv-1",),
     )
-    # Aendere die gesuchte Metric auf etwas, das PV nicht emittiert.
-    sd = ScenarioDevice(
-        id="meter-1",
-        type="smart_meter",
-        params={
-            "aggregate_device_ids": ["pv-1"],
-            "aggregate_metric_name": "soc_kwh",
-        },
-    )
-    custom_device = SmartMeterDevice()
-    custom_device.initialize(sd, FixedSeedRandom(seed=0))
-    pv = _make_pv(rated=Decimal("500"))
-    pv.tick(_context(tick=0))
-    custom_device.attach_sources({"pv-1": pv})
-    outcome = custom_device.tick(_context(tick=0))
+    pv_never_ticked = _make_pv(rated=Decimal("500"))  # kein tick(), telemetry()==()
+    device.attach_sources({"pv-1": pv_never_ticked})
+    outcome = device.tick(_context(tick=0))
     assert outcome.telemetry[0].value == Decimal("0.000000")
+
+
+def test_aggregate_metric_name_other_than_power_kw_rejected_in_welle_4b() -> None:
+    """Welle-4b-Review H-1: `aggregate_metric_name` muss in
+    Welle 4b auf `'power_kw'` bleiben. Andere Werte werden vom
+    Config-Validator abgelehnt — Welle 5+ aktiviert die
+    Forward-Looking-Erweiterung mit dynamischer
+    Telemetrie-Emission."""
+    with pytest.raises(SmartMeterConfigInvalidValueError) as exc_info:
+        SmartMeterConfig(
+            aggregate_device_ids=("pv-1",),
+            aggregate_metric_name="import_kwh",
+        )
+    assert "power_kw" in str(exc_info.value).lower()
 
 
 # ---------------------------------------------------------------------------

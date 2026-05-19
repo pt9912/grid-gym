@@ -105,7 +105,17 @@ produktiven Command-Surface in Welle 4b.
 - Optional: `aggregate_metric_name: str = "power_kw"` —
   bleibt in Welle 4b auf Default; Forward-Looking-Hook fuer
   Welle 5 / Post-MVP, wenn auch `import_kwh`/`export_kwh`/
-  `soc_kwh` aggregierbar werden sollen.
+  `soc_kwh` aggregierbar werden sollen. **Welle-4b-Pflicht
+  (Review-H-1, Commit folgt):** der Config-Validator lehnt
+  Werte ungleich `"power_kw"` ab, weil die Telemetrie-Emission
+  in `model.py` auf `aggregated_power_kw` + Unit `kW` hardcoded
+  ist (siehe §2.4 Punkt 5). Ohne diese Sperre wuerde ein
+  abweichender `aggregate_metric_name` zwar die korrekte
+  Quell-Metric summieren, aber unter dem falschen Telemetrie-
+  Label emittieren (still-falscher Drift). Welle 5+ aktiviert
+  die Forward-Looking-Erweiterung zusammen mit einer
+  dynamischen `_emit_telemetry`-Emission, die Metric/Unit aus
+  dem Config liest.
 
 `aggregate_device_ids` darf leer sein (`()`); leeres
 Aggregat liefert `aggregated_power_kw = Decimal("0")` (kein
