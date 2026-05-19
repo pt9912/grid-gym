@@ -1,20 +1,24 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
 **Status:** In Progress — Welle 0/1/2/3 abgeschlossen am
-2026-05-18. Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`,
-`314f853`) + Welle-0-Review-Fixes (`d490905` / `51a5f4e` /
-`6d39c7a` / `df99d97` / `6e108d6`), Welle 1 (`b927e7a`) +
-Welle-1-Review-Folge (`88252f1` / `9a61823` / `129c137` /
-`a6c912c` / `6e108d6`), Welle 2 (`6247228` / `48f0106` /
-`5866117` / `9a138c2`) + Welle-2-Review-Folge (`4600e79` /
-`eb09e9b` / `d7bc2d9` / `f4988ff` / `bd13882`), Welle 3a
-(`2abbd12`) + Welle 3b + Closure (folgender Commit).
-Default-`make gates` cache-frei gruen ohne
-`CRITICAL_COV_TARGETS`-Override. Naechster Schritt ist
-Welle 4a (`GridConnection`, `GG-DEV-012`) — Welle 4 ist
-pre-Start in 4a (`GridConnection`) + 4b (`SmartMeter` +
-Closure) sub-gesliced; zwei separate ADRs 0017 + 0018
-statt einer geteilten (siehe §3 Welle 4). M1-Spine
+2026-05-18, Welle 4a am 2026-05-19. Welle 0a/0b/0c (`3322cb8`,
+`1f19996`, `ee37f36`, `314f853`) + Welle-0-Review-Fixes
+(`d490905` / `51a5f4e` / `6d39c7a` / `df99d97` / `6e108d6`),
+Welle 1 (`b927e7a`) + Welle-1-Review-Folge (`88252f1` /
+`9a61823` / `129c137` / `a6c912c` / `6e108d6`), Welle 2
+(`6247228` / `48f0106` / `5866117` / `9a138c2`) +
+Welle-2-Review-Folge (`4600e79` / `eb09e9b` / `d7bc2d9` /
+`f4988ff` / `bd13882`), Welle 3a (`2abbd12`) + Welle 3b +
+Closure (`e5d3c9a`) + Welle-3-Review-Folge (`6cad963` /
+`ea875c3` / `60582e7` / `45a9be6` / `b4e3ce7`), Welle 4a
+(`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` / `1ed976a` /
+`7ad78e4` / `bdce682`). Default-`make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override. Naechster Schritt ist
+Welle 4b (`SmartMeter`, `GG-DEV-014` + Welle-4-Closure) —
+Welle 4 ist pre-Start in 4a (`GridConnection`) + 4b
+(`SmartMeter` + Closure) sub-gesliced; zwei separate ADRs
+0017 + 0018 statt einer geteilten (siehe §3 Welle 4).
+M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -549,7 +553,30 @@ ADR 0016 fuer PV+Load) — die State-Modelle (kumulativ vs.
 stateless) und die Command-Surfaces sind zu verschieden, um
 eine ehrliche Abstraktion zu rechtfertigen.
 
-#### Welle 4a — GridConnection (`GG-DEV-012`) + ADR 0017 (Provisional) (1/2 Tag)
+#### Welle 4a — GridConnection (`GG-DEV-012`) + ADR 0017 (Provisional) (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commits: `b73b44a` (Welle-4a-Erstwurf
++ ADR 0017 Provisional) plus Welle-4a-Review-Folge `579cd5a`
+(H-1 + M-2 Doku-Drift), `1ed976a` (M-1 + M-3 ADR-Schaerfung),
+`7ad78e4` (M-4 + M-5 + L-4 Test-Pflicht), `bdce682` (L-3
+Single-Source-of-Truth).
+
+**Belege:**
+
+- 545 Unit-Tests gruen (vorher 484 → +59 GridConnection-
+  Erstwurf, dann +2 Pre-Init-Hook-Tests = 545).
+- `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt
+  jetzt `devices/grid_connection`).
+- ADR 0017 `Proposed → Provisional` (Schaerfung auf
+  `Accepted` mit Welle-4b-Closure).
+- Welle-4a-Review-Befund: 0 Crit / 1 High / 5 Med / 4 Low /
+  3 Info; alle Crit/High/Med + 2 Low adressiert, L-1/L-2 als
+  Forward-Looking offen gelassen (Welle-5+-Material bzw.
+  Konvention bereits projektweit), Info-only nicht
+  adressiert.
+
+**Lieferung im Repo:**
 
 - `hexagon/core/devices/grid_connection/` (Struktur analog
   Welle 2 Battery + Welle 3 PV/Load):

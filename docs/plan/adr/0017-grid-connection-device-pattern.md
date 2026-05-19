@@ -1,7 +1,25 @@
 # ADR 0017 — GridConnection-Anschlusspunkt-Pattern (M2 Welle 4a)
 
-**Status:** Proposed
+**Status:** Provisional — Validierung erfolgt mit M2-Welle-4a-
+PR-Merge (`b73b44a`): 543 Unit-Tests gruen (vorher 484, +59
+GridConnection-Tests), `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override; Welle-4a-Review-Folge (`579cd5a`
+/ `1ed976a` / `7ad78e4` / `bdce682`) hat H-1/M-1..M-5/L-3/L-4
+adressiert (545 Unit-Tests Endstand). Schaerfung auf `Accepted`
+mit Welle-4b-Closure.
 **Datum:** 2026-05-19
+**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`.
+**Geschaerft am:** 2026-05-19 (vor-Implementierungs-Schaerfung,
+Commit `3cabe83`) — §2.5 Telemetrie-Liste von 4 auf 3 Punkte
+reduziert (`command_status` ist String, `TelemetryPoint.value`
+ist `Decimal`; Status laeuft ueber `drain_alarms()`).
+**Erneut geschaerft am:** 2026-05-19 (Welle-4a-Review-Folge,
+Commit `1ed976a`) — §2.4 IGNORED-Klarstellung fuer strukturell
+ungueltige Payloads (Spiegel zu PV/Load); §2.5 Decimal-
+Praezisions-Note zu persistiertem `import_kwh`/`export_kwh`-
+Tail. Schaerfung folgt `ADR 0011`-Pattern (parallele Schaerfung
+ohne Supersedes — der Entscheidungs-Kern in §§2.1/2.2/2.3/2.6/
+2.7 ist unveraendert).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol,
 das `GridConnectionDevice` implementiert),
