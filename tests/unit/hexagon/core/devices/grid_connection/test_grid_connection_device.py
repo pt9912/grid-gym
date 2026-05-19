@@ -378,11 +378,17 @@ def test_alarm_carries_command_id() -> None:
 
 
 def test_telemetry_emits_three_metrics_sorted() -> None:
-    """ADR 0017 §2.5: drei TelemetryPoints sortiert nach Metrikname."""
+    """ADR 0017 §2.5: drei TelemetryPoints sortiert nach Metrikname.
+
+    Welle-4a-Review M-5: zusaetzlich zur konkreten Tripel-Pruefung
+    wird die Sortier-Invariante mechanisch gepinnt, damit ein
+    zukuenftiger Metrik-Eintrag nicht stille Drift einfuehrt.
+    """
     device = _initialize(GridConnectionDevice())
     outcome = device.tick(_context(tick=0))
     metrics = [p.metric for p in outcome.telemetry]
     assert metrics == ["export_kwh", "import_kwh", "power_kw"]
+    assert metrics == sorted(metrics), "Telemetrie-Metriken muessen alphabetisch sortiert sein"
 
 
 def test_telemetry_units() -> None:
@@ -402,12 +408,16 @@ def test_telemetry_quality_is_valid() -> None:
 
 
 def test_telemetry_value_is_decimal_quantized() -> None:
+    """Welle-4a-Review L-4: robuste Pruefung ueber `Decimal.as_tuple().
+    exponent`, statt fragiles `str.split(".", 1)[1]` (das bei
+    ganzzahligen Decimals ohne `.` einen IndexError werfen wuerde).
+    `quantize(Decimal("0.000001"))` setzt den Exponenten immer auf
+    -6, auch fuer den Wert `Decimal("0.000000")`."""
     device = _initialize(GridConnectionDevice())
     device.apply_command(_command(value=Decimal("50")))
     outcome = device.tick(_context(tick=0))
     for point in outcome.telemetry:
-        decimals_part = str(point.value).split(".", 1)[1]
-        assert len(decimals_part) <= 6
+        assert point.value.as_tuple().exponent == -6
 
 
 def test_apply_command_then_tick_uses_pending() -> None:
@@ -666,6 +676,36 @@ def test_attach_random_after_from_snapshot() -> None:
     new_random = FixedSeedRandom(seed=42)
     restored.attach_random(new_random)
     outcome = restored.tick(_context(tick=1))
+    assert outcome.telemetry
+
+
+def test_set_run_id_pre_init_is_allowed() -> None:
+    """Welle-4a-Review M-4: set_run_id darf vor initialize()
+    aufgerufen werden (TickLoop-Lifecycle in Welle 6 kann
+    run_id setzen, bevor der Scenario-Loader das Geraet
+    initialisiert). Spiegelt PV/Load (kein Pre-Init-Raise auf
+    set_run_id)."""
+    device = GridConnectionDevice()
+    device.set_run_id("run-pre-init")
+    # Kein Raise — und der gespeicherte run_id taucht beim
+    # ersten Tick nach Init in der Telemetrie auf.
+    _initialize(device)
+    device.tick(_context(tick=0))
+    for point in device.telemetry():
+        assert point.run_id == "run-pre-init"
+
+
+def test_attach_random_pre_init_is_allowed() -> None:
+    """Welle-4a-Review M-4: analog set_run_id. Hook bleibt
+    defensiv aufrufbar — kein DeviceNotInitializedError. Der
+    nachfolgende initialize()-Aufruf ueberschreibt die
+    Random-Port-Referenz (ADR 0013 §2.6 Lifecycle: initialize
+    setzt random)."""
+    device = GridConnectionDevice()
+    device.attach_random(FixedSeedRandom(seed=99))
+    # Kein Raise.
+    _initialize(device)
+    outcome = device.tick(_context(tick=0))
     assert outcome.telemetry
 
 
