@@ -586,10 +586,13 @@ eine ehrliche Abstraktion zu rechtfertigen.
     SmartMeter in 4b); Self-Sufficient-`from_snapshot`
     (Welle-2-Review-C-1) verifiziert, dass kein
     Re-Initialisierungs-Schritt die Summen zurueckschiebt.
-- `GridConnectionDevice.telemetry()` liefert mindestens
-  `power_kw`, `import_kwh`, `export_kwh`, `command_status`
-  als `TelemetryPoint`-Tupel (deterministisch nach Metrikname
-  sortiert).
+- `GridConnectionDevice.telemetry()` liefert genau drei
+  `TelemetryPoint`s (sortiert nach Metrikname: `export_kwh`,
+  `import_kwh`, `power_kw`). **Kein `command_status`-Telemetry-
+  Point** — `TelemetryPoint.value` ist `Decimal`, ein String-
+  Tag ist strukturell nicht emittierbar; Command-Status laeuft
+  ueber `drain_alarms()` + `GridConnectionAlarm` (analog
+  Battery / PV / Load; ADR 0017 §2.5).
 - **Welle-2/3-Review-Patterns mechanisch gespiegelt** (gleiche
   Liste wie PV/Load in Welle 3b):
   - C-1: self-sufficient `from_snapshot` ohne `__init__`-

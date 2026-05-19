@@ -838,7 +838,9 @@ devices:
   - id: "grid-1"
     type: "grid_connection"
     params:
-      nominal_frequency_hz: 50.0
+      nominal_voltage_v: 400
+      max_import_kw: 100
+      max_export_kw: 100
   - id: "pv-1"
     type: "pv"
     params:
