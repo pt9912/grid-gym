@@ -16,11 +16,15 @@ Welle 4a (`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` /
 Welle-4b-Review-Folge (`1093b2c` / `bc94a8c` / `d3769dc` /
 `85dced7`). Default-`make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
-alle fuenf MVP-Geraete). Naechster Schritt ist **Welle 5a
-(Bilanz + GridModelSnapshot, `GG-GRID-001`/`002`)** — Welle 5
-ist pre-Start in 5a (Bilanz-Physik-Kern) + 5b (Loads + CSV/JSON-
-Loader + Closure) sub-gesliced; zwei separate ADRs 0019 + 0020
-statt einer geteilten (siehe §3 Welle 5). M1-Spine
+alle fuenf MVP-Geraete) plus `core/grid_model` (Welle 5a).
+Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
+`16f8b9b` / `91e0118` / `1af57b8`) liegt; Naechster Schritt
+ist **Welle 5b (Loads + LoadProfile + CSV/JSON-Loader +
+Welle-5-Closure, `GG-GRID-003`/`004`)** — Welle 5 ist
+pre-Start in 5a (Bilanz-Physik-Kern, abgeschlossen) + 5b
+(Loads + CSV/JSON-Loader + Closure) sub-gesliced; zwei
+separate ADRs 0019 + 0020 statt einer geteilten (siehe §3
+Welle 5). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -829,7 +833,31 @@ laufen auf demselben `make`-Gate (`test-unit` + Default-
   (wie ADR 0017 + 0018 fuer GridConnection/SmartMeter) — die
   Concerns sind zu verschieden fuer eine ehrliche Abstraktion.
 
-#### Welle 5a — Bilanz + GridModelSnapshot + ADR 0019 (Proposed)
+#### Welle 5a — Bilanz + GridModelSnapshot + ADR 0019 (Provisional) (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commits: `268a1c0` (Welle-5a-Erstwurf +
+ADR 0019 Proposed, +1075/-1) plus Welle-5a-Review-Folge
+`676f684` (M-4 Decimal-Type + L-1 Re-Export), `16f8b9b`
+(M-1 model_kind semantisch), `91e0118` (M-3 Lastenheft-Marker
++ L-3 Single-Source + L-5 bool-Negativ), `1af57b8` (M-2 + L-2
+ADR-Doku-Sync). ADR 0019 ist `Provisional`; Schaerfung auf
+`Accepted` mit Welle-5-Closure.
+
+**Belege:**
+
+- 642 Unit-Tests gruen (vorher 605 → +34 grid_model-Erstwurf,
+  +3 Welle-5a-Review-Tests = 642).
+- `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt
+  jetzt `core/grid_model`).
+- ADR 0019 `Proposed → Provisional` (nach 3 Pre-
+  Implementation-Schaerfungs-Runden + 1 Review-Folge-
+  Schaerfung).
+- Welle-5a-Review-Befund: 0 Crit / 0 High / 4 Med / 5 Low /
+  4 Info; alle Crit/High/Med + 4 Low adressiert (L-4 als
+  Reviewer-empfohlener Skip, I-1..I-4 Forward-Looking).
+
+**Lieferung im Repo:**
 
 - `hexagon/core/grid_model/` (Top-Level neben `devices/`,
   `scenario/`, `replay/`):

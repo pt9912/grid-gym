@@ -1,7 +1,26 @@
 # ADR 0019 — Grid-Model-Bilanz-Pattern (M2 Welle 5a)
 
-**Status:** Proposed
+**Status:** Provisional — Validierung erfolgt mit M2-Welle-5a-
+PR-Merge (`268a1c0`): 639 Unit-Tests gruen (vorher 605, +34
+grid_model-Tests), `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override; Welle-5a-Review-Folge
+(`676f684` / `16f8b9b` / `91e0118` / `1af57b8`) hat
+M-1/M-2/M-3/M-4/L-1/L-2/L-3/L-5 adressiert (642 Unit-Tests
+Endstand). Schaerfung auf `Accepted` mit Welle-5-Closure
+(zusammen mit ADR 0020).
 **Datum:** 2026-05-19
+**Status geaendert am:** 2026-05-19 — `Proposed →
+Provisional`. Pre-Implementation-Schaerfung in drei Runden
+(Commits `d384218` / `eeeb034` / `a858be8`) hat
+Imbalance-Formel (Round 1), Determinismus-Property + Pre-
+Grid-Subsumme (Round 2), Auto-Schluss-vs-Manual-Begruendung +
+Config-Invarianten + Clamp-Counting (Round 3) fixiert.
+**Geschaerft am:** 2026-05-19 (Welle-5a-Review-Folge,
+Commit `1af57b8`) — §5 Operative-Artefakte-Test-Modul-Anzahl
+korrigiert; §6 Welle-5b-Snapshot-Versionssprung-Forward-
+Pointer ergaenzt. Schaerfung folgt `ADR 0011`-Pattern
+(parallele Schaerfung ohne Supersedes — der Entscheidungs-
+Kern in §§2.1/2.2/2.3/2.4/2.4a/2.5/2.6/2.7 ist unveraendert).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol —
 `GridModelBilanz` ist **explizit kein** Device; siehe §1 + §3),
