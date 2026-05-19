@@ -1,6 +1,7 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0/1/2/3 abgeschlossen am
+**Status:** In Progress — Welle 0/1/2/3/4/5/6a/6b abgeschlossen,
+zuletzt Welle 6b am 2026-05-19 (`0f1c597`). Welle 0/1/2/3 am
 2026-05-18, Welle 4 (4a + 4b + Closure) am 2026-05-19.
 Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`, `314f853`) +
 Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
@@ -23,11 +24,14 @@ Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
 + Welle-5b-Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` /
 `e5f8f86` / `29d23bb`). Welle 6a (`27a441f`) + Welle-6a-
 Review-Folge (`ff45c11` / `e3909f0` / `f7f21a6` / `da8deef` /
-`779fcea`) liegt. Naechster Schritt ist **Welle 6b
-(Scenario-Loader-Device-Factory + LoadEvent/LoadProfile-
-Wiring + GridConnection-Auto-Schluss)** — Welle 6 ist pre-
-Start in 6a (TickLoop + Snapshot, abgeschlossen) + 6b
-(Scenario-Loader) + 6c (MVP-Demo + Closure) sub-gesliced.
+`779fcea`) liegt. Welle 6b (`0f1c597`, kombiniert Implementation
++ Review-Folge: Scenario-Loader-Device-Factory + LoadEvent/
+LoadProfile-Wiring + GridConnection-Auto-Schluss + 14
+Review-Findings ohne Supersede-ADR) am 2026-05-19 abgeschlossen.
+Naechster Schritt ist **Welle 6c (MVP-Demo-Szenario + E2E-Tests
++ Welle-6-Closure)** — Welle 6 ist pre-Start in 6a (TickLoop +
+Snapshot, abgeschlossen) + 6b (Scenario-Loader, abgeschlossen)
++ 6c (MVP-Demo + Closure, ausstehend) sub-gesliced.
 M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
@@ -1112,7 +1116,14 @@ L-3+L-4+L-5 ADR-Forward-Pointer + Style).
   ohne `CRITICAL_COV_TARGETS`-Override (Default-Liste
   unveraendert; TickLoop ist Default-Coverage seit M1).
 
-#### Welle 6b — Scenario-Loader-Device-Factory + LoadEvent/LoadProfile-Wiring + GridConnection-Auto-Schluss
+#### Welle 6b — Scenario-Loader-Device-Factory + LoadEvent/LoadProfile-Wiring + GridConnection-Auto-Schluss (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commit `0f1c597` (kombiniert
+Welle-6b-Implementation + Welle-6b-Review-Folge: 14 Findings
+abgearbeitet ohne Supersede-ADR, Schaerfung-Pattern). Stand:
+761 Unit-Tests gruen (vorher 731 → +30 Welle-6b-Tests),
+critical-domain branch coverage 91.35% (`coverage-gate-critical`).
+ADR 0021 `Proposed → Provisional`.
 
 - **Scenario-Loader-Device-Factory** (`hexagon/core/scenario/
   loader.py`-Erweiterung):

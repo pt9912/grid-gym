@@ -1,6 +1,6 @@
 # ADR 0021 — Scenario-Loader-Device-Factory + TickLoop-Event-Wiring + GridConnection-Auto-Schluss (M2 Welle 6b)
 
-**Status:** Proposed
+**Status:** Provisional
 **Datum:** 2026-05-19
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (DeviceModel-Protocol —

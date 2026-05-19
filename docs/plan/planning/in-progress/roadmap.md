@@ -24,9 +24,11 @@ M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
 Aktiver Slice: **M2 (Geraetemodelle)** — Slice-Plan
 liegt in [`in-progress/M2-devices.md`](M2-devices.md) (Status
-`In Progress`, Welle 0..3 + Welle-3-Review-Folge abgeschlossen
-seit 2026-05-18; Welle 4 SmartMeter/GridConnection ist der
-naechste aktive Block).
+`In Progress`, Wellen 0/1/2/3/4/5/6a/6b abgeschlossen, zuletzt
+Welle 6b am 2026-05-19 (`0f1c597` — Scenario-Loader +
+TickLoop-Event-Wiring + Auto-Schluss + 14-Findings-Review).
+Welle 6c (MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure) ist
+der naechste aktive Block).
 
 ---
 
