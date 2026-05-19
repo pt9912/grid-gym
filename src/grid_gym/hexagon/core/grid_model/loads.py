@@ -304,7 +304,12 @@ def _extract_string(value: object, field: str) -> str:
 
 
 def _extract_strict_int(value: object, field: str) -> int:
-    """Akzeptiert nur `int` (kein `bool`/`float`/`Decimal`)."""
+    """Akzeptiert nur `int` (kein `bool`/`float`/`Decimal`).
+    Welle-5b-Review L-5: `tick_ms` Wertebereich (`> 0`) wird in
+    `LoadProfile.__post_init__` geprueft — beide Pfade liefern
+    `LoadProfileTypeError`, sodass der Fehler-Typ konsistent
+    ist, nur die Message-Konstante variiert nach Verstoss-
+    Ursache."""
     if isinstance(value, bool) or not isinstance(value, int):
         raise LoadProfileTypeError(field, "int", type(value).__name__)
     return value
@@ -319,15 +324,29 @@ def _extract_tick_values(raw: object) -> tuple[Decimal, ...]:
 
 
 def _coerce_tick_value(value: object, index: int) -> Decimal:
+    """Welle-5b-Review M-3: akzeptiert zusaetzlich `str` als
+    Decimal-String (YAML/TOML-Adapter koennen Decimals als
+    String reichen, um den `parse_float=Decimal`-Hebel zu
+    umgehen). `float` bleibt abgelehnt (Round-Trip-Verlust)."""
     if isinstance(value, bool):
-        raise LoadProfileTypeError(f"tick_values[{index}]", "Decimal or int", "bool")
+        raise LoadProfileTypeError(f"tick_values[{index}]", "Decimal/int/str", "bool")
     if isinstance(value, Decimal):
         return value
     if isinstance(value, int):
         return Decimal(value)
+    if isinstance(value, str):
+        with _loads_decimal_context():
+            try:
+                return Decimal(value)
+            except InvalidOperation as err:
+                raise LoadProfileTypeError(
+                    f"tick_values[{index}]",
+                    "Decimal-string",
+                    value,
+                ) from err
     raise LoadProfileTypeError(
         f"tick_values[{index}]",
-        "Decimal or int (not float)",
+        "Decimal/int/str (not float)",
         type(value).__name__,
     )
 

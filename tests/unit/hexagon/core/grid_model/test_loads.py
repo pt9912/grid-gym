@@ -376,6 +376,31 @@ def test_parse_json_mapping_int_tick_values_accepted() -> None:
     assert profile.tick_values == (Decimal("1"), Decimal("2"), Decimal("3"))
 
 
+def test_parse_json_mapping_str_decimal_accepted() -> None:
+    """Welle-5b-Review M-3: Mapping-Pfad akzeptiert Decimal-Strings
+    (z.B. aus YAML/TOML-Adaptern, die parse_float=Decimal nicht
+    durchreichen koennen)."""
+    payload: dict[str, object] = {
+        "target_device_id": "load-1",
+        "tick_ms": 1000,
+        "tick_values": ["1.5", "2.0", "3.14"],
+    }
+    profile = parse_json_profile(payload)
+    assert profile.tick_values == (Decimal("1.5"), Decimal("2.0"), Decimal("3.14"))
+
+
+def test_parse_json_mapping_invalid_str_decimal_rejected() -> None:
+    """Strings, die kein gueltiger Decimal sind, werden typed
+    abgelehnt."""
+    payload: dict[str, object] = {
+        "target_device_id": "load-1",
+        "tick_ms": 1000,
+        "tick_values": ["not-a-decimal"],
+    }
+    with pytest.raises(LoadProfileTypeError):
+        parse_json_profile(payload)
+
+
 def test_parse_json_mapping_float_tick_value_rejected() -> None:
     """ADR 0020 §2.4 Punkt 5: float im Mapping-Pfad wird
     abgelehnt (Round-Trip-Verlust-Defense)."""

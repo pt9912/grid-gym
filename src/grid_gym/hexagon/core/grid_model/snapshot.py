@@ -174,6 +174,16 @@ class GridModelSnapshot:
           Tupeln.
         - v2 (Welle 5b): liest die beiden neuen Felder als
           Pflicht.
+
+        **Welle-5b-Review M-4 — Semantik-Toleranz:** Der
+        Snapshot-Roundtrip ist **semantisch tolerant**:
+        `from_dict(...)` prueft Pro-LoadEvent/LoadProfile-
+        Invarianten (`__post_init__`), aber nicht Cross-Item-
+        Konflikte (z. B. ueberlappende Same-Device-Events).
+        Die Cross-Item-Validierung ist Welle-6-Scenario-Loader-
+        Verantwortung (ADR 0020 §2.2 / §7); ein verkonfigurierter
+        Snapshot kommt nach `from_dict` formal durch, wirft
+        aber spaeter in der TickLoop-Verdrahtung.
         """
         if "version" not in state:
             from grid_gym.hexagon.core.errors import MissingKeysError
