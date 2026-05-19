@@ -42,16 +42,21 @@ unveraendert.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
 from grid_gym.hexagon.core.devices import DeviceModel
+from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
+from grid_gym.hexagon.core.devices.load import LoadDevice
+from grid_gym.hexagon.core.domain.command import Command
+from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
+from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.errors import (
     TickLoopInvalidTickMsError,
     TickLoopSnapshotClockMismatchError,
@@ -154,6 +159,8 @@ class TickLoop:
         scheduler: Scheduler,
         devices: tuple[DeviceModel, ...] = (),
         grid_model: GridModelBilanz | None = None,
+        active_load_events: tuple[LoadEvent, ...] = (),
+        active_load_profiles: tuple[LoadProfile, ...] = (),
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -171,9 +178,26 @@ class TickLoop:
         # Loader injiziert die produktive Liste + grid_model.
         self._devices: tuple[DeviceModel, ...] = devices
         self._grid_model: GridModelBilanz | None = grid_model
+        # Welle-6b (ADR 0021 §2.4/§2.5): active LoadEvents/Profiles
+        # werden in jedem Tick zum apply_command-Pfad an LoadDevices
+        # uebersetzt (Jedes-Tick-Baseline + Profile-Overlay +
+        # Event-Overlay).
+        self._active_load_events: tuple[LoadEvent, ...] = active_load_events
+        self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
         # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
         # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
         self._unknown_source_count: int = 0
+        # Welle-6b (ADR 0021 §2.5): O(1)-Lookup-Tabelle fuer Devices
+        # per device_id; einmal im Konstruktor aufgebaut, in
+        # jedem Tick wiederverwendet.
+        self._device_by_id: dict[str, DeviceModel] = {d.device_id: d for d in self._devices}
+        # Welle-6b-Review M-2: konstante Load-Baseline-Map einmal
+        # cachen statt jeden Tick aus `_devices` zu filtern.
+        # `rated_power_kw` ist pro LoadDevice nach `initialize(...)`
+        # invariant.
+        self._load_baseline_by_id: dict[str, Decimal] = {
+            d.device_id: d.rated_power_kw for d in self._devices if isinstance(d, LoadDevice)
+        }
         # Welle-6a-Review C-1: Welle-3-Review-M-4-Vertrag erfordert,
         # dass TickLoop fuer jedes Device `set_run_id(self._run_id)`
         # ruft, bevor der erste Tick laeuft — sonst emittieren alle
@@ -214,64 +238,81 @@ class TickLoop:
         return self._unknown_source_count
 
     def tick(self) -> TickResult:
-        """Schiebt die Simulationszeit um `tick_ms` vor, ruft fuer
-        jedes registrierte Device `device.tick(context)`, aggregiert
-        die `power_kw`-Telemetrie nach `TelemetryPoint.source` und
-        ruft `grid_model.update(...)` mit Sign-Konvention aus
-        ADR 0019 §2.2.
+        """Schiebt die Simulationszeit um `tick_ms` vor und faehrt
+        die Welle-6b-Split-Iteration durch (ADR 0021 §2.7/§2.8):
 
-        - **Device-Iteration** in Konstruktor-Reihenfolge
-          (`ScenarioDevice`-Definitionsreihenfolge wird in Welle 6b
-          ueber den Scenario-Loader gehalten).
-        - `TickResult.emitted_telemetry` ist die Konkatenation aller
-          `device.tick().telemetry`-Tupel in Device-Reihenfolge.
-        - **grid_model-Aufruf** geschieht nach allen Device-Ticks
-          mit aggregierten Power-Werten; ist nur aktiv, wenn ein
-          `grid_model`-Parameter ueber den Konstruktor injiziert
-          wurde.
-        - Welle-4-Scope (`GG-SIM-001`): ohne Devices/grid_model
-          bleibt das Verhalten identisch zur M1-Welle-4-Spine
-          (nur Scheduler-Event-Pop).
+        1. Clock advance, Scheduler-Events poppen (M1).
+        2. **Vor-Tick-Block** (ADR 0021 §2.5): LoadProfile-Overlay
+           + LoadEvent-Overlay -> `apply_command(set_power_kw)` an
+           LoadDevices; sammelt manuelle Override-IDs fuer
+           GridConnection (falls Profile/Event auf eine
+           GridConnection-ID zielen).
+        3. **Erste Iteration**: PV/Load/Battery/SmartMeter ticken
+           (alle ausser `GridConnectionDevice`). Telemetry sammeln
+           + Bilanz-Aggregation in `generation`/`load`/`storage`-
+           Buckets.
+        4. **Auto-Schluss-Berechnung** (ADR 0021 §2.7): pro
+           GridConnection ohne manuellen Override
+           `apply_command(set_power_kw, -pre_grid_residual)`.
+        5. **Zweite Iteration**: GridConnection-Devices ticken;
+           Telemetry sammeln + `grid_connection`-Bucket.
+        6. `grid_model.update(...)` mit allen vier Bilanz-Werten.
+
+        Welle-4-Scope: ohne Devices/grid_model bleibt das
+        Verhalten identisch zur M1-Welle-4-Spine.
         """
         self._clock.advance(self._tick_ms)
         now = self._clock.now()
         popped = tuple(self._scheduler.pop_due(now))
 
-        # Welle 6a: Device-Iteration + Bilanz-Aggregation.
         context = DeviceTickContext(
             tick=self._tick_count,
             simulation_time=now,
             tick_ms=self._tick_ms,
         )
         emitted: list[TelemetryPoint] = []
-        # Welle-6a-Review M-4: Bilanz-Aggregation laeuft im Decimal-
-        # Localcontext, damit ein Caller mit reduzierter Praezision
-        # keine stille Drift einfuehrt.
-        with _tick_loop_decimal_context():
-            bucket_sums: dict[str, Decimal] = {
-                "generation": _ZERO,
-                "load": _ZERO,
-                "storage": _ZERO,
-                "grid_connection": _ZERO,
-            }
-            # Welle-6a-Review M-3: unbekannte source-Tags werden
-            # gezaehlt, damit Welle-7+/M3-Geraete-Drift (z. B.
-            # `source="wind"` ohne Bucket-Mapping) sichtbar ist —
-            # statt nur silent-skipped. Aufrufer koennen den Counter
-            # ueber `unknown_source_count` lesen (Property).
-            unknown_count = 0
-            for device in self._devices:
-                outcome = device.tick(context)
-                for point in outcome.telemetry:
-                    emitted.append(point)
-                    if point.metric != _POWER_KW_METRIC:
-                        continue
-                    bucket = _BILANZ_SOURCE_BUCKETS.get(point.source)
-                    if bucket is None:
-                        unknown_count += 1
-                        continue
-                    bucket_sums[bucket] += point.value
+        # Welle-6b-Review M-1: `list[str]` statt `set[str]` — die
+        # Reihenfolge ist deterministisch (Konstruktor-Reihenfolge),
+        # und O(N) `in`-Check ist bei typisch ≤ 2 GridConnections
+        # vernachlaessigbar gegen das Determinismus-Risiko von
+        # Set-Hash-Iteration.
+        manual_override_grid_ids: list[str] = []
+        bucket_sums: dict[str, Decimal] = {
+            "generation": _ZERO,
+            "load": _ZERO,
+            "storage": _ZERO,
+            "grid_connection": _ZERO,
+        }
+        unknown_count = 0
 
+        with _tick_loop_decimal_context():
+            # Schritt A — Vor-Tick-Block (ADR 0021 §2.5).
+            # Welle-6b-Review H-3: Event-Window-Check nutzt die
+            # Tick-Start-Zeit (`now - tick_ms`), nicht die Tick-End-
+            # Zeit `now`. Damit deckt die halbgeoffene Pruefung
+            # `event.start_s <= now_s < event_end_s` korrekt das
+            # erste Tick-Intervall `[0, tick_ms)` ab — sonst
+            # wuerde ein Event mit `duration_s == tick_ms/1000`
+            # bereits im ersten Tick als abgelaufen behandelt.
+            tick_start_ms = now - self._tick_ms
+            self._consume_load_inputs_into(
+                tick_start_ms=tick_start_ms,
+                now_ms=now,
+                manual_override_grid_ids=manual_override_grid_ids,
+            )
+            grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
+            non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
+            # Schritt B — Erste Iteration (ohne GridConnection).
+            unknown_count += self._run_device_iteration(
+                non_grid_devices, context, emitted, bucket_sums
+            )
+            # Schritt C — GridConnection-Auto-Schluss (ADR 0021 §2.7).
+            self._apply_grid_connection_auto_close(
+                grid_devices, bucket_sums, manual_override_grid_ids, now
+            )
+            # Schritt D — Zweite Iteration (GridConnection ticken).
+            unknown_count += self._run_device_iteration(grid_devices, context, emitted, bucket_sums)
+            # Schritt E — Bilanz-Aggregation.
             if self._grid_model is not None:
                 self._grid_model.update(
                     generation_kw=bucket_sums["generation"],
@@ -289,6 +330,150 @@ class TickLoop:
         )
         self._tick_count += 1
         return result
+
+    def _run_device_iteration(
+        self,
+        devices: Sequence[DeviceModel],
+        context: DeviceTickContext,
+        emitted: list[TelemetryPoint],
+        bucket_sums: dict[str, Decimal],
+    ) -> int:
+        """Ruft `device.tick(context)` fuer alle uebergebenen
+        Devices, konkateniert Telemetrie in `emitted` und summiert
+        `power_kw`-Werte nach `TelemetryPoint.source` in
+        `bucket_sums`. Liefert die Anzahl der unbekannten
+        source-Tags (Welle-6a-Review-M-3-Counter)."""
+        unknown = 0
+        for device in devices:
+            outcome = device.tick(context)
+            for point in outcome.telemetry:
+                emitted.append(point)
+                if point.metric != _POWER_KW_METRIC:
+                    continue
+                bucket = _BILANZ_SOURCE_BUCKETS.get(point.source)
+                if bucket is None:
+                    unknown += 1
+                    continue
+                bucket_sums[bucket] += point.value
+        return unknown
+
+    def _apply_grid_connection_auto_close(
+        self,
+        grid_devices: Sequence[DeviceModel],
+        bucket_sums: dict[str, Decimal],
+        manual_override_grid_ids: list[str],
+        now_ms: int,
+    ) -> None:
+        """Welle-6b (ADR 0021 §2.7): GridConnection-Auto-Schluss
+        nach erster Device-Iteration. Pro GridConnection ohne
+        manuellen Override setzt
+        `power_kw := -(generation - load - storage)`. Manuelle
+        Heuristik: nur LoadEvent/LoadProfile qualifizieren — keine
+        M1-Scheduler-Events (Welle-6b-Review-Round-1-High-3)."""
+        pre_grid_residual = bucket_sums["generation"] - bucket_sums["load"] - bucket_sums["storage"]
+        for grid_dev in grid_devices:
+            if grid_dev.device_id in manual_override_grid_ids:
+                continue
+            # Welle-6b-Review M-5: `result=IGNORED` ist hier ein
+            # **Konstruktor-Default**, kein semantischer Endstatus.
+            # `Command.result` ist by-`GG-DATA-004` ein End-Status —
+            # eine in-flight `result=None` ist out-of-scope. Den
+            # echten Endstatus liefert der Rueckgabewert von
+            # `apply_command`; das vorgegebene `IGNORED` wird durch
+            # die Geraete-Validierung ueberschrieben (intern als
+            # Outcome zurueckgegeben), nicht hier persistiert.
+            grid_dev.apply_command(
+                Command(
+                    command_id=(f"auto_close_{grid_dev.device_id}_tick_{self._tick_count}"),
+                    simulation_time=now_ms,
+                    target_device_id=grid_dev.device_id,
+                    type="set_power_kw",
+                    payload={"value": -pre_grid_residual},
+                    validation_status="validated",
+                    result=CommandResult.IGNORED,
+                )
+            )
+
+    def _consume_load_inputs_into(
+        self,
+        *,
+        tick_start_ms: int,
+        now_ms: int,
+        manual_override_grid_ids: list[str],
+    ) -> None:
+        """Welle-6b (ADR 0021 §2.5): Jedes-Tick-Baseline +
+        Profile/Event-Overlay an LoadDevices anwenden.
+
+        Schritt:
+        1. Baseline: pro LoadDevice `intent = rated_power_kw`
+           (Welle-6b-Review-Befund H-2: TickLoop besitzt
+           `set_power_kw` an LoadDevices exklusiv — externe
+           `apply_command`-Aufrufe zwischen Ticks werden im
+           Folge-Tick durch die Baseline ueberschrieben).
+        2. Profile-Overlay: LoadProfile setzt intent fuer ihren
+           `target_device_id` auf `tick_values[profile_index]`.
+        3. Event-Overlay: aktiver LoadEvent setzt intent auf
+           `event.power_kw` (Window-Check `start_s <= now_s <
+           start_s + duration_s` mit `now_s = tick_start_ms/1000`
+           — Welle-6b-Review H-3).
+        4. `apply_command(set_power_kw, value=intent)` pro Device.
+
+        Wenn `target_device_id` eine GridConnection ist, wird die
+        ID in `manual_override_grid_ids` getragen (Welle-6b-Auto-
+        Schluss-Heuristik aus §2.7). Welle-6b-Review M-1:
+        `list[str]` statt `set[str]` — Determinismus-Pflicht
+        (kein Hash-Seeding bei kuenftiger Iteration).
+        """
+        intent_by_id: dict[str, Decimal] = dict(self._load_baseline_by_id)
+
+        # Profile-Overlay.
+        for profile in self._active_load_profiles:
+            target_dev = self._device_by_id.get(profile.target_device_id)
+            if target_dev is None:
+                continue
+            profile_index = (self._tick_count * self._tick_ms) // profile.tick_ms
+            tick_values = profile.tick_values
+            value = tick_values[min(profile_index, len(tick_values) - 1)]
+            intent_by_id[profile.target_device_id] = value
+            if (
+                isinstance(target_dev, GridConnectionDevice)
+                and profile.target_device_id not in manual_override_grid_ids
+            ):
+                manual_override_grid_ids.append(profile.target_device_id)
+
+        # Event-Overlay. Welle-6b-Review H-3: `now_s` ist die Tick-
+        # Start-Zeit, damit ein Event mit `duration_s = tick_ms/1000`
+        # waehrend genau des ersten Tick-Intervalls als aktiv gilt.
+        _ = now_ms  # Tick-End-Zeit nicht mehr fuer Window-Check noetig.
+        now_s = Decimal(tick_start_ms) / Decimal(1000)
+        for event in self._active_load_events:
+            event_end_s = event.start_s + event.duration_s
+            if not (event.start_s <= now_s < event_end_s):
+                continue
+            target_dev = self._device_by_id.get(event.target_device_id)
+            if target_dev is None:
+                continue
+            intent_by_id[event.target_device_id] = event.power_kw
+            if (
+                isinstance(target_dev, GridConnectionDevice)
+                and event.target_device_id not in manual_override_grid_ids
+            ):
+                manual_override_grid_ids.append(event.target_device_id)
+
+        # apply_command pro Device mit berechnetem intent.
+        for device_id, intent in intent_by_id.items():
+            device = self._device_by_id[device_id]
+            device.apply_command(
+                Command(
+                    command_id=(f"baseline_{device_id}_tick_{self._tick_count}"),
+                    simulation_time=now_ms,
+                    target_device_id=device_id,
+                    type="set_power_kw",
+                    payload={"value": intent},
+                    validation_status="validated",
+                    result=CommandResult.IGNORED,
+                )
+            )
 
     def snapshot(self) -> Mapping[str, object]:
         """Liefert den TickLoop-State als `SnapshotEnvelope`-konformes

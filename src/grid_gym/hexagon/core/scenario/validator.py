@@ -26,6 +26,7 @@ ist mit Trigger 014 geschlossen.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from decimal import Decimal
 from typing import Final
 
 from grid_gym.hexagon.core.errors import (
@@ -72,6 +73,28 @@ _REQUIRED_FAULT: Final[frozenset[str]] = frozenset(
     {"start_simulation_time", "duration_ms", "target", "type", "payload", "recovery"}
 )
 
+# Welle-6b (ADR 0021 §2.3): optionale Welle-6b-Top-Level-Sektionen.
+# Alle drei sind optional — Welle-6a-Default ist „kein grid_model,
+# keine load_events, keine load_profiles".
+_REQUIRED_GRID_MODEL: Final[frozenset[str]] = frozenset(
+    {
+        "nominal_frequency_hz",
+        "frequency_sensitivity_hz_per_kw",
+        "frequency_clamp_min_hz",
+        "frequency_clamp_max_hz",
+        "nominal_voltage_v",
+        "voltage_sensitivity_v_per_kw",
+        "voltage_clamp_min_v",
+        "voltage_clamp_max_v",
+    }
+)
+_REQUIRED_LOAD_EVENT: Final[frozenset[str]] = frozenset(
+    {"start_s", "duration_s", "target_device_id", "power_kw"}
+)
+_REQUIRED_LOAD_PROFILE: Final[frozenset[str]] = frozenset(
+    {"target_device_id", "tick_values", "tick_ms"}
+)
+
 
 def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     """Prueft die Pflicht-Struktur eines Szenario-Mappings.
@@ -96,6 +119,10 @@ def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     _assert_event_list(raw, devices)
     _assert_replay_reference(raw)
     _assert_fault_list(raw)
+    # Welle-6b (ADR 0021 §2.3): drei optionale Top-Level-Sektionen.
+    _assert_grid_model_block(raw)
+    _assert_load_events_block(raw, devices)
+    _assert_load_profiles_block(raw, devices)
 
 
 def _assert_required_keys(
@@ -234,3 +261,85 @@ def _assert_fault_list(raw: Mapping[str, object]) -> None:
             )
         assert_payload_canonical_compatible(payload, "scenario", f"faults[{index}].payload")
         _assert_str(entry, f"faults[{index}].recovery")
+
+
+# ---------------------------------------------------------------------------
+# Welle 6b — optionale Top-Level-Sektionen (ADR 0021 §2.3)
+# ---------------------------------------------------------------------------
+
+
+def _assert_decimal(mapping: Mapping[str, object], path: str) -> None:
+    """Welle-6b (ADR 0021 §2.3): GG-DATA-005-Decimal-Pflicht
+    fuer alle physikalischen Felder (kein float, kein int, kein
+    bool)."""
+    leaf = path.split(".")[-1]
+    value = mapping[leaf]
+    if not isinstance(value, Decimal):
+        raise ScenarioWrongTypeError(path, "Decimal", type(value).__name__)
+
+
+def _assert_grid_model_block(raw: Mapping[str, object]) -> None:
+    if "grid_model" not in raw:
+        return
+    block = raw["grid_model"]
+    if not isinstance(block, Mapping):
+        raise ScenarioWrongTypeError("grid_model", "Mapping", type(block).__name__)
+    _assert_required_keys("grid_model", block, _REQUIRED_GRID_MODEL)
+    for field in _REQUIRED_GRID_MODEL:
+        _assert_decimal(block, f"grid_model.{field}")
+
+
+def _assert_load_events_block(
+    raw: Mapping[str, object], devices: list[Mapping[str, object]]
+) -> None:
+    if "load_events" not in raw:
+        return
+    raw_events = raw["load_events"]
+    if not isinstance(raw_events, list):
+        raise ScenarioWrongTypeError("load_events", "list", type(raw_events).__name__)
+    device_ids = {device["id"] for device in devices}
+    for index, entry in enumerate(raw_events):
+        if not isinstance(entry, Mapping):
+            raise ScenarioWrongTypeError(f"load_events[{index}]", "Mapping", type(entry).__name__)
+        _assert_required_keys(f"load_events[{index}]", entry, _REQUIRED_LOAD_EVENT)
+        _assert_decimal(entry, f"load_events[{index}].start_s")
+        _assert_decimal(entry, f"load_events[{index}].duration_s")
+        _assert_str(entry, f"load_events[{index}].target_device_id")
+        _assert_decimal(entry, f"load_events[{index}].power_kw")
+        target = entry["target_device_id"]
+        if isinstance(target, str) and target not in device_ids:
+            raise ScenarioUnknownEventTargetError(target)
+
+
+def _assert_load_profiles_block(
+    raw: Mapping[str, object], devices: list[Mapping[str, object]]
+) -> None:
+    if "load_profiles" not in raw:
+        return
+    raw_profiles = raw["load_profiles"]
+    if not isinstance(raw_profiles, list):
+        raise ScenarioWrongTypeError("load_profiles", "list", type(raw_profiles).__name__)
+    device_ids = {device["id"] for device in devices}
+    for index, entry in enumerate(raw_profiles):
+        if not isinstance(entry, Mapping):
+            raise ScenarioWrongTypeError(f"load_profiles[{index}]", "Mapping", type(entry).__name__)
+        _assert_required_keys(f"load_profiles[{index}]", entry, _REQUIRED_LOAD_PROFILE)
+        _assert_str(entry, f"load_profiles[{index}].target_device_id")
+        _assert_int(entry, f"load_profiles[{index}].tick_ms")
+        tick_values = entry["tick_values"]
+        if not isinstance(tick_values, list):
+            raise ScenarioWrongTypeError(
+                f"load_profiles[{index}].tick_values",
+                "list[Decimal]",
+                type(tick_values).__name__,
+            )
+        for value_index, value in enumerate(tick_values):
+            if not isinstance(value, Decimal):
+                raise ScenarioWrongTypeError(
+                    f"load_profiles[{index}].tick_values[{value_index}]",
+                    "Decimal",
+                    type(value).__name__,
+                )
+        target = entry["target_device_id"]
+        if isinstance(target, str) and target not in device_ids:
+            raise ScenarioUnknownEventTargetError(target)

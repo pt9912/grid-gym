@@ -599,12 +599,57 @@ class ScenarioDuplicateDeviceIdError(ScenarioError):
         super().__init__(f"duplicate device id in scenario: {device_id!r}")
 
 
+class ScenarioUnknownDeviceTypeError(ScenarioError):
+    """Welle-6b (ADR 0021 §2.2): `ScenarioDevice.type` ist in der
+    Device-Factory-Map nicht registriert. Welle-7+/M3-Geraete
+    muessen sich in `scenario.loader._DEVICE_FACTORIES` eintragen
+    oder per `device_type`-Protocol-Property dispatchen."""
+
+    def __init__(self, device_type: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"scenario references unknown device type {device_type!r}. "
+            f"Welle-6b-Factory-Map kennt: {sorted(known)}."
+        )
+
+
+class ScenarioMissingSourceDeviceError(ScenarioError):
+    """Welle-6b (ADR 0021 §2.2): SmartMeter's `aggregate_device_ids`
+    referenziert eine Geraete-ID, die im Scenario nicht definiert
+    ist. Fail-fast vor dem ersten Tick (statt
+    `SmartMeterSourceMissingError` zur Laufzeit, ADR 0018 §2.4)."""
+
+    def __init__(self, smart_meter_id: str, missing_source_id: str) -> None:
+        super().__init__(
+            f"SmartMeter {smart_meter_id!r} referenziert "
+            f"aggregate_device_id {missing_source_id!r}, "
+            f"das im Scenario nicht definiert ist."
+        )
+
+
 class ScenarioUnknownEventTargetError(ScenarioError):
     """Ein Event referenziert eine Geraete-ID, die nicht in
     `devices` definiert ist (`GG-SCN-008`)."""
 
     def __init__(self, target: str) -> None:
         super().__init__(f"scenario event targets unknown device: {target!r}")
+
+
+class ScenarioInvalidLoadTargetError(ScenarioError):
+    """Welle-6b-Review M-6 (ADR 0021 §2.5 + §2.7):
+    `LoadEvent.target_device_id` bzw. `LoadProfile.target_device_id`
+    muss auf ein `LoadDevice` oder `GridConnectionDevice` zeigen
+    (die einzigen legitimen Overlay-Ziele). Andere Geraete-Typen
+    (PV/Battery/SmartMeter) sind unzulaessig — Fail-fast im
+    Builder, statt zur Laufzeit `apply_command(set_power_kw)` an
+    den falschen Typ zu liefern."""
+
+    def __init__(self, source: str, target_id: str, target_type: str) -> None:
+        super().__init__(
+            f"{source} target_device_id={target_id!r} verweist auf "
+            f"Geraete-Typ {target_type!r}; erlaubt sind nur "
+            "LoadDevice und GridConnectionDevice "
+            "(Welle-6b-Review M-6, ADR 0021 §2.5/§2.7)."
+        )
 
 
 class ScenarioUnsupportedReplayFormatError(ScenarioError):

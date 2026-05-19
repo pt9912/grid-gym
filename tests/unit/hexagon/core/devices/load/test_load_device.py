@@ -138,6 +138,32 @@ def test_double_initialize_raises() -> None:
         device.initialize(_scenario_device(), FixedSeedRandom(seed=1))
 
 
+def test_rated_power_kw_pre_init_raises() -> None:
+    """Welle-6b-Review M-4: `LoadDevice.rated_power_kw` ist
+    Welle-6b-Public-Restore-Source (ADR 0021 §2.6). Pre-init
+    muss `DeviceNotInitializedError` werfen (Welle-1-/Welle-3-
+    Pattern)."""
+    with pytest.raises(DeviceNotInitializedError):
+        _ = LoadDevice().rated_power_kw
+
+
+def test_rated_power_kw_after_initialize_returns_config_value() -> None:
+    """Welle-6b-Review M-4: nach `initialize(...)` liefert
+    `rated_power_kw` den `LoadConfig.rated_power_kw`-Wert."""
+    device = _initialize(LoadDevice())
+    assert device.rated_power_kw == Decimal("800")
+
+
+def test_rated_power_kw_after_from_snapshot_returns_config_value() -> None:
+    """Welle-6b-Review M-4: `from_snapshot` setzt `_config` direkt,
+    ohne `initialize(...)`. `rated_power_kw` muss trotzdem den
+    serialisierten Wert liefern."""
+    original = _initialize(LoadDevice())
+    snap = original.snapshot()
+    restored = LoadDevice.from_snapshot(snap)
+    assert restored.rated_power_kw == Decimal("800")
+
+
 def test_device_id_after_init() -> None:
     device = _initialize(LoadDevice())
     assert device.device_id == "load-1"

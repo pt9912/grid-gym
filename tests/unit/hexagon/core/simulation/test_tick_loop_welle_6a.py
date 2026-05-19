@@ -85,6 +85,8 @@ def _make_battery(device_id: str = "battery-1") -> BatteryDevice:
 
 def _make_grid_connection(
     device_id: str = "grid-1",
+    max_import_kw: Decimal = Decimal("1000"),
+    max_export_kw: Decimal = Decimal("1000"),
 ) -> GridConnectionDevice:
     grid_dev = GridConnectionDevice()
     grid_dev.initialize(
@@ -93,8 +95,8 @@ def _make_grid_connection(
             type="grid_connection",
             params={
                 "nominal_voltage_v": Decimal("400"),
-                "max_import_kw": Decimal("100"),
-                "max_export_kw": Decimal("100"),
+                "max_import_kw": max_import_kw,
+                "max_export_kw": max_export_kw,
             },
         ),
         FixedSeedRandom(seed=0),
@@ -200,8 +202,13 @@ def test_tick_without_devices_emits_empty_telemetry() -> None:
 
 
 def test_grid_model_update_called_with_aggregated_power_kw() -> None:
-    """pv=500 (gen), load=300 (load), battery=0 (storage),
-    grid=0 (auto-default) -> imbalance = 500 - 300 - 0 + 0 = 200 kW."""
+    """Welle 6a + 6b: pv=500 (gen), load=300 (load), battery=0
+    (storage). Welle-6b-Auto-Schluss (ADR 0021 §2.7) berechnet
+    `pre_grid_residual = 500 - 300 - 0 = 200 kW` und setzt
+    `grid_connection.power_kw = -200`. Damit imbalance =
+    `500 - 300 - 0 + (-200) = 0`. Ohne Auto-Schluss (Manual-Pfad)
+    waere imbalance 200 — siehe Welle-6b-Tests fuer den
+    Manual-Pfad."""
     pv = _make_pv(rated=Decimal("500"))
     load = _make_load(rated=Decimal("300"))
     battery = _make_battery()
@@ -212,7 +219,8 @@ def test_grid_model_update_called_with_aggregated_power_kw() -> None:
         grid_model=bilanz,
     )
     loop.tick()
-    assert bilanz.last_imbalance_kw == Decimal("200")
+    # Welle-6b-Auto-Schluss balanciert die Bilanz.
+    assert bilanz.last_imbalance_kw == Decimal("0")
 
 
 def test_grid_model_only_active_when_injected() -> None:

@@ -84,6 +84,17 @@ class LoadDevice:
     def alarms(self) -> tuple[LoadAlarm, ...]:
         return tuple(self._alarms)
 
+    @property
+    def rated_power_kw(self) -> Decimal:
+        """Welle-6b-Konvention (ADR 0021 §2.6): Public-Restore-
+        Source fuer das TickLoop-Jedes-Tick-Baseline-Pattern.
+        Aufrufer liest den Nenn-Verbrauchswert, ohne auf das
+        private `_config`-Feld zuzugreifen. Pre-init wirft
+        `DeviceNotInitializedError`."""
+        if self._config is None:
+            raise DeviceNotInitializedError("rated_power_kw")
+        return self._config.rated_power_kw
+
     def drain_alarms(self) -> tuple[LoadAlarm, ...]:
         drained = tuple(self._alarms)
         self._alarms = []

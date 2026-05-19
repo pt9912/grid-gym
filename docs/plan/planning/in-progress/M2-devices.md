@@ -1155,10 +1155,41 @@ L-3+L-4+L-5 ADR-Forward-Pointer + Style).
 - ADR 0014 `Battery`-Snapshot-Schema-Verweise im TickLoop-
   Code (Welle-2-Closure hat ADR 0014 bereits `Accepted`
   gemacht; Welle 6b ergaenzt nur die TickLoop-Verdrahtung).
-- **Welle-6b-Gate-Status**: `make gates` cache-frei gruen.
-  Test-Anzahl-Inkrement: ~30..60 neue Tests
-  (Scenario-Loader-Device-Factory + LoadEvent/Profile-Wiring
-  + GridConnection-Auto-Schluss).
+- **Welle-6b-Gate-Status**: `make gates` cache-frei gruen
+  (Stand 2026-05-19: 761 Unit-Tests, branch coverage 91.35%
+  ueber `coverage-gate-critical`). Test-Anzahl-Inkrement
+  Welle 6a→6b: +29 Tests (12 TickLoop-6b + 12 Loader-6b +
+  3 LoadDevice-rated_power_kw + 2 Factory-Sync).
+- **Welle-6b-Review-Folge** (2026-05-19): 14 Findings (4 High,
+  7 Medium, 3 Low, 1 Niedrig) abgearbeitet ohne Supersede-ADR
+  (Schaerfung-Pattern). Kern-Inkremente:
+  - **H-1 Cap-Limit/Auto-Schluss**: Test pinnt
+    `imbalance_kw`-Restposten bei `max_export_kw`-Clamp
+    (ADR 0021 §2.7 Klausel „Cap-Limit-Respekt").
+  - **H-2 Baseline-Force-Reset**: TickLoop besitzt
+    `set_power_kw` an LoadDevices exklusiv. Externe
+    `apply_command` zwischen Ticks wird im Folge-Tick durch
+    `rated_power_kw` ueberschrieben — Pflicht-Test +
+    Code-Kommentar im Helper.
+  - **H-3 Profile/Event-Clock-Desync**: Event-Window-Check
+    nutzt jetzt `tick_start_ms = now - tick_ms`, nicht
+    `now`. Pflicht-Tests fuer beide Half-Open-Boundaries
+    (`start_s=0, duration_s=1` aktiv im ersten Tick;
+    abgelaufen im zweiten).
+  - **H-4 Validator + parse_*-Helfer**: `validator.py` prueft
+    optionale `grid_model`-/`load_events`-/`load_profiles`-
+    Top-Level-Sektionen typisiert; `loader.py` erweitert um
+    `parse_load_events`, `parse_load_profiles`, internem
+    `_parse_grid_model_config`. `_build_scenario` reicht die
+    drei neuen Felder durch.
+  - **M-1 Set→List-Determinismus**: `manual_override_grid_ids`
+    ist jetzt `list[str]` mit Dedup-Append (verhindert
+    Hash-basierte Iteration-Drift).
+  - **M-2 Baseline-Cache**: `_load_baseline_by_id` einmal in
+    `__init__` materialisiert.
+  - **M-6 Overlay-Target-Validierung**: neue
+    `ScenarioInvalidLoadTargetError` blockt LoadEvent/Profile
+    auf PV/Battery/SmartMeter-Targets im Builder.
 
 #### Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure
 

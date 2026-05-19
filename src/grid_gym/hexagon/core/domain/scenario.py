@@ -17,6 +17,16 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover
+    # Welle-6b (ADR 0021 §2.3): Imports fuer optionale
+    # Scenario-Erweiterungen. TYPE_CHECKING-Guard, weil
+    # `grid_model`/`loads.py` selbst keine Scenario-Importe
+    # haben (kein Cycle), aber wir den runtime-Import vermeiden
+    # wollen — Welle-1-Pattern fuer Domain-Cross-Imports.
+    from grid_gym.hexagon.core.grid_model.config import GridModelConfig
+    from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +124,10 @@ class Scenario:
       `GG-SCN-001`).
     - `events`, `replay`, `faults` (optional; Welle 5 modelliert
       sie als leere Tupel/`None` wenn nicht im Quell-Mapping).
+    - `grid_model_config`, `load_events`, `load_profiles`
+      (M2-Welle-6b, ADR 0021 §2.3): optionale Welle-6b-
+      Erweiterungen fuer das Netzbilanzmodell und Lastenheft-
+      `GG-GRID-003`/`004`-Pfade.
 
     `scenario_hash` wird vom Loader berechnet (nicht hier) per
     `canonical_json(asdict(scenario))` + SHA-256 — siehe
@@ -127,3 +141,7 @@ class Scenario:
     events: tuple[ScenarioEvent, ...]
     replay: ScenarioReplayRef | None
     faults: tuple[ScenarioFault, ...]
+    # Welle-6b (ADR 0021 §2.3): optionale Erweiterungen.
+    grid_model_config: "GridModelConfig | None" = None
+    load_events: "tuple[LoadEvent, ...]" = ()
+    load_profiles: "tuple[LoadProfile, ...]" = ()
