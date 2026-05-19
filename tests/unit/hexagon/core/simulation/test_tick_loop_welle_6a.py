@@ -365,6 +365,38 @@ def test_snapshot_version_is_two() -> None:
     assert snap["version"] == 2
 
 
+def test_from_snapshot_does_not_restore_devices_or_grid_model() -> None:
+    """Welle-6a-Review M-5: TickLoop.from_snapshot() liest in
+    Welle 6a die `devices.*`/`grid_model`-Sub-Snapshots NICHT —
+    Aufrufer (Welle 6b Scenario-Loader) muss pre-konstruierte
+    Instanzen ueber den Konstruktor injizieren. Pflicht-Test pinnt
+    die Asymmetrie, damit Welle 6b den Vertrag nicht stillschweigend
+    aendert."""
+    pv = _make_pv()
+    bilanz = GridModelBilanz(config=_grid_model_config())
+    original = _make_loop(devices=(pv,), grid_model=bilanz)
+    original.tick()
+    snap = original.snapshot()
+    # Resume mit clock/random nach M1-Pattern, OHNE Devices/grid_model.
+    resumed_clock = FakeClock()
+    sim_time = snap["simulation_time"]
+    assert isinstance(sim_time, int)
+    resumed_clock.advance(sim_time)
+    sub = snap["sub_snapshots"]
+    assert isinstance(sub, Mapping)
+    random_payload = sub["random_root"]
+    assert isinstance(random_payload, Mapping)
+    from grid_gym.hexagon.core.serialization.canonical import canonical_json
+
+    resumed_random = MersenneTwisterRandomPort.from_snapshot(canonical_json(random_payload))
+    resumed = TickLoop.from_snapshot(snap, clock=resumed_clock, random=resumed_random)
+    # Welle-6a-Vertrag: resumed haelt keine Devices/grid_model.
+    # Welle-6a-internes Feld-Lesen ist Test-Verantwortung; Welle 6b
+    # wuerde das ueber den Konstruktor wieder anhaengen.
+    assert resumed._devices == ()  # type: ignore[attr-defined]
+    assert resumed._grid_model is None  # type: ignore[attr-defined]
+
+
 def test_snapshot_grid_model_sub_snapshot_carries_v2() -> None:
     """grid_model traegt ADR-0020-Snapshot-Version v2 (eigene
     Versionierung, unabhaengig von TickLoop-Snapshot-Version)."""

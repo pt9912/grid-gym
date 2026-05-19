@@ -437,6 +437,20 @@ class TickLoopInvalidTickMsError(TickLoopError):
         super().__init__(f"tick_ms must be positive, got {value}")
 
 
+class TickLoopUnknownDeviceTypeError(TickLoopError):
+    """Welle-6a-Review M-6: TickLoop kennt keinen `device_type` fuer
+    den uebergebenen `DeviceModel`-Klassen-Namen. Schreib-Pfad-
+    Exception (im `snapshot()`-Pfad); semantisch getrennt von
+    `TickLoopSnapshotWrongTypeError` (Lese-Pfad-Format-Verletzung)."""
+
+    def __init__(self, class_name: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"TickLoop kennt keinen device_type fuer Klasse {class_name!r}. "
+            f"Welle-7+/M3-Geraete muessen sich in _DEVICE_TYPE_BY_CLASS_NAME "
+            f"registrieren. Bekannt: {sorted(known)}."
+        )
+
+
 class TickLoopSnapshotFormatError(TickLoopError, SnapshotFormatError):
     """Wurzel der TickLoop-Snapshot-Format-Vertragsverletzungen.
 

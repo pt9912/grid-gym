@@ -32,7 +32,7 @@ from contextlib import contextmanager
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Self, cast, override
 
-from grid_gym.hexagon.core.devices._protocol import DeviceModel
+from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.devices.smart_meter.commands import SmartMeterAlarm
 from grid_gym.hexagon.core.devices.smart_meter.config import (
     SmartMeterConfig,

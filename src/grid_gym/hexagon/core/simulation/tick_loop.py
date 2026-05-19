@@ -48,7 +48,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
-from grid_gym.hexagon.core.devices._protocol import DeviceModel
+from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
@@ -59,6 +59,7 @@ from grid_gym.hexagon.core.errors import (
     TickLoopSnapshotRandomMismatchError,
     TickLoopSnapshotVersionError,
     TickLoopSnapshotWrongTypeError,
+    TickLoopUnknownDeviceTypeError,
 )
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
@@ -454,12 +455,13 @@ def _device_type_for(device: DeviceModel) -> str:
     `devices.<device_type>.<device_id>`-Sub-Snapshot-Key-Konstruktion
     (ADR 0015 §2.3). Welle 7+/M3-Geraete muessen ihren Klassen-Namen
     in `_DEVICE_TYPE_BY_CLASS_NAME` registrieren oder eine
-    `device_type`-Protocol-Erweiterung erzwingen."""
+    `device_type`-Protocol-Erweiterung erzwingen.
+
+    Welle-6a-Review M-6: Schreib-Pfad-Exception
+    `TickLoopUnknownDeviceTypeError` (statt der Lese-Pfad-spezifischen
+    `TickLoopSnapshotWrongTypeError`) — Exception-Hierarchie bleibt
+    semantisch sauber."""
     class_name = type(device).__name__
     if class_name not in _DEVICE_TYPE_BY_CLASS_NAME:
-        raise TickLoopSnapshotWrongTypeError(
-            f"device({class_name})",
-            f"registered DeviceModel class (one of {sorted(_DEVICE_TYPE_BY_CLASS_NAME)})",
-            class_name,
-        )
+        raise TickLoopUnknownDeviceTypeError(class_name, tuple(_DEVICE_TYPE_BY_CLASS_NAME))
     return _DEVICE_TYPE_BY_CLASS_NAME[class_name]
