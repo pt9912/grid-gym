@@ -83,32 +83,57 @@ das Verzeichnis ohne `loads.py`.
 
 ### 2.2 Imbalance-Definition
 
-Imbalance ist der vorzeichenbehaftete Saldo aus Erzeugung,
-Last und Speicherleistung **am Bilanz-Punkt** (vor
-GridConnection-Ausgleich):
+Imbalance ist die **Residualgroesse** der vollstaendigen
+Netzbilanz, mechanisch identisch zur Formel aus
+ADR 0017 §2.2:
 
 ```
 imbalance_kw = sum(pv.power_kw)
              - sum(load.power_kw)
              - sum(battery.power_kw)
+             + sum(grid_connection.power_kw)
 ```
 
-Dieses Vorzeichen folgt **ADR 0016 §2.2**:
+Dieses Vorzeichen folgt **ADR 0016 §2.2** und **ADR 0017
+§2.2** (`grid_connection.power_kw > 0` = Import = positives
+Vorzeichen in der Summe):
 
-- `imbalance_kw > 0`: Erzeugungs-Ueberschuss (PV liefert mehr
-  als Load + Battery-Laden verbraucht) → System will
-  exportieren oder Frequenz steigt.
-- `imbalance_kw < 0`: Verbrauchs-Ueberschuss → System will
-  importieren oder Frequenz faellt.
-- `imbalance_kw == 0`: Balanced (idealer Zustand).
+- `imbalance_kw == 0`: Bilanz schliesst ideal (Soll-Zustand
+  unter Welle-6-Auto-Schluss; Frequenz/Spannung bleiben auf
+  Nennwert).
+- `imbalance_kw > 0`: Erzeugungs- bzw. Import-Ueberschuss →
+  Frequenz steigt, Spannung steigt.
+- `imbalance_kw < 0`: Verbrauchs-Ueberschuss → Frequenz
+  faellt, Spannung faellt.
 
-**Wichtig:** Der `GridConnection.power_kw` (ADR 0017 §2.2)
-ist die **Schluss-Variable** der Bilanz und wird NICHT in
-`imbalance_kw` einbezogen. Welle 6 setzt
-`grid_connection.power_kw = -imbalance_kw` (Ideal-Schluss),
-sodass die Anschlusspunkt-Telemetrie die Restgroesse traegt.
-Welle 5a definiert nur die Imbalance-Berechnung; der
-Bilanz-Schluss ist Welle-6-TickLoop-Arbeit.
+**Worked Example (Spiegel zu ADR 0017 §2.2):**
+
+| Geraet           | `power_kw` | Beitrag zur Bilanz |
+| ---------------- | ---------- | ------------------ |
+| pv-1             | `+2.0`     | +2.0 (Erzeugung)   |
+| load-1           | `+1.0`     | -1.0 (Verbrauch)   |
+| battery-1        | `+1.0`     | -1.0 (Laden)       |
+| grid-connection  | `-0.0`     | +0.0 (Balanced)    |
+
+`imbalance_kw = 2.0 - 1.0 - 1.0 + 0.0 = 0` → balanced.
+
+Spiegel mit nicht-geschlossener Bilanz (Welle-6-Auto-Schluss
+NICHT aktiv): `pv=+2`, `load=+1`, `battery=+0.5`,
+`grid_connection=+1` (manuell per Scenario-Event gesetzt):
+
+`imbalance_kw = 2.0 - 1.0 - 0.5 + 1.0 = +1.5` →
+Erzeugungs-/Importueberschuss, Frequenz steigt um
+`+1.5 * k_f`.
+
+**Beziehung zu Welle-6-Auto-Schluss:** Wenn Welle 6 die
+GridConnection automatisch als Bilanz-Schluss setzt
+(`grid_connection.power_kw = -(pv - load - battery)`),
+wird `imbalance_kw` per Konstruktion `0`. Die Frequenz/
+Spannungs-Aenderung tritt also nur bei **manuell** gesetzten
+GridConnection-Werten (z. B. Szenario-Events, Kapazitaets-
+Begrenzungen via `max_import_kw`/`max_export_kw`-Clamp) auf —
+das spiegelt die reale Netzdynamik (Frequenz folgt der
+Restbilanz, nicht der Summe einzelner Anteile).
 
 ### 2.3 Frequenz-Formel (`GG-GRID-001`)
 
@@ -130,9 +155,14 @@ Imbalance unter `±5 MW` bleibt. Welle-5a-MVP-Demo-Szenarien
 liegen erwartet unter `1 MW`.
 
 **Safety-Clamp:** `45.0 Hz ≤ frequency_hz ≤ 55.0 Hz`. Werte
-ausserhalb werden auf den naechsten Grenzwert geclamped; ein
-Clamp-Event setzt ein internes `_clamp_flag`, das vom
-Snapshot getragen wird (Forward-Looking fuer M3-Alarm-Pfad).
+ausserhalb werden auf den naechsten Grenzwert geclamped;
+jedes Clamp-Event inkrementiert `clamp_event_count` (siehe
+§2.5; monoton nicht-fallend ueber den Lauf, Forward-Looking
+fuer M3-Alarm-Pfad). Welle 5a fuehrt **keinen** separaten
+`last_clamped: bool`-Flag mit Reset-Semantik — der Zaehler
+allein traegt die Welle-5a-Information, und die Differenz
+zwischen zwei aufeinanderfolgenden Snapshots zeigt, ob ein
+Clamp seitdem zugeschnappt hat.
 
 ### 2.4 Spannungs-Formel (`GG-GRID-002`)
 
@@ -163,13 +193,23 @@ Konstante.
 ### 2.5 Snapshot-Layout
 
 `GridModelSnapshot` ist eine Frozen-Dataclass (Spiegel zu
-ADR 0014 §2.2):
+ADR 0014 §2.2). Im Code traegt sie ein `GridModelConfig`-
+Objekt als Feld; in der `to_dict()`-Serialisierung wird der
+Config in ein **nested Mapping mit explizit benannten Keys**
+zerlegt (Pattern-Spiegel zu PV/Load/Battery/GridConnection-
+Snapshots: SnapshotEnvelope akzeptiert rekursiv nur
+canonical-kompatible Payloads, keine Dataclass-Objekte —
+siehe `hexagon/core/domain/snapshot.py::SnapshotEnvelope.
+__post_init__`).
+
+**Dataclass-Felder (`GridModelSnapshot`):**
 
 - `version: int` — Schema-Version (`1` in Welle 5a). Bumps
   mit Folge-ADRs (Welle 5b ergaenzt LoadEvents/Profiles und
   bumpt auf `2`).
 - `config: GridModelConfig` — Sollwerte + Sensitivitaeten +
-  Clamp-Grenzen; embedded fuer self-sufficient-`from_snapshot`.
+  Clamp-Grenzen; embedded fuer self-sufficient-
+  `from_snapshot`.
 - `model_kind: str` — Selbstkennzeichnung des Modells
   (`"simplified-proportional"` in Welle 5a).
 - `current_frequency_hz: Decimal`.
@@ -179,12 +219,45 @@ ADR 0014 §2.2):
   Persistiert, damit Resume die Forward-History nicht
   rekonstruieren muss.
 - `clamp_event_count: int` — Zaehler, wie oft eine Safety-
-  Clamp zugeschnappt hat. Forward-Looking fuer M3-Alarme.
+  Clamp zugeschnappt hat (Welle-5a-Monotonie-Invariante:
+  monoton nicht-fallend; nur durch `from_snapshot(...)`-
+  Resume kann der Wert von 0 wieder hoch erscheinen).
+  Forward-Looking fuer M3-Alarme.
 
-`snapshot()` mapped auf `Mapping[str, object]` mit `version`
-als Erst-Feld (ADR 0013 §2.4 Konvention).
-`from_snapshot(state) -> Self` rekonstruiert self-sufficient
-via Welle-0a-Codec-Free-Functions.
+**`to_dict()`-Mapping (Top-Level, `version` als Erst-Feld):**
+
+```
+{
+  "version": 1,
+  "config": {                                  # nested dict, kein Dataclass
+    "nominal_frequency_hz": Decimal,           # Default 50.0
+    "frequency_sensitivity_hz_per_kw": Decimal, # Default 0.001
+    "frequency_clamp_min_hz": Decimal,         # Default 45.0
+    "frequency_clamp_max_hz": Decimal,         # Default 55.0
+    "nominal_voltage_v": Decimal,              # Default 400.0
+    "voltage_sensitivity_v_per_kw": Decimal,   # Default 0.1
+    "voltage_clamp_min_v": Decimal,            # = 0.7 * nominal_voltage_v
+    "voltage_clamp_max_v": Decimal,            # = 1.3 * nominal_voltage_v
+  },
+  "model_kind": "simplified-proportional",
+  "current_frequency_hz": Decimal,
+  "current_voltage_v": Decimal,
+  "last_imbalance_kw": Decimal,
+  "clamp_event_count": int,
+}
+```
+
+Voltage-Clamps werden im Snapshot **absolut** persistiert
+(nicht als `0.7 * nominal_voltage_v`-Faktor); Resume nutzt
+exakt die persistierten Werte und ist gegen
+Sensitivitaets-Konvention-Drift unempfindlich.
+
+`from_dict(state) -> Self` nutzt Welle-0a-Codec-Free-Functions
+(`assert_required_keys`, `assert_int`, `assert_str`,
+`assert_decimal`, `assert_mapping`) und rekonstruiert
+self-sufficient. `GridModelConfigError` wird zu
+`WrongTypeError(subsystem="grid_model", ...)` ueberfuehrt
+(Welle-3-Review-L-1- und Welle-4b-Review-M-2-Pattern).
 
 ### 2.6 Lifecycle (kein DeviceModel)
 
@@ -195,14 +268,15 @@ Methoden. Stattdessen:
   separates `initialize(scenario_device, random)` (keine
   ScenarioDevice-Identitaet, keine RandomPort-Abhaengigkeit
   in Welle 5a).
-- `update(generation_kw, load_kw, storage_kw)` — Tick-Methode.
-  Berechnet Imbalance + Frequenz + Spannung, schreibt
-  interne Felder fort. Kein Telemetry-Tupel als Return —
-  Welle 6 liest `frequency_hz`/`voltage_v` direkt ueber
-  Getter und integriert sie ggf. in
+- `update(generation_kw, load_kw, storage_kw, grid_connection_kw)`
+  — Tick-Methode mit **vier** Power-Inputs (Spiegel zur
+  Bilanz-Formel §2.2). Berechnet Imbalance + Frequenz +
+  Spannung, schreibt interne Felder fort. Kein Telemetry-
+  Tupel als Return — Welle 6 liest `frequency_hz`/`voltage_v`
+  direkt ueber Getter und integriert sie ggf. in
   `TickResult.emitted_telemetry`.
-- `frequency_hz` / `voltage_v` / `last_imbalance_kw` —
-  Properties.
+- `frequency_hz` / `voltage_v` / `last_imbalance_kw` /
+  `clamp_event_count` — Properties.
 - `snapshot()` / `from_snapshot(state)` — analog DeviceModel,
   aber **ohne** Pre-init-Asymmetrie (kein
   `DeviceNotInitializedError`; `GridModelBilanz` ist nach
@@ -323,7 +397,9 @@ liegen folgende Module:
 - `SnapshotEnvelope.sub_snapshots` bekommt ab Welle 6 einen
   `grid_model`-Single-Instance-Eintrag (vs. den fuenf
   `devices.<id>`-Eintraegen). Dadurch bumpt die Envelope-
-  Version v1→v2 (separat in ADR 0015 zu fixieren).
+  Version v1→v2 (separat in **ADR 0015 zu fixieren —
+  geplante ADR, Datei wird mit Welle 6 angelegt; Forward-
+  Reference im aktuellen Repo noch ohne ADR-File**).
 - `GridConnection.power_kw` wird in Welle 6 aus
   `-imbalance_kw` abgeleitet, sodass die Bilanz mechanisch
   geschlossen wird. Die Welle-4a-Sign-Konvention bleibt
