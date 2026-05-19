@@ -249,12 +249,20 @@ Welle-4a-Minimum:
    - Wenn `new_power_kw == 0`: keine Aenderung.
    Damit sind beide Summen monoton nicht-fallend (Welle-4a-
    Invariante; durch Test verifiziert).
-3. **Telemetrie-Emission:** vier `TelemetryPoint`-Eintraege je
-   Tick (deterministisch nach Metrikname sortiert):
-   - `command_status` (String-Tag aus letztem `apply_command`),
-   - `export_kwh` (kumulativ, Quantisierung 6 NK-Stellen),
-   - `import_kwh` (kumulativ, Quantisierung 6 NK-Stellen),
-   - `power_kw` (aktueller Wert, Quantisierung 6 NK-Stellen).
+3. **Telemetrie-Emission:** drei `TelemetryPoint`-Eintraege je
+   Tick (deterministisch nach Metrikname sortiert; spiegelt das
+   Battery-Pattern aus ADR 0014 §2.4, das ebenfalls drei numerische
+   Metriken emittiert):
+   - `export_kwh` (kumulativ, Quantisierung 6 NK-Stellen, Unit `kWh`),
+   - `import_kwh` (kumulativ, Quantisierung 6 NK-Stellen, Unit `kWh`),
+   - `power_kw` (aktueller Wert, Quantisierung 6 NK-Stellen, Unit `kW`).
+
+   **Kein `command_status`-TelemetryPoint:** `TelemetryPoint.value`
+   ist `Decimal` (siehe `hexagon/core/domain/telemetry.py`),
+   ein String-Tag ist also strukturell nicht emittierbar.
+   Command-Status laeuft analog Battery / PV / Load ueber den
+   Alarm-Pfad (`drain_alarms()`-Methode + `GridConnectionAlarm`-
+   Domain-Klasse).
 
 Quantisierung wie Battery / PV / Load:
 `value.quantize(Decimal("0.000001"), ROUND_HALF_EVEN)`.

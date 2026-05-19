@@ -130,8 +130,10 @@ Vertrag:
   TickLoop-Reload-Pfade (Welle 6 / M3) ggf. neu verdrahten.
 - Pre-`attach_sources`-`tick(...)`-Aufruf: SmartMeter
   emittiert `aggregated_power_kw = Decimal("0")` mit
-  `command_status = "sources-not-attached"` als `TelemetryPoint`-
-  Quality-Tag. **Kein** Fehler — das macht den Smoke-Test
+  `quality=Quality.UNKNOWN` (statt `VALID`). Damit bleibt der
+  Pre-attach-Zustand maschinell unterscheidbar, ohne einen
+  separaten String-Tag-`TelemetryPoint` zu brauchen (siehe
+  §2.4 Punkt 5). **Kein** Fehler — das macht den Smoke-Test
   einfacher und schliesst nicht das Welle-6-Verdrahtungsfenster.
 
 Pattern-Analogie: `attach_random(random)` aus Welle-3-Review
@@ -186,11 +188,19 @@ Welle-4b-Minimum:
    Review-M-3-Pattern), damit Praezisions-Drift zwischen
    Replay-Laeufen ausgeschlossen ist. Quantisierung des
    End-Ergebnisses: 6 NK-Stellen mit `ROUND_HALF_EVEN`.
-5. **Telemetrie-Emission:** zwei `TelemetryPoint`-Eintraege
-   je Tick (deterministisch nach Metrikname sortiert):
-   - `aggregated_power_kw` (Summe, quantisiert),
-   - `command_status` (String-Tag, in Welle 4b nur
-     `"sources-not-attached"` oder `"ok"`).
+5. **Telemetrie-Emission:** ein `TelemetryPoint`-Eintrag je
+   Tick:
+   - `aggregated_power_kw` (Summe, quantisiert auf 6 NK-Stellen
+     mit `ROUND_HALF_EVEN`, Unit `kW`).
+
+   Im Pre-attach-Fall (§2.3) wird derselbe `TelemetryPoint`
+   mit `value=Decimal("0")` und `quality=Quality.UNKNOWN`
+   emittiert — die Pre-attach-Situation laeuft ueber das
+   `Quality`-Enum (`UNKNOWN` statt `VALID`), nicht ueber einen
+   separaten String-Tag-`TelemetryPoint` (`TelemetryPoint.value`
+   ist `Decimal`, String-Tag ist strukturell nicht emittierbar).
+   Reference-Lookup-Defense bleibt ein typisierter Fehler-Pfad,
+   kein Telemetrie-Tag.
 
 **Forward-Looking-Defense:** die Aggregations-Formel
 behandelt jede Quelle gleich (Summe ueber `power_kw`).
