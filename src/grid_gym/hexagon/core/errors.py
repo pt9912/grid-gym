@@ -471,11 +471,20 @@ class TickLoopSnapshotWrongTypeError(TickLoopSnapshotFormatError):
 
 
 class TickLoopSnapshotVersionError(TickLoopError):
-    """Snapshot traegt eine unbekannte `version`."""
+    """Snapshot traegt eine unbekannte `version`.
+
+    ADR 0015 §2.4 Pflicht-Text fuer M2-Welle-6a-Reject: die Message
+    nennt die gefundene und erwartete Version PLUS einen Verweis
+    auf den M6-`GG-PERSIST-*`-Migrations-Slice, damit der Operator
+    den Migrations-Pfad ohne ADR-Lesen findet.
+    """
 
     def __init__(self, expected: int, found: object) -> None:
         super().__init__(
-            f"unsupported tick_loop snapshot version: expected {expected}, got {found!r}"
+            f"TickLoop snapshot version={found!r} wird in M2-Welle-6a "
+            f"nicht mehr gelesen (erwartet: {expected}). "
+            f"Quellen: Lauf in M1 abgeschlossen oder Snapshot-"
+            f"Migrations-Slice abwarten (M6, GG-PERSIST-*)."
         )
 
 

@@ -44,8 +44,9 @@ def _v1_state() -> dict[str, object]:
 
 def test_from_snapshot_rejects_v1_with_typed_error() -> None:
     """ADR 0015 §2.4 Pflicht-Vertrag: v1-Snapshot -> typisierter
-    Fehler. Pflicht-Message verweist auf M6 `GG-PERSIST-*`-
-    Migrations-Slice."""
+    Fehler. Pflicht-Message-Tokens (Welle-6a-Review M-1):
+    - Beide Versionen (`1` und `2`).
+    - Verweis auf M6 `GG-PERSIST-*`-Migrations-Slice."""
     state = _v1_state()
     with pytest.raises(TickLoopSnapshotVersionError) as exc_info:
         TickLoop.from_snapshot(
@@ -53,11 +54,11 @@ def test_from_snapshot_rejects_v1_with_typed_error() -> None:
             clock=FakeClock(),
             random=MersenneTwisterRandomPort(seed=0),
         )
-    # Die Exception-Klasse traegt die Welle-1-Welle-4-Stand-Version
-    # gegen die aktuelle Welle-6a-Version (2).
     message = str(exc_info.value)
     assert "1" in message  # gefundene Version
     assert "2" in message  # erwartete Version
+    assert "M6" in message  # Migrations-Slice-Pointer
+    assert "GG-PERSIST" in message  # Lastenheft-/Roadmap-Token
 
 
 def test_v1_reject_message_keeps_test_assertion_simple() -> None:
