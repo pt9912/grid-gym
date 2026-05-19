@@ -190,6 +190,35 @@ die Wahl ist eine konservative Vorbelegung.
 `"power-flow-adapter"` umstellen; Welle 5a haelt es als
 Konstante.
 
+### 2.4a GridModelConfig-Invarianten (Welle-4a-Review-Round-3-Medium-1)
+
+`GridModelConfig` ist Frozen-Dataclass; `__post_init__` validiert
+und wirft `GridModelConfigInvalidValueError` bei Verstoss:
+
+- **Sollwerte positiv:**
+  - `nominal_frequency_hz > 0`.
+  - `nominal_voltage_v > 0`.
+- **Sensitivitaeten positiv** (Sign-Konvention: `imbalance > 0`
+  → `f`/`v` steigt; ein negativer Sensitivitaets-Wert wuerde
+  die Semantik invertieren):
+  - `frequency_sensitivity_hz_per_kw > 0`.
+  - `voltage_sensitivity_v_per_kw > 0`.
+- **Clamp-Reihenfolge:**
+  - `frequency_clamp_min_hz < nominal_frequency_hz <
+    frequency_clamp_max_hz`.
+  - `voltage_clamp_min_v < nominal_voltage_v <
+    voltage_clamp_max_v`.
+  - Strikt kleiner/groesser (kein Equal), damit der
+    Equilibrium-Zustand (imbalance == 0) garantiert
+    nicht-clampend ist.
+
+Diese Invarianten sind Welle-5a-Pflicht und durch Unit-Tests
+(jedes Verstoss-Szenario einzeln) gepinnt. `from_dict`
+ueberfuehrt `GridModelConfigInvalidValueError` zu
+`WrongTypeError(subsystem="grid_model", field="config",
+expected="valid", actual=<config-error-text>)` —
+Pattern-Spiegel zu Welle-3-Review-L-1 / Welle-4b-Review-M-2.
+
 ### 2.5 Snapshot-Layout
 
 `GridModelSnapshot` ist eine Frozen-Dataclass (Spiegel zu
@@ -223,6 +252,25 @@ __post_init__`).
   monoton nicht-fallend; nur durch `from_snapshot(...)`-
   Resume kann der Wert von 0 wieder hoch erscheinen).
   Forward-Looking fuer M3-Alarme.
+
+  **Clamp-Counting-Semantik (Welle-4a-Review-Round-3-
+  Medium-2):** Jeder `update(...)`-Aufruf inkrementiert den
+  Zaehler um **die Anzahl der unabhaengig zuschnappenden
+  Clamps** in diesem Aufruf:
+  - Frequenz UND Spannung clampen gleichzeitig → `count +=
+    2`.
+  - Nur Frequenz clampt → `count += 1`.
+  - Nur Spannung clampt → `count += 1`.
+  - Keine Clamps → `count += 0`.
+
+  Aufeinanderfolgende `update(...)`-Aufrufe mit identischem
+  Input, die jeweils clampen, zaehlen jeweils einzeln —
+  **keine Deduplizierung**. Damit gibt der Differenz-
+  Zaehler zwischen zwei Snapshots die Anzahl der
+  Clamp-Vorfaelle wieder, nicht die Anzahl der „Uebergangs"-
+  Ereignisse. Welle-5a-Property pinnt: bei 100 identischen
+  clampenden Inputs erwartet der Test `count == 100` (bzw.
+  `200` wenn beide Clamps gleichzeitig schnappen).
 
 **`to_dict()`-Mapping (Top-Level, `version` als Erst-Feld):**
 
@@ -320,6 +368,33 @@ Welle-5a-Proportionalmodell ist trivial deterministisch und
 deckt `GG-GRID-001` Akzeptanz („vereinfachtes Leistungs-
 bilanzmodell, das Frequenzabweichungen aus Erzeugung, Last
 und Speicherleistung ableitet") wortwoertlich.
+
+**Auto-Schluss vs. Lastenheft-Akzeptanz (Review-Round-3-
+Hoch):** Wenn Welle 6 den Auto-Schluss als Default verdrahtet
+(`grid_connection.power_kw := -pre_grid_residual_kw`), wird
+`imbalance_kw` per Konstruktion `0` — und Frequenz/Spannung
+bleiben auf Nennwert. Lastenheft `GG-GRID-001` „aus Erzeugung,
+Last und Speicherleistung ableitet" ist trotzdem **wortwoertlich
+erfuellt**: die Formel verwendet diese drei Groessen als
+Bausteine. Die Akzeptanz wird ueber **manuelle Welle-5a-
+Test-Szenarien** demonstriert, die GridConnection bewusst
+NICHT auto-schliessen (Beispiel-Test:
+`scenario.events = [set_power_kw(target='grid-1', value=0)]`
+zwingt `grid_connection.power_kw = 0`, sodass das
+`pre_grid_residual = pv - load - battery` direkt in
+`imbalance_kw` durchschlaegt und Frequenz/Spannung deviieren).
+Welle-6-MVP-Demo-Scenario kann den Auto-Schluss-Pfad nutzen
+(Frequenz stabil auf 50 Hz), Welle-5a-Property-Tests nutzen
+den Manual-Pfad (Frequenz deviiert deterministisch).
+
+**Physikalisch:** der Auto-Schluss-Fall entspricht dem
+Idealzustand „Netz ist unendlich stark, faengt jeden
+Mismatch perfekt auf". Manuelle GridConnection und Cap-
+Limits (`max_import_kw`/`max_export_kw` aus ADR 0017 §2.4)
+sind die realistischeren Faelle, in denen die lokale
+Frequenz/Spannung deviiert. Das entspricht der MVP-
+Vereinfachung, dass das Netzbilanzmodell keine
+Sekundaerregelung modelliert.
 
 **Single-Bus statt Power-Flow:** Eine echte Power-Flow-
 Analyse (Newton-Raphson, Backward-Forward-Sweep) braucht
@@ -471,3 +546,24 @@ liegen folgende Module:
   `grid.frequency_hz`/`grid.voltage_v` aufgenommen werden;
   diese Entscheidung ist nicht Gegenstand der vorliegenden
   ADR.
+
+  **Open Question fuer den Welle-6-ADR (Round-3-Reviewer):**
+  `TelemetryPoint` verlangt `device_id`, `source` und
+  `sequence` als Pflichtfelder
+  (siehe `hexagon/core/domain/telemetry.py:26`). Falls
+  Welle 6 Grid-Werte als TelemetryPoints emittiert, braucht
+  der Folge-ADR (Welle 6 ist ADR-Kandidat fuer 0021 oder
+  inline im M2-Slice-Plan) eine Konvention fuer:
+  - Pseudo-`device_id` (Vorschlag: `"grid_model"` als
+    Single-Instance-Marker, parallel zur Snapshot-Sub-Key-
+    Konvention),
+  - `source` (Vorschlag: `"grid_model"`),
+  - `sequence`-Counter (Vorschlag: dedizierter Counter
+    `_grid_model_telemetry_sequence`, separat von Geraete-
+    Sequence-Pools).
+
+  Welle 5a haelt das Feld bewusst leer und gibt diese drei
+  Vertraege an Welle 6 weiter. Falls Welle 6 entscheidet,
+  Grid-Werte NICHT als TelemetryPoint zu emittieren (sondern
+  z. B. nur ueber den Snapshot zu persistieren), entfaellt
+  die Konvention.
