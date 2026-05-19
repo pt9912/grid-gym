@@ -124,9 +124,48 @@ aktiven `LoadEvent`s:
   "set_power_kw", payload={"value": power_kw})` den
   Event-Wert.
 - Wenn `simulation_time_s >= start_s + duration_s`: das Event
-  ist „abgelaufen". TickLoop stellt den **Vor-Event-Wert**
-  wieder her (z. B. `LoadDevice._config.rated_power_kw` oder
-  den vorherigen `set_power_kw`-Wert).
+  ist „abgelaufen". TickLoop stellt den **Default-Restore-
+  Wert** wieder her — siehe naechster Absatz.
+
+**Restore-Konvention (Review-Round-1-Medium-1):** Welle 5b
+persistiert keinen „Vor-Event-Wert" in `LoadEvent` oder
+`LoadDevice`. Der Restore-Wert nach Event-Ablauf ist
+**deterministisch `LoadConfig.rated_power_kw`**: TickLoop
+ruft nach Event-Ablauf `apply_command(set_power_kw, value=
+load_config.rated_power_kw)` auf. Konsequenzen:
+
+- Manuelle `set_power_kw`-Commands aus Scenario-Events oder
+  externen Sources, die **vor** einem LoadEvent abgesetzt
+  wurden, werden bei Event-Ablauf ueberschrieben — kein
+  Stack-basiertes Verhalten.
+- Snapshot-Roundtrip ist self-sufficient: `GridModelSnapshot
+  v2` persistiert nur die `LoadEvent`-Definitionen; nach
+  `from_snapshot(...)` + TickLoop-Restart faengt die Engine
+  bei `simulation_time` an, evaluiert welche Events aktiv
+  sind, und ruft fuer aktive Events `set_power_kw(event.
+  power_kw)`, fuer alle anderen LoadDevices implizit
+  `rated_power_kw` (bzw. der durch das Resume bereits
+  rekonstruierte Wert aus dem LoadDevice-Snapshot).
+
+**Overlapping Events same-device — Welle-5b-Out-of-Scope:**
+mehrere `LoadEvent`s mit demselben `target_device_id` und
+ueberlappenden `[start_s, start_s + duration_s]`-Intervallen
+sind in Welle 5b **nicht spezifiziert**. Die Scenario-Loader-
+Schicht (Welle 6) hat zwei Optionen:
+
+1. **Validator-Reject**: scenario-load wirft einen typisierten
+   Fehler, wenn ueberlappende Events auf demselben Geraet
+   gefunden werden (bevorzugt; klare Semantik).
+2. **Last-wins**: der spaeter startende Event ueberschreibt
+   den frueher startenden bis zu seinem Ablauf, danach geht
+   es zurueck auf `rated_power_kw` (kein Pop des
+   ueberschriebenen Events).
+
+Welle 5b empfiehlt Option (1) als Welle-6-Default. M3 kann
+ueberlappende Events mit Stack-Semantik (LIFO-Restore)
+nachruesten, dafuer waere dann `LoadEvent` um ein
+`pre_event_power_kw`-Feld zu erweitern (Snapshot-Versions-
+Bump v2→v3 in M3 oder einer eigenen Folge-Welle).
 
 Welle 5b liefert die Datenstruktur, nicht die TickLoop-
 Verdrahtung — das ist Welle 6.
@@ -148,29 +187,78 @@ class LoadProfile:
 - Alle `tick_values[i]` sind `Decimal` und `>= 0`.
 - `tick_ms > 0`.
 
-**Vertrag in Welle 6:** TickLoop berechnet pro Tick den
-Profil-Index aus `simulation_time_ms // tick_ms`. Wenn der
-Index ueber `len(tick_values)` hinausgeht, wird der **letzte
-Wert** wiederholt (Welle-5b-Konvention; M3 kann Loop-/Periodisch-
-Modus aktivieren). Profile-Wert wird via
+**Vertrag in Welle 6 — Profil-Index-Konvention (Review-
+Round-1-High-2):** der bestehende `TickLoop.tick()` advanced
+die Clock **vor** der Tick-Body-Ausfuehrung, sodass das
+`TickResult.tick == 0` bereits `simulation_time == tick_ms`
+traegt (`src/grid_gym/hexagon/core/simulation/tick_loop.py:111`).
+Eine naive Formel `profile_index = simulation_time_ms //
+profile.tick_ms` waere damit um einen Tick verschoben (bei
+gleichgrossen `tick_ms` greift im ersten Tick `tick_values[1]`
+statt `tick_values[0]`).
+
+Welle-5b-Konvention:
+
+```
+profile_index = (context.tick * context.tick_ms) // profile.tick_ms
+```
+
+mit `context.tick` als 0-basiertem Tick-Counter (Welle-1/M1-
+Konvention). Damit gilt:
+
+- Beim ersten Tick (`context.tick == 0`): `profile_index == 0`,
+  also wird `tick_values[0]` waehrend des ersten Tick-
+  Intervalls aktiv.
+- Bei `context.tick == k`: `profile_index = k * tick_ms //
+  profile.tick_ms`.
+
+Welle 6-TickLoop fixiert diese Formel im TickLoop-Code (oder
+in einer Welle-6-ADR). Welle 5b dokumentiert nur die
+Konvention; die `LoadProfile`-Dataclass selbst speichert
+keinen Tick-Counter.
+
+**Out-of-bounds:** wenn `profile_index >= len(tick_values)`,
+wird der **letzte Wert** wiederholt (Welle-5b-Konvention; M3
+kann Loop-/Periodisch-Modus aktivieren). Profile-Wert wird via
 `apply_command(set_power_kw, value=tick_values[index])` an den
 LoadDevice gegeben.
 
 **Tick-Resolution-Mismatch:** wenn Profil-`tick_ms` (z. B.
 `100`) nicht mit Scenario-`tick_ms` (z. B. `1000`)
 uebereinstimmt, wird der Profil-Wert **nicht interpoliert**;
-TickLoop nutzt den Wert bei `floor(sim_time_ms /
-profile.tick_ms)`. Welle 5b ist explizit gegen Interpolation
-(M3-Material).
+die obige Formel `(context.tick * context.tick_ms) //
+profile.tick_ms` greift trotzdem deterministisch (Welle 5b
+ist explizit gegen Interpolation; M3-Material).
 
-### 2.4 CSV/JSON-Loader (Free-Functions)
+### 2.4 CSV/JSON-Parser (Pure Free-Functions, kein Datei-I/O)
+
+**Architektur-Pflicht (Review-Round-1-High-1):** Core ist
+I/O-frei (`GG-AR-TABU-002`, `spec/architecture.md:285`); das
+bestehende `hexagon/core/scenario/loader.py`-Pattern bestaetigt
+das (kein `open()`-Aufruf, nur Mapping-Parsing). Welle 5b
+liefert deshalb **pure Parser ueber bereits-eingelesenen Text/
+Mappings**, kein File-Lesen im Core:
 
 ```python
-def load_csv_profile(path: Path) -> LoadProfile: ...
-def load_json_profile(path: Path) -> LoadProfile: ...
+def parse_csv_profile(text: str) -> LoadProfile: ...
+def parse_json_profile(payload: str | Mapping[str, object]) -> LoadProfile: ...
 ```
 
-**CSV-Format** (`load_csv_profile`):
+- `parse_csv_profile(text)` nimmt den gesamten CSV-Inhalt als
+  String entgegen.
+- `parse_json_profile(payload)` akzeptiert beide Eingabeformen:
+  einen JSON-String (wird intern via `json.loads(...)` geparst)
+  ODER ein bereits-deserialisiertes Mapping (z. B. aus dem
+  Scenario-YAML-Adapter).
+
+**Datei-I/O** ist Adapter-Verantwortung und nicht Teil dieser
+ADR. Ein konkreter `LoadProfileFileAdapter` o.ae. landet
+spaeter unter `hexagon/adapters/...` oder bleibt M3-Material
+(Replay-Source-Verkabelung). Welle 5b haelt nur den
+Architektur-Vertrag fest, dass der Adapter den File-Inhalt
+als Text/Bytes liest und dann an die Core-Parser durchreicht.
+
+**CSV-Format** (`parse_csv_profile`):
 
 ```csv
 target_device_id,tick_ms,tick_values
@@ -179,9 +267,11 @@ load-1,1000,1.5;2.0;1.8;1.2
 
 - Einzeilige Header + einzeilige Daten.
 - Pflicht-Spalten: `target_device_id`, `tick_ms`, `tick_values`.
-- `tick_values` als `;`-separated `Decimal`-Liste.
+- `tick_values` als `;`-separated `Decimal`-String-Liste; der
+  Parser konvertiert jeden Eintrag via `Decimal(<string>)` —
+  keine `float`-Zwischenstufe.
 
-**JSON-Format** (`load_json_profile`):
+**JSON-Format** (`parse_json_profile`):
 
 ```json
 {
@@ -192,22 +282,51 @@ load-1,1000,1.5;2.0;1.8;1.2
 ```
 
 - Pflicht-Keys: `target_device_id`, `tick_ms`, `tick_values`.
-- `tick_values` als JSON-Array; numerische Werte werden als
-  `Decimal` geparst (kein float-Round-Trip).
+- `tick_values` als JSON-Array.
+
+**JSON-Number-Handling (Review-Round-1-Medium-2):** `json.loads`
+deserialisiert `1.5` zu `float` und `1` zu `int`. Welle 5b
+verlangt aber `Decimal` fuer alle Eintraege. Der Parser-Vertrag
+ist:
+
+1. `parse_json_profile(text: str)`-Pfad nutzt
+   `json.loads(text, parse_float=Decimal)` — damit werden
+   Float-Literale direkt zu `Decimal` (kein float-Roundtrip).
+2. **Integer**-Eintraege (`1`, `2`) bleiben dabei `int`; sie
+   werden vom internen Builder explizit ueber `Decimal(value)`
+   nach `Decimal` konvertiert (sicher fuer `int`, im Gegensatz
+   zu `Decimal(float)`).
+3. **`bool`-Eintraege** (Python `True`/`False` sind
+   `int`-Subklassen) werden via `isinstance(value, bool)`-
+   Defense abgelehnt; sie haben in `tick_values` keine
+   Bedeutung und sind ein Drift-Signal aus dem Generator.
+4. `tick_ms` bleibt `int` (kein Decimal); die explizite
+   Konvertierung im Builder schlaegt fehl, wenn der JSON-Wert
+   `float` oder `Decimal` ist (Welle-4a-Review-L-4-Pattern).
+5. `parse_json_profile(mapping)`-Pfad (bereits deserialisiert)
+   verlangt vom Aufrufer, dass numerische `tick_values`
+   entweder `Decimal` oder `int` sind; `float`-Werte werden
+   abgewiesen, weil sie auf einen verlorenen Round-Trip
+   hindeuten.
 
 **Fehlerbehandlung** (typisiert, Welle-0a-Codec-Spiegel):
 
 ```python
 class LoadProfileFormatError(GridGymError): ...
-class LoadProfileFileNotFoundError(LoadProfileFormatError): ...
 class LoadProfileMissingFieldError(LoadProfileFormatError): ...
 class LoadProfileTypeError(LoadProfileFormatError): ...
 class LoadProfileEmptyError(LoadProfileFormatError): ...
 ```
 
+Eine `LoadProfileFileNotFoundError` ist **nicht Bestandteil**
+der Core-Hierarchie — File-Errors gehoeren in den Adapter
+(`OSError`/`FileNotFoundError` werden dort gefangen und
+ggf. in eine Adapter-Fehlerklasse ueberfuehrt).
+
 **Out-of-Scope (M3 oder Post-MVP):**
 
-- Glob-/Wildcard-Pfade.
+- Datei-I/O / Pfad-Aufloesung / Glob-Wildcards (Adapter-/
+  M3-Material).
 - Stochastische Profile (Welle-5a-`RandomPort` ist bewusst
   ausserhalb).
 - Profil-Interpolation / Resampling.
@@ -435,6 +554,12 @@ Closure-Notiz verzeichnet (Erwartung: ~30..50 neue Tests).
   generische Pfad.
 - **Multi-Profil-Strategien** pro Geraet (mehrere Profile,
   Switching). Post-MVP.
+- **Ueberlappende `LoadEvent`s same-device** mit Stack-/LIFO-
+  Restore-Semantik. Welle 5b empfiehlt Validator-Reject im
+  Scenario-Loader (Welle 6); Stack-Semantik ist M3 oder
+  Post-MVP, dafuer waere `LoadEvent` um ein
+  `pre_event_power_kw`-Feld zu erweitern + Snapshot-Versions-
+  Bump v2→v3 in der Folge-Welle.
 - **Streaming-Loader** fuer grosse Profile. Welle 5b haelt
   das ganze Profil im Speicher.
 - **TickLoop-Verdrahtung**. Welle 6.
