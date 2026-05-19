@@ -355,6 +355,31 @@ Diese ADR gilt NICHT fuer:
   6a-Implementation; diese ADR fixiert nur den TickLoop-
   Snapshot-Schema-Vertrag).
 
+**Welle-6a-Review H-1 — Forward-Pointer fuer `device_type`-
+Protocol-Property:** Welle 6a nutzt ein Hartzweig-Mapping
+`_DEVICE_TYPE_BY_CLASS_NAME` (Klassen-Name → snake_case-String)
+fuer die `devices.<device_type>.<device_id>`-Sub-Snapshot-Key-
+Konstruktion. Das ist Welle-7+/M3-Drift-Risiko: Umbenennung
+einer DeviceModel-Klasse (`BatteryDevice` → `BatteryDeviceV2`)
+oder Subklassing (`HighVoltageGridConnectionDevice`) bricht
+die Dispatch mit `TickLoopUnknownDeviceTypeError`.
+
+Welle 7+ oder M3 sollen das Mapping durch eine **explizite
+Protocol-Property** ersetzen:
+
+```python
+class DeviceModel(Protocol):
+    @property
+    def device_type(self) -> str: ...
+```
+
+Jedes Geraet exposed seinen Type-String direkt (z. B.
+`BatteryDevice.device_type → "battery"`), TickLoop liest
+`device.device_type` statt eines Side-Channel-Klassen-Namens.
+Welle-6a-Hartzweig bleibt bis zur Protocol-Erweiterung als
+brittler-aber-funktionierender Pfad bestehen — ein Eintrag
+in der Folge-Welle-Backlog.
+
 ---
 
 ## 5. Operative Artefakte

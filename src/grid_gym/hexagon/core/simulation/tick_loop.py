@@ -87,10 +87,21 @@ def _tick_loop_decimal_context() -> Iterator[None]:
         yield
 
 
+# Welle-6a-Review L-3: v2-Top-Level-Pflicht-Keys sind identisch
+# zu v1; die Welle-6a-Erweiterung liegt ausschliesslich im
+# `sub_snapshots`-Mapping (siehe ADR 0015 §2.3 + §1 Bruch-
+# Begruendung). Beim naechsten Versions-Bump in M6/Folge-Welle
+# kann das Set ggf. waeqsen.
 _REQUIRED_KEYS: Final[frozenset[str]] = frozenset(
     {"version", "run_id", "simulation_time", "tick_count", "tick_ms", "sub_snapshots"}
 )
 
+# Welle-6a: M1-Welle-4-Pflicht-Sub-Snapshots bleiben unveraendert.
+# `devices.<device_type>.<device_id>` und `grid_model` werden nur
+# vom TickLoop selbst geschrieben (Welle-6a) und sollen NICHT
+# Aufrufer-Pflicht in der Welle-6a-Lese-Pfad-Validierung sein
+# (ADR 0015 §2.3 — Hexagon-Layer bleibt sauber, generische
+# Envelope-Validierung kennt keine M2-Sub-Snapshot-Namen).
 _REQUIRED_SUB_SNAPSHOT_KEYS: Final[frozenset[str]] = frozenset({"scheduler", "random_root"})
 
 _POWER_KW_METRIC: Final[str] = "power_kw"
@@ -301,7 +312,19 @@ class TickLoop:
         }
         for device in self._devices:
             device_type = _device_type_for(device)
-            key = f"devices.{device_type}.{device.device_id}"
+            device_id = device.device_id
+            # Welle-6a-Review L-5: Punkt im device_id kollidiert mit
+            # dem `devices.<type>.<id>`-Schluessel-Schema (dot-getrennt).
+            # Welle-6b-Scenario-Loader sollte device_ids vor der
+            # Konstruktion validieren; defensiver Assert hier macht
+            # die Kollision sichtbar, statt eine still-falsche
+            # Sub-Snapshot-Key-Struktur zu produzieren.
+            if "." in device_id:
+                raise TickLoopUnknownDeviceTypeError(
+                    f"{type(device).__name__}(device_id={device_id!r})",
+                    tuple(_DEVICE_TYPE_BY_CLASS_NAME),
+                )
+            key = f"devices.{device_type}.{device_id}"
             sub_snapshots[key] = device.snapshot()
         if self._grid_model is not None:
             sub_snapshots["grid_model"] = self._grid_model.snapshot()

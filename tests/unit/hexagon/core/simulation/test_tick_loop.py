@@ -180,9 +180,11 @@ def test_different_seeds_yield_different_sub_port_streams() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_snapshot_has_envelope_keys_and_sub_snapshots() -> None:
+def test_snapshot_v2_without_devices_keeps_m1_sub_keys() -> None:
     """Welle 6a (ADR 0015): TickLoop.snapshot()["version"] ist `2`.
-    Ohne Devices/grid_model bleibt sub_snapshots auf den M1-Keys."""
+    Ohne Devices/grid_model bleibt sub_snapshots auf den M1-Keys
+    (Welle-6a-Review L-4: Test-Name spiegelt die Welle-6a-
+    Spezialitaet)."""
     loop = _build_loop()
     snap = loop.snapshot()
     assert snap["version"] == 2
