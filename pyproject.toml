@@ -210,6 +210,12 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # Methoden-Surface (Welle-5b-Erweiterung um active_load_events +
 # active_load_profiles bringt die Zahl ueber den Default-Schwellenwert).
 "src/grid_gym/hexagon/core/grid_model/bilanz.py" = ["PLR0904"]
+# TickLoop ist der zentrale Simulations-Orchestrator und nimmt
+# Welle-6a alle Dependencies (run_id, tick_ms, clock, random,
+# scheduler, devices, grid_model) als Konstruktor-kwargs entgegen
+# — PLR0913 (max 5 Args) ist hier nicht haltbar, weil die
+# Abhaengigkeits-Liste mit M2-Welle-1..5 strukturell gewachsen ist.
+"src/grid_gym/hexagon/core/simulation/tick_loop.py" = ["PLR0913"]
 
 # ---------------------------------------------------------------------------
 # mypy --strict (ADR 0005)

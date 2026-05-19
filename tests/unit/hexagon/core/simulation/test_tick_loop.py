@@ -181,9 +181,11 @@ def test_different_seeds_yield_different_sub_port_streams() -> None:
 
 
 def test_snapshot_has_envelope_keys_and_sub_snapshots() -> None:
+    """Welle 6a (ADR 0015): TickLoop.snapshot()["version"] ist `2`.
+    Ohne Devices/grid_model bleibt sub_snapshots auf den M1-Keys."""
     loop = _build_loop()
     snap = loop.snapshot()
-    assert snap["version"] == 1
+    assert snap["version"] == 2
     assert snap["run_id"] == "run-1"
     assert snap["tick_count"] == 0
     assert snap["tick_ms"] == 100
@@ -292,7 +294,7 @@ def test_from_snapshot_rejects_random_mismatch() -> None:
 
 def _minimal_state() -> dict[str, object]:
     return {
-        "version": 1,
+        "version": 2,
         "run_id": "r",
         "simulation_time": 0,
         "tick_count": 0,
