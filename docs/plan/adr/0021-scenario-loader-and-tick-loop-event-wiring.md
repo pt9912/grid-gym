@@ -85,20 +85,22 @@ hexagon/core/scenario/
                          #            + parse_load_profiles(...)
 ```
 
-Welle-6b-Implementation traegt sich auch eine neue Helfer-Klasse
-im TickLoop ein:
+Welle-6b-Implementation ergaenzt **private Methoden** auf der
+bestehenden `TickLoop`-Klasse (keine neue Klasse — Welle-6a-
+Review-M-6-Spiegel: Schreib-Pfad-Helfer leben innerhalb des
+Orchestrator-Bereichs):
 
 ```
-hexagon/core/simulation/tick_loop.py
-    TickLoop._apply_load_event(event, device)
-    TickLoop._apply_load_profile(profile, device, tick_index)
-    TickLoop._auto_close_grid_connection(devices)
+hexagon/core/simulation/tick_loop.py (Welle 6b)
+    TickLoop._consume_load_profile(profile, lookup)
+    TickLoop._consume_load_event(event, lookup, sim_time)
+    TickLoop._apply_grid_connection_auto_close(...)
+    TickLoop._build_device_by_id()
 ```
 
-Diese Helfer leben **innerhalb** des `TickLoop`-Bereichs (private
-Methoden), weil sie auf interne Felder (`self._devices`,
-`self._active_load_events`, etc.) zugreifen — der Scenario-Loader
-liefert die Daten, der TickLoop konsumiert sie.
+Diese Methoden greifen auf interne Felder
+(`self._devices`, `self._active_load_events`, etc.) zu — der
+Scenario-Loader liefert die Daten, der TickLoop konsumiert sie.
 
 ### 2.2 Device-Factory-Dispatch
 
@@ -152,7 +154,48 @@ einen `attach_sources(sources_by_id)`-Aufruf (ADR 0018 §2.3),
   (Welle-6b-spezifisch, vor dem ersten Tick — verhindert
   Welle-4b-`SmartMeterSourceMissingError` zur Laufzeit).
 
-### 2.3 `build_tick_loop(...)`-Builder
+### 2.3 `Scenario`-Domain-Erweiterung (Welle-6b-Round-1-High-1)
+
+Welle 6b braucht drei neue Top-Level-Felder im `Scenario`-
+Frozen-Dataclass-Datentyp, die mit M1 noch nicht existierten:
+
+- `grid_model_config: GridModelConfig | None` — optionale
+  GridModelBilanz-Konfiguration aus dem Scenario-YAML
+  (`grid_model:`-Sektion). Wenn `None`, baut der Loader einen
+  `GridModelBilanz`-Standard-Setup oder laesst die Bilanz weg.
+- `load_events: tuple[LoadEvent, ...]` — Scenario-Lastspruenge
+  (`GG-GRID-004`); leeres Tupel wenn keine Events.
+- `load_profiles: tuple[LoadProfile, ...]` — Scenario-Last-
+  Profile (`GG-GRID-003` „Zeitreihen"); leeres Tupel wenn
+  keine Profile.
+
+**Welle-6b-Scope-Pflicht** (Round-1-High-1):
+
+- `hexagon/core/scenario/scenario.py` (oder gleichwertiger
+  Domain-Pfad) erweitert um die drei Felder.
+- `hexagon/core/scenario/validator.py` (oder gleichwertig)
+  validiert die neuen Felder typisiert (canonical-kompatibel).
+- `Scenario`-canonical-Hash bleibt deterministisch (alle drei
+  Felder sind immutable Dataclasses bzw. Tupel).
+
+**Bezug zu `Scenario.events`:** das bestehende
+`events: tuple[ScenarioEvent, ...]`-Feld traegt M1-Scheduler-
+Events fuer den `Scheduler`. Welle 6b laesst es unveraendert —
+LoadEvents sind **eine separate Konzern-Kategorie** (sie
+beziehen sich nicht auf den Scheduler, sondern direkt auf
+LoadDevice-Power-Werte). Keine Vermischung.
+
+**ScenarioEvent → Command-Bridge** (Welle-6b-Round-1-High-3):
+Der aktuelle TickLoop popped M1-Scheduler-Events nur und gibt
+sie in `TickResult.popped_events` zurueck. Es gibt
+**keinen** apply_command-Pfad fuer M1-Scheduler-Events. Welle
+6b setzt diese Vorraussetzung nicht voraus — die manuelle
+Heuristik in §2.7 bezieht sich **ausschliesslich** auf
+LoadEvent/LoadProfile (Welle-5b-Datenstrukturen), nicht auf
+M1-Scheduler-Events. Ein ScenarioEvent→Command-Bridge ist
+explizit out-of-scope und bleibt Welle 6c / M3-Material.
+
+### 2.4 `build_tick_loop(...)`-Builder
 
 ```python
 def build_tick_loop(
@@ -163,150 +206,190 @@ def build_tick_loop(
 ) -> TickLoop: ...
 ```
 
-Der Builder liefert eine produktive `TickLoop`-Instanz:
+Der Builder liefert eine produktive `TickLoop`-Instanz aus den
+**Welle-6b-erweiterten** Scenario-Feldern:
 
 1. `devices = build_devices(scenario.devices, random_root)`.
-2. `grid_model = build_grid_model(scenario.grid_model_config)`
-   (kann `None` sein, wenn das Scenario kein Bilanz-Modell
-   deklariert — Welle-6b-Default ist ein
-   `GridModelBilanz`-Standard-Setup).
-3. `scheduler = Scheduler.from_scenario_events(scenario.events)`.
-4. `load_events = parse_load_events(scenario.load_events)`.
-5. `load_profiles = parse_load_profiles(scenario.load_profiles)`.
-6. `loop = TickLoop(run_id, tick_ms, clock, random_root,
-   scheduler, devices=devices, grid_model=grid_model)`.
-7. Loop intern: `loop._active_load_events = load_events`,
-   `loop._active_load_profiles = load_profiles` (Welle-6b-
-   Erweiterung). Hint: TickLoop-Konstruktor bekommt zwei neue
-   kwargs `active_load_events=()`, `active_load_profiles=()`.
+2. `grid_model = (GridModelBilanz(scenario.grid_model_config)
+   if scenario.grid_model_config is not None else None)`.
+3. `scheduler = Scheduler()` neu initialisiert; pro
+   `scenario_event` in `scenario.events` wird ein
+   `scheduler.add(event)` durchgereicht (M1-Surface,
+   unveraendert — Welle 6b legt **keinen** neuen
+   `Scheduler.from_scenario_events`-Builder an, weil das
+   eine M1-Schaerfung waere, die nicht in Welle 6b gehoert).
+4. `loop = TickLoop(run_id, tick_ms, clock, random_root,
+   scheduler, devices=devices, grid_model=grid_model,
+   active_load_events=scenario.load_events,
+   active_load_profiles=scenario.load_profiles)`.
+
+**TickLoop-Konstruktor-Erweiterung (Welle 6b):** Welle 6a
+hatte bereits `devices=()` und `grid_model=None`. Welle 6b
+ergaenzt `active_load_events: tuple[LoadEvent, ...] = ()` und
+`active_load_profiles: tuple[LoadProfile, ...] = ()`.
+Welle-6a-Tests bleiben durch die `()`-Defaults kompatibel.
 
 **Welle-6b-Builder-Verantwortung NUR fuer Scenario-Daten:**
 Welle-6b liefert KEIN Postgres-Persistierungs-Pfad und kein
 End-to-End-Demo-Szenario — das ist Welle 6c.
 
-### 2.4 LoadEvent-Wiring im TickLoop
+### 2.5 LoadEvent/LoadProfile-Wiring (Jedes-Tick-Baseline)
 
-`TickLoop.tick()` (Welle-6b-Erweiterung) bekommt vor der
-Device-Iteration einen neuen Vor-Tick-Block:
-
-```
-fuer jeden LoadEvent in self._active_load_events:
-    falls event_active(event, simulation_time):
-        device = self._device_by_id[event.target_device_id]
-        device.apply_command(Command(
-            type="set_power_kw",
-            payload={"value": event.power_kw},
-        ))
-    elif event_just_expired(event, simulation_time):
-        device.apply_command(Command(
-            type="set_power_kw",
-            payload={"value": device._config.rated_power_kw},
-        ))
-```
-
-mit:
-
-- `event_active(event, sim_time) := event.start_s <= sim_time <
-   event.start_s + event.duration_s`.
-- `event_just_expired(event, sim_time) := sim_time ==
-   event.start_s + event.duration_s` (einmaliger Restore-Trigger;
-   weitere Ticks lassen den `rated_power_kw`-Wert bestehen).
-
-**TickLoop fuehrt ein `_device_by_id`-Mapping**, das aus dem
-Konstruktor automatisch aus `self._devices` aufgebaut wird
-(O(N)-Setup, O(1)-Lookup pro Event).
-
-### 2.5 LoadProfile-Wiring im TickLoop
-
-Analog zu Event-Wiring, aber mit Tick-Index statt
-Sim-Zeit-Intervall:
+**Welle-6b-Round-1-Medium-1-Schaerfung:** statt eines
+einmaligen `event_just_expired`-Triggers (der bei nicht-
+tick-aligned Endzeiten und Resume scheitern wuerde), nutzt
+Welle 6b ein **Jedes-Tick-Baseline + Override**-Pattern. Pro
+Tick und pro LoadDevice berechnet TickLoop einen
+`intent_power_kw`-Wert, den es per
+`apply_command(set_power_kw, value=intent_power_kw)` anwendet:
 
 ```
-fuer jedes LoadProfile in self._active_load_profiles:
+intent_power_kw_by_load_id: dict[str, Decimal] = {
+    load_device.device_id: load_device.rated_power_kw
+    for load_device in self._load_devices_by_id.values()
+}
+
+# Schritt 1 — LoadProfile (Baseline-Overlay).
+for profile in self._active_load_profiles:
     profile_index = (self._tick_count * self._tick_ms) // profile.tick_ms
     tick_values = profile.tick_values
-    if profile_index < len(tick_values):
-        value = tick_values[profile_index]
-    else:
-        value = tick_values[-1]   # Repeat-Last-Value (ADR 0020 §2.3)
-    device = self._device_by_id[profile.target_device_id]
+    value = tick_values[min(profile_index, len(tick_values) - 1)]
+    intent_power_kw_by_load_id[profile.target_device_id] = value
+
+# Schritt 2 — LoadEvent (Event-Overlay).
+for event in self._active_load_events:
+    if event.start_s <= sim_time_s < event.start_s + event.duration_s:
+        intent_power_kw_by_load_id[event.target_device_id] = event.power_kw
+
+# Schritt 3 — apply_command pro Device.
+for device_id, intent in intent_power_kw_by_load_id.items():
+    device = self._device_by_id[device_id]
     device.apply_command(Command(
         type="set_power_kw",
-        payload={"value": value},
+        payload={"value": intent},
     ))
 ```
+
+**Vorteile gegenueber expliziter `event_just_expired`-Logik:**
+
+- Resume nach beliebigem Ablauf-Zeitpunkt funktioniert (kein
+  „Restore-already-applied"-Marker noetig).
+- Nicht-tick-aligned Event-Endzeiten verhalten sich
+  deterministisch (Event ist „aktiv" oder nicht; nach Ablauf
+  wirkt der Baseline-Wert automatisch).
+- Default-Wert ohne Profile/Event = `LoadDevice.rated_power_kw`
+  (siehe §2.6 Public-Property-Vertrag).
 
 **Welle-6b-Profil-Index-Konvention:** ADR 0020 §2.3 fixiert
 `(context.tick * context.tick_ms) // profile.tick_ms`. In
 TickLoop-Implementation ist `context.tick = self._tick_count`
-**vor** dem `tick()`-Body-Ablauf — der Loop laeuft fuer das
-erste `tick()` mit `tick_count = 0`, sodass `tick_values[0]`
-waehrend des ersten Tick-Intervalls aktiv ist. Off-by-one-frei
-gegen Welle-4-Clock-Konvention (TickLoop advanced die Clock
-vor dem Tick-Body, aber `tick_count` zaehlt nach Tick-Body).
+vor dem Tick-Body-Ablauf — der Loop laeuft fuer das erste
+`tick()` mit `tick_count = 0`, sodass `tick_values[0]`
+waehrend des ersten Tick-Intervalls aktiv ist. Off-by-one-frei.
 
-### 2.6 Event-vs-Profile-Konflikt-Resolution
+**TickLoop fuehrt ein `_device_by_id`-Mapping**, das aus dem
+Konstruktor automatisch aus `self._devices` aufgebaut wird
+(O(N)-Setup, O(1)-Lookup pro Event/Profile).
 
-Mehrere Quellen koennen gleichzeitig `set_power_kw` an dasselbe
-Device richten. Welle-6b-Konvention (Pflicht-Reihenfolge im
-Tick):
+### 2.6 Public Restore-Source — `LoadDevice.rated_power_kw`
 
-1. **LoadProfile** zuerst — setzt einen Baseline-Wert pro Tick.
-2. **LoadEvent** danach — ueberschreibt den Profile-Wert
-   wenn ein Event in diesem Tick aktiv ist (Event hat hoehere
-   Prioritaet, weil es eine bewusst-zeitliche-Anweisung ist).
-3. **Manuelle Scenario-Events** (`Scenario.events` aus M1-
-   Scheduler) sind seit M1 vor dem Tick-Body verarbeitet —
-   sie ueberschreiben LoadProfile, werden aber von LoadEvent
-   ueberschrieben (wenn beides im selben Tick aktiv ist).
+**Welle-6b-Round-1-Medium-2-Schaerfung:** das
+Jedes-Tick-Baseline-Pattern aus §2.5 verlangt, dass die
+TickLoop pro `LoadDevice` den `rated_power_kw`-Wert lesen
+kann, **ohne** auf das private `device._config.rated_power_kw`-
+Feld zuzugreifen (verletzt LoadDevice-Modul-Grenze).
 
-**Reihenfolge in TickLoop._consume_load_inputs():**
+Welle 6b ergaenzt die `LoadDevice`-Surface um eine
+**Public-Property**:
+
+```python
+class LoadDevice:
+    ...
+    @property
+    def rated_power_kw(self) -> Decimal:
+        """Welle-6b-Konvention: Public-Restore-Source fuer das
+        TickLoop-Jedes-Tick-Baseline (Welle-6b-Review-Round-1-
+        Medium-2)."""
+        if self._config is None:
+            raise DeviceNotInitializedError("rated_power_kw")
+        return self._config.rated_power_kw
+```
+
+**Pre-init-Raise:** vor `initialize(...)` wirft die Property
+`DeviceNotInitializedError` (Welle-1-/Welle-3-Pattern fuer
+Pre-init-Felder).
+
+**Pattern-Spiegel-Pflicht:** Welle 6b haelt das `rated_power_kw`-
+Property **nur** auf `LoadDevice`. PV/Battery/GridConnection/
+SmartMeter haben kein TickLoop-Restore-Bedarf in Welle 6b
+(GridConnection wird ueber Auto-Schluss gesetzt; PV emittiert
+ohne Welle-6b-Override; Battery wird ueber Welle-7+-Storage-
+Strategien gesteuert).
+
+### 2.7 GridConnection-Auto-Schluss (Split-Iteration)
+
+**Welle-6b-Round-1-High-2-Schaerfung:** der ursprueengliche
+Vor-Tick-Block-Ansatz (§2.7 / §2.8) hatte einen Phasen-Konflikt
+— vor der Device-Iteration fehlt die aktuelle PV/Load/Battery-
+Telemetrie; nach der Iteration wirkt `apply_command(set_power_kw)`
+an die GridConnection erst im **naechsten** Tick (weil
+`pending_power_kw` gesetzt wird und `current_power_kw` erst
+beim naechsten `tick()` aktualisiert).
+
+Loesung: **Split-Iteration** in `TickLoop.tick()`. Die
+GridConnection-Iteration wird vom Rest der Devices getrennt:
 
 ```
-for profile in self._active_load_profiles:
-    apply_profile_value(profile, ...)
-for event in self._active_load_events:
-    if event_active_or_just_expired(event, sim_time):
-        apply_event_value_or_restore(event, ...)
+# Schritt A — Vor-Tick-Block: LoadProfile + LoadEvent an Loads.
+for load_device in self._load_devices:
+    intent = ...   # Jedes-Tick-Baseline-Logik aus §2.5
+    load_device.apply_command(set_power_kw, intent)
+
+# Schritt B — Erste Device-Iteration: PV + Load + Battery + SmartMeter
+#            (alle Devices AUSSER GridConnection).
+non_grid_connection_devices = [d for d in self._devices
+                                if not isinstance(d, GridConnectionDevice)]
+for device in non_grid_connection_devices:
+    outcome = device.tick(context)
+    emitted.extend(outcome.telemetry)
+
+# Schritt C — GridConnection-Auto-Schluss:
+#            berechne pre_grid_residual aus post-tick-Telemetry der
+#            non_grid_connection_devices.
+pre_grid_residual = (
+    sum(pv.power_kw for pv in pv_devices)
+    - sum(load.power_kw for load in load_devices)
+    - sum(battery.power_kw for battery in battery_devices)
+)
+for grid_dev in grid_connection_devices:
+    if grid_dev.device_id in manual_override_ids:
+        continue   # manuelle-Heuristik: LoadEvent/Profile hat schon set_power_kw gemacht
+    grid_dev.apply_command(set_power_kw, value=-pre_grid_residual)
+
+# Schritt D — Zweite Device-Iteration: GridConnection ticken.
+for grid_dev in grid_connection_devices:
+    outcome = grid_dev.tick(context)
+    emitted.extend(outcome.telemetry)
+
+# Schritt E — Bilanz-Aggregation aus allen post-tick-Telemetrien.
 ```
 
-Damit ist die Resolution deterministisch und unabhaengig von
-der Iteration-Reihenfolge der Devices selbst.
+**Manuelle-Heuristik** (`manual_override_ids`) — Welle-6b-
+Konvention:
 
-### 2.7 GridConnection-Auto-Schluss
+- Wenn ein LoadEvent oder LoadProfile in diesem Tick die
+  Device-ID `grid_connection_id` als `target_device_id` setzt,
+  gilt der Wert als manuell ueberlagert. Auto-Schluss wird
+  uebersprungen.
+- **NICHT** aus M1-Scheduler-Events abgeleitet (Welle-6b-
+  Round-1-High-3: ScenarioEvent→Command-Bridge ist out-of-
+  scope).
 
-Pro Tick (Welle-6b-Erweiterung in `TickLoop.tick()`, **nach** der
-Device-Iteration aber **vor** der Bilanz-Aggregation):
-
-1. Sammle alle `GridConnectionDevice`-Instanzen aus
-   `self._devices`.
-2. Pruefe pro GridConnection, ob ihre `current_power_kw`
-   bereits **manuell** gesetzt wurde:
-   - **Manuell** = Welle 6b liefert ein einfaches Heuristik:
-     wenn fuer diese Device-ID in diesem Tick ein
-     `LoadEvent` aktiv ist ODER ein `LoadProfile`-Wert
-     angewendet wurde ODER ein M1-Scheduler-Event mit
-     `target = grid_connection.device_id` und
-     `type = "set_power_kw"` aufgetaucht ist, gilt der
-     Wert als manuell.
-   - **Sonst** automatisch: berechne
-     `pre_grid_residual = sum(pv) - sum(load) - sum(battery)`
-     und setze `grid_connection.power_kw :=
-     -pre_grid_residual` via `apply_command(set_power_kw,
-     ...)`.
-3. **Cap-Limit-Respekt:** ADR 0017 §2.4 enforced Caps. Wenn
-   Auto-Schluss den Cap sprengt, wird der Wert clamped und
-   der Restposten geht in die `imbalance_kw`-Berechnung
-   (Frequenz/Spannungs-Drift).
-
-**Welle-6b-Implementation-Hinweis:** der Auto-Schluss ist
-**konservativ** — wenn die manuelle-Heuristik schwer zu
-entscheiden ist (z. B. Scenario-Event und Auto-Schluss
-gleichzeitig im selben Tick), gewinnt die manuelle-Quelle
-(Reihenfolge: Profile → Event → Auto-Schluss). Welle-7+/M3
-kann den Auto-Schluss um eine explizite
-`Scenario.auto_close_grid_connection: bool`-Konfiguration
-ergaenzen.
+**Cap-Limit-Respekt:** ADR 0017 §2.4 enforced
+`max_import_kw`/`max_export_kw`. Wenn Auto-Schluss den Cap
+sprengt, wird der Wert clamped (intern in `GridConnectionDevice.
+apply_command`); der Restposten geht in die `imbalance_kw`-
+Berechnung in Schritt E.
 
 ### 2.8 Tick-Reihenfolge (Vollstaendige Welle-6b-Sequenz)
 
@@ -314,20 +397,24 @@ Pro `TickLoop.tick()`:
 
 1. `clock.advance(tick_ms)` (M1).
 2. Scheduler-Events poppen (M1).
-3. **Vor-Tick-Block** (Welle 6b):
-   a. LoadProfile-Werte an LoadDevices anwenden (Profile-
-      Baseline).
-   b. LoadEvent-Werte an LoadDevices anwenden / Restore bei
-      Ablauf (Event-Overlay).
-   c. GridConnection-Auto-Schluss-Werte berechnen und
-      anwenden, sofern manuelle Heuristik leer.
-4. Device-Iteration: `device.tick(context)` fuer alle Devices
-   (Welle 6a).
-5. Bilanz-Aggregation: aggregiere `power_kw`-Telemetry,
-   `grid_model.update(...)` (Welle 6a, jetzt mit
-   GridConnection-Auto-Schluss-Werten gespeist).
-6. `TickResult.emitted_telemetry` zusammenstellen.
-7. `_tick_count += 1`.
+3. **Vor-Tick-Block — Schritt A** (Welle 6b §2.5):
+   - LoadProfile + LoadEvent → `apply_command(set_power_kw)`
+     an LoadDevices (Jedes-Tick-Baseline + Profile-Overlay
+     + Event-Overlay).
+4. **Erste Device-Iteration — Schritt B** (Welle 6b §2.7):
+   - `device.tick(context)` fuer alle Devices **ausser**
+     `GridConnectionDevice`. Telemetry sammeln.
+5. **Auto-Schluss-Berechnung — Schritt C** (Welle 6b §2.7):
+   - Pre-Grid-Residual aus PV/Load/Battery-Post-Tick-Telemetry.
+   - `apply_command(set_power_kw, -residual)` an
+     GridConnection-Devices, sofern manuelle-Heuristik leer.
+6. **Zweite Device-Iteration — Schritt D** (Welle 6b §2.7):
+   - `grid_connection.tick(context)` fuer alle GridConnection-
+     Devices. Telemetry sammeln.
+7. **Bilanz-Aggregation — Schritt E** (Welle 6a + 6b):
+   - `grid_model.update(...)` mit gesamter Post-Tick-Telemetry.
+8. `TickResult.emitted_telemetry` zusammenstellen.
+9. `_tick_count += 1`.
 
 ### 2.9 Determinismus
 
@@ -387,14 +474,21 @@ basiertes Set-Verhalten — Determinismus per Bauplan.
 
 Diese ADR gilt fuer:
 
+- `hexagon/core/scenario/scenario.py` (oder gleichwertig)
+  erweitert um drei Top-Level-Felder
+  (`grid_model_config`, `load_events`, `load_profiles`).
+- `hexagon/core/scenario/validator.py` (oder gleichwertig)
+  validiert die drei neuen Felder.
 - `hexagon/core/scenario/loader.py`: `build_devices`,
-  `build_tick_loop`, `parse_load_events`, `parse_load_profiles`.
-- `hexagon/core/scenario/`-Erweiterungen fuer Scenario-YAML-
-  Format (`events:` / `load_profiles:`-Sektionen).
+  `build_tick_loop`, `parse_load_events`,
+  `parse_load_profiles`.
 - `hexagon/core/simulation/tick_loop.py`:
-  `_active_load_events`-/`_active_load_profiles`-Felder,
-  `_device_by_id`-Lookup, Vor-Tick-Block fuer Event/Profile-
-  Anwendung + Auto-Schluss.
+  `_active_load_events`-/`_active_load_profiles`-Konstruktor-
+  kwargs, `_device_by_id`-Lookup, Vor-Tick-Block fuer
+  LoadProfile/LoadEvent (§2.5), Split-Iteration fuer
+  GridConnection-Auto-Schluss (§2.7).
+- `hexagon/core/devices/load/model.py`:
+  Public-`rated_power_kw`-Property auf `LoadDevice` (§2.6).
 - `hexagon/core/errors.py`:
   `ScenarioUnknownDeviceTypeError`,
   `ScenarioMissingSourceDeviceError`.
@@ -470,6 +564,13 @@ Closure-Notiz verzeichnet (Erwartung: ~30..50 neue Tests).
 
 ## 7. Nicht Gegenstand dieser ADR
 
+- **ScenarioEvent→Command-Bridge** (Welle-6b-Round-1-High-3):
+  M1-Scheduler-Events werden weiterhin nur in
+  `TickResult.popped_events` zurueckgegeben; eine Uebersetzung
+  in `Command.apply_command(set_power_kw, ...)` fuer
+  Scheduler-Events (z. B. „setze pv-1 auf 200 kW bei t=10s")
+  ist Welle 6c oder M3. Welle 6b's manuelle-Heuristik
+  bezieht sich **ausschliesslich** auf LoadEvent/LoadProfile.
 - **MVP-Demo-Szenario** (`mvp_demo.yaml`). Welle 6c.
 - **Postgres-Persistierung des Builder-Outputs**. Welle 6c +
   M3.
