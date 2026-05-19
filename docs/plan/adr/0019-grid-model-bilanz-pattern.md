@@ -287,9 +287,16 @@ Methoden. Stattdessen:
 Welle-5a-Property:
 
 - Gleicher `GridModelConfig` + identische
-  `(generation_kw, load_kw, storage_kw)`-Sequenz →
-  byte-identische `(frequency_hz, voltage_v)`-Spur ueber
-  ≥ 100 Updates.
+  `(generation_kw, load_kw, storage_kw, grid_connection_kw)`-
+  Sequenz → byte-identische
+  `(frequency_hz, voltage_v, last_imbalance_kw,
+  clamp_event_count)`-Spur ueber ≥ 100 Updates.
+- Pflicht-Hypothesis-Property (`@given(...)` ueber
+  Decimal-Tupel der vier Inputs): zweimal dieselbe Sequenz →
+  byte-identische Snapshot-Folge inkl. der monoton nicht-
+  fallenden `clamp_event_count`-Spur. Damit ist der manuelle
+  GridConnection-/Clamp-Pfad mechanisch durch die Property
+  gepinnt, nicht nur durch Punkt-Tests.
 
 `RandomPort` wird **nicht** konsumiert (Welle 5a hat kein
 stochastisches Element). M3-Fault-Injection (Spannungs-
@@ -400,10 +407,23 @@ liegen folgende Module:
   Version v1→v2 (separat in **ADR 0015 zu fixieren —
   geplante ADR, Datei wird mit Welle 6 angelegt; Forward-
   Reference im aktuellen Repo noch ohne ADR-File**).
-- `GridConnection.power_kw` wird in Welle 6 aus
-  `-imbalance_kw` abgeleitet, sodass die Bilanz mechanisch
-  geschlossen wird. Die Welle-4a-Sign-Konvention bleibt
-  unveraendert (ADR 0017 §2.2).
+- `GridConnection.power_kw` wird in Welle 6 aus der
+  **Pre-Grid-Restbilanz** abgeleitet:
+
+  ```
+  pre_grid_residual_kw = sum(pv.power_kw)
+                       - sum(load.power_kw)
+                       - sum(battery.power_kw)
+  grid_connection.power_kw := -pre_grid_residual_kw   # Auto-Schluss
+  ```
+
+  Damit wird `imbalance_kw` aus §2.2 per Konstruktion `0`
+  (Bilanz schliesst). **Nicht** verwechseln mit
+  `-imbalance_kw` — das waere zirkulaer, weil
+  `imbalance_kw` in §2.2 bereits `grid_connection.power_kw`
+  enthaelt. Die Welle-4a-Sign-Konvention (ADR 0017 §2.2)
+  bleibt unveraendert; der Schluss-Pfad nutzt nur die
+  Pre-Grid-Subsumme.
 
 **Was load-bearing bleibt:**
 
