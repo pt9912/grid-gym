@@ -508,10 +508,9 @@ liegen folgende Module:
   Wege ueber `update(...)` statt `tick(...)`-Protocol.
 - `SnapshotEnvelope.sub_snapshots` bekommt ab Welle 6 einen
   `grid_model`-Single-Instance-Eintrag (vs. den fuenf
-  `devices.<id>`-Eintraegen). Dadurch bumpt die Envelope-
-  Version v1→v2 (separat in **ADR 0015 zu fixieren —
-  geplante ADR, Datei wird mit Welle 6 angelegt; Forward-
-  Reference im aktuellen Repo noch ohne ADR-File**).
+  `devices.<device_type>.<device_id>`-Eintraegen). Dadurch
+  bumpt die TickLoop-Snapshot-Version v1→v2 (separat in
+  **ADR 0015** fixiert).
 - **Welle-5b-Snapshot-Versionssprung (Forward-Pointer,
   Review-M-2):** Der aktuelle `GridModelSnapshot.from_dict`-
   Hartzweig (`if version != SNAPSHOT_VERSION: raise

@@ -68,11 +68,12 @@ ohne Scenario-Events. Welle 5b fuegt:
   `start_s`, `duration_s`, `target_device_id`, `power_kw`. Wird
   in Welle 6 vom TickLoop konsumiert und in
   `LoadDevice.apply_command(Command.type="set_power_kw")`
-  uebersetzt; nach `start_s + duration_s` wird der Vor-Event-
-  Wert (z. B. `rated_power_kw`) wiederhergestellt.
+  uebersetzt; nach `start_s + duration_s` wird der Default-
+  Restore-Wert `LoadConfig.rated_power_kw` gesetzt (kein
+  Stack-Restore des Vor-Event-Werts; siehe §2.2).
 - **`LoadProfile`-Dataclass** (`GG-GRID-003` „Zeitreihen"):
   Tick-indizierte `Decimal`-Folge fuer einen `target_device_id`.
-- **CSV/JSON-Loader** als Free-Functions:
+- **CSV/JSON-Parser** als Free-Functions:
   `parse_csv_profile(text)` und `parse_json_profile(payload)` →
   `LoadProfile` (pure Parser; Datei-I/O ist Adapter-
   Verantwortung, siehe §2.4 — Round-1-Hoch-Schaerfung). Format-
@@ -91,7 +92,7 @@ nimmt einen Teil davon vorweg, weil `GG-GRID-003` und
 M2 erforderlich ist. M3 baut auf Welle 5b auf: dieselbe
 `LoadProfile`-Repraesentation wird in M3 fuer komplexere
 Replay-Quellen (z. B. PV-Solarprofile, Stochastik) wieder-
-verwendet. Welle 5b implementiert den **Loader** aktiv (kein
+verwendet. Welle 5b implementiert die **Parser** aktiv (kein
 Stub), aber haelt das Anwendungs-Pattern bewusst klein:
 keine Profil-Generatoren, kein Loop-Modus, keine
 Interpolation zwischen Tick-Werten.
@@ -108,11 +109,11 @@ Welle-5a-Modulen:
 ```
 hexagon/core/grid_model/
     __init__.py        # Re-Export erweitert um LoadEvent + LoadProfile +
-                       #   Loader + LoadProfileFormatError
+                       #   Parser + LoadProfileFormatError
     config.py          # (Welle 5a)
     bilanz.py          # (Welle 5a)
     snapshot.py        # (Welle 5a, erweitert in Welle 5b um v2)
-    loads.py           # Welle 5b: LoadEvent + LoadProfile + Loader
+    loads.py           # Welle 5b: LoadEvent + LoadProfile + Parser
 ```
 
 `tests/unit/hexagon/core/grid_model/` ergaenzt ein separates
@@ -357,8 +358,8 @@ ggf. in eine Adapter-Fehlerklasse ueberfuehrt).
 - Stochastische Profile (Welle-5a-`RandomPort` ist bewusst
   ausserhalb).
 - Profil-Interpolation / Resampling.
-- Streaming-Loader fuer grosse Profile (`tick_values` haelt das
-  ganze Profil im Speicher).
+- Streaming-Parser/-Adapter fuer grosse Profile (`tick_values`
+  haelt das ganze Profil im Speicher).
 
 ### 2.5 `GridModelSnapshot` v1 → v2
 
@@ -438,8 +439,8 @@ kein interner State). Welle-5b-Determinismus-Property:
   identische `LoadDevice.apply_command`-Sequenz und damit
   byte-identische Frequenz-/Spannungs-Spur (in Verbindung mit
   Welle-5a-Bilanz).
-- CSV-/JSON-Loader sind deterministisch (gleiche Eingabe-
-  Datei → gleicher `LoadProfile`).
+- CSV-/JSON-Parser sind deterministisch (gleicher Eingabe-
+  Text bzw. gleiches Mapping → gleicher `LoadProfile`).
 
 `RandomPort` wird **nicht** konsumiert (analog Welle 5a).
 M3-Fault-Injection in Profilen (z. B. „Mess-Ausfall in einem
@@ -453,7 +454,7 @@ Tick") wird stochastisch — separate Open-Triggers.
 `004` sind MUSS-Akzeptanz im Lastenheft §11; M2 muss sie
 liefern. Eine Verschiebung auf M3 wuerde den MVP-Anspruch
 brechen. Der M3-Driftrisiko-Hinweis im M2-Slice-Plan §3
-Welle 5 ist explizit: M3 baut auf der Welle-5b-Loader-
+Welle 5 ist explizit: M3 baut auf der Welle-5b-Parser-
 Infrastruktur auf, repliziert sie nicht.
 
 **Separate ADR statt geteilt mit ADR 0019:** Welle 5a ist
@@ -471,10 +472,10 @@ Migrations-Risiko. Mit Backward-Compat bleibt die M2-
 Welle-Migration mechanisch unkritisch. Der Lese-Pfad ist
 explizit symmetrisch (v1-Read → leere LoadEvent/Profile-
 Tupel; v2-Read mit Pflicht-Felder). Welle 6 erbt diese
-Konvention fuer den `SnapshotEnvelope`-Versions-Bump (ADR
-0015, geplant).
+Konvention fuer den TickLoop-Snapshot-v2-Vertrag im
+SnapshotEnvelope-Pattern (ADR 0015, geplant).
 
-**Keine Profil-Interpolation:** das vereinfacht den Loader
+**Keine Profil-Interpolation:** das vereinfacht den Parser
 und macht die Determinismus-Property trivial. Profile-Loop-
 Modus, periodische Wiederholung, Interpolation zwischen Tick-
 Werten — alles M3-Erweiterungen. Welle 5b liefert nur den
@@ -484,7 +485,7 @@ out-of-bounds.
 **CSV + JSON statt nur einer Variante:** beide Formate sind
 fuer unterschiedliche Datenquellen praktisch — CSV fuer
 manuelle Test-Szenarien (Spreadsheet-export), JSON fuer
-programmatisch generierte Profile. Der Loader-Aufwand ist
+programmatisch generierte Profile. Der Parser-Aufwand ist
 klein (zwei Free-Functions, identisches `LoadProfile`-
 Ergebnis), die Akzeptanz-Verbreiterung gross.
 
@@ -550,7 +551,7 @@ Closure-Notiz verzeichnet (Erwartung: ~30..50 neue Tests).
   `LoadDevice.apply_command`-Aufrufe.
 - Scenario-YAML-Spec (Welle 5b oder Welle 6) erweitert um
   `events:` und `load_profile:` Sektionen — fuer Welle 5b
-  reicht es, dass Datenstrukturen + Loader stehen; der
+  reicht es, dass Datenstrukturen + Parser stehen; der
   YAML-Adapter ist Welle-6-Material.
 
 **Was load-bearing bleibt:**
@@ -588,11 +589,11 @@ Closure-Notiz verzeichnet (Erwartung: ~30..50 neue Tests).
   Post-MVP, dafuer waere `LoadEvent` um ein
   `pre_event_power_kw`-Feld zu erweitern + Snapshot-Versions-
   Bump v2→v3 in der Folge-Welle.
-- **Streaming-Loader** fuer grosse Profile. Welle 5b haelt
-  das ganze Profil im Speicher.
+- **Streaming-Parser/-Adapter** fuer grosse Profile. Welle 5b
+  haelt das ganze Profil im Speicher.
 - **TickLoop-Verdrahtung**. Welle 6.
 - **Scenario-YAML-Format-Erweiterung**. Welle 6 — Welle 5b
-  liefert nur die Datenstrukturen + Loader.
+  liefert nur die Datenstrukturen + Parser.
 - **`PV`-Profile / Solarkurven**. `LoadProfile` ist **load-
   spezifisch** (target_device_id zeigt auf LoadDevice). PV-
   Profile sind Welle-5+/M3 — eigene Datenstruktur, weil

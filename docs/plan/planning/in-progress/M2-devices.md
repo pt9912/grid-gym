@@ -22,8 +22,8 @@ Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
 `16f8b9b` / `91e0118` / `1af57b8`); Welle 5b (`fa02c0b`)
 + Welle-5b-Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` /
 `e5f8f86` / `29d23bb`). Naechster Schritt ist **Welle 6a
-(TickLoop-Device-Iteration + grid_model + SnapshotEnvelope
-v1→v2)** — Welle 6 ist pre-Start in 6a (TickLoop + Envelope)
+(TickLoop-Device-Iteration + grid_model + TickLoop-Snapshot
+v1→v2)** — Welle 6 ist pre-Start in 6a (TickLoop + Snapshot)
 + 6b (Scenario-Loader + LoadEvent/Profile-Wiring + GridConn-
 Auto-Schluss) + 6c (MVP-Demo + Closure) sub-gesliced; ADR 0015
 ist Pre-Start-ADR fuer 6a (siehe §3 Welle 6). M1-Spine
@@ -816,7 +816,7 @@ ueber den TickLoop.
 
 **Sub-Slicing-Entscheidung (Pre-Start, 2026-05-19):** Welle 5
 ist vor dem Start in **5a (Bilanz + GridModelSnapshot) + 5b
-(Loads + CSV/JSON-Loader + Closure)** geteilt. Die
+(Loads + CSV/JSON-Parser + Closure)** geteilt. Die
 §3-Sub-Slicing-Schwellen greifen weich — beide Sub-Wellen
 laufen auf demselben `make`-Gate (`test-unit` + Default-
 `coverage-gate-critical`), aber:
@@ -873,7 +873,8 @@ ADR-Doku-Sync). ADR 0019 ist `Provisional`; Schaerfung auf
     `version: int`-Erst-Feld + `from_snapshot` als classmethod,
     konsumiert generischen `SnapshotFormatError`-Codec aus
     Welle 0. Snapshot-Sub-Key in `SnapshotEnvelope.sub_snapshots`
-    ist `grid_model` (Single-Instance, kein `devices.<id>`).
+    ist `grid_model` (Single-Instance, kein
+    `devices.<device_type>.<device_id>`).
 - ADR 0019 (`grid-model-bilanz-pattern`) `Proposed → Provisional`
   mit Welle-5a-Commit; Schaerfung auf `Accepted` mit
   Welle-5b-Closure-Commit (oder spaetestens Welle 7).
@@ -931,14 +932,14 @@ Pattern), plus Welle-5-Closure-Commit (ADR 0019 + ADR 0020
     Commands an `LoadDevice` uebersetzt.
   - `LoadProfile` Frozen-Dataclass (`GG-GRID-003` „Zeitreihen"):
     `tick_values: tuple[Decimal, ...]` plus `target_device_id`.
-    Profile-Daten kommen aus CSV/JSON-Datei oder Scenario-YAML
-    inline; Welle 5b liefert den **aktiven** Loader (kein
-    Stub — Reviewer-Befund-Risiko gegen M3-Replay-Source-
-    Doppelung explizit in ADR 0020 §3 begruendet).
-  - `load_csv_profile(path: Path) -> LoadProfile` und
-    `load_json_profile(path: Path) -> LoadProfile` als
-    Free-Functions. Fehlerfaelle (Datei fehlt, kaputtes Format)
-    geben typed `LoadProfileFormatError`-Subklassen aus
+    Profile-Daten kommen aus bereits eingelesenem CSV/JSON-Text
+    oder Scenario-YAML inline; Datei-I/O bleibt Adapter-
+    Verantwortung.
+  - `parse_csv_profile(text: str) -> LoadProfile` und
+    `parse_json_profile(payload: str | Mapping[str, object]) ->
+    LoadProfile` als pure Free-Functions. Fehlerfaelle
+    (kaputtes Format, fehlende Felder, falsche Typen) geben
+    typed `LoadProfileFormatError`-Subklassen aus
     Welle-0a-Codec-Pattern.
   - Annahmen, Grenzen und Parametrisierung in Docstrings +
     Lastenheft-Verweis (analog Welle 5a).
@@ -977,13 +978,13 @@ Pattern), plus Welle-5-Closure-Commit (ADR 0019 + ADR 0020
 - **Welle-5b-Gate-Status**: Default `make gates` cache-frei
   gruen — `core/grid_model` weiterhin ≥ 90 %, plus Test-
   Inkrement (~30..60 neue Tests fuer LoadEvent/LoadProfile/
-  CSV-JSON-Loader).
+  CSV-JSON-Parser).
 
 ### Welle 6 — TickLoop-Integration + Scenario + MVP-Demo
 
 **Sub-Slicing-Entscheidung (Pre-Start, 2026-05-19):** Welle 6
 ist vor dem Start in **6a (TickLoop-Device-Iteration + grid_model
-+ SnapshotEnvelope v1→v2) + 6b (Scenario-Loader-Device-Factory
++ TickLoop-Snapshot v1→v2) + 6b (Scenario-Loader-Device-Factory
 + LoadEvent/LoadProfile-Wiring + GridConnection-Auto-Schluss)
 + 6c (MVP-Demo-Szenario + E2E-Tests + Welle-7-Closure-
 Vorbereitung)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
@@ -1027,32 +1028,35 @@ Vorbereitung)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
 - **`TickLoop.snapshot()`-Erweiterung**:
   - Sub-Snapshots in `SnapshotEnvelope.sub_snapshots`
     zusammengefuehrt:
-    - `devices.<device_id>` je Geraete-Instanz (5 MVP-
-      Geraete: battery, pv, load, grid_connection, smart_meter).
+    - `devices.<device_type>.<device_id>` je Geraete-Instanz
+      (5 MVP-Geraete: battery, pv, load, grid_connection,
+      smart_meter). Das Typsegment ist Pflicht fuer
+      `from_snapshot`-Dispatch, weil die Per-Device-Snapshots
+      selbst keinen Device-Typ tragen.
     - `grid_model` (Single-Instance) aus Welle 5 — Schluessel
       ohne `devices.`-Praefix, weil `grid_model` kein Device
       ist.
   - Welle 6a verifiziert, dass alle sechs Snapshot-Quellen aus
     Erfolgskriterium 6 zusammengefuehrt werden (5 Geraete +
     Bilanzmodell).
-- **`SnapshotEnvelope`-Versionsschritt v1 → v2** (loest F-2
-  aus Review-3): das Welle-6a-Envelope-Mapping bekommt sechs
-  neue Sub-Snapshot-Keys; das ist ein strukturierender Bruch
-  zum M1-Welle-4-Envelope. `SnapshotEnvelope.version` wird
-  von `1` auf `2` gehoben.
-  - **Pflicht-Verhalten:** `TickLoop.from_snapshot(envelope)`
-    auf einem v1-Envelope wirft einen typisierten
-    `SnapshotEnvelopeSchemaVersionError` (Subklasse der
-    generischen `SnapshotFormatError`-Basis aus Welle 0) mit
-    Klartext „Envelope-Version 1 wird in M2 nicht mehr
-    gelesen; Lauf in M1 abgeschlossen oder Snapshot-Migrations-
-    Slice abwarten (M6, `GG-PERSIST-*`)".
+- **TickLoop-Snapshot-Versionsschritt v1 → v2** (loest F-2
+  aus Review-3): das Welle-6a-TickLoop-Snapshot-Mapping
+  bekommt sechs neue Sub-Snapshot-Keys; das ist ein
+  strukturierender Bruch zum M1-Welle-4-Snapshot.
+  `TickLoop.snapshot()["version"]` wird von `1` auf `2`
+  gehoben.
+  - **Pflicht-Verhalten:** `TickLoop.from_snapshot(state)` auf
+    einem v1-TickLoop-Snapshot wirft einen typisierten
+    `TickLoopSnapshotVersionError` mit Klartext „TickLoop
+    snapshot version=1 wird in M2-Welle-6a nicht mehr gelesen;
+    Lauf in M1 abgeschlossen oder Snapshot-Migrations-Slice
+    abwarten (M6, `GG-PERSIST-*`)".
   - **Pflicht-Test:** `tests/unit/hexagon/core/simulation/
     test_snapshot_envelope_v1_to_v2.py` baut einen
-    v1-Envelope und erwartet den typisierten Fehler.
+    v1-TickLoop-Snapshot und erwartet den typisierten Fehler.
     Backward-Compat-Reader ist out-of-scope (M6
     `GG-PERSIST-*`-Migrations-Slice).
-- ADR 0015 `SnapshotEnvelope`-Versions-Bump v1 → v2
+- ADR 0015 `TickLoop-Snapshot-v2 im SnapshotEnvelope-Pattern`
   (`Proposed` → `Provisional` mit Welle-6a-Commit; →
   `Accepted` mit Welle-6c-Closure-Commit). Dokumentiert den
   Bruch, fixiert den typisierten Fehler-Vertrag, verweist auf
@@ -1237,13 +1241,15 @@ Vorbereitung)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
   Verifikation reicht ueber `make test-integration` + Postgres-
   Roundtrip; UI-Konsum kommt mit M5.
 - **`SnapshotEnvelope`-Sub-Snapshots brechen Welle-4-M1-Format**:
-  Welle 6 erweitert das Envelope-Mapping um sechs neue Keys —
-  fuenf unter `devices.<id>` plus einen `grid_model`-Single-
-  Instance-Key. *Fallback:* der Bruch ist im Plan bereits als
-  Pflicht-Schritt verankert (siehe Welle 6 „SnapshotEnvelope-
-  Versionsschritt v1 → v2") — `SnapshotEnvelope.version`
-  zaehlt auf `2` hoch, v1-Envelopes werfen typisierten
-  `SnapshotEnvelopeSchemaVersionError` (Fail-Fast, kein
+  Welle 6 erweitert das TickLoop-Snapshot-Mapping um sechs
+  neue Keys — fuenf unter
+  `devices.<device_type>.<device_id>` plus einen
+  `grid_model`-Single-Instance-Key. *Fallback:* der Bruch ist
+  im Plan bereits als Pflicht-Schritt verankert (siehe Welle 6
+  „TickLoop-Snapshot-Versionsschritt v1 → v2") —
+  `TickLoop.snapshot()["version"]` zaehlt auf `2` hoch,
+  v1-Snapshots werfen typisierten
+  `TickLoopSnapshotVersionError` (Fail-Fast, kein
   Backward-Read). ADR 0015 fixiert den Vertrag; ein Lese-
   Migrations-Pfad ist explizit M6 (`GG-PERSIST-*`).
 - **`grid_model` vs. `grid_connection` Naming-Drift**: das
@@ -1283,7 +1289,7 @@ nach ADR 0006 §3).
 | `grid_model`-Snapshot-Versionierung                                          | `make test-unit` Snapshot-Roundtrip-Test `GridModelSnapshot` (`version: int`-Erst-Feld + byte-stabiler Roundtrip; **kein** Protocol-Adherence-Test, da kein `DeviceModel`) |
 | Netzbilanz-Determinismus                                                     | `make test-unit` Property-Test via `hypothesis @given(seed=integers())` (seed-stabile Leistungsbilanz vs. Frequenz)                  |
 | Demo-Szenario `mvp_demo.yaml` deterministisch                                | `make test-integration` mit `mvp_demo.yaml` (`tick_ms=1000`, Seed-Konstante `M2_DEMO_SEED`); zweifacher Lauf → byte-identische `emitted_telemetry` **ueber ≥ 100 Ticks**; Postgres-Roundtrip |
-| SnapshotEnvelope v1 → v2 Schema-Bump (Fail-Fast)                              | `make test-unit` mit `test_snapshot_envelope_v1_to_v2.py` — v1-Envelope wirft typisierten `SnapshotEnvelopeSchemaVersionError`         |
+| TickLoop-Snapshot v1 → v2 Schema-Bump (Fail-Fast)                             | `make test-unit` mit `test_snapshot_envelope_v1_to_v2.py` — v1-TickLoop-Snapshot wirft typisierten `TickLoopSnapshotVersionError`      |
 | `make fullbuild` gruen ohne Override                                         | `make fullbuild` — **M2-Abschluss-Gate**                                                                                              |
 | Trigger 013 (`replay-diff-tick-ms-parameter`) geschlossen                    | `make test-unit` mit Battery-Pflicht-Test `test_replay_diff_tick_ms.py` (`tick_ms=100`, `diff_replay(..., tick_ms=100)`)             |
 | Trigger 014 + 015 nach `done/`                                                | `docs/plan/planning/done/014-…md`, `015-…md` mit Closure-Notiz                                                                       |
