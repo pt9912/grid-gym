@@ -16,8 +16,11 @@ Welle 4a (`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` /
 Welle-4b-Review-Folge (`1093b2c` / `bc94a8c` / `d3769dc` /
 `85dced7`). Default-`make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
-alle fuenf MVP-Geraete). Naechster Schritt ist **Welle 5
-(Netzbilanzmodell, `GG-GRID-001..004`)**. M1-Spine
+alle fuenf MVP-Geraete). Naechster Schritt ist **Welle 5a
+(Bilanz + GridModelSnapshot, `GG-GRID-001`/`002`)** — Welle 5
+ist pre-Start in 5a (Bilanz-Physik-Kern) + 5b (Loads + CSV/JSON-
+Loader + Closure) sub-gesliced; zwei separate ADRs 0019 + 0020
+statt einer geteilten (siehe §3 Welle 5). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -794,7 +797,7 @@ plus Welle-4-Closure-Commit (ADR 0017 → Accepted, ADR 0018
   spaetestens mit Welle-7-Closure, falls Welle-4-Review-
   Folge offene Punkte vererbt — Pattern aus Welle 3a/3b).
 
-### Welle 5 — Netzbilanzmodell (`GG-GRID-001..004`) (1 Tag)
+### Welle 5 — Netzbilanzmodell (`GG-GRID-001..004`)
 
 **Abgrenzung gegenueber Welle 4a:** `grid_connection` aus
 Welle 4a ist ein **Geraetetyp** (`GG-DEV-012`,
@@ -805,38 +808,120 @@ Device listet und die Bilanz aggregiert ueber alle
 Connection-Points laeuft. Welle 6 verdrahtet die zwei Schichten
 ueber den TickLoop.
 
+**Sub-Slicing-Entscheidung (Pre-Start, 2026-05-19):** Welle 5
+ist vor dem Start in **5a (Bilanz + GridModelSnapshot) + 5b
+(Loads + CSV/JSON-Loader + Closure)** geteilt. Die
+§3-Sub-Slicing-Schwellen greifen weich — beide Sub-Wellen
+laufen auf demselben `make`-Gate (`test-unit` + Default-
+`coverage-gate-critical`), aber:
+
+- **Zwei verschiedene Concerns**: 5a ist reines **Physik-Modell**
+  (Frequenz/Spannungs-Formel + Snapshot), 5b ist eine
+  **Daten-/I/O-Integration** (CSV/JSON-Parser + Scenario-Event-
+  Erweiterung). Vertraege, Test-Stile und Reviewer-Aufmerksamkeit
+  divergieren deutlich.
+- **Driftrisiko gegen M3-Replay-Verkabelung**: 5b nimmt eine
+  Aufgabe vor, die im urspruenglichen Plan urspruenglich auch
+  als M3-Replay-Source-Pfad gelistet war. Bewusste Doppel-
+  Implementierung wird in ADR 0020 dokumentiert; M3 baut auf
+  5b auf, statt parallel zu replizieren.
+- **Zwei separate ADRs 0019 + 0020** statt einer geteilten
+  (wie ADR 0017 + 0018 fuer GridConnection/SmartMeter) — die
+  Concerns sind zu verschieden fuer eine ehrliche Abstraktion.
+
+#### Welle 5a — Bilanz + GridModelSnapshot + ADR 0019 (Proposed)
+
 - `hexagon/core/grid_model/` (Top-Level neben `devices/`,
   `scenario/`, `replay/`):
   - `bilanz.py` — vereinfachtes Leistungsbilanzmodell
     (`GG-GRID-001`/`002`) leitet Frequenz-/Spannungsabweichungen
-    aus Erzeugung, Last, Speicherleistung ab.
-  - `loads.py` — `GG-GRID-003`/`004`: Lasten als konstant /
-    Zeitreihe / Szenario-Event; Lastspruenge mit
-    Start/Dauer/Leistung.
+    aus Erzeugung, Last, Speicherleistung ab. Vorschlag
+    (in ADR 0019 §2 zu fixieren): einfache proportionale Formel
+    `f = f_nom + k_f * imbalance_kw`, `v = v_nom + k_v *
+    imbalance_kw`, mit Safety-Clamps gegen Runaway.
   - `snapshot.py` — `GridModelSnapshot` Frozen-Dataclass mit
     `version: int`-Erst-Feld + `from_snapshot` als classmethod,
     konsumiert generischen `SnapshotFormatError`-Codec aus
     Welle 0. Snapshot-Sub-Key in `SnapshotEnvelope.sub_snapshots`
     ist `grid_model` (Single-Instance, kein `devices.<id>`).
-  - Annahmen, Grenzen und Parametrisierung in Docstrings +
-    Lastenheft-Verweis.
-- `GG-GRID-005..007` (SOLLTE: Inselnetz / Transformatorgrenzen /
-  Blindleistung) bleiben **out-of-scope** fuer M2 (siehe §4),
-  werden als eigene Open-Triggers angelegt, falls in Welle 0
-  S-6-Sweep noch nicht erfasst.
+- ADR 0019 (`grid-model-bilanz-pattern`) `Proposed → Provisional`
+  mit Welle-5a-Commit; Schaerfung auf `Accepted` mit
+  Welle-5b-Closure-Commit (oder spaetestens Welle 7).
 - Tests:
   - Property-Tests fuer Leistungsbilanz via
     `hypothesis @given(seed=integers())`: Summe (Erzeugung −
     Last − Speicherleistung) ist deterministisch konsistent mit
     Frequenzabweichung und seed-stabil.
   - **Snapshot-Roundtrip-Contract-Test** (Welle-1-Konvention,
-    auf das Bilanzmodell uebertragen, ohne `DeviceModel`-
+    auf das Bilanzmodell uebertragen, **ohne** `DeviceModel`-
     Protocol-Adherence-Test — das Bilanzmodell ist kein
     `DeviceModel`): `version: int` als Erst-Feld + byte-stabiler
-    `from_snapshot(snapshot())`-Roundtrip ist Welle-5-DoD-Item
-    (siehe Erfolgskriterium 6 „Pro-Geraet-Pflicht" — sechster
-    Eintrag der Snapshot-Liste).
-- **Gate-Status nach Welle 5**: Default-Gate bleibt gruen.
+    `from_snapshot(snapshot())`-Roundtrip ist Welle-5a-DoD-Item.
+  - Safety-Clamp-Tests: Frequenz/Spannung verlassen ihre
+    Wertebereiche nicht (z. B. `45 Hz ≤ f ≤ 55 Hz`,
+    `0.7 * v_nom ≤ v ≤ 1.3 * v_nom`); ungueltige Imbalance-
+    Inputs werden defensiv geclamped.
+- **Welle-5a-Gate-Status**: Default `make gates` cache-frei
+  gruen — `core/grid_model` ≥ 90 % Line + Branch
+  (Default-`CRITICAL_COV_TARGETS` um `core/grid_model`
+  erweitert).
+
+#### Welle 5b — Loads + LoadProfile + CSV/JSON-Loader + ADR 0020 (Proposed) + Welle-5-Closure
+
+- `hexagon/core/grid_model/loads.py` (Welle-5b-Hauptarbeit):
+  - `LoadEvent` Frozen-Dataclass (`GG-GRID-004`): `start_s`,
+    `duration_s`, `target_device_id`, `power_kw`. Scenario-
+    Event-Pfad — wird im Welle-6-TickLoop in `set_power_kw`-
+    Commands an `LoadDevice` uebersetzt.
+  - `LoadProfile` Frozen-Dataclass (`GG-GRID-003` „Zeitreihen"):
+    `tick_values: tuple[Decimal, ...]` plus `target_device_id`.
+    Profile-Daten kommen aus CSV/JSON-Datei oder Scenario-YAML
+    inline; Welle 5b liefert den **aktiven** Loader (kein
+    Stub — Reviewer-Befund-Risiko gegen M3-Replay-Source-
+    Doppelung explizit in ADR 0020 §3 begruendet).
+  - `load_csv_profile(path: Path) -> LoadProfile` und
+    `load_json_profile(path: Path) -> LoadProfile` als
+    Free-Functions. Fehlerfaelle (Datei fehlt, kaputtes Format)
+    geben typed `LoadProfileFormatError`-Subklassen aus
+    Welle-0a-Codec-Pattern.
+  - Annahmen, Grenzen und Parametrisierung in Docstrings +
+    Lastenheft-Verweis (analog Welle 5a).
+- `hexagon/core/grid_model/snapshot.py` (Welle-5b-Erweiterung):
+  - `GridModelSnapshot` traegt zusaetzlich `active_load_events:
+    tuple[LoadEvent, ...]` und `active_load_profiles:
+    tuple[LoadProfile, ...]`, damit Resume die Scenario-Events
+    weiterfuehrt. ADR 0020 §2.x fixiert das Schema.
+  - Snapshot-Version bumpt von `1` (Welle 5a) auf `2` (Welle 5b)
+    mit Backward-Compat-Lesepfad (v1-Snapshot ohne
+    LoadEvents/LoadProfiles ist roundtrip-faehig, LoadEvents
+    laden als leeres Tupel).
+- `GG-GRID-005..007` (SOLLTE: Inselnetz / Transformatorgrenzen /
+  Blindleistung) bleiben **out-of-scope** fuer M2 (siehe §4),
+  werden als eigene Open-Triggers angelegt.
+- ADR 0020 (`load-profile-and-event-pattern`) `Proposed →
+  Provisional` mit Welle-5b-Commit; Schaerfung auf `Accepted`
+  mit Welle-5-Closure-Commit.
+- Tests:
+  - LoadEvent-Roundtrip-Tests (Snapshot-Persistierung).
+  - LoadProfile-Roundtrip-Tests + CSV/JSON-Parsing inkl.
+    Negativ-Tests (kaputte Datei, falsche Encoding,
+    nicht-numerische Werte → typisierter Fehler).
+  - Snapshot-Versions-Bump v1→v2 Backward-Compat-Test
+    (`from_dict({"version": 1, ...})` produziert ein
+    GridModelSnapshot mit leeren LoadEvent/Profile-Tupeln).
+  - Integration-Test: Bilanz konsumiert eine LoadProfile-
+    Quelle und reproduziert deterministische Frequenz-/
+    Spannungsverlaeufe.
+- **Welle-5-Closure-Bestandteile** (zusaetzlich zu 5b-Code):
+  - ADR 0019 + ADR 0020 auf `Accepted` heben.
+  - `Status:`-Header im Slice-Plan auf "Welle 5
+    abgeschlossen" ziehen.
+  - `Naechster Schritt`: Welle 6 (TickLoop-Integration +
+    Demo-Szenario).
+- **Welle-5b-Gate-Status**: Default `make gates` cache-frei
+  gruen — `core/grid_model` weiterhin ≥ 90 %, plus Test-
+  Inkrement (~30..60 neue Tests fuer LoadEvent/LoadProfile/
+  CSV-JSON-Loader).
 
 ### Welle 6 — TickLoop-Integration + Scenario (1 Tag)
 
@@ -1044,4 +1129,4 @@ nach ADR 0006 §3).
 | Trigger 013 (`replay-diff-tick-ms-parameter`) geschlossen                    | `make test-unit` mit Battery-Pflicht-Test `test_replay_diff_tick_ms.py` (`tick_ms=100`, `diff_replay(..., tick_ms=100)`)             |
 | Trigger 014 + 015 nach `done/`                                                | `docs/plan/planning/done/014-…md`, `015-…md` mit Closure-Notiz                                                                       |
 | Trigger 013 nach `done/`                                                      | `docs/plan/planning/done/013-…md` mit Closure-Notiz (synchron mit Battery-Welle-2-Test oben)                                          |
-| ADR 0013 (`DeviceModel`) + ADR 0014 (`Battery`-Snapshot-Schema) + ADR 0015 (Envelope v1→v2) + ADR 0016 (PV+Load) + ADR 0017 (GridConnection) + ADR 0018 (SmartMeter) `Accepted` | `docs/plan/adr/0013-device-model-protocol.md`, `0014-battery-snapshot-schema.md`, `0015-snapshot-envelope-v2.md`, `0016-pv-load-device-pattern.md`, `0017-grid-connection-device-pattern.md`, `0018-smart-meter-device-pattern.md` jeweils mit `Accepted`-Status |
+| ADR 0013 (`DeviceModel`) + ADR 0014 (`Battery`-Snapshot-Schema) + ADR 0015 (Envelope v1→v2) + ADR 0016 (PV+Load) + ADR 0017 (GridConnection) + ADR 0018 (SmartMeter) + ADR 0019 (Grid-Model-Bilanz) + ADR 0020 (Load-Profile + Event) `Accepted` | `docs/plan/adr/0013-device-model-protocol.md`, `0014-battery-snapshot-schema.md`, `0015-snapshot-envelope-v2.md`, `0016-pv-load-device-pattern.md`, `0017-grid-connection-device-pattern.md`, `0018-smart-meter-device-pattern.md`, `0019-grid-model-bilanz-pattern.md`, `0020-load-profile-and-event-pattern.md` jeweils mit `Accepted`-Status |
