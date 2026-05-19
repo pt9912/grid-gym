@@ -35,6 +35,7 @@ from grid_gym.hexagon.core.devices.grid_connection.config import (
     GridConnectionConfig,
 )
 from grid_gym.hexagon.core.devices.grid_connection.snapshot import (
+    CONFIG_FIELD_NAMES,
     SNAPSHOT_VERSION,
     GridConnectionSnapshot,
 )
@@ -66,7 +67,8 @@ _RUN_ID_UNSET = ""
 """Marker fuer den Pre-`set_run_id`-Zustand (Welle-3-Review-M-4-
 Pattern). Welle 6 TickLoop ruft `set_run_id` vor dem ersten Tick."""
 
-_PARAM_KEYS = ("nominal_voltage_v", "max_import_kw", "max_export_kw")
+# Welle-4a-Review L-3: Single-Source-of-Truth ueber `snapshot.py`.
+_PARAM_KEYS = CONFIG_FIELD_NAMES
 
 
 @contextmanager

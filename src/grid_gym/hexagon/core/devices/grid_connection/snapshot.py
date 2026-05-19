@@ -37,6 +37,16 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
 SUBSYSTEM: Final[str] = "grid_connection"
 SNAPSHOT_VERSION: Final[int] = 1
 
+# Welle-4a-Review L-3: Single-Source-of-Truth fuer die Config-Keys.
+# `model.py` importiert dieselbe Tuple zum geordneten Iterieren
+# beim `_config_from_params`-Parsing; `_CONFIG_KEYS` ist daraus als
+# frozenset abgeleitet fuer die `assert_required_keys`-Pruefung.
+CONFIG_FIELD_NAMES: Final[tuple[str, ...]] = (
+    "nominal_voltage_v",
+    "max_import_kw",
+    "max_export_kw",
+)
+
 _TOP_KEYS: Final[frozenset[str]] = frozenset(
     {
         "version",
@@ -50,9 +60,7 @@ _TOP_KEYS: Final[frozenset[str]] = frozenset(
         "export_kwh",
     }
 )
-_CONFIG_KEYS: Final[frozenset[str]] = frozenset(
-    {"nominal_voltage_v", "max_import_kw", "max_export_kw"}
-)
+_CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
 
 
 @dataclass(frozen=True, slots=True)
