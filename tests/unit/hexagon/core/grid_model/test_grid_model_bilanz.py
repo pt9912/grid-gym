@@ -194,8 +194,10 @@ def test_balanced_inputs_keep_nominal() -> None:
 
 
 def test_excess_generation_raises_frequency() -> None:
-    """Pre-Grid-Restbilanz +1.5 kW, grid=0 → imbalance=+1.5,
-    f = 50 + 0.001*1.5 = 50.0015 Hz."""
+    """**Lastenheft `GG-GRID-001` Akzeptanz**: Frequenz reagiert
+    auf Erzeugung/Last/Speicher im manuellen GridConnection-Pfad
+    (kein Auto-Schluss). Pre-Grid-Restbilanz +1.5 kW, grid=0 →
+    imbalance=+1.5, f = 50 + 0.001*1.5 = 50.0015 Hz."""
     bilanz = GridModelBilanz(config=_config())
     bilanz.update(
         generation_kw=Decimal("3"),
@@ -209,7 +211,11 @@ def test_excess_generation_raises_frequency() -> None:
 
 
 def test_excess_load_lowers_frequency() -> None:
-    """pv=1, load=3, battery=0, grid=0 → imbalance=-2, f drops."""
+    """**Lastenheft `GG-GRID-001` Akzeptanz** (negativer Pfad):
+    pv=1, load=3, battery=0, grid=0 → imbalance=-2, f drops.
+    Lastenheft §11 GG-GRID-001 verlangt das Frequenz-Verhalten
+    aus Erzeugung/Last/Speicher; voltage-Spur testet
+    `GG-GRID-002` parallel."""
     bilanz = GridModelBilanz(config=_config())
     bilanz.update(
         generation_kw=Decimal("1"),
@@ -238,8 +244,11 @@ def test_grid_connection_auto_schluss_keeps_equilibrium() -> None:
 
 
 def test_grid_connection_partial_close_partial_deviation() -> None:
-    """Manueller GridConnection unter dem Pre-Grid-Residual ->
-    partielle Frequenzabweichung."""
+    """**Lastenheft `GG-GRID-001`/`002` Akzeptanz** (Manual-Pfad):
+    manueller GridConnection unter dem Pre-Grid-Residual ->
+    partielle Frequenzabweichung. Demonstriert ADR 0019 §3
+    Manual-Pfad als primaeren Akzeptanz-Pfad gegenueber dem
+    Auto-Schluss-Pfad."""
     bilanz = GridModelBilanz(config=_config())
     bilanz.update(
         generation_kw=Decimal("3"),
@@ -335,10 +344,8 @@ def test_snapshot_first_field_is_version() -> None:
     assert state["version"] == SNAPSHOT_VERSION
 
 
-def test_snapshot_carries_required_fields() -> None:
-    bilanz = GridModelBilanz(config=_config())
-    state = bilanz.snapshot()
-    for key in (
+_EXPECTED_TOP_LEVEL_KEYS = frozenset(
+    {
         "version",
         "config",
         "model_kind",
@@ -346,31 +353,37 @@ def test_snapshot_carries_required_fields() -> None:
         "current_voltage_v",
         "last_imbalance_kw",
         "clamp_event_count",
-    ):
-        assert key in state
+    }
+)
+"""Welle-5a-Review L-3: Test-eigene Single-Source-of-Truth fuer
+die Top-Level-Snapshot-Keys (parallel zu `_TOP_KEYS` in
+snapshot.py). Welle 5b ergaenzt hier `active_load_events`
++ `active_load_profiles`."""
+
+
+def test_snapshot_carries_required_fields() -> None:
+    bilanz = GridModelBilanz(config=_config())
+    state = bilanz.snapshot()
+    for key in _EXPECTED_TOP_LEVEL_KEYS:
+        assert key in state, f"missing top-level key: {key}"
+    assert set(state.keys()) == _EXPECTED_TOP_LEVEL_KEYS
 
 
 def test_snapshot_config_is_nested_dict_not_dataclass() -> None:
     """ADR 0019 §2.5: config wird als nested dict serialisiert
-    (SnapshotEnvelope akzeptiert keine Dataclass-Objekte)."""
+    (SnapshotEnvelope akzeptiert keine Dataclass-Objekte).
+    Welle-5a-Review L-3: iteriert ueber `CONFIG_FIELD_NAMES` aus
+    Snapshot-Modul-Single-Source-of-Truth statt hartkodierter
+    Duplikation."""
     bilanz = GridModelBilanz(config=_config())
     state = bilanz.snapshot()
     config_state = state["config"]
     assert isinstance(config_state, dict)
     assert not hasattr(config_state, "__dataclass_fields__")
-    # Alle 8 expliziten Config-Keys vorhanden:
     config_mapping = cast(Mapping[str, object], config_state)
-    for key in (
-        "nominal_frequency_hz",
-        "frequency_sensitivity_hz_per_kw",
-        "frequency_clamp_min_hz",
-        "frequency_clamp_max_hz",
-        "nominal_voltage_v",
-        "voltage_sensitivity_v_per_kw",
-        "voltage_clamp_min_v",
-        "voltage_clamp_max_v",
-    ):
-        assert key in config_mapping
+    for key in CONFIG_FIELD_NAMES:
+        assert key in config_mapping, f"missing config key: {key}"
+    assert set(config_mapping.keys()) == set(CONFIG_FIELD_NAMES)
 
 
 def test_from_snapshot_byte_stable_roundtrip() -> None:
@@ -421,6 +434,18 @@ def test_from_dict_wrong_version_type_rejected() -> None:
     bilanz = GridModelBilanz(config=_config())
     state = dict(bilanz.snapshot())
     state["version"] = "1"
+    with pytest.raises(WrongTypeError):
+        GridModelSnapshot.from_dict(state)
+
+
+def test_from_dict_bool_clamp_event_count_rejected() -> None:
+    """Welle-5a-Review L-5: `assert_int` schliesst `bool` als
+    int-Subclass explizit aus (snapshot_codec.py); Welle 5a hat
+    zwei int-Felder (version + clamp_event_count) und beide
+    sollen die Pruefung haben."""
+    bilanz = GridModelBilanz(config=_config())
+    state = dict(bilanz.snapshot())
+    state["clamp_event_count"] = True
     with pytest.raises(WrongTypeError):
         GridModelSnapshot.from_dict(state)
 
