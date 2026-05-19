@@ -116,6 +116,18 @@ class GridModelSnapshot:
             raise VersionError(SUBSYSTEM, expected=SNAPSHOT_VERSION, found=version)
 
         model_kind = assert_str(state["model_kind"], "model_kind", SUBSYSTEM)
+        # Welle-5a-Review M-1: model_kind ist in Welle 5a auf
+        # `MODEL_KIND_SIMPLIFIED_PROPORTIONAL` festgenagelt
+        # (ADR 0019 §2.4; Lastenheft §11.2 GG-GRID-002 verlangt
+        # explizite Selbstkennzeichnung). Welle 5+/M3 lockert
+        # das, wenn weitere Identifier dazukommen.
+        if model_kind != MODEL_KIND_SIMPLIFIED_PROPORTIONAL:
+            raise WrongTypeError(
+                SUBSYSTEM,
+                "model_kind",
+                MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
+                model_kind,
+            )
         current_frequency_hz = assert_decimal(
             state["current_frequency_hz"], "current_frequency_hz", SUBSYSTEM
         )

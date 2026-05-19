@@ -425,6 +425,19 @@ def test_from_dict_wrong_version_type_rejected() -> None:
         GridModelSnapshot.from_dict(state)
 
 
+def test_from_dict_unknown_model_kind_rejected() -> None:
+    """Welle-5a-Review M-1: model_kind muss in Welle 5a auf
+    `simplified-proportional` festgenagelt sein; ein
+    `power-flow-adapter`-Snapshot darf nicht stillschweigend
+    re-instantiiert werden (Lastenheft §11.2-Akzeptanz)."""
+    bilanz = GridModelBilanz(config=_config())
+    state = dict(bilanz.snapshot())
+    state["model_kind"] = "power-flow-adapter"
+    with pytest.raises(WrongTypeError) as exc_info:
+        GridModelSnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "grid_model"
+
+
 def test_from_dict_invalid_config_reraises_as_wrong_type() -> None:
     """ADR 0019 §2.4a-Schaerfung: Config-Verletzung -> WrongTypeError."""
     bilanz = GridModelBilanz(config=_config())
