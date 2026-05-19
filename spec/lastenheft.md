@@ -859,12 +859,12 @@ devices:
   - id: "meter-1"
     type: "smart_meter"
     params:
-      measured_device_ids:
-        - "grid-1"
-        - "pv-1"
-        - "load-1"
+      aggregate_device_ids:
         - "battery-1"
-      sample_interval_ms: 100
+        - "grid-1"
+        - "load-1"
+        - "pv-1"
+      aggregate_metric_name: "power_kw"
 events:
   - at_s: 10
     target: "pv-1"

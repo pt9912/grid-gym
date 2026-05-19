@@ -130,7 +130,7 @@ Vertrag:
   TickLoop-Reload-Pfade (Welle 6 / M3) ggf. neu verdrahten.
 - Pre-`attach_sources`-`tick(...)`-Aufruf: SmartMeter
   emittiert `aggregated_power_kw = Decimal("0")` mit
-  `quality=Quality.UNKNOWN` (statt `VALID`). Damit bleibt der
+  `quality=Quality.MISSING` (statt `VALID`). Damit bleibt der
   Pre-attach-Zustand maschinell unterscheidbar, ohne einen
   separaten String-Tag-`TelemetryPoint` zu brauchen (siehe
   §2.4 Punkt 5). **Kein** Fehler — das macht den Smoke-Test
@@ -194,9 +194,12 @@ Welle-4b-Minimum:
      mit `ROUND_HALF_EVEN`, Unit `kW`).
 
    Im Pre-attach-Fall (§2.3) wird derselbe `TelemetryPoint`
-   mit `value=Decimal("0")` und `quality=Quality.UNKNOWN`
+   mit `value=Decimal("0")` und `quality=Quality.MISSING`
    emittiert — die Pre-attach-Situation laeuft ueber das
-   `Quality`-Enum (`UNKNOWN` statt `VALID`), nicht ueber einen
+   `Quality`-Enum (`MISSING` statt `VALID`; `MISSING` ist der
+   spec-Wert aus `Quality`-Enum, der „Daten fehlen" semantisch
+   am praezisesten traegt — siehe `hexagon/core/domain/quality.py`),
+   nicht ueber einen
    separaten String-Tag-`TelemetryPoint` (`TelemetryPoint.value`
    ist `Decimal`, String-Tag ist strukturell nicht emittierbar).
    Reference-Lookup-Defense bleibt ein typisierter Fehler-Pfad,

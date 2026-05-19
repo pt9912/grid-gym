@@ -232,7 +232,7 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 # `--build-arg`. Beispiel (Welle 2, A-2 Custom-Emitter):
 #   make coverage-gate-critical \
 #        CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization
-ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay"
+ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay"
 RUN set -eu; \
     for target in ${CRITICAL_COV_TARGETS}; do \
         if [ ! -d "${target}" ]; then \
