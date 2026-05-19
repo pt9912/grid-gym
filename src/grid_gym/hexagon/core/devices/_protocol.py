@@ -201,3 +201,20 @@ class DeviceModel(Protocol):
         liefert die Baseline-Implementation als Test-Pattern.
         """
         ...
+
+    def set_run_id(self, run_id: str) -> None:
+        """Setzt den `TelemetryPoint.run_id`-Wert (`GG-DATA-001`).
+
+        Vertrag (Welle-3-Review-M-4 / Welle-6a-Review-C-1):
+        `TickLoop` ruft `set_run_id(run_id)` einmal nach
+        `initialize(...)` und vor dem ersten `tick(...)`, damit
+        emittierte `TelemetryPoint`s die echte run_id tragen. Vor
+        diesem Aufruf liefert das Device Telemetrie mit
+        `run_id=""` (Sentinel `_RUN_ID_UNSET` aus den Geraete-
+        Modellen). Pre-init zulaessig (Welle 6 TickLoop ruft das
+        Hook ggf. vor dem `initialize`-Aufruf, falls der Loader
+        die run_id schon kennt; siehe Welle-4a-Review M-4-Test
+        `test_set_run_id_pre_init_is_allowed` in PV/Load/Battery/
+        GridConnection/SmartMeter).
+        """
+        ...

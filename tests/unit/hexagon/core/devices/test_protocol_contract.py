@@ -362,6 +362,11 @@ def test_wrong_signature_still_passes_isinstance() -> None:
         def from_snapshot(cls, state):  # type: ignore[no-untyped-def]  # noqa: ARG003
             return cls()
 
+        def set_run_id(self, run_id: str) -> None:  # type: ignore[no-untyped-def]  # noqa: ARG002, RUF100
+            # Welle-6a-Protocol-Erweiterung (C-1-Fix); _run_id wird
+            # nicht persistiert, weil das Test-Double nichts emittiert.
+            _ = run_id
+
     # @runtime_checkable findet `tick` als Attribut — passt durch.
     # Das ist eine bekannte typing.Protocol-Beschraenkung; siehe
     # Protocol-Docstring im `_protocol.py`.

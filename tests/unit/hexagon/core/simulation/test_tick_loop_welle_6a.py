@@ -153,6 +153,26 @@ def test_tick_iterates_devices_and_collects_telemetry() -> None:
     assert "load" in sources
 
 
+def test_tick_loop_sets_run_id_on_all_devices() -> None:
+    """Welle-6a-Review C-1: TickLoop ruft `set_run_id` fuer jedes
+    Device beim Konstruieren — Telemetrie traegt die echte run_id,
+    nicht den `_RUN_ID_UNSET`-Default ('')."""
+    pv = _make_pv()
+    load = _make_load()
+    battery = _make_battery()
+    grid_dev = _make_grid_connection()
+    meter = _make_smart_meter(aggregate_device_ids=("pv-1",))
+    meter.attach_sources({"pv-1": pv})
+    loop = _make_loop(devices=(pv, load, battery, grid_dev, meter))
+    result = loop.tick()
+    assert result.emitted_telemetry  # mindestens ein Telemetry-Punkt
+    for point in result.emitted_telemetry:
+        assert point.run_id == "run-6a", (
+            f"Device {point.device_id} emittierte run_id={point.run_id!r}, "
+            f"erwartet 'run-6a' (Welle-3-Review-M-4-Vertrag)."
+        )
+
+
 def test_tick_emits_telemetry_in_device_order() -> None:
     """Welle-6a: Telemetrie ist in Device-Konstruktor-Reihenfolge
     konkateniert."""

@@ -126,6 +126,15 @@ class NullDevice:
     def telemetry(self) -> tuple[TelemetryPoint, ...]:
         return self._last_telemetry
 
+    # -- Welle-6a: set_run_id (Welle-3-Review-M-4 / Welle-6a-Review-C-1)
+
+    def set_run_id(self, run_id: str) -> None:
+        """No-Op: NullDevice traegt keine `run_id` in seiner
+        Telemetrie (emittiert leere Tupel). Methode existiert nur,
+        damit `isinstance(NullDevice(), DeviceModel)` nach der
+        Welle-6a-Protocol-Erweiterung weiter haelt."""
+        self._run_id: str = run_id
+
     # -- Roundtrip --------------------------------------------------------
 
     @classmethod

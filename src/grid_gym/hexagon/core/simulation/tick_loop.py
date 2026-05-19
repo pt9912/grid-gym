@@ -143,6 +143,21 @@ class TickLoop:
         # Loader injiziert die produktive Liste + grid_model.
         self._devices: tuple[DeviceModel, ...] = devices
         self._grid_model: GridModelBilanz | None = grid_model
+        # Welle-6a-Review C-1: Welle-3-Review-M-4-Vertrag erfordert,
+        # dass TickLoop fuer jedes Device `set_run_id(self._run_id)`
+        # ruft, bevor der erste Tick laeuft — sonst emittieren alle
+        # Devices Telemetrie mit `run_id=""` statt der echten run_id
+        # (verletzt GG-DATA-001). Konstruktor-Phase ist der natuerliche
+        # Ort fuer den Lifecycle-Hook.
+        self._attach_devices()
+
+    def _attach_devices(self) -> None:
+        """Reicht `run_id` an alle Devices durch (Welle-3-Review-M-4-
+        Vertrag). `attach_random` und `attach_sources` (SmartMeter)
+        bleiben Welle-6b-Scenario-Loader-Verantwortung — die brauchen
+        Quell-Referenzen, die hier nicht verfuegbar sind."""
+        for device in self._devices:
+            device.set_run_id(self._run_id)
 
     @property
     def run_id(self) -> str:
