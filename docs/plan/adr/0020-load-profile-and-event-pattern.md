@@ -1,7 +1,33 @@
 # ADR 0020 — Load-Profile + Load-Event Pattern (M2 Welle 5b)
 
-**Status:** Proposed
+**Status:** Accepted — Validierung erfolgt mit M2-Welle-5b-PR-
+Merge (`fa02c0b`): 694 Unit-Tests gruen (vorher 642, +52 fuer
+LoadEvent/LoadProfile/Parser/v2-Snapshot), `make gates` cache-
+frei gruen ohne `CRITICAL_COV_TARGETS`-Override; Welle-5b-
+Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` / `e5f8f86` /
+`29d23bb`) hat H-1/M-1/M-2/M-3/M-4/M-5/M-6/L-1/L-3/L-4/L-5/
+L-6/L-7 adressiert (705 Unit-Tests Endstand). Welle-5-Closure
+synchron mit folgendem Plan-Sync-Commit.
 **Datum:** 2026-05-19
+**Status geaendert am:** 2026-05-19 — `Proposed → Accepted`
+(direkt, ADR 0006 §2 erlaubt Sprung wenn der Validierungs-
+Spike Pflicht-Bestandteil des Welle-PR-Merges ist; Welle-5b-
+Review-Folge hat das geleistet).
+**Geschaerft am:** 2026-05-19 (Pre-Implementation, Commit
+`53a4f91`) — §2.4 Datei-I/O herausgenommen
+(`GG-AR-TABU-002`-Defense; `parse_csv_profile`/
+`parse_json_profile` als pure Parser); §2.3 Profil-Index-
+Formel korrigiert (off-by-one gegen TickLoop-Clock-Konvention);
+§2.2 Restore-Konvention auf `LoadConfig.rated_power_kw`
+explizit, overlapping Events same-device out-of-scope; §2.4
+JSON-Number-Vertrag in 5 Punkten fixiert.
+**Erneut geschaerft am:** 2026-05-19 (Welle-5b-Review-Folge,
+Commit `47c054a`) — §2.1 + §5 Funktions-Namen auf
+`parse_*_profile` synchronisiert (Pre-Implementation-
+Schaerfung hatte den Code-Wechsel in §2.4 vorgenommen, aber
+§§2.1/5 nicht mitgezogen). Schaerfung folgt `ADR 0011`-Pattern
+(parallele Schaerfung ohne Supersedes — der Entscheidungs-
+Kern in §§2.2/2.3/2.5/2.6/2.7 ist unveraendert).
 **Bezug:**
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) (Schwester-ADR
 fuer Welle 5a; ADR 0020 erweitert `GridModelSnapshot` um

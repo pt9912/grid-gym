@@ -16,15 +16,14 @@ Welle 4a (`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` /
 Welle-4b-Review-Folge (`1093b2c` / `bc94a8c` / `d3769dc` /
 `85dced7`). Default-`make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
-alle fuenf MVP-Geraete) plus `core/grid_model` (Welle 5a).
+alle fuenf MVP-Geraete) plus `core/grid_model` (Welle 5).
+Welle 5 (5a + 5b + Closure) am 2026-05-19 abgeschlossen:
 Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
-`16f8b9b` / `91e0118` / `1af57b8`) liegt; Naechster Schritt
-ist **Welle 5b (Loads + LoadProfile + CSV/JSON-Loader +
-Welle-5-Closure, `GG-GRID-003`/`004`)** — Welle 5 ist
-pre-Start in 5a (Bilanz-Physik-Kern, abgeschlossen) + 5b
-(Loads + CSV/JSON-Loader + Closure) sub-gesliced; zwei
-separate ADRs 0019 + 0020 statt einer geteilten (siehe §3
-Welle 5). M1-Spine
+`16f8b9b` / `91e0118` / `1af57b8`); Welle 5b (`fa02c0b`)
++ Welle-5b-Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` /
+`e5f8f86` / `29d23bb`). Naechster Schritt ist **Welle 6
+(TickLoop-Integration + Demo-Szenario + ADR 0015 Envelope
+v1→v2)**. M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -894,7 +893,33 @@ ADR-Doku-Sync). ADR 0019 ist `Provisional`; Schaerfung auf
   (Default-`CRITICAL_COV_TARGETS` um `core/grid_model`
   erweitert).
 
-#### Welle 5b — Loads + LoadProfile + CSV/JSON-Loader + ADR 0020 (Proposed) + Welle-5-Closure
+#### Welle 5b — Loads + LoadProfile + CSV/JSON-Parser + ADR 0020 (Accepted) + Welle-5-Closure (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commits: `fa02c0b` (Welle-5b-Erstwurf +
+ADR 0020 Provisional, +1200/-19) plus Welle-5b-Review-Folge
+`5f64f78` (H-1+M-2 CSV-Haertung), `47c054a` (M-1 ADR-Naming),
+`12ad8f9` (M-3+M-4+L-5 Mapping+Doku+tick_ms), `e5f8f86`
+(M-5+M-6 Test-Luecken), `29d23bb` (L-1+L-3+L-4+L-6+L-7 Style/
+Pattern), plus Welle-5-Closure-Commit (ADR 0019 + ADR 0020
+→ Accepted, §1 Status-Sync auf Welle 6).
+
+**Belege:**
+
+- 705 Unit-Tests gruen (vorher 642 → +52 SmartMeter-Erstwurf
+  → +11 Welle-5b-Review-Tests = 705).
+- `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt
+  jetzt alle 5 MVP-Geraete + `core/grid_model`).
+- ADR 0019 `Provisional → Accepted`; ADR 0020 `Proposed →
+  Accepted` (direkt; Welle-5b-Review-Folge hat den
+  Validierungs-Spike geleistet).
+- Welle-5b-Review-Befund: 0 Crit / 1 High / 6 Med / 7 Low /
+  4 Info; alle Crit/High/Med + 6 Low adressiert (L-2 als
+  Reviewer-empfohlener Skip — Code-Duplikation
+  `_parse_load_events`/`_parse_load_profiles` akzeptabel),
+  I-1..I-4 Forward-Looking.
+
+**Lieferung im Repo:**
 
 - `hexagon/core/grid_model/loads.py` (Welle-5b-Hauptarbeit):
   - `LoadEvent` Frozen-Dataclass (`GG-GRID-004`): `start_s`,

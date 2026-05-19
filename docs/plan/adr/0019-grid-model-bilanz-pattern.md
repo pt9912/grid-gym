@@ -1,16 +1,20 @@
 # ADR 0019 — Grid-Model-Bilanz-Pattern (M2 Welle 5a)
 
-**Status:** Provisional — Validierung erfolgt mit M2-Welle-5a-
+**Status:** Accepted — Validierung erfolgt mit M2-Welle-5a-
 PR-Merge (`268a1c0`): 639 Unit-Tests gruen (vorher 605, +34
 grid_model-Tests), `make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override; Welle-5a-Review-Folge
 (`676f684` / `16f8b9b` / `91e0118` / `1af57b8`) hat
 M-1/M-2/M-3/M-4/L-1/L-2/L-3/L-5 adressiert (642 Unit-Tests
-Endstand). Schaerfung auf `Accepted` mit Welle-5-Closure
-(zusammen mit ADR 0020).
+Endstand). Welle-5b-Lieferung (`fa02c0b`) hat das Snapshot-
+Layout von v1 auf v2 erweitert mit Backward-Compat-Lesepfad
+fuer v1-Snapshots; ADR 0020 erweitert dieses ADR ohne
+Supersedes. Welle-5-Closure (folgender Plan-Sync-Commit)
+hebt Status auf `Accepted`.
 **Datum:** 2026-05-19
 **Status geaendert am:** 2026-05-19 — `Proposed →
-Provisional`. Pre-Implementation-Schaerfung in drei Runden
+Provisional` (Welle 5a-Merge); `Provisional → Accepted`
+(Welle-5-Closure). Pre-Implementation-Schaerfung in drei Runden
 (Commits `d384218` / `eeeb034` / `a858be8`) hat
 Imbalance-Formel (Round 1), Determinismus-Property + Pre-
 Grid-Subsumme (Round 2), Auto-Schluss-vs-Manual-Begruendung +
