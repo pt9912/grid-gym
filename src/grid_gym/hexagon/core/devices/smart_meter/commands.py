@@ -4,8 +4,8 @@ SmartMeter hat in Welle-4b-Minimum **keinen produktiven
 Command-Surface** — beliebige `Command.type` → `IGNORED`
 (ADR 0013 §2.3). Der Drain-Pfad (`drain_alarms()`, Welle-2-
 Review M-3-Spiegel) ist trotzdem vorhanden, weil
-Forward-Looking-Erweiterungen (z. B.
-`set_aggregate_scope`-Command in Post-MVP) Alarme erzeugen
+Forward-Looking-Erweiterungen (z. B. `set_aggregate_scope`-
+Command in Post-MVP, siehe ADR 0018 §7) Alarme erzeugen
 koennten.
 """
 

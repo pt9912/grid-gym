@@ -41,6 +41,7 @@ from grid_gym.hexagon.core.devices.smart_meter.config import (
 from grid_gym.hexagon.core.devices.smart_meter.snapshot import (
     CONFIG_FIELD_NAMES,
     SNAPSHOT_VERSION,
+    SUBSYSTEM as _SUBSYSTEM,
     SmartMeterSnapshot,
 )
 from grid_gym.hexagon.core.domain.command import Command
@@ -64,7 +65,8 @@ from grid_gym.hexagon.ports.driven.random import RandomPort
 _ZERO = Decimal(0)
 _QUANTUM = Decimal("0.000001")
 _SMART_METER_SOURCE = "smart_meter"
-_SUBSYSTEM = "smart_meter"
+# Welle-4b-Review L-1: SUBSYSTEM-Konstante via snapshot.py re-
+# importiert (siehe oben), statt hier nochmal zu deklarieren.
 _SMART_METER_DECIMAL_PRECISION = 28
 
 _RUN_ID_UNSET = ""
@@ -216,7 +218,9 @@ class SmartMeterDevice:
         sources_by_id: Mapping[str, DeviceModel],
     ) -> Decimal:
         total = _ZERO
-        device_id = cast(ScenarioDevice, self._scenario_device).id
+        # Welle-4b-Review L-4: device_id-Property statt Cast —
+        # leserlicher, faengt Pre-init.
+        device_id = self.device_id
         for source_id in aggregate_device_ids:
             if source_id not in sources_by_id:
                 # ADR 0018 §2.4 Reference-Lookup-Defense.
@@ -288,7 +292,8 @@ class SmartMeterDevice:
         aggregated_value: Decimal,
         quality: Quality,
     ) -> tuple[TelemetryPoint, ...]:
-        device_id = cast(ScenarioDevice, self._scenario_device).id
+        # Welle-4b-Review L-4: device_id-Property statt Cast.
+        device_id = self.device_id
         value = aggregated_value.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         self._sequence += 1
         return (
