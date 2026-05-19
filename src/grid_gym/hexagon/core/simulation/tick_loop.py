@@ -42,9 +42,10 @@ unveraendert.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
@@ -69,6 +70,21 @@ _SNAPSHOT_VERSION: Final[int] = 2
 ADR 0015. Erhoehung -> Folge-ADR."""
 
 _ZERO = Decimal(0)
+_TICK_LOOP_DECIMAL_PRECISION: Final[int] = 28
+
+
+@contextmanager
+def _tick_loop_decimal_context() -> Iterator[None]:
+    """Decimal-Localcontext-Wrapper fuer die Bilanz-Aggregation in
+    `tick()` (Welle-6a-Review M-4, Welle-5b-Review-M-2-Pattern).
+    Pinnt `prec=28` + `ROUND_HALF_EVEN`, analog
+    `bilanz.py::_grid_model_decimal_context` und
+    `loads.py::_loads_decimal_context`."""
+    with localcontext() as ctx:
+        ctx.prec = _TICK_LOOP_DECIMAL_PRECISION
+        ctx.rounding = ROUND_HALF_EVEN
+        yield
+
 
 _REQUIRED_KEYS: Final[frozenset[str]] = frozenset(
     {"version", "run_id", "simulation_time", "tick_count", "tick_ms", "sub_snapshots"}
@@ -143,6 +159,9 @@ class TickLoop:
         # Loader injiziert die produktive Liste + grid_model.
         self._devices: tuple[DeviceModel, ...] = devices
         self._grid_model: GridModelBilanz | None = grid_model
+        # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
+        # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
+        self._unknown_source_count: int = 0
         # Welle-6a-Review C-1: Welle-3-Review-M-4-Vertrag erfordert,
         # dass TickLoop fuer jedes Device `set_run_id(self._run_id)`
         # ruft, bevor der erste Tick laeuft — sonst emittieren alle
@@ -172,6 +191,15 @@ class TickLoop:
         """Anzahl bereits abgeschlossener Ticks (0 vor dem ersten
         `tick()`-Aufruf)."""
         return self._tick_count
+
+    @property
+    def unknown_source_count(self) -> int:
+        """Welle-6a-Review M-3: kumulative Anzahl von TelemetryPoints
+        mit `power_kw`-Metric und unbekanntem `source`-Tag (nicht in
+        `_BILANZ_SOURCE_BUCKETS`). Forward-Looking-Defense fuer
+        Welle-7+/M3-Geraete-Drift (z. B. `WindDevice` mit
+        `source='wind'`)."""
+        return self._unknown_source_count
 
     def tick(self) -> TickResult:
         """Schiebt die Simulationszeit um `tick_ms` vor, ruft fuer
@@ -204,30 +232,42 @@ class TickLoop:
             tick_ms=self._tick_ms,
         )
         emitted: list[TelemetryPoint] = []
-        bucket_sums: dict[str, Decimal] = {
-            "generation": _ZERO,
-            "load": _ZERO,
-            "storage": _ZERO,
-            "grid_connection": _ZERO,
-        }
-        for device in self._devices:
-            outcome = device.tick(context)
-            for point in outcome.telemetry:
-                emitted.append(point)
-                if point.metric != _POWER_KW_METRIC:
-                    continue
-                bucket = _BILANZ_SOURCE_BUCKETS.get(point.source)
-                if bucket is None:
-                    continue
-                bucket_sums[bucket] += point.value
+        # Welle-6a-Review M-4: Bilanz-Aggregation laeuft im Decimal-
+        # Localcontext, damit ein Caller mit reduzierter Praezision
+        # keine stille Drift einfuehrt.
+        with _tick_loop_decimal_context():
+            bucket_sums: dict[str, Decimal] = {
+                "generation": _ZERO,
+                "load": _ZERO,
+                "storage": _ZERO,
+                "grid_connection": _ZERO,
+            }
+            # Welle-6a-Review M-3: unbekannte source-Tags werden
+            # gezaehlt, damit Welle-7+/M3-Geraete-Drift (z. B.
+            # `source="wind"` ohne Bucket-Mapping) sichtbar ist —
+            # statt nur silent-skipped. Aufrufer koennen den Counter
+            # ueber `unknown_source_count` lesen (Property).
+            unknown_count = 0
+            for device in self._devices:
+                outcome = device.tick(context)
+                for point in outcome.telemetry:
+                    emitted.append(point)
+                    if point.metric != _POWER_KW_METRIC:
+                        continue
+                    bucket = _BILANZ_SOURCE_BUCKETS.get(point.source)
+                    if bucket is None:
+                        unknown_count += 1
+                        continue
+                    bucket_sums[bucket] += point.value
 
-        if self._grid_model is not None:
-            self._grid_model.update(
-                generation_kw=bucket_sums["generation"],
-                load_kw=bucket_sums["load"],
-                storage_kw=bucket_sums["storage"],
-                grid_connection_kw=bucket_sums["grid_connection"],
-            )
+            if self._grid_model is not None:
+                self._grid_model.update(
+                    generation_kw=bucket_sums["generation"],
+                    load_kw=bucket_sums["load"],
+                    storage_kw=bucket_sums["storage"],
+                    grid_connection_kw=bucket_sums["grid_connection"],
+                )
+        self._unknown_source_count += unknown_count
 
         result = TickResult(
             tick=self._tick_count,

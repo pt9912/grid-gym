@@ -225,6 +225,86 @@ def test_grid_model_only_active_when_injected() -> None:
     assert result.emitted_telemetry  # pv hat Telemetrie emittiert
 
 
+def test_unknown_source_tag_increments_counter_without_breaking_bilanz() -> None:
+    """Welle-6a-Review M-3: TelemetryPoint mit `power_kw`-Metric und
+    unbekanntem `source` (Welle-7+/M3-Forward-Compat-Drift) wird
+    silent-skipped in der Bilanz-Aggregation, aber im
+    `unknown_source_count`-Counter sichtbar gemacht."""
+    from decimal import Decimal
+    from typing import Self
+    from collections.abc import Mapping
+
+    from grid_gym.hexagon.core.domain.command import Command
+    from grid_gym.hexagon.core.domain.command_result import CommandResult
+    from grid_gym.hexagon.core.domain.device import (
+        DeviceTickContext,
+        DeviceTickOutcome,
+    )
+    from grid_gym.hexagon.core.domain.quality import Quality
+    from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
+    from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
+    from grid_gym.hexagon.ports.driven.random import RandomPort
+
+    class _UnknownSourceDevice:
+        """Test-Double: emittiert power_kw mit source='wind'."""
+
+        def __init__(self) -> None:
+            self._run_id = ""
+
+        @property
+        def device_id(self) -> str:
+            return "wind-1"
+
+        def initialize(self, scenario_device: ScenarioDevice, random: RandomPort) -> None:
+            _ = scenario_device
+            _ = random
+
+        def apply_command(self, command: Command) -> CommandResult:
+            _ = command
+            return CommandResult.IGNORED
+
+        def tick(self, context: DeviceTickContext) -> DeviceTickOutcome:
+            return DeviceTickOutcome(
+                telemetry=(
+                    TelemetryPoint(
+                        run_id=self._run_id,
+                        tick=context.tick,
+                        simulation_time=context.simulation_time,
+                        device_id="wind-1",
+                        metric="power_kw",
+                        value=Decimal("200"),
+                        unit="kW",
+                        quality=Quality.VALID,
+                        source="wind",
+                        sequence=1,
+                    ),
+                ),
+            )
+
+        def snapshot(self) -> Mapping[str, object]:
+            return {"version": 1}
+
+        def telemetry(self) -> tuple[TelemetryPoint, ...]:
+            return ()
+
+        @classmethod
+        def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+            _ = state
+            return cls()
+
+        def set_run_id(self, run_id: str) -> None:
+            self._run_id = run_id
+
+    wind = _UnknownSourceDevice()
+    bilanz = GridModelBilanz(config=_grid_model_config())
+    loop = _make_loop(devices=(wind,), grid_model=bilanz)
+    assert loop.unknown_source_count == 0
+    loop.tick()
+    # Bilanz unbeeinflusst, Counter inkrementiert.
+    assert bilanz.last_imbalance_kw == Decimal("0")
+    assert loop.unknown_source_count == 1
+
+
 def test_smart_meter_aggregated_power_kw_is_not_double_counted() -> None:
     """ADR 0015 §2.3 + ADR 0018 §2.4: SmartMeter emittiert
     `aggregated_power_kw` (nicht `power_kw`) — die Bilanz-
