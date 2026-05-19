@@ -293,6 +293,17 @@ def test_parse_csv_non_str_input_rejected() -> None:
         parse_csv_profile(b"binary")  # type: ignore[arg-type]
 
 
+def test_parse_csv_comma_in_field_rejected_as_cell_count_mismatch() -> None:
+    """Welle-5b-Review L-6: Komma in einem Feldwert (z.B.
+    target_device_id='load,with,commas') ist nicht supportet —
+    der Cell-Count-Check faengt das mechanisch als
+    LoadProfileTypeError ab. Welle 5b nutzt bewusst kein
+    stdlib-csv-Modul (ID-Convention erlaubt keine Kommas)."""
+    text = "target_device_id,tick_ms,tick_values\nload,with,commas,1000,1.5\n"
+    with pytest.raises(LoadProfileTypeError):
+        parse_csv_profile(text)
+
+
 def test_parse_csv_multi_data_row_rejected() -> None:
     """Welle-5b-Review H-1: CSV-Multi-Row darf nicht stillschweigend
     nur die erste Datenzeile nehmen — Welle 5b haelt exakt
@@ -485,17 +496,53 @@ def test_parse_json_non_str_non_mapping_rejected() -> None:
 # ---------------------------------------------------------------------------
 
 
+def test_loads_all_subset_of_grid_model_init_all() -> None:
+    """Welle-5b-Review L-7: `loads.__all__` und `__init__.__all__`
+    pflegen ueberlappende Symbol-Listen. Pinnt, dass alle in
+    `loads.__all__` exportierten Symbole auch im obersten Modul-
+    Re-Export liegen — verhindert Drift bei zukuenftigen
+    Erweiterungen."""
+    from grid_gym.hexagon.core import grid_model as package
+    from grid_gym.hexagon.core.grid_model import loads as loads_module
+
+    loads_exports = set(loads_module.__all__)
+    package_exports = set(package.__all__)
+    missing = loads_exports - package_exports
+    assert not missing, f"Symbols in loads.__all__ but not re-exported: {missing}"
+
+
 def test_loads_module_does_not_import_pathlib_or_open_files() -> None:
     """GG-AR-TABU-002: hexagon/core ist I/O-frei. parse_*-Funktionen
     sollen ueber bereits-eingelesenen Text/Mapping arbeiten, kein
     open() oder Path-Lesen.
 
-    Statische Pruefung: das `loads`-Modul importiert weder
-    `pathlib.Path` noch `open` direkt; es nutzt nur stdlib `json`
-    fuer das Mapping-Parsing.
+    Welle-5b-Review L-1: AST-basierte Pruefung statt `dir(module)`-
+    Heuristik. `dir()` haette ein versehentliches
+    `import pathlib as _pathlib` durchgelassen; AST-Scan
+    findet jeden Import-Statement, unabhaengig vom Alias.
     """
+    import ast
+    import inspect
+
     import grid_gym.hexagon.core.grid_model.loads as loads_module
 
-    module_names = {name for name in dir(loads_module) if not name.startswith("_")}
-    assert "Path" not in module_names
-    assert "open" not in module_names
+    source = inspect.getsource(loads_module)
+    tree = ast.parse(source)
+
+    forbidden_modules = {"pathlib", "io", "os"}
+    forbidden_names = {"open"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".")[0]
+                assert root not in forbidden_modules, f"forbidden module import: {alias.name}"
+        elif isinstance(node, ast.ImportFrom) and node.module is not None:
+            root = node.module.split(".")[0]
+            assert root not in forbidden_modules, f"forbidden from-import: {node.module}"
+            for alias in node.names:
+                assert alias.name not in forbidden_names, (
+                    f"forbidden from-import name: {alias.name}"
+                )
+        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+            # Pruefe Aufrufstellen wie `open(...)`.
+            assert node.id not in forbidden_names, f"forbidden builtin reference: {node.id}"

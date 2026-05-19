@@ -70,7 +70,19 @@ class LoadProfileMissingFieldError(LoadProfileFormatError):
 
 
 class LoadProfileTypeError(LoadProfileFormatError):
-    """Feld hat falschen Typ oder unzulaessigen Wert."""
+    """Feld hat falschen Typ oder unzulaessigen Wert.
+
+    Welle-5b-Review L-4: Konvention fuer den `actual`-Parameter
+    (Welle-4a-Pattern-Spiegel):
+
+    - Typ-Mismatch → `type(value).__name__` (z. B. `"float"`).
+    - Wertebereich-Verstoss → `value` direkt (z. B. `Decimal('-1')`).
+    - Leer-String-Verstoss → der Literalwert `"''"`.
+
+    Damit ist die Message-Form konsistent mit der Welle-4a/5a-
+    Konvention; Aufrufer koennen den Fehler-Typ inspizieren ohne
+    sich auf die Message-Form verlassen zu muessen.
+    """
 
     def __init__(self, field: str, expected: str, actual: object) -> None:
         super().__init__(f"LoadProfile.{field}: expected {expected!r}, got {actual!r}")

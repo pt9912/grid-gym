@@ -101,12 +101,22 @@ _V2_ADDITIONAL_KEYS: Final[frozenset[str]] = frozenset(
 _V2_TOP_KEYS: Final[frozenset[str]] = _V1_TOP_KEYS | _V2_ADDITIONAL_KEYS
 _CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
 
-_LOAD_EVENT_KEYS: Final[frozenset[str]] = frozenset(
-    {"start_s", "duration_s", "target_device_id", "power_kw"}
+# Welle-5b-Review L-3: Welle-4a/5a-Review-L-3-Spiegel — Tupel als
+# Single-Source-of-Truth fuer geordnete Serialisierung, frozenset
+# daraus als Pflicht-Set fuer assert_required_keys.
+LOAD_EVENT_FIELD_NAMES: Final[tuple[str, ...]] = (
+    "start_s",
+    "duration_s",
+    "target_device_id",
+    "power_kw",
 )
-_LOAD_PROFILE_KEYS: Final[frozenset[str]] = frozenset(
-    {"target_device_id", "tick_values", "tick_ms"}
+LOAD_PROFILE_FIELD_NAMES: Final[tuple[str, ...]] = (
+    "target_device_id",
+    "tick_values",
+    "tick_ms",
 )
+_LOAD_EVENT_KEYS: Final[frozenset[str]] = frozenset(LOAD_EVENT_FIELD_NAMES)
+_LOAD_PROFILE_KEYS: Final[frozenset[str]] = frozenset(LOAD_PROFILE_FIELD_NAMES)
 
 
 @dataclass(frozen=True, slots=True)
