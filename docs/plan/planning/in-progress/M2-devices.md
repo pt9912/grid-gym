@@ -21,12 +21,14 @@ Welle 5 (5a + 5b + Closure) am 2026-05-19 abgeschlossen:
 Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
 `16f8b9b` / `91e0118` / `1af57b8`); Welle 5b (`fa02c0b`)
 + Welle-5b-Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` /
-`e5f8f86` / `29d23bb`). Naechster Schritt ist **Welle 6a
-(TickLoop-Device-Iteration + grid_model + TickLoop-Snapshot
-v1→v2)** — Welle 6 ist pre-Start in 6a (TickLoop + Snapshot)
-+ 6b (Scenario-Loader + LoadEvent/Profile-Wiring + GridConn-
-Auto-Schluss) + 6c (MVP-Demo + Closure) sub-gesliced; ADR 0015
-ist Pre-Start-ADR fuer 6a (siehe §3 Welle 6). M1-Spine
+`e5f8f86` / `29d23bb`). Welle 6a (`27a441f`) + Welle-6a-
+Review-Folge (`ff45c11` / `e3909f0` / `f7f21a6` / `da8deef` /
+`779fcea`) liegt. Naechster Schritt ist **Welle 6b
+(Scenario-Loader-Device-Factory + LoadEvent/LoadProfile-
+Wiring + GridConnection-Auto-Schluss)** — Welle 6 ist pre-
+Start in 6a (TickLoop + Snapshot, abgeschlossen) + 6b
+(Scenario-Loader) + 6c (MVP-Demo + Closure) sub-gesliced.
+M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -1009,7 +1011,37 @@ Vorbereitung)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
   konsumiert die kombinierte 6a+6b-Surface. Sequenzieller
   Pfad, kein paralleler.
 
-#### Welle 6a — TickLoop-Device-Iteration + grid_model-Update + Snapshot-Envelope v1→v2 + ADR 0015 (Proposed)
+#### Welle 6a — TickLoop-Device-Iteration + grid_model-Update + TickLoop-Snapshot v1→v2 + ADR 0015 (Provisional) (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commits: `27a441f` (Welle-6a-Erstwurf + ADR
+0015 Proposed; 716 Unit-Tests) plus Welle-6a-Review-Folge
+`ff45c11` (C-1+M-2 set_run_id-Lifecycle + DeviceModel-Protocol-
+Erweiterung), `e3909f0` (M-1 Exception-Message + Pflicht-Text),
+`f7f21a6` (M-3+M-4 unknown_source-Counter + Decimal-
+Localcontext), `da8deef` (M-5+M-6+M-7 from_snapshot-Test +
+TickLoopUnknownDeviceTypeError + Import-Pfad), `779fcea` (H-1+
+L-3+L-4+L-5 ADR-Forward-Pointer + Style).
+
+**Belege:**
+
+- 719 Unit-Tests gruen (vorher 705 → +11 Welle-6a-Erstwurf
+  → +3 Welle-6a-Review-Tests = 719).
+- `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override.
+- ADR 0015 `Proposed → Provisional`. User-Schaerfung in der
+  Vor-Implementierung verlagerte den Versions-Bump von
+  SnapshotEnvelope auf TickLoop-Snapshot (Schwester-Schemata,
+  unterschiedliche Verantwortlichkeiten); Welle-6a-Review-
+  Folge ergaenzte zusaetzlich §4-Forward-Pointer fuer
+  `device_type`-Protocol-Property.
+- Welle-6a-Review-Befund: 1 Crit / 1 High / 7 Med / 6 Low /
+  4 Info; alle Crit/High/Med + 4 Low adressiert (L-1, L-2,
+  L-6 als Cleanup-Welle deferred — wuerden 5+ Module touchen;
+  I-1..I-4 Forward-Looking).
+
+**Lieferung im Repo:**
+
+- `hexagon/core/simulation/tick_loop.py` erweitert:
 
 - **`TickLoop.tick()`-Erweiterung** (`hexagon/core/simulation/
   tick_loop.py`):
