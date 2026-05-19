@@ -120,6 +120,27 @@ def test_load_event_float_value_rejected() -> None:
         )
 
 
+def test_load_event_non_str_target_id_rejected() -> None:
+    """Welle-5b-Review M-5: target_device_id-Type-Pflicht."""
+    with pytest.raises(LoadProfileTypeError):
+        LoadEvent(
+            start_s=Decimal("0"),
+            duration_s=Decimal("1"),
+            target_device_id=42,  # type: ignore[arg-type]
+            power_kw=Decimal("1"),
+        )
+
+
+def test_load_event_none_target_id_rejected() -> None:
+    with pytest.raises(LoadProfileTypeError):
+        LoadEvent(
+            start_s=Decimal("0"),
+            duration_s=Decimal("1"),
+            target_device_id=None,  # type: ignore[arg-type]
+            power_kw=Decimal("1"),
+        )
+
+
 # ---------------------------------------------------------------------------
 # LoadProfile (ADR 0020 §2.3)
 # ---------------------------------------------------------------------------
@@ -197,6 +218,17 @@ def test_load_profile_list_tick_values_rejected() -> None:
         LoadProfile(
             target_device_id="load-1",
             tick_values=[Decimal("1.5")],  # type: ignore[arg-type]
+            tick_ms=1000,
+        )
+
+
+def test_load_profile_non_str_target_id_rejected() -> None:
+    """Welle-5b-Review M-5: target_device_id-Type-Pflicht (analog
+    LoadEvent)."""
+    with pytest.raises(LoadProfileTypeError):
+        LoadProfile(
+            target_device_id=99,  # type: ignore[arg-type]
+            tick_values=(Decimal("1"),),
             tick_ms=1000,
         )
 

@@ -634,6 +634,30 @@ def test_snapshot_v2_serializes_events_as_list_of_mappings() -> None:
     assert isinstance(profile_mapping["tick_values"], list)
 
 
+def test_snapshot_v2_byte_stable_across_repeated_emits() -> None:
+    """Welle-5b-Review M-6: zwei aufeinanderfolgende `snapshot()`-
+    Aufrufe auf demselben Bilanz-Zustand liefern byte-identische
+    Mappings. ADR 0020 §2.7 Determinismus-Vertrag fuer v2-
+    Snapshots mit befuellten LoadEvent/LoadProfile-Tupeln."""
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_events=(_sample_event(),),
+        active_load_profiles=(_sample_profile(),),
+    )
+    bilanz.update(
+        generation_kw=Decimal("3"),
+        load_kw=Decimal("1"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("-1"),
+    )
+    snap_a = dict(bilanz.snapshot())
+    snap_b = dict(bilanz.snapshot())
+    assert snap_a == snap_b
+    # Auch der Roundtrip muss byte-stabil sein:
+    restored = GridModelBilanz.from_snapshot(snap_a)
+    assert dict(restored.snapshot()) == snap_a
+
+
 def test_snapshot_v2_roundtrip_with_events_and_profiles() -> None:
     bilanz = GridModelBilanz(
         config=_config(),
