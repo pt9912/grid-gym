@@ -228,9 +228,17 @@ gespiegelt:
 **Kein `REJECTED`-Pfad fuer Vorzeichen.** Im Gegensatz zu
 PV/Load (ADR 0016 §2.4) hat GridConnection keinen Sign-Vertrag,
 der Negative ausschliesst — beide Vorzeichen sind valide
-(Import/Export). `REJECTED` greift nur bei strukturell
-ungueltigen Payloads (z. B. fehlender `value`-Key, nicht-
-numerisches `value`).
+(Import/Export). Strukturell ungueltige Payloads (fehlender
+`value`-Key, nicht-numerisches `value`) liefern `IGNORED`
+(Spiegel zu Battery / PV / Load und ADR 0014 §2.3 /
+ADR 0016 §2.4 — der Validator gibt nur die positiven
+Wertepfade als `ACCEPTED` / `LIMITED` zurueck; strukturelle
+Fehler sind nicht von „Command an falsches Geraet" zu
+unterscheiden und werden defensiv ignoriert, statt mit einem
+Alarm zu signalisieren). `REJECTED` ist in Welle 4a damit
+**ein nicht-aktiver Result-Pfad**; reserviert fuer eine
+spaetere Welle, falls ein produktiver Anwendungsfall
+auftaucht.
 
 Mehrfach-Commands im selben Tick: last-wins (Konvention aus
 ADR 0014 §2.3 / ADR 0016 §2.4 spiegeln).
@@ -266,6 +274,21 @@ Welle-4a-Minimum:
 
 Quantisierung wie Battery / PV / Load:
 `value.quantize(Decimal("0.000001"), ROUND_HALF_EVEN)`.
+
+**Decimal-Praezisions-Hinweis (Welle-4a-Review M-3):** die
+Quantisierung greift nur auf der **Telemetrie**-Seite. Der
+intern akkumulierte `self._import_kwh`/`self._export_kwh`-
+Wert behaelt die volle 28-NK-Praezision aus dem Local-Context
+und wird ungekuerzt persistiert (Snapshot-Roundtrip bleibt
+byte-stabil, weil Decimal seine Praezision serialisiert).
+Konsequenz: ein replay-divergent skalierter Lauf (z. B.
+`tick_ms=100` vs. `tick_ms=1000`) kann am persistierten Wert
+in der 27.–28. Stelle abweichen; **nur** die telemetrierte
+Form (`.quantize(0.000001)`) ist garantiert byte-stabil
+zwischen tick_ms-Skalierungen. Welle 5/6 Netzbilanz und
+M3-Replay sollen entsprechend ueber die Telemetrie-Form
+vergleichen, nicht ueber den Roh-Snapshot-Wert.
+
 Decimal-Localcontext-Wrapper (Welle-2-Review M-2 / Welle-3-
 Review M-3) spiegelt — Tick-Body in
 `with _device_decimal_context()`.
