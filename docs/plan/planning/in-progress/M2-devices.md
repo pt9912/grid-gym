@@ -1,24 +1,23 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
 **Status:** In Progress — Welle 0/1/2/3 abgeschlossen am
-2026-05-18, Welle 4a am 2026-05-19. Welle 0a/0b/0c (`3322cb8`,
-`1f19996`, `ee37f36`, `314f853`) + Welle-0-Review-Fixes
-(`d490905` / `51a5f4e` / `6d39c7a` / `df99d97` / `6e108d6`),
-Welle 1 (`b927e7a`) + Welle-1-Review-Folge (`88252f1` /
-`9a61823` / `129c137` / `a6c912c` / `6e108d6`), Welle 2
-(`6247228` / `48f0106` / `5866117` / `9a138c2`) +
-Welle-2-Review-Folge (`4600e79` / `eb09e9b` / `d7bc2d9` /
-`f4988ff` / `bd13882`), Welle 3a (`2abbd12`) + Welle 3b +
-Closure (`e5d3c9a`) + Welle-3-Review-Folge (`6cad963` /
-`ea875c3` / `60582e7` / `45a9be6` / `b4e3ce7`), Welle 4a
-(`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` / `1ed976a` /
-`7ad78e4` / `bdce682`). Default-`make gates` cache-frei gruen
-ohne `CRITICAL_COV_TARGETS`-Override. Naechster Schritt ist
-Welle 4b (`SmartMeter`, `GG-DEV-014` + Welle-4-Closure) —
-Welle 4 ist pre-Start in 4a (`GridConnection`) + 4b
-(`SmartMeter` + Closure) sub-gesliced; zwei separate ADRs
-0017 + 0018 statt einer geteilten (siehe §3 Welle 4).
-M1-Spine
+2026-05-18, Welle 4 (4a + 4b + Closure) am 2026-05-19.
+Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`, `314f853`) +
+Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
+`df99d97` / `6e108d6`), Welle 1 (`b927e7a`) + Welle-1-Review-
+Folge (`88252f1` / `9a61823` / `129c137` / `a6c912c` /
+`6e108d6`), Welle 2 (`6247228` / `48f0106` / `5866117` /
+`9a138c2`) + Welle-2-Review-Folge (`4600e79` / `eb09e9b` /
+`d7bc2d9` / `f4988ff` / `bd13882`), Welle 3a (`2abbd12`) +
+Welle 3b + Closure (`e5d3c9a`) + Welle-3-Review-Folge
+(`6cad963` / `ea875c3` / `60582e7` / `45a9be6` / `b4e3ce7`),
+Welle 4a (`b73b44a`) + Welle-4a-Review-Folge (`579cd5a` /
+`1ed976a` / `7ad78e4` / `bdce682`), Welle 4b (`94efb2a`) +
+Welle-4b-Review-Folge (`1093b2c` / `bc94a8c` / `d3769dc` /
+`85dced7`). Default-`make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
+alle fuenf MVP-Geraete). Naechster Schritt ist **Welle 5
+(Netzbilanzmodell, `GG-GRID-001..004`)**. M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -672,7 +671,31 @@ Single-Source-of-Truth).
   Pattern). 484 → ~540 Unit-Tests (analog Welle 3b: +40..+60
   Tests).
 
-#### Welle 4b — SmartMeter (`GG-DEV-014`) + ADR 0018 (Provisional) + Welle-4-Closure (1/2 Tag)
+#### Welle 4b — SmartMeter (`GG-DEV-014`) + ADR 0018 (Accepted) + Welle-4-Closure (`Done` 2026-05-19)
+
+**Abgeschlossen.** Commits: `94efb2a` (Welle-4b-Erstwurf +
+ADR 0018 Proposed) plus Welle-4b-Review-Folge `1093b2c`
+(H-1 power_kw-Pflicht), `bc94a8c` (M-1 + M-3 Doku), `d3769dc`
+(M-2 typed-Error-Wrap), `85dced7` (L-1 + L-2 + L-4 Style),
+plus Welle-4-Closure-Commit (ADR 0017 → Accepted, ADR 0018
+→ Accepted, §1 Status-Sync auf Welle 5).
+
+**Belege:**
+
+- 605 Unit-Tests gruen (vorher 545 → +58 SmartMeter-Erstwurf
+  → +2 Welle-4b-Review-Tests = 605).
+- `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt
+  jetzt alle fuenf MVP-Geraete: `battery`, `pv`, `load`,
+  `grid_connection`, `smart_meter`).
+- ADR 0018 `Proposed → Accepted` (direkt; ADR 0017 parallel
+  `Provisional → Accepted`).
+- Welle-4b-Review-Befund: 0 Crit / 1 High / 4 Med / 4 Low /
+  3 Info; alle Crit/High/Med + 3 Low adressiert, M-4/L-3 als
+  Reviewer-empfohlene Skips offen (Pattern-Konsistenz mit
+  Welle 4a bzw. Folge-Welle), Info-only nicht adressiert.
+
+**Lieferung im Repo:**
 
 - `hexagon/core/devices/smart_meter/` (Struktur analog 4a):
   - `config.py` — `SmartMeterConfig` Frozen-Dataclass mit

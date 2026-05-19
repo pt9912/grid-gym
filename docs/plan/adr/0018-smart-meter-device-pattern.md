@@ -1,7 +1,31 @@
 # ADR 0018 — SmartMeter-Aggregator-Pattern (M2 Welle 4b)
 
-**Status:** Proposed
+**Status:** Accepted — Validierung mit M2-Welle-4b-PR-Merge
+(Commit `94efb2a`): 603 Unit-Tests gruen (vorher 545, +58
+SmartMeter-Tests), `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override; Welle-4b-Review-Folge
+(`1093b2c` / `bc94a8c` / `d3769dc` / `85dced7`) hat
+H-1/M-1..M-3/L-1/L-2/L-4 adressiert (605 Unit-Tests Endstand).
+Welle-4-Closure synchron mit folgendem Plan-Sync-Commit.
 **Datum:** 2026-05-19
+**Status geaendert am:** 2026-05-19 — `Proposed → Accepted`
+(direkt, kein Provisional-Zwischenschritt; ADR 0006 §2 erlaubt
+Sprung wenn der Validierungs-Spike Pflicht-Bestandteil des
+Welle-PR-Merges ist).
+**Geschaerft am:** 2026-05-19 (Pre-Implementation, Commit
+`3cabe83` zusammen mit ADR 0017) — §§2.3/2.4 `Quality.UNKNOWN`
+→ `Quality.MISSING` (UNKNOWN existiert nicht im `Quality`-Enum;
+MISSING traegt die „Daten fehlen"-Semantik); §2.4 Punkt 5
+Telemetrie-Liste von 2 auf 1 Punkt reduziert (`command_status`
+ist String, `TelemetryPoint.value` ist `Decimal`).
+**Erneut geschaerft am:** 2026-05-19 (Welle-4b-Review-Folge,
+Commit `1093b2c`) — §2.2 `aggregate_metric_name`-Pflicht in
+Welle 4b auf `"power_kw"` ausgeschaerft (Telemetrie-Hardcoding
+in `model.py`; Welle 5+ aktiviert die Forward-Looking-
+Erweiterung mit dynamischer Emission). Schaerfung folgt
+`ADR 0011`-Pattern (parallele Schaerfung ohne Supersedes — der
+Entscheidungs-Kern in §§2.1/2.3/2.4/2.6/2.7/2.8 ist
+unveraendert).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (`DeviceModel`-Protocol,
 das `SmartMeterDevice` implementiert — diese ADR aendert das

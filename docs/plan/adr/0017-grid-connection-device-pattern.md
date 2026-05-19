@@ -1,14 +1,15 @@
 # ADR 0017 — GridConnection-Anschlusspunkt-Pattern (M2 Welle 4a)
 
-**Status:** Provisional — Validierung erfolgt mit M2-Welle-4a-
+**Status:** Accepted — Validierung erfolgt mit M2-Welle-4a-
 PR-Merge (`b73b44a`): 543 Unit-Tests gruen (vorher 484, +59
 GridConnection-Tests), `make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override; Welle-4a-Review-Folge (`579cd5a`
 / `1ed976a` / `7ad78e4` / `bdce682`) hat H-1/M-1..M-5/L-3/L-4
-adressiert (545 Unit-Tests Endstand). Schaerfung auf `Accepted`
-mit Welle-4b-Closure.
+adressiert. Welle-4-Closure (zusammen mit ADR 0018, folgender
+Plan-Sync-Commit) hebt Status auf `Accepted`.
 **Datum:** 2026-05-19
-**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`
+(Welle 4a-Merge); `Provisional → Accepted` (Welle-4-Closure).
 **Geschaerft am:** 2026-05-19 (vor-Implementierungs-Schaerfung,
 Commit `3cabe83`) — §2.5 Telemetrie-Liste von 4 auf 3 Punkte
 reduziert (`command_status` ist String, `TelemetryPoint.value`
