@@ -28,14 +28,29 @@ Stochastik, ueberlappende Same-Device-Events (Stack-Restore).
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation, localcontext
 from typing import Final
 
 from grid_gym.hexagon.core.errors import GridGymError
 
 _ZERO = Decimal(0)
+_LOADS_DECIMAL_PRECISION: Final[int] = 28
+
+
+@contextmanager
+def _loads_decimal_context() -> Iterator[None]:
+    """Decimal-Localcontext-Wrapper (Welle-5b-Review M-2):
+    `Decimal(<string>)` haengt am thread-globalen Caller-Kontext.
+    Eine Aufrufer-Umgebung mit reduzierter Praezision wuerde lange
+    Decimal-Strings stumm verlieren; der Wrapper pinnt `prec=28`
+    + `ROUND_HALF_EVEN` analog `bilanz.py::_grid_model_decimal_context`."""
+    with localcontext() as ctx:
+        ctx.prec = _LOADS_DECIMAL_PRECISION
+        ctx.rounding = ROUND_HALF_EVEN
+        yield
 
 
 # ---------------------------------------------------------------------------
@@ -175,7 +190,7 @@ _CSV_REQUIRED_FIELDS: Final[tuple[str, ...]] = (
     "tick_ms",
     "tick_values",
 )
-_CSV_MIN_LINES: Final[int] = 2  # header + one data row
+_CSV_REQUIRED_LINES: Final[int] = 2  # header + exactly one data row
 
 
 def parse_csv_profile(text: str) -> LoadProfile:
@@ -197,8 +212,12 @@ def parse_csv_profile(text: str) -> LoadProfile:
     if not isinstance(text, str):
         raise LoadProfileTypeError("text", "str", type(text).__name__)
     lines = text.strip().splitlines()
-    if len(lines) < _CSV_MIN_LINES:
-        raise LoadProfileTypeError("csv", "header + >=1 data row", f"{len(lines)} lines")
+    # Welle-5b-Review H-1: exakt 2 Zeilen (Header + 1 Data-Row).
+    # Multi-Row-Input wird abgewiesen, statt stillschweigend nur
+    # die erste Datenzeile zu nehmen — Welle 5b haelt nur Single-
+    # Row-CSV. Multi-Row ist Welle-5+/M3-Erweiterung.
+    if len(lines) != _CSV_REQUIRED_LINES:
+        raise LoadProfileTypeError("csv", "exactly header + 1 data row", f"{len(lines)} lines")
     header_cells = [cell.strip() for cell in lines[0].split(",")]
     if header_cells != list(_CSV_REQUIRED_FIELDS):
         raise LoadProfileMissingFieldError(",".join(_CSV_REQUIRED_FIELDS))
@@ -215,8 +234,11 @@ def parse_csv_profile(text: str) -> LoadProfile:
     tick_value_strs = [v.strip() for v in tick_values_str.split(";") if v.strip()]
     if not tick_value_strs:
         raise LoadProfileEmptyError
+    # Welle-5b-Review M-2: localcontext-Wrapper schuetzt vor
+    # Caller-Praezisions-Verlust.
     try:
-        tick_values = tuple(Decimal(v) for v in tick_value_strs)
+        with _loads_decimal_context():
+            tick_values = tuple(Decimal(v) for v in tick_value_strs)
     except InvalidOperation as err:
         raise LoadProfileTypeError(
             "tick_values", "Decimal-strings (';'-separated)", tick_values_str

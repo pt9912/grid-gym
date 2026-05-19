@@ -261,6 +261,30 @@ def test_parse_csv_non_str_input_rejected() -> None:
         parse_csv_profile(b"binary")  # type: ignore[arg-type]
 
 
+def test_parse_csv_multi_data_row_rejected() -> None:
+    """Welle-5b-Review H-1: CSV-Multi-Row darf nicht stillschweigend
+    nur die erste Datenzeile nehmen — Welle 5b haelt exakt
+    Header + 1 Data-Row. Multi-Row ist Welle-5+/M3."""
+    text = "target_device_id,tick_ms,tick_values\nload-1,1000,1.5\nload-2,1000,2.0\n"
+    with pytest.raises(LoadProfileTypeError) as exc_info:
+        parse_csv_profile(text)
+    assert "exactly" in str(exc_info.value).lower() or "1 data row" in str(exc_info.value)
+
+
+def test_parse_csv_decimal_robust_against_caller_low_precision() -> None:
+    """Welle-5b-Review M-2: parse_csv_profile soll auch in einem
+    Caller-Kontext mit niedriger Decimal-Precision verlustfrei
+    parsen (localcontext-Wrapper)."""
+    from decimal import localcontext as caller_localcontext
+
+    text = "target_device_id,tick_ms,tick_values\nload-1,1000,1.123456789012345678901234\n"
+    with caller_localcontext() as ctx:
+        ctx.prec = 4  # bewusst zu niedrig
+        profile = parse_csv_profile(text)
+    # Volle 24 Nachkomma-Stellen erhalten (prec=28 im Wrapper).
+    assert profile.tick_values[0] == Decimal("1.123456789012345678901234")
+
+
 # ---------------------------------------------------------------------------
 # parse_json_profile — String-Pfad (ADR 0020 §2.4)
 # ---------------------------------------------------------------------------
