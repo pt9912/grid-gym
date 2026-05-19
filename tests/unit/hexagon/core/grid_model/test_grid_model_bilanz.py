@@ -40,14 +40,13 @@ from grid_gym.hexagon.core.errors import (
     WrongTypeError,
 )
 from grid_gym.hexagon.core.grid_model import (
+    CONFIG_FIELD_NAMES,
     GridModelBilanz,
     GridModelConfig,
     GridModelConfigInvalidValueError,
     GridModelSnapshot,
-    SNAPSHOT_VERSION,
-)
-from grid_gym.hexagon.core.grid_model.snapshot import (
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
+    SNAPSHOT_VERSION,
 )
 
 
@@ -140,6 +139,14 @@ def test_clamp_inverted_rejected() -> None:
 def test_voltage_clamp_min_above_nominal_rejected() -> None:
     with pytest.raises(GridModelConfigInvalidValueError):
         _config(voltage_clamp_min_v=Decimal("450"))
+
+
+def test_float_value_rejected() -> None:
+    """Welle-5a-Review M-4: GG-DATA-005 no-float — direkter
+    Konstruktor-Pfad muss float ablehnen, nicht nur Wertebereich."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(nominal_frequency_hz=50.0)  # type: ignore[arg-type]
+    assert "Decimal" in str(exc_info.value)
 
 
 # ---------------------------------------------------------------------------

@@ -66,6 +66,27 @@ class GridModelConfig:
     voltage_clamp_max_v: Decimal
 
     def __post_init__(self) -> None:
+        # Welle-5a-Review M-4: Decimal-Typ-Pruefung an allen
+        # Direkt-Konstruktor-Pfaden (`from_dict` ist via
+        # `assert_decimal` bereits geschuetzt; YAML-Adapter und
+        # Test-Helper koennen jedoch float-Werte einschleichen).
+        # GG-DATA-005 no-float-Invariante: kein float an
+        # Datengrenzen.
+        for field_name in (
+            "nominal_frequency_hz",
+            "frequency_sensitivity_hz_per_kw",
+            "frequency_clamp_min_hz",
+            "frequency_clamp_max_hz",
+            "nominal_voltage_v",
+            "voltage_sensitivity_v_per_kw",
+            "voltage_clamp_min_v",
+            "voltage_clamp_max_v",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, Decimal):
+                raise GridModelConfigInvalidValueError(
+                    field_name, value, f"Decimal (got {type(value).__name__})"
+                )
         if self.nominal_frequency_hz <= _ZERO:
             raise GridModelConfigInvalidValueError(
                 "nominal_frequency_hz", self.nominal_frequency_hz, "> 0"

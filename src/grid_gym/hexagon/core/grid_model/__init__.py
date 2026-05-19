@@ -27,12 +27,20 @@ from grid_gym.hexagon.core.grid_model.config import (
     GridModelConfigInvalidValueError,
 )
 from grid_gym.hexagon.core.grid_model.snapshot import (
+    CONFIG_FIELD_NAMES,
+    MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
     SNAPSHOT_VERSION,
+    SUBSYSTEM,
     GridModelSnapshot,
 )
 
+# Welle-5a-Review L-1: Welle-4a-Review-L-3-Pattern (Single-Source-
+# of-Truth-Konstanten an der obersten Modul-Schnittstelle).
 __all__ = [
+    "CONFIG_FIELD_NAMES",
+    "MODEL_KIND_SIMPLIFIED_PROPORTIONAL",
     "SNAPSHOT_VERSION",
+    "SUBSYSTEM",
     "GridModelBilanz",
     "GridModelConfig",
     "GridModelConfigError",
