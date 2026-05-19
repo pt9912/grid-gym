@@ -45,6 +45,8 @@ from grid_gym.hexagon.core.grid_model import (
     GridModelConfig,
     GridModelConfigInvalidValueError,
     GridModelSnapshot,
+    LoadEvent,
+    LoadProfile,
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
     SNAPSHOT_VERSION,
 )
@@ -353,12 +355,14 @@ _EXPECTED_TOP_LEVEL_KEYS = frozenset(
         "current_voltage_v",
         "last_imbalance_kw",
         "clamp_event_count",
+        "active_load_events",
+        "active_load_profiles",
     }
 )
 """Welle-5a-Review L-3: Test-eigene Single-Source-of-Truth fuer
-die Top-Level-Snapshot-Keys (parallel zu `_TOP_KEYS` in
-snapshot.py). Welle 5b ergaenzt hier `active_load_events`
-+ `active_load_profiles`."""
+die Top-Level-Snapshot-Keys (parallel zu `_V2_TOP_KEYS` in
+snapshot.py). Welle 5b ergaenzt `active_load_events`
++ `active_load_profiles` (Snapshot v1→v2)."""
 
 
 def test_snapshot_carries_required_fields() -> None:
@@ -554,3 +558,194 @@ def test_clamp_count_monotone_property(seed_kw: int) -> None:
         current = bilanz.clamp_event_count
         assert current >= last
         last = current
+
+
+# ---------------------------------------------------------------------------
+# Welle-5b: Snapshot v1 -> v2 Backward-Compat + LoadEvents/Profiles
+# (ADR 0020 §2.5 / §2.6)
+# ---------------------------------------------------------------------------
+
+
+def _sample_event() -> LoadEvent:
+    return LoadEvent(
+        start_s=Decimal("10"),
+        duration_s=Decimal("5"),
+        target_device_id="load-1",
+        power_kw=Decimal("2.5"),
+    )
+
+
+def _sample_profile() -> LoadProfile:
+    return LoadProfile(
+        target_device_id="load-2",
+        tick_values=(Decimal("1.0"), Decimal("1.5"), Decimal("2.0")),
+        tick_ms=1000,
+    )
+
+
+def test_bilanz_default_active_lists_are_empty() -> None:
+    """ADR 0019 §2.6 + ADR 0020 §2.5: ohne explizite Argumente
+    haelt Bilanz leere LoadEvent/Profile-Tupel."""
+    bilanz = GridModelBilanz(config=_config())
+    assert bilanz.active_load_events == ()
+    assert bilanz.active_load_profiles == ()
+
+
+def test_bilanz_constructor_accepts_events_and_profiles() -> None:
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_events=(_sample_event(),),
+        active_load_profiles=(_sample_profile(),),
+    )
+    assert bilanz.active_load_events == (_sample_event(),)
+    assert bilanz.active_load_profiles == (_sample_profile(),)
+
+
+def test_snapshot_v2_emits_version_two() -> None:
+    """ADR 0020 §2.5: Welle 5b emittiert ausschliesslich v2-
+    Snapshots (kein Down-Grade auf v1)."""
+    bilanz = GridModelBilanz(config=_config())
+    state = bilanz.snapshot()
+    assert state["version"] == 2
+    assert SNAPSHOT_VERSION == 2
+
+
+def test_snapshot_v2_serializes_events_as_list_of_mappings() -> None:
+    """ADR 0020 §2.5: active_load_events/profiles als Liste von
+    Mappings (canonical-kompatibel, keine Dataclass-Objekte)."""
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_events=(_sample_event(),),
+        active_load_profiles=(_sample_profile(),),
+    )
+    state = bilanz.snapshot()
+    events = state["active_load_events"]
+    assert isinstance(events, list)
+    assert len(events) == 1
+    event_mapping = events[0]
+    assert isinstance(event_mapping, dict)
+    assert event_mapping["target_device_id"] == "load-1"
+
+    profiles = state["active_load_profiles"]
+    assert isinstance(profiles, list)
+    profile_mapping = profiles[0]
+    assert isinstance(profile_mapping, dict)
+    assert profile_mapping["target_device_id"] == "load-2"
+    assert isinstance(profile_mapping["tick_values"], list)
+
+
+def test_snapshot_v2_roundtrip_with_events_and_profiles() -> None:
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_events=(_sample_event(),),
+        active_load_profiles=(_sample_profile(),),
+    )
+    bilanz.update(
+        generation_kw=Decimal("3"),
+        load_kw=Decimal("1"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("-1"),
+    )
+    state = bilanz.snapshot()
+    restored = GridModelBilanz.from_snapshot(state)
+    assert restored == bilanz
+    assert restored.active_load_events == (_sample_event(),)
+    assert restored.active_load_profiles == (_sample_profile(),)
+
+
+def test_from_dict_v1_backward_compat_reads_empty_lists() -> None:
+    """ADR 0020 §2.6: v1-Snapshots (Welle-5a-Stand, ohne
+    LoadEvents/Profiles) bleiben roundtrip-faehig; v1-Read
+    liefert leere Tupel."""
+    bilanz_v2 = GridModelBilanz(config=_config())
+    state_v2 = dict(bilanz_v2.snapshot())
+
+    # v1-Snapshot konstruieren: version=1 + entfernte Welle-5b-Felder.
+    state_v1 = {
+        k: v for k, v in state_v2.items() if k not in {"active_load_events", "active_load_profiles"}
+    }
+    state_v1["version"] = 1
+
+    restored = GridModelSnapshot.from_dict(state_v1)
+    assert restored.version == 1
+    assert restored.active_load_events == ()
+    assert restored.active_load_profiles == ()
+
+
+def test_from_dict_v1_to_v2_write_upgrade() -> None:
+    """ADR 0020 §2.6: v1-Read → v2-Write (kein Down-Grade).
+    Nach from_dict eines v1-Snapshots emittiert die Bilanz beim
+    naechsten snapshot() bereits v2."""
+    bilanz_v2 = GridModelBilanz(config=_config())
+    state_v2 = dict(bilanz_v2.snapshot())
+    state_v1 = {
+        k: v for k, v in state_v2.items() if k not in {"active_load_events", "active_load_profiles"}
+    }
+    state_v1["version"] = 1
+
+    restored = GridModelBilanz.from_snapshot(state_v1)
+    new_state = restored.snapshot()
+    assert new_state["version"] == 2
+    assert new_state["active_load_events"] == []
+    assert new_state["active_load_profiles"] == []
+
+
+def test_from_dict_unsupported_version_three_rejected() -> None:
+    """Nur v1 und v2 sind in Welle 5b zugelassen."""
+    bilanz = GridModelBilanz(config=_config())
+    state = dict(bilanz.snapshot())
+    state["version"] = 3
+    with pytest.raises(VersionError):
+        GridModelSnapshot.from_dict(state)
+
+
+def test_from_dict_v2_missing_load_events_key_rejected() -> None:
+    """ADR 0020 §2.6: v2-Read verlangt active_load_events Pflicht."""
+    bilanz = GridModelBilanz(config=_config())
+    state = dict(bilanz.snapshot())
+    del state["active_load_events"]
+    with pytest.raises(MissingKeysError):
+        GridModelSnapshot.from_dict(state)
+
+
+def test_from_dict_v2_non_list_load_events_rejected() -> None:
+    bilanz = GridModelBilanz(config=_config())
+    state = dict(bilanz.snapshot())
+    state["active_load_events"] = "not-a-list"
+    with pytest.raises(WrongTypeError):
+        GridModelSnapshot.from_dict(state)
+
+
+def test_from_dict_v2_invalid_load_event_reraises_as_wrong_type() -> None:
+    """Welle-5b: LoadEvent-Invariant-Verletzung in Snapshot wird zu
+    `WrongTypeError(subsystem='grid_model')` ueberfuehrt (Welle-3-
+    Review-L-1 / Welle-4b-Review-M-2-Pattern)."""
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_events=(_sample_event(),),
+    )
+    state = dict(bilanz.snapshot())
+    events_raw = state["active_load_events"]
+    assert isinstance(events_raw, list)
+    bad_event = dict(events_raw[0])
+    bad_event["duration_s"] = Decimal("0")  # Invariant-Verletzung
+    state["active_load_events"] = [bad_event]
+    with pytest.raises(WrongTypeError) as exc_info:
+        GridModelSnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "grid_model"
+
+
+def test_from_dict_v2_invalid_load_profile_reraises_as_wrong_type() -> None:
+    bilanz = GridModelBilanz(
+        config=_config(),
+        active_load_profiles=(_sample_profile(),),
+    )
+    state = dict(bilanz.snapshot())
+    profiles_raw = state["active_load_profiles"]
+    assert isinstance(profiles_raw, list)
+    bad_profile = dict(profiles_raw[0])
+    bad_profile["tick_ms"] = 0  # Invariant-Verletzung
+    state["active_load_profiles"] = [bad_profile]
+    with pytest.raises(WrongTypeError) as exc_info:
+        GridModelSnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "grid_model"

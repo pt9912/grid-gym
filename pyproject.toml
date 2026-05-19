@@ -206,6 +206,10 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # — das uebersteigt regelmaessig die `max-public-methods=12`-Schwelle.
 # Per-File-Ignore statt cargo-cult-noqa pro Klasse (Welle-3-Review L-5).
 "src/grid_gym/hexagon/core/devices/*/model.py" = ["PLR0904"]
+# GridModelBilanz traegt analog zur Geraete-API eine breite Property-/
+# Methoden-Surface (Welle-5b-Erweiterung um active_load_events +
+# active_load_profiles bringt die Zahl ueber den Default-Schwellenwert).
+"src/grid_gym/hexagon/core/grid_model/bilanz.py" = ["PLR0904"]
 
 # ---------------------------------------------------------------------------
 # mypy --strict (ADR 0005)

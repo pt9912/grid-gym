@@ -26,6 +26,16 @@ from grid_gym.hexagon.core.grid_model.config import (
     GridModelConfigError,
     GridModelConfigInvalidValueError,
 )
+from grid_gym.hexagon.core.grid_model.loads import (
+    LoadEvent,
+    LoadProfile,
+    LoadProfileEmptyError,
+    LoadProfileFormatError,
+    LoadProfileMissingFieldError,
+    LoadProfileTypeError,
+    parse_csv_profile,
+    parse_json_profile,
+)
 from grid_gym.hexagon.core.grid_model.snapshot import (
     CONFIG_FIELD_NAMES,
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
@@ -34,8 +44,9 @@ from grid_gym.hexagon.core.grid_model.snapshot import (
     GridModelSnapshot,
 )
 
-# Welle-5a-Review L-1: Welle-4a-Review-L-3-Pattern (Single-Source-
-# of-Truth-Konstanten an der obersten Modul-Schnittstelle).
+# Welle-5a-Review L-1 + Welle 5b: Welle-4a-Review-L-3-Pattern
+# (Single-Source-of-Truth-Konstanten an der obersten Modul-
+# Schnittstelle) + Welle-5b-Load-API-Exports.
 __all__ = [
     "CONFIG_FIELD_NAMES",
     "MODEL_KIND_SIMPLIFIED_PROPORTIONAL",
@@ -46,4 +57,12 @@ __all__ = [
     "GridModelConfigError",
     "GridModelConfigInvalidValueError",
     "GridModelSnapshot",
+    "LoadEvent",
+    "LoadProfile",
+    "LoadProfileEmptyError",
+    "LoadProfileFormatError",
+    "LoadProfileMissingFieldError",
+    "LoadProfileTypeError",
+    "parse_csv_profile",
+    "parse_json_profile",
 ]

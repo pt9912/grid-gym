@@ -44,6 +44,7 @@ from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Self, override
 
 from grid_gym.hexagon.core.grid_model.config import GridModelConfig
+from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.grid_model.snapshot import (
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
     SNAPSHOT_VERSION,
@@ -66,7 +67,12 @@ def _grid_model_decimal_context() -> Iterator[None]:
 class GridModelBilanz:
     """Netzbilanzmodell — Single-Instance, kein DeviceModel."""
 
-    def __init__(self, config: GridModelConfig) -> None:
+    def __init__(
+        self,
+        config: GridModelConfig,
+        active_load_events: tuple[LoadEvent, ...] = (),
+        active_load_profiles: tuple[LoadProfile, ...] = (),
+    ) -> None:
         self._config: GridModelConfig = config
         # ADR 0019 §2.6: nach __init__ ist Equilibrium-Zustand
         # (imbalance == 0; Frequenz/Spannung auf Nennwert).
@@ -75,6 +81,11 @@ class GridModelBilanz:
         self._last_imbalance_kw: Decimal = _ZERO
         self._clamp_event_count: int = 0
         self._model_kind: str = MODEL_KIND_SIMPLIFIED_PROPORTIONAL
+        # Welle 5b (ADR 0020 §2.5): passive State, der vom
+        # TickLoop in Welle 6 in LoadDevice.apply_command-Aufrufe
+        # uebersetzt wird. update() konsumiert ihn nicht.
+        self._active_load_events: tuple[LoadEvent, ...] = active_load_events
+        self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
 
     @property
     def config(self) -> GridModelConfig:
@@ -99,6 +110,14 @@ class GridModelBilanz:
     @property
     def model_kind(self) -> str:
         return self._model_kind
+
+    @property
+    def active_load_events(self) -> tuple[LoadEvent, ...]:
+        return self._active_load_events
+
+    @property
+    def active_load_profiles(self) -> tuple[LoadProfile, ...]:
+        return self._active_load_profiles
 
     def update(
         self,
@@ -187,6 +206,8 @@ class GridModelBilanz:
             current_voltage_v=self._current_voltage_v,
             last_imbalance_kw=self._last_imbalance_kw,
             clamp_event_count=self._clamp_event_count,
+            active_load_events=self._active_load_events,
+            active_load_profiles=self._active_load_profiles,
         )
         return snap.to_dict()
 
@@ -195,7 +216,11 @@ class GridModelBilanz:
         """Rekonstruiert eine `GridModelBilanz` aus einem
         Snapshot (ADR 0019 §2.5/§2.6 self-sufficient)."""
         snap = GridModelSnapshot.from_dict(state)
-        bilanz = cls(config=snap.config)
+        bilanz = cls(
+            config=snap.config,
+            active_load_events=snap.active_load_events,
+            active_load_profiles=snap.active_load_profiles,
+        )
         bilanz._current_frequency_hz = snap.current_frequency_hz
         bilanz._current_voltage_v = snap.current_voltage_v
         bilanz._last_imbalance_kw = snap.last_imbalance_kw
@@ -214,6 +239,8 @@ class GridModelBilanz:
             and self._last_imbalance_kw == other._last_imbalance_kw
             and self._clamp_event_count == other._clamp_event_count
             and self._model_kind == other._model_kind
+            and self._active_load_events == other._active_load_events
+            and self._active_load_profiles == other._active_load_profiles
         )
 
     @override
@@ -226,6 +253,8 @@ class GridModelBilanz:
                 self._last_imbalance_kw,
                 self._clamp_event_count,
                 self._model_kind,
+                self._active_load_events,
+                self._active_load_profiles,
             )
         )
 
