@@ -21,9 +21,12 @@ Welle 5 (5a + 5b + Closure) am 2026-05-19 abgeschlossen:
 Welle 5a (`268a1c0`) + Welle-5a-Review-Folge (`676f684` /
 `16f8b9b` / `91e0118` / `1af57b8`); Welle 5b (`fa02c0b`)
 + Welle-5b-Review-Folge (`5f64f78` / `47c054a` / `12ad8f9` /
-`e5f8f86` / `29d23bb`). Naechster Schritt ist **Welle 6
-(TickLoop-Integration + Demo-Szenario + ADR 0015 Envelope
-v1→v2)**. M1-Spine
+`e5f8f86` / `29d23bb`). Naechster Schritt ist **Welle 6a
+(TickLoop-Device-Iteration + grid_model + SnapshotEnvelope
+v1→v2)** — Welle 6 ist pre-Start in 6a (TickLoop + Envelope)
++ 6b (Scenario-Loader + LoadEvent/Profile-Wiring + GridConn-
+Auto-Schluss) + 6c (MVP-Demo + Closure) sub-gesliced; ADR 0015
+ist Pre-Start-ADR fuer 6a (siehe §3 Welle 6). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -976,52 +979,67 @@ Pattern), plus Welle-5-Closure-Commit (ADR 0019 + ADR 0020
   Inkrement (~30..60 neue Tests fuer LoadEvent/LoadProfile/
   CSV-JSON-Loader).
 
-### Welle 6 — TickLoop-Integration + Scenario (1 Tag)
+### Welle 6 — TickLoop-Integration + Scenario + MVP-Demo
 
-- `TickLoop.tick()`:
+**Sub-Slicing-Entscheidung (Pre-Start, 2026-05-19):** Welle 6
+ist vor dem Start in **6a (TickLoop-Device-Iteration + grid_model
++ SnapshotEnvelope v1→v2) + 6b (Scenario-Loader-Device-Factory
++ LoadEvent/LoadProfile-Wiring + GridConnection-Auto-Schluss)
++ 6c (MVP-Demo-Szenario + E2E-Tests + Welle-7-Closure-
+Vorbereitung)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
+**klar**:
+
+- **Drei verschiedene Concerns**: 6a ist Simulation-Core-
+  Verdrahtung (TickLoop + Snapshot-Envelope), 6b ist Scenario-
+  Adapter-Erweiterung (Device-Factory + Event-/Profile-
+  Wiring), 6c ist E2E-Demo (`make test-integration` +
+  `mvp_demo.yaml`).
+- **Drei verschiedene `make`-Gates**: 6a + 6b nutzen
+  `test-unit` + `coverage-gate-critical`; 6c laeuft zusaetzlich
+  ueber `test-integration` mit Postgres-Roundtrip — anderer
+  Gate-Stack, anderer Review-Fokus.
+- **Drei verschiedene ADRs/Schema-Brueche**: 6a fuehrt
+  `ADR 0015` (Envelope v1→v2 mit typisiertem Reject) ein; 6b
+  erweitert ggf. `ADR 0014` (Battery-Snapshot) implizit ueber
+  die TickLoop-Verdrahtung; 6c ist `ADR-frei`, aber bringt
+  Lastenheft-`GG-MVP-002`-Akzeptanz mechanisch.
+- **Sub-Wellen sind aufeinander aufbauend**: 6a liefert die
+  TickLoop-Surface, die 6b mit Scenario-Daten fuettert; 6c
+  konsumiert die kombinierte 6a+6b-Surface. Sequenzieller
+  Pfad, kein paralleler.
+
+#### Welle 6a — TickLoop-Device-Iteration + grid_model-Update + Snapshot-Envelope v1→v2 + ADR 0015 (Proposed)
+
+- **`TickLoop.tick()`-Erweiterung** (`hexagon/core/simulation/
+  tick_loop.py`):
   - Geraete werden in stabiler Reihenfolge aufgerufen
     (Scenario-Device-Definitionsreihenfolge ⇒ kanonische
-    Liste). Tie-Breaking-Vertrag dokumentiert in
-    `hexagon/core/simulation/tick_loop.py`.
+    Liste). Tie-Breaking-Vertrag dokumentiert; Property-Test
+    gegen Permutation der `ScenarioDevice`-Eingabereihenfolge
+    (analog Welle-3-Scheduler-Property aus M1).
   - `TickResult.emitted_telemetry` ist befuellt mit
-    deterministisch nach
-    `(device_id, metric, sequence)` sortierten Tupeln.
-- `TickLoop.snapshot()` haengt Sub-Snapshots in
-  `SnapshotEnvelope.sub_snapshots` zusammen:
-  - `devices.<device_id>` je Geraete-Instanz (Welle 2..4 plus
-    PV/Load aus Welle 3),
-  - `grid_model` (Single-Instance) aus Welle 5 — Schluessel ohne
-    `devices.`-Praefix, weil `grid_model` kein Device ist.
-  Welle 6 verifiziert, dass alle sechs Snapshot-Quellen aus
-  Erfolgskriterium 6 zusammengefuehrt werden (5 Geraete +
-  Bilanzmodell).
-- `Scenario`-Loader (`hexagon/core/scenario/loader.py`) befuellt
-  konkrete Geraete-Instanzen (`BatteryDevice`, etc.) aus den
-  bisher nur als Mapping vorgehaltenen `ScenarioDevice`-
-  Definitionen (`GG-SCN-001`).
-- ADR 0014 `Battery`-Snapshot-Schema (`Provisional` → `Accepted`
-  synchron mit Welle 6-Merge) — strikt nach ADR-Erweiterungs-
-  Pattern, kein Supersedes.
-- `tests/integration/scenarios/mvp_demo.yaml` als End-to-End-
-  Szenario (`GG-MVP-002`-Pflicht) mit **`tick_ms=1000`** und
-  einer eingefrorenen Seed-Konstante in den Test-Helfern
-  (`M2_DEMO_SEED` in `tests/integration/_constants.py` oder
-  Conftest, Wert z. B. `0xC0FFEE`). `make test-integration`
-  startet das Szenario **zweimal** mit der gleichen Konstante
-  und verifiziert byte-identische
-  `TickResult.emitted_telemetry`-Folge ueber **mindestens 100
-  Ticks** (einheitlich mit Erfolgskriterium 4) plus
-  persistierte `runs`-Zeile. Zweite-Lauf-Pflicht schliesst die
-  Reproduzierbarkeits-Spalte fuer CI-Audits.
-- TickLoop-Geraete-Tick-Reihenfolge ist durch einen Property-
-  Test gegen Permutation der `ScenarioDevice`-Eingabereihenfolge
-  gesichert (analog Welle-3-Scheduler-Property aus M1).
-- **SnapshotEnvelope-Versionsschritt v1 → v2** (loest F-2 aus
-  Review-3): das Welle-6-Envelope-Mapping bekommt sechs neue
-  Sub-Snapshot-Keys (`devices.<id>` x 5 + `grid_model`); das
-  ist ein strukturierender Bruch zum M1-Welle-4-Envelope.
-  `SnapshotEnvelope.version` wird in Welle 6 von `1` auf `2`
-  gehoben.
+    deterministisch nach `(device_id, metric, sequence)`
+    sortierten Tupeln.
+  - `grid_model.update(...)`-Aufruf nach allen Device-Ticks
+    mit aggregierten Power-Werten. Pre-Grid-Restbilanz +
+    `grid_connection.power_kw`-Input gehen in
+    `imbalance_kw`-Berechnung (ADR 0019 §2.2).
+- **`TickLoop.snapshot()`-Erweiterung**:
+  - Sub-Snapshots in `SnapshotEnvelope.sub_snapshots`
+    zusammengefuehrt:
+    - `devices.<device_id>` je Geraete-Instanz (5 MVP-
+      Geraete: battery, pv, load, grid_connection, smart_meter).
+    - `grid_model` (Single-Instance) aus Welle 5 — Schluessel
+      ohne `devices.`-Praefix, weil `grid_model` kein Device
+      ist.
+  - Welle 6a verifiziert, dass alle sechs Snapshot-Quellen aus
+    Erfolgskriterium 6 zusammengefuehrt werden (5 Geraete +
+    Bilanzmodell).
+- **`SnapshotEnvelope`-Versionsschritt v1 → v2** (loest F-2
+  aus Review-3): das Welle-6a-Envelope-Mapping bekommt sechs
+  neue Sub-Snapshot-Keys; das ist ein strukturierender Bruch
+  zum M1-Welle-4-Envelope. `SnapshotEnvelope.version` wird
+  von `1` auf `2` gehoben.
   - **Pflicht-Verhalten:** `TickLoop.from_snapshot(envelope)`
     auf einem v1-Envelope wirft einen typisierten
     `SnapshotEnvelopeSchemaVersionError` (Subklasse der
@@ -1031,29 +1049,117 @@ Pattern), plus Welle-5-Closure-Commit (ADR 0019 + ADR 0020
     Slice abwarten (M6, `GG-PERSIST-*`)".
   - **Pflicht-Test:** `tests/unit/hexagon/core/simulation/
     test_snapshot_envelope_v1_to_v2.py` baut einen
-    v1-Envelope (Welle-4-M1-Format) und erwartet den
-    typisierten Fehler. Backward-Compat-Reader ist
-    out-of-scope (M6 `GG-PERSIST-*`-Migrations-Slice).
+    v1-Envelope und erwartet den typisierten Fehler.
+    Backward-Compat-Reader ist out-of-scope (M6
+    `GG-PERSIST-*`-Migrations-Slice).
 - ADR 0015 `SnapshotEnvelope`-Versions-Bump v1 → v2
-  (`Provisional` → `Accepted` synchron mit Welle 6-Merge):
-  dokumentiert den Bruch, fixiert den typisierten Fehler-
-  Vertrag, verweist auf M6 fuer Lese-Migrations-Pfade. Strikt
-  nach ADR-Erweiterungs-Pattern, kein Supersedes.
-- **Bypass-Strategie fuer Trusted-Source-Pfade** (Welle-0b-Review
-  M-5): die Welle-0a-Pflicht-Check `assert_payload_canonical_
-  compatible` in `SnapshotEnvelope.__post_init__` walked rekursiv
-  jeden Sub-Snapshot. Bei tiefen Geraete-Snapshots (z. B. Battery
+  (`Proposed` → `Provisional` mit Welle-6a-Commit; →
+  `Accepted` mit Welle-6c-Closure-Commit). Dokumentiert den
+  Bruch, fixiert den typisierten Fehler-Vertrag, verweist auf
+  M6 fuer Lese-Migrations-Pfade. Strikt nach ADR-Erweiterungs-
+  Pattern, kein Supersedes.
+- **Bypass-Strategie fuer Trusted-Source-Pfade** (Welle-0b-
+  Review M-5): die Welle-0a-Pflicht-Check
+  `assert_payload_canonical_compatible` in
+  `SnapshotEnvelope.__post_init__` walked rekursiv jeden
+  Sub-Snapshot. Bei tiefen Geraete-Snapshots (z. B. Battery
   mit langer Command-Historie) summiert sich das auf O(N) je
   Konstruktor-Aufruf, dazu noch O(N) beim spaeteren
-  `canonical_json`-Encoding. Fuer Trusted-Source-Pfade (Resume
-  aus einem zuvor byte-validierten Snapshot) ist die Pruefung
-  redundant. Welle 6 plant entweder einen optionalen
+  `canonical_json`-Encoding. Fuer Trusted-Source-Pfade
+  (Resume aus einem zuvor byte-validierten Snapshot) ist die
+  Pruefung redundant. Welle 6a plant entweder einen optionalen
   `_skip_payload_check=False`-Kwarg am Konstruktor oder einen
-  separaten `from_validated_mapping`-Classmethod-Pfad. Entscheidung
-  faellt mit ADR 0015; bis dahin bleibt der eager-Check
-  unkonditional.
-- **Gate-Status nach Welle 6**: `make fullbuild` gruen ohne
-  jeden Override.
+  separaten `from_validated_mapping`-Classmethod-Pfad.
+  Entscheidung faellt mit ADR 0015; bis dahin bleibt der
+  eager-Check unkonditional.
+- **Welle-6a-Gate-Status**: `make gates` cache-frei gruen
+  ohne `CRITICAL_COV_TARGETS`-Override (Default-Liste
+  unveraendert; TickLoop ist Default-Coverage seit M1).
+
+#### Welle 6b — Scenario-Loader-Device-Factory + LoadEvent/LoadProfile-Wiring + GridConnection-Auto-Schluss
+
+- **Scenario-Loader-Device-Factory** (`hexagon/core/scenario/
+  loader.py`-Erweiterung):
+  - Bisher hielt der Scenario-Loader `ScenarioDevice`-Mappings
+    als Daten; Welle 6b instantiiert daraus konkrete
+    `DeviceModel`-Implementationen (`BatteryDevice`, `PvDevice`,
+    `LoadDevice`, `SmartMeterDevice`, `GridConnectionDevice`).
+  - Factory-Dispatch nach `ScenarioDevice.type` — fehlende
+    Types liefern typisierten Fehler (Welle-2/3/4-Review-
+    Pattern).
+  - `GG-SCN-001`-Akzeptanz.
+- **LoadEvent/LoadProfile-Wiring zum TickLoop**:
+  - Scenario-YAML-Format-Erweiterung um `events:` und
+    `load_profiles:` Sektionen (`GG-GRID-003`/`004`-Pfade
+    aus Welle 5b).
+  - Scenario-Loader parst `events` zu `LoadEvent`-Tupel und
+    `load_profiles` zu `LoadProfile`-Tupel (via
+    `parse_csv_profile`/`parse_json_profile` aus
+    `grid_model/loads.py` — die Datei-I/O-Adapter-Schicht
+    liest die Profil-Dateien und reicht Text/Mapping durch).
+  - TickLoop konsumiert pro Tick aktive Events/Profiles und
+    uebersetzt sie in `LoadDevice.apply_command(set_power_kw,
+    value=...)`-Aufrufe (ADR 0020 §2.2 / §2.3).
+  - Restore nach Event-Ablauf: `set_power_kw(rated_power_kw)`
+    (ADR 0020 §2.2).
+- **GridConnection-Auto-Schluss** (ADR 0019 §6 / ADR 0017
+  §2.2):
+  - TickLoop berechnet `pre_grid_residual_kw = pv - load -
+    battery` und setzt `grid_connection.power_kw :=
+    -pre_grid_residual_kw` (Ideal-Schluss).
+  - Falls Scenario-Event den `grid_connection`-Wert manuell
+    setzt (z. B. `set_power_kw`-Command aus YAML-Event):
+    Manual-Path nimmt Vorrang; Auto-Schluss-Pfad wird
+    uebersprungen.
+  - Cap-Limit (`max_import_kw`/`max_export_kw`) bleibt durch
+    ADR 0017 §2.4 enforced — wenn der Auto-Schluss den Cap
+    sprengt, wird der Wert clamped und der Restposten geht
+    in die `imbalance_kw`-Berechnung (Frequenz/Spannungs-
+    Drift).
+- ADR 0014 `Battery`-Snapshot-Schema-Verweise im TickLoop-
+  Code (Welle-2-Closure hat ADR 0014 bereits `Accepted`
+  gemacht; Welle 6b ergaenzt nur die TickLoop-Verdrahtung).
+- **Welle-6b-Gate-Status**: `make gates` cache-frei gruen.
+  Test-Anzahl-Inkrement: ~30..60 neue Tests
+  (Scenario-Loader-Device-Factory + LoadEvent/Profile-Wiring
+  + GridConnection-Auto-Schluss).
+
+#### Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure
+
+- **`tests/integration/scenarios/mvp_demo.yaml`** als
+  End-to-End-Szenario (`GG-MVP-002`-Pflicht):
+  - `tick_ms=1000` (M1-Konsistenz, lesbar in CI).
+  - Eingefrorene Seed-Konstante in den Test-Helfern
+    (`M2_DEMO_SEED` in `tests/integration/_constants.py`
+    oder Conftest, Wert z. B. `0xC0FFEE`).
+  - 5 MVP-Geraete + `grid_model`-Bilanz + 1 Beispiel-
+    `LoadEvent` + 1 Beispiel-`LoadProfile`-Profil-Datei.
+- **`make test-integration`** startet das Szenario
+  **zweimal** mit der gleichen Konstante und verifiziert
+  byte-identische `TickResult.emitted_telemetry`-Folge ueber
+  **mindestens 100 Ticks** (einheitlich mit
+  Erfolgskriterium 4) plus persistierte `runs`-Zeile.
+  Zweite-Lauf-Pflicht schliesst die Reproduzierbarkeits-
+  Spalte fuer CI-Audits.
+- **TickLoop-Property-Test**: Permutation der
+  `ScenarioDevice`-Eingabereihenfolge erzeugt byte-identische
+  Telemetry (Welle-3-Scheduler-Property-Pattern).
+- **Welle-6-Closure-Bestandteile** (zusaetzlich zu 6c-Code):
+  - ADR 0015 (Envelope v1→v2) auf `Accepted` heben.
+  - `Status:`-Header im Slice-Plan auf "Welle 6
+    abgeschlossen" ziehen.
+  - `Naechster Schritt`: Welle 7 (Closure).
+- **Welle-6c-Gate-Status**: `make fullbuild` gruen ohne
+  jeden Override (M2-Erfolgskriterium 2).
+
+#### Welle-6-Gate-Erwartung (Sub-Welle-uebergreifend)
+
+- Default-`CRITICAL_COV_TARGETS` bleibt unveraendert (alle
+  5 MVP-Geraete + `core/grid_model` + M1-Spine sind seit
+  Welle 5b drin).
+- ADR 0015 ist nach Welle 6c `Accepted` (oder spaetestens
+  mit Welle-7-Closure, falls Welle-6-Review-Folge offene
+  Punkte vererbt — Pattern aus Welle 4/5).
 
 ### Welle 7 — Closure (1/2 Tag)
 
