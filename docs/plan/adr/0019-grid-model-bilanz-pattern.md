@@ -459,8 +459,15 @@ liegen folgende Module:
 - `src/grid_gym/hexagon/core/grid_model/`
   (`__init__`, `config`, `bilanz`, `snapshot` — 4 Module;
   `loads.py` folgt mit Welle 5b).
-- `tests/unit/hexagon/core/grid_model/` (4 Test-Module:
-  `config`, `bilanz`, `snapshot`, `determinism`).
+- `tests/unit/hexagon/core/grid_model/test_grid_model_bilanz.py`
+  — **ein** konsolidiertes Test-Modul mit Section-Kommentaren
+  (Config-Invarianten, Initial-Equilibrium, Imbalance-Formel,
+  Safety-Clamps + Clamp-Counting, Snapshot-Roundtrip,
+  Determinismus). Spiegelt das PV/Load/GridConnection-Pattern
+  (`test_pv_device.py` ist ebenfalls konsolidiert). Welle 5b
+  ergaenzt `test_loads.py` separat. *(Welle-5a-Review L-2:
+  ursprueglicher ADR-Text nannte 4 Test-Module — auf 1
+  konsolidiertes korrigiert.)*
 - Default-`CRITICAL_COV_TARGETS` aus Dockerfile-`coverage-
   gate-critical`-Stage um `core/grid_model` erweitert.
 - Volle Test-Anzahl-Inkrement gegen Welle 4b wird in der
@@ -482,6 +489,17 @@ liegen folgende Module:
   Version v1→v2 (separat in **ADR 0015 zu fixieren —
   geplante ADR, Datei wird mit Welle 6 angelegt; Forward-
   Reference im aktuellen Repo noch ohne ADR-File**).
+- **Welle-5b-Snapshot-Versionssprung (Forward-Pointer,
+  Review-M-2):** Der aktuelle `GridModelSnapshot.from_dict`-
+  Hartzweig (`if version != SNAPSHOT_VERSION: raise
+  VersionError(...)`) wird in Welle 5b durch eine
+  `version in {1, 2}`-Verzweigung + per-Version-Parser
+  ersetzt. v1-Snapshots (ohne `active_load_events` /
+  `active_load_profiles`) sollen weiterhin als roundtrip-
+  faehige Welle-5a-Snapshots lesbar bleiben (Backward-Compat-
+  Lesepfad in ADR 0020 §2.x). Welle 5a haelt den jetzigen
+  Hartzweig bewusst; Welle 5b plant den Umbau im selben
+  Modul mit gleichzeitigem ADR-0020-Closure.
 - `GridConnection.power_kw` wird in Welle 6 aus der
   **Pre-Grid-Restbilanz** abgeleitet:
 
