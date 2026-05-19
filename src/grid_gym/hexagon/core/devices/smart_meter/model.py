@@ -18,7 +18,7 @@ Lifecycle-Erweiterung gegenueber DeviceModel-Protocol
 Drei verschiedene Lookup-Fehler-Modi (ADR 0018 §2.3 / §2.4):
 
 1. **Pre-attach** (Mapping nie gesetzt): Telemetrie mit
-   `value=0` + `quality=UNKNOWN` (kein Fehler).
+   `value=0` + `quality=MISSING` (kein Fehler).
 2. **Reference-Lookup-Defense** (Mapping gesetzt, aber ID
    fehlt): `SmartMeterSourceMissingError`.
 3. **Quell-Pre-init** (Quell-`telemetry()` ist `()`): Silent-
@@ -136,9 +136,22 @@ class SmartMeterDevice:
 
     def attach_random(self, random: RandomPort) -> None:
         """Re-Attach des `RandomPort` nach `from_snapshot`
-        (Welle-3-Review M-6-Pattern). SmartMeter konsumiert
-        `_random` in Welle 4b nicht; M3-Fault-Injection
-        (Mess-Stoerungen, `GG-FAULT-*`) wird es verbrauchen."""
+        (Welle-3-Review M-6-Pattern).
+
+        **Welle-4b-Vertrag (Review-M-3):** `attach_random` ist in
+        Welle 4b **optional** — SmartMeter konsumiert `_random`
+        nicht (`tick` ist eine reine Funktion der Quell-
+        Telemetrie). `tick(...)` nach `from_snapshot(...)` ohne
+        vorherigen `attach_random`-Aufruf ist in Welle 4b
+        zulaessig.
+
+        **M3-Vertrag (Forward-Looking):** wenn M3-Fault-Injection
+        (`GG-FAULT-*` Mess-Stoerungen, fehlende Ablesungen)
+        aktiviert wird, wechselt `attach_random` auf **Pflicht**.
+        TickLoop/Scenario-Loader muss dann nach jedem
+        `from_snapshot(...)` einen `attach_random(...)`-Aufruf
+        sequenzieren, sonst werden Fault-Injection-Pfade
+        stillschweigend deaktiviert."""
         self._random = random
 
     def attach_sources(self, sources_by_id: Mapping[str, DeviceModel]) -> None:
