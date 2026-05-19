@@ -34,7 +34,10 @@ from typing import Self, cast, override
 
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.smart_meter.commands import SmartMeterAlarm
-from grid_gym.hexagon.core.devices.smart_meter.config import SmartMeterConfig
+from grid_gym.hexagon.core.devices.smart_meter.config import (
+    SmartMeterConfig,
+    SmartMeterConfigError,
+)
 from grid_gym.hexagon.core.devices.smart_meter.snapshot import (
     CONFIG_FIELD_NAMES,
     SNAPSHOT_VERSION,
@@ -351,10 +354,19 @@ def _config_from_params(params: Mapping[str, object]) -> SmartMeterConfig:
             type(metric_name_raw).__name__,
         )
 
-    return SmartMeterConfig(
-        aggregate_device_ids=device_ids,
-        aggregate_metric_name=metric_name_raw,
-    )
+    # Welle-4b-Review M-2: SmartMeterConfig-Validierung (Sortier-
+    # Invariante, Welle-4b-`power_kw`-Pflicht, etc.) muss in einen
+    # subsystem-typisierten `WrongTypeError` ueberfuehrt werden,
+    # damit Aufrufer eine einheitliche Fehler-Hierarchie sehen
+    # (Pattern-Spiegel zu PV/Load/GridConnection-snapshot.py:
+    # `from_dict`-Wrap).
+    try:
+        return SmartMeterConfig(
+            aggregate_device_ids=device_ids,
+            aggregate_metric_name=metric_name_raw,
+        )
+    except SmartMeterConfigError as err:
+        raise WrongTypeError(_SUBSYSTEM, "params", "valid", str(err)) from err
 
 
 def _config_to_params(config: SmartMeterConfig) -> Mapping[str, object]:

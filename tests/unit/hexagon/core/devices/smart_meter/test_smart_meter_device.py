@@ -253,6 +253,22 @@ def test_tuple_aggregate_device_ids_accepted() -> None:
     assert device.device_id == "meter-1"
 
 
+def test_unsorted_params_reraised_as_wrong_type_error() -> None:
+    """Welle-4b-Review M-2: unsortierte aggregate_device_ids im
+    YAML/Param-Mapping muessen als typed
+    `WrongTypeError(subsystem='smart_meter')` ankommen, nicht als
+    nackter `SmartMeterConfigInvalidValueError` — Pattern-Spiegel
+    zu PV/Load/GridConnection-`from_dict`."""
+    sd = ScenarioDevice(
+        id="meter-1",
+        type="smart_meter",
+        params={"aggregate_device_ids": ["pv-1", "battery-1"]},  # unsortiert
+    )
+    with pytest.raises(WrongTypeError) as exc_info:
+        SmartMeterDevice().initialize(sd, FixedSeedRandom(seed=0))
+    assert exc_info.value.subsystem == "smart_meter"
+
+
 # ---------------------------------------------------------------------------
 # Command-Surface (ADR 0018 §2.6) — alles IGNORED
 # ---------------------------------------------------------------------------
