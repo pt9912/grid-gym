@@ -11,8 +11,10 @@ Welle-1-Review-Folge (`88252f1` / `9a61823` / `129c137` /
 (`2abbd12`) + Welle 3b + Closure (folgender Commit).
 Default-`make gates` cache-frei gruen ohne
 `CRITICAL_COV_TARGETS`-Override. Naechster Schritt ist
-Welle 4 (SmartMeter + GridConnection, `GG-DEV-012` +
-`GG-DEV-014`). M1-Spine
+Welle 4a (`GridConnection`, `GG-DEV-012`) — Welle 4 ist
+pre-Start in 4a (`GridConnection`) + 4b (`SmartMeter` +
+Closure) sub-gesliced; zwei separate ADRs 0017 + 0018
+statt einer geteilten (siehe §3 Welle 4). M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
 den bisher leeren `hexagon/core/devices/`-Slot mit den MVP-
@@ -360,8 +362,9 @@ sind in ADR 0013 §2 entschieden:
   (siehe §3 Welle 6 unten). Welle 1 liefert nur den **Vertrag**,
   nicht die Laufzeit.
 - **Keine konkreten Geraete-Implementationen.** Battery (Welle 2),
-  PV/Load (Welle 3), SmartMeter/GridConnection (Welle 4),
-  Grid-Bilanz-Modell (Welle 5) folgen sequenziell.
+  PV/Load (Welle 3), GridConnection (Welle 4a),
+  SmartMeter (Welle 4b), Grid-Bilanz-Modell (Welle 5) folgen
+  sequenziell.
 
 **Konvention fuer Welle 2..5** (ADR 0013 §5):
 
@@ -527,28 +530,221 @@ Independent code-reviewer fand 1 Crit + 3 High + 6 Med + 7 Low
 Commit; Test-Anzahl 478 → 484 (+6 Tests fuer attach_random/
 run_id-Defaults).
 
-### Welle 4 — SmartMeter + GridConnection (`GG-DEV-012`/`014`) (1 Tag)
+### Welle 4 — SmartMeter + GridConnection (`GG-DEV-012`/`014`)
 
-- `hexagon/core/devices/smart_meter/`:
-  - `SmartMeterDevice` aggregiert Telemetry aus angeschlossenen
-    Geraeten (PV/Load/Battery) nach `GG-DEV-014`-Akzeptanz.
-- `hexagon/core/devices/grid_connection/`:
-  - `GridConnectionDevice` als Anschlusspunkt mit
-    Importsumme/Exportsumme (`GG-DEV-012`).
+**Sub-Slicing-Entscheidung (Pre-Start, 2026-05-19):** Welle 4
+ist vor dem Start in **4a (GridConnection) + 4b (SmartMeter +
+Closure)** geteilt. Die §3-Sub-Slicing-Schwellen greifen
+nicht strikt — beide Geraete laufen auf demselben `make`-Gate
+(`test-unit` + Default-`coverage-gate-critical`) und der
+generische Codec aus Welle 0a + Welle-3-Review-L-1 traegt
+fuer beide (kein zweites `*SnapshotFormatError`-Subsystem
+einzufuehren). Die Spaltung ist eine **Judgment-Call-
+Vorsorge** wie Welle 3a/3b: zwei verschiedene Device-Patterns
+(stateful Anschlusspunkt mit kumulativem Import/Export-Sums
+vs. stateless Aggregator ueber Geraete-Telemetry) in einem
+Commit waeren ein groesseres Review-Paket als noetig. Folge:
+**zwei separate ADRs 0017 + 0018**, nicht eine geteilte (wie
+ADR 0016 fuer PV+Load) — die State-Modelle (kumulativ vs.
+stateless) und die Command-Surfaces sind zu verschieden, um
+eine ehrliche Abstraktion zu rechtfertigen.
+
+#### Welle 4a — GridConnection (`GG-DEV-012`) + ADR 0017 (Provisional) (1/2 Tag)
+
+- `hexagon/core/devices/grid_connection/` (Struktur analog
+  Welle 2 Battery + Welle 3 PV/Load):
+  - `config.py` — `GridConnectionConfig` Frozen-Dataclass mit
+    Anschlusspunkt-Parametern (Vorschlag: `nominal_voltage_v`,
+    `max_import_kw`, `max_export_kw`). Initial-Validator nach
+    Welle-2/3-Pattern (positive Grenzwerte, konsistente
+    Sign-Konvention).
+  - `model.py` — `GridConnectionDevice` implementiert
+    `DeviceModel`-Protocol. **Stateful:** kumulative
+    `import_kwh`/`export_kwh`-Summen werden tick-weise aus
+    `power_kw × tick_dauer` fortgeschrieben. Sign-Konvention
+    in ADR 0017 §2 fixiert (Vorschlag: Bezug = Netzanschluss,
+    Import positiv = Energie ins lokale System, Export
+    negativ = Energie aus dem lokalen System ins Netz —
+    spiegelt PV/Load-Sign-Konvention aus ADR 0016 §2.2
+    mechanisch).
+  - `commands.py` — Command-Validator. Welle-4a-Minimum: nur
+    `set_power_kw`-Override (analog PV/Load aus Welle 3); der
+    typische Set-Point kommt aus Scenario-Events, nicht aus
+    Operator-Commands. Grenzwert-verletzende Befehle →
+    `CommandResult.REJECTED` + Alarm; innerhalb-Grenzen-
+    Power-Befehle ueber `max_import_kw`/`max_export_kw` →
+    `LIMITED` + Alarm mit `(result, limit, limit_unit)`-Tupel
+    (Welle-3-Review-M-2-Disambiguation + L-3-`limit_unit`).
+  - `snapshot.py` — `GridConnectionSnapshot` Frozen-Dataclass
+    mit `version: int`-Erst-Feld + `from_snapshot` als
+    classmethod. Konsumiert generische Codec-Free-Functions
+    aus Welle 0a + Welle-3-Review-L-1 (`assert_str`,
+    `assert_decimal`, `assert_required_keys`,
+    `assert_payload_canonical_compatible`). Kumulative
+    `import_kwh`/`export_kwh`-Felder sind im Snapshot
+    **explizit** persistiert (Unterschied zum stateless
+    SmartMeter in 4b); Self-Sufficient-`from_snapshot`
+    (Welle-2-Review-C-1) verifiziert, dass kein
+    Re-Initialisierungs-Schritt die Summen zurueckschiebt.
+- `GridConnectionDevice.telemetry()` liefert mindestens
+  `power_kw`, `import_kwh`, `export_kwh`, `command_status`
+  als `TelemetryPoint`-Tupel (deterministisch nach Metrikname
+  sortiert).
+- **Welle-2/3-Review-Patterns mechanisch gespiegelt** (gleiche
+  Liste wie PV/Load in Welle 3b):
+  - C-1: self-sufficient `from_snapshot` ohne `__init__`-
+    Re-Run.
+  - C-2: Sign-Vertrag-vor-Clamp (Welle-2/3-Reihenfolge).
+  - M-2: Alarm-`(result, limit, limit_unit)`-Tupel-
+    Disambiguation in Docstrings.
+  - M-3: `drain_alarms()`-Methode.
+  - M-4: `_RUN_ID_UNSET`-Konstante (kein magisches `None`).
+  - M-5/M-6: `attach_random`-Methode mit Forward-Looking-
+    Defense-Doku.
+  - M-7: payload-None-defensive in `apply_command`.
+  - H-2: `set_run_id`-Hook (Welle-3-Pattern, fuer M3-Fault-
+    Streams vorbereitend).
+  - L-3: `limit_unit`-Field auf Alarm-Tupel.
+- ADR 0017 (`grid-connection-device-pattern`) `Proposed →
+  Provisional` mit Welle-4a-Commit. ADR-Erweiterungs-Pattern
+  ohne Supersedes (ADR 0011 §2); Schaerfung auf `Accepted`
+  mit Welle-4b-Closure-Commit (oder spaetestens mit Welle 7,
+  falls Welle-4a-Review-Folge offene Punkte vererbt).
+- **Lastenheft §12 `grid_connection`**-Drift-Check (Welle-3-
+  Review-H-1-Pattern): Welle 4a verifiziert mechanisch, dass
+  die `power_kw`/`import_kwh`/`export_kwh`-Metriknamen im
+  Lastenheft mit dem Code uebereinstimmen — bei Drift Doku
+  nachziehen, nicht Code (Code ist authoritative ab M2).
 - Tests:
-  - Smoke-Tests (`GG-DEV-012`/`014`-Akzeptanz: deterministischer
-    Smoke; gleicher Seed + identische Eingaben → byte-identische
-    Telemetry **ueber ≥ 100 Ticks** — einheitlich mit
+  - Unit-Tests pro Akzeptanz-Kriterium `GG-DEV-012`
+    (Minimalmodell + deterministischer Smoke-Test).
+  - Protocol-Adherence-Test (Welle-1-Konvention) gegen
+    `DeviceModel`-Protocol mit `GridConnectionDevice` als
+    Parameter.
+  - Snapshot-Roundtrip-Contract-Test:
+    `GridConnectionDevice.snapshot()` →
+    `GridConnectionDevice.from_snapshot()` produziert
+    byte-identische Folge-Ticks; `version: int` als Erst-Feld;
+    `import_kwh`/`export_kwh`-Kontinuitaet ueber den
+    Roundtrip verifiziert.
+  - Determinismus-Property via
+    `hypothesis @given(seed=integers(min_value=0))`: gleicher
+    Seed + identische Command-Sequenz → byte-identische
+    Telemetry-Folge ueber ≥ 100 Ticks (einheitlich mit
     Erfolgskriterium 4).
-  - **Protocol-Adherence-Test je Geraet** (Welle-1-Konvention):
-    `SmartMeterDevice` und `GridConnectionDevice` mit `version:
-    int`-Discriminator und byte-stabilem Snapshot-Roundtrip.
-- **Gate-Status nach Welle 4**: Default-Gate bleibt gruen.
+  - Negativ-Tests: ungueltige Config, Command-Out-of-Range
+    (Sign-Konvention + Limit-Tupel).
+- **Welle-4a-Gate-Status**: Default `make gates` cache-frei
+  gruen — `devices/grid_connection` ≥ 90 % Line + Branch.
+  Default-`CRITICAL_COV_TARGETS` aus Dockerfile-`coverage-
+  gate-critical`-Stage wird in Welle 4a um
+  `devices/grid_connection` erweitert (Welle-3-Review-C-1-
+  Pattern). 484 → ~540 Unit-Tests (analog Welle 3b: +40..+60
+  Tests).
+
+#### Welle 4b — SmartMeter (`GG-DEV-014`) + ADR 0018 (Provisional) + Welle-4-Closure (1/2 Tag)
+
+- `hexagon/core/devices/smart_meter/` (Struktur analog 4a):
+  - `config.py` — `SmartMeterConfig` Frozen-Dataclass mit
+    Aggregations-Scope (Vorschlag: `aggregate_device_ids:
+    tuple[str, ...]` — kanonisch sortiert nach Welle-1-
+    Konvention; Initial-Validator prueft Format).
+  - `model.py` — `SmartMeterDevice` implementiert
+    `DeviceModel`-Protocol. **Stateless aggregator:**
+    Aggregation laeuft je Tick neu ueber die in
+    `aggregate_device_ids` referenzierten Geraete
+    (PV/Load/Battery/optional GridConnection); kein interner
+    Speicher ausser Pending-Commands + RNG-Stand.
+    Aggregations-Funktion: Summe von `power_kw` der Quellen
+    (Welle-4b-MVP — Erweiterungen wie energy-Aggregat sind
+    Forward-Looking, in ADR 0018 dokumentiert). ADR 0018 §2
+    fixiert das Aggregat-Vertrag-Detail (Decimal-Konvention,
+    Tupel-Ordnung, **fehlende-Device-Verhalten** = typisierter
+    Fehler, kein Silent-Skip).
+  - `commands.py` — Welle-4b-Minimum: keine produktiven
+    Commands ausser dem Drain-Pfad (analog PV/Load-Pattern).
+    Pending-Commands werden defensiv akzeptiert; `apply_
+    command` mit unbekanntem Typ wirft `CommandResult.
+    REJECTED` + Alarm.
+  - `snapshot.py` — `SmartMeterSnapshot` Frozen-Dataclass mit
+    `version: int`-Erst-Feld + `from_snapshot` als
+    classmethod. **Wichtig:** der Snapshot enthaelt NUR
+    SmartMeter-eigene Felder (Config-Hash + Pending-
+    Commands + RNG-Stand + `_run_id`); die aggregierten Werte
+    sind derived und werden zur Snapshot-Zeit **nicht**
+    persistiert. Roundtrip-Test prueft genau das (negative
+    Assertion: kein `aggregated_*`-Feld im Mapping).
+- `SmartMeterDevice.telemetry()` liefert mindestens
+  `aggregated_power_kw` und `command_status` als
+  `TelemetryPoint`-Tupel; weitere Metriken (z. B.
+  `aggregated_energy_kwh`) sind Welle-4b-Optional
+  (Forward-Looking, in ADR 0018 dokumentiert, aber kein DoD).
+- **Welle-2/3-Review-Patterns mechanisch gespiegelt** —
+  gleiche Liste wie Welle 4a (C-1/C-2/M-2/M-3/M-4/M-5/M-6/
+  M-7/H-2/L-3). **Plus** Welle-4b-spezifisch:
+  - **Aggregator-Reference-Lookup-Defense**: wenn eine
+    referenzierte `aggregate_device_ids`-ID im aktuellen
+    Tick-Context fehlt (z. B. nach Snapshot-Resume mit
+    geaenderter Scenario-Struktur), wirft
+    `SmartMeterDevice.tick()` einen typisierten Fehler — kein
+    Silent-Skip. Dokumentation in ADR 0018 §2.
+  - **Decimal-Aggregations-Kontext**: Summe ueber
+    `Decimal`-Werte muss byte-stabil sein (Welle-2-Review-
+    M-2 / Welle-3-Review-M-3-Pattern); Quantisierung 6
+    Nachkommastellen nach Aggregation.
+- ADR 0018 (`smart-meter-device-pattern`) `Proposed →
+  Provisional` mit Welle-4b-Commit; Schaerfung auf `Accepted`
+  mit Welle-4-Closure-Commit. ADR-Erweiterungs-Pattern ohne
+  Supersedes.
+- **Lastenheft §12 `smart_meter`**-Drift-Check (Welle-3-
+  Review-H-1-Pattern): analog Welle 4a, Metriknamen
+  abgleichen.
+- Tests:
+  - Unit-Tests pro Akzeptanz-Kriterium `GG-DEV-014`
+    (Minimalmodell + deterministischer Smoke-Test).
+  - Protocol-Adherence-Test (Welle-1-Konvention) gegen
+    `DeviceModel`-Protocol mit `SmartMeterDevice` als
+    Parameter.
+  - Snapshot-Roundtrip-Contract-Test (`version: int` als
+    Erst-Feld; **negative Assertion**: `aggregated_*`-Felder
+    explizit NICHT im Snapshot, durch Test verifiziert).
+  - Determinismus-Property ueber ≥ 100 Ticks (einheitlich
+    mit Erfolgskriterium 4); SmartMeter-Determinismus ist
+    bedingt deterministisch — gleicher Seed + identische
+    Quellen-Telemetry → identische Aggregat-Telemetry.
+  - Aggregator-Smoke-Test: SmartMeter aggregiert ueber
+    `(PvDevice, LoadDevice, BatteryDevice,
+    GridConnectionDevice)` und reproduziert die Summe
+    byte-stabil ueber 10 Ticks.
+  - Negativ-Test: Aggregator-Reference-Lookup-Defense
+    (fehlende Device-ID nach Resume → typisierter Fehler).
+- **Welle-4-Closure-Bestandteile** (zusaetzlich zu 4b-Code):
+  - ADR 0017 + ADR 0018 auf `Accepted` heben.
+  - `Status:`-Header im Slice-Plan auf "Welle 4
+    abgeschlossen" ziehen.
+  - `Naechster Schritt`: Welle 5 (Netzbilanzmodell).
+- **Welle-4b-Gate-Status**: Default `make gates` cache-frei
+  gruen — `devices/smart_meter` ≥ 90 % Line + Branch.
+  Default-`CRITICAL_COV_TARGETS` um `devices/smart_meter`
+  erweitert. ~540 → ~600 Unit-Tests (analog Welle 3a/3b-
+  Volumen).
+
+#### Welle-4-Gate-Erwartung (Sub-Welle-uebergreifend)
+
+- Default-`CRITICAL_COV_TARGETS` aus Dockerfile-Stage
+  enthaelt nach Welle 4b: `hexagon/core/simulation
+  devices/battery devices/pv devices/load
+  devices/grid_connection devices/smart_meter scenario
+  replay` — fuenf MVP-Geraete plus M1-Spine + Scenario +
+  Replay. Erfolgskriterium 1 bleibt unverletzt.
+- ADR 0017 + ADR 0018 sind nach Welle 4b `Accepted` (oder
+  spaetestens mit Welle-7-Closure, falls Welle-4-Review-
+  Folge offene Punkte vererbt — Pattern aus Welle 3a/3b).
 
 ### Welle 5 — Netzbilanzmodell (`GG-GRID-001..004`) (1 Tag)
 
-**Abgrenzung gegenueber Welle 4:** `grid_connection` aus
-Welle 4 ist ein **Geraetetyp** (`GG-DEV-012`,
+**Abgrenzung gegenueber Welle 4a:** `grid_connection` aus
+Welle 4a ist ein **Geraetetyp** (`GG-DEV-012`,
 `hexagon/core/devices/grid_connection/`). Das **Netzbilanzmodell**
 hier ist *kein* Geraet — Bezeichnung und Pfad sind bewusst
 verschieden, weil `GG-AR-COMP-DEVICES` §5 das Modell nicht als
@@ -670,8 +866,12 @@ ueber den TickLoop.
 
 ### Welle 7 — Closure (1/2 Tag)
 
-- ADR 0013 + ADR 0014 + ADR 0015 `Accepted` (wenn noch
-  `Provisional`).
+- ADR 0013 + ADR 0014 + ADR 0015 + ADR 0016 + ADR 0017 +
+  ADR 0018 `Accepted` (wenn noch `Provisional`). ADR 0013/
+  0014/0016 sind bereits in Welle 1/2/3 `Accepted`; ADR 0015
+  schliesst mit Welle 6 (Envelope v1→v2); ADR 0017/0018
+  schliessen mit Welle 4b-Closure und werden in Welle 7 nur
+  verifiziert.
 - Trigger 013 (`replay-diff-tick-ms-parameter`) ist bereits in
   Welle 2 mechanisch geschlossen (siehe Battery-Pflicht-Test
   `test_replay_diff_tick_ms.py`). Welle 7 verifiziert nur, dass
@@ -751,11 +951,11 @@ ueber den TickLoop.
   Migrations-Pfad ist explizit M6 (`GG-PERSIST-*`).
 - **`grid_model` vs. `grid_connection` Naming-Drift**: das
   Bilanzmodell (Welle 5, `hexagon/core/grid_model/`) und der
-  Geraetetyp `grid_connection` (Welle 4,
+  Geraetetyp `grid_connection` (Welle 4a,
   `hexagon/core/devices/grid_connection/`) sind sprachlich nah,
   aber strukturell verschieden — Geraet vs. Systemmodell. Risiko:
-  Code-Review mischt die beiden in Welle 4/5 versehentlich.
-  *Fallback:* Welle 4 Code-Review-Checkliste enthaelt einen
+  Code-Review mischt die beiden in Welle 4a/5 versehentlich.
+  *Fallback:* Welle 4a Code-Review-Checkliste enthaelt einen
   expliziten Punkt „`grid_connection` ist Device, `grid_model`
   ist Systemmodell — keine Cross-Imports". `AC-HEXAGON-PURE`
   faengt das nicht ab; nur Review/Naming-Disziplin schuetzt.
@@ -791,4 +991,4 @@ nach ADR 0006 §3).
 | Trigger 013 (`replay-diff-tick-ms-parameter`) geschlossen                    | `make test-unit` mit Battery-Pflicht-Test `test_replay_diff_tick_ms.py` (`tick_ms=100`, `diff_replay(..., tick_ms=100)`)             |
 | Trigger 014 + 015 nach `done/`                                                | `docs/plan/planning/done/014-…md`, `015-…md` mit Closure-Notiz                                                                       |
 | Trigger 013 nach `done/`                                                      | `docs/plan/planning/done/013-…md` mit Closure-Notiz (synchron mit Battery-Welle-2-Test oben)                                          |
-| ADR 0013 (`DeviceModel`) + ADR 0014 (`Battery`-Snapshot-Schema) + ADR 0015 (Envelope v1→v2) `Accepted` | `docs/plan/adr/0013-device-model-protocol.md`, `docs/plan/adr/0014-battery-snapshot-schema.md`, `docs/plan/adr/0015-snapshot-envelope-v2.md` mit `Accepted`-Status |
+| ADR 0013 (`DeviceModel`) + ADR 0014 (`Battery`-Snapshot-Schema) + ADR 0015 (Envelope v1→v2) + ADR 0016 (PV+Load) + ADR 0017 (GridConnection) + ADR 0018 (SmartMeter) `Accepted` | `docs/plan/adr/0013-device-model-protocol.md`, `0014-battery-snapshot-schema.md`, `0015-snapshot-envelope-v2.md`, `0016-pv-load-device-pattern.md`, `0017-grid-connection-device-pattern.md`, `0018-smart-meter-device-pattern.md` jeweils mit `Accepted`-Status |
