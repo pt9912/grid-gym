@@ -47,10 +47,11 @@ ohne Scenario-Events. Welle 5b fuegt:
 - **`LoadProfile`-Dataclass** (`GG-GRID-003` „Zeitreihen"):
   Tick-indizierte `Decimal`-Folge fuer einen `target_device_id`.
 - **CSV/JSON-Loader** als Free-Functions:
-  `load_csv_profile(path)` und `load_json_profile(path)` →
-  `LoadProfile`. Format-Fehler werden als typed
-  `LoadProfileFormatError`-Subklassen gemeldet (Welle-0a-Codec-
-  Pattern).
+  `parse_csv_profile(text)` und `parse_json_profile(payload)` →
+  `LoadProfile` (pure Parser; Datei-I/O ist Adapter-
+  Verantwortung, siehe §2.4 — Round-1-Hoch-Schaerfung). Format-
+  Fehler werden als typed `LoadProfileFormatError`-Subklassen
+  gemeldet (Welle-0a-Codec-Pattern).
 - **`GridModelSnapshot v2`**: erweitert um
   `active_load_events: tuple[LoadEvent, ...]` und
   `active_load_profiles: tuple[LoadProfile, ...]`. v1-Snapshots
@@ -498,7 +499,8 @@ liegen folgende Module:
 
 - `src/grid_gym/hexagon/core/grid_model/loads.py` (neu):
   `LoadEvent`, `LoadProfile`, `LoadProfileFormatError`-
-  Hierarchie, `load_csv_profile`, `load_json_profile`.
+  Hierarchie, `parse_csv_profile`, `parse_json_profile` (pure
+  Parser, kein Datei-I/O — siehe §2.4).
 - `src/grid_gym/hexagon/core/grid_model/snapshot.py` erweitert
   auf `SNAPSHOT_VERSION = 2` mit Backward-Compat-Lesepfad.
 - `src/grid_gym/hexagon/core/grid_model/__init__.py` Re-Export
