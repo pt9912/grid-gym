@@ -26,8 +26,8 @@ Aktiver Slice: **M3 (Faults + Multi-Agent + Observability)** — Slice-Plan
 wird mit M3-Welle-0-Start eroeffnet.
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
-([`done/M2-devices.md`](done/M2-devices.md)) inkl. Welle-7-Closure
-(`done/M2-devices-results.md`).
+([`done/M2-devices.md`](../done/M2-devices.md)) inkl. Welle-7-Closure
+([`done/M2-devices-results.md`](../done/M2-devices-results.md)).
 
 ---
 
@@ -202,6 +202,16 @@ unter [`in-progress/M2-devices.md`](M2-devices.md)
   - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
   - [ ] Property-Tests fuer Fault-Determinismus
         (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export).
+  - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
+        gruen — Default-Liste um `core/faults`, `core/agents`,
+        `adapters/driven/telemetry-otlp` erweitert (analog
+        M2-DoD-Item „Default-`make gates` ohne Override").
+  - [ ] `make fullbuild` gruen ohne Override — M3-Abschluss-
+        Gate, mit OTLP-Collector als Sibling-Container im
+        Compose-Smoke.
+  - [ ] M3-Welle-7-End-to-End-Sweep (S-1..S-6, analog M2-Welle-7
+        §4) — Reviewer-Stempel je Welle, dokumentiert in
+        `done/M3-results.md`.
 
 ### M4 — Protokolladapter (Vorbelegung)
 

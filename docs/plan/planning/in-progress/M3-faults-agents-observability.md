@@ -30,12 +30,17 @@ bereits als „naechsten aktiven Slice" ausgewiesen).
   §7 (S-1..S-6-Pattern), gespiegelt durch M2 in
   [`done/M2-devices-results.md`](../done/M2-devices-results.md)
   §4.
-- Lastenheft §12 (`GG-FAULT-001..010`), §13
-  (`GG-AGENT-001..008`), §14 (`GG-OTEL-001..004`), §15
-  (`GG-SAFE-001..006`).
-- Architektur §6 (`GG-AR-COMP-FAULTS`), §7
-  (`GG-AR-COMP-AGENTS`), §8 (`GG-AR-PORT-DRN-008` —
-  `LogPort`/`MetricsPort`/`TracePort`).
+- Lastenheft §14 Fault Injection (`GG-FAULT-001..010`),
+  §15 Multi-Agent-System (`GG-AGENT-001..008`),
+  §19 Telemetrie (`GG-OTEL-001..004`),
+  §20 Sicherheitsanforderungen (`GG-SAFE-001..006`).
+- Architektur §5 Komponentensicht (`GG-AR-COMP-FAULTS`,
+  `GG-AR-COMP-AGENTS`, `GG-AR-COMP-OBS`),
+  §13 Fault-Injection-Architektur,
+  §14 Multi-Agent-Subsystem,
+  §15 Beobachtbarkeit;
+  §4.2 Driven-Ports-Tabelle mit `GG-AR-PORT-DRN-008`
+  (`LogPort`/`MetricsPort`/`TracePort`).
 - [`ADR 0007`](../../adr/0007-random-port.md) §5/§6
   (`RandomPort.sub_port` als Fault-Stream-Vehikel; Drift-
   Trigger 011 fuer Multi-Agent).
@@ -60,11 +65,14 @@ M2-Geraete-Pfads:
   `GG-AR-COMP-AGENTS`): Agent-Bus + Agent-Protocol;
   Sub-Random-Streams pro Agent; Decision-Loop integriert sich
   in TickLoop; RL-Adapter sind separater Folge-Slice nach M3.
-- **Observability** (`GG-OTEL-001..004`,
+- **Observability** (`GG-OTEL-001..004`, `GG-AR-COMP-OBS`,
   `GG-AR-PORT-DRN-008`): `LogPort`, `MetricsPort`, `TracePort`
-  als Driven-Ports; OTLP-Adapter; Telemetry-Stream geht
-  ueber `MetricsPort` an einen OTLP-Collector;
-  Tick-/Welle-Spans liegen ueber `TracePort` an.
+  als Driven-Ports; produktiver OTLP-Adapter unter
+  `adapters/driven/telemetry-*/` (Architektur §5 Z. 314 fixiert
+  diesen Pfad — `*` steht fuer den konkreten Backend-Slug, z. B.
+  `telemetry-otlp`); Telemetry-Stream geht ueber `MetricsPort`
+  an einen OTLP-Collector; Tick-/Welle-Spans liegen ueber
+  `TracePort` an.
 
 M3 schliesst die DoD-Restposten fuer M3 in `roadmap.md §3 M3`
 (6 Checkboxen). Welle 7 schliesst M3 in `done/M3-…md` ab.
@@ -179,7 +187,8 @@ Triage-Notiz erweitert nur den Slice-Plan + die welle-0.md.
 
 ### Welle 1 — Fault-Foundation (FaultPort + Scenario-Schema)
 
-- ADR-Folge (geplant **ADR 0022**) als Erweiterung zu
+- ADR-Folge (geplant **ADR 0022**, `Provisional` mit Welle-1-
+  Merge, `Accepted` mit Welle-7-Closure) als Erweiterung zu
   [`ADR 0013`](../../adr/0013-device-model-protocol.md) §4:
   Fault-Injection-Protocol + Scenario-Schema-Erweiterung
   fuer `faults`-Block.
@@ -206,8 +215,11 @@ Default-`CRITICAL_COV_TARGETS` um `core/faults` erweitert.
 - Recovery-Verhalten je Fault: `auto-recover-after-N-ticks`
   als Default; `manual-via-command` als alternativer Pfad.
 - Property-Test: gleicher Seed + gleiche Fault-Sequenz →
-  byte-identische Telemetry (gespiegelt M2-Welle-6c-
-  Permutations-Pattern).
+  byte-identische Telemetry (Pattern aus M2-Welle-6c, siehe
+  `done/M2-devices.md` §3 Welle 6c +
+  `done/M2-devices-results.md` §3 Zeile „Welle 6c");
+  M1-Welle-3-Tie-Breaking-Determinismus
+  (`done/M1-tick-loop-results.md`) ist die zweite Referenz.
 
 **Welle-2-Gate:** `make test-integration` gruen mit
 End-to-End-Fault-Szenario (`tests/integration/scenarios/
@@ -215,7 +227,8 @@ fault_demo.yaml`).
 
 ### Welle 3 — Multi-Agent-Foundation (AgentBus + AgentPort)
 
-- ADR-Folge (geplant **ADR 0023**) fuer Multi-Agent-Bus +
+- ADR-Folge (geplant **ADR 0023**, `Provisional` mit Welle-3-
+  Merge, `Accepted` mit Welle-7-Closure) fuer Multi-Agent-Bus +
   AgentPort.
 - `Agent`-Protocol + `AgentBus` + Sub-Random-Stream-
   Konvention (`RandomPort.sub_port(f"agent-{id}")`).
@@ -245,7 +258,8 @@ Override (zweiter Sub-Bereich abgeschlossen).
 
 ### Welle 5 — Observability-Foundation (LogPort/MetricsPort/TracePort)
 
-- ADR-Folge (geplant **ADR 0024**) fuer Driven-Port-Trio
+- ADR-Folge (geplant **ADR 0024**, `Provisional` mit Welle-5-
+  Merge, `Accepted` mit Welle-7-Closure) fuer Driven-Port-Trio
   `LogPort`/`MetricsPort`/`TracePort` (`GG-AR-PORT-DRN-008`).
 - Ports liegen in `ports/driven/observability.py`.
 - M1-Test-Doubles (Null-Adapter) fuer Welle-3-Multi-Agent-
@@ -256,15 +270,19 @@ Override (zweiter Sub-Bereich abgeschlossen).
 
 ### Welle 6 — OTLP-Adapter
 
-- Produktiver `adapters/driven/observability_otlp/`-Adapter
-  mit OTLP-gRPC- oder OTLP-HTTP-Export.
+- Produktiver `adapters/driven/telemetry-otlp/`-Adapter
+  (Pfad gemaess `spec/architecture.md` §5 Z. 314
+  `adapters/driven/telemetry-*`) mit OTLP-gRPC- oder
+  OTLP-HTTP-Export.
 - `deploy/compose.yml`-Erweiterung um OTLP-Collector-Service.
 - `make fullbuild`-Compose-Smoke verifiziert mind. ein Span +
   ein Metric exportiert.
 
 **Welle-6-Gate:** `make fullbuild` gruen mit OTLP-Collector-
-Sibling. Default-`CRITICAL_COV_TARGETS` um
-`adapters/driven/observability_otlp` erweitert.
+Sibling, **dritter Sub-Bereich (Observability) abgeschlossen**
+(parallel zu Welle-2-Gate „Faults abgeschlossen" und Welle-4-
+Gate „Multi-Agent abgeschlossen"). Default-`CRITICAL_COV_TARGETS`
+um `adapters/driven/telemetry-otlp` erweitert.
 
 ### Welle 7 — Closure (1/2 Tag)
 
@@ -303,7 +321,7 @@ Sibling. Default-`CRITICAL_COV_TARGETS` um
   [`016..019`](../open/), eigene Slices nach M3.
 - **SOLLTE-Netz** (`GG-GRID-005..007`) — Trigger
   [`020..022`](../open/), eigene Slices nach M3.
-- **SOLLTE-Battery** (`GG-BESS-006/007`) — Trigger
+- **SOLLTE-Battery** (`GG-BESS-006..007`) — Trigger
   [`023..024`](../open/), eigene Slices nach M3.
 - **UI / Demo-Seite** (`GG-UI-001..009`) — M5.
 - **Performance-Benchmarks** (`GG-RT-004/005`) — M6.
@@ -347,6 +365,21 @@ Sibling. Default-`CRITICAL_COV_TARGETS` um
   Trigger-Triage haelt sie explizit als „out-of-scope fuer
   M3" fest; nur wenn ein Welle-N-Plan einen Trigger
   ausdruecklich konsumiert, wird er hochgenommen.
+- **Observability-Ports-Vorgriff durch Multi-Agent/Faults**:
+  Multi-Agent (Welle 3) und Faults (Welle 2) wollen
+  potenziell schon Decision-/Recovery-Events via
+  `LogPort`/`MetricsPort` emittieren, **bevor** Welle 5 die
+  Ports ueberhaupt definiert. Welle 5 sagt zwar „Null-Adapter
+  fuer Welle-3-/Welle-2-Tests" zu, aber das macht den
+  Welle-2/3-Code zwangslaeufig Null-Adapter-aware. *Fallback*:
+  ADR 0023 (Welle 3) entscheidet bewusst, ob `AgentBus` die
+  Ports schon **injiziert** (= Ports stehen mit Null-Adapter)
+  oder erst in Welle 6 verkabelt; gleiche Frage fuer
+  FaultPort-Adapter in Welle 2. Konsequenz fuer den
+  Welle-Plan: ADR 0023/0022 muss den Pre-Welle-5-Ports-
+  Vertrag explizit als Out-of-Scope der Welle markieren oder
+  einen Mini-Vorgriff (Ports-Definition vor Welle 5) als
+  Welle-1/3-Lieferung dazunehmen.
 
 ---
 

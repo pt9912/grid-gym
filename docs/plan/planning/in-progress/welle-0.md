@@ -2,9 +2,11 @@
 
 **Status:** Done — M3-Welle-0 abgeschlossen am 2026-05-20 mit
 `cfb7a72` (C0, Slice-Doc + welle-7-Move) + `4bd2673` (C1,
-M3-Slice-Plan-Eroeffnung) + diesem C2-Doc-Sync (Trigger-Triage
-+ Status-Flip). Vorabraeumung + Slice-Plan-Eroeffnung fuer M3
-(Faults + Multi-Agent + Observability) ist geliefert.
+M3-Slice-Plan-Eroeffnung) + `f5de006` (C2, Trigger-Triage +
+Status-Flip) + Review-Folge (C3, `fix(welle-0)`: 5 High + 5
+Medium + 1 Low Spec-Drift-/Konsistenz-Findings adressiert).
+Vorabraeumung + Slice-Plan-Eroeffnung fuer M3 (Faults +
+Multi-Agent + Observability) ist geliefert.
 Kanonische M3-Slice-Spezifikation:
 [`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
 — dieses Welle-0-Doc ist der Index zur Welle, nicht der
@@ -123,10 +125,15 @@ werden in der Reihenfolge ihrer `Proposed`-Datierung vergeben).
 - Dieses Dokument als Welle-Start-Marker. Status:
   `In Progress`.
 - `git mv docs/plan/planning/in-progress/welle-7.md
-   docs/plan/planning/done/welle-7.md`. Reiner Rename ohne
-  Inhalts-Edit; Memory-Konvention `feedback_git_mv`
-  unbeeinflusst (kein Rewrite). Single-Commit-Move ist hier
-  sicher.
+   docs/plan/planning/done/welle-7.md` mit zwei kleinen
+  Inhalts-Edits im welle-7-Body (M1→M2-Typo §2.4 +
+  ADR-0016-Ergaenzung §3 + `<C2-Hash>`→`8667474`-Aufloesung
+  §4 C2; Worktree-User-/Linter-Cleanup-Mods post-`8667474`).
+  Rename-Detection per `git diff -M` ergibt 98 % Similarity;
+  Memory-Konvention `feedback_git_mv` formal verletzt (Move +
+  Mini-Rewrite in einem Commit), praktisch toleriert (`git log
+  --follow done/welle-7.md` traceable, siehe Review-Folge-1
+  M-1/M-2).
 - `in-progress/README.md`-Sync: `welle-7.md`-Zeile entfernt,
   `welle-0.md`-Zeile ergaenzt.
 
@@ -180,7 +187,7 @@ werden in der Reihenfolge ihrer `Proposed`-Datierung vergeben).
 3. `done/`-Bestand: enthaelt `welle-7.md` (neu hinzugekommen),
    weiterhin `M1-*`, `M2-*`, `welle-6c.md`,
    `M2-devices-results.md`, Trigger 001/002/009..015.
-4. `open/`-Bestand: 17 Dateien (`003`..`008`, `011`, `012`,
+4. `open/`-Bestand: 18 Dateien (`003`..`008`, `011`, `012`,
    `016..024` plus `README.md`); keine Datei-Moves in
    Welle 0.
 5. `make gates`-Sanity: gruen (Doc-only-Edits sollten den
