@@ -170,6 +170,52 @@ def test_adapter_ignores_non_voltage_drop_faults() -> None:
     assert device._voltage_drop_active is False
 
 
+def test_adapter_handles_missing_target_silently_without_inject() -> None:
+    """Welle-2b-Review F1 (Mirror C2a-M-3): wenn `device_by_id` den
+    Target nicht enthaelt, wird kein `inject_fault` aufgerufen; Adapter-
+    State bleibt korrekt (`_active_faults[key] = True`)."""
+    adapter = GridFaultAdapter(faults=(_voltage_drop_fault(),))
+    adapter.apply_active_faults(
+        (),
+        DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),
+    )
+    assert adapter._active_faults["fault-0", "grid-1"] is True
+
+
+def test_adapter_manual_recovery_before_window_does_not_crash() -> None:
+    """Welle-2b-Review F1 (Mirror C2a-M-3): Manual-Recovery bevor der
+    Fault aktiviert wurde, laeuft sauber durch (kein `clear_fault`-
+    Call, weil `currently_active = False`)."""
+    device = _grid_device()
+    adapter = GridFaultAdapter(
+        faults=(_voltage_drop_fault(start_simulation_time=10000, duration_ms=5000),)
+    )
+    adapter.register_manual_recovery("fault-0", "grid-1")
+    adapter.apply_active_faults(
+        (device,),
+        DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),
+    )
+    assert ("fault-0", "grid-1") not in adapter._pending_manual_recoveries
+    assert device._voltage_drop_active is False
+
+
+def test_adapter_does_not_mutate_pending_power_kw() -> None:
+    """Welle-2b-Review F3 (ADR 0022 §2.4 GridConnection-Constraint):
+    `apply_active_faults` mutiert NIE `_pending_power_kw`. Adapter-
+    Boundary-Pin zusaetzlich zum device-level
+    `test_inject_voltage_drop_does_not_mutate_pending_power_kw`."""
+    device = _grid_device()
+    pending_before = device._pending_power_kw
+    current_before = device._current_power_kw
+    adapter = GridFaultAdapter(faults=(_voltage_drop_fault(),))
+    adapter.apply_active_faults(
+        (device,),
+        DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),
+    )
+    assert device._pending_power_kw == pending_before
+    assert device._current_power_kw == current_before
+
+
 def test_adapter_fault_id_uses_original_scenario_index() -> None:
     """Welle-2-Review M-2 (Spiegel zu Battery-Test): `fault-{i}`-
     ID-Konvention nutzt den Original-Scenario-Index."""

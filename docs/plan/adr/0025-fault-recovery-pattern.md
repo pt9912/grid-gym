@@ -99,15 +99,21 @@ Fault-Typen hinzufuegt — `fault-N` referenziert immer den
 gleichen Eintrag in `scenario.faults`. `register_manual_recovery`-
 Aufrufer muessen mit dem Scenario-Index arbeiten.
 
-**Welle-2-Derate-Konstanten** (Review-Folge L-2): die
-fault-typ-spezifischen Default-Faktoren sind in den Device-
-Modulen als Modul-Konstanten codiert (z. B.
-`BatteryDevice._CELL_FAILURE_DERATE = Decimal("0.5")` —
-50 % `max_discharge_kw`-Reduktion). Welle-3+ kann die Faktoren
-via `payload[<key>]: Decimal`-Override konfigurierbar machen
-(Range-Check `0 < factor <= 1` ist Welle-3-Material). Welle-2-
-Implementer **ignorieren** `payload` vollstaendig (Schema-
-Validierung ist Welle-3-Material, siehe Review-Folge M-5).
+**Welle-2-Derate-Konstanten** (Review-Folge L-2 + Welle-2b-
+Review F5): die fault-typ-spezifischen Default-Faktoren sind
+in den Device-Modulen als Modul-Konstanten codiert:
+
+- `BatteryDevice._CELL_FAILURE_DERATE = Decimal("0.5")` —
+  50 % `max_discharge_kw`-Reduktion bei `cell_failure`.
+- `GridConnectionDevice._VOLTAGE_DROP_FRACTION = Decimal("0.5")` —
+  Voltage faellt bei `voltage_drop` auf 50 % von
+  `nominal_voltage_v`.
+
+Welle-3+ kann die Faktoren via `payload[<key>]: Decimal`-Override
+konfigurierbar machen (Range-Check `0 < factor <= 1` ist Welle-3-
+Material). Welle-2-Implementer **ignorieren** `payload`
+vollstaendig (Schema-Validierung ist Welle-3-Material, siehe
+Review-Folge M-5).
 
 **Welle-2-Ramp-vs-Derate-Vertrag** (Review-Folge M-6): der
 Derate-Clamp ist ein **Hard-Clamp** in der jeweiligen Tick,

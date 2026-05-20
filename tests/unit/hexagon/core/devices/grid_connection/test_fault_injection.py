@@ -179,3 +179,58 @@ def test_snapshot_with_unknown_fault_keys_ignored() -> None:
     restored = GridConnectionDevice.from_snapshot(state)
     assert restored._voltage_drop_active is True
     # Unbekannter Welle-3-Key wird ignoriert.
+
+
+def test_snapshot_with_empty_fault_state_defaults_false() -> None:
+    """Welle-2b-Review F2 (Mirror C2a-M-1): leeres
+    `fault_state = {}` defaultet `voltage_drop_active` auf False."""
+    device = _grid_device()
+    state = dict(device.snapshot())
+    state["fault_state"] = {}
+    restored = GridConnectionDevice.from_snapshot(state)
+    assert restored._voltage_drop_active is False
+
+
+def test_snapshot_with_wrong_typed_fault_flag_raises_wrongtype() -> None:
+    """Welle-2b-Review F2 (Mirror C2a-M-1):
+    `voltage_drop_active = "true"` (String statt bool) wirft
+    typisierten `WrongTypeError`."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    device = _grid_device()
+    state = dict(device.snapshot())
+    state["fault_state"] = {"voltage_drop_active": "true"}
+    with pytest.raises(WrongTypeError):
+        GridConnectionDevice.from_snapshot(state)
+
+
+def test_snapshot_roundtrip_after_tick_under_active_fault() -> None:
+    """Welle-2b-Review F4: nach einer Tick unter aktivem
+    voltage_drop hat `_current_voltage_v` den reduzierten Wert.
+    Snapshot-Roundtrip pinnt das (vs. dem Vor-Tick-Test, der nur
+    `_pending_voltage_v` mutated sah)."""
+    device = _grid_device()
+    device.inject_fault("voltage_drop", {})
+    device.tick(DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000))
+    # Nach Tick: current_voltage_v ist auch reduziert.
+    assert device._current_voltage_v == Decimal("200")
+    state = device.snapshot()
+    restored = GridConnectionDevice.from_snapshot(state)
+    assert restored._current_voltage_v == Decimal("200")
+    assert restored._pending_voltage_v == Decimal("200")
+    assert restored._voltage_drop_active is True
+    assert restored == device
+
+
+def test_clear_fault_pre_init_is_safe_noop() -> None:
+    """Welle-2b-Review F6: `clear_fault` ist pre-init sicher
+    (No-Op). Symmetrisch zu Battery, das `_cell_failure_active =
+    False` als reines Attribut-Setzen hat. Grid hat zusaetzlich
+    eine `_pending_voltage_v`-Mutation hinter einem `config is
+    not None`-Guard."""
+    device = GridConnectionDevice()
+    # Pre-init: kein `initialize` Aufruf.
+    device.clear_fault("voltage_drop")
+    assert device._voltage_drop_active is False
+    # _pending_voltage_v bleibt Default `_ZERO` (config noch None).
+    assert device._pending_voltage_v == Decimal(0)
