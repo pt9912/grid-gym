@@ -1,17 +1,21 @@
 # Welle 0 — M3 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — Slice-Begleit-Dokument angelegt
-2026-05-20. M3-Welle-0 ist die Vorabraeumung + Slice-Plan-
-Eroeffnung fuer M3 (Faults + Multi-Agent + Observability).
-Kanonische Slice-Spezifikation wird in C1 unter
-`docs/plan/planning/in-progress/M3-faults-agents-observability.md`
-angelegt — dieses Welle-0-Doc ist der Index zur Welle, nicht
-der Meilenstein-Slice-Plan selbst.
+**Status:** Done — M3-Welle-0 abgeschlossen am 2026-05-20 mit
+`cfb7a72` (C0, Slice-Doc + welle-7-Move) + `4bd2673` (C1,
+M3-Slice-Plan-Eroeffnung) + diesem C2-Doc-Sync (Trigger-Triage
++ Status-Flip). Vorabraeumung + Slice-Plan-Eroeffnung fuer M3
+(Faults + Multi-Agent + Observability) ist geliefert.
+Kanonische M3-Slice-Spezifikation:
+[`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
+— dieses Welle-0-Doc ist der Index zur Welle, nicht der
+Meilenstein-Slice-Plan selbst.
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
-(kein Code-Pfad-Wechsel; Pattern analog M2-Welle-0c). Welle-
-Closure (C2) ersetzt den `<C2-Commit-Hash>`-Platzhalter im
-Header.
+(kein Code-Pfad-Wechsel; Pattern analog M2-Welle-0c).
+Trigger-Triage in `M3-faults-agents-observability.md §3
+Welle 0` festgehalten; alle Open-Trigger 005/006/007/011 +
+M2-SOLLTE-Trigger 016..024 haben dort eine explizite
+M3-Drift-Aussage.
 
 ## 1. Context
 
