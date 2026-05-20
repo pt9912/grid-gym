@@ -1,0 +1,94 @@
+# MVP-Demo-Szenario (M2 Welle 6c).
+#
+# End-to-End-Fixture fuer den Welle-6c-Integrationstest
+# (`test_mvp_demo_scenario.py`). Erfuellt `GG-MVP-002`:
+# 5 MVP-Geraete + `grid_model`-Bilanz + ein `LoadEvent`
+# und ein `LoadProfile`-Beispiel.
+#
+# Numerische Felder sind als YAML-Strings notiert. Der
+# Test-seitige Loader (`_yaml_scenario_loader.py`) konvertiert
+# sie zu `Decimal` — float-Praezisionsverlust ist damit
+# konstruktiv unmoeglich (`GG-DATA-005`).
+#
+# Seed `12648430` == `0xC0FFEE` (siehe
+# `tests/integration/_constants.py::M2_DEMO_SEED`).
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "mvp-demo"
+  name: "MVP Demo (Welle 6c)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 100
+  seed: 12648430
+
+devices:
+  - id: "pv-1"
+    type: "pv"
+    params:
+      rated_power_kw: "500"
+  - id: "load-1"
+    type: "load"
+    params:
+      rated_power_kw: "300"
+  - id: "battery-1"
+    type: "battery"
+    params:
+      capacity_kwh: "100"
+      initial_soc_pct: "50"
+      min_soc_pct: "0"
+      max_soc_pct: "100"
+      max_charge_kw: "50"
+      max_discharge_kw: "50"
+      charge_efficiency: "1"
+      discharge_efficiency: "1"
+      ramp_kw_per_s: "100"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "1000"
+      max_export_kw: "1000"
+  - id: "meter-1"
+    type: "smart_meter"
+    params:
+      # Alphabetisch sortiert (`SmartMeterConfig`-Pflicht-
+      # Invariante: canonical order).
+      aggregate_device_ids:
+        - "battery-1"
+        - "load-1"
+        - "pv-1"
+      aggregate_metric_name: "power_kw"
+
+grid_model:
+  nominal_frequency_hz: "50"
+  frequency_sensitivity_hz_per_kw: "0.001"
+  frequency_clamp_min_hz: "45"
+  frequency_clamp_max_hz: "55"
+  nominal_voltage_v: "400"
+  voltage_sensitivity_v_per_kw: "0.1"
+  voltage_clamp_min_v: "280"
+  voltage_clamp_max_v: "520"
+
+load_events:
+  - start_s: "10"
+    duration_s: "5"
+    target_device_id: "load-1"
+    power_kw: "250"
+
+load_profiles:
+  - target_device_id: "load-1"
+    tick_values:
+      - "100"
+      - "110"
+      - "120"
+      - "130"
+      - "140"
+      - "150"
+      - "160"
+      - "170"
+      - "180"
+      - "190"
+    tick_ms: 1000

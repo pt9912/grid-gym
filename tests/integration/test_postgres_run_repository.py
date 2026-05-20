@@ -9,6 +9,10 @@ Der `make test-integration`-Stack mounted den Docker-Socket vom
 Host in den Test-Runner-Container — testcontainers spawnt
 Postgres ueber diesen Socket als Sibling-Container (nicht
 docker-in-docker).
+
+Die `postgres_dsn`-Fixture ist seit M2 Welle 6c modul-uebergreifend
+in `tests/integration/conftest.py` (gemeinsame Nutzung mit
+`test_mvp_demo_scenario.py`).
 """
 
 from __future__ import annotations
@@ -18,9 +22,6 @@ from collections.abc import Callable, Iterator
 
 import psycopg
 import pytest
-from alembic import command
-from alembic.config import Config
-from testcontainers.postgres import PostgresContainer
 
 from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
 from grid_gym.hexagon.core.domain.run import RunMetadata
@@ -28,36 +29,6 @@ from grid_gym.hexagon.core.errors import (
     RunAlreadyExistsError,
     RunNotFoundError,
 )
-
-
-@pytest.fixture(scope="module")
-def postgres_dsn() -> Iterator[tuple[str, str]]:
-    """Spawnt einen Postgres-Container fuer das ganze Test-Modul.
-
-    Liefert ein Tupel `(psycopg_dsn, sqlalchemy_url)`:
-    - `psycopg_dsn` (`postgresql://...`) fuer `psycopg.connect`.
-    - `sqlalchemy_url` (`postgresql+psycopg://...`) fuer
-      alembic/SQLAlchemy 2.x mit psycopg3-Dialect.
-    Module-scope, damit Migration + Roundtrip-Tests sich eine
-    Instanz teilen.
-    """
-    with PostgresContainer("postgres:16-alpine") as postgres:
-        # testcontainers liefert per Default `postgresql+psycopg2://`
-        # (alter Dialect-Name). psycopg3 nutzt
-        # `postgresql+psycopg://`; psycopg.connect kommt mit
-        # `postgresql://` aus (kein Dialect-Praefix).
-        raw_url = postgres.get_connection_url()
-        sqlalchemy_url = raw_url.replace("postgresql+psycopg2://", "postgresql+psycopg://")
-        psycopg_dsn = raw_url.replace("postgresql+psycopg2://", "postgresql://")
-        _run_alembic_upgrade(sqlalchemy_url)
-        yield (psycopg_dsn, sqlalchemy_url)
-
-
-def _run_alembic_upgrade(sqlalchemy_url: str) -> None:
-    """Wendet alle Migrationen auf das ephemere Schema an."""
-    config = Config("alembic.ini")
-    config.set_main_option("sqlalchemy.url", sqlalchemy_url)
-    command.upgrade(config, "head")
 
 
 @pytest.fixture

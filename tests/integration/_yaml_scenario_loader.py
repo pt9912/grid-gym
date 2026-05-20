@@ -1,0 +1,124 @@
+"""Test-seitiger YAML-Loader fuer M2-Welle-6c-Integrationstests.
+
+Konvertiert eine YAML-Datei in das vom Core erwartete
+`Mapping[str, object]` mit `Decimal`-coerced numerischen Feldern
+und ruft anschliessend `load_scenario(...)`.
+
+Welle-6c-Anti-Scope: dies ist KEIN produktiver Adapter unter
+`src/`. ADR 0021 §2.1 haelt YAML-File-Parsing als
+Adapter-Verantwortung ausserhalb von `core/scenario/`. Bis ein
+produktiver Adapter geplant wird (eigenes Slice + ADR), bleibt
+die Konvertierung auf die Integrationstest-Infrastruktur
+beschraenkt.
+
+Konvertierungsregel: ausschliesslich `str` → `Decimal`. Floats
+in den Quelldaten werden vom Scenario-Validator typisiert
+abgelehnt (`ScenarioWrongTypeError`); Praezisionsverluste sind
+damit konstruktiv ausgeschlossen (`GG-DATA-005`).
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from decimal import Decimal
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from grid_gym.hexagon.core.scenario.loader import LoadedScenario, load_scenario
+
+_DEVICE_DECIMAL_PARAMS: frozenset[str] = frozenset(
+    {
+        "rated_power_kw",
+        "capacity_kwh",
+        "initial_soc_pct",
+        "min_soc_pct",
+        "max_soc_pct",
+        "max_charge_kw",
+        "max_discharge_kw",
+        "charge_efficiency",
+        "discharge_efficiency",
+        "ramp_kw_per_s",
+        "nominal_voltage_v",
+        "max_import_kw",
+        "max_export_kw",
+    }
+)
+
+_GRID_MODEL_DECIMAL_FIELDS: frozenset[str] = frozenset(
+    {
+        "nominal_frequency_hz",
+        "frequency_sensitivity_hz_per_kw",
+        "frequency_clamp_min_hz",
+        "frequency_clamp_max_hz",
+        "nominal_voltage_v",
+        "voltage_sensitivity_v_per_kw",
+        "voltage_clamp_min_v",
+        "voltage_clamp_max_v",
+    }
+)
+
+_LOAD_EVENT_DECIMAL_FIELDS: frozenset[str] = frozenset({"start_s", "duration_s", "power_kw"})
+
+
+def load_yaml_scenario(path: Path) -> LoadedScenario:
+    """Laedt eine YAML-Szenariodatei und konvertiert sie nach Decimal."""
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise TypeError(f"YAML root must be a mapping; got {type(raw).__name__} from {path}")
+    return load_scenario(_coerce_decimals(raw))
+
+
+def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
+    result: dict[str, Any] = dict(raw)
+
+    devices = result.get("devices")
+    if isinstance(devices, list):
+        result["devices"] = [_coerce_device(entry) for entry in devices]
+
+    grid_model = result.get("grid_model")
+    if isinstance(grid_model, dict):
+        result["grid_model"] = _coerce_decimal_fields(grid_model, _GRID_MODEL_DECIMAL_FIELDS)
+
+    load_events = result.get("load_events")
+    if isinstance(load_events, list):
+        result["load_events"] = [
+            _coerce_decimal_fields(entry, _LOAD_EVENT_DECIMAL_FIELDS) for entry in load_events
+        ]
+
+    load_profiles = result.get("load_profiles")
+    if isinstance(load_profiles, list):
+        result["load_profiles"] = [_coerce_load_profile(entry) for entry in load_profiles]
+
+    return result
+
+
+def _coerce_device(entry: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(entry)
+    params = result.get("params")
+    if isinstance(params, dict):
+        result["params"] = _coerce_decimal_fields(params, _DEVICE_DECIMAL_PARAMS)
+    return result
+
+
+def _coerce_decimal_fields(
+    entry: Mapping[str, Any], decimal_fields: frozenset[str]
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in entry.items():
+        if key in decimal_fields and isinstance(value, str):
+            result[key] = Decimal(value)
+        else:
+            result[key] = value
+    return result
+
+
+def _coerce_load_profile(entry: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(entry)
+    tick_values = result.get("tick_values")
+    if isinstance(tick_values, list):
+        result["tick_values"] = [
+            Decimal(value) if isinstance(value, str) else value for value in tick_values
+        ]
+    return result
