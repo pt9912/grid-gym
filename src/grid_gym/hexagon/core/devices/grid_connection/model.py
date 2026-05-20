@@ -51,9 +51,11 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import (
     DeviceAlreadyInitializedError,
     DeviceNotInitializedError,
+    FaultUnsupportedTypeError,
     MissingKeysError,
     WrongTypeError,
 )
+from grid_gym.hexagon.core.faults.types import FAULT_TYPE_VOLTAGE_DROP
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _ZERO = Decimal(0)
@@ -62,6 +64,14 @@ _MS_PER_HOUR = Decimal(3_600_000)
 _GRID_CONNECTION_SOURCE = "grid_connection"
 _SUBSYSTEM = "grid_connection"
 _GRID_CONNECTION_DECIMAL_PRECISION = 28
+
+_VOLTAGE_DROP_FRACTION = Decimal("0.5")
+"""M3-Welle-2 (ADR 0025 §2.1): bei aktivem `voltage_drop` faellt
+die Spannung auf `_VOLTAGE_DROP_FRACTION * nominal_voltage_v`
+(Welle-2-Default 50 %). Welle 3+ kann den Faktor via Payload
+konfigurierbar machen. Hard-Clamp in der jeweiligen Tick;
+Auto-Schluss (`_pending_power_kw`) wird NICHT beruehrt
+(ADR 0022 §2.4 GridConnection-Constraint)."""
 
 _RUN_ID_UNSET = ""
 """Marker fuer den Pre-`set_run_id`-Zustand (Welle-3-Review-M-4-
@@ -98,6 +108,14 @@ class GridConnectionDevice:
         self._pending_power_kw: Decimal = _ZERO
         self._import_kwh: Decimal = _ZERO
         self._export_kwh: Decimal = _ZERO
+        # M3-Welle-2 (ADR 0025 §2.2): Voltage-State + Fault-Flag.
+        # Welle-2-Default = `nominal_voltage_v` aus Config (in
+        # `initialize` gesetzt). Fault mutiert `_pending_voltage_v`;
+        # `tick()` committed in `_current_voltage_v` (analog
+        # `_pending_power_kw` → `_current_power_kw`).
+        self._current_voltage_v: Decimal = _ZERO
+        self._pending_voltage_v: Decimal = _ZERO
+        self._voltage_drop_active: bool = False
         self._last_telemetry: tuple[TelemetryPoint, ...] = ()
         self._alarms: list[GridConnectionAlarm] = []
         self._run_id: str = _RUN_ID_UNSET
@@ -149,6 +167,10 @@ class GridConnectionDevice:
         self._pending_power_kw = _ZERO
         self._import_kwh = _ZERO
         self._export_kwh = _ZERO
+        # M3-Welle-2 (ADR 0025): Voltage-Default = nominal_voltage_v.
+        self._current_voltage_v = config.nominal_voltage_v
+        self._pending_voltage_v = config.nominal_voltage_v
+        self._voltage_drop_active = False
 
     def apply_command(self, command: Command) -> CommandResult:
         if self._scenario_device is None or self._config is None:
@@ -174,6 +196,12 @@ class GridConnectionDevice:
         # Welle-4a-Minimum (ADR 0017 §2.5): kein Ramp.
         new_power_kw = self._pending_power_kw
         self._current_power_kw = new_power_kw
+        # M3-Welle-2 (ADR 0025 §2.1): Voltage-State commit
+        # (analog Power-State). Fault hat `_pending_voltage_v`
+        # bereits mutiert; Auto-Schluss-Schritt (ADR 0021 §2.7)
+        # beruehrt diese Felder NICHT.
+        new_voltage_v = self._pending_voltage_v
+        self._current_voltage_v = new_voltage_v
 
         # Energie-Akkumulation: delta_kwh = |power_kw| * (tick_ms / 3_600_000).
         # tick_ms wird zu Decimal gehoben, damit der Local-Context greift
@@ -184,9 +212,67 @@ class GridConnectionDevice:
         elif new_power_kw < _ZERO:
             self._export_kwh += delta_kwh
 
-        telemetry = self._emit_telemetry(context, new_power_kw)
+        telemetry = self._emit_telemetry(context, new_power_kw, new_voltage_v)
         self._last_telemetry = telemetry
         return DeviceTickOutcome(telemetry=telemetry)
+
+    # ------------------------------------------------------------------
+    # Fault-Injection (M3 Welle 2, ADR 0022 §2.1 + ADR 0025)
+    # ------------------------------------------------------------------
+
+    def inject_fault(
+        self,
+        fault_type: str,
+        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1)
+    ) -> None:
+        """Wendet einen Fault auf das Device an
+        (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
+
+        Welle-2-Closed-Set (ADR 0025 §2.1): unterstuetzt
+        ausschliesslich `fault_type=FAULT_TYPE_VOLTAGE_DROP`
+        (`"voltage_drop"`). Andere Typen werfen typisiert
+        `FaultUnsupportedTypeError`.
+
+        Effekt: setzt `_voltage_drop_active = True` + senkt
+        `_pending_voltage_v` auf
+        `_VOLTAGE_DROP_FRACTION * nominal_voltage_v` (Welle-2-
+        Default 50 %). Die naechste `tick()` committed das in
+        `_current_voltage_v` und emittiert das gesenkte
+        `voltage_v`-Telemetry.
+
+        **GridConnection-Constraint** (ADR 0022 §2.4): der Fault
+        mutiert KEINE `_pending_power_kw` — der Welle-6b-Auto-
+        Schluss wuerde sie sonst in derselben Tick ueberschreiben.
+
+        **Welle-2-Payload-Vertrag**: `payload` wird vollstaendig
+        ignoriert (keine Schema-Validierung, kein konfigurierbarer
+        `drop_fraction`-Override). Welle-3+ kann das schaerfen.
+        """
+        if fault_type == FAULT_TYPE_VOLTAGE_DROP:
+            config = cast(GridConnectionConfig, self._config)
+            self._voltage_drop_active = True
+            self._pending_voltage_v = config.nominal_voltage_v * _VOLTAGE_DROP_FRACTION
+            return
+        raise FaultUnsupportedTypeError("grid_connection", fault_type)
+
+    def clear_fault(self, fault_type: str) -> None:
+        """Recovery-Surface (Welle-2-Review-Folge H-2,
+        ADR 0025 §2.2): setzt den Voltage-Drop-Flag zurueck und
+        restauriert `_pending_voltage_v` auf `nominal_voltage_v`.
+        Symmetrisch zu `inject_fault`.
+
+        Welle-2-Closed-Set: nur `voltage_drop`. Unbekannter
+        `fault_type` wirft `FaultUnsupportedTypeError`.
+        Idempotenz-Vertrag (ADR 0025 §2.4): wiederholte Aufrufe
+        sind No-Op (Voltage stays nominal).
+        """
+        if fault_type == FAULT_TYPE_VOLTAGE_DROP:
+            config = cast(GridConnectionConfig, self._config)
+            self._voltage_drop_active = False
+            if config is not None:
+                self._pending_voltage_v = config.nominal_voltage_v
+            return
+        raise FaultUnsupportedTypeError("grid_connection", fault_type)
 
     def telemetry(self) -> tuple[TelemetryPoint, ...]:
         return self._last_telemetry
@@ -204,6 +290,9 @@ class GridConnectionDevice:
             pending_power_kw=self._pending_power_kw,
             import_kwh=self._import_kwh,
             export_kwh=self._export_kwh,
+            current_voltage_v=self._current_voltage_v,
+            pending_voltage_v=self._pending_voltage_v,
+            voltage_drop_active=self._voltage_drop_active,
         )
         return snap.to_dict()
 
@@ -222,6 +311,9 @@ class GridConnectionDevice:
         device._pending_power_kw = snap.pending_power_kw
         device._import_kwh = snap.import_kwh
         device._export_kwh = snap.export_kwh
+        device._current_voltage_v = snap.current_voltage_v
+        device._pending_voltage_v = snap.pending_voltage_v
+        device._voltage_drop_active = snap.voltage_drop_active
         device._run_id = snap.run_id
         device._sequence = snap.sequence
         return device
@@ -236,6 +328,9 @@ class GridConnectionDevice:
             and self._pending_power_kw == other._pending_power_kw
             and self._import_kwh == other._import_kwh
             and self._export_kwh == other._export_kwh
+            and self._current_voltage_v == other._current_voltage_v
+            and self._pending_voltage_v == other._pending_voltage_v
+            and self._voltage_drop_active == other._voltage_drop_active
             and self._device_id_or_none() == other._device_id_or_none()
             and self._run_id == other._run_id
             and self._sequence == other._sequence
@@ -250,6 +345,9 @@ class GridConnectionDevice:
                 self._pending_power_kw,
                 self._import_kwh,
                 self._export_kwh,
+                self._current_voltage_v,
+                self._pending_voltage_v,
+                self._voltage_drop_active,
                 self._device_id_or_none(),
                 self._run_id,
                 self._sequence,
@@ -263,17 +361,21 @@ class GridConnectionDevice:
         self,
         context: DeviceTickContext,
         new_power_kw: Decimal,
+        new_voltage_v: Decimal,
     ) -> tuple[TelemetryPoint, ...]:
         device_id = cast(ScenarioDevice, self._scenario_device).id
         export_kwh = self._export_kwh.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         import_kwh = self._import_kwh.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         power_kw = new_power_kw.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
+        voltage_v = new_voltage_v.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
-        # Drei Tupel; alphabetisch sortiert nach Metrikname (ADR 0017 §2.5).
+        # Vier Tupel; alphabetisch sortiert nach Metrikname
+        # (ADR 0017 §2.5 + M3-Welle-2 ADR 0025 §2.1 voltage_v).
         emissions = (
             ("export_kwh", export_kwh, "kWh"),
             ("import_kwh", import_kwh, "kWh"),
             ("power_kw", power_kw, "kW"),
+            ("voltage_v", voltage_v, "V"),
         )
         points = []
         for metric, value, unit in emissions:

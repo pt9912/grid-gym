@@ -62,6 +62,13 @@ _TOP_KEYS: Final[frozenset[str]] = frozenset(
 )
 _CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
 
+# M3-Welle-2 (ADR 0025 §2.2): optionale Top-Level-Keys fuer
+# Welle-2-Erweiterungen. Welle-1-Snapshots ohne diese Felder
+# bleiben roundtrip-faehig (Defaults via Backward-Compat).
+_FAULT_STATE_KEY: Final[str] = "fault_state"
+_CURRENT_VOLTAGE_V_KEY: Final[str] = "current_voltage_v"
+_PENDING_VOLTAGE_V_KEY: Final[str] = "pending_voltage_v"
+
 
 @dataclass(frozen=True, slots=True)
 class GridConnectionSnapshot:
@@ -82,6 +89,12 @@ class GridConnectionSnapshot:
     pending_power_kw: Decimal
     import_kwh: Decimal
     export_kwh: Decimal
+    # M3-Welle-2 (ADR 0025 §2.2): additive Voltage-State + Fault-
+    # Flag. Default fuer Voltage = `nominal_voltage_v` (oben);
+    # Welle-1-Snapshots ohne diese Felder bleiben roundtrip-faehig.
+    current_voltage_v: Decimal = Decimal(0)
+    pending_voltage_v: Decimal = Decimal(0)
+    voltage_drop_active: bool = False
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -100,6 +113,13 @@ class GridConnectionSnapshot:
             "pending_power_kw": self.pending_power_kw,
             "import_kwh": self.import_kwh,
             "export_kwh": self.export_kwh,
+            # M3-Welle-2 (ADR 0025): additiv. Welle-1-Snapshots
+            # ohne diese Keys bleiben roundtrip-faehig.
+            _CURRENT_VOLTAGE_V_KEY: self.current_voltage_v,
+            _PENDING_VOLTAGE_V_KEY: self.pending_voltage_v,
+            _FAULT_STATE_KEY: {
+                "voltage_drop_active": self.voltage_drop_active,
+            },
         }
 
     @classmethod
@@ -146,6 +166,32 @@ class GridConnectionSnapshot:
         import_kwh = assert_decimal(state["import_kwh"], "import_kwh", SUBSYSTEM)
         export_kwh = assert_decimal(state["export_kwh"], "export_kwh", SUBSYSTEM)
 
+        # M3-Welle-2 (ADR 0025 §2.2): optionale Voltage-State + Flag.
+        # Welle-1-Snapshots ohne diese Keys defaulten auf
+        # nominal_voltage_v (current/pending) bzw. False (flag).
+        current_voltage_v = (
+            assert_decimal(state[_CURRENT_VOLTAGE_V_KEY], _CURRENT_VOLTAGE_V_KEY, SUBSYSTEM)
+            if _CURRENT_VOLTAGE_V_KEY in state
+            else config.nominal_voltage_v
+        )
+        pending_voltage_v = (
+            assert_decimal(state[_PENDING_VOLTAGE_V_KEY], _PENDING_VOLTAGE_V_KEY, SUBSYSTEM)
+            if _PENDING_VOLTAGE_V_KEY in state
+            else config.nominal_voltage_v
+        )
+        voltage_drop_active = False
+        if _FAULT_STATE_KEY in state:
+            fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
+            raw_flag = fault_state.get("voltage_drop_active", False)
+            if not isinstance(raw_flag, bool):
+                raise WrongTypeError(
+                    SUBSYSTEM,
+                    f"{_FAULT_STATE_KEY}.voltage_drop_active",
+                    "bool",
+                    type(raw_flag).__name__,
+                )
+            voltage_drop_active = raw_flag
+
         return cls(
             version=version,
             device_id=device_id,
@@ -156,6 +202,9 @@ class GridConnectionSnapshot:
             pending_power_kw=pending_power_kw,
             import_kwh=import_kwh,
             export_kwh=export_kwh,
+            current_voltage_v=current_voltage_v,
+            pending_voltage_v=pending_voltage_v,
+            voltage_drop_active=voltage_drop_active,
         )
 
 

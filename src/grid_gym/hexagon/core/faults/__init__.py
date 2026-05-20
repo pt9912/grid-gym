@@ -9,5 +9,6 @@ unter `adapters/driven/fault_*/` (Welle 2).
 
 from grid_gym.hexagon.core.faults._protocol import FaultInjectableDevice
 from grid_gym.hexagon.core.faults.battery_fault_adapter import BatteryFaultAdapter
+from grid_gym.hexagon.core.faults.grid_fault_adapter import GridFaultAdapter
 
-__all__ = ["BatteryFaultAdapter", "FaultInjectableDevice"]
+__all__ = ["BatteryFaultAdapter", "FaultInjectableDevice", "GridFaultAdapter"]

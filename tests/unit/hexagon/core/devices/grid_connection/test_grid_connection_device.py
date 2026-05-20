@@ -377,17 +377,20 @@ def test_alarm_carries_command_id() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_telemetry_emits_three_metrics_sorted() -> None:
-    """ADR 0017 §2.5: drei TelemetryPoints sortiert nach Metrikname.
+def test_telemetry_emits_four_metrics_sorted() -> None:
+    """ADR 0017 §2.5 + M3-Welle-2 (ADR 0025 §2.1): vier
+    TelemetryPoints sortiert nach Metrikname (`export_kwh`,
+    `import_kwh`, `power_kw`, `voltage_v` — Welle-2 ergaenzt
+    `voltage_v`).
 
-    Welle-4a-Review M-5: zusaetzlich zur konkreten Tripel-Pruefung
-    wird die Sortier-Invariante mechanisch gepinnt, damit ein
-    zukuenftiger Metrik-Eintrag nicht stille Drift einfuehrt.
+    Welle-4a-Review M-5 + M3-Welle-2: die Sortier-Invariante wird
+    mechanisch gepinnt, damit ein zukuenftiger Metrik-Eintrag
+    nicht stille Drift einfuehrt.
     """
     device = _initialize(GridConnectionDevice())
     outcome = device.tick(_context(tick=0))
     metrics = [p.metric for p in outcome.telemetry]
-    assert metrics == ["export_kwh", "import_kwh", "power_kw"]
+    assert metrics == ["export_kwh", "import_kwh", "power_kw", "voltage_v"]
     assert metrics == sorted(metrics), "Telemetrie-Metriken muessen alphabetisch sortiert sein"
 
 
@@ -779,10 +782,12 @@ def test_command_sequence_determinism(power_values: list[Decimal]) -> None:
     assert trace_a == trace_b
 
 
-def test_full_100_tick_trace_has_300_telemetry_points() -> None:
-    """GridConnection emittiert 3 Metriken/Tick → 100 Ticks * 3 = 300 Points."""
+def test_full_100_tick_trace_has_400_telemetry_points() -> None:
+    """M3-Welle-2 (ADR 0025 §2.1): GridConnection emittiert 4
+    Metriken/Tick (`export_kwh`, `import_kwh`, `power_kw`,
+    `voltage_v`) → 100 Ticks * 4 = 400 Points."""
     trace = _run_grid(seed=42, command_powers=(Decimal("60"),))
-    assert len(trace) == 300
+    assert len(trace) == 400
 
 
 @given(seed=st.integers(min_value=0, max_value=2**32 - 1))
