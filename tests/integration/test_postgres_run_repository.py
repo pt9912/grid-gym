@@ -10,7 +10,8 @@ Host in den Test-Runner-Container — testcontainers spawnt
 Postgres ueber diesen Socket als Sibling-Container (nicht
 docker-in-docker).
 
-Die `postgres_dsn`-Fixture ist seit M2 Welle 6c modul-uebergreifend
+Seit M2 Welle 6c (`fix(welle-6c)`-Review-Folge L-6): die
+`postgres_dsn`- UND `repository`-Fixtures leben modul-uebergreifend
 in `tests/integration/conftest.py` (gemeinsame Nutzung mit
 `test_mvp_demo_scenario.py`).
 """
@@ -18,9 +19,7 @@ in `tests/integration/conftest.py` (gemeinsame Nutzung mit
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Iterator
 
-import psycopg
 import pytest
 
 from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
@@ -29,24 +28,6 @@ from grid_gym.hexagon.core.errors import (
     RunAlreadyExistsError,
     RunNotFoundError,
 )
-
-
-@pytest.fixture
-def repository(
-    postgres_dsn: tuple[str, str],
-) -> Iterator[PostgresRunRepository]:
-    """Frisches Repository pro Test — Tabelle wird zwischen Tests
-    geleert, damit Reihenfolge unabhaengig bleibt."""
-    psycopg_dsn, _ = postgres_dsn
-    factory: Callable[[], psycopg.Connection] = lambda: psycopg.connect(psycopg_dsn)
-    _truncate_runs(factory)
-    yield PostgresRunRepository(connection_factory=factory)
-
-
-def _truncate_runs(factory: Callable[[], psycopg.Connection]) -> None:
-    with factory() as conn, conn.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE runs")
-        conn.commit()
 
 
 def _make_metadata(run_id: str | None = None) -> RunMetadata:

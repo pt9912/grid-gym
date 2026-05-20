@@ -8,6 +8,7 @@ byte-identische `TickResult.emitted_telemetry` liefern
 
 from __future__ import annotations
 
+from importlib.metadata import version as _pkg_version
 from pathlib import Path
 from typing import Final
 
@@ -21,7 +22,7 @@ MIN_DETERMINISM_TICKS: Final[int] = 100
 """Mindest-Tick-Anzahl fuer den Determinismus-Vergleich
 (`M2-devices.md §3 Welle 6c`)."""
 
-DEMO_TOOL_VERSION: Final[str] = "0.1.0"
-"""Tool-Version-Konstante fuer `RunMetadata.tool_version` in
-Welle-6c-Tests; spiegelt den Wert aus
-`test_postgres_run_repository.py::_make_metadata`."""
+DEMO_TOOL_VERSION: Final[str] = _pkg_version("grid-gym")
+"""Tool-Version aus `pyproject.toml` (via `importlib.metadata`).
+Welle-6c-Review L-3: ersetzt den hardcoded `"0.1.0"`-Wert, damit
+`RunMetadata.tool_version` automatisch mit Versions-Bumps geht."""

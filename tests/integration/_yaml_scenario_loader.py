@@ -71,6 +71,14 @@ def load_yaml_scenario(path: Path) -> LoadedScenario:
 
 
 def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Schema-bewusste Decimal-Konvertierung.
+
+    Welle-6c-Review M-4: Nicht-Mapping/Nicht-List-Strukturen werden
+    **unveraendert** durchgereicht (`raw["devices"] = "not-a-list"`
+    fliesst durch und triggert anschliessend
+    `ScenarioWrongTypeError` im Validator), statt einen opaken
+    `ValueError` aus `dict(non-mapping)` zu erzeugen.
+    """
     result: dict[str, Any] = dict(raw)
 
     devices = result.get("devices")
@@ -78,14 +86,12 @@ def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
         result["devices"] = [_coerce_device(entry) for entry in devices]
 
     grid_model = result.get("grid_model")
-    if isinstance(grid_model, dict):
+    if isinstance(grid_model, Mapping):
         result["grid_model"] = _coerce_decimal_fields(grid_model, _GRID_MODEL_DECIMAL_FIELDS)
 
     load_events = result.get("load_events")
     if isinstance(load_events, list):
-        result["load_events"] = [
-            _coerce_decimal_fields(entry, _LOAD_EVENT_DECIMAL_FIELDS) for entry in load_events
-        ]
+        result["load_events"] = [_coerce_load_event(entry) for entry in load_events]
 
     load_profiles = result.get("load_profiles")
     if isinstance(load_profiles, list):
@@ -94,10 +100,15 @@ def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _coerce_device(entry: Mapping[str, Any]) -> dict[str, Any]:
+def _coerce_device(entry: Any) -> Any:
+    """Welle-6c-Review M-4: Non-Mapping wird durchgereicht — der
+    Scenario-Validator wirft anschliessend `ScenarioWrongTypeError`
+    mit Pfad `devices[i]`."""
+    if not isinstance(entry, Mapping):
+        return entry
     result = dict(entry)
     params = result.get("params")
-    if isinstance(params, dict):
+    if isinstance(params, Mapping):
         result["params"] = _coerce_decimal_fields(params, _DEVICE_DECIMAL_PARAMS)
     return result
 
@@ -114,7 +125,17 @@ def _coerce_decimal_fields(
     return result
 
 
-def _coerce_load_profile(entry: Mapping[str, Any]) -> dict[str, Any]:
+def _coerce_load_event(entry: Any) -> Any:
+    """Welle-6c-Review M-4: Non-Mapping wird durchgereicht."""
+    if not isinstance(entry, Mapping):
+        return entry
+    return _coerce_decimal_fields(entry, _LOAD_EVENT_DECIMAL_FIELDS)
+
+
+def _coerce_load_profile(entry: Any) -> Any:
+    """Welle-6c-Review M-4: Non-Mapping wird durchgereicht."""
+    if not isinstance(entry, Mapping):
+        return entry
     result = dict(entry)
     tick_values = result.get("tick_values")
     if isinstance(tick_values, list):

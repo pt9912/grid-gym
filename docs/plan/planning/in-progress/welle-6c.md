@@ -1,15 +1,19 @@
 # Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure
 
 **Status:** Done — Welle 6 abgeschlossen am 2026-05-20 mit
-`8a3aa2f` (C0, Slice-Doc) + `c31052c` (C1, `feat`) + Doc-Sync
-(C2, dieser Commit). Schliesst die Wellen-Reihe 6a (`27a441f`)
-+ 6b (`0f1c597` + `93f784f`) ab. Kanonische Slice-Spezifikation:
-`M2-devices.md §3 Welle 6c` — dieses Dokument ist
-lesefreundlicher Index + per-Welle-Tracking, nicht Ersatz.
+`8a3aa2f` (C0, Slice-Doc) + `c31052c` (C1, `feat`) +
+`6adb041` (C2, Doc-Sync) + Review-Folge (C3, `fix(welle-6c)`,
+adressiert 4 Medium + 6 Low Findings ohne Supersede-ADR,
+Schaerfung-Pattern aus Welle 6b). Schliesst die Wellen-Reihe
+6a (`27a441f`) + 6b (`0f1c597` + `93f784f`) ab. Kanonische
+Slice-Spezifikation: `M2-devices.md §3 Welle 6c` — dieses
+Dokument ist lesefreundlicher Index + per-Welle-Tracking,
+nicht Ersatz.
 
-**Spec-Reife:** Inhaltlich final. Welle-Closure (C2) hat den
-Header auf `Done` gezogen und die `<…-Commit-Hash>`-Platzhalter
-in §4.C2 / §7 durch die realen C1-/C2-Hashes ersetzt.
+**Spec-Reife:** Inhaltlich final. C2 hat den Header auf `Done`
+gezogen und die `<…-Commit-Hash>`-Platzhalter in §4.C2 / §7
+durch die realen C1-/C2-Hashes ersetzt; C3 (Review-Folge)
+adressiert Code-Quality-Findings ohne Spec-Aenderung.
 
 ## 1. Context
 
@@ -50,7 +54,7 @@ I/O-agnostisch (ADR 0021 unverletzt).
 4. Unit-Property-Test
    (`tests/unit/hexagon/core/simulation/test_scenario_permutation.py`)
    — `ScenarioDevice`-Permutation → byte-identische Telemetry.
-5. Welle-6-Closure-Doc-Sync: ADR 0015 → `Accepted`,
+5. Welle-6-Closure-Doc-Sync: ADR 0015 + ADR 0021 → `Accepted`,
    `M2-devices.md` §1/§3, `roadmap.md`, beide README.
 
 **Anti-Scope:**
@@ -66,12 +70,19 @@ I/O-agnostisch (ADR 0021 unverletzt).
 
 ## 3. Architektur-Entscheidungen
 
-Welle 6c bringt **keine neue ADR**. Hebt ADR 0015 (Snapshot-
-Envelope v2, `Provisional` seit Welle 6a) auf `Accepted`. Die
-v1→v2-Implementation und der typisierte
-`TickLoopSnapshotVersionError` sind seit Welle 6a aktiv
-(`src/grid_gym/hexagon/core/simulation/tick_loop.py:74,517,562`
-+ `tests/unit/hexagon/core/simulation/test_snapshot_envelope_v1_to_v2.py`).
+Welle 6c bringt **keine neue ADR**. Hebt zwei Provisional-ADRs
+auf `Accepted` (Welle-6b-Closure-Folgeerwartung aus dem
+`93f784f`-Commit-Body):
+
+- **ADR 0015** (Snapshot-Envelope v2, `Provisional` seit Welle 6a):
+  v1→v2-Implementation und typisierter
+  `TickLoopSnapshotVersionError` sind seit Welle 6a aktiv
+  (`src/grid_gym/hexagon/core/simulation/tick_loop.py:74,517,562`
+  + `tests/unit/hexagon/core/simulation/test_snapshot_envelope_v1_to_v2.py`).
+- **ADR 0021** (Scenario-Loader + TickLoop-Event-Wiring,
+  `Provisional` seit Welle 6b): `build_devices`/`build_tick_loop`
+  + Vor-Tick-Block werden in der MVP-Demo produktiv exerziert;
+  der Permutations-Property-Test pinnt §2.2/§2.9 Determinismus.
 
 ## 4. Liefer-Reihenfolge (3 Commits)
 
@@ -91,8 +102,9 @@ als Welle-Start-Marker. Status: `In Progress`. Kein Code.
    - 5 MVP-Geraete: 1× Battery, 1× PV, 1× Load, 1× GridConnection
      (Auto-Schluss-Empfaenger), 1× SmartMeter
    - `grid_model_config` mit den 8 Decimal-Feldern (siehe
-     `_minimal_raw_mapping` in
-     `tests/unit/.../test_loader_welle_6b.py:399–416`)
+     `_minimal_raw_mapping` bzw. `_grid_model_config` in
+     `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
+     — Funktions-Referenz statt Zeilenbereich, da driftet)
    - 1× `LoadEvent` (z. B. `set_power_kw` auf der Load bei Tick 10)
    - 1× `LoadProfile` (kurze Profilreihe, z. B. 10 Stuetzpunkte)
    - **Numerische Werte als Strings** in YAML (`"100.0"`), damit
@@ -133,8 +145,11 @@ als Welle-Start-Marker. Status: `In Progress`. Kein Code.
    - **`test_demo_scenario_run_roundtrips_through_postgres`**:
      Persistiert `RunMetadata` (mit `scenario_hash` aus
      `LoadedScenario`, `seed=M2_DEMO_SEED`, `tick_ms=1000`,
-     `started_at`/`ended_at` aus `FakeClock`, `tool_version` aus
-     einer Konstante) ueber `PostgresRunRepository.save(...)`,
+     `started_at`/`ended_at` als hardcoded ISO-8601-UTC-Strings
+     (kein Live-Clock-Pull noetig, da der Test nur den
+     `runs`-Roundtrip pinnt), `tool_version` aus
+     `importlib.metadata.version("grid-gym")`) ueber
+     `PostgresRunRepository.save(...)`,
      liest per `get_by_id(...)` zurueck, vergleicht 1:1.
 
 5. **`tests/integration/conftest.py`** — `postgres_dsn`-Fixture
@@ -196,6 +211,60 @@ finalen Status-Update auf `welle-6c.md`:
    C2-Doc-Sync` gezogen; Verifikationspfad als „erfuellt"
    markiert.
 
+### C3 — `fix(welle-6c)`: Review-Folge (Schaerfung-Pattern)
+
+Code-Review nach C2-Closure hat 0 High, 4 Medium und 6 Low
+Findings ergeben — kein Supersede-ADR, alle in einem `fix`-
+Commit adressiert (Schaerfung-Pattern aus Welle 6b).
+
+**Medium (4):**
+
+- **M-1**: `test_scenario_permutation.py` deckt SmartMeter
+  nicht ab. Permutations-Strategie permutiert jetzt nur
+  Nicht-Aggregator-Devices; SmartMeter haengt konstant am Ende
+  (spiegelt MVP-Demo-Konvention, ADR 0018 §2.3 Read-Order-
+  Constraint dokumentiert).
+- **M-2**: `test_demo_scenario_telemetry_is_byte_identical_across_runs`
+  prueft jetzt zusaetzlich, dass alle 5 MVP-Geraete-IDs in der
+  Telemetry erscheinen und SmartMeter `aggregated_power_kw`
+  emittiert. Schliesst Silent-Empty-Telemetry-Regression aus.
+- **M-3**: Neuer Test
+  `test_yaml_loader_allowlist.py` scannt
+  `dataclasses.fields(BatteryConfig|PvConfig|LoadConfig|
+  GridConnectionConfig|SmartMeterConfig)` auf `Decimal`-Felder
+  und verifiziert Coverage in `_DEVICE_DECIMAL_PARAMS`
+  (Drift-Detection). Bonus: Orphan-Eintraege-Pruefung.
+- **M-4**: `_coerce_device`/`_coerce_load_event`/
+  `_coerce_load_profile` werfen jetzt keinen opaken
+  `ValueError` mehr bei Non-Mapping-Inputs — sie reichen
+  unveraendert durch, der Scenario-Validator wirft den
+  typisierten `ScenarioWrongTypeError`.
+
+**Low (6):**
+
+- **L-1**: §2.5 + §3 listen jetzt explizit ADR 0015 **und**
+  ADR 0021 als gehobene ADRs.
+- **L-2**: §4.C1.4-Beschreibung sagt jetzt „hardcoded ISO-8601-
+  UTC-Strings" statt „aus FakeClock"; §6-Bezug auf FakeClock
+  klargestellt (`ClockPort` im `build_tick_loop`, **nicht**
+  fuer `started_at`/`ended_at`).
+- **L-3**: `DEMO_TOOL_VERSION` kommt jetzt aus
+  `importlib.metadata.version("grid-gym")` statt hardcoded
+  `"0.1.0"` — synct mit `pyproject.toml`-Bumps.
+- **L-4**: §4.C1.1-Verweis auf `test_loader_welle_6b.py`
+  zeigt jetzt auf Funktions-Referenz (`_minimal_raw_mapping`
+  bzw. `_grid_model_config`), nicht mehr auf einen
+  drift-anfaelligen Zeilenbereich.
+- **L-5**: Permutations-Property-Test laeuft jetzt mit
+  `max_examples=50` statt 25 — deckt alle 4!=24
+  Permutationen statistisch ueberzeugend ab.
+- **L-6**: `repository`-Fixture in `conftest.py` zentralisiert
+  (war in beiden Test-Modulen dupliziert).
+
+**Note (N1–N5):** keine Action-Items, nur Observations
+(Image-Pin per Digest, YAML-Doppelload, Status-Block-Pattern)
+— in `open/` getriggert, wenn relevant.
+
 ## 5. Critical Files to Modify/Create
 
 | Pfad                                                                       | Commit | Aktion |
@@ -214,6 +283,14 @@ finalen Status-Update auf `welle-6c.md`:
 | `docs/plan/planning/in-progress/README.md`                                 | C2     | EDIT   |
 | `docs/plan/planning/in-progress/roadmap.md`                                | C2     | EDIT   |
 | `docs/plan/planning/in-progress/welle-6c.md`                               | C2     | EDIT (Status-Header) |
+| `tests/unit/hexagon/core/simulation/test_scenario_permutation.py`          | C3     | EDIT (M-1 + L-5: SmartMeter + max_examples=50) |
+| `tests/integration/test_mvp_demo_scenario.py`                              | C3     | EDIT (M-2: Positiv-Assertion + L-6: Fixture-Move) |
+| `tests/integration/_yaml_scenario_loader.py`                               | C3     | EDIT (M-4: typed-error guards) |
+| `tests/integration/test_yaml_loader_allowlist.py`                          | C3     | NEU (M-3: Allowlist-Drift-Detection) |
+| `tests/integration/_constants.py`                                          | C3     | EDIT (L-3: importlib.metadata.version) |
+| `tests/integration/conftest.py`                                            | C3     | EDIT (L-6: `repository`-Fixture zentralisiert) |
+| `tests/integration/test_postgres_run_repository.py`                        | C3     | EDIT (L-6: lokale Fixture entfernt) |
+| `docs/plan/planning/in-progress/welle-6c.md`                               | C3     | EDIT (Status + §4.C3 Review-Folge + Tabelle + §7 Tests-Count) |
 
 ## 6. Bestehender Code zur Wiederverwendung
 
@@ -230,7 +307,9 @@ finalen Status-Update auf `welle-6c.md`:
   `tests/unit/hexagon/core/simulation/test_scheduler.py:149–208`.
 - `MersenneTwisterRandomPort(seed=…)` aus
   `src/grid_gym/adapters/driven/random_mt/mersenne_twister.py`.
-- `FakeClock` (M1) fuer deterministisches `started_at`/`ended_at`.
+- `FakeClock` (M1) als `ClockPort` im `build_tick_loop(...)`-
+  Aufruf (nicht fuer `RunMetadata.started_at`/`ended_at`; diese
+  sind hardcoded ISO-Strings im Test).
 
 ## 7. Verifikationspfad — alle Items erfuellt (2026-05-20)
 
@@ -238,9 +317,11 @@ End-to-End ueber `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
 1. **`make test-unit`** — gruen, **762 Tests** (+1 ggue. Welle 6b)
-   inkl. `test_scenario_permutation.py` (25 Hypothesis-Beispiele).
-2. **`make test-integration`** — gruen, **7 Tests** (+2 ggue.
-   Welle 6b) inkl. `test_mvp_demo_scenario.py`:
+   inkl. `test_scenario_permutation.py` (50 Hypothesis-Beispiele
+   nach C3-Review-Folge, vorher 25).
+2. **`make test-integration`** — gruen, **9 Tests** (+4 ggue.
+   Welle 6b: 2 in C1 = `test_mvp_demo_scenario.py`, 2 in C3 =
+   `test_yaml_loader_allowlist.py`):
    - byte-identische `emitted_telemetry` ueber 100 Ticks;
    - `runs`-Row roundtrip durch ephemeren Postgres-Sibling-
      Container.
@@ -252,14 +333,14 @@ nach Repo-Konvention):
 5. **ADR-0015-Status** sichtbar `Accepted` (`docs/plan/adr/0015-snapshot-envelope-v2.md`
    Zeile 3). Zusaetzlich ADR 0021 auf `Accepted` gehoben (Welle-6b-
    Closure-Folgeerwartung, siehe `93f784f`-Commit-Body).
-6. **Git-Pattern**: drei neue Welle-6c-Commits in der Reihenfolge
+6. **Git-Pattern**: vier neue Welle-6c-Commits in der Reihenfolge
    `docs(plan): welle-6c Slice-Doc (C0)` →
    `feat(welle-6c): ... (C1)` →
-   `docs(plan): Welle-6c Status/DoD-Sync (C2)`. `git log --oneline -3`
-   zeigt diese drei Hashes als juengste Commits. Der absolute
-   Abstand zu `origin/main` haengt vom Push-Stand ab (Welle 6c
-   addiert +3 zu dem, was schon `ahead` war) und wird hier
-   bewusst nicht eingefroren.
+   `docs(plan): Welle-6c Status/DoD-Sync (C2)` →
+   `fix(welle-6c): Review-Folge (C3, M+L Findings)`.
+   `git log --oneline -4` zeigt diese vier Hashes als juengste
+   Commits. Der absolute Abstand zu `origin/main` haengt vom
+   Push-Stand ab und wird hier bewusst nicht eingefroren.
 
 ## 8. Risiken & Fallback
 

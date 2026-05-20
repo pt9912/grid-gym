@@ -15,12 +15,15 @@ docker-in-docker).
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
+import psycopg
 import pytest
 from alembic import command
 from alembic.config import Config
 from testcontainers.postgres import PostgresContainer
+
+from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
 
 
 @pytest.fixture(scope="module")
@@ -49,3 +52,22 @@ def _run_alembic_upgrade(sqlalchemy_url: str) -> None:
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", sqlalchemy_url)
     command.upgrade(config, "head")
+
+
+@pytest.fixture
+def repository(
+    postgres_dsn: tuple[str, str],
+) -> Iterator[PostgresRunRepository]:
+    """Frisches `PostgresRunRepository` pro Test mit TRUNCATE-Reset.
+
+    Welle-6c-Review L-6: vereinheitlicht die zuvor in
+    `test_postgres_run_repository.py` und `test_mvp_demo_scenario.py`
+    dupliziert definierte Fixture. TRUNCATE laeuft per Test, damit
+    Tests reihenfolgeunabhaengig sind.
+    """
+    psycopg_dsn, _ = postgres_dsn
+    factory: Callable[[], psycopg.Connection] = lambda: psycopg.connect(psycopg_dsn)
+    with factory() as conn, conn.cursor() as cursor:
+        cursor.execute("TRUNCATE TABLE runs")
+        conn.commit()
+    yield PostgresRunRepository(connection_factory=factory)

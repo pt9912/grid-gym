@@ -19,10 +19,6 @@ produktiver YAML-Adapter unter `src/`, ADR 0021 §2.1).
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Iterator
-
-import psycopg
-import pytest
 
 from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
@@ -38,19 +34,6 @@ from tests.integration._constants import (
 )
 from tests.integration._yaml_scenario_loader import load_yaml_scenario
 from tests.unit.hexagon.ports.driven._fakes import FakeClock
-
-
-@pytest.fixture
-def repository(
-    postgres_dsn: tuple[str, str],
-) -> Iterator[PostgresRunRepository]:
-    """Frisches `PostgresRunRepository` pro Test mit TRUNCATE-Reset."""
-    psycopg_dsn, _ = postgres_dsn
-    factory: Callable[[], psycopg.Connection] = lambda: psycopg.connect(psycopg_dsn)
-    with factory() as conn, conn.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE runs")
-        conn.commit()
-    yield PostgresRunRepository(connection_factory=factory)
 
 
 def _drive_demo(loaded: LoadedScenario, *, ticks: int) -> tuple[TelemetryPoint, ...]:
@@ -70,13 +53,25 @@ def _drive_demo(loaded: LoadedScenario, *, ticks: int) -> tuple[TelemetryPoint, 
 def test_demo_scenario_telemetry_is_byte_identical_across_runs() -> None:
     """`M2-devices.md §3 Welle 6c`: zwei Laeufe mit gleichem Seed
     erzeugen byte-identische `TickResult.emitted_telemetry` ueber
-    `MIN_DETERMINISM_TICKS=100` Ticks (`GG-MVP-002`)."""
+    `MIN_DETERMINISM_TICKS=100` Ticks (`GG-MVP-002`).
+
+    Positiv-Assertion (Welle-6c-Review M-2): alle 5 MVP-Geraete
+    plus die SmartMeter-Aggregation muessen tatsaechlich Telemetry
+    emittieren — sonst bliebe eine Silent-Empty-Telemetry-
+    Regression (beide Laeufe gleich-broken) unbemerkt."""
     loaded = load_yaml_scenario(MVP_DEMO_SCENARIO_PATH)
     assert loaded.scenario.simulation.seed == M2_DEMO_SEED
     telemetry_a = _drive_demo(loaded, ticks=MIN_DETERMINISM_TICKS)
     telemetry_b = _drive_demo(loaded, ticks=MIN_DETERMINISM_TICKS)
     assert telemetry_a == telemetry_b
-    assert len(telemetry_a) > 0, "Demo-Szenario muss Telemetry emittieren"
+    device_ids = {point.device_id for point in telemetry_a}
+    assert device_ids >= {"pv-1", "load-1", "battery-1", "grid-1", "meter-1"}, (
+        f"GG-MVP-002 verlangt Telemetry aller 5 MVP-Geraete; gesehen: {device_ids}"
+    )
+    assert any(
+        point.device_id == "meter-1" and point.metric == "aggregated_power_kw"
+        for point in telemetry_a
+    ), "SmartMeter muss `aggregated_power_kw` emittieren (ADR 0018 §2.4)"
 
 
 def test_demo_scenario_run_roundtrips_through_postgres(

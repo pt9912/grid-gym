@@ -13,10 +13,22 @@ Tuple-Position eines Records mit der Eingabe-Permutation. Die
 Invariante ist „pro Geraet identische Telemetry" — diese
 verifiziert die Determinismus-Pflicht aus ADR 0021 §2.2 / §2.9.
 
-Hypothesis @given mit `st.permutations(_devices())` + 25
-Beispielen + 20 Ticks ist konservativ; das exerziert den
-TickLoop-Komplettzyklus inkl. Vor-Tick-Block + GridConnection-
-Auto-Schluss.
+**SmartMeter-Constraint** (Welle-6c-Review M-1, ADR 0018 §2.3):
+SmartMeter liest die Telemetry seiner Quell-Devices innerhalb
+**desselben Ticks** und ist deswegen lese-Reihenfolge-abhaengig.
+Wenn SmartMeter VOR seinen Quellen in der Iteration steht, liest
+er Stale-Tick-(t-1)-Werte; die Aggregation ist dann nicht mehr
+identisch zur Konstellation „SmartMeter LAST". Welle 6c klammert
+das aus, indem die Permutation **nur** die Nicht-Aggregator-
+Devices permutiert (pv/load/battery/grid_connection) und der
+SmartMeter konsistent am Ende der Sequenz haengt — das spiegelt
+die MVP-Demo-Konvention `mvp_demo.yaml` und pinnt die
+Permutation-Invariante fuer die produktive Topologie.
+
+Hypothesis @given mit `st.permutations(non-aggregator devices)`
++ 50 Beispielen + 20 Ticks; das deckt alle 4!=24 Permutationen
+der 4 Nicht-Aggregator-Geraete statistisch ueberzeugend ab
+(Welle-6c-Review L-5).
 """
 
 from __future__ import annotations
@@ -43,7 +55,9 @@ from tests.unit.hexagon.ports.driven._fakes import FakeClock
 _TICKS: int = 20
 
 
-def _devices() -> tuple[ScenarioDevice, ...]:
+def _non_aggregator_devices() -> tuple[ScenarioDevice, ...]:
+    """Devices ohne Inter-Tick-Read-Abhaengigkeit (siehe Modul-
+    Docstring M-1: SmartMeter ist ausgeklammert)."""
     return (
         ScenarioDevice(
             id="pv-1",
@@ -79,6 +93,20 @@ def _devices() -> tuple[ScenarioDevice, ...]:
                 "max_export_kw": Decimal("1000"),
             },
         ),
+    )
+
+
+def _smart_meter_device() -> ScenarioDevice:
+    """Aggregator-Device, das **immer** am Ende der Iteration
+    stehen muss (siehe Modul-Docstring M-1). `aggregate_device_ids`
+    in alphabetischer Reihenfolge (canonical, ADR 0018 §2.2)."""
+    return ScenarioDevice(
+        id="meter-1",
+        type="smart_meter",
+        params={
+            "aggregate_device_ids": ["battery-1", "load-1", "pv-1"],
+            "aggregate_metric_name": "power_kw",
+        },
     )
 
 
@@ -133,11 +161,11 @@ def _group_by_device(
 
 
 @given(
-    permutation=st.permutations(list(_devices())),
+    permutation=st.permutations(list(_non_aggregator_devices())),
     seed=st.integers(min_value=0, max_value=2**32 - 1),
 )
 @settings(
-    max_examples=25,
+    max_examples=50,
     deadline=None,
     suppress_health_check=[HealthCheck.too_slow],
 )
@@ -145,10 +173,12 @@ def test_scenario_device_permutation_yields_identical_per_device_telemetry(
     permutation: Sequence[ScenarioDevice], seed: int
 ) -> None:
     """ADR 0021 §2.2 / §2.9 — Determinismus-Pflicht: gleicher Seed
-    + gleiche Geraetemenge in beliebiger Reihenfolge ⇒ pro Geraet
-    byte-identische Telemetry-Sequenz."""
-    canonical = _devices()
-    permuted = tuple(permutation)
+    + gleiche Nicht-Aggregator-Geraetemenge in beliebiger Reihenfolge
+    (mit SmartMeter konstant am Ende) ⇒ pro Geraet byte-identische
+    Telemetry-Sequenz inkl. SmartMeter-Aggregat (`aggregated_power_kw`)."""
+    smart_meter = _smart_meter_device()
+    canonical = (*_non_aggregator_devices(), smart_meter)
+    permuted = (*permutation, smart_meter)
     telemetry_canonical = _drive(canonical, seed)
     telemetry_permuted = _drive(permuted, seed)
     assert _group_by_device(telemetry_canonical) == _group_by_device(telemetry_permuted)
