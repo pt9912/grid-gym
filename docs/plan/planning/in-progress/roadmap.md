@@ -122,9 +122,9 @@ der naechste aktive Block).
 ### M2 — Geraetemodelle (Vorbelegung)
 
 **Slice-Plan:** [`in-progress/M2-devices.md`](M2-devices.md)
-(Status `In Progress` seit 2026-05-18; Welle 0..3 inkl. Welle-3-
-Review-Folge abgeschlossen, Welle 4..7 ausstehend; ADR 0013/0014/
-0016 `Accepted`, ADR 0015 vorbelegt).
+(Status `In Progress` seit 2026-05-18; Welle 0..6 (6 = 6a + 6b +
+6c) abgeschlossen, Welle 7 (M2-Closure) ausstehend;
+ADR 0013/0014/0015/0016/0017/0018/0019/0020/0021 `Accepted`).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des

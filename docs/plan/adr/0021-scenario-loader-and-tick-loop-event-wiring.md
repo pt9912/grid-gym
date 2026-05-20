@@ -1,7 +1,17 @@
 # ADR 0021 — Scenario-Loader-Device-Factory + TickLoop-Event-Wiring + GridConnection-Auto-Schluss (M2 Welle 6b)
 
-**Status:** Provisional
+**Status:** Accepted — Welle-6c-Closure (`c31052c`) liefert das
+End-to-End-MVP-Demo-Szenario inkl. zweier Integrationstests
+(Determinismus + Postgres-Roundtrip) und exerziert
+`build_devices(...)` + `build_tick_loop(...)` + den Vor-Tick-
+Block (LoadProfile/LoadEvent/Auto-Schluss) produktiv ueber
+≥ 100 Ticks; ScenarioDevice-Permutations-Property-Test
+(`test_scenario_permutation.py`) pinnt die Determinismus-
+Pflicht (§2.2/§2.9). `make fullbuild` gruen ohne Override.
 **Datum:** 2026-05-19
+**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`
+(Welle-6b-Merge `0f1c597`); 2026-05-20 —
+`Provisional → Accepted` (Welle-6c-Closure `c31052c`).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) (DeviceModel-Protocol —
 Factory-Dispatch nach `ScenarioDevice.type` erzeugt

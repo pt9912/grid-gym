@@ -1,18 +1,15 @@
 # Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure
 
-**Status:** In Progress — Slice-Begleit-Dokument angelegt
-2026-05-20. Welle-6-Closure-Slice, schliesst die Wellen-Reihe
-6a (`27a441f`) + 6b (`0f1c597` + `93f784f`) ab. Kanonische
-Slice-Spezifikation: `M2-devices.md §3 Welle 6c`
-(Zeile 1205–1231) — dieses Dokument ist lesefreundlicher Index
-+ per-Welle-Tracking, nicht Ersatz.
+**Status:** Done — Welle 6 abgeschlossen am 2026-05-20 mit
+`8a3aa2f` (C0, Slice-Doc) + `c31052c` (C1, `feat`) + Doc-Sync
+(C2, dieser Commit). Schliesst die Wellen-Reihe 6a (`27a441f`)
++ 6b (`0f1c597` + `93f784f`) ab. Kanonische Slice-Spezifikation:
+`M2-devices.md §3 Welle 6c` — dieses Dokument ist
+lesefreundlicher Index + per-Welle-Tracking, nicht Ersatz.
 
-**Spec-Reife:** Inhaltlich final (Liefergegenstaende §4.C1,
-Verifikation §7, Risiken §8). Das `Status:`-Feld oben spiegelt
-ausschliesslich den **Umsetzungs-Fortschritt**, nicht den Reife-
-grad der Spezifikation. Welle-Closure (C2) aktualisiert den
-Header auf `Done` und ersetzt die `<…-Commit-Hash>`-Platzhalter
-in §4.C2 / §7 durch die realen Hashes aus C1 und C2.
+**Spec-Reife:** Inhaltlich final. Welle-Closure (C2) hat den
+Header auf `Done` gezogen und die `<…-Commit-Hash>`-Platzhalter
+in §4.C2 / §7 durch die realen C1-/C2-Hashes ersetzt.
 
 ## 1. Context
 
@@ -195,8 +192,9 @@ finalen Status-Update auf `welle-6c.md`:
    Tabelle in M2-Zeile auf 6 von 7 (Welle 7 offen).
 6. **`docs/plan/planning/in-progress/welle-6c.md`** — Status-
    Header von `In Progress` auf `Done — Welle 6 abgeschlossen
-   am 2026-05-20 mit <C1-Commit-Hash> + <C2-Commit-Hash>` ziehen;
-   Verifikationspfad als „erfuellt" markieren.
+   am 2026-05-20 mit `8a3aa2f` (C0) + `c31052c` (C1) + diesem
+   C2-Doc-Sync` gezogen; Verifikationspfad als „erfuellt"
+   markiert.
 
 ## 5. Critical Files to Modify/Create
 
@@ -234,26 +232,26 @@ finalen Status-Update auf `welle-6c.md`:
   `src/grid_gym/adapters/driven/random_mt/mersenne_twister.py`.
 - `FakeClock` (M1) fuer deterministisches `started_at`/`ended_at`.
 
-## 7. Verifikationspfad
+## 7. Verifikationspfad — alle Items erfuellt (2026-05-20)
 
 End-to-End ueber `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
-1. **`make test-unit`** — gruen inkl. neuem
-   `test_scenario_permutation.py`. Hypothesis braucht keine
-   Postgres-Container; lauft in der `unit`-Stage.
-2. **`make test-integration`** — gruen inkl. neuem
-   `test_mvp_demo_scenario.py` (beide Tests):
-   - byte-identische `emitted_telemetry` ueber ≥ 100 Ticks;
+1. **`make test-unit`** — gruen, **762 Tests** (+1 ggue. Welle 6b)
+   inkl. `test_scenario_permutation.py` (25 Hypothesis-Beispiele).
+2. **`make test-integration`** — gruen, **7 Tests** (+2 ggue.
+   Welle 6b) inkl. `test_mvp_demo_scenario.py`:
+   - byte-identische `emitted_telemetry` ueber 100 Ticks;
    - `runs`-Row roundtrip durch ephemeren Postgres-Sibling-
      Container.
 3. **`make gates`** (Default `CRITICAL_COV_TARGETS`) — gruen
-   ohne Override. Default-Liste bleibt unveraendert.
-4. **`make fullbuild`** — gruen **ohne jeden Override**. Das ist
-   das M2-Welle-6c-Abschluss-Gate laut `M2-devices.md §3`
-   Zeile 1230 + §7 Tabelle „make fullbuild gruen ohne Override".
-5. **ADR-0015-Status sichtbar `Accepted`**: nach C2-Commit
-   `head` des ADR-Files manuell verifizieren.
+   ohne Override. Default-Liste unveraendert.
+4. **`make fullbuild`** — gruen **ohne jeden Override**
+   (`/health: ok`). M2-Welle-6c-Abschluss-Gate aus
+   `M2-devices.md §3` Zeile 1230 + §7 Tabelle erfuellt.
+5. **ADR-0015-Status** sichtbar `Accepted` (`docs/plan/adr/0015-snapshot-envelope-v2.md`
+   Zeile 3). Zusaetzlich ADR 0021 auf `Accepted` gehoben (Welle-6b-
+   Closure-Folgeerwartung, siehe `93f784f`-Commit-Body).
 6. **Git-Pattern**: drei neue Welle-6c-Commits in der Reihenfolge
    `docs(plan): welle-6c Slice-Doc (C0)` →
    `feat(welle-6c): ... (C1)` →

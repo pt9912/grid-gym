@@ -1,7 +1,8 @@
 # Slice-Plan — M2 Geraetemodelle — In Progress
 
-**Status:** In Progress — Welle 0/1/2/3/4/5/6a/6b abgeschlossen,
-zuletzt Welle 6b am 2026-05-19 (`0f1c597`). Welle 0/1/2/3 am
+**Status:** In Progress — Welle 0/1/2/3/4/5/6 abgeschlossen
+(Welle 6 = 6a + 6b + 6c), zuletzt Welle 6c am 2026-05-20
+(`8a3aa2f` Slice-Doc + `c31052c` feat). Welle 0/1/2/3 am
 2026-05-18, Welle 4 (4a + 4b + Closure) am 2026-05-19.
 Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`, `314f853`) +
 Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /
@@ -28,10 +29,16 @@ Review-Folge (`ff45c11` / `e3909f0` / `f7f21a6` / `da8deef` /
 + Review-Folge: Scenario-Loader-Device-Factory + LoadEvent/
 LoadProfile-Wiring + GridConnection-Auto-Schluss + 14
 Review-Findings ohne Supersede-ADR) am 2026-05-19 abgeschlossen.
-Naechster Schritt ist **Welle 6c (MVP-Demo-Szenario + E2E-Tests
-+ Welle-6-Closure)** — Welle 6 ist pre-Start in 6a (TickLoop +
-Snapshot, abgeschlossen) + 6b (Scenario-Loader, abgeschlossen)
-+ 6c (MVP-Demo + Closure, ausstehend) sub-gesliced.
+Welle 6c am 2026-05-20 abgeschlossen: Slice-Doc (`8a3aa2f`) +
+`feat` (`c31052c`, MVP-Demo-Szenario + Determinismus-/Postgres-
+Integrationstest + ScenarioDevice-Permutations-Property-Test).
+762 Unit-Tests gruen (+1 vs. Welle 6b), 7 Integration-Tests
+gruen (+2 vs. Welle 6b); `make fullbuild` gruen ohne Override
+(M2-Welle-6c-Abschluss-Gate). ADR 0015 (Snapshot-Envelope-v2) und ADR 0021 (Scenario-Loader +
+TickLoop-Event-Wiring) in Welle-6c-Closure auf `Accepted` gehoben.
+Naechster Schritt ist **Welle 7 (M2-Closure)** — Welle 6 ist
+in 6a (TickLoop + Snapshot) + 6b (Scenario-Loader) + 6c (MVP-
+Demo + Closure) komplett geliefert.
 M1-Spine
 (`Tick-Loop`, `Scheduler`, `RandomPort`, `ClockPort`, Scenario,
 Replay, FastAPI-Adapter, Postgres-Persistenz) liegt; M2 fuellt
@@ -1202,7 +1209,7 @@ ADR 0021 `Proposed → Provisional`.
     `ScenarioInvalidLoadTargetError` blockt LoadEvent/Profile
     auf PV/Battery/SmartMeter-Targets im Builder.
 
-#### Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure
+#### Welle 6c — MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure (`Done` 2026-05-20, Commits `8a3aa2f` + `c31052c`)
 
 - **`tests/integration/scenarios/mvp_demo.yaml`** als
   End-to-End-Szenario (`GG-MVP-002`-Pflicht):
@@ -1230,14 +1237,18 @@ ADR 0021 `Proposed → Provisional`.
 - **Welle-6c-Gate-Status**: `make fullbuild` gruen ohne
   jeden Override (M2-Erfolgskriterium 2).
 
-#### Welle-6-Gate-Erwartung (Sub-Welle-uebergreifend)
+#### Welle-6-Gate-Erwartung (Sub-Welle-uebergreifend) — `Done` 2026-05-20
 
-- Default-`CRITICAL_COV_TARGETS` bleibt unveraendert (alle
+- Default-`CRITICAL_COV_TARGETS` blieb unveraendert (alle
   5 MVP-Geraete + `core/grid_model` + M1-Spine sind seit
-  Welle 5b drin).
-- ADR 0015 ist nach Welle 6c `Accepted` (oder spaetestens
-  mit Welle-7-Closure, falls Welle-6-Review-Folge offene
-  Punkte vererbt — Pattern aus Welle 4/5).
+  Welle 5b drin); `core/scenario` ist seit Welle 6a Bestandteil.
+- ADR 0015 (Snapshot-Envelope v2) und ADR 0021 (Scenario-Loader
+  + TickLoop-Event-Wiring) sind mit Welle-6c-Closure (`c31052c`)
+  auf `Accepted` gehoben — keine vererbten Review-Punkte
+  (Welle-6c-Run war in einem `feat`-Commit, ohne separate
+  Review-Folge).
+- `make fullbuild` cache-frei gruen ohne Override am
+  2026-05-20 (`c31052c`).
 
 ### Welle 7 — Closure (1/2 Tag)
 

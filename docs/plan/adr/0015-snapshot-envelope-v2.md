@@ -1,15 +1,21 @@
 # ADR 0015 — TickLoop-Snapshot-v2 im SnapshotEnvelope-Pattern (M2 Welle 6a)
 
-**Status:** Provisional — Validierung erfolgt mit M2-Welle-6a-
-PR-Merge (`27a441f`): 716 Unit-Tests gruen (vorher 705,
-+11 Welle-6a-Integration-Tests). Welle-6a-Review-Folge
-(`ff45c11` / `e3909f0` / `f7f21a6` / `da8deef` / `779fcea`)
-hat C-1/M-1/M-2/M-3/M-4/M-5/M-6/M-7/L-3/L-4/L-5 + H-1-ADR-
-Pointer adressiert (719 Unit-Tests Endstand). `make gates`
-cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override.
-Schaerfung auf `Accepted` mit Welle-6-Closure (Welle 6c).
+**Status:** Accepted — Welle-6c-Closure (`c31052c`) liefert das
+End-to-End-MVP-Demo (`tests/integration/scenarios/mvp_demo.yaml`
++ `test_mvp_demo_scenario.py`): zwei TickLoop-Laeufe mit
+`tick_ms=1000` und Seed `0xC0FFEE` produzieren byte-identische
+`TickResult.emitted_telemetry` ueber 100 Ticks; der
+v1-→-v2-Schema-Bump und der typisierte
+`TickLoopSnapshotVersionError` sind damit produktiv exerziert.
+`make fullbuild` gruen ohne Override (M2-Welle-6c-Abschluss-
+Gate). Welle-6a-Validierung (`27a441f`, 716 Unit-Tests) + Welle-
+6a-Review-Folge (`ff45c11` / `e3909f0` / `f7f21a6` / `da8deef` /
+`779fcea`, 719 Unit-Tests, C-1/M-1..M-7/L-3..L-5/H-1)
+unveraendert; Welle 6c hebt nur den Status.
 **Datum:** 2026-05-19
-**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-05-19 — `Proposed → Provisional`;
+2026-05-20 — `Provisional → Accepted` (Welle-6c-Closure
+`c31052c`).
 **Geschaerft am:** 2026-05-19 (User-Review Pre-
 Implementation, Commit `9e55940`) — Title + Inhalt auf
 TickLoop-Snapshot-Version statt SnapshotEnvelope-Schema
