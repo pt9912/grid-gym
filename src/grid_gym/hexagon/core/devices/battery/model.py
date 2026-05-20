@@ -48,6 +48,7 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import (
     DeviceAlreadyInitializedError,
     DeviceNotInitializedError,
+    FaultUnsupportedTypeError,
     MissingKeysError,
     WrongTypeError,
 )
@@ -84,6 +85,16 @@ _QUANTUM = Decimal("0.000001")
 
 _SUBSYSTEM = "battery"
 _BATTERY_SOURCE = "battery"
+
+_CELL_FAILURE_DERATE = Decimal("0.5")
+"""M3-Welle-2 (ADR 0025): bei aktivem `cell_failure` reduziert sich
+die effektive `max_discharge_kw` auf 50 % (Welle-2-Default). Welle 3+
+kann den Faktor via Payload konfigurierbar machen."""
+
+_FAULT_TYPE_CELL_FAILURE = "cell_failure"
+"""M3-Welle-2 (ADR 0025 §2.1): einziger von BatteryDevice
+verstandener `fault_type` in Welle 2. Welle 3+ kann den Closed-Set
+um `overcurrent`, `temperature_runaway` etc. erweitern."""
 """TelemetryPoint.source-Wert; ADR 0007 §5 Sub-Port-Konvention."""
 
 _RUN_ID_UNSET = ""
@@ -137,6 +148,11 @@ class BatteryDevice:
         # nicht der richtige Hebel, weil `sequence` keine Zufalls-
         # Quelle ist.
         self._sequence: int = 0
+        # M3-Welle-2 (ADR 0025 §2.2): Fault-State-Flag.
+        # Device haelt nur Physik-Flag; Adapter
+        # (BatteryFaultAdapter) haelt Scheduling-State
+        # (`remaining_ticks`).
+        self._cell_failure_active: bool = False
 
     # ------------------------------------------------------------------
     # Pflicht-Property (ADR 0013 §2.7)
@@ -225,6 +241,41 @@ class BatteryDevice:
         with _battery_decimal_context():
             return self._tick_in_context(context)
 
+    # ------------------------------------------------------------------
+    # Fault-Injection (M3 Welle 2, ADR 0022 §2.1 + ADR 0025)
+    # ------------------------------------------------------------------
+
+    def inject_fault(
+        self,
+        fault_type: str,
+        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload; Welle 3+ kann Derate-Faktor konfigurierbar machen
+    ) -> None:
+        """Wendet einen Fault auf das Device an
+        (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
+
+        Welle-2-Closed-Set (ADR 0025 §2.1): unterstuetzt
+        ausschliesslich `fault_type="cell_failure"`. Andere Typen
+        werfen typisiert `FaultUnsupportedTypeError`.
+
+        Effekt: setzt `_cell_failure_active = True`. Die naechste
+        `tick()` reduziert die effektive `max_discharge_kw` um
+        den Faktor `_CELL_FAILURE_DERATE` (Welle-2-Default 50 %).
+        """
+        if fault_type == _FAULT_TYPE_CELL_FAILURE:
+            self._cell_failure_active = True
+            return
+        raise FaultUnsupportedTypeError("battery", fault_type)
+
+    def _clear_cell_failure(self) -> None:
+        """Recovery-Helper fuer den `BatteryFaultAdapter`
+        (ADR 0025 §2.2 + §2.4 Idempotenz).
+
+        Der Adapter ruft das beim Window-Ende (auto-recover) oder
+        beim `manual-recover-fault`-Command. Device kennt das
+        Scheduling nicht; daher Recovery-Aufruf von aussen.
+        """
+        self._cell_failure_active = False
+
     def _tick_in_context(self, context: DeviceTickContext) -> DeviceTickOutcome:
         # Welle-2-Review L-5: `dt_hours = dt_seconds / 3600` explizit
         # (statt zwei unabhaengiger Quotienten aus `context.tick_ms`).
@@ -251,6 +302,20 @@ class BatteryDevice:
             energy_delta_kwh = new_power_kw * dt_hours / config.discharge_efficiency
         else:
             energy_delta_kwh = _ZERO
+
+        # M3-Welle-2 (ADR 0025 §2.1): bei aktivem `cell_failure`
+        # wird die effektive `max_discharge_kw` halbiert; ueber-
+        # schreitende Discharge-Power wird hart geclampt. Ramp
+        # kann den Wert in folgenden Ticks gradually erreichen,
+        # aber die Tick selbst clampt instant.
+        if self._cell_failure_active:
+            effective_max_discharge = config.max_discharge_kw * _CELL_FAILURE_DERATE
+            if new_power_kw < -effective_max_discharge:
+                new_power_kw = -effective_max_discharge
+                # Energie-Bilanz nochmal mit reduzierter Power
+                # rechnen, sonst persistiert die Original-
+                # Discharge-Rate im SOC.
+                energy_delta_kwh = new_power_kw * dt_hours / config.discharge_efficiency
 
         # SOC-Hard-Clamp + Saturation-Power-Reset (GG-BESS-005,
         # Welle-2-Review C-2).
@@ -286,6 +351,7 @@ class BatteryDevice:
             soc_kwh=self._soc_kwh,
             current_power_kw=self._current_power_kw,
             pending_power_kw=self._pending_power_kw,
+            cell_failure_active=self._cell_failure_active,
         )
         return snap.to_dict()
 
@@ -310,6 +376,7 @@ class BatteryDevice:
         device._pending_power_kw = snap.pending_power_kw
         device._run_id = snap.run_id
         device._sequence = snap.sequence
+        device._cell_failure_active = snap.cell_failure_active
         return device
 
     # ------------------------------------------------------------------
@@ -333,6 +400,7 @@ class BatteryDevice:
             and self._device_id_or_none() == other._device_id_or_none()
             and self._run_id == other._run_id
             and self._sequence == other._sequence
+            and self._cell_failure_active == other._cell_failure_active
         )
 
     @override
@@ -346,6 +414,7 @@ class BatteryDevice:
                 self._device_id_or_none(),
                 self._run_id,
                 self._sequence,
+                self._cell_failure_active,
             )
         )
 

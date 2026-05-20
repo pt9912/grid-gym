@@ -772,3 +772,57 @@ class RunAlreadyExistsError(RunRepositoryError):
 
     def __init__(self, run_id: str) -> None:
         super().__init__(f"run already exists: {run_id!r}")
+
+
+# ---------------------------------------------------------------------------
+# Fault-Injection (M3 Welle 2, ADR 0022 §2.4 / ADR 0025 §2.1)
+# ---------------------------------------------------------------------------
+
+
+class FaultPortError(GridGymError):
+    """Wurzel der `FaultPort`-Vertragsverletzungen
+    (`GG-FAULT-001..010`).
+
+    ADR 0022 §2.4 Exception-Propagation-Vertrag: Adapter-Fehler
+    propagieren ungewrappt aus `TickLoop.tick()` heraus. Welle-2-
+    Adapter werfen typisierte Subklassen, damit Aufrufer auf der
+    Hexagon-Boundary differenzieren koennen.
+    """
+
+
+class FaultUnsupportedTypeError(FaultPortError):
+    """Ein Adapter erhaelt `fault_type`, den er nicht versteht.
+
+    Welle-2-Pattern: Battery-Adapter unterstuetzt `cell_failure`;
+    Grid-Adapter unterstuetzt `voltage_drop`. Andere Typen werfen
+    typisiert ab, ohne den Tick zu beschaedigen (Aufrufer
+    entscheidet Fail-Fast vs. Alarm).
+    """
+
+    def __init__(self, adapter: str, fault_type: str) -> None:
+        super().__init__(f"fault adapter {adapter!r} does not support fault_type {fault_type!r}")
+
+
+class FaultInvalidPayloadError(FaultPortError):
+    """Ein Adapter erhaelt Payload, dessen Struktur nicht zum
+    `fault_type` passt (z. B. `cell_failure` ohne
+    `affected_cell_index` oder mit Falsch-Typ-Wert).
+
+    ADR 0025 §2.1 (`manual-via-command`-Pfad) verlangt typisiertes
+    Fail-Fast bei Payload-Schema-Verletzungen.
+    """
+
+    def __init__(self, fault_type: str, detail: str) -> None:
+        super().__init__(f"fault {fault_type!r} payload invalid: {detail}")
+
+
+class FaultUnknownReferenceError(FaultPortError):
+    """`manual-recover-fault`-Command zeigt auf eine unbekannte
+    `(fault_id, target_device_id)`-Kombination (ADR 0025 §2.1).
+    """
+
+    def __init__(self, fault_id: str, target_device_id: str) -> None:
+        super().__init__(
+            f"manual-recover-fault references unknown "
+            f"(fault_id={fault_id!r}, target_device_id={target_device_id!r})"
+        )

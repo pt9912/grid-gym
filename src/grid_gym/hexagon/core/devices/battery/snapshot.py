@@ -52,6 +52,10 @@ _TOP_KEYS: Final[frozenset[str]] = frozenset(
         "pending_power_kw",
     }
 )
+# M3-Welle-2 (ADR 0025 §2.2): `fault_state` ist optional und
+# additiv (Backward-Compat fuer Welle-1-Snapshots ohne Fault-
+# Block). Fehlt der Key, defaultet alle Flags auf `False`.
+_FAULT_STATE_KEY: Final[str] = "fault_state"
 _CONFIG_KEYS: Final[frozenset[str]] = frozenset(
     {
         "capacity_kwh",
@@ -88,6 +92,10 @@ class BatterySnapshot:
     soc_kwh: Decimal
     current_power_kw: Decimal
     pending_power_kw: Decimal
+    # M3-Welle-2 (ADR 0025 §2.2): Fault-Flag additiv. Default
+    # `False` haelt Snapshot-Roundtrip mit Welle-1-Snapshots
+    # ohne `fault_state`-Block kompatibel.
+    cell_failure_active: bool = False
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -118,6 +126,12 @@ class BatterySnapshot:
             "soc_kwh": self.soc_kwh,
             "current_power_kw": self.current_power_kw,
             "pending_power_kw": self.pending_power_kw,
+            # M3-Welle-2 (ADR 0025 §2.2): additiver fault_state-
+            # Block. Welle-1-Snapshots ohne diesen Key bleiben
+            # roundtrip-faehig (from_dict defaultet auf False).
+            _FAULT_STATE_KEY: {
+                "cell_failure_active": self.cell_failure_active,
+            },
         }
 
     @classmethod
@@ -170,6 +184,22 @@ class BatterySnapshot:
         current_power_kw = assert_decimal(state["current_power_kw"], "current_power_kw", SUBSYSTEM)
         pending_power_kw = assert_decimal(state["pending_power_kw"], "pending_power_kw", SUBSYSTEM)
 
+        # M3-Welle-2 (ADR 0025 §2.2): fault_state ist optional;
+        # Welle-1-Snapshots ohne den Block defaultet alle Flags
+        # auf False.
+        cell_failure_active = False
+        if _FAULT_STATE_KEY in state:
+            fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
+            raw_flag = fault_state.get("cell_failure_active", False)
+            if not isinstance(raw_flag, bool):
+                raise WrongTypeError(
+                    SUBSYSTEM,
+                    f"{_FAULT_STATE_KEY}.cell_failure_active",
+                    "bool",
+                    type(raw_flag).__name__,
+                )
+            cell_failure_active = raw_flag
+
         return cls(
             version=version,
             device_id=device_id,
@@ -179,6 +209,7 @@ class BatterySnapshot:
             soc_kwh=soc_kwh,
             current_power_kw=current_power_kw,
             pending_power_kw=pending_power_kw,
+            cell_failure_active=cell_failure_active,
         )
 
 
