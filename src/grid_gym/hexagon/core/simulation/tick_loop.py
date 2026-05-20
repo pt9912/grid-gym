@@ -69,6 +69,7 @@ from grid_gym.hexagon.core.errors import (
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.ports.driven.clock import ClockPort
+from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _SNAPSHOT_VERSION: Final[int] = 2
@@ -161,6 +162,7 @@ class TickLoop:
         grid_model: GridModelBilanz | None = None,
         active_load_events: tuple[LoadEvent, ...] = (),
         active_load_profiles: tuple[LoadProfile, ...] = (),
+        fault_port: FaultPort | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -184,6 +186,11 @@ class TickLoop:
         # Event-Overlay).
         self._active_load_events: tuple[LoadEvent, ...] = active_load_events
         self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
+        # M3-Welle-1 (ADR 0022 §2.5): optionaler FaultPort fuer
+        # Fault-Injection-Orchestrierung im Vor-Tick-Block. `None`
+        # skippt den Hook in `tick()`; Welle-1-Code liefert noch
+        # keinen produktiven Adapter (Welle 2).
+        self._fault_port: FaultPort | None = fault_port
         # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
         # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
         self._unknown_source_count: int = 0
@@ -300,6 +307,14 @@ class TickLoop:
                 now_ms=now,
                 manual_override_grid_ids=manual_override_grid_ids,
             )
+            # Schritt A2 — Fault-Injection (M3-Welle-1, ADR 0022 §2.4).
+            # Hook laeuft nach LoadEvent-/Profile-Overlay und vor
+            # der ersten Device-Iteration, damit Faults in derselben
+            # Tick wirksam werden (Order-Pflicht aus ADR 0022 §2.4).
+            # `None`-Default skippt sauber; produktiver Adapter
+            # kommt mit Welle 2.
+            if self._fault_port is not None:
+                self._fault_port.apply_active_faults(self._devices, context)
             grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
             non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
             # Schritt B — Erste Iteration (ohne GridConnection).

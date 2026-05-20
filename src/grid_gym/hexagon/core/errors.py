@@ -634,6 +634,20 @@ class ScenarioUnknownEventTargetError(ScenarioError):
         super().__init__(f"scenario event targets unknown device: {target!r}")
 
 
+class ScenarioUnknownFaultTargetError(ScenarioError):
+    """Ein Fault referenziert eine Geraete-ID, die nicht in
+    `devices` definiert ist (M3-Welle-1, ADR 0022 §2.3).
+
+    Spiegelt das Pattern aus `ScenarioUnknownEventTargetError`:
+    Fail-fast im Scenario-Validator (`_assert_fault_list`),
+    bevor der TickLoop einen Fault auf ein nicht-existierendes
+    Device anwenden koennte.
+    """
+
+    def __init__(self, target: str) -> None:
+        super().__init__(f"scenario fault targets unknown device: {target!r}")
+
+
 class ScenarioInvalidLoadTargetError(ScenarioError):
     """Welle-6b-Review M-6 (ADR 0021 §2.5 + §2.7):
     `LoadEvent.target_device_id` bzw. `LoadProfile.target_device_id`

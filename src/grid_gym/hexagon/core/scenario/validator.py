@@ -27,12 +27,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from decimal import Decimal
-from typing import Final
+from typing import Final, cast
 
 from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
     ScenarioMissingKeysError,
     ScenarioUnknownEventTargetError,
+    ScenarioUnknownFaultTargetError,
     ScenarioUnsupportedReplayFormatError,
     ScenarioUnsupportedSchemaVersionError,
     ScenarioUnsupportedTimeMappingError,
@@ -118,7 +119,7 @@ def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     devices = _assert_device_list(raw)
     _assert_event_list(raw, devices)
     _assert_replay_reference(raw)
-    _assert_fault_list(raw)
+    _assert_fault_list(raw, devices)
     # Welle-6b (ADR 0021 §2.3): drei optionale Top-Level-Sektionen.
     _assert_grid_model_block(raw)
     _assert_load_events_block(raw, devices)
@@ -240,12 +241,31 @@ def _assert_replay_reference(raw: Mapping[str, object]) -> None:
         raise ScenarioUnsupportedTimeMappingError(SUPPORTED_TIME_MAPPINGS, time_mapping_value)
 
 
-def _assert_fault_list(raw: Mapping[str, object]) -> None:
+def _assert_fault_list(
+    raw: Mapping[str, object],
+    devices: list[Mapping[str, object]] | None = None,
+) -> None:
+    """Validiert den optionalen `faults`-Block.
+
+    Welle-5-Strukturvertrag (Pflicht-Felder, Typen, Payload-
+    Canonical-Check) bleibt unveraendert. M3-Welle-1 (ADR 0022
+    §2.3) ergaenzt einen Target-Existenz-Check: `fault.target`
+    muss in `devices` definiert sein — spiegelt
+    `_assert_event_list`-Pattern (`ScenarioUnknownEventTargetError`).
+
+    `devices` ist optional (`None` skippt den Target-Check) zur
+    Rueckwaertskompat mit bestehenden Aufrufern, die das
+    Argument nicht setzen. `validate_scenario_mapping` reicht
+    es seit Welle 1 weiter.
+    """
     if "faults" not in raw:
         return
     raw_faults = raw["faults"]
     if not isinstance(raw_faults, list):
         raise ScenarioWrongTypeError("faults", "list", type(raw_faults).__name__)
+    device_ids: set[str] = (
+        {cast(str, device["id"]) for device in devices} if devices is not None else set()
+    )
     for index, entry in enumerate(raw_faults):
         if not isinstance(entry, Mapping):
             raise ScenarioWrongTypeError(f"faults[{index}]", "Mapping", type(entry).__name__)
@@ -261,6 +281,12 @@ def _assert_fault_list(raw: Mapping[str, object]) -> None:
             )
         assert_payload_canonical_compatible(payload, "scenario", f"faults[{index}].payload")
         _assert_str(entry, f"faults[{index}].recovery")
+        # M3-Welle-1 (ADR 0022 §2.3): Target-Existenz-Check
+        # analog `_assert_event_list`.
+        if devices is not None:
+            target = entry["target"]
+            if isinstance(target, str) and target not in device_ids:
+                raise ScenarioUnknownFaultTargetError(target)
 
 
 # ---------------------------------------------------------------------------
