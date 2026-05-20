@@ -22,52 +22,40 @@ der Test komponiert die Battery + Grid-Adapter inline.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import uuid
 from decimal import Decimal
 
+from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
-from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
 from grid_gym.hexagon.core.scenario.loader import LoadedScenario, build_tick_loop
 
 from tests.integration._constants import (
+    DEMO_TOOL_VERSION,
     FAULT_DEMO_SCENARIO_PATH,
     FAULT_DEMO_TICKS,
 )
+from tests.integration._fault_composite import CompositeFaultPort
 from tests.integration._yaml_scenario_loader import load_yaml_scenario
 from tests.unit.hexagon.ports.driven._fakes import FakeClock
 
 
-class _CompositeFaultPort:
-    """Inline-Komposition zweier `FaultPort`-Adapter (M3-Welle-2-
-    Test-Side; ADR 0025-Welle-3-Forward-Pointer fuer produktiven
-    Composite-Pattern). Welle-2-Integrationstest braucht das,
-    weil TickLoop nur einen `FaultPort` pro Lauf akzeptiert."""
-
-    def __init__(
-        self,
-        battery_adapter: BatteryFaultAdapter,
-        grid_adapter: GridFaultAdapter,
-    ) -> None:
-        self._battery = battery_adapter
-        self._grid = grid_adapter
-
-    def apply_active_faults(
-        self,
-        devices: Sequence[object],
-        context: DeviceTickContext,
-    ) -> None:
-        self._battery.apply_active_faults(devices, context)
-        self._grid.apply_active_faults(devices, context)
-
-
-def _drive_fault_demo(loaded: LoadedScenario, *, ticks: int) -> tuple[TelemetryPoint, ...]:
+def _drive_fault_demo(
+    loaded: LoadedScenario,
+    *,
+    ticks: int,
+    battery_first: bool = True,
+) -> tuple[TelemetryPoint, ...]:
     """Faehrt den Fault-Demo durch `ticks` Ticks und liefert das
-    konkatenierte Telemetry-Tupel zurueck."""
-    composite = _CompositeFaultPort(
+    konkatenierte Telemetry-Tupel zurueck. `battery_first` schaltet
+    die Sub-Port-Reihenfolge im CompositeFaultPort um (Welle-2-
+    Review M-2)."""
+    composite = CompositeFaultPort(
         battery_adapter=BatteryFaultAdapter(faults=loaded.scenario.faults),
         grid_adapter=GridFaultAdapter(faults=loaded.scenario.faults),
+        battery_first=battery_first,
     )
     loop = build_tick_loop(
         loaded.scenario,
@@ -94,46 +82,52 @@ def test_fault_demo_telemetry_is_byte_identical_across_runs() -> None:
     assert len(telemetry_a) > 0, "Fault-Demo muss Telemetry emittieren"
 
 
-def test_fault_demo_battery_discharge_halved_during_cell_failure_window() -> None:
-    """ADR 0025 §2.1 + M3-Slice-Plan §3 Welle 2 DoD-3: Battery-
-    `power_kw` waehrend des cell_failure-Windows (Tick 5..14) ist
-    auf maximal 50 % der nominalen `max_discharge_kw=50` (= -25)
-    geclamped; danach (Tick 15+) ist die volle Discharge wieder
-    erreichbar.
+def test_fault_demo_battery_emits_power_kw_smoke() -> None:
+    """Welle-2-Items-7-10-Review-Folge H-1: Smoke-Pflicht — der
+    Integrationstest beobachtet, dass Battery 30 `power_kw`-
+    Telemetry-Punkte emittiert (1 pro Tick) und ohne expliziten
+    `set_power_kw`-Command nicht aus eigener Initiative
+    entlaedt.
 
-    Welle-2-Demo-Default: Battery hat
-    `_pending_power_kw = 0` (kein expliziter Command in der YAML).
-    Discharge entsteht nicht aus eigener Initiative — der Test
-    pinnt nur, dass _cell_failure_active das `max_discharge_kw`-
-    Cap-Verhalten beeinflusst, wenn Discharge stattfindet.
-    Implizit gepinnt: Battery-Telemetry-Trace ist
-    determinismus-stabil mit/ohne Fault.
+    **NICHT** gepinnt durch diesen Test: das `max_discharge_kw`-
+    Halbierungs-Verhalten unter aktivem `cell_failure`. Welle-6b
+    `_assert_overlay_targets` (ADR 0021 §2.5) erlaubt
+    `LoadEvent`/`LoadProfile` nur auf `LoadDevice`/
+    `GridConnectionDevice`, nicht auf Battery — ein YAML-
+    angetriebener Battery-Discharge ist in Welle-2-Scope nicht
+    moeglich, ohne den Scenario-Loader-Vertrag zu erweitern
+    (Welle-3-Material).
+
+    Der Halbierungs-Vertrag selbst ist gepinnt durch:
+    - `test_tick_with_active_cell_failure_halves_discharge_clamp`
+      (`tests/unit/.../battery/test_fault_injection.py`).
+    - `test_battery_fault_telemetry_deterministic_per_seed`
+      (`tests/unit/.../faults/test_recovery_window_property.py`).
     """
     loaded = load_yaml_scenario(FAULT_DEMO_SCENARIO_PATH)
     telemetry = _drive_fault_demo(loaded, ticks=FAULT_DEMO_TICKS)
     battery_power = [
         p.value for p in telemetry if p.device_id == "battery-1" and p.metric == "power_kw"
     ]
-    # Bei `_pending_power_kw = 0` ohne externen Command bleibt
-    # Discharge bei 0. Pinning verlagert sich auf die
-    # Property-Tests (test_recovery_window_property.py); hier
-    # ist das Smoke-Pflicht: 30 power_kw-Punkte (1 pro Tick).
     assert len(battery_power) == FAULT_DEMO_TICKS
-    # Keine negative Power (kein Command → kein Discharge).
+    # Kein externer Command → Default-Discharge = 0.
     assert all(value == Decimal("0.000000") for value in battery_power)
 
 
 def test_fault_demo_grid_voltage_dropped_during_voltage_drop_window() -> None:
     """ADR 0025 §2.1: `voltage_v`-Telemetry waehrend des
-    voltage_drop-Windows ist auf `0.5 * nominal_voltage_v = 200`
-    reduziert; davor und danach nominal (400).
+    voltage_drop-Windows ist auf `0.5 * nominal_voltage_v`
+    reduziert; davor und danach nominal.
+
+    Welle-2-Review L-3: nominal + reduced + Window werden aus dem
+    geladenen Scenario abgeleitet, nicht hardcoded. Dadurch
+    erkennt der Test, wenn `fault_demo.yaml` umkonfiguriert wird
+    (z. B. nominal_voltage_v=415V), und meldet sich statt sich
+    selbst zu widerlegen.
 
     Tick-Index-Konvention: `TickLoop.tick()` ruft `clock.advance`
     am Anfang — der erste tick() emittiert
     `TelemetryPoint(tick=0, simulation_time=tick_ms=1000)`.
-    Fault-Window `[20000ms, 25000ms)` deckt damit Telemetry-
-    Ticks 19..23 inkl. ab (sim_time 20000..24000); Tick 24
-    (sim_time=25000) liegt aussehalb und ist Recovery.
     """
     loaded = load_yaml_scenario(FAULT_DEMO_SCENARIO_PATH)
     telemetry = _drive_fault_demo(loaded, ticks=FAULT_DEMO_TICKS)
@@ -143,11 +137,68 @@ def test_fault_demo_grid_voltage_dropped_during_voltage_drop_window() -> None:
         if p.device_id == "grid-1" and p.metric == "voltage_v"
     ]
     assert len(voltage_points) == FAULT_DEMO_TICKS
-    nominal = Decimal("400.000000")
-    reduced = Decimal("200.000000")
+
+    grid_device_def = next(d for d in loaded.scenario.devices if d.id == "grid-1")
+    nominal_param = grid_device_def.params["nominal_voltage_v"]
+    assert isinstance(nominal_param, Decimal)
+    nominal = Decimal(nominal_param).quantize(Decimal("0.000001"))
+    # ADR 0025 §2.1: `_VOLTAGE_DROP_FRACTION = 0.5`.
+    reduced = (nominal_param * Decimal("0.5")).quantize(Decimal("0.000001"))
+
+    voltage_fault = next(f for f in loaded.scenario.faults if f.type == "voltage_drop")
+    window_start = voltage_fault.start_simulation_time
+    window_end = window_start + voltage_fault.duration_ms
+
     for tick, sim_time, value in voltage_points:
-        # Fault-Window in Simulationszeit `[20000ms, 25000ms)`.
-        if 20000 <= sim_time < 25000:
+        if window_start <= sim_time < window_end:
             assert value == reduced, f"tick {tick} sim_time {sim_time}: voltage should be reduced"
         else:
             assert value == nominal, f"tick {tick} sim_time {sim_time}: voltage should be nominal"
+
+
+def test_fault_demo_run_roundtrips_through_postgres(
+    repository: PostgresRunRepository,
+) -> None:
+    """Welle-2-Review M-3: Postgres-Roundtrip symmetrisch zu
+    `test_demo_scenario_run_roundtrips_through_postgres` aus
+    `test_mvp_demo_scenario.py`. `RunMetadata` aus dem Fault-Demo-
+    Lauf wird ueber `PostgresRunRepository.save(...)` persistiert
+    und per `get_by_id(...)` byte-identisch zurueckgelesen.
+
+    Stellt sicher, dass die `runs`-Persistenz (M2-Welle-6c) auch
+    mit dem Fault-Pfad (M3-Welle-2) zusammenarbeitet — Welle-2
+    fuehrt keinen neuen `runs`-Felder-Bedarf ein, aber der
+    Smoke-Test fixiert das.
+    """
+    loaded = load_yaml_scenario(FAULT_DEMO_SCENARIO_PATH)
+    metadata = RunMetadata(
+        run_id=str(uuid.uuid4()),
+        scenario_hash=loaded.scenario_hash,
+        schema_version=loaded.scenario.schema_version,
+        seed=loaded.scenario.simulation.seed,
+        tick_ms=loaded.scenario.simulation.tick_ms,
+        started_at="2026-05-20T09:00:00Z",
+        ended_at="2026-05-20T09:00:30Z",
+        tool_version=DEMO_TOOL_VERSION,
+    )
+    repository.save(metadata)
+    assert repository.get_by_id(metadata.run_id) == metadata
+
+
+def test_fault_demo_composite_order_invariant_for_non_overlapping_faults() -> None:
+    """Welle-2-Review M-2: das `fault_demo.yaml` enthaelt zwei
+    NICHT-ueberlappende Faults (Battery `[5000, 15000)` vs. Grid
+    `[20000, 25000)`). Damit muessen Battery-zuerst- und Grid-
+    zuerst-Composite-Reihenfolge byte-identische Telemetry
+    erzeugen.
+
+    Pinnt: das Determinismus-Versprechen aus ADR 0025 §2.4 ist
+    nicht von der Sub-Port-Reihenfolge im Composite abhaengig,
+    solange keine zwei Faults im selben Tick auf dasselbe Device
+    zielen. Welle-3-Composite-Adapter darf das Pattern brechen,
+    aber dann braucht es einen expliziten ADR-Eintrag.
+    """
+    loaded = load_yaml_scenario(FAULT_DEMO_SCENARIO_PATH)
+    battery_first = _drive_fault_demo(loaded, ticks=FAULT_DEMO_TICKS, battery_first=True)
+    grid_first = _drive_fault_demo(loaded, ticks=FAULT_DEMO_TICKS, battery_first=False)
+    assert battery_first == grid_first

@@ -216,6 +216,24 @@ def build_tick_loop(
 ) -> TickLoop: ...
 ```
 
+**Welle-2-Items-7-10-Review N-1 — M3-Welle-1-Erweiterung:**
+ADR 0022 §2.5 ergaenzt die Builder-Signatur um einen
+keyword-only `fault_port: FaultPort | None = None`-Parameter.
+Default bleibt `None`, also brechen bestehende Aufrufe nicht;
+der Wert wird nur durchgereicht und nicht weiter verarbeitet.
+Symmetrisch zum gleichnamigen TickLoop-Konstruktor-Parameter
+(ADR 0022 §2.5):
+
+```python
+def build_tick_loop(
+    scenario: Scenario,
+    *,
+    clock: ClockPort,
+    random_root: RandomPort,
+    fault_port: FaultPort | None = None,  # M3-Welle-1, ADR 0022
+) -> TickLoop: ...
+```
+
 Der Builder liefert eine produktive `TickLoop`-Instanz aus den
 **Welle-6b-erweiterten** Scenario-Feldern:
 

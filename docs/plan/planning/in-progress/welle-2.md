@@ -128,9 +128,16 @@ Adapter-Design.
    - Recovery-Window-Boundary-Pinning (half-open `[start, end)`,
      analog Welle-6b-LoadEvent-Pattern).
 10. **`CRITICAL_COV_TARGETS`-Default** im Dockerfile um
-    `src/grid_gym/hexagon/core/faults` und
-    `src/grid_gym/hexagon/core/faults` erweitert
-    (Welle-1-Stand-`core/faults` bleibt mit drin).
+    `src/grid_gym/hexagon/core/faults` erweitert (Welle-1-Stand-
+    `core/faults` bleibt mit drin).
+    **Welle-2-Items-7-10-Review N-3 (2026-05-20):** No-op
+    bestaetigt — `CRITICAL_COV_TARGETS` enthielt seit
+    M3-Welle-1-Default `src/grid_gym/hexagon/core/faults`. Die
+    Welle-2-Adapter-Module (`battery_fault_adapter.py`,
+    `grid_fault_adapter.py`, `types.py`) liegen unter dem
+    gleichen Paket-Pfad und werden damit automatisch von der
+    Default-Schwelle abgedeckt — kein Dockerfile-Edit noetig.
+    Item-10-Status: erfuellt durch Welle-1-Default-Erweiterung.
 
 **Anti-Scope:**
 

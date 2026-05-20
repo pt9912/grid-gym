@@ -348,6 +348,15 @@ def __init__(
 - `*,`-Marker (keyword-only) verhindert positional-Aufrufe;
   bestehende `TickLoop(...)`-Aufrufer brechen nicht.
 
+**Welle-2-Items-7-10-Review N-1 — `build_tick_loop`-Builder-
+Symmetrie:** der Scenario-Loader-Builder aus ADR 0021 §2.4
+(`build_tick_loop(scenario, *, clock, random_root)`) wird in
+M3-Welle-1 ebenfalls um den `fault_port: FaultPort | None =
+None`-Kwarg ergaenzt und reicht den Wert unveraendert an den
+TickLoop-Konstruktor durch. Default bleibt `None`; M2-Welle-6b-
+Tests, die `build_tick_loop` ohne Fault-Port aufrufen, bleiben
+gruen. Siehe ADR 0021 §2.4 fuer die Builder-Signatur-Notiz.
+
 ### 2.6 Snapshot-Vertrag: kein neuer State in Welle 1
 
 `FaultPort` selbst haelt **keinen** State in Welle 1; die

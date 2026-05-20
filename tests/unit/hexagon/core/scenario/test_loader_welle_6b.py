@@ -498,6 +498,57 @@ def test_load_scenario_validator_rejects_load_event_unknown_target() -> None:
         load_scenario(raw)
 
 
+# ---------------------------------------------------------------------------
+# Welle-2-Items-7-10-Review M-1 — build_tick_loop fault_port forwarding
+# ---------------------------------------------------------------------------
+
+
+def test_build_tick_loop_forwards_fault_port_default_is_none() -> None:
+    """Welle-2-Review M-1: ohne `fault_port=`-Kwarg bleibt
+    `TickLoop._fault_port = None` (ADR 0022 §2.5 +
+    M3-Welle-1-Welle-Vertrag)."""
+    scenario = _scenario(devices=(_pv_device(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-fault-default",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+    )
+    assert loop._fault_port is None  # type: ignore[attr-defined]
+
+
+def test_build_tick_loop_forwards_fault_port_kwarg() -> None:
+    """Welle-2-Review M-1: expliziter `fault_port=`-Kwarg landet
+    in `TickLoop._fault_port`. ADR 0022 §2.5 + ADR 0025 §2.1:
+    Builder reicht den Port unveraendert durch."""
+    from collections.abc import Sequence
+
+    from grid_gym.hexagon.core.domain.device import DeviceTickContext
+
+    class _FaultPortStub:
+        def __init__(self) -> None:
+            self.calls: list[tuple[int, int]] = []
+
+        def apply_active_faults(
+            self,
+            devices: Sequence[object],
+            context: DeviceTickContext,
+        ) -> None:
+            del devices
+            self.calls.append((context.tick, context.simulation_time))
+
+    stub = _FaultPortStub()
+    scenario = _scenario(devices=(_pv_device(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-fault-stub",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+        fault_port=stub,
+    )
+    assert loop._fault_port is stub  # type: ignore[attr-defined]
+
+
 def test_build_tick_loop_smoke_runs_one_tick() -> None:
     """ADR 0021 §2.4: voller Builder + erster Tick laeuft
     durch (kein Throw, Telemetrie wird emittiert)."""
