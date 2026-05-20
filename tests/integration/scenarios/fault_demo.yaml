@@ -1,0 +1,88 @@
+# M3-Welle-2-Fault-Demo-Szenario (Item 7 + Item 8).
+#
+# Erweitert das mvp_demo.yaml-Pattern (M2-Welle-6c) um zwei
+# Welle-2-Fault-Typen:
+#
+# - Battery-`cell_failure` zwischen Tick 5 und Tick 15
+#   (Window 5000..15000 ms, ADR 0025 §2.3 half-open).
+# - Grid-`voltage_drop` zwischen Tick 20 und Tick 25
+#   (Window 20000..25000 ms; nicht-ueberlappend mit Battery).
+#
+# Determinismus-Vertrag (ADR 0021 §2.9 + ADR 0025 §2.4):
+# zwei Laeufe mit gleichem Seed produzieren byte-identische
+# `TickResult.emitted_telemetry`-Folgen.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "fault-demo"
+  name: "M3-Welle-2 Fault-Demo (cell_failure + voltage_drop)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 30
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie M2_DEMO_SEED
+
+devices:
+  - id: "pv-1"
+    type: "pv"
+    params:
+      rated_power_kw: "500"
+  - id: "load-1"
+    type: "load"
+    params:
+      rated_power_kw: "300"
+  - id: "battery-1"
+    type: "battery"
+    params:
+      capacity_kwh: "100"
+      initial_soc_pct: "50"
+      min_soc_pct: "0"
+      max_soc_pct: "100"
+      max_charge_kw: "50"
+      max_discharge_kw: "50"
+      charge_efficiency: "1"
+      discharge_efficiency: "1"
+      ramp_kw_per_s: "100"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "1000"
+      max_export_kw: "1000"
+  - id: "meter-1"
+    type: "smart_meter"
+    params:
+      aggregate_device_ids:
+        - "battery-1"
+        - "load-1"
+        - "pv-1"
+      aggregate_metric_name: "power_kw"
+
+grid_model:
+  nominal_frequency_hz: "50"
+  frequency_sensitivity_hz_per_kw: "0.001"
+  frequency_clamp_min_hz: "45"
+  frequency_clamp_max_hz: "55"
+  nominal_voltage_v: "400"
+  voltage_sensitivity_v_per_kw: "0.1"
+  voltage_clamp_min_v: "280"
+  voltage_clamp_max_v: "520"
+
+faults:
+  # Fault-0: Battery cell_failure von Tick 5 (sim_time 5000)
+  # bis Tick 15 exklusiv (sim_time 15000) — 10 Ticks aktiv.
+  - start_simulation_time: 5000
+    duration_ms: 10000
+    target: "battery-1"
+    type: "cell_failure"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"
+  # Fault-1: Grid voltage_drop von Tick 20 (sim_time 20000)
+  # bis Tick 25 exklusiv (sim_time 25000) — 5 Ticks aktiv.
+  - start_simulation_time: 20000
+    duration_ms: 5000
+    target: "grid-1"
+    type: "voltage_drop"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"

@@ -54,6 +54,7 @@ from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import ClockPort
+from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _DEVICE_FACTORIES: Final[Mapping[str, Callable[[], DeviceModel]]] = {
@@ -346,6 +347,7 @@ def build_tick_loop(
     run_id: str,
     clock: ClockPort,
     random_root: RandomPort,
+    fault_port: FaultPort | None = None,
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -355,6 +357,15 @@ def build_tick_loop(
     fertig-konfigurierten `TickLoop`. Aufrufer-Pflicht: clock
     und `random_root` sind bereits konstruiert (`random_root`
     typisch der `RandomPort` ueber `scenario.simulation.seed`).
+
+    M3-Welle-2 (ADR 0022 §2.5): optionaler `fault_port`-Kwarg
+    fuer Fault-Injection. `None`-Default skippt den TickLoop-
+    Vor-Tick-Block-Schritt-A2-Hook; Welle-2-Aufrufer mit
+    `scenario.faults`-Inhalt konstruieren typischerweise
+    `BatteryFaultAdapter` + `GridFaultAdapter` aus
+    `scenario.faults` und komponieren sie in einen produktiven
+    FaultPort (Composition-Pattern ist M3-Welle-3-Material;
+    Welle-2-Integrationstests komponieren test-side).
     """
     devices = build_devices(scenario.devices, random_root)
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
@@ -381,6 +392,7 @@ def build_tick_loop(
         grid_model=grid_model,
         active_load_events=scenario.load_events,
         active_load_profiles=scenario.load_profiles,
+        fault_port=fault_port,
     )
 
 

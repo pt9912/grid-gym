@@ -22,6 +22,13 @@ MIN_DETERMINISM_TICKS: Final[int] = 100
 """Mindest-Tick-Anzahl fuer den Determinismus-Vergleich
 (`M2-devices.md §3 Welle 6c`)."""
 
+FAULT_DEMO_SCENARIO_PATH: Final[Path] = Path(__file__).parent / "scenarios" / "fault_demo.yaml"
+"""Pfad zur YAML-Fixture des Fault-Demo-Szenarios (M3-Welle-2 Item 7)."""
+
+FAULT_DEMO_TICKS: Final[int] = 30
+"""Tick-Anzahl fuer den Fault-Demo-Lauf — deckt beide
+Fault-Windows + Recovery ab."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne
