@@ -86,6 +86,41 @@ ADR 0025 fixiert fuenf Punkte:
 
 ### 2.1 Recovery-Modi: zwei in Welle 2 produktiv
 
+**Welle-2-`fault-{i}`-ID-Konvention** (Review-Folge M-2): bis
+Welle-3+ ein optionales `fault.id`-Feld einfuehrt, generieren
+die FaultAdapter implizite IDs als `f"fault-{i}"`, wobei `i`
+der **Original-Scenario-Index** ist (`enumerate(scenario.faults)`),
+NICHT der gefilterte Index nach Type. Beispiel: Scenario hat 3
+Faults `[voltage_drop, cell_failure, overcurrent]`; der
+BatteryFaultAdapter kennt den `cell_failure`-Fault als
+`fault-1` (sein Scenario-Index), nicht `fault-0`. Rationale:
+die Konvention bleibt stabil, wenn Welle 3+ weitere
+Fault-Typen hinzufuegt — `fault-N` referenziert immer den
+gleichen Eintrag in `scenario.faults`. `register_manual_recovery`-
+Aufrufer muessen mit dem Scenario-Index arbeiten.
+
+**Welle-2-Derate-Konstanten** (Review-Folge L-2): die
+fault-typ-spezifischen Default-Faktoren sind in den Device-
+Modulen als Modul-Konstanten codiert (z. B.
+`BatteryDevice._CELL_FAILURE_DERATE = Decimal("0.5")` —
+50 % `max_discharge_kw`-Reduktion). Welle-3+ kann die Faktoren
+via `payload[<key>]: Decimal`-Override konfigurierbar machen
+(Range-Check `0 < factor <= 1` ist Welle-3-Material). Welle-2-
+Implementer **ignorieren** `payload` vollstaendig (Schema-
+Validierung ist Welle-3-Material, siehe Review-Folge M-5).
+
+**Welle-2-Ramp-vs-Derate-Vertrag** (Review-Folge M-6): der
+Derate-Clamp ist ein **Hard-Clamp** in der jeweiligen Tick,
+nicht ein Ramp-gesteuertes Soft-Limit. Begruendung: Safety-
+Constraint hat Vorrang vor Comfort-Ramp. Beispiel: bei
+`ramp_kw_per_s=10` und aktivem `cell_failure` (effective
+`max_discharge_kw = 25`) sinkt die Discharge-Power in der
+ersten Fault-Tick **instant** auf den Clamp-Wert, nicht
+gradually ueber Ramp. Welle-2-Tests
+(`test_tick_with_active_cell_failure_overrides_ramp_limit`)
+pinnen das Verhalten.
+
+
 **Welle-2-In-Scope** (`recovery`-Feld-Werte):
 
 - **`auto-recover-after-N-ticks`** (Default): N ist die
@@ -339,12 +374,13 @@ rechtfertigt.
 
 | Pfad                                                                | Aktion |
 | ------------------------------------------------------------------- | ------ |
-| `src/grid_gym/hexagon/core/devices/battery/model.py`                | EDIT (`inject_fault` + `_clear_cell_failure` + `_cell_failure_active`-State) |
+| `src/grid_gym/hexagon/core/devices/battery/model.py`                | EDIT (`inject_fault` + `clear_fault` + `_cell_failure_active`-State) |
 | `src/grid_gym/hexagon/core/devices/battery/snapshot.py`             | EDIT (`fault_state`-Block) |
-| `src/grid_gym/hexagon/core/devices/grid_connection/model.py`        | EDIT (`inject_fault` + `_clear_voltage_drop` + `_pending_voltage_v`) |
+| `src/grid_gym/hexagon/core/devices/grid_connection/model.py`        | EDIT (`inject_fault` + `clear_fault` + `_pending_voltage_v`) |
 | `src/grid_gym/hexagon/core/devices/grid_connection/snapshot.py`     | EDIT (`fault_state`-Block) |
-| `src/grid_gym/adapters/driven/fault_battery/battery_fault_adapter.py` | NEU (Recovery-Engine + Idempotenz) |
-| `src/grid_gym/adapters/driven/fault_grid/grid_fault_adapter.py`     | NEU (Recovery-Engine + Idempotenz) |
+| `src/grid_gym/hexagon/core/faults/battery_fault_adapter.py`         | NEU (Recovery-Engine + Idempotenz) |
+| `src/grid_gym/hexagon/core/faults/grid_fault_adapter.py`            | NEU (Recovery-Engine + Idempotenz) |
+| `src/grid_gym/hexagon/core/faults/types.py`                         | NEU (zentrale `FAULT_TYPE_*`-Konstanten, Welle-2-Review-Folge L-4) |
 | `src/grid_gym/hexagon/core/errors.py`                               | EDIT (`FaultUnsupportedTypeError`, `FaultInvalidPayloadError`, `FaultUnknownReferenceError`) |
 
 ADR-Cross-Refs (read-only fuer Welle 2):

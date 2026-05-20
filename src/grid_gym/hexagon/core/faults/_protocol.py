@@ -63,3 +63,20 @@ class FaultInjectableDevice(DeviceModel, Protocol):
         ueber den `FaultPort`-Adapter (Welle 2).
         """
         ...  # pragma: no cover — Protocol-Stub
+
+    def clear_fault(self, fault_type: str) -> None:
+        """Recovery-Surface: setzt den `_<fault_type>_active`-Flag
+        zurueck (M3 Welle 2 Review-Folge H-2, ADR 0025 §2.2).
+
+        Symmetrisch zu `inject_fault`: der `FaultPort`-Adapter
+        ruft `clear_fault(fault_type)` beim Window-Ende (auto-
+        recover) oder beim `manual-recover-fault`-Command. Welle-
+        2-Implementer dispatchen intern auf den Flag des
+        jeweiligen Fault-Typs.
+
+        Unbekannter `fault_type` wirft typisiert
+        `FaultUnsupportedTypeError` (gleiche Closed-Set-Disziplin
+        wie `inject_fault`). Idempotenz-Vertrag (ADR 0025 §2.4):
+        wiederholte `clear_fault`-Aufrufe sind No-Op.
+        """
+        ...  # pragma: no cover — Protocol-Stub

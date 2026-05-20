@@ -47,6 +47,10 @@ class NullFaultInjectableDevice(NullDevice):
     ) -> None:
         self.injected_faults.append((fault_type, payload))
 
+    def clear_fault(self, fault_type: str) -> None:
+        """Welle-2-Review-Folge H-2: symmetrische Recovery-Surface."""
+        self.injected_faults.append((f"clear:{fault_type}", {}))
+
 
 def test_null_fault_injectable_device_satisfies_fault_protocol() -> None:
     """ADR 0022 §2.1 Closed-Set: ein expliziter Implementer

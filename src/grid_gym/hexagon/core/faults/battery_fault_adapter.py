@@ -25,9 +25,7 @@ State-Lokalisation (ADR 0025 §2.2): Adapter haelt
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import cast
 
-from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioFault
 from grid_gym.hexagon.core.errors import (
@@ -35,9 +33,7 @@ from grid_gym.hexagon.core.errors import (
     FaultUnsupportedTypeError,
 )
 from grid_gym.hexagon.core.faults._protocol import FaultInjectableDevice
-
-_SUPPORTED_FAULT_TYPE = "cell_failure"
-"""ADR 0025 §2.1 Closed-Set fuer Welle 2."""
+from grid_gym.hexagon.core.faults.types import FAULT_TYPE_CELL_FAILURE
 
 
 class BatteryFaultAdapter:
@@ -55,7 +51,7 @@ class BatteryFaultAdapter:
         self._faults: list[tuple[str, ScenarioFault]] = [
             (f"fault-{i}", fault)
             for i, fault in enumerate(faults)
-            if fault.type == _SUPPORTED_FAULT_TYPE
+            if fault.type == FAULT_TYPE_CELL_FAILURE
         ]
         # ADR 0025 §2.2: Scheduling-State.
         # Key: (fault_id, target_device_id); Value: bool active
@@ -97,7 +93,7 @@ class BatteryFaultAdapter:
                 # ADR 0025 §2.1 Prioritaet: Manual-Override schlaegt
                 # Auto-Schedule.
                 if target is not None and currently_active:
-                    target._clear_cell_failure()  # type: ignore[attr-defined]
+                    target.clear_fault(FAULT_TYPE_CELL_FAILURE)
                 self._active_faults[key] = False
                 self._pending_manual_recoveries.discard(key)
                 continue
@@ -108,7 +104,7 @@ class BatteryFaultAdapter:
                 self._active_faults[key] = True
             elif not in_window and currently_active:
                 if target is not None:
-                    target._clear_cell_failure()  # type: ignore[attr-defined]
+                    target.clear_fault(FAULT_TYPE_CELL_FAILURE)
                 self._active_faults[key] = False
 
     def register_manual_recovery(
@@ -138,10 +134,5 @@ class BatteryFaultAdapter:
         wollen. Wirft `FaultUnsupportedTypeError` bei nicht-
         cell_failure-Typen.
         """
-        if fault_type != _SUPPORTED_FAULT_TYPE:
+        if fault_type != FAULT_TYPE_CELL_FAILURE:
             raise FaultUnsupportedTypeError("battery", fault_type)
-
-
-# Suppress unused-warning fuer `cast` (welle-1-Pattern fuer
-# Type-Guards, falls Welle-3-Refactor das nutzt).
-_ = cast

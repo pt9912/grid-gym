@@ -87,7 +87,7 @@ Adapter-Design.
    `tick()`: reduzierte `voltage_v`-Telemetry; Auto-Schluss
    bleibt unberuehrt.
 4. **`BatteryFaultAdapter`** unter
-   `src/grid_gym/adapters/driven/fault_battery/` mit
+   `src/grid_gym/hexagon/core/faults/` mit
    - Konstruktor-Injection von `scenario.faults`-Liste +
      `RandomPort` (fuer eventuelle Stochastik in Welle-3+/M3).
    - `apply_active_faults(devices, context)` filtert via
@@ -98,7 +98,7 @@ Adapter-Design.
      `auto-recover-after-N-ticks` setzt `_cell_failure_active
      = False` nach Window-Ende.
 5. **`GridFaultAdapter`** unter
-   `src/grid_gym/adapters/driven/fault_grid/` mit identischem
+   `src/grid_gym/hexagon/core/faults/` mit identischem
    Pattern, aber spezialisiert auf `voltage_drop` →
    `GridConnectionDevice._pending_voltage_v`.
 6. **Snapshot-Erweiterung** fuer BatteryDevice und
@@ -128,8 +128,8 @@ Adapter-Design.
    - Recovery-Window-Boundary-Pinning (half-open `[start, end)`,
      analog Welle-6b-LoadEvent-Pattern).
 10. **`CRITICAL_COV_TARGETS`-Default** im Dockerfile um
-    `src/grid_gym/adapters/driven/fault_battery` und
-    `src/grid_gym/adapters/driven/fault_grid` erweitert
+    `src/grid_gym/hexagon/core/faults` und
+    `src/grid_gym/hexagon/core/faults` erweitert
     (Welle-1-Stand-`core/faults` bleibt mit drin).
 
 **Anti-Scope:**
@@ -173,12 +173,21 @@ Anschluss).
 Recovery-Window-Verhalten. `permanent` und Recovery-Telemetrie sind
 nicht in Scope dieser Welle und verbleiben in Welle 3+/M6.
 
-**Adapter-Placement** (entschieden in Welle 2):
-`adapters/driven/fault_battery/` und `adapters/driven/fault_grid/`
-als separate Module (analog `adapters/driven/random_mt/`,
-`adapters/driven/persistence_postgres/`). Spiegelt das
-M3-Slice-Plan-§3-Welle-1-Wording „pro Geraet-Typ ein FaultPort-
-Adapter".
+**Adapter-Placement** (entschieden in Welle 2, korrigiert in
+Welle-2-Review-Folge H-1):
+`BatteryFaultAdapter` und `GridFaultAdapter` leben unter
+`src/grid_gym/hexagon/core/faults/`, NICHT unter
+`src/grid_gym/adapters/driven/fault_*/` (wie im ersten Plan-
+Entwurf vorgesehen). AC-ADAPTER-PURE (`pyproject.toml:317`)
+verbietet `grid_gym.adapters` den Import von
+`grid_gym.hexagon.core.faults` und `grid_gym.hexagon.core.devices`
+— ein echter Adapter unter `adapters/driven/` koennte
+`FaultInjectableDevice` + `DeviceModel` nicht typisieren. Die
+„FaultAdapter"-Klassen sind Domain-Orchestrierung, kein
+externer Adapter — `core/faults/` ist die korrekte Hexagon-
+Schicht. Klassennamen behalten ihren `Adapter`-Suffix, weil
+sie das `FaultPort`-Protocol implementieren (Adapter im Pattern-
+Sinne).
 
 **Welle-1-Review-Constraints** (aus Welle-1-Review M-3/M-4/M-5
 in ADR 0022 §2.4 dokumentiert; Welle 2 erfuellt sie):
@@ -251,11 +260,11 @@ Plus `adr/README.md`-Zeile fuer ADR 0025 `Proposed`.
 
 **Code (neu):**
 
-1. `src/grid_gym/adapters/driven/fault_battery/__init__.py` +
+1. `src/grid_gym/hexagon/core/faults/__init__.py` +
    `battery_fault_adapter.py` —
    `BatteryFaultAdapter(FaultPort)` mit Recovery-Engine fuer
    `cell_failure`.
-2. `src/grid_gym/adapters/driven/fault_grid/__init__.py` +
+2. `src/grid_gym/hexagon/core/faults/__init__.py` +
    `grid_fault_adapter.py` —
    `GridFaultAdapter(FaultPort)` mit Recovery-Engine fuer
    `voltage_drop`.
@@ -276,15 +285,17 @@ Plus `adr/README.md`-Zeile fuer ADR 0025 `Proposed`.
    `FaultUnsupportedTypeError(GridGymError)` +
    `FaultInvalidPayloadError(GridGymError)` (analog
    Welle-1-Pattern).
-7. `Dockerfile` — `CRITICAL_COV_TARGETS`-Default um
-   `adapters/driven/fault_battery` und
-   `adapters/driven/fault_grid` erweitert.
+7. `Dockerfile` — `CRITICAL_COV_TARGETS`-Default bleibt
+   unveraendert (`hexagon/core/faults` ist seit Welle 1 drin;
+   Adapter-Code lebt in `core/faults/`, NICHT unter
+   `adapters/driven/`, weil AC-ADAPTER-PURE den Import von
+   `core.faults`/`core.devices` aus `grid_gym.adapters` verbietet).
 
 **Tests (neu):**
 
-8. `tests/unit/adapters/driven/fault_battery/__init__.py` +
+8. `tests/unit/hexagon/core/faults/__init__.py` +
    `test_adapter.py` — Adapter-Verhalten + Recovery-Engine.
-9. `tests/unit/adapters/driven/fault_grid/__init__.py` +
+9. `tests/unit/hexagon/core/faults/__init__.py` +
    `test_adapter.py` — analog.
 10. `tests/unit/hexagon/core/devices/battery/test_fault_injection.py`
     — BatteryDevice.inject_fault-Vertrag + Snapshot-Roundtrip
@@ -308,10 +319,10 @@ Plus `adr/README.md`-Zeile fuer ADR 0025 `Proposed`.
 
 **Tests (Hypothesis-Property):**
 
-15. `tests/unit/adapters/driven/fault_battery/test_determinism.py`
+15. `tests/unit/hexagon/core/faults/test_determinism.py`
     — `cell_failure`-Pfad; gleicher Seed + Fault-Sequenz → byte-
     identische Telemetry (Pattern aus M2-Welle-6c, ADR 0021 §2.9).
-16. `tests/unit/adapters/driven/fault_grid/test_determinism.py`
+16. `tests/unit/hexagon/core/faults/test_determinism.py`
     — `voltage_drop`-Pfad; gleicher Seed + Fault-Sequenz → byte-
     identische Telemetry (Pattern aus M2-Welle-6c, ADR 0021 §2.9).
 
@@ -341,17 +352,17 @@ Plus `adr/README.md`-Zeile fuer ADR 0025 `Proposed`.
 | `src/grid_gym/hexagon/core/devices/battery/snapshot.py`             | C2      | EDIT (`fault_state`-Block additiv) |
 | `src/grid_gym/hexagon/core/devices/grid_connection/model.py`        | C2      | EDIT (`inject_fault` + `_pending_voltage_v`) |
 | `src/grid_gym/hexagon/core/devices/grid_connection/snapshot.py`     | C2      | EDIT (`fault_state`-Block additiv) |
-| `src/grid_gym/adapters/driven/fault_battery/__init__.py`            | C2      | NEU |
-| `src/grid_gym/adapters/driven/fault_battery/battery_fault_adapter.py` | C2    | NEU |
-| `src/grid_gym/adapters/driven/fault_grid/__init__.py`               | C2      | NEU |
-| `src/grid_gym/adapters/driven/fault_grid/grid_fault_adapter.py`     | C2      | NEU |
+| `src/grid_gym/hexagon/core/faults/__init__.py`            | C2      | NEU |
+| `src/grid_gym/hexagon/core/faults/battery_fault_adapter.py` | C2    | NEU |
+| `src/grid_gym/hexagon/core/faults/__init__.py`               | C2      | NEU |
+| `src/grid_gym/hexagon/core/faults/grid_fault_adapter.py`     | C2      | NEU |
 | `tests/integration/scenarios/fault_demo.yaml`                       | C2      | NEU |
-| `tests/unit/adapters/driven/fault_battery/__init__.py`              | C2      | NEU |
-| `tests/unit/adapters/driven/fault_battery/test_adapter.py`          | C2      | NEU |
-| `tests/unit/adapters/driven/fault_battery/test_determinism.py`      | C2      | NEU |
-| `tests/unit/adapters/driven/fault_grid/test_determinism.py`         | C2      | NEU |
-| `tests/unit/adapters/driven/fault_grid/__init__.py`                 | C2      | NEU |
-| `tests/unit/adapters/driven/fault_grid/test_adapter.py`             | C2      | NEU |
+| `tests/unit/hexagon/core/faults/__init__.py`              | C2      | NEU |
+| `tests/unit/hexagon/core/faults/test_adapter.py`          | C2      | NEU |
+| `tests/unit/hexagon/core/faults/test_determinism.py`      | C2      | NEU |
+| `tests/unit/hexagon/core/faults/test_determinism.py`         | C2      | NEU |
+| `tests/unit/hexagon/core/faults/__init__.py`                 | C2      | NEU |
+| `tests/unit/hexagon/core/faults/test_adapter.py`             | C2      | NEU |
 | `tests/unit/hexagon/core/devices/battery/test_fault_injection.py`   | C2      | NEU |
 | `tests/unit/hexagon/core/devices/grid_connection/test_fault_injection.py` | C2 | NEU |
 | `tests/unit/hexagon/core/faults/test_recovery_window.py`            | C2      | NEU |

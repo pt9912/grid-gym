@@ -74,11 +74,30 @@ def test_inject_cell_failure_sets_active_flag() -> None:
     assert device._cell_failure_active is True
 
 
-def test_clear_cell_failure_resets_flag() -> None:
+def test_clear_fault_resets_flag() -> None:
     device = _battery()
     device.inject_fault("cell_failure", {})
-    device._clear_cell_failure()
+    device.clear_fault("cell_failure")
     assert device._cell_failure_active is False
+
+
+def test_clear_fault_is_idempotent() -> None:
+    """ADR 0025 §2.4: wiederholte `clear_fault`-Aufrufe sind
+    No-Op."""
+    device = _battery()
+    device.clear_fault("cell_failure")  # Pre-init No-Op
+    device.inject_fault("cell_failure", {})
+    device.clear_fault("cell_failure")
+    device.clear_fault("cell_failure")  # zweiter clear — No-Op
+    assert device._cell_failure_active is False
+
+
+def test_clear_fault_unknown_type_raises_typed() -> None:
+    """ADR 0025 §2.4 + H-2: `clear_fault` schaerft das Closed-Set
+    symmetrisch zu `inject_fault`."""
+    device = _battery()
+    with pytest.raises(FaultUnsupportedTypeError):
+        device.clear_fault("voltage_drop")
 
 
 def test_inject_unknown_fault_type_raises_typed() -> None:
@@ -110,13 +129,13 @@ def test_tick_with_active_cell_failure_halves_discharge_clamp() -> None:
 
 
 def test_tick_after_clear_returns_to_full_discharge() -> None:
-    """Recovery: nach `_clear_cell_failure` ist die volle
+    """Recovery: nach `clear_fault("cell_failure")` ist die volle
     Discharge wieder verfuegbar."""
     device = _battery()
     device.apply_command(_set_power_command(Decimal("-50")))
     device.inject_fault("cell_failure", {})
     device.tick(DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000))  # -25
-    device._clear_cell_failure()
+    device.clear_fault("cell_failure")
     outcome = device.tick(DeviceTickContext(tick=1, simulation_time=1000, tick_ms=1000))
     power = next(p.value for p in outcome.telemetry if p.metric == "power_kw")
     # Voll: -50 (ramp ist 100 kW/s, kann von -25 in einer Tick auf -50).
@@ -143,3 +162,90 @@ def test_snapshot_roundtrip_without_fault_state_defaults_false() -> None:
     state.pop("fault_state", None)
     restored = BatteryDevice.from_snapshot(state)
     assert restored._cell_failure_active is False
+
+
+def test_snapshot_with_empty_fault_state_defaults_false() -> None:
+    """Welle-2-Review M-1: leeres `fault_state = {}` defaultet
+    alle Flags auf False (kein Crash, kein Surprise-True)."""
+    device = _battery()
+    state = dict(device.snapshot())
+    state["fault_state"] = {}
+    restored = BatteryDevice.from_snapshot(state)
+    assert restored._cell_failure_active is False
+
+
+def test_snapshot_with_unknown_fault_keys_ignored_silently() -> None:
+    """Welle-2-Review M-1 Forward-Compat: unbekannte
+    `fault_state`-Keys (z. B. Welle-3-`voltage_drop_active`) werden
+    von Welle-2-Code ignoriert. Welle-3 Snapshots bleiben lesbar."""
+    device = _battery()
+    state = dict(device.snapshot())
+    state["fault_state"] = {
+        "cell_failure_active": True,
+        "voltage_drop_active": True,  # Welle-3-Forward-Compat
+        "some_future_flag": True,
+    }
+    restored = BatteryDevice.from_snapshot(state)
+    assert restored._cell_failure_active is True
+    # Welle-2-Code kennt `voltage_drop_active` nicht; silent-ignored.
+
+
+def test_snapshot_with_wrong_typed_fault_flag_raises_wrongtype() -> None:
+    """Welle-2-Review M-1: `cell_failure_active = "true"` (String
+    statt bool) wirft typisierten `WrongTypeError`."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    device = _battery()
+    state = dict(device.snapshot())
+    state["fault_state"] = {"cell_failure_active": "true"}
+    with pytest.raises(WrongTypeError):
+        BatteryDevice.from_snapshot(state)
+
+
+def test_tick_with_active_cell_failure_overrides_ramp_limit() -> None:
+    """Welle-2-Review M-6: bei aktivem `cell_failure` schlaegt
+    der Derate-Hard-Clamp das Ramp-Limit. ADR 0025 §2.1:
+    Safety-Constraint hat Vorrang vor Comfort-Ramp.
+
+    Setup: ramp_kw_per_s=10 (langsam); current_power_kw=-50;
+    fault aktiv. Ohne Derate haette Ramp die Power in einer Tick
+    nicht senken koennen (kann nur 10 kW pro Sekunde aendern).
+    Mit Derate wird sie instant auf -25 geclamped.
+    """
+    device = BatteryDevice()
+    device.initialize(
+        ScenarioDevice(
+            id="battery-slow",
+            type="battery",
+            params={
+                "capacity_kwh": Decimal("100"),
+                "initial_soc_pct": Decimal("50"),
+                "min_soc_pct": Decimal("0"),
+                "max_soc_pct": Decimal("100"),
+                "max_charge_kw": Decimal("50"),
+                "max_discharge_kw": Decimal("50"),
+                "charge_efficiency": Decimal("1"),
+                "discharge_efficiency": Decimal("1"),
+                "ramp_kw_per_s": Decimal("10"),  # langsamer Ramp
+            },
+        ),
+        MersenneTwisterRandomPort(seed=42),
+    )
+    device.set_run_id("test")
+    # Erste Tick: voll auf -50 (ramp ist 10, dt=1s — also nur -10
+    # in einer Tick erreichbar). Wir setzen direkt -50:
+    device.apply_command(_set_power_command(Decimal("-50"), target="battery-slow"))
+    device.tick(DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000))
+    # Erste Tick erreicht durch ramp nur -10 (von 0).
+    assert device._current_power_kw == Decimal("-10")
+
+    # Fault aktivieren — sollte instant auf -25 wirken trotz Ramp.
+    # Aber: aktuelles Power ist -10, neue effective_max ist -25.
+    # -10 ist innerhalb [-25, 0] → kein Clamp. Power bleibt -10.
+    device.inject_fault("cell_failure", {})
+    device.tick(DeviceTickContext(tick=1, simulation_time=1000, tick_ms=1000))
+    # Ramp moechte -20 erreichen (-10 + -10), aber innerhalb -25.
+    assert device._current_power_kw == Decimal("-20")
+    # Eine weitere Tick — ramp moechte -30, aber Derate-Clamp setzt -25.
+    device.tick(DeviceTickContext(tick=2, simulation_time=2000, tick_ms=1000))
+    assert device._current_power_kw == Decimal("-25")  # Hard-Clamp greift

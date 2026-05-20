@@ -52,6 +52,7 @@ from grid_gym.hexagon.core.errors import (
     MissingKeysError,
     WrongTypeError,
 )
+from grid_gym.hexagon.core.faults.types import FAULT_TYPE_CELL_FAILURE
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _SATURATION_COMMAND_ID = "<saturation>"
@@ -90,11 +91,6 @@ _CELL_FAILURE_DERATE = Decimal("0.5")
 """M3-Welle-2 (ADR 0025): bei aktivem `cell_failure` reduziert sich
 die effektive `max_discharge_kw` auf 50 % (Welle-2-Default). Welle 3+
 kann den Faktor via Payload konfigurierbar machen."""
-
-_FAULT_TYPE_CELL_FAILURE = "cell_failure"
-"""M3-Welle-2 (ADR 0025 §2.1): einziger von BatteryDevice
-verstandener `fault_type` in Welle 2. Welle 3+ kann den Closed-Set
-um `overcurrent`, `temperature_runaway` etc. erweitern."""
 """TelemetryPoint.source-Wert; ADR 0007 §5 Sub-Port-Konvention."""
 
 _RUN_ID_UNSET = ""
@@ -248,33 +244,50 @@ class BatteryDevice:
     def inject_fault(
         self,
         fault_type: str,
-        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload; Welle 3+ kann Derate-Faktor konfigurierbar machen
+        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1)
     ) -> None:
         """Wendet einen Fault auf das Device an
         (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
 
         Welle-2-Closed-Set (ADR 0025 §2.1): unterstuetzt
-        ausschliesslich `fault_type="cell_failure"`. Andere Typen
-        werfen typisiert `FaultUnsupportedTypeError`.
+        ausschliesslich `fault_type=FAULT_TYPE_CELL_FAILURE`
+        (`"cell_failure"`). Andere Typen werfen typisiert
+        `FaultUnsupportedTypeError`.
 
         Effekt: setzt `_cell_failure_active = True`. Die naechste
         `tick()` reduziert die effektive `max_discharge_kw` um
-        den Faktor `_CELL_FAILURE_DERATE` (Welle-2-Default 50 %).
+        den Faktor `_CELL_FAILURE_DERATE` (Welle-2-Default 50 %)
+        als **Hard-Clamp** in der jeweiligen Tick — Ramp-Limit
+        (`ramp_kw_per_s`) wird vom Derate-Clamp ueberschrieben
+        (ADR 0025 §2.1: Safety-Constraint schlaegt Comfort-Ramp).
+
+        **Welle-2-Payload-Vertrag** (Review-Folge M-5): `payload`
+        wird vollstaendig **ignoriert** (keine Schema-Validierung,
+        keine `derate_factor`-Konfiguration). Welle-3+ kann das
+        Payload-Schema schaerfen (z. B. optionaler
+        `payload["derate_factor"]: Decimal`-Override mit Range
+        `0 < factor <= 1`); aktuell uebergebene Payload-Werte
+        werden ohne Warnung verworfen.
         """
-        if fault_type == _FAULT_TYPE_CELL_FAILURE:
+        if fault_type == FAULT_TYPE_CELL_FAILURE:
             self._cell_failure_active = True
             return
         raise FaultUnsupportedTypeError("battery", fault_type)
 
-    def _clear_cell_failure(self) -> None:
-        """Recovery-Helper fuer den `BatteryFaultAdapter`
-        (ADR 0025 §2.2 + §2.4 Idempotenz).
+    def clear_fault(self, fault_type: str) -> None:
+        """Recovery-Surface (Welle-2-Review-Folge H-2,
+        ADR 0025 §2.2): setzt den `_<fault_type>_active`-Flag
+        zurueck. Symmetrisch zu `inject_fault`.
 
-        Der Adapter ruft das beim Window-Ende (auto-recover) oder
-        beim `manual-recover-fault`-Command. Device kennt das
-        Scheduling nicht; daher Recovery-Aufruf von aussen.
+        Welle-2-Closed-Set: nur `cell_failure`. Unbekannter
+        `fault_type` wirft `FaultUnsupportedTypeError`.
+        Idempotenz-Vertrag (ADR 0025 §2.4): wiederholte Aufrufe
+        sind No-Op (`_cell_failure_active = False` bleibt False).
         """
-        self._cell_failure_active = False
+        if fault_type == FAULT_TYPE_CELL_FAILURE:
+            self._cell_failure_active = False
+            return
+        raise FaultUnsupportedTypeError("battery", fault_type)
 
     def _tick_in_context(self, context: DeviceTickContext) -> DeviceTickOutcome:
         # Welle-2-Review L-5: `dt_hours = dt_seconds / 3600` explizit
