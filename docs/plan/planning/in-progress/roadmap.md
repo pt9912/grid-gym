@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 abgeschlossen
-**Stand:** 2026-05-20 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; Welle 6c abgeschlossen; M3 ist der nächste aktive Slice)
+**Stand:** 2026-05-20 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2 abgeschlossen, Welle 3 (Multi-Agent-Foundation) als naechster Schritt)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -190,18 +190,26 @@ unter [`in-progress/M2-devices.md`](M2-devices.md)
   `GG-AR-COMP-AGENTS`, `GG-AR-PORT-DRN-008`
   (`LogPort`/`MetricsPort`/`TracePort`).
 - **DoD-Checkliste:**
-  - [ ] Fault-Definitions im Scenario werden vor `tick()` validiert
-        (`GG-SCN-006`) und im Tick-Loop ausgeloest.
-  - [ ] Mindestens ein konkreter Fault-Typ pro
-        `Battery`/`Grid`-Achse implementiert (Beispiel:
-        `voltage_drop`, `cell_failure`).
-  - [ ] Recovery-Verhalten je Fault dokumentiert + getestet.
+  - [x] Fault-Definitions im Scenario werden vor `tick()` validiert
+        (`GG-SCN-006`) und im Tick-Loop ausgeloest
+        (M3-Welle-1 + Welle-2: ADR 0022 + ADR 0025).
+  - [x] Mindestens ein konkreter Fault-Typ pro
+        `Battery`/`Grid`-Achse implementiert: Battery
+        `cell_failure` + Grid `voltage_drop` (M3-Welle-2-Closure
+        `91d44e2`).
+  - [x] Recovery-Verhalten je Fault dokumentiert + getestet:
+        `auto-recover-after-N-ticks` + `manual-via-command`
+        (ADR 0025 §2.1; Property-Tests fuer half-open
+        `[start, end)`-Window + Unit-Tests fuer manuelle
+        Recovery; `permanent`-Modus auf Welle 3+/M6 verschoben).
   - [ ] Multi-Agent-Bus implementiert (`GG-AGENT-001..008`); RL-
         Adapter koennen als separater Folge-Slice angehaengt werden
         (`GG-FUTURE-001/002`).
   - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
-  - [ ] Property-Tests fuer Fault-Determinismus
-        (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export).
+  - [x] Property-Tests fuer Fault-Determinismus
+        (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export)
+        in M3-Welle-2: Hypothesis-half-open-Window + Per-Seed-
+        Determinismus + Welle-2-Seed-Independence.
   - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
         gruen — Default-Liste um `core/faults`, `core/agents`,
         `adapters/driven/telemetry-otlp` erweitert (analog

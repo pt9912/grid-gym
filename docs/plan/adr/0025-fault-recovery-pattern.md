@@ -1,13 +1,16 @@
 # ADR 0025 — Fault-Recovery-Pattern (M3 Welle 2)
 
-**Status:** Proposed — Welle-2-Erstwurf, geplant mit
-M3-Welle-2-Merge auf `Provisional` zu heben (Pattern aus
-ADR 0021/ADR 0022). Akzeptanz mit M3-Welle-7-Closure
-(gemeinsam mit ADR 0023 Multi-Agent + ADR 0024 Observability
-oder einzeln, je nach Welle-7-Closure-Sequenzierung).
+**Status:** Provisional — M3-Welle-2-Merge `91d44e2`-Endstand
+(C2a `e2f46e3` Battery + C2a-Review-Folge `93618cf` + C2b
+`b9a0806` Grid + C2b-Review-Folge `2844482` + C2c-Items-7-10
+`acdf9c7` + Items-7-10-Review-Folge `91d44e2`). Akzeptanz mit
+M3-Welle-7-Closure (gemeinsam mit ADR 0023 Multi-Agent + ADR
+0024 Observability oder einzeln, je nach Welle-7-Closure-
+Sequenzierung).
 **Datum:** 2026-05-20
-**Status geaendert am:** (noch keine Status-Wechsel — `Proposed`
-ist initial)
+**Status geaendert am:** 2026-05-20 (`Proposed → Provisional`
+mit M3-Welle-2-Closure; 840 Unit-Tests + 14 Integration-Tests
+gruen, A-1-Gates ohne Override).
 **Bezug:**
 [`ADR 0022`](0022-fault-injection-protocol.md) §2.4
 (Fault-Injection-Hook im Vor-Tick-Block + Exception-

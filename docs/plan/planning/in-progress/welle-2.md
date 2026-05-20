@@ -1,20 +1,49 @@
 # Welle 2 — Battery- und Grid-Fault-Konkretisierung
 
-**Status:** In Progress — Slice-Begleit-Dokument angelegt (pre-C3; Closure wechselt auf `Done`)
-2026-05-20. M3-Welle-2 baut auf der M3-Welle-1-Foundation
-(`712d73b..46c7353`) auf: Welle 1 hat `FaultInjectableDevice`-
-Sub-Protocol + `FaultPort`-Driven-Port + TickLoop-Hook +
-Validator-Haertung geliefert; Welle 2 fuellt diese Schichten
-mit konkreten Adapter-Implementierungen, Fault-Typen und
-Recovery-Logik. Kanonische Slice-Spezifikation:
+**Status:** Done — M3-Welle-2-Closure am 2026-05-20
+(`1debd5e..91d44e2`, 8 Commits). M3-Welle-2 baut auf der
+M3-Welle-1-Foundation (`712d73b..46c7353`) auf: Welle 1 hat
+`FaultInjectableDevice`-Sub-Protocol + `FaultPort`-Driven-Port
++ TickLoop-Hook + Validator-Haertung geliefert; Welle 2 fuellt
+diese Schichten mit konkreten Adapter-Implementierungen,
+Fault-Typen und Recovery-Logik. Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 2`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
-**Spec-Reife:** Inhaltlich final (ADR- und Architektur-
-Entscheidungen aus Welle-1-Review M-3/M-4/M-5 beruecksichtigt).
-**Umsetzungsstatus:** `In Progress` — Welle-Closure ersetzt die
-finalen Commit-Hashes im Header und zieht den Slice auf `Done`.
+**Commit-Sequenz (Closure):**
+
+- C0 `1debd5e` — `docs(plan): welle-2 Slice-Doc` (Welle-Beginn).
+- C1 `a17ad3c` — `docs(adr): ADR 0025 Proposed —
+  Fault-Recovery-Pattern`.
+- C2a `e2f46e3` — `feat(welle-2a): Battery cell_failure +
+  BatteryFaultAdapter + Recovery + Snapshot`.
+- C2a-Review-Folge `93618cf` — `fix(welle-2a): 2H + 7M + 6L`.
+- C2b `b9a0806` — `feat(welle-2b): GridConnection voltage_drop +
+  GridFaultAdapter + Voltage-State + Snapshot`.
+- C2b-Review-Folge `2844482` — `fix(welle-2b): Pattern-Drift
+  mit C2a aufloesen (4M + 2L)`.
+- C2c-Items-7-10 `acdf9c7` — `feat(welle-2): Items 7-10 —
+  Fault-Demo-Szenario + Integration + Property-Tests`.
+- Items-7-10-Review-Folge `91d44e2` — `fix(welle-2): alle 13
+  Findings (2H + 4M + 4L + 3N)`.
+- C3 (dieses Dokument) — `docs(plan): Welle-2 Status/DoD-Sync`.
+
+**DoD-Verifikation (Welle-Schluss):**
+
+- `make test-unit`: **840 Tests gruen** (Welle-1-Stand 773 →
+  Welle-2-Stand 840 = +67 Unit-Tests).
+- `make test-integration`: **14 Tests gruen** (mvp-demo 2 +
+  fault-demo 5 + postgres 5 + yaml-allowlist 2; +3 vs.
+  Welle-1).
+- `make gates`: **A-1 gruen** ohne Override (lint, format-check,
+  mypy `--strict`, arch-check 16/16, coverage 90/85, critical-
+  coverage `core/faults`, dep-audit).
+- ADR 0025: `Proposed → Provisional` (Schaerfung-ohne-Supersede
+  zu ADR 0022 §2.4).
+- ADR 0021 §2.4 + ADR 0022 §2.5: Symmetrie-Notiz
+  `build_tick_loop(fault_port=)` ergaenzt (Items-7-10-Review
+  N-1).
 
 ## 1. Context
 

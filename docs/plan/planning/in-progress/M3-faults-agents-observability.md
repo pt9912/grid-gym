@@ -3,19 +3,29 @@
 **Status:** In Progress — eroeffnet 2026-05-20 mit M3-Welle-0
 (`cfb7a72`/`4bd2673`/`f5de006`/`3e6170d`). **Welle 1 (Fault-
 Foundation) abgeschlossen am 2026-05-20** mit
-`712d73b`/`7e0a497`/`823eda7`/`79bb50a` + Status-Sync C3 (diesem
-Commit): ADR 0022 `Proposed → Provisional`,
-`FaultInjectableDevice` Sub-Protocol + `FaultPort` Driven-Port
-+ Validator-Target-Haertung + TickLoop-Hook + 11 neue Tests
-(773 Unit-Tests total, +11 ggue. M3-Welle-0-Stand). Drei
-distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
-werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
-wandert nach `done/` mit Welle-7-Closure.
+`712d73b`/`7e0a497`/`823eda7`/`79bb50a`: ADR 0022 `Proposed →
+Provisional`, `FaultInjectableDevice` Sub-Protocol + `FaultPort`
+Driven-Port + Validator-Target-Haertung + TickLoop-Hook + 11
+neue Tests (773 Unit-Tests). **Welle 2 (Battery-/Grid-Fault-
+Konkretisierung) abgeschlossen am 2026-05-20** mit
+`1debd5e..91d44e2` (8 Commits) + C3-Status-Sync (diesem
+Commit): ADR 0025 `Proposed → Provisional` (Fault-Recovery-
+Pattern, Schaerfung-ohne-Supersede zu ADR 0022 §2.4); Battery
+`cell_failure` + Grid `voltage_drop` + `auto-recover-after-N-
+ticks` + `manual-via-command` produktiv; Adapter-Module unter
+`hexagon/core/faults/` (architektur-korrekt; **nicht** unter
+`adapters/driven/`, weil Fault-Adapter Domain-Orchestrierung
+sind); 840 Unit-Tests + 14 Integration-Tests (+67 Unit / +3
+Integration ggue. Welle-1-Stand); Property-Tests
+(Hypothesis-half-open + Determinismus + Seed-Independence);
+Fault-Demo-Szenario + Postgres-Roundtrip. Drei distinkte Sub-
+Bereiche (Faults, Multi-Agent, Observability) werden ueber
+Welle 0..7 verteilt geliefert. M3-Slice-Plan wandert nach
+`done/` mit Welle-7-Closure.
 
-**Naechster Schritt:** Welle 2 (Battery-Fault + Grid-Fault
-konkret: `cell_failure` + `voltage_drop` + Recovery-Logik +
-Property-Tests; Adapter unter `adapters/driven/fault_battery/`
-und `adapters/driven/fault_grid/`).
+**Naechster Schritt:** Welle 3 (Multi-Agent-Foundation —
+AgentBus + AgentPort + ADR 0023; geplante Trigger-Triage aus
+Welle 0 fuer Multi-Agent-Sub-Bereich).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
@@ -217,24 +227,65 @@ Triage-Notiz erweitert nur den Slice-Plan + die welle-0.md.
 Protocol-Test + Scenario-Validator-Tests (Negativ-Pfade).
 Default-`CRITICAL_COV_TARGETS` um `core/faults` erweitert.
 
-### Welle 2 — Battery- und Grid-Fault-Konkretisierung
+### Welle 2 — Battery- und Grid-Fault-Konkretisierung (`Done` 2026-05-20, Commits `1debd5e..91d44e2` + C3-Sync)
 
-- `BatteryFault` mit `cell_failure`-Beispiel (SOC-Verlust
-  oder Spannungs-Drop).
-- `GridFault` mit `voltage_drop`-Beispiel
-  (`GridConnectionDevice`-State-Mutation).
-- Recovery-Verhalten je Fault: `auto-recover-after-N-ticks`
-  als Default; `manual-via-command` als alternativer Pfad.
-- Property-Test: gleicher Seed + gleiche Fault-Sequenz →
-  byte-identische Telemetry (Pattern aus M2-Welle-6c, siehe
-  `done/M2-devices.md` §3 Welle 6c +
-  `done/M2-devices-results.md` §3 Zeile „Welle 6c");
-  M1-Welle-3-Tie-Breaking-Determinismus
-  (`done/M1-tick-loop-results.md`) ist die zweite Referenz.
+- `BatteryFault` mit `cell_failure` produktiv:
+  `BatteryFaultAdapter` unter `hexagon/core/faults/` (Architektur-
+  Korrektur ggue. Welle-1-Plan: Fault-Adapter sind Domain-
+  Orchestrierung, **nicht** externe Adapter unter
+  `adapters/driven/`); `_cell_failure_active`-Flag auf
+  `BatteryDevice`; `_CELL_FAILURE_DERATE = 0.5` halbiert
+  `max_discharge_kw` als Hard-Clamp (Safety vor Comfort-Ramp).
+- `GridFault` mit `voltage_drop` produktiv:
+  `GridFaultAdapter` strukturell symmetrisch zu Battery;
+  `_voltage_drop_active` + `_pending_voltage_v` +
+  `_current_voltage_v` auf `GridConnectionDevice`; viertes
+  Telemetry-Metric `voltage_v` (alphabetisch zwischen `power_kw`
+  und `voltage_v`). Fault mutiert **nicht** `power_kw`
+  (ADR 0022 §2.4 GridConnection-Voltage/Frequency-Only-
+  Constraint).
+- Recovery-Verhalten produktiv:
+  `auto-recover-after-N-ticks` (Default; half-open
+  `[start, end)`-Window analog ADR 0021 §2.5 LoadEvent) +
+  `manual-via-command` (`manual-recover-fault`-Command mit
+  Pflicht-Payload `fault_id` + `target_device_id`, optional
+  `correlation_id`); `permanent` verschoben auf Welle 3+/M6.
+- `FaultInjectableDevice(DeviceModel, Protocol)` um symmetrische
+  `clear_fault(fault_type)`-Methode erweitert (Welle-2a-Review
+  H-2): eliminiert das `cast() + type: ignore`-Pattern fuer
+  Protocol-Surface-Asymmetrie.
+- Snapshot-Persistierung additiv (kein v2→v3-Bump):
+  Battery- + GridConnection-Sub-Snapshots erweitert um
+  `fault_state`-Block (ADR 0015 §2.3 erlaubt additive Sub-
+  Snapshot-Erweiterung; ADR 0014/0017 bleiben `Accepted`).
+- Property-Tests (Hypothesis): Half-open-`[start, end)`-Window
+  pro Adapter (Battery + Grid; `assume(duration_ms >= 2000)`
+  garantiert distinkte Mid-Window-Probe — Items-7-10-Review
+  H-2/L-1) + Per-Seed-Determinismus + Welle-2-Seed-Independence
+  (cross-seed-Vergleich pinnt, dass Welle-2-Battery den
+  RandomPort tatsaechlich ignoriert — Forward-Pointer auf
+  Welle-3-Stochastic-Recovery).
+- Fault-Demo-Szenario unter
+  `tests/integration/scenarios/fault_demo.yaml` (5 MVP-Devices
+  + 2 nicht-ueberlappende Faults: Battery `cell_failure`
+  `[5000ms, 15000ms)` + Grid `voltage_drop`
+  `[20000ms, 25000ms)`) mit 5 Integration-Tests
+  (Determinismus-Byte-Identitaet, Battery-Smoke,
+  Voltage-Drop-Window, Postgres-Roundtrip,
+  Composite-Order-Invariant).
+- `_CompositeFaultPort` Test-Helper unter
+  `tests/integration/_fault_composite.py` (Welle-3-Promote-TODO:
+  produktiver Composite-Adapter ist Welle-3-Material).
+- Symmetrie-Notiz: ADR 0021 §2.4 + ADR 0022 §2.5 dokumentieren
+  die `build_tick_loop(fault_port=)`-Signatur-Erweiterung
+  (Items-7-10-Review N-1).
+- ADR 0025 `Proposed → Provisional` (Fault-Recovery-Pattern,
+  Schaerfung-ohne-Supersede zu ADR 0022 §2.4 — ADR 0011-Pattern).
 
-**Welle-2-Gate:** `make test-integration` gruen mit
-End-to-End-Fault-Szenario (`tests/integration/scenarios/
-fault_demo.yaml`).
+**Welle-2-Gate:** `make test-integration` gruen
+(14 Tests inkl. `tests/integration/test_fault_demo_scenario.py`
+mit 5 Tests; +3 vs. Welle 1) + `make test-unit`
+(840 Tests, +67 vs. Welle 1) + `make gates` (A-1 ohne Override).
 
 ### Welle 3 — Multi-Agent-Foundation (AgentBus + AgentPort)
 
