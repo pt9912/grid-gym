@@ -3,13 +3,14 @@
 **Status:** Done — Welle 6 abgeschlossen am 2026-05-20 mit
 `8a3aa2f` (C0, Slice-Doc) + `c31052c` (C1, `feat`) +
 `6adb041` (C2, Doc-Sync) + `43aabbd` (C3, Review-Folge-1:
-4 Medium + 6 Low Findings) + Review-Folge-2 (C4,
-`fix(welle-6c)`: User-Cross-Check-Findings — Doku-Drift +
-DoD-Checkbox-Sync + `tool_version`-Fallback).
-Schliesst die Wellen-Reihe 6a (`27a441f`) + 6b (`0f1c597` +
-`93f784f`) ab. Kanonische Slice-Spezifikation:
-`M2-devices.md §3 Welle 6c` — dieses Dokument ist
-lesefreundlicher Index + per-Welle-Tracking, nicht Ersatz.
+4 Medium + 6 Low Findings) + `7a3c171` (C4, Review-Folge-2:
+User-Cross-Check). Slice-Doc nach `done/` gezogen mit
+Welle-7-Closure (M2-Welle-7-Commit-Stack, siehe
+[`M2-devices-results.md`](M2-devices-results.md)). Schliesst
+die Wellen-Reihe 6a (`27a441f`) + 6b (`0f1c597` + `93f784f`) ab.
+Kanonische Slice-Spezifikation: [`M2-devices.md §3 Welle 6c`](M2-devices.md)
+— dieses Dokument ist lesefreundlicher Index + per-Welle-
+Tracking, nicht Ersatz.
 
 **Spec-Reife:** Inhaltlich final. C2 hat den Header auf `Done`
 gezogen und Hash-Platzhalter ersetzt; C3 adressiert Code-

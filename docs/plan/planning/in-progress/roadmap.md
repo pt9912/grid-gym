@@ -119,12 +119,15 @@ der naechste aktive Block).
   Welle-Tabelle
   [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 
-### M2 — Geraetemodelle (Vorbelegung)
+### M2 — Geraetemodelle
 
-**Slice-Plan:** [`in-progress/M2-devices.md`](M2-devices.md)
-(Status `In Progress` seit 2026-05-18; Welle 0..6 (6 = 6a + 6b +
-6c) abgeschlossen, Welle 7 (M2-Closure) ausstehend;
-ADR 0013/0014/0015/0016/0017/0018/0019/0020/0021 `Accepted`).
+**Slice-Plan:** [`done/M2-devices.md`](../done/M2-devices.md)
+(Closure-Notiz); Welle-Tabelle + Abnahme-Belege:
+[`done/M2-devices-results.md`](../done/M2-devices-results.md);
+Welle-6c-Slice-Begleit:
+[`done/welle-6c.md`](../done/welle-6c.md). Forwarder-Stub
+unter [`in-progress/M2-devices.md`](M2-devices.md)
+(ADR-Pfad-Stabilitaet per ADR 0006 §3).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des
@@ -166,8 +169,17 @@ ADR 0013/0014/0015/0016/0017/0018/0019/0020/0021 `Accepted`).
   - [x] M1-DoD-Restposten (M1 Welle 6d/7) sind als
         `done/M1-tick-loop-spine.md` geschlossen — M1 ist seit
         2026-05-17 `Done`.
+- **Status:** Done (2026-05-20). M2-Abschluss-Gate
+  `make fullbuild` cache-frei gruen **ohne**
+  `CRITICAL_COV_TARGETS`-Override seit Welle-6c-Feat
+  (`c31052c`). Welle 7 (M2-Closure, 2026-05-20) hat
+  `done/M2-devices.md` + `done/welle-6c.md` +
+  `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
+  Trigger (`016..024`) in `open/` aktiviert.
 
-### M3 — Faults + Multi-Agent + Observability (Vorbelegung)
+**Naechster aktiver Slice: M3.**
+
+### M3 — Faults + Multi-Agent + Observability (Naechster aktiver Slice)
 
 - **Lieferziel:** produktive Fault-Injection (`GG-FAULT-001..010`),
   Multi-Agent-Subsystem (`GG-AGENT-001..008`) und

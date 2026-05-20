@@ -1,8 +1,17 @@
-# Slice-Plan — M2 Geraetemodelle — In Progress
+# Slice-Plan — M2 Geraetemodelle — Done
 
-**Status:** In Progress — Welle 0/1/2/3/4/5/6 abgeschlossen
-(Welle 6 = 6a + 6b + 6c), zuletzt Welle 6c am 2026-05-20
-(`8a3aa2f` Slice-Doc + `c31052c` feat). Welle 0/1/2/3 am
+**Status:** Done (2026-05-20). M2-Abschluss-Gate `make fullbuild`
+cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override seit
+Welle-6c-Feat (`c31052c`); Welle 7 (M2-Closure, dieser
+Commit-Stack) hat den Slice-Plan nach `done/` gezogen,
+`done/M2-devices-results.md` mit Welle-Tabelle 0..7 +
+Abnahme-Belegen erstellt und 9 SOLLTE-Open-Trigger in `open/`
+aktiviert.
+
+**Welle-Closure-Uebersicht** (Detail in
+[`M2-devices-results.md`](M2-devices-results.md) §1):
+Welle 0/1/2/3/4/5/6 abgeschlossen (Welle 6 = 6a + 6b + 6c),
+Welle 7 (M2-Closure) mit diesem Commit-Stack. Welle 0/1/2/3 am
 2026-05-18, Welle 4 (4a + 4b + Closure) am 2026-05-19.
 Welle 0a/0b/0c (`3322cb8`, `1f19996`, `ee37f36`, `314f853`) +
 Welle-0-Review-Fixes (`d490905` / `51a5f4e` / `6d39c7a` /

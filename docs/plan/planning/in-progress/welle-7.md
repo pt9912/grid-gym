@@ -1,15 +1,19 @@
 # Welle 7 — M2-Closure
 
-**Status:** In Progress — Slice-Begleit-Dokument angelegt
-2026-05-20. M2-Closure-Slice: schliesst die Wellen 0..6 ab,
-zieht M2 auf `Done` und macht M3 zum naechsten aktiven Slice.
-Kanonische Slice-Spezifikation: `M2-devices.md §3 Welle 7`
-(Zeile 1253–1280) — dieses Dokument ist lesefreundlicher
-Index + per-Welle-Tracking, nicht Ersatz.
+**Status:** Done — Welle 7 abgeschlossen am 2026-05-20 mit
+`57a50fa` (C0, Slice-Doc) + `9d6bcbf` (C1, `git mv` M2-devices.md
++ welle-6c.md → done/) + diesem C2-Doc-Sync (M2-Closure-
+Inhalte). Schliesst M2 vollstaendig ab; aktiviert M3 als
+naechsten Slice. Kanonische Slice-Spezifikation:
+[`done/M2-devices.md §3 Welle 7`](../done/M2-devices.md) —
+dieses Dokument ist lesefreundlicher Index + per-Welle-
+Tracking, nicht Ersatz.
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
-(kein Code-Pfad-Wechsel). C2 ersetzt den `<C2-Commit-Hash>`-
-Platzhalter im Header durch den realen Hash.
+(kein Code-Pfad-Wechsel). Verifikationspfad in §6 als
+erfuellt markiert; `git log --follow done/M2-devices.md`
+zeigt komplette Historie ueber den Rename-Punkt hinweg
+(Memory-Regel `feedback_git_mv` erfuellt).
 
 ## 1. Context
 
