@@ -254,16 +254,21 @@ class TickLoop:
            LoadDevices; sammelt manuelle Override-IDs fuer
            GridConnection (falls Profile/Event auf eine
            GridConnection-ID zielen).
-        3. **Erste Iteration**: PV/Load/Battery/SmartMeter ticken
+        3. **Vor-Tick-Block Schritt A2** (ADR 0022 §2.4): Fault-
+           Injection-Hook auf alle Devices, falls `fault_port`
+           gesetzt. Skippt bei `fault_port=None` (Default).
+           Order-Pflicht: vor erster Device-Iteration, damit
+           Faults in derselben Tick wirksam sind.
+        4. **Erste Iteration**: PV/Load/Battery/SmartMeter ticken
            (alle ausser `GridConnectionDevice`). Telemetry sammeln
            + Bilanz-Aggregation in `generation`/`load`/`storage`-
            Buckets.
-        4. **Auto-Schluss-Berechnung** (ADR 0021 §2.7): pro
+        5. **Auto-Schluss-Berechnung** (ADR 0021 §2.7): pro
            GridConnection ohne manuellen Override
            `apply_command(set_power_kw, -pre_grid_residual)`.
-        5. **Zweite Iteration**: GridConnection-Devices ticken;
+        6. **Zweite Iteration**: GridConnection-Devices ticken;
            Telemetry sammeln + `grid_connection`-Bucket.
-        6. `grid_model.update(...)` mit allen vier Bilanz-Werten.
+        7. `grid_model.update(...)` mit allen vier Bilanz-Werten.
 
         Welle-4-Scope: ohne Devices/grid_model bleibt das
         Verhalten identisch zur M1-Welle-4-Spine.

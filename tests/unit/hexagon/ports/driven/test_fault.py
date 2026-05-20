@@ -50,3 +50,25 @@ def test_apply_active_faults_records_invocation() -> None:
     assert len(port.calls) == 1
     assert port.calls[0][0] == ()
     assert port.calls[0][1] == context
+
+
+def test_apply_active_faults_accepts_device_typed_sequence() -> None:
+    """Welle-1-Review L-1: `Sequence[object]`-Surface muss
+    Device-typed Sequenzen ohne Cast akzeptieren (sonst wuerde
+    ein Refactor zurueck auf `Sequence[DeviceModel]` den Test
+    nicht treffen)."""
+    from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
+
+    from tests.unit.hexagon.core.devices._fakes import NullDevice
+    from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
+
+    device = NullDevice()
+    device.initialize(
+        ScenarioDevice(id="null-1", type="null", params={}),
+        FixedSeedRandom(seed=1),
+    )
+    port = _RecordingFaultPort()
+    context = DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000)
+    port.apply_active_faults((device,), context)
+    assert len(port.calls) == 1
+    assert port.calls[0][0] == (device,)

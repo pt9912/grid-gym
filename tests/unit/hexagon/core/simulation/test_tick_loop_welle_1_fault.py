@@ -18,6 +18,7 @@ from collections.abc import Sequence
 
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.fault import FaultPort
@@ -104,8 +105,6 @@ def test_tick_loop_calls_fault_port_before_first_device_tick() -> None:
     in derselben Tick wirksam ist."""
     recorder: list[str] = []
     port = _OrderRecordingFaultPort(recorder)
-    from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
-
     device = _OrderRecordingNullDevice(recorder)
     device.initialize(
         ScenarioDevice(id="null-1", type="null", params={}),

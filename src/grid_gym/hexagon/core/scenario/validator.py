@@ -243,7 +243,7 @@ def _assert_replay_reference(raw: Mapping[str, object]) -> None:
 
 def _assert_fault_list(
     raw: Mapping[str, object],
-    devices: list[Mapping[str, object]] | None = None,
+    devices: list[Mapping[str, object]],
 ) -> None:
     """Validiert den optionalen `faults`-Block.
 
@@ -253,19 +253,17 @@ def _assert_fault_list(
     muss in `devices` definiert sein — spiegelt
     `_assert_event_list`-Pattern (`ScenarioUnknownEventTargetError`).
 
-    `devices` ist optional (`None` skippt den Target-Check) zur
-    Rueckwaertskompat mit bestehenden Aufrufern, die das
-    Argument nicht setzen. `validate_scenario_mapping` reicht
-    es seit Welle 1 weiter.
+    `devices` ist seit M3-Welle-1-Review-Folge **mandatory**
+    (analog `_assert_event_list`). Einziger produktiver Caller
+    ist `validate_scenario_mapping`, der die Liste immer
+    durchreicht.
     """
     if "faults" not in raw:
         return
     raw_faults = raw["faults"]
     if not isinstance(raw_faults, list):
         raise ScenarioWrongTypeError("faults", "list", type(raw_faults).__name__)
-    device_ids: set[str] = (
-        {cast(str, device["id"]) for device in devices} if devices is not None else set()
-    )
+    device_ids: set[str] = {cast(str, device["id"]) for device in devices}
     for index, entry in enumerate(raw_faults):
         if not isinstance(entry, Mapping):
             raise ScenarioWrongTypeError(f"faults[{index}]", "Mapping", type(entry).__name__)
@@ -283,10 +281,9 @@ def _assert_fault_list(
         _assert_str(entry, f"faults[{index}].recovery")
         # M3-Welle-1 (ADR 0022 §2.3): Target-Existenz-Check
         # analog `_assert_event_list`.
-        if devices is not None:
-            target = entry["target"]
-            if isinstance(target, str) and target not in device_ids:
-                raise ScenarioUnknownFaultTargetError(target)
+        target = entry["target"]
+        if isinstance(target, str) and target not in device_ids:
+            raise ScenarioUnknownFaultTargetError(target)
 
 
 # ---------------------------------------------------------------------------

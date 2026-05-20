@@ -71,5 +71,25 @@ class FaultPort(Protocol):
         Determinismus-Vertrag (analog ADR 0021 §2.2/§2.9):
         gleicher Seed + gleiche Fault-Sequenz → byte-identische
         State-Mutationen.
+
+        Empty-`devices`-Vertrag (Welle-1-Review L-7): leere
+        Sequenz ist zulaessig und produziert einen No-Op.
+        Adapter muessen das absorbieren, ohne zu werfen
+        (typischerweise indem die Iteration ueber `scenario.faults`
+        einfach kein Match findet).
+
+        Exception-Propagation (ADR 0022 §2.4): Adapter-
+        Exceptions propagieren ungewrappt aus `TickLoop.tick()`
+        heraus. TickLoop fuegt kein try/except hinzu — Welle-2-
+        Adapter entscheiden selbst, ob sie Fail-Fast werfen
+        oder einen Alarm-Pfad ueber Welle-3-/Welle-5-
+        Observability emittieren.
+
+        GridConnection-Constraint (ADR 0022 §2.4): Faults auf
+        `GridConnectionDevice` duerfen NICHT `_pending_power_kw`
+        oder `_current_power_kw` mutieren — der Welle-6b-Auto-
+        Schluss (ADR 0021 §2.7) ueberschreibt diese Felder in
+        derselben Tick. Grid-Faults muessen Voltage-/Frequency-
+        State mutieren.
         """
         ...  # pragma: no cover — Protocol-Stub

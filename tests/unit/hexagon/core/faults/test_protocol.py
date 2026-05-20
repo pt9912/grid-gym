@@ -78,3 +78,18 @@ def test_inject_fault_signature_accepts_fault_type_and_payload() -> None:
     device = NullFaultInjectableDevice()
     device.inject_fault("cell_failure", {"affected_cell_index": 3})
     assert device.injected_faults == [("cell_failure", {"affected_cell_index": 3})]
+
+
+def test_null_fault_injectable_device_snapshot_roundtrip() -> None:
+    """Welle-1-Review L-4: `from_snapshot(snapshot()) ==
+    device`-Vertrag (ADR 0013 §2.4) bleibt fuer das Sub-Protocol
+    erhalten. `cls()` in `NullDevice.from_snapshot` produziert
+    via `Self`-Typing eine Instanz der Subklasse (nicht der
+    Base-Klasse), und beide erfuellen weiterhin
+    `FaultInjectableDevice`."""
+    device = NullFaultInjectableDevice()
+    snapshot = device.snapshot()
+    restored = NullFaultInjectableDevice.from_snapshot(snapshot)
+    assert isinstance(restored, NullFaultInjectableDevice)
+    assert isinstance(restored, FaultInjectableDevice)
+    assert restored == device  # NullDevice-Equality (state-arm)

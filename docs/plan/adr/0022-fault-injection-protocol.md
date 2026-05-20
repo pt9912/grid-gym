@@ -181,7 +181,7 @@ class FaultPort(Protocol):
 
     def apply_active_faults(
         self,
-        devices: Sequence[DeviceModel],
+        devices: Sequence[object],
         context: DeviceTickContext,
     ) -> None:
         """Wendet alle bei dieser Tick aktiven Faults auf die
@@ -201,6 +201,22 @@ class FaultPort(Protocol):
 
         Welle 1 macht **keinen** dieser Punkte. Welle 2
         implementiert sie.
+
+        **Welle-1-Port-Surface ist `Sequence[object]`** (nicht
+        `Sequence[DeviceModel]`), weil AC-PORTS-NO-OUT
+        (`ADR 0002 §A-1`) den Runtime-Import von
+        `core.devices._protocol.DeviceModel` aus
+        `hexagon/ports/driven/` verbietet. Welle-2-Adapter
+        typisieren intern strenger (z. B. `Sequence[DeviceModel]`)
+        und kapseln den `isinstance(d, FaultInjectableDevice)`-
+        Check (Schritt 4 oben). Welle-3+/M3-Welle-7 koennen ein
+        minimales `_DeviceIdentifiable`-Protocol unter
+        `core/domain/` einfuehren, falls Type-Safety an der Port-
+        Grenze relevant wird.
+
+        **Empty-`devices`-Vertrag** (Welle-1-Review L-7): leere
+        Sequenz ist zulaessig und produziert einen No-Op. Adapter
+        muessen das absorbieren, ohne zu werfen.
         """
         ...
 ```
@@ -280,6 +296,29 @@ gemutateten State reagieren koennen (z. B. Battery mit
 `max_discharge_kw`). Reverse-Order (Faults nach Tick)
 wuerde einen Tick-Delay einfuehren — abgelehnt, weil
 weniger erwartungstreu.
+
+**Exception-Propagation-Vertrag** (Welle-1-Review M-4):
+Adapter-Exceptions aus `apply_active_faults(...)` propagieren
+ungewrappt aus `TickLoop.tick()` heraus. TickLoop fuegt kein
+try/except hinzu — Welle-2-Adapter entscheiden selbst, ob sie
+Fail-Fast werfen oder einen Alarm-Pfad ueber Welle-3-/Welle-5-
+Observability emittieren. Konsequenz fuer Welle 2: der
+Adapter sollte typisierte `FaultPort*Error`-Subklassen werfen,
+damit Aufrufer auf der Hexagon-Boundary differenzieren koennen.
+
+**Fault-auf-GridConnection-Constraint** (Welle-1-Review M-5):
+Faults auf `GridConnectionDevice` duerfen **NICHT**
+`_pending_power_kw` oder `_current_power_kw` mutieren. Der
+Welle-6b-Auto-Schluss (ADR 0021 §2.7, Schritt C in `tick()`)
+ueberschreibt diese Felder in derselben Tick mit
+`-pre_grid_residual_kw` — eine Power-Flow-Mutation durch einen
+Fault wuerde verloren gehen. Welle-2-Grid-Faults (z. B.
+`voltage_drop`) muessen Voltage-/Frequency-State mutieren
+(Felder, die der Auto-Schluss nicht beruehrt). Falls ein
+zukuenftiger Fault-Typ doch Power-Flow betreffen soll, ist die
+korrekte Loesung ein Welle-2-Eintrag in
+`manual_override_grid_ids` (analog LoadEvent-Override), damit
+der Auto-Schluss-Schritt das Geraet ueberspringt.
 
 ### 2.5 `FaultPort | None`-Kwarg ohne Default
 

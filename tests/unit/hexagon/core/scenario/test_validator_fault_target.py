@@ -56,3 +56,26 @@ def test_load_scenario_rejects_fault_with_unknown_target() -> None:
     with pytest.raises(ScenarioUnknownFaultTargetError) as exc_info:
         load_scenario(raw)
     assert "ghost-battery-99" in str(exc_info.value)
+
+
+def test_load_scenario_rejects_fault_missing_recovery_before_target_check() -> None:
+    """Welle-1-Review L-6: das M1-Welle-5-`_REQUIRED_FAULT`-
+    Check (inkl. `recovery`-Pflichtfeld) laeuft VOR dem
+    M3-Welle-1-Target-Check. Ein Fault mit unbekanntem Target
+    UND fehlendem `recovery` wirft `ScenarioMissingKeysError`,
+    NICHT `ScenarioUnknownFaultTargetError` — Precedence-Pin
+    fuer Welle-2-Adapter-Implementierungen."""
+    from grid_gym.hexagon.core.errors import ScenarioMissingKeysError
+
+    raw = _scenario_with_fault("ghost-battery-99")
+    # `recovery`-Feld entfernen (Pflicht laut `_REQUIRED_FAULT`).
+    faults_list = raw["faults"]
+    assert isinstance(faults_list, list)
+    fault_entry = faults_list[0]
+    assert isinstance(fault_entry, dict)
+    del fault_entry["recovery"]
+    with pytest.raises(ScenarioMissingKeysError):
+        load_scenario(raw)
+    # Target-Check waere erst nach dem Required-Keys-Check
+    # gekommen; durch die ScenarioMissingKeysError-Exception
+    # wird er nie ausgeloest.

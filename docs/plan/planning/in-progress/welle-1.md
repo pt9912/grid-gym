@@ -4,9 +4,10 @@
 `712d73b` (Pre-C0, git mv welle-0.md → done/) + `7e0a497` (C0,
 welle-1 Slice-Doc) + `823eda7` (C1, ADR 0022 Proposed) +
 `79bb50a` (C2, feat — FaultPort + FaultInjectableDevice +
-Validator-Haertung + TickLoop-Hook + 11 Tests) + diesem
-C3-Doc-Sync (ADR 0022 → Provisional, M3-Slice-Plan §0/§3,
-welle-1.md → Done). M3-Welle-1 ist die erste Code-Welle in M3;
+Validator-Haertung + TickLoop-Hook + 11 Tests) + `e9e17c7`
+(C3-Doc-Sync, ADR 0022 → Provisional, M3-Slice-Plan §0/§3,
+welle-1.md → Done) + Review-Folge (C4, `fix(welle-1)`:
+5 Medium + 7 Low Findings, +3 Tests). M3-Welle-1 ist die erste Code-Welle in M3;
 baut auf der M3-Welle-0-Slice-Plan-Eroeffnung
 (`cfb7a72..3e6170d`) auf. Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 1`](M3-faults-agents-observability.md)
@@ -17,8 +18,10 @@ Tracking, nicht Ersatz.
 **Umsetzungsstatus:** Done. C3 hat die Hash-Platzhalter
 ersetzt und den Slice auf `Done` gezogen.
 
-**Test-Bilanz:**
-- 773 Unit-Tests gruen (+11 ggue. M3-Welle-0-Stand 762).
+**Test-Bilanz** (nach Review-Folge):
+- 776 Unit-Tests gruen (+14 ggue. M3-Welle-0-Stand 762: 11
+  Welle-1-Tests aus C2 + 3 Review-Folge-Tests aus C4 fuer
+  L-1/L-4/L-6).
 - 9 Integration-Tests unveraendert gruen (kein
   Integrationspfad in Welle 1).
 - `make gates` cache-frei gruen **ohne**
@@ -336,5 +339,9 @@ nach Repo-Konvention):
 
 ## 8. Wandert nach
 
-- `done/welle-1.md` mit M3-Welle-7-Closure (analog
-  `welle-6c.md` → `welle-7.md` → `done/` Pattern aus M2).
+- `done/welle-1.md` mit **M3-Welle-2-Start** als Pre-C0
+  reiner-Rename-Commit (analog Welle-0 → done/ in M3-Welle-1-
+  Pre-C0 `712d73b`; analog welle-6c → done/ in M2-Welle-7-C1
+  `9d6bcbf`; analog welle-7 → done/ in M3-Welle-0-C0 `cfb7a72`).
+  Memory-Konvention `feedback_git_mv` strikt: keine Inhalts-
+  Edits im Rename-Commit.

@@ -232,6 +232,10 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 # `--build-arg`. Beispiel (Welle 2, A-2 Custom-Emitter):
 #   make coverage-gate-critical \
 #        CRITICAL_COV_TARGETS=src/grid_gym/hexagon/core/serialization
+# M3-Welle-1 (ADR 0022 §6): `core/faults` ist Welle-2-anticipatory
+# — Welle 1 liefert nur Protocol-Stubs (FaultInjectableDevice),
+# echte Implementer kommen mit Welle 2. Gate ist heute strukturell
+# bei 100 % Branch-Rate (keine Branches in Protocol-Stubs).
 ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults"
 RUN set -eu; \
     for target in ${CRITICAL_COV_TARGETS}; do \
