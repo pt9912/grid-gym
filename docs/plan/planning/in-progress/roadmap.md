@@ -146,16 +146,19 @@ ADR 0013/0014/0015/0016/0017/0018/0019/0020/0021 `Accepted`).
         Welle-3-Minimum (konstantes `rated_power_kw`-Modell);
         Generationsprofil-Eingang ist Welle-5-Material.
   - [x] `Load`-Modell — M2 Welle 3b, ADR 0016 `Accepted`.
-  - [ ] `SmartMeter`-Modell — M2 Welle 4 (ADR 0017 noch nicht
-        erstellt).
-  - [ ] `GridConnection`-Modell (`GG-GRID-001..007`) — M2 Welle 4.
-  - [ ] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
+  - [x] `SmartMeter`-Modell — M2 Welle 4b (`94efb2a`),
+        ADR 0018 `Accepted`.
+  - [x] `GridConnection`-Modell (`GG-GRID-001..007`) — M2 Welle 4a
+        (`b73b44a`), ADR 0017 `Accepted`.
+  - [x] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
         Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
-        sortiert — M2 Welle 6.
-  - [ ] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
-        Composition (Trigger 014 generischer Codec ist in Welle 0a
+        sortiert — M2 Welle 6a (`27a441f`); Welle-6c (`c31052c`)
+        pinnt die Determinismus-Pflicht zusaetzlich per
+        Permutations-Property-Test + MVP-Demo-Determinismus-Run.
+  - [x] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
+        Composition (Trigger 014 generischer Codec in Welle 0a
         geliefert — siehe `done/014-generic-snapshot-format-codec.md`)
-        — M2 Welle 6.
+        — M2 Welle 6a (`27a441f`), ADR 0015 `Accepted`.
   - [x] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
         gruen — `devices/battery`, `devices/pv`, `devices/load`
         haben ≥ 90 % Line + Branch (Welle-3-Review-C-1 hat den

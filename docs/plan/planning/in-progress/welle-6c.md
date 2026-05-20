@@ -2,18 +2,21 @@
 
 **Status:** Done — Welle 6 abgeschlossen am 2026-05-20 mit
 `8a3aa2f` (C0, Slice-Doc) + `c31052c` (C1, `feat`) +
-`6adb041` (C2, Doc-Sync) + Review-Folge (C3, `fix(welle-6c)`,
-adressiert 4 Medium + 6 Low Findings ohne Supersede-ADR,
-Schaerfung-Pattern aus Welle 6b). Schliesst die Wellen-Reihe
-6a (`27a441f`) + 6b (`0f1c597` + `93f784f`) ab. Kanonische
-Slice-Spezifikation: `M2-devices.md §3 Welle 6c` — dieses
-Dokument ist lesefreundlicher Index + per-Welle-Tracking,
-nicht Ersatz.
+`6adb041` (C2, Doc-Sync) + `43aabbd` (C3, Review-Folge-1:
+4 Medium + 6 Low Findings) + Review-Folge-2 (C4,
+`fix(welle-6c)`: User-Cross-Check-Findings — Doku-Drift +
+DoD-Checkbox-Sync + `tool_version`-Fallback).
+Schliesst die Wellen-Reihe 6a (`27a441f`) + 6b (`0f1c597` +
+`93f784f`) ab. Kanonische Slice-Spezifikation:
+`M2-devices.md §3 Welle 6c` — dieses Dokument ist
+lesefreundlicher Index + per-Welle-Tracking, nicht Ersatz.
 
 **Spec-Reife:** Inhaltlich final. C2 hat den Header auf `Done`
-gezogen und die `<…-Commit-Hash>`-Platzhalter in §4.C2 / §7
-durch die realen C1-/C2-Hashes ersetzt; C3 (Review-Folge)
-adressiert Code-Quality-Findings ohne Spec-Aenderung.
+gezogen und Hash-Platzhalter ersetzt; C3 adressiert Code-
+Quality-Findings; C4 adressiert User-Cross-Check-Findings
+(Doku-vs-Implementation-Drift, tool_version-Robustness) ohne
+Spec-Aenderung. Letzter Findings-Stand: 0 High, 5 Medium,
+7 Low — alle adressiert.
 
 ## 1. Context
 
@@ -101,8 +104,10 @@ als Welle-Start-Marker. Status: `In Progress`. Kein Code.
    - `simulation: { tick_ms: 1000, duration_s: 100, seed: 0xC0FFEE }`
    - 5 MVP-Geraete: 1× Battery, 1× PV, 1× Load, 1× GridConnection
      (Auto-Schluss-Empfaenger), 1× SmartMeter
-   - `grid_model_config` mit den 8 Decimal-Feldern (siehe
-     `_minimal_raw_mapping` bzw. `_grid_model_config` in
+   - `grid_model`-Block (YAML/Validator-Key; wird vom Loader zu
+     `Scenario.grid_model_config: GridModelConfig | None` parsed)
+     mit den 8 Decimal-Feldern (siehe `_minimal_raw_mapping` bzw.
+     `_grid_model_config` in
      `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
      — Funktions-Referenz statt Zeilenbereich, da driftet)
    - 1× `LoadEvent` (z. B. `set_power_kw` auf der Load bei Tick 10)
@@ -128,12 +133,16 @@ als Welle-Start-Marker. Status: `In Progress`. Kein Code.
        coerced = _coerce_decimals(raw)   # walks known numeric paths
        return load_scenario(coerced)
    ```
-   `_coerce_decimals` macht eine **schema-bewusste** Konvertierung:
+   `_coerce_decimals` macht eine **schema-bewusste** Konvertierung
+   auf den YAML/Mapping-Schluesseln (nicht auf den parsed
+   `Scenario`-Domain-Feldern):
    `simulation.tick_ms/duration_s/seed` bleiben `int`; in
-   `devices[*].params.*`, `grid_model_config.*`,
-   `load_events[*].power_kw`, `load_profiles[*].points[*].value`
-   wird `str` → `Decimal(str_value)` umgewandelt. Underscore-
-   Prefix verhindert pytest-Collection.
+   `devices[*].params.*`, `grid_model.*` (Validator-Key, wird
+   spaeter zu `Scenario.grid_model_config`), `load_events[*].*`
+   (Decimal-Felder: `start_s`, `duration_s`, `power_kw`) und
+   `load_profiles[*].tick_values[*]` (Decimal-Liste) wird
+   `str` → `Decimal(str_value)` umgewandelt. Underscore-Prefix
+   am Datei-Namen signalisiert internen Test-Helper.
 
 4. **`tests/integration/test_mvp_demo_scenario.py`** — zwei Tests:
    - **`test_demo_scenario_telemetry_is_byte_identical_across_runs`**:
@@ -203,8 +212,14 @@ finalen Status-Update auf `welle-6c.md`:
 4. **`docs/plan/planning/in-progress/README.md`** — M2-Zeile auf
    „Wellen 0..6 abgeschlossen; Welle 7 (Closure) ausstehend".
 5. **`docs/plan/planning/in-progress/roadmap.md`** — M2-Block
-   (Zeilen 122–166): DoD-Checkboxen final markieren; Welle-
-   Tabelle in M2-Zeile auf 6 von 7 (Welle 7 offen).
+   (Zeilen 122–166): die DoD-Checkboxen, deren Inhalt durch Welle
+   4–6c geliefert wurde (`SmartMeter`, `GridConnection`,
+   `TickLoop`-deterministische-Order, Geraete-Snapshot-Sub-
+   Snapshots), auf `[x]` mit Commit-Refs setzen. M2-Status bleibt
+   `In Progress` — Closure-Flip erfolgt mit Welle 7. (Hinweis:
+   C2 hat diese DoD-Updates urspruenglich angekuendigt aber nicht
+   geliefert; nachgereicht in Review-Folge-2-Commit C4 — siehe
+   §4.C4.)
 6. **`docs/plan/planning/in-progress/welle-6c.md`** — Status-
    Header von `In Progress` auf `Done — Welle 6 abgeschlossen
    am 2026-05-20 mit `8a3aa2f` (C0) + `c31052c` (C1) + diesem
@@ -265,6 +280,48 @@ Commit adressiert (Schaerfung-Pattern aus Welle 6b).
 (Image-Pin per Digest, YAML-Doppelload, Status-Block-Pattern)
 — in `open/` getriggert, wenn relevant.
 
+### C4 — `fix(welle-6c)`: Review-Folge-2 (User-Cross-Check)
+
+Nach C3-Review-Folge hat ein User-Cross-Check (Spec ↔ Implementation,
+keine Test-Ausfuehrung) drei zusaetzliche Findings entdeckt — alle
+durch fehlende Synchronisation zwischen Welle-6c-Dokumentation
+und tatsaechlich gelieferter Implementation entstanden. Schaerfung-
+Pattern, keine Supersede-ADR.
+
+- **M-5 (Medium): Roadmap-DoD-Checkboxen-vs-welle-6c.md-Drift**.
+  welle-6c.md §4.C2 hat „Roadmap-DoD-Checkboxen final markieren"
+  versprochen, der C2-Commit `6adb041` hat aber nur die Status-
+  Zeile (Z. 124–127) editiert, nicht die DoD-Liste. Vier DoDs
+  sind durch Welle 4/6a faktisch erledigt und wurden in C4
+  nachgereicht: SmartMeter (Welle 4b `94efb2a`, ADR 0018),
+  GridConnection (Welle 4a `b73b44a`, ADR 0017), TickLoop-
+  Deterministische-Order (Welle 6a `27a441f` + 6c Permutations-
+  Property-Test), Snapshot-Sub-Snapshots (Welle 6a, ADR 0015).
+  M2-Status bleibt absichtlich `In Progress` — Closure-Flip
+  erfolgt mit Welle 7 (M2-Closure-Trigger laut
+  `M2-devices.md §6`). Plus Fix der veralteten Klammer
+  „(ADR 0017 noch nicht erstellt)" am SmartMeter-Item — SmartMeter
+  liegt in ADR 0018, ADR 0017 ist GridConnection (beide `Accepted`).
+- **L-7 (Low): Feldnamen-Drift welle-6c.md ↔ Validator/Loader**.
+  welle-6c.md §4.C1.1 referenzierte `grid_model_config` als
+  YAML-Block-Name; korrekt ist der YAML/Validator-Schluessel
+  `grid_model` (der Loader parst ihn zu
+  `Scenario.grid_model_config: GridModelConfig | None`).
+  Analog war `load_profiles[*].points[*].value` falsch — der
+  Validator/Loader nutzt `load_profiles[*].tick_values` als
+  Decimal-Liste. Korrigiert in §4.C1.1 + §4.C1.3.
+- **L-8 (Low): `DEMO_TOOL_VERSION`-Robustness**. C3 hatte
+  `importlib.metadata.version("grid-gym")` direkt zur Importzeit
+  aufgerufen. In Runnern ohne installierte Distribution (z. B.
+  Ad-hoc-`pytest` ohne `uv sync`) waere das Modul mit
+  `PackageNotFoundError` gebrochen. C4 wrappt den Aufruf in
+  `try/except` mit Sentinel-Fallback
+  `"0.0.0+local"` — die produktive Docker-Test-Stage ruft
+  weiterhin `uv sync` und sieht die reale Version.
+
+Damit ist der Welle-6c-Block dokumentations-konsistent zum
+Welle-7-Closure-Slice.
+
 ## 5. Critical Files to Modify/Create
 
 | Pfad                                                                       | Commit | Aktion |
@@ -291,6 +348,9 @@ Commit adressiert (Schaerfung-Pattern aus Welle 6b).
 | `tests/integration/conftest.py`                                            | C3     | EDIT (L-6: `repository`-Fixture zentralisiert) |
 | `tests/integration/test_postgres_run_repository.py`                        | C3     | EDIT (L-6: lokale Fixture entfernt) |
 | `docs/plan/planning/in-progress/welle-6c.md`                               | C3     | EDIT (Status + §4.C3 Review-Folge + Tabelle + §7 Tests-Count) |
+| `docs/plan/planning/in-progress/roadmap.md`                                | C4     | EDIT (M-5: 4 DoD-Checkboxen `[ ]`→`[x]`, SmartMeter-ADR-Korrektur) |
+| `docs/plan/planning/in-progress/welle-6c.md`                               | C4     | EDIT (L-7: Feldnamen `grid_model`/`tick_values` + §4.C4) |
+| `tests/integration/_constants.py`                                          | C4     | EDIT (L-8: `try/except PackageNotFoundError` + Sentinel-Fallback) |
 
 ## 6. Bestehender Code zur Wiederverwendung
 
@@ -333,14 +393,14 @@ nach Repo-Konvention):
 5. **ADR-0015-Status** sichtbar `Accepted` (`docs/plan/adr/0015-snapshot-envelope-v2.md`
    Zeile 3). Zusaetzlich ADR 0021 auf `Accepted` gehoben (Welle-6b-
    Closure-Folgeerwartung, siehe `93f784f`-Commit-Body).
-6. **Git-Pattern**: vier neue Welle-6c-Commits in der Reihenfolge
+6. **Git-Pattern**: fuenf neue Welle-6c-Commits in der Reihenfolge
    `docs(plan): welle-6c Slice-Doc (C0)` →
    `feat(welle-6c): ... (C1)` →
    `docs(plan): Welle-6c Status/DoD-Sync (C2)` →
-   `fix(welle-6c): Review-Folge (C3, M+L Findings)`.
-   `git log --oneline -4` zeigt diese vier Hashes als juengste
-   Commits. Der absolute Abstand zu `origin/main` haengt vom
-   Push-Stand ab und wird hier bewusst nicht eingefroren.
+   `fix(welle-6c): Review-Folge (C3, M+L Findings)` →
+   `fix(welle-6c): Review-Folge-2 (C4, User-Cross-Check)`.
+   `git log --oneline -5` zeigt diese fuenf Hashes als juengste
+   Commits.
 
 ## 8. Risiken & Fallback
 

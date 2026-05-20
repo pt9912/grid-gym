@@ -8,7 +8,7 @@ byte-identische `TickResult.emitted_telemetry` liefern
 
 from __future__ import annotations
 
-from importlib.metadata import version as _pkg_version
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
 from pathlib import Path
 from typing import Final
 
@@ -22,7 +22,29 @@ MIN_DETERMINISM_TICKS: Final[int] = 100
 """Mindest-Tick-Anzahl fuer den Determinismus-Vergleich
 (`M2-devices.md §3 Welle 6c`)."""
 
-DEMO_TOOL_VERSION: Final[str] = _pkg_version("grid-gym")
-"""Tool-Version aus `pyproject.toml` (via `importlib.metadata`).
-Welle-6c-Review L-3: ersetzt den hardcoded `"0.1.0"`-Wert, damit
-`RunMetadata.tool_version` automatisch mit Versions-Bumps geht."""
+_FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
+"""Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
+als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne
+`uv sync`). Klar erkennbar als „nicht produktiv" — landet so auch
+im `RunMetadata.tool_version` der Test-Roundtrips."""
+
+
+def _resolve_tool_version() -> str:
+    """Welle-6c-Review-Folge-2 L-3: try/except gegen
+    `PackageNotFoundError` schuetzt Test-Module vor Import-Fehlern
+    in Runnern, die das Paket nicht als Distribution installiert
+    haben. Der produktive Docker-Test-Stage ruft `uv sync` und
+    hat den Wert immer; der Fallback greift nur fuer
+    Ad-hoc-Lokal-Laeufe."""
+    try:
+        return _pkg_version("grid-gym")
+    except PackageNotFoundError:
+        return _FALLBACK_TOOL_VERSION
+
+
+DEMO_TOOL_VERSION: Final[str] = _resolve_tool_version()
+"""Tool-Version aus `pyproject.toml` (via `importlib.metadata`)
+mit Sentinel-Fallback, falls die Distribution nicht installiert
+ist. Welle-6c-Review L-3 + Review-Folge-2-L-3: ersetzt den
+hardcoded `"0.1.0"`-Wert und schuetzt gleichzeitig vor
+`PackageNotFoundError` in nicht-installierten Test-Umgebungen."""
