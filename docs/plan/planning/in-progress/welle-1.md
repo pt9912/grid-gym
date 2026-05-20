@@ -1,16 +1,33 @@
 # Welle 1 — Fault-Foundation: FaultPort + FaultInjectableDevice + Scenario-Validator-Härtung + TickLoop-Hook
 
-**Status:** In Progress — Slice-Begleit-Dokument angelegt
-2026-05-20. M3-Welle-1 ist die erste Code-Welle in M3; baut auf
-der M3-Welle-0-Slice-Plan-Eroeffnung (`cfb7a72..3e6170d`) auf.
-Kanonische Slice-Spezifikation:
+**Status:** Done — M3-Welle-1 abgeschlossen am 2026-05-20 mit
+`712d73b` (Pre-C0, git mv welle-0.md → done/) + `7e0a497` (C0,
+welle-1 Slice-Doc) + `823eda7` (C1, ADR 0022 Proposed) +
+`79bb50a` (C2, feat — FaultPort + FaultInjectableDevice +
+Validator-Haertung + TickLoop-Hook + 11 Tests) + diesem
+C3-Doc-Sync (ADR 0022 → Provisional, M3-Slice-Plan §0/§3,
+welle-1.md → Done). M3-Welle-1 ist die erste Code-Welle in M3;
+baut auf der M3-Welle-0-Slice-Plan-Eroeffnung
+(`cfb7a72..3e6170d`) auf. Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 1`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
-**Spec-Reife:** Inhaltlich final (ADR- und Architektur-Entscheidungen abgeschlossen).
-**Umsetzungsstatus:** `In Progress` — Welle-Closure (C3) ersetzt
-die finalen Commit-Hashes im Header und zieht den Slice auf `Done`.
+**Spec-Reife:** Inhaltlich final.
+**Umsetzungsstatus:** Done. C3 hat die Hash-Platzhalter
+ersetzt und den Slice auf `Done` gezogen.
+
+**Test-Bilanz:**
+- 773 Unit-Tests gruen (+11 ggue. M3-Welle-0-Stand 762).
+- 9 Integration-Tests unveraendert gruen (kein
+  Integrationspfad in Welle 1).
+- `make gates` cache-frei gruen **ohne**
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
+  `src/grid_gym/hexagon/core/faults`).
+- `make fullbuild` gruen mit `/health: ok`.
+- AC-PORTS-NO-OUT bleibt KEPT (FaultPort-Surface vermeidet
+  `core.devices`-Import durch `Sequence[object]`-Typisierung;
+  Welle-2-Adapter schaerft intern).
 
 ## 1. Context
 

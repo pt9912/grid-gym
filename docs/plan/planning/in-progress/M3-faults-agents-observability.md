@@ -1,10 +1,21 @@
 # Slice-Plan — M3 Faults + Multi-Agent + Observability — In Progress
 
 **Status:** In Progress — eroeffnet 2026-05-20 mit M3-Welle-0
-(`cfb7a72` Slice-Doc + diesem Commit). Drei distinkte Sub-
-Bereiche (Faults, Multi-Agent, Observability) werden ueber
-Welle 0..7 verteilt geliefert. M3-Slice-Plan wandert nach
-`done/` mit Welle-7-Closure.
+(`cfb7a72`/`4bd2673`/`f5de006`/`3e6170d`). **Welle 1 (Fault-
+Foundation) abgeschlossen am 2026-05-20** mit
+`712d73b`/`7e0a497`/`823eda7`/`79bb50a` + Status-Sync C3 (diesem
+Commit): ADR 0022 `Proposed → Provisional`,
+`FaultInjectableDevice` Sub-Protocol + `FaultPort` Driven-Port
++ Validator-Target-Haertung + TickLoop-Hook + 11 neue Tests
+(773 Unit-Tests total, +11 ggue. M3-Welle-0-Stand). Drei
+distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
+werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
+wandert nach `done/` mit Welle-7-Closure.
+
+**Naechster Schritt:** Welle 2 (Battery-Fault + Grid-Fault
+konkret: `cell_failure` + `voltage_drop` + Recovery-Logik +
+Property-Tests; Adapter unter `adapters/driven/fault_battery/`
+und `adapters/driven/fault_grid/`).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
@@ -185,7 +196,7 @@ Triage-Notiz erweitert nur den Slice-Plan + die welle-0.md.
 `make gates` cache-frei gruen ohne Code-Pfad-Aenderung
 (Sanity-Check in C2).
 
-### Welle 1 — Fault-Foundation (FaultPort + Scenario-Schema)
+### Welle 1 — Fault-Foundation (FaultPort + Scenario-Schema) (`Done` 2026-05-20, Commits `712d73b`/`7e0a497`/`823eda7`/`79bb50a` + C3-Sync)
 
 - ADR-Folge (geplant **ADR 0022**, `Provisional` mit Welle-1-
   Merge, `Accepted` mit Welle-7-Closure) als Erweiterung zu
