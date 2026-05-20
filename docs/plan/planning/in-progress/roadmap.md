@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 abgeschlossen
-**Stand:** 2026-05-18 (M1 `Done` mit Welle 0..7; M2 Welle 0..3 + Welle-3-Review-Folge abgeschlossen — Battery/PV/Load fertig; Welle 4 SmartMeter/GridConnection als naechster Block)
+**Stand:** 2026-05-20 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; Welle 6c abgeschlossen; M3 ist der nächste aktive Slice)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -22,13 +22,12 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Aktiver Slice: **M2 (Geraetemodelle)** — Slice-Plan
-liegt in [`in-progress/M2-devices.md`](M2-devices.md) (Status
-`In Progress`, Wellen 0/1/2/3/4/5/6a/6b abgeschlossen, zuletzt
-Welle 6b am 2026-05-19 (`0f1c597` — Scenario-Loader +
-TickLoop-Event-Wiring + Auto-Schluss + 14-Findings-Review).
-Welle 6c (MVP-Demo-Szenario + E2E-Tests + Welle-6-Closure) ist
-der naechste aktive Block).
+Aktiver Slice: **M3 (Faults + Multi-Agent + Observability)** — Slice-Plan
+wird mit M3-Welle-0-Start eroeffnet.
+
+M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
+([`done/M2-devices.md`](done/M2-devices.md)) inkl. Welle-7-Closure
+(`done/M2-devices-results.md`).
 
 ---
 

@@ -53,7 +53,7 @@ Welle 7 leistet die Closure-Dokumentation:
    - Abnahme-Belegen (Unit-Test-Count, Integration-Test-Count,
      Coverage, `make fullbuild` ohne Override);
    - Pro-Welle-Review-Tabelle (Welle-N-Review-Folge-Commit);
-   - S-1..S-6-Verification aus dem M1-Welle-7-End-to-End-Sweep;
+   - S-1..S-6-Verification aus dem M2-Welle-7-End-to-End-Sweep;
    - Welle-7-Erbschaft fuer M3+/M6+ (SOLLTE-Trigger-Nummern,
      Snapshot-Migration-Pfad, Performance-Benchmarks).
 5. 9 Open-Trigger in `open/` fuer SOLLTE-Items
@@ -94,7 +94,7 @@ ergibt fuer alle 9 M2-ADRs (0013..0021) `Accepted` zum
 
 ADR-Immutability nach ADR 0006 §3 erzwingt einen Forwarder-Stub
 unter `in-progress/M2-devices.md`, weil diverse Accepted-ADRs
-(0013/0014/0015/0017/0018/0019/0020/0021) den `Bezug:`-Pfad
+(0013/0014/0015/0016/0017/0018/0019/0020/0021) den `Bezug:`-Pfad
 auf `in-progress/M2-devices.md` festschreiben — analog
 `in-progress/M1-tick-loop-spine.md` aus M1-Welle-7.
 
@@ -116,7 +116,7 @@ Rename. Keine Edits an anderen Dateien.
 
 - **Closure-Notiz** oben in `done/M2-devices.md`: Status-Block
   auf „Done — M2 abgeschlossen am 2026-05-20 mit Welle-7-
-  Closure-Commit `<C2-Hash>`" gezogen; Welle-Tabellen-Zeilen
+  Closure-Commit `8667474`" gezogen; Welle-Tabellen-Zeilen
   fuer 6c/7 ergaenzt.
 - **Closure-Notiz** in `done/welle-6c.md`: Status bestaetigt
   M2-Closure-Stand (Hinweis auf `done/M2-devices-results.md`).
