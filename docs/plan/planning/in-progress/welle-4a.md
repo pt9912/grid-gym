@@ -30,7 +30,7 @@ Tracking, nicht als Ersatz.
 - Pre-C0 `a24f733` — `chore(welle-4a): git mv welle-3.md → done/welle-3.md` (rename-only).
 - C0 (dieses Dokument) — `docs(plan): welle-4a Slice-Doc`.
 - C1 — `docs(adr): ADR 0026 Proposed — Agent-Drain + Registry
-  + Lifecycle`.
+  + Snapshot + Lifecycle`.
 - C2 — `feat(welle-4a): TickLoop-agents-Kwarg + Schritt-A0-
   Drain + AgentMessageBus.consume_for + Agent-State-Snapshot +
   Lifecycle + Tests`.
@@ -64,8 +64,8 @@ End-to-End-Pfad.
 **In Scope (Welle 4a):**
 
 1. **ADR 0026** (geplant) — Agent-Drain + Registry +
-   Lifecycle-Pattern als eigene ADR (analog ADR 0025 zu
-   ADR 0022 für Recovery-Pattern). Status-Lifecycle:
+   Snapshot + Lifecycle-Pattern als eigene ADR (analog ADR
+   0025 zu ADR 0022 für Recovery-Pattern). Status-Lifecycle:
    - `Proposed` mit Welle-4a-C1 (separater
      `docs(adr)`-Commit).
    - `Provisional` mit Welle-4a-C2-Merge.
@@ -95,9 +95,12 @@ End-to-End-Pfad.
    `src/grid_gym/hexagon/core/agents/_protocol.py`:
    `_RandomAttachableAgent.attach_random(random: RandomPort)
    -> None` (analog `SmartMeterDevice.attach_sources`-
-   Pattern, ADR 0018 §2.4). **Keine Erweiterung der
-   `Agent`-Pflicht-Surface**, damit RuleBasedAgents ohne
-   Stochastik den Hook nicht implementieren müssen.
+   Pattern, ADR 0018 §2.4). Das Protocol ist
+   `@runtime_checkable`, weil `_attach_agents()` es per
+   `isinstance(agent, _RandomAttachableAgent)` prueft. **Keine
+   Erweiterung der `Agent`-Pflicht-Surface**, damit
+   RuleBasedAgents ohne Stochastik den Hook nicht
+   implementieren müssen.
 5. **TickLoop-Schritt A0 (Pre-Tick-Agent-Command-Drain)**:
    - Position: am Tick-Start, **vor** Schritt A (LoadEvent-/
      Profile-Overlay), aber nach `clock.advance(...)` und
@@ -219,9 +222,9 @@ End-to-End-Pfad.
 ## 3. Architektur-Entscheidungen
 
 Welle 4a bringt **eine neue ADR**: ADR 0026 (Agent-Drain +
-Registry + Lifecycle-Pattern). Schwester-ADR zu ADR 0023
-(Welle 3 Foundation); Pattern-Pendant zu ADR 0025 (Welle 2
-Recovery-Pattern, schärft ADR 0022).
+Registry + Snapshot + Lifecycle-Pattern). Schwester-ADR zu
+ADR 0023 (Welle 3 Foundation); Pattern-Pendant zu ADR 0025
+(Welle 2 Recovery-Pattern, schärft ADR 0022).
 
 **Drain-Pfad: Pre-Tick-Schritt A0 mit `apply_command`-direct**
 (D1 aus Recherche-Brief). Drei Varianten waren denkbar:
@@ -265,7 +268,9 @@ Varianten waren denkbar:
    Pattern (ADR 0018 §2.4). RuleBasedAgent ohne Stochastik
    implementiert `attach_random` nicht — `_attach_agents()`
    prüft ein optionales Sub-Protocol
-   (`isinstance(agent, _RandomAttachableAgent)`).
+   (`isinstance(agent, _RandomAttachableAgent)`). Das
+   Sub-Protocol muss deshalb `@runtime_checkable` sein; sonst
+   wirft Python beim `isinstance`-Check einen `TypeError`.
 3. **Agent zieht sich seinen Sub-Port selbst aus dem Bus**
    — Bus-Konstruktor nimmt `RandomPort`-Referenz.
    *Abgelehnt*: Bus haelt Welle-3-konform keinen
@@ -335,7 +340,8 @@ Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
   - §2.2 Registry-API: TickLoop-Konstruktor-Kwarg + Scenario-
     Loader-Builder-Symmetrie.
   - §2.3 Lifecycle: `_attach_agents()` mit `set_run_id` +
-    optionalem `_RandomAttachableAgent`-Sub-Protocol.
+    optionalem, mit `@runtime_checkable` dekoriertem
+    `_RandomAttachableAgent`-Sub-Protocol.
   - §2.4 Bus-Eviction: `consume_for(receiver)` als
     destruktive Direct-Inbox-Drain-Variante; Broadcasts
     bleiben nicht-destruktiv.
@@ -366,7 +372,8 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 
 1. `src/grid_gym/hexagon/core/agents/_protocol.py` —
    `attach_random(random: RandomPort) -> None`-Methode als
-   **optionale** Surface via separates
+   **optionale** Surface über ein separates, mit
+   `@runtime_checkable` dekoriertem
    `_RandomAttachableAgent`-Sub-Protocol.
 2. `src/grid_gym/hexagon/core/agents/bus.py` —
    `consume_for(receiver: str) -> Sequence[AgentMessage]`-
@@ -407,7 +414,8 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 9. Neue Tests für `_attach_agents()`-Lifecycle:
    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py`
    — `set_run_id`-Aufruf, optionaler `attach_random`-Aufruf,
-   Sub-Port-Namens-Konvention.
+   Sub-Port-Namens-Konvention, kein `TypeError` beim
+   `isinstance`-Check gegen `_RandomAttachableAgent`.
 10. Neue Tests für Agent-State-Snapshot:
     `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py`
     — `agent_bus`-Roundtrip, `pending_agent_commands`-Roundtrip,
@@ -438,7 +446,7 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 | `docs/plan/planning/in-progress/README.md`                          | C0      | EDIT (welle-3→welle-4a) |
 | `docs/plan/adr/0026-agent-drain-registry-pattern.md`                | C1      | NEU |
 | `docs/plan/adr/README.md`                                           | C1      | EDIT (ADR 0026 Zeile) |
-| `src/grid_gym/hexagon/core/agents/_protocol.py`                     | C2      | EDIT (`_RandomAttachableAgent`-optional-Surface) |
+| `src/grid_gym/hexagon/core/agents/_protocol.py`                     | C2      | EDIT (`@runtime_checkable`-deklarierte `_RandomAttachableAgent`-optional-Surface) |
 | `src/grid_gym/hexagon/core/agents/bus.py`                           | C2      | EDIT (`consume_for(...)` Direct-Inbox-destruktiv, Broadcasts bleiben nicht-destruktiv) |
 | `src/grid_gym/hexagon/core/simulation/tick_loop.py`                 | C2      | EDIT (`agents=`-Kwarg + Duplicate-ID-Fail-Fast + Schritt-A0-Drain + Agent-State-Snapshots + `_attach_agents()`; `_set_agents_for_testing` entfernt) |
 | `src/grid_gym/hexagon/core/scenario/loader.py`                      | C2      | EDIT (`build_tick_loop(agents=)`-Symmetrie) |
@@ -463,8 +471,9 @@ nach Repo-Konvention):
    (`consume_for`-Direct-Inbox-Destruktiv-Vertrag,
    Broadcast-Retention, Schritt-A0-Drain-Order,
    `_attach_agents()`-Lifecycle, Agent-State-Snapshot,
-   Konstruktor-Kwarg-Forwarding, Duplicate-ID- und
-   Command-Target-Fail-Fast). Test-Count steigt von 879
+   `_RandomAttachableAgent`-Runtime-Check, Konstruktor-Kwarg-
+   Forwarding, Duplicate-ID- und Command-Target-Fail-Fast).
+   Test-Count steigt von 879
    (Welle-3-Endstand) auf ~894–900. Welle-3-Tests, die
    `_set_agents_for_testing(...)` nutzten, werden auf den
    Konstruktor-Kwarg umgestellt — Tests bleiben grün, nur
@@ -518,12 +527,14 @@ nach Repo-Konvention):
   Test pinnt das explizit.
 - **R-3 — `_attach_agents()` mit optionalem
   `_RandomAttachableAgent`-Sub-Protocol**: Hasattr ist nicht
-  typisierbar (mypy-Strict-Risiko). *Mitigation*: separate
-  `_RandomAttachableAgent`-
-  Sub-Protocol unter `_protocol.py`; `_attach_agents()`
-  prueft via `isinstance(agent, _RandomAttachableAgent)`
-  (analog Welle-1-`FaultInjectableDevice`-Pattern).
-  Saubere Typisierung; keine Hasattr-Drift.
+  typisierbar (mypy-Strict-Risiko). *Mitigation*: ein separates,
+  mit `@runtime_checkable` dekoriertes
+  `_RandomAttachableAgent`-Sub-Protocol unter `_protocol.py`;
+  `_attach_agents()` prueft via
+  `isinstance(agent, _RandomAttachableAgent)` (analog
+  Welle-1-`FaultInjectableDevice`-Pattern). Saubere
+  Typisierung; keine Hasattr-Drift; kein Runtime-`TypeError`
+  beim `isinstance`-Check.
 - **R-4 — ADR 0026 vs. ADR-0023-Schärfung**: ADR 0026 ist
   separate ADR, kein Schärfung-ohne-Supersede in ADR 0023.
   *Mitigation*: 5 substantielle Entscheidungen rechtfertigen
