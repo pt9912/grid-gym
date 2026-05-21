@@ -9,8 +9,9 @@ Entscheidungen):
 
 - **Welle 4a — Foundation-Plumbing** (dieses Dokument):
   ADR 0026 + TickLoop-Registry-API + Schritt-A0-Pre-Tick-Drain
-  + `consume_for`-Bus-Eviction + Lifecycle-Hook. **Keine**
-  konkreten Agent-Implementer.
+  + `consume_for`-Bus-Eviction + Lifecycle-Hook +
+  TickLoop-Agent-State-Snapshot. **Keine** konkreten Agent-
+  Implementer.
 - **Welle 4b — RuleBasedAgent + Scenario-Schema**: konkrete
   Implementer + `agents`-Top-Level-Block + Property-Tests +
   Sub-Snapshot-Slot + End-to-End-Demo-Szenario +
@@ -31,7 +32,8 @@ Tracking, nicht als Ersatz.
 - C1 — `docs(adr): ADR 0026 Proposed — Agent-Drain + Registry
   + Lifecycle`.
 - C2 — `feat(welle-4a): TickLoop-agents-Kwarg + Schritt-A0-
-  Drain + AgentMessageBus.consume_for + Lifecycle + Tests`.
+  Drain + AgentMessageBus.consume_for + Agent-State-Snapshot +
+  Lifecycle + Tests`.
 - C3 — `docs(plan): Welle-4a Status/DoD-Sync` (ADR 0026 →
   Provisional, M3-Plan §3 Welle-4a-Done-Tag, welle-4a.md →
   Done; M3-Welle-4b als nächster Schritt vermerkt).
@@ -134,20 +136,41 @@ End-to-End-Pfad.
      solange kein `consumed_sequences`-/Watermark-State
      persistiert wird; Buffer-Inhalt wird nach Konsumption
      kleiner, aber das Schema-Format bleibt unverändert.
-7. **`build_tick_loop(..., agents=...)`-Builder-Symmetrie**:
+7. **TickLoop-Agent-State-Snapshot**:
+   - `TickLoop.snapshot()` hängt `agent_bus` als Sub-Snapshot ein,
+     sobald `_agent_bus is not None`; verwendet wird das bereits in
+     Welle 3 definierte `AgentMessageBus`-v1-Schema.
+   - `TickLoop.snapshot()` hängt `pending_agent_commands` als
+     Sub-Snapshot ein, sobald der Buffer nicht leer ist. Format:
+     `{"version": 1, "commands": [...]}` mit den `Command`-
+     Pflichtfeldern (`command_id`, `simulation_time`,
+     `target_device_id`, `type`, `payload`, `validation_status`,
+     `result`).
+   - `TickLoop.from_snapshot(...)` rekonstruiert `agent_bus` und
+     `_pending_agent_commands`, falls die Sub-Snapshots vorhanden
+     sind. Fehlen sie, bleibt der bestehende Welle-6a-Resume-Pfad
+     unverändert (`agent_bus=None`, Pending-Buffer leer).
+   - **Keine** konkreten Agent-Instanz-Snapshots in Welle 4a:
+     `agents.<agent_type>.<agent_id>` bleibt Welle 4b, weil erst
+     konkrete Implementer eigene Snapshot-Verträge liefern.
+   - Grund: Welle 4a macht `agents=` und den Pre-Tick-Drain
+     produktiv. Ohne Persistenz für Bus + Pending-Buffer würde ein
+     Snapshot zwischen Agent-Tick und Folgetick Commands bzw.
+     Nachrichten verlieren.
+8. **`build_tick_loop(..., agents=...)`-Builder-Symmetrie**:
    - Scenario-Loader-Builder erhält
      `agents: tuple[Agent, ...] = ()`-Kwarg (analog Welle-3
      `agent_bus`).
    - Default `()`-Tuple; Welle-4b-Scenario-Loader wird die
      Agent-Faktoren-Map (analog `_DEVICE_FACTORIES`) hier
      instanziieren.
-8. **`AgentDuplicateIdError`** unter
+9. **`AgentDuplicateIdError`** unter
    `src/grid_gym/hexagon/core/errors.py` als neue Subklasse
    von `AgentBusError` — wird im TickLoop-Konstruktor
    geworfen, wenn `agents` doppelte `agent_id`-Werte enthält.
    Das macht die Welle-3-Helper-Defensive produktiv und
    typisiert.
-9. **`AgentInvalidCommandTargetError`** unter
+10. **`AgentInvalidCommandTargetError`** unter
    `src/grid_gym/hexagon/core/errors.py` als neue Subklasse
    von `AgentBusError` — wird in Schritt A0 geworfen, wenn
    ein Agent-Command auf eine `target_device_id` zielt, die
@@ -163,10 +186,11 @@ End-to-End-Pfad.
 - `agents`-Top-Level-Block im Scenario-Schema +
   `_assert_agent_list`-Validator + `ScenarioAgent`-Domain-
   Modell.
-- Sub-Snapshot-Slots (`agent_bus`, `agents.<agent_type>.
-  <agent_id>`) in `TickLoop.snapshot()` — Welle 4a hat keine
-  registrierten Agents per Default; Welle 4b fügt die Sub-
-  Snapshots additiv per ADR 0015 §2.3 ein.
+- Konkrete Agent-Instanz-Snapshots (`agents.<agent_type>.
+  <agent_id>`) in `TickLoop.snapshot()` — Welle 4a persistiert
+  nur generischen Foundation-State (`agent_bus`,
+  `pending_agent_commands`); Welle 4b fügt konkrete
+  Implementer-Snapshots additiv per ADR 0015 §2.3 ein.
 - Agent-Faktoren-Map analog `_DEVICE_FACTORIES`.
 - Property-Determinismus-Tests pro Agent-Implementer
   (`GG-AGENT-003`).
@@ -265,15 +289,19 @@ receiver`; Broadcasts bleiben nicht-destruktiv in
 `drain_for(receiver)` bis Welle 4b oder eine Folge-Slice
 registry-aware Fan-out/Watermark spezifiziert.
 
-**Snapshot-Vertrag für Welle 4a**: kein Sub-Snapshot-Slot
-für `_pending_agent_commands` oder Agents in
-`TickLoop.snapshot()`. Welle-4a-Default-TickLoop hat
-`agents=()`; `_pending_agent_commands` bleibt leer.
-Welle-4b-RuleBasedAgent-Konkretisierung fügt die Sub-
-Snapshot-Slots additiv per ADR 0015 §2.3 ein. ADR 0023 §6
-verbindliche Welle-4-Konsequenz „Agent-Sub-Snapshot-Slot
-in `TickLoop.snapshot()`" wird damit auf Welle 4b
-verschoben.
+**Snapshot-Vertrag für Welle 4a**: Foundation-State wird
+persistiert, konkrete Agent-Instanzen nicht. `agent_bus`
+kommt als Single-Instance-Sub-Snapshot hinzu, sobald ein Bus
+injiziert ist; `_pending_agent_commands` kommt als
+`pending_agent_commands`-Sub-Snapshot hinzu, sobald der
+Buffer nicht leer ist. Das verhindert Resume-Verlust zwischen
+Agent-Tick und Folgetick. Welle-4b-RuleBasedAgent-
+Konkretisierung fügt zusätzlich `agents.<agent_type>.
+<agent_id>`-Sub-Snapshots additiv per ADR 0015 §2.3 ein.
+ADR 0023 §6 verbindliche Welle-4-Konsequenz
+„Agent-Sub-Snapshot-Slot in `TickLoop.snapshot()`" wird damit
+geteilt: generischer Bus-/Pending-State in Welle 4a,
+konkreter Agent-State in Welle 4b.
 
 **ADR 0025-Pattern**: Welle 4a schärft ADR 0023 §6 ohne
 Supersede (ADR 0011-Pattern). ADR 0023 bleibt
@@ -301,7 +329,7 @@ Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
 
 - **Status**: `Proposed` (Datum 2026-05-21).
 - **§1 Kontext**: Welle-3-Forward-Pointer + ADR 0023 §6.
-- **§2 Entscheidung** (5 Sub-Sections):
+- **§2 Entscheidung** (6 Sub-Sections):
   - §2.1 Drain-Pfad: Schritt A0 Pre-Tick mit `apply_command`-
     direct.
   - §2.2 Registry-API: TickLoop-Konstruktor-Kwarg + Scenario-
@@ -313,6 +341,9 @@ Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
     bleiben nicht-destruktiv.
   - §2.5 Registry-/Drain-Fail-Fast:
     `AgentDuplicateIdError` + `AgentInvalidCommandTargetError`.
+  - §2.6 Snapshot-Vertrag: `agent_bus` + `pending_agent_commands`
+    in `TickLoop.snapshot()`/`from_snapshot(...)`; konkrete
+    `agents.<type>.<id>`-Slots bleiben Welle 4b.
 - **§3 Begründung**: drei Drain-Varianten, drei Registry-
   Varianten, drei Lifecycle-Varianten.
 - **§4 Reichweite**: In-Scope-4a (Plumbing) / Out-Scope-4b
@@ -324,8 +355,8 @@ Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
   `agents`-Top-Level-Block im Scenario-Schema bleibt Welle-
   4b-Pflicht.
 - **§7 Nicht Gegenstand**: GG-AGENT-007 Deadlines,
-  GG-AGENT-008 Async, Sub-Snapshot-Slots, Multi-Receiver-
-  Watermark.
+  GG-AGENT-008 Async, konkrete Agent-Instanz-Snapshots,
+  Multi-Receiver-Watermark.
 
 Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 
@@ -348,6 +379,8 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
    - `agent_id`-Eindeutigkeits-Check mit
      `AgentDuplicateIdError`.
    - Schritt A0 Pre-Tick-Drain (vor Schritt A).
+   - `agent_bus`- und `pending_agent_commands`-Sub-Snapshots
+     schreiben und beim `from_snapshot(...)` wiederherstellen.
    - Welle-3-`_set_agents_for_testing(...)` entfernt.
 4. `src/grid_gym/hexagon/core/scenario/loader.py` —
    `build_tick_loop(..., agents=...)`-Builder-Symmetrie.
@@ -375,7 +408,11 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py`
    — `set_run_id`-Aufruf, optionaler `attach_random`-Aufruf,
    Sub-Port-Namens-Konvention.
-10. `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
+10. Neue Tests für Agent-State-Snapshot:
+    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py`
+    — `agent_bus`-Roundtrip, `pending_agent_commands`-Roundtrip,
+    fehlende Sub-Snapshots bleiben backward-kompatibel leer.
+11. `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
     — `build_tick_loop(agents=...)`-Forwarding-Test (analog
     Welle-3-Review-Folge-3-L-1-Pattern).
 
@@ -403,13 +440,14 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 | `docs/plan/adr/README.md`                                           | C1      | EDIT (ADR 0026 Zeile) |
 | `src/grid_gym/hexagon/core/agents/_protocol.py`                     | C2      | EDIT (`_RandomAttachableAgent`-optional-Surface) |
 | `src/grid_gym/hexagon/core/agents/bus.py`                           | C2      | EDIT (`consume_for(...)` Direct-Inbox-destruktiv, Broadcasts bleiben nicht-destruktiv) |
-| `src/grid_gym/hexagon/core/simulation/tick_loop.py`                 | C2      | EDIT (`agents=`-Kwarg + Duplicate-ID-Fail-Fast + Schritt-A0-Drain + `_attach_agents()`; `_set_agents_for_testing` entfernt) |
+| `src/grid_gym/hexagon/core/simulation/tick_loop.py`                 | C2      | EDIT (`agents=`-Kwarg + Duplicate-ID-Fail-Fast + Schritt-A0-Drain + Agent-State-Snapshots + `_attach_agents()`; `_set_agents_for_testing` entfernt) |
 | `src/grid_gym/hexagon/core/scenario/loader.py`                      | C2      | EDIT (`build_tick_loop(agents=)`-Symmetrie) |
 | `src/grid_gym/hexagon/core/errors.py`                               | C2      | EDIT (`AgentDuplicateIdError` + `AgentInvalidCommandTargetError`) |
 | `tests/unit/hexagon/core/agents/test_bus.py`                        | C2      | EDIT (`consume_for`-Direct-Inbox-Tests + Broadcast-Retention) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` → `test_tick_loop_welle_4a_agent.py` | C2 | RENAME + EDIT (Konstruktor-Kwarg statt `_set_agents_for_testing`, Duplicate-ID-Fail-Fast) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_drain.py` | C2  | NEU (Schritt-A0-Drain-Tests) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py` | C2 | NEU (`_attach_agents()`-Tests) |
+| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py` | C2 | NEU (`agent_bus` + `pending_agent_commands`-Roundtrip) |
 | `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`          | C2      | EDIT (`agents=`-Forwarding-Test) |
 | `docs/plan/adr/0026-agent-drain-registry-pattern.md`                | C3      | EDIT (Status → Provisional) |
 | `docs/plan/adr/README.md`                                           | C3      | EDIT (Status → Provisional) |
@@ -421,13 +459,13 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 End-to-End über `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
-1. **`make test-unit`** — grün mit ~12–18 neuen Tests
+1. **`make test-unit`** — grün mit ~15–21 neuen Tests
    (`consume_for`-Direct-Inbox-Destruktiv-Vertrag,
    Broadcast-Retention, Schritt-A0-Drain-Order,
-   `_attach_agents()`-Lifecycle, Konstruktor-Kwarg-
-   Forwarding, Duplicate-ID- und Command-Target-Fail-Fast).
-   Test-Count steigt von 879
-   (Welle-3-Endstand) auf ~891–897. Welle-3-Tests, die
+   `_attach_agents()`-Lifecycle, Agent-State-Snapshot,
+   Konstruktor-Kwarg-Forwarding, Duplicate-ID- und
+   Command-Target-Fail-Fast). Test-Count steigt von 879
+   (Welle-3-Endstand) auf ~894–900. Welle-3-Tests, die
    `_set_agents_for_testing(...)` nutzten, werden auf den
    Konstruktor-Kwarg umgestellt — Tests bleiben grün, nur
    die API-Aufruf-Syntax ändert sich.
@@ -444,13 +482,18 @@ nach Repo-Konvention):
 5. **ADR-0026-Status sichtbar `Provisional`** nach C3.
 6. **ADR 0023 bleibt `Provisional`** (Welle 4a schärft
    ohne Supersede; keine Status-Aenderung).
-7. **Welle-3-`_set_agents_for_testing`-Helper ist entfernt**
+7. **Agent-State-Resume ist verlustfrei**: Snapshot mit
+   `agent_bus`-Buffer und nicht-leerem
+   `pending_agent_commands`-Buffer roundtript beide States; ein
+   Folgetick nach Resume wendet Pending-Commands nicht erneut und
+   nicht gar nicht, sondern genau einmal an.
+8. **Welle-3-`_set_agents_for_testing`-Helper ist entfernt**
    — Welle-4a-Code-Audit-Pflicht: `grep -rn
    "_set_agents_for_testing" tests/ src/` liefert kein
    Ergebnis nach C2.
-8. **Rename-Historie**: `git log --follow done/welle-3.md`
+9. **Rename-Historie**: `git log --follow done/welle-3.md`
    traceable über Pre-C0-Rename (`a24f733`).
-9. **Git-Pattern**: 5 neue Welle-4a-Commits in der
+10. **Git-Pattern**: 5 neue Welle-4a-Commits in der
    Reihenfolge `chore(welle-4a): git mv (Pre-C0)` →
    `docs(plan): welle-4a Slice-Doc (C0)` → `docs(adr): ADR
    0026 Proposed (C1)` → `feat(welle-4a): ... (C2)` →
@@ -494,6 +537,13 @@ nach Repo-Konvention):
   Welle-4a-Tests pinnen alle Pflicht-Pfade via NullAgent +
   `_OrderRecordingAgent`-Stubs (die jetzt das volle
   Protocol erfuellen). Welle 4b verifiziert End-to-End.
+- **R-6 — Snapshot zwischen Agent-Tick und Folgetick verliert
+  Commands**: Schritt D2 produziert Commands für den nächsten
+  Tick; ein Resume vor Schritt A0 darf sie nicht verwerfen.
+  *Mitigation*: Welle 4a persistiert `pending_agent_commands`
+  als eigenen Sub-Snapshot und stellt ihn in
+  `TickLoop.from_snapshot(...)` wieder her; Tests pinnen den
+  genau-einmal-Drain nach Resume.
 
 ## 8. Wandert nach
 
