@@ -43,7 +43,7 @@ produktiv abgeschlossen: `Agent`-Sub-Protocol +
 `AgentMessageBus`-Core-Klasse + `AgentMessage`-frozen-
 dataclass + TickLoop-Schritt-D2-Hook + `agent_bus`-Builder-
 Symmetrie + `AgentBusError`-Family + Welle-3-Foundation-
-Pending-Buffer (`_pending_agent_commands`). 889 Unit-Tests +
+Pending-Buffer (`_pending_agent_commands`). 879 Unit-Tests +
 14 Integration-Tests; `make gates` A-1 ohne Override grün.
 
 Vier Review-Folgen haben Welle-3-Foundation auf den heutigen
@@ -68,8 +68,8 @@ End-to-End-Pfad.
      `docs(adr)`-Commit).
    - `Provisional` mit Welle-4a-C2-Merge.
    - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
-    ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
-    Welle-7-Sequenzierung).
+     ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
+     Welle-7-Sequenzierung).
 2. **TickLoop-Konstruktor erhält produktiven
    `agents`-Kwarg**:
    - `agents: tuple[Agent, ...] = ()` (keyword-only, analog
@@ -426,8 +426,8 @@ nach Repo-Konvention):
    Broadcast-Retention, Schritt-A0-Drain-Order,
    `_attach_agents()`-Lifecycle, Konstruktor-Kwarg-
    Forwarding, Duplicate-ID- und Command-Target-Fail-Fast).
-   Test-Count steigt von 889
-   (Welle-3-Endstand) auf ~901–907. Welle-3-Tests, die
+   Test-Count steigt von 879
+   (Welle-3-Endstand) auf ~891–897. Welle-3-Tests, die
    `_set_agents_for_testing(...)` nutzten, werden auf den
    Konstruktor-Kwarg umgestellt — Tests bleiben grün, nur
    die API-Aufruf-Syntax ändert sich.
@@ -490,7 +490,7 @@ nach Repo-Konvention):
 - **R-5 — Sub-Slicing 4a → 4b: Welle 4a closure ohne
   konkreten Agent**: ohne RuleBasedAgent-Beispiel ist
   Welle-4a-Code zwar test-getrieben getestet, aber nicht
-  in einem produktiven Lauf gepruefte. *Mitigation*:
+  in einem produktiven Lauf geprueft. *Mitigation*:
   Welle-4a-Tests pinnen alle Pflicht-Pfade via NullAgent +
   `_OrderRecordingAgent`-Stubs (die jetzt das volle
   Protocol erfuellen). Welle 4b verifiziert End-to-End.
