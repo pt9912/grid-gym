@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1 abgeschlossen
-**Stand:** 2026-05-20 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2 abgeschlossen, Welle 3 (Multi-Agent-Foundation) als naechster Schritt)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2 abgeschlossen
+**Stand:** 2026-05-21 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a abgeschlossen, Welle 4b (RuleBasedAgent + Scenario-Schema) als naechster Schritt. ADR 0022/0023/0025/0026 alle `Provisional`. 921 Unit-Tests + 14 Integration-Tests gruen. Trigger 025 (GitHub-Actions-CI-Workflow mit vier Pflicht-Gates: `lint-imports`, `ruff check`, `arch-check-custom`, `mypy --strict`) eingebaut.)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -202,9 +202,16 @@ unter [`in-progress/M2-devices.md`](M2-devices.md)
         (ADR 0025 §2.1; Property-Tests fuer half-open
         `[start, end)`-Window + Unit-Tests fuer manuelle
         Recovery; `permanent`-Modus auf Welle 3+/M6 verschoben).
-  - [ ] Multi-Agent-Bus implementiert (`GG-AGENT-001..008`); RL-
-        Adapter koennen als separater Folge-Slice angehaengt werden
-        (`GG-FUTURE-001/002`).
+  - [~] Multi-Agent-Bus implementiert (`GG-AGENT-001..008`):
+        Foundation (Welle 3: `Agent`-Protocol + `AgentMessageBus` +
+        `AgentMessage` + TickLoop-Schritt-D2-Hook + Pending-Buffer)
+        und Foundation-Plumbing (Welle 4a: produktive
+        `agents`-Registry + Schritt-A0v/A0a-Drain +
+        `_attach_agents()`-Lifecycle + `consume_for(...)` +
+        Foundation-State-Snapshot) sind `Done`. Welle 4b liefert
+        konkrete `Agent`-Implementer (`RuleBasedAgent` o. ae.) +
+        Scenario-Schema-`agents`-Block + End-to-End-Demo. RL-
+        Adapter (`GG-FUTURE-001/002`) bleiben Folge-Slice.
   - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
   - [x] Property-Tests fuer Fault-Determinismus
         (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export)

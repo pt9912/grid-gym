@@ -14,9 +14,61 @@ lokalen, nachvollziehbaren Umgebung modellieren wollen.
 
 ## Status
 
-Dieses Repository befindet sich in einer fruehen Spezifikationsphase. Aktuell
-enthaelt es das Lastenheft, diese Projektuebersicht und Basis-Metadaten. Eine
-lauffaehige Implementierung ist noch nicht enthalten.
+**Stand 2026-05-21:** M1 (Tick-Loop-Spine) und M2 (Geraetemodelle) sind
+`Done`. M3 (Faults + Multi-Agent + Observability) ist aktiv:
+Welle 0/1/2/3/4a sind abgeschlossen, Welle 4b (RuleBasedAgent +
+Scenario-Schema) ist der naechste Schritt. Welle 5 (Observability-
+Foundation) und Welle 6 (OTLP-Adapter) folgen.
+
+| Subsystem | Stand | Belege |
+| --- | --- | --- |
+| Tick-Loop-Spine (M1) | `Done` | [`done/M1-tick-loop-results.md`](docs/plan/planning/done/M1-tick-loop-results.md) |
+| Geraetemodelle (M2) | `Done` | [`done/M2-devices-results.md`](docs/plan/planning/done/M2-devices-results.md); Battery, PV, Load, GridConnection, SmartMeter + GridModelBilanz produktiv |
+| Fault-Subsystem (M3 Welle 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Provisional` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Provisional`; `BatteryFaultAdapter` + `GridFaultAdapter` mit `cell_failure`/`voltage_drop` und Recovery-Logik |
+| Multi-Agent-Subsystem (M3 Welle 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent`-Protocol + `AgentMessageBus` + TickLoop-`agents`-Registry + Schritt-A0v/A0a-Drain + Agent-Foundation-State-Snapshot |
+| Multi-Agent konkret (M3 Welle 4b) | `Open` | `RuleBasedAgent` + Scenario-`agents`-Block + End-to-End-Demo |
+| Observability (M3 Welle 5+6) | `Open` | `LogPort`/`MetricsPort`/`TracePort` + OTLP-Adapter |
+| Protokolladapter (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
+| UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
+| Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
+
+**Testbilanz:** 921 Unit-Tests + 14 Integration-Tests gruen;
+`make gates` A-1 (lint, format-check, mypy `--strict`, arch-check
+16/16, test-unit, coverage-gate 90/85, critical-coverage 90,
+dep-audit) ohne Override cache-frei gruen.
+
+**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) mit vier
+Pflicht-Gates fuer `pull_request` und `push` auf `main`:
+`lint-imports`, `ruff check`, `python tools/arch_check.py`,
+`mypy --strict`. Siehe Trigger-Doc
+[`025-github-actions-four-gates.md`](docs/plan/planning/in-progress/025-github-actions-four-gates.md).
+
+## Build, Test, Lint
+
+Das Repository ist **Docker-only**: Host braucht nur `docker` und
+`make`. Keine lokale Python-/uv-Installation. Alle Builds, Tests
+und Gates laufen ueber Dockerfile-Stages.
+
+```bash
+make help                # alle Targets auflisten
+make gates               # alle A-1-Pflicht-Gates (lint, format-check,
+                         # typecheck, arch-check, test-unit, coverage,
+                         # critical-coverage, dep-audit)
+make test-unit           # nur Unit-Tests
+make test-integration    # Integration-Tests via Compose (Postgres-Container)
+make fullbuild           # gates + integration + runtime-Image-Bau
+```
+
+Einzel-Gates fuer schnelle Feedback-Schleifen:
+
+```bash
+make lint                # ruff check
+make format-check        # ruff format --check
+make typecheck           # mypy --strict (ADR 0005)
+make arch-check          # import-linter + tools/arch_check.py (ADR 0002 §A-1)
+make arch-check-imports  # nur import-linter (7 Tabu-Contracts)
+make arch-check-custom   # nur tools/arch_check.py (9 Custom-Checks)
+```
 
 ## MVP-Scope
 
@@ -56,22 +108,37 @@ Der MVP umfasst laut Lastenheft mindestens:
 
 ```text
 .
+├── .github/workflows/ci.yml     ← GitHub-Actions: 4 Pflicht-Gates (Trigger 025)
 ├── CHANGELOG.md
 ├── Dockerfile                   ← Multi-Stage (Lint, Arch-Check, Test, Runtime)
 ├── LICENSE
 ├── Makefile                     ← Build-/Test-Gates pro Dockerfile-Stage
+├── alembic.ini                  ← Postgres-Migrationen (M1 Welle 6c)
 ├── pyproject.toml               ← Build-/Tool-Konfiguration (ADR 0002 §6.1)
 ├── uv.lock                      ← gepinnte Dependencies (uv)
 ├── .python-version              ← 3.14 (uv-kompatibel)
 ├── README.md
+├── deploy/compose.yml           ← Produktiver Compose-Stack (M1 Welle 6c)
 ├── src/grid_gym/
 │   ├── hexagon/
-│   │   ├── core/                ← fachlicher Kern (Domain, Simulation, ...)
-│   │   └── ports/               ← Driving-/Driven-Port-Interfaces
-│   └── adapters/                ← Driving-/Driven-Adapter
+│   │   ├── core/
+│   │   │   ├── agents/          ← Agent-Protocol + AgentMessageBus (M3 Welle 3+4a)
+│   │   │   ├── devices/         ← Battery, PV, Load, GridConnection, SmartMeter (M2)
+│   │   │   ├── domain/          ← Frozen-Dataclasses (Command, Event, ScenarioFault, ...)
+│   │   │   ├── faults/          ← Battery- + GridFaultAdapter (M3 Welle 2)
+│   │   │   ├── grid_model/      ← Bilanz-Modell + LoadEvent/LoadProfile (M2 Welle 5)
+│   │   │   ├── replay/          ← Replay-Sample-Codec (M1 Welle 5)
+│   │   │   ├── scenario/        ← YAML-Loader + Validator (M1 Welle 5)
+│   │   │   ├── serialization/   ← canonical_json (M1 Welle 0a, Trigger 014)
+│   │   │   └── simulation/      ← TickLoop + Scheduler
+│   │   └── ports/driven/        ← ClockPort, RandomPort, FaultPort, RunRepositoryPort
+│   └── adapters/
+│       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
+│       └── driven/              ← Postgres, RandomMT (M1 Welle 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests
-│   └── arch/                    ← Architektur-Tests
+│   ├── unit/                    ← pytest-Unit-Tests (921 Stand 2026-05-21)
+│   ├── integration/             ← Compose-basierte Integration-Tests (14 Tests)
+│   └── unit/_arch_check_*       ← Architektur-Tests (16 Contracts)
 ├── tools/
 │   └── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)
 ├── spec/
@@ -79,13 +146,13 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records
+    │   ├── adr/                 ← Architecture Decision Records (0001..0026)
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv
-    │       ├── in-progress/     ← aktive Roadmap
+    │       ├── in-progress/     ← aktive Roadmap + Slice-Plaene
     │       └── done/            ← abgeschlossene Slices + Closure-Notizen
-    ├── user/                    ← anwender-/betreibernah (geplant)
+    ├── user/                    ← anwender-/betreibernah (Code-Review etc.)
     └── archive/                 ← verworfene/historische Skizzen
 ```
 
