@@ -40,22 +40,42 @@ distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
 werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
 wandert nach `done/` mit Welle-7-Closure.
 
-**Naechster Schritt:** Welle 4 ist in zwei Teilwellen
-geschnitten. **Welle 4a** liefert Foundation-Plumbing
-(ADR 0026, Agent-Registry am TickLoop, Pre-Tick-Command-
-Drain, `consume_for`, `_attach_agents()`-Lifecycle,
-Sub-Random-Stream-Konvention `agent-{agent_id}`, Builder-
-Symmetrie und generische Agent-Foundation-State-Snapshots).
-**Welle 4b** liefert die konkrete Multi-Agent-Konkretisierung
-(mind. ein `Agent`-Implementer, z. B. `RuleBasedAgent`,
-Decision-Logik, `agents`-Top-Level-Block im Scenario-Schema +
-Validator-Haertung, konkrete Agent-Instanz-Snapshots und das
-Welle-4-End-to-End-Gate).
+**Welle 4a (Multi-Agent-Foundation-Plumbing) abgeschlossen
+am 2026-05-21** mit `a24f733..da18c6d` (Pre-C0-Rename +
+welle-4a-C0 + ADR-0026-C1 + 3 User-Polish-Commits + C2 +
+diesem C3-Status-Sync): ADR 0026 `Proposed → Provisional`
+(Agent-Drain + Registry + Snapshot + Lifecycle-Pattern;
+Schwester-ADR zu ADR 0023, Pattern-Pendant zu ADR 0025);
+TickLoop-`agents`-Kwarg + Auto-Bus + Duplicate-ID-Fail-Fast +
+`_attach_agents()`-Lifecycle (set_run_id + optional
+`_RandomAttachableAgent.attach_random`); **Schritt A0v**
+(Pre-Clock-Target-Validierung) + **Schritt A0a** (Apply nach
+Clock, vor Schritt A) mit Atomizitaets-Vertrag bei
+`AgentInvalidCommandTargetError`; `AgentMessageBus.consume_for(
+receiver)` Direct-Inbox-destruktiv (Broadcasts bleiben
+nicht-destruktiv); `agent_bus`/`pending_agent_commands`
+Sub-Snapshots + Resume-Match-Checks fuer Devices/GridModel/
+LoadOverlays; sechs neue Error-Klassen in drei Roots
+(`AgentRegistryError`, `AgentCommandDrainError(TickLoopError)`,
+`TickLoopAgentSnapshot*Error`); Welle-3-
+`_set_agents_for_testing(...)` entfernt; `build_tick_loop(
+agents=)`-Symmetrie + GridModelBilanz-Overlay-Verdrahtung.
+921 Unit-Tests + 14 Integration-Tests (+32 Unit / 0
+Integration ggue. Welle-3-Stand); `make gates` A-1 ohne
+Override gruen.
+
+**Naechster Schritt:** **Welle 4b** liefert die konkrete
+Multi-Agent-Konkretisierung (mind. ein `Agent`-Implementer,
+z. B. `RuleBasedAgent`, Decision-Logik, `agents`-Top-Level-
+Block im Scenario-Schema + Validator-Haertung, konkrete
+Agent-Instanz-Snapshots `agents.<agent_type>.<agent_id>` und
+das Welle-4-End-to-End-Gate (`make fullbuild` ohne Override
+mit Agent-Demo-Szenario)).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
 bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
-abgeschlossen 2026-05-21.
+abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21.
 
 **Bezug:**
 

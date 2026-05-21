@@ -1,11 +1,40 @@
 # Welle 4a — Multi-Agent-Foundation-Plumbing
 
-**Status:** In Progress — eröffnet am 2026-05-21 mit M3-Welle-
-4a-Pre-C0-Rename (`a24f733`). Welle 4 ist die produktive
-Konkretisierung des Multi-Agent-Subsystems und wird in zwei
-Teilwellen geliefert (Sub-Slicing nach M3-Slice-Plan §3
-Sub-Slicing-Schwelle: 6+ Items mit ≥ 2 echten Architektur-
-Entscheidungen):
+**Status:** Done — M3-Welle-4a-Closure am 2026-05-21
+(`a24f733..da18c6d`, 6 Welle-4a-Kern-Commits + 3 User-Polish-
+Commits + diesem C3-Status-Sync). Welle 4a liefert die
+Multi-Agent-Foundation-Plumbing-Schicht; Welle 4b folgt mit
+konkreten Agent-Implementern und End-to-End-Gate.
+
+**DoD-Verifikation (Welle-Schluss):**
+
+- `make test-unit`: **921 Tests gruen** (Welle-3-Endstand 889
+  → +32 Welle-4a-Tests; davon 4 in `test_bus.py`
+  (`consume_for`), 9 in `test_tick_loop_welle_4a_agent.py`
+  (Konstruktor-Kwarg + Auto-Bus + Duplicate-ID), 3 in
+  `test_tick_loop_welle_4a_drain.py` (A0v/A0a), 5 in
+  `test_tick_loop_welle_4a_lifecycle.py` (`_attach_agents`),
+  9 in `test_tick_loop_welle_4a_snapshot.py` (Agent-
+  Foundation-State-Snapshot), 2 in
+  `test_loader_welle_6b.py` (Builder-Symmetrie)).
+- `make test-integration`: **14 Tests unveraendert gruen**
+  (Welle-4a-Foundation hat keine neuen Integration-Tests;
+  Welle-4b-End-to-End-Demo folgt).
+- `make gates`: **A-1 gruen** ohne Override (lint,
+  format-check, mypy `--strict`, arch-check 16/16, coverage
+  94.94 % line / >90 % branch, critical-coverage `core/agents`,
+  dep-audit).
+- ADR 0026: `Proposed → Provisional` (Schwester-ADR zu
+  ADR 0023; Pattern-Pendant zu ADR 0025 fuer Welle-2-
+  Konkretisierung).
+- AC-PORTS-NO-OUT bleibt KEPT (16 Contracts).
+- Welle-3-`_set_agents_for_testing(...)`-Helper entfernt:
+  `grep -rn "_set_agents_for_testing" tests/ src/` ist leer.
+
+Welle 4 ist die produktive Konkretisierung des Multi-Agent-
+Subsystems und wird in zwei Teilwellen geliefert (Sub-Slicing
+nach M3-Slice-Plan §3 Sub-Slicing-Schwelle: 6+ Items mit ≥ 2
+echten Architektur-Entscheidungen):
 
 - **Welle 4a — Foundation-Plumbing** (dieses Dokument):
   ADR 0026 + TickLoop-Registry-API + Schritt-A0-Pre-Tick-Drain
