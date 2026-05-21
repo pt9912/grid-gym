@@ -109,12 +109,12 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
    - `drain_for(receiver: str) -> Sequence[AgentMessage]` —
      deterministisch sortierte Liste pro Empfaenger (Sortier-
      Vertrag: `(simulation_time, sender, sequence)`), damit bei
-     gleichzeitigen Events stabiler Reihenfolgen-Output entsteht.
+     gleichzeitigen Events ein stabiler Reihenfolgen-Output entsteht.
    - `snapshot() -> Mapping[str, object]` + `from_snapshot(...)`.
    - Konstruktor-Injection fuer `RandomPort.sub_port("agents")`
      als Bus-Sub-Stream-Quelle (Welle-3-Foundation nutzt das
      nicht; Welle 4/5 kann pro Agent eigene Substreams über
-     `RandomPort.sub_port(f\"agent-{agent_id}\")` anbinden —
+     `RandomPort.sub_port(f"agent-{agent_id}")` anbinden —
      analog Welle-2-Battery-Seed-Independence).
 4. **`AgentMessage`-Domain-Modell** unter
    `src/grid_gym/hexagon/core/domain/agent_message.py` als
