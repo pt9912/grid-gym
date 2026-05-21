@@ -472,10 +472,17 @@ Plus `adr/README.md`-Zeile fuer ADR 0023 `Proposed`.
 End-to-End ueber `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
-1. **`make test-unit`** — gruen mit ~6–10 neuen Tests
+1. **`make test-unit`** — gruen mit +49 neuen Tests
    (Protocol-Conformance, AgentMessageBus-Determinism, Snapshot-
-   Roundtrip, AgentMessage-Frozen-Vertrag, TickLoop-Hook-Order).
-   Test-Count steigt von 840 (Welle-2-Stand) auf ~846–850.
+   Roundtrip, AgentMessage-Frozen-Vertrag, TickLoop-Hook-Order,
+   plus Review-Folge-Defense-Tests + Pending-Buffer-Tests +
+   Loader-Symmetrie). Test-Count steigt von 840 (Welle-2-Stand)
+   auf 889 (Welle-3-Endstand inkl. Review-Folge 1, 2 und 3).
+   **Pre-Implementation-Schaetzung war ~6–10 neue Tests**
+   (Welle-3-Review-Folge-3 L-2, 2026-05-21): die initiale Pre-
+   C2-Schaetzung blieb stark unter dem realen Endstand, weil
+   sie die zwei Review-Folgen + L-1-Loader-Test nicht
+   eingepreist hatte.
 2. **`make test-integration`** — bleibt 14 Tests gruen (Welle-3-
    Foundation hat keine neuen Integration-Tests; Welle-4-
    Konkretisierung wird das nachholen).

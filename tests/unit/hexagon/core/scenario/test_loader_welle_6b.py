@@ -549,6 +549,45 @@ def test_build_tick_loop_forwards_fault_port_kwarg() -> None:
     assert loop._fault_port is stub  # type: ignore[attr-defined]
 
 
+# ---------------------------------------------------------------------------
+# M3-Welle-3-Review-Folge-3 L-1 — build_tick_loop agent_bus forwarding
+# ---------------------------------------------------------------------------
+
+
+def test_build_tick_loop_forwards_agent_bus_default_is_none() -> None:
+    """M3-Welle-3-Review-Folge-3 L-1 (2026-05-21): ohne
+    `agent_bus=`-Kwarg bleibt `TickLoop._agent_bus = None`
+    (ADR 0023 §2.5 + Welle-3-Foundation-Vertrag). Spiegelt
+    das `fault_port`-Default-Pattern aus Welle 2."""
+    scenario = _scenario(devices=(_pv_device(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-agent-default",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+    )
+    assert loop._agent_bus is None  # type: ignore[attr-defined]
+
+
+def test_build_tick_loop_forwards_agent_bus_kwarg() -> None:
+    """M3-Welle-3-Review-Folge-3 L-1 (2026-05-21): expliziter
+    `agent_bus=`-Kwarg landet in `TickLoop._agent_bus`.
+    ADR 0023 §2.5: Builder reicht den Bus unveraendert durch
+    (Builder-Symmetrie zu ADR 0021 §2.4 + ADR 0022 §2.5)."""
+    from grid_gym.hexagon.core.agents import AgentMessageBus
+
+    bus = AgentMessageBus()
+    scenario = _scenario(devices=(_pv_device(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-agent-bus",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+        agent_bus=bus,
+    )
+    assert loop._agent_bus is bus  # type: ignore[attr-defined]
+
+
 def test_build_tick_loop_smoke_runs_one_tick() -> None:
     """ADR 0021 §2.4: voller Builder + erster Tick laeuft
     durch (kein Throw, Telemetrie wird emittiert)."""
