@@ -437,7 +437,7 @@ nach Repo-Konvention):
    Aktivierungs-Schwelle nicht erreicht).
 8. **Rename-Historie**: `git log --follow done/welle-2.md`
    traceable ueber Pre-C0-Rename (`3dbe6af`).
- 9. **Git-Pattern**: 5 neue Welle-3-Commits in der Reihenfolge
+9. **Git-Pattern**: 5 neue Welle-3-Commits in der Reihenfolge
    `chore(welle-3): git mv (Pre-C0)` → `docs(plan): welle-3 Slice-Doc (C0)` → `docs(adr): ADR 0023 Proposed (C1)` →
    `feat(welle-3): ... (C2)` → `docs(plan): Welle-3 Status/DoD-Sync (C3)`. `git log --oneline -5` zeigt diese
    fuenf Hashes.
