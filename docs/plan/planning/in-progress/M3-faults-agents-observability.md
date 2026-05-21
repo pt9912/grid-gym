@@ -31,7 +31,7 @@ erbend) + `AgentMessageBus`-Core-Klasse mit Snapshot-Surface
 + `AgentMessage`-frozen-dataclass mit `GG-AGENT-004`-Pflicht-
 Feldern + TickLoop-Schritt-D2-Hook (Architektur §6 Schritt 7)
 + `agent_bus`-Builder-Symmetrie + `AgentBusError`-Family
-produktiv. 879 Unit-Tests + 14 Integration-Tests (+39 Unit /
+produktiv. 889 Unit-Tests + 14 Integration-Tests (+49 Unit /
 0 Integration ggue. Welle-2-Stand); Welle-3-Foundation hat
 keine konkreten Agent-Implementer (kommen mit Welle 4). Code-
 Review-Folge `d6f66fc` adressiert 9 Findings (1H + 4M + 4L)
@@ -40,14 +40,17 @@ distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
 werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
 wandert nach `done/` mit Welle-7-Closure.
 
-**Naechster Schritt:** Welle 4 (Multi-Agent-Subsystem
-konkret — mind. ein `Agent`-Implementer (`RuleBasedAgent`
-o. ae.), Agent-Registry am TickLoop, Decision-Logik,
-`agents`-Top-Level-Block im Scenario-Schema + Validator-
-Haertung, Welle-3-Foundation-Folgen aus der Review-Folge
-(Sub-Random-Stream-Konvention `agent-{agent_id}`, Eviction-
-Spec fuer Bus-Buffer, optional `_attach_agents()`-Lifecycle
-analog `_attach_devices()`)).
+**Naechster Schritt:** Welle 4 ist in zwei Teilwellen
+geschnitten. **Welle 4a** liefert Foundation-Plumbing
+(ADR 0026, Agent-Registry am TickLoop, Pre-Tick-Command-
+Drain, `consume_for`, `_attach_agents()`-Lifecycle,
+Sub-Random-Stream-Konvention `agent-{agent_id}`, Builder-
+Symmetrie und generische Agent-Foundation-State-Snapshots).
+**Welle 4b** liefert die konkrete Multi-Agent-Konkretisierung
+(mind. ein `Agent`-Implementer, z. B. `RuleBasedAgent`,
+Decision-Logik, `agents`-Top-Level-Block im Scenario-Schema +
+Validator-Haertung, konkrete Agent-Instanz-Snapshots und das
+Welle-4-End-to-End-Gate).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
@@ -365,7 +368,7 @@ mit 5 Tests; +3 vs. Welle 1) + `make test-unit`
   `_attach_devices()` mit `set_run_id`-Aufruf ist Welle-4-
   Material.
 
-**Welle-3-Gate:** `make test-unit` gruen (879 Tests, +39 vs.
+**Welle-3-Gate:** `make test-unit` gruen (889 Tests, +49 vs.
 Welle 2) + `make test-integration` (14 Tests, unveraendert) +
 `make gates` (A-1 ohne Override; AC-PORTS-NO-OUT KEPT mit
 16 Contracts; `CRITICAL_COV_TARGETS`-Default-Erweiterung um
@@ -373,15 +376,65 @@ Welle 2) + `make test-integration` (14 Tests, unveraendert) +
 
 ### Welle 4 — Multi-Agent-Subsystem konkret
 
+Welle 4 wird per M3-Slice-Plan-Sub-Slicing-Schwelle in zwei
+Teilwellen geliefert, weil die Scope-Liste 6+ Items und mehrere
+echte Architektur-Entscheidungen enthaelt.
+
+#### Welle 4a — Foundation-Plumbing (`In Progress` 2026-05-21)
+
+- ADR 0026 `Proposed → Provisional`: Agent-Drain + Registry +
+  Snapshot + Lifecycle-Pattern (Schaerfung zu ADR 0023 ohne
+  Supersede).
+- TickLoop erhaelt `agents: tuple[Agent, ...] = ()`, Duplicate-
+  ID-Fail-Fast, Auto-Bus-Regel bei `agents != () and
+  agent_bus is None` und `_attach_agents()` mit `set_run_id` +
+  optionalem `attach_random(random_root.sub_port(f"agent-
+  {agent_id}"))`.
+- Schritt A0 drainet `_pending_agent_commands` in der Folgetick
+  per `apply_command(...)`: Target-Validierung vor Clock-/
+  Scheduler-Mutation, Apply vor Step-A-Baseline/Profile/Event.
+  Die bestehende LoadDevice-Baseline gewinnt auf LoadDevices;
+  GridConnection-Agent-Commands zaehlen als manueller Auto-
+  Close-Override. Der No-Side-Effect-Fail-Fast gilt fuer
+  ungueltige Targets; unerwartete `apply_command(...)`-
+  Exceptions propagieren ohne Rollback-Versprechen.
+- `AgentMessageBus.consume_for(receiver)` konsumiert nur direkt
+  adressierte private Inbox-Nachrichten destruktiv; Broadcasts
+  bleiben bis zu registry-aware Fan-out/Watermark
+  nicht-destruktiv.
+- TickLoop-Snapshot haengt generischen Agent-Foundation-State ein:
+  `agent_bus` plus `pending_agent_commands`. Konkrete
+  `agents.<agent_type>.<agent_id>`-Snapshots bleiben Welle 4b.
+- `build_tick_loop(..., agents=...)`-Symmetrie; der Builder
+  spiegelt `scenario.load_events`/`scenario.load_profiles` in
+  `GridModelBilanz`, wenn `grid_model_config` vorhanden ist,
+  damit GridModel-v2-Overlay-Snapshots die Welle-4a-Resume-
+  Match-Checks tragen. Overlay-only-Szenarien ohne GridModel
+  bleiben gueltig, bekommen aber keinen snapshot-gestuetzten
+  Overlay-Match-Check.
+
+**Welle-4a-Gate:** `make test-unit`, `make test-integration`,
+`make gates` und `make fullbuild` gruen ohne Override; kein
+konkreter Agent-Implementer und kein Welle-4-End-to-End-Demo-
+Szenario in dieser Teilwelle.
+
+#### Welle 4b — RuleBasedAgent + Scenario-Schema
+
 - Mind. ein konkreter Agent-Typ als Beispiel (z. B.
   `RuleBasedAgent` mit fester Regel-Tabelle).
 - Agent-Decision-Loop deterministisch + property-tested
   (gleicher Seed + gleicher Welt-Zustand → gleiche
   Entscheidungs-Sequenz).
+- `agents`-Top-Level-Block im Scenario-Schema +
+  `_assert_agent_list`-Validator + Agent-Factory-Map analog
+  `_DEVICE_FACTORIES`.
+- Konkrete Agent-Instanz-Snapshots
+  `agents.<agent_type>.<agent_id>` additiv zum Welle-4a-
+  Foundation-State.
 
-**Welle-4-Gate:** Default-`CRITICAL_COV_TARGETS` um
-`core/agents` erweitert. `make fullbuild` gruen ohne
-Override (zweiter Sub-Bereich abgeschlossen).
+**Welle-4-Gate:** Welle 4b schliesst den zweiten Sub-Bereich ab:
+Default-`CRITICAL_COV_TARGETS` enthaelt `core/agents`; `make
+fullbuild` gruen ohne Override mit End-to-End-Demo-Szenario.
 
 ### Welle 5 — Observability-Foundation (LogPort/MetricsPort/TracePort)
 
