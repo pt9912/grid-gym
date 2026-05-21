@@ -826,3 +826,73 @@ class FaultUnknownReferenceError(FaultPortError):
             f"manual-recover-fault references unknown "
             f"(fault_id={fault_id!r}, target_device_id={target_device_id!r})"
         )
+
+
+# ---------------------------------------------------------------------------
+# Multi-Agent-Bus (M3 Welle 3, ADR 0023 §2.2 + §2.6)
+# ---------------------------------------------------------------------------
+
+
+class AgentBusError(GridGymError):
+    """Wurzel der `AgentMessageBus`-/`Agent`-Vertragsverletzungen
+    (`GG-AGENT-001..008`).
+
+    ADR 0023 §2.4 Exception-Propagation-Vertrag: Agent-Fehler
+    propagieren ungewrappt aus `TickLoop.tick()` heraus
+    (analog Welle-1-FaultPort-Pattern). Welle-4-Implementer
+    werfen typisierte Subklassen, damit Aufrufer an der
+    Hexagon-Boundary differenzieren koennen. Welle 3 liefert
+    nur die Basis + Snapshot-Format-Klassen; konkrete Welle-4-
+    Subklassen kommen mit dem `RuleBasedAgent`-Slice.
+    """
+
+
+class AgentBusSnapshotFormatError(AgentBusError, SnapshotFormatError):
+    """Wurzel der `AgentMessageBus`-Snapshot-Format-Verstoesse.
+
+    Multi-Inheritance von `SnapshotFormatError` (M2 Welle 0a,
+    Trigger 014); `subsystem` ist auf `"agent_bus"` vorbelegt.
+    `super().__init__` folgt der C3-MRO — Pattern aus
+    `RandomPortSnapshotFormatError`.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__("agent_bus", message)
+
+
+class AgentBusSnapshotNotAMappingError(AgentBusSnapshotFormatError):
+    """`from_snapshot(state)` erhaelt einen Wert, der kein Mapping ist.
+
+    Format-Pruefung VOR der `version`-Pruefung — analog
+    `RandomPortSnapshotNotAnObjectError`.
+    """
+
+    def __init__(self, actual_type: str) -> None:
+        super().__init__(f"snapshot must be a Mapping, got {actual_type}")
+
+
+class AgentBusSnapshotMissingKeysError(AgentBusSnapshotFormatError):
+    """Pflicht-Keys fehlen im AgentMessageBus-Snapshot.
+
+    `sorted(missing)` defensiv (siehe
+    `RandomPortSnapshotMissingKeysError`-Begruendung).
+    """
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(f"missing agent_bus snapshot keys: {sorted(missing)}")
+
+
+class AgentBusSnapshotWrongTypeError(AgentBusSnapshotFormatError):
+    """Ein Snapshot-Key hat den falschen Typ."""
+
+    def __init__(self, key: str, expected: str, actual: str) -> None:
+        super().__init__(f"agent_bus snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class AgentBusSnapshotVersionError(AgentBusError):
+    """AgentMessageBus-Snapshot traegt eine unbekannte `version`."""
+
+    def __init__(self, expected: int, found: object) -> None:
+        super().__init__(
+            f"unsupported agent_bus snapshot version: expected {expected}, got {found!r}"
+        )

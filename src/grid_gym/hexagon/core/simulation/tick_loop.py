@@ -48,6 +48,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
+from grid_gym.hexagon.core.agents import Agent, AgentMessageBus
 from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.devices.load import LoadDevice
@@ -163,6 +164,7 @@ class TickLoop:
         active_load_events: tuple[LoadEvent, ...] = (),
         active_load_profiles: tuple[LoadProfile, ...] = (),
         fault_port: FaultPort | None = None,
+        agent_bus: AgentMessageBus | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -191,6 +193,15 @@ class TickLoop:
         # skippt den Hook in `tick()`; Welle-1-Code liefert noch
         # keinen produktiven Adapter (Welle 2).
         self._fault_port: FaultPort | None = fault_port
+        # M3-Welle-3 (ADR 0023 §2.5): optionaler AgentMessageBus +
+        # Welle-3-leerer Agent-Registry-Tuple. `None`-Default
+        # skippt den Hook in `tick()` (Schritt D2). Welle-3-Stand:
+        # `_agents` ist fest `()` — Welle 4 entscheidet, ob die
+        # Registry via Konstruktor-Kwarg oder Scenario-Loader-
+        # Builder gefuellt wird. Tests duerfen `_agents` direkt
+        # mutieren, um den Hook zu exerzieren.
+        self._agent_bus: AgentMessageBus | None = agent_bus
+        self._agents: tuple[Agent, ...] = ()
         # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
         # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
         self._unknown_source_count: int = 0
@@ -332,6 +343,21 @@ class TickLoop:
             )
             # Schritt D — Zweite Iteration (GridConnection ticken).
             unknown_count += self._run_device_iteration(grid_devices, context, emitted, bucket_sums)
+            # Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
+            # Architektur §6 Schritt 7: Agents laufen NACH der
+            # Geraete-Iteration und VOR `grid_model.update(...)`.
+            # Sie sehen den fertigen Welt-Zustand (alle Devices haben
+            # getickt, alle Telemetry ist emittiert) und produzieren
+            # Commands fuer die naechste Tick. `None`-Default skippt
+            # sauber; Welle-3-Stand: `self._agents` ist `()`. Welle 4
+            # entscheidet, wo emittierte Commands gepuffert/angewandt
+            # werden (Pending-Buffer im TickLoop vs. direkter Pfad in
+            # der naechsten Device-Iteration). Welle-3-Foundation
+            # verdrahtet die Anwendung nicht — Return Value wird
+            # bewusst verworfen (Welle-4-TODO).
+            if self._agent_bus is not None:
+                for agent in self._agents:
+                    agent.tick(context, self._agent_bus)
             # Schritt E — Bilanz-Aggregation.
             if self._grid_model is not None:
                 self._grid_model.update(

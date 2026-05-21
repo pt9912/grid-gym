@@ -236,7 +236,13 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 # — Welle 1 liefert nur Protocol-Stubs (FaultInjectableDevice),
 # echte Implementer kommen mit Welle 2. Gate ist heute strukturell
 # bei 100 % Branch-Rate (keine Branches in Protocol-Stubs).
-ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults"
+# M3-Welle-3 (ADR 0023 §2.6 + §6): `core/agents` ist Welle-3-
+# Foundation — Protocol + Bus + Snapshot-Codec. Welle-3-Test-Pfade
+# decken Protocol-Adherence + Bus-Determinismus + Snapshot-
+# Roundtrip; konkrete Agent-Implementer (`RuleBasedAgent`) kommen
+# mit Welle 4 unter dem gleichen Paket-Pfad und sind damit
+# automatisch von der Default-Schwelle erfasst.
+ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults src/grid_gym/hexagon/core/agents"
 RUN set -eu; \
     for target in ${CRITICAL_COV_TARGETS}; do \
         if [ ! -d "${target}" ]; then \

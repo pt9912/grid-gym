@@ -27,6 +27,7 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Final, cast
 
+from grid_gym.hexagon.core.agents import AgentMessageBus
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
@@ -341,13 +342,14 @@ def _build_load_profile(entry: object) -> LoadProfile:
     )
 
 
-def build_tick_loop(
+def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruktor (M3-Welle-3, ADR 0023 §2.5)
     scenario: Scenario,
     *,
     run_id: str,
     clock: ClockPort,
     random_root: RandomPort,
     fault_port: FaultPort | None = None,
+    agent_bus: AgentMessageBus | None = None,
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -366,6 +368,13 @@ def build_tick_loop(
     `scenario.faults` und komponieren sie in einen produktiven
     FaultPort (Composition-Pattern ist M3-Welle-3-Material;
     Welle-2-Integrationstests komponieren test-side).
+
+    M3-Welle-3 (ADR 0023 §2.5): optionaler `agent_bus`-Kwarg
+    fuer Multi-Agent-Bus. `None`-Default skippt den TickLoop-
+    Schritt-D2-Hook. Welle-3-Foundation: kein Agent-Registry
+    im Scenario-Schema; Welle 4 schaerft den Bau-Pfad
+    (Scenario-Loader vs. Konstruktor-Kwarg) und liefert
+    konkrete Agent-Implementer.
     """
     devices = build_devices(scenario.devices, random_root)
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
@@ -393,6 +402,7 @@ def build_tick_loop(
         active_load_events=scenario.load_events,
         active_load_profiles=scenario.load_profiles,
         fault_port=fault_port,
+        agent_bus=agent_bus,
     )
 
 
