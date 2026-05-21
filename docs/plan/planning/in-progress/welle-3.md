@@ -130,10 +130,10 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
      vergeben).
 5. **TickLoop-Konstruktor** erhaelt neuen keyword-only-Kwarg
    `agent_bus: AgentMessageBus | None = None` (analog ADR 0022
-   §2.5 `fault_port`). Default `None` skippt den Hook.
+   §2.5 `fault_port`). Default `None` ueberspringt den Hook.
 6. **TickLoop-Hook-Position**: zwischen Schritt D (zweite
    Device-Iteration) und Schritt E (`grid_model.update(...)`)
-   im aktuellen `tick_loop.py:300-345`-Block. Begruendung:
+   im aktuellen `tick_loop.py`-Block. Begruendung:
    Architektur §6 Tick-Loop Schritt 7 sieht Agents NACH der
    Geraete-Iteration und VOR Commit; AgentBus-Hook landet
    damit nach allen Telemetry-Emissionen, sodass Agents auf
@@ -350,8 +350,8 @@ Plus `adr/README.md`-Zeile fuer ADR 0023 `Proposed`.
 5. `src/grid_gym/hexagon/core/simulation/tick_loop.py` —
    `agent_bus: AgentMessageBus | None = None`-Kwarg im
    Konstruktor + Hook zwischen Schritt D und E.
-6. `src/grid_gym/hexagon/core/scenario/loader.py` (oder wo der
-   Builder lebt) — `build_tick_loop(agent_bus=...)`-Symmetrie.
+6. `src/grid_gym/hexagon/core/scenario/loader.py` —
+   `build_tick_loop(agent_bus=...)`-Symmetrie.
 7. `src/grid_gym/hexagon/core/errors.py` — `AgentBusError`-
    Basis-Subklasse von `GridGymError`.
 8. `Dockerfile` — `CRITICAL_COV_TARGETS` + `core/agents` und
@@ -369,7 +369,7 @@ Plus `adr/README.md`-Zeile fuer ADR 0023 `Proposed`.
     Frozen-Vertrag + canonical_json-Stabilitaet (analog M1-
     Welle-1-Pattern).
 12. `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` —
-    Hook-Order: (a) None-Default skippt sauber; (b) mit
+   Hook-Order: (a) None-Default ueberspringt sauber; (b) mit
     AgentBus + `NullAgent` werden Commands in den Scheduler
     geschoben; (c) TickResult bleibt deterministisch.
 
