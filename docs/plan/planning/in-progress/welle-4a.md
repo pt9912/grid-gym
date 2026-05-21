@@ -1,10 +1,10 @@
 # Welle 4a — Multi-Agent-Foundation-Plumbing
 
-**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-
+**Status:** In Progress — eroeffnet am 2026-05-21 mit M3-Welle-
 4a-Pre-C0-Rename (`a24f733`). Welle 4 ist die produktive
 Konkretisierung des Multi-Agent-Subsystems und wird in zwei
 Teilwellen geliefert (Sub-Slicing nach M3-Slice-Plan §3
-Sub-Slicing-Schwelle: 6+ Items mit ≥ 2 echte Architektur-
+Sub-Slicing-Schwelle: 6+ Items mit ≥ 2 echten Architektur-
 Entscheidungen):
 
 - **Welle 4a — Foundation-Plumbing** (dieses Dokument):
@@ -17,7 +17,7 @@ Entscheidungen):
   Welle-4-Gate (`make fullbuild` ohne Override).
 
 Pattern: spiegelt M3-Welle-1 (Fault-Foundation) → M3-Welle-2
-(Fault-Konkretisierung) eins zu eins fuer Agents.
+(Fault-Konkretisierung) eins zu eins fuer Agenten.
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
@@ -26,8 +26,7 @@ Tracking, nicht als Ersatz.
 
 **Commit-Sequenz (geplant):**
 
-- Pre-C0 `a24f733` — `chore(welle-4a): git mv welle-3.md →
-  done/` (rename-only).
+- Pre-C0 `a24f733` — `chore(welle-4a): git mv welle-3.md → done/welle-3.md` (rename-only).
 - C0 (dieses Dokument) — `docs(plan): welle-4a Slice-Doc`.
 - C1 — `docs(adr): ADR 0026 Proposed — Agent-Drain + Registry
   + Lifecycle`.
@@ -39,7 +38,7 @@ Tracking, nicht als Ersatz.
 
 ## 1. Context
 
-M3-Welle-3 (`6f8b09b`) hat die Multi-Agent-Foundation
+M3-Welle-3 (`d6f66fc`) hat die Multi-Agent-Foundation
 produktiv abgeschlossen: `Agent`-Sub-Protocol +
 `AgentMessageBus`-Core-Klasse + `AgentMessage`-frozen-
 dataclass + TickLoop-Schritt-D2-Hook + `agent_bus`-Builder-
@@ -48,13 +47,13 @@ Pending-Buffer (`_pending_agent_commands`). 889 Unit-Tests +
 14 Integration-Tests; `make gates` A-1 ohne Override gruen.
 
 Vier Review-Folgen haben Welle-3-Foundation auf den heutigen
-Stand gebracht — alle Findings adressiert; mehrere
+Stand gebracht — alle Findings wurden adressiert; mehrere
 Pflicht-Themen wurden explizit nach Welle 4 verschoben.
 
 ADR 0023 §4/§6/§7 + Welle-3-Review-Folgen 1-4 listen die
 Welle-4-Forward-Pointer auf (siehe §2 In-Scope). Welle 4a
-deckt **die Foundation-Plumbing-Schichten** ab — alles, was
-**keinen** konkreten Agent-Implementer braucht. Welle 4b
+deckt **die Foundation-Plumbing-Schichten** ab — alles, das
+keinen konkreten Agent-Implementer braucht. Welle 4b
 liefert dann den RuleBasedAgent + Scenario-Schema +
 End-to-End-Pfad.
 
@@ -67,10 +66,10 @@ End-to-End-Pfad.
    ADR 0022 fuer Recovery-Pattern). Status-Lifecycle:
    - `Proposed` mit Welle-4a-C1 (separater
      `docs(adr)`-Commit).
-   - `Provisional` mit Welle-4a-C2-Merge.
-   - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
-     ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
-     Welle-7-Sequenzierung).
+  - `Provisional` mit Welle-4a-C2-Merge.
+  - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
+    ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
+    Welle-7-Sequenzierung).
 2. **TickLoop-Konstruktor erhaelt produktiven
    `agents`-Kwarg**:
    - `agents: tuple[Agent, ...] = ()` (keyword-only, analog
@@ -82,10 +81,11 @@ End-to-End-Pfad.
    - Ruft `agent.set_run_id(self._run_id)` fuer jeden
      Agent.
    - Ruft `agent.attach_random(self._random.sub_port(
-     f"agent-{agent_id}"))` fuer jeden Agent, der die
-     optionale `attach_random`-Surface implementiert
-     (Hasattr-Check; nicht alle Agent-Typen brauchen einen
-     eigenen Random-Stream). Damit ist die Welle-3-Review-
+     f"agent-{agent_id}"))` fuer jeden Agent, der das
+     optionale `_RandomAttachableAgent`-Sub-Protocol
+     implementiert (`isinstance`-Check). Nicht alle Agent-Typen
+     brauchen einen eigenen Random-Stream. Damit ist die
+     Welle-3-Review-
      Folge-M-3-Konvention produktiv umgesetzt.
 4. **`Agent`-Protocol-Erweiterung** unter
    `src/grid_gym/hexagon/core/agents/_protocol.py` um
@@ -102,11 +102,11 @@ End-to-End-Pfad.
      wendet `apply_command(...)` auf das jeweilige
      `target_device_id`-Device an (via `_device_by_id`-
      Lookup), dann `self._pending_agent_commands.clear()`.
-   - Vertrag: Agent-Commands der vorigen Tick werden in der
+   - Vertrag: Agent-Commands der vorigen Ticks werden in der
      **aktuellen** Tick wirksam (GG-AGENT-008 Commit-
-     Reihenfolge-Invariante: Commands nicht in derselben
-     Tick verarbeitet, in der sie emittiert wurden).
-   - Order-Konvention bei Konflikt mit LoadEvent-Overlay:
+     Reihenfolge-Invariante: Commands werden nicht im selben
+     Tick verarbeitet, in dem sie emittiert wurden).
+   - Reihenfolge bei Konflikt mit LoadEvent-Overlay:
      **Agent-Commands zuerst** (Schritt A0), dann LoadEvent-
      Overlay (Schritt A). LoadEvent gewinnt im selben Tick
      auf demselben Device — konsistent mit Welle-6b-Pattern
@@ -187,7 +187,7 @@ Recovery-Pattern, schaerft ADR 0022).
 (D1 aus Recherche-Brief). Drei Varianten waren denkbar:
 
 1. **Scheduler-Push** — `Command` wird in `Event` gewrappt
-   und ueber den Scheduler in die naechste Tick gepoppt.
+   und ueber den Scheduler in den naechsten Tick gepoppt.
    *Abgelehnt*: Scheduler ist fuer Events, nicht Commands.
    Command-zu-Event-Wrap ist Vorgriff auf M5-Material;
    `Scheduler.add(event)` hat keine Command-Surface.
@@ -195,11 +195,11 @@ Recovery-Pattern, schaerft ADR 0022).
    — TickLoop ruft `device.apply_command(...)` direkt nach
    `agent.tick(...)` in Schritt D2. *Abgelehnt*: bricht
    GG-AGENT-008 Commit-Reihenfolge-Invariante (Commands der
-   aktuellen Tick wirken in dieser Tick), produziert
+   aktuellen Tick wirken im selben Tick), produziert
    Re-Iteration der Devices.
 3. **Pre-Tick-Schritt A0** (gewaehlt) — am Tick-Start, vor
-   Schritt A (LoadEvent-Overlay). Commands der vorigen Tick
-   wirken in der aktuellen Tick. *Vorteil*: konsistent mit
+Schritt A (LoadEvent-Overlay). Commands der vorigen Ticks
+   wirken im aktuellen Tick. *Vorteil*: konsistent mit
    GG-AGENT-008; analog Welle-6b-LoadEvent-Overlay-Pattern;
    kein Scheduler-Vorgriff.
 
@@ -223,8 +223,9 @@ Varianten waren denkbar:
    Agents in einer Phase** (`_attach_agents()`-Hook).
    *Gewaehlt*: spiegelt Welle-6b-SmartMeter-`attach_sources`-
    Pattern (ADR 0018 §2.4). RuleBasedAgent ohne Stochastik
-   implementiert `attach_random` nicht — Hasattr-Check im
-   TickLoop.
+   implementiert `attach_random` nicht — `_attach_agents()`
+   prüft ein optionales Sub-Protocol
+   (`isinstance(agent, _RandomAttachableAgent)`).
 3. **Agent zieht sich seinen Sub-Port selbst aus dem Bus**
    — Bus-Konstruktor nimmt `RandomPort`-Referenz.
    *Abgelehnt*: Bus haelt Welle-3-konform keinen
@@ -259,7 +260,7 @@ neue ADR (analog ADR 0025 zu ADR 0022).
 
 ## 4. Liefer-Reihenfolge
 
-### Pre-C0 — `chore`: git mv welle-3.md → done/ (rename-only, `a24f733`)
+### Pre-C0 — `chore`: git mv welle-3.md → done/welle-3.md (rename-only, `a24f733`)
 
 Reiner Rename ohne Inhaltsumschreibung. `feedback_git_mv`-
 Konvention.
@@ -268,7 +269,7 @@ Konvention.
 
 Welle-4a-Start-Marker. Status: `In Progress`. Plus
 `in-progress/README.md`-Sync:
-- `welle-3.md`-Zeile entfernen (jetzt in `done/`).
+- `welle-3.md`-Zeile entfernen (jetzt in `done/welle-3.md`).
 - `welle-4a.md`-Zeile ergaenzen.
 
 ### C1 — `docs(adr)`: ADR 0026 Proposed
@@ -284,7 +285,7 @@ Inhalt (geplant, ~ 3000–4000 Woerter, Pattern aus ADR 0025):
   - §2.2 Registry-API: TickLoop-Konstruktor-Kwarg + Scenario-
     Loader-Builder-Symmetrie.
   - §2.3 Lifecycle: `_attach_agents()` mit `set_run_id` +
-    optionalem `attach_random`-Hasattr-Check.
+    optionalem `_RandomAttachableAgent`-Sub-Protocol.
   - §2.4 Bus-Eviction: `consume_for(receiver)` destruktiv +
     Per-Receiver-Granularitaet.
   - §2.5 `AgentInvalidCommandTargetError`-Fail-Fast in
@@ -311,9 +312,8 @@ Plus `adr/README.md`-Zeile fuer ADR 0026 `Proposed`.
 
 1. `src/grid_gym/hexagon/core/agents/_protocol.py` —
    `attach_random(random: RandomPort) -> None`-Methode als
-   **optionale** Surface (separates Sub-Protocol oder
-   Hasattr-Check; Welle-4a-Implementer entscheidet zwischen
-   den beiden Pfaden).
+   **optionale** Surface via separates
+   `_RandomAttachableAgent`-Sub-Protocol.
 2. `src/grid_gym/hexagon/core/agents/bus.py` —
    `consume_for(receiver: str) -> Sequence[AgentMessage]`-
    destruktive Drain-Variante.
@@ -440,12 +440,13 @@ nach Repo-Konvention):
   LoadEvent und ein Agent-Command auf dasselbe Device im
   selben Tick zielen, gewinnt LoadEvent (Welle-6b-Pattern
   „Event-Overlay nach Baseline"). *Mitigation*: Schritt A0
-  drainet **zuerst** (Agent-Commands der vorigen Tick),
+  drainet **zuerst** (Agent-Commands der vorigen Ticks),
   Schritt A wendet **danach** LoadEvent/Profile-Overlay an.
   Test pinnt das explizit.
-- **R-3 — `_attach_agents()` mit `attach_random`-Hasattr-
-  Check**: Hasattr ist nicht typisierbar (mypy-Strict-
-  Risiko). *Mitigation*: separate `_RandomAttachableAgent`-
+- **R-3 — `_attach_agents()` mit optionalem
+  `_RandomAttachableAgent`-Sub-Protocol**: Hasattr ist nicht
+  typisierbar (mypy-Strict-Risiko). *Mitigation*: separate
+  `_RandomAttachableAgent`-
   Sub-Protocol unter `_protocol.py`; `_attach_agents()`
   prueft via `isinstance(agent, _RandomAttachableAgent)`
   (analog Welle-1-`FaultInjectableDevice`-Pattern).
