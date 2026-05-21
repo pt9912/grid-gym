@@ -27,7 +27,7 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Final, cast
 
-from grid_gym.hexagon.core.agents import AgentMessageBus
+from grid_gym.hexagon.core.agents import Agent, AgentMessageBus
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
@@ -342,7 +342,7 @@ def _build_load_profile(entry: object) -> LoadProfile:
     )
 
 
-def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruktor (M3-Welle-3, ADR 0023 §2.5)
+def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruktor (M3-Welle-3, ADR 0023 §2.5 + M3-Welle-4a, ADR 0026 §2.2)
     scenario: Scenario,
     *,
     run_id: str,
@@ -350,6 +350,7 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     random_root: RandomPort,
     fault_port: FaultPort | None = None,
     agent_bus: AgentMessageBus | None = None,
+    agents: tuple[Agent, ...] = (),
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -371,18 +372,36 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
 
     M3-Welle-3 (ADR 0023 §2.5): optionaler `agent_bus`-Kwarg
     fuer Multi-Agent-Bus. `None`-Default skippt den TickLoop-
-    Schritt-D2-Hook. Welle-3-Foundation: kein Agent-Registry
-    im Scenario-Schema; Welle 4 schaerft den Bau-Pfad
-    (Scenario-Loader vs. Konstruktor-Kwarg) und liefert
-    konkrete Agent-Implementer.
+    Schritt-D2-Hook.
+
+    M3-Welle-4a (ADR 0026 §2.2): produktiver `agents`-Kwarg
+    fuer Multi-Agent-Registry. `()`-Default behaelt agentenlose
+    Runs unveraendert. Bei nicht-leeren `agents` aktiviert die
+    Auto-Bus-Regel im TickLoop-Konstruktor automatisch einen
+    `AgentMessageBus`, falls keiner explizit injiziert ist.
+
+    M3-Welle-4a (ADR 0026 §2.2 + §2.6): bei vorhandenem
+    `grid_model_config` reicht der Builder die Scenario-
+    LoadOverlay-Tupel an den `GridModelBilanz`-Konstruktor
+    durch, damit der GridModel-v2-Overlay-Snapshot
+    (ADR 0020) die Single Source of Truth fuer die
+    Welle-4a-Resume-LoadOverlay-Match-Checks ist.
     """
     devices = build_devices(scenario.devices, random_root)
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
     # Ziele auf legitime Overlay-Geraete (LoadDevice oder
     # GridConnectionDevice) zeigen.
     _assert_overlay_targets(devices, scenario.load_events, scenario.load_profiles)
+    # M3-Welle-4a (ADR 0026 §2.2): wenn `grid_model_config`
+    # vorhanden, baut der Builder das GridModel mit den
+    # Overlay-Tupeln, damit `grid_model.snapshot()` sie
+    # persistiert (Resume-Match-Check-Vorbereitung).
     grid_model = (
-        GridModelBilanz(scenario.grid_model_config)
+        GridModelBilanz(
+            scenario.grid_model_config,
+            active_load_events=scenario.load_events,
+            active_load_profiles=scenario.load_profiles,
+        )
         if scenario.grid_model_config is not None
         else None
     )
@@ -403,6 +422,7 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
         active_load_profiles=scenario.load_profiles,
         fault_port=fault_port,
         agent_bus=agent_bus,
+        agents=agents,
     )
 
 

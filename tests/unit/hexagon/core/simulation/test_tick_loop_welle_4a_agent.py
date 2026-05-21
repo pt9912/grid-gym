@@ -101,15 +101,17 @@ def _make_loop(
     *,
     devices: tuple[DeviceModel, ...] = (),
     agent_bus: AgentMessageBus | None = None,
+    agents: tuple = (),
 ) -> TickLoop:
     return TickLoop(
-        run_id="welle-3-agent-test",
+        run_id="welle-4a-agent-test",
         tick_ms=1000,
         clock=FakeClock(),
         random=FixedSeedRandom(seed=42),
         scheduler=Scheduler(),
         devices=devices,
         agent_bus=agent_bus,
+        agents=agents,
     )
 
 
@@ -136,20 +138,18 @@ def test_tick_loop_accepts_agent_bus_without_agents() -> None:
 
 
 def test_tick_loop_calls_each_agent_when_registered() -> None:
-    """ADR 0023 §2.4: pro registriertem Agent ruft TickLoop
-    `agent.tick(context, bus)` einmal pro Tick.
+    """ADR 0023 §2.4 + ADR 0026 §2.2: pro registriertem Agent
+    ruft TickLoop `agent.tick(context, bus)` einmal pro Tick.
 
-    Welle-3-Stand: `_agents` ist Konstruktor-leer; Test-Code
-    befuellt es via `_set_agents_for_testing(...)` (L-1-Helper).
-    Welle 4 wird die produktive Registry-API formalisieren
-    (Kwarg vs. Builder-Pfad).
+    Welle-4a-Stand (ADR 0026): produktive Registry-API via
+    Konstruktor-Kwarg `agents=(...)`. Welle-3-Test-Helper
+    `_set_agents_for_testing(...)` ist entfernt.
     """
     recorder: list[str] = []
     agent_a = _OrderRecordingAgent("agent-a", recorder)
     agent_b = _OrderRecordingAgent("agent-b", recorder)
     bus = AgentMessageBus()
-    loop = _make_loop(agent_bus=bus)
-    loop._set_agents_for_testing((agent_a, agent_b))
+    loop = _make_loop(agent_bus=bus, agents=(agent_a, agent_b))
     loop.tick()
     assert recorder == ["agent.tick:agent-a", "agent.tick:agent-b"]
 
@@ -165,8 +165,7 @@ def test_agent_tick_runs_after_device_tick() -> None:
     )
     agent = _OrderRecordingAgent("agent-x", recorder)
     bus = AgentMessageBus()
-    loop = _make_loop(devices=(device,), agent_bus=bus)
-    loop._set_agents_for_testing((agent,))
+    loop = _make_loop(devices=(device,), agent_bus=bus, agents=(agent,))
     loop.tick()
     assert "device.tick:null-1" in recorder
     assert "agent.tick:agent-x" in recorder
@@ -174,34 +173,49 @@ def test_agent_tick_runs_after_device_tick() -> None:
     assert recorder.index("device.tick:null-1") < recorder.index("agent.tick:agent-x")
 
 
-def test_agent_hook_skipped_when_bus_is_none_even_with_agents() -> None:
-    """ADR 0023 §2.5: `agent_bus=None` skippt den Hook **auch**
-    wenn `_agents` gefuellt waere. Verhindert NullPointer-Sequence
-    durch versehentliche Agent-Registrierung ohne Bus."""
+def test_agent_hook_skipped_when_bus_is_none_and_no_agents() -> None:
+    """ADR 0023 §2.5 + ADR 0026 §2.2: `agent_bus=None` mit
+    `agents=()` skippt Schritt D2 sauber.
+
+    Welle-4a-Auto-Bus-Regel: `agents != () and agent_bus is None`
+    erzeugt automatisch einen Bus, damit registrierte Agents
+    nicht still als No-op enden. Der reine Skip-Pfad existiert
+    nur fuer agentenlose Runs.
+    """
+    loop = _make_loop(agent_bus=None, agents=())
+    loop.tick()
+    # Kein Crash; agentenloser Run laeuft normal durch.
+    assert loop.pending_agent_commands == ()
+
+
+def test_constructor_auto_bus_when_agents_without_explicit_bus() -> None:
+    """ADR 0026 §2.2 Auto-Bus-Regel: nicht-leere `agents` ohne
+    `agent_bus` bekommen automatisch einen frischen Bus, damit
+    Schritt D2 die Agents tickt."""
     recorder: list[str] = []
     agent = _OrderRecordingAgent("agent-x", recorder)
-    loop = _make_loop(agent_bus=None)
-    loop._set_agents_for_testing((agent,))  # technisch moeglich, semantisch falsch
+    loop = _make_loop(agent_bus=None, agents=(agent,))
+    # Auto-Bus aktiv: `_agent_bus` ist nach Konstruktor nicht None.
+    assert loop._agent_bus is not None  # type: ignore[attr-defined]
     loop.tick()
-    # Agent wurde nicht aufgerufen — Bus-Check kommt vor Loop.
-    assert recorder == []
+    # Agent wurde getickt (statt still als No-op zu enden).
+    assert recorder == ["agent.tick:agent-x"]
 
 
-def test_set_agents_for_testing_rejects_duplicate_agent_id() -> None:
-    """Welle-3-Review-Folge L-1 (2026-05-21): der Test-Helper
-    prueft `agent_id`-Eindeutigkeit defensiv, damit Tests nicht
-    versehentlich Duplicate-IDs durchreichen, die Welle 4 spaeter
-    abfangen wuerde."""
+def test_constructor_rejects_duplicate_agent_id() -> None:
+    """ADR 0026 §2.5: Konstruktor wirft `AgentDuplicateIdError`
+    bei doppelten `agent_id`-Werten. Welle-4a-Registry-Fail-Fast."""
+    from grid_gym.hexagon.core.errors import AgentDuplicateIdError
+
     recorder: list[str] = []
     agent_a = _OrderRecordingAgent("agent-x", recorder)
     agent_b = _OrderRecordingAgent("agent-x", recorder)
-    loop = _make_loop(agent_bus=AgentMessageBus())
     try:
-        loop._set_agents_for_testing((agent_a, agent_b))
-    except ValueError as exc:
+        _make_loop(agent_bus=AgentMessageBus(), agents=(agent_a, agent_b))
+    except AgentDuplicateIdError as exc:
         assert "agent-x" in str(exc)
     else:  # pragma: no cover — Test schlaegt fehl, wenn kein Raise
-        msg = "_set_agents_for_testing accepted duplicate agent_id"
+        msg = "TickLoop constructor accepted duplicate agent_id"
         raise AssertionError(msg)
 
 
@@ -215,62 +229,15 @@ def test_tick_result_unchanged_when_only_agent_bus_present() -> None:
     assert result.emitted_telemetry == ()
 
 
-def _command(command_id: str, target: str = "device-1") -> Command:
-    """Helfer fuer Command-Konstruktion in F-1-Tests."""
-    return Command(
-        command_id=command_id,
-        simulation_time=1000,
-        target_device_id=target,
-        type="set_power_kw",
-        payload={"power_kw": 5},
-        validation_status="validated",
-        result=CommandResult.IGNORED,
-    )
-
-
 def test_pending_agent_commands_empty_by_default() -> None:
     """Welle-3-Review-Folge-2 F-1 (2026-05-21): ohne registrierte
-    Agents bleibt der Pending-Buffer nach `tick()` leer."""
+    Agents bleibt der Pending-Buffer nach `tick()` leer.
+    Welle-4a-Skip-Pfad: `agents=()` und `agent_bus=None` lassen
+    den Buffer ungetastet."""
     loop = _make_loop(agent_bus=AgentMessageBus())
     assert loop.pending_agent_commands == ()
     loop.tick()
     assert loop.pending_agent_commands == ()
-
-
-def test_pending_agent_commands_collects_agent_returns() -> None:
-    """Welle-3-Review-Folge-2 F-1: emittierte Commands der Agents
-    landen im `_pending_agent_commands`-Buffer (nicht verworfen).
-    Welle 4 wird den Drain-Pfad verdrahten."""
-    recorder: list[str] = []
-    agent_a = _OrderRecordingAgent("agent-a", recorder)
-    agent_b = _OrderRecordingAgent("agent-b", recorder)
-    cmd_1 = _command("cmd-1")
-    cmd_2 = _command("cmd-2")
-    cmd_3 = _command("cmd-3")
-    agent_a.queue_emission((cmd_1,))
-    agent_b.queue_emission((cmd_2, cmd_3))
-    loop = _make_loop(agent_bus=AgentMessageBus())
-    loop._set_agents_for_testing((agent_a, agent_b))
-    loop.tick()
-    # Reihenfolge: Agents werden in `_agents`-Reihenfolge iteriert.
-    assert loop.pending_agent_commands == (cmd_1, cmd_2, cmd_3)
-
-
-def test_pending_agent_commands_accumulates_across_ticks() -> None:
-    """Welle-3-Review-Folge-2 F-1: Buffer waechst tick-by-tick
-    (Welle-3-Foundation: keine Eviction; Welle-4-Drain-Pfad raeumt
-    ihn). Spiegelt AgentMessageBus-Buffer-Semantik."""
-    recorder: list[str] = []
-    agent = _OrderRecordingAgent("agent-x", recorder)
-    cmd_a = _command("cmd-a")
-    cmd_b = _command("cmd-b")
-    loop = _make_loop(agent_bus=AgentMessageBus())
-    loop._set_agents_for_testing((agent,))
-    agent.queue_emission((cmd_a,))
-    loop.tick()
-    agent.queue_emission((cmd_b,))
-    loop.tick()
-    assert loop.pending_agent_commands == (cmd_a, cmd_b)
 
 
 def test_pending_agent_commands_property_is_immutable_view() -> None:
@@ -281,14 +248,8 @@ def test_pending_agent_commands_property_is_immutable_view() -> None:
     assert isinstance(pending, tuple)
 
 
-def test_pending_agent_commands_empty_when_bus_is_none() -> None:
-    """Welle-3-Review-Folge-2 F-1 + L-3 Konsistenz: bei
-    `agent_bus=None` skippt Schritt D2 komplett; Buffer bleibt
-    unangetastet selbst bei gefuelltem `_agents`-Tuple."""
-    recorder: list[str] = []
-    agent = _OrderRecordingAgent("agent-x", recorder)
-    agent.queue_emission((_command("cmd-x"),))
-    loop = _make_loop(agent_bus=None)
-    loop._set_agents_for_testing((agent,))
-    loop.tick()
-    assert loop.pending_agent_commands == ()
+# Welle-4a-Drain-spezifische Pending-Buffer-Tests (Schritt-A0v/A0a-
+# Atomizitaet, Drain-Order, GridConnection-Override etc.) leben in
+# `test_tick_loop_welle_4a_drain.py`. Welle-3-Tests, die
+# Buffer-Accumulation pinnten, sind in Welle 4a obsolet (Schritt
+# A0a drainet den Buffer in der naechsten Tick).

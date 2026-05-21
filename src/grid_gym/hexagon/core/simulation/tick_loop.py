@@ -48,7 +48,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
-from grid_gym.hexagon.core.agents import Agent, AgentMessageBus
+from grid_gym.hexagon.core.agents import Agent, AgentMessageBus, _RandomAttachableAgent
 from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.devices.load import LoadDevice
@@ -59,6 +59,14 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.errors import (
+    AgentDuplicateIdError,
+    AgentInvalidCommandTargetError,
+    TickLoopAgentSnapshotDeviceMismatchError,
+    TickLoopAgentSnapshotGridModelMismatchError,
+    TickLoopAgentSnapshotInvalidCommandResultError,
+    TickLoopAgentSnapshotLoadOverlayMismatchError,
+    TickLoopAgentSnapshotMissingKeysError,
+    TickLoopAgentSnapshotWrongTypeError,
     TickLoopInvalidTickMsError,
     TickLoopSnapshotClockMismatchError,
     TickLoopSnapshotMissingKeysError,
@@ -165,6 +173,7 @@ class TickLoop:
         active_load_profiles: tuple[LoadProfile, ...] = (),
         fault_port: FaultPort | None = None,
         agent_bus: AgentMessageBus | None = None,
+        agents: tuple[Agent, ...] = (),
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -193,29 +202,36 @@ class TickLoop:
         # skippt den Hook in `tick()`; Welle-1-Code liefert noch
         # keinen produktiven Adapter (Welle 2).
         self._fault_port: FaultPort | None = fault_port
-        # M3-Welle-3 (ADR 0023 §2.5): optionaler AgentMessageBus +
-        # Welle-3-leerer Agent-Registry-Tuple. `None`-Default
-        # skippt den Hook in `tick()` (Schritt D2). Welle-3-Stand:
-        # `_agents` ist fest `()` — Welle 4 entscheidet, ob die
-        # Registry via Konstruktor-Kwarg oder Scenario-Loader-
-        # Builder gefuellt wird. Tests duerfen `_agents` direkt
-        # mutieren, um den Hook zu exerzieren.
-        self._agent_bus: AgentMessageBus | None = agent_bus
-        self._agents: tuple[Agent, ...] = ()
-        # M3-Welle-3-Review-Folge-2 F-1 (2026-05-21): Pending-
-        # Buffer fuer Commands, die der Agent-Tick produziert. Der
-        # Welle-3-D2-Hook extendet diesen Buffer; Welle 4
-        # entscheidet, wie er gedrained wird (z. B. Scheduler-Push
-        # in der naechsten Tick-Pre-Phase, oder direkte
-        # `apply_command(...)`-Anwendung an Devices). Welle-3-
-        # Foundation laesst den Buffer wachsen und nicht-
-        # destruktiv lesen (analog AgentMessageBus-Drain-
-        # Semantik) — Welle-4-Eviction-Spec gilt parallel.
+        # M3-Welle-3 (ADR 0023 §2.5) + M3-Welle-4a (ADR 0026 §2.2):
+        # produktive Agent-Registry am TickLoop. `agent_bus=None`-
+        # Default bleibt der saubere Skip-Pfad fuer agentenlose
+        # Runs (Welle-3-Hook in Schritt D2 skippt dann).
         #
-        # **Snapshot-Vertrag**: Pending-Buffer ist ephemer in
-        # Welle 3 und wird **nicht** in `TickLoop.snapshot()`
-        # eingehaengt. Welle 4 entscheidet die Persistenz-Frage
-        # (additiv im Sub-Snapshot-Mapping per ADR 0015 §2.3).
+        # Welle-4a-Auto-Bus-Regel: wenn `agents != ()` aber
+        # `agent_bus is None`, erzeugt der Konstruktor einen
+        # frischen `AgentMessageBus`, damit registrierte Agents
+        # nicht still als No-op enden (ADR 0026 §2.2).
+        #
+        # Welle-4a-Duplicate-ID-Pruefung: doppelte `agent_id`-
+        # Werte werfen `AgentDuplicateIdError` (ADR 0026 §2.5
+        # Registry-Fail-Fast).
+        seen_agent_ids: set[str] = set()
+        for agent in agents:
+            if agent.agent_id in seen_agent_ids:
+                raise AgentDuplicateIdError(agent.agent_id)
+            seen_agent_ids.add(agent.agent_id)
+        if agents and agent_bus is None:
+            agent_bus = AgentMessageBus()
+        self._agent_bus: AgentMessageBus | None = agent_bus
+        self._agents: tuple[Agent, ...] = agents
+        # M3-Welle-3-Review-Folge-2 F-1 + M3-Welle-4a F-1 produktiv:
+        # `_pending_agent_commands` ist der Buffer, den Schritt D2
+        # (Agent-Tick) fuellt und Schritt A0a (Pre-Tick-Drain) in
+        # der naechsten Tick auf die Target-Devices anwendet.
+        # Welle-4a (ADR 0026 §2.6) persistiert den Buffer als
+        # `pending_agent_commands`-Sub-Snapshot, damit Snapshots
+        # zwischen Agent-Tick und Folgetick keine Commands
+        # verlieren.
         self._pending_agent_commands: list[Command] = []
         # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
         # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
@@ -238,6 +254,13 @@ class TickLoop:
         # (verletzt GG-DATA-001). Konstruktor-Phase ist der natuerliche
         # Ort fuer den Lifecycle-Hook.
         self._attach_devices()
+        # M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer
+        # registrierte Agents — set_run_id + optionaler
+        # `_RandomAttachableAgent.attach_random(random.sub_port(
+        # f"agent-{agent_id}"))`. Wird NACH `_attach_devices()`
+        # aufgerufen, damit `_device_by_id` schon gebaut ist
+        # (Welle-4b-Agents koennten Device-Referenzen brauchen).
+        self._attach_agents()
 
     def _attach_devices(self) -> None:
         """Reicht `run_id` an alle Devices durch (Welle-3-Review-M-4-
@@ -247,34 +270,24 @@ class TickLoop:
         for device in self._devices:
             device.set_run_id(self._run_id)
 
-    def _set_agents_for_testing(self, agents: tuple[Agent, ...]) -> None:
-        """Welle-3-Review-Folge L-1 (2026-05-21): narrow Test-Hook
-        fuer die `_agents`-Tuple-Befuellung. Welle-3-Foundation hat
-        keine produktive Agent-Registry — Konstruktor laesst
-        `self._agents = ()`. Tests fuer den TickLoop-Hook-Pfad
-        brauchen aber einen Weg, einen Mock-Agent einzuhaengen,
-        ohne die private Attribut-Surface direkt zu mutieren.
+    def _attach_agents(self) -> None:
+        """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
 
-        Diese Methode ist **explizit Test-only** (siehe Naming-
-        Konvention `_set_*_for_testing`). Welle 4 wird die echte
-        Registry-API (entweder TickLoop-Konstruktor-Kwarg `agents:
-        tuple[Agent, ...] = ()` oder Scenario-Loader-Builder-
-        Verantwortung) einfuehren; dann wird diese Methode
-        ueberfluessig und entfaellt.
+        Reicht `run_id` an alle registrierten Agents durch +
+        attached einen Per-Agent-Sub-Random-Stream
+        (`RandomPort.sub_port(f"agent-{agent_id}")`) an Agents,
+        die das optionale `_RandomAttachableAgent`-Sub-Protocol
+        implementieren (Hasattr-frei via `isinstance`-Check
+        gegen `@runtime_checkable`-Protocol).
 
-        Eindeutigkeits-Check: Welle-4-Registry wird `agent_id`-
-        Kollisionen als Vertragsverstoss werfen; Welle 3 macht das
-        defensiv schon hier, damit Tests nicht versehentlich
-        Duplicate-IDs durchlassen, die Welle 4 spaeter abfangen
-        wuerde."""
-        seen_ids: set[str] = set()
-        for agent in agents:
-            if agent.agent_id in seen_ids:
-                raise ValueError(  # noqa: TRY003 — Test-only-Defensive, keine Domain-Exception
-                    f"duplicate agent_id in _set_agents_for_testing: {agent.agent_id!r}"
-                )
-            seen_ids.add(agent.agent_id)
-        self._agents = agents
+        Welle-4a-Foundation: Agents ohne Stochastik
+        implementieren das Sub-Protocol nicht und bekommen
+        weder einen Sub-Port noch einen No-op-Hook aufgezwungen.
+        """
+        for agent in self._agents:
+            agent.set_run_id(self._run_id)
+            if isinstance(agent, _RandomAttachableAgent):
+                agent.attach_random(self._random.sub_port(f"agent-{agent.agent_id}"))
 
     @property
     def run_id(self) -> str:
@@ -311,7 +324,7 @@ class TickLoop:
         """
         return tuple(self._pending_agent_commands)
 
-    def tick(self) -> TickResult:
+    def tick(self) -> TickResult:  # noqa: PLR0915 — Welle-4a-tick() integriert A0v/A0a-Drain, Vor-Tick-Block, Device-Iteration in zwei Phasen, GridConnection-Auto-Close, Bilanz-Aggregation (ADR 0026 §2.1).
         """Schiebt die Simulationszeit um `tick_ms` vor und faehrt
         die Welle-6b-Split-Iteration durch (ADR 0021 §2.7/§2.8):
 
@@ -340,6 +353,21 @@ class TickLoop:
         Welle-4-Scope: ohne Devices/grid_model bleibt das
         Verhalten identisch zur M1-Welle-4-Spine.
         """
+        # Schritt A0v (M3-Welle-4a, ADR 0026 §2.1) — Pre-Clock-
+        # Target-Validierung des Pending-Agent-Command-Buffers.
+        # Laeuft VOR `clock.advance(...)` und `scheduler.pop_due(...)`,
+        # damit ein `AgentInvalidCommandTargetError` den Tick
+        # komplett unangetastet laesst (Atomizitaets-Vertrag).
+        if self._pending_agent_commands:
+            commands_to_apply: tuple[Command, ...] = tuple(self._pending_agent_commands)
+            for command in commands_to_apply:
+                if command.target_device_id not in self._device_by_id:
+                    raise AgentInvalidCommandTargetError(
+                        command.target_device_id, command.command_id
+                    )
+        else:
+            commands_to_apply = ()
+
         self._clock.advance(self._tick_ms)
         now = self._clock.now()
         popped = tuple(self._scheduler.pop_due(now))
@@ -365,6 +393,30 @@ class TickLoop:
         unknown_count = 0
 
         with _tick_loop_decimal_context():
+            # Schritt A0a (M3-Welle-4a, ADR 0026 §2.1) — Apply der
+            # in A0v validierten Pending-Agent-Commands. Laeuft
+            # VOR Schritt A (LoadEvent/Profile-Overlay), damit
+            # Agent-Commands der vorigen Ticks im aktuellen Tick
+            # in den Device-Command-Pfad eingespeist werden
+            # (GG-AGENT-008 Commit-Reihenfolge-Invariante).
+            #
+            # Agent-Commands auf GridConnection-IDs zaehlen als
+            # manueller Auto-Close-Override (ergaenzen
+            # `manual_override_grid_ids`); LoadEvent/Profile-Overlay
+            # in Schritt A laeuft danach und gewinnt auf
+            # LoadDevices (Baseline-Praezedenz aus Welle-6b).
+            for command in commands_to_apply:
+                target = self._device_by_id[command.target_device_id]
+                target.apply_command(command)
+                if (
+                    isinstance(target, GridConnectionDevice)
+                    and target.device_id not in manual_override_grid_ids
+                ):
+                    manual_override_grid_ids.append(target.device_id)
+            # Buffer erst nach erfolgreichem Apply-Durchlauf
+            # leeren — bei `apply_command(...)`-Exception bleibt
+            # er ungeleert (ADR 0026 §2.1 Exception-Pfade).
+            self._pending_agent_commands.clear()
             # Schritt A — Vor-Tick-Block (ADR 0021 §2.5).
             # Welle-6b-Review H-3: Event-Window-Check nutzt die
             # Tick-Start-Zeit (`now - tick_ms`), nicht die Tick-End-
@@ -618,6 +670,16 @@ class TickLoop:
             sub_snapshots[key] = device.snapshot()
         if self._grid_model is not None:
             sub_snapshots["grid_model"] = self._grid_model.snapshot()
+        # M3-Welle-4a (ADR 0026 §2.6): Agent-Foundation-State-
+        # Sub-Snapshots. `agent_bus` und `pending_agent_commands`
+        # werden nur eingehaengt, wenn sie nicht-trivial sind —
+        # alte Snapshots ohne diese Keys bleiben backward-kompatibel.
+        if self._agent_bus is not None:
+            sub_snapshots["agent_bus"] = self._agent_bus.snapshot()
+        if self._pending_agent_commands:
+            sub_snapshots["pending_agent_commands"] = _serialize_pending_agent_commands(
+                self._pending_agent_commands
+            )
         return {
             "version": _SNAPSHOT_VERSION,
             "run_id": self._run_id,
@@ -634,6 +696,12 @@ class TickLoop:
         *,
         clock: ClockPort,
         random: RandomPort,
+        devices: tuple[DeviceModel, ...] = (),
+        grid_model: GridModelBilanz | None = None,
+        active_load_events: tuple[LoadEvent, ...] = (),
+        active_load_profiles: tuple[LoadProfile, ...] = (),
+        fault_port: FaultPort | None = None,
+        agents: tuple[Agent, ...] = (),
     ) -> TickLoop:
         """Stellt einen `TickLoop` aus einem Snapshot wieder her.
 
@@ -642,27 +710,33 @@ class TickLoop:
         und einer Clock, die per `advance` auf
         `state['simulation_time']` gebracht wurde).
 
-        Konsistenz-Pruefungen:
-        - `clock.now() == state['simulation_time']` →
-          `TickLoopSnapshotClockMismatchError`.
-        - `random.snapshot_as_mapping() == state['sub_snapshots']
-          ['random_root']` → `TickLoopSnapshotRandomMismatchError`.
+        M3-Welle-4a (ADR 0026 §2.6) ergaenzt optionale Runtime-
+        Dependency-Kwargs: `devices`, `grid_model`,
+        `active_load_events`, `active_load_profiles`, `fault_port`,
+        `agents`. Ohne diese Kwargs bleibt der Welle-6a-Pfad
+        unveraendert (TickLoop ohne Devices/Agents); mit ihnen wird
+        der produktive Resume-Pfad fuer Welle 4a aktiviert,
+        einschliesslich `pending_agent_commands`-Drain im ersten
+        Tick.
 
-        Der `Scheduler` wird intern aus
-        `state['sub_snapshots']['scheduler']` rekonstruiert.
+        Resume-Match-Checks:
+        - Wenn der Snapshot `devices.<type>.<id>`-Sub-Snapshots
+          enthaelt und `devices` injiziert ist, muessen IDs/Typen/
+          Snapshot-State exakt passen
+          (`TickLoopAgentSnapshotDeviceMismatchError`).
+        - Wenn der Snapshot `grid_model`-Sub-Snapshot enthaelt
+          und `grid_model` injiziert ist, muss
+          `grid_model.snapshot()` exakt zum Sub-Snapshot passen
+          (`TickLoopAgentSnapshotGridModelMismatchError`).
+        - Wenn ein `grid_model`-Sub-Snapshot vorhanden ist und
+          nicht-leere LoadOverlay-Tupel injiziert werden, muessen
+          sie zum persistierten GridModel-Overlay-State passen
+          (`TickLoopAgentSnapshotLoadOverlayMismatchError`).
 
-        Bewusste Asymmetrie zwischen `clock`/`random` (extern
-        injiziert) und `scheduler` (intern rekonstruiert):
-        `clock` und `random` sind **Peer-Ports** mit eigenem
-        Persistenz-Pfad — `MersenneTwisterRandomPort` haelt seinen
-        State auch in Disk-canonical-Bytes, `ClockPort` ist je nach
-        Implementation auf wallclock-/setup-spezifische Restore-
-        Schritte angewiesen. Der `Scheduler` dagegen ist
-        **Sub-Subsystem** des TickLoops: sein Snapshot lebt
-        strukturell in `state['sub_snapshots']['scheduler']` und
-        hat ausser dem TickLoop keinen externen Persistenz-Konsumenten.
-        Composition-intern erspart das Aufrufern einen redundanten
-        Resume-Schritt.
+        Auto-Bus-Praezedenz: alte Snapshots ohne `agent_bus`-Sub-
+        Snapshot mit nicht-leeren `agents` injiziert bekommen
+        einen leeren `AgentMessageBus` (gleiche Regel wie im
+        Konstruktor).
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:
@@ -672,13 +746,36 @@ class TickLoop:
         if random.snapshot_as_mapping() != parsed.random_root:
             raise TickLoopSnapshotRandomMismatchError
         scheduler = Scheduler.from_snapshot(parsed.scheduler)
+        # M3-Welle-4a Resume-Match-Checks (ADR 0026 §2.6).
+        _assert_device_resume_match(parsed.sub_snapshots, devices)
+        _assert_grid_model_resume_match(parsed.sub_snapshots, grid_model)
+        _assert_load_overlay_resume_match(
+            parsed.sub_snapshots, active_load_events, active_load_profiles
+        )
+        # M3-Welle-4a Agent-Foundation-State-Restore (ADR 0026 §2.6).
+        agent_bus = _restore_agent_bus_from_snapshot(
+            parsed.sub_snapshots, has_agents=bool(agents), explicit_bus=None
+        )
+        pending_commands = _restore_pending_agent_commands(
+            parsed.sub_snapshots.get("pending_agent_commands")
+        )
         loop = cls(
             run_id=parsed.run_id,
             tick_ms=parsed.tick_ms,
             clock=clock,
             random=random,
             scheduler=scheduler,
+            devices=devices,
+            grid_model=grid_model,
+            active_load_events=active_load_events,
+            active_load_profiles=active_load_profiles,
+            fault_port=fault_port,
+            agent_bus=agent_bus,
+            agents=agents,
         )
+        # `_pending_agent_commands` muss nach Konstruktor-Init
+        # gefuellt werden — der Konstruktor initialisiert es leer.
+        loop._pending_agent_commands.extend(pending_commands)
         loop._tick_count = parsed.tick_count
         return loop
 
@@ -705,6 +802,7 @@ class _ParsedTickLoopSnapshot:
     tick_ms: int
     scheduler: Mapping[str, object]
     random_root: Mapping[str, object]
+    sub_snapshots: Mapping[str, object]
 
 
 def _validate_tick_loop_snapshot(state: Mapping[str, object]) -> _ParsedTickLoopSnapshot:
@@ -737,6 +835,7 @@ def _validate_tick_loop_snapshot(state: Mapping[str, object]) -> _ParsedTickLoop
         tick_ms=tick_ms,
         scheduler=scheduler_state,
         random_root=random_state,
+        sub_snapshots=sub_snapshots,
     )
 
 
@@ -778,3 +877,302 @@ def _device_type_for(device: DeviceModel) -> str:
     if class_name not in _DEVICE_TYPE_BY_CLASS_NAME:
         raise TickLoopUnknownDeviceTypeError(class_name, tuple(_DEVICE_TYPE_BY_CLASS_NAME))
     return _DEVICE_TYPE_BY_CLASS_NAME[class_name]
+
+
+# ---------------------------------------------------------------------------
+# Agent-Foundation-State-Snapshot-Helpers (M3 Welle 4a, ADR 0026 §2.6)
+# ---------------------------------------------------------------------------
+
+
+_PENDING_COMMAND_FIELDS: Final[tuple[str, ...]] = (
+    "command_id",
+    "simulation_time",
+    "target_device_id",
+    "type",
+    "payload",
+    "validation_status",
+    "result",
+)
+
+
+def _serialize_pending_agent_commands(commands: list[Command]) -> Mapping[str, object]:
+    """`pending_agent_commands`-Sub-Snapshot-Format (ADR 0026 §2.6).
+
+    `result` wird als `CommandResult`-Stringwert (`enum.name`)
+    serialisiert; canonical_json akzeptiert dict/list/str/int/Decimal,
+    aber keine Enum-Instanzen.
+    """
+    return {
+        "version": 1,
+        "commands": tuple(
+            {
+                "command_id": command.command_id,
+                "simulation_time": command.simulation_time,
+                "target_device_id": command.target_device_id,
+                "type": command.type,
+                "payload": dict(command.payload),
+                "validation_status": command.validation_status,
+                "result": command.result.name,
+            }
+            for command in commands
+        ),
+    }
+
+
+def _restore_pending_agent_commands(
+    raw: object,
+) -> tuple[Command, ...]:
+    """Rekonstruiert `_pending_agent_commands` aus Sub-Snapshot.
+
+    Fehlt der Sub-Snapshot, ist der Buffer leer (Backward-Compat
+    fuer Welle-3-Snapshots).
+    """
+    if raw is None:
+        return ()
+    if not isinstance(raw, Mapping):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            "sub_snapshots.pending_agent_commands", "Mapping", type(raw).__name__
+        )
+    missing = sorted({"version", "commands"} - raw.keys())
+    if missing:
+        raise TickLoopAgentSnapshotMissingKeysError("pending_agent_commands", missing)
+    version = raw["version"]
+    if isinstance(version, bool) or not isinstance(version, int):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            "pending_agent_commands.version", "int", type(version).__name__
+        )
+    commands_raw = raw["commands"]
+    if not isinstance(commands_raw, Sequence) or isinstance(commands_raw, (str, bytes)):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            "pending_agent_commands.commands", "Sequence", type(commands_raw).__name__
+        )
+    restored: list[Command] = []
+    for index, entry in enumerate(commands_raw):
+        restored.append(_restore_pending_command_entry(entry, index))
+    return tuple(restored)
+
+
+def _restore_pending_command_entry(raw: object, index: int) -> Command:  # noqa: C901, PLR0915 — pro-Feld-typed-Errors fuer 7 Pflichtfelder rechtfertigen einen langen Body (ADR 0026 §2.6).
+    """Pro-Eintrag-Restore mit typed-Errors fuer Format-Verstoesse."""
+    if not isinstance(raw, Mapping):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}]", "Mapping", type(raw).__name__
+        )
+    missing = [field for field in _PENDING_COMMAND_FIELDS if field not in raw]
+    if missing:
+        raise TickLoopAgentSnapshotMissingKeysError(
+            f"pending_agent_commands.commands[{index}]",
+            [f"commands[{index}].{field}" for field in missing],
+        )
+    command_id = raw["command_id"]
+    if not isinstance(command_id, str):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].command_id",
+            "str",
+            type(command_id).__name__,
+        )
+    simulation_time = raw["simulation_time"]
+    if isinstance(simulation_time, bool) or not isinstance(simulation_time, int):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].simulation_time",
+            "int",
+            type(simulation_time).__name__,
+        )
+    target_device_id = raw["target_device_id"]
+    if not isinstance(target_device_id, str):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].target_device_id",
+            "str",
+            type(target_device_id).__name__,
+        )
+    type_value = raw["type"]
+    if not isinstance(type_value, str):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].type",
+            "str",
+            type(type_value).__name__,
+        )
+    payload = raw["payload"]
+    if not isinstance(payload, Mapping):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].payload",
+            "Mapping",
+            type(payload).__name__,
+        )
+    validation_status = raw["validation_status"]
+    if not isinstance(validation_status, str):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].validation_status",
+            "str",
+            type(validation_status).__name__,
+        )
+    result_raw = raw["result"]
+    if not isinstance(result_raw, str):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            f"pending_agent_commands.commands[{index}].result",
+            "str",
+            type(result_raw).__name__,
+        )
+    try:
+        result = CommandResult[result_raw]
+    except KeyError as exc:
+        raise TickLoopAgentSnapshotInvalidCommandResultError(index, result_raw) from exc
+    return Command(
+        command_id=command_id,
+        simulation_time=simulation_time,
+        target_device_id=target_device_id,
+        type=type_value,
+        payload=dict(payload),
+        validation_status=validation_status,
+        result=result,
+    )
+
+
+def _restore_agent_bus_from_snapshot(
+    sub_snapshots: Mapping[str, object],
+    *,
+    has_agents: bool,
+    explicit_bus: AgentMessageBus | None,
+) -> AgentMessageBus | None:
+    """Rekonstruiert den AgentMessageBus aus Sub-Snapshot oder
+    Auto-Bus-Regel (ADR 0026 §2.6).
+
+    - Sub-Snapshot vorhanden → `AgentMessageBus.from_snapshot(...)`.
+    - Kein Sub-Snapshot + `has_agents == True` → leerer Bus
+      (Auto-Bus-Praezedenz, backward-kompatibel fuer Welle-3-
+      Snapshots ohne `agent_bus`-Key bei produktiver Welle-4a-
+      Restore mit injizierten Agents).
+    - Kein Sub-Snapshot + `has_agents == False` → `None`
+      (Welle-6a-Pfad unveraendert).
+    """
+    raw = sub_snapshots.get("agent_bus")
+    if raw is not None:
+        if not isinstance(raw, Mapping):
+            raise TickLoopAgentSnapshotWrongTypeError(
+                "sub_snapshots.agent_bus", "Mapping", type(raw).__name__
+            )
+        return AgentMessageBus.from_snapshot(raw)
+    if explicit_bus is not None:
+        return explicit_bus
+    if has_agents:
+        return AgentMessageBus()
+    return None
+
+
+def _assert_device_resume_match(
+    sub_snapshots: Mapping[str, object],
+    devices: tuple[DeviceModel, ...],
+) -> None:
+    """Resume-Match-Check fuer injizierte Devices (ADR 0026 §2.6).
+
+    Wenn der Snapshot `devices.<type>.<id>`-Sub-Snapshots enthaelt
+    und `devices` injiziert ist, muessen IDs, Typen UND
+    Device-Snapshot-States exakt passen.
+    """
+    if not devices:
+        return
+    device_keys = {key for key in sub_snapshots if key.startswith("devices.")}
+    if not device_keys:
+        return
+    for device in devices:
+        device_type = _device_type_for(device)
+        key = f"devices.{device_type}.{device.device_id}"
+        if key not in sub_snapshots:
+            raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003 — ADR 0026 §2.6 verlangt detail-rich Resume-Match-Diagnostik
+                f"injected device {device.device_id!r} (type={device_type!r}) "
+                f"has no matching sub-snapshot key {key!r}"
+            )
+        persisted = sub_snapshots[key]
+        if not isinstance(persisted, Mapping):
+            raise TickLoopAgentSnapshotWrongTypeError(
+                f"sub_snapshots.{key}", "Mapping", type(persisted).__name__
+            )
+        live = device.snapshot()
+        if dict(live) != dict(persisted):
+            raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003
+                f"injected device {device.device_id!r} (type={device_type!r}) "
+                f"snapshot differs from persisted state"
+            )
+
+
+def _assert_grid_model_resume_match(
+    sub_snapshots: Mapping[str, object],
+    grid_model: GridModelBilanz | None,
+) -> None:
+    """Resume-Match-Check fuer injiziertes GridModel (ADR 0026 §2.6)."""
+    if grid_model is None:
+        return
+    persisted = sub_snapshots.get("grid_model")
+    if persisted is None:
+        return
+    if not isinstance(persisted, Mapping):
+        raise TickLoopAgentSnapshotWrongTypeError(
+            "sub_snapshots.grid_model", "Mapping", type(persisted).__name__
+        )
+    live = grid_model.snapshot()
+    if dict(live) != dict(persisted):
+        raise TickLoopAgentSnapshotGridModelMismatchError(  # noqa: TRY003
+            "injected grid_model.snapshot() differs from persisted sub-snapshot"
+        )
+
+
+def _assert_load_overlay_resume_match(
+    sub_snapshots: Mapping[str, object],
+    active_load_events: tuple[LoadEvent, ...],
+    active_load_profiles: tuple[LoadProfile, ...],
+) -> None:
+    """Resume-Match-Check fuer LoadOverlay-Tupel (ADR 0026 §2.6).
+
+    Aktiv nur, wenn:
+    - Sub-Snapshot enthaelt einen `grid_model`-Slot (Single Source
+      of Truth fuer Overlay-State, ADR 0019 §6).
+    - Nicht-leere LoadOverlay-Tupel injiziert (Overlay-only-
+      Szenarien ohne GridModel bleiben gueltig).
+    """
+    if not active_load_events and not active_load_profiles:
+        return
+    grid_state = sub_snapshots.get("grid_model")
+    if grid_state is None:
+        return
+    if not isinstance(grid_state, Mapping):
+        # Match-Check fuer GridModel hat das schon abgefangen;
+        # defensive guard hier nicht doppelt werfen.
+        return
+    persisted_events = grid_state.get("active_load_events")
+    persisted_profiles = grid_state.get("active_load_profiles")
+    if persisted_events is None and persisted_profiles is None:
+        # Welle-5a-GridModel-Snapshot ohne Overlay-Persistenz —
+        # akzeptieren, kein Match-Check moeglich (nur v2+ persistiert
+        # Overlays, ADR 0020).
+        return
+    # Persistierte Werte sind List[dict] (canonical_json, ADR 0020 §2.6).
+    live_events = [dict(_load_event_to_mapping(event)) for event in active_load_events]
+    live_profiles = [dict(_load_profile_to_mapping(profile)) for profile in active_load_profiles]
+    if persisted_events is not None and list(persisted_events) != live_events:
+        raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
+            "injected active_load_events differ from persisted GridModel overlay"
+        )
+    if persisted_profiles is not None and list(persisted_profiles) != live_profiles:
+        raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
+            "injected active_load_profiles differ from persisted GridModel overlay"
+        )
+
+
+def _load_event_to_mapping(event: LoadEvent) -> Mapping[str, object]:
+    """LoadEvent-zu-Mapping-Helper analog GridModelSnapshot
+    (ADR 0020 §2.6 / `core/grid_model/snapshot.py`)."""
+    return {
+        "start_s": event.start_s,
+        "duration_s": event.duration_s,
+        "target_device_id": event.target_device_id,
+        "power_kw": event.power_kw,
+    }
+
+
+def _load_profile_to_mapping(profile: LoadProfile) -> Mapping[str, object]:
+    """LoadProfile-zu-Mapping-Helper analog GridModelSnapshot."""
+    return {
+        "target_device_id": profile.target_device_id,
+        "tick_values": list(profile.tick_values),
+        "tick_ms": profile.tick_ms,
+    }

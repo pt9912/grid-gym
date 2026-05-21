@@ -251,6 +251,60 @@ def test_drain_for_rejects_broadcast_wildcard() -> None:
         bus.drain_for("*")
 
 
+# ---------------------------------------------------------------------------
+# M3-Welle-4a (ADR 0026 §2.4): `consume_for(receiver)` destruktive
+# Direct-Inbox-Drain-Variante.
+# ---------------------------------------------------------------------------
+
+
+def test_consume_for_returns_only_direct_inbox_messages() -> None:
+    """ADR 0026 §2.4: `consume_for(receiver)` liefert nur direkt
+    an `receiver` adressierte Nachrichten (Direct-Inbox)."""
+    bus = AgentMessageBus()
+    bus.publish(_msg(sender="agent-x", receiver="agent-a", sequence=-1))
+    bus.publish(_msg(sender="agent-y", receiver="agent-b", sequence=-1))
+    bus.publish(_msg(sender="agent-z", receiver="*", sequence=-1))  # broadcast
+    consumed = bus.consume_for("agent-a")
+    # Nur Direct-Inbox; Broadcast NICHT konsumiert.
+    assert len(consumed) == 1
+    assert consumed[0].receiver == "agent-a"
+
+
+def test_consume_for_is_destructive_for_direct_inbox() -> None:
+    """ADR 0026 §2.4: `consume_for(receiver)` entfernt Direct-Inbox-
+    Messages aus dem Buffer."""
+    bus = AgentMessageBus()
+    bus.publish(_msg(sender="agent-x", receiver="agent-a", sequence=-1))
+    consumed = bus.consume_for("agent-a")
+    assert len(consumed) == 1
+    # Zweiter Aufruf liefert nichts mehr.
+    consumed_again = bus.consume_for("agent-a")
+    assert consumed_again == ()
+
+
+def test_consume_for_keeps_broadcasts_in_buffer() -> None:
+    """ADR 0026 §2.4: Broadcasts bleiben nicht-destruktiv im Buffer
+    und werden weiter ueber `drain_for(...)` ausgeliefert."""
+    bus = AgentMessageBus()
+    broadcast = _msg(sender="agent-x", receiver="*", sequence=-1)
+    bus.publish(broadcast)
+    direct = _msg(sender="agent-x", receiver="agent-a", sequence=-1)
+    bus.publish(direct)
+    bus.consume_for("agent-a")  # direct wird konsumiert
+    # Broadcast bleibt fuer drain_for verfuegbar.
+    drained = bus.drain_for("agent-b")
+    assert any(m.receiver == "*" for m in drained)
+
+
+def test_consume_for_rejects_broadcast_wildcard() -> None:
+    """ADR 0026 §2.4 + Welle-3-Review-Folge L-3:
+    `consume_for("*")` ist analog zu `drain_for("*")` verboten."""
+    bus = AgentMessageBus()
+    bus.publish(_msg(receiver="*", sequence=-1))
+    with pytest.raises(AgentBusInvalidReceiverError):
+        bus.consume_for("*")
+
+
 def test_next_sequence_property_reflects_counter() -> None:
     """Test-Accessor: `next_sequence` ist Sicht auf Counter."""
     bus = AgentMessageBus()

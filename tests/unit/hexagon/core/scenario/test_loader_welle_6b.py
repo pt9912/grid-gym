@@ -588,6 +588,96 @@ def test_build_tick_loop_forwards_agent_bus_kwarg() -> None:
     assert loop._agent_bus is bus  # type: ignore[attr-defined]
 
 
+# ---------------------------------------------------------------------------
+# M3-Welle-4a (ADR 0026 §2.2): build_tick_loop(agents=)-Symmetrie
+# + GridModelBilanz-Overlay-Verdrahtung
+# ---------------------------------------------------------------------------
+
+
+def test_build_tick_loop_forwards_agents_kwarg() -> None:
+    """ADR 0026 §2.2: produktiver `agents`-Kwarg landet in
+    `TickLoop._agents` (Builder-Symmetrie zur Konstruktor-API)."""
+    from collections.abc import Mapping, Sequence
+    from typing import Self
+
+    from grid_gym.hexagon.core.agents import Agent, AgentMessageBus
+    from grid_gym.hexagon.core.domain.command import Command
+    from grid_gym.hexagon.core.domain.device import DeviceTickContext
+
+    class _NullAgent:
+        SNAPSHOT_VERSION: int = 1
+
+        @property
+        def agent_id(self) -> str:
+            return "agent-x"
+
+        def set_run_id(self, run_id: str) -> None:
+            pass
+
+        def tick(
+            self,
+            context: DeviceTickContext,
+            bus: AgentMessageBus,
+        ) -> Sequence[Command]:
+            return ()
+
+        def snapshot(self) -> Mapping[str, object]:
+            return {"version": self.SNAPSHOT_VERSION}
+
+        @classmethod
+        def from_snapshot(cls, state: Mapping[str, object]) -> Self:  # noqa: ARG003 — Test-Stub mit Protocol-Surface
+            return cls()
+
+    agent = _NullAgent()
+    scenario = _scenario(devices=(_pv_device(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-agents",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+        agents=(agent,),
+    )
+    assert loop._agents == (agent,)  # type: ignore[attr-defined]
+    # Auto-Bus-Regel: nicht-leere agents ohne expliziten Bus →
+    # automatischer AgentMessageBus.
+    assert loop._agent_bus is not None  # type: ignore[attr-defined]
+
+
+def test_build_tick_loop_wires_grid_model_with_overlays() -> None:
+    """ADR 0026 §2.2 + §2.6: bei vorhandenem `grid_model_config`
+    konstruiert der Builder das GridModel mit den Scenario-
+    LoadOverlay-Tupeln (Single Source of Truth fuer Resume-
+    Match-Checks)."""
+    event = LoadEvent(
+        start_s=Decimal("0"),
+        duration_s=Decimal("10"),
+        target_device_id="load-1",
+        power_kw=Decimal("250"),
+    )
+    profile = LoadProfile(
+        target_device_id="load-1",
+        tick_values=(Decimal("100"), Decimal("200")),
+        tick_ms=1000,
+    )
+    scenario = _scenario(
+        devices=(_load_device("load-1"),),
+        grid_model_config=_grid_model_config(),
+        load_events=(event,),
+        load_profiles=(profile,),
+    )
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-overlays",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+    )
+    assert loop._grid_model is not None  # type: ignore[attr-defined]
+    # GridModel persistiert die Overlays in seinem Snapshot.
+    grid_state = loop._grid_model.snapshot()  # type: ignore[attr-defined]
+    assert grid_state["active_load_events"] != []
+    assert grid_state["active_load_profiles"] != []
+
+
 def test_build_tick_loop_smoke_runs_one_tick() -> None:
     """ADR 0021 §2.4: voller Builder + erster Tick laeuft
     durch (kein Throw, Telemetrie wird emittiert)."""

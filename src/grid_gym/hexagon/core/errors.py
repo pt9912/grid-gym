@@ -941,3 +941,147 @@ class AgentBusSnapshotVersionError(AgentBusError):
         super().__init__(
             f"unsupported agent_bus snapshot version: expected {expected}, got {found!r}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Agent-Registry (M3 Welle 4a, ADR 0026 §2.5)
+# ---------------------------------------------------------------------------
+
+
+class AgentRegistryError(GridGymError):
+    """Wurzel der TickLoop-Agent-Registry-Vertragsverletzungen
+    (M3 Welle 4a, ADR 0026 §2.5).
+
+    Konstruktor-Vertrags-Probleme rund um die `agents`-Tuple
+    (z. B. doppelte `agent_id`-Werte). Getrennt von
+    `AgentBusError` (Bus-Vertrag) und
+    `AgentCommandDrainError` (Schritt-A0-TickLoop-Vertrag).
+    """
+
+
+class AgentDuplicateIdError(AgentRegistryError):
+    """Konstruktor erhaelt mehrere Agents mit gleichem `agent_id`.
+
+    Welle-3-`_set_agents_for_testing(...)`-Helper hatte das
+    bereits defensiv als ValueError abgefangen; Welle 4a hebt
+    den Check in den produktiven TickLoop-Konstruktor und gibt
+    ihm eine typisierte Subklasse.
+    """
+
+    def __init__(self, agent_id: str) -> None:
+        super().__init__(f"TickLoop received duplicate agent_id: {agent_id!r}")
+
+
+# ---------------------------------------------------------------------------
+# Agent-Command-Drain (M3 Welle 4a, ADR 0026 §2.5)
+# ---------------------------------------------------------------------------
+
+
+class AgentCommandDrainError(TickLoopError):
+    """Wurzel der TickLoop-Schritt-A0-Drain-Vertragsverletzungen
+    (M3 Welle 4a, ADR 0026 §2.5).
+
+    Drain-Pfad-Probleme (z. B. Pending-Command auf unbekanntes
+    Device). Erbt von `TickLoopError`, weil Drain ein TickLoop-
+    interner Schritt-Vertrag ist, kein `AgentMessageBus`-Fehler.
+    """
+
+
+class AgentInvalidCommandTargetError(AgentCommandDrainError):
+    """Schritt A0v erkennt eine `target_device_id`, die im
+    `_device_by_id`-Lookup nicht existiert.
+
+    Atomizitaets-Vertrag (ADR 0026 §2.1): wird VOR
+    `clock.advance(...)` und `scheduler.pop_due(...)` geworfen,
+    damit der Tick komplett unangetastet bleibt. Pending-Buffer
+    wird nicht geleert; Retry/Resume bleibt sauber moeglich.
+    """
+
+    def __init__(self, target_device_id: str, command_id: str) -> None:
+        super().__init__(
+            f"Schritt A0v: pending agent command targets unknown device "
+            f"{target_device_id!r} (command_id={command_id!r})"
+        )
+
+
+# ---------------------------------------------------------------------------
+# TickLoop-Agent-Foundation-State-Snapshot (M3 Welle 4a, ADR 0026 §2.6)
+# ---------------------------------------------------------------------------
+
+
+class TickLoopAgentSnapshotMissingKeysError(TickLoopSnapshotFormatError):
+    """Pflicht-Keys fehlen im Agent-Foundation-State-Snapshot
+    (z. B. `pending_agent_commands`-Sub-Snapshot ohne
+    `commands`-Key).
+    """
+
+    def __init__(self, sub_snapshot: str, missing: list[str]) -> None:
+        super().__init__(
+            f"agent foundation sub-snapshot {sub_snapshot!r} missing keys: {sorted(missing)}"
+        )
+
+
+class TickLoopAgentSnapshotWrongTypeError(TickLoopSnapshotFormatError):
+    """Ein Key im Agent-Foundation-State-Snapshot hat den
+    falschen Typ (z. B. `pending_agent_commands.commands` ist
+    kein Sequence).
+    """
+
+    def __init__(self, key: str, expected: str, actual: str) -> None:
+        super().__init__(f"agent foundation snapshot key {key!r} must be {expected}, got {actual}")
+
+
+class TickLoopAgentSnapshotInvalidCommandResultError(TickLoopSnapshotFormatError):
+    """Ein Eintrag in `pending_agent_commands.commands` traegt
+    einen unbekannten `CommandResult`-String beim Restore.
+
+    Welle-4a-Snapshot-Vertrag (ADR 0026 §2.6): `result` wird
+    als CommandResult-Stringwert serialisiert und beim Restore
+    via `CommandResult(state["result"])` typisiert
+    zurueckgeparst.
+    """
+
+    def __init__(self, index: int, raw_value: object) -> None:
+        super().__init__(
+            f"pending_agent_commands.commands[{index}].result is not a known "
+            f"CommandResult string: {raw_value!r}"
+        )
+
+
+class TickLoopAgentSnapshotDeviceMismatchError(TickLoopSnapshotFormatError):
+    """Injizierte Device-Instanz passt nicht zum vorhandenen
+    `devices.<type>.<id>`-Sub-Snapshot (ADR 0026 §2.6
+    Resume-Match-Check).
+
+    Drei Mismatch-Achsen: Device-ID fehlt im Snapshot,
+    Device-Typ stimmt nicht mit Snapshot-Key-Segment ueberein,
+    oder `device.snapshot()` weicht vom persistierten Sub-
+    Snapshot-State ab.
+    """
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"agent-foundation resume device mismatch: {detail}")
+
+
+class TickLoopAgentSnapshotGridModelMismatchError(TickLoopSnapshotFormatError):
+    """Injiziertes `grid_model.snapshot()` passt nicht zum
+    vorhandenen `grid_model`-Sub-Snapshot (ADR 0026 §2.6
+    Resume-Match-Check)."""
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"agent-foundation resume grid_model mismatch: {detail}")
+
+
+class TickLoopAgentSnapshotLoadOverlayMismatchError(TickLoopSnapshotFormatError):
+    """Injizierte `active_load_events`/`active_load_profiles`
+    passen nicht zum persistierten GridModel-Overlay-State
+    (ADR 0026 §2.6 Resume-Match-Check, ADR 0019 §6 GridModel-
+    v2-Overlay-Snapshot).
+
+    Nur aktiv, wenn ein `grid_model`-Sub-Snapshot vorhanden ist
+    UND nicht-leere LoadOverlay-Tupel injiziert wurden.
+    Overlay-only-Szenarien ohne GridModel sind weiter gueltig.
+    """
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"agent-foundation resume load_overlay mismatch: {detail}")

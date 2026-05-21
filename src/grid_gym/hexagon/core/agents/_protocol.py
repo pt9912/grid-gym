@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Protocol, Self, runtime_checkable
 
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.ports.driven.random import RandomPort
 
 if TYPE_CHECKING:
     # Forward-Reference vermeidet zyklischen Import: `_protocol`
@@ -145,5 +146,41 @@ class Agent(Protocol):
         Konkrete Implementationen kommen mit Welle 4
         (`RuleBasedAgent` etc.). Welle-3-Test-Pattern: `NullAgent`-
         Stub liefert die Baseline-Implementation.
+        """
+        ...  # pragma: no cover — Protocol-Stub
+
+
+@runtime_checkable
+class _RandomAttachableAgent(Agent, Protocol):
+    """Optionales Sub-Protocol fuer Agents mit eigenem Per-Agent-
+    Sub-Random-Stream (M3 Welle 4a, ADR 0026 §2.3).
+
+    `_attach_agents()` am TickLoop prueft via
+    `isinstance(agent, _RandomAttachableAgent)`, ob ein Agent
+    einen Sub-Random-Stream braucht. Agents ohne Stochastik
+    implementieren das Sub-Protocol nicht und bekommen damit
+    weder einen Sub-Port noch einen No-op-Hook aufgezwungen.
+
+    `@runtime_checkable` ist Pflicht, sonst wirft Python beim
+    `isinstance(...)`-Check einen `TypeError` (vgl. R-3 in
+    welle-4a.md §7).
+
+    Sub-Port-Namens-Konvention (ADR 0026 §2.3 + Welle-3-Review-
+    Folge M-3): `RandomPort.sub_port(f"agent-{agent_id}")`.
+    Damit ist die Stream-Ableitung pro Agent deterministisch
+    und unabhaengig von anderen Agents oder Devices.
+    """
+
+    def attach_random(self, random: RandomPort) -> None:
+        """Wird vom TickLoop einmal aufgerufen, mit dem
+        Per-Agent-Sub-Random-Stream
+        (`random_root.sub_port(f"agent-{agent_id}")`).
+
+        Idempotenz-Vertrag: Welle-4a-Foundation ruft den Hook
+        genau einmal in `_attach_agents()` (analog
+        `SmartMeterDevice.attach_sources`, ADR 0018 §2.4).
+        Welle-4-Implementer entscheiden, ob sie Mehrfach-Aufrufe
+        idempotent halten — Welle 4a-Protocol verlangt nur den
+        Einmal-Aufruf-Vertrag.
         """
         ...  # pragma: no cover — Protocol-Stub

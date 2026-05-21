@@ -139,15 +139,56 @@ class AgentMessageBus:
         """
         if receiver == "*":
             raise AgentBusInvalidReceiverError(receiver)
-        matches = [
-            message
-            for message in self._buffer
-            if message.receiver == receiver or message.receiver == "*"
-        ]
+        matches = [message for message in self._buffer if message.receiver in (receiver, "*")]
         # Welle-3-Sortier-Vertrag (ADR 0023 §2.2): primaer
         # simulation_time aufsteigend, dann sender lexikographisch,
         # dann sequence aufsteigend. Damit ist die Iteration
         # deterministisch unabhaengig von Publish-Reihenfolge.
+        matches.sort(
+            key=lambda m: (m.simulation_time, m.sender, m.sequence),
+        )
+        return tuple(matches)
+
+    def consume_for(self, receiver: str) -> Sequence[AgentMessage]:
+        """Destruktive Direct-Inbox-Drain-Variante (M3 Welle 4a,
+        ADR 0026 §2.4).
+
+        Liefert alle direkt an `receiver` adressierten
+        Nachrichten (`message.receiver == receiver`) in
+        derselben Sortierung wie `drain_for(receiver)` UND
+        entfernt nur diese aus dem Buffer. Broadcasts
+        (`message.receiver == "*"`) bleiben bewusst im Buffer
+        und werden weiter nicht-destruktiv ueber
+        `drain_for(receiver)` ausgeliefert.
+
+        `receiver == "*"` ist analog zu `drain_for("*")`
+        verboten und wirft `AgentBusInvalidReceiverError`
+        (Welle-3-Review-Folge L-3-Vertrag).
+
+        Welle-4a-Eviction-Spec (Welle-3-Review-Folge M-4):
+        registry-aware Broadcast-Fan-out/Watermark bleibt
+        Welle 4b oder spaetere Folge — ein destruktiver
+        Broadcast-Konsum beim ersten `consume_for(...)`-
+        Aufruf wuerde alle nachfolgenden Receiver
+        abschneiden.
+
+        Snapshot-Schema-Erweiterung: kein Bump v1 → v2 noetig,
+        solange kein `consumed_sequences`/Watermark-State
+        persistiert wird; der Buffer wird nach Konsumption
+        kleiner, aber das Schema-Format bleibt unveraendert.
+        """
+        if receiver == "*":
+            raise AgentBusInvalidReceiverError(receiver)
+        # Direct-Inbox-Filter: NUR `message.receiver == receiver`,
+        # Broadcasts (`receiver == "*"`) bleiben unangetastet.
+        matches: list[AgentMessage] = []
+        retained: list[AgentMessage] = []
+        for message in self._buffer:
+            if message.receiver == receiver:
+                matches.append(message)
+            else:
+                retained.append(message)
+        self._buffer = retained
         matches.sort(
             key=lambda m: (m.simulation_time, m.sender, m.sequence),
         )

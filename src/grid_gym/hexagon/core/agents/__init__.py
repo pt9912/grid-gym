@@ -13,7 +13,7 @@ Welle-3-Stand: nur Foundation. Konkrete Agent-Implementer
 kommen mit M3-Welle-4.
 """
 
-from grid_gym.hexagon.core.agents._protocol import Agent
+from grid_gym.hexagon.core.agents._protocol import Agent, _RandomAttachableAgent
 from grid_gym.hexagon.core.agents.bus import SNAPSHOT_VERSION, AgentMessageBus
 
-__all__ = ["SNAPSHOT_VERSION", "Agent", "AgentMessageBus"]
+__all__ = ["SNAPSHOT_VERSION", "Agent", "AgentMessageBus", "_RandomAttachableAgent"]
