@@ -1,0 +1,71 @@
+# grid-gym CI — vier Pflicht-Gates (Trigger 025, eroeffnet 2026-05-21).
+#
+# Die vier Gates laufen parallel als separate Docker-Build-Targets.
+# Jeder Job baut nur den Stage, den er prueft — keine Aggregator-
+# Stage (kein Cross-Job-Skip). Reihenfolge in der Job-Liste ist
+# nur Anzeige-Reihenfolge; GitHub-Actions startet alle parallel.
+#
+# Bezug:
+# - Trigger-Doc: docs/plan/planning/in-progress/025-github-actions-four-gates.md
+# - Dockerfile-Stages: lint, arch-check-imports, arch-check-custom, typecheck
+# - Makefile-Targets:  make lint, make arch-check-imports, make arch-check-custom, make typecheck
+# - ADR 0002 §A-1 (Architektur-Tabus, die `arch-check-imports`-Stage enforct).
+# - ADR 0005 (`mypy --strict` als Pflicht-Gate).
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Cancel-in-Progress fuer denselben Branch — verhindert dass alte
+# Runs CI-Slots blockieren, wenn schnell hintereinander gepusht wird.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Default-Permissions: read-only auf `contents`. Jeder Job, der mehr
+# braucht (z. B. Cache-Write), muss es explizit anfragen.
+permissions:
+  contents: read
+
+jobs:
+  lint-imports:
+    name: lint-imports (import-linter)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build & run arch-check-imports stage
+        run: make arch-check-imports
+
+  ruff-check:
+    name: ruff check (lint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build & run lint stage
+        run: make lint
+
+  arch-check-custom:
+    name: arch-check-custom (tools/arch_check.py)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build & run arch-check-custom stage
+        run: make arch-check-custom
+
+  typecheck:
+    name: mypy --strict
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build & run typecheck stage
+        run: make typecheck
