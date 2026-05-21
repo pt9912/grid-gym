@@ -1,6 +1,6 @@
 # Welle 4a — Multi-Agent-Foundation-Plumbing
 
-**Status:** In Progress — eroeffnet am 2026-05-21 mit M3-Welle-
+**Status:** In Progress — eröffnet am 2026-05-21 mit M3-Welle-
 4a-Pre-C0-Rename (`a24f733`). Welle 4 ist die produktive
 Konkretisierung des Multi-Agent-Subsystems und wird in zwei
 Teilwellen geliefert (Sub-Slicing nach M3-Slice-Plan §3
@@ -17,7 +17,7 @@ Entscheidungen):
   Welle-4-Gate (`make fullbuild` ohne Override).
 
 Pattern: spiegelt M3-Welle-1 (Fault-Foundation) → M3-Welle-2
-(Fault-Konkretisierung) eins zu eins fuer Agenten.
+(Fault-Konkretisierung) eins zu eins für Agenten.
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
@@ -63,14 +63,14 @@ End-to-End-Pfad.
 
 1. **ADR 0026** (geplant) — Agent-Drain + Registry +
    Lifecycle-Pattern als eigene ADR (analog ADR 0025 zu
-   ADR 0022 fuer Recovery-Pattern). Status-Lifecycle:
+   ADR 0022 für Recovery-Pattern). Status-Lifecycle:
    - `Proposed` mit Welle-4a-C1 (separater
      `docs(adr)`-Commit).
   - `Provisional` mit Welle-4a-C2-Merge.
   - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
     ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
     Welle-7-Sequenzierung).
-2. **TickLoop-Konstruktor erhaelt produktiven
+2. **TickLoop-Konstruktor erhält produktiven
    `agents`-Kwarg**:
    - `agents: tuple[Agent, ...] = ()` (keyword-only, analog
      `devices=`, `active_load_events=`, etc.).
@@ -78,10 +78,10 @@ End-to-End-Pfad.
      entfernt — Tests stellen via Konstruktor-Kwarg um.
 3. **`_attach_agents()`-Lifecycle-Hook** im
    TickLoop-Konstruktor (analog `_attach_devices()`):
-   - Ruft `agent.set_run_id(self._run_id)` fuer jeden
+   - Ruft `agent.set_run_id(self._run_id)` für jeden
      Agent.
    - Ruft `agent.attach_random(self._random.sub_port(
-     f"agent-{agent_id}"))` fuer jeden Agent, der das
+     f"agent-{agent_id}"))` für jeden Agent, der das
      optionale `_RandomAttachableAgent`-Sub-Protocol
      implementiert (`isinstance`-Check). Nicht alle Agent-Typen
      brauchen einen eigenen Random-Stream. Damit ist die
@@ -93,7 +93,7 @@ End-to-End-Pfad.
    Methode (analog `SmartMeterDevice.attach_sources`-
    Pattern, ADR 0018 §2.4). **Welle-4a-Sub-Protocol** statt
    Erweiterung der Pflicht-Surface, damit RuleBasedAgents
-   ohne Stochastik den Hook nicht implementieren muessen.
+   ohne Stochastik den Hook nicht implementieren müssen.
 5. **TickLoop-Schritt A0 (Pre-Tick-Agent-Command-Drain)**:
    - Position: am Tick-Start, **vor** Schritt A (LoadEvent-/
      Profile-Overlay), aber nach `clock.advance(...)` und
@@ -113,7 +113,7 @@ End-to-End-Pfad.
      „Event-Overlay nach Baseline".
 6. **`AgentMessageBus.consume_for(receiver: str) ->
    Sequence[AgentMessage]`** (destruktive Drain-Variante):
-   - Liefert alle Nachrichten fuer `receiver` (oder
+   - Liefert alle Nachrichten für `receiver` (oder
      Broadcasts) **und entfernt sie** aus dem Buffer.
    - Implementiert die Welle-3-Review-Folge-M-4-Eviction-
      Spec (`consume_for` mit Per-Receiver-Watermark).
@@ -126,7 +126,7 @@ End-to-End-Pfad.
      Buffer-Inhalt wird nach Konsumption kleiner, aber das
      Schema-Format bleibt unveraendert.
 7. **`build_tick_loop(..., agents=...)`-Builder-Symmetrie**:
-   - Scenario-Loader-Builder erhaelt
+   - Scenario-Loader-Builder erhält
      `agents: tuple[Agent, ...] = ()`-Kwarg (analog Welle-3
      `agent_bus`).
    - Default `()`-Tuple; Welle-4b-Scenario-Loader wird die
@@ -150,7 +150,7 @@ End-to-End-Pfad.
   Modell.
 - Sub-Snapshot-Slots (`agent_bus`, `agents.<agent_type>.
   <agent_id>`) in `TickLoop.snapshot()` — Welle 4a hat keine
-  registrierten Agents per Default; Welle 4b fuegt die Sub-
+  registrierten Agents per Default; Welle 4b fügt die Sub-
   Snapshots additiv per ADR 0015 §2.3 ein.
 - Agent-Faktoren-Map analog `_DEVICE_FACTORIES`.
 - Property-Determinismus-Tests pro Agent-Implementer
@@ -171,7 +171,7 @@ End-to-End-Pfad.
 - RL-Adapter (`GG-FUTURE-001/002`).
 - In-Tick-Wirksamkeit (Agent-Commands wirken in derselben
   Tick) — eigene ADR-Folge.
-- Multi-Receiver-Watermark fuer `consume_for(...)`-
+- Multi-Receiver-Watermark für `consume_for(...)`-
   Per-Receiver-Tracking; Welle 4a haelt das Tracking nicht
   vor, weil ohne registrierte Agents im Default-Pfad nicht
   benoetigt. Welle 4b oder spaetere Slice verfeinert.
@@ -181,14 +181,14 @@ End-to-End-Pfad.
 Welle 4a bringt **eine neue ADR**: ADR 0026 (Agent-Drain +
 Registry + Lifecycle-Pattern). Schwester-ADR zu ADR 0023
 (Welle 3 Foundation); Pattern-Pendant zu ADR 0025 (Welle 2
-Recovery-Pattern, schaerft ADR 0022).
+Recovery-Pattern, schärft ADR 0022).
 
 **Drain-Pfad: Pre-Tick-Schritt A0 mit `apply_command`-direct**
 (D1 aus Recherche-Brief). Drei Varianten waren denkbar:
 
 1. **Scheduler-Push** — `Command` wird in `Event` gewrappt
-   und ueber den Scheduler in den naechsten Tick gepoppt.
-   *Abgelehnt*: Scheduler ist fuer Events, nicht Commands.
+   und über den Scheduler in den naechsten Tick gepoppt.
+   *Abgelehnt*: Scheduler ist für Events, nicht Commands.
    Command-zu-Event-Wrap ist Vorgriff auf M5-Material;
    `Scheduler.add(event)` hat keine Command-Surface.
 2. **`apply_command`-direct in derselben Tick (D2-Hook)**
@@ -239,21 +239,21 @@ simulation_time)` waere Per-Tick-Eviction (alle Messages vor
 einer Zeit werden geloescht, unabhaengig vom Receiver).
 *Abgelehnt*: bricht Multi-Receiver-Szenarien — wenn Agent A
 um t=1000 publiziert und Agent B die Message erst um t=2000
-lesen will, wuerde `evict_before(t=1500)` die Message
+lesen will, würde `evict_before(t=1500)` die Message
 vorzeitig entfernen. Per-Receiver-Granularitaet ist die
 robuste Wahl.
 
-**Snapshot-Vertrag fuer Welle 4a**: kein Sub-Snapshot-Slot
-fuer `_pending_agent_commands` oder Agents in
+**Snapshot-Vertrag für Welle 4a**: kein Sub-Snapshot-Slot
+für `_pending_agent_commands` oder Agents in
 `TickLoop.snapshot()`. Welle-4a-Default-TickLoop hat
 `agents=()`; `_pending_agent_commands` bleibt leer.
-Welle-4b-RuleBasedAgent-Konkretisierung fuegt die Sub-
+Welle-4b-RuleBasedAgent-Konkretisierung fügt die Sub-
 Snapshot-Slots additiv per ADR 0015 §2.3 ein. ADR 0023 §6
 verbindliche Welle-4-Konsequenz „Agent-Sub-Snapshot-Slot
 in `TickLoop.snapshot()`" wird damit auf Welle 4b
 verschoben.
 
-**ADR 0025-Pattern**: Welle 4a schaerft ADR 0023 §6 ohne
+**ADR 0025-Pattern**: Welle 4a schärft ADR 0023 §6 ohne
 Supersede (ADR 0011-Pattern). ADR 0023 bleibt
 `Provisional`; Welle-4a-Closure produziert ADR 0026 als
 neue ADR (analog ADR 0025 zu ADR 0022).
@@ -270,7 +270,7 @@ Konvention.
 Welle-4a-Start-Marker. Status: `In Progress`. Plus
 `in-progress/README.md`-Sync:
 - `welle-3.md`-Zeile entfernen (jetzt in `done/welle-3.md`).
-- `welle-4a.md`-Zeile ergaenzen.
+- `welle-4a.md`-Zeile ergänzen.
 
 ### C1 — `docs(adr)`: ADR 0026 Proposed
 
@@ -304,7 +304,7 @@ Inhalt (geplant, ~ 3000–4000 Woerter, Pattern aus ADR 0025):
   GG-AGENT-008 Async, Sub-Snapshot-Slots, Multi-Receiver-
   Watermark.
 
-Plus `adr/README.md`-Zeile fuer ADR 0026 `Proposed`.
+Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 
 ### C2 — `feat(welle-4a)`: TickLoop-Registry + Schritt-A0-Drain + consume_for + Tests
 
@@ -331,7 +331,7 @@ Plus `adr/README.md`-Zeile fuer ADR 0026 `Proposed`.
 
 **Tests (neu/edit):**
 
-6. `tests/unit/hexagon/core/agents/test_bus.py` — Tests fuer
+6. `tests/unit/hexagon/core/agents/test_bus.py` — Tests für
    `consume_for(...)`-Destruktiv-Vertrag, Watermark-
    Sanity, Roundtrip mit drain_for-Parallel.
 7. `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py`
@@ -339,11 +339,11 @@ Plus `adr/README.md`-Zeile fuer ADR 0026 `Proposed`.
    Konstruktor-Kwarg; **Datei umbenannt** zu
    `test_tick_loop_welle_4a_agent.py` (Pattern-Konsistenz
    zur Welle-Bezeichnung).
-8. Neue Tests fuer Schritt-A0-Drain:
+8. Neue Tests für Schritt-A0-Drain:
    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_drain.py`
    — Drain-Order, Drain-vor-LoadEvent, Multi-Agent-Drain,
    `AgentInvalidCommandTargetError`-Fail-Fast.
-9. Neue Tests fuer `_attach_agents()`-Lifecycle:
+9. Neue Tests für `_attach_agents()`-Lifecycle:
    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py`
    — `set_run_id`-Aufruf, optionaler `attach_random`-Aufruf,
    Sub-Port-Namens-Konvention.
@@ -390,7 +390,7 @@ Plus `adr/README.md`-Zeile fuer ADR 0026 `Proposed`.
 
 ## 6. Verifikationspfad
 
-End-to-End ueber `make`-Targets (Dockerfile-Stages, Docker-only
+End-to-End über `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
 1. **`make test-unit`** — gruen mit ~12–18 neuen Tests
@@ -412,14 +412,14 @@ nach Repo-Konvention):
    keine OTLP-Pflicht; M3-Welle-4-Abschluss-Gate folgt mit
    Welle 4b).
 5. **ADR-0026-Status sichtbar `Provisional`** nach C3.
-6. **ADR 0023 bleibt `Provisional`** (Welle 4a schaerft
+6. **ADR 0023 bleibt `Provisional`** (Welle 4a schärft
    ohne Supersede; keine Status-Aenderung).
 7. **Welle-3-`_set_agents_for_testing`-Helper ist entfernt**
    — Welle-4a-Code-Audit-Pflicht: `grep -rn
    "_set_agents_for_testing" tests/ src/` liefert kein
    Ergebnis nach C2.
 8. **Rename-Historie**: `git log --follow done/welle-3.md`
-   traceable ueber Pre-C0-Rename (`a24f733`).
+   traceable über Pre-C0-Rename (`a24f733`).
 9. **Git-Pattern**: 5 neue Welle-4a-Commits in der
    Reihenfolge `chore(welle-4a): git mv (Pre-C0)` →
    `docs(plan): welle-4a Slice-Doc (C0)` → `docs(adr): ADR
@@ -451,8 +451,8 @@ nach Repo-Konvention):
   prueft via `isinstance(agent, _RandomAttachableAgent)`
   (analog Welle-1-`FaultInjectableDevice`-Pattern).
   Saubere Typisierung; keine Hasattr-Drift.
-- **R-4 — ADR 0026 vs. ADR-0023-Schaerfung**: ADR 0026 ist
-  separate ADR, kein Schaerfung-ohne-Supersede in ADR 0023.
+- **R-4 — ADR 0026 vs. ADR-0023-Schärfung**: ADR 0026 ist
+  separate ADR, kein Schärfung-ohne-Supersede in ADR 0023.
   *Mitigation*: 5 substantielle Entscheidungen rechtfertigen
   eigene ADR (analog ADR 0025 zu ADR 0022). ADR 0026
   referenziert ADR 0023 §6 explizit als „erfuellt durch
