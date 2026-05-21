@@ -17,13 +17,10 @@ Tracking, nicht Ersatz.
 
 **Commit-Sequenz (geplant):**
 
-- Pre-C0 `3dbe6af` — `chore(welle-3): git mv welle-2.md →
-  done/` (rename-only).
+- Pre-C0 `3dbe6af` — `chore(welle-3): git mv welle-2.md → done/` (rename-only).
 - C0 (dieses Dokument) — `docs(plan): welle-3 Slice-Doc`.
-- C1 — `docs(adr): ADR 0023 Proposed — Multi-Agent-Bus +
-  Agent-Protocol`.
-- C2 — `feat(welle-3): AgentBus-Foundation + Agent-Protocol +
-  TickLoop-Hook + Tests`.
+- C1 — `docs(adr): ADR 0023 Proposed — Multi-Agent-Bus + Agent-Protocol`.
+- C2 — `feat(welle-3): AgentBus-Foundation + Agent-Protocol + TickLoop-Hook + Tests`.
 - C3 — `docs(plan): Welle-3 Status/DoD-Sync` (ADR 0023 →
   Provisional, M3-Plan §3 Welle-3-Done-Tag, welle-3.md →
   Done).
@@ -66,8 +63,7 @@ Welle-3-Lieferumfang ist Foundation-Skelett:
   Iteration) und **vor** Schritt E (`grid_model.update(...)`),
   analog `architecture.md §6` Tick-Loop Schritt 7
   („AgentPort (optional) erzeugt Steuerentscheidungen").
-- Sub-Random-Stream-Konvention `RandomPort.sub_port(f"agent-
-  {agent_id}")` (ADR 0007 §5.1).
+- Sub-Random-Stream-Konvention `RandomPort.sub_port(f"agent-{agent_id}")` (ADR 0007 §5.1).
 
 Was Welle 3 **NICHT** liefert (Welle-4-Material):
 
@@ -213,8 +209,7 @@ Pattern-Drift-Entscheidung gegen ADR 0022):
      **keinen** AgentPort/AgentBusPort.
   3. AgentBus haelt produktiven State (Message-Buffer,
      Sequence-Counter, Snapshot-Surface). Driven-Ports sind
-     per ADR 0002 §A-1 zustandsfreie Protocols (`AC-PORTS-NO-
-     OUT` erzwingt das); ein zustandsbehafteter Port waere
+     per ADR 0002 §A-1 zustandsfreie Protocols (`AC-PORTS-NO-OUT` erzwingt das); ein zustandsbehafteter Port waere
      Pattern-Bruch.
   4. Test-Isolierung (`GG-AGENT-002`) wird ueber das `Agent`-
      Sub-Protocol erreicht, nicht ueber Port-Mocking. Agents
@@ -309,8 +304,8 @@ Neu: `docs/plan/adr/0023-agent-bus-protocol.md`. Inhalt
   - §2.3 `AgentMessage`-Domain-Modell unter
     `hexagon/core/domain/agent_message.py`.
   - §2.4 TickLoop-Hook-Position (Schritt 7).
-  - §2.5 `agent_bus: AgentMessageBus | None`-Kwarg ohne
-    Default (analog `fault_port`).
+  - §2.5 `agent_bus: AgentMessageBus | None`-Kwarg mit
+    Default `None` (analog `fault_port`).
   - §2.6 Observability-Vorgriff-Verbot fuer Welle 3.
 - **§3 Begruendung**:
   - AgentBus vs. Driven-Port: Pattern-Drift gegen ADR 0022,
@@ -442,11 +437,9 @@ nach Repo-Konvention):
    Aktivierungs-Schwelle nicht erreicht).
 8. **Rename-Historie**: `git log --follow done/welle-2.md`
    traceable ueber Pre-C0-Rename (`3dbe6af`).
-9. **Git-Pattern**: 5 neue Welle-3-Commits in der Reihenfolge
-   `chore(welle-3): git mv (Pre-C0)` → `docs(plan): welle-3
-   Slice-Doc (C0)` → `docs(adr): ADR 0023 Proposed (C1)` →
-   `feat(welle-3): ... (C2)` → `docs(plan): Welle-3
-   Status/DoD-Sync (C3)`. `git log --oneline -5` zeigt diese
+ 9. **Git-Pattern**: 5 neue Welle-3-Commits in der Reihenfolge
+   `chore(welle-3): git mv (Pre-C0)` → `docs(plan): welle-3 Slice-Doc (C0)` → `docs(adr): ADR 0023 Proposed (C1)` →
+   `feat(welle-3): ... (C2)` → `docs(plan): Welle-3 Status/DoD-Sync (C3)`. `git log --oneline -5` zeigt diese
    fuenf Hashes.
 
 ## 7. Risiken
