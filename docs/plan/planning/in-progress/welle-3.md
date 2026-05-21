@@ -161,7 +161,10 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
    - `message_type: str` (Domain-spezifisch; keine Whitelist
      in Welle 3).
    - `payload: Mapping[str, object]` (frozen via
-     `dict`-snapshot bei `__post_init__`).
+     `dataclass(frozen=True, slots=True)`; **kein**
+     `MappingProxyType`-Wrap im `__post_init__`, Welle-3-
+     Review-Folge H-1: Konsistenz mit ScenarioFault/Command/
+     Event-Pattern, Domain-weiter Wrap waere Welle-4-Refactor).
    - `sequence: int` (per-Tick-monoton aufsteigend, vom Bus
      vergeben).
 5. **TickLoop-Konstruktor** erhaelt neuen keyword-only-Kwarg
@@ -176,9 +179,14 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
    den fertigen Welt-Zustand reagieren koennen.
    **Konkret**: pro registriertem Agent ruft TickLoop
    `agent.tick(context, bus) -> Sequence[Command]`; emittierte
-   Commands gehen in den `Scheduler` und werden im **naechsten**
-   Tick wirksam (Welle-3-Foundation; in-Tick-Wirksamkeit ist
-   Welle-4-Decision).
+   Commands landen in `TickLoop._pending_agent_commands`
+   (Welle-3-Review-Folge-2 F-1, 2026-05-21). Welle-3-Foundation
+   **fuehrt sie nicht aus** — Drain ist Welle-4-Material (siehe
+   ADR 0023 §2.4 fuer Drain-Pfad-Optionen). Read-only-Sicht via
+   `TickLoop.pending_agent_commands -> tuple[Command, ...]`.
+   In-Tick-Wirksamkeit bleibt verboten (GG-AGENT-008-Vertrag);
+   Welle 4 entscheidet, in welcher Tick-Pre-Phase der Buffer
+   gedrained wird.
 7. **Trigger 011 (Sub-Seed-Wortbreite) bleibt in `open/`** —
    Welle-3-Skala liegt bei < 100 Sub-Streams, weit unter
    10⁶-Aktivierungs-Schwelle. ADR-Folge zu ADR 0007 §5.2 ist

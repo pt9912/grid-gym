@@ -17,10 +17,12 @@ Pinnt:
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import Self
 
 from grid_gym.hexagon.core.agents import AgentMessageBus
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.domain.command import Command
+from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
@@ -36,9 +38,12 @@ class _OrderRecordingAgent:
     Order-Recorder. Produktive Agents kommen in Welle 4.
     """
 
+    SNAPSHOT_VERSION: int = 1
+
     def __init__(self, agent_id: str, recorder: list[str]) -> None:
         self._agent_id = agent_id
         self._recorder = recorder
+        self._emitted_commands: tuple[Command, ...] = ()
 
     @property
     def agent_id(self) -> str:
@@ -49,16 +54,34 @@ class _OrderRecordingAgent:
         # No-Op reicht fuer die Protocol-Surface.
         pass
 
+    def queue_emission(self, commands: tuple[Command, ...]) -> None:
+        """Test-Helper: legt Commands ab, die der naechste
+        `tick(...)` als Return-Wert liefern wird (Welle-3-Review-
+        Folge-2 F-1-Buffer-Test)."""
+        self._emitted_commands = commands
+
     def tick(
         self,
         context: DeviceTickContext,
         bus: AgentMessageBus,
     ) -> Sequence[Command]:
         self._recorder.append(f"agent.tick:{self._agent_id}")
-        return ()
+        return self._emitted_commands
 
     def snapshot(self) -> Mapping[str, object]:
-        return {"version": 1, "agent_id": self._agent_id}
+        return {"version": self.SNAPSHOT_VERSION, "agent_id": self._agent_id}
+
+    @classmethod
+    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+        # Test-Stub: rekonstruktion ohne Recorder (Recorder ist
+        # ephemer pro Test). Welle 4 wird das nicht brauchen.
+        agent_id = state.get("agent_id")
+        if not isinstance(agent_id, str):
+            raise TypeError(
+                f"_OrderRecordingAgent.from_snapshot: agent_id "
+                f"must be str, got {type(agent_id).__name__}"
+            )
+        return cls(agent_id=agent_id, recorder=[])
 
 
 class _OrderRecordingNullDevice(NullDevice):
@@ -190,3 +213,82 @@ def test_tick_result_unchanged_when_only_agent_bus_present() -> None:
     loop = _make_loop(agent_bus=bus)
     result = loop.tick()
     assert result.emitted_telemetry == ()
+
+
+def _command(command_id: str, target: str = "device-1") -> Command:
+    """Helfer fuer Command-Konstruktion in F-1-Tests."""
+    return Command(
+        command_id=command_id,
+        simulation_time=1000,
+        target_device_id=target,
+        type="set_power_kw",
+        payload={"power_kw": 5},
+        validation_status="validated",
+        result=CommandResult.IGNORED,
+    )
+
+
+def test_pending_agent_commands_empty_by_default() -> None:
+    """Welle-3-Review-Folge-2 F-1 (2026-05-21): ohne registrierte
+    Agents bleibt der Pending-Buffer nach `tick()` leer."""
+    loop = _make_loop(agent_bus=AgentMessageBus())
+    assert loop.pending_agent_commands == ()
+    loop.tick()
+    assert loop.pending_agent_commands == ()
+
+
+def test_pending_agent_commands_collects_agent_returns() -> None:
+    """Welle-3-Review-Folge-2 F-1: emittierte Commands der Agents
+    landen im `_pending_agent_commands`-Buffer (nicht verworfen).
+    Welle 4 wird den Drain-Pfad verdrahten."""
+    recorder: list[str] = []
+    agent_a = _OrderRecordingAgent("agent-a", recorder)
+    agent_b = _OrderRecordingAgent("agent-b", recorder)
+    cmd_1 = _command("cmd-1")
+    cmd_2 = _command("cmd-2")
+    cmd_3 = _command("cmd-3")
+    agent_a.queue_emission((cmd_1,))
+    agent_b.queue_emission((cmd_2, cmd_3))
+    loop = _make_loop(agent_bus=AgentMessageBus())
+    loop._set_agents_for_testing((agent_a, agent_b))
+    loop.tick()
+    # Reihenfolge: Agents werden in `_agents`-Reihenfolge iteriert.
+    assert loop.pending_agent_commands == (cmd_1, cmd_2, cmd_3)
+
+
+def test_pending_agent_commands_accumulates_across_ticks() -> None:
+    """Welle-3-Review-Folge-2 F-1: Buffer waechst tick-by-tick
+    (Welle-3-Foundation: keine Eviction; Welle-4-Drain-Pfad raeumt
+    ihn). Spiegelt AgentMessageBus-Buffer-Semantik."""
+    recorder: list[str] = []
+    agent = _OrderRecordingAgent("agent-x", recorder)
+    cmd_a = _command("cmd-a")
+    cmd_b = _command("cmd-b")
+    loop = _make_loop(agent_bus=AgentMessageBus())
+    loop._set_agents_for_testing((agent,))
+    agent.queue_emission((cmd_a,))
+    loop.tick()
+    agent.queue_emission((cmd_b,))
+    loop.tick()
+    assert loop.pending_agent_commands == (cmd_a, cmd_b)
+
+
+def test_pending_agent_commands_property_is_immutable_view() -> None:
+    """Welle-3-Review-Folge-2 F-1: Property liefert `tuple`-
+    Snapshot, damit Aufrufer den internen Buffer nicht mutieren."""
+    loop = _make_loop(agent_bus=AgentMessageBus())
+    pending = loop.pending_agent_commands
+    assert isinstance(pending, tuple)
+
+
+def test_pending_agent_commands_empty_when_bus_is_none() -> None:
+    """Welle-3-Review-Folge-2 F-1 + L-3 Konsistenz: bei
+    `agent_bus=None` skippt Schritt D2 komplett; Buffer bleibt
+    unangetastet selbst bei gefuelltem `_agents`-Tuple."""
+    recorder: list[str] = []
+    agent = _OrderRecordingAgent("agent-x", recorder)
+    agent.queue_emission((_command("cmd-x"),))
+    loop = _make_loop(agent_bus=None)
+    loop._set_agents_for_testing((agent,))
+    loop.tick()
+    assert loop.pending_agent_commands == ()

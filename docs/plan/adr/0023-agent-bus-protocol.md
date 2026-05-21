@@ -357,20 +357,41 @@ unknown_count += self._run_device_iteration(grid_devices, ...)
 # Schritt D2 — Agent-Tick (ADR 0023 §2.4, Architektur §6 Schritt 7).
 if self._agent_bus is not None:
     for agent in self._agents:
-        commands = agent.tick(context, self._agent_bus)
-        for command in commands:
-            self._scheduler.push(command)  # exakte Push-API: TBD in C2
+        self._pending_agent_commands.extend(
+            agent.tick(context, self._agent_bus)
+        )
 
 # Schritt E — Bilanz-Aggregation.
 if self._grid_model is not None:
     self._grid_model.update(...)
 ```
 
+**Welle-3-Pending-Buffer-Vertrag** (Welle-3-Review-Folge-2 F-1,
+2026-05-21): die vom Agent-Tick emittierten Commands landen
+in `self._pending_agent_commands: list[Command]`. Welle-3-
+Foundation **fuehrt sie nicht aus** — Drain ist Welle-4-
+Material. Read-Only-Sicht via `TickLoop.pending_agent_commands
+-> tuple[Command, ...]` (Property). Welle-4-Optionen fuer den
+Drain-Pfad: (a) `Scheduler.push(...)` als Command-Event-Wrap;
+(b) `apply_command(...)` direkt an Devices in der naechsten
+Tick-Pre-Phase; (c) eigener `apply_pending_agent_commands(...)`-
+Schritt im TickLoop. ADR-Folge zu ADR 0023 §2.4 entscheidet
+das. Welle 4 muss zusaetzlich eine Eviction-Strategie
+spezifizieren (analog M-4 fuer den `AgentMessageBus._buffer`).
+
+**Snapshot-Frage zum Pending-Buffer**: Welle-3-Foundation
+hebt den Buffer **nicht** in `TickLoop.snapshot()` ein —
+er ist ephemer und geht bei Snapshot/Restore verloren. Welle 4
+entscheidet die Persistenz (additiv im Sub-Snapshot-Mapping
+per ADR 0015 §2.3) — relevant nur, wenn Welle 4 entscheidet,
+dass Resume-Faehigkeit fuer In-Flight-Agent-Commands
+notwendig ist.
+
 **Order-Pflicht**: Agents laufen **nach** allen Telemetry-
 Emissionen und **vor** `grid_model.update(...)`. Agents
 sehen damit den fertigen Welt-Zustand der aktuellen Tick
 (alle TelemetryPoints in `emitted`, alle Devices haben
-getickt), aber ihre Commands gehen in den Scheduler und
+getickt), aber ihre Commands gehen in den Pending-Buffer und
 werden im **naechsten** Tick wirksam (GG-AGENT-008
 Commit-Reihenfolge-Invariante).
 

@@ -202,6 +202,21 @@ class TickLoop:
         # mutieren, um den Hook zu exerzieren.
         self._agent_bus: AgentMessageBus | None = agent_bus
         self._agents: tuple[Agent, ...] = ()
+        # M3-Welle-3-Review-Folge-2 F-1 (2026-05-21): Pending-
+        # Buffer fuer Commands, die der Agent-Tick produziert. Der
+        # Welle-3-D2-Hook extendet diesen Buffer; Welle 4
+        # entscheidet, wie er gedrained wird (z. B. Scheduler-Push
+        # in der naechsten Tick-Pre-Phase, oder direkte
+        # `apply_command(...)`-Anwendung an Devices). Welle-3-
+        # Foundation laesst den Buffer wachsen und nicht-
+        # destruktiv lesen (analog AgentMessageBus-Drain-
+        # Semantik) — Welle-4-Eviction-Spec gilt parallel.
+        #
+        # **Snapshot-Vertrag**: Pending-Buffer ist ephemer in
+        # Welle 3 und wird **nicht** in `TickLoop.snapshot()`
+        # eingehaengt. Welle 4 entscheidet die Persistenz-Frage
+        # (additiv im Sub-Snapshot-Mapping per ADR 0015 §2.3).
+        self._pending_agent_commands: list[Command] = []
         # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
         # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
         self._unknown_source_count: int = 0
@@ -283,6 +298,18 @@ class TickLoop:
         Welle-7+/M3-Geraete-Drift (z. B. `WindDevice` mit
         `source='wind'`)."""
         return self._unknown_source_count
+
+    @property
+    def pending_agent_commands(self) -> tuple[Command, ...]:
+        """M3-Welle-3-Review-Folge-2 F-1 (2026-05-21): Read-only-
+        Sicht auf die Commands, die der Welle-3-D2-Hook von Agents
+        gesammelt hat. Welle 4 wird einen Drain-Mechanismus
+        einfuehren (Scheduler-Push, `apply_command`-Pfad, o. ae.).
+
+        Rueckgabe ist `tuple[...]`-Snapshot der internen Liste,
+        damit Aufrufer den Buffer nicht versehentlich mutieren.
+        """
+        return tuple(self._pending_agent_commands)
 
     def tick(self) -> TickResult:
         """Schiebt die Simulationszeit um `tick_ms` vor und faehrt
@@ -378,15 +405,18 @@ class TickLoop:
             # Sie sehen den fertigen Welt-Zustand (alle Devices haben
             # getickt, alle Telemetry ist emittiert) und produzieren
             # Commands fuer die naechste Tick. `None`-Default skippt
-            # sauber; Welle-3-Stand: `self._agents` ist `()`. Welle 4
-            # entscheidet, wo emittierte Commands gepuffert/angewandt
-            # werden (Pending-Buffer im TickLoop vs. direkter Pfad in
-            # der naechsten Device-Iteration). Welle-3-Foundation
-            # verdrahtet die Anwendung nicht — Return Value wird
-            # bewusst verworfen (Welle-4-TODO).
+            # sauber; Welle-3-Stand: `self._agents` ist `()`.
+            #
+            # **Welle-3-Review-Folge-2 F-1 (2026-05-21)**: emittierte
+            # Commands landen im `_pending_agent_commands`-Buffer
+            # (nicht verworfen). Welle 4 verdrahtet den Drain-Pfad
+            # (Scheduler-Push, `apply_command`-direct-Apply o. ae.) —
+            # Welle-3-Foundation persistiert nur die Commands, fuehrt
+            # sie aber NICHT aus. Konsistent mit GG-AGENT-008-Vertrag
+            # (Commit-Reihenfolge eines Ticks bleibt unveraendert).
             if self._agent_bus is not None:
                 for agent in self._agents:
-                    agent.tick(context, self._agent_bus)
+                    self._pending_agent_commands.extend(agent.tick(context, self._agent_bus))
             # Schritt E — Bilanz-Aggregation.
             if self._grid_model is not None:
                 self._grid_model.update(

@@ -18,7 +18,7 @@ Vertrag. Konkrete Implementer kommen in Welle 4.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, Self, runtime_checkable
 
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
@@ -119,5 +119,31 @@ class Agent(Protocol):
         Snapshot-Format: `Mapping[str, object]` mit Pflicht-Key
         `"version": int` (ADR 0015 §2.3 Sub-Snapshot-Konvention).
         Konkrete Schema-Felder pro Agent-Typ sind Welle-4-Material.
+        """
+        ...  # pragma: no cover — Protocol-Stub
+
+    @classmethod
+    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+        """Rekonstruiert den Agent aus einem `snapshot()`-Mapping
+        (Welle-3-Review-Folge-2 F-2, 2026-05-21).
+
+        Vertrag analog ADR 0013 §2.4 (DeviceModel-Pattern):
+        `from_snapshot(snapshot()) == agent` ist byte-stabil.
+        Mismatch zwischen `state["version"]` und der erwarteten
+        Version wirft typisiert `VersionError(subsystem=
+        "<agent-type>", expected=N, found=...)` aus dem
+        Welle-0a-Generic-Codec
+        (`hexagon/core/serialization/snapshot_codec.py`).
+        Strukturelle Mismatches werfen `MissingKeysError`/
+        `WrongTypeError` analog.
+
+        `run_id` wird **nicht** aus dem Snapshot rekonstruiert —
+        Aufrufer muss nach `from_snapshot(...)` explizit
+        `set_run_id(run_id)` aufrufen (analog DeviceModel-
+        Resume-Pattern, ADR 0013 §2.6 Lifecycle-Pre-init-Vertrag).
+
+        Konkrete Implementationen kommen mit Welle 4
+        (`RuleBasedAgent` etc.). Welle-3-Test-Pattern: `NullAgent`-
+        Stub liefert die Baseline-Implementation.
         """
         ...  # pragma: no cover — Protocol-Stub
