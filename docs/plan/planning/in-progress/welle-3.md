@@ -30,15 +30,27 @@ Tracking, nicht als Ersatz.
   Wording-/Formatierungs-Schaerfungen am Slice-Doc.
 - C2 `4fa122d` — `feat(welle-3): AgentBus-Foundation + Agent-
   Protocol + TickLoop-Hook + Tests`.
-- Review-Folge `d6f66fc` — `fix(welle-3): Review-Folge — H-1
-  + 4M + 4L (9 Findings, Pre-C3)`.
-- C3 (dieses Dokument) — `docs(plan): Welle-3 Status/DoD-Sync`.
+- Review-Folge 1 `d6f66fc` — `fix(welle-3): Review-Folge —
+  H-1 + 4M + 4L (9 Findings, Pre-C3)`.
+- C3 `653cd83` — `docs(plan): Welle-3 Status/DoD-Sync —
+  ADR 0023 → Provisional, welle-3.md → Done`.
+- Review-Folge 2 `853ee3b` — `fix(welle-3): Review-Folge 2
+  — F-1 + F-2 + F-3 + F-4 (5 Findings nach C3; Pending-
+  Buffer + Agent.from_snapshot + Doc-Konsistenz)`.
+- Review-Folge 3 `1ea5c85` — `fix(welle-3): Review-Folge 3
+  — L-1 + L-2 (Loader-agent_bus-Test + Doc-Test-Zahlen)`.
+- Review-Folge 4 (dieser Commit) — `fix(welle-3): Review-
+  Folge 4 — M-1 + L-1 (Test-Zahlen-Sync + Commit-Sequenz-
+  Sync)`.
 
-**DoD-Verifikation (Welle-Schluss):**
+**DoD-Verifikation (Welle-Schluss, Stand `1ea5c85` + dieser
+Commit):**
 
-- `make test-unit`: **879 Tests gruen** (Welle-2-Stand 840 →
-  Welle-3-Stand 879 = +39 Unit-Tests; davon 35 mit C2 +
-  4 mit Review-Folge L-1/L-2/L-3-Defense-Tests).
+- `make test-unit`: **889 Tests gruen** (Welle-2-Stand 840 →
+  Welle-3-Endstand 889 = +49 Unit-Tests; davon 35 mit C2 +
+  4 mit RF-1 (L-1/L-2/L-3-Defense-Tests) + 8 mit RF-2
+  (F-1 Pending-Buffer 5 + F-2 from_snapshot 3) + 2 mit RF-3
+  (L-1 Loader-Forwarding)).
 - `make test-integration`: **14 Tests unveraendert gruen**
   (mvp-demo 2 + fault-demo 5 + postgres 5 + yaml-allowlist 2;
   Welle-3-Foundation hat keine neuen Integration-Tests —
