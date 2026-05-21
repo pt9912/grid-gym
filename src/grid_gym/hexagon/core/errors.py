@@ -841,10 +841,55 @@ class AgentBusError(GridGymError):
     propagieren ungewrappt aus `TickLoop.tick()` heraus
     (analog Welle-1-FaultPort-Pattern). Welle-4-Implementer
     werfen typisierte Subklassen, damit Aufrufer an der
-    Hexagon-Boundary differenzieren koennen. Welle 3 liefert
-    nur die Basis + Snapshot-Format-Klassen; konkrete Welle-4-
-    Subklassen kommen mit dem `RuleBasedAgent`-Slice.
+    Hexagon-Boundary differenzieren koennen.
+
+    **Welle-3-Surface** (Review-Folge L-4, 2026-05-21):
+    `AgentBusInvalidSequenceError` (Sentinel-Vertrag-Defense)
+    + `AgentBusInvalidReceiverError` (`drain_for("*")`-Guard).
+    Welle 4 ergaenzt um `AgentUnknownReceiverError` o. ae., wenn
+    der `RuleBasedAgent`-Slice Validation an der Decision-Surface
+    braucht. Die Basis-Klasse `AgentBusError` selbst wird in
+    Welle 3 nur als Vererbungs-Wurzel referenziert (Snapshot-
+    Format-Subklassen + Defensive-Validations).
     """
+
+
+class AgentBusInvalidSequenceError(AgentBusError):
+    """`AgentMessageBus.publish(...)` mit `message.sequence < -1`.
+
+    ADR 0023 §2.2 fixiert `-1` als Sentinel fuer "Bus vergibt
+    naechste freie Nummer"; `sequence >= 0` ist explizite
+    Vergabe (Test-Code-Pfad). Werte `< -1` wuerden in der
+    Sortier-Logik (`drain_for(...)` sortiert nach
+    `(simulation_time, sender, sequence)`) vor den echten
+    Sequenzen 0, 1, 2, ... landen und den Determinismus-
+    Vertrag verzerren. Welle-3-Review-Folge L-2 (2026-05-21).
+    """
+
+    def __init__(self, sequence: int) -> None:
+        super().__init__(
+            f"AgentMessage.sequence must be -1 (sentinel) or >= 0 (explicit), got {sequence}"
+        )
+
+
+class AgentBusInvalidReceiverError(AgentBusError):
+    """`AgentMessageBus.drain_for(receiver=...)` mit
+    semantisch unzulaessigem Receiver.
+
+    Welle-3-Vertrag (ADR 0023 §2.2 + Review-Folge L-3,
+    2026-05-21): `receiver="*"` ist Broadcast-Adressierung
+    **am Publish-Pfad** (`AgentMessage.receiver = "*"`),
+    **nicht** am Drain-Pfad. Ein `drain_for("*")`-Aufruf wuerde
+    nur Broadcasts liefern (nicht alles, wie ein Aufrufer
+    intuitiv erwarten koennte) — wir verbieten den Aufruf
+    typisiert.
+    """
+
+    def __init__(self, receiver: str) -> None:
+        super().__init__(
+            f"drain_for(receiver={receiver!r}) is not a valid query — "
+            "'*' is publish-side broadcast, not drain-side wildcard"
+        )
 
 
 class AgentBusSnapshotFormatError(AgentBusError, SnapshotFormatError):

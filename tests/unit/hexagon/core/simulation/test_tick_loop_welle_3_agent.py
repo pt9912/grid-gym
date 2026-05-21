@@ -117,15 +117,16 @@ def test_tick_loop_calls_each_agent_when_registered() -> None:
     `agent.tick(context, bus)` einmal pro Tick.
 
     Welle-3-Stand: `_agents` ist Konstruktor-leer; Test-Code
-    setzt es per direktem Attribut-Zugriff. Welle 4 wird die
-    Registry-API formalisieren (Kwarg vs. Builder-Pfad).
+    befuellt es via `_set_agents_for_testing(...)` (L-1-Helper).
+    Welle 4 wird die produktive Registry-API formalisieren
+    (Kwarg vs. Builder-Pfad).
     """
     recorder: list[str] = []
     agent_a = _OrderRecordingAgent("agent-a", recorder)
     agent_b = _OrderRecordingAgent("agent-b", recorder)
     bus = AgentMessageBus()
     loop = _make_loop(agent_bus=bus)
-    loop._agents = (agent_a, agent_b)  # Welle-3-Test-Hook
+    loop._set_agents_for_testing((agent_a, agent_b))
     loop.tick()
     assert recorder == ["agent.tick:agent-a", "agent.tick:agent-b"]
 
@@ -142,7 +143,7 @@ def test_agent_tick_runs_after_device_tick() -> None:
     agent = _OrderRecordingAgent("agent-x", recorder)
     bus = AgentMessageBus()
     loop = _make_loop(devices=(device,), agent_bus=bus)
-    loop._agents = (agent,)
+    loop._set_agents_for_testing((agent,))
     loop.tick()
     assert "device.tick:null-1" in recorder
     assert "agent.tick:agent-x" in recorder
@@ -157,10 +158,28 @@ def test_agent_hook_skipped_when_bus_is_none_even_with_agents() -> None:
     recorder: list[str] = []
     agent = _OrderRecordingAgent("agent-x", recorder)
     loop = _make_loop(agent_bus=None)
-    loop._agents = (agent,)  # technisch moeglich, semantisch falsch
+    loop._set_agents_for_testing((agent,))  # technisch moeglich, semantisch falsch
     loop.tick()
     # Agent wurde nicht aufgerufen — Bus-Check kommt vor Loop.
     assert recorder == []
+
+
+def test_set_agents_for_testing_rejects_duplicate_agent_id() -> None:
+    """Welle-3-Review-Folge L-1 (2026-05-21): der Test-Helper
+    prueft `agent_id`-Eindeutigkeit defensiv, damit Tests nicht
+    versehentlich Duplicate-IDs durchreichen, die Welle 4 spaeter
+    abfangen wuerde."""
+    recorder: list[str] = []
+    agent_a = _OrderRecordingAgent("agent-x", recorder)
+    agent_b = _OrderRecordingAgent("agent-x", recorder)
+    loop = _make_loop(agent_bus=AgentMessageBus())
+    try:
+        loop._set_agents_for_testing((agent_a, agent_b))
+    except ValueError as exc:
+        assert "agent-x" in str(exc)
+    else:  # pragma: no cover — Test schlaegt fehl, wenn kein Raise
+        msg = "_set_agents_for_testing accepted duplicate agent_id"
+        raise AssertionError(msg)
 
 
 def test_tick_result_unchanged_when_only_agent_bus_present() -> None:

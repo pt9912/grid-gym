@@ -13,7 +13,7 @@ Konkretisierung).
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 3`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-Tracking,
-nicht Ersatz.
+nicht als Ersatz.
 
 **Commit-Sequenz (geplant):**
 
@@ -79,6 +79,13 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
 - LogPort/MetricsPort-Injektion in AgentBus (Welle-5/6-Material,
   siehe Risiko R-2 unten).
 - Konkrete Agent-Sub-Snapshots (Welle-4-Material).
+- **Sub-Random-Stream-Konvention `agent-{agent_id}`** (Welle-3-
+  Review-Folge M-3, 2026-05-21): die Konvention selbst war
+  urspruenglich Welle-3-In-Scope (§2 Punkt 7 ehemals), wandert
+  jetzt nach Welle 4, weil Welle-3-Foundation keinen `RandomPort`
+  am `AgentMessageBus` injiziert und keine stochastischen Agents
+  existieren. Trigger 011 (Sub-Seed-Wortbreite) bleibt unabhaengig
+  davon in `open/`.
 
 ## 2. Scope
 
@@ -111,11 +118,12 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
      Vertrag: `(simulation_time, sender, sequence)`), damit bei
      gleichzeitigen Events ein stabiler Reihenfolgen-Output entsteht.
    - `snapshot() -> Mapping[str, object]` + `from_snapshot(...)`.
-   - Konstruktor-Injection fuer `RandomPort.sub_port("agents")`
-     als Bus-Sub-Stream-Quelle (Welle-3-Foundation nutzt das
-     nicht; Welle 4/5 kann pro Agent eigene Substreams über
-     `RandomPort.sub_port(f"agent-{agent_id}")` anbinden —
-     analog Welle-2-Battery-Seed-Independence).
+   - **Welle-3-Review-Folge M-3 (2026-05-21)**: kein
+     `RandomPort`-Konstruktor-Kwarg in Welle 3. Welle-3-Bus
+     hat keinen Zufallsbedarf; Welle 4 wird einen optionalen
+     `RandomPort.sub_port(f"agent-{agent_id}")`-Stream pro
+     Agent verdrahten, wenn stochastische Decision-Logik kommt
+     (analog Welle-2-Battery-Seed-Independence).
 4. **`AgentMessage`-Domain-Modell** unter
    `src/grid_gym/hexagon/core/domain/agent_message.py` als
    frozen dataclass mit den `GG-AGENT-004`-Pflicht-Feldern:
@@ -143,13 +151,18 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
    Commands gehen in den `Scheduler` und werden im **naechsten**
    Tick wirksam (Welle-3-Foundation; in-Tick-Wirksamkeit ist
    Welle-4-Decision).
-7. **Sub-Random-Stream-Konvention**:
-   `RandomPort.sub_port(f"agent-{agent_id}")` als Per-Agent-
-   Stream-Vehikel (analog Fault-Stream-Konvention aus ADR 0007
-   §5.1 / ADR 0013 §4). Trigger 011 (Sub-Seed-Wortbreite) wird
-   in Welle 3 **explizit NICHT aktiviert** — Welle-3-Skala
-   liegt bei < 100 Sub-Streams, weit unter 10⁶-Aktivierungs-
-   schwelle.
+7. **Trigger 011 (Sub-Seed-Wortbreite) bleibt in `open/`** —
+   Welle-3-Skala liegt bei < 100 Sub-Streams, weit unter
+   10⁶-Aktivierungs-Schwelle. ADR-Folge zu ADR 0007 §5.2 ist
+   nicht Welle-3-Material. **Welle-3-Review-Folge M-3
+   (2026-05-21)**: die Sub-Random-Stream-Konvention selbst
+   (`RandomPort.sub_port(f"agent-{agent_id}")` als Per-Agent-
+   Stream-Vehikel) wandert nach Welle 4 — Welle-3-Foundation
+   liefert weder einen `RandomPort`-Konstruktor-Kwarg am
+   `AgentMessageBus`, noch hat `Agent`-Protocol eine
+   RandomPort-Referenz. Sobald Welle 4 stochastische Agents
+   einfuehrt, schaerft sie die Konvention im Welle-4-Slice-
+   Doc + ADR 0023-Folge.
 8. **`AgentBusError`-Family** unter
    `src/grid_gym/hexagon/core/errors.py` als Basis-Subklasse
    von `GridGymError`. Welle-3-Surface enthaelt nur die Basis;
@@ -162,9 +175,14 @@ Was Welle 3 **NICHT** liefert (Welle-4-Material):
    durch. Default bleibt `None`; bestehende Tests bleiben
    gruen.
 10. **`CRITICAL_COV_TARGETS`-Default** im Dockerfile um
-    `src/grid_gym/hexagon/core/agents` und
-    `src/grid_gym/hexagon/core/domain/agent_message.py`
-    erweitert.
+    `src/grid_gym/hexagon/core/agents` erweitert.
+    **Welle-3-Review-Folge M-1 (2026-05-21)**: kein separater
+    Eintrag fuer `core/domain/agent_message.py` — der
+    Dockerfile-Stage `coverage-gate-critical` prueft pro
+    Eintrag `[ ! -d "${target}" ]` (Directory-Pflicht); File-
+    Pfade brechen den Build. Coverage erfasst
+    `agent_message.py` trotzdem vollstaendig, weil
+    `core/agents/bus.py` das Modul importiert.
 
 **Anti-Scope:**
 
@@ -407,7 +425,7 @@ Plus `adr/README.md`-Zeile fuer ADR 0023 `Proposed`.
 | `tests/unit/hexagon/core/agents/test_bus.py`                        | C2      | NEU |
 | `tests/unit/hexagon/core/domain/test_agent_message.py`              | C2      | NEU |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` | C2     | NEU |
-| `Dockerfile`                                                        | C2      | EDIT (`CRITICAL_COV_TARGETS` + `core/agents` + `core/domain/agent_message.py`) |
+| `Dockerfile`                                                        | C2      | EDIT (`CRITICAL_COV_TARGETS` + `core/agents`; M-1: kein File-Eintrag fuer `agent_message.py`) |
 | `docs/plan/adr/0023-agent-bus-protocol.md`                          | C3      | EDIT (Status → Provisional) |
 | `docs/plan/adr/README.md`                                           | C3      | EDIT (Status → Provisional) |
 | `docs/plan/planning/in-progress/M3-faults-agents-observability.md`  | C3      | EDIT (§0 + §3 Welle 3 Closure) |
@@ -426,9 +444,10 @@ nach Repo-Konvention):
    Foundation hat keine neuen Integration-Tests; Welle-4-
    Konkretisierung wird das nachholen).
 3. **`make gates`** — gruen ohne Override;
-   `CRITICAL_COV_TARGETS`-Default um `core/agents` und
-   `core/domain/agent_message.py` erweitert; Coverage ≥ 90 %
-   Line + Branch auf neuen Modulen.
+   `CRITICAL_COV_TARGETS`-Default um `core/agents` erweitert
+   (`agent_message.py` via Import-Pfad mitabgedeckt, siehe
+   §2 Punkt 10); Coverage ≥ 90 % Line + Branch auf neuen
+   Modulen.
 4. **`make fullbuild`** — gruen ohne Override; AC-PORTS-NO-OUT
    bleibt 16 Contracts (AgentBus liegt in `core/`, nicht in
    `ports/`).
@@ -449,10 +468,16 @@ nach Repo-Konvention):
 - **R-1 — AgentBus-vs-FaultPort-Pattern-Drift**: ADR 0023
   bricht das Pattern von ADR 0022 (Driven-Port). Risiko: Code-
   Reviewer fragt „warum nicht Port?". *Mitigation*: ADR 0023
-  §3 hat eine 4-Punkt-Begruendung (Architektur §14 + State +
-  Test-Isolierung + ADR 0002 §A-1 zustandsfreie Ports).
-  Welle-3-Implementer pruefen vor C1, dass die Begruendung
-  vollstaendig ist.
+  §3 hat eine 4-Punkt-Begruendung (Architektur §14 + Architektur
+  §4.2 ohne AgentBus-Port + State-/Boundary-Argument +
+  Test-Isolierung via Sub-Protocol). **Welle-3-Review-Folge
+  M-2 (2026-05-21)**: das State-Argument wurde von „AC-PORTS-
+  NO-OUT verbietet zustandsbehaftete Ports" (Ueberinterpretation
+  von AC-PORTS-NO-OUT, das nur Import-Direction regelt) auf
+  „Driven-Ports sind Adapter-Boundary; AgentBus hat keine
+  externe Boundary" praezisiert. `MersenneTwisterRandomPort`
+  bleibt der Gegenbeleg: Port + stateful + Adapter-Boundary
+  zu externer PRNG-Bibliothek.
 - **R-2 — Observability-Vorgriff durch Welle-4-RuleBasedAgent**:
   Welle-3-Foundation verbietet LogPort/MetricsPort-Injektion;
   wenn Welle 4 doch ein Decision-Audit-Trail braucht, muss
@@ -485,6 +510,15 @@ nach Repo-Konvention):
   Verarbeitung darf die Commit-Reihenfolge eines Ticks nicht
   veraendern" — Async ist erlaubt, aber nicht zwingend;
   Welle-3-Foundation deckt den synchronen Pflicht-Pfad ab.
+- **R-6 — Buffer-Wachstum ohne Eviction** (Welle-3-Review-
+  Folge M-4, 2026-05-21): `AgentMessageBus._buffer` waechst
+  unbegrenzt; `drain_for(...)` ist nicht-destruktiv. Bei
+  5 Agents × 10 000 Ticks × 1 Message/Tick = 50 000 Messages
+  im Snapshot. *Mitigation*: Welle-3-Default-`agent_bus=None`
+  + `self._agents = ()` haelt den Buffer leer; das Problem
+  schlaegt erst mit Welle-4-Konkretisierung zu. Welle-4-
+  Pflicht-Spec (ADR 0023 §2.2): `consume_for(receiver)` mit
+  Per-Receiver-Watermark oder `evict_before(simulation_time)`.
 
 ## 8. Wandert nach
 

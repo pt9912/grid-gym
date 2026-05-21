@@ -11,8 +11,13 @@ Kommunikation (Architektur §14, `GG-AGENT-004`/`008`).
 2. Architektur §4.2 Driven-Ports-Tabelle listet **keinen**
    AgentBus-Port.
 3. AgentBus haelt produktiven State (Buffer, Sequence-Counter,
-   Snapshot-Surface). Driven-Ports sind per ADR 0002 §A-1
-   zustandsfreie Protocols (`AC-PORTS-NO-OUT`).
+   Snapshot-Surface) **ohne** externe Adapter-Boundary.
+   Driven-Ports sind per Konvention Adapter-Boundary
+   (`MersenneTwisterRandomPort` ist Port + stateful + externe
+   PRNG-Library); AgentBus kapselt keine externe Library,
+   kein Protokoll, keinen Service — er ist reines Domain-
+   Orchestrierungs-Modell (Welle-3-Review-Folge M-2,
+   2026-05-21).
 4. Test-Isolierung (`GG-AGENT-002`) wird ueber das `Agent`-
    Sub-Protocol erreicht (direkte Instanziierung im Test);
    Port-Mocking ist nicht noetig.
@@ -31,6 +36,8 @@ from typing import Final, cast, override
 
 from grid_gym.hexagon.core.domain.agent_message import AgentMessage
 from grid_gym.hexagon.core.errors import (
+    AgentBusInvalidReceiverError,
+    AgentBusInvalidSequenceError,
     AgentBusSnapshotMissingKeysError,
     AgentBusSnapshotNotAMappingError,
     AgentBusSnapshotVersionError,
@@ -92,7 +99,15 @@ class AgentMessageBus:
 
         Welle-4-Material: Idempotenz-Vertrag fuer Duplicate-
         Sender + Whitelist fuer `receiver`-Patterns.
+
+        Welle-3-Review-Folge L-2 (2026-05-21): `sequence < -1`
+        wirft `AgentBusInvalidSequenceError` (sonst wuerde der
+        Wert in der Sortier-Logik vor den echten Sequenzen
+        0, 1, 2, ... landen und den Determinismus-Vertrag
+        verzerren).
         """
+        if message.sequence < -1:
+            raise AgentBusInvalidSequenceError(message.sequence)
         if message.sequence == -1:
             normalized = replace(message, sequence=self._next_sequence)
             self._next_sequence += 1
@@ -113,10 +128,17 @@ class AgentMessageBus:
         wenn ein Agent-Typ explizit „nur einmal lesen"-
         Semantik braucht.
 
-        `"*"` ist Broadcast-Adressierung (ADR 0023 §2.3):
-        Nachrichten an `"*"` werden an jeden `drain_for(...)`-
-        Aufrufer ausgeliefert.
+        `"*"` ist Broadcast-Adressierung am **Publish-Pfad**
+        (ADR 0023 §2.3): Nachrichten mit
+        `message.receiver = "*"` werden an jeden
+        `drain_for(...)`-Aufrufer ausgeliefert. Welle-3-Review-
+        Folge L-3 (2026-05-21): `drain_for("*")` selbst ist
+        verboten — der Aufruf wuerde nur Broadcasts liefern
+        (nicht alles), was semantisch fragwuerdig ist. Wir
+        werfen `AgentBusInvalidReceiverError` typisiert ab.
         """
+        if receiver == "*":
+            raise AgentBusInvalidReceiverError(receiver)
         matches = [
             message
             for message in self._buffer

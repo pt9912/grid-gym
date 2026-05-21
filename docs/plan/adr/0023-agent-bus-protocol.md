@@ -262,6 +262,23 @@ class AgentMessageBus:
         ...
 ```
 
+**Welle-3-Buffer-Eviction-Vertrag** (Welle-3-Review-Folge M-4,
+2026-05-21): Welle 3 hat **keine** Eviction-Strategie —
+`drain_for(receiver)` ist nicht-destruktiv, der Buffer waechst
+ueber die gesamte Lauf-Dauer. Bei realistischen
+Multi-Agent-Szenarien (z. B. 5 Agents × 10 000 Ticks ×
+1 Message/Tick = 50 000 Messages im Snapshot) wird das
+problematisch. Welle-4-Pflicht-Spec: entweder
+`consume_for(receiver)` mit Per-Receiver-Watermark
+(destruktive Drain-Variante; Bus loescht Messages, sobald
+alle adressierten Empfaenger sie konsumiert haben) oder per-
+Tick-Eviction-Strategie (`evict_before(simulation_time)`).
+ADR-Folge zu ADR 0023 §2.2 entscheidet das. Welle-3-
+Foundation laesst das bewusst offen, weil ohne registrierte
+Agents (`self._agents = ()` Welle-3-leer) der Buffer leer
+bleibt und das Welle-4-Auswahl-Verhalten den Vertrag
+mitdefiniert.
+
 **Keine Driven-Port-Surface**: AgentMessageBus liegt unter
 `hexagon/core/agents/`, nicht unter `hexagon/ports/driven/`.
 Konsequenz: TickLoop-Konstruktor-Kwarg ist
@@ -295,24 +312,22 @@ class AgentMessage:
     message_type: str     # Domain-spezifisch; keine Whitelist in Welle 3
     payload: Mapping[str, object]
     sequence: int         # per-Tick-monoton, vom Bus vergeben
-
-    def __post_init__(self) -> None:
-        # MappingProxy-Wrap fuer payload, damit AC-DOMAIN-FROZEN
-        # (ADR 0002 §A-1) gilt. Pattern analog ScenarioFault.payload
-        # (M1-Welle-5).
-        object.__setattr__(self, "payload", MappingProxyType(dict(self.payload)))
-
-    def snapshot(self) -> Mapping[str, object]:
-        """canonical_json-faehiges Mapping. Sortier-Schluessel
-        sind `simulation_time`, `sender`, `sequence` —
-        AgentMessageBus.drain_for(...) nutzt diese drei."""
-        ...
 ```
 
-**Frozen-Vertrag**: AC-DOMAIN-FROZEN (ADR 0002 §A-1) ist
-durch `dataclass(frozen=True, slots=True)` + Mapping-Proxy
-auf `payload` erfuellt. Snapshot-Roundtrip-Test pinnt
-canonical_json-Stabilitaet.
+**Frozen-Vertrag** (Welle-3-Review-Folge H-1, 2026-05-21):
+AC-DOMAIN-FROZEN (ADR 0002 §A-1) wird durch
+`dataclass(frozen=True, slots=True)` erfuellt — Reassign
+auf Felder wirft `FrozenInstanceError`. **Kein MappingProxy-
+Wrap** auf `payload`, weil das Domain-Layer-Pattern in
+`ScenarioFault.payload`, `Command.payload`, `Event.payload`
+ebenfalls keinen Wrap verwendet (Welle-1/M1-Stand). Konsequenz:
+Mutation des referenzierten Mappings durch den Aufrufer ist
+technisch moeglich; per Konvention reichen Aufrufer ein
+einmal konstruiertes `dict` ein und behalten keine Referenz.
+Falls Welle-4-Konkretisierung doch hermetische Frozen-
+Garantie braucht, ist das ein Domain-weites Refactor (alle
+vier `payload`-Felder gleichzeitig), keine
+`AgentMessage`-spezifische Aenderung.
 
 ### 2.4 TickLoop-Hook (Schritt 7 per Architektur §6)
 
@@ -469,12 +484,20 @@ Drei Varianten waren denkbar:
      listet einen abstrakten `AgentPort` als Schritt 7 im
      Tick-Loop-Diagramm, aber das ist die `Agent`-Schnittstelle
      selbst (Welle-3-`Agent`-Protocol), nicht der Bus.
-   - **State-Argument**: AgentBus haelt produktiven State
-     (Message-Buffer, Sequence-Counter, Snapshot-Surface).
-     Driven-Ports sind per ADR 0002 §A-1 zustandsfreie
-     Protocols — `AC-PORTS-NO-OUT` ist ein Pattern-Marker.
-     Ein zustandsbehafteter „Driven-Port" waere ein
-     Pattern-Bruch.
+   - **State-/Boundary-Argument** (Welle-3-Review-Folge M-2,
+     2026-05-21): AgentBus haelt produktiven State (Message-
+     Buffer, Sequence-Counter, Snapshot-Surface). Driven-Ports
+     sind per Konvention die Boundary zu einem externen
+     Adapter, nicht produktiver State-Trager — siehe
+     `MersenneTwisterRandomPort` (ADR 0007 §5.2), der zwar
+     statefull ist, aber als Adapter unter
+     `adapters/driven/random_mt/` eine externe PRNG-Bibliothek
+     kapselt. AgentBus hat **keine externe Boundary** (keine
+     Bibliothek, kein Protokoll, kein Service); er ist reines
+     Domain-Orchestrierungs-Modell. `AC-PORTS-NO-OUT` regelt
+     Import-Direction (`hexagon/ports/` darf nicht `core/`
+     importieren) und ist hier nicht das maßgebliche
+     Argument; entscheidend ist die fehlende Adapter-Boundary.
    - **Test-Isolierungs-Argument**: GG-AGENT-002 verlangt
      „isoliert testbar". Test-Isolierung wird ueber das
      `Agent`-Sub-Protocol erreicht: Test-Code instanziiert
@@ -563,7 +586,15 @@ beides additiv per ADR 0015 §2.3 ohne v2→v3-Bump.
 - Tests fuer Protocol-Adherence, AgentMessageBus-Determinismus,
   AgentMessage-Frozen-Vertrag, TickLoop-Hook-Order.
 - `CRITICAL_COV_TARGETS`-Default-Erweiterung um
-  `core/agents` + `core/domain/agent_message.py`.
+  `core/agents`. **Welle-3-Review-Folge M-1 (2026-05-21)**:
+  `core/domain/agent_message.py` ist NICHT als separater
+  CRITICAL_COV_TARGETS-Eintrag noetig — der Dockerfile-Stage
+  `coverage-gate-critical` prueft `[ ! -d "${target}" ]`
+  (Directory-Pflicht; Files sind nicht zulaessig). Die
+  Coverage-Messung erfasst `agent_message.py` trotzdem
+  vollstaendig, weil `core/agents/bus.py` das Modul importiert
+  und damit alle Code-Pfade in der `--cov=core/agents`-Run-
+  Reichweite landen.
 
 **Out of Scope (Welle 4):**
 
@@ -611,7 +642,7 @@ beides additiv per ADR 0015 §2.3 ohne v2→v3-Bump.
 | `tests/unit/hexagon/core/agents/test_bus.py`                        | NEU |
 | `tests/unit/hexagon/core/domain/test_agent_message.py`              | NEU |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` | NEU |
-| `Dockerfile`                                                        | EDIT (`CRITICAL_COV_TARGETS` + `core/agents` + `core/domain/agent_message.py`) |
+| `Dockerfile`                                                        | EDIT (`CRITICAL_COV_TARGETS` + `core/agents`; siehe §4 In-Scope-Note zur `agent_message.py`-Erfassung) |
 
 ADR-Cross-Refs (read-only fuer Welle 3):
 - ADR 0013 §2.8 zitiert in `Agent`-Docstring.

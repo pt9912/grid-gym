@@ -232,6 +232,35 @@ class TickLoop:
         for device in self._devices:
             device.set_run_id(self._run_id)
 
+    def _set_agents_for_testing(self, agents: tuple[Agent, ...]) -> None:
+        """Welle-3-Review-Folge L-1 (2026-05-21): narrow Test-Hook
+        fuer die `_agents`-Tuple-Befuellung. Welle-3-Foundation hat
+        keine produktive Agent-Registry — Konstruktor laesst
+        `self._agents = ()`. Tests fuer den TickLoop-Hook-Pfad
+        brauchen aber einen Weg, einen Mock-Agent einzuhaengen,
+        ohne die private Attribut-Surface direkt zu mutieren.
+
+        Diese Methode ist **explizit Test-only** (siehe Naming-
+        Konvention `_set_*_for_testing`). Welle 4 wird die echte
+        Registry-API (entweder TickLoop-Konstruktor-Kwarg `agents:
+        tuple[Agent, ...] = ()` oder Scenario-Loader-Builder-
+        Verantwortung) einfuehren; dann wird diese Methode
+        ueberfluessig und entfaellt.
+
+        Eindeutigkeits-Check: Welle-4-Registry wird `agent_id`-
+        Kollisionen als Vertragsverstoss werfen; Welle 3 macht das
+        defensiv schon hier, damit Tests nicht versehentlich
+        Duplicate-IDs durchlassen, die Welle 4 spaeter abfangen
+        wuerde."""
+        seen_ids: set[str] = set()
+        for agent in agents:
+            if agent.agent_id in seen_ids:
+                raise ValueError(  # noqa: TRY003 — Test-only-Defensive, keine Domain-Exception
+                    f"duplicate agent_id in _set_agents_for_testing: {agent.agent_id!r}"
+                )
+            seen_ids.add(agent.agent_id)
+        self._agents = agents
+
     @property
     def run_id(self) -> str:
         return self._run_id

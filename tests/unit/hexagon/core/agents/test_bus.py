@@ -22,6 +22,8 @@ from grid_gym.hexagon.core.agents import SNAPSHOT_VERSION, AgentMessageBus
 from grid_gym.hexagon.core.domain.agent_message import AgentMessage
 from grid_gym.hexagon.core.errors import (
     AgentBusError,
+    AgentBusInvalidReceiverError,
+    AgentBusInvalidSequenceError,
     AgentBusSnapshotFormatError,
     AgentBusSnapshotMissingKeysError,
     AgentBusSnapshotVersionError,
@@ -216,6 +218,37 @@ def test_agent_bus_errors_inherit_from_agent_bus_error_base() -> None:
     assert issubclass(AgentBusSnapshotMissingKeysError, AgentBusError)
     assert issubclass(AgentBusSnapshotWrongTypeError, AgentBusError)
     assert issubclass(AgentBusSnapshotVersionError, AgentBusError)
+    # Welle-3-Review-Folge L-2 + L-3 (2026-05-21): Defensive-
+    # Validation-Errors erben ebenfalls von AgentBusError.
+    assert issubclass(AgentBusInvalidSequenceError, AgentBusError)
+    assert issubclass(AgentBusInvalidReceiverError, AgentBusError)
+
+
+def test_publish_rejects_sequence_below_minus_one() -> None:
+    """Welle-3-Review-Folge L-2 (2026-05-21): `sequence < -1`
+    wirft typisiert; sonst wuerde der Wert in der Sortier-Logik
+    vor den echten Sequenzen 0,1,2,... landen."""
+    bus = AgentMessageBus()
+    with pytest.raises(AgentBusInvalidSequenceError):
+        bus.publish(_msg(sequence=-2))
+
+
+def test_publish_accepts_sentinel_minus_one() -> None:
+    """Sentinel `-1` bleibt zulaessig (L-2-Schaerfung verbietet
+    nur `< -1`)."""
+    bus = AgentMessageBus()
+    bus.publish(_msg(sequence=-1))  # darf NICHT werfen
+    assert bus.next_sequence == 1
+
+
+def test_drain_for_rejects_broadcast_wildcard() -> None:
+    """Welle-3-Review-Folge L-3 (2026-05-21): `drain_for("*")`
+    ist verboten — `"*"` ist Publish-Pfad-Broadcast, kein
+    Drain-Pfad-Wildcard."""
+    bus = AgentMessageBus()
+    bus.publish(_msg(receiver="*", sequence=-1))
+    with pytest.raises(AgentBusInvalidReceiverError):
+        bus.drain_for("*")
 
 
 def test_next_sequence_property_reflects_counter() -> None:
