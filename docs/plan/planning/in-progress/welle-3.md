@@ -476,7 +476,7 @@ nach Repo-Konvention):
   — dann wuerden Agents aber auf den Welt-Zustand der
   *vorherigen* Tick reagieren. *Mitigation*: Welle-3-Vertrag
   ist explizit „Commands wirken im naechsten Tick"; in-Tick-
-  Wirksamkeit ist Welle-4-Decision (oder eigene Slice).
+  Wirksamkeit ist Welle-4-Decision oder eine eigene Slice.
 - **R-5 — Async-Kommunikation (GG-AGENT-008) als Vorgriff**:
   Welle-3-Foundation ist synchron; AgentMessageBus.drain hat
   keine async-Variante. Wenn Welle 4 doch Async braucht, muss
