@@ -66,8 +66,8 @@ End-to-End-Pfad.
    ADR 0022 für Recovery-Pattern). Status-Lifecycle:
    - `Proposed` mit Welle-4a-C1 (separater
      `docs(adr)`-Commit).
-  - `Provisional` mit Welle-4a-C2-Merge.
-  - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
+   - `Provisional` mit Welle-4a-C2-Merge.
+   - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
     ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
     Welle-7-Sequenzierung).
 2. **TickLoop-Konstruktor erhält produktiven
@@ -76,6 +76,8 @@ End-to-End-Pfad.
      `devices=`, `active_load_events=`, etc.).
    - Welle-3-Test-Helper `_set_agents_for_testing(...)` wird
      entfernt — Tests stellen via Konstruktor-Kwarg um.
+   - Agent-IDs werden im Konstruktor eindeutig validiert;
+     Duplikate werfen typisiert `AgentDuplicateIdError`.
 3. **`_attach_agents()`-Lifecycle-Hook** im
    TickLoop-Konstruktor (analog `_attach_devices()`):
    - Ruft `agent.set_run_id(self._run_id)` für jeden
@@ -87,13 +89,13 @@ End-to-End-Pfad.
      brauchen einen eigenen Random-Stream. Damit ist die
      Welle-3-Review-
      Folge-M-3-Konvention produktiv umgesetzt.
-4. **`Agent`-Protocol-Erweiterung** unter
-   `src/grid_gym/hexagon/core/agents/_protocol.py` um
-   optionale `attach_random(random: RandomPort) -> None`-
-   Methode (analog `SmartMeterDevice.attach_sources`-
-   Pattern, ADR 0018 §2.4). **Welle-4a-Sub-Protocol** statt
-   Erweiterung der Pflicht-Surface, damit RuleBasedAgents
-   ohne Stochastik den Hook nicht implementieren müssen.
+4. **Optionales Random-Lifecycle-Sub-Protocol** unter
+   `src/grid_gym/hexagon/core/agents/_protocol.py`:
+   `_RandomAttachableAgent.attach_random(random: RandomPort)
+   -> None` (analog `SmartMeterDevice.attach_sources`-
+   Pattern, ADR 0018 §2.4). **Keine Erweiterung der
+   `Agent`-Pflicht-Surface**, damit RuleBasedAgents ohne
+   Stochastik den Hook nicht implementieren müssen.
 5. **TickLoop-Schritt A0 (Pre-Tick-Agent-Command-Drain)**:
    - Position: am Tick-Start, **vor** Schritt A (LoadEvent-/
      Profile-Overlay), aber nach `clock.advance(...)` und
@@ -112,19 +114,26 @@ End-to-End-Pfad.
      auf demselben Device — konsistent mit Welle-6b-Pattern
      „Event-Overlay nach Baseline".
 6. **`AgentMessageBus.consume_for(receiver: str) ->
-   Sequence[AgentMessage]`** (destruktive Drain-Variante):
-   - Liefert alle Nachrichten für `receiver` (oder
-     Broadcasts) **und entfernt sie** aus dem Buffer.
-   - Implementiert die Welle-3-Review-Folge-M-4-Eviction-
-     Spec (`consume_for` mit Per-Receiver-Watermark).
-   - Per-Receiver-Watermark in Welle 4a noch **nicht**
-     gebraucht (nicht-destruktiver `drain_for` und
-     destruktiver `consume_for` existieren parallel) —
-     Welle-4b-Implementer entscheiden, welche Variante
-     RuleBasedAgent verwendet.
-   - Snapshot-Schema-Erweiterung: kein Bump v1 → v2 noetig;
-     Buffer-Inhalt wird nach Konsumption kleiner, aber das
-    Schema-Format bleibt unverändert.
+   Sequence[AgentMessage]`** (destruktive Direct-Inbox-Drain-
+   Variante):
+   - Liefert alle direkt an `receiver` adressierten Nachrichten
+     (`message.receiver == receiver`) in derselben Sortierung wie
+     `drain_for(...)` **und entfernt nur diese** aus dem Buffer.
+   - `receiver="*"` bleibt wie bei `drain_for("*")` unzulaessig
+     und wirft `AgentBusInvalidReceiverError`.
+   - Broadcasts (`message.receiver == "*"`) bleiben in Welle 4a
+     bewusst nicht-destruktiv und werden weiter nur ueber
+     `drain_for(receiver)` ausgeliefert. Ein destruktiver
+     Erstkonsum von Broadcasts wuerde andere Receiver
+     abschneiden; registry-aware Fan-out/Watermark bleibt
+     Welle 4b oder spaetere Folge.
+   - Implementiert die Welle-3-Review-Folge-M-4-Eviction-Spec
+     fuer private Agent-Inboxes, ohne Broadcast-Semantik zu
+     brechen.
+   - Snapshot-Schema-Erweiterung: kein Bump v1 → v2 noetig,
+     solange kein `consumed_sequences`-/Watermark-State
+     persistiert wird; Buffer-Inhalt wird nach Konsumption
+     kleiner, aber das Schema-Format bleibt unverändert.
 7. **`build_tick_loop(..., agents=...)`-Builder-Symmetrie**:
    - Scenario-Loader-Builder erhält
      `agents: tuple[Agent, ...] = ()`-Kwarg (analog Welle-3
@@ -132,7 +141,13 @@ End-to-End-Pfad.
    - Default `()`-Tuple; Welle-4b-Scenario-Loader wird die
      Agent-Faktoren-Map (analog `_DEVICE_FACTORIES`) hier
      instanziieren.
-8. **`AgentInvalidCommandTargetError`** unter
+8. **`AgentDuplicateIdError`** unter
+   `src/grid_gym/hexagon/core/errors.py` als neue Subklasse
+   von `AgentBusError` — wird im TickLoop-Konstruktor
+   geworfen, wenn `agents` doppelte `agent_id`-Werte enthält.
+   Das macht die Welle-3-Helper-Defensive produktiv und
+   typisiert.
+9. **`AgentInvalidCommandTargetError`** unter
    `src/grid_gym/hexagon/core/errors.py` als neue Subklasse
    von `AgentBusError` — wird in Schritt A0 geworfen, wenn
    ein Agent-Command auf eine `target_device_id` zielt, die
@@ -172,9 +187,10 @@ End-to-End-Pfad.
 - In-Tick-Wirksamkeit (Agent-Commands wirken in derselben
   Tick) — eigene ADR-Folge.
 - Multi-Receiver-Watermark für `consume_for(...)`-
-  Per-Receiver-Tracking; Welle 4a haelt das Tracking nicht
-  vor, weil ohne registrierte Agents im Default-Pfad nicht
-  benoetigt. Welle 4b oder spaetere Slice verfeinert.
+  Per-Receiver-Tracking bei Broadcasts; Welle 4a haelt das
+  Tracking nicht vor und konsumiert deshalb nur direkt
+  adressierte Nachrichten destruktiv. Welle 4b oder spaetere
+  Slice verfeinert registry-aware Fan-out/Eviction.
 
 ## 3. Architektur-Entscheidungen
 
@@ -198,7 +214,7 @@ Recovery-Pattern, schärft ADR 0022).
    aktuellen Tick wirken im selben Tick), produziert
    Re-Iteration der Devices.
 3. **Pre-Tick-Schritt A0** (gewaehlt) — am Tick-Start, vor
-Schritt A (LoadEvent-Overlay). Commands der vorigen Ticks
+   Schritt A (LoadEvent-Overlay). Commands der vorigen Ticks
    wirken im aktuellen Tick. *Vorteil*: konsistent mit
    GG-AGENT-008; analog Welle-6b-LoadEvent-Overlay-Pattern;
    kein Scheduler-Vorgriff.
@@ -233,15 +249,21 @@ Varianten waren denkbar:
    fuehrt das auch nicht ein, weil der Bus selbst keine
    stochastischen Operationen hat.
 
-**Drain-Eviction: `consume_for(receiver)` destruktiv**
+**Drain-Eviction: `consume_for(receiver)` als private Inbox**
 (D4 aus Recherche-Brief). Variante mit `evict_before(
 simulation_time)` waere Per-Tick-Eviction (alle Messages vor
 einer Zeit werden geloescht, unabhaengig vom Receiver).
 *Abgelehnt*: bricht Multi-Receiver-Szenarien — wenn Agent A
 um t=1000 publiziert und Agent B die Message erst um t=2000
 lesen will, würde `evict_before(t=1500)` die Message
-vorzeitig entfernen. Per-Receiver-Granularitaet ist die
-robuste Wahl.
+vorzeitig entfernen. Ebenfalls abgelehnt fuer Welle 4a:
+destruktives Entfernen von Broadcasts beim ersten
+`consume_for(...)`-Aufruf; das wuerde spaetere Receiver
+abschneiden. Gewaehlt ist deshalb eine schmale Eviction:
+`consume_for(receiver)` konsumiert nur `message.receiver ==
+receiver`; Broadcasts bleiben nicht-destruktiv in
+`drain_for(receiver)` bis Welle 4b oder eine Folge-Slice
+registry-aware Fan-out/Watermark spezifiziert.
 
 **Snapshot-Vertrag für Welle 4a**: kein Sub-Snapshot-Slot
 für `_pending_agent_commands` oder Agents in
@@ -286,10 +308,11 @@ Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
     Loader-Builder-Symmetrie.
   - §2.3 Lifecycle: `_attach_agents()` mit `set_run_id` +
     optionalem `_RandomAttachableAgent`-Sub-Protocol.
-  - §2.4 Bus-Eviction: `consume_for(receiver)` destruktiv +
-    Per-Receiver-Granularitaet.
-  - §2.5 `AgentInvalidCommandTargetError`-Fail-Fast in
-    Schritt A0.
+  - §2.4 Bus-Eviction: `consume_for(receiver)` als
+    destruktive Direct-Inbox-Drain-Variante; Broadcasts
+    bleiben nicht-destruktiv.
+  - §2.5 Registry-/Drain-Fail-Fast:
+    `AgentDuplicateIdError` + `AgentInvalidCommandTargetError`.
 - **§3 Begründung**: drei Drain-Varianten, drei Registry-
   Varianten, drei Lifecycle-Varianten.
 - **§4 Reichweite**: In-Scope-4a (Plumbing) / Out-Scope-4b
@@ -316,29 +339,34 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
    `_RandomAttachableAgent`-Sub-Protocol.
 2. `src/grid_gym/hexagon/core/agents/bus.py` —
    `consume_for(receiver: str) -> Sequence[AgentMessage]`-
-   destruktive Drain-Variante.
+   destruktive Direct-Inbox-Drain-Variante (keine Broadcast-
+   Konsumption).
 3. `src/grid_gym/hexagon/core/simulation/tick_loop.py`:
    - `agents: tuple[Agent, ...] = ()`-Kwarg (keyword-only).
    - `_attach_agents()`-Lifecycle (set_run_id + optional
      attach_random).
+   - `agent_id`-Eindeutigkeits-Check mit
+     `AgentDuplicateIdError`.
    - Schritt A0 Pre-Tick-Drain (vor Schritt A).
    - Welle-3-`_set_agents_for_testing(...)` entfernt.
 4. `src/grid_gym/hexagon/core/scenario/loader.py` —
    `build_tick_loop(..., agents=...)`-Builder-Symmetrie.
 5. `src/grid_gym/hexagon/core/errors.py` —
-   `AgentInvalidCommandTargetError`-Subklasse von
-   `AgentBusError`.
+   `AgentDuplicateIdError` + `AgentInvalidCommandTargetError`
+   als Subklassen von `AgentBusError`.
 
 **Tests (neu/edit):**
 
 6. `tests/unit/hexagon/core/agents/test_bus.py` — Tests für
-   `consume_for(...)`-Destruktiv-Vertrag, Watermark-
-   Sanity, Roundtrip mit drain_for-Parallel.
+   `consume_for(...)`-Direct-Inbox-Destruktiv-Vertrag,
+   Broadcast-Retention-Sanity, Roundtrip mit
+   `drain_for(...)`-Parallel.
 7. `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py`
    — Umstellung von `_set_agents_for_testing` auf
    Konstruktor-Kwarg; **Datei umbenannt** zu
    `test_tick_loop_welle_4a_agent.py` (Pattern-Konsistenz
-   zur Welle-Bezeichnung).
+   zur Welle-Bezeichnung); Duplicate-`agent_id`-Fall erwartet
+   `AgentDuplicateIdError`.
 8. Neue Tests für Schritt-A0-Drain:
    `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_drain.py`
    — Drain-Order, Drain-vor-LoadEvent, Multi-Agent-Drain,
@@ -373,13 +401,13 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 | `docs/plan/planning/in-progress/README.md`                          | C0      | EDIT (welle-3→welle-4a) |
 | `docs/plan/adr/0026-agent-drain-registry-pattern.md`                | C1      | NEU |
 | `docs/plan/adr/README.md`                                           | C1      | EDIT (ADR 0026 Zeile) |
-| `src/grid_gym/hexagon/core/agents/_protocol.py`                     | C2      | EDIT (`attach_random`-optional-Surface) |
-| `src/grid_gym/hexagon/core/agents/bus.py`                           | C2      | EDIT (`consume_for(...)` destruktiv) |
-| `src/grid_gym/hexagon/core/simulation/tick_loop.py`                 | C2      | EDIT (`agents=`-Kwarg + Schritt-A0-Drain + `_attach_agents()`; `_set_agents_for_testing` entfernt) |
+| `src/grid_gym/hexagon/core/agents/_protocol.py`                     | C2      | EDIT (`_RandomAttachableAgent`-optional-Surface) |
+| `src/grid_gym/hexagon/core/agents/bus.py`                           | C2      | EDIT (`consume_for(...)` Direct-Inbox-destruktiv, Broadcasts bleiben nicht-destruktiv) |
+| `src/grid_gym/hexagon/core/simulation/tick_loop.py`                 | C2      | EDIT (`agents=`-Kwarg + Duplicate-ID-Fail-Fast + Schritt-A0-Drain + `_attach_agents()`; `_set_agents_for_testing` entfernt) |
 | `src/grid_gym/hexagon/core/scenario/loader.py`                      | C2      | EDIT (`build_tick_loop(agents=)`-Symmetrie) |
-| `src/grid_gym/hexagon/core/errors.py`                               | C2      | EDIT (`AgentInvalidCommandTargetError`) |
-| `tests/unit/hexagon/core/agents/test_bus.py`                        | C2      | EDIT (consume_for-Tests) |
-| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` → `test_tick_loop_welle_4a_agent.py` | C2 | RENAME + EDIT (Konstruktor-Kwarg statt `_set_agents_for_testing`) |
+| `src/grid_gym/hexagon/core/errors.py`                               | C2      | EDIT (`AgentDuplicateIdError` + `AgentInvalidCommandTargetError`) |
+| `tests/unit/hexagon/core/agents/test_bus.py`                        | C2      | EDIT (`consume_for`-Direct-Inbox-Tests + Broadcast-Retention) |
+| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` → `test_tick_loop_welle_4a_agent.py` | C2 | RENAME + EDIT (Konstruktor-Kwarg statt `_set_agents_for_testing`, Duplicate-ID-Fail-Fast) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_drain.py` | C2  | NEU (Schritt-A0-Drain-Tests) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py` | C2 | NEU (`_attach_agents()`-Tests) |
 | `tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`          | C2      | EDIT (`agents=`-Forwarding-Test) |
@@ -394,9 +422,11 @@ End-to-End über `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
 1. **`make test-unit`** — grün mit ~12–18 neuen Tests
-   (consume_for-Destruktiv-Vertrag, Schritt-A0-Drain-Order,
+   (`consume_for`-Direct-Inbox-Destruktiv-Vertrag,
+   Broadcast-Retention, Schritt-A0-Drain-Order,
    `_attach_agents()`-Lifecycle, Konstruktor-Kwarg-
-   Forwarding, Fail-Fast-Errors). Test-Count steigt von 889
+   Forwarding, Duplicate-ID- und Command-Target-Fail-Fast).
+   Test-Count steigt von 889
    (Welle-3-Endstand) auf ~901–907. Welle-3-Tests, die
    `_set_agents_for_testing(...)` nutzten, werden auf den
    Konstruktor-Kwarg umgestellt — Tests bleiben grün, nur
