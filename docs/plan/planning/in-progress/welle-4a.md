@@ -224,7 +224,8 @@ End-to-End-Pfad.
 - Welle-4-Abschluss-Gate (`make fullbuild` ohne Override
   mit End-to-End-Demo-Szenario).
 
-**Anti-Scope (M3-Welle-7+ oder spaetere Folge):**
+**Anti-Scope (nach Welle 4a: Welle 4b, Welle 5/6 oder
+spaetere Folge):**
 
 - Deadlines (`GG-AGENT-007`) — bleibt explizit
   out-of-scope. Welle 4b kann das aufnehmen, wenn
