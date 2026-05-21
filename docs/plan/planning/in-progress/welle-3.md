@@ -1,10 +1,10 @@
 # Welle 3 — Multi-Agent-Foundation
 
-**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-3-Pre-C0-
-Rename (`3dbe6af`). Welle 3 baut auf M3-Welle-1-Fault-Foundation
+**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-3-Pre-C0-Rename
+(`3dbe6af`). Welle 3 baut auf M3-Welle-1-Fault-Foundation
 (`46c7353`) und M3-Welle-2-Fault-Konkretisierung
-(`91d44e2`) auf: Fault-Subsystem ist abgeschlossen, M3-Slice-
-Plan §3 wechselt jetzt vom Faults-Sub-Bereich in den
+(`91d44e2`) auf: Fault-Subsystem ist abgeschlossen, M3-Slice-Plan §3
+wechselt jetzt vom Faults-Sub-Bereich in den
 Multi-Agent-Sub-Bereich. Welle 3 ist Foundation-only —
 **konkrete Agent-Typen (`RuleBasedAgent`) kommen in Welle 4**,
 analog zum Faults-Pattern (Welle 1 Foundation → Welle 2
@@ -12,8 +12,8 @@ Konkretisierung).
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 3`](M3-faults-agents-observability.md)
-— dieses Dokument ist lesefreundlicher Index + per-Welle-
-Tracking, nicht Ersatz.
+— dieses Dokument ist lesefreundlicher Index + per-Welle-Tracking,
+nicht Ersatz.
 
 **Commit-Sequenz (geplant):**
 
@@ -49,8 +49,8 @@ M3-Welle-3 startet jetzt den **Multi-Agent-Sub-Bereich**. Per
 
 Konsequenz fuer Welle 3: `AgentMessageBus` ist **Core-Klasse**,
 **kein** Driven-Port — anders als FaultPort in Welle 1. Diese
-Designentscheidung wird in ADR 0023 §3 gegen den FaultPort-
-Praezedenzfall begruendet (siehe §3 unten).
+Designentscheidung wird in ADR 0023 §3 gegen den FaultPort-Praezedenzfall
+begruendet (siehe §3 unten).
 
 Welle-3-Lieferumfang ist Foundation-Skelett:
 
@@ -230,8 +230,8 @@ Konkrete Position-Entscheidung:
 Order-Pflicht: Agents emittieren Commands, die im **naechsten**
 Tick wirksam werden — keine in-Tick-Mutation. Begruendung:
 GG-AGENT-008 sagt explizit „Asynchrone Verarbeitung darf die
-Commit-Reihenfolge eines Ticks nicht veraendern". In-Tick-
-Wirksamkeit (Re-Iteration der Devices nach Agent-Commands)
+Commit-Reihenfolge eines Ticks nicht veraendern". In-Tick-Wirksamkeit
+(Re-Iteration der Devices nach Agent-Commands)
 ist eine eigene Entscheidung fuer Welle 4 oder spaeter.
 
 **Observability-Vorgriff-Klausel** (M3-Plan §5 Risiko
@@ -253,8 +253,8 @@ Aktivierungs-Kriterium ist `> 10⁶ Sub-Ports pro Lauf` oder
 bleibt in `open/`. Welle-4-Konkretisierung pruefen erneut,
 falls RuleBasedAgent stochastische Decisions hat.
 
-**Snapshot-Vertrag** (analog ADR 0022 §2.6): Welle-3-
-Foundation fuegt **keinen** neuen Sub-Snapshot-Key in
+**Snapshot-Vertrag** (analog ADR 0022 §2.6): Welle-3-Foundation
+fuegt **keinen** neuen Sub-Snapshot-Key in
 `TickLoop.snapshot()` hinzu. AgentMessageBus haelt zwar State
 (Message-Buffer, Sequence-Counter), aber:
 
@@ -274,8 +274,8 @@ ohne Supersede.
 
 ### Pre-C0 — `chore`: git mv welle-2.md → done/ (rename-only, `3dbe6af`)
 
-Reiner Rename ohne Inhaltsumschreibung — `feedback_git_mv`-
-Konvention. Welle-2-Slice-Begleit-Doc wandert von
+Reiner Rename ohne Inhaltsumschreibung — `feedback_git_mv`-Konvention.
+Welle-2-Slice-Begleit-Doc wandert von
 `in-progress/` nach `done/`, damit C0 ein neues
 `welle-3.md` in `in-progress/` eroeffnen kann ohne
 Pfad-Kollision.
