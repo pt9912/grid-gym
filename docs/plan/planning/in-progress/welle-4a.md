@@ -34,7 +34,7 @@ Tracking, nicht als Ersatz.
   Drain + AgentMessageBus.consume_for + Lifecycle + Tests`.
 - C3 — `docs(plan): Welle-4a Status/DoD-Sync` (ADR 0026 →
   Provisional, M3-Plan §3 Welle-4a-Done-Tag, welle-4a.md →
-  Done; M3-Welle-4b als naechster Schritt vermerkt).
+  Done; M3-Welle-4b als nächster Schritt vermerkt).
 
 ## 1. Context
 
@@ -44,7 +44,7 @@ produktiv abgeschlossen: `Agent`-Sub-Protocol +
 dataclass + TickLoop-Schritt-D2-Hook + `agent_bus`-Builder-
 Symmetrie + `AgentBusError`-Family + Welle-3-Foundation-
 Pending-Buffer (`_pending_agent_commands`). 889 Unit-Tests +
-14 Integration-Tests; `make gates` A-1 ohne Override gruen.
+14 Integration-Tests; `make gates` A-1 ohne Override grün.
 
 Vier Review-Folgen haben Welle-3-Foundation auf den heutigen
 Stand gebracht — alle Findings wurden adressiert; mehrere
@@ -124,7 +124,7 @@ End-to-End-Pfad.
      RuleBasedAgent verwendet.
    - Snapshot-Schema-Erweiterung: kein Bump v1 → v2 noetig;
      Buffer-Inhalt wird nach Konsumption kleiner, aber das
-     Schema-Format bleibt unveraendert.
+    Schema-Format bleibt unverändert.
 7. **`build_tick_loop(..., agents=...)`-Builder-Symmetrie**:
    - Scenario-Loader-Builder erhält
      `agents: tuple[Agent, ...] = ()`-Kwarg (analog Welle-3
@@ -187,7 +187,7 @@ Recovery-Pattern, schärft ADR 0022).
 (D1 aus Recherche-Brief). Drei Varianten waren denkbar:
 
 1. **Scheduler-Push** — `Command` wird in `Event` gewrappt
-   und über den Scheduler in den naechsten Tick gepoppt.
+   und über den Scheduler in den nächsten Tick gepoppt.
    *Abgelehnt*: Scheduler ist für Events, nicht Commands.
    Command-zu-Event-Wrap ist Vorgriff auf M5-Material;
    `Scheduler.add(event)` hat keine Command-Surface.
@@ -275,7 +275,7 @@ Welle-4a-Start-Marker. Status: `In Progress`. Plus
 ### C1 — `docs(adr)`: ADR 0026 Proposed
 
 Neu: `docs/plan/adr/0026-agent-drain-registry-pattern.md`.
-Inhalt (geplant, ~ 3000–4000 Woerter, Pattern aus ADR 0025):
+Inhalt (geplant, ~ 3000–4000 Wörter, Pattern aus ADR 0025):
 
 - **Status**: `Proposed` (Datum 2026-05-21).
 - **§1 Kontext**: Welle-3-Forward-Pointer + ADR 0023 §6.
@@ -290,7 +290,7 @@ Inhalt (geplant, ~ 3000–4000 Woerter, Pattern aus ADR 0025):
     Per-Receiver-Granularitaet.
   - §2.5 `AgentInvalidCommandTargetError`-Fail-Fast in
     Schritt A0.
-- **§3 Begruendung**: drei Drain-Varianten, drei Registry-
+- **§3 Begründung**: drei Drain-Varianten, drei Registry-
   Varianten, drei Lifecycle-Varianten.
 - **§4 Reichweite**: In-Scope-4a (Plumbing) / Out-Scope-4b
   (Konkretisierung).
@@ -393,22 +393,22 @@ Plus `adr/README.md`-Zeile für ADR 0026 `Proposed`.
 End-to-End über `make`-Targets (Dockerfile-Stages, Docker-only
 nach Repo-Konvention):
 
-1. **`make test-unit`** — gruen mit ~12–18 neuen Tests
+1. **`make test-unit`** — grün mit ~12–18 neuen Tests
    (consume_for-Destruktiv-Vertrag, Schritt-A0-Drain-Order,
    `_attach_agents()`-Lifecycle, Konstruktor-Kwarg-
    Forwarding, Fail-Fast-Errors). Test-Count steigt von 889
    (Welle-3-Endstand) auf ~901–907. Welle-3-Tests, die
    `_set_agents_for_testing(...)` nutzten, werden auf den
-   Konstruktor-Kwarg umgestellt — Tests bleiben gruen, nur
-   die API-Aufruf-Syntax aendert sich.
-2. **`make test-integration`** — bleibt 14 Tests gruen
+   Konstruktor-Kwarg umgestellt — Tests bleiben grün, nur
+   die API-Aufruf-Syntax ändert sich.
+2. **`make test-integration`** — bleibt 14 Tests grün
    (Welle 4a hat keine neuen Integration-Tests; Welle 4b
    bringt das End-to-End-Demo-Szenario).
-3. **`make gates`** — gruen ohne Override; AC-PORTS-NO-OUT
-   bleibt 16 Contracts; `CRITICAL_COV_TARGETS` unveraendert
+3. **`make gates`** — grün ohne Override; AC-PORTS-NO-OUT
+   bleibt 16 Contracts; `CRITICAL_COV_TARGETS` unverändert
    (`core/agents` ist seit Welle 3 enthalten und wird durch
    Welle-4a-Code weiter ausgenutzt).
-4. **`make fullbuild`** — gruen ohne Override (Welle 4a hat
+4. **`make fullbuild`** — grün ohne Override (Welle 4a hat
    keine OTLP-Pflicht; M3-Welle-4-Abschluss-Gate folgt mit
    Welle 4b).
 5. **ADR-0026-Status sichtbar `Provisional`** nach C3.
