@@ -18,18 +18,41 @@ ticks` + `manual-via-command` produktiv; Adapter-Module unter
 sind); 840 Unit-Tests + 14 Integration-Tests (+67 Unit / +3
 Integration ggue. Welle-1-Stand); Property-Tests
 (Hypothesis-half-open + Determinismus + Seed-Independence);
-Fault-Demo-Szenario + Postgres-Roundtrip. Drei distinkte Sub-
-Bereiche (Faults, Multi-Agent, Observability) werden ueber
-Welle 0..7 verteilt geliefert. M3-Slice-Plan wandert nach
-`done/` mit Welle-7-Closure.
+Fault-Demo-Szenario + Postgres-Roundtrip. **Welle 3 (Multi-
+Agent-Foundation) abgeschlossen am 2026-05-21** mit
+`3dbe6af..d6f66fc` (5 Welle-3-Kern-Commits + 8 Wording-
+Polish-Commits + diesem C3-Sync): ADR 0023 `Proposed →
+Provisional` (Multi-Agent-Bus + Agent-Protocol; Pattern-Drift
+gegen ADR 0022 — AgentMessageBus als **Core-Klasse**, kein
+Driven-Port, weil Architektur §14 das eigene Kernmodul
+vorschreibt und der Bus keine externe Adapter-Boundary hat).
+`Agent`-Sub-Protocol (eigenstaendig, **nicht** DeviceModel-
+erbend) + `AgentMessageBus`-Core-Klasse mit Snapshot-Surface
++ `AgentMessage`-frozen-dataclass mit `GG-AGENT-004`-Pflicht-
+Feldern + TickLoop-Schritt-D2-Hook (Architektur §6 Schritt 7)
++ `agent_bus`-Builder-Symmetrie + `AgentBusError`-Family
+produktiv. 879 Unit-Tests + 14 Integration-Tests (+39 Unit /
+0 Integration ggue. Welle-2-Stand); Welle-3-Foundation hat
+keine konkreten Agent-Implementer (kommen mit Welle 4). Code-
+Review-Folge `d6f66fc` adressiert 9 Findings (1H + 4M + 4L)
+als Schaerfungen-ohne-Supersede (ADR 0011-Pattern). Drei
+distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
+werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
+wandert nach `done/` mit Welle-7-Closure.
 
-**Naechster Schritt:** Welle 3 (Multi-Agent-Foundation —
-AgentBus + AgentPort + ADR 0023; geplante Trigger-Triage aus
-Welle 0 fuer Multi-Agent-Sub-Bereich).
+**Naechster Schritt:** Welle 4 (Multi-Agent-Subsystem
+konkret — mind. ein `Agent`-Implementer (`RuleBasedAgent`
+o. ae.), Agent-Registry am TickLoop, Decision-Logik,
+`agents`-Top-Level-Block im Scenario-Schema + Validator-
+Haertung, Welle-3-Foundation-Folgen aus der Review-Folge
+(Sub-Random-Stream-Konvention `agent-{agent_id}`, Eviction-
+Spec fuer Bus-Buffer, optional `_attach_agents()`-Lifecycle
+analog `_attach_devices()`)).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
-bereits als „naechsten aktiven Slice" ausgewiesen).
+bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
+abgeschlossen 2026-05-21.
 
 **Bezug:**
 
@@ -287,24 +310,66 @@ Default-`CRITICAL_COV_TARGETS` um `core/faults` erweitert.
 mit 5 Tests; +3 vs. Welle 1) + `make test-unit`
 (840 Tests, +67 vs. Welle 1) + `make gates` (A-1 ohne Override).
 
-### Welle 3 — Multi-Agent-Foundation (AgentBus + AgentPort)
+### Welle 3 — Multi-Agent-Foundation (AgentBus + Agent-Protocol) (`Done` 2026-05-21, Commits `3dbe6af..d6f66fc` + C3-Sync)
 
-- ADR-Folge (geplant **ADR 0023**, `Provisional` mit Welle-3-
-  Merge, `Accepted` mit Welle-7-Closure) fuer Multi-Agent-Bus +
-  AgentPort.
-- `Agent`-Protocol + `AgentBus` + Sub-Random-Stream-
-  Konvention (`RandomPort.sub_port(f"agent-{id}")`).
-- TickLoop-Integration: AgentBus.tick(...) zwischen Device-
-  Iteration und GridModel-Update.
-- Trigger 011 (`MLRandomPort`-Sub-Seed-Wortbreite) wird hier
-  entschieden — ADR-Folge zu ADR 0007 §5.2 entweder zum
-  Hochbumpen auf 128 bit oder zur Einfuehrung von
-  `MLRandomPort` mit eigener Seeding-Kette.
+- ADR 0023 `Proposed → Provisional` (Multi-Agent-Bus +
+  Agent-Protocol; Pattern-Drift gegen ADR 0022:
+  AgentMessageBus als **Core-Klasse**, kein Driven-Port).
+- `Agent`-Sub-Protocol unter `hexagon/core/agents/_protocol.py`
+  (eigenstaendig, **nicht** DeviceModel-erbend — Agents
+  produzieren `Sequence[Command]`, keine TelemetryPoints; ADR
+  0013 §2.8-konform).
+- `AgentMessageBus`-Core-Klasse unter
+  `hexagon/core/agents/bus.py` mit deterministisch sortiertem
+  Buffer (Sortier-Vertrag `(simulation_time, sender, sequence)`),
+  nicht-destruktiver `drain_for`-Semantik, Snapshot-Roundtrip-
+  Surface; `publish(sequence < -1)` und `drain_for("*")`
+  werden typisiert abgelehnt (Welle-3-Review-Folge L-2/L-3).
+- `AgentMessage`-frozen-dataclass unter
+  `hexagon/core/domain/agent_message.py` mit `GG-AGENT-004`-
+  Pflicht-Feldern (`simulation_time`, `sender`, `receiver`,
+  `message_type`, `payload`, `sequence`). Konsistenz-Pflicht:
+  kein `MappingProxyType`-Wrap auf `payload` (Welle-3-Review-
+  Folge H-1 — Domain-Layer-Pattern analog ScenarioFault/
+  Command/Event).
+- TickLoop-Schritt-D2-Hook zwischen Schritt D (zweite Device-
+  Iteration) und Schritt E (`grid_model.update`) per
+  Architektur §6 Schritt 7; `agent_bus: AgentMessageBus |
+  None = None`-Kwarg + `_set_agents_for_testing(...)`-Helper
+  (Welle-3-Review-Folge L-1 — Welle 4 erzwingt die produktive
+  Registry-API).
+- `build_tick_loop`-Builder-Symmetrie (`agent_bus`-Kwarg
+  analog Welle-2-`fault_port`); ADR 0021 §2.4-Pattern
+  fortgefuehrt.
+- `AgentBusError`-Family unter `core/errors.py`:
+  Snapshot-Format-Klassen
+  (`AgentBusSnapshotNotAMappingError`,
+  `AgentBusSnapshotMissingKeysError`,
+  `AgentBusSnapshotWrongTypeError`,
+  `AgentBusSnapshotVersionError`) plus
+  Defensive-Validation-Klassen (`AgentBusInvalidSequenceError`,
+  `AgentBusInvalidReceiverError`).
+- `CRITICAL_COV_TARGETS`-Default um `core/agents` erweitert
+  (10. Ziel-Modul); `agent_message.py` wird via Import-Pfad
+  mitabgedeckt — kein separater File-Eintrag noetig
+  (Welle-3-Review-Folge M-1).
+- Trigger 011 (`MLRandomPort`-Sub-Seed-Wortbreite) bleibt in
+  `open/` — Welle-3-Skala (< 100 Sub-Streams) erreicht
+  Aktivierungs-Schwelle (10⁶ Sub-Ports) nicht; ADR-Folge zu
+  ADR 0007 §5.2 wird in Welle 4 erneut geprueft.
+- Welle-4-Folge-Specs (Welle-3-Review-Folge M-3/M-4 + N-2):
+  Sub-Random-Stream-Konvention `RandomPort.sub_port(f"agent-
+  {agent_id}")` wandert nach Welle 4; Bus-Buffer-Eviction
+  (`consume_for(receiver)` oder `evict_before(...)`) ist
+  Welle-4-Pflicht; `_attach_agents()`-Lifecycle analog
+  `_attach_devices()` mit `set_run_id`-Aufruf ist Welle-4-
+  Material.
 
-**Sub-Slicing-Erwartung:** Welle 3 koennte in 3a (AgentBus-
-Core) und 3b (Sub-Random-Stream-Konvention + Trigger-011-
-Entscheidung) zerfallen, sobald die ADR-Implementation den
-Scope der Welle ueberschreitet.
+**Welle-3-Gate:** `make test-unit` gruen (879 Tests, +39 vs.
+Welle 2) + `make test-integration` (14 Tests, unveraendert) +
+`make gates` (A-1 ohne Override; AC-PORTS-NO-OUT KEPT mit
+16 Contracts; `CRITICAL_COV_TARGETS`-Default-Erweiterung um
+`core/agents` greift cache-frei).
 
 ### Welle 4 — Multi-Agent-Subsystem konkret
 

@@ -1,7 +1,22 @@
 # ADR 0023 — Multi-Agent-Bus + Agent-Protocol (M3 Welle 3)
 
-**Status:** Proposed
+**Status:** Provisional — Validierung erfolgt mit M3-Welle-3-
+PR-Merge (`4fa122d` C2 + `d6f66fc` Review-Folge):
+879 Unit-Tests gruen (Welle-2-Stand 840 → +39 inkl. 4 L-1/L-2/
+L-3-Defense-Tests aus der Review-Folge), 14 Integration-Tests
+unveraendert (Welle-3-Foundation hat keine Scenario-
+Erweiterung), `make gates` A-1 cache-frei gruen **ohne**
+`CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
+`core/agents`; siehe §4 In-Scope-Note zur `agent_message.py`-
+Erfassung), AC-PORTS-NO-OUT bleibt KEPT (16 Contracts).
+Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0022 und
+ADR 0024 oder einzeln, je nach Welle-7-Closure-Sequenzierung).
 **Datum:** 2026-05-21
+**Status geaendert am:** 2026-05-21 — `Proposed → Provisional`
+(M3-Welle-3-C2-Merge `4fa122d` + Review-Folge `d6f66fc` Pre-
+C3-Closure; ADR-Schaerfungen aus der Review-Folge (H-1, M-1
+bis M-4) sind im jeweiligen §-Abschnitt mit
+„Welle-3-Review-Folge"-Notiz markiert).
 **Bezug:**
 [`ADR 0007`](0007-random-port.md) §5
 (`RandomPort.sub_port`-Vertrag fuer Per-Agent-Sub-Streams,

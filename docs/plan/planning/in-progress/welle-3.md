@@ -1,29 +1,57 @@
 # Welle 3 — Multi-Agent-Foundation
 
-**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-3-Pre-C0-Rename
-(`3dbe6af`). Welle 3 baut auf M3-Welle-1-Fault-Foundation
-(`46c7353`) und M3-Welle-2-Fault-Konkretisierung
-(`91d44e2`) auf: Fault-Subsystem ist abgeschlossen, M3-Slice-Plan §3
-wechselt jetzt vom Faults-Sub-Bereich in den
-Multi-Agent-Sub-Bereich. Welle 3 ist Foundation-only —
-**konkrete Agent-Typen (`RuleBasedAgent`) kommen in Welle 4**,
-analog zum Faults-Pattern (Welle 1 Foundation → Welle 2
-Konkretisierung).
-
-Kanonische Slice-Spezifikation:
+**Status:** Done — M3-Welle-3-Closure am 2026-05-21
+(`3dbe6af..d6f66fc`, 5 Welle-3-Kern-Commits + 8 User-
+Polish-Commits + diesem C3-Sync). M3-Welle-3 baut auf der
+M3-Welle-2-Fault-Konkretisierung (`91d44e2`) auf und liefert
+die Multi-Agent-Foundation als Pendant zur Welle-1-Fault-
+Foundation: `Agent`-Sub-Protocol (eigenstaendig, **nicht**
+DeviceModel-erbend), `AgentMessageBus`-Core-Klasse (Pattern-
+Drift gegen ADR 0022: kein Driven-Port, weil Architektur §14
+das eigene Kernmodul vorschreibt und der Bus keine externe
+Adapter-Boundary hat), `AgentMessage`-frozen-dataclass,
+TickLoop-Schritt-D2-Hook und Builder-Symmetrie. Welle 3 ist
+Foundation-only — **konkrete Agent-Typen (`RuleBasedAgent`)
+kommen in Welle 4**, analog zum Faults-Pattern (Welle 1
+Foundation → Welle 2 Konkretisierung). Kanonische Slice-
+Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 3`](M3-faults-agents-observability.md)
-— dieses Dokument ist lesefreundlicher Index + per-Welle-Tracking,
-nicht als Ersatz.
+— dieses Dokument ist lesefreundlicher Index + per-Welle-
+Tracking, nicht als Ersatz.
 
-**Commit-Sequenz (geplant):**
+**Commit-Sequenz (Closure):**
 
-- Pre-C0 `3dbe6af` — `chore(welle-3): git mv welle-2.md → done/` (rename-only).
-- C0 (dieses Dokument) — `docs(plan): welle-3 Slice-Doc`.
-- C1 — `docs(adr): ADR 0023 Proposed — Multi-Agent-Bus + Agent-Protocol`.
-- C2 — `feat(welle-3): AgentBus-Foundation + Agent-Protocol + TickLoop-Hook + Tests`.
-- C3 — `docs(plan): Welle-3 Status/DoD-Sync` (ADR 0023 →
-  Provisional, M3-Plan §3 Welle-3-Done-Tag, welle-3.md →
-  Done).
+- Pre-C0 `3dbe6af` — `chore(welle-3): git mv welle-2.md →
+  done/` (rename-only).
+- C0 `b05077a` — `docs(plan): welle-3 Slice-Doc`.
+- C1 `75cc6e2` — `docs(adr): ADR 0023 Proposed — Multi-
+  Agent-Bus + Agent-Protocol`.
+- User-Polish-Commits `bdafdcf..6f393a8` — 8 nicht-funktionale
+  Wording-/Formatierungs-Schaerfungen am Slice-Doc.
+- C2 `4fa122d` — `feat(welle-3): AgentBus-Foundation + Agent-
+  Protocol + TickLoop-Hook + Tests`.
+- Review-Folge `d6f66fc` — `fix(welle-3): Review-Folge — H-1
+  + 4M + 4L (9 Findings, Pre-C3)`.
+- C3 (dieses Dokument) — `docs(plan): Welle-3 Status/DoD-Sync`.
+
+**DoD-Verifikation (Welle-Schluss):**
+
+- `make test-unit`: **879 Tests gruen** (Welle-2-Stand 840 →
+  Welle-3-Stand 879 = +39 Unit-Tests; davon 35 mit C2 +
+  4 mit Review-Folge L-1/L-2/L-3-Defense-Tests).
+- `make test-integration`: **14 Tests unveraendert gruen**
+  (mvp-demo 2 + fault-demo 5 + postgres 5 + yaml-allowlist 2;
+  Welle-3-Foundation hat keine neuen Integration-Tests —
+  Welle-4-Konkretisierung wird das nachholen).
+- `make gates`: **A-1 gruen** ohne Override (lint, format-
+  check, mypy `--strict`, arch-check 16/16, coverage 90/85,
+  critical-coverage mit `core/agents` als 10. Ziel-Modul, dep-
+  audit).
+- ADR 0023: `Proposed → Provisional` (Pattern-Drift gegen
+  ADR 0022 §2.2 mit 4-Punkt-Begruendung — Architektur §14 +
+  §4.2 + State-/Boundary-Argument + Test-Isolierung).
+- AC-PORTS-NO-OUT bleibt KEPT (16 Contracts) — AgentBus liegt
+  in `core/agents/`, nicht in `ports/driven/`.
 
 ## 1. Context
 
