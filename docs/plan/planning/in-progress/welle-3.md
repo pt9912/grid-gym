@@ -1,8 +1,8 @@
 # Welle 3 — Multi-Agent-Foundation
 
-**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-3-
-Pre-C0-Rename (`3dbe6af`). Welle 3 baut auf M3-Welle-1-Fault-
-Foundation (`46c7353`) und M3-Welle-2-Fault-Konkretisierung
+**Status:** In Progress — eroeffnet 2026-05-21 mit M3-Welle-3-Pre-C0-
+Rename (`3dbe6af`). Welle 3 baut auf M3-Welle-1-Fault-Foundation
+(`46c7353`) und M3-Welle-2-Fault-Konkretisierung
 (`91d44e2`) auf: Fault-Subsystem ist abgeschlossen, M3-Slice-
 Plan §3 wechselt jetzt vom Faults-Sub-Bereich in den
 Multi-Agent-Sub-Bereich. Welle 3 ist Foundation-only —
