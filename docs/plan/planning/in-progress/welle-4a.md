@@ -68,7 +68,8 @@ End-to-End-Pfad.
    0025 zu ADR 0022 für Recovery-Pattern). Status-Lifecycle:
    - `Proposed` mit Welle-4a-C1 (separater
      `docs(adr)`-Commit).
-   - `Provisional` mit Welle-4a-C2-Merge.
+   - `Provisional` mit Welle-4a-C3-Closure (nach dem
+     C2-Code-Commit).
    - `Accepted` mit M3-Welle-7-Closure (gemeinsam mit
      ADR 0023 und Welle-4b-ADR-Folge oder einzeln, je nach
      Welle-7-Sequenzierung).
@@ -188,7 +189,7 @@ End-to-End-Pfad.
      `agents` greift dieselbe Auto-Bus-Regel wie im
      TickLoop-Konstruktor.
    - Default `()`-Tuple; Welle-4b-Scenario-Loader wird die
-     Agent-Faktoren-Map (analog `_DEVICE_FACTORIES`) hier
+     Agent-Factory-Map (analog `_DEVICE_FACTORIES`) hier
      instanziieren.
 9. **`AgentDuplicateIdError`** unter
    `src/grid_gym/hexagon/core/errors.py` als neue Subklasse
@@ -217,7 +218,7 @@ End-to-End-Pfad.
   nur generischen Foundation-State (`agent_bus`,
   `pending_agent_commands`); Welle 4b fügt konkrete
   Implementer-Snapshots additiv per ADR 0015 §2.3 ein.
-- Agent-Faktoren-Map analog `_DEVICE_FACTORIES`.
+- Agent-Factory-Map analog `_DEVICE_FACTORIES`.
 - Property-Determinismus-Tests pro Agent-Implementer
   (`GG-AGENT-003`).
 - Welle-4-Abschluss-Gate (`make fullbuild` ohne Override
