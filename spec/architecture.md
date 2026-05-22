@@ -250,6 +250,18 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 | GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability                                                                                                              | GG-OTEL-001..004                             |
 | GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | GG-PRINC-005                                 |
 | GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert.                           | GG-SIM-001, GG-SCN-002                       |
+| GG-AR-PORT-DRN-011 | `FaultPort` — Fault-Injection-Adapter-Boundary (`apply_active_faults(devices, context)`). Spezifiziert in [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.4–§2.5 und [`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md) (`manual-via-command`-Recovery). | GG-FAULT-001..010                            |
+
+**Hinweis — `AgentMessageBus` ist kein Driven-Port.** Das
+Multi-Agent-Subsystem (siehe §14) nutzt einen Core-internen
+`AgentMessageBus`, der per
+[`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §3
+bewusst **nicht** als Driven-Port modelliert ist: er kapselt
+weder einen Adapter, noch eine externe Library, noch ein
+Protokoll, sondern ist reines Domain-Orchestrierungs-Modell
+(deterministisch sortierter In-Memory-Bus). Test-Isolierung
+laeuft ueber das `Agent`-Sub-Protocol, nicht ueber Port-
+Mocking.
 
 #### Dependency Rule (verbindlich)
 
@@ -323,32 +335,85 @@ Replay-Laeufe nutzen denselben Prozessor (`GG-AR-P-007`). Innerhalb eines
 Ticks werden Schritte sequenziell ausgefuehrt; parallele Berechnung ist
 auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
 
+Die produktive Schrittfolge des `TickLoop.tick()` ist auf M3-Welle-4a-
+Stand wie folgt fixiert (Quell-ADRs: [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md),
+[`ADR 0019`](../docs/plan/adr/0019-grid-model-bilanz-pattern.md),
+[`ADR 0021`](../docs/plan/adr/0021-scenario-loader-and-tick-loop-event-wiring.md),
+[`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md),
+[`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md),
+[`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md)):
+
 ```text
-   ┌────────────────────────────────────────────────────────────┐
-   │                       Tick (t)                             │
-   │                                                            │
-   │  1. ClockPort liefert simulation_time                      │
-   │  2. Scheduler entnimmt faellige Events                     │
-   │       (stabile Sortierung: time, prio, source, seq, id)    │
-   │  3. ReplaySourcePort / DeviceProtocolPort liefern Eingaben │
-   │  4. FaultInjection modifiziert / blockiert Eingaben        │
-   │  5. Geraete-Tick:                                          │
-   │       für jedes Device: apply_command -> tick -> telemetry │
-   │  6. Quality-Markierung (valid/stale/nan/missing/...)       │
-   │  7. AgentPort (optional) erzeugt Steuerentscheidungen      │
-   │  8. Commit:                                                │
-   │       - TelemetrySinkPort  (deterministisch sortiert)      │
-   │       - AlarmSinkPort                                      │
-   │       - RunRepositoryPort  (Lauf-Metadaten / Sequenz)      │
-   │  9. Snapshot (zyklisch oder on-demand)                     │
-   └────────────────────────────────────────────────────────────┘
+   ┌──────────────────────────────────────────────────────────────────┐
+   │                       Tick (t)                                   │
+   │                                                                  │
+   │  A0v Pre-Clock Pending-Agent-Command-Target-Validierung          │
+   │       (ADR 0026 §2.1 — Atomizitaets-Vertrag: Exception           │
+   │        laesst Clock/Scheduler/Buffer unangetastet)               │
+   │  1.   ClockPort.advance(tick_ms); now := clock.now()             │
+   │  2.   Scheduler.pop_due(now)                                     │
+   │         (stabile Sortierung: time, prio, source, seq, id)        │
+   │                                                                  │
+   │  ┌── _tick_loop_decimal_context() — prec=28, ROUND_HALF_EVEN ──┐ │
+   │  │ A0a Apply validierter Pending-Agent-Commands                │ │
+   │  │       (ADR 0026 §2.1; GridConnection-Targets ergaenzen      │ │
+   │  │        manual_override_grid_ids; Buffer wird erst nach      │ │
+   │  │        erfolgreichem Apply-Durchlauf geleert)               │ │
+   │  │ A   Vor-Tick-Block: LoadDevice-Baseline + LoadProfile-      │ │
+   │  │       Overlay + LoadEvent-Overlay → apply_command(          │ │
+   │  │       set_power_kw) (ADR 0021 §2.5)                         │ │
+   │  │ A2  FaultPort.apply_active_faults(devices, context)         │ │
+   │  │       falls fault_port gesetzt (ADR 0022 §2.4)              │ │
+   │  │ B   Erste Geraete-Iteration (PV/Load/Battery/SmartMeter):   │ │
+   │  │       für jedes Device: tick → telemetry-Sammlung +         │ │
+   │  │       Bilanz-Aggregation in generation/load/storage-Buckets │ │
+   │  │ C   GridConnection-Auto-Schluss: pro GridConnection ohne    │ │
+   │  │       manuellen Override apply_command(set_power_kw,        │ │
+   │  │       -pre_grid_residual) (ADR 0021 §2.7)                   │ │
+   │  │ D   Zweite Iteration (GridConnection-Tick) → telemetry +    │ │
+   │  │       grid_connection-Bucket                                │ │
+   │  │ D2  Agent-Tick (optional): für jeden registrierten Agent    │ │
+   │  │       agent.tick(context, bus); emittierte Commands         │ │
+   │  │       landen im _pending_agent_commands-Buffer fuer A0v/    │ │
+   │  │       A0a der NAECHSTEN Tick (GG-AGENT-008 Commit-          │ │
+   │  │       Reihenfolge-Invariante, ADR 0023 §2.4)                │ │
+   │  │ E   grid_model.update(generation_kw, load_kw, storage_kw,   │ │
+   │  │       grid_connection_kw) (ADR 0019 §2.2)                   │ │
+   │  └─────────────────────────────────────────────────────────────┘ │
+   │                                                                  │
+   │   M6 (geplant):                                                  │
+   │     - Commit: TelemetrySinkPort / AlarmSinkPort /                │
+   │       RunRepositoryPort (deterministisch sortiert)               │
+   │     - Snapshot (zyklisch oder on-demand) ueber                   │
+   │       TickLoop.snapshot()                                        │
+   └──────────────────────────────────────────────────────────────────┘
 ```
+
+Welle-4a (ADR 0026 §2.3) verdrahtet zusaetzlich einen einmaligen
+Lifecycle-Hook im TickLoop-Konstruktor: `_attach_agents()` ruft
+`agent.set_run_id(run_id)` und — fuer Agents mit
+`_RandomAttachableAgent`-Sub-Protocol —
+`agent.attach_random(random_root.sub_port(f"agent-{agent_id}"))`. Damit
+gilt die Sub-Random-Stream-Konvention `agent-{agent_id}` produktiv;
+Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
 
 **Determinismusinvarianten:**
 
-- Tie-Breaking-Reihenfolge ist dokumentiert und getestet (`GG-ARCH-006`).
-- Eingangswerte ohne gueltige Quelle werden mit Qualitaetsstatus markiert,
-  nie ungeprueft uebernommen (`GG-SAFE-001..004`, `GG-AR-P-010`).
+- Tie-Breaking-Reihenfolge fuer Scheduler-Events ist dokumentiert und
+  getestet (`GG-ARCH-006`).
+- AgentMessageBus-Sortierung `(simulation_time, sender, sequence)` ist
+  deterministisch unabhaengig von Publish-Reihenfolge (ADR 0023 §2.2).
+- A0v/A0a-Trennung garantiert, dass ein
+  `AgentInvalidCommandTargetError` weder Clock noch Scheduler noch
+  Devices noch Pending-Buffer mutiert — Retry/Resume bleibt sauber
+  moeglich (ADR 0026 §2.1).
+- Agent-Foundation-State (`_pending_agent_commands` +
+  `AgentMessageBus`) ist Sub-Snapshot-persistiert (ADR 0026 §2.6 +
+  ADR 0015 §2.3-additiv), damit Snapshots zwischen Agent-Tick und
+  Folgetick keine Commands verlieren.
+- Eingangswerte ohne gueltige Quelle werden mit Qualitaetsstatus
+  markiert, nie ungeprueft uebernommen (`GG-SAFE-001..004`,
+  `GG-AR-P-010`).
 - Persistenz darf gepuffert sein, solange Commit-Reihenfolge fachlich
   stabil bleibt (`GG-RT-005`).
 
@@ -616,6 +681,37 @@ ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 
 Konkurrierende Strategien (`GG-AGENT-005`) werden durch dokumentierte
 Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
+
+**Produktive Surface (M3 Welle 3 / Welle 4a, ADR 0023 + ADR 0026):**
+
+- `Agent`-Sub-Protocol (`hexagon/core/agents/_protocol.py`) fixiert
+  die Pflicht-Surface (`agent_id`, `set_run_id`, `tick`, `snapshot`,
+  `from_snapshot`); `_RandomAttachableAgent`-Sub-Protocol traegt den
+  optionalen `attach_random(...)`-Hook fuer stochastische Agenten
+  (Welle 4a, ADR 0026 §2.3).
+- `AgentMessageBus`-Core-Klasse (`hexagon/core/agents/bus.py`)
+  liefert `publish` / `drain_for` (nicht-destruktiv) /
+  `consume_for` (destruktive Direct-Inbox-Drain-Variante, Welle 4a,
+  ADR 0026 §2.4) sowie Snapshot-Roundtrip (ADR 0023 §2.2).
+- Registrierung erfolgt produktiv ueber den Konstruktor-Kwarg
+  `TickLoop(agents=tuple[Agent, ...])` mit Auto-Bus-Regel und
+  `AgentDuplicateIdError`-Fail-Fast (ADR 0026 §2.2). Der `build_
+  tick_loop(...)`-Loader reicht den Kwarg symmetrisch durch.
+- Command-Drain laeuft ueber Schritt A0v + A0a vor Schritt A der
+  naechsten Tick (siehe §6). Agent-Commands sind also frueh im
+  Folge-Tick wirksam, ohne den Scheduler oder die Device-
+  Iteration zu beruehren.
+- Foundation-State (`AgentMessageBus`-Buffer +
+  `_pending_agent_commands`) wird als additive Sub-Snapshots
+  `agent_bus` und `pending_agent_commands` in
+  `TickLoop.snapshot()` / `from_snapshot(...)` persistiert (ADR
+  0026 §2.6 + ADR 0015 §2.3-additiv, kein Schema-Bump).
+
+**Welle-4b-Scope (offen):** konkrete Agent-Implementer
+(`RuleBasedAgent` o. ae.), `agents`-Top-Level-Block im Scenario-
+Schema, konkrete Agent-Instanz-Snapshots
+(`agents.<type>.<id>`), Property-Determinismus-Tests pro
+Agent-Implementer und End-to-End-Demo-Szenario.
 
 ---
 
