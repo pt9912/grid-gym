@@ -1,11 +1,27 @@
 # ADR 0027 — RuleBasedAgent + Scenario-Agents-Block-Pattern (M3 Welle 4b)
 
-**Status:** Proposed — 2026-05-22 mit M3-Welle-4b-C1 (dieses
-Dokument). Validierung erfolgt mit M3-Welle-4b-C2-Merge
-(produktive Implementation + Tests); Provisional-Tag mit C3.
+**Status:** Provisional — Validierung erfolgt mit M3-Welle-4b-
+C2-Merge (`95979e5`) + C2-Review-Folge (`11b2ca9`): 992
+Unit-Tests gruen (Welle-4a-Endstand 923 → +65 Welle-4b-
+Tests + 4 Review-Folge-Tests), 19 Integration-Tests
+(Welle-4a-Endstand 14 → +5 Welle-4b-E2E + Review-Folge),
+`make fullbuild` cache-frei gruen **ohne** Override (volle
+CI-Linie + Runtime-Image + Compose-Smoke `make ci + make
+runtime`); coverage 94.51% line / 90.47% critical-branch;
+dep-audit gruen (starlette-Upgrade `ac7b47f`).
 Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0023 /
 ADR 0026 oder einzeln).
 **Datum:** 2026-05-22
+**Status geaendert am:** 2026-05-22 — `Proposed → Provisional`
+mit M3-Welle-4b-C2-Merge (`95979e5`: feat-Commit liefert
+RuleBasedAgent + ScenarioAgent + agents-Top-Level-Block-
+Validator + `_assert_agent_list` + `_build_agents`-Factory
++ `_AGENT_PLUGIN_FACTORIES`-Hook + agents.<type>.<id>-
+Sub-Snapshot + bidirektionaler Resume-Match-Check + 7 neue
+Error-Klassen + 65 neue Tests + Demo-Szenario) sowie
+C2-Review-Folge `11b2ca9` (Sentinel-Pattern fuer
+build_tick_loop-`agents`-Kwarg + Plugin-Restore-Scope-
+Schnitt-Doku + SoC-Assertion).
 **Geaendert am:** 2026-05-22 — Welle-4b-C1-Review-Folge
 (F-1 blocking + F-2 important + F-3..F-6 nits, alle vor
 Provisional adressiert):

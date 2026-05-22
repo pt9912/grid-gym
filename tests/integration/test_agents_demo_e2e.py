@@ -119,7 +119,9 @@ def test_agents_demo_battery_soc_moves_during_charge_phase() -> None:
     loaded = load_yaml_scenario(AGENTS_DEMO_SCENARIO_PATH)
     loop = _build_loop(loaded)
     battery = next(
-        d for d in loop._devices if isinstance(d, BatteryDevice)  # type: ignore[attr-defined]
+        d
+        for d in loop._devices
+        if isinstance(d, BatteryDevice)  # type: ignore[attr-defined]
     )
     initial_snapshot = battery.snapshot()
     initial_soc_kwh = initial_snapshot["soc_kwh"]

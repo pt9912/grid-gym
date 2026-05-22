@@ -1,11 +1,38 @@
 # Welle 4b — RuleBasedAgent + Scenario-Schema + End-to-End-Demo
 
-**Status:** In Progress — M3-Welle-4b-Eroeffnung am 2026-05-22
-(Pre-C0 `8802dc0` rename-only, Post-Pre-C0 `c055be9` link-fix,
-C0 dieser Slice-Doc). Welle 4b liefert die produktive
-Konkretisierung des Multi-Agent-Subsystems oberhalb der
-Welle-4a-Foundation-Plumbing-Schicht (`a24f733..da18c6d` +
-Welle-4a-Review-Folge `38272f6`).
+**Status:** Done — M3-Welle-4b-Closure am 2026-05-22
+(`8802dc0..ac7b47f`, 9 Welle-4b-Kern-Commits inkl. Review-
+Folgen + diesem C3-Status-Sync). Welle 4b liefert die
+produktive Konkretisierung des Multi-Agent-Subsystems
+oberhalb der Welle-4a-Foundation-Plumbing-Schicht
+(`a24f733..da18c6d` + Welle-4a-Review-Folge `38272f6`).
+
+**DoD-Verifikation (Welle-Schluss):**
+
+- `make fullbuild` cache-frei gruen **ohne** Override (volle
+  CI-Linie `lint + format-check + typecheck + arch-check +
+  test-unit + coverage-gate + coverage-gate-critical +
+  dep-audit + test-integration + openapi-validate +
+  image-audit` plus `runtime`-Build + Compose-Smoke). Das
+  ist das **Welle-4-Abnahme-Kriterium** aus ADR 0027 §2.5.
+- `make test-unit`: **992 Tests gruen** (Welle-4a-Endstand 923
+  → +65 Welle-4b-C2 + 4 Welle-4b-C2-Review-Folge = +69
+  Welle-4b-Tests).
+- `make test-integration`: **19 Tests gruen** (Welle-4a-
+  Endstand 14 → +4 Welle-4b-E2E + 1 SoC-Pinning = +5
+  Welle-4b-Integration-Tests).
+- `make gates` A-1 gruen ohne Override: lint, format-check,
+  mypy `--strict` (90 source files), arch-check 7/7 contracts
+  kept, arch-check-imports 7/7 kept 0/7 broken, coverage
+  94.51% line / 90.47% critical-branch, dep-audit gruen
+  (starlette `1.0.0 → 1.0.1` Upgrade `ac7b47f`).
+- ADR 0027: `Proposed → Provisional` (Schwester-ADR zu
+  ADR 0026; Pattern-Pendant zu ADR 0025 fuer Welle-2-
+  Konkretisierung).
+- AC-PORTS-NO-OUT bleibt KEPT.
+- Welle-4-Gate `make fullbuild` als Top-Level-Closure ohne
+  Override-Mitigation; Compose-Smoke + Trivy-Image-Audit
+  laufen produktiv durch.
 
 Welle 4b schliesst zugleich die M3-Welle 4 ab (Foundation 4a +
 Konkretisierung 4b), spiegelt damit eins-zu-eins das M3-Welle-1
@@ -19,21 +46,27 @@ Kanonische Slice-Spezifikation:
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 
-**Commit-Sequenz (geplant):**
+**Commit-Sequenz (geliefert):**
 
 - Pre-C0 `8802dc0` — `chore(welle-4b): git mv welle-4a.md → done/welle-4a.md` (rename-only).
 - Post-Pre-C0 `c055be9` — `docs(plan): fix welle-4a.md relative ref nach Pre-C0-Move`.
-- C0 (dieses Dokument + `in-progress/README.md`-Sync) —
-  `docs(plan): welle-4b Slice-Doc`.
-- C1 — `docs(adr): ADR 0027 Proposed — RuleBasedAgent +
-  Scenario-Agents-Block-Pattern` (oder Aktualisierung
-  ADR 0023/0026, falls keine eigenstaendigen Architektur-
-  Entscheidungen benoetigt).
-- C2 — `feat(welle-4b): RuleBasedAgent + Scenario-Schema +
-  agents-Top-Level-Block + Property-Tests + End-to-End-Demo`.
-- C3 — `docs(plan): Welle-4b Status/DoD-Sync` (ADR-Sync,
-  M3-Plan §3 Welle-4b-Done-Tag, Welle-4-Gate-Beleg,
-  welle-4b.md → Done; Welle 5 als naechster Schritt vermerkt).
+- C0 `581e09b` + `d1a6683` (Spot-Check-Folge) — `docs(plan):
+  welle-4b Slice-Doc + Out-of-Scope-Schaerfung Trigger 011 /
+  GG-AGENT-005`.
+- C1 `5995152` + `42b47da` (C1-Review-Folge) —
+  `docs(adr): ADR 0027 Proposed + F-1/F-2 + 4 Nits`.
+- C2 `95979e5` + `11b2ca9` (C2-Review-Folge) —
+  `feat(welle-4b): RuleBasedAgent + Scenario-Agents-Block +
+  Property-Tests + End-to-End-Demo` + C2-Review-Folge-Fix
+  (build_tick_loop-Sentinel + Plugin-Restore-Welle-4c-
+  Verschiebung + SoC-Pinning).
+- Dep-Audit-Fix `ac7b47f` — `chore(deps): bump starlette
+  1.0.0 → 1.0.1 (PYSEC-2026-161)`.
+- C3 (dieser Commit) — `docs(plan): Welle-4b Status/DoD-Sync`
+  (ADR 0027 → Provisional, ADR-Index + M3-Plan §3 Welle-4b-
+  Done-Tag, welle-4b.md → Done, Welle-4-Gate `make fullbuild`-
+  Beleg, Welle 5 (Observability) als naechster Schritt
+  vermerkt).
 
 ## 1. Context
 

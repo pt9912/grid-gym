@@ -342,9 +342,7 @@ def test_rule_from_mapping_rejects_wrong_type_in_condition(field: str, bad_value
     snap = _base_snapshot()
     condition: dict[str, object] = {"metric": "tick", "comparator": ">=", "threshold": 0}
     condition[field] = bad_value
-    snap["rules"] = (
-        {"condition": condition, "action": {"type": "charge", "payload": {}}},
-    )
+    snap["rules"] = ({"condition": condition, "action": {"type": "charge", "payload": {}}},)
     with pytest.raises(WrongTypeError):
         RuleBasedAgent.from_snapshot(snap)
 
@@ -493,9 +491,7 @@ def test_plugin_and_plugin_name_properties_expose_internal_state() -> None:
     Property-Surface (Coverage fuer `plugin`/`plugin_name`-
     Properties)."""
     plugin = _StubPlugin(recorded_calls=[])
-    agent_plugin_path = RuleBasedAgent(
-        agent_id="bess", plugin=plugin, plugin_name="stub_v1"
-    )
+    agent_plugin_path = RuleBasedAgent(agent_id="bess", plugin=plugin, plugin_name="stub_v1")
     assert agent_plugin_path.plugin is plugin
     assert agent_plugin_path.plugin_name == "stub_v1"
 

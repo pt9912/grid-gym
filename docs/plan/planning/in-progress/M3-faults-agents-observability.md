@@ -64,18 +64,48 @@ agents=)`-Symmetrie + GridModelBilanz-Overlay-Verdrahtung.
 Integration ggue. Welle-3-Stand); `make gates` A-1 ohne
 Override gruen.
 
-**Naechster Schritt:** **Welle 4b** liefert die konkrete
-Multi-Agent-Konkretisierung (mind. ein `Agent`-Implementer,
-z. B. `RuleBasedAgent`, Decision-Logik, `agents`-Top-Level-
-Block im Scenario-Schema + Validator-Haertung, konkrete
-Agent-Instanz-Snapshots `agents.<agent_type>.<agent_id>` und
-das Welle-4-End-to-End-Gate (`make fullbuild` ohne Override
-mit Agent-Demo-Szenario)).
+**Welle 4b (Multi-Agent-Konkretisierung) abgeschlossen am
+2026-05-22** mit `8802dc0..ac7b47f` (Pre-C0-Rename welle-4a →
+done/ + Post-Pre-C0-Link-Fix + welle-4b-C0 + ADR-0027-C1 + C1-
+Review-Folge + C2 + C2-Review-Folge + dep-audit-Fix +
+diesem C3-Status-Sync): ADR 0027 `Proposed → Provisional`
+(RuleBasedAgent + Scenario-Agents-Block-Pattern; Schwester-
+ADR zu ADR 0026, Pattern-Pendant zu ADR 0025). Produktiv:
+`RuleBasedAgent`-Implementer mit Hybrid Rules + Plugin-Hook
+(Welle-4b-Metric-Whitelist `tick`/`simulation_time`, first-
+match-wins, snapshot-bar); `ScenarioAgent`-Domain +
+`_assert_agent_list(...)`-Validator + `_build_agents(...)`-
+Factory + `_AGENT_PLUGIN_FACTORIES`-Hook (leer; Welle 4c+
+Material); `agents.<agent_type>.<agent_id>`-Sub-Snapshot mit
+bidirektionalem Resume-Match-Check; `AgentPlugin`-Sub-
+Protocol (`@runtime_checkable`); sieben neue Error-Klassen
+(`ScenarioUnknownAgentTypeError`,
+`ScenarioUnknownAgentTargetError`,
+`ScenarioInvalidRuleMetricError`,
+`ScenarioInvalidRuleComparatorError`,
+`ScenarioInvalidAgentParamsError`,
+`ScenarioUnknownAgentPluginError`,
+`TickLoopAgentInstanceSnapshotMismatchError`);
+`build_tick_loop(agents=None)`-Sentinel-Pattern (expliziter
+`()`-Override wird respektiert); Demo-Szenario
+`tests/integration/scenarios/agents_demo.yaml` mit drei
+zeitgesteuerten Phasen (Idle/Charge/Discharge). 992 Unit-
+Tests + 19 Integration-Tests (+69 Unit / +5 Integration ggue.
+Welle-4a-Stand). **`make fullbuild` cache-frei gruen ohne
+Override** (volle CI + Runtime-Image + Compose-Smoke +
+Trivy-Image-Audit) — Welle-4-Abnahme-Kriterium aus ADR 0027
+§2.5 erfuellt. Plus `dep-audit`-Fix `ac7b47f`
+(starlette `1.0.0 → 1.0.1`, PYSEC-2026-161).
+
+**Naechster Schritt:** **Welle 5** (Observability —
+LogPort/MetricsPort/TracePort, ADR 0024). M3-Welle 4
+(Foundation 4a + Konkretisierung 4b) ist abgeschlossen.
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
 bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
-abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21.
+abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21;
+Welle 4b abgeschlossen 2026-05-22.
 
 **Bezug:**
 
