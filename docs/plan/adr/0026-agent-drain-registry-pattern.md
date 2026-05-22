@@ -53,7 +53,7 @@ ADR 0026 = Welle-4a-Konkretisierung von Welle-3-ADR 0023),
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/in-progress/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4a-Slice-Doc
-[`in-progress/welle-4a.md`](../planning/in-progress/welle-4a.md).
+[`done/welle-4a.md`](../planning/done/welle-4a.md).
 Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..008`); §16
 Kommunikationsschnittstellen (`GG-DATA-004` `Command`).
 Architektur §6 Datenfluss Tick-Loop (Schritt 7 + neuer

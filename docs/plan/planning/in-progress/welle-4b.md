@@ -1,0 +1,321 @@
+# Welle 4b — RuleBasedAgent + Scenario-Schema + End-to-End-Demo
+
+**Status:** In Progress — M3-Welle-4b-Eroeffnung am 2026-05-22
+(Pre-C0 `8802dc0` rename-only, Post-Pre-C0 `c055be9` link-fix,
+C0 dieser Slice-Doc). Welle 4b liefert die produktive
+Konkretisierung des Multi-Agent-Subsystems oberhalb der
+Welle-4a-Foundation-Plumbing-Schicht (`a24f733..da18c6d` +
+Welle-4a-Review-Folge `38272f6`).
+
+Welle 4b schliesst zugleich die M3-Welle 4 ab (Foundation 4a +
+Konkretisierung 4b), spiegelt damit eins-zu-eins das M3-Welle-1
+(Fault-Foundation) → M3-Welle-2 (Fault-Konkretisierung)-Pattern.
+Nach Welle-4b-Closure ist das Multi-Agent-Subsystem auf produktivem
+Welle-4-Vertragstand und kann Welle 5 (Observability) zur Seite
+liefern.
+
+Kanonische Slice-Spezifikation:
+[`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
+— dieses Dokument ist lesefreundlicher Index + per-Welle-
+Tracking, nicht als Ersatz.
+
+**Commit-Sequenz (geplant):**
+
+- Pre-C0 `8802dc0` — `chore(welle-4b): git mv welle-4a.md → done/welle-4a.md` (rename-only).
+- Post-Pre-C0 `c055be9` — `docs(plan): fix welle-4a.md relative ref nach Pre-C0-Move`.
+- C0 (dieses Dokument + `in-progress/README.md`-Sync) —
+  `docs(plan): welle-4b Slice-Doc`.
+- C1 — `docs(adr): ADR 0027 Proposed — RuleBasedAgent +
+  Scenario-Agents-Block-Pattern` (oder Aktualisierung
+  ADR 0023/0026, falls keine eigenstaendigen Architektur-
+  Entscheidungen benoetigt).
+- C2 — `feat(welle-4b): RuleBasedAgent + Scenario-Schema +
+  agents-Top-Level-Block + Property-Tests + End-to-End-Demo`.
+- C3 — `docs(plan): Welle-4b Status/DoD-Sync` (ADR-Sync,
+  M3-Plan §3 Welle-4b-Done-Tag, Welle-4-Gate-Beleg,
+  welle-4b.md → Done; Welle 5 als naechster Schritt vermerkt).
+
+## 1. Context
+
+M3-Welle-4a (`a24f733..da18c6d` + Welle-4a-Review-Folge
+`38272f6`) hat die Foundation-Plumbing-Schicht produktiv
+abgeschlossen: ADR 0026 `Provisional`, TickLoop-`agents`-
+Konstruktor-Kwarg + Auto-Bus + `AgentDuplicateIdError`-Fail-
+Fast, Schritt A0v/A0a-Drain mit Atomizitaets-Vertrag,
+`_attach_agents()`-Lifecycle mit Sub-Random-Stream-Konvention,
+`AgentMessageBus.consume_for(receiver)` Direct-Inbox-Drain,
+Agent-Foundation-State-Sub-Snapshots (`agent_bus` +
+`pending_agent_commands`), Resume-Match-Checks. 923 Unit-Tests
++ 14 Integration-Tests; `make gates` A-1 ohne Override gruen.
+
+Welle-4a-Foundation hat **keine** konkreten Agent-Implementer
+und **keinen** `agents`-Top-Level-Block im Scenario-Schema —
+Welle-4a-Tests pinnen alle Pflicht-Pfade via `_NullAgent` und
+`_OrderRecordingAgent`-Stubs. Welle 4b setzt darauf auf und
+liefert die produktiv konsumierbaren Bausteine.
+
+ADR 0023 §6 + ADR 0026 §7 Anti-Scope listen die Welle-4b-
+Pflicht-Themen auf (siehe §2 In-Scope).
+
+## 2. Scope
+
+**In Scope (Welle 4b):**
+
+- **`RuleBasedAgent`-Implementer** (`hexagon/core/agents/
+  rule_based.py`): konkreter `Agent`-Implementer mit
+  deterministischer Decision-Logik. Surface-Auswahl ist
+  Welle-4b-C1-Material (z. B. Regel-Map `device_id →
+  TelemetryThreshold → Command-Template`). Implementer
+  erfuellt `Agent`-Protocol (Welle-3) und optional
+  `_RandomAttachableAgent`-Sub-Protocol (Welle-4a).
+- **`agents`-Top-Level-Block im Scenario-Schema** + Validator-
+  Hardening + `ScenarioAgent`-Domain-Klasse (analog
+  `ScenarioDevice` / `ScenarioFault`). Schema-Validierung:
+  Pflicht-Felder (`id`, `type`, `params`), Eindeutigkeit
+  von `agent_id`, Unknown-Type-Reject (analog
+  `ScenarioUnknownDeviceTypeError`-Pattern,
+  `ScenarioUnknownAgentTypeError`).
+- **`build_agents(...)` Factory + `build_tick_loop(agents=)`-
+  Verdrahtung im Loader** (analog `build_devices` aus
+  Welle 6b). Pro `ScenarioAgent`: Factory-Dispatch nach
+  `ScenarioAgent.type`, `agent.set_run_id(...)` + optional
+  `attach_random(...)` laufen ueber den TickLoop-Konstruktor-
+  Lifecycle (Welle-4a-`_attach_agents()`).
+- **Konkrete Agent-Instanz-Snapshots** `agents.<agent_type>.
+  <agent_id>` in `TickLoop.snapshot()` /
+  `from_snapshot(...)` (ADR 0015 §2.3-additiv, kein Schema-
+  Bump). Roundtrip-Vertrag analog Device-Snapshot-Pattern
+  (ADR 0013 §2.4): `from_snapshot(snapshot())` ist
+  byte-stabil.
+- **Property-Determinismus-Tests** pro Agent-Implementer
+  (`GG-AGENT-003`): gleicher Seed + gleicher Eingabeverlauf
+  → identische Command-Sequenz. Property-Tests laufen mit
+  `hypothesis` analog Welle-2-Fault-Property-Tests.
+- **End-to-End-Demo-Szenario** unter
+  `scenarios/agents-demo.yaml` o. ae.: minimales PV + Load
+  + Battery + GridConnection-Setup mit einem
+  `RuleBasedAgent`, das Battery-SoC-Threshold steuert.
+  Demo laeuft 60 s ohne Crash, emittiert Telemetry, Snapshot/
+  Restore-Roundtrip ist byte-stabil.
+- **Welle-4-Abschluss-Gate** `make fullbuild` ohne Override:
+  alle A-1-Gates + Compose-Smoke + Demo-Szenario-Lauf gruen
+  ohne `OVERRIDE=…`. Damit ist M3-Welle 4 (Foundation +
+  Konkretisierung) abnahmefaehig.
+
+**Out of Scope (Welle 4c oder spaeter — explizit dokumentierte
+Forward-Pointer aus ADR 0023 §6 + ADR 0026 §7):**
+
+- `GG-AGENT-007` Deadlines (Agent-Tick-Budget).
+- `GG-AGENT-008` Async (vollstaendiger Async-Vertrag —
+  Welle-4-Stand bleibt synchron-deterministisch).
+- `LogPort`/`MetricsPort`/`TracePort`-Injektion in Agents
+  (ADR 0024-Material, Welle 5/6).
+- Multi-Receiver-Broadcast-Watermark (`evict_before(...)`
+  o. ae., ADR 0026 §2.4 Forward-Pointer).
+- RL-Adapter / Trigger 011.
+- In-Tick-Wirksamkeit der Agent-Commands (GG-AGENT-008
+  Commit-Reihenfolge bleibt: Commands wirken im Folge-Tick
+  via A0v/A0a).
+- Mehrere konkurrierende Agent-Implementer mit
+  Priorisierungs-Resolution (`GG-AGENT-005`) — Welle-4b
+  liefert einen Implementer-Typ; Multi-Strategien sind
+  Welle 4c+ Material.
+
+## 3. Architektur-Entscheidungen (geplant)
+
+**ADR-Status (Welle-4b-Eroeffnung):**
+
+- ADR 0027 (oder Welle-4b-internes Pattern-ADR, falls noetig)
+  — `RuleBasedAgent`-Decision-Surface + Scenario-`agents`-
+  Block. Status `Proposed` mit Welle-4b-C1; `Provisional`
+  mit Welle-4b-C3; `Accepted` mit M3-Welle-7-Closure.
+- ADR 0023 / ADR 0026 bleiben unveraendert in `Provisional`;
+  Welle-4b-Code lebt im durch sie definierten Vertrag.
+
+**Offene Punkte (zu klaeren in C1):**
+
+- **Single ADR oder Pattern-Update?** Falls Welle-4b nur
+  konkrete Implementer ohne neue Architektur-Decision
+  liefert (alle Vertraege via ADR 0023/0026 abgedeckt),
+  reicht ein internes Welle-4b-Decision-Memo statt eigener
+  ADR. Sub-Slicing-Schwelle aus M3-Slice-Plan §3 prueft das
+  am C1-Zeitpunkt.
+- **`RuleBasedAgent`-Surface-Granularitaet:** Map-basiert
+  (Threshold-Rules) oder Hooks-basiert (Decision-Callbacks)?
+  Vermutlich Threshold-Map (deterministisch, snapshot-bar,
+  testbar) — final in C1.
+- **`agents`-Schema-Format:** flach
+  (`agents: list[{id, type, params}]`) oder nested
+  (`agents: {<id>: {type, params}}`)? Konsistenz zu
+  `devices` (flach) bevorzugt — final in C1.
+- **End-to-End-Demo-Szenario-Surface:** YAML-Datei in `tests/
+  fixtures/` oder eigenes `scenarios/`-Verzeichnis?
+  Konsistenz zur bestehenden Test-Fixtures-Konvention
+  bevorzugt — final in C2.
+
+## 4. Liefer-Reihenfolge
+
+### Pre-C0 — `chore`: git mv welle-4a.md → done/ (rename-only, `8802dc0`)
+
+Reiner Rename-Commit nach Welle-4a-C3-Closure + Welle-4a-
+Review-Folge + Welle-4b-Vorbereitung-Sync. 0 Insertions /
+0 Deletions; `git log --follow done/welle-4a.md` bleibt
+traceable.
+
+### Post-Pre-C0 — `docs(plan)`: fix welle-4a.md relative ref nach Move (`c055be9`)
+
+Fix der einen broken Reference in `done/welle-4a.md` (Zeile
+53: `M3-faults-agents-observability.md` →
+`../in-progress/M3-faults-agents-observability.md`). Separater
+Commit per `feedback_git_mv`-Konvention.
+
+### C0 — `docs(plan)`: welle-4b Slice-Doc (dieses Dokument)
+
+Eroeffnet Welle 4b mit Scope-Skizze, geplanter Liefer-
+Reihenfolge, Risiken und Anti-Scope. Plus `in-progress/
+README.md`-Sync: `welle-4a.md`-Eintrag entfernt (jetzt in
+`done/`), neuer `welle-4b.md`-Eintrag im Bestand.
+
+### C1 — `docs(adr)` oder `docs(plan)`: Architektur-Entscheidungen
+
+Falls Welle-4b neue Architektur-Decisions erfordert (z. B.
+`RuleBasedAgent`-Decision-Surface, `agents`-Schema-Format,
+Snapshot-Slot-Konvention): ADR 0027 Proposed. Sonst:
+internes Welle-4b-Decision-Memo in diesem Slice-Doc unter
+§3.
+
+### C2 — `feat(welle-4b)`: RuleBasedAgent + Scenario-Schema + Demo + Tests
+
+Produktive Implementation:
+
+- `hexagon/core/agents/rule_based.py` — `RuleBasedAgent`-
+  Klasse mit deterministischer Decision-Logik + Snapshot/
+  Roundtrip.
+- `hexagon/core/scenario/validator.py` + `loader.py` —
+  `agents`-Top-Level-Block Validator + `ScenarioAgent`-Domain
+  + `build_agents(...)` Factory + `build_tick_loop(agents=)`-
+  Verdrahtung.
+- `hexagon/core/simulation/tick_loop.py` — Agent-Instanz-
+  Sub-Snapshots (`agents.<type>.<id>`) in `snapshot()` /
+  `from_snapshot(...)`.
+- `tests/unit/hexagon/core/agents/test_rule_based.py` —
+  Decision-Logik-Pinning + Snapshot-Roundtrip.
+- `tests/unit/hexagon/core/scenario/test_*` —
+  `agents`-Schema-Validator + Loader-Forwarding.
+- `tests/unit/hexagon/core/simulation/test_tick_loop_welle_
+  4b_*.py` — Agent-Instanz-Snapshot + Resume-Match.
+- `tests/property/test_rule_based_determinism.py` — Property-
+  Test (Seed → Sequenz).
+- `tests/integration/test_agents_demo_e2e.py` — End-to-End-
+  Demo-Run (60 s, Telemetry, Snapshot/Restore).
+- `scenarios/agents-demo.yaml` (oder `tests/fixtures/...`) —
+  Demo-Szenario.
+
+### C3 — `docs(plan)`: Welle-4b Status/DoD-Sync
+
+ADR 0027 (oder ADR 0023/0026) Status-Uebergang. M3-Slice-Plan
+§3 Welle-4b-Done-Tag. `welle-4b.md` Status `In Progress →
+Done`. Welle-4-Gate-Beleg (`make fullbuild` cache-frei gruen
+ohne Override). Welle 5 als naechster Schritt im
+`in-progress/README.md` vermerkt.
+
+## 5. Critical Files
+
+Files, die zwingend Aenderungen im C2-Commit haben:
+
+- `src/grid_gym/hexagon/core/agents/rule_based.py` — **NEU**
+  (RuleBasedAgent-Implementer).
+- `src/grid_gym/hexagon/core/agents/__init__.py` —
+  Re-Export `RuleBasedAgent`.
+- `src/grid_gym/hexagon/core/scenario/validator.py` —
+  `agents`-Block-Validierung.
+- `src/grid_gym/hexagon/core/scenario/loader.py` —
+  `build_agents(...)` + `build_tick_loop(agents=)`-
+  Verdrahtung.
+- `src/grid_gym/hexagon/core/domain/scenario.py` —
+  `ScenarioAgent`-Domain-Klasse + Aufnahme in `Scenario`-
+  Tupel.
+- `src/grid_gym/hexagon/core/simulation/tick_loop.py` —
+  Agent-Instanz-Sub-Snapshot-Schreibe-/Lese-Pfad.
+- `src/grid_gym/hexagon/core/errors.py` —
+  `ScenarioUnknownAgentTypeError` + ggf.
+  `ScenarioDuplicateAgentIdError`.
+- `tests/...` — Tests pro Vertrag (siehe C2-Block).
+- `scenarios/agents-demo.yaml` oder
+  `tests/fixtures/scenarios/agents-demo.yaml` — Demo.
+
+## 6. Verifikationspfad
+
+Welle-4b-Endstand erreicht, wenn alle Punkte gruen:
+
+1. `make test-unit` — Welle-4b-Tests gruen; Welle-4a-Stand
+   923 → erwartet ≥ 950 (RuleBasedAgent + Schema + Snapshot
+   + Property + Resume bringt ~25-30 neue Tests).
+2. `make test-integration` — End-to-End-Demo-Test gruen.
+3. `make gates` A-1 cache-frei gruen ohne Override
+   (lint, format-check, mypy `--strict`, arch-check,
+   coverage ≥ 94 % line + ≥ 90 % branch, critical-coverage
+   `core/agents`, dep-audit).
+4. `make fullbuild` ohne Override gruen — **Welle-4-
+   Abschluss-Gate**: Compose-Smoke + Demo-Szenario-Lauf +
+   Trivy-Image-Audit (falls in fullbuild eingeschlossen).
+5. ADR-Status-Uebergang (`Proposed → Provisional` oder
+   bestehende ADRs unveraendert mit Welle-4b-Hash als
+   Provisional-Stand).
+6. `make docs-check` gruen (alle Markdown-Refs aufloesbar).
+7. AC-PORTS-NO-OUT bleibt KEPT.
+8. `grep -rn` keine Welle-4a-Forward-Pointer mit Welle-4b-
+   Adresse offen (alle `RuleBasedAgent`/`agents`-Top-Level-
+   Forward-Pointer aus Welle-4a-Docs sind aufgeloest).
+
+## 7. Risiken
+
+- **R-1: Determinismus-Drift in `RuleBasedAgent`-Decision-
+  Logik.** Wenn die Decision-Surface implizit auf
+  Set/Dict-Iteration baut, bricht das Property-Test-
+  Determinismus-Pinning (`GG-AGENT-003`). Mitigation:
+  Decision-Map als sortiertes Tupel oder explizite
+  `sorted(...)`-Aufrufe pro Iteration; Property-Test mit
+  Permutations-Input.
+- **R-2: Scenario-Schema-Migration.** Wenn `agents`-Block
+  in einem Scenario-Schema-Bump (`v1 → v2`) landet, brechen
+  alle existierenden Demo-Szenarien. Mitigation:
+  optionaler Top-Level-Block (`agents:` darf fehlen,
+  default `()`), gleiches Pattern wie `faults:` /
+  `load_events:` /  `grid_model:` aus Welle 6b.
+- **R-3: Snapshot-Backward-Compat.** Alte Welle-4a-Snapshots
+  (ohne `agents.<type>.<id>`-Sub-Snapshots) muessen mit
+  Welle-4b-Restore-Pfad ohne Crash lesbar bleiben.
+  Mitigation: Welle-4a-Pattern beibehalten (Snapshot-Slot
+  optional, Default-leer); Welle-4a-Resume-Match-Check
+  bidirektional (`38272f6`) bleibt Pflicht.
+- **R-4: `make fullbuild`-Compose-Smoke-Pflichten.**
+  Demo-Szenario muss in compose-up + Tick-Loop ohne Crash
+  laufen. Wenn der `RuleBasedAgent` z. B. `Decimal`-
+  Operationen ausserhalb des localcontext-Vertrags
+  durchfuehrt, bricht `make fullbuild`. Mitigation: alle
+  Decimal-Operationen im Agent unter
+  `_tick_loop_decimal_context`-Schutz (analog Device-
+  Implementer-Pattern aus Welle 6).
+- **R-5: Welle-4-Gate-Reife.** `make fullbuild` ist in M3
+  evtl. noch nicht produktiv (Compose-Smoke-Stage existiert
+  vielleicht nicht voll). Mitigation: vor C2-Start Status
+  von `make fullbuild` checken; falls Stage fehlt, in C1
+  als M3-Welle-5-Vorbereitung markieren und Welle-4b-Gate
+  pragmatisch auf `make gates` A-1 + Demo-Szenario-Unit-
+  Test reduzieren.
+- **R-6: ADR-Scope.** Welle 4b koennte ohne eigenstaendige
+  ADR auskommen, wenn alle Decisions in ADR 0023/0026
+  bereits gefasst sind. Mitigation: C1-Triage entscheidet;
+  internes Decision-Memo in §3 dieses Slice-Docs als
+  Fallback dokumentiert.
+
+## 8. Wandert nach
+
+- `done/welle-4b.md` mit M3-Welle-5-Start als Pre-C0 reiner-
+  Rename-Commit (Memory-Konvention `feedback_git_mv` strikt,
+  Pattern aus Welle-4a-Pre-C0 `a24f733` + Welle-4b-Pre-C0
+  `8802dc0`).
+- Welle 5 folgt direkt — M3-Slice-Plan §3 sieht Observability
+  (LogPort/MetricsPort/TracePort + ADR 0024) als naechsten
+  Sub-Bereich nach abgeschlossener Welle 4.
