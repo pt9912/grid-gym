@@ -97,6 +97,13 @@ def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
     if isinstance(load_profiles, list):
         result["load_profiles"] = [_coerce_load_profile(entry) for entry in load_profiles]
 
+    # M3-Welle-4b (ADR 0027): agents-Block payload-Decimal-Coercion.
+    agents = result.get("agents")
+    if isinstance(agents, Mapping):
+        result["agents"] = {
+            agent_id: _coerce_agent(agent_def) for agent_id, agent_def in agents.items()
+        }
+
     return result
 
 
@@ -142,4 +149,59 @@ def _coerce_load_profile(entry: Any) -> Any:
         result["tick_values"] = [
             Decimal(value) if isinstance(value, str) else value for value in tick_values
         ]
+    return result
+
+
+# Welle-4b-Helper fuer agents-Block. Decimal-Coercion ist
+# pflicht-pragmatisch: Rule-`action.payload` enthaelt typisch
+# physikalische Werte (`value: "20"` fuer `set_power_kw`), die
+# der TickLoop an `Device.apply_command` weiterreicht (erwartet
+# Decimal). Welle-4b-Schema-Coercion ist nur fuer den
+# `action.payload`-Strang aktiv; Conditions sind int-typed.
+_RULE_PAYLOAD_DECIMAL_KEYS: frozenset[str] = frozenset(
+    {
+        "value",
+        "power_kw",
+    }
+)
+
+
+def _coerce_agent(entry: Any) -> Any:
+    """Welle-4b: konvertiert Decimal-Strings im `params.rules[*]
+    .action.payload`-Strang nach `Decimal`."""
+    if not isinstance(entry, Mapping):
+        return entry
+    result = dict(entry)
+    params = result.get("params")
+    if isinstance(params, Mapping):
+        result["params"] = _coerce_agent_params(params)
+    return result
+
+
+def _coerce_agent_params(params: Mapping[str, Any]) -> dict[str, Any]:
+    result: dict[str, Any] = dict(params)
+    rules = result.get("rules")
+    if isinstance(rules, list):
+        result["rules"] = [_coerce_rule(rule) for rule in rules]
+    return result
+
+
+def _coerce_rule(rule: Any) -> Any:
+    if not isinstance(rule, Mapping):
+        return rule
+    result = dict(rule)
+    action = result.get("action")
+    if isinstance(action, Mapping):
+        action_dict = dict(action)
+        payload = action_dict.get("payload")
+        if isinstance(payload, Mapping):
+            action_dict["payload"] = {
+                key: (
+                    Decimal(value)
+                    if key in _RULE_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
+                    else value
+                )
+                for key, value in payload.items()
+            }
+        result["action"] = action_dict
     return result

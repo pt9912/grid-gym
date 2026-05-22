@@ -184,3 +184,53 @@ class _RandomAttachableAgent(Agent, Protocol):
         Einmal-Aufruf-Vertrag.
         """
         ...  # pragma: no cover — Protocol-Stub
+
+
+@runtime_checkable
+class AgentPlugin(Protocol):
+    """Optionales Plugin-Sub-Protocol fuer `RuleBasedAgent`-
+    Decision-Hooks (M3 Welle 4b, ADR 0027 §2.3).
+
+    Welle-4b liefert die Hook-Surface + Factory-Map, aber **keine**
+    konkreten Plugin-Implementer. Welle 4c+ kann z. B.
+    `LearnedPolicyPlugin` / `MPCControllerPlugin` registrieren.
+
+    Plugin-Restore-Vertrag (ADR 0027 §2.3, Welle-4b-Review-Folge
+    F-2): `from_snapshot(state)` rekonstruiert den Plugin-Zustand
+    **ausschliesslich** aus dem Plugin-Snapshot — keine Scenario-
+    `plugin_params`-Abhaengigkeit. Scenario-Params fliessen nur
+    in den Fresh-Start-Pfad ein (Konstruktor/Factory). Drift-
+    Detection zwischen Scenario und Snapshot ist Aufrufer-Pflicht.
+    """
+
+    def decide(
+        self,
+        context: DeviceTickContext,
+        bus: "AgentMessageBus",
+        params: Mapping[str, object],
+    ) -> Sequence[Command]:
+        """Plugin-Decision-Pfad analog `Agent.tick(...)`.
+
+        Welle-4b-Vertrag: `params` ist das Scenario-`plugin_params`-
+        Mapping (read-only). Determinismus-Vertrag (`GG-AGENT-003`)
+        gilt: gleicher Seed + gleicher Eingabeverlauf → identische
+        Command-Sequenz.
+        """
+        ...  # pragma: no cover — Protocol-Stub
+
+    def snapshot(self) -> Mapping[str, object]:
+        """Persistiert Plugin-lokalen Zustand.
+
+        Format: `Mapping[str, object]` mit Pflicht-Key
+        `"version": int` (ADR 0015 §2.3 Sub-Snapshot-Konvention).
+        """
+        ...  # pragma: no cover — Protocol-Stub
+
+    @classmethod
+    def from_snapshot(cls, state: Mapping[str, object]) -> "AgentPlugin":
+        """Rekonstruiert das Plugin aus seinem Snapshot.
+
+        Plugin-Snapshot ist Single Source of Truth (ADR 0027 §2.3).
+        Scenario-Params werden hier nicht erwartet.
+        """
+        ...  # pragma: no cover — Protocol-Stub

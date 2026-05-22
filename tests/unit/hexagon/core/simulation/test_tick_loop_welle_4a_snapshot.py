@@ -617,7 +617,8 @@ def test_from_snapshot_grid_model_resume_tolerates_tuple_list_drift() -> None:
     grid_state = dict(sub_snapshots["grid_model"])  # type: ignore[arg-type]
     if "active_load_events" in grid_state:
         grid_state["active_load_events"] = [
-            dict(entry) for entry in grid_state["active_load_events"]  # type: ignore[union-attr]
+            dict(entry)
+            for entry in grid_state["active_load_events"]  # type: ignore[union-attr]
         ]
     sub_snapshots["grid_model"] = grid_state
     snapshot["sub_snapshots"] = sub_snapshots

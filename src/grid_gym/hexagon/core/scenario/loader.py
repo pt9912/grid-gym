@@ -27,7 +27,12 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Final, cast
 
-from grid_gym.hexagon.core.agents import Agent, AgentMessageBus
+from grid_gym.hexagon.core.agents import Agent, AgentMessageBus, AgentPlugin, RuleBasedAgent
+from grid_gym.hexagon.core.agents.rule_based import (
+    Rule,
+    RuleAction,
+    RuleCondition,
+)
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
@@ -36,6 +41,7 @@ from grid_gym.hexagon.core.devices.pv import PvDevice
 from grid_gym.hexagon.core.devices.smart_meter import SmartMeterDevice
 from grid_gym.hexagon.core.domain.scenario import (
     Scenario,
+    ScenarioAgent,
     ScenarioDevice,
     ScenarioEvent,
     ScenarioFault,
@@ -46,6 +52,8 @@ from grid_gym.hexagon.core.domain.scenario import (
 from grid_gym.hexagon.core.errors import (
     ScenarioInvalidLoadTargetError,
     ScenarioMissingSourceDeviceError,
+    ScenarioUnknownAgentPluginError,
+    ScenarioUnknownAgentTypeError,
     ScenarioUnknownDeviceTypeError,
 )
 from grid_gym.hexagon.core.grid_model import GridModelBilanz, GridModelConfig
@@ -132,6 +140,8 @@ def _build_scenario(raw: Mapping[str, object]) -> Scenario:
         grid_model_config=_parse_grid_model_config(raw),
         load_events=parse_load_events(raw),
         load_profiles=parse_load_profiles(raw),
+        # M3-Welle-4b (ADR 0027 §2.1): optionaler nested agents-Block.
+        agents=_parse_agents(raw),
     )
 
 
@@ -386,8 +396,20 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     durch, damit der GridModel-v2-Overlay-Snapshot
     (ADR 0020) die Single Source of Truth fuer die
     Welle-4a-Resume-LoadOverlay-Match-Checks ist.
+
+    M3-Welle-4b (ADR 0027 §2.2): wenn `agents=()`-Default
+    und `scenario.agents != ()` → Builder ruft
+    `_build_agents(scenario.agents)` und reicht das Resultat
+    durch. Aufrufer mit eigenem `agents=(...)`-Override
+    (z. B. Tests mit Stub-Agents) bekommen ihren Override
+    durchgereicht — pattern-konsistent zu `agent_bus`-Kwarg.
     """
     devices = build_devices(scenario.devices, random_root)
+    # M3-Welle-4b (ADR 0027 §2.2): wenn der Aufrufer keinen
+    # `agents`-Override liefert, leite Tuple aus `scenario.agents`
+    # via Factory-Map ab.
+    if not agents and scenario.agents:
+        agents = _build_agents(scenario.agents)
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
     # Ziele auf legitime Overlay-Geraete (LoadDevice oder
     # GridConnectionDevice) zeigen.
@@ -455,3 +477,146 @@ def _assert_overlay_targets(
             raise ScenarioInvalidLoadTargetError(
                 "LoadProfile", profile.target_device_id, type(target).__name__
             )
+
+
+# ---------------------------------------------------------------------------
+# M3-Welle-4b (ADR 0027 §2.1 + §2.2): agents-Top-Level-Block + Factory
+# ---------------------------------------------------------------------------
+
+
+def _parse_agents(raw: Mapping[str, object]) -> tuple[ScenarioAgent, ...]:
+    """ADR 0027 §2.1: liest den optionalen `agents`-Block (nested
+    Mapping) aus dem validierten Scenario-Mapping in eine
+    lexikographisch sortierte Tuple von `ScenarioAgent`-Eintraegen.
+
+    Sortier-Vertrag (ADR 0027 §2.1): Iteration ueber
+    `sorted(agents.keys())` lexikographisch, damit YAML-Loader-
+    spezifische Reihenfolge keine Drift erzeugt.
+    """
+    if "agents" not in raw:
+        return ()
+    block = cast(Mapping[str, object], raw["agents"])
+    return tuple(
+        ScenarioAgent(
+            id=agent_id,
+            type=cast(str, cast(Mapping[str, object], block[agent_id])["type"]),
+            params=cast(
+                Mapping[str, object], cast(Mapping[str, object], block[agent_id])["params"]
+            ),
+        )
+        for agent_id in sorted(block.keys())
+    )
+
+
+_AGENT_FACTORIES: Final[Mapping[str, Callable[[ScenarioAgent], Agent]]] = {
+    "rule_based": lambda scenario_agent: _build_rule_based_agent(scenario_agent),
+}
+"""ADR 0027 §2.2: Welle-4b-Agent-Factory-Map. Welle 4c+/M5
+muessen sich hier eintragen, analog `_DEVICE_FACTORIES`."""
+
+
+_AGENT_PLUGIN_FACTORIES: Final[Mapping[str, Callable[[Mapping[str, object]], AgentPlugin]]] = {}
+"""ADR 0027 §2.3: Plugin-Factory-Map fuer den
+`RuleBasedAgent`-Plugin-Pfad. Welle 4b ist leer; konkrete
+Plugins (`LearnedPolicyPlugin`, `MPCControllerPlugin` etc.)
+sind Welle 4c+ Material.
+
+Aufrufer mit einem Scenario, das `plugin: "<name>"` nutzt
+ohne registrierte Factory, sieht `ScenarioUnknownAgentPluginError`
+beim `build_agents(...)`-Aufruf (Fail-fast vor erstem Tick)."""
+
+
+def _build_agents(
+    scenario_agents: tuple[ScenarioAgent, ...],
+) -> tuple[Agent, ...]:
+    """ADR 0027 §2.2: Factory-Dispatch nach `ScenarioAgent.type`
+    zu konkreten `Agent`-Implementern.
+
+    Pattern parallel zu `build_devices(...)` aus Welle 6b. Pro
+    `ScenarioAgent`:
+
+    1. Factory aus `_AGENT_FACTORIES[type]`
+       (Unknown → `ScenarioUnknownAgentTypeError`).
+    2. `agent = factory(scenario_agent)`.
+
+    Lifecycle (`set_run_id`, optional `attach_random`) ist
+    Welle-4a-`_attach_agents()`-Verantwortung — das laeuft im
+    `TickLoop`-Konstruktor (ADR 0026 §2.3), nicht hier.
+
+    `random_root` wird NICHT injiziert (anders als
+    `build_devices(...)`): RuleBasedAgent ist deterministisch
+    und braucht keinen Random-Sub-Stream. Plugin-basierte
+    Agents bekommen Random — falls ueberhaupt — via
+    `_AGENT_PLUGIN_FACTORIES` (Welle 4c+ Material).
+    """
+    agents: list[Agent] = []
+    for scenario_agent in scenario_agents:
+        factory = _AGENT_FACTORIES.get(scenario_agent.type)
+        if factory is None:
+            raise ScenarioUnknownAgentTypeError(scenario_agent.type, tuple(_AGENT_FACTORIES))
+        agents.append(factory(scenario_agent))
+    return tuple(agents)
+
+
+def _build_rule_based_agent(scenario_agent: ScenarioAgent) -> RuleBasedAgent:
+    """ADR 0027 §2.3: konstruiert einen `RuleBasedAgent` aus dem
+    `ScenarioAgent`-Eintrag.
+
+    Hybrid-Mutual-Exclusivity ist vom Validator bereits geprueft
+    (`ScenarioInvalidAgentParamsError`), daher hier nur die
+    Konstruktion. Plugin-Pfad: Plugin-Factory-Lookup +
+    Konstruktion mit `plugin_params`.
+    """
+    params = scenario_agent.params
+    if "plugin" in params:
+        plugin_name = cast(str, params["plugin"])
+        plugin_factory = _AGENT_PLUGIN_FACTORIES.get(plugin_name)
+        if plugin_factory is None:
+            raise ScenarioUnknownAgentPluginError(
+                scenario_agent.id, plugin_name, tuple(_AGENT_PLUGIN_FACTORIES)
+            )
+        plugin_params_raw = params.get("plugin_params")
+        plugin_params: Mapping[str, object] = (
+            cast(Mapping[str, object], plugin_params_raw)
+            if isinstance(plugin_params_raw, Mapping)
+            else {}
+        )
+        plugin_instance = plugin_factory(plugin_params)
+        return RuleBasedAgent(
+            agent_id=scenario_agent.id,
+            target_device_id=None,
+            rules=(),
+            plugin=plugin_instance,
+            plugin_name=plugin_name,
+            plugin_params=plugin_params,
+        )
+    # Rules-Pfad.
+    target_device_id = cast(str, params["target_device_id"])
+    rules_raw = cast(list[Mapping[str, object]], params["rules"])
+    rules: tuple[Rule, ...] = tuple(_build_rule(rule_raw) for rule_raw in rules_raw)
+    return RuleBasedAgent(
+        agent_id=scenario_agent.id,
+        target_device_id=target_device_id,
+        rules=rules,
+        plugin=None,
+        plugin_name=None,
+        plugin_params=None,
+    )
+
+
+def _build_rule(rule_raw: Mapping[str, object]) -> Rule:
+    """Konstruiert eine `Rule` aus dem Scenario-Mapping. Validator
+    hat alle Pflicht-Felder + Typen + Whitelists bereits geprueft."""
+    condition_raw = cast(Mapping[str, object], rule_raw["condition"])
+    action_raw = cast(Mapping[str, object], rule_raw["action"])
+    return Rule(
+        condition=RuleCondition(
+            metric=cast(str, condition_raw["metric"]),
+            comparator=cast(str, condition_raw["comparator"]),
+            threshold=cast(int, condition_raw["threshold"]),
+        ),
+        action=RuleAction(
+            type=cast(str, action_raw["type"]),
+            payload=cast(Mapping[str, object], action_raw["payload"]),
+        ),
+    )

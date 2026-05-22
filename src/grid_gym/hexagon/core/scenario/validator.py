@@ -31,6 +31,9 @@ from typing import Final, cast
 
 from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
+    ScenarioInvalidAgentParamsError,
+    ScenarioInvalidRuleComparatorError,
+    ScenarioInvalidRuleMetricError,
     ScenarioMissingKeysError,
     ScenarioUnknownEventTargetError,
     ScenarioUnknownFaultTargetError,
@@ -96,6 +99,16 @@ _REQUIRED_LOAD_PROFILE: Final[frozenset[str]] = frozenset(
     {"target_device_id", "tick_values", "tick_ms"}
 )
 
+# M3-Welle-4b (ADR 0027 §2.2): `agents`-Top-Level-Block.
+_REQUIRED_AGENT_DEF: Final[frozenset[str]] = frozenset({"type", "params"})
+"""Pflicht-Keys pro `agents`-Eintrag (nested Mapping). `id` ist
+der Dict-Key des umschliessenden `agents`-Blocks, nicht im
+agent_def enthalten."""
+
+_REQUIRED_RULE: Final[frozenset[str]] = frozenset({"condition", "action"})
+_REQUIRED_RULE_CONDITION: Final[frozenset[str]] = frozenset({"metric", "comparator", "threshold"})
+_REQUIRED_RULE_ACTION: Final[frozenset[str]] = frozenset({"type", "payload"})
+
 
 def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     """Prueft die Pflicht-Struktur eines Szenario-Mappings.
@@ -124,6 +137,8 @@ def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     _assert_grid_model_block(raw)
     _assert_load_events_block(raw, devices)
     _assert_load_profiles_block(raw, devices)
+    # M3-Welle-4b (ADR 0027 §2.2): optionaler `agents`-Top-Level-Block.
+    _assert_agent_list(raw, devices)
 
 
 def _assert_required_keys(
@@ -366,3 +381,180 @@ def _assert_load_profiles_block(
         target = entry["target_device_id"]
         if isinstance(target, str) and target not in device_ids:
             raise ScenarioUnknownEventTargetError(target)
+
+
+# ---------------------------------------------------------------------------
+# M3-Welle-4b (ADR 0027 §2.2 + §2.3): `agents`-Top-Level-Block
+# ---------------------------------------------------------------------------
+
+
+def _assert_agent_list(raw: Mapping[str, object], devices: list[Mapping[str, object]]) -> None:
+    """ADR 0027 §2.2: Validiert den optionalen `agents`-Block.
+
+    Schema-Form: **nested Mapping** `agents: {<agent_id>:
+    {type, params}}`. Aufrufer iteriert spaeter ueber
+    `sorted(agents.keys())` lexikographisch fuer Determinismus.
+
+    Pflicht-Pruefungen pro Eintrag:
+    - `type` ist String.
+    - `params` ist Mapping; canonical-kompatibel
+      (`assert_payload_canonical_compatible`).
+    - Wenn `params.target_device_id` vorhanden ist: muss in
+      `devices` existieren
+      (`ScenarioUnknownAgentTargetError`).
+    - Hybrid Mutual-Exclusivity-Vertrag (ADR 0027 §2.3):
+      genau einer von `rules` (Liste) oder `plugin` (String)
+      muss in `params` vorhanden sein
+      (`ScenarioInvalidAgentParamsError`).
+    - Wenn `rules` vorhanden: pro Eintrag struktureller Check
+      (Pflicht-Keys, Comparator-Whitelist, Metric-Whitelist;
+      `ScenarioInvalidRuleComparatorError` /
+      `ScenarioInvalidRuleMetricError`).
+
+    Welle-4b-Validator macht KEINEN Factory-Type-Whitelist-
+    Check fuer `agent.type` (kommt aus der Loader-Factory-Map
+    via `ScenarioUnknownAgentTypeError` in `build_agents(...)`)
+    und KEINEN Plugin-Registry-Whitelist-Check (kommt aus
+    `_AGENT_PLUGIN_FACTORIES` via `ScenarioUnknownAgentPluginError`
+    in `build_agents(...)`). Strukturell-Schema-Validierung
+    bleibt hier; Factory-Dispatch ist Loader-Pflicht.
+    """
+    from grid_gym.hexagon.core.agents.rule_based import (
+        COMPARATOR_WHITELIST,
+        WELLE_4B_METRIC_WHITELIST,
+    )
+
+    if "agents" not in raw:
+        return
+    raw_agents = raw["agents"]
+    if not isinstance(raw_agents, Mapping):
+        raise ScenarioWrongTypeError("agents", "Mapping", type(raw_agents).__name__)
+    device_ids: set[str] = {cast(str, device["id"]) for device in devices}
+    for agent_id in sorted(raw_agents.keys()):
+        if not isinstance(agent_id, str) or not agent_id:
+            raise ScenarioWrongTypeError(  # noqa: TRY003 — Validator-Diagnostik braucht den Pfad-Praefix `agents[*] key`, damit der Fehler im YAML-Schema-Kontext lesbar bleibt
+                "agents[*] key", "non-empty str", type(agent_id).__name__
+            )
+        path = f"agents[{agent_id!r}]"
+        entry = raw_agents[agent_id]
+        if not isinstance(entry, Mapping):
+            raise ScenarioWrongTypeError(path, "Mapping", type(entry).__name__)
+        _assert_required_keys(path, entry, _REQUIRED_AGENT_DEF)
+        _assert_str(entry, f"{path}.type")
+        params = entry["params"]
+        if not isinstance(params, Mapping):
+            raise ScenarioWrongTypeError(f"{path}.params", "Mapping", type(params).__name__)
+        assert_payload_canonical_compatible(params, "scenario", f"{path}.params")
+        _assert_agent_target(agent_id, params, device_ids)
+        _assert_agent_hybrid_params(
+            agent_id, params, COMPARATOR_WHITELIST, WELLE_4B_METRIC_WHITELIST
+        )
+
+
+def _assert_agent_target(
+    agent_id: str,
+    params: Mapping[str, object],
+    device_ids: set[str],
+) -> None:
+    """ADR 0027 §2.2: `params.target_device_id` (optional) muss
+    auf ein bekanntes Device zeigen."""
+    from grid_gym.hexagon.core.errors import ScenarioUnknownAgentTargetError
+
+    target = params.get("target_device_id")
+    if target is None:
+        return
+    if not isinstance(target, str):
+        raise ScenarioWrongTypeError(
+            f"agents[{agent_id!r}].params.target_device_id",
+            "str",
+            type(target).__name__,
+        )
+    if target not in device_ids:
+        raise ScenarioUnknownAgentTargetError(agent_id, target)
+
+
+def _assert_agent_hybrid_params(
+    agent_id: str,
+    params: Mapping[str, object],
+    comparator_whitelist: tuple[str, ...],
+    metric_whitelist: tuple[str, ...],
+) -> None:
+    """ADR 0027 §2.3 Mutual Exclusivity: genau einer von
+    `rules` (Liste) oder `plugin` (String) muss vorhanden sein."""
+    has_rules = "rules" in params
+    has_plugin = "plugin" in params
+    if has_rules and has_plugin:
+        raise ScenarioInvalidAgentParamsError(
+            agent_id,
+            "params hat sowohl 'rules' als auch 'plugin' "
+            "(Mutual-Exclusivity-Verstoss; ADR 0027 §2.3)",
+        )
+    if not has_rules and not has_plugin:
+        raise ScenarioInvalidAgentParamsError(
+            agent_id,
+            "params hat weder 'rules' noch 'plugin' (kein Decision-Pfad; ADR 0027 §2.3)",
+        )
+    if has_rules:
+        _assert_rules_block(agent_id, params["rules"], comparator_whitelist, metric_whitelist)
+    if has_plugin:
+        plugin_value = params["plugin"]
+        if not isinstance(plugin_value, str):
+            raise ScenarioWrongTypeError(
+                f"agents[{agent_id!r}].params.plugin",
+                "str",
+                type(plugin_value).__name__,
+            )
+
+
+def _assert_rules_block(  # noqa: C901, PLR0915 — pro-Feld-typed-Errors fuer condition (3 Felder) + action (2 Felder) + Whitelist-Checks; Pattern-Konsistenz zu Welle-6b-Validator-Bloecken.
+    agent_id: str,
+    rules: object,
+    comparator_whitelist: tuple[str, ...],
+    metric_whitelist: tuple[str, ...],
+) -> None:
+    """ADR 0027 §2.3: pro `rules`-Eintrag Pflicht-Struktur +
+    Comparator + Metric in Whitelist."""
+    if not isinstance(rules, list):
+        raise ScenarioWrongTypeError(
+            f"agents[{agent_id!r}].params.rules", "list", type(rules).__name__
+        )
+    if not rules:
+        raise ScenarioInvalidAgentParamsError(
+            agent_id, "params.rules ist leer (kein Decision-Pfad; ADR 0027 §2.3)"
+        )
+    for index, entry in enumerate(rules):
+        path = f"agents[{agent_id!r}].params.rules[{index}]"
+        if not isinstance(entry, Mapping):
+            raise ScenarioWrongTypeError(path, "Mapping", type(entry).__name__)
+        _assert_required_keys(path, entry, _REQUIRED_RULE)
+        condition = entry["condition"]
+        if not isinstance(condition, Mapping):
+            raise ScenarioWrongTypeError(f"{path}.condition", "Mapping", type(condition).__name__)
+        _assert_required_keys(f"{path}.condition", condition, _REQUIRED_RULE_CONDITION)
+        metric = condition["metric"]
+        if not isinstance(metric, str):
+            raise ScenarioWrongTypeError(f"{path}.condition.metric", "str", type(metric).__name__)
+        if metric not in metric_whitelist:
+            raise ScenarioInvalidRuleMetricError(agent_id, metric, metric_whitelist)
+        comparator = condition["comparator"]
+        if not isinstance(comparator, str):
+            raise ScenarioWrongTypeError(
+                f"{path}.condition.comparator", "str", type(comparator).__name__
+            )
+        if comparator not in comparator_whitelist:
+            raise ScenarioInvalidRuleComparatorError(agent_id, comparator, comparator_whitelist)
+        threshold = condition["threshold"]
+        if isinstance(threshold, bool) or not isinstance(threshold, int):
+            raise ScenarioWrongTypeError(
+                f"{path}.condition.threshold", "int", type(threshold).__name__
+            )
+        action = entry["action"]
+        if not isinstance(action, Mapping):
+            raise ScenarioWrongTypeError(f"{path}.action", "Mapping", type(action).__name__)
+        _assert_required_keys(f"{path}.action", action, _REQUIRED_RULE_ACTION)
+        _assert_str(action, f"{path}.action.type")
+        payload = action["payload"]
+        if not isinstance(payload, Mapping):
+            raise ScenarioWrongTypeError(
+                f"{path}.action.payload", "Mapping", type(payload).__name__
+            )

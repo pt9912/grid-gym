@@ -29,6 +29,14 @@ FAULT_DEMO_TICKS: Final[int] = 30
 """Tick-Anzahl fuer den Fault-Demo-Lauf — deckt beide
 Fault-Windows + Recovery ab."""
 
+AGENTS_DEMO_SCENARIO_PATH: Final[Path] = Path(__file__).parent / "scenarios" / "agents_demo.yaml"
+"""Pfad zur YAML-Fixture des Agents-Demo-Szenarios (M3-Welle-4b,
+ADR 0027 §2.6)."""
+
+AGENTS_DEMO_TICKS: Final[int] = 60
+"""Tick-Anzahl fuer den Agents-Demo-Lauf — deckt alle drei
+zeitgesteuerten Phasen (Idle/Charge/Discharge) ab."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

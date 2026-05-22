@@ -114,6 +114,25 @@ class ScenarioFault:
 
 
 @dataclass(frozen=True, slots=True)
+class ScenarioAgent:
+    """Agent-Definition im Szenario (M3 Welle 4b, ADR 0027 §2.2).
+
+    Welle-4b-Stand: minimaler Strukturvertrag (id + type + params)
+    analog `ScenarioDevice`. Konkrete `params`-Schemas sind pro
+    `type` festgelegt (RuleBasedAgent: `target_device_id` +
+    `rules` ODER `plugin` + `plugin_params`).
+
+    `id` ist die `agent_id`-Pflicht aus dem nested `agents`-
+    Top-Level-Block (ADR 0027 §2.1). Der Validator extrahiert
+    `id` aus dem Dict-Key, nicht aus `agent_def`.
+    """
+
+    id: str
+    type: str
+    params: Mapping[str, object]
+
+
+@dataclass(frozen=True, slots=True)
 class Scenario:
     """Geladenes, kanonisches Szenario (`GG-SCN-001..008`).
 
@@ -128,6 +147,9 @@ class Scenario:
       (M2-Welle-6b, ADR 0021 §2.3): optionale Welle-6b-
       Erweiterungen fuer das Netzbilanzmodell und Lastenheft-
       `GG-GRID-003`/`004`-Pfade.
+    - `agents` (M3-Welle-4b, ADR 0027 §2.1): optionaler nested
+      `agents`-Block; Default leer fuer Welle-1..6-Szenarien
+      ohne Agenten.
 
     `scenario_hash` wird vom Loader berechnet (nicht hier) per
     `canonical_json(asdict(scenario))` + SHA-256 — siehe
@@ -145,3 +167,5 @@ class Scenario:
     grid_model_config: "GridModelConfig | None" = None
     load_events: "tuple[LoadEvent, ...]" = ()
     load_profiles: "tuple[LoadProfile, ...]" = ()
+    # M3-Welle-4b (ADR 0027 §2.1): optionaler nested agents-Block.
+    agents: tuple[ScenarioAgent, ...] = ()

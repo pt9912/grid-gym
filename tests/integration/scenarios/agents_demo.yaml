@@ -1,0 +1,105 @@
+# Welle-4b-Demo-Szenario (M3 Welle 4b, ADR 0027 §2.6).
+#
+# End-to-End-Fixture fuer den Welle-4b-Integrationstest
+# (`test_agents_demo_e2e.py`). Spiegelt das MVP-Demo-Pattern
+# aus Welle 6c, ergaenzt um einen `RuleBasedAgent` mit
+# zeitgesteuerten Phasen (Idle / Charge / Discharge per
+# `tick`-Threshold; siehe ADR 0027 §2.3 + §2.6).
+#
+# Welle-4b-Scope-Schnitt (F-1): Decision-Logik ist
+# **context-basiert** (`tick`, `simulation_time` aus
+# `DeviceTickContext`), nicht SoC-reaktiv. Echte
+# Telemetry-getriebene Steuerung ist Welle-4c+ Material
+# (siehe ADR 0027 §7).
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "agents-demo"
+  name: "Welle 4b Agents Demo"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 60
+  seed: 12648430
+
+devices:
+  - id: "pv-1"
+    type: "pv"
+    params:
+      rated_power_kw: "500"
+  - id: "load-1"
+    type: "load"
+    params:
+      rated_power_kw: "300"
+  - id: "battery-1"
+    type: "battery"
+    params:
+      capacity_kwh: "100"
+      initial_soc_pct: "50"
+      min_soc_pct: "0"
+      max_soc_pct: "100"
+      max_charge_kw: "50"
+      max_discharge_kw: "50"
+      charge_efficiency: "1"
+      discharge_efficiency: "1"
+      ramp_kw_per_s: "100"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "1000"
+      max_export_kw: "1000"
+  - id: "meter-1"
+    type: "smart_meter"
+    params:
+      aggregate_device_ids:
+        - "battery-1"
+        - "load-1"
+        - "pv-1"
+      aggregate_metric_name: "power_kw"
+
+grid_model:
+  nominal_frequency_hz: "50"
+  frequency_sensitivity_hz_per_kw: "0.001"
+  frequency_clamp_min_hz: "45"
+  frequency_clamp_max_hz: "55"
+  nominal_voltage_v: "400"
+  voltage_sensitivity_v_per_kw: "0.1"
+  voltage_clamp_min_v: "280"
+  voltage_clamp_max_v: "520"
+
+# M3-Welle-4b (ADR 0027 §2.1): nested agents-Block.
+# Genau ein RuleBasedAgent steuert die Battery zeitgesteuert.
+# Rules-Reihenfolge: first-match-wins, also frueheste Phase
+# zuerst pruefen. Die letzte "catch-all"-Regel (`tick >= 0`)
+# steht NICHT zuerst, sonst wuerde sie alle nachfolgenden
+# Regeln verdecken.
+agents:
+  bess-controller:
+    type: "rule_based"
+    params:
+      target_device_id: "battery-1"
+      # Battery-Command-Vertrag (M2-Welle-2): einziger akzeptierter
+      # `type` ist `set_power_kw` mit payload-key `value` als
+      # Decimal (positiv = charge, negativ = discharge).
+      rules:
+        # Phase 3: Discharge (tick >= 30) → set_power_kw(-20).
+        - condition:
+            metric: "tick"
+            comparator: ">="
+            threshold: 30
+          action:
+            type: "set_power_kw"
+            payload:
+              value: "-20"
+        # Phase 2: Charge (tick >= 10) → set_power_kw(+20).
+        - condition:
+            metric: "tick"
+            comparator: ">="
+            threshold: 10
+          action:
+            type: "set_power_kw"
+            payload:
+              value: "20"
+        # Phase 1: Idle (tick < 10) — kein Command-Match.

@@ -1085,3 +1085,101 @@ class TickLoopAgentSnapshotLoadOverlayMismatchError(TickLoopSnapshotFormatError)
 
     def __init__(self, detail: str) -> None:
         super().__init__(f"agent-foundation resume load_overlay mismatch: {detail}")
+
+
+# ---------------------------------------------------------------------------
+# Welle-4b — Scenario-Agents-Block + RuleBasedAgent (M3 Welle 4b, ADR 0027)
+# ---------------------------------------------------------------------------
+
+
+class ScenarioUnknownAgentTypeError(ScenarioError):
+    """ADR 0027 §2.2: `ScenarioAgent.type` ist in der
+    Welle-4b-Agent-Factory-Map (`_AGENT_FACTORIES`) nicht
+    registriert. Welle-4c+/M5-Agent-Typen muessen sich dort
+    eintragen, analog `ScenarioUnknownDeviceTypeError`-Pattern.
+    """
+
+    def __init__(self, agent_type: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"scenario references unknown agent type {agent_type!r}. "
+            f"Welle-4b-Factory-Map kennt: {sorted(known)}."
+        )
+
+
+class ScenarioUnknownAgentTargetError(ScenarioError):
+    """ADR 0027 §2.2: Ein `params.target_device_id` eines Agents
+    referenziert eine Geraete-ID, die nicht in `devices` definiert
+    ist. Spiegelt das Pattern aus `ScenarioUnknownEventTargetError`
+    + `ScenarioUnknownFaultTargetError`."""
+
+    def __init__(self, agent_id: str, target: str) -> None:
+        super().__init__(f"scenario agent {agent_id!r} targets unknown device: {target!r}")
+
+
+class ScenarioInvalidRuleMetricError(ScenarioError):
+    """ADR 0027 §2.3 Welle-4b-Metric-Whitelist: Ein `rules`-
+    Eintrag eines `RuleBasedAgent` verwendet einen `metric`-Namen,
+    der in Welle-4b nicht zulaessig ist.
+
+    Welle-4b-Whitelist (context-basiert): `tick`, `simulation_time`.
+    Telemetry-basierte Metrics (`state_of_charge_pct` u. ae.) sind
+    Welle-4c+-Material und brauchen einen Telemetry-Forwarding-
+    Mechanismus (siehe ADR 0027 §7).
+    """
+
+    def __init__(self, agent_id: str, metric: str, allowed: tuple[str, ...]) -> None:
+        super().__init__(
+            f"scenario agent {agent_id!r} rule metric {metric!r} not in "
+            f"Welle-4b whitelist: allowed={sorted(allowed)}"
+        )
+
+
+class ScenarioInvalidRuleComparatorError(ScenarioError):
+    """ADR 0027 §2.3: Ein `rules`-Eintrag verwendet einen
+    `comparator`, der nicht in der deterministischen Liste
+    `<`, `<=`, `==`, `!=`, `>=`, `>` ist."""
+
+    def __init__(self, agent_id: str, comparator: str, allowed: tuple[str, ...]) -> None:
+        super().__init__(
+            f"scenario agent {agent_id!r} rule comparator {comparator!r} not "
+            f"in allowed set: {sorted(allowed)}"
+        )
+
+
+class ScenarioInvalidAgentParamsError(ScenarioError):
+    """ADR 0027 §2.3: `RuleBasedAgent.params` verstoesst gegen
+    den Hybrid-Mutual-Exclusivity-Vertrag — entweder enthaelt
+    der Block sowohl `rules` als auch `plugin` (Mutual-Exclusivity-
+    Verstoss, Drift-Risiko), oder er enthaelt keines von beiden
+    (kein Decision-Pfad, stiller No-op verboten).
+    """
+
+    def __init__(self, agent_id: str, detail: str) -> None:
+        super().__init__(f"scenario agent {agent_id!r} params invalid: {detail}")
+
+
+class ScenarioUnknownAgentPluginError(ScenarioError):
+    """ADR 0027 §2.3: Ein `params.plugin`-Wert referenziert
+    eine Plugin-Factory, die in `_AGENT_PLUGIN_FACTORIES` nicht
+    registriert ist (Welle 4b leer; konkrete Plugins sind
+    Welle 4c+ Material).
+    """
+
+    def __init__(self, agent_id: str, plugin: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"scenario agent {agent_id!r} plugin {plugin!r} not registered. "
+            f"Known plugins: {sorted(known)}."
+        )
+
+
+class TickLoopAgentInstanceSnapshotMismatchError(TickLoopSnapshotFormatError):
+    """ADR 0027 §2.4: Bidirektionaler Resume-Match-Check fuer
+    `agents.<agent_type>.<agent_id>`-Sub-Snapshots —
+    jeder injizierte Agent muss einen Snapshot-Slot haben, jeder
+    Snapshot-Slot muss einen injizierten Agent haben (analog
+    Welle-4a-Review-Folge `_assert_device_resume_match`,
+    Commit `38272f6`).
+    """
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"agent-instance resume mismatch: {detail}")

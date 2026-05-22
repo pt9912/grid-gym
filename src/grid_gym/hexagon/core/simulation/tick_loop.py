@@ -61,6 +61,7 @@ from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
     AgentInvalidCommandTargetError,
+    TickLoopAgentInstanceSnapshotMismatchError,
     TickLoopAgentSnapshotDeviceMismatchError,
     TickLoopAgentSnapshotGridModelMismatchError,
     TickLoopAgentSnapshotInvalidCommandResultError,
@@ -138,6 +139,14 @@ oder eine `device_type`-Protocol-Erweiterung erzwingen.
 `power_kw`); SmartMeter wird daher in der Bilanz-Aggregation
 ueber den Metric-Filter automatisch uebersprungen, ohne dass die
 SmartMeter-Aggregation den `imbalance_kw`-Wert verdoppelt."""
+
+_AGENT_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
+    "RuleBasedAgent": "rule_based",
+}
+"""M3-Welle-4b-Agent-Type-Mapping fuer Sub-Snapshot-Key-Konstruktion
+`agents.<agent_type>.<agent_id>` (ADR 0027 §2.4 + ADR 0015 §2.3-
+additiv). Welle 4c+/M5-Agent-Typen muessen sich hier eintragen,
+pattern-konsistent zu `_DEVICE_TYPE_BY_CLASS_NAME`."""
 
 _BILANZ_SOURCE_BUCKETS: Final[Mapping[str, str]] = {
     "pv": "generation",
@@ -681,6 +690,26 @@ class TickLoop:
             sub_snapshots["pending_agent_commands"] = _serialize_pending_agent_commands(
                 self._pending_agent_commands
             )
+        # M3-Welle-4b (ADR 0027 §2.4): konkrete Agent-Instanz-
+        # Sub-Snapshots `agents.<agent_type>.<agent_id>` (additiv
+        # per ADR 0015 §2.3 — kein Schema-Bump). Welle-4b-only
+        # fuer Agents in `_AGENT_TYPE_BY_CLASS_NAME`; unbekannte
+        # Klassen werden hier defensiv geskippt (Forward-Compat
+        # fuer Welle-4c+-Agent-Typen, die noch nicht registriert
+        # sind — die wuerden vom Validator/Loader-Pfad bereits
+        # vor dem Konstruktor abgewiesen).
+        for agent in self._agents:
+            agent_class_name = type(agent).__name__
+            if agent_class_name not in _AGENT_TYPE_BY_CLASS_NAME:
+                continue
+            agent_type = _AGENT_TYPE_BY_CLASS_NAME[agent_class_name]
+            agent_id = agent.agent_id
+            if "." in agent_id:
+                raise TickLoopUnknownDeviceTypeError(
+                    f"{agent_class_name}(agent_id={agent_id!r})",
+                    tuple(_AGENT_TYPE_BY_CLASS_NAME),
+                )
+            sub_snapshots[f"agents.{agent_type}.{agent_id}"] = agent.snapshot()
         return {
             "version": _SNAPSHOT_VERSION,
             "run_id": self._run_id,
@@ -753,10 +782,11 @@ class TickLoop:
         _assert_load_overlay_resume_match(
             parsed.sub_snapshots, active_load_events, active_load_profiles
         )
+        # M3-Welle-4b (ADR 0027 §2.4): bidirektionaler Resume-Match-
+        # Check fuer Agent-Instanz-Sub-Snapshots.
+        _assert_agent_instance_resume_match(parsed.sub_snapshots, agents)
         # M3-Welle-4a Agent-Foundation-State-Restore (ADR 0026 §2.6).
-        agent_bus = _restore_agent_bus_from_snapshot(
-            parsed.sub_snapshots, has_agents=bool(agents)
-        )
+        agent_bus = _restore_agent_bus_from_snapshot(parsed.sub_snapshots, has_agents=bool(agents))
         pending_commands = _restore_pending_agent_commands(
             parsed.sub_snapshots.get("pending_agent_commands")
         )
@@ -1205,3 +1235,72 @@ def _load_profile_to_mapping(profile: LoadProfile) -> Mapping[str, object]:
         "tick_values": list(profile.tick_values),
         "tick_ms": profile.tick_ms,
     }
+
+
+def _agent_type_for(agent: Agent) -> str | None:
+    """Liefert das `agent_type`-Segment fuer die
+    `agents.<agent_type>.<agent_id>`-Sub-Snapshot-Key-Konstruktion
+    (M3 Welle 4b, ADR 0027 §2.4).
+
+    Liefert `None`, wenn der Agent-Klassen-Name in
+    `_AGENT_TYPE_BY_CLASS_NAME` nicht registriert ist — Aufrufer
+    entscheidet, ob er das als Skip (Forward-Compat) oder Error
+    behandelt.
+    """
+    return _AGENT_TYPE_BY_CLASS_NAME.get(type(agent).__name__)
+
+
+def _assert_agent_instance_resume_match(
+    sub_snapshots: Mapping[str, object],
+    agents: tuple[Agent, ...],
+) -> None:
+    """Bidirektionaler Resume-Match-Check fuer Agent-Instanz-
+    Sub-Snapshots (M3 Welle 4b, ADR 0027 §2.4).
+
+    Analog `_assert_device_resume_match` (Welle-4a-Review-Folge
+    `38272f6`): jeder injizierte Agent muss einen `agents.<type>
+    .<id>`-Slot haben, jeder Slot muss einen injizierten Agent
+    haben. Snapshot-State-Vergleich via `canonical_json`-Bytes
+    (kein False-Positive nach tuple/list-Roundtrip).
+
+    Wenn `agents=()` ist (Welle-6a/Welle-4a-Pfad ohne Agents),
+    wird der Check uebersprungen — gleiches Pattern wie
+    `_assert_device_resume_match`.
+    """
+    if not agents:
+        return
+    agent_keys = {key for key in sub_snapshots if key.startswith("agents.")}
+    if not agent_keys:
+        return
+    expected_keys: set[str] = set()
+    for agent in agents:
+        agent_type = _agent_type_for(agent)
+        if agent_type is None:
+            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
+                f"injected agent {agent.agent_id!r} has unregistered class "
+                f"{type(agent).__name__!r} (not in _AGENT_TYPE_BY_CLASS_NAME)"
+            )
+        key = f"agents.{agent_type}.{agent.agent_id}"
+        expected_keys.add(key)
+        if key not in sub_snapshots:
+            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
+                f"injected agent {agent.agent_id!r} (type={agent_type!r}) "
+                f"has no matching sub-snapshot key {key!r}"
+            )
+        persisted = sub_snapshots[key]
+        if not isinstance(persisted, Mapping):
+            raise TickLoopAgentSnapshotWrongTypeError(
+                f"sub_snapshots.{key}", "Mapping", type(persisted).__name__
+            )
+        live = agent.snapshot()
+        if canonical_json(dict(live)) != canonical_json(dict(persisted)):
+            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
+                f"injected agent {agent.agent_id!r} (type={agent_type!r}) "
+                f"snapshot differs from persisted state"
+            )
+    extras = agent_keys - expected_keys
+    if extras:
+        raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
+            f"persisted agent sub-snapshots {sorted(extras)!r} have no "
+            "matching injected agent (injected subset is not a full restore)"
+        )
