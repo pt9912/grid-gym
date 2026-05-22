@@ -682,13 +682,14 @@ ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 Konkurrierende Strategien (`GG-AGENT-005`) werden durch dokumentierte
 Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 
-**Produktive Surface (M3 Welle 3 / Welle 4a, ADR 0023 + ADR 0026):**
+**Produktive Surface (M3 Welle 3 / 4a / 4b, ADR 0023 + ADR 0026 + ADR 0027):**
 
 - `Agent`-Sub-Protocol (`hexagon/core/agents/_protocol.py`) fixiert
   die Pflicht-Surface (`agent_id`, `set_run_id`, `tick`, `snapshot`,
   `from_snapshot`); `_RandomAttachableAgent`-Sub-Protocol traegt den
   optionalen `attach_random(...)`-Hook fuer stochastische Agenten
-  (Welle 4a, ADR 0026 §2.3).
+  (Welle 4a, ADR 0026 §2.3); `AgentPlugin`-Sub-Protocol traegt den
+  Decision-Hook fuer Welle-4c+-Plugins (Welle 4b, ADR 0027 §2.3).
 - `AgentMessageBus`-Core-Klasse (`hexagon/core/agents/bus.py`)
   liefert `publish` / `drain_for` (nicht-destruktiv) /
   `consume_for` (destruktive Direct-Inbox-Drain-Variante, Welle 4a,
@@ -696,7 +697,9 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 - Registrierung erfolgt produktiv ueber den Konstruktor-Kwarg
   `TickLoop(agents=tuple[Agent, ...])` mit Auto-Bus-Regel und
   `AgentDuplicateIdError`-Fail-Fast (ADR 0026 §2.2). Der `build_
-  tick_loop(...)`-Loader reicht den Kwarg symmetrisch durch.
+  tick_loop(...)`-Loader reicht den Kwarg symmetrisch durch
+  und defaultet ihn (Sentinel-Pattern `agents=None`) auf
+  `scenario.agents` (Welle 4b, ADR 0027 §2.2).
 - Command-Drain laeuft ueber Schritt A0v + A0a vor Schritt A der
   naechsten Tick (siehe §6). Agent-Commands sind also frueh im
   Folge-Tick wirksam, ohne den Scheduler oder die Device-
@@ -706,12 +709,38 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
   `agent_bus` und `pending_agent_commands` in
   `TickLoop.snapshot()` / `from_snapshot(...)` persistiert (ADR
   0026 §2.6 + ADR 0015 §2.3-additiv, kein Schema-Bump).
+- **Konkrete Agent-Implementer** (Welle 4b, ADR 0027):
+  `RuleBasedAgent` (`hexagon/core/agents/rule_based.py`) mit
+  Hybrid Decision-Surface — Default-Pfad ist deterministische
+  Threshold-Rules-Liste (first-match-wins, Welle-4b-Metric-
+  Whitelist `tick` / `simulation_time` aus `DeviceTickContext`),
+  Erweiterungs-Pfad ist optionaler `plugin`-Hook ueber
+  `_AGENT_PLUGIN_FACTORIES`-Registry (Welle 4b leer; konkrete
+  Plugins sind Welle 4c+ Material). Mutual Exclusivity Rules
+  ODER Plugin (ADR 0027 §2.3).
+- **`agents`-Top-Level-Block im Scenario-Schema** (Welle 4b,
+  ADR 0027 §2.1 + §2.2): nested Mapping `agents: {<agent_id>:
+  {type, params}}` mit lexikographischer Sort-Iteration im
+  Loader; `ScenarioAgent`-Domain (frozen dataclass);
+  `_assert_agent_list(...)`-Validator mit Comparator-/Metric-
+  Whitelist-Checks; `_build_agents(...)`-Factory-Dispatch
+  analog `build_devices`.
+- **Konkrete Agent-Instanz-Sub-Snapshots**
+  `agents.<agent_type>.<agent_id>` (Welle 4b, ADR 0027 §2.4)
+  additiv per ADR 0015 §2.3 (kein Schema-Bump); bidirektionaler
+  Resume-Match-Check analog Welle-4a-Folge — jeder injizierte
+  Agent hat einen Slot und jeder Slot einen injizierten Agent
+  (canonical_json-Equality).
 
-**Welle-4b-Scope (offen):** konkrete Agent-Implementer
-(`RuleBasedAgent` o. ae.), `agents`-Top-Level-Block im Scenario-
-Schema, konkrete Agent-Instanz-Snapshots
-(`agents.<type>.<id>`), Property-Determinismus-Tests pro
-Agent-Implementer und End-to-End-Demo-Szenario.
+**Welle-4c+-Scope (offen):** konkrete `AgentPlugin`-Implementer
+(`LearnedPolicy`, `MPCController` o. ae.), Plugin-Restore-Pfad
+in `RuleBasedAgent.from_snapshot` (Welle-4b rekonstruiert nur
+Rules + `plugin_name`, kein Plugin-State — siehe ADR 0027 §7),
+`GG-AGENT-005` Priorisierung konkurrierender Agents,
+`GG-AGENT-007` Deadlines, `GG-AGENT-008` Async, Telemetry-
+Forwarding-Mechanismus (TickLoop-Bridge oder
+`TelemetryQueryPort` — siehe ADR 0023 §2.1 Forward-Pointer +
+ADR 0027 §7).
 
 ---
 

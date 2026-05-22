@@ -14,28 +14,33 @@ lokalen, nachvollziehbaren Umgebung modellieren wollen.
 
 ## Status
 
-**Stand 2026-05-21:** M1 (Tick-Loop-Spine) und M2 (Geraetemodelle) sind
+**Stand 2026-05-22:** M1 (Tick-Loop-Spine) und M2 (Geraetemodelle) sind
 `Done`. M3 (Faults + Multi-Agent + Observability) ist aktiv:
-Welle 0/1/2/3/4a sind abgeschlossen, Welle 4b (RuleBasedAgent +
-Scenario-Schema) ist der naechste Schritt. Welle 5 (Observability-
-Foundation) und Welle 6 (OTLP-Adapter) folgen.
+Welle 0/1/2/3/4a/4b sind abgeschlossen — Multi-Agent-Subsystem ist
+komplett (Foundation + Konkretisierung). **Welle 5 (Observability —
+LogPort/MetricsPort/TracePort, ADR 0024) ist der naechste aktive
+Slice**; Welle 6 (OTLP-Adapter) folgt.
 
 | Subsystem | Stand | Belege |
 | --- | --- | --- |
 | Tick-Loop-Spine (M1) | `Done` | [`done/M1-tick-loop-results.md`](docs/plan/planning/done/M1-tick-loop-results.md) |
 | Geraetemodelle (M2) | `Done` | [`done/M2-devices-results.md`](docs/plan/planning/done/M2-devices-results.md); Battery, PV, Load, GridConnection, SmartMeter + GridModelBilanz produktiv |
 | Fault-Subsystem (M3 Welle 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Provisional` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Provisional`; `BatteryFaultAdapter` + `GridFaultAdapter` mit `cell_failure`/`voltage_drop` und Recovery-Logik |
-| Multi-Agent-Subsystem (M3 Welle 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent`-Protocol + `AgentMessageBus` + TickLoop-`agents`-Registry + Schritt-A0v/A0a-Drain + Agent-Foundation-State-Snapshot |
-| Multi-Agent konkret (M3 Welle 4b) | `Open` | `RuleBasedAgent` + Scenario-`agents`-Block + End-to-End-Demo |
+| Multi-Agent-Foundation (M3 Welle 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent`-Protocol + `AgentMessageBus` + TickLoop-`agents`-Registry + Schritt-A0v/A0a-Drain + Agent-Foundation-State-Snapshot |
+| Multi-Agent konkret (M3 Welle 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` mit Hybrid Rules + Plugin-Hook + Scenario-`agents`-Top-Level-Block + bidirektionaler `agents.<type>.<id>`-Sub-Snapshot-Resume-Match + End-to-End-Demo (`tests/integration/scenarios/agents_demo.yaml`) |
 | Observability (M3 Welle 5+6) | `Open` | `LogPort`/`MetricsPort`/`TracePort` + OTLP-Adapter |
 | Protokolladapter (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 
-**Testbilanz:** 921 Unit-Tests + 14 Integration-Tests gruen;
-`make gates` A-1 (lint, format-check, mypy `--strict`, arch-check
-16/16, test-unit, coverage-gate 90/85, critical-coverage 90,
-dep-audit) ohne Override cache-frei gruen.
+**Testbilanz:** 992 Unit-Tests + 19 Integration-Tests gruen
+(Welle-4b-Endstand `b5ba33a`). `make fullbuild` cache-frei gruen
+**ohne** Override — Welle-4-Abnahme-Kriterium (volle CI + Runtime-
+Image + Compose-Smoke + Trivy-Image-Audit) erfuellt. `make gates`
+A-1 (lint, format-check, mypy `--strict`, arch-check 7/7
+contracts kept, test-unit, coverage-gate 90/85 line / 94.51%
+total, critical-coverage 90 / 90.47% branch, dep-audit gruen
+nach starlette-Upgrade) ohne Override cache-frei gruen.
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) mit vier
 Pflicht-Gates fuer `pull_request` und `push` auf `main`:
@@ -122,7 +127,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 ├── src/grid_gym/
 │   ├── hexagon/
 │   │   ├── core/
-│   │   │   ├── agents/          ← Agent-Protocol + AgentMessageBus (M3 Welle 3+4a)
+│   │   │   ├── agents/          ← Agent-Protocol + AgentMessageBus + RuleBasedAgent (M3 Welle 3+4a+4b)
 │   │   │   ├── devices/         ← Battery, PV, Load, GridConnection, SmartMeter (M2)
 │   │   │   ├── domain/          ← Frozen-Dataclasses (Command, Event, ScenarioFault, ...)
 │   │   │   ├── faults/          ← Battery- + GridFaultAdapter (M3 Welle 2)
@@ -136,9 +141,9 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT (M1 Welle 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (921 Stand 2026-05-21)
-│   ├── integration/             ← Compose-basierte Integration-Tests (14 Tests)
-│   └── unit/_arch_check_*       ← Architektur-Tests (16 Contracts)
+│   ├── unit/                    ← pytest-Unit-Tests (992 Stand 2026-05-22)
+│   ├── integration/             ← Compose-basierte Integration-Tests (19 Tests)
+│   └── unit/_arch_check_*       ← Architektur-Tests (7 import-linter + 7 custom AC-Checks)
 ├── tools/
 │   └── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)
 ├── spec/
@@ -146,7 +151,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0026)
+    │   ├── adr/                 ← Architecture Decision Records (0001..0027)
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv

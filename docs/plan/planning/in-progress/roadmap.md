@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2 abgeschlossen
-**Stand:** 2026-05-21 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a abgeschlossen, Welle 4b (RuleBasedAgent + Scenario-Schema) als naechster Schritt. ADR 0022/0023/0025/0026 alle `Provisional`. 921 Unit-Tests + 14 Integration-Tests gruen. Trigger 025 (GitHub-Actions-CI-Workflow mit vier Pflicht-Gates: `lint-imports`, `ruff check`, `arch-check-custom`, `mypy --strict`) eingebaut.)
+**Stand:** 2026-05-22 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a/4b abgeschlossen (Multi-Agent komplett), Welle 5 (Observability — LogPort/MetricsPort/TracePort, ADR 0024) als naechster Schritt. ADR 0022/0023/0025/0026/0027 alle `Provisional`. **992 Unit-Tests + 19 Integration-Tests gruen**; `make fullbuild` cache-frei gruen ohne Override (Welle-4-Abnahme-Kriterium erfuellt). Trigger 025 (GitHub-Actions-CI-Workflow mit vier Pflicht-Gates) eingebaut.)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
@@ -202,16 +202,20 @@ unter [`in-progress/M2-devices.md`](M2-devices.md)
         (ADR 0025 §2.1; Property-Tests fuer half-open
         `[start, end)`-Window + Unit-Tests fuer manuelle
         Recovery; `permanent`-Modus auf Welle 3+/M6 verschoben).
-  - [~] Multi-Agent-Bus implementiert (`GG-AGENT-001..008`):
+  - [x] Multi-Agent-Bus implementiert (`GG-AGENT-001..006`):
         Foundation (Welle 3: `Agent`-Protocol + `AgentMessageBus` +
-        `AgentMessage` + TickLoop-Schritt-D2-Hook + Pending-Buffer)
-        und Foundation-Plumbing (Welle 4a: produktive
+        `AgentMessage` + TickLoop-Schritt-D2-Hook + Pending-Buffer),
+        Foundation-Plumbing (Welle 4a: produktive
         `agents`-Registry + Schritt-A0v/A0a-Drain +
         `_attach_agents()`-Lifecycle + `consume_for(...)` +
-        Foundation-State-Snapshot) sind `Done`. Welle 4b liefert
-        konkrete `Agent`-Implementer (`RuleBasedAgent` o. ae.) +
-        Scenario-Schema-`agents`-Block + End-to-End-Demo. RL-
-        Adapter (`GG-FUTURE-001/002`) bleiben Folge-Slice.
+        Foundation-State-Snapshot) und Konkretisierung (Welle 4b:
+        `RuleBasedAgent` mit Hybrid Rules + Plugin-Hook +
+        Scenario-`agents`-Top-Level-Block (nested Mapping) +
+        bidirektionaler `agents.<type>.<id>`-Sub-Snapshot-Resume-
+        Match + End-to-End-Demo `tests/integration/scenarios/
+        agents_demo.yaml`) sind `Done`. `GG-AGENT-007` Deadlines
+        und `GG-AGENT-008` Async bleiben Welle-4c+/M5-Material;
+        RL-Adapter (`GG-FUTURE-001/002`) bleiben Folge-Slice.
   - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
   - [x] Property-Tests fuer Fault-Determinismus
         (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export)
@@ -221,9 +225,12 @@ unter [`in-progress/M2-devices.md`](M2-devices.md)
         gruen — Default-Liste um `core/faults`, `core/agents`,
         `adapters/driven/telemetry-otlp` erweitert (analog
         M2-DoD-Item „Default-`make gates` ohne Override").
-  - [ ] `make fullbuild` gruen ohne Override — M3-Abschluss-
-        Gate, mit OTLP-Collector als Sibling-Container im
-        Compose-Smoke.
+  - [~] `make fullbuild` gruen ohne Override — Welle-4-
+        Abschluss-Gate erfuellt (cache-frei gruen mit Welle-4b-
+        Closure `b5ba33a`: volle CI + Runtime-Image + Compose-
+        Smoke + Trivy-Image-Audit, ohne OTLP-Collector). M3-
+        Abschluss-Gate verlangt zusaetzlich OTLP-Collector als
+        Sibling-Container — kommt mit Welle 5/6.
   - [ ] M3-Welle-7-End-to-End-Sweep (S-1..S-6, analog M2-Welle-7
         §4) — Reviewer-Stempel je Welle, dokumentiert in
         `done/M3-results.md`.
