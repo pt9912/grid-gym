@@ -50,8 +50,11 @@ class _OrderRecordingAgent:
         return self._agent_id
 
     def set_run_id(self, run_id: str) -> None:
-        # Welle-3-Hook ruft set_run_id nicht auf (Welle-4-Decision);
-        # No-Op reicht fuer die Protocol-Surface.
+        # Welle-4a (ADR 0026 §2.3): `_attach_agents()` ruft das hier
+        # produktiv auf — dieser Stub recordet aber bewusst nicht;
+        # Lifecycle-Recording lebt im `_NullAgent` von
+        # `test_tick_loop_welle_4a_lifecycle.py`. Der Order-Recorder
+        # hier soll nur Tick-Reihenfolge pinnen.
         pass
 
     def queue_emission(self, commands: tuple[Command, ...]) -> None:

@@ -558,3 +558,78 @@ def test_from_snapshot_device_mismatch_raises() -> None:
     different_device = _initialized_pv_device("pv-2")
     with pytest.raises(TickLoopAgentSnapshotDeviceMismatchError):
         TickLoop.from_snapshot(snapshot, clock=clock2, random=random2, devices=(different_device,))
+
+
+def test_from_snapshot_rejects_extra_persisted_devices() -> None:
+    """ADR 0026 §2.6 + Welle-4a-Review-Folge I-1 (2026-05-22): wenn
+    der Snapshot mehr Devices persistiert als injiziert werden, wirft
+    `TickLoopAgentSnapshotDeviceMismatchError` — kein stiller Subset-
+    Restore."""
+    from grid_gym.hexagon.core.errors import (
+        TickLoopAgentSnapshotDeviceMismatchError,
+    )
+
+    device_a = _initialized_pv_device("pv-1")
+    device_b = _initialized_pv_device("pv-2")
+    loop = _make_loop(devices=(device_a, device_b))
+    snapshot = loop.snapshot()
+    clock2 = FakeClock()
+    random2 = FixedSeedRandom(seed=42)
+    # Nur 1 von 2 Devices injizieren → bidirektionaler Check schlaegt zu.
+    only_a = _initialized_pv_device("pv-1")
+    with pytest.raises(TickLoopAgentSnapshotDeviceMismatchError, match="pv-2"):
+        TickLoop.from_snapshot(snapshot, clock=clock2, random=random2, devices=(only_a,))
+
+
+def test_from_snapshot_grid_model_resume_tolerates_tuple_list_drift() -> None:
+    """ADR 0026 §2.6 + Welle-4a-Review-Folge I-2 (2026-05-22): nested
+    `tuple` im live-Snapshot vs. `list` im persistierten Snapshot ist
+    nach canonical_json-Vergleich equivalent — kein False-Positive-
+    Mismatch nach Persistence-Roundtrip."""
+    from decimal import Decimal
+
+    from grid_gym.hexagon.core.grid_model import GridModelBilanz, GridModelConfig
+    from grid_gym.hexagon.core.grid_model.loads import LoadEvent
+
+    config = GridModelConfig(
+        nominal_frequency_hz=Decimal("50"),
+        frequency_sensitivity_hz_per_kw=Decimal("0.001"),
+        frequency_clamp_min_hz=Decimal("45"),
+        frequency_clamp_max_hz=Decimal("55"),
+        nominal_voltage_v=Decimal("400"),
+        voltage_sensitivity_v_per_kw=Decimal("0.1"),
+        voltage_clamp_min_v=Decimal("280"),
+        voltage_clamp_max_v=Decimal("520"),
+    )
+    event = LoadEvent(
+        start_s=Decimal("0"),
+        duration_s=Decimal("10"),
+        target_device_id="load-a",
+        power_kw=Decimal("100"),
+    )
+    grid_model = GridModelBilanz(config, active_load_events=(event,))
+    loop = _make_loop(grid_model=grid_model)
+    snapshot = dict(loop.snapshot())
+    sub_snapshots = dict(snapshot["sub_snapshots"])  # type: ignore[arg-type]
+    # Simuliere Persistence-Roundtrip: GridModel-Sub-Snapshot in eine
+    # Form bringen, in der nested tuples zu lists werden — Drift, die
+    # `dict() != dict()` als Mismatch falsch-positiv markieren wuerde.
+    grid_state = dict(sub_snapshots["grid_model"])  # type: ignore[arg-type]
+    if "active_load_events" in grid_state:
+        grid_state["active_load_events"] = [
+            dict(entry) for entry in grid_state["active_load_events"]  # type: ignore[union-attr]
+        ]
+    sub_snapshots["grid_model"] = grid_state
+    snapshot["sub_snapshots"] = sub_snapshots
+    clock2 = FakeClock()
+    random2 = FixedSeedRandom(seed=42)
+    # Fresh GridModel mit identischem State (tuple in live-Snapshot).
+    same_grid = GridModelBilanz(config, active_load_events=(event,))
+    # Darf NICHT raisen — canonical_json normalisiert tuple/list.
+    TickLoop.from_snapshot(
+        snapshot,
+        clock=clock2,
+        random=random2,
+        grid_model=same_grid,
+        active_load_events=(event,),
+    )

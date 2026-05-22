@@ -76,6 +76,7 @@ from grid_gym.hexagon.core.errors import (
     TickLoopUnknownDeviceTypeError,
 )
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
+from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.ports.driven.clock import ClockPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
@@ -754,7 +755,7 @@ class TickLoop:
         )
         # M3-Welle-4a Agent-Foundation-State-Restore (ADR 0026 §2.6).
         agent_bus = _restore_agent_bus_from_snapshot(
-            parsed.sub_snapshots, has_agents=bool(agents), explicit_bus=None
+            parsed.sub_snapshots, has_agents=bool(agents)
         )
         pending_commands = _restore_pending_agent_commands(
             parsed.sub_snapshots.get("pending_agent_commands")
@@ -1032,7 +1033,6 @@ def _restore_agent_bus_from_snapshot(
     sub_snapshots: Mapping[str, object],
     *,
     has_agents: bool,
-    explicit_bus: AgentMessageBus | None,
 ) -> AgentMessageBus | None:
     """Rekonstruiert den AgentMessageBus aus Sub-Snapshot oder
     Auto-Bus-Regel (ADR 0026 §2.6).
@@ -1052,8 +1052,6 @@ def _restore_agent_bus_from_snapshot(
                 "sub_snapshots.agent_bus", "Mapping", type(raw).__name__
             )
         return AgentMessageBus.from_snapshot(raw)
-    if explicit_bus is not None:
-        return explicit_bus
     if has_agents:
         return AgentMessageBus()
     return None
@@ -1067,16 +1065,29 @@ def _assert_device_resume_match(
 
     Wenn der Snapshot `devices.<type>.<id>`-Sub-Snapshots enthaelt
     und `devices` injiziert ist, muessen IDs, Typen UND
-    Device-Snapshot-States exakt passen.
+    Device-Snapshot-States exakt passen — **bidirektional**:
+    jedes injizierte Device hat einen persistierten Slot, und
+    jeder persistierte Slot hat ein passendes injiziertes Device.
+    Welle-4a-Review-Folge I-1 (2026-05-22): einseitige Pruefung
+    haette beim Resume mit Subset der Devices stille
+    Partial-Restores erlaubt.
+
+    State-Vergleich via `canonical_json`-Bytes (Welle-4a-Review-
+    Folge I-2): `dict(...) != dict(...)` deckt nur Top-Level ab;
+    nested `tuple` vs. `list` (typisch nach Persistence-Roundtrip)
+    waeren in der naiven Variante False-Positives. canonical_json
+    normalisiert beide auf das gleiche JSON-Array-Layout.
     """
     if not devices:
         return
     device_keys = {key for key in sub_snapshots if key.startswith("devices.")}
     if not device_keys:
         return
+    expected_keys: set[str] = set()
     for device in devices:
         device_type = _device_type_for(device)
         key = f"devices.{device_type}.{device.device_id}"
+        expected_keys.add(key)
         if key not in sub_snapshots:
             raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003 — ADR 0026 §2.6 verlangt detail-rich Resume-Match-Diagnostik
                 f"injected device {device.device_id!r} (type={device_type!r}) "
@@ -1088,18 +1099,28 @@ def _assert_device_resume_match(
                 f"sub_snapshots.{key}", "Mapping", type(persisted).__name__
             )
         live = device.snapshot()
-        if dict(live) != dict(persisted):
+        if canonical_json(dict(live)) != canonical_json(dict(persisted)):
             raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003
                 f"injected device {device.device_id!r} (type={device_type!r}) "
                 f"snapshot differs from persisted state"
             )
+    extras = device_keys - expected_keys
+    if extras:
+        raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003
+            f"persisted device sub-snapshots {sorted(extras)!r} have no "
+            "matching injected device (injected subset is not a full restore)"
+        )
 
 
 def _assert_grid_model_resume_match(
     sub_snapshots: Mapping[str, object],
     grid_model: GridModelBilanz | None,
 ) -> None:
-    """Resume-Match-Check fuer injiziertes GridModel (ADR 0026 §2.6)."""
+    """Resume-Match-Check fuer injiziertes GridModel (ADR 0026 §2.6).
+
+    State-Vergleich via `canonical_json`-Bytes (Welle-4a-Review-
+    Folge I-2): siehe `_assert_device_resume_match`-Docstring.
+    """
     if grid_model is None:
         return
     persisted = sub_snapshots.get("grid_model")
@@ -1110,7 +1131,7 @@ def _assert_grid_model_resume_match(
             "sub_snapshots.grid_model", "Mapping", type(persisted).__name__
         )
     live = grid_model.snapshot()
-    if dict(live) != dict(persisted):
+    if canonical_json(dict(live)) != canonical_json(dict(persisted)):
         raise TickLoopAgentSnapshotGridModelMismatchError(  # noqa: TRY003
             "injected grid_model.snapshot() differs from persisted sub-snapshot"
         )
@@ -1146,13 +1167,21 @@ def _assert_load_overlay_resume_match(
         # Overlays, ADR 0020).
         return
     # Persistierte Werte sind List[dict] (canonical_json, ADR 0020 §2.6).
+    # Welle-4a-Review-Folge I-2: Vergleich via `canonical_json`-Bytes,
+    # damit `tuple` vs. `list` und Decimal-Tail-Nullen einheitlich
+    # normalisiert werden (sonst False-Positives nach Persistence-
+    # Roundtrip).
     live_events = [dict(_load_event_to_mapping(event)) for event in active_load_events]
     live_profiles = [dict(_load_profile_to_mapping(profile)) for profile in active_load_profiles]
-    if persisted_events is not None and list(persisted_events) != live_events:
+    if persisted_events is not None and canonical_json(list(persisted_events)) != canonical_json(
+        live_events
+    ):
         raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
             "injected active_load_events differ from persisted GridModel overlay"
         )
-    if persisted_profiles is not None and list(persisted_profiles) != live_profiles:
+    if persisted_profiles is not None and canonical_json(
+        list(persisted_profiles)
+    ) != canonical_json(live_profiles):
         raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
             "injected active_load_profiles differ from persisted GridModel overlay"
         )

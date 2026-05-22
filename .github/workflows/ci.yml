@@ -5,6 +5,15 @@
 # Stage (kein Cross-Job-Skip). Reihenfolge in der Job-Liste ist
 # nur Anzeige-Reihenfolge; GitHub-Actions startet alle parallel.
 #
+# Welle-4a-Review-Folge N-2 (2026-05-22): die Jobs nutzen
+# `docker/build-push-action@v6` statt `make <target>` direkt,
+# damit jeder Stage einen scope-isolierten GHA-Layer-Cache
+# (`cache-from`/`cache-to: type=gha`) bekommt. Funktional bleibt
+# der Build identisch zum `make <target>` (Makefile ruft denselben
+# `docker build --target <stage>` mit gleichen Cache-freien
+# Build-Args); Aenderungen an einem Makefile-Target muessen hier
+# nachgezogen werden.
+#
 # Bezug:
 # - Trigger-Doc: docs/plan/planning/in-progress/025-github-actions-four-gates.md
 # - Dockerfile-Stages: lint, arch-check-imports, arch-check-custom, typecheck
@@ -22,11 +31,14 @@ on:
     branches:
       - main
 
-# Cancel-in-Progress fuer denselben Branch — verhindert dass alte
-# Runs CI-Slots blockieren, wenn schnell hintereinander gepusht wird.
+# Cancel-in-Progress nur fuer Pull-Request-Runs. Bei Push auf `main`
+# bleibt jeder Commit ein eigener, vollstaendiger CI-Run, damit jeder
+# Main-Commit einen verlaesslichen Status traegt (Welle-4a-Review-
+# Folge N-3, 2026-05-22). Pull-Requests duerfen weiter cancellen, weil
+# nur der letzte Push-Zustand des PRs final entscheidend ist.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Default-Permissions: read-only auf `contents`. Jeder Job, der mehr
 # braucht (z. B. Cache-Write), muss es explizit anfragen.
@@ -40,8 +52,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build & run arch-check-imports stage
-        run: make arch-check-imports
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: arch-check-imports
+          push: false
+          load: false
+          cache-from: type=gha,scope=arch-check-imports
+          cache-to: type=gha,scope=arch-check-imports,mode=max
 
   ruff-check:
     name: ruff check (lint)
@@ -49,8 +70,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build & run lint stage
-        run: make lint
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: lint
+          push: false
+          load: false
+          cache-from: type=gha,scope=lint
+          cache-to: type=gha,scope=lint,mode=max
 
   arch-check-custom:
     name: arch-check-custom (tools/arch_check.py)
@@ -58,8 +88,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build & run arch-check-custom stage
-        run: make arch-check-custom
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: arch-check-custom
+          push: false
+          load: false
+          cache-from: type=gha,scope=arch-check-custom
+          cache-to: type=gha,scope=arch-check-custom,mode=max
 
   typecheck:
     name: mypy --strict
@@ -67,5 +106,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build & run typecheck stage
-        run: make typecheck
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: typecheck
+          push: false
+          load: false
+          cache-from: type=gha,scope=typecheck
+          cache-to: type=gha,scope=typecheck,mode=max
