@@ -58,7 +58,7 @@ produktiv.
 **Datum:** 2026-05-18 (in `next/` eroeffnet);
 Move `next/` → `in-progress/`: 2026-05-18 mit Welle-0a-Start.
 **Bezug:**
-- [`roadmap.md`](roadmap.md) §3 M2 (Vorbelegung,
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M2 (Vorbelegung,
   „Naechster aktiver Slice: M2").
 - M1-Closure-Notiz
   [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)

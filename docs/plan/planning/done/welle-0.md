@@ -8,7 +8,7 @@ Medium + 1 Low Spec-Drift-/Konsistenz-Findings adressiert).
 Vorabraeumung + Slice-Plan-Eroeffnung fuer M3 (Faults +
 Multi-Agent + Observability) ist geliefert.
 Kanonische M3-Slice-Spezifikation:
-[`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md`](../in-progress/M3-faults-agents-observability.md)
 — dieses Welle-0-Doc ist der Index zur Welle, nicht der
 Meilenstein-Slice-Plan selbst.
 
@@ -25,7 +25,7 @@ M2 ist seit 2026-05-20 mit Welle-7-Closure-Commit-Stack
 (`57a50fa`/`9d6bcbf`/`8667474`) abgeschlossen
 ([`done/M2-devices.md`](../done/M2-devices.md),
 [`done/M2-devices-results.md`](../done/M2-devices-results.md)).
-M3 ist laut [`roadmap.md §3 M3`](roadmap.md) der naechste
+M3 ist laut [`roadmap.md §3 M3`](../in-progress/roadmap.md) der naechste
 aktive Slice mit drei distinkten Sub-Bereichen:
 
 - **Faults**: `GG-FAULT-001..010` + `GG-SAFE-001..006`,

@@ -10,7 +10,7 @@ welle-1.md → Done) + Review-Folge (C4, `fix(welle-1)`:
 5 Medium + 7 Low Findings, +3 Tests). M3-Welle-1 ist die erste Code-Welle in M3;
 baut auf der M3-Welle-0-Slice-Plan-Eroeffnung
 (`cfb7a72..3e6170d`) auf. Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 1`](M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 1`](../in-progress/M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 

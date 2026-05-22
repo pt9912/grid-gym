@@ -225,7 +225,7 @@ in den jeweiligen Sub-Bereichs-Wellen (Welle 1/3/5).
 
 ### Welle 0 — Vorabraeumung + Slice-Plan-Eroeffnung (in progress)
 
-- Slice-Begleit-Doc [`welle-0.md`](welle-0.md) (C0
+- Slice-Begleit-Doc [`welle-0.md`](../done/welle-0.md) (C0
   `cfb7a72`).
 - M3-Slice-Plan (dieses Dokument, C1).
 - M3-Welle-0-Trigger-Triage (C2):
