@@ -6,6 +6,30 @@ Dokument). Validierung erfolgt mit M3-Welle-4b-C2-Merge
 Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0023 /
 ADR 0026 oder einzeln).
 **Datum:** 2026-05-22
+**Geaendert am:** 2026-05-22 — Welle-4b-C1-Review-Folge
+(F-1 blocking + F-2 important + F-3..F-6 nits, alle vor
+Provisional adressiert):
+
+- §2.1 `sorted(agents.keys())` explizit als **lexikographisch**
+  qualifiziert + Zero-Padding-Hinweis (F-3).
+- §2.3 Decision-Surface komplett auf **context-basiert**
+  umgestellt: Metric-Whitelist `tick` / `simulation_time`
+  (statt Bus-Telemetry-Pull, der eine Telemetry-Bridge
+  erfordert haette, die Welle 4b nicht liefert) (F-1).
+- §2.3 Plugin-Restore-Vertrag praezisiert: Plugin-Snapshot
+  ist Single Source of Truth; `params` sind nur fuer
+  Construction, nicht fuer Restore (F-2).
+- §2.3 Metric-Whitelist-Reject-Error `ScenarioInvalidRule
+  MetricError` ergaenzt (F-4); Edge-Case „weder Rules noch
+  Plugin" als `ScenarioInvalidAgentParamsError` (F-5);
+  YAML-Quoting-Hinweis fuer Comparator + Decimal-Threshold
+  ergaenzt (F-6).
+- §2.6 Demo-Inhalt auf zeitgesteuerte Phasen (Idle/Charge/
+  Discharge per `tick`-Threshold) statt SoC-Reaktion
+  umgestellt (F-1-Folge).
+- §7 Telemetry-Forwarding-Out-of-Scope-Block expliziter
+  mit ADR-0023-§2.1-Forward-Pointer + zwei Resolution-Pfaden
+  fuer Welle 4c+.
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-
 ADR-Pattern — diese ADR schaerft ADR 0026 §6 verbindliche
@@ -119,16 +143,24 @@ agents:
   (analog Bus-Sortierung in ADR 0023 §2.2). Die Map-Form
   macht das in der Schema-Definition transparent.
 - **Determinismus-Vertrag**: Validator + Loader iterieren
-  ueber `sorted(agents.keys())`, damit YAML-Loader-
-  spezifische Reihenfolge keine Drift erzeugt. Welle-4a-
-  TickLoop-`agents=tuple[Agent, ...]` ist eine sortierte
-  Tuple (nicht insertion-order).
+  ueber `sorted(agents.keys())` **lexikographisch** (Python-
+  Default-`str`-Sortierung; explizit, damit YAML-Loader-
+  spezifische Reihenfolge keine Drift erzeugt — pattern-
+  konsistent zu ADR 0023 §2.2 Bus-Sortierung mit
+  lexikographischem `sender`-Glied). Welle-4a-TickLoop-
+  `agents=tuple[Agent, ...]` ist eine lexikographisch
+  sortierte Tuple (nicht insertion-order). Aufrufer, die
+  Agent-IDs mit Zahlen mischen, sollten Zero-Padding nutzen
+  (`agent-01` statt `agent-1`), falls ihnen natural-order
+  wichtig ist; lexikographisch sortiert sich `agent-10` vor
+  `agent-2`.
 
 **Welle-3-Pattern-Konsistenz**: AgentMessageBus-Sortierung
 ist bereits per `(simulation_time, sender, sequence)`
 deterministisch (ADR 0023 §2.2); Agent-Tick-Reihenfolge im
 TickLoop folgt der `_agents`-Tuple-Reihenfolge — beide
-profitieren von der `sorted(agent_id)`-Konstruktion.
+profitieren von der lexikographisch `sorted(agent_id)`-
+Konstruktion.
 
 ### 2.2 `ScenarioAgent`-Domain-Klasse + `_assert_agent_list`-Validator
 
@@ -204,20 +236,29 @@ params:
   target_device_id: battery-1
   rules:
     - condition:
-        metric: state_of_charge_pct
-        comparator: "<"
-        threshold: "20"
+        metric: simulation_time
+        comparator: ">="
+        threshold: 10000
       command:
         type: charge
         payload: {power_kw: "50"}
     - condition:
-        metric: state_of_charge_pct
-        comparator: ">"
-        threshold: "80"
+        metric: tick
+        comparator: ">="
+        threshold: 30
       command:
         type: discharge
         payload: {power_kw: "50"}
 ```
+
+> **YAML-Quoting-Hinweis**: `comparator`-Werte muessen als
+> Strings quoted sein (`comparator: ">="` mit Anfuehrungs-
+> zeichen), sonst interpretiert PyYAML `>` als
+> Block-Scalar-Indikator. `threshold`-Werte fuer
+> Decimal-Felder (siehe Whitelist unten) muessen ebenfalls
+> als String quoted sein (`threshold: "20.5"`), damit
+> `GG-DATA-005` (kein `float`) eingehalten wird. Int-Felder
+> wie `tick` koennen unquoted bleiben.
 
 **Vertrag:**
 
@@ -228,22 +269,47 @@ params:
   den Command; nachfolgende Regeln werden uebersprungen.
 - Wenn keine Regel passt: kein Command (leeres
   `Sequence[Command]`-Return).
-- Metric-Werte stammen aus dem `AgentMessageBus` (Welle-4b
-  setzt das Metric-Pull via `bus.drain_for(agent_id)` mit
-  `message_type="telemetry_metric"`-Konvention um — Welle-3-
-  Foundation hat den Bus, Welle 4b nutzt ihn fuer
-  Telemetry-Forwarding).
-- Comparator-Set: `"<"`, `"<="`, `"=="`, `"!="`, `">="`, `">"`
-  (deterministische Liste; andere werden mit
-  `ScenarioInvalidRuleComparatorError` abgewiesen).
-- Threshold + Payload-Values sind `Decimal`-Strings (kein
-  `float`, `GG-DATA-005`).
+- **Welle-4b-Metric-Whitelist (context-basiert)**: der
+  RuleBasedAgent liest Metric-Werte **ausschliesslich aus
+  dem `DeviceTickContext`**, der dem Agent in
+  `Agent.tick(context, bus)` uebergeben wird (Welle-4a-
+  Protocol-Surface; siehe ADR 0023 §2.1). Welle-4b-zulaessige
+  Metric-Namen:
+  - `tick` (`int`, 0-basiert; entspricht `context.tick`).
+  - `simulation_time` (`int` in ms; entspricht
+    `context.simulation_time`).
+  Andere `metric`-Namen werden vom Validator typisiert mit
+  `ScenarioInvalidRuleMetricError` abgewiesen.
+
+  **Bewusster Welle-4b-Scope-Schnitt**: Decision-Logik
+  basiert auf Tick-Counter / Simulation-Zeit, **nicht** auf
+  Live-Telemetry (Device-SoC, GridConnection-Power etc.).
+  Welle 4b liefert Foundation-Konkretisierung — die Demo
+  zeigt End-to-End-Plumbing (`RuleBasedAgent` produziert
+  Commands, A0a wendet sie an, Snapshot/Resume ist
+  byte-stabil) ohne Telemetry-Bridge.
+
+  Telemetry-basierte Decision-Logik (z. B. Battery-SoC-
+  Threshold) erfordert einen Telemetry-Forwarding-Mechanismus
+  am AgentMessageBus oder einen `TelemetryQueryPort` (ADR
+  0023 §2.1 Forward-Pointer „Welle 4 wird einen optionalen
+  TelemetryQueryPort hinzufuegen, falls Decision-Logik
+  Live-Telemetry braucht"). Beides ist Welle 4c+ Material
+  und bleibt explizit out-of-scope (§7).
+- Comparator-Set: `"<"`, `"<="`, `"=="`, `"!="`, `">="`,
+  `">"` (deterministische Liste; andere werden mit
+  `ScenarioInvalidRuleComparatorError` abgewiesen). Welle 4b
+  vergleicht `int`-gegen-`int` (beide Metric-Werte sind
+  `int`); spaetere Welle-4c+-Erweiterungen mit Decimal-
+  Metrics nutzen denselben Comparator-Set wertbasiert ueber
+  `Decimal.__lt__` etc.
+- Payload-Werte fuer Decimal-Felder (`power_kw` o. ae.) sind
+  Decimal-Strings (kein `float`, `GG-DATA-005`).
 
 **Erweiterungs-Pfad — Plugin-Hook (optional):**
 
 ```yaml
 params:
-  target_device_id: battery-1
   plugin: "custom_decision_v1"
   plugin_params: {...}
 ```
@@ -290,8 +356,33 @@ class AgentPlugin(Protocol):
 Plugin haelt seinen eigenen State (snapshot-bar via Plugin-
 selbst-implementierten `snapshot/from_snapshot`-Methoden).
 Der `RuleBasedAgent` persistiert das Plugin-State-Mapping
-unter `params.plugin_state` in seinem eigenen Snapshot
+unter `plugin_state` in seinem eigenen Snapshot
 (siehe §2.4).
+
+**Plugin-Restore-Vertrag (Welle-4b-Review-Folge F-2,
+2026-05-22):** beim Restore via `RuleBasedAgent.from_
+snapshot(state)` ist der **Plugin-Snapshot** die einzige
+Source-of-Truth fuer den Plugin-Zustand. Aufrufer-Pfad:
+
+1. `plugin_name = state["plugin"]` lesen.
+2. Plugin-Klasse aus `_AGENT_PLUGIN_FACTORIES[plugin_name]`
+   holen (Modul-Level-Map; analog `_DEVICE_TYPE_BY_CLASS_
+   NAME`-Lookup).
+3. **`PluginClass.from_snapshot(state["plugin_state"])`
+   aufrufen — OHNE Scenario-`plugin_params`.** Das ist
+   analog zu `DeviceModel.from_snapshot(state)`: kein
+   Scenario-Bezug, alles Notwendige liegt im Snapshot-State.
+4. Scenario-`plugin_params` fliessen nur in den **Fresh-
+   Start-Pfad** ein (`PluginClass`-Konstruktor oder
+   Factory-Function); beim Resume werden sie ignoriert.
+
+Damit gilt: wenn ein Scenario zwischen Snapshot und Restore
+veraendert wird (Plugin-Params unterscheiden sich), bleibt
+der Resume korrekt — Plugin-State ist authoritative.
+Drift-Detection zwischen Scenario und Snapshot ist
+**out-of-scope** (Aufrufer-Verantwortung; pattern-konsistent
+zu Welle-6a-`TickLoop.from_snapshot`, das auch keine
+Cross-Scenario-Drift erkennt).
 
 **Mutual Exclusivity**: ein Agent nutzt **entweder** Rules
 **oder** Plugin, nicht beides — wenn beide gesetzt sind,
@@ -300,6 +391,14 @@ Begruendung: Hybrid-Reihenfolge (Rules-First-Plugin-Fallback
 vs. Plugin-First-Rules-Fallback) waere Quelle stiller
 Determinismus-Drift. Welle-4c kann das aufweichen, wenn
 ein konkretes Plugin das braucht.
+
+**Edge-Case „weder Rules noch Plugin" (Welle-4b-Review-Folge
+F-5):** wenn `params` weder einen `rules`-Block noch einen
+`plugin`-Key enthaelt, wirft der Validator
+`ScenarioInvalidAgentParamsError` (gleiche Error-Klasse wie
+Mutual-Exclusivity-Verstoss; Message unterscheidet die
+beiden Faelle). Kein stiller No-op-Agent — produktiver
+Agent ohne Decision-Surface ist immer ein Schema-Fehler.
 
 ### 2.4 `agents.<agent_type>.<agent_id>`-Sub-Snapshot-Layout
 
@@ -396,9 +495,24 @@ Inkonsistenz zu Welle-6b/Welle-2-Demo-Setup).
 - 1 × `BatteryDevice` (z. B. `battery-1`).
 - 1 × `GridConnectionDevice` (z. B. `grid-1`).
 - 1 × `SmartMeterDevice` (Aggregator).
-- 1 × `RuleBasedAgent` (`bess-controller`) mit Threshold-
-  Rules auf Battery-SoC.
+- 1 × `RuleBasedAgent` (`bess-controller`) mit
+  **zeitgesteuerten Threshold-Rules** (siehe §2.3 Welle-4b-
+  Metric-Whitelist `tick` / `simulation_time`):
+  - Phase 1 (Tick 0..9, simulation_time < 10 s): Idle,
+    keine Battery-Commands.
+  - Phase 2 (Tick 10..29, simulation_time 10..29 s):
+    Charge-Command (`type: charge`, `power_kw: "20"`).
+  - Phase 3 (Tick 30..59, simulation_time 30..59 s):
+    Discharge-Command (`type: discharge`, `power_kw: "20"`).
 - Simulation: 60 s, `tick_ms=1000`, fixer Seed.
+
+Die Demo zeigt End-to-End-Plumbing (Agent emittiert
+Commands ueber A0a, Snapshot/Resume ist byte-stabil),
+**nicht** echte BESS-Steuerung mit SoC-Feedback. Telemetry-
+gesteuerte Decision-Logik (SoC-Threshold etc.) ist Welle-4c+-
+Material und braucht einen Telemetry-Forwarding-Mechanismus
+am AgentMessageBus oder einen `TelemetryQueryPort` (ADR 0023
+§2.1 Forward-Pointer).
 
 ---
 
@@ -517,6 +631,7 @@ Sub-Snapshot-Layout ist neu).
   (`ScenarioUnknownAgentTypeError`,
   `ScenarioUnknownAgentTargetError`,
   `ScenarioInvalidRuleComparatorError`,
+  `ScenarioInvalidRuleMetricError`,
   `ScenarioInvalidAgentParamsError`,
   `ScenarioUnknownAgentPluginError`,
   `TickLoopAgentInstanceSnapshotMismatchError`).
@@ -622,10 +737,28 @@ ADR-Folge zu ADR 0007 `AsyncRandomPort`.
 **Observability-Ports** (`GG-OTEL-001..004`) — Welle 5/6;
 ADR 0024.
 
-**Telemetry-Forwarding-Schema** im Bus — Welle 4b nutzt
-`message_type="telemetry_metric"`-Konvention pragmatisch;
-formale Schema-Definition (mit eigenem Sub-Snapshot oder
-Bus-Variante) ist Welle 4c+ Material.
+**Telemetry-Forwarding-Mechanismus** (Live-Telemetry-Zugriff
+fuer Agents) — bewusst out-of-scope in Welle 4b:
+
+- ADR 0023 §2.1 Forward-Pointer: „Welle 4 wird einen
+  optionalen `TelemetryQueryPort` (oder aequivalent)
+  hinzufuegen, falls Decision-Logik Live-Telemetry braucht."
+  Welle 4b nimmt diesen Pointer **nicht** auf — der
+  RuleBasedAgent operiert auf `context`-Feldern (`tick`,
+  `simulation_time`), siehe §2.3 Metric-Whitelist.
+- Telemetry-Forwarding-Optionen fuer Welle 4c+ (zwei
+  Pfade, Entscheidung dort):
+  1. TickLoop-Bridge: TickLoop publiziert Device-Telemetry
+     als typisierte `AgentMessage` (z. B.
+     `message_type="telemetry_metric"`) auf den
+     `AgentMessageBus` nach Schritt D / vor Schritt D2.
+     Vorteil: bestehender Bus, kein neuer Port.
+  2. `TelemetryQueryPort` als Driven-Port: explizite
+     Query-Surface, vom TickLoop oder einem Read-Adapter
+     erfuellt. Vorteil: Pull-Modell, kein Bus-Buffer-Druck.
+- Schema-Definition (Message-Format, Sub-Snapshot-Slot
+  fuer subscribed Metric-Channels o. ae.) ist Welle-4c+-
+  ADR-Material.
 
 **Sub-Seed-Wortbreite-Erhoehung** (Trigger 011) — bleibt in
 `open/`. Welle 4b mit einem konkreten Agent-Implementer
