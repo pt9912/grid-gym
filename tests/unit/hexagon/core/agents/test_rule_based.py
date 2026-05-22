@@ -453,3 +453,56 @@ def test_plugin_snapshot_serializes_plugin_state() -> None:
     assert snap["plugin_state"] == {"version": 1, "calls": (1, 2, 3)}
     assert snap["target_device_id"] is None
     assert snap["rules"] == ()
+
+
+def test_plugin_state_is_lost_in_welle_4b_from_snapshot() -> None:
+    """ADR 0027 §2.3 + §7 Welle-4b-Review-Folge F-2 (2026-05-22):
+    Welle-4b `from_snapshot` rekonstruiert KEINEN Plugin-State
+    (kein Plugin-Factory-Lookup). Konkrete Plugins sind Welle 4c+
+    Material; dieser Test pinnt den expliziten Scope-Schnitt,
+    damit der Welle-4c+-Trigger sichtbar bleibt.
+
+    Konsequenz bei TickLoop-Resume mit Plugin: `agent.snapshot()`
+    vor vs. nach Roundtrip weicht ab (`plugin_state: {...}` →
+    `plugin_state: null`). Bidirektionaler Resume-Match-Check
+    wuerde das als Mismatch erkennen.
+    """
+    plugin = _StubPlugin(recorded_calls=[1, 2, 3])
+    agent = RuleBasedAgent(
+        agent_id="bess",
+        plugin=plugin,
+        plugin_name="stub_v1",
+        plugin_params={"param-a": "value"},
+    )
+    snap_with_plugin = agent.snapshot()
+    assert snap_with_plugin["plugin_state"] is not None
+    restored = RuleBasedAgent.from_snapshot(snap_with_plugin)
+    # Plugin-Name bleibt erhalten (Tracking), aber Plugin-Instanz
+    # und plugin_state sind verloren — Welle-4b-Welt-Schnitt.
+    assert restored.plugin_name == "stub_v1"
+    assert restored.plugin is None
+    snap_after = restored.snapshot()
+    # Drift sichtbar:
+    assert snap_after["plugin"] == "stub_v1"
+    assert snap_after["plugin_state"] is None
+    assert snap_after != snap_with_plugin
+
+
+def test_plugin_and_plugin_name_properties_expose_internal_state() -> None:
+    """ADR 0027 §2.3 + Welle-4b-Review-Folge F-6: pruefe public
+    Property-Surface (Coverage fuer `plugin`/`plugin_name`-
+    Properties)."""
+    plugin = _StubPlugin(recorded_calls=[])
+    agent_plugin_path = RuleBasedAgent(
+        agent_id="bess", plugin=plugin, plugin_name="stub_v1"
+    )
+    assert agent_plugin_path.plugin is plugin
+    assert agent_plugin_path.plugin_name == "stub_v1"
+
+    agent_rules_path = RuleBasedAgent(
+        agent_id="bess",
+        target_device_id="battery-1",
+        rules=(_rule("tick", ">=", 0),),
+    )
+    assert agent_rules_path.plugin is None
+    assert agent_rules_path.plugin_name is None

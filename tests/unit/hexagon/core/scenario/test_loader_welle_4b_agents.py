@@ -148,6 +148,41 @@ def test_build_tick_loop_explicit_agents_override_scenario() -> None:
     assert loop._agents[0].agent_id == "custom-agent"  # type: ignore[attr-defined]
 
 
+def test_build_tick_loop_explicit_empty_tuple_yields_agentless_run() -> None:
+    """ADR 0027 §2.2 + Welle-4b-Review-Folge F-1 (2026-05-22):
+    expliziter `agents=()` (leeres Tupel) wird vom Builder als
+    „agentenloser Run" respektiert, auch wenn `scenario.agents`
+    nicht-leer ist. Vorher hatte `not agents`-Check das
+    silent zu `_build_agents(scenario.agents)` umgeleitet."""
+    scenario = _scenario_with_agents((_rule_based_agent(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-w4b-empty",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+        agents=(),  # explizit leer
+    )
+    assert loop._agents == ()  # type: ignore[attr-defined]
+    # Auto-Bus-Regel ist Welle-4a-Verantwortung: bei agents=()
+    # wird kein Bus angelegt.
+    assert loop._agent_bus is None  # type: ignore[attr-defined]
+
+
+def test_build_tick_loop_none_agents_derives_from_scenario() -> None:
+    """ADR 0027 §2.2 + Welle-4b-Review-Folge F-1: `agents=None`-
+    Sentinel triggert Scenario-Defaultierung (kanonischer Pfad)."""
+    scenario = _scenario_with_agents((_rule_based_agent(),))
+    loop = build_tick_loop(
+        scenario,
+        run_id="run-w4b-derived",
+        clock=FakeClock(),
+        random_root=MersenneTwisterRandomPort(seed=42),
+        # agents nicht angegeben → None-Default → derive
+    )
+    assert len(loop._agents) == 1  # type: ignore[attr-defined]
+    assert loop._agents[0].agent_id == "bess"  # type: ignore[attr-defined]
+
+
 def test_load_scenario_populates_agents_in_lex_order() -> None:
     """ADR 0027 §2.1: `agents`-Dict-Keys werden lexikographisch
     sortiert in den Tuple gemappt."""

@@ -360,7 +360,7 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     random_root: RandomPort,
     fault_port: FaultPort | None = None,
     agent_bus: AgentMessageBus | None = None,
-    agents: tuple[Agent, ...] = (),
+    agents: tuple[Agent, ...] | None = None,
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -397,19 +397,22 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     (ADR 0020) die Single Source of Truth fuer die
     Welle-4a-Resume-LoadOverlay-Match-Checks ist.
 
-    M3-Welle-4b (ADR 0027 §2.2): wenn `agents=()`-Default
-    und `scenario.agents != ()` → Builder ruft
-    `_build_agents(scenario.agents)` und reicht das Resultat
-    durch. Aufrufer mit eigenem `agents=(...)`-Override
-    (z. B. Tests mit Stub-Agents) bekommen ihren Override
-    durchgereicht — pattern-konsistent zu `agent_bus`-Kwarg.
+    M3-Welle-4b (ADR 0027 §2.2): `agents=None`-Default
+    (Sentinel) signalisiert „Builder leitet Tuple aus
+    `scenario.agents` via Factory-Map ab". Explizite Tupel
+    werden vom Aufrufer durchgereicht — auch das leere
+    Tupel `()` (= „agentenloser Run trotz Scenario-Block").
+    Welle-4b-Review-Folge F-1 (2026-05-22): vorher hatte
+    `agents=()`-Default die Scenario-Defaultierung
+    ausgeloest, was den expliziten agentenlosen Override
+    silent ueberschrieb.
     """
     devices = build_devices(scenario.devices, random_root)
-    # M3-Welle-4b (ADR 0027 §2.2): wenn der Aufrufer keinen
-    # `agents`-Override liefert, leite Tuple aus `scenario.agents`
-    # via Factory-Map ab.
-    if not agents and scenario.agents:
-        agents = _build_agents(scenario.agents)
+    # M3-Welle-4b (ADR 0027 §2.2 + Review-Folge F-1):
+    # `agents=None`-Sentinel triggert Scenario-Defaultierung.
+    # Expliziter `()`-Override wird respektiert.
+    if agents is None:
+        agents = _build_agents(scenario.agents) if scenario.agents else ()
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
     # Ziele auf legitime Overlay-Geraete (LoadDevice oder
     # GridConnectionDevice) zeigen.

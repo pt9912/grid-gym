@@ -650,6 +650,21 @@ Sub-Snapshot-Layout ist neu).
 - Konkrete `AgentPlugin`-Implementer (`LearnedPolicy`,
   `MPCController` etc.) — Welle-4b liefert nur die Hook-
   Surface + Factory-Map (leer).
+- **`AgentPlugin`-Restore-Pfad in `RuleBasedAgent.from_
+  snapshot`** (Welle-4b-Review-Folge F-2, 2026-05-22):
+  Welle-4b rekonstruiert nur Rules + `plugin_name` (zur
+  Tracking-Persistenz), persistiert aber **nicht** den
+  Plugin-Zustand. `self._plugin` und `self._plugin_params`
+  bleiben `None`. Welle 4c+ schliesst das durch eine
+  erweiterte `from_snapshot`-Surface (Plugin-Factory-
+  Injection-Kwarg oder Lookup ueber zentralen Registry-
+  Service). Pinning-Test
+  `test_plugin_state_is_lost_in_welle_4b_from_snapshot`
+  pinnt den Welle-4b-Scope-Schnitt; bidirektionaler
+  TickLoop-Resume-Match-Check
+  (`_assert_agent_instance_resume_match`) macht jeden
+  Plugin-Roundtrip nach Welle-4b-Stand sichtbar
+  (`TickLoopAgentInstanceSnapshotMismatchError`).
 - `GG-AGENT-005` Priorisierung konkurrierender Agents
   (Welle 4c+; ADR 0023 §7 erlaubt Aufschub).
 - `GG-AGENT-007` Deadlines / `GG-AGENT-008` Async

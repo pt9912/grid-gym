@@ -101,3 +101,38 @@ def test_agents_demo_is_deterministic_across_two_runs() -> None:
     a = _collect_telemetry()
     b = _collect_telemetry()
     assert a == b
+
+
+def test_agents_demo_battery_soc_moves_during_charge_phase() -> None:
+    """ADR 0027 §2.6 + Welle-4b-Review-Folge F-3 (2026-05-22):
+    Demo-Test prueft, dass die `set_power_kw`-Commands aus
+    Phase 2 (Charge, Tick 10..29) tatsaechlich auf der Battery
+    wirksam sind — nicht nur "kein Crash". Battery-SoC nach
+    Phase 2 muss sich von Initial unterscheiden.
+
+    Ohne diese Assertion wuerde ein stilles Battery-Reject
+    (z. B. Payload-Format-Drift) unbemerkt bleiben und das
+    Welle-4b-Plumbing als gruen erscheinen, obwohl die
+    Decision-Logik nichts bewirkt."""
+    from grid_gym.hexagon.core.devices.battery import BatteryDevice
+
+    loaded = load_yaml_scenario(AGENTS_DEMO_SCENARIO_PATH)
+    loop = _build_loop(loaded)
+    battery = next(
+        d for d in loop._devices if isinstance(d, BatteryDevice)  # type: ignore[attr-defined]
+    )
+    initial_snapshot = battery.snapshot()
+    initial_soc_kwh = initial_snapshot["soc_kwh"]
+    # Fahre Phase 1 (Idle Tick 0..9) + Phase 2 (Charge Tick 10..29)
+    # = 30 Ticks. Buffer-Drain-Delay (A0a wendet Tick-N-Command in
+    # Tick N+1 an) verschiebt das Wirken um eine Tick — daher 31
+    # Ticks fuer mindestens 20 Charge-Apply-Phasen.
+    for _ in range(31):
+        loop.tick()
+    after_charge_snapshot = battery.snapshot()
+    after_charge_soc_kwh = after_charge_snapshot["soc_kwh"]
+    assert after_charge_soc_kwh != initial_soc_kwh, (
+        f"Battery-SoC nach Charge-Phase sollte sich von Initial "
+        f"({initial_soc_kwh}) unterscheiden — sah {after_charge_soc_kwh}. "
+        "Stilles Battery-Reject? Welle-4b-Demo-Plumbing nicht wirksam."
+    )

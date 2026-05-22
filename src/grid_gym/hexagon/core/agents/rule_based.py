@@ -251,14 +251,32 @@ class RuleBasedAgent:
     def from_snapshot(cls, state: Mapping[str, object]) -> Self:  # noqa: PLR0915 — pro-Feld-typed-Errors fuer 6 Pflichtfelder + Rules-Sub-Mapping; Pattern-Konsistenz zu TickLoop-_restore_pending_command_entry.
         """Rekonstruiert `RuleBasedAgent` aus seinem Snapshot.
 
-        Plugin-Restore-Vertrag (ADR 0027 §2.3 Welle-4b-Review-
-        Folge F-2): Plugin-Snapshot ist Single Source of Truth.
-        Plugin-Factory-Lookup ueber `_AGENT_PLUGIN_FACTORIES`
-        am Scenario-Loader (`scenario/loader.py`) — aus dem
-        `agents`-Modul ist die Factory-Map nicht referenziert, um
-        zyklischen Import zu vermeiden. Plugin-Restore wird daher
-        vom Scenario-Loader / Aufrufer durchgefuehrt, nicht direkt
-        von `from_snapshot`. Welle-4b-Default-Pfad ist Rules-only.
+        **Welle-4b-Plugin-Restore-Scope-Schnitt** (ADR 0027 §2.3
+        + §7 Welle-4b-Review-Folge F-2, 2026-05-22):
+
+        Welle 4b liefert die **Hook-Surface** + Factory-Map
+        (Welle-4b leer); konkrete `AgentPlugin`-Implementer und
+        damit auch der Plugin-Restore-Pfad sind explizit
+        **Welle 4c+ Material**. `from_snapshot(...)` rekonstruiert
+        Rules + `plugin_name` (zur Tracking-Persistenz im
+        Snapshot), persistiert aber **nicht** den Plugin-Zustand
+        — `self._plugin` bleibt `None`, `self._plugin_params`
+        bleibt `None`.
+
+        Konsequenz fuer Plugin-Snapshots: `agent.snapshot()` vor
+        und nach `from_snapshot(snapshot())` weicht ab
+        (`plugin_state: {...}` → `plugin_state: null`). Bei
+        TickLoop-Resume mit `_assert_agent_instance_resume_match`
+        wuerde das einen `TickLoopAgentInstanceSnapshotMismatchError`
+        triggern, sobald ein Plugin produktiv verwendet wird.
+        Welle 4c+ wird das durch eine erweiterte
+        `from_snapshot`-Surface schliessen (z. B. Plugin-Factory-
+        Injection-Kwarg oder Plugin-Lookup ueber zentralen
+        Registry-Service).
+
+        Welle-4b-Tests (siehe `test_rule_based.py`) decken den
+        Plugin-Roundtrip-Loss explizit ab, damit der Welle-4c+-
+        Trigger sichtbar ist.
 
         Strukturelle Pruefungen (Welle-0a-Codec-Pattern):
         Pflicht-Keys + Typ-Match per Helper-Funktionen.
