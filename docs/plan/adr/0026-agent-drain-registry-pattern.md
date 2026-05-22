@@ -466,6 +466,20 @@ Runtime-Dependencies matcht (Device/GridModel/LoadOverlay).
   - Schluessel im `sub_snapshots`-Mapping:
     `"pending_agent_commands"`.
 
+Diese Einhaenge-Regel ist bewusst asymmetrisch:
+`agent_bus` ist ein Runtime-Capability-Signal. Ein leerer,
+aber vorhandener Bus bedeutet, dass der TickLoop Agent-
+Kommunikation aktiv verdrahtet hat und ein Resume diesen Bus
+auch dann rekonstruieren muss, wenn dessen Message-Buffer leer
+ist. `pending_agent_commands` ist dagegen nur eine
+Arbeitsschlange fuer noch nicht angewendete Agent-Commands.
+Ein leerer Pending-Buffer ist identisch zum Default-Zustand nach
+Konstruktion/Restore und wird deshalb nicht als leerer Sub-
+Snapshot persistiert. Das haelt neue Snapshots fuer agentenlose
+oder gerade drain-leere Laeufe naeher an alten Snapshot-Formen
+und vermeidet unnoetige Backward-Compat-Drift, ohne
+Resume-Information zu verlieren.
+
 `TickLoop.from_snapshot(...)` rekonstruiert beide Sub-
 Snapshots, falls sie vorhanden sind, und nimmt optionale
 Runtime-Dependency-Kwargs an:
