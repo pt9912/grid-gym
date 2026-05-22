@@ -40,22 +40,22 @@ Nicht Gegenstand dieses Dokuments:
 
 ## 2. Architekturprinzipien
 
-| Kennung         | Prinzip                                                                                  | Bezug              |
-| --------------- | ---------------------------------------------------------------------------------------- | ------------------ |
-| GG-AR-P-001     | Modulare Plattform: Simulationskern, Geraetemodelle, Adapter, Persistenz, UI sind getrennt | GG-ARCH-001        |
-| GG-AR-P-002     | Hexagonale Architektur fuer den Simulationskern (Ports & Adapters)                        | GG-ARCH-002        |
-| GG-AR-P-003     | Simulationslogik kennt keine Kommunikationsadapter; Abhaengigkeiten zeigen nach innen     | GG-ARCH-003, GG-PRINC-006 |
-| GG-AR-P-004     | Geraetemodelle sind ueber gemeinsame Schnittstelle austauschbar                           | GG-ARCH-004, GG-DEV-001 |
-| GG-AR-P-005     | Interne Kommunikation ist eventbasiert mit deterministischem Scheduler                    | GG-ARCH-005, GG-ARCH-006 |
-| GG-AR-P-006     | Zeitmodell ist zentralisiert; Fachlogik liest Zeit nur ueber den Clock-Port               | GG-ARCH-007        |
-| GG-AR-P-007     | Live- und Replay-Simulation teilen denselben Tick-Prozessor                              | GG-ARCH-008, GG-SIM-006 |
-| GG-AR-P-008     | Determinismus ist invariant: gleicher Seed, gleiche Eingaben, gleiche kanonische Ausgabe  | GG-SIM-001/002/003, GG-RT-002 |
-| GG-AR-P-009     | Einheitliche interne Modelle fuer Telemetrie, Command, Event und Snapshot                | GG-DATA-001..005, GG-ARCH-005 |
-| GG-AR-P-010     | Sicherer Default: ungueltige, NaN-, stale-, missing-Werte werden nicht ungeprueft uebernommen | GG-SAFE-001..004, GG-BESS-005 |
-| GG-AR-P-011     | Simulationsadapter sind als solche gekennzeichnet und versprechen keine produktive Steuerung | GG-SAFE-007, GG-NONGOAL-001 |
-| GG-AR-P-012     | Plattform laeuft offline lokal in Docker Compose; PostgreSQL ist Pflicht-Persistenz       | GG-DEPLOY-001/002/011, GG-PERSIST-005 |
-| GG-AR-P-013     | Konfiguration statt Code: Geraete, Szenarien, Faults, Replays sind YAML-deklariert        | GG-SCN-001, GG-ARCH-004 |
-| GG-AR-P-014     | Architektur-Tabus werden per Build-/Architekturtest erzwungen                              | GG-PRINC-006, GG-CC-002/003/004, GG-ARCHTEST-* |
+| Kennung     | Prinzip                                                                                       | Bezug                                          |
+| ----------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| GG-AR-P-001 | Modulare Plattform: Simulationskern, Geraetemodelle, Adapter, Persistenz, UI sind getrennt    | GG-ARCH-001                                    |
+| GG-AR-P-002 | Hexagonale Architektur fuer den Simulationskern (Ports & Adapters)                            | GG-ARCH-002                                    |
+| GG-AR-P-003 | Simulationslogik kennt keine Kommunikationsadapter; Abhaengigkeiten zeigen nach innen         | GG-ARCH-003, GG-PRINC-006                      |
+| GG-AR-P-004 | Geraetemodelle sind ueber gemeinsame Schnittstelle austauschbar                               | GG-ARCH-004, GG-DEV-001                        |
+| GG-AR-P-005 | Interne Kommunikation ist eventbasiert mit deterministischem Scheduler                        | GG-ARCH-005, GG-ARCH-006                       |
+| GG-AR-P-006 | Zeitmodell ist zentralisiert; Fachlogik liest Zeit nur ueber den Clock-Port                   | GG-ARCH-007                                    |
+| GG-AR-P-007 | Live- und Replay-Simulation teilen denselben Tick-Prozessor                                   | GG-ARCH-008, GG-SIM-006                        |
+| GG-AR-P-008 | Determinismus ist invariant: gleicher Seed, gleiche Eingaben, gleiche kanonische Ausgabe      | GG-SIM-001/002/003, GG-RT-002                  |
+| GG-AR-P-009 | Einheitliche interne Modelle fuer Telemetrie, Command, Event und Snapshot                     | GG-DATA-001..005, GG-ARCH-005                  |
+| GG-AR-P-010 | Sicherer Default: ungueltige, NaN-, stale-, missing-Werte werden nicht ungeprueft uebernommen | GG-SAFE-001..004, GG-BESS-005                  |
+| GG-AR-P-011 | Simulationsadapter sind als solche gekennzeichnet und versprechen keine produktive Steuerung  | GG-SAFE-007, GG-NONGOAL-001                    |
+| GG-AR-P-012 | Plattform laeuft offline lokal in Docker Compose; PostgreSQL ist Pflicht-Persistenz           | GG-DEPLOY-001/002/011, GG-PERSIST-005          |
+| GG-AR-P-013 | Konfiguration statt Code: Geraete, Szenarien, Faults, Replays sind YAML-deklariert            | GG-SCN-001, GG-ARCH-004                        |
+| GG-AR-P-014 | Architektur-Tabus werden per Build-/Architekturtest erzwungen                                 | GG-PRINC-006, GG-CC-002/003/004, GG-ARCHTEST-* |
 
 ---
 
@@ -63,23 +63,23 @@ Nicht Gegenstand dieses Dokuments:
 
 ```text
             ┌──────────────────────┐  ┌────────────────────────┐
-            │ Szenariodateien      │  │ Replay-Quellen          │
-            │ (YAML, schema_vN)    │  │ (CSV / JSON Lines)      │
+            │ Szenariodateien      │  │ Replay-Quellen         │
+            │ (YAML, schema_vN)    │  │ (CSV / JSON Lines)     │
             └──────────┬───────────┘  └──────────┬─────────────┘
-                       │                          │
-                       ▼                          ▼
-   ┌────────────────────────────────────────────────────────────────┐
-   │                          grid-gym                              │
-   │                                                                │
+                       │                         │
+                       ▼                         ▼
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                          grid-gym                               │
+   │                                                                 │
    │   API (REST / WebSocket / OpenAPI) ◄──── CLI / UI / Test-Client │
-   │                                                                │
+   │                                                                 │
    │   Simulationskern (Scheduler, Tick-Loop, Geraetemodelle,        │
-   │   Fault Injection, Multi-Agent, Snapshot)                      │
-   │                                                                │
+   │   Fault Injection, Multi-Agent, Snapshot)                       │
+   │                                                                 │
    │   Adapter-Schicht (Replay, Protokolladapter — optional)         │
-   └────┬──────────────┬─────────────────┬─────────────────┬────────┘
+   └────┬──────────────┬─────────────────┬─────────────────┬─────────┘
         │              │                 │                 │
-   ┌────▼────┐   ┌─────▼─────┐    ┌──────▼───────┐  ┌──────▼─────────┐
+   ┌────▼────┐   ┌─────▼─────┐    ┌──────▼───────┐  ┌──────▼──────────┐
    │ Modbus  │   │ MQTT      │    │ OPC-UA       │  │ DNP3 / IEC61850 │
    │ TCP     │   │ Broker    │    │              │  │                 │
    └─────────┘   └───────────┘    └──────────────┘  └─────────────────┘
@@ -226,30 +226,30 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 
 #### Driving Ports (vom Kern angeboten)
 
-| Port-ID            | Verantwortung                                              | Bezug                          |
-| ------------------ | ---------------------------------------------------------- | ------------------------------ |
-| GG-AR-PORT-DRV-001 | `RunControlPort` — Start, Pause, Resume, Stop, Status      | GG-API-001, GG-SIM-008         |
-| GG-AR-PORT-DRV-002 | `ScenarioPort` — Laden, Validieren, Hashen                 | GG-SCN-001/003/004/008         |
-| GG-AR-PORT-DRV-003 | `ReplayPort` — Quelle binden, Faktor setzen, Diff abrufen  | GG-SIM-006, GG-REPLAY-001..007 |
-| GG-AR-PORT-DRV-004 | `FaultInjectionPort` — Faults laden, ausloesen, beenden    | GG-FAULT-001..010              |
-| GG-AR-PORT-DRV-005 | `SnapshotPort` — erzeugen, fortsetzen                      | GG-SIM-005                     |
-| GG-AR-PORT-DRV-006 | `TelemetryQueryPort` — Live- und Lauf-Abfragen             | GG-API-002, GG-PERSIST-001     |
+| Port-ID            | Verantwortung                                               | Bezug                          |
+| ------------------ | ----------------------------------------------------------- | ------------------------------ |
+| GG-AR-PORT-DRV-001 | `RunControlPort` — Start, Pause, Resume, Stop, Status       | GG-API-001, GG-SIM-008         |
+| GG-AR-PORT-DRV-002 | `ScenarioPort` — Laden, Validieren, Hashen                  | GG-SCN-001/003/004/008         |
+| GG-AR-PORT-DRV-003 | `ReplayPort` — Quelle binden, Faktor setzen, Diff abrufen   | GG-SIM-006, GG-REPLAY-001..007 |
+| GG-AR-PORT-DRV-004 | `FaultInjectionPort` — Faults laden, ausloesen, beenden     | GG-FAULT-001..010              |
+| GG-AR-PORT-DRV-005 | `SnapshotPort` — erzeugen, fortsetzen                       | GG-SIM-005                     |
+| GG-AR-PORT-DRV-006 | `TelemetryQueryPort` — Live- und Lauf-Abfragen              | GG-API-002, GG-PERSIST-001     |
 | GG-AR-PORT-DRV-007 | `HealthPort` — Healthcheck mit `healthy/degraded/unhealthy` | GG-DEPLOY-006                  |
 
 #### Driven Ports (vom Kern aufgerufen)
 
-| Port-ID            | Verantwortung                                                              | Bezug                       |
-| ------------------ | -------------------------------------------------------------------------- | --------------------------- |
-| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant. Protocol-Vertrag und `SimulationTime`-Alias sind in M1 Welle 2 (siehe Slice-Plan §3 Welle 2) fixiert. | GG-ARCH-007, GG-RT-002      |
-| GG-AR-PORT-DRN-002 | `TelemetrySinkPort` — Persistenz und Live-Stream von Telemetriepunkten     | GG-DATA-001, GG-PERSIST-001 |
-| GG-AR-PORT-DRN-003 | `RunRepositoryPort` — Laufmetadaten, Szenario-Hash, Lauf-Loeschung         | GG-PERSIST-003/009          |
-| GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                         | GG-PERSIST-004, GG-BESS-002 |
-| GG-AR-PORT-DRN-005 | `ScenarioSourcePort` — Szenario-Datei lesen                                 | GG-SCN-001                  |
-| GG-AR-PORT-DRN-006 | `ReplaySourcePort` — Replay-Samples liefern                                  | GG-REPLAY-001/002           |
-| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter (MQTT, Modbus, …)          | GG-ARCH-003, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
-| GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability         | GG-OTEL-001..004            |
-| GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                            | GG-PRINC-005                |
-| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert. | GG-SIM-001, GG-SCN-002      |
+| Port-ID            | Verantwortung                                                                                                                                                                    | Bezug                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant. Protocol-Vertrag und `SimulationTime`-Alias sind in M1 Welle 2 (siehe Slice-Plan §3 Welle 2) fixiert. | GG-ARCH-007, GG-RT-002                       |
+| GG-AR-PORT-DRN-002 | `TelemetrySinkPort` — Persistenz und Live-Stream von Telemetriepunkten                                                                                                           | GG-DATA-001, GG-PERSIST-001                  |
+| GG-AR-PORT-DRN-003 | `RunRepositoryPort` — Laufmetadaten, Szenario-Hash, Lauf-Loeschung                                                                                                               | GG-PERSIST-003/009                           |
+| GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                                                                                                                               | GG-PERSIST-004, GG-BESS-002                  |
+| GG-AR-PORT-DRN-005 | `ScenarioSourcePort` — Szenario-Datei lesen                                                                                                                                      | GG-SCN-001                                   |
+| GG-AR-PORT-DRN-006 | `ReplaySourcePort` — Replay-Samples liefern                                                                                                                                      | GG-REPLAY-001/002                            |
+| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter (MQTT, Modbus, …)                                                                                                                | GG-ARCH-003, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
+| GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability                                                                                                              | GG-OTEL-001..004                             |
+| GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | GG-PRINC-005                                 |
+| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert.                           | GG-SIM-001, GG-SCN-002                       |
 
 #### Dependency Rule (verbindlich)
 
@@ -279,16 +279,16 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 
 #### Architektur-Tabus (Build-/Architekturtest)
 
-| Tabu-ID         | Regel                                                                                   | Bezug             |
-| --------------- | --------------------------------------------------------------------------------------- | ----------------- |
-| GG-AR-TABU-001  | `hexagon/core/*` darf keine `adapters/*`-Symbole importieren                            | GG-ARCH-003, GG-PRINC-006 |
-| GG-AR-TABU-002  | `hexagon/core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren   | GG-CC-003         |
-| GG-AR-TABU-003  | `adapters/*` darf keine fachlichen Entscheidungen treffen (nur Mapping/Transport)        | GG-CC-002         |
-| GG-AR-TABU-004  | Keine zyklischen Modulabhaengigkeiten                                                    | GG-CC-004         |
-| GG-AR-TABU-005  | Fachlogik liest Systemzeit nicht direkt; Zeit kommt aus `ClockPort`                      | GG-ARCH-007       |
-| GG-AR-TABU-006  | Domain-Objekte sind immutable, sofern nicht explizit und lokal begrenzt                  | GG-CC-007         |
-| GG-AR-TABU-007  | Keine statischen God-Utility-Classes                                                     | GG-CC-006         |
-| GG-AR-TABU-008  | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt   | GG-CC-008         |
+| Tabu-ID        | Regel                                                                                   | Bezug                     |
+| -------------- | --------------------------------------------------------------------------------------- | ------------------------- |
+| GG-AR-TABU-001 | `hexagon/core/*` darf keine `adapters/*`-Symbole importieren                            | GG-ARCH-003, GG-PRINC-006 |
+| GG-AR-TABU-002 | `hexagon/core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren  | GG-CC-003                 |
+| GG-AR-TABU-003 | `adapters/*` darf keine fachlichen Entscheidungen treffen (nur Mapping/Transport)       | GG-CC-002                 |
+| GG-AR-TABU-004 | Keine zyklischen Modulabhaengigkeiten                                                   | GG-CC-004                 |
+| GG-AR-TABU-005 | Fachlogik liest Systemzeit nicht direkt; Zeit kommt aus `ClockPort`                     | GG-ARCH-007               |
+| GG-AR-TABU-006 | Domain-Objekte sind immutable, sofern nicht explizit und lokal begrenzt                 | GG-CC-007                 |
+| GG-AR-TABU-007 | Keine statischen God-Utility-Classes                                                    | GG-CC-006                 |
+| GG-AR-TABU-008 | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt | GG-CC-008                 |
 
 Diese Tabus werden durch Architekturtests erzwungen
 (`GG-ARCHTEST-001..005`; siehe `GG-AR-TEST-001` — Testarchitektur).
@@ -297,22 +297,22 @@ Diese Tabus werden durch Architekturtests erzwungen
 
 ## 5. Komponentensicht
 
-| Komponente               | Modul                              | Verantwortung                                                | Bezug                                    |
-| ------------------------ | ---------------------------------- | ------------------------------------------------------------ | ---------------------------------------- |
-| `GG-AR-COMP-CORE`        | `hexagon/core/simulation`          | Deterministischer Tick-Loop, Scheduler, Snapshot, Pause/Resume | GG-SIM-001..009, GG-ARCH-006/007/008    |
-| `GG-AR-COMP-SCHED`       | `hexagon/core/simulation/scheduler` | Event-Scheduler mit dokumentiertem Tie-Breaking              | GG-ARCH-005/006                          |
-| `GG-AR-COMP-DEVICES`     | `hexagon/core/devices`             | `DeviceModel`-Interface, MVP-Modelle (`battery`, `pv`, `load`, `grid_connection`, `smart_meter`), SOLLTE-Modelle | GG-DEV-001..018, GG-BESS-001..008, GG-GRID-001..007 |
-| `GG-AR-COMP-SCENARIO`    | `hexagon/core/scenario`            | YAML-Schema-Validator, Szenario-Hash, kanonische Serialisierung | GG-SCN-001..008, GG-DATA-005             |
-| `GG-AR-COMP-REPLAY`      | `hexagon/core/replay`              | Replay-Sample-Import, Zeitabbildung, Diff-Engine             | GG-REPLAY-001..007                       |
-| `GG-AR-COMP-FAULTS`      | `hexagon/core/faults`              | Fault-Modell, Aktivierung/Recovery, Determinismus            | GG-FAULT-001..010                        |
-| `GG-AR-COMP-AGENTS`      | `hexagon/core/agents`              | optionales Multi-Agent-Subsystem, deterministisches Messaging | GG-AGENT-001..008                        |
-| `GG-AR-COMP-DOMAIN`      | `hexagon/core/domain`              | Telemetry, Command, Event, Quality-Status, Run-Metadaten     | GG-DATA-001..005, GG-DEV-002/003         |
-| `GG-AR-COMP-API`         | `adapters/driving/http-api`         | REST + WebSocket + OpenAPI                                   | GG-API-001..004, GG-UI-001               |
-| `GG-AR-COMP-UI`          | `ui/`                              | Web-UI fuer Demo, Live-Telemetrie, Alarme, Replay-Steuerung   | GG-UI-001..009                           |
-| `GG-AR-COMP-PERSIST`     | `adapters/driven/persistence-*`    | PostgreSQL (Pflicht), optional Timescale / Influx; Migrationen | GG-PERSIST-001..009                      |
-| `GG-AR-COMP-PROTOCOLS`   | `adapters/driven/protocol-*`        | MQTT, Modbus, OPC-UA, DNP3, IEC61850 als Simulationsadapter   | GG-MQTT-001, GG-MODB-001, GG-OPCUA-001, GG-DNP3-001, GG-IEC-001 |
-| `GG-AR-COMP-OBS`         | `adapters/driven/telemetry-*`       | Strukturierte Logs, Metriken, optional OTEL                  | GG-OTEL-001..004                         |
-| `GG-AR-COMP-DEPLOY`      | `deploy/`                          | docker-compose, Healthchecks, optional Kubernetes-Manifeste   | GG-DEPLOY-001..011                       |
+| Komponente             | Modul                               | Verantwortung                                                                                                    | Bezug                                                           |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `GG-AR-COMP-CORE`      | `hexagon/core/simulation`           | Deterministischer Tick-Loop, Scheduler, Snapshot, Pause/Resume                                                   | GG-SIM-001..009, GG-ARCH-006/007/008                            |
+| `GG-AR-COMP-SCHED`     | `hexagon/core/simulation/scheduler` | Event-Scheduler mit dokumentiertem Tie-Breaking                                                                  | GG-ARCH-005/006                                                 |
+| `GG-AR-COMP-DEVICES`   | `hexagon/core/devices`              | `DeviceModel`-Interface, MVP-Modelle (`battery`, `pv`, `load`, `grid_connection`, `smart_meter`), SOLLTE-Modelle | GG-DEV-001..018, GG-BESS-001..008, GG-GRID-001..007             |
+| `GG-AR-COMP-SCENARIO`  | `hexagon/core/scenario`             | YAML-Schema-Validator, Szenario-Hash, kanonische Serialisierung                                                  | GG-SCN-001..008, GG-DATA-005                                    |
+| `GG-AR-COMP-REPLAY`    | `hexagon/core/replay`               | Replay-Sample-Import, Zeitabbildung, Diff-Engine                                                                 | GG-REPLAY-001..007                                              |
+| `GG-AR-COMP-FAULTS`    | `hexagon/core/faults`               | Fault-Modell, Aktivierung/Recovery, Determinismus                                                                | GG-FAULT-001..010                                               |
+| `GG-AR-COMP-AGENTS`    | `hexagon/core/agents`               | optionales Multi-Agent-Subsystem, deterministisches Messaging                                                    | GG-AGENT-001..008                                               |
+| `GG-AR-COMP-DOMAIN`    | `hexagon/core/domain`               | Telemetry, Command, Event, Quality-Status, Run-Metadaten                                                         | GG-DATA-001..005, GG-DEV-002/003                                |
+| `GG-AR-COMP-API`       | `adapters/driving/http-api`         | REST + WebSocket + OpenAPI                                                                                       | GG-API-001..004, GG-UI-001                                      |
+| `GG-AR-COMP-UI`        | `ui/`                               | Web-UI fuer Demo, Live-Telemetrie, Alarme, Replay-Steuerung                                                      | GG-UI-001..009                                                  |
+| `GG-AR-COMP-PERSIST`   | `adapters/driven/persistence-*`     | PostgreSQL (Pflicht), optional Timescale / Influx; Migrationen                                                   | GG-PERSIST-001..009                                             |
+| `GG-AR-COMP-PROTOCOLS` | `adapters/driven/protocol-*`        | MQTT, Modbus, OPC-UA, DNP3, IEC61850 als Simulationsadapter                                                      | GG-MQTT-001, GG-MODB-001, GG-OPCUA-001, GG-DNP3-001, GG-IEC-001 |
+| `GG-AR-COMP-OBS`       | `adapters/driven/telemetry-*`       | Strukturierte Logs, Metriken, optional OTEL                                                                      | GG-OTEL-001..004                                                |
+| `GG-AR-COMP-DEPLOY`    | `deploy/`                           | docker-compose, Healthchecks, optional Kubernetes-Manifeste                                                      | GG-DEPLOY-001..011                                              |
 
 ---
 
@@ -325,22 +325,22 @@ auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
 
 ```text
    ┌────────────────────────────────────────────────────────────┐
-   │                       Tick (t)                              │
-   │                                                             │
-   │  1. ClockPort liefert simulation_time                       │
-   │  2. Scheduler entnimmt faellige Events                      │
-   │       (stabile Sortierung: time, prio, source, seq, id)     │
-   │  3. ReplaySourcePort / DeviceProtocolPort liefern Eingaben  │
-   │  4. FaultInjection modifiziert / blockiert Eingaben         │
-   │  5. Geraete-Tick:                                           │
-   │       für jedes Device: apply_command -> tick -> telemetry  │
-   │  6. Quality-Markierung (valid/stale/nan/missing/...)         │
-   │  7. AgentPort (optional) erzeugt Steuerentscheidungen        │
-   │  8. Commit:                                                  │
-   │       - TelemetrySinkPort  (deterministisch sortiert)        │
-   │       - AlarmSinkPort                                         │
-   │       - RunRepositoryPort  (Lauf-Metadaten / Sequenz)        │
-   │  9. Snapshot (zyklisch oder on-demand)                        │
+   │                       Tick (t)                             │
+   │                                                            │
+   │  1. ClockPort liefert simulation_time                      │
+   │  2. Scheduler entnimmt faellige Events                     │
+   │       (stabile Sortierung: time, prio, source, seq, id)    │
+   │  3. ReplaySourcePort / DeviceProtocolPort liefern Eingaben │
+   │  4. FaultInjection modifiziert / blockiert Eingaben        │
+   │  5. Geraete-Tick:                                          │
+   │       für jedes Device: apply_command -> tick -> telemetry │
+   │  6. Quality-Markierung (valid/stale/nan/missing/...)       │
+   │  7. AgentPort (optional) erzeugt Steuerentscheidungen      │
+   │  8. Commit:                                                │
+   │       - TelemetrySinkPort  (deterministisch sortiert)      │
+   │       - AlarmSinkPort                                      │
+   │       - RunRepositoryPort  (Lauf-Metadaten / Sequenz)      │
+   │  9. Snapshot (zyklisch oder on-demand)                     │
    └────────────────────────────────────────────────────────────┘
 ```
 
@@ -424,17 +424,17 @@ Simulationszeit in ms, Integer-Sequenzen).
 
 ### 8.1 Externe API
 
-| Endpunkt / Schnittstelle | Aufgabe                                       | Bezug                       |
-| ------------------------ | --------------------------------------------- | --------------------------- |
-| `POST /runs`             | Lauf starten (mit Szenario-Ref + Seed)        | GG-API-001                  |
-| `POST /runs/{id}/pause`  | Pause                                         | GG-API-001, GG-SIM-008      |
-| `POST /runs/{id}/resume` | Resume                                        | GG-API-001, GG-SIM-008      |
-| `POST /runs/{id}/stop`   | Stop                                           | GG-API-001                  |
-| `GET  /runs/{id}/status` | Statusabfrage                                 | GG-API-001, GG-DEPLOY-006   |
-| `POST /runs/{id}/faults` | Fault injizieren                              | GG-API-001, GG-FAULT-*      |
-| `POST /runs/{id}/snapshot` | Snapshot erzeugen / fortsetzen                | GG-SIM-005                  |
-| `WS   /runs/{id}/telemetry` | Live-Telemetrie-Stream (sortiert, sequenziert) | GG-API-002                  |
-| `GET  /openapi.json`     | OpenAPI-Vertrag                                | GG-API-003                  |
+| Endpunkt / Schnittstelle    | Aufgabe                                        | Bezug                     |
+| --------------------------- | ---------------------------------------------- | ------------------------- |
+| `POST /runs`                | Lauf starten (mit Szenario-Ref + Seed)         | GG-API-001                |
+| `POST /runs/{id}/pause`     | Pause                                          | GG-API-001, GG-SIM-008    |
+| `POST /runs/{id}/resume`    | Resume                                         | GG-API-001, GG-SIM-008    |
+| `POST /runs/{id}/stop`      | Stop                                           | GG-API-001                |
+| `GET  /runs/{id}/status`    | Statusabfrage                                  | GG-API-001, GG-DEPLOY-006 |
+| `POST /runs/{id}/faults`    | Fault injizieren                               | GG-API-001, GG-FAULT-*    |
+| `POST /runs/{id}/snapshot`  | Snapshot erzeugen / fortsetzen                 | GG-SIM-005                |
+| `WS   /runs/{id}/telemetry` | Live-Telemetrie-Stream (sortiert, sequenziert) | GG-API-002                |
+| `GET  /openapi.json`        | OpenAPI-Vertrag                                | GG-API-003                |
 
 Fehlerantworten folgen `GG-API-004`: `code`, `message`, `details`,
 `run_id?`, stabiler HTTP-Status. Eingaben werden vor Eintritt in den
@@ -466,15 +466,15 @@ eingebaute Defaults. Geheimnisse werden nie in Klartext geloggt
 Determinismus ist ein **Cross-Cutting-Concern**, nicht ein einzelner
 Modulvertrag.
 
-| Mechanismus                       | Aussage                                                                                  | Bezug                       |
-| --------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------- |
-| Zentraler `ClockPort`             | Einzige Quelle fuer `simulation_time` im Kern; kein direkter Systemzeitzugriff           | GG-ARCH-007, GG-AR-TABU-005 |
-| Seedbarer `RandomPort`            | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar (PRNG-Wahl und Seeding-Kette per [`ADR 0007`](../docs/plan/adr/0007-random-port.md)) | GG-SIM-001, GG-SCN-002      |
-| Stabiles Tie-Breaking             | `(time, priority, source, sequence, event_id)`                                            | GG-ARCH-006                 |
-| Kanonische Serialisierung         | Stabile Feldreihenfolge, festgelegte Numerik                                              | GG-DATA-005                 |
-| Replay-Diff                       | Fachliche vs. volatile Felder werden klassifiziert                                       | GG-REPLAY-007, GG-SAFE-006  |
-| Replay & Live teilen Tick-Loop    | Unterschiede liegen nur in Eingabe-Adaptern                                              | GG-ARCH-008, GG-AR-P-007    |
-| Parallelitaet pro Tick            | Innerhalb eines Ticks zulaessig, Commit ist deterministisch geordnet                     | GG-SIM-004                  |
+| Mechanismus                    | Aussage                                                                                                                                                     | Bezug                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Zentraler `ClockPort`          | Einzige Quelle fuer `simulation_time` im Kern; kein direkter Systemzeitzugriff                                                                              | GG-ARCH-007, GG-AR-TABU-005 |
+| Seedbarer `RandomPort`         | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar (PRNG-Wahl und Seeding-Kette per [`ADR 0007`](../docs/plan/adr/0007-random-port.md)) | GG-SIM-001, GG-SCN-002      |
+| Stabiles Tie-Breaking          | `(time, priority, source, sequence, event_id)`                                                                                                              | GG-ARCH-006                 |
+| Kanonische Serialisierung      | Stabile Feldreihenfolge, festgelegte Numerik                                                                                                                | GG-DATA-005                 |
+| Replay-Diff                    | Fachliche vs. volatile Felder werden klassifiziert                                                                                                          | GG-REPLAY-007, GG-SAFE-006  |
+| Replay & Live teilen Tick-Loop | Unterschiede liegen nur in Eingabe-Adaptern                                                                                                                 | GG-ARCH-008, GG-AR-P-007    |
+| Parallelitaet pro Tick         | Innerhalb eines Ticks zulaessig, Commit ist deterministisch geordnet                                                                                        | GG-SIM-004                  |
 
 Die Plattform unterscheidet **logische Tick-Dauer** (10 ms … 1 s) und
 **Wall-Clock-Verhalten** (Beschleunigung `0.5x / 1x / 10x / unbounded`).
@@ -621,13 +621,13 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 
 ## 15. Beobachtbarkeit
 
-| Aspekt              | Mechanismus                                                       | Bezug              |
-| ------------------- | ----------------------------------------------------------------- | ------------------ |
-| Strukturierte Logs  | JSON-Logs mit `ts, level, run_id, module, event_id, message`      | GG-OTEL-002        |
-| Metriken            | `tick_duration_ms`, `event_queue_len`, `telemetry_points_per_s`, `error_count`, `replay_diff_status` | GG-OTEL-003 |
-| Traces              | optional OTLP, ein Tick → Scheduler → Device → Adapter → Persistenz | GG-OTEL-001/004    |
-| Healthcheck         | `healthy/degraded/unhealthy` mit Ursache, Dienste separat         | GG-DEPLOY-006      |
-| Replay-Diff-Status  | maschinenlesbarer Statuswert pro Lauf                              | GG-REPLAY-007, GG-SAFE-006 |
+| Aspekt             | Mechanismus                                                                                          | Bezug                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------- |
+| Strukturierte Logs | JSON-Logs mit `ts, level, run_id, module, event_id, message`                                         | GG-OTEL-002                |
+| Metriken           | `tick_duration_ms`, `event_queue_len`, `telemetry_points_per_s`, `error_count`, `replay_diff_status` | GG-OTEL-003                |
+| Traces             | optional OTLP, ein Tick → Scheduler → Device → Adapter → Persistenz                                  | GG-OTEL-001/004            |
+| Healthcheck        | `healthy/degraded/unhealthy` mit Ursache, Dienste separat                                            | GG-DEPLOY-006              |
+| Replay-Diff-Status | maschinenlesbarer Statuswert pro Lauf                                                                | GG-REPLAY-007, GG-SAFE-006 |
 
 ---
 
@@ -666,17 +666,17 @@ Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
 gemaess `ADR 0004` §2.2; loest die zuvor positionsabhaengige
 `§17`-Referenz ab).
 
-| Testart                 | Verortung                              | Bezug                                |
-| ----------------------- | -------------------------------------- | ------------------------------------ |
-| Unit Tests              | je Modul, `tests/unit/...`            | GG-TESTTYPE-001, GG-TEST-006         |
-| Integration Tests       | `tests/integration/...`               | GG-TESTTYPE-002, GG-TEST-007         |
-| Architekturtests        | `tests/arch/...` — erzwingt `GG-AR-TABU-001..008` | GG-TESTTYPE-003, GG-ARCHTEST-001..005 |
-| Contract Tests          | OpenAPI / WebSocket / Adapter         | GG-TESTTYPE-004, GG-API-003          |
-| E2E / Demo-Abnahme      | `tests/e2e/demo`                      | GG-TESTTYPE-005, GG-DEMO-*           |
-| Replay-Diff-Tests       | Golden-File-Vergleich (Referenzlauf)   | GG-SIM-001, GG-REPLAY-007            |
-| Fault-Tests             | scenario-driven                        | GG-FAULT-001..010                    |
-| Performance-Tests       | Referenzumgebung aus `GG-RT-001`-Akzeptanz | GG-TESTTYPE-006, GG-RT-004/005       |
-| Security-Tests          | Dependency-/Schwachstellen-Scan        | GG-TESTTYPE-007, GG-CICD-005/006     |
+| Testart            | Verortung                                         | Bezug                                 |
+| ------------------ | ------------------------------------------------- | ------------------------------------- |
+| Unit Tests         | je Modul, `tests/unit/...`                        | GG-TESTTYPE-001, GG-TEST-006          |
+| Integration Tests  | `tests/integration/...`                           | GG-TESTTYPE-002, GG-TEST-007          |
+| Architekturtests   | `tests/arch/...` — erzwingt `GG-AR-TABU-001..008` | GG-TESTTYPE-003, GG-ARCHTEST-001..005 |
+| Contract Tests     | OpenAPI / WebSocket / Adapter                     | GG-TESTTYPE-004, GG-API-003           |
+| E2E / Demo-Abnahme | `tests/e2e/demo`                                  | GG-TESTTYPE-005, GG-DEMO-*            |
+| Replay-Diff-Tests  | Golden-File-Vergleich (Referenzlauf)              | GG-SIM-001, GG-REPLAY-007             |
+| Fault-Tests        | scenario-driven                                   | GG-FAULT-001..010                     |
+| Performance-Tests  | Referenzumgebung aus `GG-RT-001`-Akzeptanz        | GG-TESTTYPE-006, GG-RT-004/005        |
+| Security-Tests     | Dependency-/Schwachstellen-Scan                   | GG-TESTTYPE-007, GG-CICD-005/006      |
 
 Architekturtests sind ein **Quality Gate**: Verletzungen brechen den
 Build (`GG-AR-TABU-001..008`, `GG-ARCHTEST-001..005`).
@@ -688,46 +688,46 @@ Build (`GG-AR-TABU-001..008`, `GG-ARCHTEST-001..005`).
 Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
 `GG-TRACE-001` (Lastenheft §27.1).
 
-| Architekturartefakt                                | Lastenheft-Anforderung(en)                                |
-| -------------------------------------------------- | --------------------------------------------------------- |
-| `GG-AR-P-001..014` Architekturprinzipien            | GG-ARCH-001..008, GG-PRINC-001..006, GG-CC-001..008 (Detail-Mapping pro `GG-PRINC-*` siehe `GG-TRACE-001` in `lastenheft.md` §27.1) |
-| Schichtenmodell                                    | GG-ARCH-001/002                                           |
-| Hexagonale Sicht (`GG-AR-P-002`)                    | GG-ARCH-002/003, GG-PRINC-003..006                        |
-| `GG-AR-TABU-001..008` Architektur-Tabus             | GG-PRINC-006, GG-CC-002/003/004/006/007/008, GG-ARCHTEST-001..005 |
-| `GG-AR-PORT-DRV-001..007` Driving Ports             | GG-API-001/002, GG-SIM-005/006/008, GG-REPLAY-001..007, GG-FAULT-001..010, GG-PERSIST-001, GG-DEPLOY-006 |
-| `GG-AR-PORT-DRN-001..010` Driven Ports              | GG-ARCH-003/007, GG-DATA-001, GG-PERSIST-001/003/009, GG-OTEL-001..004, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
+| Architekturartefakt                                 | Lastenheft-Anforderung(en)                                                                                                                                                                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GG-AR-P-001..014` Architekturprinzipien            | GG-ARCH-001..008, GG-PRINC-001..006, GG-CC-001..008 (Detail-Mapping pro `GG-PRINC-*` siehe `GG-TRACE-001` in `lastenheft.md` §27.1)                                                                                                          |
+| Schichtenmodell                                     | GG-ARCH-001/002                                                                                                                                                                                                                              |
+| Hexagonale Sicht (`GG-AR-P-002`)                    | GG-ARCH-002/003, GG-PRINC-003..006                                                                                                                                                                                                           |
+| `GG-AR-TABU-001..008` Architektur-Tabus             | GG-PRINC-006, GG-CC-002/003/004/006/007/008, GG-ARCHTEST-001..005                                                                                                                                                                            |
+| `GG-AR-PORT-DRV-001..007` Driving Ports             | GG-API-001/002, GG-SIM-005/006/008, GG-REPLAY-001..007, GG-FAULT-001..010, GG-PERSIST-001, GG-DEPLOY-006                                                                                                                                     |
+| `GG-AR-PORT-DRN-001..010` Driven Ports              | GG-ARCH-003/007, GG-DATA-001, GG-PERSIST-001/003/009, GG-OTEL-001..004, GG-MQTT/MODB/OPCUA/DNP3/IEC-001                                                                                                                                      |
 | `GG-AR-COMP-*` Komponentensicht                     | GG-ARCH-001..008, GG-DEV-001..018, GG-BESS-001..008, GG-GRID-001..007, GG-SCN-001..008, GG-REPLAY-001..007, GG-FAULT-001..010, GG-AGENT-001..008, GG-API-001..004, GG-UI-001..009, GG-PERSIST-001..009, GG-OTEL-001..004, GG-DEPLOY-001..011 |
-| `GG-AR-COMP-CORE` Tick-Loop / Datenfluss            | GG-SIM-001..009, GG-RT-001..006, GG-ARCH-005/006/007/008  |
-| `GG-AR-COMP-DOMAIN` Domain-Modell                   | GG-DATA-001..005, GG-DEV-002/003, GG-CC-007               |
-| `GG-AR-COMP-API` (REST + WebSocket)                 | GG-API-001..004, GG-SAFE-008                              |
-| Adapter-Interfaces (Driven, `GG-AR-PORT-DRN-007`)   | GG-MQTT/MODB/OPCUA/DNP3/IEC-001, GG-ARCH-003              |
-| Konfiguration (`GG-AR-PORT-DRN-009`, `GG-AR-P-013`) | GG-PRINC-005, GG-AR-P-013                                 |
-| `GG-AR-P-008` Determinismus / Zeitmodell             | GG-SIM-001..004, GG-ARCH-006/007, GG-REPLAY-007, GG-SAFE-006 |
-| `GG-AR-P-010` Sicherer Default + Fallback            | GG-SAFE-001..008, GG-BESS-002/005                         |
-| `GG-AR-COMP-PERSIST` Persistenz                     | GG-PERSIST-001..009                                       |
-| `GG-AR-COMP-SCENARIO` Szenariosystem                | GG-SCN-001..008, GG-DATA-005                              |
-| `GG-AR-COMP-FAULTS` Fault-Injection                 | GG-FAULT-001..010, GG-SCN-006                             |
-| `GG-AR-COMP-AGENTS` Multi-Agent-Subsystem           | GG-AGENT-001..008                                         |
-| `GG-AR-COMP-OBS` Beobachtbarkeit                    | GG-OTEL-001..004, GG-DEPLOY-006, GG-REPLAY-007            |
-| `GG-AR-COMP-DEPLOY` Deployment-Sicht                | GG-DEPLOY-001..011                                        |
-| `GG-AR-TEST-001` Testarchitektur                    | GG-TESTTYPE-001..007, GG-ARCHTEST-001..005, GG-TEST-001..008 |
+| `GG-AR-COMP-CORE` Tick-Loop / Datenfluss            | GG-SIM-001..009, GG-RT-001..006, GG-ARCH-005/006/007/008                                                                                                                                                                                     |
+| `GG-AR-COMP-DOMAIN` Domain-Modell                   | GG-DATA-001..005, GG-DEV-002/003, GG-CC-007                                                                                                                                                                                                  |
+| `GG-AR-COMP-API` (REST + WebSocket)                 | GG-API-001..004, GG-SAFE-008                                                                                                                                                                                                                 |
+| Adapter-Interfaces (Driven, `GG-AR-PORT-DRN-007`)   | GG-MQTT/MODB/OPCUA/DNP3/IEC-001, GG-ARCH-003                                                                                                                                                                                                 |
+| Konfiguration (`GG-AR-PORT-DRN-009`, `GG-AR-P-013`) | GG-PRINC-005, GG-AR-P-013                                                                                                                                                                                                                    |
+| `GG-AR-P-008` Determinismus / Zeitmodell            | GG-SIM-001..004, GG-ARCH-006/007, GG-REPLAY-007, GG-SAFE-006                                                                                                                                                                                 |
+| `GG-AR-P-010` Sicherer Default + Fallback           | GG-SAFE-001..008, GG-BESS-002/005                                                                                                                                                                                                            |
+| `GG-AR-COMP-PERSIST` Persistenz                     | GG-PERSIST-001..009                                                                                                                                                                                                                          |
+| `GG-AR-COMP-SCENARIO` Szenariosystem                | GG-SCN-001..008, GG-DATA-005                                                                                                                                                                                                                 |
+| `GG-AR-COMP-FAULTS` Fault-Injection                 | GG-FAULT-001..010, GG-SCN-006                                                                                                                                                                                                                |
+| `GG-AR-COMP-AGENTS` Multi-Agent-Subsystem           | GG-AGENT-001..008                                                                                                                                                                                                                            |
+| `GG-AR-COMP-OBS` Beobachtbarkeit                    | GG-OTEL-001..004, GG-DEPLOY-006, GG-REPLAY-007                                                                                                                                                                                               |
+| `GG-AR-COMP-DEPLOY` Deployment-Sicht                | GG-DEPLOY-001..011                                                                                                                                                                                                                           |
+| `GG-AR-TEST-001` Testarchitektur                    | GG-TESTTYPE-001..007, GG-ARCHTEST-001..005, GG-TEST-001..008                                                                                                                                                                                 |
 
 ---
 
 ## 19. Offene architektonische Punkte
 
-| Kennung           | Frage                                                                                            | Status |
-| ----------------- | ------------------------------------------------------------------------------------------------ | ------ |
-| GG-AR-OPEN-001    | Welche Sprache und welcher Build-Stack? (Python, Go, Rust, Kotlin, .NET?) — legt Sprache und Runtime des Simulationskerns, der Adapter und der Build-Toolchain fest. Modulgrenzen aus `GG-AR-P-002` und den Tabus `GG-AR-TABU-001..008` bleiben sprachunabhaengig; betroffen sind Implementierungspakete, Querschnittsbibliotheken und Test-/Architekturtest-Tooling. **Geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) (`Accepted` 2026-05-15)** und der synchronen [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) (Type-Check-Gate via `mypy --strict`). | Geschlossen (2026-05-15) |
-| GG-AR-OPEN-002    | API-Service und Simulationsdienst als ein Prozess oder zwei? — Composition-Root-Entscheidung. **Geschlossen mit [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md) (`Accepted` 2026-05-17): zwei Prozesse, Postgres als Persistenz-Bus.** | Geschlossen (2026-05-17) |
-| GG-AR-OPEN-003    | Persistenzzugriff: Repository-Pattern + leichtgewichtiger Treiber, oder ORM?                     | Offen  |
-| GG-AR-OPEN-004    | Wird der `AgentMessageBus` als In-Process-Bus oder als Adapter (z. B. NATS) implementiert?       | Offen  |
-| GG-AR-OPEN-005    | Replay-Diff-Klassifikation: Liste fachlich vs. volatil als Konfiguration oder hartcodiert?       | Offen  |
-| GG-AR-OPEN-006    | Snapshot-Format: einheitlich JSON-kanonisch, binaer, oder hybrid?                                  | Offen  |
-| GG-AR-OPEN-007    | UI-Architektur: SSR vs. SPA; eigene REST-Konsumentenschicht oder direkte WebSocket-Anbindung?     | Offen  |
-| GG-AR-OPEN-008    | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE (`GG-OTEL-001`)                         | Offen  |
-| GG-AR-OPEN-009    | Welche Protokolladapter sind ab MVP enthalten? Heute alle SOLLTE (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`) | Offen  |
-| GG-AR-OPEN-010    | Authentifizierung der API — heute nicht im Lastenheft normiert; spaetere `GG-SAFE-…`-Erweiterung   | Offen  |
+| Kennung        | Frage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Status                   |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| GG-AR-OPEN-001 | Welche Sprache und welcher Build-Stack? (Python, Go, Rust, Kotlin, .NET?) — legt Sprache und Runtime des Simulationskerns, der Adapter und der Build-Toolchain fest. Modulgrenzen aus `GG-AR-P-002` und den Tabus `GG-AR-TABU-001..008` bleiben sprachunabhaengig; betroffen sind Implementierungspakete, Querschnittsbibliotheken und Test-/Architekturtest-Tooling. **Geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) (`Accepted` 2026-05-15)** und der synchronen [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) (Type-Check-Gate via `mypy --strict`). | Geschlossen (2026-05-15) |
+| GG-AR-OPEN-002 | API-Service und Simulationsdienst als ein Prozess oder zwei? — Composition-Root-Entscheidung. **Geschlossen mit [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md) (`Accepted` 2026-05-17): zwei Prozesse, Postgres als Persistenz-Bus.**                                                                                                                                                                                                                                                                                                                                         | Geschlossen (2026-05-17) |
+| GG-AR-OPEN-003 | Persistenzzugriff: Repository-Pattern + leichtgewichtiger Treiber, oder ORM?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Offen                    |
+| GG-AR-OPEN-004 | Wird der `AgentMessageBus` als In-Process-Bus oder als Adapter (z. B. NATS) implementiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
+| GG-AR-OPEN-005 | Replay-Diff-Klassifikation: Liste fachlich vs. volatil als Konfiguration oder hartcodiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
+| GG-AR-OPEN-006 | Snapshot-Format: einheitlich JSON-kanonisch, binaer, oder hybrid?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Offen                    |
+| GG-AR-OPEN-007 | UI-Architektur: SSR vs. SPA; eigene REST-Konsumentenschicht oder direkte WebSocket-Anbindung?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Offen                    |
+| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE (`GG-OTEL-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Offen                    |
+| GG-AR-OPEN-009 | Welche Protokolladapter sind ab MVP enthalten? Heute alle SOLLTE (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Offen                    |
+| GG-AR-OPEN-010 | Authentifizierung der API — heute nicht im Lastenheft normiert; spaetere `GG-SAFE-…`-Erweiterung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Offen                    |
 
 Geschlossene Punkte erhalten einen Verweis auf ein ADR-Dokument unter
 [`docs/plan/adr/`](../docs/plan/adr/). Die Dokumentations- und
