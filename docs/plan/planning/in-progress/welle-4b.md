@@ -103,8 +103,13 @@ Pflicht-Themen auf (siehe §2 In-Scope).
   Konkretisierung) abnahmefaehig.
 
 **Out of Scope (Welle 4c oder spaeter — explizit dokumentierte
-Forward-Pointer aus ADR 0023 §6 + ADR 0026 §7):**
+Forward-Pointer aus ADR 0023 §6 + ADR 0026 §7 + ADR 0027 §7):**
 
+- **Konkrete `AgentPlugin`-Implementer** (`LearnedPolicy`,
+  `MPCController` o. ae.) — ADR 0027 §2.3 + §4 + §7: Welle
+  4b liefert nur die `AgentPlugin`-Sub-Protocol-Surface +
+  `_AGENT_PLUGIN_FACTORIES`-Registry (leer). Konkrete
+  Plugins sind Welle 4c+ Material.
 - `GG-AGENT-007` Deadlines (Agent-Tick-Budget).
 - `GG-AGENT-008` Async (vollstaendiger Async-Vertrag —
   Welle-4-Stand bleibt synchron-deterministisch).
@@ -135,37 +140,45 @@ Forward-Pointer aus ADR 0023 §6 + ADR 0026 §7):**
   Priorisierung in Welle 4c+ (kein neues
   Priorisierungs-Konstrukt am TickLoop in Welle 4b).
 
-## 3. Architektur-Entscheidungen (geplant)
+## 3. Architektur-Entscheidungen (C1-Triage 2026-05-22)
 
-**ADR-Status (Welle-4b-Eroeffnung):**
+**ADR-Status (Welle-4b-Stand 2026-05-22):**
 
-- ADR 0027 (oder Welle-4b-internes Pattern-ADR, falls noetig)
-  — `RuleBasedAgent`-Decision-Surface + Scenario-`agents`-
-  Block. Status `Proposed` mit Welle-4b-C1; `Provisional`
-  mit Welle-4b-C3; `Accepted` mit M3-Welle-7-Closure.
+- [`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md)
+  `Proposed` (2026-05-22 mit Welle-4b-C1). Schwester-ADR zu
+  ADR 0026 (Welle-4a-Foundation); Pattern-Pendant zu
+  ADR 0025 (Welle-2-Konkretisierung). `Provisional` mit
+  Welle-4b-C2-Merge; `Accepted` mit M3-Welle-7-Closure.
 - ADR 0023 / ADR 0026 bleiben unveraendert in `Provisional`;
   Welle-4b-Code lebt im durch sie definierten Vertrag.
 
-**Offene Punkte (zu klaeren in C1):**
+**Entscheidungen (C1-Triage 2026-05-22, in ADR 0027 fixiert):**
 
-- **Single ADR oder Pattern-Update?** Falls Welle-4b nur
-  konkrete Implementer ohne neue Architektur-Decision
-  liefert (alle Vertraege via ADR 0023/0026 abgedeckt),
-  reicht ein internes Welle-4b-Decision-Memo statt eigener
-  ADR. Sub-Slicing-Schwelle aus M3-Slice-Plan §3 prueft das
-  am C1-Zeitpunkt.
-- **`RuleBasedAgent`-Surface-Granularitaet:** Map-basiert
-  (Threshold-Rules) oder Hooks-basiert (Decision-Callbacks)?
-  Vermutlich Threshold-Map (deterministisch, snapshot-bar,
-  testbar) — final in C1.
-- **`agents`-Schema-Format:** flach
-  (`agents: list[{id, type, params}]`) oder nested
-  (`agents: {<id>: {type, params}}`)? Konsistenz zu
-  `devices` (flach) bevorzugt — final in C1.
-- **End-to-End-Demo-Szenario-Surface:** YAML-Datei in `tests/
-  fixtures/` oder eigenes `scenarios/`-Verzeichnis?
-  Konsistenz zur bestehenden Test-Fixtures-Konvention
-  bevorzugt — final in C2.
+- **D-1 — ADR 0027 statt Decision-Memo** (ADR 0027 §1, §3.3):
+  Welle 4b trifft drei substantielle neue Architektur-
+  Decisions (Schema-Form, Decision-Surface, Sub-Snapshot-
+  Layout) → eigenstaendiges ADR pro Pattern-Konsistenz zu
+  ADR 0025 / ADR 0026.
+- **D-2 — RuleBasedAgent Hybrid Rules + Plugin-Hook**
+  (ADR 0027 §2.3, §3.2): Default-Pfad Threshold-Rules-Liste
+  (first-match-wins, geordnete Tuple, snapshot-bar,
+  scenario-spezifizierbar); Erweiterungs-Pfad optionaler
+  Plugin-Hook mit `_AGENT_PLUGIN_FACTORIES` (Welle 4b leer,
+  konkrete Plugins sind Welle 4c+). **Mutual Exclusivity:**
+  Rules ODER Plugin, nicht beides — vermeidet Reihenfolge-
+  Drift. Neues `AgentPlugin`-Sub-Protocol mit eigenem
+  Snapshot-Vertrag.
+- **D-3 — `agents`-Schema nested Mapping** (ADR 0027 §2.1,
+  §3.1): `agents: {<agent_id>: {type, params}}` (Schema-
+  eindeutige IDs, fachliche Map-Semantik). Konsistenz-Bruch
+  zu flachen `devices`/`faults`/`events`/`load_events`/
+  `load_profiles` als bewusste fachliche Entscheidung
+  dokumentiert. Loader iteriert `sorted(agents.keys())` fuer
+  Determinismus.
+- **D-4 — Demo-Szenario `tests/integration/scenarios/agents_demo.yaml`**
+  (ADR 0027 §2.6): Konsistenz zu existing `mvp_demo.yaml`
+  und `fault_demo.yaml`; kein neues Top-Level-`scenarios/`-
+  Verzeichnis.
 
 ## 4. Liefer-Reihenfolge
 
@@ -190,13 +203,20 @@ Reihenfolge, Risiken und Anti-Scope. Plus `in-progress/
 README.md`-Sync: `welle-4a.md`-Eintrag entfernt (jetzt in
 `done/`), neuer `welle-4b.md`-Eintrag im Bestand.
 
-### C1 — `docs(adr)` oder `docs(plan)`: Architektur-Entscheidungen
+### C1 — `docs(adr)`: ADR 0027 Proposed + welle-4b.md §3-Triage-Resultate
 
-Falls Welle-4b neue Architektur-Decisions erfordert (z. B.
-`RuleBasedAgent`-Decision-Surface, `agents`-Schema-Format,
-Snapshot-Slot-Konvention): ADR 0027 Proposed. Sonst:
-internes Welle-4b-Decision-Memo in diesem Slice-Doc unter
-§3.
+[`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md)
+Proposed (2026-05-22): RuleBasedAgent + Scenario-Agents-Block-
+Pattern. Fixiert fuenf substantielle Architektur-
+Entscheidungen — §2.1 nested-Schema, §2.2 ScenarioAgent +
+`_assert_agent_list`-Validator + `build_agents(...)`-Factory,
+§2.3 Hybrid Rules + Plugin-Hook (`AgentPlugin`-Sub-Protocol
+neu), §2.4 `agents.<type>.<id>`-Sub-Snapshot-Layout
+(bidirektionaler Resume-Match), §2.5 Welle-4-Abschluss-Gate
+(`make fullbuild` mit Mitigation-Fallback), §2.6 Demo-Pfad.
+Plus `welle-4b.md §3`-Update: vier offene Punkte aus C0 in
+Entscheidungen D-1..D-4 konsolidiert, ADR 0027 verlinkt.
+Plus `docs/plan/adr/README.md`-Eintrag fuer ADR 0027.
 
 ### C2 — `feat(welle-4b)`: RuleBasedAgent + Scenario-Schema + Demo + Tests
 
