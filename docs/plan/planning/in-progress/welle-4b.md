@@ -112,14 +112,28 @@ Forward-Pointer aus ADR 0023 §6 + ADR 0026 §7):**
   (ADR 0024-Material, Welle 5/6).
 - Multi-Receiver-Broadcast-Watermark (`evict_before(...)`
   o. ae., ADR 0026 §2.4 Forward-Pointer).
-- RL-Adapter / Trigger 011.
+- RL-Adapter (`GG-FUTURE-001/002`, ADR 0023 §7) —
+  RL-Trainings-Loop bleibt extern; `Agent`-Protocol ist
+  RL-faehig, aber kein Welle-4-Material.
+- **Trigger 011** (Sub-Seed-Wortbreite) — ADR 0023 §7
+  verlangt Welle-4-Konkretisierungs-Pruefung des
+  Aktivierungs-Kriteriums (`> 10⁶ Sub-Ports`). Welle-4b-
+  Stand: ein konkreter `RuleBasedAgent`-Implementer im
+  Demo-Szenario erreicht das Kriterium nicht (< 100
+  Agents × ein Per-Agent-Sub-Random-Stream); Trigger 011
+  bleibt in `open/`. Naechste Aktivierungs-Pruefung mit
+  M3-Welle-7-Closure oder bei produktivem Multi-Strategien-
+  Pattern (siehe `GG-AGENT-005`-Forward-Pointer unten).
 - In-Tick-Wirksamkeit der Agent-Commands (GG-AGENT-008
   Commit-Reihenfolge bleibt: Commands wirken im Folge-Tick
   via A0v/A0a).
 - Mehrere konkurrierende Agent-Implementer mit
-  Priorisierungs-Resolution (`GG-AGENT-005`) — Welle-4b
-  liefert einen Implementer-Typ; Multi-Strategien sind
-  Welle 4c+ Material.
+  Priorisierungs-Resolution (`GG-AGENT-005`) — ADR 0023 §7
+  („Welle 4 oder Welle-4-Folge") raeumt explizit
+  Wahlfreiheit ein; Welle 4b nutzt sie, liefert einen
+  Implementer-Typ und schiebt Multi-Strategien-
+  Priorisierung in Welle 4c+ (kein neues
+  Priorisierungs-Konstrukt am TickLoop in Welle 4b).
 
 ## 3. Architektur-Entscheidungen (geplant)
 
