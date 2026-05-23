@@ -29,23 +29,6 @@ Block; `Post-M1` = nach M1-Abschluss.
 | **Post-M1**          | `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | **Post-M1**          | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 
-> Bereits aktiviert: `001-code-review-doc.md` →
-> [`done/`](../done/001-code-review-doc.md) (2026-05-15,
-> Post-Acceptance per Drittes Review; weiter nach `done/`
-> nach Lieferung des PR-Templates + Code-Review-Doku).
->
-> Bereits geschlossen: `003-random-port-adr.md` →
-> [`done/`](../done/003-random-port-adr.md) (2026-05-17 nach
-> ADR-0007-Acceptance in Welle 2).
->
-> Bereits geschlossen: `012-snapshot-composition.md` →
-> [`done/`](../done/012-snapshot-composition.md) (2026-05-17 nach
-> ADR-0010-Acceptance in Welle 4).
->
-> Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
-> [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)
-> (2026-05-15).
-
 Architektonische offene Punkte (`GG-AR-OPEN-002..010`) leben weiterhin
 in `architecture.md` §19 und sind dort die kanonische Liste. Wenn
 einer dieser Punkte einen konkreten Scope-Trigger erhaelt, wandert
