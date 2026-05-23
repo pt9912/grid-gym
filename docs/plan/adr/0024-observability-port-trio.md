@@ -1,7 +1,12 @@
 # ADR 0024 — Observability-Port-Trio: LogPort + MetricsPort + TracePort (M3 Welle 5)
 
-**Status:** Proposed
+**Status:** Provisional — Welle-5-C2-Merge `718c177` (Observability-
+Port-Trio + Null-Adapter + TickLoop-Hooks produktiv; 1023 Unit-Tests +
+19 Integration-Tests gruen, `make fullbuild` cache-frei gruen ohne
+Override, Welle-5-Abnahme-Kriterium aus §4.1 erfuellt). `Accepted`
+mit M3-Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-Verifikation.
 **Datum:** 2026-05-23
+**Status geaendert am:** 2026-05-23 — `Proposed → Provisional`.
 **Bezug:**
 [Lastenheft](../../../spec/lastenheft.md) §19 Telemetrie
 (`GG-OTEL-001..004`),

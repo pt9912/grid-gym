@@ -1,35 +1,45 @@
 # Welle 5 — Observability-Foundation (LogPort/MetricsPort/TracePort)
 
-**Status:** In Progress — eroeffnet 2026-05-23 mit C0 (dieses Dokument).
-M3-Welle 4 (Foundation 4a + Konkretisierung 4b) ist abgeschlossen
-(`8802dc0..ac7b47f` + C3-Sync `b5ba33a`); Welle 5 liefert den **dritten
-Sub-Bereich** (Observability) aus dem M3-Slice-Plan und schliesst damit
-die Sub-Bereichs-Triade ab (Welle 1+2 Faults, Welle 3+4a+4b Multi-Agent,
-Welle 5+6 Observability).
+**Status:** Done — M3-Welle-5-Closure am 2026-05-23
+(`7427daf..a690c02`, 6 Welle-5-Kern-Commits inkl. C0/C1/C2/Hygiene-
+Folge/coverage-report-Target + diesem C3-Status-Sync). Welle 5
+liefert den **dritten Sub-Bereich** (Observability) aus dem
+M3-Slice-Plan und schliesst damit die Sub-Bereichs-Triade ab
+(Welle 1+2 Faults, Welle 3+4a+4b Multi-Agent, Welle 5+6
+Observability). M3-Welle 4 (Foundation 4a + Konkretisierung 4b)
+war Ausgangsbasis (`8802dc0..ac7b47f` + C3-Sync `b5ba33a`).
 
-**DoD-Verifikation (Welle-Schluss-Plan):**
+**DoD-Verifikation (Welle-Schluss):**
 
 - `make fullbuild` cache-frei gruen **ohne** Override (volle CI +
-  Runtime-Image + Compose-Smoke + Trivy-Image-Audit) als
-  Welle-5-Abnahme-Kriterium.
-  - In Welle 5 bleibt die Compose-Smoke-Verifikation auf
-    Laufzeit-Stack-Liveness beschraenkt; OTLP-Span-/Metric-Export-
-    Assertions sind explizit Welle 6.
-- `make test-unit` mit allen Welle-5-Tests gruen (Port-Surface,
-  Null-Adapter-Roundtrip, ggf. Bytes-Pfad-Tests).
-  - Mindestanforderung: mindestens je ein Tick-, Agent- und
-    Fault-Test auf Default-Null-Adapters (`record_calls=False`) mit
-    Hook-Verifikation.
-- `make test-integration` mit Welle-5-Tests gruen (Multi-Agent- +
-  Fault-Demo unter Null-Adapter-Default).
-  - Welle-5-spezifisch: Null-Adapter-Metriken/Logs in den beiden
-    Demo-Pfaden nachweislich aufgerufen.
+  Runtime-Image + Compose-Smoke + Trivy-Image-Audit). Welle-5-
+  Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt. Compose-Smoke-
+  Verifikation auf Laufzeit-Stack-Liveness beschraenkt; OTLP-Span-/
+  Metric-Export-Assertions bleiben Welle 6.
+- `make test-unit`: **1023 Tests gruen** (Welle-4b-Endstand 992 →
+  +29 Welle-5-C2 + 2 Hygiene-Folge-Tests = +31 Welle-5-Tests).
+- `make test-integration`: **19 Tests gruen** (unveraendert
+  gegenueber Welle-4b — Welle 5 fuegt keine Integration-Tests
+  hinzu; Multi-Agent- und Fault-Demo-Pfade laufen unveraendert
+  mit Default-`None`-Observability-Ports).
 - `make gates` A-1 gruen ohne Override: lint, format-check,
-  mypy `--strict`, arch-check, coverage 90/85 line, critical-coverage,
-  dep-audit.
-- ADR 0024: `Proposed → Provisional`.
-- AC-PORTS-NO-OUT bleibt KEPT (3 neue Driven-Ports, kein Driving-
-  Port-Verletzer).
+  mypy `--strict` (192 source files), arch-check 17/17 contracts
+  kept (inkl. neuer `AC-NO-COVERAGE-PRAGMA` per ADR 0029),
+  coverage **95.55%** total / 96% line / ~91.76% critical-branch
+  (90/85-Schwellen erfuellt; Anstieg +1.04 Punkte gegenueber
+  Welle-4b-94.51% durch Dead-Code-Loeschung in der Hygiene-Folge),
+  dep-audit gruen.
+- ADR 0024: `Proposed → Provisional` (Welle-5-C2-Merge `718c177`).
+  `Accepted` mit M3-Welle-7-Closure.
+- ADR 0029 `Accepted` (Schaerfung-ohne-Supersede von ADR 0002 §A-1
+  per ADR 0011-Pattern; 11. arch_check-Contract
+  `AC-NO-COVERAGE-PRAGMA`).
+- AC-PORTS-NO-OUT bleibt KEPT (3 neue Driven-Ports unter
+  `hexagon/ports/driven/observability.py`, kein Driving-Port-
+  Verletzer).
+- `AC-NO-TIME` bleibt KEPT — `tick_duration_ms` ist nicht aus
+  TickLoop emittiert (Wall-Clock im Core verboten); Welle 6
+  OTLP-Adapter instrumentiert das extern.
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 5`](M3-faults-agents-observability.md)

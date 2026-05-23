@@ -1,12 +1,11 @@
 # Slice-Plan — M3 Faults + Multi-Agent + Observability — In Progress
 
-**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b
-sind abgeschlossen (Multi-Agent-Subsystem komplett); **Welle 5
-(Observability — LogPort/MetricsPort/TracePort, ADR 0024)** ist der
-naechste aktive Slice; Welle 6 (OTLP-Adapter) und Welle 7 (Closure)
-folgen. Drei Sub-Bereiche (Faults, Multi-Agent, Observability) ueber
-Welle 0..7 verteilt; M3-Slice-Plan wandert nach `done/` mit Welle-7-
-Closure.
+**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b/5
+sind abgeschlossen (Multi-Agent-Subsystem komplett, Observability-
+Foundation komplett); **Welle 6 (OTLP-Adapter)** ist der naechste
+aktive Slice; Welle 7 (Closure) folgt. Drei Sub-Bereiche (Faults,
+Multi-Agent, Observability) ueber Welle 0..7 verteilt; M3-Slice-Plan
+wandert nach `done/` mit Welle-7-Closure.
 
 **Wellen-Historie:**
 
@@ -105,14 +104,66 @@ Closure.
   - Begleit-Fix `ac7b47f`: `dep-audit` starlette `1.0.0 → 1.0.1`
     (PYSEC-2026-161).
 
-**Naechster Schritt:** **Welle 5** (Observability —
-LogPort/MetricsPort/TracePort, ADR 0024).
+- **Welle 5 — Observability-Foundation** — `Done` 2026-05-23,
+  `7427daf..a690c02` (6 Welle-5-Kern-Commits inkl. C0/C1/C2/
+  Hygiene-Folge/coverage-report-Target + C3-Sync).
+  - ADR 0024 `Proposed → Provisional` (Observability-Port-Trio
+    `LogPort`/`MetricsPort`/`TracePort` als Driven-Ports unter
+    `hexagon/ports/driven/observability.py`).
+  - 3 Protocols (`@runtime_checkable`, stateless, **keine** OTLP/
+    SDK-Typen im Port-Layer — Core bleibt OTLP-frei) +
+    `SpanContext`-frozen-dataclass (`trace_id`/`span_id`/
+    `parent_span_id` String-basiert) mit `start_span`/`end_span`/
+    `record_event`-Surface; `None`-No-Op-Fallback im TracePort
+    fuer Adapter-Robustheit.
+  - 3 Null-Adapter (`adapters/driven/observability_null/`) mit
+    Default-`call_count`+`last_call`-Surface und opt-in
+    `record_calls=True` fuer `call_records`+`clear_calls()`.
+    NullTraceAdapter manufakturiert deterministische
+    `SpanContext`-Instanzen.
+  - Additive TickLoop-Hooks (`log_port`/`metrics_port`/
+    `trace_port`-Kwargs, Default `None` skippt): `tick.cycle`-
+    Span umfasst die Tick-Arbeit; `tick_begin`/`tick_end` Logs;
+    `gauge('event_queue_len', ...)` nach `scheduler.pop_due`;
+    `increment('tick_count')` am Tick-Ende; `fault.inject`-Span
+    um Schritt A2 (ADR 0022 §2.4); `agent.tick`-Span pro
+    Agent-Tick in Schritt D2 (ADR 0023 §2.4 + ADR 0026 §2.1).
+    Schritt-/Atomizitaets-Vertraege aus ADR 0022/0023/0026
+    bleiben unangetastet.
+  - Loest ADR 0023 §2.6 Observability-Vorgriff-Verbot auf
+    (Welle-3-Klausel).
+  - `tick_duration_ms` **nicht** aus TickLoop emittiert —
+    `AC-NO-TIME` verbietet Wall-Clock-Zugriff im Core; Welle 6
+    OTLP-Adapter instrumentiert das extern.
+  - Trigger 006 (`--strict-bytes`) explizit deferred auf Welle 6
+    (kein Bytes-Pfad in Welle 5).
+  - **Hygiene-Folge** `9ae2376`: ADR 0029 `Accepted` (Schaerfung-
+    ohne-Supersede von ADR 0002 §A-1 per ADR 0011-Pattern); 11.
+    `tools/arch_check.py`-Contract `AC-NO-COVERAGE-PRAGMA`
+    verbietet `# pragma: no cover`/`no branch`/`exclude file`
+    in `src/grid_gym/**`. Erstanwendung: 32 Pragma-Vorkommen
+    entfernt (29 Protocol-Stubs ueber `^\s*\.\.\.\s*$`-Regex in
+    `[tool.coverage.report] exclude_lines` abgedeckt, 4 Dead-Code-
+    Stellen geloescht).
+  - Make-Target `coverage-report` (Commit `a690c02`):
+    `docker build --no-cache-filter coverage-gate` liefert die
+    aktuelle Total-Coverage ohne `--no-cache`-Volllauf.
+  - 1023 Unit-Tests + 19 Integration-Tests (+31 Unit / 0
+    Integration ggue. Welle 4b). Coverage **95.55%** total
+    (+1.04 ggue. Welle-4b-94.51% durch Dead-Code-Loeschung).
+  - **`make fullbuild` cache-frei gruen ohne Override** —
+    Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt.
+
+**Naechster Schritt:** **Welle 6** (OTLP-Adapter —
+`adapters/driven/telemetry-otlp/`, Compose-Collector-Integration,
+Trigger-006-`--strict-bytes`-Entscheidung).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
 bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
 abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21;
-Welle 4b abgeschlossen 2026-05-22.
+Welle 4b abgeschlossen 2026-05-22; Welle 5 abgeschlossen
+2026-05-23.
 
 **Bezug:**
 
@@ -493,17 +544,40 @@ Szenario in dieser Teilwelle.
 Default-`CRITICAL_COV_TARGETS` enthaelt `core/agents`; `make
 fullbuild` gruen ohne Override mit End-to-End-Demo-Szenario.
 
-### Welle 5 — Observability-Foundation (LogPort/MetricsPort/TracePort)
+### Welle 5 — Observability-Foundation (LogPort/MetricsPort/TracePort) (`Done` 2026-05-23, Commits `7427daf..a690c02` + C3-Sync)
 
-- ADR-Folge (geplant **ADR 0024**, `Provisional` mit Welle-5-
-  Merge, `Accepted` mit Welle-7-Closure) fuer Driven-Port-Trio
-  `LogPort`/`MetricsPort`/`TracePort` (`GG-AR-PORT-DRN-008`).
-- Ports liegen in `ports/driven/observability.py`.
-- M1-Test-Doubles (Null-Adapter) fuer Welle-3-Multi-Agent-
-  und Welle-2-Fault-Tests, damit Tests nicht zwingend OTLP-
-  Collector brauchen.
-- Trigger 006 (`--strict-bytes`) wird hier entschieden —
-  OTLP-Protobuf-Bytes-Pfade pruefen.
+- ADR 0024 `Proposed → Provisional` mit Welle-5-C2-Merge `718c177`
+  (`Accepted` mit Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-
+  Verifikation) fuer Driven-Port-Trio `LogPort`/`MetricsPort`/
+  `TracePort` (`GG-AR-PORT-DRN-008`).
+- Ports liegen in `ports/driven/observability.py`. Drei
+  `@runtime_checkable`-Protocols + `SpanContext`-frozen-dataclass;
+  stateless, keine OTLP/SDK-Typen im Port-Layer (Core bleibt
+  OTLP-frei).
+- Null-Adapter-Trio unter `adapters/driven/observability_null/`
+  fuer Welle-3-Multi-Agent- und Welle-2-Fault-Tests, damit Tests
+  nicht zwingend OTLP-Collector brauchen. Default-Surface
+  `call_count`+`last_call`; opt-in `record_calls=True` fuer
+  `call_records`+`clear_calls()`.
+- Trigger 006 (`--strict-bytes`) **deferred** auf Welle 6 (kein
+  Bytes-Pfad in Welle 5; Trigger bleibt in `open/` mit Welle-6-
+  Aktivierungs-Notiz).
+- TickLoop-Hooks rein additiv: `tick.cycle`-Span umfasst die
+  Tick-Arbeit, `event_queue_len`-Gauge nach `scheduler.pop_due`,
+  `tick_count`-Counter am Tick-Ende, `fault.inject`-/`agent.tick`-
+  Spans als Kinder; Schritt-Reihenfolge aus ADR 0022/0023/0026
+  unangetastet. `tick_duration_ms` **nicht** aus dem Core
+  emittiert — `AC-NO-TIME` verbietet Wall-Clock-Zugriff; Welle-6-
+  OTLP-Adapter instrumentiert das extern.
+- Hygiene-Folge: ADR 0029 `Accepted` (Schaerfung-ohne-Supersede
+  von ADR 0002 §A-1 per ADR 0011-Pattern); 11. arch_check-Contract
+  `AC-NO-COVERAGE-PRAGMA` verbietet `pragma: no cover`/`no branch`/
+  `exclude file`. 32 Pragma-Vorkommen aus `src/grid_gym/**`
+  entfernt (29 Protocol-Stubs ueber Regex-`exclude_lines`-Pattern,
+  4 Dead-Code-Stellen geloescht).
+- 1023 Unit-Tests + 19 Integration-Tests; Coverage 95.55% total
+  (+1.04 ggue. Welle 4b). `make fullbuild` cache-frei gruen ohne
+  Override.
 
 ### Welle 6 — OTLP-Adapter
 
