@@ -72,7 +72,7 @@ help:
 	@echo "  make lint              ruff check (BLE/TRY/B/DTZ/S/TID/C901/PLR*/N/RET/SIM/ARG/RUF + banned-api)"
 	@echo "  make format-check      ruff format --check (kein Auto-Fix)"
 	@echo "  make typecheck         mypy --strict (ADR 0005, GG-QG-005, GG-PRINC-004/005 LSP/ISP)"
-	@echo "  make arch-check        import-linter + tools/arch_check.py (16 A-1-Contracts)"
+	@echo "  make arch-check        import-linter + tools/arch_check.py (17 A-1-Contracts: 6 import-linter + 11 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
 	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"

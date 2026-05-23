@@ -207,7 +207,10 @@ def test_trace_port_wraps_fault_inject_with_parent_tick_span() -> None:
     assert names == ["tick.cycle", "fault.inject"]
     tick_span_ctx = starts[0].kwargs["returned"]
     fault_parent = starts[1].kwargs["parent"]
-    assert fault_parent is tick_span_ctx
+    # Welle-5-Review-Folge L-4: `==` statt `is` — SpanContext ist
+    # frozen dataclass; ein `_CallTracker`-Refactor mit deepcopy oder
+    # Pickle-Roundtrip wuerde sonst die Tests still brechen.
+    assert fault_parent == tick_span_ctx
 
 
 def test_trace_port_wraps_each_agent_tick_with_parent_tick_span() -> None:
@@ -222,8 +225,9 @@ def test_trace_port_wraps_each_agent_tick_with_parent_tick_span() -> None:
     agent_ids = [r.kwargs["attributes"]["agent_id"] for r in starts[1:]]
     assert agent_ids == ["agent-a", "agent-b"]
     tick_span_ctx = starts[0].kwargs["returned"]
+    # Welle-5-Review-Folge L-4: siehe oben (Equality statt Identitaet).
     for r in starts[1:]:
-        assert r.kwargs["parent"] is tick_span_ctx
+        assert r.kwargs["parent"] == tick_span_ctx
 
 
 # --- Span balance ------------------------------------------------------------

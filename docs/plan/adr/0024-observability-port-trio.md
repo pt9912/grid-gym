@@ -7,6 +7,14 @@ Override, Welle-5-Abnahme-Kriterium aus §4.1 erfuellt). `Accepted`
 mit M3-Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-Verifikation.
 **Datum:** 2026-05-23
 **Status geaendert am:** 2026-05-23 — `Proposed → Provisional`.
+**Letzte inhaltliche Aenderung:** 2026-05-23 — Welle-5-Review-Folge-
+Schaerfungen: §1 N-3 (`ADR 0022 §2.5 → §2.4` Pre-Tick-Hook-Korrektur);
+§2.6 M-1 (Log-/`tick_duration_ms`-Hooks als Welle-6-Material
+qualifiziert); §4.3 M-2 (Welle-6-Forward-Pointer fuer Sentinel-Pattern,
+Trace-ID-Determinismus, Vertragsschnitt); §7 (L-2/N-1/N-2 Out-of-
+Scope-Erweiterungen); `Bezug:`-Liste L-3 (`ADR 0011` ergaenzt). Vor-
+`Accepted`-Schliff per ADR 0006 §4; ADR-Index `Letzte inhaltliche
+Aenderung`-Datum gepflegt.
 **Bezug:**
 [Lastenheft](../../../spec/lastenheft.md) §19 Telemetrie
 (`GG-OTEL-001..004`),
@@ -24,6 +32,9 @@ Schritt-A0v/A0a + TickLoop-Schritt-Reihenfolge, die Welle-5-Hooks
 nicht antasten duerfen),
 [`ADR 0028`](0028-link-maintenance-accepted-adr-bezug.md) (Bezug-Pfad-
 Pflege als Maintenance-Edit),
+[`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-ohne-
+Supersedes-Pattern als Fallback bei Welle-6-OTLP-Compose-Smoke-Bruch,
+siehe §4.2),
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md §3 Welle 5`](../planning/in-progress/M3-faults-agents-observability.md),
 Welle-5-Slice-Doc
@@ -58,7 +69,7 @@ liegt explizit bei dieser ADR. Welle 4 (Multi-Agent-Konkretisierung)
 hat die Klausel respektiert; M3-Welle-5 loest das Vorgriff-Verbot
 jetzt auf.
 
-`ADR 0022 §2.5` (FaultPort) hat den Pre-Tick-Hook eingefuehrt und
+`ADR 0022 §2.4` (FaultPort) hat den Pre-Tick-Hook eingefuehrt und
 `ADR 0026 §2.1` die Schritte A0v / A0a fixiert. Beide setzen
 Reihenfolge-Vertraege, die Welle-5-Hooks **nicht antasten** duerfen
 (nur additive Anhaengung).
@@ -251,30 +262,44 @@ Kontext fuehren koennen.
 ### 2.6 Hook-Verdrahtung (TickLoop / Agent / Fault)
 
 Welle 5 haengt Telemetrie-Hooks **rein additiv** an die in
-[`ADR 0022 §2.5`](0022-fault-injection-protocol.md),
+[`ADR 0022 §2.4`](0022-fault-injection-protocol.md),
 [`ADR 0023 §2.4`](0023-agent-bus-protocol.md), und
 [`ADR 0026 §2.1`](0026-agent-drain-registry-pattern.md) fixierten
 TickLoop-Schritte an. **Keine Reihenfolge-/Schritt-Aenderung** und
 keine Modifikation existierender Atomizitaets-/Drain-Vertraege.
 
 - TickLoop:
-  - `MetricsPort.observe("tick_duration_ms", ...)` am Tick-Schluss.
-  - `MetricsPort.gauge("event_queue_len", ...)` nach Scheduler-Drain.
-  - `LogPort.log("info", "tick begin", ...)` / `"tick end"` als
-    optionaler Per-Tick-Trail; Default-Adapter (Null) frisst die
-    Aufrufe ohne Sichtbarkeit, der produktive Welle-6-OTLP-Adapter
-    kann sie filtern.
+  - `MetricsPort.observe("tick_duration_ms", ...)` — **Welle-6-OTLP-
+    Adapter-Material**, **nicht** aus TickLoop selbst emittiert.
+    `AC-NO-TIME` verbietet Wall-Clock-Zugriff im Core; der OTLP-
+    Adapter instrumentiert die Tick-Dauer extern via eigene Clock-
+    Quelle (z. B. OpenTelemetry-Runtime-Hook).
+  - `MetricsPort.gauge("event_queue_len", ...)` nach Scheduler-Drain
+    (Welle-5-C2 produktiv).
+  - `MetricsPort.increment("tick_count", ...)` am Tick-Ende (Welle-5-
+    C2 produktiv; Counter, kein Gauge — Welle-6-Naming-Konvention
+    fuer `tick_index`-Gauge bleibt OTLP-Adapter-Verantwortung).
+  - `LogPort.log("info", "tick_begin"/"tick_end", ...)` als Per-Tick-
+    Trail (Welle-5-C2 produktiv); Default-Null-Adapter frisst die
+    Aufrufe, der produktive OTLP-Adapter kann sie filtern.
 - Agent (siehe ADR 0023 §2.6 — Vorgriff-Verbot wird hier
   aufgeloest):
-  - `LogPort.log("info", "agent decision", attributes={...})` im
-    `Agent.decide()`-Pfad.
-  - `TracePort.start_span("agent.decide", parent=<tick-span>)`
-    /`end_span` als optionaler Wrap.
-- Fault (siehe ADR 0022 §2.5):
-  - `TracePort.start_span("fault.inject", ...)` /`end_span` um
-    `FaultPort.apply_active_faults(...)`.
-  - `LogPort.log("warn", "fault active", attributes={...})` als
-    Audit-Trail-Ereignis.
+  - `TracePort.start_span("agent.tick", parent=<tick-span>)` /
+    `end_span` als Wrap pro Agent-Tick (Welle-5-C2 produktiv).
+  - `LogPort.log("info", "agent decision", attributes={...})` —
+    **Welle-6-Material**; Welle-5-Minimum ist der Span-Wrap. Welle 6
+    entscheidet im OTLP-Adapter, ob Decision-Logs zusaetzlich zum
+    Span emittiert werden (Span-Attribute koennen die gleiche
+    Information tragen).
+- Fault (siehe ADR 0022 §2.4):
+  - `TracePort.start_span("fault.inject", parent=<tick-span>)` /
+    `end_span` um `FaultPort.apply_active_faults(...)` (Welle-5-C2
+    produktiv).
+  - `LogPort.log("warn", "fault active", attributes={...})` —
+    **Welle-6-Material**; Welle-5-Minimum ist der Span-Wrap. Der
+    Audit-Trail-Log waere pro aktivem Fault, nicht pro Tick — Welle 6
+    entscheidet, ob TickLoop oder der Fault-Adapter selbst die Logs
+    emittiert (Adapter-Side-Logs sind feiner granuliert).
 
 Konkrete Hook-Positionen + Span-Schachtelung sind C2-Material und
 werden im Welle-5-C2-Commit verdrahtet.
@@ -388,6 +413,57 @@ zurueckgeklappt oder per Folge-ADR (Schaerfung ohne Supersede,
 - Dashboards, Alerts, Trace-Korrelation in Multi-Service-Szenarien
   (Post-M3).
 - Sampling-/Baggage-Felder im `SpanContext` (Welle 6 oder spaeter).
+
+### 4.4 Welle-6-Forward-Pointer (Review-Folge M-2)
+
+Carry-Over-Lessons aus Welle 3/4a/4b, die fuer den Welle-6-OTLP-
+Adapter Welle-5-Vertrags-Stellen schaerfen:
+
+- **Sentinel-Pattern fuer `scenario.observability`-Block** (Welle-4b-
+  F-1-Parallel): falls Welle 6 einen optionalen `scenario.observability:`-
+  Block einfuehrt, muss `build_tick_loop(..., log_port=None, ...)` auf
+  `None`-Sentinel = „aus Scenario ableiten" und `()` / expliziter
+  Skip-Adapter = „kein Hook" umgestellt werden. Aktuelles Welle-5-
+  `None` ist eindeutig „Skip", weil es keinen Scenario-Block gibt;
+  ein Welle-6-Sentinel-Bruch ist sonst silent (analog dem ADR-0027-
+  `agents=()`-Default-Bug, der per F-1 mit `agents=None`-Sentinel
+  behoben wurde).
+- **Trace-ID-Determinismus** (Welle-3-M-3-Parallel): Der Welle-6-
+  OTLP-Adapter erzeugt W3C-128-bit-`trace_id`/`span_id`. Determinismus
+  ist eine Welle-6-Entscheidung — entweder ueber
+  `RandomPort.sub_port("observability-trace")` (deterministisch pro
+  Lauf, konsistent zu ADR 0007 §5/§6 + ADR 0026 §2.3 Sub-Random-
+  Stream-Konvention `agent-{agent_id}`) oder ueber externe Entropie
+  (Determinismus-Garantie aufgegeben, OTLP-Standard-Verhalten).
+  Welle 6 dokumentiert die Wahl + Begruendung.
+- **Welle-6-Vertragsschnitt** (Welle-4b-F-2-Parallel): Welle 6 darf
+  `SpanContext.trace_id`/`span_id`-String-Werte intern in das W3C-
+  Hex-Format mappen — die `start_span`/`end_span`/`record_event`-
+  Port-Signaturen + die `SpanContext`-Felder
+  (`trace_id`/`span_id`/`parent_span_id`) sind Welle-5-eingefroren.
+  Ein Welle-6-Bruch (z. B. neues `SpanContext`-Feld, neue Methoden-
+  Signatur) braucht Folge-ADR per `ADR 0011`-Schaerfungs-Pattern.
+- **Type-Signatur-Asymmetrie `end_span`/`record_event`** (Review-
+  Folge L-2): Null-Adapter akzeptiert `SpanContext | None` (No-Op-
+  Robustheit per §2.4); das Protocol verlangt `SpanContext`
+  (strikt). Welle 6 muss diese Asymmetrie aufloesen — entweder das
+  Protocol auf `SpanContext | None` erweitern (Single-Source-of-Truth
+  fuer die No-Op-Invariante) oder den OTLP-Adapter explizit mit
+  `| None`-Signatur bauen + ADR-0024-Notiz dazu.
+- **Counter-vs-Gauge-Naming** (Review-Folge N-1): Welle-5 emittiert
+  `MetricsPort.increment("tick_count", ...)` (Counter). Architektur
+  §15 nennt `tick_index` als Gauge. Welle 6 OTLP-Adapter klaert die
+  Naming-Konvention (z. B. `ticks_total` als Counter +
+  `tick_index_current` als Gauge), damit Dashboards die Semantik
+  nicht verwechseln.
+- **`_obs_observe`-Helper-Symmetrie** (Review-Folge N-2): TickLoop
+  hat `_obs_gauge` + `_obs_increment` Helper, aber bewusst kein
+  `_obs_observe` (Histogramme braeuchten Wall-Clock-Quelle, die
+  `AC-NO-TIME` im Core verbietet). Welle 6 OTLP-Adapter kann externe
+  Histogramme instrumentieren; falls TickLoop spaeter einen
+  `observe`-Use-Case ohne Wall-Clock findet (z. B. Verteilung von
+  `event_queue_len`-Werten), ergaenzt eine Folge-Welle den Helper
+  symmetrisch.
 
 ---
 

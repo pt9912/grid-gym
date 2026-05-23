@@ -98,6 +98,75 @@ Status `In Progress → Done`. Welle-5-Gate-Beleg
 (OTLP-Adapter) als naechster Schritt im
 [`in-progress/README.md`](README.md) vermerkt.
 
+### Review-Folge — Multi-Agent-Review nach C3 (2026-05-23)
+
+Fuenf parallele Review-Agenten (Compliance gegen ADR-Disziplin,
+shallow Bug-Scan, Pattern-Fit mit Welle-1..4-Praezedenzen, Lessons-
+Carry-Over aus Welle-3/4a/4b-Review-Folgen, ADR-Section-Ref-Accuracy)
+haben **kein** High-Compliance- oder High-Pattern-Issue gefunden.
+Eine echte Code-Bug-Klasse (H-1: orphaned `tick.cycle`-Span bei
+Body-Exceptions) plus mehrere Medium-Findings (ADR-0024-Text-vs.-
+Code-Drifts) wurden konsolidiert und in diesem Review-Folge-Commit
+geschlossen:
+
+**Inline-Fixes:**
+
+- **H-1** (`tick_loop.py`): `tick.cycle`-Span jetzt im `try/finally`,
+  damit Body-Exceptions keinen ungeschlossenen Span hinterlassen.
+  Body-Extraktion in `_run_tick_body(commands_to_apply, tick_event_id,
+  tick_span)` haelt `tick()` lesbar. Inner-Spans (`fault.inject`,
+  `agent.tick`) hatten die Garantie bereits; H-1 zieht den Outer-Span
+  symmetrisch nach.
+- **L-1** (`tick_loop.py`): `tick_count`-Counter + `tick_end`-Log
+  laufen jetzt **innerhalb** des `tick.cycle`-Spans (vor der finally-
+  Close), damit OTLP-Korrelations-Konsumenten beide Tick-Member-
+  Events korrekt zuordnen.
+- **M-3** (`Makefile:75`): `make help`-Text `16 A-1-Contracts` →
+  `17 A-1-Contracts (6 import-linter + 11 arch_check)` (Synchron-Lauf
+  mit ADR 0029).
+- **L-3** (`ADR 0024 Bezug:`-Liste): `ADR 0011` ergaenzt als Bezug-
+  Anker fuer §4.2 (Schaerfung-ohne-Supersede-Fallback bei Welle-6-
+  OTLP-Compose-Smoke-Bruch); per ADR 0028 zulaessiger
+  Maintenance-Edit.
+- **L-4** (`test_tick_loop_welle_5_observability.py`): Span-Parent-
+  Asserts auf `==`-Equality umgestellt (statt `is`-Identity), damit
+  ein zukuenftiger Tracker-Refactor mit deepcopy/Pickle die Tests
+  nicht still bricht.
+
+**ADR-0024-Schaerfungen (Provisional, Vor-`Accepted`-Schliff per
+ADR 0006 §4 — `Letzte inhaltliche Aenderung`-Pflichtfeld gesetzt):**
+
+- **N-3** §1 Body: `ADR 0022 §2.5` → `§2.4` an drei Stellen (Pre-Tick-
+  Hook ist in §2.4 fixiert; §2.5 ist die Konstruktor-Kwarg-
+  Definition).
+- **M-1** §2.6: `LogPort.log("agent decision"/"fault active")` und
+  `MetricsPort.observe("tick_duration_ms")` explizit als Welle-6-
+  Material qualifiziert (Welle-5-Minimum ist der Span-Wrap;
+  `tick_duration_ms` blockiert per `AC-NO-TIME`; Audit-/Decision-Logs
+  sind in Welle 6 OTLP-Adapter-Verantwortung).
+- **M-2** §4.4 (neu): drei Welle-6-Forward-Pointer dokumentiert —
+  Sentinel-Pattern fuer `scenario.observability` (Welle-4b-F-1-
+  Parallel), Trace-ID-Determinismus (Welle-3-M-3-Parallel),
+  Vertragsschnitt fuer `SpanContext`-Felder + Port-Signaturen
+  (Welle-4b-F-2-Parallel). Plus L-2/N-1/N-2 als Welle-6-Folgearbeit-
+  Bullets (Type-Signatur-Asymmetrie, Counter-/Gauge-Naming, fehlender
+  `_obs_observe`-Helper).
+
+**Welle-6-Folgearbeit** (keine Welle-5-Code-Fixes, dokumentiert in
+ADR 0024 §4.4):
+
+- L-2: `NullTraceAdapter.end_span/record_event` Type-Signatur breiter
+  als `TracePort`-Protocol — Welle 6 entscheidet ueber Protocol-
+  Erweiterung vs. Adapter-spezifische `| None`-Signatur.
+- N-1: `tick_count`-Counter vs. `tick_index`-Gauge-Naming — Welle 6
+  klaert in OTLP-Adapter.
+- N-2: `_obs_observe`-Helper bewusst nicht in Welle 5 (AC-NO-TIME);
+  Welle 6 entscheidet symmetrische Ergaenzung.
+
+`make gates` A-1 nach Review-Folge weiterhin cache-frei gruen ohne
+Override; `make fullbuild` ebenso. Test-Count + Coverage unveraendert
+(Tests aequivalent ueberarbeitet, kein neuer Test-Case-Set).
+
 ### End-of-Wave — `chore`: git mv M3-welle-5.md → done/ (rename-only)
 
 Per Wave-Self-Close-Commit-Konvention reiner

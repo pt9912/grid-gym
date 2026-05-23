@@ -414,7 +414,7 @@ class TickLoop:
         """
         return tuple(self._pending_agent_commands)
 
-    def tick(self) -> TickResult:  # noqa: PLR0915 — Welle-4a-tick() integriert A0v/A0a-Drain, Vor-Tick-Block, Device-Iteration in zwei Phasen, GridConnection-Auto-Close, Bilanz-Aggregation (ADR 0026 §2.1).
+    def tick(self) -> TickResult:
         """Schiebt die Simulationszeit um `tick_ms` vor und faehrt
         die Welle-6b-Split-Iteration durch (ADR 0021 §2.7/§2.8):
 
@@ -458,16 +458,42 @@ class TickLoop:
         else:
             commands_to_apply = ()
 
-        # M3-Welle-5 (ADR 0024 §2.6): Observability-Hook tick_begin.
-        # Wird NACH A0v emittiert — der Span klammert die produktive
-        # Tick-Arbeit (Clock advance + Schritt A/B/C/D/E), nicht die
-        # Pre-Clock-Validierung. Georpaharte Spans bei A0v-Exceptions
-        # vermeidet damit der Hook-Schnitt.
+        # M3-Welle-5-Review-Folge H-1: Outer-Tick-Span im try/finally,
+        # damit eine Body-Exception keinen ungeschlossenen Span
+        # hinterlaesst. Inner-Spans (`fault.inject`, `agent.tick`)
+        # haben die Garantie bereits; der Outer-Tick-Span braucht sie
+        # ebenso. Body in `_run_tick_body` extrahiert, damit `tick()`
+        # lesbar bleibt und der try/finally nicht 130 Zeilen wrappt.
+        #
+        # Welle-5-Review-Folge L-1 ist im Body geloest: `tick_end`-Log
+        # + `tick_count`-Counter laufen VOR der Span-Close, damit
+        # OTLP-Korrelations-Konsumenten beide Telemetrie-Events als
+        # Tick-Member sehen.
+        #
+        # Pre-Clock-Validierung (A0v) bleibt VOR `_obs_start_span` —
+        # eine A0v-Exception soll keinen Span oeffnen.
         tick_event_id = f"tick-{self._tick_count}"
         tick_span = self._obs_start_span(
             "tick.cycle",
             attributes={"tick": self._tick_count, "run_id": self._run_id},
         )
+        try:
+            return self._run_tick_body(commands_to_apply, tick_event_id, tick_span)
+        finally:
+            self._obs_end_span(tick_span)
+
+    def _run_tick_body(  # noqa: PLR0915 — Welle-4a-tick-Body (A0a/A/A2/B/C/D/D2/E) integriert mehrere Schritt-Phasen (ADR 0026 §2.1).
+        self,
+        commands_to_apply: tuple[Command, ...],
+        tick_event_id: str,
+        tick_span: SpanContext | None,
+    ) -> TickResult:
+        """M3-Welle-5-Review-Folge H-1: Body-Extraktion fuer den
+        try/finally-Span-Wrap in `tick()`. Vertrag identisch zu
+        Welle-4a-tick — A0a/A/A2/B/C/D/D2/E in derselben Reihenfolge.
+        Aufrufer (`tick()`) garantiert, dass `tick_span` (sofern
+        non-None) im finally geschlossen wird, auch wenn der Body
+        throwet."""
         self._obs_log(
             "info",
             "tick_begin",
@@ -624,16 +650,18 @@ class TickLoop:
             emitted_telemetry=tuple(emitted),
         )
         self._tick_count += 1
-        # M3-Welle-5 (ADR 0024 §2.6): Observability-Hook tick_end.
-        # Schliesst den oben geoeffneten Tick-Span und emittiert
-        # tick_end-Log + tick_count-Counter NACH `_tick_count += 1`,
-        # damit der naechste `tick()` direkt das frische Counter-
-        # Inkrement sieht.
+        # M3-Welle-5 (ADR 0024 §2.6) + Review-Folge L-1: Observability-
+        # Hook tick_end. Counter + Log laufen NACH `_tick_count += 1`
+        # (damit der naechste `tick()` das frische Inkrement sieht) und
+        # VOR der Span-Close — die Span-Close passiert im
+        # `tick()`-Wrapper-finally (Review-Folge H-1). Damit liegen
+        # `tick_count`-Counter und `tick_end`-Log innerhalb des
+        # `tick.cycle`-Spans und OTLP-Korrelations-Konsumenten sehen
+        # beide als Tick-Member.
         self._obs_increment(
             "tick_count",
             attributes={"run_id": self._run_id},
         )
-        self._obs_end_span(tick_span)
         self._obs_log(
             "info",
             "tick_end",
