@@ -1,7 +1,10 @@
 # ADR 0028 — Link-Maintenance an Accepted-ADR-`Bezug:`-Linien
 
-**Status:** Proposed
+**Status:** Accepted — kein Validierungs-Spike erforderlich.
+Direkter `Proposed → Accepted`-Sprung per `ADR 0006 §2`-Klausel
+(„ADR ohne Validierungsbedarf").
 **Datum:** 2026-05-23
+**Status geaendert am:** 2026-05-23 — `Proposed → Accepted`.
 **Bezug:**
 [`ADR 0004`](0004-identifier-based-cross-references.md) §1 (Positions-
 fragilitaet von Pfad-/Anker-Verweisen),
