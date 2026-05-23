@@ -1,105 +1,112 @@
 # Slice-Plan — M3 Faults + Multi-Agent + Observability — In Progress
 
-**Status:** In Progress — eroeffnet 2026-05-20 mit M3-Welle-0
-(`cfb7a72`/`4bd2673`/`f5de006`/`3e6170d`). **Welle 1 (Fault-
-Foundation) abgeschlossen am 2026-05-20** mit
-`712d73b`/`7e0a497`/`823eda7`/`79bb50a`: ADR 0022 `Proposed →
-Provisional`, `FaultInjectableDevice` Sub-Protocol + `FaultPort`
-Driven-Port + Validator-Target-Haertung + TickLoop-Hook + 11
-neue Tests (773 Unit-Tests). **Welle 2 (Battery-/Grid-Fault-
-Konkretisierung) abgeschlossen am 2026-05-20** mit
-`1debd5e..91d44e2` (8 Commits) + C3-Status-Sync (diesem
-Commit): ADR 0025 `Proposed → Provisional` (Fault-Recovery-
-Pattern, Schaerfung-ohne-Supersede zu ADR 0022 §2.4); Battery
-`cell_failure` + Grid `voltage_drop` + `auto-recover-after-N-
-ticks` + `manual-via-command` produktiv; Adapter-Module unter
-`hexagon/core/faults/` (architektur-korrekt; **nicht** unter
-`adapters/driven/`, weil Fault-Adapter Domain-Orchestrierung
-sind); 840 Unit-Tests + 14 Integration-Tests (+67 Unit / +3
-Integration ggue. Welle-1-Stand); Property-Tests
-(Hypothesis-half-open + Determinismus + Seed-Independence);
-Fault-Demo-Szenario + Postgres-Roundtrip. **Welle 3 (Multi-
-Agent-Foundation) abgeschlossen am 2026-05-21** mit
-`3dbe6af..d6f66fc` (5 Welle-3-Kern-Commits + 8 Wording-
-Polish-Commits + diesem C3-Sync): ADR 0023 `Proposed →
-Provisional` (Multi-Agent-Bus + Agent-Protocol; Pattern-Drift
-gegen ADR 0022 — AgentMessageBus als **Core-Klasse**, kein
-Driven-Port, weil Architektur §14 das eigene Kernmodul
-vorschreibt und der Bus keine externe Adapter-Boundary hat).
-`Agent`-Sub-Protocol (eigenstaendig, **nicht** DeviceModel-
-erbend) + `AgentMessageBus`-Core-Klasse mit Snapshot-Surface
-+ `AgentMessage`-frozen-dataclass mit `GG-AGENT-004`-Pflicht-
-Feldern + TickLoop-Schritt-D2-Hook (Architektur §6 Schritt 7)
-+ `agent_bus`-Builder-Symmetrie + `AgentBusError`-Family
-produktiv. 889 Unit-Tests + 14 Integration-Tests (+49 Unit /
-0 Integration ggue. Welle-2-Stand); Welle-3-Foundation hat
-keine konkreten Agent-Implementer (kommen mit Welle 4). Code-
-Review-Folge `d6f66fc` adressiert 9 Findings (1H + 4M + 4L)
-als Schaerfungen-ohne-Supersede (ADR 0011-Pattern). Drei
-distinkte Sub-Bereiche (Faults, Multi-Agent, Observability)
-werden ueber Welle 0..7 verteilt geliefert. M3-Slice-Plan
-wandert nach `done/` mit Welle-7-Closure.
+**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b
+sind abgeschlossen (Multi-Agent-Subsystem komplett); **Welle 5
+(Observability — LogPort/MetricsPort/TracePort, ADR 0024)** ist der
+naechste aktive Slice; Welle 6 (OTLP-Adapter) und Welle 7 (Closure)
+folgen. Drei Sub-Bereiche (Faults, Multi-Agent, Observability) ueber
+Welle 0..7 verteilt; M3-Slice-Plan wandert nach `done/` mit Welle-7-
+Closure.
 
-**Welle 4a (Multi-Agent-Foundation-Plumbing) abgeschlossen
-am 2026-05-21** mit `a24f733..da18c6d` (Pre-C0-Rename +
-welle-4a-C0 + ADR-0026-C1 + 3 User-Polish-Commits + C2 +
-diesem C3-Status-Sync): ADR 0026 `Proposed → Provisional`
-(Agent-Drain + Registry + Snapshot + Lifecycle-Pattern;
-Schwester-ADR zu ADR 0023, Pattern-Pendant zu ADR 0025);
-TickLoop-`agents`-Kwarg + Auto-Bus + Duplicate-ID-Fail-Fast +
-`_attach_agents()`-Lifecycle (set_run_id + optional
-`_RandomAttachableAgent.attach_random`); **Schritt A0v**
-(Pre-Clock-Target-Validierung) + **Schritt A0a** (Apply nach
-Clock, vor Schritt A) mit Atomizitaets-Vertrag bei
-`AgentInvalidCommandTargetError`; `AgentMessageBus.consume_for(
-receiver)` Direct-Inbox-destruktiv (Broadcasts bleiben
-nicht-destruktiv); `agent_bus`/`pending_agent_commands`
-Sub-Snapshots + Resume-Match-Checks fuer Devices/GridModel/
-LoadOverlays; sechs neue Error-Klassen in drei Roots
-(`AgentRegistryError`, `AgentCommandDrainError(TickLoopError)`,
-`TickLoopAgentSnapshot*Error`); Welle-3-
-`_set_agents_for_testing(...)` entfernt; `build_tick_loop(
-agents=)`-Symmetrie + GridModelBilanz-Overlay-Verdrahtung.
-921 Unit-Tests + 14 Integration-Tests (+32 Unit / 0
-Integration ggue. Welle-3-Stand); `make gates` A-1 ohne
-Override gruen.
+**Wellen-Historie:**
 
-**Welle 4b (Multi-Agent-Konkretisierung) abgeschlossen am
-2026-05-22** mit `8802dc0..ac7b47f` (Pre-C0-Rename welle-4a →
-done/ + Post-Pre-C0-Link-Fix + welle-4b-C0 + ADR-0027-C1 + C1-
-Review-Folge + C2 + C2-Review-Folge + dep-audit-Fix +
-diesem C3-Status-Sync): ADR 0027 `Proposed → Provisional`
-(RuleBasedAgent + Scenario-Agents-Block-Pattern; Schwester-
-ADR zu ADR 0026, Pattern-Pendant zu ADR 0025). Produktiv:
-`RuleBasedAgent`-Implementer mit Hybrid Rules + Plugin-Hook
-(Welle-4b-Metric-Whitelist `tick`/`simulation_time`, first-
-match-wins, snapshot-bar); `ScenarioAgent`-Domain +
-`_assert_agent_list(...)`-Validator + `_build_agents(...)`-
-Factory + `_AGENT_PLUGIN_FACTORIES`-Hook (leer; Welle 4c+
-Material); `agents.<agent_type>.<agent_id>`-Sub-Snapshot mit
-bidirektionalem Resume-Match-Check; `AgentPlugin`-Sub-
-Protocol (`@runtime_checkable`); sieben neue Error-Klassen
-(`ScenarioUnknownAgentTypeError`,
-`ScenarioUnknownAgentTargetError`,
-`ScenarioInvalidRuleMetricError`,
-`ScenarioInvalidRuleComparatorError`,
-`ScenarioInvalidAgentParamsError`,
-`ScenarioUnknownAgentPluginError`,
-`TickLoopAgentInstanceSnapshotMismatchError`);
-`build_tick_loop(agents=None)`-Sentinel-Pattern (expliziter
-`()`-Override wird respektiert); Demo-Szenario
-`tests/integration/scenarios/agents_demo.yaml` mit drei
-zeitgesteuerten Phasen (Idle/Charge/Discharge). 992 Unit-
-Tests + 19 Integration-Tests (+69 Unit / +5 Integration ggue.
-Welle-4a-Stand). **`make fullbuild` cache-frei gruen ohne
-Override** (volle CI + Runtime-Image + Compose-Smoke +
-Trivy-Image-Audit) — Welle-4-Abnahme-Kriterium aus ADR 0027
-§2.5 erfuellt. Plus `dep-audit`-Fix `ac7b47f`
-(starlette `1.0.0 → 1.0.1`, PYSEC-2026-161).
+- **Welle 0 — Vorabraeumung + Slice-Eroeffnung** — eroeffnet
+  2026-05-20, `cfb7a72`/`4bd2673`/`f5de006`/`3e6170d`.
+
+- **Welle 1 — Fault-Foundation** — `Done` 2026-05-20,
+  `712d73b`/`7e0a497`/`823eda7`/`79bb50a`.
+  - ADR 0022 `Proposed → Provisional`.
+  - `FaultInjectableDevice` Sub-Protocol + `FaultPort` Driven-Port +
+    Validator-Target-Haertung + TickLoop-Hook.
+  - 773 Unit-Tests (+11).
+
+- **Welle 2 — Battery-/Grid-Fault-Konkretisierung** — `Done`
+  2026-05-20, `1debd5e..91d44e2` (8 Commits) + C3-Status-Sync.
+  - ADR 0025 `Proposed → Provisional` (Fault-Recovery-Pattern,
+    Schaerfung-ohne-Supersede zu ADR 0022 §2.4).
+  - Battery `cell_failure` + Grid `voltage_drop` +
+    `auto-recover-after-N-ticks` + `manual-via-command` produktiv.
+  - Adapter-Module unter `hexagon/core/faults/` (architektur-korrekt;
+    **nicht** unter `adapters/driven/`, weil Fault-Adapter
+    Domain-Orchestrierung sind).
+  - 840 Unit-Tests + 14 Integration-Tests (+67 / +3 ggue. Welle 1).
+  - Property-Tests (Hypothesis-half-open + Determinismus +
+    Seed-Independence); Fault-Demo-Szenario + Postgres-Roundtrip.
+
+- **Welle 3 — Multi-Agent-Foundation** — `Done` 2026-05-21,
+  `3dbe6af..d6f66fc` (5 Kern-Commits + 8 Wording-Polish + C3-Sync).
+  - ADR 0023 `Proposed → Provisional` (Multi-Agent-Bus +
+    Agent-Protocol).
+  - **Pattern-Drift gegen ADR 0022:** `AgentMessageBus` als
+    Core-Klasse, kein Driven-Port — Architektur §14 schreibt eigenes
+    Kernmodul vor; Bus hat keine externe Adapter-Boundary.
+  - `Agent`-Sub-Protocol (eigenstaendig, **nicht** DeviceModel-
+    erbend) + `AgentMessageBus` mit Snapshot-Surface +
+    `AgentMessage`-frozen-dataclass mit `GG-AGENT-004`-Pflicht-
+    Feldern + TickLoop-Schritt-D2-Hook (Architektur §6 Schritt 7) +
+    `agent_bus`-Builder-Symmetrie + `AgentBusError`-Family.
+  - 889 Unit-Tests + 14 Integration-Tests (+49 / 0 ggue. Welle 2).
+    Foundation ohne konkrete Agent-Implementer (Welle 4).
+  - Code-Review-Folge `d6f66fc` adressiert 9 Findings (1H + 4M + 4L)
+    als Schaerfungen-ohne-Supersede (ADR 0011-Pattern).
+
+- **Welle 4a — Multi-Agent-Foundation-Plumbing** — `Done`
+  2026-05-21, `a24f733..da18c6d`.
+  - ADR 0026 `Proposed → Provisional` (Agent-Drain + Registry +
+    Snapshot + Lifecycle-Pattern; Schwester-ADR zu ADR 0023,
+    Pattern-Pendant zu ADR 0025).
+  - TickLoop-`agents`-Kwarg + Auto-Bus + Duplicate-ID-Fail-Fast +
+    `_attach_agents()`-Lifecycle (`set_run_id` + optional
+    `_RandomAttachableAgent.attach_random`).
+  - **Schritt A0v** (Pre-Clock-Target-Validierung) + **Schritt A0a**
+    (Apply nach Clock, vor Schritt A) mit Atomizitaets-Vertrag bei
+    `AgentInvalidCommandTargetError`.
+  - `AgentMessageBus.consume_for(receiver)` Direct-Inbox-destruktiv
+    (Broadcasts bleiben nicht-destruktiv).
+  - `agent_bus`/`pending_agent_commands` Sub-Snapshots +
+    Resume-Match-Checks fuer Devices/GridModel/LoadOverlays.
+  - Sechs neue Error-Klassen in drei Roots: `AgentRegistryError`,
+    `AgentCommandDrainError(TickLoopError)`,
+    `TickLoopAgentSnapshot*Error`.
+  - Welle-3-`_set_agents_for_testing(...)`-Helper entfernt;
+    `build_tick_loop(agents=)`-Symmetrie + GridModelBilanz-Overlay-
+    Verdrahtung.
+  - 921 Unit-Tests + 14 Integration-Tests (+32 / 0 ggue. Welle 3);
+    `make gates` A-1 ohne Override gruen.
+
+- **Welle 4b — Multi-Agent-Konkretisierung** — `Done` 2026-05-22,
+  `8802dc0..ac7b47f`.
+  - ADR 0027 `Proposed → Provisional` (RuleBasedAgent +
+    Scenario-Agents-Block-Pattern; Schwester-ADR zu ADR 0026,
+    Pattern-Pendant zu ADR 0025).
+  - `RuleBasedAgent`-Implementer mit Hybrid Rules + Plugin-Hook
+    (Welle-4b-Metric-Whitelist `tick`/`simulation_time`,
+    first-match-wins, snapshot-bar).
+  - `ScenarioAgent`-Domain + `_assert_agent_list(...)`-Validator +
+    `_build_agents(...)`-Factory + `_AGENT_PLUGIN_FACTORIES`-Hook
+    (leer; Welle 4c+).
+  - `agents.<agent_type>.<agent_id>`-Sub-Snapshot mit bidirektionalem
+    Resume-Match-Check; `AgentPlugin`-Sub-Protocol (`@runtime_checkable`).
+  - Sieben neue Error-Klassen: `ScenarioUnknownAgentTypeError`,
+    `ScenarioUnknownAgentTargetError`,
+    `ScenarioInvalidRuleMetricError`,
+    `ScenarioInvalidRuleComparatorError`,
+    `ScenarioInvalidAgentParamsError`,
+    `ScenarioUnknownAgentPluginError`,
+    `TickLoopAgentInstanceSnapshotMismatchError`.
+  - `build_tick_loop(agents=None)`-Sentinel-Pattern (expliziter
+    `()`-Override wird respektiert).
+  - Demo-Szenario `tests/integration/scenarios/agents_demo.yaml` mit
+    drei zeitgesteuerten Phasen (Idle/Charge/Discharge).
+  - 992 Unit-Tests + 19 Integration-Tests (+69 / +5 ggue. Welle 4a).
+  - **`make fullbuild` cache-frei gruen ohne Override** (volle CI +
+    Runtime-Image + Compose-Smoke + Trivy-Image-Audit) — Welle-4-
+    Abnahme-Kriterium aus ADR 0027 §2.5 erfuellt.
+  - Begleit-Fix `ac7b47f`: `dep-audit` starlette `1.0.0 → 1.0.1`
+    (PYSEC-2026-161).
 
 **Naechster Schritt:** **Welle 5** (Observability —
-LogPort/MetricsPort/TracePort, ADR 0024). M3-Welle 4
-(Foundation 4a + Konkretisierung 4b) ist abgeschlossen.
+LogPort/MetricsPort/TracePort, ADR 0024).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
