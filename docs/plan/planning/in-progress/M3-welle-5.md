@@ -12,10 +12,18 @@ Welle 5+6 Observability).
 - `make fullbuild` cache-frei gruen **ohne** Override (volle CI +
   Runtime-Image + Compose-Smoke + Trivy-Image-Audit) als
   Welle-5-Abnahme-Kriterium.
+  - In Welle 5 bleibt die Compose-Smoke-Verifikation auf
+    Laufzeit-Stack-Liveness beschraenkt; OTLP-Span-/Metric-Export-
+    Assertions sind explizit Welle 6.
 - `make test-unit` mit allen Welle-5-Tests gruen (Port-Surface,
   Null-Adapter-Roundtrip, ggf. Bytes-Pfad-Tests).
+  - Mindestanforderung: mindestens je ein Tick-, Agent- und
+    Fault-Test auf Default-Null-Adapters (`record_calls=False`) mit
+    Hook-Verifikation.
 - `make test-integration` mit Welle-5-Tests gruen (Multi-Agent- +
   Fault-Demo unter Null-Adapter-Default).
+  - Welle-5-spezifisch: Null-Adapter-Metriken/Logs in den beiden
+    Demo-Pfaden nachweislich aufgerufen.
 - `make gates` A-1 gruen ohne Override: lint, format-check,
   mypy `--strict`, arch-check, coverage 90/85 line, critical-coverage,
   dep-audit.
@@ -57,14 +65,15 @@ Produktive Lieferung:
 - 3 Null-Adapter (Test-Doubles) in
   `adapters/driven/observability_null/`. Default fuer Welle-2-Fault-
   und Welle-3/4-Multi-Agent-Tests (kein OTLP-Collector noetig).
+  - Null-Adapters liefern standardmaessig `call_count` + `last_call` für
+    standardisierte Assertions; `record_calls=True` aktiviert vollstaendige
+    Call-History (Default: `False`).
 - TickLoop-Hooks: `MetricsPort` fuer Tick-Telemetrie (Tick-Dauer,
   Devices/Agents/Faults-Counts), `LogPort` fuer Tick-Logs.
 - Agent-Hooks: `LogPort` fuer Agent-Decision-Logs, `TracePort` fuer
   optional Span-Wrapping um `Agent.decide()`.
 - Fault-Hooks: `TracePort` fuer Span-Wrapping um `inject_fault()`,
   `LogPort` fuer Fault-Audit-Trail.
-- Optionaler `record_calls=True`-Modus der Null-Adapter, damit Tests
-  Telemetrie-Aufrufe assertieren koennen (Default `False`).
 
 Trigger 006 (`--strict-bytes`) Entscheidung am OTLP-Protobuf-Bytes-
 Pfad: moeglich, dass `--strict-bytes` in Welle 5 noch nicht
@@ -129,8 +138,9 @@ Quellen:
 - Verdrahtung in TickLoop (Tick-Telemetrie + Tick-Logs).
 - Verdrahtung in `AgentMessageBus` / Agent-Decision-Pfad.
 - Verdrahtung in Fault-Adapter (Fault-Injection-Spans + Audit-Log).
-- Optionaler `record_calls=True`-Modus fuer Null-Adapter (Test-
-  Assertion-Surface).
+- Null-Adapter liefern default `call_count` + `last_call`; optionaler
+  `record_calls=True`-Modus ergänzt full-fidelity `call_records` als
+  Test-Assertion-Surface.
 - ADR 0024 `Proposed → Provisional`.
 
 **Out-of-Scope (Welle 6+):**
@@ -144,15 +154,31 @@ Quellen:
 
 ## 3. Architektur-Entscheidungen (C1-Triage TBD)
 
-Wird mit C1 (ADR 0024 Proposed) gefuellt. Erwartete Decision-Items:
+Wird mit C1 (ADR 0024 Proposed) gefuellt. Verbindliche Vorlage:
 
-- Port-Surface-Form (Protocol mit Default-Methoden, abstract base,
-  `@runtime_checkable`?).
-- Null-Adapter-Default-Verhalten (silent vs. record).
-- Hook-Reihenfolge in TickLoop (Pre-/Post-Tick, Per-Schritt).
-- `record_calls=True`-API (gesammelte Records als Sequence,
-  Clear/Reset-Surface).
-- Trigger-006-Aktivierungs-Zeitpunkt (Welle 5 vs. Welle 6).
+- Port-Surface-Form:
+  - `Protocol`, optional `@runtime_checkable`, state-los.
+  - keine Default-Methoden, keine Seiteneffekte auf Port-Ebene.
+  - **Keine** externen OTLP/SDK-Typen in `ports/`-Layer.
+- TracePort-Vertrag:
+  - kleiner, interner `SpanContext`-Record mit
+    `trace_id`, `span_id`, optional `parent_span_id` (String-basiert).
+  - `start_span(name: str, *, parent: SpanContext | None = None, attributes: Mapping[str, object] | None = None) -> SpanContext`
+  - `end_span(context: SpanContext) -> None`
+  - `record_event(context: SpanContext, name: str, attributes: Mapping[str, object] | None = None) -> None`
+  - `TracePort` definiert bewusst `SpanContext` als Pflichtparam in beiden Terminal-Methoden; Call-Sites prüfen daher vor dem Aufruf, ob der Kontext vorhanden ist.
+  - Falls `None` dennoch geliefert wird, gilt **No-Op** als erlaubtes Fallback-Verhalten (keine Exception, keine Seiteneffekte).
+- Null-Adapter-Standardverhalten:
+  - default `record_calls=False`, aber `call_count` + `last_call`
+    sind immer verfügbar.
+  - `record_calls=True` zusätzlich: `call_records` als append-only
+    Sequenz + `clear_calls()`.
+- TickLoop/Agent/Fault-Hooks:
+  - Reihenfolge und Einhängepunkte in C1 fixieren, keine
+    bestehende Schritt- oder Broadcast-Reihenfolge veraendern.
+- Trigger-006:
+  - Entscheidungszeitpunkt bleibt offen; `--strict-bytes`-Freigabe mit
+    Welle-6-OTLP-Bytes-Vertrag koordiniert.
 
 ## 4. Liefer-Reihenfolge
 
@@ -186,7 +212,12 @@ Siehe Commit-Sequenz oben (C0 → C1 → C2 → C3 → End-of-Wave).
   (`agents_demo.yaml`) + Fault-Demo gruen mit Null-Adapter-
   Default-Verdrahtung.
 - `make fullbuild` cache-frei gruen ohne Override
-  (Welle-5-Abnahme-Kriterium).
+  (Welle-5-Abnahme-Kriterium; Compose-Smoke-Verifikation ohne OTLP-Collector-Asserts).
+- `make fullbuild` ist die Gesamtabnahme der Welle; die separaten
+  `test-unit`/`test-integration` ACs bleiben dennoch als gezielte
+  Welle-5-Regressionen für Ports, Hooks und Null-Adapter bestehen.
+- Welle-6-Postcondition: Compose-Smoke-Verifikation der Span-/Metric-
+  Export-Pipeline mit produktivem OTLP-Adapter.
 - AC-PORTS-NO-OUT bleibt KEPT — 3 neue Driven-Ports, kein
   Driving-Port-Verletzer.
 
@@ -197,9 +228,9 @@ Siehe Commit-Sequenz oben (C0 → C1 → C2 → C3 → End-of-Wave).
   bewusst offen lassen, Welle 6 trifft die Aktivierung am konkreten
   OTLP-Bytes-Pfad. Trigger 006 bleibt `Open`.
 - **R-2** — Null-Adapter-Default senkt Test-Coverage (Telemetrie-
-  Aufrufe nicht assertierbar). *Mitigation:* `record_calls=True`-
-  Modus als optionaler Test-Affordance; Welle-5-Tests verwenden ihn
-  fuer Surface-Validierung.
+  Aufrufe nicht assertierbar). *Mitigation:* Null-Adapters exponieren
+  auf dem Default-Pfad strukturierte Call-Oberflaechen (`call_count`,
+  `last_call`) und Welle-5-Tests muessen diese mitlaufen.
 - **R-3** — `TracePort` ohne OTLP-Konsument ist schwer ohne
   Welle 6 zu validieren. *Mitigation:* Vertrag an OpenTelemetry-
   Span/SpanContext-Konventionen anlehnen; Welle 6 muss kompatibel
