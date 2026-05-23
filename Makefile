@@ -123,6 +123,8 @@ format:
 	$(DOCKER) run --rm \
 		--user "$$(id -u):$$(id -g)" \
 		-e UV_CACHE_DIR=/tmp/uv-cache \
+		-e UV_PROJECT_ENVIRONMENT=/tmp/uv-venv \
+		-e RUFF_CACHE_DIR=/tmp/ruff-cache \
 		-v "$$(pwd)":/src -w /src \
 		$(IMAGE_PREFIX)-source:latest \
 		uv run ruff format .
