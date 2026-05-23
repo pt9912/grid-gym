@@ -85,6 +85,7 @@ help:
 	@echo "  make test              Alle Test-Marker im selben Stage"
 	@echo "  make test-integration  Compose-basierte Integration-Tests (Postgres etc.)"
 	@echo "  make coverage-gate            GG-COV-001/002 — \$$COVERAGE_THRESHOLD% Line + \$$COVERAGE_BRANCH_THRESHOLD% Branch (gesamt)"
+	@echo "  make coverage-report          Zeigt Total-Coverage frisch (--no-cache-filter coverage-gate; vorgelagerte Stages bleiben kalt)"
 	@echo "  make coverage-gate-critical   GG-COV-003 MUSS — \$$CRITICAL_COVERAGE_THRESHOLD% auf kritischer Domain (simulation/devices/battery/scenario/replay)"
 	@echo ""
 	@echo "Security & Spec-Gates:"
@@ -184,6 +185,21 @@ coverage-gate:
 		--build-arg COVERAGE_THRESHOLD=$(COVERAGE_THRESHOLD) \
 		--build-arg COVERAGE_BRANCH_THRESHOLD=$(COVERAGE_BRANCH_THRESHOLD) \
 		-t $(IMAGE_PREFIX)-coverage-gate:latest
+
+# Zeigt die aktuelle Total-Line- und Branch-Coverage, ohne den
+# Cache der vorgelagerten `base`/`deps`/`source`-Stages zu kippen.
+# `--no-cache-filter coverage-gate` (BuildKit) zwingt nur die
+# coverage-gate-Stage zur Re-Ausfuehrung; pytest laeuft frisch,
+# darunterliegende Layer bleiben kalt → typischer Lauf < 15s.
+coverage-report:
+	@$(DOCKER) build $(BUILD_CONTEXT) -f $(DOCKERFILE) $(DOCKER_BUILD_ARGS) \
+		--target coverage-gate \
+		--no-cache-filter coverage-gate \
+		--build-arg COVERAGE_THRESHOLD=$(COVERAGE_THRESHOLD) \
+		--build-arg COVERAGE_BRANCH_THRESHOLD=$(COVERAGE_BRANCH_THRESHOLD) \
+		-t $(IMAGE_PREFIX)-coverage-gate:latest 2>&1 \
+		| grep -E "^#[0-9]+ +[0-9.]+ +(TOTAL|Required test coverage|====.*passed)" \
+		| sed 's/^#[0-9]* *[0-9.]* *//'
 
 # Override CRITICAL_COV_TARGETS, um nur einen Teilbereich der kritischen
 # Domain zu pruefen — bevor alle Pfade aus GG-COV-003 implementiert sind.
