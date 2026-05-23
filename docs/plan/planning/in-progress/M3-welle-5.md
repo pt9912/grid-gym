@@ -152,9 +152,13 @@ Quellen:
 - Dashboards, Alerts, Trace-Korrelation in Multi-Service-Szenarien
   — Post-M3.
 
-## 3. Architektur-Entscheidungen (C1-Triage TBD)
+## 3. Architektur-Entscheidungen
 
-Wird mit C1 (ADR 0024 Proposed) gefuellt. Verbindliche Vorlage:
+Formalisiert in
+[`ADR 0024`](../../adr/0024-observability-port-trio.md) `Proposed`
+(M3-Welle-5-C1, 2026-05-23). Die nachfolgende Liste ist die mit C1
+fixierte Triage-Vorgabe; ADR 0024 schreibt sie normativ auf und
+ergaenzt Begruendung, Reichweite, Konsequenzen und Out-of-Scope.
 
 - Port-Surface-Form:
   - `Protocol`, optional `@runtime_checkable`, state-los.
