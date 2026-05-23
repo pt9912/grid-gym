@@ -12,7 +12,7 @@ Vertrag), [`ADR 0009`](0009-randomport-snapshot-schema-rng-version.md)
 (Snapshot-Schema), [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 §3 (Erweiterung ohne Supersedes), Welle-1-`SnapshotEnvelope`
 in `hexagon/core/domain/snapshot.py`,
-[`docs/plan/planning/open/012-snapshot-composition.md`](../planning/open/012-snapshot-composition.md)
+[`docs/plan/planning/done/012-snapshot-composition.md`](../planning/done/012-snapshot-composition.md)
 (Trigger, geschlossen durch diese ADR — wandert nach `done/`
 synchron zu Welle-4-Closure).
 
@@ -48,7 +48,7 @@ muss. Hier prallt der `bytes`-Vertrag mit der
   internen `_build_payload()`-Funktion, sodass es nur EINEN
   Wahrheitspfad fuer das Snapshot-Schema gibt.
 
-Trigger 012 (`docs/plan/planning/open/012-snapshot-composition.md`)
+Trigger 012 (`docs/plan/planning/done/012-snapshot-composition.md`)
 hatte Variante 3 als „Option A (empfohlen)" gelistet.
 
 ---

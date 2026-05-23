@@ -59,10 +59,15 @@ mechanisch faengt:
 
 - **Post-Move-Pfad-Drift** (M1-Slice-Plan `in-progress/ →
   done/`): 8 Refs in nicht-immutable-Dateien aktualisiert,
-  3 immutable ADR-Bezug-Pfade via Forwarder-Stubs abgefangen
+  3 immutable ADR-Bezug-Pfade initial via Forwarder-Stubs abgefangen
   (`in-progress/M1-tick-loop-spine.md`,
   `open/003-random-port-adr.md`, `open/012-snapshot-composition.md`,
-  `next/M1-tick-loop-spine.md`).
+  `next/M1-tick-loop-spine.md`). Mit
+  [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
+  (2026-05-23) ist das Stub-Pattern durch direkte Pfad-Pflege in den
+  Accepted-ADRs ersetzt; die genannten Stubs (plus
+  `in-progress/M2-devices.md` aus M2-Welle 7) wurden im selben Cleanup
+  entfernt.
 - **Tatsaechliche Drift** (echter Bug, nicht nur Pfad-Move):
   - `done/M1-tick-loop-spine.md:25 roadmap.md` → korrigiert
     auf `../in-progress/roadmap.md`.

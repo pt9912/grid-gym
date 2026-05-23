@@ -124,9 +124,7 @@ M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
 (Closure-Notiz); Welle-Tabelle + Abnahme-Belege:
 [`done/M2-devices-results.md`](../done/M2-devices-results.md);
 Welle-6c-Slice-Begleit:
-[`done/welle-6c.md`](../done/welle-6c.md). Forwarder-Stub
-unter [`in-progress/M2-devices.md`](M2-devices.md)
-(ADR-Pfad-Stabilitaet per ADR 0006 §3).
+[`done/welle-6c.md`](../done/welle-6c.md).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des

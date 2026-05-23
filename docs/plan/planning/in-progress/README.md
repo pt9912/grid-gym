@@ -19,8 +19,13 @@ Ein Eintrag wechselt typischerweise:
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `roadmap.md`              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
-| `M2-devices.md`           | Forwarder-Stub fuer ADR-Pfad-Stabilitaet (ADR 0006 §3); aktueller Slice-Plan ist [`done/M2-devices.md`](../done/M2-devices.md), Welle-Tabelle + Abnahme-Belege [`done/M2-devices-results.md`](../done/M2-devices-results.md). M2 ist `Done` seit 2026-05-20. |
 | `welle-4b.md`             | M3-Welle-4b-Slice-Begleit-Dokument (RuleBasedAgent + Scenario-`agents`-Top-Level-Block + Property-Tests + End-to-End-Demo + Welle-4-Abschluss-Gate). Stand 2026-05-22: `Done` (Commits `8802dc0..ac7b47f` + C3-Sync). 992 Unit-Tests + 19 Integration-Tests; `make fullbuild` cache-frei gruen ohne Override (Welle-4-Abnahme-Kriterium erfuellt). Wandert nach `done/` mit M3-Welle-5-Pre-C0. |
 | `M3-faults-agents-observability.md` | M3-Slice-Plan: Fault-Injection + Multi-Agent-Bus + Observability (Log/Metrics/Trace). Stand 2026-05-22: `In Progress` — Welle 0/1/2/3/4a/4b abgeschlossen (M3-Welle 4 = Multi-Agent komplett); Welle 5 (Observability — LogPort/MetricsPort/TracePort) der naechste Slice. |
 | `025-github-actions-four-gates.md` | Trigger 025: GitHub-Actions-CI-Workflow mit vier Pflicht-Gates (`lint-imports`, `ruff check`, `python tools/arch_check.py`, `mypy --strict`). Stand 2026-05-21: `In Progress` — `.github/workflows/ci.yml` eingebaut in `01796ae`; wartet auf ersten produktiven CI-Lauf nach Push auf `origin/main`. Wandert nach `done/` nach erstem gruenen Lauf. M6-Vorzieh-Slice. |
-| `M1-tick-loop-spine.md`   | Forwarder-Stub (Link-Stabilitaet fuer ADRs 0008/0009 etc., die auf den `in-progress/`-Pfad zeigen). Aktueller Slice-Plan: [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md). |
+
+Frueher hier liegende Forwarder-Stubs `M1-tick-loop-spine.md` und
+`M2-devices.md` wurden 2026-05-23 mit
+[`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
+entfernt; die `Bezug:`-Pfade in den abhaengigen ADRs zeigen seither
+direkt auf [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
+bzw. [`done/M2-devices.md`](../done/M2-devices.md).

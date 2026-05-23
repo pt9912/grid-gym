@@ -396,11 +396,12 @@ bis dahin aktiven Gates (`make gates CRITICAL_COV_TARGETS=...`).
 - `archive/` ist nicht erfolgt (M1 wurde planmaessig
   abgeschlossen, nicht umgeplant).
 
-Ein Forwarder-Stub bleibt unter
-[`in-progress/M1-tick-loop-spine.md`](../in-progress/M1-tick-loop-spine.md)
-liegen, weil ADR 0008 und ADR 0009 in ihrer `Bezug:`-Zeile auf
-den `in-progress/`-Pfad zeigen und nach Acceptance per
-`ADR 0006 §3` immutable sind.
+Der urspruenglich zur Link-Stabilitaet angelegte Forwarder-Stub unter
+`in-progress/M1-tick-loop-spine.md` (und der zweite unter
+`next/M1-tick-loop-spine.md`) wurde 2026-05-23 mit
+[`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
+entfernt; die `Bezug:`-Pfade in ADR 0007/0008/0009 zeigen seither
+direkt auf dieses Dokument.
 
 ## 7. Verifikationspfad
 

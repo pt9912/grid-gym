@@ -40,7 +40,7 @@ fixierte Imbalance-Berechnung ist die Inverse dazu),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-ADR-
 Pattern — diese ADR baut auf ADR 0014 §2.2 auf, ohne Supersedes).
 M2-Slice-Plan
-[`in-progress/M2-devices.md`](../planning/in-progress/M2-devices.md)
+[`done/M2-devices.md`](../planning/done/M2-devices.md)
 §3 Welle 5a. Lastenheft §11 (`GG-GRID-001`/`002`),
 §5 `GG-AR-COMP-DEVICES` (System-Modell, nicht Device-Liste).
 

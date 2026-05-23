@@ -19,7 +19,7 @@ from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 [Architektur](../../../spec/architecture.md),
 [`ADR 0002`](0002-language-and-build-stack.md) §A-1 AC-NO-RAND,
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
-(Lifecycle), [`docs/plan/planning/open/003-random-port-adr.md`](../planning/open/003-random-port-adr.md)
+(Lifecycle), [`docs/plan/planning/done/003-random-port-adr.md`](../planning/done/003-random-port-adr.md)
 (geschlossen durch diese ADR — wandert nach `done/` bei Acceptance).
 
 ---
@@ -159,7 +159,7 @@ ohne Mehrwert.
 
 Lokaler Vertrag fuer den Provisional-Status (per Lifecycle-Pflicht
 aus `ADR 0006`). Die Durchfuehrung geschieht in M1 Welle 2 (siehe
-[`docs/plan/planning/next/M1-tick-loop-spine.md`](../planning/next/M1-tick-loop-spine.md) §3 Welle 2).
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done/M1-tick-loop-spine.md) §3 Welle 2).
 
 **Akzeptanzkriterien:**
 
@@ -295,7 +295,7 @@ Wesentliche Eigenschaften:
 
 Bei Acceptance schliesst diese ADR:
 
-- **Trigger 003** (`docs/plan/planning/open/003-random-port-adr.md`)
+- **Trigger 003** (`docs/plan/planning/done/003-random-port-adr.md`)
   wandert nach `done/`.
 - `GG-AR-PORT-DRN-010` ist damit implementierungs-spezifiziert
   (sprach- und PRNG-Wahl).
@@ -308,7 +308,7 @@ Bei Acceptance schliesst diese ADR:
 
 **Bei `Provisional`** (jetzt):
 
-- Diese ADR darf in `next/M1-tick-loop-spine.md §3 Welle 2`
+- Diese ADR darf in `done/M1-tick-loop-spine.md §3 Welle 2`
   referenziert werden — als „RandomPort-Vertrag pro ADR 0007
   (Provisional)".
 - Keine Aenderung an `architecture.md` §19 oder `roadmap.md` §4.
@@ -319,7 +319,7 @@ Bei Acceptance schliesst diese ADR:
 - Closure-Notiz in `done/spike-0-results.md §6` ergaenzen (Hinweis,
   dass die im Spike-0 Welle 5 angekuendigte Folge-ADR jetzt
   geschlossen ist).
-- `next/M1-tick-loop-spine.md §3 Welle 2` wird zu „Welle 2 fertig,
+- `done/M1-tick-loop-spine.md §3 Welle 2` wird zu „Welle 2 fertig,
   ADR 0007 Accepted".
 - `architecture.md §9.x` (Driven-Port-Beschreibung von
   `GG-AR-PORT-DRN-010`) bekommt einen Backlink-Satz „PRNG-Wahl

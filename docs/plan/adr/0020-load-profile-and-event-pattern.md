@@ -44,7 +44,7 @@ Command-Surface),
 ADR-Pattern — diese ADR erweitert ADR 0019 §2.5 fuer das
 Load-Repraesentations-Schema, kein Supersedes).
 M2-Slice-Plan
-[`in-progress/M2-devices.md`](../planning/in-progress/M2-devices.md)
+[`done/M2-devices.md`](../planning/done/M2-devices.md)
 §3 Welle 5b. Lastenheft §11 (`GG-GRID-003`/`004`).
 
 ---

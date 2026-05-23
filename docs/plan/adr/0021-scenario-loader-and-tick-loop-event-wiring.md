@@ -38,7 +38,7 @@ Konstruktor-Injekt-Pattern bestaetigen),
 ADR-Pattern — Welle 6b erweitert ADR 0013/0017/0018/0019/0020
 ohne Supersedes).
 M2-Slice-Plan
-[`in-progress/M2-devices.md`](../planning/in-progress/M2-devices.md)
+[`done/M2-devices.md`](../planning/done/M2-devices.md)
 §3 Welle 6b. Lastenheft §3 (`GG-MVP-002`),
 `GG-SCN-001` (Scenario-Loader-Verantwortung).
 

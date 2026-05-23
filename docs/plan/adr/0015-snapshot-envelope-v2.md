@@ -54,7 +54,7 @@ TickLoop-Snapshot-Konvention ohne Supersedes; M1-Snapshots
 werden im M2-Code-Pfad NICHT mehr gelesen, aber die M1-ADR
 bleibt historisch intakt).
 M2-Slice-Plan
-[`in-progress/M2-devices.md`](../planning/in-progress/M2-devices.md)
+[`done/M2-devices.md`](../planning/done/M2-devices.md)
 §3 Welle 6a. Lastenheft §3 (`GG-MVP-002` End-to-End-Szenario),
 `GG-PERSIST-*` (M6-Lese-Migrations-Pfad).
 
