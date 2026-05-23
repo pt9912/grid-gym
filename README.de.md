@@ -1,5 +1,7 @@
 # grid-gym
 
+**Deutsch** | [English](README.md)
+
 `grid-gym` ist eine geplante modulare Open-Source-Plattform zur Simulation,
 Validierung und Analyse elektrischer Energiesysteme.
 
@@ -122,7 +124,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 ├── pyproject.toml               ← Build-/Tool-Konfiguration (ADR 0002 §6.1)
 ├── uv.lock                      ← gepinnte Dependencies (uv)
 ├── .python-version              ← 3.14 (uv-kompatibel)
-├── README.md
+├── README.md                    ← englische Hauptversion
+├── README.de.md                 ← deutsche Version (dieses Dokument)
 ├── deploy/compose.yml           ← Produktiver Compose-Stack (M1 Welle 6c)
 ├── src/grid_gym/
 │   ├── hexagon/
