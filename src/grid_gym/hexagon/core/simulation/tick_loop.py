@@ -81,6 +81,12 @@ from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.ports.driven.clock import ClockPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
+from grid_gym.hexagon.ports.driven.observability import (
+    LogPort,
+    MetricsPort,
+    SpanContext,
+    TracePort,
+)
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _SNAPSHOT_VERSION: Final[int] = 2
@@ -184,6 +190,9 @@ class TickLoop:
         fault_port: FaultPort | None = None,
         agent_bus: AgentMessageBus | None = None,
         agents: tuple[Agent, ...] = (),
+        log_port: LogPort | None = None,
+        metrics_port: MetricsPort | None = None,
+        trace_port: TracePort | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -234,6 +243,14 @@ class TickLoop:
             agent_bus = AgentMessageBus()
         self._agent_bus: AgentMessageBus | None = agent_bus
         self._agents: tuple[Agent, ...] = agents
+        # M3-Welle-5 (ADR 0024 §2.6): Observability-Port-Trio.
+        # `None`-Default skippt jeden Hook in `tick()`; produktive
+        # Adapter (Null oder OTLP) injizieren strukturierte
+        # Logs/Metriken/Traces. Loest ADR 0023 §2.6 Observability-
+        # Vorgriff-Verbot auf (Welle-3-Klausel).
+        self._log_port: LogPort | None = log_port
+        self._metrics_port: MetricsPort | None = metrics_port
+        self._trace_port: TracePort | None = trace_port
         # M3-Welle-3-Review-Folge-2 F-1 + M3-Welle-4a F-1 produktiv:
         # `_pending_agent_commands` ist der Buffer, den Schritt D2
         # (Agent-Tick) fuellt und Schritt A0a (Pre-Tick-Drain) in
@@ -298,6 +315,69 @@ class TickLoop:
             agent.set_run_id(self._run_id)
             if isinstance(agent, _RandomAttachableAgent):
                 agent.attach_random(self._random.sub_port(f"agent-{agent.agent_id}"))
+
+    # ------------------------------------------------------------------
+    # Observability-Hook-Helpers (M3 Welle 5, ADR 0024 §2.6).
+    # Jeder Helper kapselt die `if self._..._port is None: skip`-Logik,
+    # damit `tick()` lesbar bleibt. Hooks sind rein additiv — sie
+    # aendern weder Schritt-Reihenfolge noch Atomizitaets-Vertraege.
+    # ------------------------------------------------------------------
+    def _obs_start_span(
+        self,
+        name: str,
+        *,
+        parent: SpanContext | None = None,
+        attributes: Mapping[str, object] | None = None,
+    ) -> SpanContext | None:
+        if self._trace_port is None:
+            return None
+        return self._trace_port.start_span(name, parent=parent, attributes=attributes)
+
+    def _obs_end_span(self, span: SpanContext | None) -> None:
+        if self._trace_port is None or span is None:
+            return
+        self._trace_port.end_span(span)
+
+    def _obs_log(
+        self,
+        level: str,
+        message: str,
+        *,
+        event_id: str,
+        attributes: Mapping[str, object] | None = None,
+    ) -> None:
+        if self._log_port is None:
+            return
+        self._log_port.log(
+            level,
+            message,
+            run_id=self._run_id,
+            module="tick_loop",
+            event_id=event_id,
+            attributes=attributes,
+        )
+
+    def _obs_gauge(
+        self,
+        name: str,
+        value: float,
+        *,
+        attributes: Mapping[str, object] | None = None,
+    ) -> None:
+        if self._metrics_port is None:
+            return
+        self._metrics_port.gauge(name, value, attributes=attributes)
+
+    def _obs_increment(
+        self,
+        name: str,
+        value: int = 1,
+        *,
+        attributes: Mapping[str, object] | None = None,
+    ) -> None:
+        if self._metrics_port is None:
+            return
+        self._metrics_port.increment(name, value, attributes=attributes)
 
     @property
     def run_id(self) -> str:
@@ -378,9 +458,32 @@ class TickLoop:
         else:
             commands_to_apply = ()
 
+        # M3-Welle-5 (ADR 0024 §2.6): Observability-Hook tick_begin.
+        # Wird NACH A0v emittiert — der Span klammert die produktive
+        # Tick-Arbeit (Clock advance + Schritt A/B/C/D/E), nicht die
+        # Pre-Clock-Validierung. Georpaharte Spans bei A0v-Exceptions
+        # vermeidet damit der Hook-Schnitt.
+        tick_event_id = f"tick-{self._tick_count}"
+        tick_span = self._obs_start_span(
+            "tick.cycle",
+            attributes={"tick": self._tick_count, "run_id": self._run_id},
+        )
+        self._obs_log(
+            "info",
+            "tick_begin",
+            event_id=tick_event_id,
+            attributes={"tick": self._tick_count},
+        )
+
         self._clock.advance(self._tick_ms)
         now = self._clock.now()
         popped = tuple(self._scheduler.pop_due(now))
+
+        self._obs_gauge(
+            "event_queue_len",
+            float(len(popped)),
+            attributes={"run_id": self._run_id},
+        )
 
         context = DeviceTickContext(
             tick=self._tick_count,
@@ -448,7 +551,18 @@ class TickLoop:
             # `None`-Default skippt sauber; produktiver Adapter
             # kommt mit Welle 2.
             if self._fault_port is not None:
-                self._fault_port.apply_active_faults(self._devices, context)
+                # M3-Welle-5 (ADR 0024 §2.6): Trace-Wrap um den
+                # Fault-Apply-Aufruf. Schritt-A2-Position aus
+                # ADR 0022 §2.4 bleibt unveraendert.
+                fault_span = self._obs_start_span(
+                    "fault.inject",
+                    parent=tick_span,
+                    attributes={"tick": self._tick_count},
+                )
+                try:
+                    self._fault_port.apply_active_faults(self._devices, context)
+                finally:
+                    self._obs_end_span(fault_span)
             grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
             non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
             # Schritt B — Erste Iteration (ohne GridConnection).
@@ -478,7 +592,21 @@ class TickLoop:
             # (Commit-Reihenfolge eines Ticks bleibt unveraendert).
             if self._agent_bus is not None:
                 for agent in self._agents:
-                    self._pending_agent_commands.extend(agent.tick(context, self._agent_bus))
+                    # M3-Welle-5 (ADR 0024 §2.6): Trace-Wrap pro
+                    # Agent-Tick. Schritt-D2-Position aus ADR 0023
+                    # §2.4 + ADR 0026 §2.1 bleibt unveraendert.
+                    agent_span = self._obs_start_span(
+                        "agent.tick",
+                        parent=tick_span,
+                        attributes={
+                            "agent_id": agent.agent_id,
+                            "tick": self._tick_count,
+                        },
+                    )
+                    try:
+                        self._pending_agent_commands.extend(agent.tick(context, self._agent_bus))
+                    finally:
+                        self._obs_end_span(agent_span)
             # Schritt E — Bilanz-Aggregation.
             if self._grid_model is not None:
                 self._grid_model.update(
@@ -496,6 +624,22 @@ class TickLoop:
             emitted_telemetry=tuple(emitted),
         )
         self._tick_count += 1
+        # M3-Welle-5 (ADR 0024 §2.6): Observability-Hook tick_end.
+        # Schliesst den oben geoeffneten Tick-Span und emittiert
+        # tick_end-Log + tick_count-Counter NACH `_tick_count += 1`,
+        # damit der naechste `tick()` direkt das frische Counter-
+        # Inkrement sieht.
+        self._obs_increment(
+            "tick_count",
+            attributes={"run_id": self._run_id},
+        )
+        self._obs_end_span(tick_span)
+        self._obs_log(
+            "info",
+            "tick_end",
+            event_id=tick_event_id,
+            attributes={"tick": result.tick, "emitted_count": len(emitted)},
+        )
         return result
 
     def _run_device_iteration(
@@ -732,6 +876,9 @@ class TickLoop:
         active_load_profiles: tuple[LoadProfile, ...] = (),
         fault_port: FaultPort | None = None,
         agents: tuple[Agent, ...] = (),
+        log_port: LogPort | None = None,
+        metrics_port: MetricsPort | None = None,
+        trace_port: TracePort | None = None,
     ) -> TickLoop:
         """Stellt einen `TickLoop` aus einem Snapshot wieder her.
 
@@ -803,6 +950,9 @@ class TickLoop:
             fault_port=fault_port,
             agent_bus=agent_bus,
             agents=agents,
+            log_port=log_port,
+            metrics_port=metrics_port,
+            trace_port=trace_port,
         )
         # `_pending_agent_commands` muss nach Konstruktor-Init
         # gefuellt werden — der Konstruktor initialisiert es leer.

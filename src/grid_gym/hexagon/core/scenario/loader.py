@@ -64,6 +64,7 @@ from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import ClockPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
+from grid_gym.hexagon.ports.driven.observability import LogPort, MetricsPort, TracePort
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _DEVICE_FACTORIES: Final[Mapping[str, Callable[[], DeviceModel]]] = {
@@ -361,6 +362,9 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     fault_port: FaultPort | None = None,
     agent_bus: AgentMessageBus | None = None,
     agents: tuple[Agent, ...] | None = None,
+    log_port: LogPort | None = None,
+    metrics_port: MetricsPort | None = None,
+    trace_port: TracePort | None = None,
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -448,6 +452,9 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
         fault_port=fault_port,
         agent_bus=agent_bus,
         agents=agents,
+        log_port=log_port,
+        metrics_port=metrics_port,
+        trace_port=trace_port,
     )
 
 
