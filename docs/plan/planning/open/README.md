@@ -36,16 +36,11 @@ Block; `Post-M1` = nach M1-Abschluss.
 >
 > Bereits geschlossen: `003-random-port-adr.md` →
 > [`done/`](../done/003-random-port-adr.md) (2026-05-17 nach
-> ADR-0007-Acceptance in Welle 2; Forwarder-Stub urspruenglich hier
-> liegen geblieben, 2026-05-23 mit
-> [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
-> entfernt).
+> ADR-0007-Acceptance in Welle 2).
 >
 > Bereits geschlossen: `012-snapshot-composition.md` →
 > [`done/`](../done/012-snapshot-composition.md) (2026-05-17 nach
-> ADR-0010-Acceptance in Welle 4; Forwarder-Stub 2026-05-23 mit
-> [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
-> entfernt).
+> ADR-0010-Acceptance in Welle 4).
 >
 > Bereits geschlossen: `011-hexagon-layout-adr-0002-realign.md` →
 > [`done/`](../done/011-hexagon-layout-adr-0002-realign.md)
