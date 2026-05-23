@@ -38,3 +38,4 @@ Eine Closure-Notiz fasst zusammen:
 | `welle-2.md`                                   | 2026-05-20  | M3 Welle 2: Battery- + Grid-Fault-Konkretisierung (`cell_failure`, `voltage_drop`, Recovery).        |
 | `welle-3.md`                                   | 2026-05-21  | M3 Welle 3: Multi-Agent-Foundation (`Agent`-Protocol + `AgentMessageBus` + TickLoop-Hook).           |
 | `welle-4a.md`                                  | 2026-05-21  | M3 Welle 4a: Multi-Agent-Foundation-Plumbing (Drain + Registry + Snapshot + Lifecycle).             |
+| `welle-4b.md`                                  | 2026-05-22  | M3 Welle 4b: Multi-Agent-Konkretisierung (`RuleBasedAgent` + Scenario-`agents`-Block + Plugin-Hook + End-to-End-Demo). |

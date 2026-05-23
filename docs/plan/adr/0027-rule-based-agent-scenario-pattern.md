@@ -75,7 +75,7 @@ Welle-4a-ADR 0026),
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/in-progress/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4b-Slice-Doc
-[`in-progress/welle-4b.md`](../planning/in-progress/welle-4b.md).
+[`done/welle-4b.md`](../planning/done/welle-4b.md).
 Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..006`); §16
 Kommunikationsschnittstellen (`GG-DATA-004` `Command`).
 Architektur §6 Datenfluss Tick-Loop (Schritt D2 + A0v/A0a),

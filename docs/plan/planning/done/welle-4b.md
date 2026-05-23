@@ -42,7 +42,7 @@ Welle-4-Vertragstand und kann Welle 5 (Observability) zur Seite
 liefern.
 
 Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 4`](../in-progress/M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 
