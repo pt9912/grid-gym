@@ -78,12 +78,29 @@ Produktive Lieferung:
   - Null-Adapters liefern standardmaessig `call_count` + `last_call` für
     standardisierte Assertions; `record_calls=True` aktiviert vollstaendige
     Call-History (Default: `False`).
-- TickLoop-Hooks: `MetricsPort` fuer Tick-Telemetrie (Tick-Dauer,
-  Devices/Agents/Faults-Counts), `LogPort` fuer Tick-Logs.
-- Agent-Hooks: `LogPort` fuer Agent-Decision-Logs, `TracePort` fuer
-  optional Span-Wrapping um `Agent.decide()`.
-- Fault-Hooks: `TracePort` fuer Span-Wrapping um `inject_fault()`,
-  `LogPort` fuer Fault-Audit-Trail.
+- TickLoop-Hooks (Welle-5-C2 produktiv):
+  - `TracePort.start_span("tick.cycle", ...)` umfasst die Tick-Arbeit
+    (im `tick()`-Wrapper try/finally per Review-Folge H-1).
+  - `MetricsPort.gauge("event_queue_len", ...)` nach Scheduler-Drain.
+  - `MetricsPort.increment("tick_count", ...)` am Tick-Ende.
+  - `LogPort.log("info", "tick_begin"/"tick_end", ...)` als Per-Tick-
+    Trail.
+  - `tick_duration_ms` **nicht** emittiert — `AC-NO-TIME` verbietet
+    Wall-Clock-Zugriff im Core; Welle-6-OTLP-Adapter instrumentiert
+    das extern (ADR 0024 §2.6).
+- Agent-Hooks (Welle-5-C2 produktiv): `TracePort.start_span(
+  "agent.tick", parent=<tick-span>, ...)` Wrap pro Agent-Tick in
+  Schritt D2. `LogPort.log("agent decision", ...)` ist **Welle-6-
+  Material** — Welle-5-Minimum ist der Span-Wrap; Decision-Information
+  kann im OTLP-Adapter ueber Span-Attribute getragen werden
+  (ADR 0024 §2.6).
+- Fault-Hooks (Welle-5-C2 produktiv): `TracePort.start_span(
+  "fault.inject", parent=<tick-span>, ...)` Wrap um
+  `FaultPort.apply_active_faults(...)` in Schritt A2. `LogPort.log(
+  "fault active", ...)` ist **Welle-6-Material** — Welle-5-Minimum
+  ist der Span-Wrap; der Audit-Trail-Log waere pro aktivem Fault
+  (Adapter-Side-Logs feiner granuliert als TickLoop-Side, ADR 0024
+  §2.6).
 
 Trigger 006 (`--strict-bytes`) Entscheidung am OTLP-Protobuf-Bytes-
 Pfad: moeglich, dass `--strict-bytes` in Welle 5 noch nicht

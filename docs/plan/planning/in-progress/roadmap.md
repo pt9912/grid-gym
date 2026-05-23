@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2 abgeschlossen
-**Stand:** 2026-05-22 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a/4b abgeschlossen (Multi-Agent komplett), Welle 5 (Observability — LogPort/MetricsPort/TracePort, ADR 0024) als naechster Schritt. ADR 0022/0023/0025/0026/0027 alle `Provisional`. **992 Unit-Tests + 19 Integration-Tests gruen**; `make fullbuild` cache-frei gruen ohne Override (Welle-4-Abnahme-Kriterium erfuellt). Trigger 025 (GitHub-Actions-CI-Workflow mit vier Pflicht-Gates) eingebaut.)
+**Stand:** 2026-05-23 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a/4b/5 abgeschlossen (Multi-Agent komplett + Observability-Foundation komplett), Welle 6 (OTLP-Adapter, ADR 0024 Provisional → Accepted mit M3-Welle-7-Closure nach Welle-6-Compose-Smoke-Verifikation) als naechster Schritt. ADR 0022/0023/0024/0025/0026/0027 alle `Provisional`; ADR 0028 + ADR 0029 `Accepted` (Schaerfung-ohne-Supersede-Pflege von ADR 0006 §3 und ADR 0002 §A-1). **1023 Unit-Tests + 19 Integration-Tests gruen**; Coverage 95.55% total; `make fullbuild` cache-frei gruen ohne Override (Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt). 17 A-1-Contracts (6 import-linter + 11 arch_check inkl. neuem `AC-NO-COVERAGE-PRAGMA`).)
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---

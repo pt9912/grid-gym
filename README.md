@@ -16,12 +16,13 @@ in a local, traceable environment.
 
 ## Status
 
-**As of 2026-05-22:** M1 (Tick-Loop Spine) and M2 (Device Models) are
+**As of 2026-05-23:** M1 (Tick-Loop Spine) and M2 (Device Models) are
 `Done`. M3 (Faults + Multi-Agent + Observability) is active:
-Waves 0/1/2/3/4a/4b are completed — the Multi-Agent subsystem is
-complete (Foundation + Concretization). **Wave 5 (Observability —
-LogPort/MetricsPort/TracePort, ADR 0024) is the next active
-slice**; Wave 6 (OTLP adapter) follows.
+Waves 0/1/2/3/4a/4b/5 are completed — the Multi-Agent subsystem is
+complete (Foundation + Concretization), and the Observability
+Foundation (Port-Trio + Null-Adapters + TickLoop hooks) is in place.
+**Wave 6 (OTLP adapter) is the next active slice**; Wave 7 (M3
+Closure) follows.
 
 | Subsystem | Status | References |
 | --- | --- | --- |
@@ -30,19 +31,20 @@ slice**; Wave 6 (OTLP adapter) follows.
 | Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Provisional` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Provisional`; `BatteryFaultAdapter` + `GridFaultAdapter` with `cell_failure`/`voltage_drop` and recovery logic |
 | Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
 | Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
-| Observability (M3 Waves 5+6) | `Open` | `LogPort`/`MetricsPort`/`TracePort` + OTLP adapter |
+| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (11th `arch_check` contract `AC-NO-COVERAGE-PRAGMA`). |
+| OTLP Adapter (M3 Wave 6) | `Open` | `adapters/driven/telemetry-otlp/` + Compose-Collector + Span/Metric export verification |
 | Protocol Adapters (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
-**Test balance:** 992 unit tests + 19 integration tests green
-(Wave-4b end state `b5ba33a`). `make fullbuild` cache-free green
-**without** override — Wave-4 acceptance criterion (full CI + runtime
+**Test balance:** 1023 unit tests + 19 integration tests green
+(Wave-5 end state `8b23602`). `make fullbuild` cache-free green
+**without** override — Wave-5 acceptance criterion (full CI + runtime
 image + Compose smoke + Trivy image audit) met. `make gates`
-A-1 (lint, format-check, mypy `--strict`, arch-check 7/7
-contracts kept, test-unit, coverage-gate 90/85 line / 94.51%
-total, critical-coverage 90 / 90.47% branch, dep-audit green
-after starlette upgrade) cache-free green without override.
+A-1 (lint, format-check, mypy `--strict`, arch-check 17/17
+contracts kept incl. new `AC-NO-COVERAGE-PRAGMA`, test-unit,
+coverage-gate 90/85 line / 95.55% total, critical-coverage 90,
+dep-audit) cache-free green without override.
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) with four
 mandatory gates for `pull_request` and `push` on `main`:
@@ -144,7 +146,7 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT (M1 Waves 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (992 as of 2026-05-22)
+│   ├── unit/                    ← pytest unit tests (1023 as of 2026-05-23)
 │   ├── integration/             ← Compose-based integration tests (19 tests)
 │   └── unit/_arch_check_*       ← architecture tests (7 import-linter + 7 custom AC checks)
 ├── tools/
