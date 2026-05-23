@@ -39,3 +39,4 @@ Eine Closure-Notiz fasst zusammen:
 | `welle-3.md`                                   | 2026-05-21  | M3 Welle 3: Multi-Agent-Foundation (`Agent`-Protocol + `AgentMessageBus` + TickLoop-Hook).           |
 | `welle-4a.md`                                  | 2026-05-21  | M3 Welle 4a: Multi-Agent-Foundation-Plumbing (Drain + Registry + Snapshot + Lifecycle).             |
 | `welle-4b.md`                                  | 2026-05-22  | M3 Welle 4b: Multi-Agent-Konkretisierung (`RuleBasedAgent` + Scenario-`agents`-Block + Plugin-Hook + End-to-End-Demo). |
+| `M3-welle-5.md`                                | 2026-05-23  | M3 Welle 5: Observability-Foundation (`LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault-Hooks; ADR 0024 Provisional + ADR 0029 Accepted Hygiene-Folge). Erste Welle-Doc unter `M{N}-welle-{X}.md`-Naming-Konvention. |

@@ -38,7 +38,7 @@ siehe §4.2),
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md §3 Welle 5`](../planning/in-progress/M3-faults-agents-observability.md),
 Welle-5-Slice-Doc
-[`in-progress/M3-welle-5.md §3`](../planning/in-progress/M3-welle-5.md)
+[`done/M3-welle-5.md §3`](../planning/done/M3-welle-5.md)
 (Welle-5-Triage-Vorgabe — diese ADR formalisiert die dort gesetzten
 Contracts).
 
@@ -81,7 +81,7 @@ Protobuf-Bytes-Pfaden. Welle 5 fuehrt **noch keinen** Bytes-Vertrag
 ein — Trigger 006 bleibt mit Welle-6-Aktivierungs-Notiz offen.
 
 Welle-5-Slice-Doc
-[`M3-welle-5.md §3`](../planning/in-progress/M3-welle-5.md) hat die
+[`M3-welle-5.md §3`](../planning/done/M3-welle-5.md) hat die
 Triage-Resultate vor C1 festgelegt; diese ADR schreibt sie normativ
 auf, ohne sie ergebnis-offen neu zu verhandeln.
 
@@ -360,7 +360,7 @@ mit der Welle-6-Lieferung.
   Adapter) vorbehalten.
 - **Null-Adapter mit Default-`call_count`/`last_call`:**
   Senkt das in
-  [`M3-welle-5.md §7 R-2`](../planning/in-progress/M3-welle-5.md)
+  [`M3-welle-5.md §7 R-2`](../planning/done/M3-welle-5.md)
   identifizierte Coverage-Risiko der Null-Default-Verdrahtung —
   Tests haben **immer** eine strukturierte Assertion-Surface, ohne
   explizit `record_calls=True` aktivieren zu muessen. Voll-History
@@ -383,7 +383,7 @@ mit der Welle-6-Lieferung.
 Diese ADR ist `Proposed` zum Zeitpunkt der M3-Welle-5-C1. Sie wird
 mit dem Welle-5-Merge auf `Provisional` gehoben, sofern der
 Lieferungs-Vertrag aus
-[`M3-welle-5.md §6 Verifikationspfad`](../planning/in-progress/M3-welle-5.md)
+[`M3-welle-5.md §6 Verifikationspfad`](../planning/done/M3-welle-5.md)
 gruen ist:
 
 - `make gates` A-1 ohne Override.

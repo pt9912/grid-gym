@@ -42,7 +42,7 @@ war Ausgangsbasis (`8802dc0..ac7b47f` + C3-Sync `b5ba33a`).
   OTLP-Adapter instrumentiert das extern.
 
 Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 5`](M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 5`](../in-progress/M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 
@@ -113,7 +113,7 @@ Notiz.
 Status `In Progress → Done`. Welle-5-Gate-Beleg
 (`make fullbuild` cache-frei gruen ohne Override). M3-Welle 6
 (OTLP-Adapter) als naechster Schritt im
-[`in-progress/README.md`](README.md) vermerkt.
+[`in-progress/README.md`](../in-progress/README.md) vermerkt.
 
 ### Review-Folge — Multi-Agent-Review nach C3 (2026-05-23)
 
@@ -210,7 +210,7 @@ Verifikation.
 Quellen:
 
 - M3-Slice-Plan
-  [`M3-faults-agents-observability.md §3 Welle 5`](M3-faults-agents-observability.md)
+  [`M3-faults-agents-observability.md §3 Welle 5`](../in-progress/M3-faults-agents-observability.md)
   (kanonische Spec).
 - Lastenheft §19 Telemetrie (`GG-OTEL-001..004`).
 - Architektur §4.2 Driven-Ports-Tabelle (`GG-AR-PORT-DRN-008`
