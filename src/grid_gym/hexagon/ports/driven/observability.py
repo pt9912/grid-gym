@@ -76,7 +76,7 @@ class LogPort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> None:
         """Emittiert ein strukturiertes Log-Event."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
 
 @runtime_checkable
@@ -109,7 +109,7 @@ class MetricsPort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> None:
         """Inkrementiert einen Counter."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def gauge(
         self,
@@ -119,7 +119,7 @@ class MetricsPort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> None:
         """Setzt einen Gauge-Wert."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def observe(
         self,
@@ -129,7 +129,7 @@ class MetricsPort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> None:
         """Beobachtet einen Verteilungs-Wert."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
 
 @runtime_checkable
@@ -160,11 +160,11 @@ class TracePort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> SpanContext:
         """Oeffnet einen Span und liefert den Kontext zurueck."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def end_span(self, context: SpanContext) -> None:
         """Schliesst einen offenen Span. No-Op bei `None`."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def record_event(
         self,
@@ -173,4 +173,4 @@ class TracePort(Protocol):
         attributes: Mapping[str, object] | None = None,
     ) -> None:
         """Haengt ein Event an einen offenen Span. No-Op bei `None`."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...

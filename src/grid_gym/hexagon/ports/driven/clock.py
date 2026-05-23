@@ -35,7 +35,7 @@ class ClockPort(Protocol):
     def now(self) -> SimulationTime:
         """Liefert den aktuellen Stand der Simulationszeit (ms ab
         Lauf-Start)."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def advance(self, delta_ms: int) -> None:
         """Schiebt die Simulationszeit um `delta_ms` Millisekunden
@@ -45,4 +45,4 @@ class ClockPort(Protocol):
         rufen `advance(tick_ms)` einmal pro Tick auf — `tick_ms`
         kommt aus `RunMetadata.tick_ms` (`GG-SIM-002`).
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...

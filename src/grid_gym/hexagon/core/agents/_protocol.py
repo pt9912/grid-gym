@@ -64,7 +64,7 @@ class Agent(Protocol):
         invariant. Primaere Sortier-Schluessel-Komponente fuer
         Bus-Nachrichten (`AgentMessage.sender`/`.receiver`).
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def set_run_id(self, run_id: str) -> None:
         """Wird vom TickLoop einmal nach Konstruktion aufgerufen.
@@ -75,7 +75,7 @@ class Agent(Protocol):
         Vertrag ist Welle-4-Decision; Welle-3-Protocol verlangt
         nur die Methode.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def tick(
         self,
@@ -107,7 +107,7 @@ class Agent(Protocol):
         gleicher Eingabeverlauf (Bus-Nachrichten + context) →
         identische Command-Sequenz.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def snapshot(self) -> Mapping[str, object]:
         """Persistiert lokalen Agent-Zustand (`GG-AGENT-006`).
@@ -121,7 +121,7 @@ class Agent(Protocol):
         `"version": int` (ADR 0015 §2.3 Sub-Snapshot-Konvention).
         Konkrete Schema-Felder pro Agent-Typ sind Welle-4-Material.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     @classmethod
     def from_snapshot(cls, state: Mapping[str, object]) -> Self:
@@ -147,7 +147,7 @@ class Agent(Protocol):
         (`RuleBasedAgent` etc.). Welle-3-Test-Pattern: `NullAgent`-
         Stub liefert die Baseline-Implementation.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
 
 @runtime_checkable
@@ -183,7 +183,7 @@ class _RandomAttachableAgent(Agent, Protocol):
         idempotent halten — Welle 4a-Protocol verlangt nur den
         Einmal-Aufruf-Vertrag.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
 
 @runtime_checkable
@@ -216,7 +216,7 @@ class AgentPlugin(Protocol):
         gilt: gleicher Seed + gleicher Eingabeverlauf → identische
         Command-Sequenz.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def snapshot(self) -> Mapping[str, object]:
         """Persistiert Plugin-lokalen Zustand.
@@ -224,7 +224,7 @@ class AgentPlugin(Protocol):
         Format: `Mapping[str, object]` mit Pflicht-Key
         `"version": int` (ADR 0015 §2.3 Sub-Snapshot-Konvention).
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     @classmethod
     def from_snapshot(cls, state: Mapping[str, object]) -> "AgentPlugin":
@@ -233,4 +233,4 @@ class AgentPlugin(Protocol):
         Plugin-Snapshot ist Single Source of Truth (ADR 0027 §2.3).
         Scenario-Params werden hier nicht erwartet.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...

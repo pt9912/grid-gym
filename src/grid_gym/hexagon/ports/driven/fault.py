@@ -92,4 +92,4 @@ class FaultPort(Protocol):
         derselben Tick. Grid-Faults muessen Voltage-/Frequency-
         State mutieren.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...

@@ -62,7 +62,7 @@ class FaultInjectableDevice(DeviceModel, Protocol):
         Welle 1 hat keine konkrete Implementation; Aufrufe gehen
         ueber den `FaultPort`-Adapter (Welle 2).
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def clear_fault(self, fault_type: str) -> None:
         """Recovery-Surface: setzt den `_<fault_type>_active`-Flag
@@ -79,4 +79,4 @@ class FaultInjectableDevice(DeviceModel, Protocol):
         wie `inject_fault`). Idempotenz-Vertrag (ADR 0025 §2.4):
         wiederholte `clear_fault`-Aufrufe sind No-Op.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...

@@ -38,7 +38,7 @@ class RunRepositoryPort(Protocol):
         bereits vorhanden ist — Doppel-Inserts sind ein
         Programmierfehler (`run_id` ist UUID4-eindeutig).
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def get_by_id(self, run_id: str) -> RunMetadata:
         """Liest die Laufmetadaten zu einem `run_id`.
@@ -46,9 +46,9 @@ class RunRepositoryPort(Protocol):
         Wirft `RunNotFoundError`, wenn der Lauf nicht persistiert
         ist.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def exists(self, run_id: str) -> bool:
         """Non-error-Lookup: gibt `True` zurueck, wenn der Lauf
         persistiert ist."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...

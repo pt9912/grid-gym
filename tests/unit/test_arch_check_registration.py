@@ -34,6 +34,9 @@ _EXPECTED_CHECK_FUNCTIONS: frozenset[str] = frozenset(
         "_check_typed_errors",
         "_check_no_cycles",
         "_check_adapter_lightweight",
+        # AC-NO-COVERAGE-PRAGMA (ADR 0029, Schaerfung von ADR 0002 §A-1
+        # per ADR 0011-Pattern; 11. arch_check-Contract).
+        "_check_no_coverage_pragma",
     }
 )
 
@@ -99,12 +102,14 @@ def test_no_unexpected_checks_registered_in_main() -> None:
 
 
 def test_registered_count_matches_adr_count() -> None:
-    """Die Zahl ist heute genau 10 (siehe `ADR 0002 §A-1` — sechzehn
-    A-1-Contracts insgesamt, davon sechs ueber `import-linter` und
-    zehn ueber `tools/arch_check.py`)."""
-    expected_arch_check_contracts = 10
+    """Die Zahl ist heute genau 11 (siehe `ADR 0002 §A-1` — sechzehn
+    urspruengliche A-1-Contracts plus AC-NO-COVERAGE-PRAGMA per
+    `ADR 0029` als Schaerfung-ohne-Supersedes von §A-1 per ADR 0011-
+    Pattern; davon sechs ueber `import-linter` und elf ueber
+    `tools/arch_check.py`)."""
+    expected_arch_check_contracts = 11
     registered = _extract_main_check_calls()
     assert len(registered) == expected_arch_check_contracts, (
         f"arch_check.py main() registriert {len(registered)} Contracts, "
-        f"erwartet {expected_arch_check_contracts} (ADR 0002 §A-1)."
+        f"erwartet {expected_arch_check_contracts} (ADR 0002 §A-1 + ADR 0029)."
     )

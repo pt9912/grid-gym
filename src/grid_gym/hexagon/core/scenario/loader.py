@@ -290,9 +290,11 @@ def _smart_meter_aggregate_ids(scenario_device: ScenarioDevice) -> tuple[str, ..
     raw = scenario_device.params["aggregate_device_ids"]
     if isinstance(raw, tuple):
         return cast(tuple[str, ...], raw)
-    if isinstance(raw, list):
-        return tuple(cast(list[str], raw))
-    return ()  # pragma: no cover — vorgelagert von initialize geblockt
+    # `device.initialize(...)` validiert vorgelagert via
+    # `SmartMeterConfig._config_from_params`, dass `raw` entweder
+    # `tuple` oder `list` ist — der `list`-Branch ist daher der einzige
+    # noch erreichbare Pfad.
+    return tuple(cast(list[str], raw))
 
 
 def _parse_grid_model_config(raw: Mapping[str, object]) -> GridModelConfig | None:

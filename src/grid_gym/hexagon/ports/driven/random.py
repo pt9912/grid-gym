@@ -39,7 +39,7 @@ class RandomPort(Protocol):
 
     def next_int(self, low: int, high: int) -> int:
         """Liefert einen Integer in `[low, high]` (inklusive)."""
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def next_float(self) -> Decimal:
         """Liefert einen Decimal-Wert in `[0, 1)` mit maximal 6
@@ -51,7 +51,7 @@ class RandomPort(Protocol):
         CPythons `repr(float)`-Round-Trip (PEP 3101); auf
         Nicht-CPython-Runtimes nicht garantiert.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def sub_port(self, name: str) -> RandomPort:
         """Erzeugt einen unabhaengigen Sub-Port mit deterministischem
@@ -63,7 +63,7 @@ class RandomPort(Protocol):
         Sub-Name → gleicher Sub-Stream, unabhaengig davon, wie
         viele Calls auf dem Parent vorher liefen.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def snapshot(self) -> bytes:
         """Serialisiert den internen Zustand als UTF-8-Bytes im
@@ -80,7 +80,7 @@ class RandomPort(Protocol):
         `AC-PORTS-NO-OUT` verbietet `ports → adapters`-Importe. Bei
         ADR-0007-Acceptance wurde §5.1 entsprechend geschaerft.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...
 
     def snapshot_as_mapping(self) -> Mapping[str, object]:
         """Liefert den State im `SnapshotEnvelope`-tauglichen
@@ -104,4 +104,4 @@ class RandomPort(Protocol):
         `SnapshotEnvelope`; `snapshot()` bleibt fuer
         Disk-Persistenz und Resume.
         """
-        ...  # pragma: no cover — Protocol-Stub
+        ...

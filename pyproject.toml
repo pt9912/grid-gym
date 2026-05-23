@@ -413,8 +413,16 @@ branch = true
 source = ["src/grid_gym"]
 
 [tool.coverage.report]
+# Coverage-Pragmas (`# pragma: no cover`, `# pragma: no branch`,
+# `# pragma: exclude file`) sind projekt-weit verboten
+# (AC-NO-COVERAGE-PRAGMA, tools/arch_check.py). Stattdessen:
+# - Protocol-Stubs mit `...`-Body werden ueber den
+#   `^\\s*\\.\\.\\.\\s*$`-Pattern ausgeschlossen (sie sind nie zur
+#   Laufzeit aufgerufen, ihr `...` ist nur Typing-Marker).
+# - `raise NotImplementedError` markiert echte Sub-Class-Pflicht-Methoden.
+# - `if TYPE_CHECKING:`-Bloecke sind reine Typing-Imports.
 exclude_lines = [
-    "pragma: no cover",
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
+    "^\\s*\\.\\.\\.\\s*$",
 ]

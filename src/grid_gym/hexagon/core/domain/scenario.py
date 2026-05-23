@@ -19,7 +19,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     # Welle-6b (ADR 0021 §2.3): Imports fuer optionale
     # Scenario-Erweiterungen. TYPE_CHECKING-Guard, weil
     # `grid_model`/`loads.py` selbst keine Scenario-Importe

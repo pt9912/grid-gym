@@ -22,6 +22,12 @@ Welle 3 deckt:
 - AC-NO-CYCLES — keine Importzyklen (via `grimp`)
 - AC-ADAPTER-LIGHTWEIGHT — zyklomatische Komplexitaet `<= 8` fuer
   Adapter-Funktionen
+- AC-NO-COVERAGE-PRAGMA — kein `# pragma: no cover`, `# pragma: no
+  branch` oder `# pragma: exclude file` im Repo (Coverage-Gate-
+  Disziplin; Protocol-Stubs werden ueber das
+  `coverage.report.exclude_lines`-Pattern `\\.\\.\\.` abgedeckt,
+  Dead-Code wird geloescht, defensives `if not isinstance(...)` nach
+  Vorvalidierung wird ueber `typing.cast` ersetzt)
 
 Konfiguration kommt aus `[tool.grid_gym.arch_check]` in
 `pyproject.toml`. Exit-Code 0 = alle Contracts kept, 1 = mindestens
@@ -194,6 +200,7 @@ def main() -> int:
         violations.extend(_check_typed_errors(repo_root, src_root, config))
         violations.extend(_check_no_cycles())
         violations.extend(_check_adapter_lightweight(repo_root, src_root))
+        violations.extend(_check_no_coverage_pragma(repo_root, src_root))
 
     for violation in violations:
         print(violation.format(), file=sys.stderr)
@@ -955,6 +962,55 @@ def _check_adapter_lightweight(repo_root: Path, src_root: Path) -> Iterator[Viol
                     f"{rel}:{node.lineno}",
                     f"function `{node.name}` complexity {complexity} > {_ADAPTER_MAX_COMPLEXITY}",
                 )
+
+
+# ---------------------------------------------------------------------------
+# AC-NO-COVERAGE-PRAGMA
+# ---------------------------------------------------------------------------
+
+# Forbiddene Coverage-Pragmas — Disziplin-Gate (M3-Welle-5-Folge).
+# `pragma: no cover` und Geschwister markieren Code, der von der
+# Coverage-Messung explizit ausgenommen wird. Erlaubt waeren sie nur
+# fuer wirklich unerreichbaren Code; in der Praxis verstecken sie aber
+# meist unzureichend getestete Pfade. Repo-Konvention: Protocol-Stubs
+# werden ueber den `\\.\\.\\.`-Pattern in `[tool.coverage.report]
+# exclude_lines` abgedeckt, defensives Dead-Code wird geloescht
+# (`typing.cast` nach vorgelagerter Type-Validation), und echte
+# Sub-Class-Pflicht-Methoden tragen `raise NotImplementedError`
+# (das ebenfalls in `exclude_lines` steht).
+_FORBIDDEN_COVERAGE_PRAGMAS: tuple[str, ...] = (
+    "pragma: no cover",
+    "pragma: no branch",
+    "pragma: exclude file",
+)
+
+
+def _check_no_coverage_pragma(repo_root: Path, src_root: Path) -> Iterator[Violation]:
+    """AC-NO-COVERAGE-PRAGMA — Coverage-Pragmas sind verboten.
+
+    Scannt alle `*.py`-Dateien unter `src_root` zeilenweise nach den
+    drei verbotenen Pragma-Markern. Auch in Kommentaren, Docstrings
+    und Strings: ein `pragma: no cover` als String-Literal sollte
+    es nicht geben (Test-Strings, die genau diesen Marker carry'n,
+    waeren ein Wartungs-Risiko); falls so ein Bedarf real wird,
+    haendelt das eine Folge-ADR.
+
+    Tests (`tests/**`) sind nicht im Scan-Pfad — die Bug-Fix-
+    Faelle, in denen ein Test temporaer einen Marker tragen wuerde,
+    sind nicht durch `src_root` erfasst. Falls in Zukunft auch
+    Tests gescannt werden sollen, wird dies dem Aufrufer in
+    `main()` ueberlassen.
+    """
+    for py_file in _iter_py_files(src_root):
+        rel = _rel(repo_root, py_file)
+        for lineno, line in enumerate(py_file.read_text(encoding="utf-8").splitlines(), start=1):
+            for marker in _FORBIDDEN_COVERAGE_PRAGMAS:
+                if marker in line:
+                    yield Violation(
+                        "AC-NO-COVERAGE-PRAGMA",
+                        f"{rel}:{lineno}",
+                        f"`# {marker}` verboten (Coverage-Gate-Disziplin)",
+                    )
 
 
 def _cyclomatic_complexity(func: ast.FunctionDef | ast.AsyncFunctionDef) -> int:

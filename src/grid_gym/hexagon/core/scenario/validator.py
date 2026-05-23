@@ -200,10 +200,8 @@ def _assert_device_list(raw: Mapping[str, object]) -> list[Mapping[str, object]]
         # `canonical_json` in `loader.py::compute_scenario_hash` mit
         # `FloatNotAllowedError` aus dem Encoder bricht.
         assert_payload_canonical_compatible(params, "scenario", f"devices[{index}].params")
-        device_id = entry["id"]
-        # `_assert_str` oben hat den Typ bereits geprueft.
-        if not isinstance(device_id, str):  # pragma: no cover
-            raise ScenarioWrongTypeError(f"devices[{index}].id", "str", type(device_id).__name__)
+        # `_assert_str` oben hat den Typ bereits als str validiert.
+        device_id = cast(str, entry["id"])
         if device_id in seen_ids:
             raise ScenarioDuplicateDeviceIdError(device_id)
         seen_ids.add(device_id)
@@ -231,9 +229,8 @@ def _assert_event_list(raw: Mapping[str, object], devices: list[Mapping[str, obj
                 f"events[{index}].payload", "Mapping", type(payload).__name__
             )
         assert_payload_canonical_compatible(payload, "scenario", f"events[{index}].payload")
-        target = entry["target"]
-        if not isinstance(target, str):  # pragma: no cover
-            raise ScenarioWrongTypeError(f"events[{index}].target", "str", type(target).__name__)
+        # `_assert_str` oben hat den Typ bereits als str validiert.
+        target = cast(str, entry["target"])
         if target not in device_ids:
             raise ScenarioUnknownEventTargetError(target)
 
