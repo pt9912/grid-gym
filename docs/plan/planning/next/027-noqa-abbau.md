@@ -89,9 +89,10 @@ Nach jedem Paket gilt:
 - `python tools/check_noqa.py --fail-on-noqa` ausfuehren (keine neuen Marker in bereits
   bereinigten Bereichen) als harte Stufe:
   - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
-- Nach Paket A–E (und ohne offene technische Ausnahmen) folgt die finale
-  Repo-Absicherung mit:
+- Zusätzlich folgt direkt anschliessend ein vollständiger Repo-Run als harte Stufe:
   - `python tools/check_noqa.py --fail-on-noqa`
+  (frueh erkennt dadurch, falls durch Refactorings neue `# noqa` in nicht explizit angefuehrten
+  Dateien entstehen)
 - Betroffene Paket-Tests laufen gruen.
 - Bei betroffenen Dateien in den Kernpaketen darf kein anderer Paket-Scope
   gestartet werden, solange kein Testlauf + Check in diesem Paket abgeschlossen ist.
@@ -163,6 +164,9 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa src/grid_gym/adapters/driving/http_api/app.py src/grid_gym/hexagon/core/agents/bus.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/simulation/tick_loop.py`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
+- `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py`
+ - `pytest tests/unit/hexagon/core/agents`
+ - `pytest tests/unit/adapters/driving/http_api`
   - gezielte Regressionstests für:
     - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
     - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen),
@@ -200,8 +204,9 @@ Paket-Abnahme (hard):
 - `pytest tests/unit/hexagon/ports`
 - `pytest tests/unit/adapters`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
-- mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
-  aufrufende Pfade.
+- `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
+- Pro Modulfamilie mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
+  aufrufende Pfade (`ports/`, `adapters`, `core/scenario/loader`, `core/agents/rule_based`).
 
 ### D — Lange Funktionen und Komplexitaet reduzieren
 
