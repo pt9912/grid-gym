@@ -86,13 +86,14 @@ Verbindliche Reihenfolge:
 
 Nach jedem Paket gilt:
 
-- `python tools/check_noqa.py --fail-on-noqa` ausfuehren (keine neuen Marker in bereits
-  bereinigten Bereichen) als harte Stufe:
+- `python tools/check_noqa.py --fail-on-noqa` wird paketweise als harte Stufe auf den
+  betroffenen Scope angewendet:
   - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
-- Zusätzlich folgt direkt anschliessend ein vollständiger Repo-Run als harte Stufe:
+- Zusätzlich wird für bestehende Kernüberschneidungen (`tick_loop.py`, `validator.py`,
+  `rule_based.py`) nach dem jeweiligen Paket ein gezielter Noqa-Guard gegen Regressionsmarker
+  auf den bereits bereinigten Dateien gefahren; dort dürfen keine neuen Marker entstehen.
+- Nach Paket A–E (und ohne offene technische Ausnahmen) folgt die finale Repo-Absicherung mit:
   - `python tools/check_noqa.py --fail-on-noqa`
-  (frueh erkennt dadurch, falls durch Refactorings neue `# noqa` in nicht explizit angefuehrten
-  Dateien entstehen)
 - Betroffene Paket-Tests laufen gruen.
 - Bei betroffenen Dateien in den Kernpaketen darf kein anderer Paket-Scope
   gestartet werden, solange kein Testlauf + Check in diesem Paket abgeschlossen ist.
