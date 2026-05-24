@@ -24,6 +24,14 @@ Ausnahme-Regel:
   per `# noqa` gelöst werden. Falls technische Huerde vorliegt, ist ein
   Folgepaket mit separatem Freigabeprozess anzulegen.
 
+Minimale Ausnahmedokumentation für ein Folgepaket (obligatorisch, falls
+technisch unvermeidbar):
+
+- Kurzbegründung (1 Satz), betroffene Datei/Zeile(n), Sicherheits-/Stabilitätsrisiko.
+- Konkreter alternativer Plan (neuer Paket-Scope, neue DoD, erwartete Marker-Reduktion).
+- Owner + Datum + Referenz auf Folge-PR/Issue.
+- Freigabe durch fachliche Leitung + Architektur-Review mit Datum.
+
 Nach Abschluss gilt:
 
 - `python tools/check_noqa.py --fail-on-noqa` findet keine Marker.
@@ -74,8 +82,11 @@ Verbindliche Reihenfolge:
 Nach jedem Paket gilt:
 
 - `python tools/check_noqa.py` ausfuehren (keine neuen Marker in bereits
-  bereinigten Bereichen).
+  bereinigten Bereichen) als harte Stufe:
+  - `python tools/check_noqa.py --fail-on-noqa`
 - Betroffene Paket-Tests laufen gruen.
+- Bei betroffenen Dateien in den Kernpaketen darf kein anderer Paket-Scope
+  gestartet werden, solange kein Testlauf + Check in diesem Paket abgeschlossen ist.
 - Bei betroffenen `Protocol`-Schnittstellen werden einschliesslich
   Contract-Tests/Mocks erneut ausgeführt.
 
@@ -101,10 +112,17 @@ Vorgehen:
 
 Akzeptanz:
 
-- Keine `ARG002`, `ARG003`, `RUF100`-Marker mehr.
-- Betroffene Unit-Tests laufen gruen.
-- Bei Signaturanpassungen in protocol-gebundenen Methoden gelten Contract-Tests
-  in `tests/unit/hexagon/core/devices/test_protocol_contract.py` als hard.
+ - Keine `ARG002`, `ARG003`, `RUF100`-Marker mehr.
+ - Betroffene Unit-Tests laufen gruen.
+ - Bei Signaturanpassungen in protocol-gebundenen Methoden gelten Contract-Tests
+   in `tests/unit/hexagon/core/devices/test_protocol_contract.py` als hard.
+
+Paket-Abnahme (hard):
+- `python tools/check_noqa.py --fail-on-noqa`
+- `pytest tests/unit/hexagon/core/devices/test_protocol_contract.py`
+- `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
+- Contract-Verhalten in betroffenen `Device`-/Protocol-Flows unverändert: bestehende
+  erfolgreiche und Fehlerpfade sind testgedeckt.
 
 ### B — TRY003 durch explizite Error-Typen oder Factory-Helfer
 
@@ -129,10 +147,17 @@ Vorgehen:
 Akzeptanz:
 
 - Keine `TRY003`-Marker mehr.
-- Snapshot-/Validator-Tests pruefen weiterhin die diagnostisch
+ - Snapshot-/Validator-Tests pruefen weiterhin die diagnostisch
   relevanten Pfad- und Mismatch-Details.
-- Bestehende Public-API-/Contract-Behauptungen zu den berührten Komponenten
+ - Bestehende Public-API-/Contract-Behauptungen zu den berührten Komponenten
   bleiben bestehen.
+
+Paket-Abnahme (hard):
+- `python tools/check_noqa.py --fail-on-noqa`
+- `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
+- gezielte Regressionstests für:
+  - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
+  - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen).
 
 ### C — PLR0913-APIs entflechten ohne Vertragsbruch
 
@@ -157,9 +182,16 @@ Vorgehen:
 Akzeptanz:
 
 - Keine `PLR0913`-Marker mehr.
-- Port-/Adapter-Contract-Tests decken die neue Signaturform ab.
-- Bei Signaturänderungen: bestehende Aufruferstellen oder
+ - Port-/Adapter-Contract-Tests decken die neue Signaturform ab.
+ - Bei Signaturänderungen: bestehende Aufruferstellen oder
   Vertragstests sind zwingend nachzuziehen.
+
+Paket-Abnahme (hard):
+- `python tools/check_noqa.py --fail-on-noqa`
+- `pytest tests/unit/hexagon/ports`
+- `pytest tests/unit/hexagon/adapters`
+- mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
+  aufrufende Pfade.
 
 ### D — Lange Funktionen und Komplexitaet reduzieren
 
@@ -183,9 +215,17 @@ Vorgehen:
 Akzeptanz:
 
 - Keine `PLR0915`, `C901`, `PLR0911`-Marker mehr.
-- Replay-/TickLoop-/Scenario-Validator-Tests laufen gruen.
-- Bestehende Schnittstellen-Verhaltenstests (inkl. Regel- und
+ - Replay-/TickLoop-/Scenario-Validator-Tests laufen gruen.
+ - Bestehende Schnittstellen-Verhaltenstests (inkl. Regel- und
   Resume-Szenarien) laufen weiterhin gruen.
+
+Paket-Abnahme (hard):
+- `python tools/check_noqa.py --fail-on-noqa`
+- `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py`
+- `pytest tests/unit/hexagon/core/scenario/test_validator.py`
+- `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
+- Replay-/Resume-spezifische Integrationsabdeckung wird vor/nach Refactor
+  gegen identische Erwartungsartefakte (Snapshots, Entscheidungswege) gegengeprueft.
 
 ### E — Spezialfaelle ersetzen
 
@@ -208,8 +248,16 @@ Vorgehen:
 
 Akzeptanz:
 
-- Keine `BLE001`, `S311`, `S101`-Marker mehr.
-- `make arch-check-custom` bleibt gruen.
+ - Keine `BLE001`, `S311`, `S101`-Marker mehr.
+ - `make arch-check-custom` bleibt gruen.
+
+Paket-Abnahme (hard):
+- `python tools/check_noqa.py --fail-on-noqa`
+- `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
+- `pytest tests/unit/hexagon/adapters/test_arch_check.py` (bzw. das äquivalente vorhandene
+  Arch-Check-Regressionstestset im Repo)
+- Bei `tools/arch_check.py` ist eine lokale Validierung mit vorhandenen
+  bekannten Fallback-Szenarien in den bestehenden Testpfaden nachweislich grün.
 
 ## 4. Scharfstellung
 
@@ -233,3 +281,10 @@ Erst nachdem `python tools/check_noqa.py --fail-on-noqa` lokal gruen ist:
 - Relevante Unit-Tests fuer geaenderte Module gruen.
 - Noqa-Check ist in Make/Docker als hartes Gate verdrahtet.
 - Dieses Plan-Dokument wandert nach `done/` mit kurzer Closure-Notiz.
+
+No-Go bei diesem Slice:
+
+- `python tools/check_noqa.py --fail-on-noqa` ist gruen, aber ein hartes DoD- oder
+  Contract-Check fehlt.
+- Es werden neue Marker als Dauer-Ausnahme eingeführt statt ein Folgepaket mit
+  dokumentierter Freigabe zu starten.
