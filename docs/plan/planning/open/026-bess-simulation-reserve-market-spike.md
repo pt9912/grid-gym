@@ -108,11 +108,11 @@ Alle Punkte gelten als Hard-Gates für die Aktivierung. Die Prüfinfos pro Punkt
 direkt im Slice-PR zu dokumentieren.
 
 - Architektur:
-  - Kein neuer `pandas`/`numpy`/`scipy`-Import im `grid_gym/**/core/**`.  
+  - Kein neuer `pandas`/`numpy`/`scipy`-Import im `src/grid_gym/hexagon/core/**/*.py`.  
     Nachweis (automatisch):  
     `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `mapfile -t NEW_CORE_FILES < <(git diff --name-only "$BASE_BRANCH"...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')`
-    `if (( ${#NEW_CORE_FILES[@]} > 0 )); then ! rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "${NEW_CORE_FILES[@]}"; else echo "No changed core files to check."; fi`
+    `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
+    `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
     Nachweis (manuell + Review): Kern-Data-Typen im neuen Core-Code auf `float` persistierte Felder prüfen.
   - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
@@ -121,16 +121,16 @@ direkt im Slice-PR zu dokumentieren.
   - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
   Nachweis (automatisch):  
   `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-  `mapfile -t NEW_CORE_FILES < <(git diff --name-only "$BASE_BRANCH"...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')`
-  `if (( ${#NEW_CORE_FILES[@]} > 0 )); then ! rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "${NEW_CORE_FILES[@]}"; else echo "No changed core files to check."; fi`
+  `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
+  `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
     Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
   - `numpy`/`pandas`/`scipy` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.  
     Nachweis (automatisch):
     `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `mapfile -t NEW_CORE_FILES < <(git diff --name-only "$BASE_BRANCH"...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')`
-    `if (( ${#NEW_CORE_FILES[@]} > 0 )); then ! rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "${NEW_CORE_FILES[@]}"; else echo "No changed core files to check."; fi`
+    `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
+    `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Keine neuen Kernformate im YAML/Scenario; externe CSV-/Excel-Adapter nur als optionale Randintegration mit Adapternotiz.
 - Nachweise im Slice-PR:
   - Jeder Punkt aus der DoD ist mit Test-/Code-Nachweis verlinkt.
@@ -155,8 +155,8 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   Feldliste (`reserve_mode`, `recovery_time`, `T_FCR`, geplante Schedules).
   - Nachweis:
     - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    - `mapfile -t NEW_CORE_FILES < <(git diff --name-only "$BASE_BRANCH"...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')`
-    - `if (( ${#NEW_CORE_FILES[@]} > 0 )); then ! rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "${NEW_CORE_FILES[@]}"; else echo "No changed core files to check."; fi` darf keine Treffer liefern.
+    - `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
+    - `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
 - **Hard-Gate-Nachweis**: PR enthält einen Abschnitt "Validation Checklist" mit mindestens den oben definierten operativen Checks (inkl. Screenshot/Link auf Command-Output o. Ä.).
