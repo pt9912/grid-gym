@@ -91,22 +91,34 @@ def configure_run_repository(repository: RunRepositoryPort) -> None:
     app.state.run_repository = repository
 
 
+class _RunRepositoryNotConfiguredError(RuntimeError):
+    """Konfigurations-Fehler: HTTP-API ohne `RunRepositoryPort` gestartet.
+
+    Erbt von `RuntimeError`, damit FastAPI das ohne Mapper-Konfig auf
+    `500 Internal Server Error` mappt. Message in `__init__` (Slice 027
+    Paket B TRY003-Drop).
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "RunRepositoryPort is not configured. Call "
+            "grid_gym.adapters.driving.http_api.app.configure_run_repository "
+            "before serving requests."
+        )
+
+
 def get_run_repository(request: Request) -> RunRepositoryPort:
     """Dependency-Provider fuer `RunRepositoryPort`.
 
-    Wirft `RuntimeError`, wenn die App nicht konfiguriert ist —
-    Endpoints muessen vor dem ersten Aufruf
+    Wirft `_RunRepositoryNotConfiguredError`, wenn die App nicht
+    konfiguriert ist — Endpoints muessen vor dem ersten Aufruf
     `configure_run_repository` durchlaufen haben. Verhindert,
     dass ein nicht konfigurierter Welle-6-Stand stillschweigend
     nichts persistiert.
     """
     repository = getattr(request.app.state, "run_repository", None)
     if repository is None:
-        raise RuntimeError(  # noqa: TRY003 — Konfigurations-Fehler, kein Domain-Fehler
-            "RunRepositoryPort is not configured. Call "
-            "grid_gym.adapters.driving.http_api.app.configure_run_repository "
-            "before serving requests."
-        )
+        raise _RunRepositoryNotConfiguredError
     return cast(RunRepositoryPort, repository)
 
 

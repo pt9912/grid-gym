@@ -1268,6 +1268,101 @@ def _restore_agent_bus_from_snapshot(
     return None
 
 
+class _DeviceMissingSubSnapshotError(TickLoopAgentSnapshotDeviceMismatchError):
+    """Resume-Diagnostik: injizierte Device-ID hat keinen `devices.<type>.<id>`-Slot.
+
+    Slice 027 Paket B TRY003-Drop: Message in `__init__` (statt
+    f-string am `raise`-Site).
+    """
+
+    def __init__(self, device_id: str, device_type: str, key: str) -> None:
+        super().__init__(
+            f"injected device {device_id!r} (type={device_type!r}) "
+            f"has no matching sub-snapshot key {key!r}"
+        )
+
+
+class _DeviceSnapshotDiffersError(TickLoopAgentSnapshotDeviceMismatchError):
+    """Resume-Diagnostik: `device.snapshot()` weicht vom persistierten Sub-Snapshot ab."""
+
+    def __init__(self, device_id: str, device_type: str) -> None:
+        super().__init__(
+            f"injected device {device_id!r} (type={device_type!r}) "
+            "snapshot differs from persisted state"
+        )
+
+
+class _DeviceExtraSubSnapshotsError(TickLoopAgentSnapshotDeviceMismatchError):
+    """Resume-Diagnostik: persistierte Device-Sub-Snapshots ohne injizierten Match."""
+
+    def __init__(self, extras: list[str]) -> None:
+        super().__init__(
+            f"persisted device sub-snapshots {sorted(extras)!r} have no "
+            "matching injected device (injected subset is not a full restore)"
+        )
+
+
+class _GridModelDiffersError(TickLoopAgentSnapshotGridModelMismatchError):
+    """Resume-Diagnostik: `grid_model.snapshot()` weicht ab."""
+
+    def __init__(self) -> None:
+        super().__init__("injected grid_model.snapshot() differs from persisted sub-snapshot")
+
+
+class _LoadEventsOverlayDiffersError(TickLoopAgentSnapshotLoadOverlayMismatchError):
+    """Resume-Diagnostik: `active_load_events` weichen vom persistierten Overlay ab."""
+
+    def __init__(self) -> None:
+        super().__init__("injected active_load_events differ from persisted GridModel overlay")
+
+
+class _LoadProfilesOverlayDiffersError(TickLoopAgentSnapshotLoadOverlayMismatchError):
+    """Resume-Diagnostik: `active_load_profiles` weichen ab."""
+
+    def __init__(self) -> None:
+        super().__init__("injected active_load_profiles differ from persisted GridModel overlay")
+
+
+class _AgentUnregisteredClassError(TickLoopAgentInstanceSnapshotMismatchError):
+    """Resume-Diagnostik: Agent-Klasse nicht in `_AGENT_TYPE_BY_CLASS_NAME`."""
+
+    def __init__(self, agent_id: str, class_name: str) -> None:
+        super().__init__(
+            f"injected agent {agent_id!r} has unregistered class "
+            f"{class_name!r} (not in _AGENT_TYPE_BY_CLASS_NAME)"
+        )
+
+
+class _AgentMissingSubSnapshotError(TickLoopAgentInstanceSnapshotMismatchError):
+    """Resume-Diagnostik: injizierter Agent ohne passenden Sub-Snapshot-Slot."""
+
+    def __init__(self, agent_id: str, agent_type: str, key: str) -> None:
+        super().__init__(
+            f"injected agent {agent_id!r} (type={agent_type!r}) "
+            f"has no matching sub-snapshot key {key!r}"
+        )
+
+
+class _AgentSnapshotDiffersError(TickLoopAgentInstanceSnapshotMismatchError):
+    """Resume-Diagnostik: `agent.snapshot()` weicht ab."""
+
+    def __init__(self, agent_id: str, agent_type: str) -> None:
+        super().__init__(
+            f"injected agent {agent_id!r} (type={agent_type!r}) "
+            "snapshot differs from persisted state"
+        )
+
+
+class _AgentExtraSubSnapshotsError(TickLoopAgentInstanceSnapshotMismatchError):
+    """Resume-Diagnostik: persistierte Agent-Sub-Snapshots ohne injizierten Match."""
+
+    def __init__(self, extras: list[str]) -> None:
+        super().__init__(
+            f"persisted agent sub-snapshots {sorted(extras)!r} have no "
+            "matching injected agent (injected subset is not a full restore)"
+        )
+
+
 def _assert_device_resume_match(
     sub_snapshots: Mapping[str, object],
     devices: tuple[DeviceModel, ...],
@@ -1300,10 +1395,7 @@ def _assert_device_resume_match(
         key = f"devices.{device_type}.{device.device_id}"
         expected_keys.add(key)
         if key not in sub_snapshots:
-            raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003 — ADR 0026 §2.6 verlangt detail-rich Resume-Match-Diagnostik
-                f"injected device {device.device_id!r} (type={device_type!r}) "
-                f"has no matching sub-snapshot key {key!r}"
-            )
+            raise _DeviceMissingSubSnapshotError(device.device_id, device_type, key)
         persisted = sub_snapshots[key]
         if not isinstance(persisted, Mapping):
             raise TickLoopAgentSnapshotWrongTypeError(
@@ -1311,16 +1403,10 @@ def _assert_device_resume_match(
             )
         live = device.snapshot()
         if canonical_json(dict(live)) != canonical_json(dict(persisted)):
-            raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003
-                f"injected device {device.device_id!r} (type={device_type!r}) "
-                f"snapshot differs from persisted state"
-            )
+            raise _DeviceSnapshotDiffersError(device.device_id, device_type)
     extras = device_keys - expected_keys
     if extras:
-        raise TickLoopAgentSnapshotDeviceMismatchError(  # noqa: TRY003
-            f"persisted device sub-snapshots {sorted(extras)!r} have no "
-            "matching injected device (injected subset is not a full restore)"
-        )
+        raise _DeviceExtraSubSnapshotsError(sorted(extras))
 
 
 def _assert_grid_model_resume_match(
@@ -1343,9 +1429,7 @@ def _assert_grid_model_resume_match(
         )
     live = grid_model.snapshot()
     if canonical_json(dict(live)) != canonical_json(dict(persisted)):
-        raise TickLoopAgentSnapshotGridModelMismatchError(  # noqa: TRY003
-            "injected grid_model.snapshot() differs from persisted sub-snapshot"
-        )
+        raise _GridModelDiffersError
 
 
 def _assert_load_overlay_resume_match(
@@ -1387,15 +1471,11 @@ def _assert_load_overlay_resume_match(
     if persisted_events is not None and canonical_json(list(persisted_events)) != canonical_json(
         live_events
     ):
-        raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
-            "injected active_load_events differ from persisted GridModel overlay"
-        )
+        raise _LoadEventsOverlayDiffersError
     if persisted_profiles is not None and canonical_json(
         list(persisted_profiles)
     ) != canonical_json(live_profiles):
-        raise TickLoopAgentSnapshotLoadOverlayMismatchError(  # noqa: TRY003
-            "injected active_load_profiles differ from persisted GridModel overlay"
-        )
+        raise _LoadProfilesOverlayDiffersError
 
 
 def _load_event_to_mapping(event: LoadEvent) -> Mapping[str, object]:
@@ -1457,17 +1537,11 @@ def _assert_agent_instance_resume_match(
     for agent in agents:
         agent_type = _agent_type_for(agent)
         if agent_type is None:
-            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
-                f"injected agent {agent.agent_id!r} has unregistered class "
-                f"{type(agent).__name__!r} (not in _AGENT_TYPE_BY_CLASS_NAME)"
-            )
+            raise _AgentUnregisteredClassError(agent.agent_id, type(agent).__name__)
         key = f"agents.{agent_type}.{agent.agent_id}"
         expected_keys.add(key)
         if key not in sub_snapshots:
-            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
-                f"injected agent {agent.agent_id!r} (type={agent_type!r}) "
-                f"has no matching sub-snapshot key {key!r}"
-            )
+            raise _AgentMissingSubSnapshotError(agent.agent_id, agent_type, key)
         persisted = sub_snapshots[key]
         if not isinstance(persisted, Mapping):
             raise TickLoopAgentSnapshotWrongTypeError(
@@ -1475,13 +1549,7 @@ def _assert_agent_instance_resume_match(
             )
         live = agent.snapshot()
         if canonical_json(dict(live)) != canonical_json(dict(persisted)):
-            raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
-                f"injected agent {agent.agent_id!r} (type={agent_type!r}) "
-                f"snapshot differs from persisted state"
-            )
+            raise _AgentSnapshotDiffersError(agent.agent_id, agent_type)
     extras = agent_keys - expected_keys
     if extras:
-        raise TickLoopAgentInstanceSnapshotMismatchError(  # noqa: TRY003
-            f"persisted agent sub-snapshots {sorted(extras)!r} have no "
-            "matching injected agent (injected subset is not a full restore)"
-        )
+        raise _AgentExtraSubSnapshotsError(sorted(extras))

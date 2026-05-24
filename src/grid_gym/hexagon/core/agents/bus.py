@@ -53,6 +53,18 @@ wuerden v1 → v2 bumpen.
 """
 
 
+class _AgentMessageBusUnhashableError(TypeError):
+    """`AgentMessageBus` ist mutable und damit nicht hashable.
+
+    Python-Konvention: `__hash__` wirft `TypeError` fuer unhashable
+    Types. Modulokale Sub-Klasse mit `__init__`-Message (Slice 027
+    Paket B TRY003-Drop).
+    """
+
+    def __init__(self) -> None:
+        super().__init__("AgentMessageBus is mutable and not hashable")
+
+
 class AgentMessageBus:
     """Deterministisch sortierter Message-Bus (ADR 0023 §2.2).
 
@@ -286,7 +298,7 @@ class AgentMessageBus:
     def __hash__(self) -> int:
         # Bus ist mutable (publish() veraendert den Buffer); kein
         # Hashing per Vertrag. `__eq__` reicht fuer Test-Vergleich.
-        raise TypeError("AgentMessageBus is mutable and not hashable")  # noqa: TRY003 — Python-builtin TypeError, keine Domain-Exception
+        raise _AgentMessageBusUnhashableError
 
 
 def _message_from_mapping(raw: Mapping[str, object], index: int) -> AgentMessage:

@@ -110,6 +110,19 @@ _REQUIRED_RULE_CONDITION: Final[frozenset[str]] = frozenset({"metric", "comparat
 _REQUIRED_RULE_ACTION: Final[frozenset[str]] = frozenset({"type", "payload"})
 
 
+class _InvalidAgentsKeyTypeError(ScenarioWrongTypeError):
+    """`agents`-Block hat einen Key, der kein non-empty `str` ist.
+
+    Slice 027 Paket B TRY003-Drop: Pfad-Praefix `agents[*] key` und
+    Erwartungs-String `non-empty str` sind hier statisch — die
+    Sub-Klasse haelt sie im `__init__`, damit der Aufrufer kein
+    String-Tupel mehr inline bauen muss.
+    """
+
+    def __init__(self, actual_key: object) -> None:
+        super().__init__("agents[*] key", "non-empty str", type(actual_key).__name__)
+
+
 def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     """Prueft die Pflicht-Struktur eines Szenario-Mappings.
 
@@ -429,9 +442,7 @@ def _assert_agent_list(raw: Mapping[str, object], devices: list[Mapping[str, obj
     device_ids: set[str] = {cast(str, device["id"]) for device in devices}
     for agent_id in sorted(raw_agents.keys()):
         if not isinstance(agent_id, str) or not agent_id:
-            raise ScenarioWrongTypeError(  # noqa: TRY003 — Validator-Diagnostik braucht den Pfad-Praefix `agents[*] key`, damit der Fehler im YAML-Schema-Kontext lesbar bleibt
-                "agents[*] key", "non-empty str", type(agent_id).__name__
-            )
+            raise _InvalidAgentsKeyTypeError(agent_id)
         path = f"agents[{agent_id!r}]"
         entry = raw_agents[agent_id]
         if not isinstance(entry, Mapping):
