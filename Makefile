@@ -263,8 +263,8 @@ openapi-validate:
 
 # --- Aggregierte Gates -----------------------------------------------------
 
-gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit
-	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (18 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit"
+gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate
+	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (18 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker)"
 
 # M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen
 # heute ein explizites `CRITICAL_COV_TARGETS`-Override, weil der
