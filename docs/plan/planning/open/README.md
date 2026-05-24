@@ -33,6 +33,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | Datei                                          | Trigger                                                                   | Aktivierung |
 | ---------------------------------------------- | ------------------------------------------------------------------------- | ----------- |
 | `011-mlrandomport-subseed-width.md`            | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6)                      | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle (M3-Welle 3+4 hat Schwelle nicht erreicht) |
+| `026-bess-simulation-reserve-market-spike.md`  | Lokale BESS-Simulation als Vorlage fuer Reserve-Market-/LER-Strategien     | bei Reserve-Market-Agent, BESS-SOC-Management-Agent oder LER-Demo |
 
 **SOLLTE — M2-Welle-7-Erbschaft** (Quelle: [`done/M2-devices.md`](../done/M2-devices.md) §4 Out-of-Scope):
 
