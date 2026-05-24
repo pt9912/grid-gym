@@ -324,7 +324,8 @@ def test_class_missing_device_id_property_fails_protocol() -> None:
             return ()
 
         @classmethod
-        def from_snapshot(cls, state):  # type: ignore[no-untyped-def]  # noqa: ARG003
+        def from_snapshot(cls, state):  # type: ignore[no-untyped-def]
+            _ = state  # Test-Stub mit Protocol-Surface; Payload ignoriert.
             return cls()
 
     assert not isinstance(MissingDeviceId(), DeviceModel)
@@ -359,10 +360,11 @@ def test_wrong_signature_still_passes_isinstance() -> None:
             return ()
 
         @classmethod
-        def from_snapshot(cls, state):  # type: ignore[no-untyped-def]  # noqa: ARG003
+        def from_snapshot(cls, state):  # type: ignore[no-untyped-def]
+            _ = state  # Test-Stub mit Protocol-Surface; Payload ignoriert.
             return cls()
 
-        def set_run_id(self, run_id: str) -> None:  # type: ignore[no-untyped-def]  # noqa: ARG002, RUF100
+        def set_run_id(self, run_id: str) -> None:  # type: ignore[no-untyped-def]
             # Welle-6a-Protocol-Erweiterung (C-1-Fix); _run_id wird
             # nicht persistiert, weil das Test-Double nichts emittiert.
             _ = run_id

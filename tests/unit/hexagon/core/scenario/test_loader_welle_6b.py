@@ -625,7 +625,8 @@ def test_build_tick_loop_forwards_agents_kwarg() -> None:
             return {"version": self.SNAPSHOT_VERSION}
 
         @classmethod
-        def from_snapshot(cls, state: Mapping[str, object]) -> Self:  # noqa: ARG003 — Test-Stub mit Protocol-Surface
+        def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+            _ = state  # Test-Stub mit Protocol-Surface; Snapshot-Payload wird ignoriert.
             return cls()
 
     agent = _NullAgent()

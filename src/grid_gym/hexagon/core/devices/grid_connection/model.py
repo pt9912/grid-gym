@@ -223,7 +223,7 @@ class GridConnectionDevice:
     def inject_fault(
         self,
         fault_type: str,
-        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1)
+        payload: Mapping[str, object],
     ) -> None:
         """Wendet einen Fault auf das Device an
         (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
@@ -248,6 +248,7 @@ class GridConnectionDevice:
         ignoriert (keine Schema-Validierung, kein konfigurierbarer
         `drop_fraction`-Override). Welle-3+ kann das schaerfen.
         """
+        _ = payload  # Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1).
         if fault_type == FAULT_TYPE_VOLTAGE_DROP:
             config = cast(GridConnectionConfig, self._config)
             self._voltage_drop_active = True

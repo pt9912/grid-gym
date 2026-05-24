@@ -244,7 +244,7 @@ class BatteryDevice:
     def inject_fault(
         self,
         fault_type: str,
-        payload: Mapping[str, object],  # noqa: ARG002 — Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1)
+        payload: Mapping[str, object],
     ) -> None:
         """Wendet einen Fault auf das Device an
         (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
@@ -269,6 +269,7 @@ class BatteryDevice:
         `0 < factor <= 1`); aktuell uebergebene Payload-Werte
         werden ohne Warnung verworfen.
         """
+        _ = payload  # Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1).
         if fault_type == FAULT_TYPE_CELL_FAILURE:
             self._cell_failure_active = True
             return
