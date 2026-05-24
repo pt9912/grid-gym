@@ -165,7 +165,7 @@ According to the requirements specification, the MVP comprises at least:
 │   └── architecture.md          ← architecture (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0027)
+    │   ├── adr/                 ← Architecture Decision Records (0001..0029)
     │   └── planning/
     │       ├── open/            ← trigger watch, open follow-ups
     │       ├── next/            ← planned but not yet active

@@ -165,7 +165,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0027)
+    │   ├── adr/                 ← Architecture Decision Records (0001..0029)
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv
