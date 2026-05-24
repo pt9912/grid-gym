@@ -53,17 +53,22 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       `src/grid_gym/hexagon/core/smart_meter`). Der Architektur-
       Slug `telemetry-otlp` (Dash, Spec §5 Z. 314 `telemetry-*`)
       ist prosaisches Pendant, **nicht** Coverage-Target-Form.
-- [ ] **ADR-0024-Schaerfung** der §4.4-Forward-Pointer per ADR 0011-
+- [x] **ADR-0024-Schaerfung** der §4.4-Forward-Pointer per ADR 0011-
       Pattern (Counter-/Gauge-Naming, `_obs_observe`-Helper,
       Trace-ID-Determinismus, `SpanContext`-Felder, Sentinel-
       Pattern fuer `scenario.observability`) + `Letzte inhaltliche
-      Aenderung`-Pflichtfeld (ADR 0006 §4).
+      Aenderung`-Pflichtfeld (ADR 0006 §4). **Erfuellt mit C1.2
+      `fa0b11b`** (ADR 0024 §4.5 mit 8 Decisions; `make docs-check`
+      exit 0).
 - [ ] **ADR 0024 bleibt `Provisional`** bis M3-Welle-7-Closure;
       Promotion auf `Accepted` ist M3-Welle-7-Material.
-- [ ] **ADR-Folge-Entscheidung** fuer Compose-Smoke-Verifikations-
+- [x] **ADR-Folge-Entscheidung** fuer Compose-Smoke-Verifikations-
       Pattern (Sibling-Container + Export-Sink-Assertion): eigener
       ADR `Provisional` **oder** Schaerfung-ohne-Supersede in
-      ADR 0024 — Decision dokumentiert.
+      ADR 0024 — Decision dokumentiert. **Erfuellt mit C1.2
+      `fa0b11b`** — Wahl: Schaerfung-ohne-Supersede in ADR 0024
+      §4.5.7 (Compose-Smoke-Determinismus-Pattern mit vier
+      Determinismus-Pflichten); kein separater ADR-Eintrag.
 - [ ] **Trigger 006 (`--strict-bytes`) Entscheidung** am konkreten
       OTLP-Bytes-Vertrag (aktivieren oder konkrete Begruendung
       fuer Verschiebung in M4/M6-Re-Triage).
@@ -110,9 +115,23 @@ Per Wave-Self-Close-Commit-Konvention
 ([`planning/README.md`](../README.md)) **kein Pre-C0-Move** mehr —
 welle-5.md hat sich mit `b9bd8c7` + `4d95df7` selbst geschlossen.
 
-### C1 — `feat(welle-6)`: telemetry-otlp-Adapter (gRPC) + Unit-Tests + ADR-0024-Schaerfung
+### C1 — telemetry-otlp-Adapter + ADR-0024-Schaerfung (5 Sub-Commits)
 
-Produktive Lieferung:
+C1 ist die produktivste Welle-6-Phase und wurde nach C0-Schliff
+in fuenf Sub-Commits aufgeteilt, damit jeder Schritt unabhaengig
+verifizierbar bleibt und Code-Review-Last sich gleichmaessig
+verteilt:
+
+| Sub-Commit | Gegenstand | Status |
+| ---------- | ---------- | ------ |
+| **C1.1** | OpenTelemetry-Dependencies + Import-Linter-Erweiterung (`AC-NO-FW`/`AC-PORTS-NO-FW` um `opentelemetry`+`grpc`) | **Done** — `c98ce1a` (2026-05-24); `make arch-check` 7/7 KEPT |
+| Floor-Refresh | Bestehende Library-Floors (`fastapi`/`uvicorn`/`pydantic`/`psycopg`/`alembic`) auf aktuellen PyPI-Stand | **Done** — `69dd3d1` (2026-05-24); resolved-Versionen unveraendert, nur `requires-dist`-Metadata |
+| **C1.2** | ADR-0024-Schaerfung §4.5 mit 8 Decisions (L-2/N-1/N-2/Sentinel/Trace-ID + D-4-Uebernahme + gRPC-Pinning + Smoke-Determinismus-Pattern) | **Done** — `fa0b11b` (2026-05-24); `make docs-check` exit 0 |
+| **C1.3a** | `OtlpAdapterConfig` (`_config.py` frozen-dataclass mit Allow-List-Validation `{"grpc"}`) + Unit-Tests fuer Konfig-Surface, Defaults, Env-Var-Fallback, Validation-Errors | **Geplant** |
+| **C1.3b** | Drei OTLP-Adapter (`logs.py`/`metrics.py`/`traces.py`) implementieren `LogPort`/`MetricsPort`/`TracePort` mit `| None`-Robustheit (§4.5.1) und ohne `time.*`-Import (§4.5.5); Unit-Tests gegen In-Process-`grpcio`-Mock fuer Surface + Roundtrip + Failure-Modes | **Geplant** |
+| **C1.3c** | `build_otlp_adapters(config)`-Factory + `flush_and_shutdown()`-Helper (§4.5.7 Punkt 4); `__init__.py` Re-Exports; `Dockerfile`-`CRITICAL_COV_TARGETS` um `src/grid_gym/adapters/driven/telemetry_otlp` erweitert; Final-`make gates`-Verifikation | **Geplant** |
+
+Produktive Lieferung (Spec-Detail; verteilt ueber C1.3a/b/c):
 
 - 3 OTLP-Adapter (gRPC-Transport) in
   `src/grid_gym/adapters/driven/telemetry_otlp/` (Modulname
