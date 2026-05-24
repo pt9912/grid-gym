@@ -112,11 +112,11 @@ direkt im Slice-PR zu dokumentieren.
   - Kein neuer `pandas`/`numpy`/`scipy`-Import im `src/grid_gym/hexagon/core/**/*.py`.  
     Nachweis (automatisch):  
     `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-    `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
+    `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
+    `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then VIOLATION=0; for file in "${CHANGED_CORE_FILES[@]}"; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
     Nachweis:
-    - automatisiert: `python scripts/check_core_determinism.py --mode state-floats $CHANGED_CORE_FILES`
+    - automatisiert: `python tools/check_core_determinism.py --mode state-floats -- "${CHANGED_CORE_FILES[@]}"`
     - manuell: Architektur-Review im neuen Core-Code, insbesondere persistierte State-/Snapshot-Felder.
   - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
     Nachweis (manuell): Architektur-Review im neuen Core-Code, keine neue Batteriemodelle oder alternative Command-Pfade.
@@ -124,16 +124,16 @@ direkt im Slice-PR zu dokumentieren.
   - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
   Nachweis (automatisch):  
   `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-  `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-  `if [ -n "$CHANGED_CORE_FILES" ]; then python scripts/check_core_determinism.py --mode determinism $CHANGED_CORE_FILES; fi`
+  `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
+  `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}"; fi`
   - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
     Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
   - `numpy`/`pandas`/`scipy` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.  
     Nachweis (automatisch):
     `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-    `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
+    `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
+    `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then VIOLATION=0; for file in "${CHANGED_CORE_FILES[@]}"; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Keine neuen Kernformate im YAML/Scenario; externe CSV-/Excel-Adapter nur als optionale Randintegration mit Adapternotiz.
 - Nachweise im Slice-PR:
   - Jeder Punkt aus der DoD ist mit Test-/Code-Nachweis verlinkt.
@@ -158,8 +158,8 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   Feldliste (`reserve_mode`, `recovery_time`, `T_FCR`, geplante Schedules).
   - Nachweis:
     - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    - `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-    - `if [ -n "$CHANGED_CORE_FILES" ]; then python scripts/check_core_determinism.py --mode determinism $CHANGED_CORE_FILES; fi` darf keine Treffer liefern.
+    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
+    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}"; fi` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
 - **Hard-Gate-Nachweis**: PR enthält einen Abschnitt "Validation Checklist" mit mindestens den oben definierten operativen Checks (inkl. Screenshot/Link auf Command-Output o. Ä.).
@@ -178,13 +178,14 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
 ### Zusatz: Robuster automatischer Kern-Check (AST-basiert, empfohlen)
 
 Regex allein deckt nicht alle Import-/Alias-/Wrapper-Fälle ab. Für CI oder lokale Checks wird empfohlen, den folgenden deterministischen Kern-Scan als Script zu ergänzen:
+Die referenzierte Implementierung liegt als `tools/check_core_determinism.py` vor.
 
 ```
 #!/usr/bin/env python3
 """Core-Checks für neue Dateien im hexagon/core.
 
 Einsatz:
-  python scripts/check_core_determinism.py --mode determinism --mode state-floats $(git diff ...)
+  python tools/check_core_determinism.py --mode determinism --mode state-floats -- <files...>
 """
 from __future__ import annotations
 
@@ -237,6 +238,12 @@ def _has_float_annotation(annotation: ast.AST | None) -> bool:
     if annotation is None:
         return False
     return re.search(r"(?<![.\\w])float(?![\\w])", ast.unparse(annotation)) is not None
+
+
+def _is_float_call(node: ast.Call) -> bool:
+    return (isinstance(node.func, ast.Name) and node.func.id == "float") or (
+        isinstance(node.func, ast.Attribute) and node.func.attr == "float"
+    )
 
 
 def _is_dataclass_decorator(expr: ast.expr) -> bool:
@@ -298,10 +305,8 @@ def _check_state_floats(tree: ast.AST, file: Path) -> list[str]:
         if in_dataclass and isinstance(node, ast.AnnAssign):
             if _has_float_annotation(node.annotation):
                 violations.append(f"{file}:{node.lineno}:{node.col_offset}: typed float field '{ast.unparse(node.target)}'")
-            if isinstance(node.value, ast.Call):
-                fn = ast.unparse(node.value.func)
-                if re.fullmatch(r"float", fn):
-                    violations.append(f"{file}:{node.lineno}:{node.col_offset}: float() default in persisted field '{ast.unparse(node.target)}'")
+            if isinstance(node.value, ast.Call) and _is_float_call(node.value):
+                violations.append(f"{file}:{node.lineno}:{node.col_offset}: float() default in persisted field '{ast.unparse(node.target)}'")
 
         for child in ast.iter_child_nodes(node):
             walk(child, in_dataclass)
@@ -342,7 +347,7 @@ if __name__ == "__main__":
 ```
 
 Beachtung:
-- Bei der Code-Bewertung muss die Freigabeliste auf erlaubte Zufalls-/Zeitquellen (`RandomPort`, Scenario-Event-Pfade) explizit dokumentiert und im Skript berücksichtigt werden.
+- Bei der Code-Bewertung muss die Freigabeliste auf erlaubte Zufalls-/Zeitquellen (`RandomPort`, Scenario-Event-Pfade) explizit dokumentiert und im Skript (`tools/check_core_determinism.py`) berücksichtigt werden.
 - Für Float-Felder sind neben `float`-Typannotationen auch `float(...)`-Konvertierungen im persistierten State/Dataclass-Pfad zu prüfen.
 
 ## Einschaetzung
