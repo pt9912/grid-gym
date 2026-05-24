@@ -28,7 +28,7 @@ Rules oder Plugin, nicht beides. Validator erzwingt das per
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final, Self
 
@@ -296,7 +296,7 @@ class RuleBasedAgent:
         }
 
     @classmethod
-    def from_snapshot(cls, state: Mapping[str, object]) -> Self:  # noqa: PLR0915 — pro-Feld-typed-Errors fuer 6 Pflichtfelder + Rules-Sub-Mapping; Pattern-Konsistenz zu TickLoop-_restore_pending_command_entry.
+    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
         """Rekonstruiert `RuleBasedAgent` aus seinem Snapshot.
 
         **Welle-4b-Plugin-Restore-Scope-Schnitt** (ADR 0027 §2.3
@@ -318,65 +318,21 @@ class RuleBasedAgent:
         wuerde das einen `TickLoopAgentInstanceSnapshotMismatchError`
         triggern, sobald ein Plugin produktiv verwendet wird.
         Welle 4c+ wird das durch eine erweiterte
-        `from_snapshot`-Surface schliessen (z. B. Plugin-Factory-
-        Injection-Kwarg oder Plugin-Lookup ueber zentralen
-        Registry-Service).
+        `from_snapshot`-Surface schliessen.
 
-        Welle-4b-Tests (siehe `test_rule_based.py`) decken den
-        Plugin-Roundtrip-Loss explizit ab, damit der Welle-4c+-
-        Trigger sichtbar ist.
-
-        Strukturelle Pruefungen (Welle-0a-Codec-Pattern):
-        Pflicht-Keys + Typ-Match per Helper-Funktionen.
+        Slice 027 Paket D: pro-Feld-Pruefungen in
+        `_parse_agent_id`/`_parse_target_device_id`/
+        `_parse_rules_field`/`_parse_plugin_name` extrahiert
+        (PLR0915-Drop).
         """
-        version = state.get("version")
-        if version != _SNAPSHOT_VERSION:
-            from grid_gym.hexagon.core.errors import VersionError
-
-            raise VersionError("rule_based_agent", _SNAPSHOT_VERSION, version)
-        agent_id_raw = state.get("agent_id")
-        if not isinstance(agent_id_raw, str):
-            from grid_gym.hexagon.core.errors import WrongTypeError
-
-            raise WrongTypeError("rule_based_agent", "agent_id", "str", type(agent_id_raw).__name__)
-        target_raw = state.get("target_device_id")
-        target: str | None
-        if target_raw is None:
-            target = None
-        elif isinstance(target_raw, str):
-            target = target_raw
-        else:
-            from grid_gym.hexagon.core.errors import WrongTypeError
-
-            raise WrongTypeError(
-                "rule_based_agent",
-                "target_device_id",
-                "str | None",
-                type(target_raw).__name__,
-            )
-        rules_raw = state.get("rules", ())
-        if not isinstance(rules_raw, Sequence) or isinstance(rules_raw, (str, bytes)):
-            from grid_gym.hexagon.core.errors import WrongTypeError
-
-            raise WrongTypeError("rule_based_agent", "rules", "Sequence", type(rules_raw).__name__)
-        rules: tuple[Rule, ...] = tuple(_rule_from_mapping(entry) for entry in rules_raw)
-        plugin_raw = state.get("plugin")
-        plugin_name: str | None
-        if plugin_raw is None:
-            plugin_name = None
-        elif isinstance(plugin_raw, str):
-            plugin_name = plugin_raw
-        else:
-            from grid_gym.hexagon.core.errors import WrongTypeError
-
-            raise WrongTypeError(
-                "rule_based_agent", "plugin", "str | None", type(plugin_raw).__name__
-            )
-        # Plugin-Instanz-Restore wird vom Aufrufer (Scenario-Loader)
-        # durchgefuehrt — siehe Klassen-Docstring.
+        _assert_snapshot_version(state)
+        agent_id = _parse_agent_id(state)
+        target = _parse_target_device_id(state)
+        rules = _parse_rules_field(state)
+        plugin_name = _parse_plugin_name(state)
         return cls(
             RuleBasedAgentConfig(
-                agent_id=agent_id_raw,
+                agent_id=agent_id,
                 target_device_id=target,
                 rules=rules,
                 plugin=None,
@@ -407,39 +363,101 @@ def _condition_matches(condition: RuleCondition, context: DeviceTickContext) -> 
     return _apply_comparator(value, condition.comparator, condition.threshold)
 
 
-def _apply_comparator(value: int, comparator: str, threshold: int) -> bool:  # noqa: PLR0911 — 6 Comparator-Branches + Default-Fallback aus deterministischer Whitelist (ADR 0027 §2.3).
-    """Wertbasierter Vergleich mit der Welle-4b-Comparator-Liste."""
-    if comparator == "<":
-        return value < threshold
-    if comparator == "<=":
-        return value <= threshold
-    if comparator == "==":
-        return value == threshold
-    if comparator == "!=":
-        return value != threshold
-    if comparator == ">=":
-        return value >= threshold
-    if comparator == ">":
-        return value > threshold
-    # Defensive: Validator haette das schon abgewiesen.
-    return False
+def _assert_snapshot_version(state: Mapping[str, object]) -> None:
+    """Pruefung `version == _SNAPSHOT_VERSION` (Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import VersionError
+
+    version = state.get("version")
+    if version != _SNAPSHOT_VERSION:
+        raise VersionError("rule_based_agent", _SNAPSHOT_VERSION, version)
 
 
-def _rule_from_mapping(raw: object) -> Rule:  # noqa: PLR0915 — pro-Feld-typed-Errors fuer condition (3) + action (2) Pflichtfelder; Pattern-Konsistenz zu TickLoop-_restore_pending_command_entry.
+def _parse_agent_id(state: Mapping[str, object]) -> str:
+    """Parser-Helper fuer `agent_id`-Pflichtfeld (Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    agent_id_raw = state.get("agent_id")
+    if not isinstance(agent_id_raw, str):
+        raise WrongTypeError("rule_based_agent", "agent_id", "str", type(agent_id_raw).__name__)
+    return agent_id_raw
+
+
+def _parse_target_device_id(state: Mapping[str, object]) -> str | None:
+    """Parser-Helper fuer `target_device_id` (str | None, Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    target_raw = state.get("target_device_id")
+    if target_raw is None:
+        return None
+    if isinstance(target_raw, str):
+        return target_raw
+    raise WrongTypeError(
+        "rule_based_agent",
+        "target_device_id",
+        "str | None",
+        type(target_raw).__name__,
+    )
+
+
+def _parse_rules_field(state: Mapping[str, object]) -> tuple[Rule, ...]:
+    """Parser-Helper fuer `rules`-Sequence (Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    rules_raw = state.get("rules", ())
+    if not isinstance(rules_raw, Sequence) or isinstance(rules_raw, (str, bytes)):
+        raise WrongTypeError("rule_based_agent", "rules", "Sequence", type(rules_raw).__name__)
+    return tuple(_rule_from_mapping(entry) for entry in rules_raw)
+
+
+def _parse_plugin_name(state: Mapping[str, object]) -> str | None:
+    """Parser-Helper fuer `plugin`-Name (str | None, Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    plugin_raw = state.get("plugin")
+    if plugin_raw is None:
+        return None
+    if isinstance(plugin_raw, str):
+        return plugin_raw
+    raise WrongTypeError("rule_based_agent", "plugin", "str | None", type(plugin_raw).__name__)
+
+
+_COMPARATOR_DISPATCH: Final[Mapping[str, Callable[[int, int], bool]]] = {
+    "<": lambda value, threshold: value < threshold,
+    "<=": lambda value, threshold: value <= threshold,
+    "==": lambda value, threshold: value == threshold,
+    "!=": lambda value, threshold: value != threshold,
+    ">=": lambda value, threshold: value >= threshold,
+    ">": lambda value, threshold: value > threshold,
+}
+"""Deterministischer Comparator-Dispatcher (ADR 0027 §2.3, Slice 027 Paket D).
+
+Mapping statt if/elif-Kaskade — PLR0911-frei und einfacher zu erweitern."""
+
+
+def _apply_comparator(value: int, comparator: str, threshold: int) -> bool:
+    """Wertbasierter Vergleich mit der Welle-4b-Comparator-Whitelist."""
+    predicate = _COMPARATOR_DISPATCH.get(comparator)
+    if predicate is None:
+        # Defensive: Validator haette das schon abgewiesen.
+        return False
+    return predicate(value, threshold)
+
+
+def _rule_from_mapping(raw: object) -> Rule:
     """Rekonstruiert eine `Rule` aus dem Snapshot-Mapping.
 
     Strukturelle Pruefung mit typisierten Fehlern aus dem
-    Welle-0a-Generic-Codec (`hexagon/core/errors.py`).
+    Welle-0a-Generic-Codec (`hexagon/core/errors.py`). Slice 027
+    Paket D: in Sub-Parser fuer Condition + Action zerlegt
+    (PLR0915-Drop).
     """
-    if not isinstance(raw, Mapping):
-        from grid_gym.hexagon.core.errors import WrongTypeError
+    from grid_gym.hexagon.core.errors import WrongTypeError
 
+    if not isinstance(raw, Mapping):
         raise WrongTypeError("rule_based_agent", "rules[*]", "Mapping", type(raw).__name__)
     condition_raw = raw.get("condition")
     action_raw = raw.get("action")
     if not isinstance(condition_raw, Mapping):
-        from grid_gym.hexagon.core.errors import WrongTypeError
-
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].condition",
@@ -447,20 +465,25 @@ def _rule_from_mapping(raw: object) -> Rule:  # noqa: PLR0915 — pro-Feld-typed
             type(condition_raw).__name__,
         )
     if not isinstance(action_raw, Mapping):
-        from grid_gym.hexagon.core.errors import WrongTypeError
-
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].action",
             "Mapping",
             type(action_raw).__name__,
         )
-    metric = condition_raw.get("metric")
-    comparator = condition_raw.get("comparator")
-    threshold = condition_raw.get("threshold")
-    if not isinstance(metric, str):
-        from grid_gym.hexagon.core.errors import WrongTypeError
+    condition = _parse_rule_condition(condition_raw)
+    action = _parse_rule_action(action_raw)
+    return Rule(condition=condition, action=action)
 
+
+def _parse_rule_condition(raw: Mapping[str, object]) -> RuleCondition:
+    """Parser-Helper fuer `RuleCondition` (Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    metric = raw.get("metric")
+    comparator = raw.get("comparator")
+    threshold = raw.get("threshold")
+    if not isinstance(metric, str):
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].condition.metric",
@@ -468,8 +491,6 @@ def _rule_from_mapping(raw: object) -> Rule:  # noqa: PLR0915 — pro-Feld-typed
             type(metric).__name__,
         )
     if not isinstance(comparator, str):
-        from grid_gym.hexagon.core.errors import WrongTypeError
-
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].condition.comparator",
@@ -477,19 +498,22 @@ def _rule_from_mapping(raw: object) -> Rule:  # noqa: PLR0915 — pro-Feld-typed
             type(comparator).__name__,
         )
     if isinstance(threshold, bool) or not isinstance(threshold, int):
-        from grid_gym.hexagon.core.errors import WrongTypeError
-
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].condition.threshold",
             "int",
             type(threshold).__name__,
         )
-    action_type = action_raw.get("type")
-    payload = action_raw.get("payload")
-    if not isinstance(action_type, str):
-        from grid_gym.hexagon.core.errors import WrongTypeError
+    return RuleCondition(metric=metric, comparator=comparator, threshold=threshold)
 
+
+def _parse_rule_action(raw: Mapping[str, object]) -> RuleAction:
+    """Parser-Helper fuer `RuleAction` (Slice 027 Paket D)."""
+    from grid_gym.hexagon.core.errors import WrongTypeError
+
+    action_type = raw.get("type")
+    payload = raw.get("payload")
+    if not isinstance(action_type, str):
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].action.type",
@@ -497,15 +521,10 @@ def _rule_from_mapping(raw: object) -> Rule:  # noqa: PLR0915 — pro-Feld-typed
             type(action_type).__name__,
         )
     if not isinstance(payload, Mapping):
-        from grid_gym.hexagon.core.errors import WrongTypeError
-
         raise WrongTypeError(
             "rule_based_agent",
             "rules[*].action.payload",
             "Mapping",
             type(payload).__name__,
         )
-    return Rule(
-        condition=RuleCondition(metric=metric, comparator=comparator, threshold=threshold),
-        action=RuleAction(type=action_type, payload=dict(payload)),
-    )
+    return RuleAction(type=action_type, payload=dict(payload))

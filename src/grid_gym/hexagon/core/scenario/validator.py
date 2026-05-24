@@ -514,14 +514,19 @@ def _assert_agent_hybrid_params(
             )
 
 
-def _assert_rules_block(  # noqa: C901, PLR0915 — pro-Feld-typed-Errors fuer condition (3 Felder) + action (2 Felder) + Whitelist-Checks; Pattern-Konsistenz zu Welle-6b-Validator-Bloecken.
+def _assert_rules_block(
     agent_id: str,
     rules: object,
     comparator_whitelist: tuple[str, ...],
     metric_whitelist: tuple[str, ...],
 ) -> None:
     """ADR 0027 §2.3: pro `rules`-Eintrag Pflicht-Struktur +
-    Comparator + Metric in Whitelist."""
+    Comparator + Metric in Whitelist.
+
+    Slice 027 Paket D: pro-Eintrag-Validierung in Sub-Helper
+    extrahiert (`_assert_rule_entry`/`_assert_rule_condition_block`/
+    `_assert_rule_action_block`); C901+PLR0915-Drop.
+    """
     if not isinstance(rules, list):
         raise ScenarioWrongTypeError(
             f"agents[{agent_id!r}].params.rules", "list", type(rules).__name__
@@ -532,37 +537,70 @@ def _assert_rules_block(  # noqa: C901, PLR0915 — pro-Feld-typed-Errors fuer c
         )
     for index, entry in enumerate(rules):
         path = f"agents[{agent_id!r}].params.rules[{index}]"
-        if not isinstance(entry, Mapping):
-            raise ScenarioWrongTypeError(path, "Mapping", type(entry).__name__)
-        _assert_required_keys(path, entry, _REQUIRED_RULE)
-        condition = entry["condition"]
-        if not isinstance(condition, Mapping):
-            raise ScenarioWrongTypeError(f"{path}.condition", "Mapping", type(condition).__name__)
-        _assert_required_keys(f"{path}.condition", condition, _REQUIRED_RULE_CONDITION)
-        metric = condition["metric"]
-        if not isinstance(metric, str):
-            raise ScenarioWrongTypeError(f"{path}.condition.metric", "str", type(metric).__name__)
-        if metric not in metric_whitelist:
-            raise ScenarioInvalidRuleMetricError(agent_id, metric, metric_whitelist)
-        comparator = condition["comparator"]
-        if not isinstance(comparator, str):
-            raise ScenarioWrongTypeError(
-                f"{path}.condition.comparator", "str", type(comparator).__name__
-            )
-        if comparator not in comparator_whitelist:
-            raise ScenarioInvalidRuleComparatorError(agent_id, comparator, comparator_whitelist)
-        threshold = condition["threshold"]
-        if isinstance(threshold, bool) or not isinstance(threshold, int):
-            raise ScenarioWrongTypeError(
-                f"{path}.condition.threshold", "int", type(threshold).__name__
-            )
-        action = entry["action"]
-        if not isinstance(action, Mapping):
-            raise ScenarioWrongTypeError(f"{path}.action", "Mapping", type(action).__name__)
-        _assert_required_keys(f"{path}.action", action, _REQUIRED_RULE_ACTION)
-        _assert_str(action, f"{path}.action.type")
-        payload = action["payload"]
-        if not isinstance(payload, Mapping):
-            raise ScenarioWrongTypeError(
-                f"{path}.action.payload", "Mapping", type(payload).__name__
-            )
+        _assert_rule_entry(
+            path,
+            entry,
+            agent_id=agent_id,
+            comparator_whitelist=comparator_whitelist,
+            metric_whitelist=metric_whitelist,
+        )
+
+
+def _assert_rule_entry(
+    path: str,
+    entry: object,
+    *,
+    agent_id: str,
+    comparator_whitelist: tuple[str, ...],
+    metric_whitelist: tuple[str, ...],
+) -> None:
+    """Sub-Validator pro `rules[i]` (Slice 027 Paket D)."""
+    if not isinstance(entry, Mapping):
+        raise ScenarioWrongTypeError(path, "Mapping", type(entry).__name__)
+    _assert_required_keys(path, entry, _REQUIRED_RULE)
+    _assert_rule_condition_block(
+        f"{path}.condition",
+        entry["condition"],
+        agent_id=agent_id,
+        comparator_whitelist=comparator_whitelist,
+        metric_whitelist=metric_whitelist,
+    )
+    _assert_rule_action_block(f"{path}.action", entry["action"])
+
+
+def _assert_rule_condition_block(
+    path: str,
+    condition: object,
+    *,
+    agent_id: str,
+    comparator_whitelist: tuple[str, ...],
+    metric_whitelist: tuple[str, ...],
+) -> None:
+    """Sub-Validator fuer `rules[i].condition` (Slice 027 Paket D)."""
+    if not isinstance(condition, Mapping):
+        raise ScenarioWrongTypeError(path, "Mapping", type(condition).__name__)
+    _assert_required_keys(path, condition, _REQUIRED_RULE_CONDITION)
+    metric = condition["metric"]
+    if not isinstance(metric, str):
+        raise ScenarioWrongTypeError(f"{path}.metric", "str", type(metric).__name__)
+    if metric not in metric_whitelist:
+        raise ScenarioInvalidRuleMetricError(agent_id, metric, metric_whitelist)
+    comparator = condition["comparator"]
+    if not isinstance(comparator, str):
+        raise ScenarioWrongTypeError(f"{path}.comparator", "str", type(comparator).__name__)
+    if comparator not in comparator_whitelist:
+        raise ScenarioInvalidRuleComparatorError(agent_id, comparator, comparator_whitelist)
+    threshold = condition["threshold"]
+    if isinstance(threshold, bool) or not isinstance(threshold, int):
+        raise ScenarioWrongTypeError(f"{path}.threshold", "int", type(threshold).__name__)
+
+
+def _assert_rule_action_block(path: str, action: object) -> None:
+    """Sub-Validator fuer `rules[i].action` (Slice 027 Paket D)."""
+    if not isinstance(action, Mapping):
+        raise ScenarioWrongTypeError(path, "Mapping", type(action).__name__)
+    _assert_required_keys(path, action, _REQUIRED_RULE_ACTION)
+    _assert_str(action, f"{path}.type")
+    payload = action["payload"]
+    if not isinstance(payload, Mapping):
+        raise ScenarioWrongTypeError(f"{path}.payload", "Mapping", type(payload).__name__)

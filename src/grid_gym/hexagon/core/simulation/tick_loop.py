@@ -485,7 +485,7 @@ class TickLoop:
         finally:
             self._obs_end_span(tick_span)
 
-    def _run_tick_body(  # noqa: PLR0915 — Welle-4a-tick-Body (A0a/A/A2/B/C/D/D2/E) integriert mehrere Schritt-Phasen (ADR 0026 §2.1).
+    def _run_tick_body(
         self,
         commands_to_apply: tuple[Command, ...],
         tick_event_id: str,
@@ -496,7 +496,15 @@ class TickLoop:
         Welle-4a-tick — A0a/A/A2/B/C/D/D2/E in derselben Reihenfolge.
         Aufrufer (`tick()`) garantiert, dass `tick_span` (sofern
         non-None) im finally geschlossen wird, auch wenn der Body
-        throwet."""
+        throwet.
+
+        Slice 027 Paket D: Schritt-A0a/A2/D2 in eigene Helper-Methoden
+        extrahiert (`_apply_pending_agent_commands`,
+        `_apply_fault_injection`, `_run_agent_tick_phase`); PLR0915-Drop.
+        Reihenfolge bleibt zwingend A0a → A → A2 → B → C → D → D2 → E
+        (ADR 0026 §2.1; Determinismus-Vertrag aus M3-Welle-2-Property-
+        Tests).
+        """
         self._obs_log(
             "info",
             "tick_begin",
@@ -535,38 +543,11 @@ class TickLoop:
         unknown_count = 0
 
         with _tick_loop_decimal_context():
-            # Schritt A0a (M3-Welle-4a, ADR 0026 §2.1) — Apply der
-            # in A0v validierten Pending-Agent-Commands. Laeuft
-            # VOR Schritt A (LoadEvent/Profile-Overlay), damit
-            # Agent-Commands der vorigen Ticks im aktuellen Tick
-            # in den Device-Command-Pfad eingespeist werden
-            # (GG-AGENT-008 Commit-Reihenfolge-Invariante).
-            #
-            # Agent-Commands auf GridConnection-IDs zaehlen als
-            # manueller Auto-Close-Override (ergaenzen
-            # `manual_override_grid_ids`); LoadEvent/Profile-Overlay
-            # in Schritt A laeuft danach und gewinnt auf
-            # LoadDevices (Baseline-Praezedenz aus Welle-6b).
-            for command in commands_to_apply:
-                target = self._device_by_id[command.target_device_id]
-                target.apply_command(command)
-                if (
-                    isinstance(target, GridConnectionDevice)
-                    and target.device_id not in manual_override_grid_ids
-                ):
-                    manual_override_grid_ids.append(target.device_id)
-            # Buffer erst nach erfolgreichem Apply-Durchlauf
-            # leeren — bei `apply_command(...)`-Exception bleibt
-            # er ungeleert (ADR 0026 §2.1 Exception-Pfade).
-            self._pending_agent_commands.clear()
+            # Schritt A0a — Apply der in A0v validierten Pending-Agent-Commands.
+            self._apply_pending_agent_commands(commands_to_apply, manual_override_grid_ids)
             # Schritt A — Vor-Tick-Block (ADR 0021 §2.5).
             # Welle-6b-Review H-3: Event-Window-Check nutzt die
-            # Tick-Start-Zeit (`now - tick_ms`), nicht die Tick-End-
-            # Zeit `now`. Damit deckt die halbgeoffene Pruefung
-            # `event.start_s <= now_s < event_end_s` korrekt das
-            # erste Tick-Intervall `[0, tick_ms)` ab — sonst
-            # wuerde ein Event mit `duration_s == tick_ms/1000`
-            # bereits im ersten Tick als abgelaufen behandelt.
+            # Tick-Start-Zeit (`now - tick_ms`).
             tick_start_ms = now - self._tick_ms
             self._consume_load_inputs_into(
                 tick_start_ms=tick_start_ms,
@@ -574,24 +555,7 @@ class TickLoop:
                 manual_override_grid_ids=manual_override_grid_ids,
             )
             # Schritt A2 — Fault-Injection (M3-Welle-1, ADR 0022 §2.4).
-            # Hook laeuft nach LoadEvent-/Profile-Overlay und vor
-            # der ersten Device-Iteration, damit Faults in derselben
-            # Tick wirksam werden (Order-Pflicht aus ADR 0022 §2.4).
-            # `None`-Default skippt sauber; produktiver Adapter
-            # kommt mit Welle 2.
-            if self._fault_port is not None:
-                # M3-Welle-5 (ADR 0024 §2.6): Trace-Wrap um den
-                # Fault-Apply-Aufruf. Schritt-A2-Position aus
-                # ADR 0022 §2.4 bleibt unveraendert.
-                fault_span = self._obs_start_span(
-                    "fault.inject",
-                    parent=tick_span,
-                    attributes={"tick": self._tick_count},
-                )
-                try:
-                    self._fault_port.apply_active_faults(self._devices, context)
-                finally:
-                    self._obs_end_span(fault_span)
+            self._apply_fault_injection(context, tick_span)
             grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
             non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
             # Schritt B — Erste Iteration (ohne GridConnection).
@@ -605,37 +569,7 @@ class TickLoop:
             # Schritt D — Zweite Iteration (GridConnection ticken).
             unknown_count += self._run_device_iteration(grid_devices, context, emitted, bucket_sums)
             # Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
-            # Architektur §6 Schritt 7: Agents laufen NACH der
-            # Geraete-Iteration und VOR `grid_model.update(...)`.
-            # Sie sehen den fertigen Welt-Zustand (alle Devices haben
-            # getickt, alle Telemetry ist emittiert) und produzieren
-            # Commands fuer die naechste Tick. `None`-Default skippt
-            # sauber; Welle-3-Stand: `self._agents` ist `()`.
-            #
-            # **Welle-3-Review-Folge-2 F-1 (2026-05-21)**: emittierte
-            # Commands landen im `_pending_agent_commands`-Buffer
-            # (nicht verworfen). Welle 4 verdrahtet den Drain-Pfad
-            # (Scheduler-Push, `apply_command`-direct-Apply o. ae.) —
-            # Welle-3-Foundation persistiert nur die Commands, fuehrt
-            # sie aber NICHT aus. Konsistent mit GG-AGENT-008-Vertrag
-            # (Commit-Reihenfolge eines Ticks bleibt unveraendert).
-            if self._agent_bus is not None:
-                for agent in self._agents:
-                    # M3-Welle-5 (ADR 0024 §2.6): Trace-Wrap pro
-                    # Agent-Tick. Schritt-D2-Position aus ADR 0023
-                    # §2.4 + ADR 0026 §2.1 bleibt unveraendert.
-                    agent_span = self._obs_start_span(
-                        "agent.tick",
-                        parent=tick_span,
-                        attributes={
-                            "agent_id": agent.agent_id,
-                            "tick": self._tick_count,
-                        },
-                    )
-                    try:
-                        self._pending_agent_commands.extend(agent.tick(context, self._agent_bus))
-                    finally:
-                        self._obs_end_span(agent_span)
+            self._run_agent_tick_phase(context, tick_span)
             # Schritt E — Bilanz-Aggregation.
             if self._grid_model is not None:
                 self._grid_model.update(
@@ -672,6 +606,89 @@ class TickLoop:
             attributes={"tick": result.tick, "emitted_count": len(emitted)},
         )
         return result
+
+    def _apply_pending_agent_commands(
+        self,
+        commands_to_apply: tuple[Command, ...],
+        manual_override_grid_ids: list[str],
+    ) -> None:
+        """Schritt A0a (M3-Welle-4a, ADR 0026 §2.1) — Apply der in A0v
+        validierten Pending-Agent-Commands.
+
+        Slice 027 Paket D: aus `_run_tick_body` ausgelagert, Reihenfolge
+        und Mutation des `manual_override_grid_ids`-Buffers bleiben
+        identisch (Determinismus-Vertrag).
+
+        Agent-Commands auf GridConnection-IDs zaehlen als manueller
+        Auto-Close-Override (ergaenzen `manual_override_grid_ids`);
+        LoadEvent/Profile-Overlay in Schritt A laeuft danach und
+        gewinnt auf LoadDevices (Baseline-Praezedenz aus Welle-6b).
+        Buffer-Clear nur nach erfolgreichem Apply-Durchlauf (ADR 0026
+        §2.1 Exception-Pfade).
+        """
+        for command in commands_to_apply:
+            target = self._device_by_id[command.target_device_id]
+            target.apply_command(command)
+            if (
+                isinstance(target, GridConnectionDevice)
+                and target.device_id not in manual_override_grid_ids
+            ):
+                manual_override_grid_ids.append(target.device_id)
+        self._pending_agent_commands.clear()
+
+    def _apply_fault_injection(
+        self,
+        context: DeviceTickContext,
+        tick_span: SpanContext | None,
+    ) -> None:
+        """Schritt A2 — Fault-Injection (M3-Welle-1, ADR 0022 §2.4).
+
+        Slice 027 Paket D: aus `_run_tick_body` ausgelagert. `None`-
+        Default skippt sauber. Trace-Wrap aus M3-Welle-5 (ADR 0024
+        §2.6) bleibt mit try/finally erhalten.
+        """
+        if self._fault_port is None:
+            return
+        fault_span = self._obs_start_span(
+            "fault.inject",
+            parent=tick_span,
+            attributes={"tick": self._tick_count},
+        )
+        try:
+            self._fault_port.apply_active_faults(self._devices, context)
+        finally:
+            self._obs_end_span(fault_span)
+
+    def _run_agent_tick_phase(
+        self,
+        context: DeviceTickContext,
+        tick_span: SpanContext | None,
+    ) -> None:
+        """Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
+
+        Slice 027 Paket D: aus `_run_tick_body` ausgelagert. Agents
+        laufen NACH der Geraete-Iteration und VOR `grid_model.update(...)`
+        (Architektur §6 Schritt 7). `None`-Bus-Default skippt sauber.
+
+        Welle-3-Review-Folge-2 F-1: emittierte Commands landen im
+        `_pending_agent_commands`-Buffer (nicht verworfen). Welle 4
+        verdrahtet den Drain-Pfad.
+        """
+        if self._agent_bus is None:
+            return
+        for agent in self._agents:
+            agent_span = self._obs_start_span(
+                "agent.tick",
+                parent=tick_span,
+                attributes={
+                    "agent_id": agent.agent_id,
+                    "tick": self._tick_count,
+                },
+            )
+            try:
+                self._pending_agent_commands.extend(agent.tick(context, self._agent_bus))
+            finally:
+                self._obs_end_span(agent_span)
 
     def _run_device_iteration(
         self,
@@ -1164,8 +1181,14 @@ def _restore_pending_agent_commands(
     return tuple(restored)
 
 
-def _restore_pending_command_entry(raw: object, index: int) -> Command:  # noqa: C901, PLR0915 — pro-Feld-typed-Errors fuer 7 Pflichtfelder rechtfertigen einen langen Body (ADR 0026 §2.6).
-    """Pro-Eintrag-Restore mit typed-Errors fuer Format-Verstoesse."""
+def _restore_pending_command_entry(raw: object, index: int) -> Command:
+    """Pro-Eintrag-Restore mit typed-Errors fuer Format-Verstoesse.
+
+    Slice 027 Paket D: pro-Feld-Typchecks in
+    `_check_pending_command_str_field`/`_check_pending_command_int_field`/
+    `_parse_pending_command_payload`/`_parse_pending_command_result`
+    extrahiert (C901+PLR0915-Drop).
+    """
     if not isinstance(raw, Mapping):
         raise TickLoopAgentSnapshotWrongTypeError(
             f"pending_agent_commands.commands[{index}]", "Mapping", type(raw).__name__
@@ -1176,34 +1199,50 @@ def _restore_pending_command_entry(raw: object, index: int) -> Command:  # noqa:
             f"pending_agent_commands.commands[{index}]",
             [f"commands[{index}].{field}" for field in missing],
         )
-    command_id = raw["command_id"]
-    if not isinstance(command_id, str):
+    command_id = _check_pending_command_str_field(raw, index, "command_id")
+    simulation_time = _check_pending_command_int_field(raw, index, "simulation_time")
+    target_device_id = _check_pending_command_str_field(raw, index, "target_device_id")
+    type_value = _check_pending_command_str_field(raw, index, "type")
+    payload = _parse_pending_command_payload(raw, index)
+    validation_status = _check_pending_command_str_field(raw, index, "validation_status")
+    result = _parse_pending_command_result(raw, index)
+    return Command(
+        command_id=command_id,
+        simulation_time=simulation_time,
+        target_device_id=target_device_id,
+        type=type_value,
+        payload=payload,
+        validation_status=validation_status,
+        result=result,
+    )
+
+
+def _check_pending_command_str_field(raw: Mapping[str, object], index: int, field: str) -> str:
+    """Pflicht-`str`-Check fuer ein `pending_agent_commands.commands[i].<field>`."""
+    value = raw[field]
+    if not isinstance(value, str):
         raise TickLoopAgentSnapshotWrongTypeError(
-            f"pending_agent_commands.commands[{index}].command_id",
+            f"pending_agent_commands.commands[{index}].{field}",
             "str",
-            type(command_id).__name__,
+            type(value).__name__,
         )
-    simulation_time = raw["simulation_time"]
-    if isinstance(simulation_time, bool) or not isinstance(simulation_time, int):
+    return value
+
+
+def _check_pending_command_int_field(raw: Mapping[str, object], index: int, field: str) -> int:
+    """Pflicht-`int`-Check (excl. `bool`) fuer ein Pending-Command-Feld."""
+    value = raw[field]
+    if isinstance(value, bool) or not isinstance(value, int):
         raise TickLoopAgentSnapshotWrongTypeError(
-            f"pending_agent_commands.commands[{index}].simulation_time",
+            f"pending_agent_commands.commands[{index}].{field}",
             "int",
-            type(simulation_time).__name__,
+            type(value).__name__,
         )
-    target_device_id = raw["target_device_id"]
-    if not isinstance(target_device_id, str):
-        raise TickLoopAgentSnapshotWrongTypeError(
-            f"pending_agent_commands.commands[{index}].target_device_id",
-            "str",
-            type(target_device_id).__name__,
-        )
-    type_value = raw["type"]
-    if not isinstance(type_value, str):
-        raise TickLoopAgentSnapshotWrongTypeError(
-            f"pending_agent_commands.commands[{index}].type",
-            "str",
-            type(type_value).__name__,
-        )
+    return value
+
+
+def _parse_pending_command_payload(raw: Mapping[str, object], index: int) -> dict[str, object]:
+    """Payload-Parser (Mapping-Check + dict-Kopie)."""
     payload = raw["payload"]
     if not isinstance(payload, Mapping):
         raise TickLoopAgentSnapshotWrongTypeError(
@@ -1211,13 +1250,11 @@ def _restore_pending_command_entry(raw: object, index: int) -> Command:  # noqa:
             "Mapping",
             type(payload).__name__,
         )
-    validation_status = raw["validation_status"]
-    if not isinstance(validation_status, str):
-        raise TickLoopAgentSnapshotWrongTypeError(
-            f"pending_agent_commands.commands[{index}].validation_status",
-            "str",
-            type(validation_status).__name__,
-        )
+    return dict(payload)
+
+
+def _parse_pending_command_result(raw: Mapping[str, object], index: int) -> CommandResult:
+    """`CommandResult`-Enum-Restore aus Snapshot-String."""
     result_raw = raw["result"]
     if not isinstance(result_raw, str):
         raise TickLoopAgentSnapshotWrongTypeError(
@@ -1226,18 +1263,9 @@ def _restore_pending_command_entry(raw: object, index: int) -> Command:  # noqa:
             type(result_raw).__name__,
         )
     try:
-        result = CommandResult[result_raw]
+        return CommandResult[result_raw]
     except KeyError as exc:
         raise TickLoopAgentSnapshotInvalidCommandResultError(index, result_raw) from exc
-    return Command(
-        command_id=command_id,
-        simulation_time=simulation_time,
-        target_device_id=target_device_id,
-        type=type_value,
-        payload=dict(payload),
-        validation_status=validation_status,
-        result=result,
-    )
 
 
 def _restore_agent_bus_from_snapshot(
