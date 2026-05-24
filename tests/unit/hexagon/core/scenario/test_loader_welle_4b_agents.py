@@ -18,7 +18,7 @@ from decimal import Decimal
 import pytest
 
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
-from grid_gym.hexagon.core.agents import RuleBasedAgent
+from grid_gym.hexagon.core.agents import RuleBasedAgent, RuleBasedAgentConfig
 from grid_gym.hexagon.core.domain.scenario import (
     Scenario,
     ScenarioAgent,
@@ -129,9 +129,11 @@ def test_build_tick_loop_explicit_agents_override_scenario() -> None:
     """Expliziter `agents=`-Override gewinnt gegen `scenario.agents`."""
     scenario = _scenario_with_agents((_rule_based_agent("scenario-agent"),))
     custom_agent = RuleBasedAgent(
-        agent_id="custom-agent",
-        target_device_id="battery-1",
-        rules=(),
+        RuleBasedAgentConfig(
+            agent_id="custom-agent",
+            target_device_id="battery-1",
+            rules=(),
+        )
     )
     # Da `rules=()`-Konstruktor das normalerweise zu „kein
     # Decision-Pfad" macht, faengt der Validator das ab — der

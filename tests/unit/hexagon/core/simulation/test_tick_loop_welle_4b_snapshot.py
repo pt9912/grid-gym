@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from grid_gym.hexagon.core.agents import AgentMessageBus, RuleBasedAgent
+from grid_gym.hexagon.core.agents import AgentMessageBus, RuleBasedAgent, RuleBasedAgentConfig
 from grid_gym.hexagon.core.agents.rule_based import (
     Rule,
     RuleAction,
@@ -29,14 +29,16 @@ from tests.unit.hexagon.ports.driven._fakes import FakeClock, FixedSeedRandom
 
 def _rba(agent_id: str, target: str = "battery-1") -> RuleBasedAgent:
     return RuleBasedAgent(
-        agent_id=agent_id,
-        target_device_id=target,
-        rules=(
-            Rule(
-                condition=RuleCondition(metric="tick", comparator=">=", threshold=0),
-                action=RuleAction(type="charge", payload={"power_kw": "50"}),
+        RuleBasedAgentConfig(
+            agent_id=agent_id,
+            target_device_id=target,
+            rules=(
+                Rule(
+                    condition=RuleCondition(metric="tick", comparator=">=", threshold=0),
+                    action=RuleAction(type="charge", payload={"power_kw": "50"}),
+                ),
             ),
-        ),
+        )
     )
 
 
@@ -113,14 +115,16 @@ def test_from_snapshot_rejects_snapshot_state_mismatch() -> None:
     snap = loop.snapshot()
     # Restored mit ABWEICHENDER Rule (anderer threshold).
     drifted = RuleBasedAgent(
-        agent_id="bess-a",
-        target_device_id="battery-1",
-        rules=(
-            Rule(
-                condition=RuleCondition(metric="tick", comparator=">=", threshold=999),
-                action=RuleAction(type="charge", payload={"power_kw": "50"}),
+        RuleBasedAgentConfig(
+            agent_id="bess-a",
+            target_device_id="battery-1",
+            rules=(
+                Rule(
+                    condition=RuleCondition(metric="tick", comparator=">=", threshold=999),
+                    action=RuleAction(type="charge", payload={"power_kw": "50"}),
+                ),
             ),
-        ),
+        )
     )
     with pytest.raises(TickLoopAgentInstanceSnapshotMismatchError):
         TickLoop.from_snapshot(

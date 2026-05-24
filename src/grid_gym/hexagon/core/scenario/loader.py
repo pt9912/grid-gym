@@ -27,7 +27,13 @@ from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Final, cast
 
-from grid_gym.hexagon.core.agents import Agent, AgentMessageBus, AgentPlugin, RuleBasedAgent
+from grid_gym.hexagon.core.agents import (
+    Agent,
+    AgentMessageBus,
+    AgentPlugin,
+    RuleBasedAgent,
+    RuleBasedAgentConfig,
+)
 from grid_gym.hexagon.core.agents.rule_based import (
     Rule,
     RuleAction,
@@ -616,24 +622,23 @@ def _build_rule_based_agent(scenario_agent: ScenarioAgent) -> RuleBasedAgent:
         )
         plugin_instance = plugin_factory(plugin_params)
         return RuleBasedAgent(
-            agent_id=scenario_agent.id,
-            target_device_id=None,
-            rules=(),
-            plugin=plugin_instance,
-            plugin_name=plugin_name,
-            plugin_params=plugin_params,
+            RuleBasedAgentConfig(
+                agent_id=scenario_agent.id,
+                plugin=plugin_instance,
+                plugin_name=plugin_name,
+                plugin_params=plugin_params,
+            )
         )
     # Rules-Pfad.
     target_device_id = cast(str, params["target_device_id"])
     rules_raw = cast(list[Mapping[str, object]], params["rules"])
     rules: tuple[Rule, ...] = tuple(_build_rule(rule_raw) for rule_raw in rules_raw)
     return RuleBasedAgent(
-        agent_id=scenario_agent.id,
-        target_device_id=target_device_id,
-        rules=rules,
-        plugin=None,
-        plugin_name=None,
-        plugin_params=None,
+        RuleBasedAgentConfig(
+            agent_id=scenario_agent.id,
+            target_device_id=target_device_id,
+            rules=rules,
+        )
     )
 
 

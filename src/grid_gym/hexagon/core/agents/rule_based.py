@@ -129,6 +129,26 @@ class Rule:
     action: RuleAction
 
 
+@dataclass(frozen=True, slots=True)
+class RuleBasedAgentConfig:
+    """Konstruktor-Konfiguration fuer `RuleBasedAgent`
+    (Slice 027 Paket C, ADR 0027 §2.3).
+
+    Buendelt die 6 Konstruktor-Felder zu einem Value-Object, damit
+    der Konstruktor kein 6-Kwarg-Aufruf mehr ist. Mutual-Exclusivity-
+    Vertrag aus `RuleBasedAgent`-Docstring bleibt vom Scenario-
+    Validator durchgesetzt; das Envelope traegt die Felder, nicht die
+    Pfad-Disambiguierung.
+    """
+
+    agent_id: str
+    target_device_id: str | None = None
+    rules: tuple[Rule, ...] = ()
+    plugin: AgentPlugin | None = None
+    plugin_name: str | None = None
+    plugin_params: Mapping[str, object] | None = None
+
+
 class RuleBasedAgent:
     """Konkreter `Agent`-Implementer mit Hybrid Decision-Surface
     (M3 Welle 4b, ADR 0027 §2.3).
@@ -144,23 +164,14 @@ class RuleBasedAgent:
     Konstruktor verlaesst sich auf vorgelagerte Validierung.
     """
 
-    def __init__(  # noqa: PLR0913 — Hybrid Rules + Plugin-Pfad-Konstruktor mit Mutual Exclusivity (ADR 0027 §2.3); kein sauberer Split-Pfad ohne Vertrags-Bruch.
-        self,
-        *,
-        agent_id: str,
-        target_device_id: str | None = None,
-        rules: tuple[Rule, ...] = (),
-        plugin: AgentPlugin | None = None,
-        plugin_name: str | None = None,
-        plugin_params: Mapping[str, object] | None = None,
-    ) -> None:
-        self._agent_id: str = agent_id
-        self._target_device_id: str | None = target_device_id
-        self._rules: tuple[Rule, ...] = rules
-        self._plugin: AgentPlugin | None = plugin
-        self._plugin_name: str | None = plugin_name
+    def __init__(self, config: RuleBasedAgentConfig) -> None:
+        self._agent_id: str = config.agent_id
+        self._target_device_id: str | None = config.target_device_id
+        self._rules: tuple[Rule, ...] = config.rules
+        self._plugin: AgentPlugin | None = config.plugin
+        self._plugin_name: str | None = config.plugin_name
         self._plugin_params: Mapping[str, object] | None = (
-            dict(plugin_params) if plugin_params is not None else None
+            dict(config.plugin_params) if config.plugin_params is not None else None
         )
         self._run_id: str = ""
 
@@ -364,12 +375,14 @@ class RuleBasedAgent:
         # Plugin-Instanz-Restore wird vom Aufrufer (Scenario-Loader)
         # durchgefuehrt — siehe Klassen-Docstring.
         return cls(
-            agent_id=agent_id_raw,
-            target_device_id=target,
-            rules=rules,
-            plugin=None,
-            plugin_name=plugin_name,
-            plugin_params=None,
+            RuleBasedAgentConfig(
+                agent_id=agent_id_raw,
+                target_device_id=target,
+                rules=rules,
+                plugin=None,
+                plugin_name=plugin_name,
+                plugin_params=None,
+            )
         )
 
 

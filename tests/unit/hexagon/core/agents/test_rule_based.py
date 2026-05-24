@@ -20,6 +20,7 @@ from grid_gym.hexagon.core.agents import (
     AgentMessageBus,
     AgentPlugin,
     RuleBasedAgent,
+    RuleBasedAgentConfig,
 )
 from grid_gym.hexagon.core.agents.rule_based import (
     COMPARATOR_WHITELIST,
@@ -44,19 +45,49 @@ def _rule(metric: str, comparator: str, threshold: int, command_type: str = "cha
     )
 
 
+def _rule_agent(
+    *,
+    agent_id: str = "bess",
+    target_device_id: str = "battery-1",
+    rules: tuple[Rule, ...] = (),
+) -> RuleBasedAgent:
+    """Test-Helper fuer den Rules-Pfad (Slice 027 Paket C)."""
+    return RuleBasedAgent(
+        RuleBasedAgentConfig(
+            agent_id=agent_id,
+            target_device_id=target_device_id,
+            rules=rules,
+        )
+    )
+
+
+def _plugin_agent(
+    plugin: AgentPlugin,
+    *,
+    agent_id: str = "bess",
+    plugin_name: str = "stub_v1",
+    plugin_params: Mapping[str, object] | None = None,
+) -> RuleBasedAgent:
+    """Test-Helper fuer den Plugin-Pfad (Slice 027 Paket C)."""
+    return RuleBasedAgent(
+        RuleBasedAgentConfig(
+            agent_id=agent_id,
+            plugin=plugin,
+            plugin_name=plugin_name,
+            plugin_params=plugin_params,
+        )
+    )
+
+
 def test_rule_based_agent_implements_agent_protocol() -> None:
     """RuleBasedAgent erfuellt das Welle-3-Agent-Protocol."""
-    agent = RuleBasedAgent(
-        agent_id="bess", target_device_id="battery-1", rules=(_rule("tick", ">=", 5),)
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 5),))
     assert isinstance(agent, Agent)
 
 
 def test_rules_pfad_first_match_wins() -> None:
     """ADR 0027 §2.3: first-match-wins ueber die geordnete Rules-Tuple."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
+    agent = _rule_agent(
         rules=(
             _rule("tick", ">=", 0, "first-rule"),
             _rule("tick", ">=", 0, "second-rule"),  # wuerde auch matchen
@@ -69,11 +100,7 @@ def test_rules_pfad_first_match_wins() -> None:
 
 def test_rules_no_match_yields_empty_sequence() -> None:
     """Kein Match → leere Sequenz, kein Command."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("tick", ">=", 100),),
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 100),))
     assert agent.tick(_ctx(tick=5), AgentMessageBus()) == ()
 
 
@@ -96,11 +123,7 @@ def test_comparator_set_value_based(
     comparator: str, tick_value: int, threshold: int, expected_match: bool
 ) -> None:
     """ADR 0027 §2.3: Comparator-Whitelist wertbasiert."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("tick", comparator, threshold),),
-    )
+    agent = _rule_agent(rules=(_rule("tick", comparator, threshold),))
     commands = agent.tick(_ctx(tick=tick_value), AgentMessageBus())
     assert (len(commands) == 1) is expected_match
 
@@ -108,11 +131,7 @@ def test_comparator_set_value_based(
 def test_command_uses_context_simulation_time() -> None:
     """ADR 0027 §2.3: emittierte Commands tragen
     `context.simulation_time`, nicht den Threshold."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("tick", ">=", 0),),
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 0),))
     commands = agent.tick(_ctx(tick=5, simulation_time=12345), AgentMessageBus())
     assert commands[0].simulation_time == 12345
     assert commands[0].target_device_id == "battery-1"
@@ -120,9 +139,7 @@ def test_command_uses_context_simulation_time() -> None:
 
 def test_command_id_is_deterministic_per_tick_and_rule() -> None:
     """Command-ID nutzt agent_id + tick + rule_index → deterministisch."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
+    agent = _rule_agent(
         rules=(_rule("tick", "<", 100, "first"), _rule("tick", ">=", 5, "second")),
     )
     commands = agent.tick(_ctx(tick=10), AgentMessageBus())
@@ -131,11 +148,7 @@ def test_command_id_is_deterministic_per_tick_and_rule() -> None:
 
 def test_metric_simulation_time_is_supported() -> None:
     """ADR 0027 §2.3 Welle-4b-Whitelist: `simulation_time` zulaessig."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("simulation_time", ">=", 10000),),
-    )
+    agent = _rule_agent(rules=(_rule("simulation_time", ">=", 10000),))
     no_match = agent.tick(_ctx(tick=0, simulation_time=5000), AgentMessageBus())
     match = agent.tick(_ctx(tick=0, simulation_time=10000), AgentMessageBus())
     assert no_match == ()
@@ -146,11 +159,7 @@ def test_unknown_metric_does_not_match() -> None:
     """Defensive: bei `metric` ausserhalb der Welle-4b-Whitelist
     matched die Regel nicht (Validator haette das vorgelagert
     abgewiesen)."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("voltage_v", ">=", 230),),
-    )
+    agent = _rule_agent(rules=(_rule("voltage_v", ">=", 230),))
     commands = agent.tick(_ctx(tick=10), AgentMessageBus())
     assert commands == ()
 
@@ -158,9 +167,7 @@ def test_unknown_metric_does_not_match() -> None:
 def test_set_run_id_sets_internal_state() -> None:
     """Welle-4a-Lifecycle-Hook (ADR 0026 §2.3): set_run_id wird
     vom TickLoop-Konstruktor via `_attach_agents()` aufgerufen."""
-    agent = RuleBasedAgent(
-        agent_id="bess", target_device_id="battery-1", rules=(_rule("tick", ">=", 0),)
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 0),))
     agent.set_run_id("run-42")
     # No-op-Vertrag; nur sichergestellt, dass der Aufruf nicht raised.
 
@@ -170,9 +177,7 @@ def test_rule_based_agent_is_not_random_attachable_by_default() -> None:
     `_RandomAttachableAgent`-Sub-Protocol."""
     from grid_gym.hexagon.core.agents import _RandomAttachableAgent
 
-    agent = RuleBasedAgent(
-        agent_id="bess", target_device_id="battery-1", rules=(_rule("tick", ">=", 0),)
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 0),))
     assert not isinstance(agent, _RandomAttachableAgent)
 
 
@@ -184,9 +189,7 @@ def test_rule_based_agent_is_not_random_attachable_by_default() -> None:
 def test_snapshot_contains_pflicht_keys() -> None:
     """ADR 0027 §2.4: Snapshot hat version + agent_id + target +
     rules + plugin + plugin_state."""
-    agent = RuleBasedAgent(
-        agent_id="bess", target_device_id="battery-1", rules=(_rule("tick", ">=", 5),)
-    )
+    agent = _rule_agent(rules=(_rule("tick", ">=", 5),))
     snap = agent.snapshot()
     assert snap["version"] == 1
     assert snap["agent_id"] == "bess"
@@ -206,9 +209,7 @@ def test_snapshot_contains_pflicht_keys() -> None:
 def test_from_snapshot_roundtrip_is_byte_stable() -> None:
     """Snapshot → from_snapshot → snapshot ist byte-stabil
     (ADR 0013 §2.4-Pattern)."""
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
+    agent = _rule_agent(
         rules=(
             _rule("tick", ">=", 5, "charge"),
             _rule("simulation_time", "<", 1000, "idle"),
@@ -425,12 +426,7 @@ def test_plugin_path_delegates_decide() -> None:
     """ADR 0027 §2.3: Plugin-Pfad ruft `plugin.decide(...)`."""
     recorded: list[int] = []
     plugin = _StubPlugin(recorded_calls=recorded)
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        plugin=plugin,
-        plugin_name="stub_v1",
-        plugin_params={"param-a": "value"},
-    )
+    agent = _plugin_agent(plugin, plugin_params={"param-a": "value"})
     commands = agent.tick(_ctx(tick=7), AgentMessageBus())
     assert recorded == [7]
     assert len(commands) == 1
@@ -440,12 +436,7 @@ def test_plugin_path_delegates_decide() -> None:
 def test_plugin_snapshot_serializes_plugin_state() -> None:
     """ADR 0027 §2.4: Plugin-Pfad serialisiert plugin_name + plugin_state."""
     plugin = _StubPlugin(recorded_calls=[1, 2, 3])
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        plugin=plugin,
-        plugin_name="stub_v1",
-        plugin_params={"param-a": "value"},
-    )
+    agent = _plugin_agent(plugin, plugin_params={"param-a": "value"})
     snap = agent.snapshot()
     assert snap["plugin"] == "stub_v1"
     assert snap["plugin_state"] == {"version": 1, "calls": (1, 2, 3)}
@@ -466,12 +457,7 @@ def test_plugin_state_is_lost_in_welle_4b_from_snapshot() -> None:
     wuerde das als Mismatch erkennen.
     """
     plugin = _StubPlugin(recorded_calls=[1, 2, 3])
-    agent = RuleBasedAgent(
-        agent_id="bess",
-        plugin=plugin,
-        plugin_name="stub_v1",
-        plugin_params={"param-a": "value"},
-    )
+    agent = _plugin_agent(plugin, plugin_params={"param-a": "value"})
     snap_with_plugin = agent.snapshot()
     assert snap_with_plugin["plugin_state"] is not None
     restored = RuleBasedAgent.from_snapshot(snap_with_plugin)
@@ -491,14 +477,10 @@ def test_plugin_and_plugin_name_properties_expose_internal_state() -> None:
     Property-Surface (Coverage fuer `plugin`/`plugin_name`-
     Properties)."""
     plugin = _StubPlugin(recorded_calls=[])
-    agent_plugin_path = RuleBasedAgent(agent_id="bess", plugin=plugin, plugin_name="stub_v1")
+    agent_plugin_path = _plugin_agent(plugin)
     assert agent_plugin_path.plugin is plugin
     assert agent_plugin_path.plugin_name == "stub_v1"
 
-    agent_rules_path = RuleBasedAgent(
-        agent_id="bess",
-        target_device_id="battery-1",
-        rules=(_rule("tick", ">=", 0),),
-    )
+    agent_rules_path = _rule_agent(rules=(_rule("tick", ">=", 0),))
     assert agent_rules_path.plugin is None
     assert agent_rules_path.plugin_name is None

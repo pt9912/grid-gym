@@ -15,7 +15,7 @@ kommen mit M3-Welle-4.
 
 from grid_gym.hexagon.core.agents._protocol import Agent, AgentPlugin, _RandomAttachableAgent
 from grid_gym.hexagon.core.agents.bus import SNAPSHOT_VERSION, AgentMessageBus
-from grid_gym.hexagon.core.agents.rule_based import RuleBasedAgent
+from grid_gym.hexagon.core.agents.rule_based import RuleBasedAgent, RuleBasedAgentConfig
 
 __all__ = [
     "SNAPSHOT_VERSION",
@@ -23,5 +23,6 @@ __all__ = [
     "AgentMessageBus",
     "AgentPlugin",
     "RuleBasedAgent",
+    "RuleBasedAgentConfig",
     "_RandomAttachableAgent",
 ]
