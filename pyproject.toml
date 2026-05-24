@@ -41,12 +41,22 @@ classifiers = [
 # Contracts `AC-NO-FW`/`AC-PORTS-NO-FW` halten `hexagon/core/**`
 # und `hexagon/ports/**` frei davon.
 dependencies = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.30",
-    "pydantic>=2.7",
+    # Floor `>=0.136` matched aktuellen PyPI-Stand 0.136.3 (2026-05-24,
+    # User-verifiziert) — angehoben von >=0.115 (M1-Welle-6a-Floor).
+    "fastapi>=0.136",
+    # Floor `>=0.47` matched aktuellen PyPI-Stand 0.47.0 (2026-05-24,
+    # User-verifiziert) — angehoben von >=0.30 (M1-Welle-6a-Floor).
+    "uvicorn[standard]>=0.47",
+    # Floor `>=2.13` matched aktuellen PyPI-Stand 2.13.4 (2026-05-24,
+    # User-verifiziert) — angehoben von >=2.7 (M1-Welle-6a-Floor).
+    "pydantic>=2.13",
     # Welle 6c — Postgres-Persistenz fuer `RunRepositoryPort`.
-    "psycopg[binary]>=3.2",
-    "alembic>=1.13",
+    # Floor `>=3.3` matched aktuellen PyPI-Stand 3.3.4 (2026-05-24,
+    # User-verifiziert) — angehoben von >=3.2 (M2-Welle-6c-Floor).
+    "psycopg[binary]>=3.3",
+    # Floor `>=1.18` matched aktuellen PyPI-Stand 1.18.4 (2026-05-24,
+    # User-verifiziert) — angehoben von >=1.13 (M1-Welle-6c-Floor).
+    "alembic>=1.18",
     # M3-Welle-6 — OTLP-Adapter unter `adapters/driven/telemetry_otlp/`.
     # Floor `>=1.42` matched die Welle-6-Lock-Resolution (`uv lock`
     # 2026-05-24 zieht 1.42.1) — Welle 6 testet ausschliesslich gegen

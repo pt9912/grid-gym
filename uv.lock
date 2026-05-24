@@ -444,13 +444,13 @@ typecheck = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alembic", specifier = ">=1.13" },
-    { name = "fastapi", specifier = ">=0.115" },
+    { name = "alembic", specifier = ">=1.18" },
+    { name = "fastapi", specifier = ">=0.136" },
     { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.42" },
     { name = "opentelemetry-sdk", specifier = ">=1.42" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
-    { name = "pydantic", specifier = ">=2.7" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
+    { name = "pydantic", specifier = ">=2.13" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.47" },
 ]
 
 [package.metadata.requires-dev]
