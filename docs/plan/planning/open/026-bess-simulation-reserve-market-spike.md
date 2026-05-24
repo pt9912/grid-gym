@@ -63,7 +63,8 @@ Signaturen aus dem Fremdcode ist ausgeschlossen.
    ein Slice-Slot in `planning/planning/README.md`.
 
 3) **M3-konforme technische Leitplanken** sind verbindlich bestätigt:
-   - Keine neuen `random.random()`-Abhängigkeiten im Core,
+   - Keine unkontrollierten Zufalls-/Zeitquellen im Core (`random.*`, `np.random`, `secrets`, Zeitquellen),  
+     außer explizit zugelassener `RandomPort`/Scenario-Event-Pfad.
    - keine neuen `pandas`/`numpy`-abhängigkeiten im Hexagon-Core,
    - keine neuen Nicht-Determinismuspfade ohne `RandomPort`/Events.
 
@@ -116,13 +117,17 @@ direkt im Slice-PR zu dokumentieren.
 - Determinismus:
 - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
   Nachweis (automatisch):  
-  `CORE_FILES="$(git diff --name-only ${BASE_BRANCH:-origin/main}...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')"`  
+  `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`  
+  `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
+  `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
   `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" $CORE_FILES`
   - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
     Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
   - `numpy`/`pandas` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.  
-    Nachweis (automatisch): `CORE_FILES="$(git diff --name-only ${BASE_BRANCH:-origin/main}...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')"`  
+    Nachweis (automatisch): `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`  
+    `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
+    `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
     `rg -n "^\s*import\s+(pandas|numpy|pd|np)|^\s*from\s+(pandas|numpy)\s+import" $CORE_FILES`
   - Keine neuen Kernformate im YAML/Scenario; externe CSV-/Excel-Adapter nur als optionale Randintegration mit Adapternotiz.
 - Nachweise im Slice-PR:
@@ -147,7 +152,9 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   `RandomPort` oder explizite Scenario-Events, inklusive Snapshot-relevanter
   Feldliste (`reserve_mode`, `recovery_time`, `T_FCR`, geplante Schedules).
   - Nachweis:
-    - `CORE_FILES="$(git diff --name-only ${BASE_BRANCH:-origin/main}...HEAD -- 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py')"`
+    - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
+    - `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
+    - `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
     - `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" $CORE_FILES` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
@@ -197,8 +204,9 @@ passt nicht zu den bestehenden `grid-gym`-Vertraegen:
 
 Bei Aktivierung als eigener Slice:
 
-- ADR oder Slice-Plan fuer einen `ReserveMarketAgent`,
-  `BessSocManagementAgent` oder `LerRecoveryAgent`, der bestehende
+- ADR oder Slice-Plan fuer einen der Zielagenten  
+  (`ReserveMarketAgent`, `BessSocManagementAgent`, `LerRecoveryAgent` oder  
+  `ReserveUnderdeliveryRiskAgent`) und bestehende
   `BatteryDevice`-Instanzen ueber Commands steuert statt ein neues
   Battery-Modell einzufuehren.
 - Domain-Typen fuer Reserveprodukte und Market-Schedules, z. B.
