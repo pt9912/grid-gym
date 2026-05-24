@@ -16,13 +16,21 @@ in a local, traceable environment.
 
 ## Status
 
-**As of 2026-05-23:** M1 (Tick-Loop Spine) and M2 (Device Models) are
+**As of 2026-05-24:** M1 (Tick-Loop Spine) and M2 (Device Models) are
 `Done`. M3 (Faults + Multi-Agent + Observability) is active:
 Waves 0/1/2/3/4a/4b/5 are completed — the Multi-Agent subsystem is
 complete (Foundation + Concretization), and the Observability
 Foundation (Port-Trio + Null-Adapters + TickLoop hooks) is in place.
-**Wave 6 (OTLP adapter) is the next active slice**; Wave 7 (M3
-Closure) follows.
+**Wave 6 (OTLP adapter) is `In Progress`:** C1 (adapter module +
+factory + ADR-0024-§4.5 sharpening) is delivered; C2
+(deploy/compose.yml collector sibling) and C3 (Compose-/integration
+smoke + runbook) are pending. Wave 7 (M3 closure) follows.
+
+**Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
+existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
+noqa` is now the 9th mandatory gate in `make gates`. New envelope
+types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
+`RuleBasedAgentConfig`) plus 15 typed exception sub-classes.
 
 | Subsystem | Status | References |
 | --- | --- | --- |
@@ -31,20 +39,21 @@ Closure) follows.
 | Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Provisional` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Provisional`; `BatteryFaultAdapter` + `GridFaultAdapter` with `cell_failure`/`voltage_drop` and recovery logic |
 | Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
 | Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
-| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (11th `arch_check` contract `AC-NO-COVERAGE-PRAGMA`). |
-| OTLP Adapter (M3 Wave 6) | `Open` | `adapters/driven/telemetry-otlp/` + Compose-Collector + Span/Metric export verification |
+| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
+| OTLP Adapter (M3 Wave 6) | `In Progress` (C1 done) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper in production. ADR 0024 §4.5 with 8 normative decisions (L-2/N-1/N-2/Sentinel/Trace-ID/D-4/gRPC pinning/smoke determinism). New 12th arch_check contract `AC-OTLP-ADAPTER-NO-TIME`. C2 (Compose collector sibling) + C3 (smoke + runbook) pending. |
+| Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
 | Protocol Adapters (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
-**Test balance:** 1023 unit tests + 19 integration tests green
-(Wave-5 end state `8b23602`). `make fullbuild` cache-free green
-**without** override — Wave-5 acceptance criterion (full CI + runtime
-image + Compose smoke + Trivy image audit) met. `make gates`
-A-1 (lint, format-check, mypy `--strict`, arch-check 17/17
-contracts kept incl. new `AC-NO-COVERAGE-PRAGMA`, test-unit,
-coverage-gate 90/85 line / 95.55% total, critical-coverage 90,
-dep-audit) cache-free green without override.
+**Test balance:** ~1130 unit tests + 19 integration tests green
+(state `717af22` after Slice 027 review follow-up). `make gates`
+is now 9-stage (lint, format-check, mypy `--strict`, arch-check
+**18/18 contracts kept** [6 import-linter + 12 arch_check incl.
+new `AC-OTLP-ADAPTER-NO-TIME`], test-unit, coverage-gate 90/85
+line + 95+% total, critical-coverage 90 incl. `telemetry_otlp`,
+dep-audit, **noqa-gate** [`tools/check_noqa.py --fail-on-noqa`,
+Slice 027]) — cache-free green without override.
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) with four
 mandatory gates for `pull_request` and `push` on `main`:
@@ -62,7 +71,7 @@ run via Dockerfile stages.
 make help                # list all targets
 make gates               # all A-1 mandatory gates (lint, format-check,
                          # typecheck, arch-check, test-unit, coverage,
-                         # critical-coverage, dep-audit)
+                         # critical-coverage, dep-audit, noqa-gate)
 make test-unit           # unit tests only
 make test-integration    # integration tests via Compose (Postgres container)
 make fullbuild           # gates + integration + runtime image build
