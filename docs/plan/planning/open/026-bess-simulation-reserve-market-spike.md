@@ -109,34 +109,50 @@ Alle Punkte gelten als Hard-Gates für die Aktivierung. Die Prüfinfos pro Punkt
 direkt im Slice-PR zu dokumentieren.
 
 - Architektur:
-  - Kein neuer `pandas`/`numpy`/`scipy`-Import im `src/grid_gym/hexagon/core/**/*.py`.  
-    Nachweis (automatisch):  
-    `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
-    `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then VIOLATION=0; for file in "${CHANGED_CORE_FILES[@]}"; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
-  - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
-    Nachweis:
-    - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode state-floats -- "${CHANGED_CORE_FILES[@]}"; fi`
-    - manuell: Architektur-Review im neuen Core-Code, insbesondere persistierte State-/Snapshot-Felder.
-  - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
-    Nachweis (manuell): Architektur-Review im neuen Core-Code, keine neue Batteriemodelle oder alternative Command-Pfade.
+  - Kein neuer `pandas`/`numpy`/`scipy`-Import im `src/grid_gym/hexagon/core/**/*.py`.
+  - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.
+  - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.
+  - Prüfkette:
+    1) **Hart:** AST-/Semantikcheck via `tools/check_core_determinism.py` (muss fehlschlagen, falls verletzt).
+    2) **Advisory:** Regex-Importcheck als ergänzende Spot-Prüfung (lokal).
+  - Nachweis (hart, fail-fast):
+    ```bash
+    #!/usr/bin/env bash
+    set -euo pipefail
+    BASE_BRANCH="${BASE_BRANCH:-origin/main}"
+    mapfile -t CHANGED_CORE_FILES < <(
+      git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- ":(glob)src/grid_gym/hexagon/core/**/*.py"
+    )
+    if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then
+      python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}" || exit 1
+      python tools/check_core_determinism.py --mode state-floats -- "${CHANGED_CORE_FILES[@]}" || exit 1
+    else
+      echo "No changed core files to check."
+    fi
+    ```
+  - Nachweis (advisory, local):
+    ```bash
+    BASE_BRANCH="${BASE_BRANCH:-origin/main}"
+    mapfile -t CHANGED_CORE_FILES < <(
+      git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- ":(glob)src/grid_gym/hexagon/core/**/*.py"
+    )
+    rg -n --glob ":(glob)src/grid_gym/hexagon/core/**/*.py" "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "${CHANGED_CORE_FILES[@]}"
+    ```
+  - Nachweis (manuell): Architektur-Review im neuen Core-Code, insbesondere persistierte State-/Snapshot-Felder.
 - Determinismus:
-  - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
-  Nachweis (automatisch):  
-  `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-  `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
-  `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}"; fi`
-  - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
-    Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
+  - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.
+  - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.
+  - Nachweis (hart):
+    - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
+    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- ":(glob)src/grid_gym/hexagon/core/**/*.py")`
+    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}" || exit 1; fi`
+    - manuell: Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
-  - `numpy`/`pandas`/`scipy` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.  
-    Nachweis (automatisch):
-    `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
-    `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then VIOLATION=0; for file in "${CHANGED_CORE_FILES[@]}"; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
+  - `numpy`/`pandas`/`scipy` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.
   - Keine neuen Kernformate im YAML/Scenario; externe CSV-/Excel-Adapter nur als optionale Randintegration mit Adapternotiz.
+  - Nachweis (hart):
+    - dieselbe `CHANGED_CORE_FILES`-Ermittlung wie oben
+    - kein Treffer im AST/Determinismus-Check darf vorliegen
 - Nachweise im Slice-PR:
   - Jeder Punkt aus der DoD ist mit Test-/Code-Nachweis verlinkt.
   - Snapshot-Feldliste ist vollständig dokumentiert: `reserve_mode`, `recovery_time`, `T_FCR`, geplante `MarketSchedule`.
@@ -160,8 +176,8 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   Feldliste (`reserve_mode`, `recovery_time`, `T_FCR`, geplante Schedules).
   - Nachweis:
     - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')`
-    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}"; fi` darf keine Treffer liefern.
+    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- ":(glob)src/grid_gym/hexagon/core/**/*.py")`
+    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode determinism -- "${CHANGED_CORE_FILES[@]}" || exit 1; fi` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
 - **Hard-Gate-Nachweis**: PR enthält einen Abschnitt "Validation Checklist" mit mindestens den oben definierten operativen Checks (inkl. Screenshot/Link auf Command-Output o. Ä.).
