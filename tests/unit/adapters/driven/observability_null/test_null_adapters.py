@@ -28,6 +28,7 @@ from grid_gym.adapters.driven.observability_null import (
     NullTraceAdapter,
 )
 from grid_gym.hexagon.ports.driven.observability import (
+    LogEntry,
     LogPort,
     MetricsPort,
     SpanContext,
@@ -86,7 +87,7 @@ def test_null_log_adapter_default_tracks_call_count_and_last_call() -> None:
     adapter = NullLogAdapter()
     assert adapter.call_count == 0
     assert adapter.last_call is None
-    adapter.log("info", "hello", run_id="r1", module="m", event_id="e")
+    adapter.log(LogEntry(level="info", message="hello", run_id="r1", module="m", event_id="e"))
     assert adapter.call_count == 1
     last = adapter.last_call
     assert last is not None
@@ -112,8 +113,8 @@ def test_null_log_adapter_default_does_not_collect_full_history() -> None:
     """Default `record_calls=False`: call_records bleibt leer
     (M3-welle-5.md §2 + ADR 0024 §2.5)."""
     adapter = NullLogAdapter()
-    adapter.log("info", "one")
-    adapter.log("info", "two")
+    adapter.log(LogEntry(level="info", message="one"))
+    adapter.log(LogEntry(level="info", message="two"))
     assert adapter.call_count == 2
     assert tuple(adapter.call_records) == ()
 
@@ -123,8 +124,8 @@ def test_null_log_adapter_default_does_not_collect_full_history() -> None:
 
 def test_null_log_adapter_record_calls_collects_history() -> None:
     adapter = NullLogAdapter(record_calls=True)
-    adapter.log("info", "one")
-    adapter.log("warn", "two")
+    adapter.log(LogEntry(level="info", message="one"))
+    adapter.log(LogEntry(level="warn", message="two"))
     records = list(adapter.call_records)
     assert len(records) == 2
     assert records[0].kwargs["message"] == "one"
@@ -213,7 +214,7 @@ def test_null_log_adapter_isolates_attributes_copy() -> None:
     Record-Speicher NICHT veraendern."""
     adapter = NullLogAdapter()
     attrs: dict[str, object] = {"k": "v"}
-    adapter.log("info", "msg", attributes=attrs)
+    adapter.log(LogEntry(level="info", message="msg", attributes=attrs))
     attrs["k"] = "MUTATED"
     last = adapter.last_call
     assert last is not None

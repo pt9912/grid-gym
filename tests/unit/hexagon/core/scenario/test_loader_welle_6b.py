@@ -38,6 +38,7 @@ from grid_gym.hexagon.core.errors import (
 from grid_gym.hexagon.core.grid_model import GridModelConfig
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.loader import (
+    TickLoopWiring,
     build_devices,
     build_tick_loop,
     load_scenario,
@@ -544,7 +545,7 @@ def test_build_tick_loop_forwards_fault_port_kwarg() -> None:
         run_id="run-fault-stub",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=42),
-        fault_port=stub,
+        wiring=TickLoopWiring(fault_port=stub),
     )
     assert loop._fault_port is stub  # type: ignore[attr-defined]
 
@@ -583,7 +584,7 @@ def test_build_tick_loop_forwards_agent_bus_kwarg() -> None:
         run_id="run-agent-bus",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=42),
-        agent_bus=bus,
+        wiring=TickLoopWiring(agent_bus=bus),
     )
     assert loop._agent_bus is bus  # type: ignore[attr-defined]
 
@@ -636,7 +637,7 @@ def test_build_tick_loop_forwards_agents_kwarg() -> None:
         run_id="run-agents",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=42),
-        agents=(agent,),
+        wiring=TickLoopWiring(agents=(agent,)),
     )
     assert loop._agents == (agent,)  # type: ignore[attr-defined]
     # Auto-Bus-Regel: nicht-leere agents ohne expliziten Bus →

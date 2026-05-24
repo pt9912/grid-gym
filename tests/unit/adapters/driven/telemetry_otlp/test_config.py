@@ -24,6 +24,7 @@ import pytest
 from grid_gym.adapters.driven.telemetry_otlp import (
     OtlpAdapterConfig,
     OtlpAdapterConfigError,
+    OtlpAdapterConfigOverrides,
 )
 
 
@@ -193,8 +194,10 @@ def test_from_env_rejects_invalid_protocol() -> None:
 
 def test_from_env_kwargs_override_env() -> None:
     config = OtlpAdapterConfig.from_env(
-        endpoint="http://override:4317",
-        service_name="override-name",
+        overrides=OtlpAdapterConfigOverrides(
+            endpoint="http://override:4317",
+            service_name="override-name",
+        ),
         env={
             "OTEL_EXPORTER_OTLP_ENDPOINT": "http://env:4317",
             "OTEL_SERVICE_NAME": "env-name",
@@ -314,7 +317,7 @@ def test_from_env_headers_newline_in_value_raises(raw_header: str) -> None:
 
 def test_from_env_headers_kwarg_overrides_env() -> None:
     config = OtlpAdapterConfig.from_env(
-        headers={"x-override": "yes"},
+        overrides=OtlpAdapterConfigOverrides(headers={"x-override": "yes"}),
         env={"OTEL_EXPORTER_OTLP_HEADERS": "x-env=no"},
     )
     assert dict(config.headers) == {"x-override": "yes"}
@@ -359,7 +362,7 @@ def test_from_env_empty_service_instance_id_returns_none() -> None:
 
 def test_from_env_service_instance_id_kwarg_overrides() -> None:
     config = OtlpAdapterConfig.from_env(
-        service_instance_id="kwarg-uuid",
+        overrides=OtlpAdapterConfigOverrides(service_instance_id="kwarg-uuid"),
         env={"OTEL_RESOURCE_ATTRIBUTES": "service.instance.id=env-uuid"},
     )
     assert config.service_instance_id == "kwarg-uuid"

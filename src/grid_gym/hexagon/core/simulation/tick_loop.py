@@ -82,6 +82,7 @@ from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.ports.driven.clock import ClockPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.observability import (
+    LogEntry,
     LogPort,
     MetricsPort,
     SpanContext,
@@ -349,12 +350,14 @@ class TickLoop:
         if self._log_port is None:
             return
         self._log_port.log(
-            level,
-            message,
-            run_id=self._run_id,
-            module="tick_loop",
-            event_id=event_id,
-            attributes=attributes,
+            LogEntry(
+                level=level,
+                message=message,
+                run_id=self._run_id,
+                module="tick_loop",
+                event_id=event_id,
+                attributes=attributes,
+            )
         )
 
     def _obs_gauge(

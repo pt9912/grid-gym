@@ -29,6 +29,37 @@ from typing import Protocol, runtime_checkable
 
 
 @dataclass(frozen=True, slots=True)
+class LogEntry:
+    """Strukturiertes Log-Event-Envelope (ADR 0024 §2.2, Slice 027 Paket C).
+
+    Buendelt die `GG-OTEL-002`-Pflicht-Felder zu einem einzigen
+    Value-Object, damit `LogPort.log(entry)` kein 6-Parameter-Aufruf
+    mehr ist. Der Adapter zerlegt das Envelope bei Bedarf intern
+    (NullAdapter speichert es 1:1; OTLP-Adapter mapt es auf
+    OTel-`LogRecord`).
+
+    Felder:
+
+    - `level` — String (z. B. ``"info"``, ``"warn"``). Adapter mapt
+      auf SDK-Severity nach eigener Konvention (siehe LogPort-Doc).
+    - `message` — Log-Body.
+    - `run_id` — `RunMetadata.run_id` aus ADR 0010 (optional).
+    - `module` — Quellmodul (z. B. ``"tick_loop"``); optional.
+    - `event_id` — Domain-Event-ID; optional (Welle-5-Konvention).
+    - `attributes` — strukturierte Extension-Payload ueber die
+      Pflicht-Felder hinaus (`GG-OTEL-002` flexible Extension-
+      Surface). Default: `None`.
+    """
+
+    level: str
+    message: str
+    run_id: str | None = None
+    module: str | None = None
+    event_id: str | None = None
+    attributes: Mapping[str, object] | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class SpanContext:
     """Internes Span-Kontext-Modell (ADR 0024 §2.4).
 
@@ -50,31 +81,26 @@ class LogPort(Protocol):
 
     Pflicht-Surface:
 
-    - `log(level, message, *, run_id, module, event_id, attributes)`:
-      strukturiertes Log-Event.
+    - `log(entry: LogEntry)`: emittiert ein strukturiertes Log-Event
+      ueber das `LogEntry`-Envelope.
 
-    Pflicht-Felder der Adapter-Sicht (Architektur §15): `ts`
-    (Adapter setzt aus eigener Clock-Quelle), `level`, `run_id`,
-    `module`, `event_id`, `message`. `attributes` traegt
-    zusaetzliche strukturierte Payload ueber die Pflicht-Felder hinaus.
+    Pflicht-Felder im Envelope (Architektur §15 `GG-OTEL-002`):
+    `level`, `message`, `run_id`, `module`, `event_id`, `attributes`.
+    Der Adapter setzt `ts` aus eigener Clock-Quelle (TickLoop und
+    andere Core-Aufrufer haben per `AC-NO-TIME` keinen Wall-Clock-
+    Zugang).
+
+    Slice 027 Paket C hat die frueher 6-Parameter-Signatur in das
+    `LogEntry`-Envelope gebuendelt; die Pflicht-Felder bleiben
+    inhaltlich identisch (`GG-OTEL-002`), aber der Aufrufer hat
+    jetzt eine Single-Object-Surface.
 
     `level` ist als String typisiert (keine Enum-Hierarchie im
     Port-Layer); Adapter sind frei in der Mapping-Wahl (z. B. auf
-    `logging.DEBUG/INFO/WARNING/ERROR`). `ts` ist Adapter-
-    Verantwortung — TickLoop und andere Core-Aufrufer haben per
-    AC-NO-TIME keinen Wall-Clock-Zugang.
+    `logging.DEBUG/INFO/WARNING/ERROR`).
     """
 
-    def log(  # noqa: PLR0913 — 6 Felder spiegeln das Pflicht-Set aus Architektur §15 `GG-OTEL-002` (`level`, `message`, `run_id`, `module`, `event_id`, `attributes`).
-        self,
-        level: str,
-        message: str,
-        *,
-        run_id: str | None = None,
-        module: str | None = None,
-        event_id: str | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None:
+    def log(self, entry: LogEntry) -> None:
         """Emittiert ein strukturiertes Log-Event."""
         ...
 

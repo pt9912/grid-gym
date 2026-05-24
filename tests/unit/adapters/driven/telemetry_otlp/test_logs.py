@@ -34,7 +34,7 @@ from opentelemetry.sdk._logs.export import (
 )
 
 from grid_gym.adapters.driven.telemetry_otlp import OtlpLogAdapter
-from grid_gym.hexagon.ports.driven.observability import LogPort
+from grid_gym.hexagon.ports.driven.observability import LogEntry, LogPort
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def test_log_emits_record(
     adapter: OtlpLogAdapter,
     log_exporter: InMemoryLogExporter,
 ) -> None:
-    adapter.log("info", "tick_begin")
+    adapter.log(LogEntry(level="info", message="tick_begin"))
     records = log_exporter.get_finished_logs()
     assert len(records) == 1
     assert records[0].log_record.body == "tick_begin"
@@ -74,7 +74,7 @@ def test_log_severity_text_uppercases_level(
     adapter: OtlpLogAdapter,
     log_exporter: InMemoryLogExporter,
 ) -> None:
-    adapter.log("warn", "low-fuel")
+    adapter.log(LogEntry(level="warn", message="low-fuel"))
     records = log_exporter.get_finished_logs()
     assert records[0].log_record.severity_text == "WARN"
 
@@ -101,7 +101,7 @@ def test_known_levels_map_to_severity(
     level: str,
     expected_severity: SeverityNumber,
 ) -> None:
-    adapter.log(level, "msg")
+    adapter.log(LogEntry(level=level, message="msg"))
     records = log_exporter.get_finished_logs()
     assert records[0].log_record.severity_number == expected_severity
 
@@ -110,7 +110,7 @@ def test_unknown_level_defaults_to_info(
     adapter: OtlpLogAdapter,
     log_exporter: InMemoryLogExporter,
 ) -> None:
-    adapter.log("audit", "msg")
+    adapter.log(LogEntry(level="audit", message="msg"))
     records = log_exporter.get_finished_logs()
     assert records[0].log_record.severity_number == SeverityNumber.INFO
 
@@ -119,7 +119,7 @@ def test_case_insensitive_level_match(
     adapter: OtlpLogAdapter,
     log_exporter: InMemoryLogExporter,
 ) -> None:
-    adapter.log("INFO", "upper-case")
+    adapter.log(LogEntry(level="INFO", message="upper-case"))
     records = log_exporter.get_finished_logs()
     assert records[0].log_record.severity_number == SeverityNumber.INFO
 
@@ -132,11 +132,13 @@ def test_log_includes_mandatory_fields_as_attributes(
     log_exporter: InMemoryLogExporter,
 ) -> None:
     adapter.log(
-        "info",
-        "tick_begin",
-        run_id="run-42",
-        module="tick_loop",
-        event_id="evt-001",
+        LogEntry(
+            level="info",
+            message="tick_begin",
+            run_id="run-42",
+            module="tick_loop",
+            event_id="evt-001",
+        )
     )
     record_attrs = dict(log_exporter.get_finished_logs()[0].log_record.attributes or {})
     assert record_attrs.get("run_id") == "run-42"
@@ -148,7 +150,7 @@ def test_log_omits_unset_mandatory_fields(
     adapter: OtlpLogAdapter,
     log_exporter: InMemoryLogExporter,
 ) -> None:
-    adapter.log("info", "minimal")
+    adapter.log(LogEntry(level="info", message="minimal"))
     record_attrs = dict(log_exporter.get_finished_logs()[0].log_record.attributes or {})
     assert "run_id" not in record_attrs
     assert "module" not in record_attrs
@@ -160,10 +162,12 @@ def test_log_attributes_extension_merged(
     log_exporter: InMemoryLogExporter,
 ) -> None:
     adapter.log(
-        "info",
-        "with-extras",
-        run_id="run-1",
-        attributes={"custom_field": "value", "feature": "welle-6"},
+        LogEntry(
+            level="info",
+            message="with-extras",
+            run_id="run-1",
+            attributes={"custom_field": "value", "feature": "welle-6"},
+        )
     )
     record_attrs = dict(log_exporter.get_finished_logs()[0].log_record.attributes or {})
     assert record_attrs.get("run_id") == "run-1"
@@ -182,10 +186,12 @@ def test_log_extras_override_mandatory_fields(
     eintragen.
     """
     adapter.log(
-        "info",
-        "override-test",
-        run_id="original",
-        attributes={"run_id": "overridden"},
+        LogEntry(
+            level="info",
+            message="override-test",
+            run_id="original",
+            attributes={"run_id": "overridden"},
+        )
     )
     record_attrs = dict(log_exporter.get_finished_logs()[0].log_record.attributes or {})
     assert record_attrs.get("run_id") == "overridden"

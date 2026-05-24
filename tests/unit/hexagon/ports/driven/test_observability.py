@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from grid_gym.hexagon.ports.driven.observability import (
+    LogEntry,
     LogPort,
     MetricsPort,
     SpanContext,
@@ -22,17 +23,8 @@ from grid_gym.hexagon.ports.driven.observability import (
 
 
 class _StubLogPort:
-    def log(
-        self,
-        level: str,
-        message: str,
-        *,
-        run_id: str | None = None,
-        module: str | None = None,
-        event_id: str | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None:
-        pass
+    def log(self, entry: LogEntry) -> None:
+        _ = entry
 
 
 class _StubMetricsPort:

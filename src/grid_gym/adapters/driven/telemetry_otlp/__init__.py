@@ -26,6 +26,7 @@ from grid_gym.adapters.driven.telemetry_otlp._config import (
     OtlpAdapterConfigInvalidHeaderError,
     OtlpAdapterConfigInvalidProtocolError,
     OtlpAdapterConfigNonPositiveError,
+    OtlpAdapterConfigOverrides,
     OtlpAdapterConfigTimeoutTooSmallError,
 )
 from grid_gym.adapters.driven.telemetry_otlp._factory import (
@@ -49,6 +50,7 @@ __all__ = [
     "OtlpAdapterConfigInvalidHeaderError",
     "OtlpAdapterConfigInvalidProtocolError",
     "OtlpAdapterConfigNonPositiveError",
+    "OtlpAdapterConfigOverrides",
     "OtlpAdapterConfigTimeoutTooSmallError",
     "OtlpLogAdapter",
     "OtlpMetricsAdapter",

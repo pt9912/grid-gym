@@ -7,15 +7,21 @@ Override, Welle-5-Abnahme-Kriterium aus §4.1 erfuellt). `Accepted`
 mit M3-Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-Verifikation.
 **Datum:** 2026-05-23
 **Status geaendert am:** 2026-05-23 — `Proposed → Provisional`.
-**Letzte inhaltliche Aenderung:** 2026-05-24 — Welle-6-C1.2-
-Schaerfungen: neue §4.5 loest die §4.4-Forward-Pointer
+**Letzte inhaltliche Aenderung:** 2026-05-24 — Slice 027 Paket C:
+`LogPort.log`-Surface auf `log(entry: LogEntry)` umgestellt (vorher
+6-Parameter `level/message/run_id/module/event_id/attributes`).
+Pflicht-Felder bleiben inhaltlich identisch (`GG-OTEL-002`),
+werden jetzt am `LogEntry`-frozen-dataclass-Envelope getragen.
+Adapter (NullLogAdapter, OtlpLogAdapter) + TickLoop-`_obs_log`-
+Helper + alle Tests entsprechend nachgezogen. Schaerfung-ohne-
+Supersede per ADR 0011. **Vorherige Aenderung (2026-05-24)** —
+Welle-6-C1.2-Schaerfungen: neue §4.5 loest die §4.4-Forward-Pointer
 L-2/N-1/N-2/Sentinel-Pattern/Trace-ID-Determinismus normativ auf;
 nimmt zusaetzlich die in `M3-welle-6.md` festgelegten C0-Decisions
 (D-4 = kein `time.*` im Adapter-Code; gRPC-Transport-Pinning;
 Compose-Smoke-Determinismus-Pattern mit Sink-Isolation + Flush +
 Poll) als verbindliche Welle-6-Vertraege in diese ADR auf.
-Schaerfung-ohne-Supersede per ADR 0011. **Vorherige Aenderung
-(2026-05-23)** — Welle-5-Review-Folge-Schaerfungen: §1 N-3
+**Vorherige Aenderung (2026-05-23)** — Welle-5-Review-Folge-Schaerfungen: §1 N-3
 (`ADR 0022 §2.5 → §2.4` Pre-Tick-Hook-Korrektur); §2.6 M-1
 (Log-/`tick_duration_ms`-Hooks als Welle-6-Material qualifiziert);
 §4.3 M-2 (Welle-6-Forward-Pointer fuer Sentinel-Pattern, Trace-ID-
@@ -123,21 +129,25 @@ observability.py` (drei Protocols in einer Datei — gemeinsame Domain
 ### 2.2 `LogPort`
 
 ```python
+@dataclass(frozen=True, slots=True)
+class LogEntry:
+    level: str
+    message: str
+    run_id: str | None = None
+    module: str | None = None
+    event_id: str | None = None
+    attributes: Mapping[str, object] | None = None
+
+
 class LogPort(Protocol):
-    def log(
-        self,
-        level: str,
-        message: str,
-        *,
-        run_id: str | None = None,
-        module: str | None = None,
-        event_id: str | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None: ...
+    def log(self, entry: LogEntry) -> None: ...
 ```
 
 - Surface deckt die in Architektur §15 / `GG-OTEL-002` geforderten
-  Pflicht-Felder ab.
+  Pflicht-Felder ab — die Felder leben jetzt am `LogEntry`-Envelope
+  (Slice 027 Paket C, ADR 0011-Schaerfung). Inhaltlich identisch zur
+  vorherigen 6-Parameter-Signatur; der Aufrufer hat jetzt eine
+  Single-Object-Surface.
 - `level` ist als String typisiert (nicht als Enum), um dem Core
   keine Level-Hierarchie aufzuzwingen — Adapter sind frei in der
   Mapping-Wahl (z. B. Python-`logging.DEBUG/INFO/...`).

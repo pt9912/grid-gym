@@ -30,7 +30,11 @@ from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
-from grid_gym.hexagon.core.scenario.loader import LoadedScenario, build_tick_loop
+from grid_gym.hexagon.core.scenario.loader import (
+    LoadedScenario,
+    TickLoopWiring,
+    build_tick_loop,
+)
 
 from tests.integration._constants import (
     DEMO_TOOL_VERSION,
@@ -62,7 +66,7 @@ def _drive_fault_demo(
         run_id="welle-2-fault-demo",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed),
-        fault_port=composite,
+        wiring=TickLoopWiring(fault_port=composite),
     )
     collected: list[TelemetryPoint] = []
     for _ in range(ticks):

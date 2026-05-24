@@ -355,18 +355,37 @@ def _build_load_profile(entry: object) -> LoadProfile:
     )
 
 
-def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruktor (M3-Welle-3, ADR 0023 §2.5 + M3-Welle-4a, ADR 0026 §2.2)
+@dataclass(frozen=True, slots=True)
+class TickLoopWiring:
+    """Optionale Verdrahtungs-Envelope fuer `build_tick_loop`
+    (Slice 027 Paket C).
+
+    Buendelt alle optionalen Cross-Cutting-Ports zu einem
+    Value-Object, damit `build_tick_loop` kein 10-Parameter-Aufruf
+    mehr ist. Default `None` heisst „kein Port" (analog zu den
+    bisherigen `None`-Defaults der einzelnen Kwargs).
+
+    Felder spiegeln den TickLoop-Konstruktor-Vertrag aus
+    `ADR 0022 §2.5`, `ADR 0023 §2.5`, `ADR 0024 §2.6`, `ADR 0026
+    §2.2`. Eine Aenderung dieser Liste braucht eine Folge-ADR
+    (Builder-Symmetrie).
+    """
+
+    fault_port: FaultPort | None = None
+    agent_bus: AgentMessageBus | None = None
+    agents: tuple[Agent, ...] | None = None
+    log_port: LogPort | None = None
+    metrics_port: MetricsPort | None = None
+    trace_port: TracePort | None = None
+
+
+def build_tick_loop(
     scenario: Scenario,
     *,
     run_id: str,
     clock: ClockPort,
     random_root: RandomPort,
-    fault_port: FaultPort | None = None,
-    agent_bus: AgentMessageBus | None = None,
-    agents: tuple[Agent, ...] | None = None,
-    log_port: LogPort | None = None,
-    metrics_port: MetricsPort | None = None,
-    trace_port: TracePort | None = None,
+    wiring: TickLoopWiring | None = None,
 ) -> TickLoop:
     """Welle-6b (ADR 0021 §2.4): produktiver TickLoop-Builder.
 
@@ -414,11 +433,13 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
     silent ueberschrieb.
     """
     devices = build_devices(scenario.devices, random_root)
+    w = wiring if wiring is not None else TickLoopWiring()
     # M3-Welle-4b (ADR 0027 §2.2 + Review-Folge F-1):
-    # `agents=None`-Sentinel triggert Scenario-Defaultierung.
+    # `wiring.agents=None`-Sentinel triggert Scenario-Defaultierung.
     # Expliziter `()`-Override wird respektiert.
-    if agents is None:
-        agents = _build_agents(scenario.agents) if scenario.agents else ()
+    resolved_agents: tuple[Agent, ...] | None = w.agents
+    if resolved_agents is None:
+        resolved_agents = _build_agents(scenario.agents) if scenario.agents else ()
     # Welle-6b-Review M-6: Validierung, dass LoadEvent/LoadProfile-
     # Ziele auf legitime Overlay-Geraete (LoadDevice oder
     # GridConnectionDevice) zeigen.
@@ -451,12 +472,12 @@ def build_tick_loop(  # noqa: PLR0913 — Builder-Symmetrie zu TickLoop-Konstruk
         grid_model=grid_model,
         active_load_events=scenario.load_events,
         active_load_profiles=scenario.load_profiles,
-        fault_port=fault_port,
-        agent_bus=agent_bus,
-        agents=agents,
-        log_port=log_port,
-        metrics_port=metrics_port,
-        trace_port=trace_port,
+        fault_port=w.fault_port,
+        agent_bus=w.agent_bus,
+        agents=resolved_agents,
+        log_port=w.log_port,
+        metrics_port=w.metrics_port,
+        trace_port=w.trace_port,
     )
 
 

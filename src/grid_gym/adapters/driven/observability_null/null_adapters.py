@@ -34,7 +34,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Final
 
-from grid_gym.hexagon.ports.driven.observability import SpanContext
+from grid_gym.hexagon.ports.driven.observability import LogEntry, SpanContext
 
 __all__ = [
     "CallRecord",
@@ -121,23 +121,14 @@ class NullLogAdapter:
     def __init__(self, *, record_calls: bool = False) -> None:
         self._tracker = _CallTracker(record_calls=record_calls)
 
-    def log(  # noqa: PLR0913 — 6 Felder spiegeln das Pflicht-Set aus Architektur §15 `GG-OTEL-002` (`level`, `message`, `run_id`, `module`, `event_id`, `attributes`).
-        self,
-        level: str,
-        message: str,
-        *,
-        run_id: str | None = None,
-        module: str | None = None,
-        event_id: str | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None:
+    def log(self, entry: LogEntry) -> None:
         kwargs: dict[str, object] = {
-            "level": level,
-            "message": message,
-            "run_id": run_id,
-            "module": module,
-            "event_id": event_id,
-            "attributes": dict(attributes) if attributes is not None else None,
+            "level": entry.level,
+            "message": entry.message,
+            "run_id": entry.run_id,
+            "module": entry.module,
+            "event_id": entry.event_id,
+            "attributes": dict(entry.attributes) if entry.attributes is not None else None,
         }
         self._tracker.track("log", (), kwargs)
 

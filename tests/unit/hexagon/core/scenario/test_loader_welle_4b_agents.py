@@ -31,6 +31,7 @@ from grid_gym.hexagon.core.errors import (
     ScenarioUnknownAgentTypeError,
 )
 from grid_gym.hexagon.core.scenario.loader import (
+    TickLoopWiring,
     _build_agents,
     build_tick_loop,
     load_scenario,
@@ -142,7 +143,7 @@ def test_build_tick_loop_explicit_agents_override_scenario() -> None:
         run_id="run-w4b",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=42),
-        agents=(custom_agent,),
+        wiring=TickLoopWiring(agents=(custom_agent,)),
     )
     assert len(loop._agents) == 1  # type: ignore[attr-defined]
     assert loop._agents[0].agent_id == "custom-agent"  # type: ignore[attr-defined]
@@ -160,7 +161,7 @@ def test_build_tick_loop_explicit_empty_tuple_yields_agentless_run() -> None:
         run_id="run-w4b-empty",
         clock=FakeClock(),
         random_root=MersenneTwisterRandomPort(seed=42),
-        agents=(),  # explizit leer
+        wiring=TickLoopWiring(agents=()),  # explizit leer
     )
     assert loop._agents == ()  # type: ignore[attr-defined]
     # Auto-Bus-Regel ist Welle-4a-Verantwortung: bei agents=()

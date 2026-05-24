@@ -42,6 +42,8 @@ from opentelemetry.sdk._logs import LoggerProvider
 # — `LogRecord` ist seit OTel-Python 1.18 unter diesem Pfad stabil).
 from opentelemetry.sdk._logs._internal import LogRecord  # type: ignore[attr-defined]
 
+from grid_gym.hexagon.ports.driven.observability import LogEntry
+
 __all__ = ["OtlpLogAdapter"]
 
 # String-Level → OTel-SeverityNumber. Lower-case-Key-Lookup unten.
@@ -80,28 +82,19 @@ class OtlpLogAdapter:
     ) -> None:
         self._logger = logger_provider.get_logger(instrumentation_name)
 
-    def log(  # noqa: PLR0913 — 6 Felder spiegeln das Pflicht-Set aus Architektur §15 `GG-OTEL-002` (`level`, `message`, `run_id`, `module`, `event_id`, `attributes`).
-        self,
-        level: str,
-        message: str,
-        *,
-        run_id: str | None = None,
-        module: str | None = None,
-        event_id: str | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None:
+    def log(self, entry: LogEntry) -> None:
         """Emittiert ein strukturiertes Log-Event ueber OTLP."""
-        severity_number = _LEVEL_TO_SEVERITY.get(level.lower(), _DEFAULT_SEVERITY)
+        severity_number = _LEVEL_TO_SEVERITY.get(entry.level.lower(), _DEFAULT_SEVERITY)
         merged_attrs = self._merge_attributes(
-            run_id=run_id,
-            module=module,
-            event_id=event_id,
-            extra=attributes,
+            run_id=entry.run_id,
+            module=entry.module,
+            event_id=entry.event_id,
+            extra=entry.attributes,
         )
         record = LogRecord(
-            severity_text=level.upper(),
+            severity_text=entry.level.upper(),
             severity_number=severity_number,
-            body=message,
+            body=entry.message,
             attributes=cast("Mapping[str, Any]", merged_attrs),
         )
         self._logger.emit(record)

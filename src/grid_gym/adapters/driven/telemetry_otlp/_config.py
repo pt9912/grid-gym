@@ -45,6 +45,7 @@ __all__ = [
     "OtlpAdapterConfigInvalidHeaderError",
     "OtlpAdapterConfigInvalidProtocolError",
     "OtlpAdapterConfigNonPositiveError",
+    "OtlpAdapterConfigOverrides",
     "OtlpAdapterConfigTimeoutTooSmallError",
 ]
 
@@ -236,6 +237,26 @@ def _parse_service_instance_id_from_resource_attrs(raw: str) -> str | None:
 
 
 @dataclass(frozen=True, slots=True)
+class OtlpAdapterConfigOverrides:
+    """Override-Envelope fuer `OtlpAdapterConfig.from_env` (Slice 027 Paket C).
+
+    Buendelt die optionalen Override-Felder zu einem einzigen Value-Object,
+    damit `from_env` kein 7-Kwarg-Aufruf mehr ist. Jedes Feld matched ein
+    Klassen-Feld von `OtlpAdapterConfig`; `None` heisst „Env-Var oder
+    Default verwenden" (Praezedenz: explizite Overrides > Env-Vars >
+    Klassen-Defaults).
+    """
+
+    endpoint: str | None = None
+    headers: Mapping[str, str] | None = None
+    timeout_s: float | None = None
+    batch_max_export_size: int | None = None
+    service_name: str | None = None
+    service_instance_id: str | None = None
+    protocol: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class OtlpAdapterConfig:
     """Konfiguration fuer den OTLP-Adapter (M3 Welle 6).
 
@@ -271,39 +292,37 @@ class OtlpAdapterConfig:
             raise OtlpAdapterConfigEmptyFieldError("service_name")
 
     @classmethod
-    def from_env(  # noqa: PLR0913 — 7 Felder spiegeln exakt das Datenmodell der Klasse; jeder Override matched ein Klassen-Feld.
+    def from_env(
         cls,
         *,
-        endpoint: str | None = None,
-        headers: Mapping[str, str] | None = None,
-        timeout_s: float | None = None,
-        batch_max_export_size: int | None = None,
-        service_name: str | None = None,
-        service_instance_id: str | None = None,
-        protocol: str | None = None,
+        overrides: OtlpAdapterConfigOverrides | None = None,
         env: Mapping[str, str] | None = None,
     ) -> OtlpAdapterConfig:
-        """Konstruktor mit OTEL_*-Env-Var-Fallback.
+        """Konstruktor mit OTEL_*-Env-Var-Fallback (Slice 027 Paket C).
 
-        Praezedenzregel: explizite Kwargs > Env-Vars > Klassen-Defaults.
-        `env`-Parameter erlaubt Test-Injection (statt `os.environ`-
-        Patching).
+        Praezedenzregel: `overrides`-Feld != None > Env-Vars > Klassen-
+        Defaults. `env`-Parameter erlaubt Test-Injection (statt
+        `os.environ`-Patching). Wenn `overrides` selbst `None` ist,
+        werden ausschliesslich Env-Vars + Defaults benutzt.
         """
         env_source = env if env is not None else os.environ
+        ov = overrides if overrides is not None else OtlpAdapterConfigOverrides()
 
         resolved_endpoint = (
-            endpoint if endpoint is not None else env_source.get(_ENV_ENDPOINT, _DEFAULT_ENDPOINT)
+            ov.endpoint
+            if ov.endpoint is not None
+            else env_source.get(_ENV_ENDPOINT, _DEFAULT_ENDPOINT)
         )
 
         resolved_headers: Mapping[str, str]
-        if headers is not None:
-            resolved_headers = dict(headers)
+        if ov.headers is not None:
+            resolved_headers = dict(ov.headers)
         else:
             resolved_headers = _parse_headers(env_source.get(_ENV_HEADERS, ""))
 
         resolved_timeout_s: float
-        if timeout_s is not None:
-            resolved_timeout_s = timeout_s
+        if ov.timeout_s is not None:
+            resolved_timeout_s = ov.timeout_s
         else:
             timeout_env = env_source.get(_ENV_TIMEOUT_MS)
             if timeout_env is not None:
@@ -315,27 +334,29 @@ class OtlpAdapterConfig:
                 resolved_timeout_s = _DEFAULT_TIMEOUT_S
 
         resolved_batch_size = (
-            batch_max_export_size
-            if batch_max_export_size is not None
+            ov.batch_max_export_size
+            if ov.batch_max_export_size is not None
             else _DEFAULT_BATCH_MAX_EXPORT_SIZE
         )
 
         resolved_service_name = (
-            service_name
-            if service_name is not None
+            ov.service_name
+            if ov.service_name is not None
             else env_source.get(_ENV_SERVICE_NAME, _DEFAULT_SERVICE_NAME)
         )
 
         resolved_instance_id: str | None
-        if service_instance_id is not None:
-            resolved_instance_id = service_instance_id
+        if ov.service_instance_id is not None:
+            resolved_instance_id = ov.service_instance_id
         else:
             resolved_instance_id = _parse_service_instance_id_from_resource_attrs(
                 env_source.get(_ENV_RESOURCE_ATTRIBUTES, "")
             )
 
         resolved_protocol = (
-            protocol if protocol is not None else env_source.get(_ENV_PROTOCOL, _DEFAULT_PROTOCOL)
+            ov.protocol
+            if ov.protocol is not None
+            else env_source.get(_ENV_PROTOCOL, _DEFAULT_PROTOCOL)
         )
 
         return cls(
