@@ -4,6 +4,7 @@
 Nutzung:
   python tools/check_core_determinism.py --mode determinism --mode state-floats -- <files...>
 """
+
 from __future__ import annotations
 
 import argparse
@@ -61,8 +62,8 @@ def _has_float_annotation(annotation: ast.AST | None) -> bool:
     if annotation is None:
         return False
     return any(
-        isinstance(child, ast.Name) and child.id == "float"
-        or isinstance(child, ast.Attribute) and child.attr == "float"
+        (isinstance(child, ast.Name) and child.id == "float")
+        or (isinstance(child, ast.Attribute) and child.attr == "float")
         for child in ast.walk(annotation)
     )
 
@@ -87,41 +88,72 @@ def _is_dataclass(node: ast.ClassDef) -> bool:
     return any(_is_dataclass_decorator(decorator) for decorator in node.decorator_list)
 
 
+def _check_import_node(node: ast.Import, file: Path) -> list[str]:
+    """Per-Knoten-Check fuer `import x`-Statements (Determinism-Forbidden-Roots)."""
+    violations: list[str] = []
+    for alias in node.names:
+        root = alias.name.split(".")[0]
+        if root in FORBIDDEN_ROOT_MODULES:
+            violations.append(
+                f"{file}:{node.lineno}:{node.col_offset}: forbidden import '{alias.name}'"
+            )
+    return violations
+
+
+def _check_importfrom_node(node: ast.ImportFrom, file: Path) -> list[str]:
+    """Per-Knoten-Check fuer `from x import y`-Statements."""
+    if node.module is None:
+        return []
+    root = node.module.split(".")[0]
+    if root not in FORBIDDEN_ROOT_MODULES:
+        return []
+    label = (
+        "forbidden wildcard import from"
+        if any(alias.name == "*" for alias in node.names)
+        else "forbidden from-import"
+    )
+    return [f"{file}:{node.lineno}:{node.col_offset}: {label} '{node.module}'"]
+
+
+def _check_call_node(
+    node: ast.Call,
+    file: Path,
+    module_aliases: dict[str, str],
+    from_imports: dict[str, str],
+) -> list[str]:
+    """Per-Knoten-Check fuer Calls auf importierten Forbidden-Root-Modulen."""
+    root = _call_root_name(node.func)
+    if not root or root in ALLOWED_IDENTIFIERS:
+        return []
+    violations: list[str] = []
+    if root in module_aliases and module_aliases[root] in FORBIDDEN_ROOT_MODULES:
+        violations.append(
+            f"{file}:{node.lineno}:{node.col_offset}: forbidden core-call '{ast.unparse(node.func)}()' via '{root}'"
+        )
+    if root in from_imports and from_imports[root] in FORBIDDEN_ROOT_MODULES:
+        violations.append(
+            f"{file}:{node.lineno}:{node.col_offset}: forbidden core-call '{ast.unparse(node.func)}()' via imported '{root}'"
+        )
+    return violations
+
+
 def _check_determinism(
     tree: ast.AST,
     file: Path,
     module_aliases: dict[str, str],
     from_imports: dict[str, str],
 ) -> list[str]:
+    """Dispatcher: laeuft den AST und delegiert pro Knoten-Typ an Sub-Checks."""
     violations: list[str] = []
     wildcard_forbidden = {name for name in module_aliases if name.startswith("*from:")}
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                root = alias.name.split(".")[0]
-                if root in FORBIDDEN_ROOT_MODULES:
-                    violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden import '{alias.name}'")
+            violations.extend(_check_import_node(node, file))
         elif isinstance(node, ast.ImportFrom):
-            if node.module is None:
-                continue
-            root = node.module.split(".")[0]
-            if root in FORBIDDEN_ROOT_MODULES and any(alias.name == "*" for alias in node.names):
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden wildcard import from '{node.module}'")
-            elif root in FORBIDDEN_ROOT_MODULES:
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden from-import '{node.module}'")
+            violations.extend(_check_importfrom_node(node, file))
         elif isinstance(node, ast.Call):
-            root = _call_root_name(node.func)
-            if not root or root in ALLOWED_IDENTIFIERS:
-                continue
-            if root in module_aliases and module_aliases[root] in FORBIDDEN_ROOT_MODULES:
-                violations.append(
-                    f"{file}:{node.lineno}:{node.col_offset}: forbidden core-call '{ast.unparse(node.func)}()' via '{root}'"
-                )
-            if root in from_imports and from_imports[root] in FORBIDDEN_ROOT_MODULES:
-                violations.append(
-                    f"{file}:{node.lineno}:{node.col_offset}: forbidden core-call '{ast.unparse(node.func)}()' via imported '{root}'"
-                )
+            violations.extend(_check_call_node(node, file, module_aliases, from_imports))
 
     for name in sorted(wildcard_forbidden):
         root = name.removeprefix("*from:")
@@ -144,7 +176,9 @@ def _check_state_floats(tree: ast.AST, file: Path) -> list[str]:
 
         if in_dataclass and isinstance(node, ast.AnnAssign):
             if _has_float_annotation(node.annotation):
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: typed float field '{ast.unparse(node.target)}'")
+                violations.append(
+                    f"{file}:{node.lineno}:{node.col_offset}: typed float field '{ast.unparse(node.target)}'"
+                )
             if isinstance(node.value, ast.Call) and _is_float_call(node.value):
                 violations.append(
                     f"{file}:{node.lineno}:{node.col_offset}: float() default in persisted field '{ast.unparse(node.target)}'"
@@ -172,7 +206,9 @@ def _check_files(paths: Iterable[Path], modes: tuple[str, ...]) -> list[str]:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="*")
-    parser.add_argument("--mode", action="append", required=True, choices=("determinism", "state-floats"))
+    parser.add_argument(
+        "--mode", action="append", required=True, choices=("determinism", "state-floats")
+    )
     return parser.parse_args(argv)
 
 
