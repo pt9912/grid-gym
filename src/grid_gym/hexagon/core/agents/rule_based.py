@@ -52,6 +52,43 @@ COMPARATOR_WHITELIST: Final[tuple[str, ...]] = ("<", "<=", "==", "!=", ">=", ">"
 """ADR 0027 §2.3: deterministischer Comparator-Set."""
 
 
+class RuleBasedAgentInvariantError(RuntimeError):
+    """Konstruktor-/Validator-Invariante verletzt (Slice 027 Paket E).
+
+    Wird in defensiven Guards verwendet, an denen der ADR-0027-Validator
+    eigentlich garantiert, dass ein Wert gesetzt ist. Ein Treffer
+    bedeutet einen Bug im Validator-Pfad — nicht ein normaler Aufrufer-
+    Fehler.
+    """
+
+
+class _MissingTargetDeviceIdError(RuleBasedAgentInvariantError):
+    """`target_device_id` ist None, obwohl der Validator es garantiert.
+
+    Message-Bildung in `__init__` (Codebase-Konvention; verhindert TRY003
+    am Aufruferort).
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "RuleBasedAgent.target_device_id ist None, obwohl der Validator "
+            "es im Rules-Pfad garantiert (ADR 0027 §2.3)."
+        )
+
+
+def _required_target_device_id(target: str | None) -> str:
+    """Typisierter Guard fuer Konstruktor-Vertrag aus ADR 0027 §2.3.
+
+    Ersetzt das frueher dort stehende `assert target is not None`
+    (Slice 027 Paket E, S101-Drop). Der Validator garantiert das per
+    Konstruktor-Pfad; falls der Vertrag bricht, ist das ein Bug —
+    typisierte Exception statt `AssertionError`.
+    """
+    if target is None:
+        raise _MissingTargetDeviceIdError
+    return target
+
+
 @dataclass(frozen=True, slots=True)
 class RuleCondition:
     """Bedingungs-Vertrag fuer eine `RuleBasedAgent`-Regel
@@ -188,9 +225,9 @@ class RuleBasedAgent:
         Auto-Close-Commands).
         """
         # target_device_id wird im Rules-Pfad immer gesetzt; per
-        # Konstruktor-Vertrag (Validator erzwingt das).
-        target = self._target_device_id
-        assert target is not None  # noqa: S101 — Konstruktor-Vertrag aus Validator
+        # Konstruktor-Vertrag (Validator erzwingt das). Slice 027
+        # Paket E ersetzt das `assert` durch einen typisierten Guard.
+        target = _required_target_device_id(self._target_device_id)
         rule_index = self._rules.index(rule)
         return Command(
             command_id=f"rule_based_{self._agent_id}_tick_{context.tick}_rule_{rule_index}",

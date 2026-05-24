@@ -53,6 +53,7 @@ from pathlib import Path
 from typing import Any
 
 import grimp
+from grimp.exceptions import GrimpException
 
 # Stdlib-Module, die in `hexagon/**` ohne Whitelist erlaubt sind.
 _STDLIB_NAMES: frozenset[str] = frozenset(sys.stdlib_module_names)
@@ -896,14 +897,16 @@ def _check_no_cycles() -> Iterator[Violation]:
     dedupliziert, damit dieselbe Schleife nicht n-mal je Start-Wahl
     gemeldet wird.
 
-    Fangt `Exception` breit, weil grimps API-Fehlerspektrum stabil
-    weiterentwickelt wird (`NotATopLevelModule`, `ModuleNotPresent`,
-    `NoSuchChainExists`, ...). Ein fehlgeschlagenes grimp-Query darf
-    den Lauf nicht stillschweigend zerstoeren, deshalb Log auf stderr.
+    Fangt `grimp.exceptions.GrimpException` als Base-Klasse aller
+    grimp-eigenen Fehler (`NotATopLevelModule`, `ModuleNotPresent`,
+    `NoSuchChainExists`, ...) — engerer Catch statt `Exception`
+    (Slice 027 Paket E, BLE001-Drop). Ein fehlgeschlagenes grimp-
+    Query darf den Lauf nicht stillschweigend zerstoeren, deshalb
+    Log auf stderr.
     """
     try:
         graph = grimp.build_graph(_INTERNAL_PACKAGE)
-    except Exception as exc:  # noqa: BLE001 — grimp-API-Fehlerspektrum bewusst breit
+    except GrimpException as exc:
         print(f"[arch_check] grimp build_graph failed: {exc}", file=sys.stderr)
         return
 
@@ -913,7 +916,7 @@ def _check_no_cycles() -> Iterator[Violation]:
             continue
         try:
             direct_imports = graph.find_modules_directly_imported_by(importer)
-        except Exception as exc:  # noqa: BLE001 — siehe oben
+        except GrimpException as exc:
             print(
                 f"[arch_check] grimp direct-imports failed for {importer}: {exc}",
                 file=sys.stderr,
@@ -924,7 +927,7 @@ def _check_no_cycles() -> Iterator[Violation]:
                 continue
             try:
                 chain = graph.find_shortest_chain(imported, importer)
-            except Exception as exc:  # noqa: BLE001 — siehe oben
+            except GrimpException as exc:
                 print(
                     f"[arch_check] grimp shortest-chain failed {imported}->{importer}: {exc}",
                     file=sys.stderr,

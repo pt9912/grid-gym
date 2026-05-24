@@ -118,7 +118,10 @@ class MersenneTwisterRandomPort:
         """
         self._seed: int = seed
         self._sub_path: tuple[str, ...] = tuple(sub_path)
-        self._rng: _random.Random = _random.Random(seed)  # noqa: S311 — Determinismus, nicht Krypto
+        # `random.Random` ist hier bewusst Determinismus-PRNG (ADR 0007 §5.1),
+        # nicht Krypto. Ruff-S311-Ausnahme via per-file-ignore in pyproject.toml
+        # (Slice 027 Paket E).
+        self._rng: _random.Random = _random.Random(seed)
 
     def next_int(self, low: int, high: int) -> int:
         """Integer in `[low, high]` (inklusive).

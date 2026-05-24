@@ -230,6 +230,12 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # — das uebersteigt regelmaessig die `max-public-methods=12`-Schwelle.
 # Per-File-Ignore statt cargo-cult-noqa pro Klasse (Welle-3-Review L-5).
 "src/grid_gym/hexagon/core/devices/*/model.py" = ["PLR0904"]
+# Mersenne-Twister-Adapter benutzt `random.Random` bewusst fuer
+# Determinismus (`ADR 0007 §5.1`), nicht fuer Krypto. S311 ist
+# explizit fuer Crypto-Kontext gedacht; der deterministische
+# Sim-PRNG ist die richtige Wahl hier. Per-File-Ignore statt
+# `# noqa: S311` (Slice 027 Paket E).
+"src/grid_gym/adapters/driven/random_mt/mersenne_twister.py" = ["S311"]
 # GridModelBilanz traegt analog zur Geraete-API eine breite Property-/
 # Methoden-Surface (Welle-5b-Erweiterung um active_load_events +
 # active_load_profiles bringt die Zahl ueber den Default-Schwellenwert).
