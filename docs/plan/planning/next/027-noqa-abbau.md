@@ -2,8 +2,8 @@
 
 **Status:** Next — Scope skizziert, noch kein aktiver Slice.
 **Datum:** 2026-05-24
-**Ausloeser:** `tools/check_noqa.py` meldet 36 bestehende `# noqa`-Marker.
-**Ziel:** Alle 36 `# noqa`-Marker entfernen und danach das Noqa-Gate
+**Ausloeser:** `tools/check_noqa.py` meldet bestehende `# noqa`-Marker.
+**Ziel:** Alle aktuellen `# noqa`-Marker entfernen und danach das Noqa-Gate
 hart schalten.
 
 ---
@@ -52,7 +52,7 @@ Quelle:
 python tools/check_noqa.py
 ```
 
-Stand 2026-05-24:
+Stand 2026-05-24 (durch erneuten Lauf vor Paketstart zu verifizieren):
 
 | Gruppe | Anzahl | Dateien |
 | ------ | ------ | ------- |
@@ -67,7 +67,8 @@ Stand 2026-05-24:
 | `RUF100` | 1 | Unused-noqa in Test-Stub-Zeile |
 
 Hinweis: Eine Zeile kann mehrere Ruff-Codes enthalten; die Summe der
-Gruppen-Codes ist daher nicht identisch mit den 36 Kommentarstellen.
+Gruppen-Codes kann daher ober- oder unterhalb der Kommentarstellenzahl
+liegen, sofern der Ausführungsmodus von `check_noqa` identisch bleibt.
 
 ## 3. Arbeitspakete
 
@@ -164,7 +165,8 @@ Paket-Abnahme (hard):
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
 - gezielte Regressionstests für:
   - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
-  - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen).
+  - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen),
+  - `tests/unit/hexagon/adapters/driving` (HTTP-API-Contract-/Request-Handling-Pfade).
 
 ### C — PLR0913-APIs entflechten ohne Vertragsbruch
 
@@ -197,6 +199,7 @@ Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/ports/driven/observability.py src/grid_gym/adapters/driven/observability_null/null_adapters.py src/grid_gym/adapters/driven/telemetry_otlp/logs.py src/grid_gym/adapters/driven/telemetry_otlp/_config.py src/grid_gym/hexagon/core/scenario/loader.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/ports`
 - `pytest tests/unit/hexagon/adapters`
+- `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
 - mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
   aufrufende Pfade.
 
@@ -261,6 +264,7 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa tools/arch_check.py src/grid_gym/adapters/driven/random_mt/mersenne_twister.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
+- `pytest tests/unit/hexagon/adapters/driven/random_mt`
 - `pytest tests/unit/hexagon/adapters/test_arch_check.py` (bzw. das äquivalente vorhandene
   Arch-Check-Regressionstestset im Repo)
 - Bei `tools/arch_check.py` ist eine lokale Validierung mit vorhandenen
