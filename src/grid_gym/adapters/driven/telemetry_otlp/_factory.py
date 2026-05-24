@@ -45,7 +45,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 # des Pakets — daher der explizite `_log_exporter`-Pfad).
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 
-from grid_gym.adapters.driven.telemetry_otlp._config import OtlpAdapterConfig
+from grid_gym.adapters.driven.telemetry_otlp._config import _MS_PER_S, OtlpAdapterConfig
 from grid_gym.adapters.driven.telemetry_otlp.logs import OtlpLogAdapter
 from grid_gym.adapters.driven.telemetry_otlp.metrics import OtlpMetricsAdapter
 from grid_gym.adapters.driven.telemetry_otlp.traces import OtlpTraceAdapter
@@ -60,10 +60,10 @@ __all__ = [
 # Shutdown-Pfade duerfen groesseren Wert per Kwarg uebergeben.
 _DEFAULT_FLUSH_TIMEOUT_MS: Final[int] = 5000
 
+# `_MS_PER_S` wird aus `_config` importiert (Review-Folge L-4: einzige
+# Quelle der Wahrheit fuer ms↔s-Konversion in diesem Adapter-Modul).
 # OTel-SDK-Konvention: `OTLPx*Exporter`-`timeout`-Parameter ist in
 # **Sekunden**; `force_flush(timeout_millis=)` ist in Millisekunden.
-# Wir rechnen explizit um, damit es im Adapter-Code nicht klemmt.
-_MS_PER_S: Final[int] = 1000
 
 
 @dataclass(frozen=True, slots=True)

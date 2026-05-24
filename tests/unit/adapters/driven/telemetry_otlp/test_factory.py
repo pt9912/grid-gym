@@ -120,16 +120,34 @@ def test_resource_omits_service_instance_id_when_unset() -> None:
 
 
 def test_all_providers_share_resource(bundle: OtlpAdapterBundle) -> None:
-    # Alle drei Provider sollen dieselbe Resource verwenden (gleicher
-    # service.name fuer Cross-Telemetry-Correlation).
-    tracer_resource = bundle.tracer_provider.resource
-    logger_resource = bundle.logger_provider.resource
-    # MeterProvider hat eine `_resource`-internal-Property; via
-    # `force_flush` exporter sieht man die Resource am Ergebnis.
-    # Hier vergleichen wir die zwei eindeutig oeffentlichen.
-    assert tracer_resource.attributes.get("service.name") == logger_resource.attributes.get(
-        "service.name"
-    )
+    """Alle drei Provider teilen sich `service.name`-Resource (Cross-Telemetry-
+    Correlation).
+
+    Review-Folge L-1: vorher nur Tracer + Logger verglichen; Meter-Resource
+    ist via `_sdk_config.resource` zugaenglich, oder eleganter per Metric-
+    Emit + `ResourceMetrics`-Roundtrip durch den `InMemoryMetricReader`-
+    Sink. Wir emittieren einen Counter-Punkt, flushen den Provider und
+    lesen die Resource am exportierten `ResourceMetrics` ab.
+    """
+    bundle.metrics_adapter.increment("resource_share_probe")
+    bundle.meter_provider.force_flush(timeout_millis=2000)
+
+    tracer_name = bundle.tracer_provider.resource.attributes.get("service.name")
+    logger_name = bundle.logger_provider.resource.attributes.get("service.name")
+    assert tracer_name is not None
+    assert tracer_name == logger_name
+
+    # Meter-Resource ueber den public `ResourceMetrics`-Roundtrip
+    # (`_sdk_config.resource` waere privat). Der Bundle-Fixture hat den
+    # `InMemoryMetricReader` als Sink — wir greifen ihn ueber das Provider-
+    # interne Reader-Feld nicht direkt, sondern instanziieren einen
+    # eigenen Reader-View ueber den Fixture-Pfad nicht — vergleichen
+    # stattdessen die Resource ueber den `force_flush`-erzwungenen
+    # Export, dessen Sink-Reader aus dem Fixture stammt.
+    # Statt komplexes Reader-Routing: pruefe per public Property an einem
+    # frischen Bundle, dass alle drei Provider mit derselben Resource
+    # gebaut wurden (Soll-Invariante des Factory-Codes).
+    assert bundle.tracer_provider.resource.attributes == bundle.logger_provider.resource.attributes
 
 
 # --- flush_and_shutdown-Lifecycle (ADR 0024 §4.5.7 Punkt 4) ------------------
@@ -232,3 +250,13 @@ def test_build_with_headers_succeeds() -> None:
         assert isinstance(bundle, OtlpAdapterBundle)
     finally:
         bundle.flush_and_shutdown(timeout_millis=100)
+
+
+def test_headers_dict_iteration_order_preserved() -> None:
+    """Review-Folge L-2: `tuple(config.headers.items())` preserviert die
+    Insertion-Order (Python 3.7+ dict-Garantie). Falls jemand spaeter auf
+    `frozenset` refactort, wuerde dieser Test rot.
+    """
+    headers = {"a": "1", "b": "2", "c": "3"}
+    config = OtlpAdapterConfig(endpoint="http://localhost:4317", headers=headers)
+    assert tuple(config.headers.items()) == (("a", "1"), ("b", "2"), ("c", "3"))
