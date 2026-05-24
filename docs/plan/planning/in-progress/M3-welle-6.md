@@ -195,9 +195,22 @@ Produktive Lieferung:
     gemeinsamen Sink teilen.
   - Healthcheck per `otelcol --check-config` oder
     `wget`-Probe auf Health-Extension-Port.
-- API-/Sim-Container bekommen `OTEL_EXPORTER_OTLP_ENDPOINT=
-  otel-collector:4317` plus `OTEL_SERVICE_NAME` per Compose-
-  `environment`-Block (Default-Werte gemaess `OtlpAdapterConfig`).
+- API-/Sim-Container bekommen per Compose-`environment`-Block
+  (Default-Werte gemaess `OtlpAdapterConfig`):
+  - `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317`
+    (Sibling-Hostname + gRPC-Port).
+  - `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` — explizit gepinnt,
+    damit ein SDK-Default-Wechsel oder ein Env-Override im
+    Deploy-Stack den Export-Pfad nicht still auf
+    `http/protobuf` umlenkt (Welle-6-Annahme: Transport
+    bleibt deterministisch gRPC). C1-`OtlpAdapterConfig`
+    validiert den Wert auf `{"grpc"}`; HTTP/protobuf ist
+    explizit Out-of-Scope (siehe §2) und wuerde eine
+    Konfig-Erweiterung erfordern.
+  - `OTEL_SERVICE_NAME` (Welle-6-Default: `grid-gym-sim` bzw.
+    `grid-gym-api`).
+  - `OTEL_RESOURCE_ATTRIBUTES` (C3-Smoke-Fixture setzt hier
+    die per-Lauf eindeutige `service.instance.id`).
 - `make runtime`/`make compose-smoke` werden um Collector-
   Liveness-Wait erweitert; Boot-Reihenfolge per
   `depends_on.condition: service_healthy`.
@@ -301,7 +314,7 @@ Quellen:
   (`Provisional` — Port-Trio-Spec).
 - [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
   (Bezug-Pfade-Pflege bei `git mv`).
-- [`ADR 0029`](../../adr/0029-arch-check-no-coverage-pragma.md)
+- [`ADR 0029`](../../adr/0029-no-coverage-pragma-contract.md)
   (Adapter-Pragmas verboten).
 - Trigger 006
   [`open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
