@@ -35,6 +35,10 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Assertions auf eine per-Lauf eindeutige
       `service.instance.id`, damit kein Alt-Eintrag aus einem
       frueheren Run als positiver Beleg gewertet werden kann.
+      Zusaetzlich Buffer-Determinismus: SDK-Side
+      `force_flush()` + `shutdown()` aller drei Provider vor
+      Assertion, Collector-Side kurze `batch.timeout`-Konfig
+      + bis-zu-5s-Bounded-Poll auf den Sink (siehe C3).
 - [ ] **`make gates` A-1 gruen ohne Override** — lint, format-check,
       mypy `--strict`, arch-check, coverage 90/85 line, critical-
       coverage, dep-audit (`grpcio` +
@@ -69,14 +73,18 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
 - [ ] **`AC-NO-TIME` bleibt KEPT** — `tick_duration_ms` weiterhin
       **nicht** aus TickLoop emittiert; Adapter-Code importiert
       kein `time` (D-4 in C0 festgezogen); einzige Wall-Clock-
-      Quelle ist die externe OTel-SDK (`BatchSpanProcessor`).
+      Quellen liegen eine Schicht tiefer in der externen
+      OTel-SDK (Span-Lifecycle setzt `StartTime`/`EndTime`,
+      Batch-Processoren exportieren).
 - [ ] **`AC-NO-COVERAGE-PRAGMA` (ADR 0029) bleibt KEPT** — keine
       `# pragma: no cover`/`no branch`/`exclude file` in den
       neuen Adapter-Modulen.
 - [ ] **Runbook `docs/user/observability.md`** vorhanden (welche
       Spans/Metrics/Logs emittiert werden, lokaler Stack-Boot,
       Failure-Modes + Diagnose-Pfad).
-- [ ] **README/README.de Welle-6-Closure-Zeile** ergaenzt.
+- [ ] **`README.md` + `README.de.md` Welle-6-Closure-Zeile**
+      ergaenzt (beide Sprach-Varianten halten den gleichen
+      Status-Block).
 - [ ] **M3-welle-6.md → `done/`** via Wave-Self-Close-Commit-
       Konvention; relative Link- und Bezug-Pfade-Pflege im
       Folge-Commit (ADR 0028).
@@ -118,13 +126,15 @@ Produktive Lieferung:
     `Counter`/`UpDownCounter`/`Histogram` der OTel-Metrics-SDK.
   - `OtlpTraceAdapter` — implementiert `TracePort`-Protocol;
     `start_span`/`end_span`/`record_event`-Surface auf OTel-
-    Tracer + `BatchSpanProcessor` + `OTLPSpanExporter`. Span-
-    Dauer liefert die OTel-SDK ueber `StartTime`/`EndTime` im
-    `BatchSpanProcessor`; der Adapter ruft **kein** `time.*`
-    selbst auf (D-4 unten in C0 festgezogen). `AC-NO-TIME`
-    bleibt damit auch im Adapter-Code KEPT — Wall-Clock-
-    Affordance liegt erst eine Schicht tiefer in der externen
-    SDK.
+    Tracer + `BatchSpanProcessor` + `OTLPSpanExporter`. Die
+    Start-/End-Zeitpunkte werden vom OTel-Span/SDK selbst
+    gesetzt (Span-Lifecycle: `tracer.start_span(...)` setzt
+    `StartTime`, `span.end()` setzt `EndTime`); der
+    `BatchSpanProcessor` ist nur das Export-Vehikel und
+    misst nicht. Der Adapter ruft **kein** `time.*` selbst
+    auf (D-4 unten in C0 festgezogen). `AC-NO-TIME` bleibt
+    damit auch im Adapter-Code KEPT — Wall-Clock-Affordance
+    liegt erst eine Schicht tiefer in der externen SDK.
 - Konfigurations-Helper (`OtlpAdapterConfig`-frozen-dataclass):
   `endpoint`, `headers`, `timeout_s`, `batch_max_export_size`,
   `service_name`, `service_instance_id`. Default-Quelle:
@@ -193,6 +203,12 @@ Produktive Lieferung:
     eindeutigen Pfad (z. B. `pytest`-`tmp_path` + Compose-
     Volume-Mount), damit konkurrierende Lauefe keinen
     gemeinsamen Sink teilen.
+  - **`batch`-Processor mit kurzer Timeout-Konfiguration**
+    (z. B. `timeout: 100ms`, `send_batch_size: 1`) im
+    Smoke-Pfad, damit Collector-Side-Batching die Sink-
+    Sichtbarkeit nicht verzoegert. Produktiv-Profile (M3-
+    Welle-7-Folge oder M4-Slice) duerfen groessere Werte
+    fahren; Welle-6-Smoke verwendet die kurze Config.
   - Healthcheck per `otelcol --check-config` oder
     `wget`-Probe auf Health-Extension-Port.
 - API-/Sim-Container bekommen per Compose-`environment`-Block
@@ -234,6 +250,31 @@ Produktive Lieferung:
     obigen Env-Vars).
   - Trigger einen Tick mit `RuleBasedAgent` + Battery-Fault
     (Demo-Szenario aus Welle 4b/Welle 2 wiederverwendet).
+  - **Erzwungener Flush + Provider-Shutdown vor Assertions**
+    (SDK-Seite — sonst sitzen Spans/Metrics/Logs noch in
+    `BatchSpanProcessor` / `BatchLogRecordProcessor` /
+    `PeriodicExportingMetricReader`):
+    - `tracer_provider.force_flush()` + `shutdown()`.
+    - `logger_provider.force_flush()` + `shutdown()`.
+    - `meter_provider.force_flush()` + `shutdown()`.
+    Reihenfolge: erst `force_flush()` aller Provider, dann
+    `shutdown()`, damit kein Provider in Mitte des Flushes
+    geschlossen wird. C1-Adapter stellt diese Provider-
+    Handles ueber `build_otlp_adapters(...)` bereit oder
+    exponiert eine `flush_and_shutdown()`-Helper-Funktion
+    fuer Test-Use.
+  - **Bounded Poll-Loop auf den Sink** (Collector-Seite —
+    selbst nach SDK-Flush kann der Collector-`batch`-
+    Processor und der `file`-Exporter noch puffern; die
+    kurze Batch-Timeout-Konfig in C2 minimiert das, aber
+    der Smoke wartet zusaetzlich): bis zu **5 Sekunden**
+    Polling im 100-ms-Intervall, bis im Sink die drei
+    erwarteten Eintraege (Span + Metric + Log) mit der
+    per-Lauf eindeutigen `service.instance.id` sichtbar
+    sind. Timeout → Test-Failure mit klarem Fehlertext
+    („Smoke-Sink hat nach 5s keine Eintraege fuer
+    instance.id=<uuid> gesammelt — flush nicht durchgekommen
+    oder Adapter nicht verkabelt").
   - Pruefe gegen den Collector-File-Sink, dass im Output
     **alle drei** Adapter-Pfade Spuren hinterlassen haben:
     - **≥ 1 Span** mit `name == "tick.cycle"` (Welle-5-
@@ -255,8 +296,9 @@ Produktive Lieferung:
   - Failure-Modes + Diagnose-Pfad (Collector down →
     Adapter-Log-Pattern, Export-Timeout → Backpressure-
     Verhalten).
-- README/README.de Eintrag (eine Zeile in der Status-Tabelle
-  bzw. Telemetry-Sektion) inkl. Welle-6-Closure-Datum.
+- `README.md` + `README.de.md` Eintrag (eine Zeile in der
+  Status-Tabelle bzw. Telemetry-Sektion, beide Sprach-
+  Varianten symmetrisch) inkl. Welle-6-Closure-Datum.
 - C3 traegt zusaetzlich Status `In Progress → Done`,
   Welle-6-Gate-Beleg (`make fullbuild` cache-frei gruen ohne
   Override **mit** Collector-Sibling), Test-/Coverage-Stand,
@@ -384,8 +426,11 @@ Items:
   (Tick-Loop-Robustheit > Telemetrie-Strenge); WARN-Log auf
   `LogPort` mit Throttling.
 - **D-4 Span-Dauer-Messung — Entschieden (C0):** OTel-SDK-
-  Default (`StartTime`/`EndTime` ueber `BatchSpanProcessor`),
-  **kein eigener `time.*`-Aufruf im Adapter-Code**. Begruendung:
+  Default (Start-/End-Zeitpunkte werden vom OTel-Span/SDK
+  selbst gesetzt — `tracer.start_span()` setzt `StartTime`,
+  `span.end()` setzt `EndTime`; `BatchSpanProcessor` ist
+  reines Export-Vehikel), **kein eigener `time.*`-Aufruf im
+  Adapter-Code**. Begruendung:
   die Alternative (`time.monotonic()` adapterseitig) waere zwar
   technisch zulaessig (Adapter liegt ausserhalb der Core-AC-NO-
   TIME-Boundary), wuerde aber ohne Mehrwert eine zusaetzliche
@@ -476,8 +521,11 @@ beide voraussetzt.
   Tests gruen (~30-50 zusaetzliche Tests erwartet — Surface
   je Adapter, Konfig-Defaults, Failure-Modes).
 - `make test-integration`: bestehende 19 Tests + mindestens 1
-  Welle-6-Compose-Smoke-Test gruen (Collector-Sibling,
-  Span+Metric-Sink-Assertion).
+  Welle-6-Compose-Smoke-Test gruen (Collector-Sibling;
+  Span + Metric + Log-Sink-Assertion gefiltert auf per-Lauf
+  eindeutige `service.instance.id`; SDK-Side `force_flush()` +
+  `shutdown()` aller drei Provider; Collector-Side
+  Bounded-Poll auf den Sink-File).
 - `make fullbuild` cache-frei gruen ohne Override **mit**
   Collector-Sibling (Welle-6-Abnahme-Kriterium).
 - AC-PORTS-NO-OUT bleibt KEPT — 3 neue Driven-Adapter,
@@ -544,6 +592,30 @@ beide voraussetzt.
   `service.instance.id`. Damit kann selbst ein versehentlich
   geteilter Sink-Pfad die Assertion nicht faelschlich gruen
   faerben. Folge fuer DoD-Checkliste #3 (Smoke-Pflicht-Item).
+- **R-9** — **Compose-Smoke-False-Negative durch Buffering
+  (SDK + Collector)**. Defaults der OTel-SDK
+  (`BatchSpanProcessor`, `BatchLogRecordProcessor`,
+  `PeriodicExportingMetricReader`) puffern Sekunden bis
+  Minuten; der Collector-`batch`-Processor und der `file`-
+  Exporter puffern eine zweite Schicht. Ohne erzwungenen
+  Flush koennen Span/Metric/Log am Tick-Ende noch nicht im
+  Sink stehen, obwohl der Adapter korrekt verkabelt ist —
+  Test wuerde flaky rot. *Mitigation:* zweischichtiges
+  Flush-Protokoll in C3:
+  1. **SDK-Seite (synchron):** `tracer_provider`/
+     `logger_provider`/`meter_provider` jeweils
+     `force_flush()` und danach `shutdown()` (Reihenfolge:
+     erst alle flushen, dann shutdown — sonst flush waehrend
+     shutdown unsicher). C1-Adapter stellt diese Provider-
+     Handles bereit (z. B. ueber `build_otlp_adapters(...)`-
+     Rueckgabe oder eine `flush_and_shutdown()`-Helper-
+     Funktion fuer Test-Use).
+  2. **Collector-Seite (eventually):** kurze `batch.timeout`-
+     Konfig (z. B. 100ms) plus Bounded-Poll mit 5s-Timeout
+     im 100-ms-Raster auf den Sink-File. Timeout-Fall
+     produziert klaren Fehlertext, der den Flush-Pfad als
+     verdaechtig markiert.
+  Folge fuer DoD-Checkliste #3 (Buffer-Determinismus-Klausel).
 
 ## 8. Wandert nach
 
