@@ -30,8 +30,12 @@ classifiers = [
 # - `fastapi` + `uvicorn`: Driving-Adapter `adapters/driving/http_api/`
 #   (`GG-API-001..003`, `openapi-validate`-Stage in Dockerfile).
 # - `pydantic`: Request-/Response-Schemas am API-Rand.
-# `psycopg`, `alembic`, `structlog`, `prometheus-client`,
-# `opentelemetry-api` folgen mit Welle 6b und spaeteren Slices.
+# - `psycopg`, `alembic`: M1-Welle-6c-Postgres-Persistenz.
+# - `opentelemetry-sdk` + `opentelemetry-exporter-otlp-proto-grpc`:
+#   M3-Welle-6 OTLP-Adapter (`adapters/driven/telemetry_otlp/`),
+#   gRPC-Transport gepinnt per `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`
+#   (ADR 0024 §2 + M3-Welle-6-Slice §3 D-2/D-3). `grpcio` kommt
+#   transitiv ueber den Exporter.
 # Die Imports sind nur in `src/grid_gym/adapters/driving/**` und
 # `src/grid_gym/adapters/driven/**` erlaubt — die import-linter-
 # Contracts `AC-NO-FW`/`AC-PORTS-NO-FW` halten `hexagon/core/**`
@@ -43,6 +47,13 @@ dependencies = [
     # Welle 6c — Postgres-Persistenz fuer `RunRepositoryPort`.
     "psycopg[binary]>=3.2",
     "alembic>=1.13",
+    # M3-Welle-6 — OTLP-Adapter unter `adapters/driven/telemetry_otlp/`.
+    # Floor `>=1.42` matched die Welle-6-Lock-Resolution (`uv lock`
+    # 2026-05-24 zieht 1.42.1) — Welle 6 testet ausschliesslich gegen
+    # diese Linie; ein cache-loses Install ohne Lock soll nicht in
+    # alte 1.27..1.41er-Versionen abrutschen.
+    "opentelemetry-sdk>=1.42",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.42",
 ]
 
 [build-system]
@@ -309,6 +320,11 @@ forbidden_modules = [
     "paho",
     "pymodbus",
     "asyncua",
+    # M3-Welle-6 — OTel-SDK + gRPC duerfen nur im OTLP-Adapter
+    # (`adapters/driven/telemetry_otlp/`) erscheinen, nicht in Ports.
+    # ADR 0024 §2.1 (keine OTLP-/SDK-Typen im Port-Layer).
+    "opentelemetry",
+    "grpc",
     "socket",
     "pathlib",
 ]
@@ -340,6 +356,13 @@ forbidden_modules = [
     "paho",
     "pymodbus",
     "asyncua",
+    # M3-Welle-6 — OTel-SDK + gRPC duerfen nur im OTLP-Adapter
+    # (`adapters/driven/telemetry_otlp/`) erscheinen, nicht im Core.
+    # ADR 0024 §2.1 + M3-Welle-6-D-4 (kein `time.*` im Adapter-Code
+    # — Wall-Clock-Quelle ist die externe SDK; Core ist davon doppelt
+    # geschuetzt durch AC-NO-FW + AC-NO-TIME).
+    "opentelemetry",
+    "grpc",
 ]
 
 [[tool.importlinter.contracts]]
