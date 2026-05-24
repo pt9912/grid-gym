@@ -65,7 +65,7 @@ Signaturen aus dem Fremdcode ist ausgeschlossen.
 3) **M3-konforme technische Leitplanken** sind verbindlich bestätigt:
    - Keine unkontrollierten Zufalls-/Zeitquellen im Core (`random.*`, `np.random`, `secrets`, Zeitquellen),  
      außer explizit zugelassener `RandomPort`/Scenario-Event-Pfad.
-   - keine neuen `pandas`/`numpy`-abhängigkeiten im Hexagon-Core,
+   - keine neuen `pandas`/`numpy`/`scipy`-abhängigkeiten im Hexagon-Core,
    - keine neuen Nicht-Determinismuspfade ohne `RandomPort`/Events.
 
 4) Datenbedarf ist beschraenkt auf: vorhandene Szenario-Events + optionaler
@@ -108,27 +108,21 @@ Alle Punkte gelten als Hard-Gates für die Aktivierung. Die Prüfinfos pro Punkt
 direkt im Slice-PR zu dokumentieren.
 
 - Architektur:
-  - Kein neuer `pandas`/`numpy`-Import im `grid_gym/**/core/**`.  
-    Nachweis (automatisch): `rg -n "^\s*import\s+(pandas|numpy|pd|np|scipy)|^\s*from\s+(pandas|numpy)\s+import" grid_gym/**/core`
+  - Kein neuer `pandas`/`numpy`/`scipy`-Import im `grid_gym/**/core/**`.  
+    Nachweis (automatisch): `rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" grid_gym/**/core --glob '*.py'`
   - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
     Nachweis (manuell + Review): Kern-Data-Typen im neuen Core-Code auf `float` persistierte Felder prüfen.
   - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
     Nachweis (manuell): Architektur-Review im neuen Core-Code, keine neue Batteriemodelle oder alternative Command-Pfade.
 - Determinismus:
-- Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
+  - Zufalls-/Nichtdeterminismusquellen im neuen Core-Code sind ausschließlich über einen expliziten `RandomPort` dokumentiert; andere Quellen sind ausgeschlossen.  
   Nachweis (automatisch):  
-  `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`  
-  `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
-  `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
-  `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" $CORE_FILES`
+  `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" grid_gym/**/core --glob '*.py'`
   - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
     Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
   - `numpy`/`pandas` dürfen nur in Adaptern/Utilities (nicht in `core`) auftauchen.  
-    Nachweis (automatisch): `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`  
-    `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
-    `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
-    `rg -n "^\s*import\s+(pandas|numpy|pd|np)|^\s*from\s+(pandas|numpy)\s+import" $CORE_FILES`
+    Nachweis (automatisch): `rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" grid_gym/**/core --glob '*.py'`
   - Keine neuen Kernformate im YAML/Scenario; externe CSV-/Excel-Adapter nur als optionale Randintegration mit Adapternotiz.
 - Nachweise im Slice-PR:
   - Jeder Punkt aus der DoD ist mit Test-/Code-Nachweis verlinkt.
@@ -152,10 +146,7 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   `RandomPort` oder explizite Scenario-Events, inklusive Snapshot-relevanter
   Feldliste (`reserve_mode`, `recovery_time`, `T_FCR`, geplante Schedules).
   - Nachweis:
-    - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
-    - `CORE_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD -- '*.py' | grep '/core/' || true)"`  
-    - `if [ -z "$CORE_FILES" ]; then CORE_FILES="$(git ls-files 'grid_gym/**/core/*.py' 'grid_gym/**/core/**/*.py' | tr '\n' ' ')"; fi`
-    - `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" $CORE_FILES` darf keine Treffer liefern.
+    - `rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" grid_gym/**/core --glob '*.py'` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
 - **Hard-Gate-Nachweis**: PR enthält einen Abschnitt "Validation Checklist" mit mindestens den oben definierten operativen Checks (inkl. Screenshot/Link auf Command-Output o. Ä.).
