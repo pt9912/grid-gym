@@ -37,6 +37,10 @@ _EXPECTED_CHECK_FUNCTIONS: frozenset[str] = frozenset(
         # AC-NO-COVERAGE-PRAGMA (ADR 0029, Schaerfung von ADR 0002 §A-1
         # per ADR 0011-Pattern; 11. arch_check-Contract).
         "_check_no_coverage_pragma",
+        # AC-OTLP-ADAPTER-NO-TIME (M3-Welle-6-Review-Folge-H-2, ADR 0024
+        # §4.5.5 D-4; 12. arch_check-Contract). Scoped auf
+        # `adapters/driven/telemetry_otlp/**`; forbids `time` + `datetime`.
+        "_check_otlp_adapter_no_time",
     }
 )
 
@@ -102,14 +106,16 @@ def test_no_unexpected_checks_registered_in_main() -> None:
 
 
 def test_registered_count_matches_adr_count() -> None:
-    """Die Zahl ist heute genau 11 (siehe `ADR 0002 §A-1` — sechzehn
-    urspruengliche A-1-Contracts plus AC-NO-COVERAGE-PRAGMA per
-    `ADR 0029` als Schaerfung-ohne-Supersedes von §A-1 per ADR 0011-
-    Pattern; davon sechs ueber `import-linter` und elf ueber
-    `tools/arch_check.py`)."""
-    expected_arch_check_contracts = 11
+    """Die Zahl ist heute genau 12: sechzehn urspruengliche A-1-Contracts
+    (`ADR 0002 §A-1`) plus AC-NO-COVERAGE-PRAGMA per `ADR 0029` plus
+    AC-OTLP-ADAPTER-NO-TIME per M3-Welle-6-Review-Folge-H-2
+    (Schaerfung-ohne-Supersedes von `ADR 0024 §4.5.5 D-4` per ADR 0011-
+    Pattern); davon sechs ueber `import-linter` und zwoelf ueber
+    `tools/arch_check.py`."""
+    expected_arch_check_contracts = 12
     registered = _extract_main_check_calls()
     assert len(registered) == expected_arch_check_contracts, (
         f"arch_check.py main() registriert {len(registered)} Contracts, "
-        f"erwartet {expected_arch_check_contracts} (ADR 0002 §A-1 + ADR 0029)."
+        f"erwartet {expected_arch_check_contracts} "
+        "(ADR 0002 §A-1 + ADR 0029 + ADR 0024 §4.5.5)."
     )

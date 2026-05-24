@@ -104,6 +104,24 @@ def test_batch_max_export_size_must_be_positive(invalid_size: int) -> None:
         OtlpAdapterConfig(batch_max_export_size=invalid_size)
 
 
+def test_batch_max_export_size_at_otel_limit_accepted() -> None:
+    """OTel-`max_queue_size` ist 2048 — Werte am Limit sind erlaubt."""
+    config = OtlpAdapterConfig(batch_max_export_size=2048)
+    assert config.batch_max_export_size == 2048
+
+
+@pytest.mark.parametrize("oversized", [2049, 4096, 8192])
+def test_batch_max_export_size_above_otel_limit_raises(oversized: int) -> None:
+    """Review-Folge H-3: Werte ueber dem OTel-`max_queue_size`-Limit (2048)
+    werden gefangen, statt im Compose-Smoke silent gedrosselt zu werden.
+    """
+    with pytest.raises(OtlpAdapterConfigError) as exc_info:
+        OtlpAdapterConfig(batch_max_export_size=oversized)
+    msg = str(exc_info.value)
+    assert "2048" in msg
+    assert "H-3" in msg or "max_queue_size" in msg
+
+
 # --- String-field validation -------------------------------------------------
 
 

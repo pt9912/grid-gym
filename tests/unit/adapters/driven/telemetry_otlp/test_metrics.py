@@ -11,10 +11,12 @@ Pinnt:
 - Instrument-Caching: zweimal `increment("x")` benutzt dasselbe
   OTel-`Counter`-Instrument (kein zweites `create_counter`).
 - Attributes-Propagation.
-- **Kein `time.*`-Import im Adapter-Modul** (ADR 0024 §4.5.5 D-4).
 
 Tests verwenden `InMemoryMetricReader` als In-Process-Sink (kein
-Live-Collector noetig).
+Live-Collector noetig). Die `time.*`/`datetime`-Freiheit des
+Adapter-Moduls (ADR 0024 §4.5.5 D-4) wird zentral vom
+`AC-OTLP-ADAPTER-NO-TIME`-Contract in `tools/arch_check.py`
+geprueft.
 """
 
 from __future__ import annotations
@@ -170,19 +172,8 @@ def test_repeated_observe_reuses_histogram(adapter: OtlpMetricsAdapter) -> None:
     assert first is second
 
 
-# --- Modul-Importe (ADR 0024 §4.5.5 D-4) -------------------------------------
-
-
-def test_module_does_not_import_time() -> None:
-    """`metrics`-Modul darf kein `time.*` importieren (ADR 0024 §4.5.5)."""
-    import grid_gym.adapters.driven.telemetry_otlp.metrics as metrics_mod
-
-    source = metrics_mod.__file__
-    assert source is not None
-    with open(source, encoding="utf-8") as fh:
-        text = fh.read()
-    assert "import time" not in text
-    assert "from time" not in text
-    assert "from datetime" not in text
-    assert "perf_counter" not in text
-    assert "monotonic" not in text
+# --- Modul-Importe ----------------------------------------------------------
+#
+# `time.*`/`datetime`-Freiheit (ADR 0024 §4.5.5 D-4) wird zentral vom
+# `AC-OTLP-ADAPTER-NO-TIME`-Contract per AST geprueft, nicht hier per
+# Substring-Inspektion (Review-Folge H-2). Siehe `tools/arch_check.py`.

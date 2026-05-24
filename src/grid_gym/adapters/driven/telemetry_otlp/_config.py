@@ -37,6 +37,7 @@ from typing import Final
 
 __all__ = [
     "OtlpAdapterConfig",
+    "OtlpAdapterConfigBatchTooLargeError",
     "OtlpAdapterConfigEmptyFieldError",
     "OtlpAdapterConfigEnvTimeoutParseError",
     "OtlpAdapterConfigError",
@@ -49,6 +50,13 @@ __all__ = [
 _DEFAULT_ENDPOINT: Final[str] = "http://localhost:4317"
 _DEFAULT_TIMEOUT_S: Final[float] = 10.0
 _DEFAULT_BATCH_MAX_EXPORT_SIZE: Final[int] = 512
+
+# OTel-SDK 1.42 setzt das interne `BatchSpanProcessor.max_queue_size`
+# auf 2048 hart; `max_export_batch_size > max_queue_size` waere silent
+# gedrosselt (Records verschwinden im Drop). Wir spiegeln das Limit
+# als Validation, damit Konfig-Drift sofort sichtbar wird statt im
+# Compose-Smoke (Review-Folge H-3 zu ADR 0024 §4.5.7).
+_MAX_BATCH_MAX_EXPORT_SIZE: Final[int] = 2048
 _DEFAULT_SERVICE_NAME: Final[str] = "grid-gym"
 _DEFAULT_PROTOCOL: Final[str] = "grpc"
 
@@ -106,6 +114,24 @@ class OtlpAdapterConfigNonPositiveError(OtlpAdapterConfigError):
 
     def __init__(self, field: str, value: float | int) -> None:
         super().__init__(f"OtlpAdapterConfig.{field}={value} muss > 0 sein.")
+
+
+class OtlpAdapterConfigBatchTooLargeError(OtlpAdapterConfigError):
+    """`batch_max_export_size` ueberschreitet das OTel-SDK-`max_queue_size`-Limit (2048).
+
+    Review-Folge H-3 zu ADR 0024 §4.5.7: ueberlange Batches wuerden silent
+    am `max_queue_size`-Hard-Limit von `BatchSpanProcessor`/
+    `BatchLogRecordProcessor` gedrosselt; das ist kein Drop-Error, sondern
+    Record-Verlust. Validation hier macht die Konfig-Drift sofort sichtbar.
+    """
+
+    def __init__(self, value: int) -> None:
+        super().__init__(
+            f"OtlpAdapterConfig.batch_max_export_size={value} > "
+            f"{_MAX_BATCH_MAX_EXPORT_SIZE} (OTel-SDK-`max_queue_size`-Hard-Limit; "
+            "ueberlange Batches werden silent gedrosselt). "
+            "Review-Folge H-3 zu ADR 0024 §4.5.7."
+        )
 
 
 class OtlpAdapterConfigEnvTimeoutParseError(OtlpAdapterConfigError):
@@ -197,6 +223,8 @@ class OtlpAdapterConfig:
             raise OtlpAdapterConfigNonPositiveError(
                 "batch_max_export_size", self.batch_max_export_size
             )
+        if self.batch_max_export_size > _MAX_BATCH_MAX_EXPORT_SIZE:
+            raise OtlpAdapterConfigBatchTooLargeError(self.batch_max_export_size)
         if not self.service_name:
             raise OtlpAdapterConfigEmptyFieldError("service_name")
 

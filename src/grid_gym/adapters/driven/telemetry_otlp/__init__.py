@@ -19,6 +19,7 @@ C1.3c (siehe `M3-welle-6.md §3 C1`).
 
 from grid_gym.adapters.driven.telemetry_otlp._config import (
     OtlpAdapterConfig,
+    OtlpAdapterConfigBatchTooLargeError,
     OtlpAdapterConfigEmptyFieldError,
     OtlpAdapterConfigEnvTimeoutParseError,
     OtlpAdapterConfigError,
@@ -37,6 +38,7 @@ from grid_gym.adapters.driven.telemetry_otlp.traces import OtlpTraceAdapter
 __all__ = [
     "OtlpAdapterBundle",
     "OtlpAdapterConfig",
+    "OtlpAdapterConfigBatchTooLargeError",
     "OtlpAdapterConfigEmptyFieldError",
     "OtlpAdapterConfigEnvTimeoutParseError",
     "OtlpAdapterConfigError",

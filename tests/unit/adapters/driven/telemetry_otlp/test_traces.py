@@ -15,7 +15,9 @@ Pinnt:
 - Attributes werden 1:1 an OTel weitergereicht.
 - Tests verwenden `InMemorySpanExporter` als In-Process-Sink (kein
   Live-Collector noetig).
-- **Kein `time.*`-Import im Adapter-Modul** (ADR 0024 §4.5.5 D-4).
+- `time.*`/`datetime`-Freiheit (ADR 0024 §4.5.5 D-4) wird zentral
+  vom `AC-OTLP-ADAPTER-NO-TIME`-Contract in `tools/arch_check.py`
+  geprueft (AST-basiert, keine Substring-Heuristik).
 """
 
 from __future__ import annotations
@@ -59,8 +61,23 @@ def adapter(span_exporter: InMemorySpanExporter) -> Iterator[OtlpTraceAdapter]:
 # --- Protocol-Conformance ----------------------------------------------------
 
 
+def _accept_trace_port(port: TracePort) -> TracePort:
+    """Statischer Pin (mypy `--strict`): erzwingt strikte `TracePort`-Konformitaet
+    trotz der `| None`-Adapter-Robustheit in `end_span`/`record_event`
+    (ADR 0024 §4.5.1 — Adapter-spezifische Erweiterung, Protocol bleibt strikt).
+    """
+    return port
+
+
 def test_adapter_implements_trace_port(adapter: OtlpTraceAdapter) -> None:
     assert isinstance(adapter, TracePort)
+    # Statischer Pin gegen Review-Folge-H-1: `OtlpTraceAdapter.end_span`/
+    # `.record_event` haben `SpanContext | None`-Signatur (ADR 0024 §4.5.1);
+    # das Protocol verlangt strikt `SpanContext`. Der Adapter-Parameter ist
+    # damit kontravariant breiter — Liskov-konform. mypy `--strict` validiert
+    # das hier; Runtime-`isinstance` allein wuerde Signatur-Drift nicht
+    # fangen, weil `@runtime_checkable` nur Method-Namen prueft.
+    _accept_trace_port(adapter)
 
 
 # --- start_span surface ------------------------------------------------------
@@ -197,20 +214,8 @@ def test_active_spans_cleaned_after_end(adapter: OtlpTraceAdapter) -> None:
     assert context.span_id not in adapter._active_spans
 
 
-# --- Modul-Importe (ADR 0024 §4.5.5 D-4) -------------------------------------
-
-
-def test_module_does_not_import_time() -> None:
-    """`traces`-Modul darf kein `time.*` importieren (ADR 0024 §4.5.5)."""
-    import grid_gym.adapters.driven.telemetry_otlp.traces as traces_mod
-
-    source = traces_mod.__file__
-    assert source is not None
-    with open(source, encoding="utf-8") as fh:
-        text = fh.read()
-    # AC-NO-TIME-Geist: weder Modul-Import noch from-Import.
-    assert "import time" not in text
-    assert "from time" not in text
-    assert "from datetime" not in text
-    assert "perf_counter" not in text
-    assert "monotonic" not in text
+# --- Modul-Importe ----------------------------------------------------------
+#
+# `time.*`/`datetime`-Freiheit (ADR 0024 §4.5.5 D-4) wird zentral vom
+# `AC-OTLP-ADAPTER-NO-TIME`-Contract per AST geprueft, nicht hier per
+# Substring-Inspektion (Review-Folge H-2). Siehe `tools/arch_check.py`.

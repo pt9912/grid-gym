@@ -38,16 +38,45 @@ from grid_gym.hexagon.ports.driven.observability import (
 # --- Protocol-Conformance ----------------------------------------------------
 
 
+def _accept_log_port(port: LogPort) -> LogPort:
+    """Statischer Pin (mypy `--strict`): erzwingt strikte `LogPort`-Konformitaet."""
+    return port
+
+
+def _accept_metrics_port(port: MetricsPort) -> MetricsPort:
+    """Statischer Pin (mypy `--strict`): erzwingt strikte `MetricsPort`-Konformitaet."""
+    return port
+
+
+def _accept_trace_port(port: TracePort) -> TracePort:
+    """Statischer Pin (mypy `--strict`): erzwingt strikte `TracePort`-Konformitaet
+    trotz der `| None`-Adapter-Robustheit in `end_span`/`record_event`
+    (ADR 0024 §4.5.1 — Adapter-spezifische Erweiterung, Protocol bleibt strikt).
+    """
+    return port
+
+
 def test_null_log_adapter_satisfies_log_port() -> None:
     assert isinstance(NullLogAdapter(), LogPort)
+    # Statische Pruefung: mypy `--strict` prueft hier, dass die Adapter-
+    # Methoden-Signaturen kontravariant breiter sind als das Protocol
+    # (Liskov-konform). Runtime-`isinstance` allein wuerde Signatur-Drift
+    # nicht fangen, weil `@runtime_checkable` nur Method-Namen prueft.
+    _accept_log_port(NullLogAdapter())
 
 
 def test_null_metrics_adapter_satisfies_metrics_port() -> None:
     assert isinstance(NullMetricsAdapter(), MetricsPort)
+    _accept_metrics_port(NullMetricsAdapter())
 
 
 def test_null_trace_adapter_satisfies_trace_port() -> None:
     assert isinstance(NullTraceAdapter(), TracePort)
+    # Statischer Pin gegen Review-Folge-H-1: `NullTraceAdapter.end_span`/
+    # `.record_event` haben `SpanContext | None`-Signatur (ADR 0024 §2.4
+    # No-Op-Robustheit); das Protocol verlangt strikt `SpanContext`. Der
+    # Adapter-Parameter ist damit kontravariant breiter — Liskov-konform.
+    _accept_trace_port(NullTraceAdapter())
 
 
 # --- Default-Surface (record_calls=False) ------------------------------------

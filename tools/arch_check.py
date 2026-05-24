@@ -28,6 +28,12 @@ Welle 3 deckt:
   `coverage.report.exclude_lines`-Pattern `\\.\\.\\.` abgedeckt,
   Dead-Code wird geloescht, defensives `if not isinstance(...)` nach
   Vorvalidierung wird ueber `typing.cast` ersetzt)
+- AC-OTLP-ADAPTER-NO-TIME — kein `time`-/`datetime`-Import unter
+  `adapters/driven/telemetry_otlp/**` (ADR 0024 §4.5.5 D-4: Span-
+  Dauern liefert die OTel-SDK, kein Wall-Clock-Affordance im Adapter-
+  Code). Separater Contract zu `AC-NO-TIME` (das nur `time` und
+  nur den Core abdeckt); `datetime` ist im Adapter zusaetzlich
+  verboten
 
 Konfiguration kommt aus `[tool.grid_gym.arch_check]` in
 `pyproject.toml`. Exit-Code 0 = alle Contracts kept, 1 = mindestens
@@ -201,6 +207,7 @@ def main() -> int:
         violations.extend(_check_no_cycles())
         violations.extend(_check_adapter_lightweight(repo_root, src_root))
         violations.extend(_check_no_coverage_pragma(repo_root, src_root))
+        violations.extend(_check_otlp_adapter_no_time(repo_root, src_root))
 
     for violation in violations:
         print(violation.format(), file=sys.stderr)
@@ -387,6 +394,56 @@ def _no_time_violations(node: ast.AST, rel: str, aliases: ImportAliases) -> Iter
     else:
         detail = f"time.{attr}() (via alias or attribute) — use ClockPort"
     yield Violation("AC-NO-TIME", f"{rel}:{node.lineno}", detail)
+
+
+# ---------------------------------------------------------------------------
+# AC-OTLP-ADAPTER-NO-TIME (ADR 0024 §4.5.5 D-4)
+# ---------------------------------------------------------------------------
+
+
+_OTLP_ADAPTER_FORBIDDEN_TIME_ROOTS: frozenset[str] = frozenset({"time", "datetime"})
+
+
+def _check_otlp_adapter_no_time(repo_root: Path, src_root: Path) -> Iterator[Violation]:
+    """`adapters/driven/telemetry_otlp/**` darf weder `time` noch `datetime`
+    importieren (ADR 0024 §4.5.5 D-4 — Span-Dauern liefert die OTel-SDK,
+    kein Wall-Clock-Affordance im Adapter-Code).
+    """
+    otlp_root = src_root / "adapters" / "driven" / "telemetry_otlp"
+    if not otlp_root.exists():
+        return
+    for py_file in _iter_py_files(otlp_root):
+        tree = _parse(py_file)
+        rel = _rel(repo_root, py_file)
+        for node in ast.walk(tree):
+            yield from _otlp_adapter_no_time_violations(node, rel)
+
+
+def _otlp_adapter_no_time_violations(node: ast.AST, rel: str) -> Iterator[Violation]:
+    """Per-Knoten-Check fuer verbotene `time`-/`datetime`-Imports im OTLP-Adapter."""
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            root = alias.name.split(".")[0]
+            if root in _OTLP_ADAPTER_FORBIDDEN_TIME_ROOTS:
+                yield Violation(
+                    "AC-OTLP-ADAPTER-NO-TIME",
+                    f"{rel}:{node.lineno}",
+                    f"import {alias.name} — Wall-Clock im OTLP-Adapter verboten "
+                    "(ADR 0024 §4.5.5 D-4)",
+                )
+        return
+    if isinstance(node, ast.ImportFrom):
+        if node.module is None:
+            return
+        root = node.module.split(".")[0]
+        if root in _OTLP_ADAPTER_FORBIDDEN_TIME_ROOTS:
+            imported = ", ".join(a.asname or a.name for a in node.names)
+            yield Violation(
+                "AC-OTLP-ADAPTER-NO-TIME",
+                f"{rel}:{node.lineno}",
+                f"from {node.module} import {imported} — Wall-Clock im OTLP-Adapter "
+                "verboten (ADR 0024 §4.5.5 D-4)",
+            )
 
 
 def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:
