@@ -18,8 +18,8 @@ oder Test-Stubs ohne ungenutzte Argumente ersetzt.
 Ausnahme-Regel:
 
 - Es werden in diesem Slice keine neuen `# noqa`-Marker eingefuehrt.
-- Bestehende Marker werden entfernt; verbleibende Marker sind No-Go für die
-  Auslieferung.
+- Bestehende Marker werden entfernt; verbleibende Marker sind No-Go fuer die
+  Auslieferung dieses Slices, solange kein Folgepaket-Freigabeprozess abgeschlossen ist.
 - Eine dauerhafte technische Ausnahme darf im Rahmen dieses Spikes nicht
   per `# noqa` gelöst werden. Falls technische Huerde vorliegt, ist ein
   Folgepaket mit separatem Freigabeprozess anzulegen.
@@ -31,6 +31,10 @@ technisch unvermeidbar):
 - Konkreter alternativer Plan (neuer Paket-Scope, neue DoD, erwartete Marker-Reduktion).
 - Owner + Datum + Referenz auf Folge-PR/Issue.
 - Freigabe durch fachliche Leitung + Architektur-Review mit Datum.
+
+Nach Abschluss der Ausnahme-Dokumentation bleibt der finale Gate im Slice trotzdem
+ein Blocker: `python tools/check_noqa.py --fail-on-noqa` auf dem vollständigen
+Scope darf erst nach Schliessung des Folgepakets gruen laufen.
 
 Nach Abschluss gilt:
 
@@ -83,6 +87,9 @@ Nach jedem Paket gilt:
 
 - `python tools/check_noqa.py` ausfuehren (keine neuen Marker in bereits
   bereinigten Bereichen) als harte Stufe:
+  - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
+- Nach Paket A–E (und ohne offene technische Ausnahmen) folgt die finale
+  Repo-Absicherung mit:
   - `python tools/check_noqa.py --fail-on-noqa`
 - Betroffene Paket-Tests laufen gruen.
 - Bei betroffenen Dateien in den Kernpaketen darf kein anderer Paket-Scope
@@ -118,7 +125,7 @@ Akzeptanz:
    in `tests/unit/hexagon/core/devices/test_protocol_contract.py` als hard.
 
 Paket-Abnahme (hard):
-- `python tools/check_noqa.py --fail-on-noqa`
+- `python tools/check_noqa.py --fail-on-noqa tests/unit/hexagon/core/devices/test_protocol_contract.py tests/unit/hexagon/core/scenario/test_loader_welle_6b.py src/grid_gym/hexagon/core/devices/battery/model.py src/grid_gym/hexagon/core/devices/grid_connection/model.py`
 - `pytest tests/unit/hexagon/core/devices/test_protocol_contract.py`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
 - Contract-Verhalten in betroffenen `Device`-/Protocol-Flows unverändert: bestehende
@@ -153,7 +160,7 @@ Akzeptanz:
   bleiben bestehen.
 
 Paket-Abnahme (hard):
-- `python tools/check_noqa.py --fail-on-noqa`
+- `python tools/check_noqa.py --fail-on-noqa src/grid_gym/adapters/driving/http_api/app.py src/grid_gym/hexagon/core/agents/bus.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/simulation/tick_loop.py`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
 - gezielte Regressionstests für:
   - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
@@ -187,7 +194,7 @@ Akzeptanz:
   Vertragstests sind zwingend nachzuziehen.
 
 Paket-Abnahme (hard):
-- `python tools/check_noqa.py --fail-on-noqa`
+- `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/ports/driven/observability.py src/grid_gym/adapters/driven/observability_null/null_adapters.py src/grid_gym/adapters/driven/telemetry_otlp/logs.py src/grid_gym/adapters/driven/telemetry_otlp/_config.py src/grid_gym/hexagon/core/scenario/loader.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/ports`
 - `pytest tests/unit/hexagon/adapters`
 - mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
@@ -220,7 +227,7 @@ Akzeptanz:
   Resume-Szenarien) laufen weiterhin gruen.
 
 Paket-Abnahme (hard):
-- `python tools/check_noqa.py --fail-on-noqa`
+- `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/simulation/tick_loop.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py`
 - `pytest tests/unit/hexagon/core/scenario/test_validator.py`
 - `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
@@ -252,7 +259,7 @@ Akzeptanz:
  - `make arch-check-custom` bleibt gruen.
 
 Paket-Abnahme (hard):
-- `python tools/check_noqa.py --fail-on-noqa`
+- `python tools/check_noqa.py --fail-on-noqa tools/arch_check.py src/grid_gym/adapters/driven/random_mt/mersenne_twister.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
 - `pytest tests/unit/hexagon/adapters/test_arch_check.py` (bzw. das äquivalente vorhandene
   Arch-Check-Regressionstestset im Repo)
