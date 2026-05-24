@@ -26,11 +26,16 @@ from grid_gym.adapters.driven.telemetry_otlp._config import (
     OtlpAdapterConfigInvalidProtocolError,
     OtlpAdapterConfigNonPositiveError,
 )
+from grid_gym.adapters.driven.telemetry_otlp._factory import (
+    OtlpAdapterBundle,
+    build_otlp_adapters,
+)
 from grid_gym.adapters.driven.telemetry_otlp.logs import OtlpLogAdapter
 from grid_gym.adapters.driven.telemetry_otlp.metrics import OtlpMetricsAdapter
 from grid_gym.adapters.driven.telemetry_otlp.traces import OtlpTraceAdapter
 
 __all__ = [
+    "OtlpAdapterBundle",
     "OtlpAdapterConfig",
     "OtlpAdapterConfigEmptyFieldError",
     "OtlpAdapterConfigEnvTimeoutParseError",
@@ -41,4 +46,5 @@ __all__ = [
     "OtlpLogAdapter",
     "OtlpMetricsAdapter",
     "OtlpTraceAdapter",
+    "build_otlp_adapters",
 ]

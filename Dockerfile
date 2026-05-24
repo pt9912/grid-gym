@@ -242,7 +242,7 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 # Roundtrip; konkrete Agent-Implementer (`RuleBasedAgent`) kommen
 # mit Welle 4 unter dem gleichen Paket-Pfad und sind damit
 # automatisch von der Default-Schwelle erfasst.
-ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults src/grid_gym/hexagon/core/agents"
+ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults src/grid_gym/hexagon/core/agents src/grid_gym/adapters/driven/telemetry_otlp"
 RUN set -eu; \
     for target in ${CRITICAL_COV_TARGETS}; do \
         if [ ! -d "${target}" ]; then \
