@@ -435,7 +435,12 @@ Mapping statt if/elif-Kaskade — PLR0911-frei und einfacher zu erweitern."""
 
 
 def _apply_comparator(value: int, comparator: str, threshold: int) -> bool:
-    """Wertbasierter Vergleich mit der Welle-4b-Comparator-Whitelist."""
+    """Wertbasierter Vergleich mit defensive Fallback-Semantik auf der
+    vom Scenario-Validator (ADR 0027 §2.3) bereits gefilterten Comparator-
+    Whitelist. Unbekannte Comparator-Strings sind in der Praxis nur
+    erreichbar, wenn ein Snapshot direkt mit einem unbekannten Wert
+    restoret wird (Validator hat dann nicht greifen koennen) — der
+    Fallback gibt `False` zurueck, kein Crash."""
     predicate = _COMPARATOR_DISPATCH.get(comparator)
     if predicate is None:
         # Defensive: Validator haette das schon abgewiesen.

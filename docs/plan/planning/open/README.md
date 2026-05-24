@@ -27,6 +27,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | `006-mypy-strict-bytes.md`                     | `--strict-bytes`-Aktivierung (ADR 0005)                                   | nach Konsolidierung des `GG-DATA-005`-Bytes-Vertrags |
 | `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
+| `028-tick-loop-private-error-import-contract.md` | arch_check-Contract fuer modul-lokale `_*Error`-Klassen in `tick_loop.py` (Slice 027 Review-Folge L-5) | bei Welle 5b/6-Hardening oder bei erstem Verstoss-Bug |
 
 **M3-/Multi-Agent-Folge:**
 

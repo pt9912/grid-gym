@@ -166,6 +166,11 @@ RUN uv run python tools/check_noqa.py
 # Default (leerer ARG) prueft das gesamte Repo (`src tests tools`).
 # Plan §3.0: paketweise Hard-Stufe nach jedem Paket; Plan §4: Final-Scharf-
 # schaltung in `make gates` nach Slice-Abschluss.
+#
+# `$NOQA_FILES` ist absichtlich unquoted — Shell-Word-Splitting laesst
+# uns mehrere Pfade per Whitespace getrennt uebergeben
+# (`NOQA_FILES="src/a.py src/b.py"`). Pfade mit Whitespace im Namen
+# werden nicht unterstuetzt; das Repo hat keine.
 # ---------------------------------------------------------------------------
 FROM source AS noqa-gate
 ARG NOQA_FILES=""

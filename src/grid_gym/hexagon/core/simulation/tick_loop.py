@@ -634,6 +634,10 @@ class TickLoop:
                 and target.device_id not in manual_override_grid_ids
             ):
                 manual_override_grid_ids.append(target.device_id)
+        # Buffer-Clear NUR nach erfolgreichem Apply-Durchlauf (ADR 0026
+        # §2.1 Exception-Pfad). Eine `apply_command(...)`-Exception oben
+        # laesst den Buffer ungeleert, damit Resume die Pending-Commands
+        # nochmal sehen kann.
         self._pending_agent_commands.clear()
 
     def _apply_fault_injection(
@@ -1321,9 +1325,13 @@ class _DeviceSnapshotDiffersError(TickLoopAgentSnapshotDeviceMismatchError):
 
 
 class _DeviceExtraSubSnapshotsError(TickLoopAgentSnapshotDeviceMismatchError):
-    """Resume-Diagnostik: persistierte Device-Sub-Snapshots ohne injizierten Match."""
+    """Resume-Diagnostik: persistierte Device-Sub-Snapshots ohne injizierten Match.
 
-    def __init__(self, extras: list[str]) -> None:
+    Sortier-Verantwortung liegt in `__init__` (deterministische Ausgabe);
+    Aufrufer uebergibt eine ungeordnete `set[str]` der Extra-Keys.
+    """
+
+    def __init__(self, extras: set[str]) -> None:
         super().__init__(
             f"persisted device sub-snapshots {sorted(extras)!r} have no "
             "matching injected device (injected subset is not a full restore)"
@@ -1382,9 +1390,13 @@ class _AgentSnapshotDiffersError(TickLoopAgentInstanceSnapshotMismatchError):
 
 
 class _AgentExtraSubSnapshotsError(TickLoopAgentInstanceSnapshotMismatchError):
-    """Resume-Diagnostik: persistierte Agent-Sub-Snapshots ohne injizierten Match."""
+    """Resume-Diagnostik: persistierte Agent-Sub-Snapshots ohne injizierten Match.
 
-    def __init__(self, extras: list[str]) -> None:
+    Sortier-Verantwortung liegt in `__init__` (deterministische Ausgabe);
+    Aufrufer uebergibt eine ungeordnete `set[str]` der Extra-Keys.
+    """
+
+    def __init__(self, extras: set[str]) -> None:
         super().__init__(
             f"persisted agent sub-snapshots {sorted(extras)!r} have no "
             "matching injected agent (injected subset is not a full restore)"
@@ -1434,7 +1446,7 @@ def _assert_device_resume_match(
             raise _DeviceSnapshotDiffersError(device.device_id, device_type)
     extras = device_keys - expected_keys
     if extras:
-        raise _DeviceExtraSubSnapshotsError(sorted(extras))
+        raise _DeviceExtraSubSnapshotsError(extras)
 
 
 def _assert_grid_model_resume_match(
@@ -1580,4 +1592,4 @@ def _assert_agent_instance_resume_match(
             raise _AgentSnapshotDiffersError(agent.agent_id, agent_type)
     extras = agent_keys - expected_keys
     if extras:
-        raise _AgentExtraSubSnapshotsError(sorted(extras))
+        raise _AgentExtraSubSnapshotsError(extras)
