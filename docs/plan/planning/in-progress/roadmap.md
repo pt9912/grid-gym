@@ -1,7 +1,23 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2 abgeschlossen
-**Stand:** 2026-05-23 (M1 `Done` mit Welle 0..7; M2 `Done` mit Welle 0..7; **M3 aktiv** — Welle 0/1/2/3/4a/4b/5 abgeschlossen (Multi-Agent komplett + Observability-Foundation komplett), Welle 6 (OTLP-Adapter, ADR 0024 Provisional → Accepted mit M3-Welle-7-Closure nach Welle-6-Compose-Smoke-Verifikation) als naechster Schritt. ADR 0022/0023/0024/0025/0026/0027 alle `Provisional`; ADR 0028 + ADR 0029 `Accepted` (Schaerfung-ohne-Supersede-Pflege von ADR 0006 §3 und ADR 0002 §A-1). **1023 Unit-Tests + 19 Integration-Tests gruen**; Coverage 95.55% total; `make fullbuild` cache-frei gruen ohne Override (Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt). 17 A-1-Contracts (6 import-linter + 11 arch_check inkl. neuem `AC-NO-COVERAGE-PRAGMA`).)
+**Stand:** 2026-05-23
+
+- **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7).
+- **M3 aktiv:** Welle 0/1/2/3/4a/4b/5 abgeschlossen — Multi-Agent
+  komplett, Observability-Foundation komplett.
+- **Naechster Schritt:** Welle 6 (OTLP-Adapter). ADR 0024 wird mit
+  M3-Welle-7-Closure nach Welle-6-Compose-Smoke-Verifikation auf
+  `Accepted` gehoben.
+- **ADRs:** 0022/0023/0024/0025/0026/0027 `Provisional`; 0028 + 0029
+  `Accepted` (Schaerfung-ohne-Supersede-Pflege von ADR 0006 §3 bzw.
+  ADR 0002 §A-1).
+- **Tests:** 1023 Unit + 19 Integration gruen; Coverage 95.55% total.
+- **Build:** `make fullbuild` cache-frei gruen ohne Override
+  (Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt).
+- **Contracts:** 17 A-1 (6 import-linter + 11 arch_check inkl.
+  neuem `AC-NO-COVERAGE-PRAGMA`).
+
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
 ---
