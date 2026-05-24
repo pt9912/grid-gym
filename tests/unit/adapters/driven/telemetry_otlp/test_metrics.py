@@ -1,0 +1,188 @@
+"""Tests fuer `OtlpMetricsAdapter` (M3 Welle 6 C1.3b, ADR 0024 §2.3 + §4.5.2).
+
+Pinnt:
+
+- Protocol-Conformance (`isinstance(adapter, MetricsPort)`).
+- `increment(name, value)` mappt auf OTel-`Counter.add(...)`;
+  Folge-Aufrufe akkumulieren sauber.
+- `gauge(name, value)` mappt auf OTel-`Gauge.set(...)`; letzter Wert
+  wird exportiert.
+- `observe(name, value)` mappt auf OTel-`Histogram.record(...)`.
+- Instrument-Caching: zweimal `increment("x")` benutzt dasselbe
+  OTel-`Counter`-Instrument (kein zweites `create_counter`).
+- Attributes-Propagation.
+- **Kein `time.*`-Import im Adapter-Modul** (ADR 0024 §4.5.5 D-4).
+
+Tests verwenden `InMemoryMetricReader` als In-Process-Sink (kein
+Live-Collector noetig).
+"""
+
+from __future__ import annotations
+
+from collections.abc import Iterator
+
+import pytest
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+
+from grid_gym.adapters.driven.telemetry_otlp import OtlpMetricsAdapter
+from grid_gym.hexagon.ports.driven.observability import MetricsPort
+
+
+@pytest.fixture
+def metric_reader() -> InMemoryMetricReader:
+    return InMemoryMetricReader()
+
+
+@pytest.fixture
+def adapter(metric_reader: InMemoryMetricReader) -> Iterator[OtlpMetricsAdapter]:
+    provider = MeterProvider(metric_readers=[metric_reader])
+    yield OtlpMetricsAdapter(provider, instrumentation_name="grid-gym-test")
+    provider.shutdown()
+
+
+def _collect_metric_data(reader: InMemoryMetricReader) -> dict[str, object]:
+    """Sammelt alle Metric-Records nach Name auf, fuer einfache Asserts."""
+    data = reader.get_metrics_data()
+    by_name: dict[str, object] = {}
+    if data is None:
+        return by_name
+    for resource_metric in data.resource_metrics:
+        for scope_metric in resource_metric.scope_metrics:
+            for metric in scope_metric.metrics:
+                by_name[metric.name] = metric
+    return by_name
+
+
+# --- Protocol-Conformance ----------------------------------------------------
+
+
+def test_adapter_implements_metrics_port(adapter: OtlpMetricsAdapter) -> None:
+    assert isinstance(adapter, MetricsPort)
+
+
+# --- increment (Counter) -----------------------------------------------------
+
+
+def test_increment_default_value(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.increment("tick_count")
+    metrics = _collect_metric_data(metric_reader)
+    assert "tick_count" in metrics
+
+
+def test_increment_accumulates(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.increment("evt_count", 1)
+    adapter.increment("evt_count", 2)
+    adapter.increment("evt_count", 5)
+    metrics = _collect_metric_data(metric_reader)
+    counter = metrics["evt_count"]
+    # OTel-Counter-Metric has `data.data_points` mit kumulativem `value`.
+    points = list(counter.data.data_points)  # type: ignore[attr-defined]
+    assert len(points) == 1
+    assert points[0].value == 8
+
+
+def test_increment_with_attributes_propagates(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.increment("labelled", 3, attributes={"phase": "init"})
+    metrics = _collect_metric_data(metric_reader)
+    counter = metrics["labelled"]
+    points = list(counter.data.data_points)  # type: ignore[attr-defined]
+    assert len(points) == 1
+    assert dict(points[0].attributes) == {"phase": "init"}
+
+
+# --- gauge -------------------------------------------------------------------
+
+
+def test_gauge_sets_value(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.gauge("event_queue_len", 7.0)
+    metrics = _collect_metric_data(metric_reader)
+    assert "event_queue_len" in metrics
+
+
+def test_gauge_overwrites_previous_value(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.gauge("queue", 3.0)
+    adapter.gauge("queue", 7.0)
+    metrics = _collect_metric_data(metric_reader)
+    points = list(metrics["queue"].data.data_points)  # type: ignore[attr-defined]
+    assert len(points) == 1
+    assert points[0].value == pytest.approx(7.0)
+
+
+# --- observe (Histogram) -----------------------------------------------------
+
+
+def test_observe_records_distribution(
+    adapter: OtlpMetricsAdapter,
+    metric_reader: InMemoryMetricReader,
+) -> None:
+    adapter.observe("latency_ms", 12.5)
+    adapter.observe("latency_ms", 25.0)
+    adapter.observe("latency_ms", 7.25)
+    metrics = _collect_metric_data(metric_reader)
+    histogram = metrics["latency_ms"]
+    points = list(histogram.data.data_points)  # type: ignore[attr-defined]
+    assert len(points) == 1
+    assert points[0].count == 3
+    assert points[0].sum == pytest.approx(44.75)
+
+
+# --- Instrument-Caching ------------------------------------------------------
+
+
+def test_repeated_increment_reuses_counter(adapter: OtlpMetricsAdapter) -> None:
+    """Zweimal `increment("x")` darf nicht ein zweites `Counter`-Instrument anlegen."""
+    adapter.increment("cached")
+    counter_first = adapter._counters["cached"]
+    adapter.increment("cached")
+    counter_second = adapter._counters["cached"]
+    assert counter_first is counter_second
+
+
+def test_repeated_gauge_reuses_gauge(adapter: OtlpMetricsAdapter) -> None:
+    adapter.gauge("g", 1.0)
+    first = adapter._gauges["g"]
+    adapter.gauge("g", 2.0)
+    second = adapter._gauges["g"]
+    assert first is second
+
+
+def test_repeated_observe_reuses_histogram(adapter: OtlpMetricsAdapter) -> None:
+    adapter.observe("h", 1.0)
+    first = adapter._histograms["h"]
+    adapter.observe("h", 2.0)
+    second = adapter._histograms["h"]
+    assert first is second
+
+
+# --- Modul-Importe (ADR 0024 §4.5.5 D-4) -------------------------------------
+
+
+def test_module_does_not_import_time() -> None:
+    """`metrics`-Modul darf kein `time.*` importieren (ADR 0024 §4.5.5)."""
+    import grid_gym.adapters.driven.telemetry_otlp.metrics as metrics_mod
+
+    source = metrics_mod.__file__
+    assert source is not None
+    with open(source, encoding="utf-8") as fh:
+        text = fh.read()
+    assert "import time" not in text
+    assert "from time" not in text
+    assert "from datetime" not in text
+    assert "perf_counter" not in text
+    assert "monotonic" not in text
