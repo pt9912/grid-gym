@@ -7,12 +7,20 @@ Override, Welle-5-Abnahme-Kriterium aus §4.1 erfuellt). `Accepted`
 mit M3-Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-Verifikation.
 **Datum:** 2026-05-23
 **Status geaendert am:** 2026-05-23 — `Proposed → Provisional`.
-**Letzte inhaltliche Aenderung:** 2026-05-23 — Welle-5-Review-Folge-
-Schaerfungen: §1 N-3 (`ADR 0022 §2.5 → §2.4` Pre-Tick-Hook-Korrektur);
-§2.6 M-1 (Log-/`tick_duration_ms`-Hooks als Welle-6-Material
-qualifiziert); §4.3 M-2 (Welle-6-Forward-Pointer fuer Sentinel-Pattern,
-Trace-ID-Determinismus, Vertragsschnitt); §7 (L-2/N-1/N-2 Out-of-
-Scope-Erweiterungen); `Bezug:`-Liste L-3 (`ADR 0011` ergaenzt). Vor-
+**Letzte inhaltliche Aenderung:** 2026-05-24 — Welle-6-C1.2-
+Schaerfungen: neue §4.5 loest die §4.4-Forward-Pointer
+L-2/N-1/N-2/Sentinel-Pattern/Trace-ID-Determinismus normativ auf;
+nimmt zusaetzlich die in `M3-welle-6.md` festgelegten C0-Decisions
+(D-4 = kein `time.*` im Adapter-Code; gRPC-Transport-Pinning;
+Compose-Smoke-Determinismus-Pattern mit Sink-Isolation + Flush +
+Poll) als verbindliche Welle-6-Vertraege in diese ADR auf.
+Schaerfung-ohne-Supersede per ADR 0011. **Vorherige Aenderung
+(2026-05-23)** — Welle-5-Review-Folge-Schaerfungen: §1 N-3
+(`ADR 0022 §2.5 → §2.4` Pre-Tick-Hook-Korrektur); §2.6 M-1
+(Log-/`tick_duration_ms`-Hooks als Welle-6-Material qualifiziert);
+§4.3 M-2 (Welle-6-Forward-Pointer fuer Sentinel-Pattern, Trace-ID-
+Determinismus, Vertragsschnitt); §7 (L-2/N-1/N-2 Out-of-Scope-
+Erweiterungen); `Bezug:`-Liste L-3 (`ADR 0011` ergaenzt). Vor-
 `Accepted`-Schliff per ADR 0006 §4; ADR-Index `Letzte inhaltliche
 Aenderung`-Datum gepflegt.
 **Bezug:**
@@ -36,11 +44,15 @@ Pflege als Maintenance-Edit),
 Supersedes-Pattern als Fallback bei Welle-6-OTLP-Compose-Smoke-Bruch,
 siehe §4.2),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md §3 Welle 5`](../planning/in-progress/M3-faults-agents-observability.md),
+[`in-progress/M3-faults-agents-observability.md §3 Welle 5/6`](../planning/in-progress/M3-faults-agents-observability.md),
 Welle-5-Slice-Doc
 [`done/M3-welle-5.md §3`](../planning/done/M3-welle-5.md)
 (Welle-5-Triage-Vorgabe — diese ADR formalisiert die dort gesetzten
-Contracts).
+Contracts),
+Welle-6-Slice-Doc
+[`in-progress/M3-welle-6.md §3`](../planning/in-progress/M3-welle-6.md)
+(Welle-6-C0-Decisions: gRPC-Transport, D-4 Span-Dauer-Quelle, Compose-
+Smoke-Determinismus — §4.5 unten nimmt sie normativ in diese ADR auf).
 
 ---
 
@@ -465,6 +477,194 @@ Adapter Welle-5-Vertrags-Stellen schaerfen:
   `event_queue_len`-Werten), ergaenzt eine Folge-Welle den Helper
   symmetrisch.
 
+### 4.5 Welle-6-C1.2-Schaerfungen
+
+Diese Sektion loest die in §4.4 dokumentierten Welle-6-Forward-
+Pointer mit normativen C1.2-Entscheidungen auf und nimmt zusaetzlich
+die in
+[`M3-welle-6.md`](../planning/in-progress/M3-welle-6.md)
+festgelegten C0-Decisions verbindlich in diese ADR auf. Schaerfung-
+ohne-Supersede per [`ADR 0011`](0011-schaerfung-ohne-abloesung.md).
+Folge-Vertraege gelten fuer den OTLP-Adapter in
+`adapters/driven/telemetry_otlp/` (C1.3-Lieferung).
+
+#### 4.5.1 L-2 — Type-Signatur-Asymmetrie `end_span`/`record_event`
+
+**Entscheidung:** Adapter-spezifische `| None`-Signatur (keine
+Protocol-Erweiterung).
+
+- Das `TracePort`-Protocol bleibt **strikt** (`SpanContext` als
+  Pflichtparameter, §2.4 unveraendert). Aufrufer-Vertrag bleibt:
+  „immer einen gueltigen Kontext fuehren".
+- Adapter (Null + OTLP) implementieren `def end_span(self,
+  context: SpanContext | None) -> None` und `def record_event(
+  self, context: SpanContext | None, ...) -> None` mit
+  `if context is None: return` als erste Anweisung. Die No-Op-
+  Robustheit aus §2.4 bleibt damit **Adapter-Verantwortung**, nicht
+  Protocol-Pflicht.
+- Begruendung gegen Protocol-Erweiterung: wuerde den Aufrufer-
+  Vertrag retroaktiv permissiv machen („None ist OK"). §2.4 haelt
+  ihn explizit auf „Aufrufer ist verantwortlich" — die
+  `| None`-Robustheit ist defensiver Fallback, kein API-Versprechen.
+- C1.3-Konsequenz: `OtlpTraceAdapter.end_span` und `.record_event`
+  in `telemetry_otlp/traces.py` muessen die `| None`-Robustheit
+  mit der `if context is None: return`-Praefix-Pruefung absichern.
+
+#### 4.5.2 N-1 — Counter-vs-Gauge-Naming
+
+**Entscheidung:** `tick_count` bleibt **Counter** (Welle-5-
+Verdrahtung unangetastet); kein `tick_index`-Gauge ergaenzt.
+
+- Architektur §15 nennt `tick_index` als Gauge-Beispiel — ohne
+  konkreten UI-/Dashboard-Konsumenten ist die Ergaenzung YAGNI.
+- Welle-5-Counter `tick_count` deckt das Monotonie-Beduerfnis
+  vollstaendig ab; OTLP-Adapter mappt ihn auf einen OTel-`Counter`-
+  Instrument (monoton steigend) ohne Naming-Bruch.
+- Re-Open: ein konkreter UI-/Dashboard-Use-Case (M5) kann
+  `tick_index` als Gauge per Folge-Welle ergaenzen — **nicht**
+  silent im OTLP-Adapter.
+
+#### 4.5.3 N-2 — `_obs_observe`-Helper-Symmetrie
+
+**Entscheidung:** kein Helper.
+
+- §4.5.5 D-4 (unten) faengt das Wall-Clock-Argument: der OTLP-
+  Adapter bekommt Span-Dauern von der OTel-SDK direkt; ein
+  `_obs_observe`-Helper im Core wuerde eine Wall-Clock-Affordance
+  simulieren wollen (Histogramm-Werte mit Zeit-basierten Buckets)
+  und damit gegen `AC-NO-TIME` verstossen.
+- Re-Open: falls TickLoop spaeter einen `observe`-Use-Case
+  **ohne** Wall-Clock findet (z. B. Verteilung von
+  `event_queue_len`-Werten ueber N Ticks), wird der Helper
+  symmetrisch zu `_obs_increment` / `_obs_gauge` ergaenzt —
+  aber **nicht** fuer Zeitmessung.
+
+#### 4.5.4 Sentinel-Pattern fuer `scenario.observability`-Block
+
+**Entscheidung:** deferred auf Folge-Slice (M3-Welle-7+ oder
+M4-Slice).
+
+- Welle 6 nutzt `build_otlp_adapters(config=...)`-Factory statt
+  Scenario-Schema-Eintrag. Konfiguration kommt ueber OTel-Standard-
+  Env-Vars (`OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`,
+  `OTEL_RESOURCE_ATTRIBUTES`) plus expliziten `OtlpAdapterConfig`-
+  Kwargs.
+- Sentinel-Pattern (`None` = aus Scenario ableiten vs. `()` =
+  expliziter Skip-Adapter) ist nur dann notwendig, wenn der
+  Aufrufer-Pfad mehrere Quellen fuer Telemetrie-Konfig hat — der
+  ist in Welle 6 nicht vorhanden. Aktuelles Welle-5-`None`
+  bleibt eindeutig „Skip" (Default-Verhalten).
+- Re-Open: ein expliziter `scenario.observability:`-Block in
+  Welle 7+ (oder M4) braucht eine Folge-ADR mit
+  Sentinel-Semantik-Definition (analog ADR-0027-`agents=None`-
+  Sentinel-Fix).
+
+#### 4.5.5 D-4 — Span-Dauer-Quelle (kein `time.*` im Adapter)
+
+**Entscheidung:** Adapter-Code importiert **kein** `time` (weder
+Modul-Import noch via Sub-Aufrufe).
+
+- Start- und End-Zeitpunkte werden vom OTel-Span/SDK selbst
+  gesetzt: `tracer.start_span(...)` setzt `StartTime`,
+  `span.end()` setzt `EndTime`. `BatchSpanProcessor` / `Periodic-
+  ExportingMetricReader` sind reine Export-Vehikel und messen
+  nicht.
+- Konsequenz fuer C1.3: `telemetry_otlp/`-Modul darf
+  `import time` (oder `datetime`, `monotonic`, `perf_counter`)
+  vollstaendig ausschliessen. `AC-NO-TIME` bleibt damit auch im
+  Adapter-Code KEPT — Wall-Clock-Affordance liegt eine Schicht
+  tiefer in der externen OTel-SDK.
+- Die `AC-NO-FW`/`AC-PORTS-NO-FW`-Erweiterung um `opentelemetry`
+  und `grpc` (C1.1) schuetzt den Core doppelt: kein OTel-Import
+  im Core + kein Wall-Clock-Pfad im Adapter, der den Geist von
+  AC-NO-TIME unterlaufen wuerde.
+- Re-Open dieser Entscheidung nur per ADR-Folge (Schaerfung
+  oder neuer ADR), nicht im C1.3-Code-Pfad.
+
+#### 4.5.6 gRPC-Transport-Pinning
+
+**Entscheidung:** OTLP-Transport in Welle 6 ist **gRPC**;
+Pinning auf zwei Ebenen.
+
+- **Adapter-seitig:** `OtlpAdapterConfig.protocol` validiert auf
+  Allow-List `{"grpc"}`. Andere Werte erzeugen `ValueError` /
+  `OtlpAdapterConfigError` (C1.3-Detail). HTTP/protobuf ist
+  explizit Out-of-Scope (M3-welle-6.md §2) — Oeffnung erfordert
+  Konfig-Erweiterung **plus** Folge-Welle.
+- **Compose-seitig:** API-/Sim-Container bekommen
+  `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` per `environment`-Block
+  (M3-welle-6.md §3 C2). Damit kann ein zukuenftiger SDK-Default-
+  Wechsel den Export-Pfad nicht still auf `http/protobuf`
+  umlenken.
+- Begruendung gegen HTTP/protobuf-Parallelbetrieb in Welle 6:
+  doppelte Konfig-/Test-Flaeche ohne klaren Mehrwert; HTTP-
+  Transport hat hoehere Per-Request-Overhead und bringt keine
+  Welle-6-spezifische Eigenschaft mit, die `grpc` nicht traegt.
+- Re-Open fuer HTTP/protobuf: eigene Folge-ADR-Notiz + Konfig-
+  Erweiterung der Allow-List.
+
+#### 4.5.7 Compose-Smoke-Determinismus-Pattern (Welle-6-AC)
+
+**Entscheidung:** Smoke-Tests gegen den OTLP-Collector-Sibling
+muessen **vier** Determinismus-Pflichten erfuellen (Quelle
+M3-welle-6.md §3 C3 + §7 R-8/R-9). Dieses Pattern ist Welle-6-
+spezifische Acceptance-Bedingung und ergaenzt §4.1.
+
+1. **Per-Lauf isolierter Sink-Pfad** — z. B. `pytest`-`tmp_path`
+   in `OTEL_COLLECTOR_FILE_SINK`-Env-Var; verhindert
+   Cross-Run-Contamination bei konkurrierenden Lauefen.
+2. **Vorab-Truncation der Sink-Datei** vor Compose-Boot
+   (defensive — `tmp_path` sollte leer sein, aber Pflicht-
+   Schritt, falls Compose-Volumes Reste tragen).
+3. **Per-Lauf eindeutige `service.instance.id`** (`uuid4()`)
+   via `OTEL_RESOURCE_ATTRIBUTES`; alle Sink-Eintrag-Asserts
+   filtern auf diese ID. Damit kann selbst ein versehentlich
+   geteilter Sink-Pfad die Assertion nicht faelschlich gruen
+   faerben.
+4. **Zweischichtiges Flush-Protokoll** vor Assertion:
+   - **SDK-Seite (synchron):** `tracer_provider`/
+     `logger_provider`/`meter_provider` jeweils
+     `force_flush()` **und danach** `shutdown()`. Reihenfolge
+     ist Pflicht — erst alle Provider flushen, dann shutdown
+     (sonst flush-waehrend-shutdown unsicher).
+   - **Collector-Seite (eventually):** kurze `batch.timeout`-
+     Konfig im Smoke-Profil (z. B. 100ms) **plus** Bounded-
+     Poll mit 5s-Timeout im 100-ms-Raster auf den Sink-File.
+     Timeout-Fall produziert klaren Fehlertext, der den Flush-
+     Pfad als verdaechtig markiert.
+
+C1.3-Folge-Vertrag: `build_otlp_adapters(config)` muss die drei
+Provider-Handles fuer Test-Use exponieren (entweder als Teil
+des Factory-Return-Werts oder ueber eine `flush_and_shutdown()`-
+Helper-Funktion). Konkrete Form ist C1.3-Detail; die
+Existenz der Surface ist hier normativ festgeschrieben.
+
+#### 4.5.8 Trace-ID-Determinismus
+
+**Entscheidung:** OTel-Standard-Random (keine
+`RandomPort.sub_port`-Bindung).
+
+- OTel-SDK erzeugt `trace_id`/`span_id` standardmaessig per
+  `secrets.token_bytes(16)` bzw. `secrets.token_bytes(8)` —
+  kryptographisch zufaellig, nicht deterministisch pro Lauf.
+- Determinismus-Eigenschaft von `RandomPort.sub_port` ist fuer
+  Tick-/Scheduler-Determinismus relevant (gleicher Seed →
+  gleiche Tick-Sequenz). Trace-IDs sind aber Cross-Cutting-
+  Telemetrie, kein Tick-State — sie gehen **nicht** in
+  Snapshots ein (§2.5 unangetastet); Welle-5-Snapshot-Schema
+  enthaelt keine `spans/`-Sub-Snapshots.
+- Konsequenz fuer Property-Tests: Snapshot-Determinismus-
+  Asserts stuetzen sich **nicht** auf `SpanContext`-Werte.
+  Trace-IDs sind in produktiven Lauefen zufaellig (OTLP-
+  Standard); C3-Compose-Smoke filtert per `service.instance.id`
+  (per-Lauf eindeutiger UUID, siehe §4.5.7 Punkt 3), nicht per
+  `trace_id`.
+- Re-Open: nur, wenn ein konkreter Use-Case deterministische
+  Trace-IDs braucht (z. B. Cross-Process-Test-Replay), dann
+  per Folge-ADR mit `RandomPort.sub_port("observability-
+  trace")`-Bindung (analog ADR-0007 §5/§6 + ADR-0026 §2.3
+  Sub-Random-Stream-Konvention).
+
 ---
 
 ## 5. Operative Artefakte
@@ -492,6 +692,44 @@ werden):
   Default-Null-Adapter-Verdrahtung sinnvoll erscheint. Eingangs-
   Hypothese: Tests verifizieren das ausreichend, kein neuer
   AC-Contract noetig.
+
+Welle-6-C1.3 liefert (Spec aus §4.5 oben + M3-welle-6.md §3 C1):
+
+- `src/grid_gym/adapters/driven/telemetry_otlp/__init__.py` —
+  Re-Exports + `build_otlp_adapters(config)`-Factory mit
+  Provider-Handles (Tracer/Logger/Meter) plus
+  `flush_and_shutdown()`-Helper (§4.5.7 Punkt 4).
+- `src/grid_gym/adapters/driven/telemetry_otlp/_config.py` —
+  `OtlpAdapterConfig`-frozen-dataclass mit `endpoint`, `headers`,
+  `timeout_s`, `batch_max_export_size`, `service_name`,
+  `service_instance_id`, `protocol`-Feld (validiert auf
+  Allow-List `{"grpc"}`, §4.5.6).
+- `src/grid_gym/adapters/driven/telemetry_otlp/logs.py` —
+  `OtlpLogAdapter` (`LogPort`-Implementer).
+- `src/grid_gym/adapters/driven/telemetry_otlp/metrics.py` —
+  `OtlpMetricsAdapter` (`MetricsPort`-Implementer).
+- `src/grid_gym/adapters/driven/telemetry_otlp/traces.py` —
+  `OtlpTraceAdapter` (`TracePort`-Implementer) mit
+  `| None`-Robustheit (§4.5.1) und ohne `time.*`-Import (§4.5.5).
+- `tests/unit/adapters/driven/telemetry_otlp/test_*.py` — Unit-
+  Tests gegen In-Process-`grpcio`-Mock (Surface, Konfig-Defaults,
+  Konfig-Validation, Failure-Modes).
+- `Dockerfile` `ARG CRITICAL_COV_TARGETS` (Z. 245) um
+  `src/grid_gym/adapters/driven/telemetry_otlp` erweitert
+  (Default-Coverage-Target-Liste, filesystem-Pfad-Form analog
+  bestehender Eintraege).
+- OpenTelemetry-Dependencies in `pyproject.toml` + Lock-Sync —
+  bereits C1.1-Lieferung (`opentelemetry-sdk>=1.42`,
+  `opentelemetry-exporter-otlp-proto-grpc>=1.42`).
+- Import-Linter-Contract-Erweiterung `AC-NO-FW` /
+  `AC-PORTS-NO-FW` um `opentelemetry` + `grpc` — bereits
+  C1.1-Lieferung.
+
+C2-/C3-Lieferungen (Welle 6) liegen ausserhalb dieses ADR-
+Updates: `deploy/compose.yml`-OTLP-Collector-Sibling,
+`deploy/otel-collector-config.yaml`, Compose-/Integration-
+Smoke-Test, Runbook `docs/user/observability.md`, README/
+README.de-Closure-Zeile.
 
 ---
 
@@ -524,8 +762,11 @@ werden):
 
 ## 7. Nicht Gegenstand dieser ADR
 
-- Wahl des konkreten OTLP-Transports (gRPC vs. HTTP) — Welle 6
-  per Folge-ADR oder Closure-Notiz.
+- ~~Wahl des konkreten OTLP-Transports (gRPC vs. HTTP)~~ —
+  **geschlossen** mit Welle-6-C1.2-Schaerfung §4.5.6: gRPC ist
+  gepinnt (Adapter-Config-Allow-List `{"grpc"}` + Compose-Env-
+  Var `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`). HTTP/protobuf bleibt
+  Folge-Slice-Material.
 - Strukturierte-Logs-JSON-Schema (Pflicht-Felder + erweiterte
   Attributes) jenseits der `GG-OTEL-002`-Grundfelder — Welle 6
   oder Folge-ADR.
