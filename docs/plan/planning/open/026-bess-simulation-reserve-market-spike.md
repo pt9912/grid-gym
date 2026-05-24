@@ -65,8 +65,9 @@ Signaturen aus dem Fremdcode ist ausgeschlossen.
 3) **M3-konforme technische Leitplanken** sind verbindlich bestätigt:
    - Keine unkontrollierten Zufalls-/Zeitquellen im Core (`random.*`, `np.random`, `secrets`, Zeitquellen),  
      außer explizit zugelassener `RandomPort`/Scenario-Event-Pfad.
-   - keine neuen `pandas`/`numpy`/`scipy`-abhängigkeiten im Hexagon-Core,
-   - keine neuen Nicht-Determinismuspfade ohne `RandomPort`/Events.
+  - keine neuen `pandas`/`numpy`/`scipy`-abhängigkeiten im Hexagon-Core,
+  - keine neuen persistierten `float`-Felder im Kernzustand; bevorzugt `Decimal`.
+  - keine neuen Nicht-Determinismuspfade ohne `RandomPort`/Events.
 
 4) Datenbedarf ist beschraenkt auf: vorhandene Szenario-Events + optionaler
    adaptergespeister CSV/Excel-Import (nicht als Kernformat).
@@ -114,7 +115,11 @@ direkt im Slice-PR zu dokumentieren.
     `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
     `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
-    Nachweis (manuell + Review): Kern-Data-Typen im neuen Core-Code auf `float` persistierte Felder prüfen.
+    Nachweis:
+    - automatisiert: Neue State-/Snapshot-Dataclasses im neuen Core-Code auf `float`-Persistenz prüfen.
+      Beispiel:
+      `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "^\s*@dataclass|^\s*\\w+\\s*:\\s*float\\b|:\s*float\\b|=\s*float\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden float fields in persisted core state."; exit 1; }; else echo "No changed core files to check."; fi`
+    - manuell: Architektur-Review im neuen Core-Code, insbesondere persistierte State-/Snapshot-Felder.
   - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
     Nachweis (manuell): Architektur-Review im neuen Core-Code, keine neue Batteriemodelle oder alternative Command-Pfade.
 - Determinismus:
@@ -122,7 +127,7 @@ direkt im Slice-PR zu dokumentieren.
   Nachweis (automatisch):  
   `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
   `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-  `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
+  `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "(^\\s*(import|from)\\s+(random|secrets|uuid|time|datetime|numpy)\\b)|(^\\s*from\\s+(random|secrets|uuid|time|datetime|numpy)\\s+import\\s+)|\\b(np\\.|numpy\\.)random\\.|\\brandom\\.(random|uniform|randint|randrange|choice|shuffle|sample)|\\bsecrets\\.(choice|token_bytes|token_hex|token_urlsafe)|\\buuid\\.(uuid1|uuid3|uuid4|uuid5)|\\b(time|datetime)\\.(time|perf_counter|perf_counter_ns|monotonic|monotonic_ns|time_ns)\\(|\\bdatetime\\.datetime\\.(now|utcnow)|\\bdatetime\\.now\\(|\\bdatetime\\.utcnow\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Alle nicht-deterministischen Pfade sind als Scenario-Events modelliert und im Snapshot-Replay-relevant dokumentiert.  
     Nachweis (manuell): Gegenüberstellung Testfokus + Scenario-Doku auf vollständige Repräsentation.
 - Daten/IO:
@@ -156,7 +161,7 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
   - Nachweis:
     - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
     - `CHANGED_CORE_FILES="$(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
-    - `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "random\\.(random|uniform|randint|choice|shuffle|randrange|sample)|secrets\\.|np\\.random|numpy\\.random|time\\.time\\(|time\\.perf_counter\\(|datetime\\.datetime\\.now\\(|datetime\\.datetime\\.utcnow\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi` darf keine Treffer liefern.
+    - `if [ -n "$CHANGED_CORE_FILES" ]; then VIOLATION=0; while IFS= read -r file; do rg -n "(^\\s*(import|from)\\s+(random|secrets|uuid|time|datetime|numpy)\\b)|(^\\s*from\\s+(random|secrets|uuid|time|datetime|numpy)\\s+import\\s+)|\\b(np\\.|numpy\\.)random\\.|\\brandom\\.(random|uniform|randint|randrange|choice|shuffle|sample)|\\bsecrets\\.(choice|token_bytes|token_hex|token_urlsafe)|\\buuid\\.(uuid1|uuid3|uuid4|uuid5)|\\b(time|datetime)\\.(time|perf_counter|perf_counter_ns|monotonic|monotonic_ns|time_ns|datetime\\.now|datetime\\.utcnow)\\(" "$file" && VIOLATION=1; done <<< "$CHANGED_CORE_FILES"; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden non-deterministic sources detected in core."; exit 1; }; else echo "No changed core files to check."; fi` darf keine Treffer liefern.
 - **Testnachweis**: mind. 1 Unit-Test je Kernfunktion + 1 Integrationstest
   (Battery + GridModel + Agent) sind im Scope.
 - **Hard-Gate-Nachweis**: PR enthält einen Abschnitt "Validation Checklist" mit mindestens den oben definierten operativen Checks (inkl. Screenshot/Link auf Command-Output o. Ä.).
@@ -171,6 +176,88 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
 - **Go-Live-Entscheidung**: Dokument-Lebenszyklus bleibt **Open** als Planungsstatus.
   Die Aktivierung ist nur bei `Activation Gate: Approved` erlaubt.
   Für ein No-Go gilt `Activation Gate: Blocked`.
+
+### Zusatz: Robuster automatischer Kern-Check (AST-basiert, empfohlen)
+
+Regex allein deckt nicht alle Import-/Alias-/Wrapper-Fälle ab. Für CI oder lokale Checks wird empfohlen, den folgenden deterministischen Kern-Scan als Script zu ergänzen:
+
+```
+#!/usr/bin/env python3
+"""Core-Checks für neue Dateien im hexagon/core.
+
+Einsatz:
+  python scripts/check_core_determinism.py $(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')
+"""
+import ast
+import pathlib
+import re
+import sys
+
+FORBIDDEN_MODULES = {"random", "secrets", "uuid", "time", "datetime", "numpy"}
+FORBIDDEN_FUNC_PATTERNS = (
+    r"\brandom\.",
+    r"\bsecrets\.",
+    r"\buuid\.",
+    r"\bnp\.random\.",
+    r"\bnumpy\.random\.",
+    r"\btime\.",
+    r"\bdatetime\.",
+)
+FLOAT_STATE_PATTERNS = (
+    r"^\s*\w+\s*:\s*float\b",
+    r"\bfloat\(",
+)
+
+
+def inspect_file(path: pathlib.Path) -> list[str]:
+    source = path.read_text(encoding="utf-8")
+    lines = source.splitlines()
+    tree = ast.parse(source)
+    violations: list[str] = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".")[0]
+                if root in FORBIDDEN_MODULES:
+                    violations.append(f"{path}:{node.lineno}:{node.col_offset}: forbidden import '{alias.name}'")
+
+        if isinstance(node, ast.ImportFrom) and node.module:
+            root = node.module.split(".")[0]
+            if root in FORBIDDEN_MODULES:
+                violations.append(f"{path}:{node.lineno}:{node.col_offset}: forbidden from-import '{node.module}'")
+
+        if isinstance(node, ast.Call):
+            func = ast.unparse(node.func)
+            if any(re.search(pattern, func) for pattern in FORBIDDEN_FUNC_PATTERNS):
+                violations.append(f"{path}:{node.lineno}:{node.col_offset}: forbidden call '{func}()'")
+
+        if isinstance(node, ast.AnnAssign) and node.annotation is not None:
+            annotation = ast.unparse(node.annotation)
+            if annotation == "float":
+                violations.append(f"{path}:{node.lineno}:{node.col_offset}: typed float field '{ast.unparse(node.target)}'")
+
+        if isinstance(node, ast.Assign):
+            text = lines[node.lineno - 1] if 0 <= node.lineno - 1 < len(lines) else ""
+            if re.search(r"\bfloat\s*\(", text):
+                violations.append(f"{path}:{node.lineno}:{node.col_offset}: float() usage")
+
+    return violations
+
+
+if __name__ == "__main__":
+    files = [pathlib.Path(p) for p in sys.argv[1:]]
+    bad: list[str] = []
+    for file in files:
+        bad.extend(inspect_file(file))
+    for item in bad:
+        print(item)
+    raise SystemExit(1 if bad else 0)
+```
+
+Beachtung:
+- Bei der Code-Bewertung muss die Freigabeliste auf erlaubte Zufalls-/Zeitquellen (`RandomPort`, Scenario-Event-Pfade) explizit dokumentiert und im Skript berücksichtigt werden.
+- Für Float-Felder sind neben `float`-Typannotationen auch `float(...)`-Konvertierungen im persistierten State/Dataclass-Pfad zu prüfen.
 
 ## Einschaetzung
 
