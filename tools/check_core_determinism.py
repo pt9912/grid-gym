@@ -171,13 +171,16 @@ def _check_files(paths: Iterable[Path], modes: tuple[str, ...]) -> list[str]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("files", nargs="+")
+    parser.add_argument("files", nargs="*")
     parser.add_argument("--mode", action="append", required=True, choices=("determinism", "state-floats"))
     return parser.parse_args(argv)
 
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
+    if not args.files:
+        print("No files provided; nothing to check.")
+        return 0
     bad = _check_files([Path(p) for p in args.files], tuple(args.mode))
     for violation in bad:
         print(violation)

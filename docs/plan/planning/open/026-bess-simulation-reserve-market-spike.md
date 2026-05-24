@@ -116,7 +116,9 @@ direkt im Slice-PR zu dokumentieren.
     `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then VIOLATION=0; for file in "${CHANGED_CORE_FILES[@]}"; do rg -n "^\\s*import\\s+(pandas|numpy|pd|np|scipy)|^\\s*from\\s+(pandas|numpy|scipy)\\s+import" "$file" && VIOLATION=1; done; [ "$VIOLATION" -eq 0 ] || { echo "Forbidden imports detected in core."; exit 1; }; else echo "No changed core files to check."; fi`
   - Persistierter Kernzustand in neuem Core-Code nutzt keine neuen `float`-Felder; bevorzugt `Decimal`/werte-stabile Typen.  
     Nachweis:
-    - automatisiert: `python tools/check_core_determinism.py --mode state-floats -- "${CHANGED_CORE_FILES[@]}"`
+    - `BASE_BRANCH="${BASE_BRANCH:-origin/main}"`
+    - `mapfile -t CHANGED_CORE_FILES < <(git diff --name-only --diff-filter=AMR "$BASE_BRANCH"...HEAD -- 'src/grid_gym/hexagon/core/**/*.py')"`
+    - `if [ "${#CHANGED_CORE_FILES[@]}" -gt 0 ]; then python tools/check_core_determinism.py --mode state-floats -- "${CHANGED_CORE_FILES[@]}"; fi`
     - manuell: Architektur-Review im neuen Core-Code, insbesondere persistierte State-/Snapshot-Felder.
   - `BatteryDevice` bleibt einziger Core-Adapterpfad (`set_power_kw`); keine neuen Kernentitäten mit Akku-Logik.  
     Nachweis (manuell): Architektur-Review im neuen Core-Code, keine neue Batteriemodelle oder alternative Command-Pfade.
@@ -177,173 +179,14 @@ Aktivierung ist nur dann abgeschlossen, wenn **in einem Slice-Start-Pull-Request
 
 ### Zusatz: Robuster automatischer Kern-Check (AST-basiert, empfohlen)
 
-Regex allein deckt nicht alle Import-/Alias-/Wrapper-Fälle ab. Für CI oder lokale Checks wird empfohlen, den folgenden deterministischen Kern-Scan als Script zu ergänzen:
-Die referenzierte Implementierung liegt als `tools/check_core_determinism.py` vor.
+Regex allein deckt nicht alle Import-/Alias-/Wrapper-Fälle ab. Für CI oder lokale Checks wird empfohlen, den folgenden deterministischen Kern-Scan als Script zu ergänzen; die implementierte Referenz steht in:
 
-```
-#!/usr/bin/env python3
-"""Core-Checks für neue Dateien im hexagon/core.
+- `tools/check_core_determinism.py`
 
-Einsatz:
-  python tools/check_core_determinism.py --mode determinism --mode state-floats -- <files...>
-"""
-from __future__ import annotations
+Kurzaufruf:
 
-import argparse
-import ast
-from collections.abc import Iterable
-from pathlib import Path
-import re
-import sys
-
-FORBIDDEN_MODULES = {"random", "secrets", "uuid", "time", "datetime", "numpy"}
-ALLOWED_IDENTIFIERS = {"RandomPort", "ScenarioEvent", "RandomEvent", "EventPort"}
-
-
-def _collect_forbidden_aliases(tree: ast.AST) -> dict[str, str]:
-    aliases: dict[str, str] = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                root = alias.name.split(".")[0]
-                if root in FORBIDDEN_MODULES:
-                    aliases[alias.asname or root] = root
-        if isinstance(node, ast.ImportFrom):
-            if node.module is None:
-                continue
-            root = node.module.split(".")[0]
-            if root in FORBIDDEN_MODULES:
-                for alias in node.names:
-                    if alias.name == "*":
-                        aliases[f"*from:{root}"] = root
-                    else:
-                        aliases[alias.asname or alias.name] = root
-    return aliases
-
-
-def _call_root_name(node: ast.AST) -> str | None:
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.Attribute):
-        child = node
-        while isinstance(child, ast.Attribute):
-            value = child.value
-            if isinstance(value, ast.Name):
-                return value.id
-            child = value
-    return None
-
-
-def _has_float_annotation(annotation: ast.AST | None) -> bool:
-    if annotation is None:
-        return False
-    return re.search(r"(?<![.\\w])float(?![\\w])", ast.unparse(annotation)) is not None
-
-
-def _is_float_call(node: ast.Call) -> bool:
-    return (isinstance(node.func, ast.Name) and node.func.id == "float") or (
-        isinstance(node.func, ast.Attribute) and node.func.attr == "float"
-    )
-
-
-def _is_dataclass_decorator(expr: ast.expr) -> bool:
-    if isinstance(expr, ast.Name) and expr.id == "dataclass":
-        return True
-    if isinstance(expr, ast.Attribute) and expr.attr == "dataclass":
-        return True
-    if isinstance(expr, ast.Call):
-        return _is_dataclass_decorator(expr.func)
-    return False
-
-
-def _is_dataclass(node: ast.ClassDef) -> bool:
-    return any(_is_dataclass_decorator(dec) for dec in node.decorator_list)
-
-
-def _check_determinism(tree: ast.AST, file: Path, aliases: dict[str, str]) -> list[str]:
-    violations: list[str] = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                root = alias.name.split(".")[0]
-                if root in FORBIDDEN_MODULES:
-                    violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden import '{alias.name}'")
-
-        if isinstance(node, ast.ImportFrom):
-            if node.module is None:
-                continue
-            root = node.module.split(".")[0]
-            if root in FORBIDDEN_MODULES and any(alias.name == "*" for alias in node.names):
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden wildcard import from '{node.module}'")
-            elif root in FORBIDDEN_MODULES:
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: forbidden from-import '{node.module}'")
-
-        if isinstance(node, ast.Call):
-            root = _call_root_name(node.func)
-            if not root or root in ALLOWED_IDENTIFIERS:
-                continue
-            mapped = aliases.get(root)
-            if mapped in FORBIDDEN_MODULES:
-                violations.append(
-                    f"{file}:{node.lineno}:{node.col_offset}: forbidden core-call '{ast.unparse(node.func)}()' via '{mapped}'"
-                )
-    return violations
-
-
-def _check_state_floats(tree: ast.AST, file: Path) -> list[str]:
-    violations: list[str] = []
-
-    def walk(node: ast.AST, in_dataclass: bool = False) -> None:
-        if isinstance(node, ast.ClassDef):
-            dataclass_scope = in_dataclass or _is_dataclass(node)
-            for stmt in node.body:
-                walk(stmt, in_dataclass=dataclass_scope)
-            return
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
-            return
-
-        if in_dataclass and isinstance(node, ast.AnnAssign):
-            if _has_float_annotation(node.annotation):
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: typed float field '{ast.unparse(node.target)}'")
-            if isinstance(node.value, ast.Call) and _is_float_call(node.value):
-                violations.append(f"{file}:{node.lineno}:{node.col_offset}: float() default in persisted field '{ast.unparse(node.target)}'")
-
-        for child in ast.iter_child_nodes(node):
-            walk(child, in_dataclass)
-
-    walk(tree, False)
-    return violations
-
-
-def _check_files(paths: Iterable[Path], modes: tuple[str, ...]) -> list[str]:
-    bad: list[str] = []
-    for path in paths:
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        aliases = _collect_forbidden_aliases(tree)
-        if "determinism" in modes:
-            bad.extend(_check_determinism(tree, path, aliases))
-        if "state-floats" in modes:
-            bad.extend(_check_state_floats(tree, path))
-    return bad
-
-
-def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("files", nargs="+")
-    parser.add_argument("--mode", action="append", required=True, choices=("determinism", "state-floats"))
-    return parser.parse_args(argv)
-
-
-def main(argv: list[str]) -> int:
-    args = parse_args(argv)
-    bad = _check_files([Path(p) for p in args.files], tuple(args.mode))
-    for violation in bad:
-        print(violation)
-    return 1 if bad else 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+```bash
+python tools/check_core_determinism.py --mode determinism --mode state-floats -- <files...>
 ```
 
 Beachtung:
