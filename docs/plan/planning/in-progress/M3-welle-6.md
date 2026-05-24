@@ -32,9 +32,16 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       mypy `--strict`, arch-check, coverage 90/85 line, critical-
       coverage, dep-audit (`grpcio` +
       `opentelemetry-exporter-otlp-proto-grpc` aufgenommen).
-- [ ] **Default-`CRITICAL_COV_TARGETS` um `adapters/driven/telemetry-otlp`
-      erweitert** (DoD-Item aus Roadmap §3 M3 + M3-Slice-Plan §3
-      Welle 6).
+- [ ] **Default-`CRITICAL_COV_TARGETS` um
+      `src/grid_gym/adapters/driven/telemetry_otlp` erweitert**
+      (DoD-Item aus Roadmap §3 M3 + M3-Slice-Plan §3 Welle 6).
+      Pfadkonvention: das `ARG CRITICAL_COV_TARGETS`-Default in
+      `Dockerfile:245` listet ausschliesslich filesystem-Pfade mit
+      vollem `src/grid_gym/`-Prefix und Python-Underscore-Form
+      (z. B. `src/grid_gym/hexagon/core/grid_connection`,
+      `src/grid_gym/hexagon/core/smart_meter`). Der Architektur-
+      Slug `telemetry-otlp` (Dash, Spec §5 Z. 314 `telemetry-*`)
+      ist prosaisches Pendant, **nicht** Coverage-Target-Form.
 - [ ] **ADR-0024-Schaerfung** der §4.4-Forward-Pointer per ADR 0011-
       Pattern (Counter-/Gauge-Naming, `_obs_observe`-Helper,
       Trace-ID-Determinismus, `SpanContext`-Felder, Sentinel-
@@ -50,11 +57,12 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       OTLP-Bytes-Vertrag (aktivieren oder konkrete Begruendung
       fuer Verschiebung in M4/M6-Re-Triage).
 - [ ] **`AC-PORTS-NO-OUT` bleibt KEPT** — 3 neue Driven-Adapter
-      unter `adapters/driven/telemetry-otlp/`, keine Driving-Port-
-      Verletzer.
+      unter `src/grid_gym/adapters/driven/telemetry_otlp/`,
+      keine Driving-Port-Verletzer.
 - [ ] **`AC-NO-TIME` bleibt KEPT** — `tick_duration_ms` weiterhin
-      **nicht** aus TickLoop emittiert; Wall-Clock nur ausserhalb
-      der Core-Boundary (Adapter / OTel-SDK).
+      **nicht** aus TickLoop emittiert; Adapter-Code importiert
+      kein `time` (D-4 in C0 festgezogen); einzige Wall-Clock-
+      Quelle ist die externe OTel-SDK (`BatchSpanProcessor`).
 - [ ] **`AC-NO-COVERAGE-PRAGMA` (ADR 0029) bleibt KEPT** — keine
       `# pragma: no cover`/`no branch`/`exclude file` in den
       neuen Adapter-Modulen.
@@ -103,9 +111,13 @@ Produktive Lieferung:
     `Counter`/`UpDownCounter`/`Histogram` der OTel-Metrics-SDK.
   - `OtlpTraceAdapter` — implementiert `TracePort`-Protocol;
     `start_span`/`end_span`/`record_event`-Surface auf OTel-
-    Tracer + `BatchSpanProcessor` + `OTLPSpanExporter`. Misst
-    Span-Dauer adapterseitig per `time.monotonic()` (Wall-Clock
-    nur ausserhalb des Core erlaubt — `AC-NO-TIME` bleibt KEPT).
+    Tracer + `BatchSpanProcessor` + `OTLPSpanExporter`. Span-
+    Dauer liefert die OTel-SDK ueber `StartTime`/`EndTime` im
+    `BatchSpanProcessor`; der Adapter ruft **kein** `time.*`
+    selbst auf (D-4 unten in C0 festgezogen). `AC-NO-TIME`
+    bleibt damit auch im Adapter-Code KEPT — Wall-Clock-
+    Affordance liegt erst eine Schicht tiefer in der externen
+    SDK.
 - Konfigurations-Helper (`OtlpAdapterConfig`-frozen-dataclass):
   `endpoint`, `headers`, `timeout_s`, `batch_max_export_size`,
   `service_name`, `service_instance_id`. Default-Quelle:
@@ -284,8 +296,11 @@ Quellen:
   Erfolgskriterium 5).
 - ADR-0024-Schaerfung (Welle-5-§4.4-Forward-Pointer aufloesen).
 - Runbook `docs/user/observability.md`.
-- Default-`CRITICAL_COV_TARGETS` um `adapters/driven/telemetry-otlp`
-  erweitert.
+- Default-`CRITICAL_COV_TARGETS` um
+  `src/grid_gym/adapters/driven/telemetry_otlp` erweitert
+  (filesystem-Pfad-Form analog Dockerfile:245-Liste; der
+  Architektur-Slug `telemetry-otlp` bleibt der prosaische
+  Komponenten-Name).
 - Trigger 006 (`--strict-bytes`) Entscheidung am konkreten
   OTLP-Bytes-Vertrag (aktivieren oder konkrete Begruendung fuer
   Verschiebung).
@@ -319,12 +334,20 @@ Items:
   Silent-Log-and-Drop. Default-Vorschlag: Silent-Log-and-Drop
   (Tick-Loop-Robustheit > Telemetrie-Strenge); WARN-Log auf
   `LogPort` mit Throttling.
-- **D-4 Span-Dauer-Messung**: `time.monotonic()` adapterseitig
-  vs. OTel-SDK-Default (`StartTime`/`EndTime` der SpanProcessor).
-  Default-Vorschlag: OTel-SDK-Default, kein eigener `time.*`-
-  Aufruf im Adapter-Code (verschiebt das Wall-Clock-Affordance
-  noch eine Schicht tiefer in die SDK; `AC-NO-TIME`-Geist
-  bleibt gewahrt).
+- **D-4 Span-Dauer-Messung — Entschieden (C0):** OTel-SDK-
+  Default (`StartTime`/`EndTime` ueber `BatchSpanProcessor`),
+  **kein eigener `time.*`-Aufruf im Adapter-Code**. Begruendung:
+  die Alternative (`time.monotonic()` adapterseitig) waere zwar
+  technisch zulaessig (Adapter liegt ausserhalb der Core-AC-NO-
+  TIME-Boundary), wuerde aber ohne Mehrwert eine zusaetzliche
+  Wall-Clock-Affordance in unserem Code erzeugen und C1 zwei
+  legitime Implementierungen offen lassen. Konsequenz fuer §5
+  Critical Files: `traces.py` importiert kein `time`; einzige
+  Zeit-Quelle ist die externe OTel-SDK. Folge fuer §7 R-3:
+  `time.*`-mypy-Findings sind in C1 ein Bug-Signal, kein
+  Style-Issue. **Aenderungs-Vertrag:** Re-Open dieser Decision
+  nur per ADR-Folge (ADR 0011-Schaerfung ODER neuer ADR), nicht
+  im C1-Code-Pfad.
 - **D-5 `_obs_observe`-Helper-Symmetrie**: ergaenzen vs.
   weglassen (Welle-5-§4.4-N-2). Default-Vorschlag: nein.
 - **D-6 Counter/Gauge-Naming-Konvention**: `tick_count`
@@ -379,9 +402,13 @@ beide voraussetzt.
 - `pyproject.toml` / `requirements*.txt` — neue Dependencies
   (`opentelemetry-exporter-otlp-proto-grpc`, `grpcio`,
   `opentelemetry-sdk` falls noch nicht enthalten).
-- `Makefile` — Default-`CRITICAL_COV_TARGETS` um
-  `adapters/driven/telemetry-otlp` erweitert (D-Item M3-
-  Slice-Plan §3 Welle 6).
+- `Dockerfile` (`ARG CRITICAL_COV_TARGETS`-Default Z. 245) —
+  Default-Coverage-Target-Liste um
+  `src/grid_gym/adapters/driven/telemetry_otlp` erweitert
+  (filesystem-Pfad-Form, Underscore; **nicht** der Architektur-
+  Slug `telemetry-otlp`). DoD-Item aus Roadmap §3 M3 +
+  M3-Slice-Plan §3 Welle 6. Der `Makefile`-Pfad selbst aendert
+  sich nicht — `CRITICAL_COV_TARGETS` wird durchgereicht.
 - `tools/arch_check.py` — pruefen, ob
   `AC-OBS-ADAPTER-NO-CORE-IMPORT` als 12. Contract
   sinnvoll ist (Adapter darf Ports importieren, kein Core).
@@ -407,8 +434,9 @@ beide voraussetzt.
 - AC-PORTS-NO-OUT bleibt KEPT — 3 neue Driven-Adapter,
   keine Driving-Port-Verletzer.
 - `AC-NO-TIME` bleibt KEPT — kein Wall-Clock-Zugriff im
-  Core; Adapter-`time.monotonic()` (falls D-4 dafuer
-  entscheidet) ist ausserhalb der Core-Boundary.
+  Core und (per D-4 in C0 festgezogen) auch kein `time.*`-
+  Import im Adapter-Code. Einzige Wall-Clock-Quelle ist die
+  externe OTel-SDK.
 - `AC-NO-COVERAGE-PRAGMA` bleibt KEPT.
 - `make image-audit` Trivy gegen Runtime-Image + Collector-
   Image gruen (Whitelist pflegen, falls neue Findings).
