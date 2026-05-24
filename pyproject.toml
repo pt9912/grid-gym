@@ -58,12 +58,15 @@ dependencies = [
     # User-verifiziert) — angehoben von >=1.13 (M1-Welle-6c-Floor).
     "alembic>=1.18",
     # M3-Welle-6 — OTLP-Adapter unter `adapters/driven/telemetry_otlp/`.
-    # Floor `>=1.42` matched die Welle-6-Lock-Resolution (`uv lock`
+    # Floor `>=1.42,<1.43` matched die Welle-6-Lock-Resolution (`uv lock`
     # 2026-05-24 zieht 1.42.1) — Welle 6 testet ausschliesslich gegen
     # diese Linie; ein cache-loses Install ohne Lock soll nicht in
-    # alte 1.27..1.41er-Versionen abrutschen.
-    "opentelemetry-sdk>=1.42",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.42",
+    # alte 1.27..1.41er-Versionen abrutschen, **und** ein 1.43er-Upgrade
+    # darf nicht silent passieren, weil OTLP-Log-Exporter-Pfade in
+    # `_log_exporter` (Underscore-Prefix) historisch unstable sind
+    # (M3-welle-6.md §7 R-X, Review-Folge M-2).
+    "opentelemetry-sdk>=1.42,<1.43",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.42,<1.43",
 ]
 
 [build-system]

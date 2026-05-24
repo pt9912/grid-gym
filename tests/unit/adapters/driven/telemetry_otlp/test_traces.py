@@ -214,6 +214,40 @@ def test_active_spans_cleaned_after_end(adapter: OtlpTraceAdapter) -> None:
     assert context.span_id not in adapter._active_spans
 
 
+def test_start_span_without_end_leaks_into_active_spans(
+    adapter: OtlpTraceAdapter,
+) -> None:
+    """Review-Folge M-3: pinned das aktuelle Leak-Verhalten als bekannte
+    Schwaeche. Ein Aufrufer, der `start_span` macht und dann eine Exception
+    wirft (oder vergisst, `end_span` zu rufen), hinterlaesst den Eintrag
+    im `_active_spans`-Cache. Pro Tick-Loop-Lauf mit vergessenem
+    End-Span kompoundiert das zu einem schleichenden Memory-Leak.
+
+    Aktuelles Welle-6-Verhalten: keine TTL, keine LRU-Eviction — der
+    Cache waechst unbegrenzt. Empfehlung Welle-7 oder Folge-Slice:
+    `OrderedDict` mit Soft-Limit (z. B. 1024 Eintraege) + Warn-Log,
+    falls die Schwelle anhaltend ueberschritten wird. Bis dahin liegt
+    die Verantwortung beim Aufrufer (TickLoop-Hook-Wrapping mit
+    `try/finally`-Block).
+    """
+    leaked_span_ids = []
+    # Drei Spans starten, keinen schliessen — alle drei muessen im Cache
+    # bleiben (das ist das gewollte aktuelle Verhalten; ein TTL-Eviction-
+    # Refactor wuerde diesen Test umstellen).
+    for i in range(3):
+        ctx = adapter.start_span(f"leaked.{i}")
+        leaked_span_ids.append(ctx.span_id)
+    for span_id in leaked_span_ids:
+        assert span_id in adapter._active_spans, (
+            f"span {span_id} fehlt im Cache — Leak-Verhalten hat sich geaendert "
+            "(Review-Folge M-3); pruefe ob die TTL-/Eviction-Strategie eingefuehrt wurde."
+        )
+    # Aufraeum-Pfad zur Vermeidung von Cross-Test-Cache-Drift.
+    for span_id in leaked_span_ids:
+        if otel_span := adapter._active_spans.pop(span_id, None):
+            otel_span.end()
+
+
 # --- Modul-Importe ----------------------------------------------------------
 #
 # `time.*`/`datetime`-Freiheit (ADR 0024 §4.5.5 D-4) wird zentral vom

@@ -27,7 +27,10 @@ import pytest
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader
 
-from grid_gym.adapters.driven.telemetry_otlp import OtlpMetricsAdapter
+from grid_gym.adapters.driven.telemetry_otlp import (
+    OtlpMetricsAdapter,
+    OtlpMetricsNameCollisionError,
+)
 from grid_gym.hexagon.ports.driven.observability import MetricsPort
 
 
@@ -170,6 +173,44 @@ def test_repeated_observe_reuses_histogram(adapter: OtlpMetricsAdapter) -> None:
     adapter.observe("h", 2.0)
     second = adapter._histograms["h"]
     assert first is second
+
+
+# --- Cross-Family-Naming-Collision (Review-Folge M-4) ------------------------
+
+
+def test_counter_then_gauge_same_name_raises(adapter: OtlpMetricsAdapter) -> None:
+    adapter.increment("queue_len")
+    with pytest.raises(OtlpMetricsNameCollisionError) as exc_info:
+        adapter.gauge("queue_len", 5.0)
+    assert "queue_len" in str(exc_info.value)
+    assert "counter" in str(exc_info.value)
+    assert "gauge" in str(exc_info.value)
+
+
+def test_counter_then_histogram_same_name_raises(adapter: OtlpMetricsAdapter) -> None:
+    adapter.increment("latency")
+    with pytest.raises(OtlpMetricsNameCollisionError):
+        adapter.observe("latency", 1.5)
+
+
+def test_gauge_then_counter_same_name_raises(adapter: OtlpMetricsAdapter) -> None:
+    adapter.gauge("rate", 3.0)
+    with pytest.raises(OtlpMetricsNameCollisionError):
+        adapter.increment("rate")
+
+
+def test_histogram_then_gauge_same_name_raises(adapter: OtlpMetricsAdapter) -> None:
+    adapter.observe("dist", 1.0)
+    with pytest.raises(OtlpMetricsNameCollisionError):
+        adapter.gauge("dist", 0.0)
+
+
+def test_same_family_same_name_no_collision(adapter: OtlpMetricsAdapter) -> None:
+    """Wiederholter Aufruf in derselben Familie ist erlaubt — Cache-Reuse."""
+    adapter.increment("ok_counter")
+    adapter.increment("ok_counter", 5)  # selbe Familie, kein Collision
+    adapter.gauge("ok_gauge", 1.0)
+    adapter.gauge("ok_gauge", 2.0)  # selbe Familie, kein Collision
 
 
 # --- Modul-Importe ----------------------------------------------------------

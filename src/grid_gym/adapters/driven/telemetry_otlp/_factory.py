@@ -125,11 +125,21 @@ def build_otlp_adapters(config: OtlpAdapterConfig) -> OtlpAdapterBundle:
     Headers werden als `tuple[tuple[str, str], ...]` an die OTel-API
     weitergereicht (OTel-Konvention; akzeptiert auch `dict`, aber
     Tuples sind hashable + zeigen Reihenfolge stabil).
+
+    Resource-Aufbau (Review-Folge M-6): `Resource.create({})` zieht
+    `OTEL_RESOURCE_ATTRIBUTES` per OTel-SDK-Default automatisch (incl.
+    `service.name`, `deployment.environment`, custom Attribute, etc.).
+    Konfig-Werte (`service_name`, `service_instance_id`) werden als
+    Override **on top** gemerged — explizite Konfig schlaegt Env-Var.
     """
-    resource_attrs: dict[str, str] = {"service.name": config.service_name}
+    explicit_attrs: dict[str, str] = {"service.name": config.service_name}
     if config.service_instance_id is not None:
-        resource_attrs["service.instance.id"] = config.service_instance_id
-    resource = Resource.create(resource_attrs)
+        explicit_attrs["service.instance.id"] = config.service_instance_id
+    # `Resource.create({})` mit leerem Dict laesst die SDK-Default-
+    # Detection laufen (zieht OTEL_RESOURCE_ATTRIBUTES + SDK-Standard-
+    # Felder wie `service.name`-Fallback aus `OTEL_SERVICE_NAME`).
+    # `merge` ueberschreibt Env-Werte mit den expliziten Konfig-Werten.
+    resource = Resource.create({}).merge(Resource.create(explicit_attrs))
 
     headers_tuple = tuple(config.headers.items())
 

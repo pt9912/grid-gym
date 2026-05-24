@@ -34,6 +34,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Final
+from urllib.parse import unquote
 
 __all__ = [
     "OtlpAdapterConfig",
@@ -44,11 +45,19 @@ __all__ = [
     "OtlpAdapterConfigInvalidHeaderError",
     "OtlpAdapterConfigInvalidProtocolError",
     "OtlpAdapterConfigNonPositiveError",
+    "OtlpAdapterConfigTimeoutTooSmallError",
 ]
 
 # Default-Werte (siehe Modul-Docstring fuer Begruendung).
 _DEFAULT_ENDPOINT: Final[str] = "http://localhost:4317"
 _DEFAULT_TIMEOUT_S: Final[float] = 10.0
+
+# OTLP-Exporter-`timeout`-Kwarg ist in Sekunden als `int` (OTel-SDK
+# 1.42-Konvention). `int(0.5) == 0` waere ein Null-Timeout (sofortiger
+# Fail oder unendlich, je nach SDK-Variante). Wir verlangen ≥ 1 s als
+# Floor, damit `int(round(timeout_s)) >= 1` und der Konfig-Pfad sicher
+# auf die OTel-API mappt (Review-Folge M-1).
+_MIN_TIMEOUT_S: Final[float] = 1.0
 _DEFAULT_BATCH_MAX_EXPORT_SIZE: Final[int] = 512
 
 # OTel-SDK 1.42 setzt das interne `BatchSpanProcessor.max_queue_size`
@@ -116,6 +125,24 @@ class OtlpAdapterConfigNonPositiveError(OtlpAdapterConfigError):
         super().__init__(f"OtlpAdapterConfig.{field}={value} muss > 0 sein.")
 
 
+class OtlpAdapterConfigTimeoutTooSmallError(OtlpAdapterConfigError):
+    """`timeout_s` ist unter dem Sub-Sekunden-Floor (Review-Folge M-1).
+
+    OTel-Exporter erwarten `timeout` als Integer-Sekunden; `int(0.5) == 0`
+    wuerde als Null-Timeout interpretiert (SDK-Variante-abhaengig:
+    sofortiger Fail oder unendlich). Floor ≥ 1 s erzwingt eine
+    sinnvolle Sekunden-Aufloesung.
+    """
+
+    def __init__(self, value: float) -> None:
+        super().__init__(
+            f"OtlpAdapterConfig.timeout_s={value} muss >= {_MIN_TIMEOUT_S} s sein "
+            "(OTel-Exporter-`timeout`-Kwarg ist int-Sekunden; "
+            "Sub-Sekunden-Aufloesung waere verlustbehaftet). "
+            "Review-Folge M-1 zu ADR 0024 §4.5."
+        )
+
+
 class OtlpAdapterConfigBatchTooLargeError(OtlpAdapterConfigError):
     """`batch_max_export_size` ueberschreitet das OTel-SDK-`max_queue_size`-Limit (2048).
 
@@ -155,7 +182,13 @@ def _parse_headers(raw: str) -> dict[str, str]:
     """Parst `OTEL_EXPORTER_OTLP_HEADERS` im OTel-Standard-Format.
 
     Format: ``key1=value1,key2=value2``. Whitespace um Keys/Values wird
-    getrimmt. Leere Werte oder Eintraege ohne ``=`` erzeugen
+    getrimmt. URL-encoded Values (z. B. ``Authorization=Bearer%20token``)
+    werden per `urllib.parse.unquote` decodiert — das matched die OTel-
+    Spec (Environment-Variable-Specification §3.1; Review-Folge M-5).
+
+    Newline-Characters (`\\n`, `\\r`) in Values sind verboten — Header-
+    Injection-Schutz (Review-Folge M-5). Leere Werte sind erlaubt
+    (OTel-Spec); leere Keys oder Eintraege ohne ``=`` erzeugen
     `OtlpAdapterConfigInvalidHeaderError`.
     """
     if not raw:
@@ -171,7 +204,14 @@ def _parse_headers(raw: str) -> dict[str, str]:
         key_stripped = key.strip()
         if not key_stripped:
             raise OtlpAdapterConfigInvalidHeaderError(candidate, "leerer Key")
-        parsed[key_stripped] = value.strip()
+        value_stripped = value.strip()
+        decoded_value = unquote(value_stripped)
+        if any(ch in decoded_value for ch in ("\n", "\r")):
+            raise OtlpAdapterConfigInvalidHeaderError(
+                candidate,
+                "Newline/Carriage-Return im Value — Header-Injection-Schutz",
+            )
+        parsed[key_stripped] = decoded_value
     return parsed
 
 
@@ -219,6 +259,8 @@ class OtlpAdapterConfig:
             raise OtlpAdapterConfigEmptyFieldError("endpoint")
         if self.timeout_s <= 0:
             raise OtlpAdapterConfigNonPositiveError("timeout_s", self.timeout_s)
+        if self.timeout_s < _MIN_TIMEOUT_S:
+            raise OtlpAdapterConfigTimeoutTooSmallError(self.timeout_s)
         if self.batch_max_export_size <= 0:
             raise OtlpAdapterConfigNonPositiveError(
                 "batch_max_export_size", self.batch_max_export_size

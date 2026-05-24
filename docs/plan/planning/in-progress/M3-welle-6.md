@@ -635,6 +635,16 @@ beide voraussetzt.
      produziert klaren Fehlertext, der den Flush-Pfad als
      verdaechtig markiert.
   Folge fuer DoD-Checkliste #3 (Buffer-Determinismus-Klausel).
+- **R-10** — **OTLP-Log-Exporter-Pfad-Drift bei OTel-Upgrade**.
+  `OTLPLogExporter` liegt in OTel-SDK 1.42 unter
+  `opentelemetry.exporter.otlp.proto.grpc._log_exporter` (Underscore-
+  Prefix). Andere Exporter (`metric_exporter`, `trace_exporter`)
+  haben den Underscore nicht — die Asymmetrie ist OTel-historisch.
+  Ein 1.43er-Upgrade kann den Pfad zu `log_exporter` (ohne
+  Underscore) verschieben, was per Floor `>=1.42` silent passieren
+  und C1.3c-Imports brechen wuerde. *Mitigation:* Floor narrow auf
+  `>=1.42,<1.43` (`pyproject.toml`). Ein 1.43-Upgrade braucht
+  bewussten Test + ggf. Try/Except-Import + ADR-Folge.
 
 ## 8. Wandert nach
 

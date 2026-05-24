@@ -26,13 +26,17 @@ from grid_gym.adapters.driven.telemetry_otlp._config import (
     OtlpAdapterConfigInvalidHeaderError,
     OtlpAdapterConfigInvalidProtocolError,
     OtlpAdapterConfigNonPositiveError,
+    OtlpAdapterConfigTimeoutTooSmallError,
 )
 from grid_gym.adapters.driven.telemetry_otlp._factory import (
     OtlpAdapterBundle,
     build_otlp_adapters,
 )
 from grid_gym.adapters.driven.telemetry_otlp.logs import OtlpLogAdapter
-from grid_gym.adapters.driven.telemetry_otlp.metrics import OtlpMetricsAdapter
+from grid_gym.adapters.driven.telemetry_otlp.metrics import (
+    OtlpMetricsAdapter,
+    OtlpMetricsNameCollisionError,
+)
 from grid_gym.adapters.driven.telemetry_otlp.traces import OtlpTraceAdapter
 
 __all__ = [
@@ -45,8 +49,10 @@ __all__ = [
     "OtlpAdapterConfigInvalidHeaderError",
     "OtlpAdapterConfigInvalidProtocolError",
     "OtlpAdapterConfigNonPositiveError",
+    "OtlpAdapterConfigTimeoutTooSmallError",
     "OtlpLogAdapter",
     "OtlpMetricsAdapter",
+    "OtlpMetricsNameCollisionError",
     "OtlpTraceAdapter",
     "build_otlp_adapters",
 ]

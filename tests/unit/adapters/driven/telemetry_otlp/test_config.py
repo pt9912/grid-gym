@@ -98,6 +98,23 @@ def test_timeout_must_be_positive(invalid_timeout: float) -> None:
         OtlpAdapterConfig(timeout_s=invalid_timeout)
 
 
+@pytest.mark.parametrize("sub_second_timeout", [0.001, 0.1, 0.5, 0.999])
+def test_timeout_below_min_raises(sub_second_timeout: float) -> None:
+    """Review-Folge M-1: `timeout_s < 1.0` faengt der Floor (sonst wuerde
+    `int(0.5) == 0` einen Null-Timeout an die OTel-Exporter weiterreichen).
+    """
+    with pytest.raises(OtlpAdapterConfigError) as exc_info:
+        OtlpAdapterConfig(timeout_s=sub_second_timeout)
+    msg = str(exc_info.value)
+    assert "M-1" in msg or "Sekunden-Aufloesung" in msg
+
+
+def test_timeout_at_min_accepted() -> None:
+    """`timeout_s == 1.0` ist der niedrigste erlaubte Wert."""
+    config = OtlpAdapterConfig(timeout_s=1.0)
+    assert config.timeout_s == pytest.approx(1.0)
+
+
 @pytest.mark.parametrize("invalid_size", [0, -1, -512])
 def test_batch_max_export_size_must_be_positive(invalid_size: int) -> None:
     with pytest.raises(OtlpAdapterConfigError, match="batch_max_export_size"):
@@ -255,6 +272,44 @@ def test_from_env_headers_missing_equals_raises() -> None:
 def test_from_env_headers_empty_key_raises() -> None:
     with pytest.raises(OtlpAdapterConfigError, match="leerer Key"):
         OtlpAdapterConfig.from_env(env={"OTEL_EXPORTER_OTLP_HEADERS": "=value"})
+
+
+# --- Headers URL-decode + Newline-Reject (Review-Folge M-5) ------------------
+
+
+def test_from_env_headers_url_decoded() -> None:
+    """OTel-Spec §3.1: Header-Values sind URL-encoded; `%20` → space."""
+    config = OtlpAdapterConfig.from_env(
+        env={"OTEL_EXPORTER_OTLP_HEADERS": "Authorization=Bearer%20token"},
+    )
+    assert dict(config.headers) == {"Authorization": "Bearer token"}
+
+
+def test_from_env_headers_url_decoded_special_chars() -> None:
+    """`%2C` (Komma), `%3D` (Gleichheit), `%2F` (Slash) werden decoded."""
+    config = OtlpAdapterConfig.from_env(
+        env={"OTEL_EXPORTER_OTLP_HEADERS": "x-token=abc%2Cdef%3Dghi"},
+    )
+    assert dict(config.headers) == {"x-token": "abc,def=ghi"}
+
+
+@pytest.mark.parametrize(
+    "raw_header",
+    [
+        "x-auth=token\nX-Inject: evil",
+        "x-auth=token\r\nX-Inject: evil",
+        "x-auth=before%0Aafter",  # URL-encoded LF — nach decode immer noch \n
+        "x-auth=before%0D%0Aafter",  # URL-encoded CRLF
+    ],
+)
+def test_from_env_headers_newline_in_value_raises(raw_header: str) -> None:
+    """Review-Folge M-5: Newlines im Header-Value sind Injection-Vehikel.
+
+    Pruefung passiert NACH `urlencode-decode` — `%0A` und `%0D` werden
+    zu `\\n`/`\\r` aufgeloest und dann gefangen.
+    """
+    with pytest.raises(OtlpAdapterConfigError, match="Header-Injection"):
+        OtlpAdapterConfig.from_env(env={"OTEL_EXPORTER_OTLP_HEADERS": raw_header})
 
 
 def test_from_env_headers_kwarg_overrides_env() -> None:
