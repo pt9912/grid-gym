@@ -26,8 +26,15 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Surface + Export-Roundtrip gegen In-Process-`grpcio`-Mock).
 - [ ] **`make test-integration` gruen** — Welle-6-Smoke fuegt
       mindestens einen Test hinzu, der gegen den `otel-collector`-
-      Sibling pruft, dass **≥ 1 Span + ≥ 1 Metric exportiert**
-      wurden (Collector-Export-File-Sink oder OTLP-Receiver-Loopback).
+      Sibling pruft, dass **≥ 1 Span + ≥ 1 Metric + ≥ 1 Log
+      exportiert** wurden (alle drei Adapter aus C1 sind smoke-
+      validiert; Unit-Tests mit `grpcio`-Mock allein wuerden
+      Verdrahtungs-Bugs im realen Export-Pfad nicht fangen).
+      Sink-Determinismus ist Pflicht (siehe C3): pro Lauf
+      isolierter Output-Pfad **plus** Vorab-Truncation **plus**
+      Assertions auf eine per-Lauf eindeutige
+      `service.instance.id`, damit kein Alt-Eintrag aus einem
+      frueheren Run als positiver Beleg gewertet werden kann.
 - [ ] **`make gates` A-1 gruen ohne Override** — lint, format-check,
       mypy `--strict`, arch-check, coverage 90/85 line, critical-
       coverage, dep-audit (`grpcio` +
@@ -148,7 +155,12 @@ Produktive Lieferung:
     entscheidet (Pro: Helper-Symmetrie zu `_obs_increment` /
     `_obs_gauge`; Contra: Wall-Clock-Affordance laeuft am
     `AC-NO-TIME`-Geist vorbei). Default-Vorschlag: **nein**,
-    Adapter misst Span-Dauer intern.
+    weil die OTel-SDK die Span-Dauer ueber
+    `StartTime`/`EndTime` im `BatchSpanProcessor` ohnehin
+    liefert (D-4 oben). Der Adapter ruft selbst kein `time.*`
+    auf; „intern" bedeutet ausdruecklich **nicht** manuelle
+    Zeitmessung im Adapter-Code, sondern Delegation an die
+    SDK eine Schicht tiefer.
   - §4.4 Sentinel-Pattern fuer `scenario.observability`-Block:
     bewusst aufgeschoben auf M3-Welle-7 oder Folge-Slice;
     Welle 6 nutzt `build_otlp_adapters(config=...)`-Factory
@@ -173,9 +185,14 @@ Produktive Lieferung:
   - Image: `otel/opentelemetry-collector-contrib:<gepinnte-tag>`
     (Pin-Strategie gemaess ADR 0019 Image-Pinning-Pattern).
   - Konfig-Volume `deploy/otel-collector-config.yaml` mit
-    `otlp`-Receiver (gRPC :4317) + `file`-Exporter
-    (`/tmp/otel-out.jsonl`) + `logging`-Exporter fuer Smoke-
-    Inspection.
+    `otlp`-Receiver (gRPC :4317) + `file`-Exporter (Pfad per
+    Env-Var `OTEL_COLLECTOR_FILE_SINK` parametrisiert, Default
+    `/tmp/otel-out.jsonl` fuer lokalen Boot) + `logging`-
+    Exporter fuer Smoke-Inspection. Smoke-Fixture in C3
+    setzt `OTEL_COLLECTOR_FILE_SINK` auf einen per-Lauf
+    eindeutigen Pfad (z. B. `pytest`-`tmp_path` + Compose-
+    Volume-Mount), damit konkurrierende Lauefe keinen
+    gemeinsamen Sink teilen.
   - Healthcheck per `otelcol --check-config` oder
     `wget`-Probe auf Health-Extension-Port.
 - API-/Sim-Container bekommen `OTEL_EXPORTER_OTLP_ENDPOINT=
@@ -190,14 +207,33 @@ Produktive Lieferung:
 ### C3 — `feat(welle-6)`/`docs`: Compose-/Integration-Smoke + Runbook + Status/DoD-Sync
 
 - Integration-Smoke-Test (`tests/integration/test_otlp_compose_smoke.py`):
-  - Boot API + Sim + Collector via Compose-Fixture.
+  - Sink-Determinismus-Setup (zwingend vor Boot):
+    - Generiere per-Lauf eindeutige `service.instance.id`
+      (z. B. `uuid4()`); per `OTEL_RESOURCE_ATTRIBUTES`-Env-Var
+      an API/Sim weitergereicht.
+    - Generiere per-Lauf eindeutigen Sink-Pfad (`pytest`-
+      `tmp_path / "otel-out.jsonl"`); per
+      `OTEL_COLLECTOR_FILE_SINK`-Env-Var an Collector weitergereicht.
+    - Truncation der Sink-Datei vor Boot (defensive — `tmp_path`
+      sollte ohnehin leer sein, aber Pflicht-Schritt fuer den
+      Fall, dass Compose-Volumes Reste tragen).
+  - Boot API + Sim + Collector via Compose-Fixture (mit den
+    obigen Env-Vars).
   - Trigger einen Tick mit `RuleBasedAgent` + Battery-Fault
     (Demo-Szenario aus Welle 4b/Welle 2 wiederverwendet).
-  - Pruefe gegen den Collector-File-Sink (`/tmp/otel-out.jsonl`),
-    dass **≥ 1 Span** (`tick.cycle` mindestens) und **≥ 1
-    Metric** (`tick_count` mindestens) im Output liegen.
-  - Pruefe Service-Resource-Attribute (`service.name`,
-    `service.instance.id`).
+  - Pruefe gegen den Collector-File-Sink, dass im Output
+    **alle drei** Adapter-Pfade Spuren hinterlassen haben:
+    - **≥ 1 Span** mit `name == "tick.cycle"` (Welle-5-
+      TickLoop-Span aus ADR 0024 §2.6).
+    - **≥ 1 Metric** mit `name == "tick_count"` (Welle-5-
+      Counter).
+    - **≥ 1 Log-Record** mit `body in {"tick_begin", "tick_end"}`
+      (Welle-5-Per-Tick-Trail).
+    Alle Assertions filtern auf die per-Lauf eindeutige
+    `service.instance.id`, damit kein Alt-Eintrag aus einem
+    anderen Run als positiver Beleg durchgeht.
+  - Pruefe zusaetzlich Service-Resource-Attribute
+    (`service.name`, `service.instance.id`).
 - Runbook `docs/user/observability.md` (neu) mit:
   - Welche Spans/Metrics/Logs der Tick-Loop emittiert
     (Quervers auf ADR 0024 §2.6 und ADR 0027 §2.6).
@@ -484,6 +520,17 @@ beide voraussetzt.
   Welle 6 aendert die Hook-Reihenfolge **nicht**; Adapter
   konsumiert die existierende Surface. Welle-5-Tests
   (Span-Parent-Asserts) bleiben gruen.
+- **R-8** — **Compose-Smoke-False-Positive durch Alt-Eintraege
+  im Collector-Sink** (statischer `/tmp/otel-out.jsonl`-Pfad
+  wuerde Eintraege aus frueheren oder konkurrierenden Lauefen
+  zaehlen). *Mitigation:* Dreifach-Verteidigung in C3 (siehe
+  §3 C3 Sink-Determinismus-Setup): (a) per-Lauf eindeutiger
+  Sink-Pfad ueber `pytest`-`tmp_path` + `OTEL_COLLECTOR_FILE_SINK`-
+  Env-Var, (b) Vorab-Truncation der Sink-Datei vor Boot,
+  (c) Assertion-Filter auf eine per-Lauf eindeutige
+  `service.instance.id`. Damit kann selbst ein versehentlich
+  geteilter Sink-Pfad die Assertion nicht faelschlich gruen
+  faerben. Folge fuer DoD-Checkliste #3 (Smoke-Pflicht-Item).
 
 ## 8. Wandert nach
 
