@@ -88,7 +88,7 @@ Nach jedem Paket gilt:
 
 - `python tools/check_noqa.py --fail-on-noqa` wird paketweise als harte Stufe auf den
   betroffenen Scope angewendet:
--  `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
+  - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
  - Zusätzlich wird für bestehende Kernüberschneidungen (`tick_loop.py`, `validator.py`,
    `rule_based.py`) nach dem jeweiligen Paket ein harter Noqa-Guard auf die konkret berührten
    Kern-Dateien gefahren; dort dürfen keine neuen Marker entstehen.
@@ -177,9 +177,9 @@ Paket-Abnahme (hard):
 - `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py`
  - `pytest tests/unit/hexagon/core/agents`
  - `pytest tests/unit/adapters/driving/http_api`
-  - gezielte Regressionstests für:
+  - Gezielte hart verpflichtende Regressionstests:
     - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
-    - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen),
+    - `tests/unit/hexagon/core/agents` (Fallback-/Bus-/Error-Pfade),
     - `tests/unit/adapters/driving/http_api` (HTTP-API-Contract-/Request-Handling-Pfade).
 
 ### C — PLR0913-APIs entflechten ohne Vertragsbruch
