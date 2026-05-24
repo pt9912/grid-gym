@@ -153,6 +153,25 @@ FROM source AS docs-check
 RUN uv run python tools/check_refs.py
 
 # ---------------------------------------------------------------------------
+# noqa-check: tools/check_noqa.py — `# noqa`-Marker-Reporter (Slice 027).
+# Standardmodus: Report mit Exit-Code 0. Vor dem Plan-§4-Scharfschalten
+# nuetzlich fuer einen aktuellen Bestands-Lauf.
+# ---------------------------------------------------------------------------
+FROM source AS noqa-check
+RUN uv run python tools/check_noqa.py
+
+# ---------------------------------------------------------------------------
+# noqa-gate: tools/check_noqa.py --fail-on-noqa — Hard-Gate (Slice 027).
+# Per `--build-arg NOQA_FILES="..."` paketweise auf einen Scope eingrenzbar;
+# Default (leerer ARG) prueft das gesamte Repo (`src tests tools`).
+# Plan §3.0: paketweise Hard-Stufe nach jedem Paket; Plan §4: Final-Scharf-
+# schaltung in `make gates` nach Slice-Abschluss.
+# ---------------------------------------------------------------------------
+FROM source AS noqa-gate
+ARG NOQA_FILES=""
+RUN uv run python tools/check_noqa.py --fail-on-noqa $NOQA_FILES
+
+# ---------------------------------------------------------------------------
 # test-unit: pytest auf tests/unit/. Schliesst hypothesis-Property-Tests
 # fuer Determinismus (`GG-SIM-001..004`) und kanonische Serialisierung
 # (A-2 / `GG-DATA-005`) ein.

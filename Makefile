@@ -76,6 +76,8 @@ help:
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
 	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"
+	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
+	@echo "  make noqa-gate         tools/check_noqa.py --fail-on-noqa (Slice 027 Plan §3.0 paketweise; FILES=... fuer Scope)"
 	@echo ""
 	@echo "Tests:"
 	@echo "  make test-unit         pytest tests/unit/"
@@ -146,6 +148,23 @@ arch-check-custom:
 
 docs-check:
 	$(DOCKER_BUILD) --target docs-check -t $(IMAGE_PREFIX)-docs-check:latest
+
+# `tools/check_noqa.py` — `# noqa`-Marker-Reporter (Slice 027 Plan).
+# Default-Modus ist Report-only (Exit 0); fuer einen Bestands-Lauf vor
+# dem Slice-Start. Hard-Gate ist `make noqa-gate` (siehe darunter).
+noqa-check:
+	$(DOCKER_BUILD) --target noqa-check -t $(IMAGE_PREFIX)-noqa-check:latest
+
+# `tools/check_noqa.py --fail-on-noqa` — Hard-Gate (Exit 1 bei Treffer).
+# Paketweise verwendbar via `FILES`-Variable:
+#   make noqa-gate FILES="src/grid_gym/adapters/driving/http_api/app.py"
+# Ohne `FILES` prueft das gesamte Repo (`src tests tools`). Plan §3.0
+# verlangt paketweise Hard-Stufen nach jedem A..E-Paket; Plan §4
+# integriert das Gate final in `make gates` (kommt mit Slice-Final).
+noqa-gate:
+	$(DOCKER_BUILD) --target noqa-gate \
+		--build-arg NOQA_FILES="$(FILES)" \
+		-t $(IMAGE_PREFIX)-noqa-gate:latest
 
 # --- Tests -----------------------------------------------------------------
 
