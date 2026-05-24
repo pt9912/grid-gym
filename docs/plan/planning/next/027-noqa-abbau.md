@@ -88,10 +88,19 @@ Nach jedem Paket gilt:
 
 - `python tools/check_noqa.py --fail-on-noqa` wird paketweise als harte Stufe auf den
   betroffenen Scope angewendet:
-  - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
-- Zusätzlich wird für bestehende Kernüberschneidungen (`tick_loop.py`, `validator.py`,
-  `rule_based.py`) nach dem jeweiligen Paket ein gezielter Noqa-Guard gegen Regressionsmarker
-  auf den bereits bereinigten Dateien gefahren; dort dürfen keine neuen Marker entstehen.
+-  `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
+ - Zusätzlich wird für bestehende Kernüberschneidungen (`tick_loop.py`, `validator.py`,
+   `rule_based.py`) nach dem jeweiligen Paket ein harter Noqa-Guard auf die konkret berührten
+   Kern-Dateien gefahren; dort dürfen keine neuen Marker entstehen.
+   - Paket A: kein Kern-Guard, da keine Kern-Dateien im Scope.
+   - Paket B: `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/simulation/tick_loop.py src/grid_gym/hexagon/core/scenario/validator.py`
+   - Paket C: `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/agents/rule_based.py`
+   - Paket D: `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/simulation/tick_loop.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/agents/rule_based.py`
+   - Paket E: `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/agents/rule_based.py`
+   - Zusätzlich ist für alle betroffenen Kernmodule ein verbindlicher Contract-Regression-Guard Pflicht:
+     - `validator.py`: `pytest tests/unit/hexagon/core/scenario/test_validator_fault_target.py tests/unit/hexagon/core/scenario/test_validator_welle_4b_agents.py`
+     - `tick_loop.py`: `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py tests/unit/hexagon/core/simulation/test_tick_loop.py::test_resume_continues_byte_identical_to_uninterrupted_run tests/unit/hexagon/core/simulation/test_tick_loop.py::test_resume_preserves_tick_count tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py::test_from_snapshot_grid_model_resume_tolerates_tuple_list_drift`
+     - `rule_based.py`: `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
 - Nach Paket A–E (und ohne offene technische Ausnahmen) folgt die finale Repo-Absicherung mit:
   - `python tools/check_noqa.py --fail-on-noqa`
 - Betroffene Paket-Tests laufen gruen.
