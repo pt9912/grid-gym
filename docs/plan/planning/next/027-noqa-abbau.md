@@ -86,7 +86,7 @@ Verbindliche Reihenfolge:
 
 Nach jedem Paket gilt:
 
-- `python tools/check_noqa.py` ausfuehren (keine neuen Marker in bereits
+- `python tools/check_noqa.py --fail-on-noqa` ausfuehren (keine neuen Marker in bereits
   bereinigten Bereichen) als harte Stufe:
   - `python tools/check_noqa.py --fail-on-noqa <Datei1> <Datei2> ...`
 - Nach Paket A–E (und ohne offene technische Ausnahmen) folgt die finale
@@ -232,10 +232,10 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/core/simulation/tick_loop.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py`
-- `pytest tests/unit/hexagon/core/scenario/test_validator.py`
+- `pytest tests/unit/hexagon/core/scenario/test_validator_fault_target.py tests/unit/hexagon/core/scenario/test_validator_welle_4b_agents.py`
 - `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
-- Replay-/Resume-spezifische Integrationsabdeckung wird vor/nach Refactor
-  gegen identische Erwartungsartefakte (Snapshots, Entscheidungswege) gegengeprueft.
+- Replay-/Resume-Abdeckung wird vor/nach Refactor per konkreten Regressionstests gegengeprueft:
+  - `pytest tests/unit/hexagon/core/simulation/test_tick_loop.py::test_resume_continues_byte_identical_to_uninterrupted_run tests/unit/hexagon/core/simulation/test_tick_loop.py::test_resume_preserves_tick_count tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py::test_from_snapshot_grid_model_resume_tolerates_tuple_list_drift`
 
 ### E — Spezialfaelle ersetzen
 
