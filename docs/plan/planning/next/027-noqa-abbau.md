@@ -163,10 +163,10 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa src/grid_gym/adapters/driving/http_api/app.py src/grid_gym/hexagon/core/agents/bus.py src/grid_gym/hexagon/core/scenario/validator.py src/grid_gym/hexagon/core/simulation/tick_loop.py`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
-- gezielte Regressionstests für:
-  - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
-  - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen),
-  - `tests/unit/hexagon/adapters/driving` (HTTP-API-Contract-/Request-Handling-Pfade).
+  - gezielte Regressionstests für:
+    - `tests/unit/hexagon/core/scenario` (Fehlerpfade, Snapshot-/Mismatch-Cases),
+    - `tests/unit/hexagon/core/agents` (Fallback-/Bus-Fehlerpfade, falls betroffen),
+    - `tests/unit/adapters/driving/http_api` (HTTP-API-Contract-/Request-Handling-Pfade).
 
 ### C — PLR0913-APIs entflechten ohne Vertragsbruch
 
@@ -198,7 +198,7 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa src/grid_gym/hexagon/ports/driven/observability.py src/grid_gym/adapters/driven/observability_null/null_adapters.py src/grid_gym/adapters/driven/telemetry_otlp/logs.py src/grid_gym/adapters/driven/telemetry_otlp/_config.py src/grid_gym/hexagon/core/scenario/loader.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/ports`
-- `pytest tests/unit/hexagon/adapters`
+- `pytest tests/unit/adapters`
 - `pytest tests/unit/hexagon/core/scenario/test_loader_welle_6b.py`
 - mindestens ein API-Contract/Vertrags-Test der berührten Module gegen alte/neu
   aufrufende Pfade.
@@ -264,8 +264,8 @@ Akzeptanz:
 Paket-Abnahme (hard):
 - `python tools/check_noqa.py --fail-on-noqa tools/arch_check.py src/grid_gym/adapters/driven/random_mt/mersenne_twister.py src/grid_gym/hexagon/core/agents/rule_based.py`
 - `pytest tests/unit/hexagon/core/agents/test_rule_based.py`
-- `pytest tests/unit/hexagon/adapters/driven/random_mt`
-- `pytest tests/unit/hexagon/adapters/test_arch_check.py` (bzw. das äquivalente vorhandene
+- `pytest tests/unit/adapters/driven/random_mt`
+- `pytest tests/unit/test_arch_check_registration.py` oder `pytest tests/unit/test_arch_check_domain_frozen.py`
   Arch-Check-Regressionstestset im Repo)
 - Bei `tools/arch_check.py` ist eine lokale Validierung mit vorhandenen
   bekannten Fallback-Szenarien in den bestehenden Testpfaden nachweislich grün.
