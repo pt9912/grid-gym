@@ -16,41 +16,50 @@ Konvention analog Roadmap §3 M3 — `[ ]` offen, `[x]` erfuellt,
 `[~]` partiell. Status beim C0-Stand `In Progress`: alle Items
 offen; Haken wandern mit C1/C2/C3-Beleg.
 
-- [ ] **ADR 0022 (`Fault Injection Protocol`) → `Accepted`** —
+- [x] **ADR 0022 (`Fault Injection Protocol`) → `Accepted`** —
       Closure-Beleg ist Welle-1/2-Lieferung (Faults-Subsystem
-      abgeschlossen 2026-05-20). `Letzte inhaltliche Aenderung`-
-      Pflichtfeld (ADR 0006 §4) gesetzt.
-- [ ] **ADR 0023 (`AgentBus Protocol`) → `Accepted`** —
-      Closure-Beleg ist Welle-3/4-Lieferung (Multi-Agent-Subsystem
-      abgeschlossen 2026-05-22). `Letzte inhaltliche Aenderung`-
-      Pflichtfeld (ADR 0006 §4) gesetzt.
-- [ ] **ADR 0024 (`Observability Port Trio`) → `Accepted`** —
-      Closure-Beleg ist Welle-5/6-Lieferung (OTLP-Adapter +
-      Compose-Smoke abgeschlossen 2026-05-25). `Letzte inhaltliche
-      Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt. Explizit als
-      M3-Welle-7-Material in `done/M3-welle-6.md` DoD vermerkt.
-- [ ] **ADR 0025 (`Fault Recovery Pattern`) → `Accepted`** —
-      Closure-Beleg ist Welle-2-Lieferung (Recovery-Engine +
-      Fault-Demo/Property-Tests abgeschlossen 2026-05-20).
+      abgeschlossen 2026-05-20). **Erfuellt mit C1.1 `c971c6a`**;
       `Letzte inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4)
       gesetzt.
-- [ ] **ADR 0026 (`Agent Drain Registry Pattern`) → `Accepted`** —
+- [x] **ADR 0023 (`AgentBus Protocol`) → `Accepted`** —
+      Closure-Beleg ist Welle-3/4-Lieferung (Multi-Agent-Subsystem
+      abgeschlossen 2026-05-22). **Erfuellt mit C1.2 `670a4df`**;
+      `Letzte inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4)
+      gesetzt.
+- [x] **ADR 0024 (`Observability Port Trio`) → `Accepted`** —
+      Closure-Beleg ist Welle-5/6-Lieferung (OTLP-Adapter +
+      Compose-Smoke abgeschlossen 2026-05-25). **Erfuellt mit
+      C1.3 `d13e1f3`**; `Letzte inhaltliche Aenderung`-Pflichtfeld
+      (ADR 0006 §4) gesetzt. Explizit als M3-Welle-7-Material in
+      `done/M3-welle-6.md` DoD vermerkt.
+- [x] **ADR 0025 (`Fault Recovery Pattern`) → `Accepted`** —
+      Closure-Beleg ist Welle-2-Lieferung (Recovery-Engine +
+      Fault-Demo/Property-Tests abgeschlossen 2026-05-20).
+      **Erfuellt mit C1.4 `92daafc`**; `Letzte inhaltliche
+      Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt.
+- [x] **ADR 0026 (`Agent Drain Registry Pattern`) → `Accepted`** —
       Closure-Beleg ist Welle-4a-Lieferung (Agent-Registry,
       Drain, Lifecycle + Snapshot-Plumbing abgeschlossen
-      2026-05-21). `Letzte inhaltliche Aenderung`-Pflichtfeld
-      (ADR 0006 §4) gesetzt.
-- [ ] **ADR 0027 (`Rule-Based Agent Scenario Pattern`) →
+      2026-05-21). **Erfuellt mit C1.5 `2d0d0d4`**; `Letzte
+      inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt.
+- [x] **ADR 0027 (`Rule-Based Agent Scenario Pattern`) →
       `Accepted`** — Closure-Beleg ist Welle-4b-Lieferung
       (`RuleBasedAgent`, Scenario-`agents`-Block, Agent-
       Sub-Snapshots + Demo abgeschlossen 2026-05-22).
-      `Letzte inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4)
-      gesetzt.
-- [ ] **Trigger 006 (`--strict-bytes`) Entscheidung** —
-      Aktivierung als Folge-Slice nach `next/` planen oder konkrete
-      Begruendung fuer Verschiebung in M4/M6-Re-Triage liefern.
-      Bezug: ADR 0005 `--strict-bytes`-Option + OTLP-Bytes-Vertrag
-      aus Welle 6. Decision dokumentiert; bei Verschiebung bleibt
-      Trigger 006 in `open/` mit neuem Aktivierungs-Kriterium.
+      **Erfuellt mit C1.6 `5480937`**; `Letzte inhaltliche
+      Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt.
+- [x] **Trigger 006 (`--strict-bytes`) Entscheidung** —
+      **Erfuellt mit C2** (dieser Commit): Verschoben mit
+      geschaerftem Aktivierungs-Kriterium. Befund: aktuell kein
+      produktiver `bytes`/`bytearray`-Pfad im Domain-Code (das
+      Snapshot-Codec verbietet `bytes`/`bytearray` sogar explizit;
+      OTLP-Adapter nutzen Protocol-Buffer-Serialisierung der
+      OTel-SDK als Library-interna). Aktivierung wandert in
+      `next/`, sobald M4-Protokolladapter (MQTT/Modbus/OPC-UA),
+      Snapshot-v2→v3-Lese-Migrations-Pfad oder ein OTLP-Trace-
+      Roundtrip-Test einen ersten echten Binaer-Pfad einfuehrt.
+      Detail-Dokumentation: [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+      §Decision + §Aktivierungs-Kriterium.
 - [ ] **`done/M3-results.md`** angelegt, Pattern analog
       [`done/M2-devices-results.md`](../done/M2-devices-results.md):
       Welle-Tabelle (Welle 0..7 mit Status/Datum/Commit-Range),
