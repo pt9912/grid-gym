@@ -185,16 +185,53 @@ Default `512` reicht fuer Welle-6-Demo-Lasten (5-100 Ticks/s).
 ### 4.3 Spans kommen nicht im Collector an (Welle 6 C3 Edge-Case)
 
 **Bekannt** seit M3-Welle-6-C3 (2026-05-25) — siehe
-[Trigger 029](../plan/planning/open/029-otlp-span-grpc-export-edge-case.md).
-SDK-side sind die Spans korrekt (ConsoleSpanExporter zeigt sie,
-recording=True, valide IDs), aber der OTLP-gRPC-Span-Export an
-einen Sibling-Container kommt nicht durch. Metrics+Logs ueber die
-identische Connection funktionieren.
+[Trigger 029](../plan/planning/open/029-otlp-span-grpc-export-edge-case.md)
+inkl. Doku-Befund (5 Punkte). SDK-side sind die Spans korrekt
+(ConsoleSpanExporter zeigt sie, recording=True, valide IDs), aber
+der OTLP-gRPC-Span-Export an einen Sibling-Container kommt nicht
+durch. Metrics+Logs ueber die identische Connection funktionieren.
+
+**Achtung — was NICHT als Diagnose taugt:**
+
+- `force_flush() == True` allein. Laut OTLPSpanExporter-Python-
+  API puffert der Exporter selbst nichts; `force_flush` returnt
+  trivial `True`. Erst der Receiver-Counter im Collector beweist
+  einen Annahme-Erfolg.
+- Debug-Exporter-Logs allein. Sie zeigen nur, was die Pipeline
+  bis zum Exporter gefuehrt hat — vorgelagerte Drop-Stellen
+  (Receiver-Refused / Processor-Filter) bleiben unsichtbar.
+
+**Was als Diagnose taugt (Collector-Internal-Telemetry):**
+
+Der Collector exponiert Prometheus-Counter auf `:8888/metrics`
+(`service.telemetry.metrics.address` in
+[`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)).
+Die Trigger-029-relevanten Counter:
+
+| Counter                              | Bedeutung                                    |
+| ------------------------------------ | -------------------------------------------- |
+| `otelcol_receiver_accepted_spans`    | Receiver hat den Span angenommen             |
+| `otelcol_receiver_refused_spans`     | Receiver hat den Span aktiv abgelehnt        |
+| `otelcol_processor_batch_batch_send_size` | Batches, die der Processor weiterreicht |
+| `otelcol_exporter_sent_spans`        | Exporter hat den Span erfolgreich verschickt |
+| `otelcol_exporter_send_failed_spans` | Exporter hat einen Send-Failure              |
+
+Diff-Interpretation: `accepted_spans=0` → Bruch **vor** dem
+Receiver (Netz, TLS, Service-Methode); `accepted_spans>0` und
+`sent_spans=0` → Bruch in Pipeline/Processor/Exporter.
+
+**SDK-side Diagnose:**
+
+`span.get_span_context().trace_flags & 0x01` (SAMPLED-Bit). Ist
+das Bit 0, hat der SDK-Sampler den Span verworfen — kein OTLP-
+Export findet statt.
 
 **Diagnose-Tooling:**
 [`tools/diagnose_otlp_span_export.py`](../../tools/diagnose_otlp_span_export.py)
 — Matrix-Script mit Endpoint/Insecure/Processor-Varianten und
-voll aufgedrehten gRPC- + OTel-Debug-Loggern. Aufruf (Docker-only):
+voll aufgedrehten gRPC- + OTel-Debug-Loggern; druckt pro Variante
+`trace_flags` + `sampled` + `recording` und scraped am Ende die
+Internal-Counter von `:8888/metrics`. Aufruf (Docker-only):
 
 ```bash
 docker compose -f tests/integration/compose.yml run --rm test-runner \
@@ -209,10 +246,17 @@ Span-Smoke bleibt ausgeklammert, bis Trigger 029 geschlossen ist.
 
 **Vorsicht-Pattern**: bei OTel-SDK signalisiert `force_flush=True`
 „Queue ist leer", nicht „Records sind im Collector angekommen".
-Export-Failures werden aus der Queue entfernt, ohne dass `force_
-flush` False meldet. **Verifikation immer ueber das Empfaenger-
-seitige Ziel** (Collector-Log, File-Sink, Backend-API), nicht
-nur ueber SDK-Side-Returncodes.
+Insbesondere bei `OTLPSpanExporter` (Python-API): der Exporter
+puffert selbst nichts, `force_flush` returnt trivial `True` — auch
+wenn der Background-Send via gRPC fehlschlaegt. Export-Failures
+werden aus der Queue entfernt, ohne dass `force_flush` `False`
+meldet.
+
+**Verifikation immer ueber das Empfaenger-seitige Ziel**
+(Collector-Internal-Counter `otelcol_receiver_accepted_spans` /
+`otelcol_exporter_sent_spans`, File-Sink, Backend-API), nicht
+nur ueber SDK-Side-Returncodes. Siehe §4.3 fuer den Internal-
+Telemetry-Endpunkt und das Diagnose-Tooling.
 
 ---
 

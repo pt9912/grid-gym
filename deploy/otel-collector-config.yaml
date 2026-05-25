@@ -48,6 +48,25 @@ exporters:
     verbosity: detailed
 
 service:
+  # Internal-Telemetry-Endpunkt (Prometheus-kompatibel) auf :8888.
+  # Liefert Counter wie `otelcol_receiver_accepted_spans`,
+  # `otelcol_receiver_refused_spans`, `otelcol_exporter_sent_spans`
+  # — die einzige verlaessliche Diagnose-Quelle fuer "kommt es
+  # ueberhaupt am Receiver an / wird's gedroppet / wird's
+  # exportiert" (siehe `docs/user/observability.md` §4.3 +
+  # Trigger 029). Wir binden explizit auf 0.0.0.0, damit der Port
+  # vom Host / Sibling-Container scrapbar ist.
+  # Format ist der seit Collector ~0.123 neue `readers.pull`-
+  # Pattern; das aeltere `metrics.address: host:port` ist im
+  # 0.152-Image als „invalid keys" entfernt.
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
   extensions: [health_check]
   pipelines:
     traces:

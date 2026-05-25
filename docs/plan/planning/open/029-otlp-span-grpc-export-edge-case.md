@@ -1,6 +1,7 @@
 # 029 — OTLP-Span-gRPC-Export-Edge-Case (Welle 6 C3 Caveat)
 
-**Status:** Open — eroeffnet 2026-05-25 als Welle-6-C3-Caveat.
+**Status:** Open — eroeffnet 2026-05-25 als Welle-6-C3-Caveat,
+geschaerft 2026-05-25 nach Doku-Befund (Quellen unten in §7).
 **Quelle:** M3-Welle-6-C3-Smoke-Test
 (`tests/integration/test_otlp_compose_smoke.py`); Befund waehrend
 des Tripel-Assert-Bauversuchs (Span/Metric/Log).
@@ -8,6 +9,47 @@ des Tripel-Assert-Bauversuchs (Span/Metric/Log).
 gruen bekommen — damit der Welle-6-Smoke spaeter auf das volle
 Tripel (Span/Metric/Log) hochgezogen werden kann, das ADR 0024
 §4.5.7 und M3-welle-6.md §C3 urspruenglich vorsehen.
+
+---
+
+## 0. Doku-Befund (2026-05-25)
+
+Die ursprueng-formulierten Hypothesen (Endpoint-Format, Insecure-
+Flag, Processor-Variante) haben wir gegen die offizielle Doku
+gegengeprueft (siehe §7 Bezug). Ergebnis:
+
+1. **Endpoint-Matrix ist Spec-konform.** OTLP/gRPC akzeptiert
+   sowohl `http://host:4317` (impliziter Insecure-Default per
+   URL-Schema) als auch `host:port` + `insecure=True`. Beides
+   ist gueltig. Damit ist der Bruchpunkt **nicht** in der
+   Endpoint-Konfiguration zu suchen.
+2. **Collector-Config ist Standard.** `otlp.grpc` auf
+   `0.0.0.0:4317` + separate `traces`/`metrics`/`logs`-Pipelines
+   mit demselben Receiver ist genau das dokumentierte Modell.
+3. **`force_flush() == True` ist KEIN Beweis fuer
+   Netzwerk-Export.** Laut `opentelemetry-python`-Source puffert
+   `OTLPSpanExporter` selbst nichts; `force_flush` returnt
+   trivial `True`. Die echte Beweisfuehrung muss processor-side
+   (SimpleSpanProcessor / BatchSpanProcessor exportiert) und
+   receiver-side (`otelcol_receiver_accepted_spans`) laufen.
+4. **Metrics+Logs ueber denselben Host/Port beweisen nur
+   Transport-Erreichbarkeit**, nicht den Trace-Service-Pfad.
+   OTLP/gRPC ist signal-spezifisch (`ExportTraceServiceRequest`
+   vs. `ExportMetricsServiceRequest` vs.
+   `ExportLogsServiceRequest`) — der Trace-Pfad kann eigenstaendig
+   brechen.
+5. **Naechste Diagnose-Schritte (Doku):** Collector-Internal-
+   Metrics scrapen (`otelcol_receiver_accepted_spans`,
+   `otelcol_receiver_refused_spans`,
+   `otelcol_exporter_sent_spans`) plus SDK-side
+   `span.context.trace_flags & 0x01` (SAMPLED-Bit) auswerten.
+   Damit trennt man sauber: kommt am Receiver an /
+   wird gedroppet / wird exportiert / wird vom Sampler verworfen.
+
+**Konsequenz:** Hypothesen-Liste unten neu geordnet — Sampling/
+Processor-Pfad nach oben, Endpoint-Varianten nach unten. Diagnose-
+Tooling um Internal-Metrics + `trace_flags` erweitert
+(`tools/diagnose_otlp_span_export.py`, 2026-05-25).
 
 ---
 
@@ -52,13 +94,30 @@ SDK-side verifiziert (Unit-Tests in
 ## 3. Diagnose-Tooling
 
 `tools/diagnose_otlp_span_export.py` — Standalone-Script mit
-Matrix-Varianten (Endpoint-Format × Insecure-Flag × Processor-
+Matrix-Varianten (Endpoint-Format x Insecure-Flag x Processor-
 Variante) + voll aufgedrehtem `GRPC_VERBOSITY=DEBUG`,
 `GRPC_TRACE=api,client_channel,connectivity_state,call_error` +
 `opentelemetry`/`grpc`-Loggern auf DEBUG. Faehrt einen frischen
-Collector-Sibling hoch, sendet einen Span je Variante mit
-parallelem `ConsoleSpanExporter`, dumpt am Ende den vollen
-Collector-stderr und eine `variant → collector_hits`-Matrix.
+Collector-Sibling hoch (inkl. `service.telemetry.metrics.address:
+0.0.0.0:8888`), sendet einen Span je Variante mit parallelem
+`ConsoleSpanExporter`, dumpt am Ende drei Diagnose-Quellen:
+
+1. **Collector-stderr** (debug-Exporter-Pretty-Output + interner
+   `service.telemetry.logs.level: debug`).
+2. **Per-Variante-Tracking** im SDK: pro Span werden
+   `trace_flags`, `sampled` (SAMPLED-Bit), `recording`, `span_id`
+   geloggt — damit faellt auf, wenn der SDK-Sampler den Span
+   verwirft (kein OTLP-Export); siehe Doku-Befund Punkt 5.
+3. **Collector-Internal-Counter** (Prometheus-Scrape von
+   `:8888/metrics`): `otelcol_receiver_accepted_spans`,
+   `otelcol_receiver_refused_spans`,
+   `otelcol_processor_batch_batch_send_size`,
+   `otelcol_exporter_sent_spans`,
+   `otelcol_exporter_send_failed_spans` plus die analogen
+   `accepted_metric_points`/`accepted_log_records` zum Vergleich.
+   Erst diese Counter beweisen, ob ein Span am Receiver
+   angenommen, gedroppet oder weiterexportiert wurde — Debug-
+   Exporter-Logs allein zeigen das nicht (Doku-Befund Punkt 5).
 
 Aufruf (Docker-only, kein lokaler Python-Pfad):
 
@@ -67,31 +126,56 @@ docker compose -f tests/integration/compose.yml run --rm test-runner \\
     uv run python tools/diagnose_otlp_span_export.py
 ```
 
-## 4. Hypothesen-Liste (Triage-Reihenfolge)
+Erwartete Diagnose-Interpretation:
 
-1. **gRPC-Channel-State-Race** im Cross-Network-Sibling-Setup —
-   die Span-Connection wird vor dem Send teardown, weil `force_
-   flush` die Queue als leer erkennt obwohl der Export-Call noch
-   in-flight ist. Test: `BatchSpanProcessor` mit langem
-   `schedule_delay_millis` + Beobachten, ob Spans nach
-   ~5 s ankommen.
-2. **OTel-SDK-`OTLPSpanExporter`-Bug mit Python 3.14** — neueste
-   Python-Version + neueste SDK koennten an einer 3.13/3.14-
-   Inkompatibilitaet leiden. Test: Downgrade auf Python 3.13 via
-   `make ... PYTHON_VERSION=3.13` (verfuegbar laut ADR 0002 §6.1).
-3. **Collector-Receiver dropped Spans silent** wegen Schema-/
-   Resource-Inkonsistenz, die Metrics/Logs nicht haben. Test:
-   `service.telemetry.logs.level: debug` im Collector
-   (im `diagnose`-Script schon gesetzt) — Receiver-Logs sollten
-   dann zeigen, dass etwas reinkommt und gedroppet wird.
-4. **`grpcio`-Floor zu niedrig** — `pyproject.toml` haerten auf
-   ein neueres `grpcio`-Minimum, falls Bekannte Bugs in der
-   gepinnten Version dokumentiert sind.
-5. **Header-/Resource-Diff zwischen Trace- und Metric-/Log-
-   Exporter im Factory-Pfad** — `_factory.py` baut alle drei
-   gleich, aber moeglich uebersehene Asymmetrie. Test:
-   `OTLPSpanExporter`-Konstruktor mit explizit denselben Args
-   wie `OTLPMetricExporter` (modulo Klasse).
+- `accepted_spans=0`: Span erreicht den Collector **nicht** —
+  Bruch liegt zwischen SDK-Exporter und Receiver-Endpoint
+  (Netz/TLS/Service-Methode).
+- `accepted_spans>0` und `sent_spans=0`: Span wird angenommen,
+  aber nicht exportiert — Pipeline-/Processor-/Exporter-Bug
+  collector-side.
+- `accepted_spans>0` und `sent_spans>0` und Debug-Log zeigt
+  nichts: Debug-Exporter-Filter / Verbosity-Problem (sollte
+  bei `verbosity: detailed` nicht passieren).
+- `sampled=False`: SDK-Sampler verwirft den Span vor Exporter-
+  Aufruf — Sampler-Konfig pruefen.
+
+## 4. Hypothesen-Liste (Triage-Reihenfolge, post-Doku-Befund)
+
+1. **SDK-Sampler verwirft Span vor Export.** Default-Sampler ist
+   `ParentBasedSampler(ALWAYS_ON)`, der bei Root-Spans
+   `ALWAYS_ON` greift — aber Edge-Case-Konstellationen
+   (z. B. nested Provider, vergessener `set_tracer_provider`-
+   Call) koennten zu `NonRecordingSpan` fuehren. **Test:**
+   `trace_flags & 0x01`-Print im Diagnose-Script auswerten
+   (jetzt eingebaut).
+2. **Processor exportiert Span nicht.** `BatchSpanProcessor` mit
+   Background-Thread koennte beim ersten gRPC-Channel-Setup im
+   Cross-Network-Sibling-Mode in einen unrecoverable State
+   geraten; `SimpleSpanProcessor` ist synchron — wenn dort
+   auch `accepted_spans=0`, ist es eindeutig **vor** dem
+   Processor. **Test:** Internal-Counter pro Variante
+   (Batch vs. Simple) vergleichen.
+3. **gRPC-Trace-Service-Pfad bricht selektiv.** Logs+Metrics
+   nutzen `ExportLogsServiceRequest`/`ExportMetricsServiceRequest`
+   ueber die gleiche Connection, aber `ExportTraceServiceRequest`
+   wird vom Receiver moeglicherweise schon vor Pipeline-Annahme
+   abgelehnt (Schema-Inkonsistenz, Resource-Mismatch). **Test:**
+   `otelcol_receiver_refused_spans` > 0 ist Beweis.
+4. **OTel-Python-Trace-Exporter-Bug mit grpcio-Floor.** SDK 1.42
+   + grpcio-Default-Floor koennten an einer Inkompatibilitaet
+   leiden, die Metrics/Logs durch ihre Exporter umgehen.
+   **Test:** Trace-Exporter-Source-Inspektion (`force_flush`-
+   Implementierung; pruefen, ob er einen eigenen Channel-State
+   teardown macht, den die anderen nicht tun).
+5. **Endpoint-/Insecure-Varianten.** *Nach Doku-Befund Punkt 1
+   unwahrscheinlich*; Spec-konform sind sowohl
+   `http://host:4317` als auch `host:port` + `insecure=True`.
+   Bleibt als Cross-Check im Diagnose-Script enthalten, ist
+   aber nicht der Primaer-Verdacht.
+6. **Python-3.14-SDK-Edge.** *Spekulativ*; ggf. Downgrade auf
+   3.13 (`make ... PYTHON_VERSION=3.13`) als Vergleich, falls
+   alle anderen Hypothesen widerlegt sind.
 
 ## 5. Akzeptanz
 
@@ -114,10 +198,34 @@ Trigger 029 wandert nach `done/`, sobald:
 
 ## 7. Bezug
 
-- M3 Welle 6 C3 (`docs/plan/planning/in-progress/M3-welle-6.md`
+**Welle-6-interne Quellen:**
+
+- M3 Welle 6 C3
+  ([`docs/plan/planning/done/M3-welle-6.md`](../done/M3-welle-6.md)
   §C3) — Caveat dokumentiert.
 - ADR 0024 §4.5.7 — Compose-Smoke-Determinismus-Pattern, vier
   Pflichten; Span ist Teil des Tripels.
-- `tools/diagnose_otlp_span_export.py` — Matrix-Diagnose-Script.
-- `tests/integration/test_otlp_compose_smoke.py` — Smoke-Test
-  mit Span-Caveat im Docstring.
+- [`tools/diagnose_otlp_span_export.py`](../../../../tools/diagnose_otlp_span_export.py)
+  — Matrix-Diagnose-Script (Endpoint x Insecure x Processor,
+  plus `trace_flags`-Print + Internal-Counter-Scrape).
+- [`tests/integration/test_otlp_compose_smoke.py`](../../../../tests/integration/test_otlp_compose_smoke.py)
+  — Smoke-Test mit Span-Caveat im Docstring.
+- [`deploy/otel-collector-config.yaml`](../../../../deploy/otel-collector-config.yaml)
+  — `service.telemetry.metrics.address: 0.0.0.0:8888` aktiv,
+  damit Internal-Counter per Sibling-Container scrapbar sind.
+
+**OTel-Doku-Quellen (Doku-Befund 2026-05-25):**
+
+- [OTLP Exporter Configuration](https://opentelemetry.io/docs/specs/otel/protocol/exporter/)
+  — Endpoint-/Insecure-Konvention (Doku-Befund Punkt 1).
+- [Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+  — receiver/pipeline-Modell (Doku-Befund Punkt 2).
+- [Python OTLPSpanExporter](https://opentelemetry-python.readthedocs.io/en/latest/_modules/opentelemetry/exporter/otlp/proto/grpc/trace_exporter.html)
+  — `force_flush()` returnt trivial `True` (Doku-Befund Punkt 3).
+- [OTLP Spec](https://opentelemetry.io/docs/specs/otlp/)
+  — `ExportTraceServiceRequest` vs.
+  `ExportMetricsServiceRequest` vs. `ExportLogsServiceRequest`
+  als getrennte Service-Methoden (Doku-Befund Punkt 4).
+- [Collector Internal Telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/)
+  — `otelcol_receiver_accepted_spans` etc. als verlaessliche
+  Diagnose-Quelle (Doku-Befund Punkt 5).

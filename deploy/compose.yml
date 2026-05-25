@@ -49,11 +49,13 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
     # Sink-Verzeichnis als tmpfs — Default-Profil ohne
-    # Persistenz; C3-Smoke-Fixture ersetzt das per Override-
-    # File durch einen bind-mount auf `pytest tmp_path`
-    # (ADR 0024 §4.5.7 Punkt 1: per-Lauf isolierter Sink-Pfad).
+    # Persistenz. `mode=1777` (world-writable, sticky-bit) ist
+    # Pflicht, weil das distroless-Image als `nonroot`-User
+    # (uid 65532) laeuft und ohne explizite Permissions im
+    # default-root-owned tmpfs den `file`-Exporter mit
+    # „permission denied" am Pipeline-Start crashen liesse.
     tmpfs:
-      - /var/log/otel
+      - /var/log/otel:mode=1777
     # Kein healthcheck-Block: distroless Image, keine Probe-Binary
     # vorhanden. Echte Liveness pollt `make runtime` extern via
     # Python aus dem `api`-Container gegen :13133.
