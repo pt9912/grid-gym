@@ -60,21 +60,32 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Roundtrip-Test einen ersten echten Binaer-Pfad einfuehrt.
       Detail-Dokumentation: [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
       §Decision + §Aktivierungs-Kriterium.
-- [ ] **`done/M3-results.md`** angelegt, Pattern analog
+- [x] **`done/M3-results.md`** angelegt, Pattern analog
       [`done/M2-devices-results.md`](../done/M2-devices-results.md):
       Welle-Tabelle (Welle 0..7 mit Status/Datum/Commit-Range),
       Test-Bilanz pro Welle (Unit + Integration), Coverage-
       Endstand, Closure-Verweis auf alle sechs M3-ADRs.
-- [ ] **`roadmap.md` §3 M3 auf `Done`** — DoD-Checkboxen
+      **Erfuellt mit C3** (dieser Commit-Stack).
+- [x] **`roadmap.md` §3 M3 auf `Done`** — DoD-Checkboxen
       aktivieren (10.000-Punkte-Benchmark bleibt M6, andere
       M3-spezifische Items haken), Status auf `Done`, „Naechster
       aktiver Slice: M4 (Protokolladapter)" gesetzt.
-- [ ] **Open-Trigger fuer M3-Restposten** angelegt, soweit nicht
-      schon existent. Bekannte Kandidaten:
-      - **RL-Adapter** (`GG-FUTURE-001/002`) — eigener Slice nach
-        M3-Closure. Multi-Agent-Bus aus Welle 3/4 ist RL-faehig,
-        aber der RL-Trainings-Loop bleibt extern.
-      - Weitere Restposten werden im S-6-Sweep identifiziert.
+      **Erfuellt mit C3** (dieser Commit-Stack).
+- [x] **Open-Trigger fuer M3-Restposten** angelegt:
+      - **RL-Adapter** (`GG-FUTURE-001/002`) als
+        [`../open/030-rl-adapter.md`](../open/030-rl-adapter.md)
+        eroeffnet — `RL-Trainings-Loop bleibt extern`,
+        Zielplattform-Triage offen (Gym/PettingZoo / Ray RLlib
+        / Stable-Baselines3); Aktivierung bei externer
+        RL-Workload, Trigger-026-BESS-Spike oder Welle-4c+-
+        Multi-Agent-Erweiterung.
+      - Weitere Restposten aus dem S-6-Sweep
+        (`GG-AGENT-007/008`, `GG-SAFE-001..006`,
+        Snapshot-v2→v3-Migration) bleiben in `done/M3-
+        results.md` §5/§7 dokumentiert ohne eigenen
+        Trigger — sie sind entweder explizit M5/M6-Material
+        oder als Welle-4c+/M5-Erweiterung markiert.
+      **Erfuellt mit C3** (dieser Commit-Stack).
 - [ ] **End-to-End-Sweep S-1..S-6** (Pflicht-Punkt aus
       `M3-faults-agents-observability.md §3 Welle 7`, Pattern
       analog M2-Welle-7 §4):

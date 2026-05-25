@@ -190,9 +190,16 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Naechster aktiver Slice: M3.**
+**Naechster aktiver Slice: M4.** M3 ist `Done` (2026-05-25,
+siehe [`done/M3-results.md`](../done/M3-results.md)): drei Sub-
+Bereiche (Faults, Multi-Agent, Observability) ueber Welle 0..7
+geliefert; sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
+`Accepted`; `make fullbuild` cache-frei gruen ohne Override mit
+OTLP-Collector-Sibling; 1138 Unit-Tests + 21 Integration-Tests;
+96 % Total-Coverage; 19 A-1-Contracts (6 import-linter + 13
+arch_check).
 
-### M3 — Faults + Multi-Agent + Observability (Naechster aktiver Slice)
+### M3 — Faults + Multi-Agent + Observability (`Done` 2026-05-25)
 
 - **Lieferziel:** produktive Fault-Injection (`GG-FAULT-001..010`),
   Multi-Agent-Subsystem (`GG-AGENT-001..008`) und
@@ -230,26 +237,26 @@ Welle-6c-Slice-Begleit:
         agents_demo.yaml`) sind `Done`. `GG-AGENT-007` Deadlines
         und `GG-AGENT-008` Async bleiben Welle-4c+/M5-Material;
         RL-Adapter (`GG-FUTURE-001/002`) bleiben Folge-Slice.
-  - [ ] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter.
+  - [x] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter
+        (M3-Welle-5 Foundation + M3-Welle-6 OTLP-Adapter; ADR
+        0024 `Accepted` mit M3-Welle-7-C1.3 `d13e1f3`).
   - [x] Property-Tests fuer Fault-Determinismus
         (gleicher Seed + Fault-Sequenz → gleicher Telemetry-Export)
         in M3-Welle-2: Hypothesis-half-open-Window + Per-Seed-
         Determinismus + Welle-2-Seed-Independence.
-  - [ ] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
+  - [x] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
         gruen — Default-Liste um `core/faults`, `core/agents`,
-        `adapters/driven/telemetry-otlp` erweitert (analog
-        M2-DoD-Item „Default-`make gates` ohne Override").
-  - [~] `make fullbuild` gruen ohne Override — Welle-4-
-        Abschluss-Gate erfuellt (cache-frei gruen mit Welle-4b-
-        Closure `b5ba33a`: volle CI + Runtime-Image + Compose-
-        Smoke + Trivy-Image-Audit, ohne OTLP-Collector). M3-
-        Abschluss-Gate verlangt zusaetzlich OTLP-Collector als
-        Sibling-Container — kommt mit Welle 5/6.
-  - [ ] M3-Welle-7-End-to-End-Sweep (S-1..S-6, analog M2-Welle-7
-        §4) — Reviewer-Stempel je Welle, dokumentiert in
-        `done/M3-results.md`.
+        `adapters/driven/telemetry_otlp` erweitert (Pfad-Form
+        mit Underscore, siehe `done/M3-welle-6.md` DoD-Note).
+  - [x] `make fullbuild` gruen ohne Override — Welle-6-C2
+        (`c61ab0d`) liefert cache-frei gruen mit OTLP-Collector-
+        Sibling im Compose-Smoke + Trivy-Image-Audit fuer beide
+        Tags (`grid-gym-runtime` + `$(OTEL_COLLECTOR_IMAGE)`).
+  - [x] M3-Welle-7-End-to-End-Sweep (S-1..S-6, analog M2-Welle-7
+        §4) — dokumentiert in
+        [`done/M3-results.md`](../done/M3-results.md) §4.
 
-### M4 — Protokolladapter (Vorbelegung)
+### M4 — Protokolladapter (Naechster aktiver Slice)
 
 - **Lieferziel:** produktive Driven-Adapter fuer die in Spec §16
   genannten Protokolle (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
