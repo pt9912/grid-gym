@@ -1,6 +1,6 @@
 # 028 — Import-Contract fuer modul-lokale `_*Error`-Klassen in `tick_loop.py`
 
-**Status:** In Progress — aktiviert 2026-05-25 (Move open → in-progress).
+**Status:** Done — geschlossen 2026-05-25 (`22dd20b`).
 **Quelle:** Code-Reviewer-Findings auf Slice 027 (Commits
 `b1bf914..83b1c50`); Slice 027 Review-Folge L-5.
 **Ziel:** Verhindern, dass die zehn modul-lokalen Resume-Diagnostik-
@@ -82,10 +82,62 @@ Optionen:
   _DeviceMissingSubSnapshotError` in einem Test) bricht `make arch-check`
   mit klarer Message.
 
-## 4. Wandert nach
+## 4. Closure (2026-05-25)
 
-`done/028-tick-loop-private-error-import-contract.md` mit Closure-Notiz,
-nachdem der Contract `Kept` ist.
+Slice 028 geliefert in zwei Commit-Triplet-Schritten:
+
+| Commit    | Gegenstand                                                                                                              |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `907c26e` | `git mv` open/ → in-progress/ (reiner Move).                                                                            |
+| `914057d` | Status auf `In Progress` + open/in-progress-README-Sync + Scope-Entscheidung dokumentiert.                              |
+| `22dd20b` | `feat(arch-check)`: Contract + pyproject-Whitelist + Test-Registration + Makefile-Help/Echo + Verifikation.             |
+| `e425b33` | `git mv` in-progress/ → done/ (reiner Move).                                                                            |
+| _dieser_  | Closure-Notiz im Slice-Dokument + done/README-Eintrag + in-progress/README-Entfernung.                                  |
+
+**Akzeptanz-Verifikation:**
+
+- Neuer Contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` als
+  `_check_tick_loop_private_resume_errors` in `tools/arch_check.py`
+  registriert (13. arch_check-Contract; 19 A-1-Contracts insgesamt
+  mit den 6 import-linter-Contracts).
+- `tests/unit/test_arch_check_registration.py`:
+  `_EXPECTED_CHECK_FUNCTIONS` + `expected_arch_check_contracts = 13`
+  syncen — Schutz vor stilly-removed-Check-Drift bleibt scharf.
+- `Makefile`: Help-Text (`make help`) und `gates`-Aggregator-Echo
+  beide auf 19 / 13 angehoben.
+- `make arch-check` gruen: 7 import-linter KEPT, „all contracts
+  kept" auf arch_check-Seite.
+- `make gates` gruen: alle 9 Stages (lint, format-check, typecheck,
+  arch-check (19), test-unit, coverage-gate, coverage-gate-critical,
+  dep-audit, noqa-gate).
+- Smoke-Test: probeweises `from grid_gym.hexagon.core.simulation.
+  tick_loop import _DeviceMissingSubSnapshotError` in
+  `tests/unit/hexagon/core/simulation/test_tick_loop.py` brach
+  `make arch-check` mit klarer Message; Smoke vor `22dd20b`
+  zurueckgenommen.
+
+**Scope-Auspraegung (final):**
+
+- Generisch auf jedes modul-lokale Underscore-Symbol von
+  `grid_gym.hexagon.core.simulation.tick_loop` (nicht nur die
+  zehn Resume-Diagnostik-Sub-Klassen).
+- Geltungsbereich: `src/**` und `tests/**`, ausgenommen
+  `tick_loop.py` selbst.
+- Importform: `from ... import _<name>`. Andere Formen
+  (`import ... as tl; tl._X`) sind bewusst nicht abgedeckt
+  (Slice-Plan §3 beschraenkt sich auf `from ... import`).
+- Whitelist: ein Bestandseintrag,
+  `tests/unit/hexagon/core/scenario/test_loader_factory_sync.py:
+  _DEVICE_TYPE_BY_CLASS_NAME` (Welle-6b-Review-L-1-Drift-Test).
+  Whitelist-Erweiterung erfordert ADR-Verweis (per Konvention zu
+  den anderen `[tool.grid_gym.arch_check]`-Whitelists).
+
+**Nicht erledigt, bleibt offen:**
+
+- Private Imports aus anderen Hexagon-Modulen sind nicht abgedeckt
+  — wenn dort ein analoges Problem auftritt, eigene Folge-ADR.
+- Die `import ... as tl; tl._X`-Form bleibt theoretisch moeglich;
+  bisher kein Bedarf, weil im Repo nirgends genutzt.
 
 ## 5. Bezug
 
