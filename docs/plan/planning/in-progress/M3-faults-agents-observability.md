@@ -1,9 +1,11 @@
 # Slice-Plan — M3 Faults + Multi-Agent + Observability — In Progress
 
-**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b/5
-sind abgeschlossen (Multi-Agent-Subsystem komplett, Observability-
-Foundation komplett); **Welle 6 (OTLP-Adapter)** ist der naechste
-aktive Slice; Welle 7 (Closure) folgt. Drei Sub-Bereiche (Faults,
+**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b/5/6
+sind abgeschlossen (alle drei Sub-Bereiche inhaltlich fertig:
+Faults `Done` 2026-05-20, Multi-Agent `Done` 2026-05-22, Observability
+Foundation `Done` 2026-05-23, OTLP-Adapter `Done` 2026-05-25);
+**Welle 7 (Closure)** ist der naechste aktive Slice (eroeffnet
+2026-05-25 via `M3-welle-7.md`). Drei Sub-Bereiche (Faults,
 Multi-Agent, Observability) ueber Welle 0..7 verteilt; M3-Slice-Plan
 wandert nach `done/` mit Welle-7-Closure.
 
@@ -154,16 +156,67 @@ wandert nach `done/` mit Welle-7-Closure.
   - **`make fullbuild` cache-frei gruen ohne Override** —
     Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt.
 
-**Naechster Schritt:** **Welle 6** (OTLP-Adapter —
-`adapters/driven/telemetry-otlp/`, Compose-Collector-Integration,
-Trigger-006-`--strict-bytes`-Entscheidung).
+- **Welle 6 — OTLP-Adapter** — `Done` 2026-05-25,
+  `c98ce1a..46dbd6e` (C1 inkl. drei Review-Folgen
+  `8eba9ff`/`c99680c`/`54657dc`/`3f887b5`/`c19c69d`/`5493831`,
+  C2 `c61ab0d`, C3-Hauptcommit `47a46b0`, C3-Closure-Docs
+  `11eb670`, End-of-Wave-Move `245add8`, Pfad-Folge `ac70eda`,
+  Trigger-029-Schaerfung `24dfb2e`, Trigger-029-Move `1f8f69a`,
+  Trigger-029-Closure `7fbafbb`, Code-Review-Folge `46dbd6e`).
+  - Produktiver `adapters/driven/telemetry_otlp/`-Adapter:
+    `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC)
+    + `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper.
+  - ADR 0024 §4.5-Schaerfung mit 8 normativen Decisions
+    (Compose-Smoke-Determinismus-Pattern, gRPC-Pinning,
+    Trace-ID-Determinismus, etc.) per ADR-0011-Pattern ohne
+    Supersede.
+  - `deploy/compose.yml`-Erweiterung um `otel-collector`-Sibling
+    + `deploy/otel-collector-config.yaml` + Trivy-Audit fuer
+    den gepinnten Collector-Tag.
+  - `tools/wait_otel_collector.py` als externer Liveness-Poll
+    (distroless-Image hat keinen in-container Healthcheck).
+  - Integration-Smoke `tests/integration/test_otlp_compose_smoke.py`
+    mit Tripel-Assert (>= 1 Span `tick.cycle` + >= 1 Metric
+    `tick_count` + >= 1 Log `tick_begin`/`tick_end`), gefiltert
+    auf per-Lauf eindeutige `service.instance.id`.
+  - Trigger 029 (`done/029-otlp-span-grpc-export-edge-case.md`)
+    als Fehlbefund geschlossen — vermuteter OTLP-Span-Export-Bug
+    war ein Span-Regex-Bug im Smoke-Test (`^Name` ohne Leading-
+    Whitespace vs. Debug-Exporter-Padding `    Name           :
+    tick.cycle`).
+  - `tools/diagnose_otlp_span_export.py` als Matrix-Diagnose-
+    Pattern + Internal-Counter-Scrape im Repo erhalten (Operations-
+    Affordance).
+  - Runbook `docs/user/observability.md` mit Padding-Format-
+    Hinweisen + Internal-Counter-Diagnose + Failure-Mode-Pfaden.
+  - Neuer 12. arch_check-Contract `AC-OTLP-ADAPTER-NO-TIME`
+    (ADR 0024 §4.5.5 D-4): kein `time`/`datetime`-Import in
+    `adapters/driven/telemetry_otlp/**`.
+  - Code-Review-Folge (`46dbd6e`): H-1 (Sampler-Pin) + 4
+    M-Findings + 4 L-Findings + 2 N-Findings als Code-Fixes;
+    Sentinel-Test gegen Format-Drift.
+  - 1023+ Unit-Tests + 21 Integration-Tests (+0 Unit / +2
+    Integration ggue. Welle 5; neu: Compose-Smoke + Format-
+    Drift-Sentinel). Coverage-Endstand unveraendert ggue. Welle 5
+    (Welle 6 fuegt nur produktiven Adapter-Code hinzu, der ueber
+    `CRITICAL_COV_TARGETS` abgedeckt ist).
+  - **`make fullbuild` cache-frei gruen ohne Override mit
+    OTLP-Collector-Sibling** — Welle-6-Abnahme-Kriterium aus
+    ADR 0024 §4.5.7 + M3-Slice-Plan §3 Welle 6 erfuellt.
+  - ADR 0024 bleibt `Provisional` — Promotion auf `Accepted` ist
+    M3-Welle-7-Material.
+
+**Naechster Schritt:** **Welle 7** (M3-Closure —
+ADR 0022/0023/0024 → `Accepted`, Trigger-006-Decision,
+`done/M3-results.md`, `roadmap.md` M3 auf `Done`, S-1..S-6-Sweep,
+End-of-Wave-Move M3-Slice-Plan → `done/`).
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
 bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
 abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21;
 Welle 4b abgeschlossen 2026-05-22; Welle 5 abgeschlossen
-2026-05-23.
+2026-05-23; Welle 6 abgeschlossen 2026-05-25.
 
 **Bezug:**
 
