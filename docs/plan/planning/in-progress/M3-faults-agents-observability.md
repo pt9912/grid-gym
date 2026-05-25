@@ -207,7 +207,7 @@ wandert nach `done/` mit Welle-7-Closure.
     M3-Welle-7-Material.
 
 **Naechster Schritt:** **Welle 7** (M3-Closure —
-ADR 0022/0023/0024 → `Accepted`, Trigger-006-Decision,
+ADR 0022..0027 → `Accepted`, Trigger-006-Decision,
 `done/M3-results.md`, `roadmap.md` M3 auf `Done`, S-1..S-6-Sweep,
 End-of-Wave-Move M3-Slice-Plan → `done/`).
 
@@ -650,8 +650,8 @@ um `adapters/driven/telemetry-otlp` erweitert.
 
 ### Welle 7 — Closure (1/2 Tag)
 
-- ADR 0022/0023/0024 (sowie ggf. ADR-Folgen zu Trigger 005/
-  006/011 wenn aktiv) auf `Accepted`.
+- ADR 0022..0027 (sowie ggf. ADR-Folgen zu Trigger 005/006/011
+  wenn aktiv) auf `Accepted`.
 - `done/M3-faults-agents-observability.md` Closure-Notiz +
   `done/M3-results.md` Welle-Tabelle (Pattern analog
   `done/M2-devices-results.md`).
@@ -667,8 +667,8 @@ um `adapters/driven/telemetry-otlp` erweitert.
   - S-3 — Default-Gate ohne Override.
   - S-4 — kein M3-spezifisches Image-Hardening-Trigger
     (Image-Pin-Trigger aus `M2-Notes` ist optional).
-  - S-5 — ADR-Erweiterungs-Pattern fortgefuehrt (3 neue ADRs
-    0022/0023/0024 ohne Supersedes).
+  - S-5 — ADR-Erweiterungs-Pattern fortgefuehrt (sechs M3-ADRs
+    0022..0027 ohne Supersedes).
   - S-6 — Lastenheft-Coverage-Sweep nach M3-Closure (M4-
     Trigger erstellen, falls relevant).
 
@@ -705,8 +705,8 @@ um `adapters/driven/telemetry-otlp` erweitert.
   Observability. Strikte Sub-Bereichs-Trennung. Falls eine
   Welle die Sub-Slicing-Schwelle ueberschreitet, in Na/Nb
   teilen.
-- **ADR-Drift bei drei parallelen Sub-Bereichen**: drei ADRs
-  (0022/0023/0024) koennten in verschiedener Reihenfolge
+- **ADR-Drift bei drei parallelen Sub-Bereichen**: sechs M3-ADRs
+  (0022..0027) koennten in verschiedener Reihenfolge
   `Provisional`/`Accepted` werden. *Fallback*: jede ADR
   hat eigene Akzeptanz-Bedingung (Welle-N-Closure); kein
   Querbezug zwischen ADRs erzwungen.
@@ -778,6 +778,6 @@ Pattern).
 | Fault-Determinismus Property-Test                     | `make test-unit` mit `hypothesis @given(seed)`-Tests |
 | Default-`make gates` ohne Override                    | `make gates` (Default-`CRITICAL_COV_TARGETS` um `core/faults`, `core/agents`, `ports/driven/observability` erweitert) |
 | `make fullbuild` gruen ohne Override                  | `make fullbuild` — **M3-Abschluss-Gate** |
-| ADR 0022/0023/0024 `Accepted`                         | `docs/plan/adr/0022-*.md`, `0023-*.md`, `0024-*.md` `Accepted` |
+| ADR 0022..0027 `Accepted`                             | `docs/plan/adr/0022-*.md` .. `0027-*.md` `Accepted` |
 | Open-Trigger 011 entschieden                          | ADR-Folge in M3-Welle-3 mit `Accepted`-Status |
 | End-to-End-Sweep S-1..S-6                             | `done/M3-results.md §4` mit Per-S-Item-Belegen |

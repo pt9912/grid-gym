@@ -5,7 +5,7 @@ Dokument). Welle 0/1/2/3/4a/4b/5/6 sind abgeschlossen; die drei
 M3-Sub-Bereiche (Faults `Done` 2026-05-20, Multi-Agent `Done`
 2026-05-22, Observability **Foundation `Done` 2026-05-23,
 OTLP-Adapter `Done` 2026-05-25**) sind alle inhaltlich fertig.
-Welle 7 ist die formale Closure-Welle: drei ADRs auf `Accepted`
+Welle 7 ist die formale Closure-Welle: sechs M3-ADRs auf `Accepted`
 promoten, einen verbliebenen Trigger entscheiden, M3-Ergebnisse
 in einer Welle-Tabelle bündeln und den M3-Slice-Plan selbst
 nach `done/` moven.
@@ -29,6 +29,22 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Compose-Smoke abgeschlossen 2026-05-25). `Letzte inhaltliche
       Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt. Explizit als
       M3-Welle-7-Material in `done/M3-welle-6.md` DoD vermerkt.
+- [ ] **ADR 0025 (`Fault Recovery Pattern`) → `Accepted`** —
+      Closure-Beleg ist Welle-2-Lieferung (Recovery-Engine +
+      Fault-Demo/Property-Tests abgeschlossen 2026-05-20).
+      `Letzte inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4)
+      gesetzt.
+- [ ] **ADR 0026 (`Agent Drain Registry Pattern`) → `Accepted`** —
+      Closure-Beleg ist Welle-4a-Lieferung (Agent-Registry,
+      Drain, Lifecycle + Snapshot-Plumbing abgeschlossen
+      2026-05-21). `Letzte inhaltliche Aenderung`-Pflichtfeld
+      (ADR 0006 §4) gesetzt.
+- [ ] **ADR 0027 (`Rule-Based Agent Scenario Pattern`) →
+      `Accepted`** — Closure-Beleg ist Welle-4b-Lieferung
+      (`RuleBasedAgent`, Scenario-`agents`-Block, Agent-
+      Sub-Snapshots + Demo abgeschlossen 2026-05-22).
+      `Letzte inhaltliche Aenderung`-Pflichtfeld (ADR 0006 §4)
+      gesetzt.
 - [ ] **Trigger 006 (`--strict-bytes`) Entscheidung** —
       Aktivierung als Folge-Slice nach `next/` planen oder konkrete
       Begruendung fuer Verschiebung in M4/M6-Re-Triage liefern.
@@ -39,7 +55,7 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       [`done/M2-devices-results.md`](../done/M2-devices-results.md):
       Welle-Tabelle (Welle 0..7 mit Status/Datum/Commit-Range),
       Test-Bilanz pro Welle (Unit + Integration), Coverage-
-      Endstand, Closure-Verweis auf alle drei ADRs.
+      Endstand, Closure-Verweis auf alle sechs M3-ADRs.
 - [ ] **`roadmap.md` §3 M3 auf `Done`** — DoD-Checkboxen
       aktivieren (10.000-Punkte-Benchmark bleibt M6, andere
       M3-spezifische Items haken), Status auf `Done`, „Naechster
@@ -70,12 +86,13 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
         die Welle-6-Erbschaft (`OTEL_COLLECTOR_IMAGE` Pin,
         `tools/diagnose_otlp_span_export.py`) hier ausreicht,
         kein neuer Trigger.
-      - **S-5 — ADR-Erweiterungs-Pattern fortgefuehrt**: drei
-        neue ADRs (0022/0023/0024) plus eine Folge-ADR (0029
-        `AC-NO-COVERAGE-PRAGMA`) ohne Supersedes; ADR-0011-
-        Pattern (Schaerfung-ohne-Ablöesung) konsistent angewandt.
-        Verifikation: keine Supersedes-Eintraege in den vier
-        ADRs.
+      - **S-5 — ADR-Erweiterungs-Pattern fortgefuehrt**: sechs
+        M3-ADRs (0022/0023/0024 plus Folge-ADRs 0025/0026/0027)
+        und Hygiene-ADR 0029 (`AC-NO-COVERAGE-PRAGMA`) ohne
+        Supersedes; ADR-0011-Pattern (Schaerfung-ohne-Ablöesung)
+        konsistent angewandt. Verifikation: keine Supersedes-
+        Eintraege in den sieben ADRs; 0022..0027 alle auf
+        `Accepted`.
       - **S-6 — Lastenheft-Coverage-Sweep**: pruefen, welche
         M3-relevanten `GG-*`-IDs durch die Welle 1-6 erfuellt
         sind und welche fuer M4 (Protokolladapter) oder
@@ -113,16 +130,19 @@ Per Wave-Self-Close-Commit-Konvention
 M3-Slice-Plan bleibt bis zur Welle-7-End-of-Wave-Folge in
 `in-progress/`.
 
-### C1 — `docs(adr)`: ADR 0022/0023/0024 → `Accepted` (3 Sub-Commits)
+### C1 — `docs(adr)`: ADR 0022..0027 → `Accepted` (6 Sub-Commits)
 
-C1 promotet die drei M3-Sub-Bereichs-ADRs in eigenen Commits, damit
-jeder ADR-Stand individuell nachvollziehbar bleibt:
+C1 promotet die sechs M3-ADRs in eigenen Commits, damit jeder
+ADR-Stand individuell nachvollziehbar bleibt:
 
 | Sub-Commit | ADR | Closure-Beleg |
 | ---------- | --- | ------------- |
 | **C1.1** | ADR 0022 (`Fault Injection Protocol`) | Welle-1/2-Lieferung; `BatteryFaultAdapter` + `GridFaultAdapter` produktiv (Welle 2 `91d44e2`) |
 | **C1.2** | ADR 0023 (`AgentBus Protocol`) | Welle-3/4-Lieferung; `AgentMessageBus` + `RuleBasedAgent` + bidirektionaler Snapshot-Resume-Match produktiv (Welle 4b) |
 | **C1.3** | ADR 0024 (`Observability Port Trio`) | Welle-5/6-Lieferung; Port-Trio + OTLP-Adapter-Trio + Compose-Smoke produktiv (Welle 6 `46dbd6e`) |
+| **C1.4** | ADR 0025 (`Fault Recovery Pattern`) | Welle-2-Lieferung; Recovery-Engine + Fault-Demo/Property-Tests produktiv (Welle 2 `91d44e2`) |
+| **C1.5** | ADR 0026 (`Agent Drain Registry Pattern`) | Welle-4a-Lieferung; Registry + Drain + Lifecycle + Snapshot-Plumbing produktiv (Welle 4a) |
+| **C1.6** | ADR 0027 (`Rule-Based Agent Scenario Pattern`) | Welle-4b-Lieferung; `RuleBasedAgent` + Scenario-`agents`-Block + Demo produktiv (Welle 4b `ac7b47f`) |
 
 Jeder Sub-Commit setzt:
 
@@ -162,7 +182,7 @@ Granularitaet sinnvoll):
 - **`done/M3-results.md`** (neu) — Welle-Tabelle (Welle 0..7
   mit Status/Datum/Commit-Range), Test-Bilanz pro Welle
   (Unit + Integration), Coverage-Endstand, Closure-Verweis
-  auf alle drei ADRs. Pattern analog
+  auf alle sechs M3-ADRs. Pattern analog
   [`done/M2-devices-results.md`](../done/M2-devices-results.md).
 - **`roadmap.md` §3 M3** auf `Done`: DoD-Checkboxen
   aktivieren, Status setzen, „Naechster aktiver Slice: M4"
@@ -185,8 +205,9 @@ C4 mit C3 zusammen committed werden.
 
 ### C5 — `docs(plan)`: Slice-Plan-Sync vor End-of-Wave
 
-- `M3-faults-agents-observability.md`: Status-Header auf `Done`,
-  Wellen-Historie um Welle 6 und Welle 7 ergaenzen.
+- `M3-faults-agents-observability.md`: Wellen-Historie um Welle 6
+  und Welle 7 ergaenzen; Closure-Notiz vorbereiten, aber
+  Status-Header bleibt bis nach C6 `In Progress`.
 - Bis dahin erfuellte DoD-Haken in diesem Dokument setzen; Gate-
   und Move-Haken bleiben bis C6 bzw. End-of-Wave-Folge offen.
 - README-Bestandspflege passiert erst nach den reinen `git mv`-
@@ -202,7 +223,8 @@ C4 mit C3 zusammen committed werden.
 - `make test-integration` cache-frei gruen.
 - `make docs-check` cache-frei gruen mit dem Vor-Move-Pfadstand.
 
-Wenn alles gruen: weiter mit End-of-Wave.
+Wenn alles gruen: `M3-faults-agents-observability.md` und dieses
+Dokument auf `Done` synchronisieren und weiter mit End-of-Wave.
 
 ### End-of-Wave — reine Moves nach `done/`
 
@@ -232,11 +254,13 @@ auch:
 ## 1. Context
 
 M3 hat drei parallele Sub-Bereiche (Faults, Multi-Agent,
-Observability) ueber acht Wellen geliefert (Welle 0..6). Jeder
-Sub-Bereich hat seine eigene ADR (0022/0023/0024); jede ADR ist
-im `Provisional`-Zustand stehen geblieben, bis die zugehoerigen
-Wellen abgeschlossen sind. Welle 7 ist die einzige Welle ohne
-neuen Code — sie sammelt die formalen Closure-Schritte ein.
+Observability) ueber sieben Lieferwellen (Welle 0..6) plus
+Closure-Welle 7 geliefert. Die
+Sub-Bereiche haben drei Basis-ADRs (0022/0023/0024) und drei
+konkretisierende Folge-ADRs (0025/0026/0027); alle sechs stehen
+bis zur Welle-7-Closure auf `Provisional`. Welle 7 ist die einzige
+Welle ohne neuen Code — sie sammelt die formalen Closure-Schritte
+ein.
 
 **Welle-6-Closure-Stand (Basis fuer Welle 7):**
 
@@ -266,7 +290,7 @@ neuen Code — sie sammelt die formalen Closure-Schritte ein.
 
 **In Scope:**
 
-- ADR-Promotionen (0022, 0023, 0024) auf `Accepted` mit
+- ADR-Promotionen (0022..0027) auf `Accepted` mit
   Closure-Belegen.
 - Trigger 006 Decision (Aktivieren vs. Verschieben).
 - `done/M3-results.md` als Wellen-Tabelle + Test-/Coverage-
@@ -301,13 +325,13 @@ Welle 7 hat keine neuen Architektur-Entscheidungen — sie
 - ADR 0022 — `Fault Injection Protocol` (Welle 1/2).
 - ADR 0023 — `AgentBus Protocol` (Welle 3/4).
 - ADR 0024 — `Observability Port Trio` (Welle 5/6).
+- ADR 0025 — `Fault Recovery Pattern` (Welle 2).
+- ADR 0026 — `Agent Drain Registry Pattern` (Welle 4a).
+- ADR 0027 — `Rule-Based Agent Scenario Pattern` (Welle 4b).
 
-**Konsumierte Folge-ADRs (bereits `Accepted` und unangetastet):**
+**Konsumierte Hygiene-/Prozess-ADRs (bereits `Accepted` und
+unangetastet):**
 
-- ADR 0025 — `Fault Recovery Pattern` (Welle 2, `Accepted`).
-- ADR 0026 — `Agent Drain Registry Pattern` (Welle 4a, `Accepted`).
-- ADR 0027 — `Rule-Based Agent Scenario Pattern` (Welle 4b,
-  `Accepted`).
 - ADR 0029 — `AC-NO-COVERAGE-PRAGMA Contract` (Welle 5b/Slice 027,
   `Accepted`).
 
@@ -327,7 +351,7 @@ fuer C5 (Sync gegen C1/C2/C3/C4-Stand) und End-of-Wave (nach
 C6-Verifikation).
 
 C2 und C3 sind unabhaengig — koennen in beliebiger Reihenfolge.
-C1 (drei Sub-Commits) ist parallelisierbar zu C2/C3, weil ADR-
+C1 (sechs Sub-Commits) ist parallelisierbar zu C2/C3, weil ADR-
 Files isoliert sind.
 
 C4 kann mit C3 zusammen, wenn S-1..S-6 keine neuen Befunde
@@ -341,6 +365,9 @@ liefert.
   Letzte inhaltliche Aenderung).
 - `docs/plan/adr/0023-agent-bus-protocol.md` (dito).
 - `docs/plan/adr/0024-observability-port-trio.md` (dito).
+- `docs/plan/adr/0025-fault-recovery-pattern.md` (dito).
+- `docs/plan/adr/0026-agent-drain-registry-pattern.md` (dito).
+- `docs/plan/adr/0027-rule-based-agent-scenario-pattern.md` (dito).
 - `docs/plan/planning/in-progress/roadmap.md` (M3 auf `Done`,
   DoD-Checkboxen aktivieren).
 - `docs/plan/planning/in-progress/M3-faults-agents-observability.md`
@@ -391,7 +418,7 @@ Nach dem End-of-Wave-Move:
 ## 7. Risiken
 
 - **ADR-Promotionen blockieren auf einer offenen Decision**:
-  ADR 0022/0023/0024 koennten beim `Accepted`-Schritt feststellen,
+  ADR 0022..0027 koennten beim `Accepted`-Schritt feststellen,
   dass eine Folge-Schaerfung noetig ist (z. B. weil ein
   Welle-6-Befund noch nicht in ADR 0024 steht). *Fallback*:
   Schaerfung-ohne-Supersede per ADR-0011-Pattern in C1; der
