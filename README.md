@@ -16,19 +16,15 @@ in a local, traceable environment.
 
 ## Status
 
-**As of 2026-05-25:** M1 (Tick-Loop Spine) and M2 (Device Models) are
-`Done`. M3 (Faults + Multi-Agent + Observability) is active:
-Waves 0/1/2/3/4a/4b/5 are completed — the Multi-Agent subsystem is
-complete (Foundation + Concretization), and the Observability
-Foundation (Port-Trio + Null-Adapters + TickLoop hooks) is in place.
-**Wave 6 (OTLP adapter) is `Done`:** C1 (adapter module + factory),
-C2 (deploy/compose.yml collector sibling + Trivy audit), C3
-(integration smoke `tests/integration/test_otlp_compose_smoke.py`
-with the full triple span+metric+log + runbook
-[`docs/user/observability.md`](docs/user/observability.md)) are
-delivered. Trigger 029 (suspected OTLP span export bug) was closed
-as a false finding — the real bug was a span-name regex in the
-smoke test. Wave 7 (M3 closure) follows.
+**As of 2026-05-25:** M1 (Tick-Loop Spine), M2 (Device Models) and
+M3 (Faults + Multi-Agent + Observability) are all `Done`. M3 closed
+with Wave 7 (six M3 ADRs `Accepted`, Trigger 006 deferred, S-1..S-6
+end-to-end sweep, complete closure artefact
+[`done/M3-results.md`](docs/plan/planning/done/M3-results.md)).
+**Next active slice: M4** (protocol adapters — MQTT, Modbus, OPC-UA,
+DNP3, IEC 61850). Trigger 029 (suspected OTLP span export bug) was
+closed as a false finding — the real bug was a span-name regex in
+the smoke test.
 
 **Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
 existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
@@ -40,31 +36,38 @@ types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
 | --- | --- | --- |
 | Tick-Loop Spine (M1) | `Done` | [`done/M1-tick-loop-results.md`](docs/plan/planning/done/M1-tick-loop-results.md) |
 | Device Models (M2) | `Done` | [`done/M2-devices-results.md`](docs/plan/planning/done/M2-devices-results.md); Battery, PV, Load, GridConnection, SmartMeter + GridModel balance productive |
-| Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Provisional` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Provisional`; `BatteryFaultAdapter` + `GridFaultAdapter` with `cell_failure`/`voltage_drop` and recovery logic |
-| Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
-| Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
-| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
-| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (12/19 A-1 contracts; 13th is `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` from Slice 028). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (full triple span+metric+log) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
+| Faults + Multi-Agent + Observability (M3) | `Done` | [`done/M3-results.md`](docs/plan/planning/done/M3-results.md); Waves 0..7 closed. Six M3 ADRs `Accepted` (see detail rows below). |
+| Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Accepted` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Accepted`; `BatteryFaultAdapter` + `GridFaultAdapter` with `cell_failure`/`voltage_drop` and recovery logic |
+| Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Accepted` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Accepted`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
+| Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Accepted`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
+| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Accepted`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
+| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (12th custom contract). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (full triple span+metric+log) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
-| Protocol Adapters (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
+| Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 13th arch_check contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1 contracts total). |
+| Protocol Adapters (M4) | `Pending` (next active milestone) | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
-**Test balance:** ~1130 unit tests + 20 integration tests green
-(state `47a46b0` after M3 Wave 6 C3). `make gates` is now 9-stage
+**Test balance:** 1138 unit tests + 21 integration tests green
+(state `0b3164a` after M3 closure). `make gates` is now 9-stage
 (lint, format-check, mypy `--strict`, arch-check **19/19 contracts
 kept** [6 import-linter + 13 arch_check incl.
 `AC-OTLP-ADAPTER-NO-TIME` and `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
-test-unit, coverage-gate 90/85 line + 95+% total, critical-coverage
+test-unit, coverage-gate 90/85 line + 96 % total, critical-coverage
 90 incl. `telemetry_otlp`, dep-audit, **noqa-gate**
 [`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — cache-free
-green without override.
+green without override since Wave 6 C2 (`c61ab0d`).
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) with four
 mandatory gates for `pull_request` and `push` on `main`:
 `lint-imports`, `ruff check`, `python tools/arch_check.py`,
-`mypy --strict`. See trigger doc
-[`025-github-actions-four-gates.md`](docs/plan/planning/in-progress/025-github-actions-four-gates.md).
+`mypy --strict`. See closure doc
+[`done/025-github-actions-four-gates.md`](docs/plan/planning/done/025-github-actions-four-gates.md).
+
+**AI-coding-agent briefing:** [`AGENTS.md`](AGENTS.md) — hard rules
+(Docker-only, `# noqa` ban, `git mv` two-commit pattern,
+Wave-Self-Close commit convention, architecture-spec language-/
+milestone-free) and pointers to canonical sources.
 
 ## Build, Test, Lint
 
@@ -140,9 +143,11 @@ According to the requirements specification, the MVP comprises at least:
 ├── pyproject.toml               ← build/tool configuration (ADR 0002 §6.1)
 ├── uv.lock                      ← pinned dependencies (uv)
 ├── .python-version              ← 3.14 (uv-compatible)
+├── AGENTS.md                    ← AI-coding-agent briefing (hard rules + pointers)
 ├── README.md                    ← English main version (this document)
 ├── README.de.md                 ← German version
-├── deploy/compose.yml           ← productive Compose stack (M1 Wave 6c)
+├── deploy/compose.yml           ← productive Compose stack + OTLP collector sibling (M3 Wave 6)
+├── deploy/otel-collector-config.yaml ← collector config (gRPC :4317, debug + file exporters)
 ├── src/grid_gym/
 │   ├── hexagon/
 │   │   ├── core/
@@ -160,11 +165,15 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT (M1 Waves 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1023 as of 2026-05-23)
-│   ├── integration/             ← Compose-based integration tests (19 tests)
-│   └── unit/_arch_check_*       ← architecture tests (7 import-linter + 7 custom AC checks)
+│   ├── unit/                    ← pytest unit tests (1138 as of 2026-05-25)
+│   ├── integration/             ← Compose-based integration tests (21 tests; OTLP smoke incl.)
+│   └── unit/_arch_check_*       ← architecture tests (6 import-linter + 13 custom AC checks = 19 A-1)
 ├── tools/
-│   └── arch_check.py            ← AST/graph architecture checks (ADR 0002 §A-1)
+│   ├── arch_check.py            ← AST/graph architecture checks (ADR 0002 §A-1)
+│   ├── check_noqa.py            ← `# noqa`-Verbots-Gate (9th A-1 gate, Slice 027)
+│   ├── check_refs.py            ← Markdown link validator (`make docs-check`)
+│   ├── wait_otel_collector.py   ← bounded liveness poll fuer distroless OTLP collector
+│   └── diagnose_otlp_span_export.py ← OTLP debug matrix script (Trigger 029 pattern)
 ├── spec/
 │   ├── lastenheft.md            ← normative requirements (GG-*)
 │   └── architecture.md          ← architecture (GG-AR-*)
