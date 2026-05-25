@@ -403,7 +403,7 @@ C6 verifiziert:
 - `make test-integration` cache-frei gruen.
 - `make docs-check` cache-frei gruen mit dem Vor-Move-Pfadstand.
 
-Vor jedem Sub-Commit (insbesondere C1.1/C1.2/C1.3 und C2/C3):
+Vor jedem Sub-Commit (insbesondere C1.1..C1.6 und C2/C3):
 
 - `make docs-check` exit 0 als minimaler Sanity-Check.
 
