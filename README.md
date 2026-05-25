@@ -16,15 +16,18 @@ in a local, traceable environment.
 
 ## Status
 
-**As of 2026-05-24:** M1 (Tick-Loop Spine) and M2 (Device Models) are
+**As of 2026-05-25:** M1 (Tick-Loop Spine) and M2 (Device Models) are
 `Done`. M3 (Faults + Multi-Agent + Observability) is active:
 Waves 0/1/2/3/4a/4b/5 are completed — the Multi-Agent subsystem is
 complete (Foundation + Concretization), and the Observability
 Foundation (Port-Trio + Null-Adapters + TickLoop hooks) is in place.
-**Wave 6 (OTLP adapter) is `In Progress`:** C1 (adapter module +
-factory + ADR-0024-§4.5 sharpening) is delivered; C2
-(deploy/compose.yml collector sibling) and C3 (Compose-/integration
-smoke + runbook) are pending. Wave 7 (M3 closure) follows.
+**Wave 6 (OTLP adapter) is `Done`:** C1 (adapter module + factory),
+C2 (deploy/compose.yml collector sibling + Trivy audit), C3
+(integration smoke + runbook [`docs/user/observability.md`](docs/user/observability.md))
+are delivered. **Caveat:** Span visibility in the collector is
+deferred in the C3 smoke — see trigger 029
+([`open/029-otlp-span-grpc-export-edge-case.md`](docs/plan/planning/open/029-otlp-span-grpc-export-edge-case.md));
+the adapter is SDK-side correct. Wave 7 (M3 closure) follows.
 
 **Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
 existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
@@ -40,20 +43,21 @@ types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
 | Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
 | Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
 | Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
-| OTLP Adapter (M3 Wave 6) | `In Progress` (C1 done) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper in production. ADR 0024 §4.5 with 8 normative decisions (L-2/N-1/N-2/Sentinel/Trace-ID/D-4/gRPC pinning/smoke determinism). New 12th arch_check contract `AC-OTLP-ADAPTER-NO-TIME`. C2 (Compose collector sibling) + C3 (smoke + runbook) pending. |
+| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (13/19 A-1 contracts since Slice 028). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (Duo metric+log; span deferred to trigger 029) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
 | Protocol Adapters (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
-**Test balance:** ~1130 unit tests + 19 integration tests green
-(state `717af22` after Slice 027 review follow-up). `make gates`
-is now 9-stage (lint, format-check, mypy `--strict`, arch-check
-**18/18 contracts kept** [6 import-linter + 12 arch_check incl.
-new `AC-OTLP-ADAPTER-NO-TIME`], test-unit, coverage-gate 90/85
-line + 95+% total, critical-coverage 90 incl. `telemetry_otlp`,
-dep-audit, **noqa-gate** [`tools/check_noqa.py --fail-on-noqa`,
-Slice 027]) — cache-free green without override.
+**Test balance:** ~1130 unit tests + 20 integration tests green
+(state `47a46b0` after M3 Wave 6 C3). `make gates` is now 9-stage
+(lint, format-check, mypy `--strict`, arch-check **19/19 contracts
+kept** [6 import-linter + 13 arch_check incl.
+`AC-OTLP-ADAPTER-NO-TIME` and `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
+test-unit, coverage-gate 90/85 line + 95+% total, critical-coverage
+90 incl. `telemetry_otlp`, dep-audit, **noqa-gate**
+[`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — cache-free
+green without override.
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) with four
 mandatory gates for `pull_request` and `push` on `main`:

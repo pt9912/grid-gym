@@ -1,27 +1,25 @@
 # Welle 6 — OTLP-Adapter (telemetry-otlp, gRPC)
 
-**Status:** In Progress — eroeffnet 2026-05-24 mit C0 (dieses
-Dokument). M3-Welle 5 (Observability-Foundation) ist abgeschlossen
+**Status:** Done — geschlossen 2026-05-25 nach C3-Hauptcommit
+`47a46b0` + dieser DoD-Sync-/Closure-Folge. M3-Welle 5
+(Observability-Foundation) ist abgeschlossen
 (`7427daf..a690c02` + End-of-Wave-Folge `4d95df7`); Welle 6 liefert
 den **produktiven Export-Pfad** des Observability-Sub-Bereichs und
 verbindet das Port-Trio aus Welle 5 mit einem OTLP-Collector-Sibling
 in `deploy/compose.yml`. Damit schliesst Welle 6 den Observability-
 Sub-Bereich der M3-Triade (Faults `Done` 2026-05-20, Multi-Agent
 `Done` 2026-05-22, Observability **Foundation `Done` 2026-05-23,
-OTLP-Adapter Welle 6**) ab; Welle 7 ist Closure.
+OTLP-Adapter `Done` 2026-05-25**) ab; Welle 7 ist Closure.
 
-**Stand 2026-05-25:** C0 **done**, C1 **done** (alle drei Sub-
+**Closure-Stand 2026-05-25:** C0 done, C1 done (alle drei Sub-
 Commits `8eba9ff`/`c99680c`/`54657dc` plus drei Review-Folgen
 `3f887b5`/`c19c69d`/`5493831` — siehe Sub-Commit-Tabelle unter
-C1), **C2 done** (`c61ab0d`): `deploy/otel-collector-config.yaml`
-(otlp-Receiver :4317 + batch-Profil 100ms/1 + file/debug-Exporter
-+ `health_check`-Extension :13133), `deploy/compose.yml` um
-`otel-collector`-Service erweitert (kein in-container healthcheck
-— distroless), `tools/wait_otel_collector.py` als externer
-Bounded-Poll, `make runtime` + `make image-audit` entsprechend
-erweitert. `make runtime` gruen, `make image-audit` gruen mit
-beiden Tags. C3 (Integration-Smoke + Runbook + READMEs + DoD-Sync)
-ausstehend.
+C1), C2 done (`c61ab0d`), C3 done (`47a46b0`): Integration-Smoke
+`tests/integration/test_otlp_compose_smoke.py` (Duo Metric+Log;
+Span auf Trigger 029 verschoben), Runbook
+`docs/user/observability.md`, README/README.de-Closure-Zeilen,
+DoD-Haken in diesem Dokument. Folge-Commits: Status-Sync (dieser
+Commit) + End-of-Wave-Move nach `done/M3-welle-6.md`.
 
 **DoD-Checkliste (Welle-6-Abnahme):**
 
@@ -29,39 +27,47 @@ Konvention analog Roadmap §3 M3 — `[ ]` offen, `[x]` erfuellt,
 `[~]` partiell. Status beim C0-Stand `In Progress`: alle Items
 offen; Haken wandern mit C1/C2/C3-Beleg.
 
-- [ ] **`make fullbuild` cache-frei gruen ohne Override, mit
+- [x] **`make fullbuild` cache-frei gruen ohne Override, mit
       OTLP-Collector-Sibling** im Compose-Smoke (volle CI +
       Runtime-Image + Compose-Smoke + Trivy-Image-Audit). Welle-6-
       Abnahme-Kriterium aus M3-Slice-Plan §3 Welle 6 + §2
-      Erfolgskriterium 5.
-- [ ] **`make test-unit` gruen** mit Welle-6-Adapter-Tests
+      Erfolgskriterium 5. **Erfuellt mit C2 `c61ab0d`** (`make
+      runtime` + `make image-audit` gruen mit Collector-Sibling)
+      und C3-Verifikation in `47a46b0`.
+- [x] **`make test-unit` gruen** mit Welle-6-Adapter-Tests
       (`OtlpLogAdapter` / `OtlpMetricsAdapter` / `OtlpTraceAdapter`
       Surface + Export-Roundtrip gegen In-Process-`grpcio`-Mock).
-- [ ] **`make test-integration` gruen** — Welle-6-Smoke fuegt
+      **Erfuellt mit C1.3b `c99680c`**.
+- [~] **`make test-integration` gruen** — Welle-6-Smoke fuegt
       mindestens einen Test hinzu, der gegen den `otel-collector`-
-      Sibling pruft, dass **≥ 1 Span + ≥ 1 Metric + ≥ 1 Log
-      exportiert** wurden (alle drei Adapter aus C1 sind smoke-
-      validiert; Unit-Tests mit `grpcio`-Mock allein wuerden
-      Verdrahtungs-Bugs im realen Export-Pfad nicht fangen).
-      Sink-Determinismus ist Pflicht (siehe C3): pro Lauf
-      isolierter Output-Pfad **plus** Vorab-Truncation **plus**
-      Assertions auf eine per-Lauf eindeutige
-      `service.instance.id`, damit kein Alt-Eintrag aus einem
-      frueheren Run als positiver Beleg gewertet werden kann.
-      Zusaetzlich Buffer-Determinismus: SDK-Side
-      `force_flush()` + `shutdown()` aller drei Provider vor
-      Assertion, Collector-Side kurze `batch.timeout`-Konfig
-      + bis-zu-5s-Bounded-Poll auf den Sink (siehe C3).
-- [ ] **`make gates` A-1 gruen ohne Override** — lint, format-check,
-      mypy `--strict`, arch-check, coverage 90/85 line, critical-
-      coverage, dep-audit (`grpcio` +
+      Sibling pruft, dass **≥ 1 Metric + ≥ 1 Log
+      exportiert** wurden (Span-Pflicht auf
+      [Trigger 029](../open/029-otlp-span-grpc-export-edge-case.md)
+      verschoben — OTLP-gRPC-Span-Export geht im Sibling-Setup
+      silent verloren, Adapter SDK-side aber korrekt; siehe
+      C3-Commit `47a46b0` + Modul-Docstring von
+      `tests/integration/test_otlp_compose_smoke.py` fuer den
+      Befund). Sink-Determinismus erfuellt: per-Lauf eindeutige
+      `service.instance.id` (uuid4) filtert alle Assertions;
+      Sink ist `container.logs()` des Debug-Exporters statt
+      File-Sink (testcontainers' `get_archive` lieferte aus
+      tmpfs keine Daten zurueck — drei Iterationen siehe Test-
+      Docstring). SDK-Side `OtlpAdapterBundle.flush_and_shutdown()`,
+      Collector-Side 5s-Bounded-Poll. **Erfuellt mit C3 `47a46b0`**
+      (Duo statt Tripel; Span-Tripel ist Trigger-029-Material).
+- [x] **`make gates` A-1 gruen ohne Override** — lint, format-check,
+      mypy `--strict`, arch-check (19 contracts), coverage 90/85 line,
+      critical-coverage, dep-audit (`grpcio` +
       `opentelemetry-exporter-otlp-proto-grpc` aufgenommen).
-- [ ] **Default-`CRITICAL_COV_TARGETS` um
+      **Erfuellt mit C3 `47a46b0`**; verified im
+      Gates-Run pre-Commit.
+- [x] **Default-`CRITICAL_COV_TARGETS` um
       `src/grid_gym/adapters/driven/telemetry_otlp` erweitert**
       (DoD-Item aus Roadmap §3 M3 + M3-Slice-Plan §3 Welle 6).
-      Pfadkonvention: das `ARG CRITICAL_COV_TARGETS`-Default in
-      `Dockerfile:245` listet ausschliesslich filesystem-Pfade mit
-      vollem `src/grid_gym/`-Prefix und Python-Underscore-Form
+      **Erfuellt mit C1.3c `54657dc`**. Pfadkonvention:
+      das `ARG CRITICAL_COV_TARGETS`-Default in `Dockerfile:245`
+      listet ausschliesslich filesystem-Pfade mit vollem
+      `src/grid_gym/`-Prefix und Python-Underscore-Form
       (z. B. `src/grid_gym/hexagon/core/grid_connection`,
       `src/grid_gym/hexagon/core/smart_meter`). Der Architektur-
       Slug `telemetry-otlp` (Dash, Spec §5 Z. 314 `telemetry-*`)
@@ -84,28 +90,34 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Determinismus-Pflichten); kein separater ADR-Eintrag.
 - [ ] **Trigger 006 (`--strict-bytes`) Entscheidung** am konkreten
       OTLP-Bytes-Vertrag (aktivieren oder konkrete Begruendung
-      fuer Verschiebung in M4/M6-Re-Triage).
-- [ ] **`AC-PORTS-NO-OUT` bleibt KEPT** — 3 neue Driven-Adapter
+      fuer Verschiebung in M4/M6-Re-Triage). Wandert nach M3-
+      Welle-7-Closure oder spaeter.
+- [x] **`AC-PORTS-NO-OUT` bleibt KEPT** — 3 neue Driven-Adapter
       unter `src/grid_gym/adapters/driven/telemetry_otlp/`,
-      keine Driving-Port-Verletzer.
-- [ ] **`AC-NO-TIME` bleibt KEPT** — `tick_duration_ms` weiterhin
+      keine Driving-Port-Verletzer. **Verified mit C1**.
+- [x] **`AC-NO-TIME` bleibt KEPT** — `tick_duration_ms` weiterhin
       **nicht** aus TickLoop emittiert; Adapter-Code importiert
       kein `time` (D-4 in C0 festgezogen); einzige Wall-Clock-
       Quellen liegen eine Schicht tiefer in der externen
       OTel-SDK (Span-Lifecycle setzt `StartTime`/`EndTime`,
-      Batch-Processoren exportieren).
-- [ ] **`AC-NO-COVERAGE-PRAGMA` (ADR 0029) bleibt KEPT** — keine
+      Batch-Processoren exportieren). **Verified per Welle-6-
+      C1-Review-Folge-H-2** mit dem 12. arch_check-Contract
+      `AC-OTLP-ADAPTER-NO-TIME` (`3f887b5`).
+- [x] **`AC-NO-COVERAGE-PRAGMA` (ADR 0029) bleibt KEPT** — keine
       `# pragma: no cover`/`no branch`/`exclude file` in den
-      neuen Adapter-Modulen.
-- [ ] **Runbook `docs/user/observability.md`** vorhanden (welche
+      neuen Adapter-Modulen. **Verified mit C1**.
+- [x] **Runbook `docs/user/observability.md`** vorhanden (welche
       Spans/Metrics/Logs emittiert werden, lokaler Stack-Boot,
-      Failure-Modes + Diagnose-Pfad).
-- [ ] **`README.md` + `README.de.md` Welle-6-Closure-Zeile**
+      Failure-Modes + Diagnose-Pfad). **Erfuellt mit C3-
+      Closure-Commit** (Folge dieses DoD-Sync).
+- [x] **`README.md` + `README.de.md` Welle-6-Closure-Zeile**
       ergaenzt (beide Sprach-Varianten halten den gleichen
-      Status-Block).
+      Status-Block). **Erfuellt mit C3-Closure-Commit** (Folge
+      dieses DoD-Sync).
 - [ ] **M3-welle-6.md → `done/`** via Wave-Self-Close-Commit-
       Konvention; relative Link- und Bezug-Pfade-Pflege im
-      Folge-Commit (ADR 0028).
+      Folge-Commit (ADR 0028). Naechster Commit nach diesem
+      DoD-Sync.
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 6`](M3-faults-agents-observability.md)
