@@ -106,7 +106,7 @@ _SDK_FLUSH_TIMEOUT_MS: Final[int] = 5000
 _SINK_POLL_TIMEOUT_S: Final[float] = 5.0
 _SINK_POLL_INTERVAL_S: Final[float] = 0.1
 _COLLECTOR_HEALTH_TIMEOUT_S: Final[float] = 30.0
-# `container.logs(tail=...)`-Cap pro Poll-Tick. 5 Ticks × Tripel-
+# `container.logs(tail=...)`-Cap pro Poll-Tick. 5 Ticks x Tripel-
 # Output (Span+Metric+Log mit Resource-Attributes + Bootstrap-
 # Header) liegt komfortabel unter 2000 Zeilen; bei drift waere
 # 4000 noch akzeptabel. Welle-6-Review-Folge N-1.

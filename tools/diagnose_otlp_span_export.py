@@ -75,19 +75,19 @@ from testcontainers.core.waiting_utils import wait_for_logs  # type: ignore[impo
 # Image-Tag und Port-Konstanten ueber `tests/integration/_collector_
 # constants.py`. Vermeidet, dass Smoke-Test + Diagnose-Script + Make-
 # file bei einem Upgrade auseinanderdriften.
-from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+from tests.integration._collector_constants import (
     GRPC_PORT as _GRPC_PORT,
 )
-from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+from tests.integration._collector_constants import (
     HEALTH_PORT as _HEALTH_PORT,
 )
-from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+from tests.integration._collector_constants import (
     INTERNAL_METRICS_PORT as _INTERNAL_METRICS_PORT,
 )
-from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+from tests.integration._collector_constants import (
     OTEL_COLLECTOR_IMAGE_DEFAULT as _COLLECTOR_IMAGE_DEFAULT,
 )
-from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+from tests.integration._collector_constants import (
     OTEL_COLLECTOR_IMAGE_ENV as _COLLECTOR_IMAGE_ENV,
 )
 
@@ -327,8 +327,7 @@ def main() -> int:
             file=sys.stderr,
         )
         print(
-            f"\n[diagnose] ===== INTERNAL METRICS "
-            f"(http://{host}:{metrics_port}/metrics) =====",
+            f"\n[diagnose] ===== INTERNAL METRICS (http://{host}:{metrics_port}/metrics) =====",
             file=sys.stderr,
         )
         _dump_internal_counters(host, metrics_port)

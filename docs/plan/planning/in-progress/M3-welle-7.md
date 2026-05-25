@@ -187,7 +187,8 @@ C4 mit C3 zusammen committed werden.
 
 - `M3-faults-agents-observability.md`: Status-Header auf `Done`,
   Wellen-Historie um Welle 6 und Welle 7 ergaenzen.
-- DoD-Haken in diesem Dokument auf `[x]`.
+- Bis dahin erfuellte DoD-Haken in diesem Dokument setzen; Gate-
+  und Move-Haken bleiben bis C6 bzw. End-of-Wave-Folge offen.
 - README-Bestandspflege passiert erst nach den reinen `git mv`-
   Commits im End-of-Wave-Folge-Edit, damit die
   Wave-Self-Close-Commit-Konvention eingehalten bleibt.
@@ -383,7 +384,7 @@ Nach dem End-of-Wave-Move:
 
 - `make docs-check` exit 0 — relative Pfade in
   `M3-faults-agents-observability.md` und `M3-welle-7.md`
-  zeigen jetzt auf `../in-progress/`, `../open/`, `../adr/`
+  zeigen jetzt auf `../in-progress/`, `../open/`, `../../adr/`
   statt der lokalen `done/`-Sibling-Pfade. Pflicht-Folge-Edit
   analog `ac70eda` aus Welle 6.
 
