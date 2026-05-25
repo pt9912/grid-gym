@@ -34,6 +34,15 @@ Welle 3 deckt:
   Code). Separater Contract zu `AC-NO-TIME` (das nur `time` und
   nur den Core abdeckt); `datetime` ist im Adapter zusaetzlich
   verboten
+- AC-TICK-LOOP-PRIVATE-RESUME-ERRORS — kein
+  `from grid_gym.hexagon.core.simulation.tick_loop import _<...>`-
+  Import ausserhalb des `tick_loop.py`-Moduls selbst (Slice 028 / L-5
+  aus Slice 027 Review-Folge). Schuetzt die zehn modul-lokalen
+  Resume-Diagnostik-Sub-Klassen (`_DeviceMissingSubSnapshotError`,
+  `_AgentSnapshotDiffersError`, ...) und alle anderen modul-lokalen
+  Helfer vor Aufruf-Site-Fixierung. Whitelist via `[tool.grid_gym.
+  arch_check] tick-loop-private-import-exempt` als `"<rel-pfad>:
+  <symbol>"`-Paare
 
 Konfiguration kommt aus `[tool.grid_gym.arch_check]` in
 `pyproject.toml`. Exit-Code 0 = alle Contracts kept, 1 = mindestens
@@ -93,6 +102,7 @@ class ArchCheckConfig:
     domain_frozen_extra: tuple[str, ...]
     typed_errors_exempt: tuple[str, ...]
     hexagon_import_whitelist: tuple[str, ...]
+    tick_loop_private_import_exempt: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,6 +219,7 @@ def main() -> int:
         violations.extend(_check_adapter_lightweight(repo_root, src_root))
         violations.extend(_check_no_coverage_pragma(repo_root, src_root))
         violations.extend(_check_otlp_adapter_no_time(repo_root, src_root))
+        violations.extend(_check_tick_loop_private_resume_errors(repo_root, src_root, config))
 
     for violation in violations:
         print(violation.format(), file=sys.stderr)
@@ -234,6 +245,7 @@ def _load_config(repo_root: Path) -> ArchCheckConfig:
         domain_frozen_extra=tuple(section.get("domain-frozen-extra", [])),
         typed_errors_exempt=tuple(section.get("typed-errors-exempt", [])),
         hexagon_import_whitelist=tuple(section.get("hexagon-import-whitelist", [])),
+        tick_loop_private_import_exempt=tuple(section.get("tick-loop-private-import-exempt", [])),
     )
 
 
@@ -445,6 +457,79 @@ def _otlp_adapter_no_time_violations(node: ast.AST, rel: str) -> Iterator[Violat
                 f"from {node.module} import {imported} — Wall-Clock im OTLP-Adapter "
                 "verboten (ADR 0024 §4.5.5 D-4)",
             )
+
+
+# ---------------------------------------------------------------------------
+# AC-TICK-LOOP-PRIVATE-RESUME-ERRORS (Slice 028)
+# ---------------------------------------------------------------------------
+
+
+_TICK_LOOP_MODULE = "grid_gym.hexagon.core.simulation.tick_loop"
+_TICK_LOOP_FILE = "src/grid_gym/hexagon/core/simulation/tick_loop.py"
+
+
+def _check_tick_loop_private_resume_errors(
+    repo_root: Path, src_root: Path, config: ArchCheckConfig
+) -> Iterator[Violation]:
+    """AC-TICK-LOOP-PRIVATE-RESUME-ERRORS — kein
+    `from grid_gym.hexagon.core.simulation.tick_loop import _<name>`-
+    Statement ausserhalb des `tick_loop.py`-Moduls selbst.
+
+    Scope-Entscheidung (Slice 028, 2026-05-25): generisch auf jedes
+    modul-lokale Underscore-Symbol (nicht nur die zehn Resume-Diagnostik-
+    Sub-Klassen). Geltungsbereich: `src/**` und `tests/**`. Whitelist
+    via `[tool.grid_gym.arch_check] tick-loop-private-import-exempt`
+    als `"<rel-pfad>:<symbol>"`-Paare (Bestands-Exempt:
+    `test_loader_factory_sync.py:_DEVICE_TYPE_BY_CLASS_NAME` als
+    legitimer Whitebox-Drift-Test, Welle-6b-Review L-1).
+
+    Andere Import-Formen (`import grid_gym.hexagon.core.simulation.
+    tick_loop as tl; tl._X`) sind bewusst nicht abgedeckt — der Slice-
+    Plan §3 beschraenkt sich auf die `from ... import _xxx`-Form.
+    """
+    exempt = _parse_tick_loop_exempt(config.tick_loop_private_import_exempt)
+    tests_root = repo_root / "tests"
+    scan_roots = [root for root in (src_root, tests_root) if root.exists()]
+    for scan_root in scan_roots:
+        for py_file in _iter_py_files(scan_root):
+            rel = _rel(repo_root, py_file)
+            if rel == _TICK_LOOP_FILE:
+                continue
+            tree = _parse(py_file)
+            for node in ast.walk(tree):
+                yield from _tick_loop_private_violations(node, rel, exempt)
+
+
+def _parse_tick_loop_exempt(entries: tuple[str, ...]) -> frozenset[tuple[str, str]]:
+    """Parsed die `"<rel-pfad>:<symbol>"`-Eintraege in (Pfad, Symbol)-Paare."""
+    pairs: set[tuple[str, str]] = set()
+    for entry in entries:
+        path, _, symbol = entry.partition(":")
+        if path and symbol:
+            pairs.add((path, symbol))
+    return frozenset(pairs)
+
+
+def _tick_loop_private_violations(
+    node: ast.AST, rel: str, exempt: frozenset[tuple[str, str]]
+) -> Iterator[Violation]:
+    if not isinstance(node, ast.ImportFrom):
+        return
+    if node.module != _TICK_LOOP_MODULE:
+        return
+    for alias in node.names:
+        symbol = alias.name
+        if not symbol.startswith("_"):
+            continue
+        if (rel, symbol) in exempt:
+            continue
+        yield Violation(
+            "AC-TICK-LOOP-PRIVATE-RESUME-ERRORS",
+            f"{rel}:{node.lineno}",
+            f"from {_TICK_LOOP_MODULE} import {symbol} — modul-lokales "
+            "Underscore-Symbol; Aufrufer fixiert Refactor-Bewegungsspielraum "
+            "(Slice 028 / Slice 027 Review-Folge L-5)",
+        )
 
 
 def _time_call_attr(call: ast.Call, aliases: ImportAliases) -> str | None:

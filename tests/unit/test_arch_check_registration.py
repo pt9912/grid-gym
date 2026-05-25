@@ -41,6 +41,11 @@ _EXPECTED_CHECK_FUNCTIONS: frozenset[str] = frozenset(
         # §4.5.5 D-4; 12. arch_check-Contract). Scoped auf
         # `adapters/driven/telemetry_otlp/**`; forbids `time` + `datetime`.
         "_check_otlp_adapter_no_time",
+        # AC-TICK-LOOP-PRIVATE-RESUME-ERRORS (Slice 028 / Slice 027
+        # Review-Folge L-5; 13. arch_check-Contract). Verbietet
+        # `from grid_gym.hexagon.core.simulation.tick_loop import _<...>`
+        # ausserhalb des `tick_loop.py`-Moduls; Whitelist via pyproject.
+        "_check_tick_loop_private_resume_errors",
     }
 )
 
@@ -106,16 +111,17 @@ def test_no_unexpected_checks_registered_in_main() -> None:
 
 
 def test_registered_count_matches_adr_count() -> None:
-    """Die Zahl ist heute genau 12: sechzehn urspruengliche A-1-Contracts
+    """Die Zahl ist heute genau 13: sechzehn urspruengliche A-1-Contracts
     (`ADR 0002 §A-1`) plus AC-NO-COVERAGE-PRAGMA per `ADR 0029` plus
     AC-OTLP-ADAPTER-NO-TIME per M3-Welle-6-Review-Folge-H-2
     (Schaerfung-ohne-Supersedes von `ADR 0024 §4.5.5 D-4` per ADR 0011-
-    Pattern); davon sechs ueber `import-linter` und zwoelf ueber
-    `tools/arch_check.py`."""
-    expected_arch_check_contracts = 12
+    Pattern) plus AC-TICK-LOOP-PRIVATE-RESUME-ERRORS per Slice 028
+    (Slice 027 Review-Folge L-5); davon sechs ueber `import-linter` und
+    dreizehn ueber `tools/arch_check.py`."""
+    expected_arch_check_contracts = 13
     registered = _extract_main_check_calls()
     assert len(registered) == expected_arch_check_contracts, (
         f"arch_check.py main() registriert {len(registered)} Contracts, "
         f"erwartet {expected_arch_check_contracts} "
-        "(ADR 0002 §A-1 + ADR 0029 + ADR 0024 §4.5.5)."
+        "(ADR 0002 §A-1 + ADR 0029 + ADR 0024 §4.5.5 + Slice 028)."
     )

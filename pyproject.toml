@@ -432,6 +432,20 @@ typed-errors-exempt = [
 # Beispiel: "pydantic" fuer `FrozenModel`-Basisklasse in
 # hexagon.core.domain (siehe AC-DOMAIN-FROZEN).
 hexagon-import-whitelist = []
+# AC-TICK-LOOP-PRIVATE-RESUME-ERRORS (Slice 028): Whitelist fuer
+# (Datei, Symbol)-Paare, die einen modul-lokalen Underscore-Import
+# aus `src/grid_gym/hexagon/core/simulation/tick_loop.py` vornehmen
+# duerfen. Format: `"<rel-pfad>:<symbol>"`. Erweiterung erfordert
+# ADR-Verweis (Slice 028 §3).
+#
+# Aktuell ein Eintrag: `test_loader_factory_sync.py` prueft absichtlich
+# Drift zwischen `loader._DEVICE_FACTORIES` und
+# `tick_loop._DEVICE_TYPE_BY_CLASS_NAME` (Welle-6b-Review L-1) — ein
+# legitimer Whitebox-Architekturtest, kein normaler Konsument der
+# privaten Konstante.
+tick-loop-private-import-exempt = [
+    "tests/unit/hexagon/core/scenario/test_loader_factory_sync.py:_DEVICE_TYPE_BY_CLASS_NAME",
+]
 
 # ---------------------------------------------------------------------------
 # pytest
