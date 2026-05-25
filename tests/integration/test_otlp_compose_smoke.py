@@ -66,9 +66,11 @@ import urllib.error
 import urllib.request
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Final
 
 import pytest
+from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
@@ -80,20 +82,35 @@ from grid_gym.adapters.driven.telemetry_otlp import (
 )
 from grid_gym.hexagon.core.scenario.loader import TickLoopWiring, build_tick_loop
 
+from tests.integration._collector_constants import (
+    GRPC_PORT as _GRPC_PORT,
+)
+from tests.integration._collector_constants import (
+    HEALTH_PORT as _HEALTH_PORT,
+)
+from tests.integration._collector_constants import (
+    OTEL_COLLECTOR_IMAGE_DEFAULT as _COLLECTOR_IMAGE_DEFAULT,
+)
+from tests.integration._collector_constants import (
+    OTEL_COLLECTOR_IMAGE_ENV as _COLLECTOR_IMAGE_ENV,
+)
 from tests.integration._constants import MVP_DEMO_SCENARIO_PATH
 from tests.integration._yaml_scenario_loader import load_yaml_scenario
 from tests.unit.hexagon.ports.driven._fakes import FakeClock
 
-_COLLECTOR_IMAGE_DEFAULT: Final[str] = "otel/opentelemetry-collector-contrib:0.152.1"
-_COLLECTOR_IMAGE_ENV: Final[str] = "OTEL_COLLECTOR_IMAGE"
-_GRPC_PORT: Final[int] = 4317
-_HEALTH_PORT: Final[int] = 13133
 _SINK_DIR_IN_CONTAINER: Final[str] = "/var/log/otel"
+_REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
+_COLLECTOR_CONFIG_PATH: Final[Path] = _REPO_ROOT / "deploy" / "otel-collector-config.yaml"
 _TICKS: Final[int] = 5
 _SDK_FLUSH_TIMEOUT_MS: Final[int] = 5000
 _SINK_POLL_TIMEOUT_S: Final[float] = 5.0
 _SINK_POLL_INTERVAL_S: Final[float] = 0.1
 _COLLECTOR_HEALTH_TIMEOUT_S: Final[float] = 30.0
+# `container.logs(tail=...)`-Cap pro Poll-Tick. 5 Ticks × Tripel-
+# Output (Span+Metric+Log mit Resource-Attributes + Bootstrap-
+# Header) liegt komfortabel unter 2000 Zeilen; bei drift waere
+# 4000 noch akzeptabel. Welle-6-Review-Folge N-1.
+_LOGS_TAIL_LINES: Final[int] = 2000
 
 # Regex-Pattern auf den Debug-Exporter-Output. Der Collector schreibt
 # pretty-printed Records nach stderr (eine Zeile pro Feld), wir
@@ -110,54 +127,60 @@ _RE_SPAN_NAME = re.compile(r"^\s*Name\s*:\s*(\S+)\s*$", re.MULTILINE)
 _RE_METRIC_NAME = re.compile(r"^\s*->\s*Name:\s*(\S+)\s*$", re.MULTILINE)
 _RE_LOG_BODY = re.compile(r"^Body:\s*Str\((\S+)\)\s*$", re.MULTILINE)
 # Block-Trenner: der Collector schreibt pro Export-Aufruf einen
-# `ResourceMetrics/ResourceLogs #N`-Header gefolgt von Resource-
+# `ResourceSpans/Metrics/Logs #N`-Header gefolgt von Resource-
 # Attributes und Inhalts-Blocks. Wir trennen am JSON-Footer, der
-# jeden Block beendet.
-_RE_BLOCK_END = re.compile(r'^\t\{"resource":', re.MULTILINE)
+# jeden Block beendet. Welle-6-Review-Folge N-2: Leading-`\s*`
+# statt hartem `^\t` — Format-Drift-Hardening analog zu den
+# Name/Body-Regexes.
+_RE_BLOCK_END = re.compile(r'^\s*\{"resource":', re.MULTILINE)
 
-# Welle-6-Smoke-Profil-Config: kurzer Batch-Timeout, file+debug-
-# Exporter, drei symmetrische Pipelines, health_check-Extension.
-# Bewusst hier inline (nicht aus `deploy/otel-collector-config.yaml`
-# kopiert), weil der Test gegen einen Container-internen Sink-Pfad
-# laeuft und einen anderen file-Path nutzen koennte. `file`-Exporter
-# bleibt im Config, auch wenn der Test ihn nicht liest — er ist der
-# Pattern, den Produktiv-Stack `deploy/compose.yml` nutzt, und der
-# Debug-Exporter ist sowieso symmetrisch dazu konfiguriert.
-_COLLECTOR_CONFIG_YAML: Final[str] = """
-extensions:
-  health_check:
-    endpoint: 0.0.0.0:13133
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-processors:
-  batch:
-    timeout: 100ms
-    send_batch_size: 1
-exporters:
-  file:
-    path: /var/log/otel/otel-out.jsonl
-    flush_interval: 100ms
-  debug:
-    verbosity: detailed
-service:
-  extensions: [health_check]
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [file, debug]
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [file, debug]
-    logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [file, debug]
+# Welle-6-Smoke-Profil-Config: bewusst aus `deploy/otel-collector-
+# config.yaml` geladen (Welle-6-Review-Folge M-2), damit Test-Profil
+# und Produktiv-Profil nicht voneinander wegdriften — beide nutzen
+# dieselbe File-Path-/Pipeline-/Extension-Konfiguration. Die Datei
+# wird beim Container-Start als `OTEL_CONFIG_YAML`-Env-Var
+# weitergereicht (siehe `_collector`-Fixture).
+_COLLECTOR_CONFIG_YAML: Final[str] = _COLLECTOR_CONFIG_PATH.read_text(encoding="utf-8")
+
+# Sentinel-Samples (Welle-6-Review-Folge M-3): Snippets aus echten
+# Collector-Debug-Exporter-Output-Bloecken (otel/opentelemetry-
+# collector-contrib:0.152.1, Welle-6-C3-Verifikation). Der Format-
+# Drift-Test `test_smoke_regexes_match_sentinel_samples` unten
+# bricht, sobald die drei Inhalts-Regexes diese Samples nicht mehr
+# treffen — schuetzt vor dem Wiederholfall des Trigger-029-Bugs
+# (Span-Name-Padding nicht erkannt).
+_SAMPLE_SPAN_BLOCK: Final[str] = """\
+Span #0
+    Trace ID       : 0f8d07e6d3535f5b137e0d42a01b25be
+    Parent ID      :
+    ID             : e1646bc1d8749459
+    Name           : tick.cycle
+    Kind           : Internal
 """
+
+_SAMPLE_METRIC_BLOCK: Final[str] = """\
+Metric #0
+Descriptor:
+     -> Name: tick_count
+     -> Description:
+     -> Unit:
+"""
+
+_SAMPLE_LOG_BLOCK: Final[str] = """\
+LogRecord #8
+ObservedTimestamp: 2026-05-25 09:09:00 +0000 UTC
+Timestamp: 1970-01-01 00:00:00 +0000 UTC
+SeverityText: INFO
+SeverityNumber: Info(9)
+Body: Str(tick_begin)
+"""
+
+# JSON-Block-Footer aus dem Debug-Exporter-Output (eine Zeile pro
+# exportiertem Resource{Spans,Metrics,Logs}-Block, fuer Block-Splitting).
+_SAMPLE_BLOCK_END: Final[str] = (
+    '\t{"resource": {"service.instance.id": "abc-123", '
+    '"service.name": "otelcol-contrib", "service.version": "0.152.1"}}'
+)
 
 
 @pytest.fixture(scope="module")
@@ -237,6 +260,13 @@ def test_otlp_compose_smoke_exports_span_metric_log(
         service_instance_id=instance_id,
     )
     bundle = build_otlp_adapters(config)
+    # Welle-6-Review-Folge H-1: Sampler explizit pinnen, damit ein
+    # `OTEL_TRACES_SAMPLER`-Env-Override (z. B. aus dem CI-Stack)
+    # diesen Smoke nicht silent verfaelschen kann. Der Tripel-Assert
+    # darunter haengt am ALWAYS_ON-Verhalten, das in der OTel-SDK
+    # zwar Default ist (ParentBasedSampler(ALWAYS_ON) als Root),
+    # aber via Env-Var ueberschreibbar — der Pin macht das robust.
+    bundle.tracer_provider.sampler = ALWAYS_ON
 
     try:
         _drive_demo_ticks(bundle)
@@ -275,12 +305,18 @@ def _poll_signals_until_complete(container: DockerContainer, instance_id: str) -
     eindeutige `service.instance.id` plus Span/Metric/Log mit den
     erwarteten Namen. Test-Failure mit klarem Fehlertext UND
     Collector-Log-Tail, wenn das Tripel nach `_SINK_POLL_TIMEOUT_S`
-    nicht vollstaendig sichtbar ist."""
+    nicht vollstaendig sichtbar ist.
+
+    Welle-6-Review-Folge L-4: `last_signals` als high-water-mark
+    (`prev or now`) statt point-in-time-Snapshot — schuetzt vor
+    der unwahrscheinlichen, aber misleadenden Diagnose-Race, dass
+    ein Signal zwischen zwei Iterationen aus dem Log rotiert."""
     deadline = time.monotonic() + _SINK_POLL_TIMEOUT_S
     last_signals: tuple[bool, bool, bool] = (False, False, False)
     while time.monotonic() < deadline:
         logs = _get_collector_logs(container)
-        last_signals = _check_signals_in_logs(logs, instance_id)
+        current = _check_signals_in_logs(logs, instance_id)
+        last_signals = tuple(prev or now for prev, now in zip(last_signals, current, strict=True))  # type: ignore[assignment]
         if all(last_signals):
             return
         time.sleep(_SINK_POLL_INTERVAL_S)
@@ -302,8 +338,13 @@ def _poll_signals_until_complete(container: DockerContainer, instance_id: str) -
 def _get_collector_logs(container: DockerContainer) -> str:
     """Liest die Container-Logs ueber die Docker-API. `logs()`
     liefert stdout+stderr als bytes; der `debug`-Exporter im
-    Collector schreibt nach stderr."""
-    raw = container.get_wrapped_container().logs()
+    Collector schreibt nach stderr.
+
+    Welle-6-Review-Folge N-1: `tail=_LOGS_TAIL_LINES` statt
+    unbounded full-log-Read — pro Poll-Tick spart das Bandbreite
+    bei langen Lauefen; die letzten ~2000 Zeilen reichen fuer
+    5 Ticks mit Tripel-Output + Bootstrap-Header."""
+    raw = container.get_wrapped_container().logs(tail=_LOGS_TAIL_LINES)
     return raw.decode("utf-8", errors="replace")
 
 
@@ -337,3 +378,47 @@ def _check_signals_in_logs(logs: str, instance_id: str) -> tuple[bool, bool, boo
 
 def _block_has_instance_id(block: str, instance_id: str) -> bool:
     return any(found == instance_id for found in _RE_INSTANCE_ID.findall(block))
+
+
+# ---------------------------------------------------------------------------
+# Sentinel: Format-Drift-Detector (Welle-6-Review-Folge M-3)
+# ---------------------------------------------------------------------------
+
+
+def test_smoke_regexes_match_sentinel_samples() -> None:
+    """Format-Drift-Sentinel: schuetzt vor dem Wiederholfall des
+    Trigger-029-Bugs.
+
+    Trigger 029 (`docs/plan/planning/done/029-otlp-span-grpc-export-
+    edge-case.md`) hat eine ganze Wochen-Iteration gekostet, weil das
+    Span-Name-Regex (`^Name`) das Leading-Whitespace-Padding-Format
+    des Debug-Exporters nicht zulassen wollte. Dieser Test bricht
+    sofort, sobald die drei Inhalts-Regexes die echten Sample-Bloecke
+    nicht mehr matchen — z. B. bei einem Collector-Upgrade, das das
+    Pretty-Print-Format aendert.
+
+    Kein Container-Boot — laeuft als reiner Regex-Match-Sanity-Check
+    in der Smoke-Test-Suite, damit Regex + Samples in der gleichen
+    Datei zusammen-versioniert bleiben (keine Drift zwischen
+    `tests/unit/` und `tests/integration/`)."""
+    span_names = _RE_SPAN_NAME.findall(_SAMPLE_SPAN_BLOCK)
+    assert "tick.cycle" in span_names, (
+        "_RE_SPAN_NAME matched das Sentinel-Sample nicht — Format-"
+        f"Drift im Debug-Exporter-Span-Block? Gefunden: {span_names!r}"
+    )
+    metric_names = _RE_METRIC_NAME.findall(_SAMPLE_METRIC_BLOCK)
+    assert "tick_count" in metric_names, (
+        "_RE_METRIC_NAME matched das Sentinel-Sample nicht — Format-"
+        f"Drift im Debug-Exporter-Metric-Block? Gefunden: {metric_names!r}"
+    )
+    log_bodies = _RE_LOG_BODY.findall(_SAMPLE_LOG_BLOCK)
+    assert "tick_begin" in log_bodies, (
+        "_RE_LOG_BODY matched das Sentinel-Sample nicht — Format-"
+        f"Drift im Debug-Exporter-Log-Block? Gefunden: {log_bodies!r}"
+    )
+    block_end_matches = _RE_BLOCK_END.findall(_SAMPLE_BLOCK_END)
+    assert block_end_matches, (
+        "_RE_BLOCK_END matched das Sentinel-Sample nicht — Format-"
+        "Drift im JSON-Footer? Block-Splitting des Polling-Loops "
+        "wuerde dann den gesamten Log als einen Block sehen."
+    )

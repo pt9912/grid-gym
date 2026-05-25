@@ -67,8 +67,13 @@ services:
         condition: service_healthy
       otel-collector:
         # service_started (nicht service_healthy), weil der
-        # Collector keinen in-container healthcheck hat. Der
-        # `api`-Container nutzt heute den Null-Adapter (Welle 5)
+        # Collector-Container distroless ist und kein in-container
+        # healthcheck-Binary (wget/nc/sh) hat — siehe die
+        # Begruendung im `otel-collector`-Service-Block oben.
+        # Liveness pollt `make runtime` extern via
+        # `tools/wait_otel_collector.py` gegen
+        # `http://otel-collector:13133/` (`health_check`-Extension).
+        # Der `api`-Container nutzt heute den Null-Adapter (Welle 5)
         # und wuerde Adapter-Aktivierung erst per Folge-Slice
         # bekommen — die `depends_on`-Kopplung sorgt nur fuer
         # die Boot-Reihenfolge, falls die Adapter-Verkabelung

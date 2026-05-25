@@ -24,6 +24,15 @@ Container oder einem Sibling-Container mit Docker-Socket-Mount:
     docker compose -f tests/integration/compose.yml run --rm test-runner \\
         uv run python tools/diagnose_otlp_span_export.py
 
+**Voraussetzung:** Container mit Docker-Socket-Mount
+(`/var/run/docker.sock`) und installierten testcontainers/
+opentelemetry-Dependencies. Der `test-runner`-Service aus
+`tests/integration/compose.yml` bringt beides mit (per Image-Build
++ Socket-Volume); ein Standalone-Aufruf ausserhalb eines
+ähnlich-shaped Containers ist nicht supported — die Welle-6-
+Konvention ist „Docker-only", deshalb gibt es keinen Host-Pfad
+mit lokaler Python-/uv-Installation.
+
 Ausgabe ist Matrix-Tabelle (Variante x Signal); Output > 50KB
 moeglich.
 """
@@ -62,11 +71,25 @@ from opentelemetry.sdk.trace.export import (
 from testcontainers.core.container import DockerContainer  # type: ignore[import-untyped]
 from testcontainers.core.waiting_utils import wait_for_logs  # type: ignore[import-untyped]
 
-_COLLECTOR_IMAGE_DEFAULT: Final[str] = "otel/opentelemetry-collector-contrib:0.152.1"
-_COLLECTOR_IMAGE_ENV: Final[str] = "OTEL_COLLECTOR_IMAGE"
-_GRPC_PORT: Final[int] = 4317
-_HEALTH_PORT: Final[int] = 13133
-_INTERNAL_METRICS_PORT: Final[int] = 8888
+# Welle-6-Review-Folge M-1: Single-Source-of-Truth fuer Collector-
+# Image-Tag und Port-Konstanten ueber `tests/integration/_collector_
+# constants.py`. Vermeidet, dass Smoke-Test + Diagnose-Script + Make-
+# file bei einem Upgrade auseinanderdriften.
+from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+    GRPC_PORT as _GRPC_PORT,
+)
+from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+    HEALTH_PORT as _HEALTH_PORT,
+)
+from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+    INTERNAL_METRICS_PORT as _INTERNAL_METRICS_PORT,
+)
+from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+    OTEL_COLLECTOR_IMAGE_DEFAULT as _COLLECTOR_IMAGE_DEFAULT,
+)
+from tests.integration._collector_constants import (  # type: ignore[import-not-found]
+    OTEL_COLLECTOR_IMAGE_ENV as _COLLECTOR_IMAGE_ENV,
+)
 
 # Span-relevante Internal-Counter aus dem Collector. Die nominelle
 # Beweisfuehrung „kommt am Receiver an / wird gedroppet / wird
@@ -158,6 +181,14 @@ def _collector_container() -> Iterator[DockerContainer]:
         .with_env("OTEL_CONFIG_YAML", _COLLECTOR_CONFIG_YAML)
         .with_command("--config=env:OTEL_CONFIG_YAML")
         .with_exposed_ports(_GRPC_PORT, _HEALTH_PORT, _INTERNAL_METRICS_PORT)
+        # `user="0:0"` (root) statt distroless-Default `nonroot`
+        # (uid 65532): erlaubt File-Schreiben in tmpfs-Verzeichnissen
+        # ohne Permission-Friktion. Diagnose-Container — Trade-off
+        # akzeptabel, weil das Script per Definition Diagnostik im
+        # Test-Netz macht und kein Produktiv-Container ist.
+        # Konsistent zur Smoke-Test-Fixture (`test_otlp_compose_smoke.
+        # py`-`_collector`-Fixture); Welle-6-Review-Folge M-4 zog
+        # die Begruendung explizit in beide Stellen.
         .with_kwargs(user="0:0")
     )
     container.start()

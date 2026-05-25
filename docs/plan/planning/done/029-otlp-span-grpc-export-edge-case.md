@@ -85,11 +85,16 @@ Signal-Typen entstand.
 
 ---
 
-## 0b. Doku-Befund (2026-05-25, vor Closure)
+<details>
+<summary><strong>Historischer Kontext (vor Closure) — Doku-Befund 2026-05-25</strong></summary>
 
-*Historischer Kontext — hat die Hypothesen-Liste umgeordnet, war
-aber selbst nicht der Bruchpunkt; Closure-Befund oben ist die
-endgueltige Erklaerung.*
+*Hat die Hypothesen-Liste umgeordnet, war aber selbst nicht der
+Bruchpunkt. Closure-Befund §0 oben ist die endgueltige Erklaerung.
+§1-§5 unten sind das urspruengliche Trigger-Dokument; Inhalte sind
+durch §0 ueberholt (insbesondere §2 „Aktueller Workaround: Test
+asserted nur Duo" — der Smoke pruft jetzt das volle Tripel).*
+
+## 0b. Doku-Befund (2026-05-25, vor Closure)
 
 
 Die ursprueng-formulierten Hypothesen (Endpoint-Format, Insecure-
@@ -307,3 +312,5 @@ Trigger 029 wandert nach `done/`, sobald:
 - [Collector Internal Telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/)
   — `otelcol_receiver_accepted_spans` etc. als verlaessliche
   Diagnose-Quelle (Doku-Befund Punkt 5).
+
+</details>

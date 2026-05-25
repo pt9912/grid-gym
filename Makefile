@@ -258,9 +258,11 @@ dep-audit:
 # Welle-6-C2-Erweiterung: zweiter Trivy-Run gegen den gepinnten
 # OTLP-Collector-Tag — der Collector ist Teil des Welle-6-Observability-
 # Pfads (`deploy/compose.yml`-Sibling) und hat dieselbe DoD-Bindung wie
-# das selbst-gebaute runtime-Image. `docker pull` davor stellt sicher,
-# dass der Tag lokal vorhanden ist, wenn das Recipe ohne vorheriges
-# `make runtime` laeuft.
+# das selbst-gebaute runtime-Image. `docker image inspect ... || pull`
+# (Welle-6-Review-Folge M-5) ist rate-limit-freundlich gegenueber
+# Docker-Hub: zieht den Tag nur dann, wenn er lokal noch nicht da
+# ist; bei wiederholten Lauefen oder im offline-CI faellt der Pull
+# weg.
 image-audit: build
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
@@ -270,7 +272,7 @@ image-audit: build
 			--severity $(TRIVY_SEVERITY) \
 			--ignore-unfixed \
 			$(IMAGE_PREFIX)-runtime:latest
-	$(DOCKER) pull $(OTEL_COLLECTOR_IMAGE)
+	$(DOCKER) image inspect $(OTEL_COLLECTOR_IMAGE) >/dev/null 2>&1 || $(DOCKER) pull $(OTEL_COLLECTOR_IMAGE)
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v "$$HOME/.cache/trivy:/root/.cache/" \
