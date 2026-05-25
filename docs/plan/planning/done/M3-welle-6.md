@@ -15,11 +15,12 @@ OTLP-Adapter `Done` 2026-05-25**) ab; Welle 7 ist Closure.
 Commits `8eba9ff`/`c99680c`/`54657dc` plus drei Review-Folgen
 `3f887b5`/`c19c69d`/`5493831` — siehe Sub-Commit-Tabelle unter
 C1), C2 done (`c61ab0d`), C3 done (`47a46b0`): Integration-Smoke
-`tests/integration/test_otlp_compose_smoke.py` (Duo Metric+Log;
-Span auf Trigger 029 verschoben), Runbook
-`docs/user/observability.md`, README/README.de-Closure-Zeilen,
-DoD-Haken in diesem Dokument. Folge-Commits: Status-Sync (dieser
-Commit) + End-of-Wave-Move nach `done/M3-welle-6.md`.
+`tests/integration/test_otlp_compose_smoke.py` (Tripel
+Span+Metric+Log — Trigger 029 ist als Fehlbefund geschlossen
+[Span-Regex-Bug im Smoke-Test selbst, nicht im OTLP-Pfad];
+siehe [`../done/029-otlp-span-grpc-export-edge-case.md`](../done/029-otlp-span-grpc-export-edge-case.md)
+§0 Closure-Befund), Runbook `docs/user/observability.md`, README/
+README.de-Closure-Zeilen, DoD-Haken in diesem Dokument.
 
 **DoD-Checkliste (Welle-6-Abnahme):**
 
@@ -38,23 +39,20 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       (`OtlpLogAdapter` / `OtlpMetricsAdapter` / `OtlpTraceAdapter`
       Surface + Export-Roundtrip gegen In-Process-`grpcio`-Mock).
       **Erfuellt mit C1.3b `c99680c`**.
-- [~] **`make test-integration` gruen** — Welle-6-Smoke fuegt
+- [x] **`make test-integration` gruen** — Welle-6-Smoke fuegt
       mindestens einen Test hinzu, der gegen den `otel-collector`-
-      Sibling pruft, dass **≥ 1 Metric + ≥ 1 Log
-      exportiert** wurden (Span-Pflicht auf
-      [Trigger 029](../open/029-otlp-span-grpc-export-edge-case.md)
-      verschoben — OTLP-gRPC-Span-Export geht im Sibling-Setup
-      silent verloren, Adapter SDK-side aber korrekt; siehe
-      C3-Commit `47a46b0` + Modul-Docstring von
-      `tests/integration/test_otlp_compose_smoke.py` fuer den
-      Befund). Sink-Determinismus erfuellt: per-Lauf eindeutige
-      `service.instance.id` (uuid4) filtert alle Assertions;
-      Sink ist `container.logs()` des Debug-Exporters statt
-      File-Sink (testcontainers' `get_archive` lieferte aus
+      Sibling pruft, dass **≥ 1 Span (`tick.cycle`) + ≥ 1 Metric
+      (`tick_count`) + ≥ 1 Log (`tick_begin`/`tick_end`)
+      exportiert** wurden. Sink-Determinismus erfuellt: per-Lauf
+      eindeutige `service.instance.id` (uuid4) filtert alle
+      Assertions; Sink ist `container.logs()` des Debug-Exporters
+      statt File-Sink (testcontainers' `get_archive` lieferte aus
       tmpfs keine Daten zurueck — drei Iterationen siehe Test-
       Docstring). SDK-Side `OtlpAdapterBundle.flush_and_shutdown()`,
       Collector-Side 5s-Bounded-Poll. **Erfuellt mit C3 `47a46b0`**
-      (Duo statt Tripel; Span-Tripel ist Trigger-029-Material).
+      (zunaechst Duo wegen Span-Regex-Bug, danach Tripel via
+      Trigger-029-Closure
+      [`../done/029-otlp-span-grpc-export-edge-case.md`](../done/029-otlp-span-grpc-export-edge-case.md)).
 - [x] **`make gates` A-1 gruen ohne Override** — lint, format-check,
       mypy `--strict`, arch-check (19 contracts), coverage 90/85 line,
       critical-coverage, dep-audit (`grpcio` +

@@ -182,14 +182,39 @@ ausspuelt.
 hochsetzen oder Collector mit groesseren Receiver-Queues betreiben.
 Default `512` reicht fuer Welle-6-Demo-Lasten (5-100 Ticks/s).
 
-### 4.3 Spans kommen nicht im Collector an (Welle 6 C3 Edge-Case)
+### 4.3 Spans, Metrics, Logs im Collector verifizieren
 
-**Bekannt** seit M3-Welle-6-C3 (2026-05-25) — siehe
-[Trigger 029](../plan/planning/open/029-otlp-span-grpc-export-edge-case.md)
-inkl. Doku-Befund (5 Punkte). SDK-side sind die Spans korrekt
-(ConsoleSpanExporter zeigt sie, recording=True, valide IDs), aber
-der OTLP-gRPC-Span-Export an einen Sibling-Container kommt nicht
-durch. Metrics+Logs ueber die identische Connection funktionieren.
+**Primaer-Quelle:** Der `debug`-Exporter im Collector schreibt
+alle empfangenen Records strukturiert nach stderr; das ist die
+schnellste Sicht.
+
+**Achtung — Output-Padding-Format unterscheidet sich pro Signal-
+Typ.** Aus dem Trigger-029-Closure-Befund (2026-05-25): Span-
+Bloecke kommen mit Leading-Whitespace-Padding, Metric/Log nicht:
+
+```
+Span #0
+    Trace ID       : ...
+    Name           : tick.cycle              # 4 Leerzeichen vor `Name`!
+    Kind           : Internal
+...
+Metric #0
+Descriptor:
+     -> Name: tick_count                     # `-> Name:` mit Leading-Space
+...
+LogRecord #0
+Body: Str(tick_begin)                        # ohne Leading-Whitespace
+```
+
+Wenn du gegen den Output greppst/regex-matchst, **immer
+`\s*`-Prefix** im Pattern. Beispiel-Regex in
+[`tests/integration/test_otlp_compose_smoke.py`](../../tests/integration/test_otlp_compose_smoke.py):
+
+```python
+_RE_SPAN_NAME = re.compile(r"^\s*Name\s*:\s*(\S+)\s*$", re.MULTILINE)
+_RE_METRIC_NAME = re.compile(r"^\s*->\s*Name:\s*(\S+)\s*$", re.MULTILINE)
+_RE_LOG_BODY = re.compile(r"^Body:\s*Str\((\S+)\)\s*$", re.MULTILINE)
+```
 
 **Achtung — was NICHT als Diagnose taugt:**
 
@@ -197,16 +222,15 @@ durch. Metrics+Logs ueber die identische Connection funktionieren.
   API puffert der Exporter selbst nichts; `force_flush` returnt
   trivial `True`. Erst der Receiver-Counter im Collector beweist
   einen Annahme-Erfolg.
-- Debug-Exporter-Logs allein. Sie zeigen nur, was die Pipeline
-  bis zum Exporter gefuehrt hat — vorgelagerte Drop-Stellen
-  (Receiver-Refused / Processor-Filter) bleiben unsichtbar.
+- Debug-Exporter-Logs allein, wenn vorgelagerte Drop-Stellen
+  (Receiver-Refused / Processor-Filter) eine Rolle spielen
+  koennen.
 
-**Was als Diagnose taugt (Collector-Internal-Telemetry):**
-
-Der Collector exponiert Prometheus-Counter auf `:8888/metrics`
-(`service.telemetry.metrics.address` in
-[`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)).
-Die Trigger-029-relevanten Counter:
+**Sekundaer-Quelle (Operations/Diagnose): Collector-Internal-
+Telemetry.** Der Collector exponiert Prometheus-Counter auf
+`:8888/metrics`
+(`service.telemetry.metrics.readers.pull.exporter.prometheus` in
+[`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)):
 
 | Counter                              | Bedeutung                                    |
 | ------------------------------------ | -------------------------------------------- |
@@ -228,8 +252,9 @@ Export findet statt.
 
 **Diagnose-Tooling:**
 [`tools/diagnose_otlp_span_export.py`](../../tools/diagnose_otlp_span_export.py)
-— Matrix-Script mit Endpoint/Insecure/Processor-Varianten und
-voll aufgedrehten gRPC- + OTel-Debug-Loggern; druckt pro Variante
+— Matrix-Script mit Endpoint/Insecure/Processor-Varianten plus
+Produktiv-Pfad-Variante (`build_otlp_adapters` + `OtlpAdapterBundle`),
+voll aufgedrehte gRPC- + OTel-Debug-Logger; druckt pro Variante
 `trace_flags` + `sampled` + `recording` und scraped am Ende die
 Internal-Counter von `:8888/metrics`. Aufruf (Docker-only):
 
@@ -238,9 +263,12 @@ docker compose -f tests/integration/compose.yml run --rm test-runner \
     uv run python tools/diagnose_otlp_span_export.py
 ```
 
-**Workaround heute:** Tests verifizieren Metrics+Logs via
-[`tests/integration/test_otlp_compose_smoke.py`](../../tests/integration/test_otlp_compose_smoke.py);
-Span-Smoke bleibt ausgeklammert, bis Trigger 029 geschlossen ist.
+Historischer Kontext zur Tooling-Erbschaft: Trigger 029
+([`done/029-otlp-span-grpc-export-edge-case.md`](../plan/planning/done/029-otlp-span-grpc-export-edge-case.md))
+wurde als Fehlbefund geschlossen — der vermutete OTLP-gRPC-Span-
+Export-Bug existierte nicht, der Smoke-Test hatte schlicht das
+`Name           : tick.cycle`-Padding-Format nicht im Span-Regex
+erlaubt.
 
 ### 4.4 `force_flush()` returnt `True` aber Records fehlen
 
@@ -265,7 +293,7 @@ Telemetry-Endpunkt und das Diagnose-Tooling.
 - [ADR 0024 — Observability-Port-Trio](../plan/adr/0024-observability-port-trio.md)
 - [ADR 0027 — RuleBasedAgent + Scenario-Pattern](../plan/adr/0027-rule-based-agent-scenario-pattern.md)
 - [M3-Welle-6 Slice-Plan](../plan/planning/done/M3-welle-6.md)
-- [Trigger 029 — OTLP-Span-gRPC-Export-Edge-Case](../plan/planning/open/029-otlp-span-grpc-export-edge-case.md)
+- [Trigger 029 — OTLP-Span-gRPC-Export-Edge-Case (Done: Fehlbefund)](../plan/planning/done/029-otlp-span-grpc-export-edge-case.md)
 - [`deploy/compose.yml`](../../deploy/compose.yml)
 - [`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)
 - [`tools/wait_otel_collector.py`](../../tools/wait_otel_collector.py)

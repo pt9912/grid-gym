@@ -1,18 +1,96 @@
-# 029 — OTLP-Span-gRPC-Export-Edge-Case (Welle 6 C3 Caveat)
+# 029 — OTLP-Span-gRPC-Export-Edge-Case (Welle 6 C3 Caveat) — **Done: Fehlbefund**
 
-**Status:** Open — eroeffnet 2026-05-25 als Welle-6-C3-Caveat,
-geschaerft 2026-05-25 nach Doku-Befund (Quellen unten in §7).
+**Status:** Done — geschlossen 2026-05-25, **Fehlbefund**: der
+OTLP-Span-Export-Pfad war nie kaputt. Die ursprueng-beobachtete
+„0 Spans im Collector"-Assertion-Failure lag am Span-Name-Regex
+im Smoke-Test (`^Name\\s*:\\s*(\\S+)\\s*$`), das das vom Debug-
+Exporter erzeugte Leading-Whitespace-Padding-Format
+(`    Name           : tick.cycle`, 4 Leerzeichen) nicht
+matchen konnte. Korrigiertes Regex: `^\\s*Name\\s*:\\s*(\\S+)\\s*$`
+— Smoke-Test ist mit dem Fix wieder auf das volle Tripel
+(Span+Metric+Log) hochgezogen und gruen.
 **Quelle:** M3-Welle-6-C3-Smoke-Test
 (`tests/integration/test_otlp_compose_smoke.py`); Befund waehrend
 des Tripel-Assert-Bauversuchs (Span/Metric/Log).
 **Ziel:** OTLP-gRPC-Span-Export Sibling-Container reproduzierbar
-gruen bekommen — damit der Welle-6-Smoke spaeter auf das volle
-Tripel (Span/Metric/Log) hochgezogen werden kann, das ADR 0024
-§4.5.7 und M3-welle-6.md §C3 urspruenglich vorsehen.
+gruen bekommen — damit der Welle-6-Smoke auf das volle Tripel
+(Span/Metric/Log) hochgezogen werden kann, das ADR 0024 §4.5.7
+und M3-welle-6.md §C3 urspruenglich vorsehen. **Erreicht.**
 
 ---
 
-## 0. Doku-Befund (2026-05-25)
+## 0. Closure-Befund (2026-05-25, Fehlbefund)
+
+Trigger 029 ist als Fehlbefund geschlossen. Der gesamte OTLP-
+Span-Adapter-Pfad ist intakt; der einzige Bug lag im
+Span-Name-Regex des Smoke-Tests selbst.
+
+**Beweisfuehrung** (via `tools/diagnose_otlp_span_export.py`,
+Matrix-Run 2026-05-25):
+
+| Diagnose-Variante                  | collector_hits | Erkenntnis                                                |
+| ---------------------------------- | -------------- | --------------------------------------------------------- |
+| `http-batch-no-flag`               | 1              | spec-konform; identisch zum Smoke-Test-Setup, gruen        |
+| `http-simple-no-flag`              | 1              | SimpleSpanProcessor mit `http://`-Endpoint, gruen          |
+| `http-simple-insecure`             | 1              | explizit `insecure=True`, gruen                            |
+| `hostport-simple-insecure`         | 1              | ohne `http://`-Schema, `insecure=True`, gruen              |
+| `hostport-batch-insecure`          | 1              | BatchSpanProcessor + nackter `host:port`, gruen            |
+| **`factory-bundle`** (Produktiv-Pfad) | 1            | voller `build_otlp_adapters` + `OtlpTraceAdapter` +    |
+|                                    |                | `bundle.flush_and_shutdown`, **gruen**                    |
+
+Collector-Internal-Counter im selben Lauf:
+
+```
+otelcol_receiver_accepted_spans{receiver="otlp",transport="grpc"} 6
+otelcol_receiver_refused_spans{receiver="otlp",transport="grpc"} 0
+otelcol_exporter_sent_spans{exporter="debug"} 6
+```
+
+**Konkretes Format-Detail**, das den Bug versteckt hat: der
+Debug-Exporter im Collector schreibt Span-Bloecke mit indented
+key-value-Padding:
+
+```
+Span #0
+    Trace ID       : ...
+    Parent ID      :
+    ID             : ...
+    Name           : tick.cycle
+    Kind           : Internal
+```
+
+— 4 Leerzeichen Leading vor `Name`, danach Spaces zum
+Doppelpunkt. Mein urspruengliches Regex `^Name\\s*:` (Anker direkt
+am Zeilenanfang) hat das nie matchen koennen. Korrektur:
+`^\\s*Name\\s*:`. Im selben Pattern hatten Metric und Log
+funktioniert (`^\\s*->\\s*Name:` mit Leading-`\\s*` bzw. Log-`Body`
+ohne Padding-Indent), weshalb die Asymmetrie zwischen den drei
+Signal-Typen entstand.
+
+**Diagnose-Mehrwert (Erbschaft):**
+
+- `tools/diagnose_otlp_span_export.py` bleibt im Repo. Die
+  Matrix-Diagnose plus Collector-Internal-Counter-Scrape ist ein
+  brauchbares Pattern fuer kuenftige OTLP-Debugging-Faelle.
+- `deploy/otel-collector-config.yaml` `service.telemetry.metrics.
+  readers.pull.exporter.prometheus`-Block bleibt aktiv — die
+  Internal-Counter sind eine echte Operations-Affordance, nicht
+  nur ein Diagnose-Helfer.
+- `deploy/compose.yml` `tmpfs '/var/log/otel:mode=1777'` bleibt
+  — das war ein Bestands-Permission-Bug im distroless-Image, der
+  nebenbei aufgefallen ist.
+- `docs/user/observability.md` §4.4 Warnung zu `force_flush()`
+  (laut Doku trivial wahr beim OTLPSpanExporter) bleibt — wir
+  hatten das im Diagnose-Lauf direkt validiert.
+
+---
+
+## 0b. Doku-Befund (2026-05-25, vor Closure)
+
+*Historischer Kontext — hat die Hypothesen-Liste umgeordnet, war
+aber selbst nicht der Bruchpunkt; Closure-Befund oben ist die
+endgueltige Erklaerung.*
+
 
 Die ursprueng-formulierten Hypothesen (Endpoint-Format, Insecure-
 Flag, Processor-Variante) haben wir gegen die offizielle Doku

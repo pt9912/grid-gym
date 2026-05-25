@@ -23,11 +23,12 @@ complete (Foundation + Concretization), and the Observability
 Foundation (Port-Trio + Null-Adapters + TickLoop hooks) is in place.
 **Wave 6 (OTLP adapter) is `Done`:** C1 (adapter module + factory),
 C2 (deploy/compose.yml collector sibling + Trivy audit), C3
-(integration smoke + runbook [`docs/user/observability.md`](docs/user/observability.md))
-are delivered. **Caveat:** Span visibility in the collector is
-deferred in the C3 smoke — see trigger 029
-([`open/029-otlp-span-grpc-export-edge-case.md`](docs/plan/planning/open/029-otlp-span-grpc-export-edge-case.md));
-the adapter is SDK-side correct. Wave 7 (M3 closure) follows.
+(integration smoke `tests/integration/test_otlp_compose_smoke.py`
+with the full triple span+metric+log + runbook
+[`docs/user/observability.md`](docs/user/observability.md)) are
+delivered. Trigger 029 (suspected OTLP span export bug) was closed
+as a false finding — the real bug was a span-name regex in the
+smoke test. Wave 7 (M3 closure) follows.
 
 **Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
 existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
@@ -43,7 +44,7 @@ types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
 | Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
 | Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
 | Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
-| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (13/19 A-1 contracts since Slice 028). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (Duo metric+log; span deferred to trigger 029) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
+| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (12/19 A-1 contracts; 13th is `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` from Slice 028). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (full triple span+metric+log) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
 | Protocol Adapters (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |

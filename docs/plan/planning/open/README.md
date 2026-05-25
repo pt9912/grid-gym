@@ -27,7 +27,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | `006-mypy-strict-bytes.md`                     | `--strict-bytes`-Aktivierung (ADR 0005)                                   | nach Konsolidierung des `GG-DATA-005`-Bytes-Vertrags |
 | `007-pyright-precommit-adr.md`                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | `008-sbom-activation.md`                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
-| `029-otlp-span-grpc-export-edge-case.md`       | OTLP-gRPC-Span-Export an Compose-Sibling-Collector silent verloren (Welle 6 C3 Caveat) | spaetestens vor M3-Welle-7-Closure oder bei erstem Production-OTLP-Span-Konsumenten |
 
 **M3-/Multi-Agent-Folge:**
 

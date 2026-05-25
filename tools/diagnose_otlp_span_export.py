@@ -214,6 +214,36 @@ def _run_variant(variant: _Variant, *, host: str, port: int, instance_id: str) -
     provider.shutdown()
 
 
+def _run_factory_variant(*, host: str, port: int, instance_id: str) -> None:
+    """6. Variante: voller Produktiv-Pfad ueber `build_otlp_adapters
+    (OtlpAdapterConfig(...))` + `bundle.trace_adapter.start_span(...)`
+    + `bundle.flush_and_shutdown(...)`. Vergleich gegen die 5
+    Standalone-Varianten oben — wenn diese hier 0 Collector-Hits
+    liefert, ist der Trigger-029-Bruchpunkt im
+    `_factory.py`/`traces.py`/`OtlpAdapterBundle.flush_and_shutdown`-
+    Pfad eingegrenzt. Marker: `diagnose.factory.bundle`."""
+    from grid_gym.adapters.driven.telemetry_otlp import (
+        OtlpAdapterConfig,
+        build_otlp_adapters,
+    )
+
+    config = OtlpAdapterConfig(
+        endpoint=f"http://{host}:{port}",
+        service_name="diagnose-otlp-span",
+        service_instance_id=instance_id,
+    )
+    bundle = build_otlp_adapters(config)
+    span_ctx = bundle.trace_adapter.start_span("diagnose.factory.bundle")
+    print(
+        f"[diagnose] variant=factory-bundle endpoint=http://{host}:{port} "
+        f"span_id={span_ctx.span_id} trace_id={span_ctx.trace_id}",
+        file=sys.stderr,
+    )
+    bundle.trace_adapter.end_span(span_ctx)
+    bundle.flush_and_shutdown(timeout_millis=5000)
+    print("[diagnose] variant=factory-bundle flush_and_shutdown done", file=sys.stderr)
+
+
 def main() -> int:
     instance_id = str(uuid.uuid4())
     print(f"[diagnose] instance_id={instance_id}", file=sys.stderr)
@@ -231,6 +261,17 @@ def main() -> int:
                 )
             # Kurz warten, damit Collector den Export verarbeiten kann.
             time.sleep(1.0)
+        # 6. Variante: voller Produktiv-Pfad via Factory + Bundle +
+        # OtlpTraceAdapter — vergleicht den Smoke-Test-Code-Pfad mit
+        # den Standalone-Varianten oben.
+        try:
+            _run_factory_variant(host=host, port=port, instance_id=instance_id)
+        except Exception as exc:
+            print(
+                f"[diagnose] variant=factory-bundle raised {type(exc).__name__}: {exc}",
+                file=sys.stderr,
+            )
+        time.sleep(1.0)
         # Collector-Logs ueber die Docker-API holen und am Ende dumpen.
         logs = collector.get_wrapped_container().logs().decode("utf-8", errors="replace")
         print("\n[diagnose] ===== COLLECTOR LOGS =====", file=sys.stderr)
@@ -249,6 +290,11 @@ def main() -> int:
                 f"[diagnose]   variant={variant.name:30s} collector_hits_for_span_name={hits}",
                 file=sys.stderr,
             )
+        factory_hits = logs.count("diagnose.factory.bundle")
+        print(
+            f"[diagnose]   variant={'factory-bundle':30s} collector_hits_for_span_name={factory_hits}",
+            file=sys.stderr,
+        )
         print(
             f"\n[diagnose] ===== INTERNAL METRICS "
             f"(http://{host}:{metrics_port}/metrics) =====",

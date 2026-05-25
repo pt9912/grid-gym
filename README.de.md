@@ -23,11 +23,12 @@ ist komplett (Foundation + Konkretisierung), und die Observability-
 Foundation (Port-Trio + Null-Adapter + TickLoop-Hooks) ist verdrahtet.
 **Welle 6 (OTLP-Adapter) ist `Done`:** C1 (Adapter-Modul + Factory),
 C2 (deploy/compose.yml-Collector-Sibling + Trivy-Audit), C3
-(Integration-Smoke + Runbook [`docs/user/observability.md`](docs/user/observability.md))
-sind geliefert. **Caveat:** Span-Sicht-im-Collector ist im C3-Smoke
-ausgeklammert — siehe Trigger 029
-([`open/029-otlp-span-grpc-export-edge-case.md`](docs/plan/planning/open/029-otlp-span-grpc-export-edge-case.md));
-Adapter ist SDK-side korrekt. Welle 7 (M3-Closure) folgt.
+(Integration-Smoke `tests/integration/test_otlp_compose_smoke.py`
+mit vollem Tripel Span+Metric+Log + Runbook
+[`docs/user/observability.md`](docs/user/observability.md)) sind
+geliefert. Trigger 029 (vermuteter OTLP-Span-Export-Bug) wurde als
+Fehlbefund geschlossen — der eigentliche Bug lag am Span-Regex im
+Smoke-Test. Welle 7 (M3-Closure) folgt.
 
 **Slice 027 (Noqa-Abbau) `Done`** zwischengeschoben: alle 36
 bestehenden `# noqa`-Marker entfernt; `tools/check_noqa.py --fail-on-
@@ -43,7 +44,7 @@ noqa` ist 9. Pflicht-Gate in `make gates`. Neue Envelope-Types
 | Multi-Agent-Foundation (M3 Welle 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Provisional` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Provisional`; `Agent`-Protocol + `AgentMessageBus` + TickLoop-`agents`-Registry + Schritt-A0v/A0a-Drain + Agent-Foundation-State-Snapshot |
 | Multi-Agent konkret (M3 Welle 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Provisional`; `RuleBasedAgent` mit Hybrid Rules + Plugin-Hook + Scenario-`agents`-Top-Level-Block + bidirektionaler `agents.<type>.<id>`-Sub-Snapshot-Resume-Match + End-to-End-Demo (`tests/integration/scenarios/agents_demo.yaml`) |
 | Observability-Foundation (M3 Welle 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Provisional`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault-Hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
-| OTLP-Adapter (M3 Welle 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` mit `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper. ADR 0024 §4.5 mit 8 normativen Decisions. arch_check-Contract `AC-OTLP-ADAPTER-NO-TIME` (13/19 A-1-Contracts seit Slice 028). `deploy/compose.yml`-`otel-collector`-Sibling + `tools/wait_otel_collector.py`-Liveness-Poll + `make image-audit`-Trivy-Erweiterung (C2). Integration-Smoke `tests/integration/test_otlp_compose_smoke.py` (Duo Metric+Log; Span auf Trigger 029) + Runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
+| OTLP-Adapter (M3 Welle 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` mit `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper. ADR 0024 §4.5 mit 8 normativen Decisions. arch_check-Contract `AC-OTLP-ADAPTER-NO-TIME` (12/19 A-1-Contracts; 13. ist `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` aus Slice 028). `deploy/compose.yml`-`otel-collector`-Sibling + `tools/wait_otel_collector.py`-Liveness-Poll + `make image-audit`-Trivy-Erweiterung (C2). Integration-Smoke `tests/integration/test_otlp_compose_smoke.py` (volles Tripel Span+Metric+Log) + Runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa-Hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa`-Marker, `make gates` um `noqa-gate` erweitert (9-stufig). |
 | Protokolladapter (M4) | `Pending` | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |

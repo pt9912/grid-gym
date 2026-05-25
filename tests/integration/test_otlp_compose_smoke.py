@@ -4,25 +4,25 @@ Spawnt einen `otel-collector`-Sibling-Container via Docker-API
 (testcontainers-`DockerContainer`, **nicht** `DockerCompose` —
 der `test-runner` hat kein `docker`-CLI und braucht keinen).
 Treibt einen TickLoop mit dem MVP-Demo-Szenario gegen das
-produktive `OtlpAdapterBundle` und prueft, dass mindestens eine
-Metric und ein Log mit der per-Lauf eindeutigen `service.instance.
-id` exportiert wurden.
+produktive `OtlpAdapterBundle` und prueft, dass mindestens ein
+Span, eine Metric und ein Log mit der per-Lauf eindeutigen
+`service.instance.id` exportiert wurden.
 
 Erfuellt die Welle-6-DoD-Pflicht „`make test-integration` gruen
 mit Welle-6-Smoke" (M3-welle-6.md §C3) und das Acceptance-Kriterium
 aus ADR 0024 §4.5.7 (Compose-Smoke-Determinismus-Pattern).
 
-**Span-Caveat (Welle 6 C3, 2026-05-25):** Der **Span**-Teil des
-ursprueng-geplanten Tripel-Asserts (Span/Metric/Log) ist hier
-**bewusst nicht** gepflichtet — siehe Trigger 029
-(`open/029-otlp-span-grpc-export-edge-case.md`). Befund: Adapter
-emittiert Spans SDK-side korrekt (ConsoleSpanExporter zeigt sie,
-recording=True, valide IDs); der OTLP-gRPC-Span-Export ueber die
-Sibling-Container-Verbindung kommt jedoch nicht im Collector an.
-Metrics + Logs ueber die identische Connection funktionieren.
-Detail-Diagnose in `tools/diagnose_otlp_span_export.py`. C3-DoD-
-Item 'Span-Sichtbarkeit' wandert nach Trigger 029, Welle-6-Closure
-bleibt mit dokumentiertem Caveat moeglich.
+**Trigger-029-Closure (2026-05-25):** Der C3-Smoke-Erst-Wurf hatte
+das Span-Item bewusst ausgeklammert, weil die Span-Asserts gegen
+den Collector-Output silent gescheitert sind. Die Trigger-029-
+Diagnose (`tools/diagnose_otlp_span_export.py`) hat dann sauber
+gezeigt, dass der Bug **nicht** in OtlpTraceAdapter / Factory /
+SDK lag, sondern in **diesem Test selbst**: das urspruengliche
+Span-Name-Regex `^Name\\s*:\\s*(\\S+)\\s*$` hat das Leading-
+Whitespace-Padding-Format des Debug-Exporters nicht erlaubt
+(`    Name           : tick.cycle` matched nicht gegen `^Name`).
+Mit `^\\s*Name\\s*:` greift es; siehe `_RE_SPAN_NAME` unten.
+Trigger 029 ist als Fehlbefund nach `done/` geschlossen.
 
 **Sink (Welle-6-C3-Refinement, 2026-05-25):**
 Iteration 1 (DockerCompose-Fixture) scheiterte: testcontainers
@@ -97,10 +97,16 @@ _COLLECTOR_HEALTH_TIMEOUT_S: Final[float] = 30.0
 
 # Regex-Pattern auf den Debug-Exporter-Output. Der Collector schreibt
 # pretty-printed Records nach stderr (eine Zeile pro Feld), wir
-# scannen blockweise nach Metric- und Log-Signal plus per-Lauf-
-# instance.id-Filter. Span-Pattern (Trigger 029) bleibt absichtlich
-# ausgeklammert.
+# scannen blockweise nach Span-/Metric-/Log-Signal plus per-Lauf-
+# instance.id-Filter.
+#
+# Span-Format im Debug-Exporter (Welle-6-Trigger-029-Befund):
+#   `    Name           : tick.cycle`  (4 Leerzeichen Leading,
+#   Padding zum Doppelpunkt). Deshalb `^\s*Name\s*:` — ein
+#   `^Name`-Anker ohne `\s*` matched nicht, weil der Span-Block
+#   strukturiertes Indent traegt.
 _RE_INSTANCE_ID = re.compile(r"service\.instance\.id:\s*Str\(([0-9a-f-]+)\)")
+_RE_SPAN_NAME = re.compile(r"^\s*Name\s*:\s*(\S+)\s*$", re.MULTILINE)
 _RE_METRIC_NAME = re.compile(r"^\s*->\s*Name:\s*(\S+)\s*$", re.MULTILINE)
 _RE_LOG_BODY = re.compile(r"^Body:\s*Str\((\S+)\)\s*$", re.MULTILINE)
 # Block-Trenner: der Collector schreibt pro Export-Aufruf einen
@@ -210,19 +216,18 @@ def _wait_collector_health(container: DockerContainer) -> None:
     )
 
 
-def test_otlp_compose_smoke_exports_metric_and_log(
+def test_otlp_compose_smoke_exports_span_metric_log(
     _collector: DockerContainer,
 ) -> None:
     """ADR 0024 §4.5.7: ein TickLoop-Lauf gegen den Collector-
-    Sibling liefert >=1 Metric (`tick_count`) und >=1 Log
-    (`tick_begin`/`tick_end`), gefiltert auf die per-Lauf
-    eindeutige `service.instance.id`.
+    Sibling liefert >=1 Span (`tick.cycle`), >=1 Metric
+    (`tick_count`) und >=1 Log (`tick_begin`/`tick_end`), alle
+    gefiltert auf die per-Lauf eindeutige `service.instance.id`.
 
-    Span-Pflicht (`tick.cycle`) ist hier bewusst raus —
-    SDK-side korrekt, aber gRPC-Export an Sibling-Collector
-    geht silent verloren. Siehe Trigger 029 +
-    `tools/diagnose_otlp_span_export.py` fuer die laufende
-    Eingrenzung."""
+    Trigger-029-Closure: Span-Item ist seit 2026-05-25 wieder
+    Pflicht — der vorherige Test-Fehlschlag lag am Span-Name-
+    Regex (`^Name` ohne Leading-Whitespace), nicht am OTLP-/
+    Adapter-Pfad."""
     instance_id = str(uuid.uuid4())
     grpc_host = _collector.get_container_host_ip()
     grpc_port = _collector.get_exposed_port(_GRPC_PORT)
@@ -245,8 +250,8 @@ def _drive_demo_ticks(bundle: OtlpAdapterBundle) -> None:
     """Baut den TickLoop aus dem MVP-Demo-Szenario mit dem
     OTLP-Adapter-Trio und treibt `_TICKS` Ticks. Wiederverwendet
     `MVP_DEMO_SCENARIO_PATH` aus M2-Welle-6c — Demo-Lauf reicht
-    aus, um Metric (`tick_count`) + Log (`tick_begin`/`tick_end`)
-    zu produzieren."""
+    aus, um Span (`tick.cycle`) + Metric (`tick_count`) + Log
+    (`tick_begin`/`tick_end`) zu produzieren."""
     loaded = load_yaml_scenario(MVP_DEMO_SCENARIO_PATH)
     loop = build_tick_loop(
         loaded.scenario,
@@ -267,26 +272,27 @@ def _poll_signals_until_complete(container: DockerContainer, instance_id: str) -
     """Bounded-Poll-Loop auf die Container-Logs des Collectors (ADR
     0024 §4.5.7 Pflicht 4 Collector-Seite). Liest periodisch die
     Logs des `debug`-Exporters, scannt sie auf die per-Lauf
-    eindeutige `service.instance.id` plus Metric+Log mit den
+    eindeutige `service.instance.id` plus Span/Metric/Log mit den
     erwarteten Namen. Test-Failure mit klarem Fehlertext UND
-    Collector-Log-Tail, wenn das Duo nach `_SINK_POLL_TIMEOUT_S`
+    Collector-Log-Tail, wenn das Tripel nach `_SINK_POLL_TIMEOUT_S`
     nicht vollstaendig sichtbar ist."""
     deadline = time.monotonic() + _SINK_POLL_TIMEOUT_S
-    last_signals: tuple[bool, bool] = (False, False)
+    last_signals: tuple[bool, bool, bool] = (False, False, False)
     while time.monotonic() < deadline:
         logs = _get_collector_logs(container)
         last_signals = _check_signals_in_logs(logs, instance_id)
         if all(last_signals):
             return
         time.sleep(_SINK_POLL_INTERVAL_S)
-    metric_ok, log_ok = last_signals
+    span_ok, metric_ok, log_ok = last_signals
     # Failure-Diagnose: Collector-Logs nur bei Fail ausgeben, damit
     # gruene CI-Runs lesbar bleiben.
     log_tail = _get_collector_logs(container)[-4000:]
     pytest.fail(
         f"Collector-Smoke hat nach {_SINK_POLL_TIMEOUT_S}s nicht "
         f"alle Pflicht-Signale fuer instance.id={instance_id!r} "
-        f"gesammelt (metric_tick_count={metric_ok}, "
+        f"gesammelt (span_tick_cycle={span_ok}, "
+        f"metric_tick_count={metric_ok}, "
         f"log_tick_begin_or_end={log_ok}). Flush nicht durchgekommen "
         f"oder Adapter nicht verkabelt. Collector-Logs (last 4000 "
         f"chars):\n{log_tail}"
@@ -301,29 +307,32 @@ def _get_collector_logs(container: DockerContainer) -> str:
     return raw.decode("utf-8", errors="replace")
 
 
-def _check_signals_in_logs(logs: str, instance_id: str) -> tuple[bool, bool]:
-    """Scannt die Collector-Logs auf das Signal-Duo mit Filter
+def _check_signals_in_logs(logs: str, instance_id: str) -> tuple[bool, bool, bool]:
+    """Scannt die Collector-Logs auf das Signal-Tripel mit Filter
     auf die per-Lauf eindeutige `service.instance.id`. Liefert
-    `(metric_tick_count, log_tick_begin_or_end)`.
+    `(span_tick_cycle, metric_tick_count, log_tick_begin_or_end)`.
 
     Der `debug`-Exporter im Collector schreibt blockweise — jeder
-    Block beginnt mit `ResourceMetrics/Logs #N`, listet
+    Block beginnt mit `ResourceSpans/Metrics/Logs #N`, listet
     `service.instance.id: Str(<uuid>)` in den Resource-Attributes
-    und enthaelt die Metric-/Log-Inhalte darunter. Wir splitten
-    an den JSON-Footer-Trennern und akzeptieren nur Bloecke, die
-    unsere `instance_id` tragen."""
+    und enthaelt die Inhalts-Felder (Span-`Name`, Metric-`Name`,
+    Log-`Body`) darunter. Wir splitten an den JSON-Footer-Trennern
+    und akzeptieren nur Bloecke, die unsere `instance_id` tragen."""
+    span_ok = False
     metric_ok = False
     log_ok = False
     for block in _RE_BLOCK_END.split(logs):
         if not _block_has_instance_id(block, instance_id):
             continue
+        if not span_ok and any(name == "tick.cycle" for name in _RE_SPAN_NAME.findall(block)):
+            span_ok = True
         if not metric_ok and any(name == "tick_count" for name in _RE_METRIC_NAME.findall(block)):
             metric_ok = True
         if not log_ok and any(
             body in {"tick_begin", "tick_end"} for body in _RE_LOG_BODY.findall(block)
         ):
             log_ok = True
-    return metric_ok, log_ok
+    return span_ok, metric_ok, log_ok
 
 
 def _block_has_instance_id(block: str, instance_id: str) -> bool:
