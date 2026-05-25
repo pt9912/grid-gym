@@ -1,13 +1,26 @@
 # ADR 0024 — Observability-Port-Trio: LogPort + MetricsPort + TracePort (M3 Welle 5)
 
-**Status:** Provisional — Welle-5-C2-Merge `718c177` (Observability-
-Port-Trio + Null-Adapter + TickLoop-Hooks produktiv; 1023 Unit-Tests +
-19 Integration-Tests gruen, `make fullbuild` cache-frei gruen ohne
-Override, Welle-5-Abnahme-Kriterium aus §4.1 erfuellt). `Accepted`
-mit M3-Welle-7-Closure nach Welle-6-OTLP-Compose-Smoke-Verifikation.
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.3).
+Validierung lieferten Welle 5 (Foundation, `7427daf..a690c02`:
+1023 Unit-Tests + 19 Integration-Tests gruen, Port-Trio +
+SpanContext + Null-Adapter + additive TickLoop-Hooks; `make
+fullbuild` cache-frei gruen ohne Override, §4.1 erfuellt) und
+Welle 6 (OTLP-Adapter, `c98ce1a..46dbd6e` inkl. Trigger-029-
+Closure als Fehlbefund: 1023 Unit-Tests + 21 Integration-Tests,
+OtlpLog/Metrics/TraceAdapter + build_otlp_adapters-Factory +
+deploy/compose.yml-otel-collector-Sibling + Compose-Smoke mit
+Tripel-Assert Span+Metric+Log, §4.5.7 Sink-Determinismus-
+Pflichten 1-4 erfuellt, `AC-OTLP-ADAPTER-NO-TIME` als
+12. arch_check-Contract aktiv).
 **Datum:** 2026-05-23
-**Status geaendert am:** 2026-05-23 — `Proposed → Provisional`.
-**Letzte inhaltliche Aenderung:** 2026-05-24 — Slice 027 Paket C:
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.3; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-23)** — `Proposed → Provisional`.
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-5/6-Beleg
+ergaenzt; keine Architektur-Aenderung). **Vorherige Aenderung
+(2026-05-24)** — Slice 027 Paket C:
 `LogPort.log`-Surface auf `log(entry: LogEntry)` umgestellt (vorher
 6-Parameter `level/message/run_id/module/event_id/attributes`).
 Pflicht-Felder bleiben inhaltlich identisch (`GG-OTEL-002`),
