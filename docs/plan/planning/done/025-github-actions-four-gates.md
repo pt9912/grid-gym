@@ -1,14 +1,16 @@
 # 025 — GitHub-Actions-CI-Workflow mit vier Gates (M3-Vorzieh-Slice)
 
-**Status:** In Progress — eroeffnet 2026-05-21 nach
-M3-Welle-4a-C3-Closure (`556baaf`). M6-Vorzieh-Slice: der
-volle CI/CD-Ausbau (`GG-CICD-001..00X`) bleibt M6-Material
-(roadmap.md §3 M6), aber die vier Pflicht-Gates fuer
-`pull_request`-Validation werden frueher gezogen, damit
-M3-Welle-4b und alle Folge-Wellen einen automatischen
+**Status:** Done — geschlossen 2026-05-25 nach Bestaetigung des
+ersten produktiven CI-Laufs (`run 26237825003`, 2026-05-21,
+Commit `01796ae`, alle vier Pflicht-Gates `success`).
+M6-Vorzieh-Slice: der volle CI/CD-Ausbau (`GG-CICD-001..00X`)
+bleibt M6-Material (roadmap.md §3 M6), aber die vier Pflicht-
+Gates fuer `pull_request`-Validation wurden frueher gezogen,
+damit M3-Welle-4b und alle Folge-Wellen einen automatischen
 GitHub-Side-Check haben.
 
-**Datum:** 2026-05-21 — eroeffnet aus M3-Welle-4a-C3-Closure.
+**Datum:** 2026-05-21 — eroeffnet aus M3-Welle-4a-C3-Closure;
+2026-05-25 — geschlossen.
 
 **Verlinkt:**
 
@@ -18,7 +20,7 @@ GitHub-Side-Check haben.
 - [`Makefile`](../../../../Makefile) — Targets
   `lint`, `arch-check-imports`, `arch-check-custom`,
   `typecheck`.
-- [`roadmap.md`](roadmap.md) §3 M6
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M6
   (`GG-CICD-001..00X` Vorbelegung).
 - [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
   §A-1 (`AC-HEXAGON-PURE`, `AC-PORTS-NO-OUT`, etc. — die
@@ -97,10 +99,49 @@ Abhaengigkeit ausser dem gemeinsamen `source`-Layer.
 - Aktionen pinnen Versionen via Commit-SHA oder Major-Tag
   (`uses: actions/checkout@v4` o. ae.).
 
-## 4. Wandert nach
+## 4. Closure (2026-05-25)
 
-- `done/025-github-actions-four-gates.md` mit Merge-Hash
-  + Trigger-Closure-Notiz.
-- Bei Welle-4b/M3-Welle-7-Closure oder M6-CI/CD-Vollausbau
-  laesst sich der Workflow erweitern (test-unit + coverage +
-  trivy + sbom als zusaetzliche Jobs).
+**Verifikation der Akzeptanz-Kriterien (§3):**
+
+- `make arch-check-imports`, `make lint`,
+  `make arch-check-custom`, `make typecheck` waren vor C0
+  jeweils cache-frei gruen — siehe
+  Welle-4a-C3-Closure-Commit `556baaf`.
+- `.github/workflows/ci.yml` ist syntaktisch valides YAML;
+  GitHub-Actions hat den Workflow ohne Schema-Fehler
+  angenommen ab dem ersten Lauf.
+- Versions-Pinning per Major-Tag (`actions/checkout@v4`
+  etc.) eingehalten.
+
+**Erster produktiver CI-Lauf:**
+
+| Feld         | Wert                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
+| Run-ID       | `26237825003`                                                                     |
+| Commit       | `01796ae` (ci: GitHub-Actions-Workflow mit vier Pflicht-Gates (Trigger 025))      |
+| Datum        | 2026-05-21 16:05 UTC                                                              |
+| Conclusion   | `success`                                                                         |
+| Jobs         | `lint-imports (import-linter)`, `ruff check (lint)`, `arch-check-custom (tools/arch_check.py)`, `mypy --strict` — alle `success` |
+
+Alle vier Pflicht-Gates aus der User-Spec wurden vom ersten
+Lauf an gruen ausgefuehrt; auch alle ~30 Folge-Laeufe bis zum
+Closure-Zeitpunkt (zuletzt `26383797368` fuer Slice-028-
+Closure, 2026-05-25) sind `success` — der Workflow ist
+stabil produktiv.
+
+**Geliefert:**
+
+- `.github/workflows/ci.yml` mit vier parallelen Jobs
+  (`lint-imports`, `ruff check (lint)`, `arch-check-custom`,
+  `typecheck`); jeder Job baut die zugehoerige Dockerfile-
+  Stage und fuehrt sie aus. Kein Aggregator-Job — der
+  GitHub-Actions-Required-Checks-Mechanismus reicht.
+
+**Bewusst nicht umgesetzt (bleibt M6-Material):**
+
+- Tests / Coverage-Gates / dep-audit / fullbuild-Smoke /
+  trivy-Image-Audit / SBOM / Release-Workflow /
+  Multi-Python-Matrix — siehe §2 „Bewusst NICHT umgesetzt".
+  Wenn M6-CI/CD-Vollausbau anlaeuft oder die Pflicht-Gate-
+  Liste fuer M3/M4 erweitert werden soll, kann der Workflow
+  inkrementell um zusaetzliche Jobs ergaenzt werden.
