@@ -1,19 +1,26 @@
 # ADR 0022 — Fault-Injection-Protocol + Scenario-Validator-Härtung (M3 Welle 1)
 
-**Status:** Provisional — Validierung erfolgt mit M3-Welle-1-
-PR-Merge (`79bb50a`): 773 Unit-Tests gruen (+11 ggue. M3-Welle-
-0-Stand 762), `make gates` cache-frei gruen **ohne**
-`CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
-`core/faults`), `make fullbuild` gruen mit `/health: ok`,
-AC-PORTS-NO-OUT bleibt KEPT (16 Contracts).
-Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0023
-Multi-Agent + ADR 0024 Observability oder einzeln, je nach
-Welle-7-Closure-Sequenzierung).
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.1).
+Validierung lieferten Welle 1 (Foundation, `79bb50a`: 773 Unit-
+Tests gruen, FaultPort + Sub-Protocol + Validator-Haertung +
+TickLoop-Hook) und Welle 2 (Konkretisierung, `1debd5e..91d44e2`:
+840 Unit-Tests + 14 Integration-Tests, Battery `cell_failure` +
+Grid `voltage_drop` + Recovery-Engine via ADR 0025, Property-
+Tests, Fault-Demo-Szenario + Postgres-Roundtrip). `make gates`
+cache-frei gruen **ohne** `CRITICAL_COV_TARGETS`-Override
+(Default-Liste enthaelt `core/faults`); `make fullbuild` gruen;
+`AC-PORTS-NO-OUT` bleibt KEPT.
 **Datum:** 2026-05-20
-**Status geaendert am:** 2026-05-20 — `Proposed → Provisional`
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.1; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-20)** — `Proposed → Provisional`
 (M3-Welle-1-Merge `79bb50a`, feat-Commit lieferte Sub-
 Protocol + FaultPort + Validator-Haertung + TickLoop-Hook +
 11 Tests).
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-1/2-Beleg
+ergaenzt; keine Architektur-Aenderung).
 **Bezug:**
 [`ADR 0013`](0013-device-model-protocol.md) §2.8
 (Sub-Protocol-Mandate fuer Post-MVP-Erweiterungen — `M3 Faults`
