@@ -108,12 +108,26 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
         `GG-SAFE-001..006` M6, Snapshot-v2→v3-Migration M6)
         bleiben in `M3-results.md §5/§7` dokumentiert ohne
         eigenen Trigger.
-- [ ] **`make gates` A-1 gruen ohne Override** — Stand bleibt
+- [x] **`make gates` A-1 gruen ohne Override** — Stand bleibt
       Welle-6-Ergebnis (`46dbd6e`); kein neuer Code in Welle 7,
       aber Re-Verifikation als Sanity-Check vor End-of-Wave-Move.
-- [ ] **`make fullbuild` M3-Abschluss-Gate gruen ohne Override** —
+      **Erfuellt mit C6** (2026-05-25): `make fullbuild`-Aggregator
+      umfasst `make ci` (mit `gates`-Sub-Aggregator) und liefert
+      „mandatory A-1 gates green: lint, format-check, typecheck
+      (mypy --strict, ADR 0005), arch-check (19 contracts),
+      test-unit, coverage-gate (90% line / 85% branch),
+      coverage-gate-critical (90% critical domain), dep-audit,
+      noqa-gate (Slice 027 — no # noqa marker)".
+- [x] **`make fullbuild` M3-Abschluss-Gate gruen ohne Override** —
       Stand bleibt Welle-6-Ergebnis (OTLP-Collector-Sibling +
       Compose-Smoke); Re-Verifikation vor End-of-Wave-Move.
+      **Erfuellt mit C6** (2026-05-25): `make fullbuild` cache-
+      frei gruen mit `[fullbuild] full closure: ci + runtime
+      image + compose smoke green`. Compose-Smoke faehrt
+      `deploy/compose.yml` mit `otel-collector`-Sibling hoch,
+      pollt `/health` und Collector-`:13133` und faehrt sauber
+      runter. Trivy-Image-Audit gruen fuer
+      `grid-gym-runtime:latest` + `$(OTEL_COLLECTOR_IMAGE)`.
 - [ ] **`M3-faults-agents-observability.md` → `done/`** via
       Wave-Self-Close-Commit-Konvention; relative Link- und
       Bezug-Pfade-Pflege im Folge-Commit (ADR 0028). Closure-
