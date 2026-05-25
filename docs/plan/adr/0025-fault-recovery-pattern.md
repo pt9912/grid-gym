@@ -1,16 +1,23 @@
 # ADR 0025 — Fault-Recovery-Pattern (M3 Welle 2)
 
-**Status:** Provisional — M3-Welle-2-Merge `91d44e2`-Endstand
-(C2a `e2f46e3` Battery + C2a-Review-Folge `93618cf` + C2b
-`b9a0806` Grid + C2b-Review-Folge `2844482` + C2c-Items-7-10
-`acdf9c7` + Items-7-10-Review-Folge `91d44e2`). Akzeptanz mit
-M3-Welle-7-Closure (gemeinsam mit ADR 0023 Multi-Agent + ADR
-0024 Observability oder einzeln, je nach Welle-7-Closure-
-Sequenzierung).
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.4).
+Validierung lieferte Welle 2 (Konkretisierung, `1debd5e..91d44e2`,
+C2a/C2b/C2c inkl. drei Review-Folgen): 840 Unit-Tests + 14
+Integration-Tests gruen, A-1-Gates ohne Override; Battery
+`cell_failure` + Grid `voltage_drop` + Recovery-Engine
+(`auto-recover-after-N-ticks`, `manual-via-command`); Property-
+Tests (Hypothesis-half-open + Determinismus + Seed-
+Independence); Fault-Demo-Szenario + Postgres-Roundtrip.
 **Datum:** 2026-05-20
-**Status geaendert am:** 2026-05-20 (`Proposed → Provisional`
-mit M3-Welle-2-Closure; 840 Unit-Tests + 14 Integration-Tests
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.4; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-20)** — `Proposed → Provisional`
+mit M3-Welle-2-Closure (840 Unit-Tests + 14 Integration-Tests
 gruen, A-1-Gates ohne Override).
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-2-Beleg
+ergaenzt; keine Architektur-Aenderung).
 **Bezug:**
 [`ADR 0022`](0022-fault-injection-protocol.md) §2.4
 (Fault-Injection-Hook im Vor-Tick-Block + Exception-
