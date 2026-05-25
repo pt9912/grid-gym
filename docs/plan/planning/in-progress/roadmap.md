@@ -303,6 +303,28 @@ Welle-6c-Slice-Begleit:
   - [ ] Image-Audit (`make image-audit`) inkl. Vuln-Scan in CI.
   - [ ] Container-Smoke-Test mit `deploy/compose.yml`
         (`make runtime` pollt `/health`).
+  - [ ] **CI-Erweiterung um Tests** (`GG-CICD-002`): `make
+        test-unit` + `make test-integration` als CI-Jobs neben
+        den vier Slice-025-Pflicht-Gates. Heute Repo-seitig in
+        `make gates` enthalten, aber nicht GitHub-seitig
+        enforced; Slice 025 §2 hatte das bewusst auf M6
+        verschoben.
+  - [ ] **CI-Erweiterung um Coverage-Gates** (`GG-CICD-003`):
+        `make coverage-gate` (90 % Line / 85 % Branch) +
+        `make coverage-gate-critical` (90 % auf
+        `CRITICAL_COV_TARGETS`) als CI-Jobs. Slice 025 §2
+        ausgelagert; lokal Pflicht via `make gates`.
+  - [ ] **CI-Erweiterung um Dependency-Audit** (`GG-CICD-006`):
+        `make dep-audit` (`pip-audit`) als CI-Job — meldet
+        bekannte Schwachstellen direkter und transitiver
+        Abhaengigkeiten. Slice 025 §2 ausgelagert; lokal
+        Pflicht via `make gates`.
+  - [ ] **Release-Workflow** (`GG-CICD-007`): GitHub-Actions-
+        Release-Pipeline, die bei Tag-Push `make sbom`
+        (Trigger 008), Container-Images, Test-/Coverage-
+        Reports und OpenAPI-Spec als Release-Assets
+        publiziert. Aktivierungs-Bedingung fuer Trigger 008
+        und damit Grundvoraussetzung fuer die SBOM-DoD oben.
 
 ---
 
