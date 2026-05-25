@@ -1,18 +1,20 @@
 # ADR 0027 — RuleBasedAgent + Scenario-Agents-Block-Pattern (M3 Welle 4b)
 
-**Status:** Provisional — Validierung erfolgt mit M3-Welle-4b-
-C2-Merge (`95979e5`) + C2-Review-Folge (`11b2ca9`): 992
-Unit-Tests gruen (Welle-4a-Endstand 923 → +65 Welle-4b-
-Tests + 4 Review-Folge-Tests), 19 Integration-Tests
-(Welle-4a-Endstand 14 → +5 Welle-4b-E2E + Review-Folge),
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.6).
+Validierung lieferte Welle 4b (Konkretisierung, `8802dc0..ac7b47f`,
+C2-Merge `95979e5` + C2-Review-Folge `11b2ca9` + dep-audit-Fix
+`ac7b47f`): 992 Unit-Tests gruen (+65 Welle-4b-Tests + 4 Review-
+Folge-Tests ggue. Welle-4a-Endstand 923), 19 Integration-Tests
+(+5 Welle-4b-E2E + Review-Folge ggue. Welle-4a-Endstand 14);
 `make fullbuild` cache-frei gruen **ohne** Override (volle
-CI-Linie + Runtime-Image + Compose-Smoke `make ci + make
-runtime`); coverage 94.51% line / 90.47% critical-branch;
-dep-audit gruen (starlette-Upgrade `ac7b47f`).
-Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0023 /
-ADR 0026 oder einzeln).
+CI-Linie + Runtime-Image + Compose-Smoke); coverage 94.51 %
+line / 90.47 % critical-branch; dep-audit gruen (starlette-
+Upgrade `ac7b47f`, PYSEC-2026-161).
 **Datum:** 2026-05-22
-**Status geaendert am:** 2026-05-22 — `Proposed → Provisional`
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.6; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-22)** — `Proposed → Provisional`
 mit M3-Welle-4b-C2-Merge (`95979e5`: feat-Commit liefert
 RuleBasedAgent + ScenarioAgent + agents-Top-Level-Block-
 Validator + `_assert_agent_list` + `_build_agents`-Factory
@@ -22,6 +24,9 @@ Error-Klassen + 65 neue Tests + Demo-Szenario) sowie
 C2-Review-Folge `11b2ca9` (Sentinel-Pattern fuer
 build_tick_loop-`agents`-Kwarg + Plugin-Restore-Scope-
 Schnitt-Doku + SoC-Assertion).
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-4b-Beleg
+ergaenzt; keine Architektur-Aenderung).
 **Geaendert am:** 2026-05-22 — Welle-4b-C1-Review-Folge
 (F-1 blocking + F-2 important + F-3..F-6 nits, alle vor
 Provisional adressiert):
