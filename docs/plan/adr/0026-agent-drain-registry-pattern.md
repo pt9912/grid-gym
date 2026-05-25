@@ -1,16 +1,19 @@
 # ADR 0026 — Agent-Drain + Registry + Snapshot + Lifecycle-Pattern (M3 Welle 4a)
 
-**Status:** Provisional — Validierung erfolgt mit M3-Welle-4a-
-C2-Merge (`da18c6d`): 921 Unit-Tests gruen (Welle-3-Endstand
-889 → +32 Welle-4a-Tests), 14 Integration-Tests unveraendert,
-`make gates` A-1 cache-frei gruen **ohne** Override (lint,
-format-check, mypy `--strict`, arch-check 16/16, coverage
-94.94 % line / >90 % branch, critical-coverage `core/agents`,
-dep-audit), AC-PORTS-NO-OUT bleibt KEPT (16 Contracts).
-Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0022,
-ADR 0023 und Welle-4b-Folge-ADR oder einzeln).
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.5).
+Validierung lieferte Welle 4a (Plumbing, `a24f733..da18c6d`):
+921 Unit-Tests gruen (+32 ggue. Welle-3-Endstand 889), 14
+Integration-Tests unveraendert; `make gates` A-1 cache-frei
+gruen **ohne** Override (lint, format-check, mypy `--strict`,
+arch-check 16/16, coverage 94.94 % line / >90 % branch,
+critical-coverage `core/agents`, dep-audit). Welle 4b
+(Konkretisierung) konsumiert das Pattern ohne neue Schaerfung.
+`AC-PORTS-NO-OUT` bleibt KEPT.
 **Datum:** 2026-05-21
-**Status geaendert am:** 2026-05-21 — `Proposed → Provisional`
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.5; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-21)** — `Proposed → Provisional`
 (M3-Welle-4a-C2-Merge `da18c6d`: feat-Commit liefert
 TickLoop-`agents`-Kwarg + Schritt-A0v/A0a-Drain +
 `_attach_agents()`-Lifecycle + `AgentMessageBus.consume_for` +
@@ -18,6 +21,9 @@ TickLoop-`agents`-Kwarg + Schritt-A0v/A0a-Drain +
 Resume-Match-Checks + sechs neue Error-Klassen +
 Builder-Symmetrie + 32 neue Tests; Welle-3-
 `_set_agents_for_testing(...)`-Helper entfernt).
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-4a-Beleg
+ergaenzt; keine Architektur-Aenderung).
 **Bezug:**
 [`ADR 0007`](0007-random-port.md) §5
 (`RandomPort.sub_port`-Vertrag fuer Per-Agent-Sub-Streams,
