@@ -56,7 +56,7 @@ Welle-5-Slice-Doc
 (Welle-5-Triage-Vorgabe — diese ADR formalisiert die dort gesetzten
 Contracts),
 Welle-6-Slice-Doc
-[`in-progress/M3-welle-6.md §3`](../planning/in-progress/M3-welle-6.md)
+[`done/M3-welle-6.md §3`](../planning/done/M3-welle-6.md)
 (Welle-6-C0-Decisions: gRPC-Transport, D-4 Span-Dauer-Quelle, Compose-
 Smoke-Determinismus — §4.5 unten nimmt sie normativ in diese ADR auf).
 
@@ -492,7 +492,7 @@ Adapter Welle-5-Vertrags-Stellen schaerfen:
 Diese Sektion loest die in §4.4 dokumentierten Welle-6-Forward-
 Pointer mit normativen C1.2-Entscheidungen auf und nimmt zusaetzlich
 die in
-[`M3-welle-6.md`](../planning/in-progress/M3-welle-6.md)
+[`M3-welle-6.md`](../planning/done/M3-welle-6.md)
 festgelegten C0-Decisions verbindlich in diese ADR auf. Schaerfung-
 ohne-Supersede per [`ADR 0011`](0011-schaerfung-ohne-abloesung.md).
 Folge-Vertraege gelten fuer den OTLP-Adapter in

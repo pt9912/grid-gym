@@ -120,7 +120,7 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       DoD-Sync.
 
 Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 6`](M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 6`](../in-progress/M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 
@@ -388,7 +388,7 @@ Welle 7 (Closure) hebt ADR 0022/0023/0024 (sowie
 Quellen:
 
 - M3-Slice-Plan
-  [`M3-faults-agents-observability.md §3 Welle 6`](M3-faults-agents-observability.md)
+  [`M3-faults-agents-observability.md §3 Welle 6`](../in-progress/M3-faults-agents-observability.md)
   (kanonische Spec).
 - Welle-5-Closure-Doc
   [`done/M3-welle-5.md`](../done/M3-welle-5.md) — §4.4 Welle-6-

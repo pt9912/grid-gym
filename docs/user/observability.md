@@ -220,7 +220,7 @@ nur ueber SDK-Side-Returncodes.
 
 - [ADR 0024 — Observability-Port-Trio](../plan/adr/0024-observability-port-trio.md)
 - [ADR 0027 — RuleBasedAgent + Scenario-Pattern](../plan/adr/0027-rule-based-agent-scenario-pattern.md)
-- [M3-Welle-6 Slice-Plan](../plan/planning/in-progress/M3-welle-6.md)
+- [M3-Welle-6 Slice-Plan](../plan/planning/done/M3-welle-6.md)
 - [Trigger 029 — OTLP-Span-gRPC-Export-Edge-Case](../plan/planning/open/029-otlp-span-grpc-export-edge-case.md)
 - [`deploy/compose.yml`](../../deploy/compose.yml)
 - [`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)
