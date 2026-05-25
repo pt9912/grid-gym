@@ -13,8 +13,15 @@ OTLP-Adapter Welle 6**) ab; Welle 7 ist Closure.
 **Stand 2026-05-25:** C0 **done**, C1 **done** (alle drei Sub-
 Commits `8eba9ff`/`c99680c`/`54657dc` plus drei Review-Folgen
 `3f887b5`/`c19c69d`/`5493831` — siehe Sub-Commit-Tabelle unter
-C1). C2 (`deploy/compose.yml` OTLP-Collector-Sibling) und C3
-(Integration-Smoke + Runbook + READMEs + DoD-Sync) ausstehend.
+C1), **C2 done** (`c61ab0d`): `deploy/otel-collector-config.yaml`
+(otlp-Receiver :4317 + batch-Profil 100ms/1 + file/debug-Exporter
++ `health_check`-Extension :13133), `deploy/compose.yml` um
+`otel-collector`-Service erweitert (kein in-container healthcheck
+— distroless), `tools/wait_otel_collector.py` als externer
+Bounded-Poll, `make runtime` + `make image-audit` entsprechend
+erweitert. `make runtime` gruen, `make image-audit` gruen mit
+beiden Tags. C3 (Integration-Smoke + Runbook + READMEs + DoD-Sync)
+ausstehend.
 
 **DoD-Checkliste (Welle-6-Abnahme):**
 
