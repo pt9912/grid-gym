@@ -1,14 +1,22 @@
 # Welle 7 — M3-Closure
 
-**Status:** In Progress — eroeffnet 2026-05-25 mit C0 (dieses
-Dokument). Welle 0/1/2/3/4a/4b/5/6 sind abgeschlossen; die drei
-M3-Sub-Bereiche (Faults `Done` 2026-05-20, Multi-Agent `Done`
-2026-05-22, Observability **Foundation `Done` 2026-05-23,
-OTLP-Adapter `Done` 2026-05-25**) sind alle inhaltlich fertig.
-Welle 7 ist die formale Closure-Welle: sechs M3-ADRs auf `Accepted`
-promoten, einen verbliebenen Trigger entscheiden, M3-Ergebnisse
-in einer Welle-Tabelle bündeln und den M3-Slice-Plan selbst
-nach `done/` moven.
+**Status:** Done — geschlossen 2026-05-25 mit dem End-of-Wave-
+Move-Folge-Commit. Welle 0/1/2/3/4a/4b/5/6 sind alle
+abgeschlossen; die drei M3-Sub-Bereiche (Faults `Done`
+2026-05-20, Multi-Agent `Done` 2026-05-22, Observability
+**Foundation `Done` 2026-05-23, OTLP-Adapter `Done`
+2026-05-25**) sind inhaltlich fertig. Welle 7 hat die formale
+Closure geliefert: sechs M3-ADRs (0022..0027) auf `Accepted`
+promoted (C1.1..C1.6), Trigger 006 (`--strict-bytes`)
+entschieden (C2: verschoben), `done/M3-results.md` mit Welle-
+Tabelle angelegt (C3), `roadmap.md` §3 M3 auf `Done` gesetzt
+(C3), Trigger 030 (RL-Adapter) als M3-Restposten in `open/`
+aktiviert (C3), S-1..S-6-End-to-End-Sweep ausgewertet (C4,
+Detail in `M3-results.md §4`), Slice-Plan-Status-Sync (C5),
+`make fullbuild` cache-frei gruen als Sanity (C6), und
+End-of-Wave-Move beider Slice-Plan-Dokumente
+(`M3-welle-7.md` + `M3-faults-agents-observability.md`) nach
+`done/` mit Pfad-Folge-Edits.
 
 **DoD-Checkliste (Welle-7-Abnahme):**
 
@@ -128,13 +136,28 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       pollt `/health` und Collector-`:13133` und faehrt sauber
       runter. Trivy-Image-Audit gruen fuer
       `grid-gym-runtime:latest` + `$(OTEL_COLLECTOR_IMAGE)`.
-- [ ] **`M3-faults-agents-observability.md` → `done/`** via
+- [x] **`M3-faults-agents-observability.md` → `done/`** via
       Wave-Self-Close-Commit-Konvention; relative Link- und
       Bezug-Pfade-Pflege im Folge-Commit (ADR 0028). Closure-
       Notiz im Slice-Plan-Header + Wellen-Historie um Welle 6+7
-      ergaenzt.
-- [ ] **`M3-welle-7.md` → `done/`** via Wave-Self-Close-Commit-
+      ergaenzt. **Erfuellt mit End-of-Wave-Move 2/2** (`79dcb42`
+      reiner `git mv`) + Folge-Edit-Commit (dieser): sechs ADRs
+      (0022..0027) ziehen ihren `M3-faults-agents-observability.
+      md`-Bezug von `../planning/in-progress/` auf
+      `../planning/done/` um; intern-relative
+      `../in-progress/M3-faults-agents-observability.md`-Verweise
+      in done/-Schwester-Dokumenten (welle-0..welle-4b,
+      M3-welle-5/6/7, M3-results) auf den jetzt selben
+      `done/`-Pfad korrigiert; Roadmap-Sibling-Link in
+      `M3-faults-agents-observability.md` auf
+      `../in-progress/roadmap.md` umgebogen.
+- [x] **`M3-welle-7.md` → `done/`** via Wave-Self-Close-Commit-
       Konvention; End-of-Wave-Move-Folge analog Welle 6.
+      **Erfuellt mit End-of-Wave-Move 1/2** (`d3daf71` reiner
+      `git mv`) + Folge-Edit-Commit (dieser): relative
+      Pfad-Verweise in `M3-welle-7.md` selbst sind durch die
+      Sed-Korrekturen oben mit erfasst worden; DoD-Haken
+      und in-progress/README.md + done/README.md gepflegt.
 
 Kanonische Slice-Spezifikation:
 [`M3-faults-agents-observability.md §3 Welle 7`](M3-faults-agents-observability.md)

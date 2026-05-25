@@ -7,7 +7,7 @@ M3-Welle-1-Foundation (`712d73b..46c7353`) auf: Welle 1 hat
 + TickLoop-Hook + Validator-Haertung geliefert; Welle 2 fuellt
 diese Schichten mit konkreten Adapter-Implementierungen,
 Fault-Typen und Recovery-Logik. Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 2`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 2`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 

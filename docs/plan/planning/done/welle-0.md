@@ -8,7 +8,7 @@ Medium + 1 Low Spec-Drift-/Konsistenz-Findings adressiert).
 Vorabraeumung + Slice-Plan-Eroeffnung fuer M3 (Faults +
 Multi-Agent + Observability) ist geliefert.
 Kanonische M3-Slice-Spezifikation:
-[`M3-faults-agents-observability.md`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
 — dieses Welle-0-Doc ist der Index zur Welle, nicht der
 Meilenstein-Slice-Plan selbst.
 

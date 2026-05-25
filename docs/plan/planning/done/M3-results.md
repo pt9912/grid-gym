@@ -6,7 +6,7 @@ Welle-6-C2 (`c61ab0d`) mit `otel-collector`-Sibling. Alle sechs
 M3-ADRs (0022/0023/0024/0025/0026/0027) sind mit Welle-7
 auf `Accepted` promoted.
 **Bezug:** Slice-Plan
-[`M3-faults-agents-observability.md`](../in-progress/M3-faults-agents-observability.md);
+[`M3-faults-agents-observability.md`](M3-faults-agents-observability.md);
 Welle-Slice-Begleit
 [`M3-welle-5.md`](M3-welle-5.md) (Observability-Foundation),
 [`M3-welle-6.md`](M3-welle-6.md) (OTLP-Adapter);
@@ -91,7 +91,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 
 Spiegelt das M2-Welle-7-Pattern (siehe
 [`M2-devices-results.md §4`](M2-devices-results.md)); referenziert
-[`M3-faults-agents-observability.md §3 Welle 7`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 7`](M3-faults-agents-observability.md)
 S-1..S-6-Items:
 
 - **S-1 (M3-Vorabraeumungs-Item, Trigger-Triage in Welle 0)** —

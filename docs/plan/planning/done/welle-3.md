@@ -15,7 +15,7 @@ Foundation-only — **konkrete Agent-Typen (`RuleBasedAgent`)
 kommen in Welle 4**, analog zum Faults-Pattern (Welle 1
 Foundation → Welle 2 Konkretisierung). Kanonische Slice-
 Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 3`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 3`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 

@@ -10,7 +10,7 @@ M3-Closure `Done` 2026-05-25). Sechs M3-ADRs (0022/0023/0024/
 [`../done/M3-results.md`](../done/M3-results.md). M3-Slice-Plan
 wandert nach `done/` mit dem Welle-7-End-of-Wave-Folge-Commit.
 **Naechster aktiver Slice:** **M4** (Protokolladapter,
-siehe [`roadmap.md`](roadmap.md) §3 M4).
+siehe [`roadmap.md`](../in-progress/roadmap.md) §3 M4).
 
 **Wellen-Historie:**
 
@@ -273,7 +273,7 @@ abgeschlossen 2026-05-25.
 
 **Bezug:**
 
-- [`roadmap.md`](roadmap.md) §3 M3 (Lieferziel, DoD-
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M3 (Lieferziel, DoD-
   Checkliste, Architekturartefakte).
 - M2-Closure-Notiz
   [`done/M2-devices.md`](../done/M2-devices.md) +

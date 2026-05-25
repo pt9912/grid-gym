@@ -57,7 +57,7 @@ Slot fuer Agent-Command-Drain),
 ADR 0025 = Welle-2-Konkretisierung von Welle-1-ADR 0022;
 ADR 0026 = Welle-4a-Konkretisierung von Welle-3-ADR 0023),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md`](../planning/in-progress/M3-faults-agents-observability.md)
+[`in-progress/M3-faults-agents-observability.md`](../planning/done/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4a-Slice-Doc
 [`done/welle-4a.md`](../planning/done/welle-4a.md).
 Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..008`); §16

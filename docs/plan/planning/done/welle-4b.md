@@ -42,7 +42,7 @@ Welle-4-Vertragstand und kann Welle 5 (Observability) zur Seite
 liefern.
 
 Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 4`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 
@@ -226,7 +226,7 @@ traceable.
 
 Fix der einen broken Reference in `done/welle-4a.md` (Zeile
 53: `M3-faults-agents-observability.md` →
-`../in-progress/M3-faults-agents-observability.md`). Separater
+`M3-faults-agents-observability.md`). Separater
 Commit per `feedback_git_mv`-Konvention.
 
 ### C0 — `docs(plan)`: welle-4b Slice-Doc (dieses Dokument)

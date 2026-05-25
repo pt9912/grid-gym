@@ -63,7 +63,7 @@ Pflege als Maintenance-Edit),
 Supersedes-Pattern als Fallback bei Welle-6-OTLP-Compose-Smoke-Bruch,
 siehe §4.2),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md §3 Welle 5/6`](../planning/in-progress/M3-faults-agents-observability.md),
+[`in-progress/M3-faults-agents-observability.md §3 Welle 5/6`](../planning/done/M3-faults-agents-observability.md),
 Welle-5-Slice-Doc
 [`done/M3-welle-5.md §3`](../planning/done/M3-welle-5.md)
 (Welle-5-Triage-Vorgabe — diese ADR formalisiert die dort gesetzten

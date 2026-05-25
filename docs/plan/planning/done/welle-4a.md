@@ -50,7 +50,7 @@ Pattern: spiegelt M3-Welle-1 (Fault-Foundation) → M3-Welle-2
 (Fault-Konkretisierung) eins zu eins für Agenten.
 
 Kanonische Slice-Spezifikation:
-[`M3-faults-agents-observability.md §3 Welle 4`](../in-progress/M3-faults-agents-observability.md)
+[`M3-faults-agents-observability.md §3 Welle 4`](M3-faults-agents-observability.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht als Ersatz.
 

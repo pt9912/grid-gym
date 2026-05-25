@@ -41,7 +41,7 @@ beide additiv um einen `fault_state`-Block ohne v2→v3-Bump),
 (Erweiterungs-ADR-Pattern — diese ADR erweitert ADR 0022 §2.4
 um Recovery-Semantik, kein Supersedes).
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md`](../planning/in-progress/M3-faults-agents-observability.md)
+[`in-progress/M3-faults-agents-observability.md`](../planning/done/M3-faults-agents-observability.md)
 §3 Welle 2.
 Lastenheft §14 Fault Injection (`GG-FAULT-001..010`;
 insbesondere die Recovery-Pflicht aus
