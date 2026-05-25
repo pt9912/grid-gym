@@ -240,7 +240,7 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 
 | Port-ID            | Verantwortung                                                                                                                                                                    | Bezug                                        |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant. Protocol-Vertrag und `SimulationTime`-Alias sind in M1 Welle 2 (siehe Slice-Plan §3 Welle 2) fixiert. | GG-ARCH-007, GG-RT-002                       |
+| GG-AR-PORT-DRN-001 | `ClockPort` — Simulationszeit (nicht Wall-Clock); zentraler Zeitlieferant. Protocol-Vertrag und `SimulationTime`-Alias bilden den verbindlichen Zeitvertrag des Kerns. | GG-ARCH-007, GG-RT-002                       |
 | GG-AR-PORT-DRN-002 | `TelemetrySinkPort` — Persistenz und Live-Stream von Telemetriepunkten                                                                                                           | GG-DATA-001, GG-PERSIST-001                  |
 | GG-AR-PORT-DRN-003 | `RunRepositoryPort` — Laufmetadaten, Szenario-Hash, Lauf-Loeschung                                                                                                               | GG-PERSIST-003/009                           |
 | GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                                                                                                                               | GG-PERSIST-004, GG-BESS-002                  |
@@ -335,8 +335,8 @@ Replay-Laeufe nutzen denselben Prozessor (`GG-AR-P-007`). Innerhalb eines
 Ticks werden Schritte sequenziell ausgefuehrt; parallele Berechnung ist
 auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
 
-Die produktive Schrittfolge des `TickLoop.tick()` ist auf M3-Welle-4a-
-Stand wie folgt fixiert (Quell-ADRs: [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md),
+Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert
+(Quell-ADRs: [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md),
 [`ADR 0019`](../docs/plan/adr/0019-grid-model-bilanz-pattern.md),
 [`ADR 0021`](../docs/plan/adr/0021-scenario-loader-and-tick-loop-event-wiring.md),
 [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md),
@@ -381,16 +381,16 @@ Stand wie folgt fixiert (Quell-ADRs: [`ADR 0015`](../docs/plan/adr/0015-snapshot
    │  │       grid_connection_kw) (ADR 0019 §2.2)                   │ │
    │  └─────────────────────────────────────────────────────────────┘ │
    │                                                                  │
-   │   M6 (geplant):                                                  │
-   │     - Commit: TelemetrySinkPort / AlarmSinkPort /                │
-   │       RunRepositoryPort (deterministisch sortiert)               │
-   │     - Snapshot (zyklisch oder on-demand) ueber                   │
+   │   Persistenz-/Snapshot-Commit:                                   │
+   │     - TelemetrySinkPort / AlarmSinkPort / RunRepositoryPort      │
+   │       werden deterministisch sortiert bedient                    │
+   │     - Snapshots laufen zyklisch oder on-demand ueber             │
    │       TickLoop.snapshot()                                        │
    └──────────────────────────────────────────────────────────────────┘
 ```
 
-Welle-4a (ADR 0026 §2.3) verdrahtet zusaetzlich einen einmaligen
-Lifecycle-Hook im TickLoop-Konstruktor: `_attach_agents()` ruft
+Der Agent-Lifecycle-Hook im TickLoop-Konstruktor (ADR 0026 §2.3)
+ruft in `_attach_agents()`
 `agent.set_run_id(run_id)` und — fuer Agents mit
 `_RandomAttachableAgent`-Sub-Protocol —
 `agent.attach_random(random_root.sub_port(f"agent-{agent_id}"))`. Damit
@@ -682,24 +682,24 @@ ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 Konkurrierende Strategien (`GG-AGENT-005`) werden durch dokumentierte
 Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 
-**Produktive Surface (M3 Welle 3 / 4a / 4b, ADR 0023 + ADR 0026 + ADR 0027):**
+**Produktive Surface (ADR 0023 + ADR 0026 + ADR 0027):**
 
 - `Agent`-Sub-Protocol (`hexagon/core/agents/_protocol.py`) fixiert
   die Pflicht-Surface (`agent_id`, `set_run_id`, `tick`, `snapshot`,
   `from_snapshot`); `_RandomAttachableAgent`-Sub-Protocol traegt den
   optionalen `attach_random(...)`-Hook fuer stochastische Agenten
-  (Welle 4a, ADR 0026 §2.3); `AgentPlugin`-Sub-Protocol traegt den
-  Decision-Hook fuer Welle-4c+-Plugins (Welle 4b, ADR 0027 §2.3).
+  (ADR 0026 §2.3); `AgentPlugin`-Sub-Protocol traegt den
+  Decision-Hook fuer pluginbasierte Agenten (ADR 0027 §2.3).
 - `AgentMessageBus`-Core-Klasse (`hexagon/core/agents/bus.py`)
   liefert `publish` / `drain_for` (nicht-destruktiv) /
-  `consume_for` (destruktive Direct-Inbox-Drain-Variante, Welle 4a,
+  `consume_for` (destruktive Direct-Inbox-Drain-Variante,
   ADR 0026 §2.4) sowie Snapshot-Roundtrip (ADR 0023 §2.2).
 - Registrierung erfolgt produktiv ueber den Konstruktor-Kwarg
   `TickLoop(agents=tuple[Agent, ...])` mit Auto-Bus-Regel und
   `AgentDuplicateIdError`-Fail-Fast (ADR 0026 §2.2). Der `build_
   tick_loop(...)`-Loader reicht den Kwarg symmetrisch durch
   und defaultet ihn (Sentinel-Pattern `agents=None`) auf
-  `scenario.agents` (Welle 4b, ADR 0027 §2.2).
+  `scenario.agents` (ADR 0027 §2.2).
 - Command-Drain laeuft ueber Schritt A0v + A0a vor Schritt A der
   naechsten Tick (siehe §6). Agent-Commands sind also frueh im
   Folge-Tick wirksam, ohne den Scheduler oder die Device-
@@ -709,38 +709,37 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
   `agent_bus` und `pending_agent_commands` in
   `TickLoop.snapshot()` / `from_snapshot(...)` persistiert (ADR
   0026 §2.6 + ADR 0015 §2.3-additiv, kein Schema-Bump).
-- **Konkrete Agent-Implementer** (Welle 4b, ADR 0027):
+- **Konkrete Agent-Implementer** (ADR 0027):
   `RuleBasedAgent` (`hexagon/core/agents/rule_based.py`) mit
   Hybrid Decision-Surface — Default-Pfad ist deterministische
-  Threshold-Rules-Liste (first-match-wins, Welle-4b-Metric-
-  Whitelist `tick` / `simulation_time` aus `DeviceTickContext`),
+  Threshold-Rules-Liste (first-match-wins; Metric-Whitelist
+  `tick` / `simulation_time` aus `DeviceTickContext`),
   Erweiterungs-Pfad ist optionaler `plugin`-Hook ueber
-  `_AGENT_PLUGIN_FACTORIES`-Registry (Welle 4b leer; konkrete
-  Plugins sind Welle 4c+ Material). Mutual Exclusivity Rules
-  ODER Plugin (ADR 0027 §2.3).
-- **`agents`-Top-Level-Block im Scenario-Schema** (Welle 4b,
-  ADR 0027 §2.1 + §2.2): nested Mapping `agents: {<agent_id>:
+  `_AGENT_PLUGIN_FACTORIES`-Registry. Mutual Exclusivity Rules
+  ODER Plugin gelten nach ADR 0027 §2.3.
+- **`agents`-Top-Level-Block im Scenario-Schema** (ADR 0027
+  §2.1 + §2.2): nested Mapping `agents: {<agent_id>:
   {type, params}}` mit lexikographischer Sort-Iteration im
   Loader; `ScenarioAgent`-Domain (frozen dataclass);
   `_assert_agent_list(...)`-Validator mit Comparator-/Metric-
   Whitelist-Checks; `_build_agents(...)`-Factory-Dispatch
   analog `build_devices`.
 - **Konkrete Agent-Instanz-Sub-Snapshots**
-  `agents.<agent_type>.<agent_id>` (Welle 4b, ADR 0027 §2.4)
+  `agents.<agent_type>.<agent_id>` (ADR 0027 §2.4)
   additiv per ADR 0015 §2.3 (kein Schema-Bump); bidirektionaler
-  Resume-Match-Check analog Welle-4a-Folge — jeder injizierte
-  Agent hat einen Slot und jeder Slot einen injizierten Agent
+  Resume-Match-Check — jeder injizierte Agent hat einen Slot
+  und jeder Slot einen injizierten Agent
   (canonical_json-Equality).
 
-**Welle-4c+-Scope (offen):** konkrete `AgentPlugin`-Implementer
-(`LearnedPolicy`, `MPCController` o. ae.), Plugin-Restore-Pfad
-in `RuleBasedAgent.from_snapshot` (Welle-4b rekonstruiert nur
-Rules + `plugin_name`, kein Plugin-State — siehe ADR 0027 §7),
-`GG-AGENT-005` Priorisierung konkurrierender Agents,
-`GG-AGENT-007` Deadlines, `GG-AGENT-008` Async, Telemetry-
-Forwarding-Mechanismus (TickLoop-Bridge oder
-`TelemetryQueryPort` — siehe ADR 0023 §2.1 Forward-Pointer +
-ADR 0027 §7).
+**Erweiterungspunkte fuer Agenten:** Die Architektur erlaubt konkrete
+`AgentPlugin`-Implementer wie `LearnedPolicy` oder `MPCController`,
+Plugin-State-Restore in `RuleBasedAgent.from_snapshot`,
+Priorisierung konkurrierender Agents (`GG-AGENT-005`), Deadlines
+(`GG-AGENT-007`), asynchrone Agent-Ausfuehrung (`GG-AGENT-008`) und
+Telemetry-Forwarding ueber eine TickLoop-Bridge oder
+`TelemetryQueryPort`. Diese Punkte bleiben Architektur-Erweiterungen;
+Lieferzeitpunkt und Slice-Zuschnitt gehoeren in Roadmap, ADR-Folgepflege
+oder Closure-Notizen.
 
 ---
 
