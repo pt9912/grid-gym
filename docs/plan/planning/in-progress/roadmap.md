@@ -1,22 +1,22 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2 abgeschlossen
-**Stand:** 2026-05-23
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen
+**Stand:** 2026-05-25
 
-- **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7).
-- **M3 aktiv:** Welle 0/1/2/3/4a/4b/5 abgeschlossen — Multi-Agent
-  komplett, Observability-Foundation komplett.
-- **Naechster Schritt:** Welle 6 (OTLP-Adapter). ADR 0024 wird mit
-  M3-Welle-7-Closure nach Welle-6-Compose-Smoke-Verifikation auf
-  `Accepted` gehoben.
-- **ADRs:** 0022/0023/0024/0025/0026/0027 `Provisional`; 0028 + 0029
-  `Accepted` (Schaerfung-ohne-Supersede-Pflege von ADR 0006 §3 bzw.
-  ADR 0002 §A-1).
-- **Tests:** 1023 Unit + 19 Integration gruen; Coverage 95.55% total.
-- **Build:** `make fullbuild` cache-frei gruen ohne Override
-  (Welle-5-Abnahme-Kriterium aus ADR 0024 §4.1 erfuellt).
-- **Contracts:** 17 A-1 (6 import-linter + 11 arch_check inkl.
-  neuem `AC-NO-COVERAGE-PRAGMA`).
+- **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
+  M3 `Done` (Welle 0..7).
+- **Naechster aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
+  OPC-UA, DNP3, IEC 61850).
+- **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
+  C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
+  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1).
+- **Tests:** 1138 Unit + 21 Integration gruen; Coverage 96 % total.
+- **Build:** `make fullbuild` cache-frei gruen ohne Override seit
+  Welle-6-C2 (`c61ab0d`) — mit OTLP-Collector-Sibling im Compose-
+  Smoke + Trivy-Image-Audit fuer beide Tags.
+- **Contracts:** 19 A-1 (6 import-linter + 13 arch_check inkl.
+  `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-RESUME-
+  ERRORS`).
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
@@ -38,12 +38,16 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Aktiver Slice: **M3 (Faults + Multi-Agent + Observability)** — Slice-Plan
-wird mit M3-Welle-0-Start eroeffnet.
+Aktiver Slice: **M4 (Protokolladapter)** — Slice-Plan wird mit
+M4-Welle-0-Start eroeffnet.
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
 ([`done/M2-devices.md`](../done/M2-devices.md)) inkl. Welle-7-Closure
 ([`done/M2-devices-results.md`](../done/M2-devices-results.md)).
+M3 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
+([`done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md))
+inkl. Welle-7-Closure
+([`done/M3-results.md`](../done/M3-results.md)).
 
 ---
 
