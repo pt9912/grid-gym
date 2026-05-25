@@ -1,22 +1,30 @@
 # ADR 0023 — Multi-Agent-Bus + Agent-Protocol (M3 Welle 3)
 
-**Status:** Provisional — Validierung erfolgt mit M3-Welle-3-
-PR-Merge (`4fa122d` C2 + `d6f66fc` Review-Folge):
-879 Unit-Tests gruen (Welle-2-Stand 840 → +39 inkl. 4 L-1/L-2/
-L-3-Defense-Tests aus der Review-Folge), 14 Integration-Tests
-unveraendert (Welle-3-Foundation hat keine Scenario-
-Erweiterung), `make gates` A-1 cache-frei gruen **ohne**
-`CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt jetzt
-`core/agents`; siehe §4 In-Scope-Note zur `agent_message.py`-
-Erfassung), AC-PORTS-NO-OUT bleibt KEPT (16 Contracts).
-Akzeptanz mit M3-Welle-7-Closure (gemeinsam mit ADR 0022 und
-ADR 0024 oder einzeln, je nach Welle-7-Closure-Sequenzierung).
+**Status:** Accepted — M3-Welle-7-Closure 2026-05-25 (C1.2).
+Validierung lieferten Welle 3 (Foundation, `3dbe6af..d6f66fc`:
+879 Unit-Tests gruen, AgentMessageBus + Agent-Protocol +
+TickLoop-Schritt-D2-Hook produktiv), Welle 4a (Plumbing,
+`a24f733..da18c6d`: 921 Unit-Tests, agents-Kwarg + Auto-Bus +
+Schritt A0v/A0a + Drain/Registry/Lifecycle via ADR 0026), Welle 4b
+(Konkretisierung, `8802dc0..ac7b47f`: 992 Unit-Tests +
+19 Integration-Tests, RuleBasedAgent + Scenario-`agents`-Block
+via ADR 0027, agents_demo.yaml + bidirektionaler Sub-Snapshot-
+Resume-Match). `make gates` cache-frei gruen **ohne**
+`CRITICAL_COV_TARGETS`-Override (Default-Liste enthaelt
+`core/agents`); `make fullbuild` gruen; `AC-PORTS-NO-OUT` bleibt
+KEPT.
 **Datum:** 2026-05-21
-**Status geaendert am:** 2026-05-21 — `Proposed → Provisional`
+**Status geaendert am:** 2026-05-25 — `Provisional → Accepted`
+(M3-Welle-7-Closure-Lauf C1.2; ADR-Header-Schliff ohne
+Architektur-Aenderung).
+**Vorherige Aenderung (2026-05-21)** — `Proposed → Provisional`
 (M3-Welle-3-C2-Merge `4fa122d` + Review-Folge `d6f66fc` Pre-
 C3-Closure; ADR-Schaerfungen aus der Review-Folge (H-1, M-1
 bis M-4) sind im jeweiligen §-Abschnitt mit
 „Welle-3-Review-Folge"-Notiz markiert).
+**Letzte inhaltliche Aenderung:** 2026-05-25 — `Provisional →
+Accepted`-Closure-Schliff (Status-Update + Welle-3/4a/4b-Beleg
+ergaenzt; keine Architektur-Aenderung).
 **Bezug:**
 [`ADR 0007`](0007-random-port.md) §5
 (`RandomPort.sub_port`-Vertrag fuer Per-Agent-Sub-Streams,
