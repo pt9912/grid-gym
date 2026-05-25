@@ -3,8 +3,8 @@
 **Projektname:** grid-gym
 **Dokumenttyp:** Architekturbeschreibung
 **Format:** Markdown
-**Version:** 0.1.0
-**Status:** Entwurf
+**Version:** 0.3.0
+**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 naechster aktiver Slice)
 **Bezug:** [`lastenheft.md`](lastenheft.md)
 
 ---
@@ -664,6 +664,46 @@ Fault-Typen (`comm_outage`, `stale_data`, `nan`, `freq_drop`,
 `Fault`-Vertrags; jedes Geraetemodell dokumentiert sein Verhalten unter
 Fault.
 
+**Produktive Surface (ADR 0022 + ADR 0025):**
+
+- `FaultInjectableDevice(DeviceModel)`-Sub-Protocol
+  (`hexagon/core/devices/_protocol.py`) traegt die Pflicht-Surface
+  `inject_fault(fault_type, payload) -> None`; Implementer setzen
+  ihren eigenen State, Recovery-Tick-Counter o. ae. (ADR 0022 §2.1).
+- `FaultPort`-Driven-Port (`hexagon/ports/driven/fault.py`,
+  `GG-AR-PORT-DRN-011`) mit `apply_active_faults(devices, context)`-
+  Surface; Adapter-Boundary trennt Domain-Orchestrierung von der
+  konkreten Fault-Auswahl-Logik (ADR 0022 §2.4–§2.5).
+- TickLoop-Pre-Tick-Hook (Schritt A2, ADR 0022 §2.4) ruft
+  `fault_port.apply_active_faults(...)` nach `_consume_load_inputs_into`
+  und vor der ersten `_run_device_iteration`. Exception-Propagation
+  bricht den Tick atomic ab (`AC-NO-TIME`-konform, kein Wall-Clock-
+  Zugriff im Core).
+- **Konkrete Fault-Adapter:** `BatteryFaultAdapter`
+  (`hexagon/core/faults/battery_fault.py`) mit `cell_failure` und
+  `GridFaultAdapter` (`hexagon/core/faults/grid_fault.py`) mit
+  `voltage_drop`. Beide leben **nicht** unter `adapters/driven/`,
+  sondern unter `hexagon/core/faults/`, weil sie Domain-
+  Orchestrierung sind und kein externes Protokoll uebersetzen.
+- **Recovery-Engine** (ADR 0025): zwei Modi —
+  `auto-recover-after-N-ticks` (Tick-Counter pro aktivem Fault,
+  deterministisch via half-open `[start, end)`-Window) und
+  `manual-via-command` (Recovery via `recover_fault(fault_id)`-
+  Command analog Agent-Command-Pfad).
+- Property-Tests (Hypothesis) pinnen Determinismus + Seed-
+  Independence pro Fault-Sequenz; Demo-Szenario
+  [`tests/integration/scenarios/fault_demo.yaml`](../tests/integration/scenarios/fault_demo.yaml)
+  + Postgres-Roundtrip via `PostgresRunRepository`.
+
+**Architektur-Erweiterungspunkte:** `permanent`-Recovery-Modus,
+weitere Fault-Typen (`comm_outage`, `stale_data`, `nan`, ...) als
+zusaetzliche Adapter-Implementer, Quality-Status-Markierung auf
+`TelemetryPoint`-Ebene (heute Fault-Effekt ueber Device-State, nicht
+ueber `Quality`-Enum). Diese Punkte bleiben Architektur-
+Erweiterungen; Lieferzeitpunkt und Slice-Zuschnitt gehoeren in
+Roadmap, ADR-Folgepflege oder Closure-Notizen (analog zur
+§14-Klausel fuer Multi-Agent-Erweiterungen).
+
 ---
 
 ## 14. Multi-Agent-Subsystem (optional)
@@ -749,9 +789,78 @@ oder Closure-Notizen.
 | ------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------- |
 | Strukturierte Logs | JSON-Logs mit `ts, level, run_id, module, event_id, message`                                         | GG-OTEL-002                |
 | Metriken           | `tick_duration_ms`, `event_queue_len`, `telemetry_points_per_s`, `error_count`, `replay_diff_status` | GG-OTEL-003                |
-| Traces             | optional OTLP, ein Tick → Scheduler → Device → Adapter → Persistenz                                  | GG-OTEL-001/004            |
+| Traces             | OTLP-gRPC, ein Tick → Scheduler → Device → Adapter → Persistenz                                      | GG-OTEL-001/004            |
 | Healthcheck        | `healthy/degraded/unhealthy` mit Ursache, Dienste separat                                            | GG-DEPLOY-006              |
 | Replay-Diff-Status | maschinenlesbarer Statuswert pro Lauf                                                                | GG-REPLAY-007, GG-SAFE-006 |
+
+**Produktive Surface (ADR 0024):**
+
+- **Driven-Port-Trio** `LogPort` / `MetricsPort` / `TracePort`
+  (`hexagon/ports/driven/observability.py`, `GG-AR-PORT-DRN-008`)
+  als `@runtime_checkable` Protocols. Surface stateless, keine
+  OTLP-/SDK-Typen im Port-Layer — Core bleibt OTLP-frei und
+  laeuft ohne den OTLP-Stack (ADR 0024 §2.1).
+- `LogEntry`-frozen-dataclass-Envelope (`level`, `message`,
+  `run_id`, `module`, `event_id`, `attributes`) als Single-Object-
+  Surface fuer `LogPort.log(entry)` (ADR 0024 §2.2).
+- `SpanContext`-frozen-dataclass (`trace_id`, `span_id`,
+  `parent_span_id`) mit `start_span` / `end_span` / `record_event`-
+  Surface; `None`-No-Op-Fallback im `TracePort` fuer Adapter-
+  Robustheit (ADR 0024 §2.4).
+- **Null-Adapter-Trio** (`hexagon/core/observability_null/`) mit
+  Default-`call_count` + `last_call`-Surface und opt-in
+  `record_calls=True` fuer `call_records` + `clear_calls()`. Default-
+  Verkabelung im TickLoop ist Null (kein externer Side-Effect ohne
+  explizite Adapter-Injektion).
+- **OTLP-Adapter-Trio** (`adapters/driven/telemetry_otlp/`):
+  `OtlpLogAdapter` / `OtlpMetricsAdapter` / `OtlpTraceAdapter`
+  ueber `opentelemetry-exporter-otlp-proto-grpc`-SDK (gRPC-Transport
+  per ADR 0024 §4.5.6 auf Allow-List `{"grpc"}` gepinnt; HTTP/
+  protobuf ist explizit Out-of-Scope und braucht eine ADR-Folge).
+  `build_otlp_adapters(config)`-Factory liefert ein
+  `OtlpAdapterBundle` mit den drei Adaptern + Provider-Handles +
+  `flush_and_shutdown()`-Helper.
+- **Additive TickLoop-Hooks** (`log_port`/`metrics_port`/`trace_port`-
+  Kwargs, Default `None` skippt): `tick.cycle`-Span umfasst die
+  Tick-Arbeit; `tick_begin` / `tick_end` Logs; `gauge('event_queue_
+  len', ...)` nach `scheduler.pop_due`; `increment('tick_count')`
+  am Tick-Ende; `fault.inject`-Span um Schritt A2 (§13);
+  `agent.tick`-Span pro Agent-Tick in Schritt D2 (§14). Schritt-/
+  Atomizitaets-Vertraege aus den Fault-/Agent-Sektionen bleiben
+  unangetastet.
+- **`AC-OTLP-ADAPTER-NO-TIME`**-Architekturtest (`tools/arch_check.
+  py`) verbietet `time`-/`datetime`-Import unter
+  `adapters/driven/telemetry_otlp/**` — Span-Dauern liefert die
+  OTel-SDK ueber Span-Lifecycle (`StartTime`/`EndTime`), keine
+  Wall-Clock-Affordance im Adapter-Code (ADR 0024 §4.5.5 D-4).
+- **Compose-Smoke-Determinismus-Pattern** (ADR 0024 §4.5.7) mit
+  vier Pflichten: per-Lauf isolierter Sink + Vorab-Truncation +
+  per-Lauf eindeutige `service.instance.id` + zweischichtiges
+  Flush-Protokoll (SDK-Side `force_flush()` + `shutdown()` plus
+  Collector-Side kurze `batch.timeout`-Konfig + Bounded-Poll).
+- **Operations-Affordance:** Collector-Internal-Telemetry auf
+  `:8888/metrics` (Prometheus-Format) via `service.telemetry.
+  metrics.readers.pull.exporter.prometheus` in
+  `deploy/otel-collector-config.yaml`. Die Counter
+  `otelcol_receiver_accepted_spans` / `_refused_spans` /
+  `otelcol_exporter_sent_spans` sind die verlaessliche Diagnose-
+  Quelle fuer Receiver-/Pipeline-/Exporter-Pfad-Bruchpunkte —
+  `OTLPSpanExporter.force_flush()` returnt laut Python-API trivial
+  `True` und ist allein kein Beweis fuer Wire-Erfolg.
+- **Runbook:** [`docs/user/observability.md`](../docs/user/observability.md)
+  beschreibt emittierte Spans/Metrics/Logs, lokalen Stack-Boot,
+  Padding-Format-Hinweise (Debug-Exporter-Output je Signal-Typ),
+  Failure-Mode-Diagnose und das Diagnose-Tooling
+  [`tools/diagnose_otlp_span_export.py`](../tools/diagnose_otlp_span_export.py)
+  (Matrix-Varianten + Internal-Counter-Scrape).
+
+**Architektur-Erweiterungspunkte:** OTLP/HTTP-Transport (heute
+auf gRPC gepinnt), zusaetzliche Sampler-Strategien, Trace-ID-
+Determinismus per `RandomPort.sub_port("observability-trace")`,
+`tick_duration_ms` als Metric (heute bewusst nicht aus dem TickLoop
+emittiert, weil `AC-NO-TIME` Wall-Clock-Zugriff im Core verbietet).
+Lieferzeitpunkt und Slice-Zuschnitt gehoeren in Roadmap, ADR-
+Folgepflege oder Closure-Notizen (analog zur §14-Klausel).
 
 ---
 
@@ -766,7 +875,7 @@ docker compose up
    ├─ service: postgres           (Pflicht-Persistenz)
    ├─ service: timescaledb        (optional, GG-PERSIST-006)
    ├─ service: influxdb           (optional, GG-PERSIST-007)
-   └─ service: otel-collector     (optional, GG-OTEL-001)
+   └─ service: otel-collector     (produktiv-Sibling, GG-OTEL-001)
 ```
 
 Vertraege:
@@ -844,12 +953,12 @@ Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | GG-AR-OPEN-001 | Welche Sprache und welcher Build-Stack? (Python, Go, Rust, Kotlin, .NET?) — legt Sprache und Runtime des Simulationskerns, der Adapter und der Build-Toolchain fest. Modulgrenzen aus `GG-AR-P-002` und den Tabus `GG-AR-TABU-001..008` bleiben sprachunabhaengig; betroffen sind Implementierungspakete, Querschnittsbibliotheken und Test-/Architekturtest-Tooling. **Geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) (`Accepted` 2026-05-15)** und der synchronen [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) (Type-Check-Gate via `mypy --strict`). | Geschlossen (2026-05-15) |
 | GG-AR-OPEN-002 | API-Service und Simulationsdienst als ein Prozess oder zwei? — Composition-Root-Entscheidung. **Geschlossen mit [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md) (`Accepted` 2026-05-17): zwei Prozesse, Postgres als Persistenz-Bus.**                                                                                                                                                                                                                                                                                                                                         | Geschlossen (2026-05-17) |
-| GG-AR-OPEN-003 | Persistenzzugriff: Repository-Pattern + leichtgewichtiger Treiber, oder ORM?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Offen                    |
-| GG-AR-OPEN-004 | Wird der `AgentMessageBus` als In-Process-Bus oder als Adapter (z. B. NATS) implementiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
+| GG-AR-OPEN-003 | Persistenzzugriff: Repository-Pattern + leichtgewichtiger Treiber, oder ORM? — **Geschlossen** mit dem produktiven `PostgresRunRepository` (`hexagon/adapters/driven/persistence_postgres/`): Repository-Pattern + `psycopg`-Treiber (kein ORM), Alembic-Migrationen, Postgres als Persistenz-Bus per [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md). Driven-Port `RunRepositoryPort` (`GG-AR-PORT-DRN-001`).                                                                                                                                                                                                                                                                                                                                                                                  | Geschlossen (2026-05-17) |
+| GG-AR-OPEN-004 | Wird der `AgentMessageBus` als In-Process-Bus oder als Adapter (z. B. NATS) implementiert? — **Geschlossen** mit [`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) (`Accepted`): In-Process-Bus als Core-Klasse `AgentMessageBus` (`hexagon/core/agents/bus.py`), kein Driven-Port. Architektur §14 schreibt eigenes Kernmodul vor; der Bus hat keine externe Adapter-Boundary.                                                                                                                                                                                                                                                                                                                                                                                                                          | Geschlossen (2026-05-21) |
 | GG-AR-OPEN-005 | Replay-Diff-Klassifikation: Liste fachlich vs. volatil als Konfiguration oder hartcodiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
 | GG-AR-OPEN-006 | Snapshot-Format: einheitlich JSON-kanonisch, binaer, oder hybrid?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Offen                    |
 | GG-AR-OPEN-007 | UI-Architektur: SSR vs. SPA; eigene REST-Konsumentenschicht oder direkte WebSocket-Anbindung?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Offen                    |
-| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE (`GG-OTEL-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Offen                    |
+| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE (`GG-OTEL-001`) — **Geschlossen** mit [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) (`Accepted`): Port-Trio `LogPort`/`MetricsPort`/`TracePort` ist Pflicht-Surface (Default-Verkabelung Null-Adapter, keine externer Side-Effekt ohne explizite Injektion). OTLP-Adapter-Trio (`adapters/driven/telemetry_otlp/`) ist produktiv; `otel-collector`-Sibling in `deploy/compose.yml` und Compose-Smoke-Determinismus-Pattern fixiert. `GG-OTEL-001` bleibt formal SOLLTE — die Architektur stellt die Pflicht-Surface, die Adapter-Wahl ist Deployment-Entscheidung.                                                                                                                                                                                                                                                  | Geschlossen (2026-05-25) |
 | GG-AR-OPEN-009 | Welche Protokolladapter sind ab MVP enthalten? Heute alle SOLLTE (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Offen                    |
 | GG-AR-OPEN-010 | Authentifizierung der API — heute nicht im Lastenheft normiert; spaetere `GG-SAFE-…`-Erweiterung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Offen                    |
 
