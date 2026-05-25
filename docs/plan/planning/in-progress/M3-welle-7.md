@@ -30,11 +30,11 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       Aenderung`-Pflichtfeld (ADR 0006 §4) gesetzt. Explizit als
       M3-Welle-7-Material in `done/M3-welle-6.md` DoD vermerkt.
 - [ ] **Trigger 006 (`--strict-bytes`) Entscheidung** —
-      `aktivieren` oder konkrete Begruendung fuer Verschiebung in
-      M4/M6-Re-Triage. Bezug: ADR 0005 `--strict-bytes`-Option +
-      OTLP-Bytes-Vertrag aus Welle 6. Decision dokumentiert; bei
-      Verschiebung wandert Trigger 006 in `open/` mit neuem
-      Aktivierungs-Kriterium.
+      Aktivierung als Folge-Slice nach `next/` planen oder konkrete
+      Begruendung fuer Verschiebung in M4/M6-Re-Triage liefern.
+      Bezug: ADR 0005 `--strict-bytes`-Option + OTLP-Bytes-Vertrag
+      aus Welle 6. Decision dokumentiert; bei Verschiebung bleibt
+      Trigger 006 in `open/` mit neuem Aktivierungs-Kriterium.
 - [ ] **`done/M3-results.md`** angelegt, Pattern analog
       [`done/M2-devices-results.md`](../done/M2-devices-results.md):
       Welle-Tabelle (Welle 0..7 mit Status/Datum/Commit-Range),
@@ -61,7 +61,7 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
         Welle hat die Sub-Slicing-Schwelle ueberschritten;
         Welle 4 wurde planmaessig in 4a/4b geteilt. Verifikation
         per Wellen-Tabelle in `done/M3-results.md`.
-      - **S-3 — Default-Gate ohne Override**: `make fullbuild`
+      - **S-3 — Default-Gate ohne Override**: `make gates`
         cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override
         (war Welle-6-DoD; mit Welle-6-Closure verifiziert).
       - **S-4 — kein M3-spezifisches Image-Hardening-Trigger**
@@ -84,6 +84,9 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
 - [ ] **`make gates` A-1 gruen ohne Override** — Stand bleibt
       Welle-6-Ergebnis (`46dbd6e`); kein neuer Code in Welle 7,
       aber Re-Verifikation als Sanity-Check vor End-of-Wave-Move.
+- [ ] **`make fullbuild` M3-Abschluss-Gate gruen ohne Override** —
+      Stand bleibt Welle-6-Ergebnis (OTLP-Collector-Sibling +
+      Compose-Smoke); Re-Verifikation vor End-of-Wave-Move.
 - [ ] **`M3-faults-agents-observability.md` → `done/`** via
       Wave-Self-Close-Commit-Konvention; relative Link- und
       Bezug-Pfade-Pflege im Folge-Commit (ADR 0028). Closure-
@@ -135,11 +138,14 @@ Jeder Sub-Commit setzt:
 
 ### C2 — `docs(plan)`: Trigger 006 (`--strict-bytes`) Entscheidung
 
-Triage am konkreten OTLP-Bytes-Vertrag aus Welle 6:
+Triage am konkreten OTLP-Bytes-Vertrag aus Welle 6. C2 ist
+**entscheidungspflichtig, aber aenderungsarm**: keine produktiven
+Code-, Tooling- oder Gate-Konfigurationsaenderungen in Welle 7.
 
-- **Option Aktivieren**: ADR 0005 `--strict-bytes` scharf
-  schalten, dep-audit + typecheck-Stage entsprechend anpassen,
-  Welle-6-Code (`_factory.py`, `_config.py`) verifizieren.
+- **Option Aktivieren**: Trigger 006 wandert nach `next/` mit
+  konkretem Folge-Slice fuer ADR 0005 `--strict-bytes`, dep-audit +
+  typecheck-Stage-Anpassung und Verifikation der relevanten
+  Bytes-Pfade. Die Aktivierung selbst erfolgt nicht in Welle 7.
 - **Option Verschieben**: Trigger 006 bleibt `open/` mit neuem
   Aktivierungs-Kriterium (z. B. „M4-Protokolladapter bringt
   konkrete `bytes`-Pfade"). Begruendung dokumentiert.
@@ -161,43 +167,43 @@ Granularitaet sinnvoll):
 - **`roadmap.md` §3 M3** auf `Done`: DoD-Checkboxen
   aktivieren, Status setzen, „Naechster aktiver Slice: M4"
   ergaenzen.
-- **Open-Trigger fuer M3-Restposten**: pro RL-Adapter
-  (`GG-FUTURE-001/002`) ein neuer `open/`-Eintrag, plus alle
-  S-6-Sweep-Befunde.
+- **Open-Trigger fuer bekannte M3-Restposten**: pro RL-Adapter
+  (`GG-FUTURE-001/002`) ein neuer `open/`-Eintrag. Weitere
+  S-6-Sweep-Befunde werden in C4 dokumentiert und dort als
+  `open/`-Trigger angelegt oder explizit als nicht triggerwuerdig
+  begruendet.
 
 ### C4 — `docs(plan)`: End-to-End-Sweep S-1..S-6
 
 S-1..S-6-Sweep-Ergebnisse als eigener Commit dokumentiert. Pro
 Sweep-Item ein DoD-Haken in diesem Dokument; Befunde, die Folge-
-Trigger ausloesen, werden in C3 (Open-Trigger-Block) konsumiert
-— C4 ist dann reiner Verifikations-Beleg.
+Trigger ausloesen, werden in C4 selbst oder in einem unmittelbaren
+Folge-Commit als `open/`-Trigger angelegt.
 
 Wenn S-1..S-6 keine neuen Befunde liefern (Optimal-Fall), kann
 C4 mit C3 zusammen committed werden.
 
-### C5 — `docs(plan)`: in-progress/README.md + Slice-Plan-Sync
+### C5 — `docs(plan)`: Slice-Plan-Sync vor End-of-Wave
 
-- `in-progress/README.md`: `M3-faults-agents-observability.md`-
-  Eintrag entfernen (wandert nach `done/`); `M3-welle-7.md`-
-  Eintrag entfernen (wandert nach `done/`); M3-Slice-Plan-
-  Status auf `Done` syncen.
-- `done/README.md`: neuer Eintrag fuer
-  `M3-faults-agents-observability.md`, `M3-welle-7.md`,
-  `M3-results.md`.
 - `M3-faults-agents-observability.md`: Status-Header auf `Done`,
   Wellen-Historie um Welle 6 und Welle 7 ergaenzen.
 - DoD-Haken in diesem Dokument auf `[x]`.
+- README-Bestandspflege passiert erst nach den reinen `git mv`-
+  Commits im End-of-Wave-Folge-Edit, damit die
+  Wave-Self-Close-Commit-Konvention eingehalten bleibt.
 
 ### C6 — Welle-7-Verifikation
 
 - `make gates` cache-frei gruen (Sanity-Check; kein neuer Code,
   aber alle Doku-Aenderungen sollen `make docs-check` mitziehen).
+- `make fullbuild` cache-frei gruen (M3-Abschluss-Gate aus dem
+  kanonischen Slice-Plan).
 - `make test-integration` cache-frei gruen.
-- `make docs-check` cache-frei gruen.
+- `make docs-check` cache-frei gruen mit dem Vor-Move-Pfadstand.
 
 Wenn alles gruen: weiter mit End-of-Wave.
 
-### End-of-Wave — `chore`: git mv M3-welle-7.md + M3-faults-agents-observability.md → done/ (rename-only)
+### End-of-Wave — reine Moves nach `done/`
 
 Per Wave-Self-Close-Commit-Konvention zwei reine
 `git mv`-Operationen (in zwei Commits, damit die Rename-Historie
@@ -209,7 +215,16 @@ sauber als `R`-Rename erkannt wird):
 Inhalts-Folge-Edits (relative Link-Anpassung in beiden
 Dokumenten, Pfad-Pflege per
 [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md))
-in einem unmittelbar nachfolgenden Commit.
+in einem unmittelbar nachfolgenden Commit. Dieser Folge-Edit enthaelt
+auch:
+
+- `in-progress/README.md`: `M3-faults-agents-observability.md`-
+  Eintrag entfernen; `M3-welle-7.md`-Eintrag entfernen.
+- `done/README.md`: neue Eintraege fuer
+  `M3-faults-agents-observability.md`, `M3-welle-7.md`,
+  `M3-results.md`.
+- `make docs-check` exit 0 nach den finalen relativen Link-
+  Anpassungen.
 
 ---
 
@@ -356,9 +371,9 @@ liefert.
 C6 verifiziert:
 
 - `make gates` cache-frei gruen.
+- `make fullbuild` cache-frei gruen.
 - `make test-integration` cache-frei gruen.
-- `make docs-check` cache-frei gruen — alle relative Link-
-  Anpassungen aus dem End-of-Wave-Move aufgeloest.
+- `make docs-check` cache-frei gruen mit dem Vor-Move-Pfadstand.
 
 Vor jedem Sub-Commit (insbesondere C1.1/C1.2/C1.3 und C2/C3):
 
