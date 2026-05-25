@@ -1,6 +1,6 @@
-# Production-Stack (M1 Welle 6c, Trigger 010).
+# Production-Stack (M1 Welle 6c Trigger 010 + M3 Welle 6 C2).
 #
-# Drei Services:
+# Vier Services:
 # - `postgres`: Datenbank fuer `RunRepositoryPort`-Persistenz.
 # - `api`: FastAPI-uvicorn-Server; bind auf `:8080`, healthcheck
 #   ueber `/health`.
@@ -8,9 +8,21 @@
 #   den TickLoop-Runner). Bleibt vorerst als `sleep infinity`
 #   im Stack, damit die `make runtime`-Smoke-Stage einen
 #   Service mit `restart=on-failure` hat.
+# - `otel-collector` (M3 Welle 6 C2): OTLP-gRPC-Collector-Sibling
+#   fuer die telemetry_otlp-Adapter (`OtlpLogAdapter`/
+#   `OtlpMetricsAdapter`/`OtlpTraceAdapter`). Image-Pin via
+#   `${OTEL_COLLECTOR_IMAGE}`-Env-Var (Makefile-Default
+#   `otel/opentelemetry-collector-contrib:0.152.1`). Image ist
+#   distroless (`gcr.io/distroless/static-debian12:nonroot`) —
+#   kein in-container healthcheck-Block, weil weder wget noch
+#   nc noch shell vorhanden sind. Statt dessen lauscht der
+#   Collector ueber die `health_check`-Extension auf :13133
+#   (siehe `otel-collector-config.yaml`); `make runtime` pollt
+#   diesen Endpunkt extern via Python aus dem `api`-Container.
 #
 # Aufruf: `make runtime` (baut Image + ruft `docker compose up`
-# auf). `/health` wird vom Makefile gepollt, bis 200 kommt.
+# auf). `/health` wird vom Makefile gepollt, bis 200 kommt;
+# anschliessend wird `otel-collector:13133/` extern gepollt.
 
 services:
   postgres:
@@ -25,15 +37,51 @@ services:
       timeout: 3s
       retries: 10
 
+  otel-collector:
+    # Welle-6-C2: OTLP-gRPC-Sibling fuer telemetry_otlp-Adapter.
+    # Image-Tag-Default kommt aus `OTEL_COLLECTOR_IMAGE` im
+    # Makefile (`export OTEL_COLLECTOR_IMAGE`); Override per
+    # Env-Var moeglich. Compose interpoliert `${VAR:-default}`
+    # selbst, damit `docker compose -f deploy/compose.yml up`
+    # ohne Makefile auch funktioniert.
+    image: ${OTEL_COLLECTOR_IMAGE:-otel/opentelemetry-collector-contrib:0.152.1}
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+    # Sink-Verzeichnis als tmpfs — Default-Profil ohne
+    # Persistenz; C3-Smoke-Fixture ersetzt das per Override-
+    # File durch einen bind-mount auf `pytest tmp_path`
+    # (ADR 0024 §4.5.7 Punkt 1: per-Lauf isolierter Sink-Pfad).
+    tmpfs:
+      - /var/log/otel
+    # Kein healthcheck-Block: distroless Image, keine Probe-Binary
+    # vorhanden. Echte Liveness pollt `make runtime` extern via
+    # Python aus dem `api`-Container gegen :13133.
+
   api:
     image: grid-gym-runtime:latest
     depends_on:
       postgres:
         condition: service_healthy
+      otel-collector:
+        # service_started (nicht service_healthy), weil der
+        # Collector keinen in-container healthcheck hat. Der
+        # `api`-Container nutzt heute den Null-Adapter (Welle 5)
+        # und wuerde Adapter-Aktivierung erst per Folge-Slice
+        # bekommen — die `depends_on`-Kopplung sorgt nur fuer
+        # die Boot-Reihenfolge, falls die Adapter-Verkabelung
+        # spaeter aktiv wird.
+        condition: service_started
     environment:
       GRID_GYM_DATABASE_URL: postgresql://grid_gym:grid_gym@postgres:5432/grid_gym
       GRID_GYM_HOST: 0.0.0.0
       GRID_GYM_PORT: "8080"
+      # Welle-6-C2: OTLP-Endpoint-Default (ADR 0024 §4.5.7).
+      # Per Compose-Sibling-Hostname; gRPC-Pin im Adapter-
+      # Config (Allow-List `{"grpc"}`).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: grid-gym-api
     ports:
       - "8080:8080"
     # Dockerfile-`ENTRYPOINT` startet `uvicorn` direkt (Trigger 015,
@@ -46,8 +94,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     environment:
       GRID_GYM_DATABASE_URL: postgresql://grid_gym:grid_gym@postgres:5432/grid_gym
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: grid-gym-sim
     # Welle 6c: kein produktiver TickLoop-Runner — M2-Geraete
     # bringen das. `sleep infinity` haelt den Service am Leben,
     # damit `make runtime`-Compose-Smoke ihn als running-Container

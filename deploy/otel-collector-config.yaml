@@ -1,0 +1,64 @@
+# OTLP-Collector-Config fuer Welle-6-Smoke (M3 Welle 6 C2).
+#
+# Pipelines (traces/metrics/logs) nehmen OTLP-gRPC auf :4317 entgegen,
+# batchen mit kurzem Timeout (Sink-Determinismus-Pflicht 4 aus ADR 0024
+# §4.5.7: Collector-Side eventually + Bounded-Poll im Smoke-Test) und
+# schreiben in zwei Exporter:
+#
+# - `file`: JSONL nach /var/log/otel/otel-out.jsonl. Pfad ist Compose-
+#   tmpfs-mount (Default) oder bind-mount (C3-Smoke-Fixture mit per-Lauf
+#   eindeutigem `pytest tmp_path`). Erfuellt Sink-Determinismus-Pflichten
+#   1/2 (per-Lauf isolierter Sink-Pfad + Vorab-Truncation).
+# - `debug`: stderr-Inspection fuer `docker compose logs otel-collector`
+#   beim manuellen Smoke-Boot (`make runtime`).
+#
+# Health-Extension lauscht auf :13133 (TCP) und antwortet HTTP 200 bei
+# initialisiertem Receiver-/Exporter-Stack. Wird von `make runtime`
+# extern via Python aus dem `api`-Container gepollt — kein in-container
+# healthcheck-Block in `deploy/compose.yml`, weil das offizielle
+# `otel/opentelemetry-collector-contrib:*`-Image distroless ist (kein
+# wget/nc/sh).
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    # Welle-6-Smoke-Profil: kurzer Timeout + minimale Batch-Groesse,
+    # damit Collector-Side-Batching die Sink-Sichtbarkeit nicht
+    # verzoegert (ADR 0024 §4.5.7 Punkt 4 Collector-Seite).
+    # Produktiv-Profile (M3-Welle-7-Folge oder M4-Slice) duerfen
+    # groessere Werte fahren.
+    timeout: 100ms
+    send_batch_size: 1
+
+exporters:
+  file:
+    path: /var/log/otel/otel-out.jsonl
+    # Append-Mode (Default), damit der bind-mount aus dem C3-Smoke
+    # einen leeren `tmp_path` mit appended-JSONL-Records sieht.
+  debug:
+    verbosity: detailed
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file, debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file, debug]

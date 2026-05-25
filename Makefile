@@ -26,6 +26,14 @@ TRIVY_IMAGE ?= aquasec/trivy:0.58.0
 TRIVY_SEVERITY ?= HIGH,CRITICAL
 DOCKER_BUILD_ARGS ?=
 COMPOSE_FILE ?= deploy/compose.yml
+# M3-Welle-6-C2: OTLP-Collector-Sibling fuer telemetry_otlp-Adapter.
+# Wird in deploy/compose.yml als `${OTEL_COLLECTOR_IMAGE:-...}`
+# interpoliert. `export` macht den Wert fuer das compose-Recipe
+# sichtbar; gleichzeitig deckt der `:-default`-Fallback im Compose-
+# YAML Aufrufe ohne Makefile (`docker compose -f deploy/compose.yml
+# up`) ab.
+OTEL_COLLECTOR_IMAGE ?= otel/opentelemetry-collector-contrib:0.152.1
+export OTEL_COLLECTOR_IMAGE
 
 DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	-f $(DOCKERFILE) \
@@ -67,6 +75,7 @@ help:
 	@echo "  TRIVY_IMAGE=$(TRIVY_IMAGE)"
 	@echo "  TRIVY_SEVERITY=$(TRIVY_SEVERITY)"
 	@echo "  COMPOSE_FILE=$(COMPOSE_FILE)"
+	@echo "  OTEL_COLLECTOR_IMAGE=$(OTEL_COLLECTOR_IMAGE)"
 	@echo ""
 	@echo "Spike-0 / A-1 (ADR 0002):"
 	@echo "  make lint              ruff check (BLE/TRY/B/DTZ/S/TID/C901/PLR*/N/RET/SIM/ARG/RUF + banned-api)"
@@ -245,6 +254,13 @@ dep-audit:
 # bricht den Build bei jeder HIGH/CRITICAL-Vulnerability, `--ignore-unfixed`
 # verschont Befunde ohne verfuegbaren Fix (alternative: explizit als
 # Ausnahme dokumentieren).
+#
+# Welle-6-C2-Erweiterung: zweiter Trivy-Run gegen den gepinnten
+# OTLP-Collector-Tag — der Collector ist Teil des Welle-6-Observability-
+# Pfads (`deploy/compose.yml`-Sibling) und hat dieselbe DoD-Bindung wie
+# das selbst-gebaute runtime-Image. `docker pull` davor stellt sicher,
+# dass der Tag lokal vorhanden ist, wenn das Recipe ohne vorheriges
+# `make runtime` laeuft.
 image-audit: build
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
@@ -254,6 +270,15 @@ image-audit: build
 			--severity $(TRIVY_SEVERITY) \
 			--ignore-unfixed \
 			$(IMAGE_PREFIX)-runtime:latest
+	$(DOCKER) pull $(OTEL_COLLECTOR_IMAGE)
+	$(DOCKER) run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$$HOME/.cache/trivy:/root/.cache/" \
+		$(TRIVY_IMAGE) image \
+			--exit-code 1 \
+			--severity $(TRIVY_SEVERITY) \
+			--ignore-unfixed \
+			$(OTEL_COLLECTOR_IMAGE)
 
 # GG-QG-006: OpenAPI-Spec aus FastAPI exportieren und mit
 # openapi-spec-validator pruefen. Stage faellt rot, solange der
@@ -322,6 +347,14 @@ build:
 # Voraussetzung: `make build` (bereits Bestandteil dieses Targets via
 # dependency) und ein `deploy/compose.yml`, das api, postgres und ui
 # definiert.
+#
+# Welle-6-C2-Erweiterung: nach dem `/health`-Probe ein Bounded-Poll
+# auf den OTLP-Collector-Health-Endpoint `http://otel-collector:13133/`
+# aus dem `api`-Container heraus. Der Collector-Container ist
+# distroless (`gcr.io/distroless/static-debian12:nonroot`) — kein
+# eigener Healthcheck moeglich, weil weder wget noch nc noch shell
+# vorhanden sind. Stattdessen pollt der API-Container die OTel-
+# `health_check`-Extension via Python-stdlib (urllib).
 runtime: build
 	@if [ ! -f $(COMPOSE_FILE) ]; then \
 		echo "[runtime] $(COMPOSE_FILE) fehlt — wird mit der Deploy-Slice angelegt"; \
@@ -330,7 +363,10 @@ runtime: build
 	$(DOCKER) compose -f $(COMPOSE_FILE) up -d --wait --wait-timeout 60
 	@echo "[runtime] stack is up; probing /health"
 	$(DOCKER) compose -f $(COMPOSE_FILE) exec -T api curl --fail --silent --show-error http://localhost:8080/health
-	@echo "[runtime] /health ok; tearing down"
+	@echo "[runtime] /health ok; probing otel-collector :13133"
+	$(DOCKER) compose -f $(COMPOSE_FILE) cp tools/wait_otel_collector.py api:/tmp/wait_otel_collector.py
+	$(DOCKER) compose -f $(COMPOSE_FILE) exec -T api python /tmp/wait_otel_collector.py
+	@echo "[runtime] otel-collector ok; tearing down"
 	$(DOCKER) compose -f $(COMPOSE_FILE) down -v --remove-orphans
 
 test-container: runtime
