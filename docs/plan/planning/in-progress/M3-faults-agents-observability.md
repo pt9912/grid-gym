@@ -1,13 +1,16 @@
 # Slice-Plan — M3 Faults + Multi-Agent + Observability — In Progress
 
-**Status:** In Progress — eroeffnet 2026-05-20. Welle 0/1/2/3/4a/4b/5/6
-sind abgeschlossen (alle drei Sub-Bereiche inhaltlich fertig:
-Faults `Done` 2026-05-20, Multi-Agent `Done` 2026-05-22, Observability
-Foundation `Done` 2026-05-23, OTLP-Adapter `Done` 2026-05-25);
-**Welle 7 (Closure)** ist der naechste aktive Slice (eroeffnet
-2026-05-25 via `M3-welle-7.md`). Drei Sub-Bereiche (Faults,
-Multi-Agent, Observability) ueber Welle 0..7 verteilt; M3-Slice-Plan
-wandert nach `done/` mit Welle-7-Closure.
+**Status:** Done — geschlossen 2026-05-25 mit Welle 7
+(Closure). Welle 0/1/2/3/4a/4b/5/6/7 sind alle abgeschlossen
+(alle drei Sub-Bereiche inhaltlich fertig: Faults `Done`
+2026-05-20, Multi-Agent `Done` 2026-05-22, Observability
+Foundation `Done` 2026-05-23, OTLP-Adapter `Done` 2026-05-25,
+M3-Closure `Done` 2026-05-25). Sechs M3-ADRs (0022/0023/0024/
+0025/0026/0027) auf `Accepted`. Closure-Artefakt:
+[`../done/M3-results.md`](../done/M3-results.md). M3-Slice-Plan
+wandert nach `done/` mit dem Welle-7-End-of-Wave-Folge-Commit.
+**Naechster aktiver Slice:** **M4** (Protokolladapter,
+siehe [`roadmap.md`](roadmap.md) §3 M4).
 
 **Wellen-Historie:**
 
@@ -206,17 +209,67 @@ wandert nach `done/` mit Welle-7-Closure.
   - ADR 0024 bleibt `Provisional` — Promotion auf `Accepted` ist
     M3-Welle-7-Material.
 
-**Naechster Schritt:** **Welle 7** (M3-Closure —
-ADR 0022..0027 → `Accepted`, Trigger-006-Decision,
-`done/M3-results.md`, `roadmap.md` M3 auf `Done`, S-1..S-6-Sweep,
-End-of-Wave-Move M3-Slice-Plan → `done/`).
+- **Welle 7 — M3-Closure** — `Done` 2026-05-25,
+  `a3b69cc..` (Welle-7-C0..C5-Commit-Stack; End-of-Wave-Move
+  schliesst die Welle ab und wandert M3-faults-agents-
+  observability.md + M3-welle-7.md nach `done/`).
+  - **C0 Slice-Doc** `a3b69cc`: `M3-welle-7.md` als Slice-
+    Begleit-Dokument analog `M3-welle-6.md`; DoD-Checkliste mit
+    11 Items; Commit-Sequenz C0..C6 + End-of-Wave.
+  - **C1 ADR-Promotionen** (sechs Sub-Commits): ADR 0022/0023/
+    0024/0025/0026/0027 jeweils `Provisional → Accepted` mit
+    Welle-1..6-Closure-Belegen
+    (`c971c6a`/`670a4df`/`d13e1f3`/`92daafc`/`2d0d0d4`/
+    `5480937`); `Letzte inhaltliche Aenderung: 2026-05-25` pro
+    ADR (ADR 0006 §4); keine Architektur-Aenderung, nur
+    Status-Schliff.
+  - **C2 Trigger-006-Decision** `d1c8aab`: `--strict-bytes`
+    verschoben mit geschaerftem Aktivierungs-Kriterium —
+    aktueller Code hat keinen produktiven `bytes`/`bytearray`-
+    Pfad (`snapshot_codec.py` verbietet das sogar explizit;
+    OTLP-Adapter nutzen Protocol-Buffer-Serialisierung der
+    OTel-SDK als Library-interna). Aktivierung bei M4-
+    Protokolladapter-Binaer-Pfad, Snapshot-v2→v3-Lese-Pfad
+    oder OTLP-Trace-Roundtrip-Test.
+  - **C3 Closure-Artefakte** `3690057`: `done/M3-results.md`
+    (Welle-Tabelle Welle 0..7 + Abnahme-Belege + Pro-Welle-
+    Reviews + S-1..S-6-Sweep + Welle-7-Erbschaft + Wandert-Nach
+    + Nicht-vollzogene Items); `roadmap.md` §3 M3 auf `Done`
+    (vier DoD-Items von `[ ]`/`[~]` auf `[x]` gehoben; M4 →
+    naechster aktiver Slice); Trigger
+    [`030-rl-adapter`](../open/030-rl-adapter.md)
+    (`GG-FUTURE-001/002`, RL-Adapter ueber AgentBus,
+    Zielplattform-Triage offen).
+  - **C4/C5 S-1..S-6-DoD + Slice-Plan-Sync**: dieser Commit-
+    Block. S-1..S-6-Sweep-DoD-Item in `M3-welle-7.md` auf `[x]`
+    (Inhalt schon in `M3-results.md §4`); diese Wellen-Historie-
+    Eintragung; in-progress/README.md-Status-Sync (Welle 7
+    `Done`).
+  - **1138 Unit-Tests + 21 Integration-Tests** (Welle-7-Stand,
+    +376/+12 ggue. M2-Welle-7-Stand 762/9). Coverage 96 % line.
+  - **19 A-1-Contracts**: 6 import-linter + 13 arch_check
+    (inkl. `AC-NO-COVERAGE-PRAGMA` aus Welle 5b und
+    `AC-OTLP-ADAPTER-NO-TIME` aus Welle 6 + `AC-TICK-LOOP-
+    PRIVATE-RESUME-ERRORS` aus Slice 028).
+  - Sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
+    `Accepted`; ADR 0029 bleibt `Accepted` (Welle-5b-
+    Hygiene-Folge).
+
+**Naechster Schritt:** **End-of-Wave-Move** (zwei reine
+`git mv`-Operationen: `M3-welle-7.md` → `done/` und
+`M3-faults-agents-observability.md` → `done/`, danach Pflicht-
+Folge-Edits fuer relative Link-Anpassungen, analog Welle-6-
+Pattern `245add8`/`ac70eda`). Danach: **M4** (Protokolladapter,
+`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`) als naechster aktiver Slice
+gemaess `roadmap.md` §3 M4.
 
 **Datum:** 2026-05-20 (in `in-progress/` direkt eroeffnet,
 kein `next/`-Zwischenschritt — M2-Welle-7-Closure hatte M3
 bereits als „naechsten aktiven Slice" ausgewiesen); Welle 3
 abgeschlossen 2026-05-21; Welle 4a abgeschlossen 2026-05-21;
 Welle 4b abgeschlossen 2026-05-22; Welle 5 abgeschlossen
-2026-05-23; Welle 6 abgeschlossen 2026-05-25.
+2026-05-23; Welle 6 abgeschlossen 2026-05-25; Welle 7
+abgeschlossen 2026-05-25.
 
 **Bezug:**
 

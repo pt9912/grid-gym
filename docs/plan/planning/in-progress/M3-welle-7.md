@@ -86,38 +86,28 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
         Trigger — sie sind entweder explizit M5/M6-Material
         oder als Welle-4c+/M5-Erweiterung markiert.
       **Erfuellt mit C3** (dieser Commit-Stack).
-- [ ] **End-to-End-Sweep S-1..S-6** (Pflicht-Punkt aus
+- [x] **End-to-End-Sweep S-1..S-6** (Pflicht-Punkt aus
       `M3-faults-agents-observability.md §3 Welle 7`, Pattern
-      analog M2-Welle-7 §4):
-      - **S-1 — M3-spezifisches Vorabraeumungs-Item**
-        (Trigger-Triage in Welle 0) nachverifizieren: hat
-        Welle 0 alle relevanten Open-Trigger entweder
-        konsumiert oder explizit als out-of-scope markiert?
-      - **S-2 — Sub-Slicing-Schwelle** (§3 Praeambel): keine
-        Welle hat die Sub-Slicing-Schwelle ueberschritten;
-        Welle 4 wurde planmaessig in 4a/4b geteilt. Verifikation
-        per Wellen-Tabelle in `done/M3-results.md`.
-      - **S-3 — Default-Gate ohne Override**: `make gates`
-        cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override
-        (war Welle-6-DoD; mit Welle-6-Closure verifiziert).
-      - **S-4 — kein M3-spezifisches Image-Hardening-Trigger**
-        (Image-Pin-Trigger aus `M2-Notes` ist optional; M3
-        hat keinen neuen Hardening-Bedarf eingebracht). Wenn
-        die Welle-6-Erbschaft (`OTEL_COLLECTOR_IMAGE` Pin,
-        `tools/diagnose_otlp_span_export.py`) hier ausreicht,
-        kein neuer Trigger.
-      - **S-5 — ADR-Erweiterungs-Pattern fortgefuehrt**: sechs
-        M3-ADRs (0022/0023/0024 plus Folge-ADRs 0025/0026/0027)
-        und Hygiene-ADR 0029 (`AC-NO-COVERAGE-PRAGMA`) ohne
-        Supersedes; ADR-0011-Pattern (Schaerfung-ohne-Ablöesung)
-        konsistent angewandt. Verifikation: keine Supersedes-
-        Eintraege in den sieben ADRs; 0022..0027 alle auf
-        `Accepted`.
-      - **S-6 — Lastenheft-Coverage-Sweep**: pruefen, welche
-        M3-relevanten `GG-*`-IDs durch die Welle 1-6 erfuellt
-        sind und welche fuer M4 (Protokolladapter) oder
-        spaeter offen bleiben. Neue `open/`-Trigger fuer M4-
-        Vorlauf-Items, falls relevant.
+      analog M2-Welle-7 §4). **Ausgewertet und dokumentiert in
+      [`../done/M3-results.md`](../done/M3-results.md) §4**
+      (C3-Closure-Artefakt). Zusammenfassung:
+      - **S-1** (Trigger-Triage Welle 0) erfuellt.
+      - **S-2** (Sub-Slicing-Schwelle) erfuellt — nur Welle 4
+        wurde geteilt (4a/4b).
+      - **S-3** (Default-Gate ohne Override) erfuellt seit
+        Welle-4b und mit Welle-6-C2 (`c61ab0d`) bestaetigt.
+      - **S-4** (kein M3-spezifisches Image-Hardening-Trigger)
+        — Welle-6-Erbschaft (Collector-Tag-Pin + Trivy-Audit)
+        reicht, kein neuer Trigger.
+      - **S-5** (ADR-Erweiterungs-Pattern ohne Supersedes)
+        erfuellt — sechs M3-ADRs (0022..0027) plus ADR 0029
+        sind alle Schaerfungen ohne Supersedes.
+      - **S-6** (Lastenheft-Coverage-Sweep) erfuellt — ein
+        neuer Trigger `030-rl-adapter.md` (`GG-FUTURE-001/002`);
+        weitere Restposten (`GG-AGENT-007/008` Welle-4c+/M5,
+        `GG-SAFE-001..006` M6, Snapshot-v2→v3-Migration M6)
+        bleiben in `M3-results.md §5/§7` dokumentiert ohne
+        eigenen Trigger.
 - [ ] **`make gates` A-1 gruen ohne Override** — Stand bleibt
       Welle-6-Ergebnis (`46dbd6e`); kein neuer Code in Welle 7,
       aber Re-Verifikation als Sanity-Check vor End-of-Wave-Move.
