@@ -10,6 +10,12 @@ Sub-Bereich der M3-Triade (Faults `Done` 2026-05-20, Multi-Agent
 `Done` 2026-05-22, Observability **Foundation `Done` 2026-05-23,
 OTLP-Adapter Welle 6**) ab; Welle 7 ist Closure.
 
+**Stand 2026-05-25:** C0 **done**, C1 **done** (alle drei Sub-
+Commits `8eba9ff`/`c99680c`/`54657dc` plus drei Review-Folgen
+`3f887b5`/`c19c69d`/`5493831` — siehe Sub-Commit-Tabelle unter
+C1). C2 (`deploy/compose.yml` OTLP-Collector-Sibling) und C3
+(Integration-Smoke + Runbook + READMEs + DoD-Sync) ausstehend.
+
 **DoD-Checkliste (Welle-6-Abnahme):**
 
 Konvention analog Roadmap §3 M3 — `[ ]` offen, `[x]` erfuellt,
@@ -127,9 +133,12 @@ verteilt:
 | **C1.1** | OpenTelemetry-Dependencies + Import-Linter-Erweiterung (`AC-NO-FW`/`AC-PORTS-NO-FW` um `opentelemetry`+`grpc`) | **Done** — `c98ce1a` (2026-05-24); `make arch-check` 7/7 KEPT |
 | Floor-Refresh | Bestehende Library-Floors (`fastapi`/`uvicorn`/`pydantic`/`psycopg`/`alembic`) auf aktuellen PyPI-Stand | **Done** — `69dd3d1` (2026-05-24); resolved-Versionen unveraendert, nur `requires-dist`-Metadata |
 | **C1.2** | ADR-0024-Schaerfung §4.5 mit 8 Decisions (L-2/N-1/N-2/Sentinel/Trace-ID + D-4-Uebernahme + gRPC-Pinning + Smoke-Determinismus-Pattern) | **Done** — `fa0b11b` (2026-05-24); `make docs-check` exit 0 |
-| **C1.3a** | `OtlpAdapterConfig` (`_config.py` frozen-dataclass mit Allow-List-Validation `{"grpc"}`) + Unit-Tests fuer Konfig-Surface, Defaults, Env-Var-Fallback, Validation-Errors | **Geplant** |
-| **C1.3b** | Drei OTLP-Adapter (`logs.py`/`metrics.py`/`traces.py`) implementieren `LogPort`/`MetricsPort`/`TracePort` mit `| None`-Robustheit (§4.5.1) und ohne `time.*`-Import (§4.5.5); Unit-Tests gegen In-Process-`grpcio`-Mock fuer Surface + Roundtrip + Failure-Modes | **Geplant** |
-| **C1.3c** | `build_otlp_adapters(config)`-Factory + `flush_and_shutdown()`-Helper (§4.5.7 Punkt 4); `__init__.py` Re-Exports; `Dockerfile`-`CRITICAL_COV_TARGETS` um `src/grid_gym/adapters/driven/telemetry_otlp` erweitert; Final-`make gates`-Verifikation | **Geplant** |
+| **C1.3a** | `OtlpAdapterConfig` (`_config.py` frozen-dataclass mit Allow-List-Validation `{"grpc"}`) + Unit-Tests fuer Konfig-Surface, Defaults, Env-Var-Fallback, Validation-Errors | **Done** — `8eba9ff` (2026-05-24) |
+| **C1.3b** | Drei OTLP-Adapter (`logs.py`/`metrics.py`/`traces.py`) implementieren `LogPort`/`MetricsPort`/`TracePort` mit `| None`-Robustheit (§4.5.1) und ohne `time.*`-Import (§4.5.5); Unit-Tests gegen In-Process-`grpcio`-Mock fuer Surface + Roundtrip + Failure-Modes | **Done** — `c99680c` (2026-05-24) |
+| **C1.3c** | `build_otlp_adapters(config)`-Factory + `flush_and_shutdown()`-Helper (§4.5.7 Punkt 4); `__init__.py` Re-Exports; `Dockerfile`-`CRITICAL_COV_TARGETS` um `src/grid_gym/adapters/driven/telemetry_otlp` erweitert; Final-`make gates`-Verifikation | **Done** — `54657dc` (2026-05-24) |
+| **C1-Review-Folge H** | High-Findings H-1/H-2/H-3 inkl. `NullTraceAdapter` (`AC-OTLP-ADAPTER-NO-TIME` als neuer 12. arch_check-Contract via H-2; per Slice 028 inzwischen 13 arch_check-Contracts insgesamt) | **Done** — `3f887b5` (2026-05-24) |
+| **C1-Review-Folge M** | Medium-Findings M-1..M-6 | **Done** — `c19c69d` (2026-05-24) |
+| **C1-Review-Folge L** | Low-Findings L-1/L-2/L-4 | **Done** — `5493831` (2026-05-24) |
 
 Produktive Lieferung (Spec-Detail; verteilt ueber C1.3a/b/c):
 
