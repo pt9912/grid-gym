@@ -1,12 +1,23 @@
 # 028 — Import-Contract fuer modul-lokale `_*Error`-Klassen in `tick_loop.py`
 
-**Status:** Open — Slice 027 Review-Folge L-5 (2026-05-24).
+**Status:** In Progress — aktiviert 2026-05-25 (Move open → in-progress).
 **Quelle:** Code-Reviewer-Findings auf Slice 027 (Commits
-`b1bf914..83b1c50`).
+`b1bf914..83b1c50`); Slice 027 Review-Folge L-5.
 **Ziel:** Verhindern, dass die zehn modul-lokalen Resume-Diagnostik-
 Sub-Klassen (`_DeviceMissingSubSnapshotError`, `_AgentSnapshotDiffersError`,
 etc., siehe `src/grid_gym/hexagon/core/simulation/tick_loop.py:1299..1391`)
 ausserhalb des Moduls importiert werden.
+**Scope-Entscheidung (2026-05-25):** Option 2 wird **generisch** auf
+das `tick_loop`-Modul angewandt — verboten ist **jeder** `from
+grid_gym.hexagon.core.simulation.tick_loop import _<...>`-Import
+ausserhalb des `tick_loop.py`-Moduls selbst (nicht nur die zehn
+Resume-Error-Klassen). Begruendung: Akzeptanz §3 spricht von „ein
+bewusster Verstoss `from tick_loop import _DeviceMissingSubSnapshotError`
+bricht `make arch-check`" — Sub-Klassen sind nur das aktuelle
+Anwendungs-Beispiel. Eine generische Regel auf Modul-Ebene faengt
+auch kuenftige modul-lokale Underscore-Helfer ohne Re-Triage.
+Nicht Teil dieses AC: private Imports aus anderen Hexagon-Modulen
+(eigene Folge-ADR, wenn ueberhaupt).
 
 ---
 
