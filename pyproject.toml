@@ -246,6 +246,17 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # — PLR0913 (max 5 Args) ist hier nicht haltbar, weil die
 # Abhaengigkeits-Liste mit M2-Welle-1..5 strukturell gewachsen ist.
 "src/grid_gym/hexagon/core/simulation/tick_loop.py" = ["PLR0913"]
+# M3-Welle-6-C2: Bounded-Poll auf controlled-internal URL
+# (`http://otel-collector:13133/` per Compose-Sibling-Hostname).
+# `S310` warnt vor user-supplied URLs; hier ist die URL
+# constant + intern. Per-File-Ignore statt `# noqa: S310`
+# (Slice 027 Konvention).
+"tools/wait_otel_collector.py" = ["S310"]
+# M3-Welle-6-C3 / Trigger 029: Matrix-Diagnose-Script darf
+# je Variant-Iteration alle Exceptions fangen (Liste der
+# OTel-SDK-Failure-Modes ist Teil dessen, was wir hier
+# eingrenzen — engerer except waere willkuerlich).
+"tools/diagnose_otlp_span_export.py" = ["BLE001", "S310"]
 
 # ---------------------------------------------------------------------------
 # mypy --strict (ADR 0005)

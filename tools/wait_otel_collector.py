@@ -35,7 +35,7 @@ def main() -> int:
     last_error: BaseException | None = None
     while time.monotonic() < deadline:
         try:
-            urllib.request.urlopen(url, timeout=_PROBE_TIMEOUT_S).read()  # noqa: S310
+            urllib.request.urlopen(url, timeout=_PROBE_TIMEOUT_S).read()
         except (urllib.error.URLError, ConnectionError, TimeoutError, OSError) as exc:
             last_error = exc
             time.sleep(_INTERVAL_S)
