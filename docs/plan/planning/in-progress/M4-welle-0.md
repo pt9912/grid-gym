@@ -1,11 +1,15 @@
 # Welle 0 — M4 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — eroeffnet 2026-05-26. Vorabraeumung +
-Slice-Plan-Eroeffnung fuer M4 (Protokolladapter — MQTT, Modbus,
-OPC-UA, DNP3, IEC 61850). Kanonische M4-Slice-Spezifikation:
-[`M4-protocol-adapters.md`](M4-protocol-adapters.md) (mit C1
-angelegt) — dieses Welle-0-Doc ist der Index zur Welle, nicht
-der Meilenstein-Slice-Plan selbst.
+**Status:** Done — M4-Welle-0 abgeschlossen am 2026-05-26 mit
+`d0bb16e` (C0, Slice-Doc) + `4451c60` (C1, M4-Slice-Plan-
+Eroeffnung) + Review-Folge `9f4ee74` (3 High + 5 Medium + 5
+Low Findings adressiert) + diesem C2 (Trigger-Triage +
+Status-Flip). Vorabraeumung + Slice-Plan-Eroeffnung fuer M4
+(Protokolladapter — MQTT, Modbus, OPC-UA, DNP3, IEC 61850)
+ist geliefert. Kanonische M4-Slice-Spezifikation:
+[`M4-protocol-adapters.md`](M4-protocol-adapters.md) — dieses
+Welle-0-Doc ist der Index zur Welle, nicht der Meilenstein-
+Slice-Plan selbst.
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
 (kein Code-Pfad-Wechsel; Pattern analog M3-Welle-0

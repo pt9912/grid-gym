@@ -160,17 +160,80 @@ in den jeweiligen Adapter-Wellen (Welle 2/3/4).
 
 - Slice-Begleit-Doc [`M4-welle-0.md`](M4-welle-0.md) (C0
   `d0bb16e`).
-- M4-Slice-Plan (dieses Dokument, C1).
-- M4-Welle-0-Trigger-Triage (C2) — siehe
-  [`M4-welle-0.md`](M4-welle-0.md) §3 „Trigger-Drift-Notiz":
-  - Open-Trigger 004 (`canonical encoder`) —
-    MQTT-Payload-Drift; **Aktivierung** erst bei messbarem
-    Perf-Druck am MQTT-Publish-Pfad; bleibt in `open/`.
-  - Open-Trigger 006 (`--strict-bytes`) —
-    Modbus-Register-Drift; **Aktivierung** nach Welle 3
-    re-evaluieren; bleibt vorerst in `open/`.
-  - Trigger 005/007/008/011/016..024/026/030 — M4-fremd,
-    keine Aenderung am Aktivierungs-Trigger; bleiben in
+- M4-Slice-Plan (dieses Dokument, C1 `4451c60`).
+- Review-Folge `9f4ee74` (3 High + 5 Medium + 5 Low
+  Findings; Decision-1-Widerspruch geloest, Checkbox-Zahl
+  korrigiert, `AC-ADAPTER-LIGHTWEIGHT`-Status-Drift
+  entschaerft).
+- M4-Welle-0-Trigger-Triage (C2): Drift-Check der 17 Open-
+  Trigger gegen M4-Scope; Detail-Begruendung in
+  [`M4-welle-0.md`](M4-welle-0.md) §3 „Trigger-Drift-Notiz".
+  - Open-Trigger
+    [`004`](../open/004-canonical-encoder-alternative-adr.md)
+    (`canonical encoder` Alternative `orjson`/`msgspec`) —
+    **M4-Drift**: MQTT-Payloads sind `bytes`; ein
+    performanterer JSON-Encoder koennte den MQTT-Publish-
+    Pfad bedienen. **Aktivierung**: erst bei messbarem
+    Perf-Druck am MQTT-Publish-Throughput; bleibt in
+    `open/`. Welle 6 (Cross-Adapter-Hardening) haelt die
+    Re-Eval-Notiz fest.
+  - Open-Trigger
+    [`005`](../open/005-pyright-vs-mypy-reeval.md)
+    (`pyright`-vs-`mypy`-Re-Eval) — **M4-nicht-blockend**.
+    Adapter-Module fuehren keine neuen generischen Protocols
+    ein. **Aktivierung**: unveraendert (bei generischen
+    Protocols in `ports/*`); bleibt in `open/`.
+  - Open-Trigger
+    [`006`](../open/006-mypy-strict-bytes.md)
+    (`--strict-bytes`) — **M4-Drift**: Modbus-Register
+    forcieren erstmals produktive `bytes`/`int`/`float`-
+    Konvertierungen im Adapter-Code (Welle 3); MQTT-
+    Payloads beruehren `bytes`/`bytearray` (Welle 2).
+    **Aktivierung**: nach M4-Welle-3 (Modbus) re-evaluieren,
+    ob `--strict-bytes` jetzt ohne `# type: ignore`-Inflation
+    greift; bleibt vorerst in `open/`. Welle 6 haelt die
+    Re-Eval-Notiz fest.
+  - Open-Trigger
+    [`007`](../open/007-pyright-precommit-adr.md)
+    (`pyright` als Pre-Commit-Hook) — **M4-nicht-blockend**:
+    Dev-Experience-Trigger. **Aktivierung**: unveraendert
+    (bei Editor-Parity-Druck); bleibt in `open/`.
+  - Open-Trigger
+    [`008`](../open/008-sbom-activation.md)
+    (`make sbom`) — **M4-fremd**: gehoert zum Release-
+    Workflow in M6. **Aktivierung**: unveraendert (mit
+    erster Artefakt-Veroeffentlichung); bleibt in `open/`.
+  - Open-Trigger
+    [`011`](../open/011-mlrandomport-subseed-width.md)
+    (`MLRandomPort` Sub-Seed-Wortbreite) — **M4-fremd**:
+    Multi-Agent-Trigger. **Aktivierung**: unveraendert
+    (bei hochskalierter Multi-Agent-Welle); bleibt in
+    `open/`.
+  - Open-Trigger
+    [`016..019`](../open/) (SOLLTE-Geraete:
+    EV-Charger/Transformer/Wind/Diesel) — **M4-fremd**:
+    keine Geraete-Erweiterung in M4. **Aktivierung**:
+    unveraendert (eigene Slices nach M4); bleiben in
+    `open/`.
+  - Open-Trigger
+    [`020..022`](../open/) (SOLLTE-Netz: Inselnetz,
+    Transformatorgrenzen, Blindleistung) — **M4-fremd**:
+    keine Netz-Erweiterung in M4. **Aktivierung**:
+    unveraendert; bleiben in `open/`.
+  - Open-Trigger
+    [`023..024`](../open/) (SOLLTE-Battery:
+    Temperatur, Zellspannung) — **M4-fremd**: keine
+    Battery-Erweiterung in M4. **Aktivierung**:
+    unveraendert; bleiben in `open/`.
+  - Open-Trigger
+    [`026`](../open/026-bess-simulation-reserve-market-spike.md)
+    (BESS-Reserve-Market-Spike) — **M4-fremd**: Multi-
+    Agent-/RL-Folge-Slice. **Aktivierung**: unveraendert;
+    bleibt in `open/`.
+  - Open-Trigger
+    [`030`](../open/030-rl-adapter.md) (RL-Adapter ueber
+    Multi-Agent-Bus) — **M4-fremd**: Multi-Agent-Folge-
+    Slice. **Aktivierung**: unveraendert; bleibt in
     `open/`.
 
 **Welle-0-Gate:** kein Default-Gate-Sprung; reines Doc-
