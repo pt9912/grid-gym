@@ -2,9 +2,9 @@
 
 **Status:** In Progress — eroeffnet 2026-05-26. Vorabraeumung +
 Slice-Plan-Eroeffnung fuer M4 (Protokolladapter — MQTT, Modbus,
-OPC-UA, DNP3, IEC 61850). Kanonische M4-Slice-Spezifikation wird
-mit C1 in `M4-protocol-adapters.md` (im selben Verzeichnis)
-angelegt — dieses Welle-0-Doc ist der Index zur Welle, nicht
+OPC-UA, DNP3, IEC 61850). Kanonische M4-Slice-Spezifikation:
+[`M4-protocol-adapters.md`](M4-protocol-adapters.md) (mit C1
+angelegt) — dieses Welle-0-Doc ist der Index zur Welle, nicht
 der Meilenstein-Slice-Plan selbst.
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
