@@ -8,7 +8,7 @@ Welle 0..7 verteilt geliefert. M4-Slice-Plan wandert nach
 
 **Datum:** 2026-05-26 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
-Hintergrund liegt in [`M4-welle-0.md`](M4-welle-0.md) §1).
+Hintergrund liegt in [`M4-welle-0.md`](../done/M4-welle-0.md) §1).
 
 **Bezug:**
 
@@ -18,7 +18,7 @@ Hintergrund liegt in [`M4-welle-0.md`](M4-welle-0.md) §1).
   [`../done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md) +
   [`../done/M3-results.md`](../done/M3-results.md).
 - M4-Welle-0-Slice-Begleit-Doc
-  [`M4-welle-0.md`](M4-welle-0.md) (Welle-0-Decision-Liste +
+  [`M4-welle-0.md`](../done/M4-welle-0.md) (Welle-0-Decision-Liste +
   Trigger-Triage).
 - Lastenheft §16 (`GG-MQTT-001`, `GG-MODB-001`,
   `GG-OPCUA-001`, `GG-DNP3-001`, `GG-IEC-001` — alle SOLLTE;
@@ -158,7 +158,7 @@ in den jeweiligen Adapter-Wellen (Welle 2/3/4).
 
 ### Welle 0 — Vorabraeumung + Slice-Plan-Eroeffnung (in progress)
 
-- Slice-Begleit-Doc [`M4-welle-0.md`](M4-welle-0.md) (C0
+- Slice-Begleit-Doc [`M4-welle-0.md`](../done/M4-welle-0.md) (C0
   `d0bb16e`).
 - M4-Slice-Plan (dieses Dokument, C1 `4451c60`).
 - Review-Folge `9f4ee74` (3 High + 5 Medium + 5 Low
@@ -167,7 +167,7 @@ in den jeweiligen Adapter-Wellen (Welle 2/3/4).
   entschaerft).
 - M4-Welle-0-Trigger-Triage (C2): Drift-Check der 17 Open-
   Trigger gegen M4-Scope; Detail-Begruendung in
-  [`M4-welle-0.md`](M4-welle-0.md) §3 „Trigger-Drift-Notiz".
+  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 „Trigger-Drift-Notiz".
   - Open-Trigger
     [`004`](../open/004-canonical-encoder-alternative-adr.md)
     (`canonical encoder` Alternative `orjson`/`msgspec`) —
@@ -244,7 +244,7 @@ Arbeitspaket. `make docs-check` cache-frei gruen
 
 - ADR-Folge (geplant **erster M4-ADR**) fuer
   `DeviceProtocolPort`-Surface mit Entscheidungen aus
-  [`M4-welle-0.md`](M4-welle-0.md) §3 Decision-Liste:
+  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision-Liste:
   - Decision 2 (Sync vs. async Vertrag, **final**):
     sync-`Protocol` mit Adapter-internem Thread/Queue
     **oder** async-`Protocol` mit TickLoop-Shim — ADR
@@ -262,7 +262,7 @@ Arbeitspaket. `make docs-check` cache-frei gruen
   - Decision 1 (DNP3 + IEC-61850 Disposition,
     **provisorisch**): ADR schreibt den Verzicht-Default
     provisorisch fest (Option a aus
-    [`M4-welle-0.md`](M4-welle-0.md) §3 Decision 1).
+    [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision 1).
     Finale Disposition in Welle 5, informiert durch
     asyncua-Erfahrung aus Welle 4.
 - NEU `src/grid_gym/hexagon/ports/driven/device_protocol.py`
@@ -296,7 +296,7 @@ Erweiterung kommt mit Welle 2).
 - NEU Integration-Smoke via testcontainers
   (`eclipse-mosquitto:2`; Reserve `flashmq`/`amqtt` als
   in-process Broker bei Lizenz-Bruch — siehe
-  [`M4-welle-0.md`](M4-welle-0.md) §3 Decision 5).
+  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision 5).
 - `tests/integration/compose.yml`-Erweiterung um
   Mosquitto-Sibling.
 
@@ -362,10 +362,10 @@ OPC-UA-Smoke. Default-`CRITICAL_COV_TARGETS` um
   asyncua-Erfahrung aus Welle 4. Welle 1 hat den Verzicht
   bereits **provisorisch** im Surface-ADR festgeschrieben
   (siehe Welle 1 oben + Decision 1 in
-  [`M4-welle-0.md`](M4-welle-0.md)).
+  [`M4-welle-0.md`](../done/M4-welle-0.md)).
 - Bei Verzicht: keine eigene ADR — Verzicht-Notiz wird
   Anhang zum `DeviceProtocolPort`-Surface-ADR aus Welle 1
-  (siehe [`M4-welle-0.md`](M4-welle-0.md) §3
+  (siehe [`M4-welle-0.md`](../done/M4-welle-0.md) §3
   ADR-Vorbelegung „Obergrenze").
 - Bei Spike: ADR-Folge (geplant **DNP3-/IEC-Spike-ADR**)
   mit reduziertem Scope + Integration-Smoke (oder
@@ -409,10 +409,12 @@ gruen mit Spike-Smoke (oder Mock-only-Unit-Test).
 - `README.md` / `README.de.md` / `AGENTS.md` / Status-Header
   in `roadmap.md` auf M4-Done-Stand syncen (Pattern aus
   M3-Welle-7-Folge `52fa4f8`/`6c5df38`/`0b3164a`).
-- Self-Close-Move: `M4-welle-0.md` und
-  `M4-protocol-adapters.md` per `git mv` nach `done/`
-  (Memory-Konvention `feedback_git_mv`: Move-Only-Commit,
-  kein Rewrite).
+- Self-Close-Move: `M4-protocol-adapters.md` per `git mv`
+  nach `done/` (Memory-Konvention `feedback_git_mv`:
+  Move-Only-Commit, kein Rewrite). `M4-welle-0.md` wurde
+  bereits mit M4-Welle-1-Pre-C0-Move (`556ae9f`) nach
+  `done/M4-welle-0.md` ueberfuehrt — kein erneuter Move in
+  Welle 7.
 - Open-Trigger fuer M4-Restposten (z. B. neue MQTT-Codec-
   Optimierungs-Trigger aus 004-Re-Eval).
 - M4-Welle-7-End-to-End-Sweep (analog M3-Welle-7 §4):

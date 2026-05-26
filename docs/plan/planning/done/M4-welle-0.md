@@ -7,22 +7,24 @@ Low Findings adressiert) + diesem C2 (Trigger-Triage +
 Status-Flip). Vorabraeumung + Slice-Plan-Eroeffnung fuer M4
 (Protokolladapter — MQTT, Modbus, OPC-UA, DNP3, IEC 61850)
 ist geliefert. Kanonische M4-Slice-Spezifikation:
-[`M4-protocol-adapters.md`](M4-protocol-adapters.md) — dieses
+[`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md)
+(bleibt in `in-progress/` bis M4-Welle-7-Closure) — dieses
 Welle-0-Doc ist der Index zur Welle, nicht der Meilenstein-
 Slice-Plan selbst.
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
 (kein Code-Pfad-Wechsel; Pattern analog M3-Welle-0
-[`done/welle-0.md`](../done/welle-0.md)). Welle-0-Decision-Liste
+[`welle-0.md`](welle-0.md)). Welle-0-Decision-Liste
 (§3) sammelt offene Fragen, entscheidet sie aber nicht —
 Entscheidungen wandern in Welle 1 und den ersten M4-ADR.
 
 ## 1. Context
 
 M3 ist seit 2026-05-25 mit Welle-7-Closure abgeschlossen
-([`done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md),
-[`done/M3-results.md`](../done/M3-results.md)). M4 ist laut
-[`roadmap.md §3 M4`](roadmap.md) der naechste aktive Slice mit
+([`M3-faults-agents-observability.md`](M3-faults-agents-observability.md),
+[`M3-results.md`](M3-results.md)). M4 ist laut
+[`roadmap.md §3 M4`](../in-progress/roadmap.md) der naechste
+aktive Slice mit
 fuenf Sub-Adaptern entlang
 [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md):
 
@@ -97,8 +99,8 @@ M3-Welle-0-Pattern (reine Doc-Welle).
    als neuer M4-Slice-Plan mit Vorbelegung Welle 0..7,
    Out-of-Scope, Risiken + Fallback, Akzeptanz-/Exit-Kriterien
    (Pattern analog
-   [`done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md)
-   und [`done/M2-devices.md`](../done/M2-devices.md)).
+   [`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
+   und [`M2-devices.md`](M2-devices.md)).
 2. Welle-0-Decision-Liste als §3 in
    `M4-protocol-adapters.md` aufnehmen (Entscheidungen
    bleiben offen; werden in Welle 1 + erstem M4-ADR
@@ -239,7 +241,7 @@ Sub-Welle.
      MQTT setzt das Pattern).
 5. **Test-Sibling-Container.** Welche Broker brauchen
    testcontainers (Pattern aus
-   [`done/009-tests-integration-compose.md`](../done/009-tests-integration-compose.md))?
+   [`009-tests-integration-compose.md`](009-tests-integration-compose.md))?
    - MQTT: `eclipse-mosquitto:2` (gut verfuegbar; Reserve
      bei Lizenz-Bruch: in-process Broker via `flashmq` /
      `amqtt`).
@@ -300,7 +302,7 @@ Sub-Welle.
 - **Kein `git mv`** in C0 — anders als M3-Welle-0 erbt
   M4-Welle-0 keinen Restposten (M3-Welle-7-Closure hat
   bereits alles nach `done/` gewandert; siehe
-  [`done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md)
+  [`M3-faults-agents-observability.md`](M3-faults-agents-observability.md)
   §6).
 
 ### C1 — `docs(plan)`: M4-Slice-Plan eroeffnen — protocol-adapters
