@@ -14,16 +14,19 @@ LIGHTWEIGHT` aus `ADR 0002 §A-1` greift weiter),
 Envelope-Schema-Bump-Pfad fuer Decision 7
 Reversibilitaet),
 [`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wiring.md)
-§2.5 (TickLoop-Vor-Tick-Block — Lifecycle-Anker fuer
-Decision 3 `start`/`stop` rund um `TickLoop.run()`),
+§2.8 (Tick-Reihenfolge / Vor-Tick-Block — Praezedenz-
+Anker fuer vor-Tick-/nach-Tick-Hook-Punkte; **Lifecycle
+fuer `start`/`stop` rund um `TickLoop.run()` ist mit
+dieser ADR neu**, in ADR 0021 noch nicht spezifiziert),
 [`ADR 0022`](0022-fault-injection-protocol.md) §2.5
 (neuer Driven-Port-Slot-Pattern: `FaultPort` als
 Praezedenz fuer neuen Driven-Port mit Konstruktor-Kwarg-
 Symmetrie + None-Default-Hook-Skip),
-[`ADR 0024`](0024-observability-port-trio.md) §1
-(Driven-Port-Trio ohne SDK-Typen im Port-Layer —
-Praezedenz fuer Decision 2 „Port bleibt
-Protokoll-Library-frei").
+[`ADR 0024`](0024-observability-port-trio.md) §2.1
+(Gemeinsame Port-Surface-Form — Praezedenz fuer
+Decision 2 „Port bleibt Protokoll-Library-frei";
+Trio-Definitionen in §2.2–§2.4 spiegeln das Pattern
+pro Port).
 M4-Slice-Plan
 [`in-progress/M4-protocol-adapters.md`](../planning/in-progress/M4-protocol-adapters.md)
 §3 Welle 1; M4-Welle-0-Decision-Liste
@@ -35,9 +38,14 @@ SOLLTE; Z. 1120–1163 inkl. Cross-Cutting-Pflicht
 „Simulations-/Testadapter").
 Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-
 Tabelle, Z. 249) + §8.2 (Adapter-Interfaces-Driven-
-Beschreibung, Z. 510–512) + §16 (Deployment-Sicht:
-Protokoll-Adapter leben im `simulation`-Container,
-**kein** eigener Service).
+Beschreibung, Z. 510–512) + §16 (Deployment-Sicht
+listet `simulation` als einzigen Worker-Service ohne
+explizite Adapter-Verortung — daraus folgt, und **diese
+ADR schreibt es normativ fest**, dass Protokoll-Adapter
+im `simulation`-Container leben und keinen eigenen
+Compose-Service erhalten; vgl. Welle-0-Inferenz in
+[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md)
+§1).
 
 ---
 
@@ -95,7 +103,7 @@ Welle-1-C2).
 
 ADR 0030 legt vier Surface-Decisions fest.
 
-### 2.1 Decision 2 — Sync-Protocol mit Adapter-internem Event-Loop-Thread (final)
+### 2.1 Decision 2 — Sync-Charakter (final); Methoden-Signaturen (Welle-1-C2-Skizze + Welle-2-Schaerfung)
 
 `DeviceProtocolPort` ist ein sync-`typing.Protocol`. Async-
 Stacks (`asyncua`, ggf. DNP3/IEC) marshalen Calls
@@ -134,17 +142,27 @@ geschaerft. Welle 1 liefert das Surface-Minimum.
   Thread+Loop-Konstruktion — das Vorbild fehlt im
   bestehenden Codebase, ist aber Standard-Pattern
   (siehe asyncua-Doku „Synchronous wrapper").
-- `paho-mqtt` und `pymodbus` (sync) brauchen keinen
-  Thread-Marshal — sie fuegen sich direkt in den
-  sync-Port ein.
+- `pymodbus` (sync-Client) fuegt sich direkt in den
+  sync-Port ein, ohne Adapter-internen Thread-Marshal.
+- `paho-mqtt` ist nur **halb** sync: der Client laeuft
+  per `loop_start()` in einem internen Thread, und
+  Callbacks (`on_message`, `on_connect`) feuern aus
+  diesem Thread. Welle-2-MQTT-Adapter loest den
+  Callback→Sync-Port-Marshal **adapter-intern** ueber
+  eine thread-sichere `queue.Queue` (oder
+  `loop_forever()`-in-eigenem-Thread mit interner
+  Queue). Welle-2-Implementer-Auflage in §4.
 
 **Konsequenz:** Welle 4 (OPC-UA) tragt die Thread+Loop-
-Konstruktion zum ersten Mal real. Falls sich dort die
-Wahl als zu schmerzhaft erweist, schaerft eine
-Folge-ADR den Vertrag (Schaerfung-ohne-Supersede per
-ADR 0011) — entweder durch async-`Protocol`-Ergaenzung
-oder durch dedizierten `AsyncDeviceProtocolPort` als
-Schwester-Port.
+Konstruktion fuer einen rein-async-Stack zum ersten Mal
+real. Falls sich dort die Wahl als zu schmerzhaft
+erweist, schaerft eine Folge-ADR den Vertrag (Schaerfung-
+ohne-Supersede per ADR 0011) — entweder durch async-
+`Protocol`-Ergaenzung oder durch dedizierten
+`AsyncDeviceProtocolPort` als **Schwester-Port**
+(eigenstaendiger, parallel-existierender Port mit
+eigenem Protocol-Vertrag, beide ueber separate
+TickLoop-Kwargs verkabelt).
 
 ### 2.2 Decision 3 — Lifecycle bei TickLoop.run()-Start (final)
 
@@ -175,9 +193,37 @@ einem `try/finally`-Block).
 `protocol_ports: tuple[DeviceProtocolPort, ...] | None =
 None` (keyword-only, Default `None` skippt Lifecycle —
 Pattern analog ADR 0022 §2.5 `fault_port`-Default).
-`TickLoop.run()` ruft `start()`/`stop()` in
-deterministischer Reihenfolge (Tuple-Index aufsteigend);
-`stop()` ist Pflicht-`try/finally`.
+**Tuple statt Single-Port**, weil Welle 2..5
+koexistierende Adapter-Instanzen erwartet (MQTT + Modbus
++ OPC-UA gleichzeitig im selben Run).
+
+**Reihenfolge-Vertrag (Decision 3 normativ):**
+
+- `start()` in **FIFO** (Tuple-Index aufsteigend) —
+  Reihenfolge ist deterministisch und steuerbar ueber
+  die Tuple-Konstruktion im Caller.
+- `stop()` in **LIFO** (Tuple-Index absteigend) — falls
+  Adapter N auf Ressourcen von Adapter N-1 angewiesen
+  ist (z. B. gemeinsamer Connection-Pool, geteilter
+  Bus), wird er **vor** N-1 abgebaut. Standard-
+  Lifecycle-Pattern; kostet nichts, wenn Adapter
+  unabhaengig sind.
+
+**Partial-Start-Failure-Vertrag (Decision 3 normativ):**
+
+- Wirft `protocol_ports[i].start()` (mit i > 0) eine
+  Exception, ruft `TickLoop.run()` **Best-Effort-Cleanup**:
+  bereits gestartete `protocol_ports[0..i-1]` werden in
+  **LIFO**-Reihenfolge mit `stop()` abgebaut. Exceptions
+  aus `stop()` waehrend Cleanup werden als
+  `__context__` an die Original-Start-Exception gehaengt
+  (`raise ... from None` nicht verwenden).
+- Anschliessend wird die Original-Start-Exception
+  propagiert. `TickLoop.run()` beginnt **nicht** mit
+  dem ersten Tick, wenn ein Adapter den `start()`
+  verweigert hat.
+- `stop()`-Pflicht-`try/finally` deckt den Erfolgs-Pfad
+  und den Tick-Exception-Pfad.
 
 ### 2.3 Decision 7 — Stateless aus Replay-Sicht (final, reversibel)
 
@@ -198,6 +244,15 @@ Sub-Snapshot-Slot hinzu.
   Decision 3-Lazy-Connect-Pattern).
 - Snapshot-Schema bleibt `v2` (M3-Welle-6a-Stand);
   kein Bump in M4-Welle-1.
+
+**Snapshot-Restore-Pfad:** wenn ein Run aus
+`SnapshotEnvelope` via `from_snapshot(...)` fortgesetzt
+wird, ruft `TickLoop.run()` `start()` der konfigurierten
+`protocol_ports` **regulaer wie aus Cold-Start** auf.
+Es gibt **keinen** gesonderten `from_snapshot()`-
+Lifecycle-Pfad fuer Adapter; Reconnect-Logik ist
+vollstaendig Adapter-Verantwortung (Retry-Backoff aus
+Decision 3-Lazy-Connect-Pattern).
 
 **Konsequenz:** Falls Welle 3+ (Modbus, OPC-UA) zeigt,
 dass Adapter-State persistent gebraucht wird (z. B.
@@ -308,6 +363,14 @@ Bedarf konkret ist.
 - **OTel-Span-Wrap** fuer Adapter-Calls ist optionale
   Welle-6-Material (Cross-Adapter-Hardening); ADR 0024
   `TracePort` bleibt der Bezug.
+- **Cross-Cutting-Doku-Pflicht** (Lastenheft
+  Z. 1161–1163): alle
+  `adapters/driven/protocol_*/`-Module dokumentieren
+  explizit den **Test-/Simulationscharakter** in
+  README oder Modul-Docstring; keine
+  Produktivsteuerung-Versprechen. Welle 6 prueft den
+  Sweep ueber alle `protocol_*`-Module
+  (`M4-protocol-adapters.md §3 Welle 6 Lastenheft-Sync`).
 
 ---
 
@@ -330,11 +393,17 @@ Bedarf konkret ist.
 
 ## 6. Verzicht-Anhang-Slot (Decision 1, fuer Welle 5)
 
-Dieser Abschnitt bleibt in der Welle-1-Version **leer**.
-Welle 5 fuellt ihn entweder mit dem **Verzicht-Text**
-(Begruendung Lizenz/Maintenance, Hinweis auf
+Dieser Abschnitt ist in der Welle-1-Version
+**Platzhalter** — die Metabeschreibung darunter
+beschreibt die zwei moeglichen Welle-5-Fuellungen, der
+normative Anhang-Inhalt selbst ist in Welle 1
+**inhaltslos**.
+
+Welle 5 fuellt den Anhang entweder mit dem **Verzicht-
+Text** (Begruendung Lizenz/Maintenance, Hinweis auf
 SOLLTE-Charakter der `GG-DNP3-001`/`GG-IEC-001`-IDs) oder
-laesst ihn leer und referenziert einen eigenen Spike-ADR.
+laesst ihn als Platzhalter und referenziert einen eigenen
+Spike-ADR.
 
 Bis Welle 5 gilt: **DNP3 und IEC 61850 sind in M4
 out-of-scope**; Lastenheft §16 Z. 1146–1159 bleiben durch
