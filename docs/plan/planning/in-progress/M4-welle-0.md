@@ -189,13 +189,18 @@ Sub-Welle.
 1. **DNP3 + IEC-61850 Disposition.** Roadmap §3 M4 DoD
    erlaubt explizit „dokumentierter Verzicht via
    Out-of-Scope-Note". Optionen:
-   - (a) Welle 5 als Verzicht-ADR (Begruendung:
-     Lizenz/Maintenance-Last der `pydnp3`/`asyncio-iec61850`-
-     Bibliotheken; Test-Sibling-Container schwer
-     verfuegbar).
+   - (a) Welle 5 als Verzicht-Anhang zum
+     `DeviceProtocolPort`-Surface-ADR aus Welle 1
+     (Begruendung: Lizenz/Maintenance-Last der
+     `pydnp3`/`asyncio-iec61850`-Bibliotheken; Test-
+     Sibling-Container schwer verfuegbar).
    - (b) Welle 5 als Spike mit reduziertem Scope (nur
      Read-Pfad, ein Profil).
-   - Entscheidung: Welle 1 (gemeinsam mit erstem M4-ADR).
+   - **Welle 1** schreibt den Default-Verzicht
+     **provisorisch** im ersten M4-ADR fest (Option a als
+     Default-Pfad). **Finale Disposition** in Welle 5,
+     informiert durch die asyncua-Erfahrung aus Welle 4 +
+     Test-Container-Verfuegbarkeit zum Welle-5-Zeitpunkt.
 2. **Sync vs. async Adapter-Vertrag.** TickLoop ist sync;
    `paho-mqtt` ist sync, `asyncua` und die meisten
    DNP3/IEC-Stacks sind async. `pymodbus` ≥ 3 bietet
@@ -370,10 +375,12 @@ Sub-Welle.
 - **Welle-0-Decision-Liste sammelt zu viel, Welle 1
   zerfaellt.** 7 offene Fragen — wenn Welle 1 alle
   gleichzeitig im ersten M4-ADR entscheiden will,
-  ueberzieht sie. *Mitigation*: Welle 1 entscheidet nur
-  Fragen 1 + 2 + 3 + 7 (Port-Surface-relevant); Fragen
+  ueberzieht sie. *Mitigation*: Welle 1 entscheidet
+  Fragen 2 + 3 + 7 final (Port-Surface-relevant) und
+  Frage 1 nur **provisorisch** (Verzicht-Default); Fragen
   4 + 5 + 6 wandern in Welle 2 (MQTT als erstes konkretes
-  Adapter-Beispiel).
+  Adapter-Beispiel). Finale Disposition Frage 1 in
+  Welle 5.
 - **DNP3/IEC-Disposition kippt nach Welle 4.** Wenn
   asyncua-Erfahrung aus Welle 4 zeigt, dass async-Stacks
   in einer sync-`DeviceProtocolPort`-Surface schmerzhaft
