@@ -77,10 +77,13 @@ ab Welle 2 (MQTT).
      Thread + Queue** (Pattern-Praezedenz pruefen:
      [`telemetry_otlp/`](../../../../src/grid_gym/adapters/driven/telemetry_otlp/)).
    - **Decision 3 (Lifecycle, final)**: konkrete Wahl in
-     ADR §2 — Default-Vorschlag ist **bei
-     `TickLoop.run()`-Start** (Replay-Mode laesst Adapter
-     weg; Adapter-Lifetime == Run-Lifetime, nicht
-     Service-Lifetime).
+     ADR §2 — Review-Folge-Wahl ist **expliziter
+     Caller-Scope**:
+     `start_protocol_ports()`/`stop_protocol_ports()`
+     wrappen die bestehende Caller-getriebene Tick-
+     Schleife (Replay-Mode laesst Adapter weg;
+     Adapter-Lifetime == Run-Scope, nicht Service-
+     Lifetime).
    - **Decision 7 (Snapshot-Pflicht, final)**:
      **stateless aus Replay-Sicht**; Reconnect-State ist
      volatile. Reversibilitaet via ADR-0015-Pattern
@@ -160,8 +163,8 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   fuer den Schema-Bump-Pfad (Decision 7
   Reversibilitaet).
 - [`ADR 0021`](../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md)
-  §2.5 (`TickLoop.run()`-Pre-Tick-Block) als
-  Lifecycle-Anker fuer Decision 3.
+  §2.8 (Tick-Reihenfolge / Vor-Tick-Block) als
+  Praezedenz-Anker fuer Decision 3.
 
 **Vorbelegungs-Liste fuer M4-Folge-ADRs** (kommen ab
 Welle 2; werden nicht in Welle 1 angelegt):
@@ -290,10 +293,13 @@ Welle 2; werden nicht in Welle 1 angelegt):
   baut.
 - **Decision 3-Wahl bricht Welle 2 (MQTT)**: `paho-mqtt`
   hat eigene Threading-Annahmen. Falls Connect-im-
-  TickLoop-Start zu Latenz-Spitzen am ersten Tick fuehrt,
-  muss Welle 2 die Lifecycle-Entscheidung in C2-Folge-ADR
-  schaerfen. *Mitigation*: Reconnect-Logik im Adapter +
-  Lazy-Connect-Pattern als Welle-2-Decision-Folge.
+  expliziten Caller-Scope zu Latenz-Spitzen am ersten
+  Tick fuehrt oder Caller `try/finally`-Disziplin
+  uneinheitlich wird, muss Welle 2 die Lifecycle-
+  Entscheidung in C2-Folge-ADR schaerfen. *Mitigation*:
+  Reconnect-Logik im Adapter + Lazy-Connect-Pattern als
+  Welle-2-Decision-Folge; C2-Tests pinnen FIFO/LIFO,
+  Partial-Cleanup und idempotenten Stop.
 - **`AC-ADAPTER-LIGHTWEIGHT`-Filter Regression durch
   Refactoring**: ein paralleler Welle-2-Commit koennte
   versehentlich den Filter aufweichen (z. B. wenn der

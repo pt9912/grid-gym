@@ -252,8 +252,11 @@ Arbeitspaket. `make docs-check` cache-frei gruen
     [`telemetry_otlp/`](../../../../src/grid_gym/adapters/driven/telemetry_otlp/)
     pruefen.
   - Decision 3 (Lifecycle, **final**): `start`/`stop` bei
-    Service-Boot in `bootstrap` **oder** bei
-    `TickLoop.run()`-Start — ADR setzt die Antwort scharf.
+    Service-Boot in `bootstrap`, interner `TickLoop.run()`-
+    Schleife, Context-Manager, Runner-Wrapper **oder**
+    explizitem Caller-Scope via
+    `start_protocol_ports()`/`stop_protocol_ports()` —
+    ADR setzt die Antwort scharf.
   - Decision 7 (Snapshot-Pflicht, **final**): ADR schreibt
     den stateless-Default aus Replay-Sicht fest
     (Reconnect-State volatile); Reversibilitaet ist via

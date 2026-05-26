@@ -16,8 +16,9 @@ Reversibilitaet),
 [`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wiring.md)
 §2.8 (Tick-Reihenfolge / Vor-Tick-Block — Praezedenz-
 Anker fuer vor-Tick-/nach-Tick-Hook-Punkte; **Lifecycle
-fuer `start`/`stop` rund um `TickLoop.run()` ist mit
-dieser ADR neu**, in ADR 0021 noch nicht spezifiziert),
+fuer `start`/`stop` rund um die Caller-getriebene
+Tick-Schleife ist mit dieser ADR neu**, in ADR 0021 noch
+nicht spezifiziert),
 [`ADR 0022`](0022-fault-injection-protocol.md) §2.5
 (neuer Driven-Port-Slot-Pattern: `FaultPort` als
 Praezedenz fuer neuen Driven-Port mit Konstruktor-Kwarg-
@@ -164,25 +165,52 @@ ohne-Supersede per ADR 0011) — entweder durch async-
 eigenem Protocol-Vertrag, beide ueber separate
 TickLoop-Kwargs verkabelt).
 
-### 2.2 Decision 3 — Lifecycle bei TickLoop.run()-Start (final)
+### 2.2 Decision 3 — Lifecycle um die Caller-getriebene Tick-Schleife (final)
 
-`DeviceProtocolPort.start()` wird vom TickLoop in
-`TickLoop.run()` aufgerufen, **vor** dem ersten Tick;
-`stop()` nach dem letzten Tick (oder bei Exception, in
-einem `try/finally`-Block).
+`DeviceProtocolPort.start()` / `stop()` werden durch
+explizite `TickLoop`-Methoden gesteuert:
+`start_protocol_ports()` startet die konfigurierten
+Adapter **vor** dem ersten Caller-`tick()`;
+`stop_protocol_ports()` stoppt sie nach dem letzten
+Caller-`tick()` oder bei Exception, wenn der Caller den
+Tick-Block in `try/finally` wrappt.
+
+Normativer Caller-Scope:
+
+```text
+loop.start_protocol_ports()
+try:
+    for _ in range(ticks):
+        loop.tick()
+finally:
+    loop.stop_protocol_ports()
+```
+
+`TickLoop` fuehrt **keine** neue `run(ticks)`-Methode ein.
+Die Tick-Granularitaet bleibt beim bestehenden Pattern:
+Caller pumpen einzelne Ticks und behalten Kontrolle ueber
+Pause/Resume, Snapshot-Zeitpunkte, API-Abbruch und Demo-
+Schleifen.
 
 **Begruendung:**
 
-- Adapter-Lifetime == Run-Lifetime, nicht Service-
-  Lifetime. Replay-Mode (`ReplaySamplePort` als
-  Eingabe) skippt das `start()` — der Replay-Pfad
-  laeuft, ohne dass MQTT-Verbindungen oder Modbus-
-  Polls aufgemacht werden.
+- Adapter-Lifetime == expliziter Run-Scope des Callers,
+  nicht Service-Lifetime. Replay-Mode (`ReplaySamplePort`
+  als Eingabe) ruft `start_protocol_ports()` nicht auf
+  oder uebergibt keine `protocol_ports` — der Replay-Pfad
+  laeuft, ohne dass MQTT-Verbindungen oder Modbus-Polls
+  aufgemacht werden.
 - Konsistenz mit `GG-AR-OPEN-002`-Entscheidung
   ([`ADR 0012`](0012-api-simulation-two-processes.md)):
   der `simulation`-Worker kann mehrere Runs hintereinander
   fahren, ohne dass Protokoll-Verbindungen zwischen
   Runs persistieren.
+- Konsistenz mit `GG-SIM-001`/`GG-ARCH-007`: `TickLoop`
+  bleibt tick-granular; die Anzahl und Kadenz der Ticks
+  bleibt eine Caller-Entscheidung.
+- Konsistenz mit dem bestehenden Caller-pumpt-Pattern in
+  HTTP-API, MVP-Demo, Tests und Integration: C2 muss keine
+  breite Migration auf eine neue Runner-API erzwingen.
 - Connect-Latency-Spike am ersten Tick wird durch
   Adapter-internes Lazy-Connect-Pattern + Retry-
   Backoff mitigiert — der `start()`-Call kann
@@ -212,18 +240,23 @@ koexistierende Adapter-Instanzen erwartet (MQTT + Modbus
 **Partial-Start-Failure-Vertrag (Decision 3 normativ):**
 
 - Wirft `protocol_ports[i].start()` (mit i > 0) eine
-  Exception, ruft `TickLoop.run()` **Best-Effort-Cleanup**:
-  bereits gestartete `protocol_ports[0..i-1]` werden in
-  **LIFO**-Reihenfolge mit `stop()` abgebaut. Exceptions
-  aus `stop()` waehrend Cleanup werden als
-  `__context__` an die Original-Start-Exception gehaengt
-  (`raise ... from None` nicht verwenden).
+  Exception, fuehrt `start_protocol_ports()` **Best-
+  Effort-Cleanup** aus: bereits gestartete
+  `protocol_ports[0..i-1]` werden in **LIFO**-Reihenfolge
+  mit `stop()` abgebaut. Exceptions aus `stop()` waehrend
+  Cleanup werden als `__context__` an die Original-Start-
+  Exception gehaengt (`raise ... from None` nicht
+  verwenden).
 - Anschliessend wird die Original-Start-Exception
-  propagiert. `TickLoop.run()` beginnt **nicht** mit
-  dem ersten Tick, wenn ein Adapter den `start()`
-  verweigert hat.
-- `stop()`-Pflicht-`try/finally` deckt den Erfolgs-Pfad
-  und den Tick-Exception-Pfad.
+  propagiert. Der Caller beginnt **nicht** mit dem ersten
+  Tick, wenn ein Adapter den `start()` verweigert hat.
+- `stop_protocol_ports()` ist idempotent fuer den
+  "nichts gestartet"-Fall und stoppt nur Ports, die seit
+  dem letzten erfolgreichen `start_protocol_ports()` als
+  gestartet markiert wurden.
+- Der Caller-`try/finally` deckt den Erfolgs-Pfad und den
+  Tick-Exception-Pfad; `TickLoop` kapselt nur FIFO/LIFO und
+  Partial-Cleanup, nicht die Tick-Schleife selbst.
 
 ### 2.3 Decision 7 — Stateless aus Replay-Sicht (final, reversibel)
 
@@ -247,9 +280,10 @@ Sub-Snapshot-Slot hinzu.
 
 **Snapshot-Restore-Pfad:** wenn ein Run aus
 `SnapshotEnvelope` via `from_snapshot(...)` fortgesetzt
-wird, ruft `TickLoop.run()` `start()` der konfigurierten
-`protocol_ports` **regulaer wie aus Cold-Start** auf.
-Es gibt **keinen** gesonderten `from_snapshot()`-
+wird, ruft der Caller `start_protocol_ports()` der
+konfigurierten `protocol_ports` **regulaer wie aus
+Cold-Start** auf, bevor er einzelne `tick()`-Aufrufe
+pumpt. Es gibt **keinen** gesonderten `from_snapshot()`-
 Lifecycle-Pfad fuer Adapter; Reconnect-Logik ist
 vollstaendig Adapter-Verantwortung (Retry-Backoff aus
 Decision 3-Lazy-Connect-Pattern).
@@ -298,7 +332,7 @@ asyncua-Erfahrung aus Welle 4.
 
 **A1 (verworfen) — Async-`DeviceProtocolPort`-Surface mit
 TickLoop-Sync-Shim:** wuerde alle bestehenden Sync-
-Driven-Ports unberuehrt lassen, aber das `TickLoop.run()`-
+Driven-Ports unberuehrt lassen, aber das `TickLoop`-
 Innere mit einem Sync->Async-Bridge belasten (z. B.
 `asyncio.run_in_executor` oder eigenes `asyncio.run()`-
 Pattern um den ganzen Tick-Block). Verworfen, weil der
@@ -317,15 +351,42 @@ Folge-ADR per ADR-0011-Pattern (Schaerfung-ohne-
 Supersedes); Schwester-Port ist dann legitim, weil
 Welle-4-Erfahrung die Notwendigkeit konkret zeigt.
 
-**A3 (verworfen) — Adapter-Lifecycle bei Service-Boot in
+**A3 (verworfen) — `TickLoop.run(ticks)` mit internem
+Lifecycle:** wuerde den Lifecycle fuer Caller sehr bequem
+machen, aber eine zweite TickLoop-Bedienform einfuehren:
+`tick()` fuer alte Caller, `run(ticks)` fuer neue Caller.
+Verworfen, weil das gegen die bisherige Tick-Granularitaet
+aus `GG-SIM-001`/`GG-ARCH-007` driftet und HTTP-API,
+MVP-Demo, Tests und Integration breit migriert werden
+muessten. Die Lifecycle-Sicherheit wird stattdessen ueber
+`start_protocol_ports()` / `stop_protocol_ports()` plus
+Caller-`try/finally` erreicht.
+
+**A4 (verworfen) — `TickLoop.protocol_lifecycle()` als
+Context-Manager:** waere Python-idiomatisch und wuerde den
+Scope sauber ausdruecken (`with loop.protocol_lifecycle():
+...`). Verworfen fuer Welle 1, weil kein anderer Driven-
+Port am TickLoop aktuell eine eigene Context-Manager-
+Konvention hat; `fault_port`/`agent_bus`/Observability-
+Hooks bleiben Konstruktor-Kwarg + Hook-Methode/`tick()`-
+Pattern.
+
+**A5 (verworfen) — `build_tick_loop()` liefert optionalen
+Runner:** ein `TickLoopRunner`-Wrapper koennte `run(ticks)`
+besitzen, waehrend roher `TickLoop` rueckwaertskompatibel
+bleibt. Verworfen wegen unnoetig breiter Surface: zwei
+Klassen mit ueberlappender Verantwortung, obwohl Welle 1
+nur FIFO/LIFO-Lifecycle und Partial-Cleanup braucht.
+
+**A6 (verworfen) — Adapter-Lifecycle bei Service-Boot in
 `bootstrap`:** wuerde MQTT-/Modbus-Verbindungen
 prozess-lebenslang halten, analog `PostgresRunRepository`.
 Verworfen, weil Replay-Mode dann zwingend Protokoll-
 Verbindungen aufmachen wuerde (oder einen Skip-Flag
 braucht) — beides ist Komplexitaet, die die
-TickLoop.run()-Variante nicht hat.
+explizite Caller-Scope-Variante nicht hat.
 
-**A4 (verworfen) — Adapter-Snapshot-Slot in
+**A7 (verworfen) — Adapter-Snapshot-Slot in
 `SnapshotEnvelope` ab Welle 1 (Default ON):** wuerde
 Welle 3+ ohne Schema-Bump erlauben, Reconnect-State zu
 persistieren. Verworfen wegen YAGNI — Welle 1 hat keinen
@@ -346,10 +407,13 @@ Bedarf konkret ist.
   (`tools/arch_check.py:1089`).
 - **TickLoop-Erweiterung in Welle-1-C2:** neuer
   Konstruktor-Kwarg `protocol_ports` (keyword-only,
-  `None`-Default skippt Lifecycle); `run()` ruft
-  `start()`/`stop()` in `try/finally`. Pattern analog
+  `None`-Default skippt Lifecycle); neue Methoden
+  `start_protocol_ports()` / `stop_protocol_ports()`
+  kapseln FIFO-Start, LIFO-Stop und Partial-Cleanup.
+  Caller wrappen ihre bestehende Tick-Schleife in
+  `try/finally`. Pattern analog
   `fault_port`/`agent_bus`/`log_port`-Kwargs aus
-  ADR 0022/0023/0024.
+  ADR 0022/0023/0024, ohne neue Runner-API.
 - **Snapshot-Vertrag bleibt v2 in M4.** Schema-Bump
   v2 → v3 ist Folge-ADR-Material, falls Welle 3+
   Persistenz-Bedarf zeigt.
