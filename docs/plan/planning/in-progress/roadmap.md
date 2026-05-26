@@ -1,22 +1,35 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen
-**Stand:** 2026-05-25
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 1
+**Stand:** 2026-05-26
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
-  M3 `Done` (Welle 0..7).
-- **Naechster aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
+  M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
+  Welle 1 mit C0+C1+Review-Folge+H4-Folge+C2 geliefert,
+  C3-Doc-Sync ausstehend).
+- **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
-  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1).
-- **Tests:** 1138 Unit + 21 Integration gruen; Coverage 96 % total.
-- **Build:** `make fullbuild` cache-frei gruen ohne Override seit
-  Welle-6-C2 (`c61ab0d`) — mit OTLP-Collector-Sibling im Compose-
-  Smoke + Trivy-Image-Audit fuer beide Tags.
+  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Proposed`**
+  (M4-Welle-1-C1 `DeviceProtocolPort`-Surface, Caller-Scope-
+  Lifecycle; `Provisional` geplant mit C2-Merge, `Accepted` mit
+  M4-Welle-7-Closure).
+- **Tests:** 1161 Unit + 21 Integration gruen (Stand `d09adf3`;
+  +23 Unit-Tests ggue. M3-Closure fuer `DeviceProtocolPort`-
+  Protocol-Surface + TickLoop-FIFO/LIFO + Partial-Start-Failure-
+  Context-Chain); Coverage 96 % total.
+- **Build:** `make gates` cache-frei gruen ohne Override
+  (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
+  HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
+  Fix `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
+  M3-Welle-7-`c61ab0d`, **nicht durch M4-Welle-1-Code verursacht**;
+  Base-Image-Bump in separatem Stack.
 - **Contracts:** 19 A-1 (6 import-linter + 13 arch_check inkl.
   `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-RESUME-
-  ERRORS`).
+  ERRORS`); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*` weiter
+  via `tools/arch_check.py:1089` (Regression-Schutz in Welle-1-C2
+  verifiziert).
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 

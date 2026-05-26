@@ -16,15 +16,20 @@ lokalen, nachvollziehbaren Umgebung modellieren wollen.
 
 ## Status
 
-**Stand 2026-05-25:** M1 (Tick-Loop-Spine), M2 (Geraetemodelle) und
-M3 (Faults + Multi-Agent + Observability) sind alle `Done`. M3
-wurde mit Welle 7 geschlossen (sechs M3-ADRs `Accepted`, Trigger 006
-verschoben, S-1..S-6-End-to-End-Sweep, vollstaendige Closure-Notiz
-[`done/M3-results.md`](docs/plan/planning/done/M3-results.md)).
-**Naechster aktiver Slice: M4** (Protokolladapter — MQTT, Modbus,
-OPC-UA, DNP3, IEC 61850). Trigger 029 (vermuteter OTLP-Span-
-Export-Bug) wurde als Fehlbefund geschlossen — der eigentliche Bug
-lag am Span-Regex im Smoke-Test.
+**Stand 2026-05-26:** M1 (Tick-Loop-Spine), M2 (Geraetemodelle) und
+M3 (Faults + Multi-Agent + Observability) sind alle `Done`. **M4
+(Protokolladapter) ist `In Progress`** — Welle 0 ist
+abgeschlossen (Slice-Plan eroeffnet + Trigger-Triage;
+`done/M4-welle-0.md` nach Self-Close-Move `556ae9f`); Welle 1
+(`DeviceProtocolPort`-Foundation) hat C0 (Slice-Doc), C1
+(ADR 0030 `Proposed`), die H1-H3+M1-M4+L1-L5-Review-Folge, eine
+H4-Folge (`TickLoop.run()` existiert nicht — Decision 3 auf
+Caller-Scope `start_protocol_ports()`/`stop_protocol_ports()`
+umgeformt) und C2 (`feat` — Port + `*Error`-Hierarchie + TickLoop-
+Lifecycle-Methoden + 1161 Unit-Tests gruen) geliefert. C3
+(Doc-Sync / `Proposed → Provisional`) ist noch offen. Trigger 029
+(vermuteter OTLP-Span-Export-Bug) wurde als Fehlbefund geschlossen
+— der eigentliche Bug lag am Span-Regex im Smoke-Test.
 
 **Slice 027 (Noqa-Abbau) `Done`** zwischengeschoben: alle 36
 bestehenden `# noqa`-Marker entfernt; `tools/check_noqa.py --fail-on-
@@ -44,19 +49,31 @@ noqa` ist 9. Pflicht-Gate in `make gates`. Neue Envelope-Types
 | OTLP-Adapter (M3 Welle 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` mit `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper. ADR 0024 §4.5 mit 8 normativen Decisions. arch_check-Contract `AC-OTLP-ADAPTER-NO-TIME` (12. Custom-Contract). `deploy/compose.yml`-`otel-collector`-Sibling + `tools/wait_otel_collector.py`-Liveness-Poll + `make image-audit`-Trivy-Erweiterung (C2). Integration-Smoke `tests/integration/test_otlp_compose_smoke.py` (volles Tripel Span+Metric+Log) + Runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa-Hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa`-Marker, `make gates` um `noqa-gate` erweitert (9-stufig). |
 | Tick-Loop-Private-Import-Contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 13. arch_check-Contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1-Contracts insgesamt). |
-| Protokolladapter (M4) | `Pending` (naechster aktiver Meilenstein) | MQTT, Modbus, OPC-UA, DNP3, IEC 61850 |
+| Protokolladapter (M4) | `In Progress` (Welle 1 C2 geliefert) | Welle 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Welle 1 liefert `DeviceProtocolPort` (`src/grid_gym/hexagon/ports/driven/device_protocol.py`) + `*Error`-Hierarchie + TickLoop-`start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + Partial-Cleanup). ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Proposed` (Caller-Scope-Lifecycle, Decisions 2/3/7 final + Decision 1 provisorisch). Konkrete Adapter (MQTT, Modbus, OPC-UA, DNP3, IEC 61850) folgen ab Welle 2. |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 
-**Testbilanz:** 1138 Unit-Tests + 21 Integration-Tests gruen
-(Stand `0b3164a` nach M3-Closure). `make gates` ist 9-stufig
-(lint, format-check, mypy `--strict`, arch-check **19/19
-contracts kept** [6 import-linter + 13 arch_check inkl.
-`AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
-test-unit, coverage-gate 90/85 line + 96 % total, critical-coverage
-90 inkl. `telemetry_otlp`, dep-audit, **noqa-gate**
-[`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — ohne Override
-cache-frei gruen seit Welle-6-C2 (`c61ab0d`).
+**Testbilanz:** 1161 Unit-Tests + 21 Integration-Tests gruen
+(Stand `d09adf3` nach M4-Welle-1-C2 — +23 Unit-Tests ggue.
+M3-Closure fuer `DeviceProtocolPort`-Protocol-Surface +
+TickLoop-FIFO/LIFO + Partial-Start-Failure-Context-Chain).
+`make gates` ist 9-stufig (lint, format-check, mypy `--strict`,
+arch-check **19/19 contracts kept** [6 import-linter +
+13 arch_check inkl. `AC-OTLP-ADAPTER-NO-TIME` und
+`AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`], test-unit, coverage-gate
+90/85 line + 96 % total, critical-coverage 90 inkl.
+`telemetry_otlp`, dep-audit, **noqa-gate**
+[`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — ohne
+Override cache-frei gruen.
+
+**Hinweis `make fullbuild` (2026-05-26):** der `image-audit`-
+Schritt schlaegt aktuell fehl, weil Trivys CVE-DB vier neue
+HIGH-CVEs im Debian-13-Base-Image meldet (`CVE-2026-40356` in
+`libgssapi-krb5-2`/`libk5crypto3`/`libkrb5-3`/`libkrb5support0`,
+Fix verfuegbar als `1.21.3-5+deb13u1`). Das ist unabhaengig vom
+M4-Code-Pfad und wird in einem separaten Base-Image-Bump-Stack
+adressiert (potenziell via Trigger 015 / Production-Image-
+Hardening).
 
 **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) mit vier
 Pflicht-Gates fuer `pull_request` und `push` auf `main`:

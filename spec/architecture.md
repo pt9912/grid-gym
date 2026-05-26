@@ -4,7 +4,7 @@
 **Dokumenttyp:** Architekturbeschreibung
 **Format:** Markdown
 **Version:** 0.3.0
-**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 naechster aktiver Slice)
+**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle 1 — `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Proposed`)
 **Bezug:** [`lastenheft.md`](lastenheft.md)
 
 ---
@@ -246,7 +246,7 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 | GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                                                                                                                               | GG-PERSIST-004, GG-BESS-002                  |
 | GG-AR-PORT-DRN-005 | `ScenarioSourcePort` — Szenario-Datei lesen                                                                                                                                      | GG-SCN-001                                   |
 | GG-AR-PORT-DRN-006 | `ReplaySourcePort` — Replay-Samples liefern                                                                                                                                      | GG-REPLAY-001/002                            |
-| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter (MQTT, Modbus, …)                                                                                                                | GG-ARCH-003, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
+| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter (MQTT, Modbus, OPC-UA, DNP3, IEC 61850). Sync-`Protocol` mit Caller-Scope-Lifecycle (`TickLoop.start_protocol_ports()` / `stop_protocol_ports()`); FIFO start, LIFO stop, Partial-Cleanup. Spezifiziert in [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1 (Sync-Charakter), §2.2 (Lifecycle), §2.3 (stateless aus Replay-Sicht), §2.4 (DNP3/IEC provisorisch Verzicht-Default). | GG-ARCH-003, GG-MQTT/MODB/OPCUA/DNP3/IEC-001 |
 | GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability                                                                                                              | GG-OTEL-001..004                             |
 | GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | GG-PRINC-005                                 |
 | GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert.                           | GG-SIM-001, GG-SCN-002                       |
