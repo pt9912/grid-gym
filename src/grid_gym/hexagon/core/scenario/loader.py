@@ -69,6 +69,7 @@ from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import ClockPort
+from grid_gym.hexagon.ports.driven.device_protocol import DeviceProtocolPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.observability import LogPort, MetricsPort, TracePort
 from grid_gym.hexagon.ports.driven.random import RandomPort
@@ -373,8 +374,9 @@ class TickLoopWiring:
 
     Felder spiegeln den TickLoop-Konstruktor-Vertrag aus
     `ADR 0022 §2.5`, `ADR 0023 §2.5`, `ADR 0024 §2.6`, `ADR 0026
-    §2.2`. Eine Aenderung dieser Liste braucht eine Folge-ADR
-    (Builder-Symmetrie).
+    §2.2`, `ADR 0030 §4` (M4-Welle-1 `protocol_ports`). Eine
+    Aenderung dieser Liste braucht eine Folge-ADR (Builder-
+    Symmetrie).
     """
 
     fault_port: FaultPort | None = None
@@ -383,6 +385,7 @@ class TickLoopWiring:
     log_port: LogPort | None = None
     metrics_port: MetricsPort | None = None
     trace_port: TracePort | None = None
+    protocol_ports: tuple[DeviceProtocolPort, ...] | None = None
 
 
 def build_tick_loop(
@@ -484,6 +487,7 @@ def build_tick_loop(
         log_port=w.log_port,
         metrics_port=w.metrics_port,
         trace_port=w.trace_port,
+        protocol_ports=w.protocol_ports,
     )
 
 

@@ -80,6 +80,10 @@ from grid_gym.hexagon.core.grid_model import GridModelBilanz
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.ports.driven.clock import ClockPort
+from grid_gym.hexagon.ports.driven.device_protocol import (
+    DeviceProtocolPort,
+    DeviceProtocolPortError,
+)
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.observability import (
     LogEntry,
@@ -194,6 +198,7 @@ class TickLoop:
         log_port: LogPort | None = None,
         metrics_port: MetricsPort | None = None,
         trace_port: TracePort | None = None,
+        protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -245,13 +250,13 @@ class TickLoop:
         self._agent_bus: AgentMessageBus | None = agent_bus
         self._agents: tuple[Agent, ...] = agents
         # M3-Welle-5 (ADR 0024 §2.6): Observability-Port-Trio.
-        # `None`-Default skippt jeden Hook in `tick()`; produktive
-        # Adapter (Null oder OTLP) injizieren strukturierte
-        # Logs/Metriken/Traces. Loest ADR 0023 §2.6 Observability-
-        # Vorgriff-Verbot auf (Welle-3-Klausel).
-        self._log_port: LogPort | None = log_port
-        self._metrics_port: MetricsPort | None = metrics_port
-        self._trace_port: TracePort | None = trace_port
+        # M4-Welle-1 (ADR 0030 §4): DeviceProtocolPort-Adapter
+        # (Caller-Scope-Lifecycle). Beide Setups in Helper-Methoden
+        # ausgelagert, weil der Konstruktor sonst die PLR0915-
+        # Schwelle reisst (Pattern analog `_attach_devices` /
+        # `_attach_agents`).
+        self._attach_observability_ports(log_port, metrics_port, trace_port)
+        self._attach_protocol_ports(protocol_ports)
         # M3-Welle-3-Review-Folge-2 F-1 + M3-Welle-4a F-1 produktiv:
         # `_pending_agent_commands` ist der Buffer, den Schritt D2
         # (Agent-Tick) fuellt und Schritt A0a (Pre-Tick-Drain) in
@@ -297,6 +302,41 @@ class TickLoop:
         Quell-Referenzen, die hier nicht verfuegbar sind."""
         for device in self._devices:
             device.set_run_id(self._run_id)
+
+    def _attach_observability_ports(
+        self,
+        log_port: LogPort | None,
+        metrics_port: MetricsPort | None,
+        trace_port: TracePort | None,
+    ) -> None:
+        """M3-Welle-5 (ADR 0024 §2.6): initialisiert das optionale
+        Observability-Port-Trio. `None`-Default skippt jeden Hook
+        in `tick()`; produktive Adapter (Null oder OTLP) injizieren
+        strukturierte Logs/Metriken/Traces. Loest ADR 0023 §2.6
+        Observability-Vorgriff-Verbot auf (Welle-3-Klausel).
+        """
+        self._log_port: LogPort | None = log_port
+        self._metrics_port: MetricsPort | None = metrics_port
+        self._trace_port: TracePort | None = trace_port
+
+    def _attach_protocol_ports(
+        self,
+        protocol_ports: tuple[DeviceProtocolPort, ...] | None,
+    ) -> None:
+        """M4-Welle-1 (ADR 0030 §2.2 + §4): initialisiert die
+        optionalen DeviceProtocolPort-Adapter mit Caller-Scope-
+        Lifecycle. `None`-Default skippt
+        `start_protocol_ports()`/`stop_protocol_ports()` als No-op
+        (Replay-Mode-Skip). Welle-1-Code liefert nur Lifecycle-
+        Methoden; konkrete Adapter (`adapters/driven/protocol_*/`)
+        kommen ab Welle 2.
+
+        `_started_protocol_port_indices` ist der Tracking-Buffer
+        fuer Partial-Start-Failure-Cleanup und LIFO-Stop +
+        Idempotenz fuer den "nichts gestartet"-Fall.
+        """
+        self._protocol_ports: tuple[DeviceProtocolPort, ...] | None = protocol_ports
+        self._started_protocol_port_indices: list[int] = []
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
@@ -416,6 +456,94 @@ class TickLoop:
         damit Aufrufer den Buffer nicht versehentlich mutieren.
         """
         return tuple(self._pending_agent_commands)
+
+    # ------------------------------------------------------------------
+    # DeviceProtocolPort-Lifecycle (M4 Welle 1, ADR 0030 §2.2)
+    # ------------------------------------------------------------------
+    # Caller-Scope-Lifecycle: Caller wrappt die bestehende Tick-Schleife
+    # in `try/finally` um `start_protocol_ports()`/`stop_protocol_ports()`,
+    # weil `TickLoop` keine `run(ticks)`-Methode hat (ADR 0030 §2.2
+    # Alternative A3 verworfen — Tick-Granularitaet aus GG-SIM-001/
+    # GG-ARCH-007 bleibt).
+    # ------------------------------------------------------------------
+    def start_protocol_ports(self) -> None:
+        """Startet die konfigurierten `DeviceProtocolPort`-Adapter
+        in **FIFO**-Reihenfolge (Tuple-Index aufsteigend).
+
+        No-op bei `protocol_ports=None` (Replay-Mode-Skip).
+
+        **Partial-Start-Failure-Vertrag (ADR 0030 §2.2)**: wirft
+        `protocol_ports[i].start()` (mit i > 0) eine Exception,
+        wird **Best-Effort-Cleanup** in **LIFO**-Reihenfolge
+        durchgefuehrt — die Indizes `0..i-1` werden mit `stop()`
+        abgebaut. Die erste Exception aus dem Cleanup wird als
+        `__context__` an die Original-Start-Exception gehaengt
+        (Pythons Auto-Context wird vorher explizit gebrochen,
+        um Zyklen zu vermeiden). Die Original-Start-Exception
+        propagiert; weitere Cleanup-Exceptions gehen in Welle 1
+        verloren — Welle-2-Schaerfung kann ein
+        `BaseExceptionGroup`-Pattern einfuehren.
+
+        Erfolg: `self._started_protocol_port_indices` traegt alle
+        i in FIFO, sodass `stop_protocol_ports()` in LIFO abbauen
+        kann.
+        """
+        if self._protocol_ports is None:
+            return
+        started: list[int] = []
+        try:
+            for idx, port in enumerate(self._protocol_ports):
+                port.start()
+                started.append(idx)
+        except DeviceProtocolPortError as start_exc:
+            # Adapter-Vertrag (ADR 0030 §2.1): Library-Exceptions
+            # werden adapter-intern in `DeviceProtocolPortError`-
+            # Subclasses gewrappt; TickLoop catched ausschliesslich
+            # typed Errors (AC-TYPED-ERRORS-konform, Boundary-
+            # Translation gehoert in Adapter, nicht in Core).
+            first_cleanup_exc: DeviceProtocolPortError | None = None
+            for idx in reversed(started):
+                try:
+                    self._protocol_ports[idx].stop()
+                except DeviceProtocolPortError as stop_exc:
+                    if first_cleanup_exc is None:
+                        first_cleanup_exc = stop_exc
+            self._started_protocol_port_indices = []
+            if first_cleanup_exc is not None:
+                # Pythons Auto-Context im except-Block setzt
+                # `first_cleanup_exc.__context__ = start_exc` — das
+                # wuerde mit unserer Inversion einen Zyklus bauen.
+                # Auto-Context explizit brechen, dann ADR-konform
+                # `start_exc.__context__ = first_cleanup_exc` setzen.
+                first_cleanup_exc.__context__ = None
+                start_exc.__context__ = first_cleanup_exc
+            raise
+        self._started_protocol_port_indices = started
+
+    def stop_protocol_ports(self) -> None:
+        """Stoppt die zuvor mit `start_protocol_ports()` erfolgreich
+        gestarteten `DeviceProtocolPort`-Adapter in **LIFO**-
+        Reihenfolge (Tuple-Index absteigend).
+
+        No-op bei `protocol_ports=None` (Replay-Mode-Skip).
+
+        **Idempotenz-Vertrag (ADR 0030 §2.2)**: nach dem ersten
+        Aufruf ist `self._started_protocol_port_indices` leer; ein
+        zweiter Aufruf ist No-op. Auch nach erfolglosem
+        `start_protocol_ports()` (Partial-Cleanup ist schon
+        gelaufen) ist `stop_protocol_ports()` No-op.
+
+        Welle-1-Vertrag: die erste Stop-Exception propagiert
+        ungewrappt — weitere Stops in der LIFO-Schleife laufen
+        nicht mehr durch. Welle-2-Schaerfung kann ein
+        `BaseExceptionGroup`-Pattern einfuehren, sodass alle Stops
+        in einer Group propagiert werden.
+        """
+        if self._protocol_ports is None:
+            return
+        for idx in reversed(self._started_protocol_port_indices):
+            self._protocol_ports[idx].stop()
+        self._started_protocol_port_indices = []
 
     def tick(self) -> TickResult:
         """Schiebt die Simulationszeit um `tick_ms` vor und faehrt
@@ -931,6 +1059,7 @@ class TickLoop:
         log_port: LogPort | None = None,
         metrics_port: MetricsPort | None = None,
         trace_port: TracePort | None = None,
+        protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
     ) -> TickLoop:
         """Stellt einen `TickLoop` aus einem Snapshot wieder her.
 
@@ -1005,6 +1134,7 @@ class TickLoop:
             log_port=log_port,
             metrics_port=metrics_port,
             trace_port=trace_port,
+            protocol_ports=protocol_ports,
         )
         # `_pending_agent_commands` muss nach Konstruktor-Init
         # gefuellt werden — der Konstruktor initialisiert es leer.
