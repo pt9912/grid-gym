@@ -460,7 +460,9 @@ Bedarf konkret ist.
   `__context__`-Chain). 23 neue Unit-Tests (1138 → 1161:
   12 Protocol-Surface + 11 TickLoop-Lifecycle). EoD-Sync
   `f8ed791` hat die Top-Level-Doku auf den C2-Stand
-  gezogen. `make arch-check` (16/16 Contracts KEPT) und
+  gezogen. `make arch-check` (19/19 Contracts KEPT — 7
+  lint-imports + 12 `tools/arch_check.py`; finales
+  Gates-Echo: `arch-check (19 contracts)`) und
   `make gates` cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
 - **Accepted** — geplant mit M4-Welle-7-Closure

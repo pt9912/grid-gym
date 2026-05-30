@@ -35,7 +35,9 @@ Modbus; Welle 4: OPC-UA; Welle 5: DNP3+IEC-Disposition).
 - `make test-integration`: **unveraendert gruen** (Welle 1
   ist Unit-Test-only; Integration-Smoke beginnt mit Welle 2
   / Mosquitto-Sibling).
-- `make arch-check`: **16/16 Contracts KEPT**;
+- `make arch-check`: **19/19 Contracts KEPT** (7 via
+  `lint-imports` + 12 via `tools/arch_check.py`; finales
+  Gates-Echo: `arch-check (19 contracts)`);
   `AC-ADAPTER-LIGHTWEIGHT`-`protocol_*`-Pfad-Filter
   (`tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`) Regression-geprueft.
@@ -422,7 +424,9 @@ per-Commit-Aktion.
   [`tests/unit/hexagon/ports/driven/test_device_protocol.py`](../../../../tests/unit/hexagon/ports/driven/test_device_protocol.py)
   (NEU mit C2).
 - [x] **`tools/arch_check.py`-Sanity** — `make arch-check`
-  cache-frei gruen; 16/16 Contracts KEPT;
+  cache-frei gruen; 19/19 Contracts KEPT (7 lint-imports +
+  12 `tools/arch_check.py`; finales Gates-Echo:
+  `arch-check (19 contracts)`);
   `AC-ADAPTER-LIGHTWEIGHT`-`protocol_*`-Pfad-Filter
   (`tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`) Regression-geprueft.

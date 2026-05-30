@@ -285,7 +285,9 @@ analog M3-Pattern). ADR 0030 ist `Provisional`.
 - [x] `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter (Decision 6) —
   Regression-geprueft (`tools/arch_check.py:1089`
   `bucket.startswith("protocol_")` greift unveraendert);
-  16/16 Contracts KEPT.
+  19/19 Contracts KEPT (7 lint-imports + 12
+  `tools/arch_check.py`; finales Gates-Echo:
+  `arch-check (19 contracts)`).
 - [x] **Unit-Tests** (+23: 1138 → 1161): 12 fuer
   Port-Protocol-Vertragsverhalten + 11 fuer
   TickLoop-Lifecycle.
