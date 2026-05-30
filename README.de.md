@@ -2,17 +2,107 @@
 
 **Deutsch** | [English](README.md)
 
-`grid-gym` ist eine geplante modulare Open-Source-Plattform zur Simulation,
-Validierung und Analyse elektrischer Energiesysteme.
+`grid-gym` ist eine Open-Source-Plattform zur deterministischen
+Simulation, Validierung und Analyse elektrischer Energiesysteme. Sie
+modelliert Netzanschlusspunkte, PV-Anlagen, Batteriespeicher, Smart Meter
+und Lastprofile mit reproduzierbarer Tick-Loop-Ausfuehrung, Snapshot/
+Replay, Fault Injection und Protokolladaptern fuer Feldbus-Telemetrie.
 
-Der Fokus liegt auf deterministischer Ausfuehrung, reproduzierbaren Ergebnissen,
-Replaybarkeit, Fault Injection, simulierter Echtzeitfaehigkeit und
-Integrationsfaehigkeit fuer Test- und Forschungsumgebungen.
+## Fuer wen?
 
-Das Projekt richtet sich an Entwickler, Forschungseinrichtungen und
-Systemintegratoren, die Energy-Management-Strategien, Smart-Grid-Regelungen,
-Batteriespeicherstrategien, Replay-Systeme und HIL-nahe Tests in einer
-lokalen, nachvollziehbaren Umgebung modellieren wollen.
+`grid-gym` richtet sich an Entwickler, Forschungseinrichtungen und
+Systemintegratoren, die eine lokale, nachvollziehbare Umgebung fuer
+Energy-Management-Strategien, Smart-Grid-Regelungen, Batteriespeicher-
+strategien, Replay-Systeme und HIL-nahe Tests brauchen — ohne reale
+Feldgeraete, Cloud-Dienste oder Internetzugriff zur Laufzeit.
+
+## Was kann ich heute ausfuehren?
+
+`grid-gym` ist bereits als lokale, Docker-basierte Validierungs-Umgebung
+ausfuehrbar. Die aktuelle Implementierung umfasst:
+
+- einen deterministischen Tick-Loop mit Snapshot- und Replay-Unterstuetzung
+- produktive Geraetemodelle fuer Batterie, PV, Last, Netzanschluss und
+  Smart Meter
+- Fault-Injection- und Recovery-Flows
+- Multi-Agent-Szenarien mit einem regelbasierten Agenten
+- strukturierte Logs, Metriken und Traces via Observability-Port-Trio
+- einen OTLP-Adapter mit lokalem OpenTelemetry-Collector-Smoke-Test
+- einen MQTT-Protokolladapter mit Mosquitto-basiertem Integration-Test
+
+Die aktuellen Gates und Szenarien laufen mit:
+
+```bash
+make help
+make gates              # 9 Pflicht-Gates (lint, format, typecheck,
+                        # arch-check, tests, coverage, critical-coverage,
+                        # dep-audit, noqa-gate)
+make test-unit          # Unit-Test-Suite (1211 Tests, Stand 2026-05-30)
+make test-integration   # Compose-/testcontainers-Integration-Suite
+                        # (22 Tests inkl. OTLP- und MQTT-Smokes)
+```
+
+Beispiel-YAML-Szenarien liegen unter
+[`tests/integration/scenarios/`](tests/integration/scenarios/).
+
+Das Repository ist **Docker-only**: Host braucht nur `docker` und `make`.
+Keine lokale Python-/uv-Installation.
+
+> `make fullbuild` enthaelt einen `image-audit`-Schritt, der aktuell
+> fehlschlaegt, solange ein ausstehender Debian-13-Base-Image-CVE-Bump
+> (`CVE-2026-40356` in der `krb5`-Familie) in einem separaten
+> Base-Image-Bump-Stack adressiert wird. Das Pflicht-Entwicklungsgate
+> ist `make gates`.
+
+## Was macht es vertrauenswuerdig?
+
+- **Deterministische Ausfuehrung.** Ein zentraler Tick-Loop treibt ein
+  diskretes Zeitmodell; Snapshot-Envelopes und Replay-Samples sind
+  byte-reproduzierbar via Canonical-JSON-Serialisierung.
+- **Erzwungene Architektur.** 19 Architektur-Contracts laufen bei
+  jedem `make arch-check`: 7 Forbidden-Import-Contracts via
+  `lint-imports` plus 12 Custom-AST-/Graph-Checks in
+  [`tools/arch_check.py`](tools/arch_check.py) (u. a.
+  `AC-ADAPTER-LIGHTWEIGHT`, `AC-OTLP-ADAPTER-NO-TIME`,
+  `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`).
+- **Neunstufiges Pflicht-Gate.** `make gates` laeuft Lint, Format-Check,
+  `mypy --strict`, Arch-Check, Unit-Tests, Coverage (90 % Line pro
+  Modul / 85 % kritisch / 96 % gesamt), Critical-Coverage,
+  Dependency-Audit und ein `# noqa`-Verbot — alles cache-frei gruen
+  ohne lokalen Override.
+- **ADR-getriebene Entscheidungen.** Jede tragende Entscheidung wird
+  als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
+  M1..M3-Closure-ADRs sind `Accepted`, M4-Wellen-ADRs landen als
+  `Provisional` und werden mit Meilenstein-Closure `Accepted`.
+- **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
+  `lint-imports`-, `ruff check`-, `tools/arch_check.py`- und
+  `mypy --strict`-Gates auf jedem Pull Request und `main`-Push
+  ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
+## Verhaeltnis zu bess-ems
+
+`grid-gym` und [`bess-ems`](https://github.com/pt9912/bess-ems) sind
+Schwesterprojekte im selben Energy-Systems-Toolkit.
+
+`grid-gym` ist die deterministische Simulations-, Replay- und
+Validierungs-Umgebung. Sie modelliert elektrische Energiesysteme,
+injiziert Faults, zeichnet Traces auf und liefert reproduzierbare
+Test-Szenarien.
+
+`bess-ems` ist ein Batterie-Energy-Management-System zum Betrieb von
+Battery Energy Storage Systems (BESS) mit Safety-First-Regelschleife,
+Markt-/Schedule-Handling und Protokolladaptern.
+
+In der Praxis kann `grid-gym` als lokale Test- und Validierungs-Umgebung
+fuer ein produktives EMS wie `bess-ems` dienen: das EMS ist das System
+under Test, waehrend `grid-gym` simulierte Geraete, Netzverhalten,
+Telemetrie, Replay und Fault-Szenarien bereitstellt.
+
+Die Projekte teilen Architektur-Ideen wie hexagonale Grenzen, explizite
+Ports/Adapter und Architektur-Checks — `grid-gym` ist aber **kein**
+EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
+
+---
 
 ## Status
 
@@ -29,7 +119,7 @@ C1 `4e102b8` (ADR 0031 `Proposed`), C2 `f33bb4e` (`feat` —
 `protocol_mqtt/`-7-Modul-Paket + 50 neue Unit-Tests = 1211 gruen
 + Mosquitto-Integration-Smoke via testcontainers = 22
 Integration-Tests gruen + `pyproject.toml`/`uv.lock`/`Dockerfile`/
-`compose.yml`-Edits) und C3 (dieser Commit, ADR 0031
+`compose.yml`-Edits) und C3 (ADR 0031
 `Proposed → Provisional`). **Naechster aktiver Schritt:** M4
 Welle 3 (Modbus-TCP-Adapter — `pymodbus`-Wrapper +
 Register-Schema + Modbus-Server-Container-Smoke). Trigger 029
@@ -74,41 +164,12 @@ arch-check **19/19 contracts kept** [7 lint-imports +
 [`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — ohne
 Override cache-frei gruen.
 
-**Hinweis `make fullbuild` (2026-05-26):** der `image-audit`-
-Schritt schlaegt aktuell fehl, weil Trivys CVE-DB vier neue
-HIGH-CVEs im Debian-13-Base-Image meldet (`CVE-2026-40356` in
-`libgssapi-krb5-2`/`libk5crypto3`/`libkrb5-3`/`libkrb5support0`,
-Fix verfuegbar als `1.21.3-5+deb13u1`). Das ist unabhaengig vom
-M4-Code-Pfad und wird in einem separaten Base-Image-Bump-Stack
-adressiert (potenziell via Trigger 015 / Production-Image-
-Hardening).
-
-**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) mit vier
-Pflicht-Gates fuer `pull_request` und `push` auf `main`:
-`lint-imports`, `ruff check`, `python tools/arch_check.py`,
-`mypy --strict`. Siehe Closure-Doc
-[`done/025-github-actions-four-gates.md`](docs/plan/planning/done/025-github-actions-four-gates.md).
-
 **Briefing fuer AI-Coding-Agenten:** [`AGENTS.md`](AGENTS.md) — harte
 Regeln (Docker-only, `# noqa`-Verbot, `git mv`-Zwei-Commit-Pattern,
 Wave-Self-Close-Konvention, Architektur-Spec sprach-/meilensteinfrei)
 und Pointer auf die kanonischen Quellen.
 
 ## Build, Test, Lint
-
-Das Repository ist **Docker-only**: Host braucht nur `docker` und
-`make`. Keine lokale Python-/uv-Installation. Alle Builds, Tests
-und Gates laufen ueber Dockerfile-Stages.
-
-```bash
-make help                # alle Targets auflisten
-make gates               # alle A-1-Pflicht-Gates (lint, format-check,
-                         # typecheck, arch-check, test-unit, coverage,
-                         # critical-coverage, dep-audit, noqa-gate)
-make test-unit           # nur Unit-Tests
-make test-integration    # Integration-Tests via Compose (Postgres-Container)
-make fullbuild           # gates + integration + runtime-Image-Bau
-```
 
 Einzel-Gates fuer schnelle Feedback-Schleifen:
 
@@ -118,7 +179,9 @@ make format-check        # ruff format --check
 make typecheck           # mypy --strict (ADR 0005)
 make arch-check          # import-linter + tools/arch_check.py (ADR 0002 §A-1)
 make arch-check-imports  # nur import-linter (7 Tabu-Contracts)
-make arch-check-custom   # nur tools/arch_check.py (9 Custom-Checks)
+make arch-check-custom   # nur tools/arch_check.py (12 Custom-Checks)
+make fullbuild           # gates + integration + runtime-Image-Bau
+                         # (siehe Hinweis oben zu image-audit / krb5-CVE)
 ```
 
 ## MVP-Scope
@@ -188,7 +251,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   │   └── ports/driven/        ← ClockPort, RandomPort, FaultPort, RunRepositoryPort
 │   └── adapters/
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
-│       └── driven/              ← Postgres, RandomMT (M1 Welle 6b/6c)
+│       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
 ├── tests/
 │   ├── unit/                    ← pytest-Unit-Tests (1211 Stand 2026-05-30, Welle-2-Stand)
 │   ├── integration/             ← Compose-basierte Integration-Tests (22 Tests; OTLP- + MQTT-Smoke inkl.)
@@ -204,7 +267,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0029)
+    │   ├── adr/                 ← Architecture Decision Records (0001..0031)
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv
