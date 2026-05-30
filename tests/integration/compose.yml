@@ -2,10 +2,18 @@
 #
 # `test-runner` baut den `source`-Stage des Dockerfiles und ruft
 # pytest gegen `tests/integration/` auf. testcontainers spawnt
-# Postgres als Sibling-Container ueber den gemounteten
-# Docker-Socket — kein docker-in-docker, kein eigener Postgres-
-# Service hier (siehe `deploy/compose.yml` fuer den Production-
-# Stack).
+# Sibling-Container ueber den gemounteten Docker-Socket — kein
+# docker-in-docker, kein eigener Service hier (siehe
+# `deploy/compose.yml` fuer den Production-Stack).
+#
+# Per Welle aktive Siblings (alle via testcontainers gespawnt,
+# nicht hier deklariert):
+# - Postgres (M1 Welle 6c, Trigger 009) fuer `RunRepositoryPort`.
+# - otel-collector (M3 Welle 6, ADR 0024 §4.5.7) fuer den
+#   OTLP-Compose-Smoke (`test_otlp_compose_smoke.py`).
+# - Mosquitto (M4 Welle 2, ADR 0031) fuer den MQTT-Smoke
+#   (`test_mqtt_compose_smoke.py`; eclipse-mosquitto:2 mit
+#   inline-Config fuer Anonymous-Access; EPL-2.0/EDL-1.0).
 #
 # Aufruf: `make test-integration` (Makefile-Target, das `docker
 # compose up --abort-on-container-exit` aufruft).

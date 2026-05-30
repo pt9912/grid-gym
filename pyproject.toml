@@ -67,6 +67,12 @@ dependencies = [
     # (M3-welle-6.md §7 R-X, Review-Folge M-2).
     "opentelemetry-sdk>=1.42,<1.43",
     "opentelemetry-exporter-otlp-proto-grpc>=1.42,<1.43",
+    # M4-Welle-2 — MQTT-Adapter unter `adapters/driven/protocol_mqtt/`.
+    # Floor `>=2.0` matched paho-mqtt 2.x mit CallbackAPIVersion.VERSION2;
+    # 1.x-Linie haette eine andere Callback-Signatur und ist EOL.
+    # Adapter-Sichtbarkeit ist per AC-PORTS-NO-FW / AC-NO-FW Forbidden-
+    # List bereits seit Spike-0 vorbelegt (siehe `paho`-Eintraege dort).
+    "paho-mqtt>=2.0",
 ]
 
 [build-system]
