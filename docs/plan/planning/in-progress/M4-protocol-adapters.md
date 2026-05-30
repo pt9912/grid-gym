@@ -243,9 +243,9 @@ Arbeitspaket. `make docs-check` cache-frei gruen
 ### Welle 1 — DeviceProtocolPort-Foundation (Done 2026-05-30)
 
 **Status:** Done. Slice-Begleit-Doc
-[`M4-welle-1.md`](M4-welle-1.md) (bleibt vorerst in
-`in-progress/`; Move nach `done/` mit M4-Welle-2-Pre-C0
-analog M3-Pattern). ADR 0030 ist `Provisional`.
+[`../done/M4-welle-1.md`](../done/M4-welle-1.md) (gewandert
+nach `done/` mit M4-Welle-2-Pre-C0 `81b5cba` + Pre-C0-Sync).
+ADR 0030 ist `Provisional`.
 
 - [x] **ADR 0030** (erster M4-ADR) fuer
   `DeviceProtocolPort`-Surface mit Entscheidungen aus

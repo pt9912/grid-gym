@@ -56,12 +56,12 @@ Modbus; Welle 4: OPC-UA; Welle 5: DNP3+IEC-Disposition).
   mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 1`](M4-protocol-adapters.md)
+[`../in-progress/M4-protocol-adapters.md §3 Welle 1`](../in-progress/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
 **Spec-Reife:** Inhaltlich final. Decisions aus
-[`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+[`M4-welle-0.md`](M4-welle-0.md) §3
 Decision-Liste werden in C1 (ADR 0030 Proposed) konkret
 gewaehlt; C2 (feat) implementiert die gewaehlte Variante.
 
@@ -197,10 +197,10 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   (Adapter-Interfaces-Driven-Beschreibung).
 - [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
   Z. 1120–1163 (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
-- [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+- [`M4-welle-0.md`](M4-welle-0.md) §3
   Decision-Liste (Items 1, 2, 3, 7) als Quelle der
   Decision-Vorbelegung.
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 1 (kanonische Slice-Spezifikation).
 - [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)
   als Pattern-Anker: ADR 0030 ist neuer Port-Slot, kein
