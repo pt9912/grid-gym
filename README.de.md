@@ -37,9 +37,9 @@ make help
 make gates              # 9 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # Unit-Test-Suite (1211 Tests, Stand 2026-05-30)
+make test-unit          # Unit-Test-Suite (1306 Tests, Stand 2026-05-30)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (22 Tests inkl. OTLP- und MQTT-Smokes)
+                        # (23 Tests inkl. OTLP-, MQTT- und Modbus-Smokes)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -120,13 +120,23 @@ Stand **2026-05-30**:
   - Welle 2 — MQTT-Adapter
     (ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md)
     `Provisional`) · `Done`
-  - Welle 3 — Modbus-TCP-Adapter (`pymodbus`-Wrapper +
-    Register-Schema + Container-Smoke) · **aktiv**
+  - Welle 3 — Modbus-TCP-Adapter (`pymodbus`-Wrapper,
+    Register-Schema, in-process pymodbus-Server-Smoke statt
+    Container — Decision M-f in ADR 0032 §2.6 umgeht das
+    Modbus-Server-Container-Lizenz-Risiko) · **C0/C1/C2
+    geliefert, C3-Doc-Sync ausstehend** — ADR
+    [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
+    `Proposed` (wird `Provisional` mit C3)
   - Wellen 4–7 — OPC-UA / DNP3 / IEC 61850 / Closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** 1211 Unit-Tests + 22 Integration-Tests gruen.
+**Testbilanz:** 1306 Unit-Tests + 23 Integration-Tests gruen
+(Stand `d721982` nach M4-Welle-3-C2 — +95 Unit-Tests ggue.
+Welle-2-Closure: ~25 Config-Validation + ~30 Codec
+(inkl. hypothesis-Property-Tests) + ~24 Lifecycle/Read+Write +
+~16 Function-Code-Override; +1 Integration-Test
+[in-process-pymodbus-Server-Smoke]).
 
 **`make gates`** ist 9-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check
@@ -154,7 +164,7 @@ in der Detail-Tabelle unten.
 | Tick-Loop-Private-Import-Contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md) — 12. `tools/arch_check.py`-Contract |
 | `DeviceProtocolPort`-Foundation (M4 Welle 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — Port + `*Error`-Hierarchie + TickLoop-FIFO/LIFO-Lifecycle |
 | MQTT-Adapter (M4 Welle 2) | `Done` | [`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/`-7-Modul-Paket (paho-mqtt 2.x, Per-Target-Queue-Marshal) + Mosquitto-Integration-Smoke |
-| Modbus-TCP-Adapter (M4 Welle 3) | `In Progress` | `pymodbus`-Wrapper + Register-Schema + Modbus-Server-Container-Smoke |
+| Modbus-TCP-Adapter (M4 Welle 3) | `In Progress` (C0/C1/C2 geliefert, C3 ausstehend) | [`in-progress/M4-welle-3.md`](docs/plan/planning/in-progress/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Proposed` (Decisions M-a/M-b/M-c/M-d/M-e/M-f alle final; → `Provisional` mit C3-Doc-Sync) — `protocol_modbus/`-5-Modul-Paket (pymodbus 3.x sync-Client, **kein** Thread-Marshal noetig — Decision M-c direkt-sync; 5 Datatypes mit Byte-Order/Word-Swap-Matrix; FC03/FC10 Defaults mit FC04/FC06-Overrides) + in-process-pymodbus-Server-Integration-Smoke (Decision M-f umgeht das Modbus-Server-Container-Lizenz-Risiko) + Trigger-006-Re-Eval ausstehend in C3 (Modbus ist erster produktiver `bytes`/`int`/`float`-Konvertierungs-Pfad im Repo) |
 | OPC-UA / DNP3 / IEC 61850 (M4 Welle 4–6) | `Pending` | Konkrete Adapter folgen in den naechsten M4-Wellen |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
@@ -247,8 +257,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (1211 Stand 2026-05-30, Welle-2-Stand)
-│   ├── integration/             ← Compose-basierte Integration-Tests (22 Tests; OTLP- + MQTT-Smoke inkl.)
+│   ├── unit/                    ← pytest-Unit-Tests (1306 Stand 2026-05-30, Welle-3-C2-Stand)
+│   ├── integration/             ← Compose-basierte Integration-Tests (23 Tests; OTLP- + MQTT- + Modbus-Smoke inkl.)
 │   └── unit/_arch_check_*       ← Architektur-Tests (7 lint-imports + 12 custom AC-Checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)

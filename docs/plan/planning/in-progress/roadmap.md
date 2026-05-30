@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle-3-Vorbereitung (Welle 2 `Done`)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 3 (C0/C1/C2 geliefert, C3 ausstehend)
 **Stand:** 2026-05-30
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -11,30 +11,44 @@
   Linter-Folge `82f947c` + Self-Close-Move `81b5cba` +
   Pre-C0-Sync `f1f9db1`; **Welle 2 `Done`** geschlossen
   2026-05-30 mit C0 `3b633f6` + C1 `4e102b8` + C2 `f33bb4e` +
-  C3 dieser Commit).
+  C3 `7e161f5` + Self-Close-Move `0d6ad6c` + Pre-C0-Sync
+  `9ba768b`; **Welle 3 `In Progress`** mit C0 `8ef1e72` +
+  C1 `a86ac46` + C2 `d721982` geliefert — C3-Doc-Sync
+  + ADR-0032-Schaerfung auf `Provisional` + Trigger-006-Re-Eval
+  ausstehend; dieser EoD-Sync schliesst den Top-Level-Doku-
+  Zwischenstand ehrlich ab).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-3 (Modbus-TCP-Adapter — `pymodbus`-Wrapper +
-  Register-Schema + Modbus-Server-Container-Smoke).
+  M4-Welle-3-C3 (`docs(plan|adr)`: Status/DoD-Sync + ADR 0032
+  `Proposed → Provisional` + Top-Level-Doku-Sync + **Trigger-
+  006-Re-Eval** mit konkretem Modbus-Code-Beleg).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
   (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted` geplant
   mit M4-Welle-7-Closure); **0031 `Provisional`** (M4-Welle-2
-  `4e102b8` MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle
-  final; `Proposed → Provisional` mit M4-Welle-2-C3 nach
-  C2-Merge `f33bb4e`; `Accepted` geplant mit M4-Welle-7-Closure).
-- **Tests:** 1211 Unit + 22 Integration gruen (Stand nach
-  M4-Welle-2-Closure; +73 Unit-Tests ggue. M3-Closure
-  [+23 in Welle 1 + +50 in Welle 2: 11 Codec + 16
-  Topic-Resolver + 17 Lifecycle/Read+Write + 6 Callback-
-  Marshal] + 1 Integration-Test [Mosquitto-MQTT-Smoke]);
-  Coverage 96 % total.
+  MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle final;
+  `Accepted` geplant mit M4-Welle-7-Closure); **0032 `Proposed`**
+  (M4-Welle-3-C1 `a86ac46` Modbus-TCP-Adapter-Profile mit
+  Decisions M-a/M-b/M-c/M-d/M-e/M-f alle final — inline
+  Register-Schema, 5 Datatypes mit Byte-Order-Matrix, direkt-
+  sync ohne Thread-Marshal, FC03/FC10-Defaults, Slave-Unit-ID
+  per Target, in-process pymodbus-Server-Smoke; `Provisional`
+  geplant mit M4-Welle-3-C3 nach C2-Merge `d721982`; `Accepted`
+  geplant mit M4-Welle-7-Closure).
+- **Tests:** 1306 Unit + 23 Integration gruen (Stand `d721982`
+  nach M4-Welle-3-C2; +168 Unit-Tests ggue. M3-Closure [+23
+  Welle 1 + +50 Welle 2 + +95 Welle 3: ~25 Modbus-Config +
+  ~30 Modbus-Codec inkl. hypothesis-Property-Tests + ~24
+  Lifecycle/Read+Write + ~16 Function-Code-Override] + 2
+  Integration-Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
+  in-process-pymodbus-Server-Smoke aus Welle 3]); Coverage
+  96 % total.
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
   Fix `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
-  M3-Welle-7-`c61ab0d`, **nicht durch M4-Welle-1-Code verursacht**;
+  M3-Welle-7-`c61ab0d`, **nicht durch M4-Welle-3-Code verursacht**;
   Base-Image-Bump in separatem Stack.
 - **Contracts:** 19 A-1 (7 lint-imports + 12 `tools/arch_check.py`
   inkl. `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-
