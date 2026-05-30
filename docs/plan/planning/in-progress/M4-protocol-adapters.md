@@ -82,7 +82,8 @@ schliesst M4 in `done/M4-protocol-adapters.md` ab.
    Operationen, Lifecycle (`start`/`stop`), Sync/Async-
    Bridge-Pattern (Decision in Welle 1). Code-Pfad:
    `src/grid_gym/hexagon/ports/driven/device_protocol.py`
-   (neu in Welle 1; aktuell fehlt die Datei).
+   (neu in Welle 1 — geliefert mit C2 `d09adf3`; Welle-1
+   Closure 2026-05-30, siehe §3 Welle 1).
 2. **Mindestens drei produktive Adapter**: MQTT (Welle 2)
    + Modbus (Welle 3) + OPC-UA (Welle 4). DNP3 und
    IEC 61850 (Welle 5) sind entweder produktiv **oder**
