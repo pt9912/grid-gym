@@ -16,20 +16,26 @@ in a local, traceable environment.
 
 ## Status
 
-**As of 2026-05-26:** M1 (Tick-Loop Spine), M2 (Device Models) and
+**As of 2026-05-30:** M1 (Tick-Loop Spine), M2 (Device Models) and
 M3 (Faults + Multi-Agent + Observability) are all `Done`. **M4
 (Protocol Adapters) is `In Progress`** — Wave 0 is closed
 (slice plan opened + trigger triage; `done/M4-welle-0.md` after
-self-close move `556ae9f`); Wave 1 (`DeviceProtocolPort`
-foundation) shipped C0 (slice doc), C1 (ADR 0030 `Proposed`),
-the H1-H3+M1-M4+L1-L5 review follow-up, an H4 follow-up
-(`TickLoop.run()` does not exist — Decision 3 reshaped to
-caller-scope `start_protocol_ports()`/`stop_protocol_ports()`),
-and C2 (`feat` — port + `*Error` hierarchy + TickLoop lifecycle
-methods + 1161 unit tests green). C3 (Doc sync /
-`Proposed → Provisional`) is outstanding. Trigger 029 (suspected
-OTLP span export bug) was closed as a false finding — the real
-bug was a span-name regex in the smoke test.
+self-close move `556ae9f`); **Wave 1 (`DeviceProtocolPort`
+foundation) is `Done`** (`done/M4-welle-1.md` after self-close
+move `81b5cba` + Pre-C0-Sync `f1f9db1`): C0 `f8cbe9d` (slice
+doc), C1 `b840e7a` (ADR 0030 `Proposed`), review follow-up
+`ad3dff8` (3H+4M+5L), H4 follow-up `111c464` (`TickLoop.run()`
+does not exist — Decision 3 reshaped to caller-scope
+`start_protocol_ports()`/`stop_protocol_ports()`), C2 `d09adf3`
+(`feat` — port + `*Error` hierarchy + TickLoop lifecycle
+methods + 23 new unit tests = 1161 green), EoD-Sync
+`f8ed791`, C3 `5f03bbf` (status/DoD sync + ADR 0030
+`Proposed → Provisional`), and C3 linter follow-up `82f947c`
+(arch-check split 7 lint-imports + 12 `tools/arch_check.py`).
+**Next active step:** M4 Wave 2 (MQTT adapter — `paho-mqtt`
+wrapper + topic schema + Mosquitto sibling smoke). Trigger 029
+(suspected OTLP span export bug) was closed as a false finding
+— the real bug was a span-name regex in the smoke test.
 
 **Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
 existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
@@ -48,18 +54,18 @@ types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
 | Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Accepted`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
 | OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (12th custom contract). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (full triple span+metric+log) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
-| Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 13th arch_check contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1 contracts total). |
-| Protocol Adapters (M4) | `In Progress` (Wave 1 C2 shipped) | Wave 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Wave 1 ships `DeviceProtocolPort` (`src/grid_gym/hexagon/ports/driven/device_protocol.py`) + `*Error` hierarchy + TickLoop `start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + partial-cleanup). ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Proposed` (caller-scope lifecycle, decisions 2/3/7 final + decision 1 provisional). Concrete adapters (MQTT, Modbus, OPC-UA, DNP3, IEC 61850) follow from Wave 2. |
+| Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 12th `tools/arch_check.py` contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1 contracts total = 7 lint-imports + 12 `tools/arch_check.py`). |
+| Protocol Adapters (M4) | `In Progress` (Wave 1 `Done`) | Wave 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Wave 1 `Done` ([`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md)) — delivered `DeviceProtocolPort` (`src/grid_gym/hexagon/ports/driven/device_protocol.py`) + `*Error` hierarchy + TickLoop `start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + partial-cleanup with `__context__` chain) + scenario-loader builder symmetry (+8 lines). ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` (caller-scope lifecycle, decisions 2/3/7 final + decision 1 provisional). **Next active step:** Wave 2 (MQTT adapter). Concrete adapters (MQTT, Modbus, OPC-UA, DNP3, IEC 61850) follow from Wave 2. |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
 **Test balance:** 1161 unit tests + 21 integration tests green
-(state `d09adf3` after M4 Wave 1 C2 — +23 unit tests vs. M3
-closure for `DeviceProtocolPort` protocol surface + TickLoop
+(state after M4 Wave 1 Closure — +23 unit tests vs. M3 closure:
+12 `DeviceProtocolPort` protocol surface + 11 TickLoop
 FIFO/LIFO + partial-start-failure context-chain). `make gates`
 is 9-stage (lint, format-check, mypy `--strict`, arch-check
-**19/19 contracts kept** [6 import-linter + 13 arch_check incl.
-`AC-OTLP-ADAPTER-NO-TIME` and `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
+**19/19 contracts kept** [7 lint-imports + 12 `tools/arch_check.py`
+incl. `AC-OTLP-ADAPTER-NO-TIME` and `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
 test-unit, coverage-gate 90/85 line + 96 % total, critical-coverage
 90 incl. `telemetry_otlp`, dep-audit, **noqa-gate**
 [`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — cache-free
@@ -180,9 +186,9 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT (M1 Waves 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1138 as of 2026-05-25)
+│   ├── unit/                    ← pytest unit tests (1161 as of 2026-05-30)
 │   ├── integration/             ← Compose-based integration tests (21 tests; OTLP smoke incl.)
-│   └── unit/_arch_check_*       ← architecture tests (6 import-linter + 13 custom AC checks = 19 A-1)
+│   └── unit/_arch_check_*       ← architecture tests (7 lint-imports + 12 custom AC checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST/graph architecture checks (ADR 0002 §A-1)
 │   ├── check_noqa.py            ← `# noqa`-Verbots-Gate (9th A-1 gate, Slice 027)

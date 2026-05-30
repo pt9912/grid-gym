@@ -5,9 +5,9 @@ dieser Commit) nach M4-Welle-1-C2-Merge `d09adf3` (feat:
 `DeviceProtocolPort`-Protocol-Surface + `TickLoop`-Lifecycle-
 Methoden + 23 neue Unit-Tests; `make gates` cache-frei gruen
 ohne `CRITICAL_COV_TARGETS`-Override).
-Status-Pfad: `Proposed (2026-05-26 `b840e7a` + Review-Folge
+Status-Pfad: Proposed (2026-05-26 `b840e7a` + Review-Folge
 `ad3dff8` + H4-Korrektur `111c464`) → Provisional (dieser
-Commit) → Accepted (geplant mit M4-Welle-7-Closure)`.
+Commit) → Accepted (geplant mit M4-Welle-7-Closure).
 **Datum:** 2026-05-26 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)

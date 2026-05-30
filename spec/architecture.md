@@ -4,7 +4,7 @@
 **Dokumenttyp:** Architekturbeschreibung
 **Format:** Markdown
 **Version:** 0.3.0
-**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle 1 — `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Proposed`)
+**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle-2-Vorbereitung — Welle 1 `Done`, `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`)
 **Bezug:** [`lastenheft.md`](lastenheft.md)
 
 ---

@@ -1,35 +1,41 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 1
-**Stand:** 2026-05-26
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 2-Vorbereitung (Welle 1 `Done`)
+**Stand:** 2026-05-30
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
-  Welle 1 mit C0+C1+Review-Folge+H4-Folge+C2 geliefert,
-  C3-Doc-Sync ausstehend).
+  **Welle 1 `Done`** geschlossen 2026-05-30 mit
+  C0 `f8cbe9d` + C1 `b840e7a` + Review-Folge `ad3dff8` +
+  H4-Korrektur `111c464` + C2 `d09adf3` + EoD-Sync `f8ed791` +
+  C3 `5f03bbf` + Linter-Folge `82f947c` + Self-Close-Move
+  `81b5cba` + Pre-C0-Sync `f1f9db1`).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
-  OPC-UA, DNP3, IEC 61850).
+  OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
+  M4-Welle-2 (MQTT-Adapter — `paho-mqtt`-Wrapper + Topic-
+  Schema + Mosquitto-Sibling-Smoke).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
-  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Proposed`**
-  (M4-Welle-1-C1 `DeviceProtocolPort`-Surface, Caller-Scope-
-  Lifecycle; `Provisional` geplant mit C2-Merge, `Accepted` mit
+  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
+  (M4-Welle-1-C1 `b840e7a` `DeviceProtocolPort`-Surface mit
+  Caller-Scope-Lifecycle; `Proposed → Provisional` mit M4-Welle-1-
+  C3 `5f03bbf` nach C2-Merge `d09adf3`; `Accepted` geplant mit
   M4-Welle-7-Closure).
-- **Tests:** 1161 Unit + 21 Integration gruen (Stand `d09adf3`;
-  +23 Unit-Tests ggue. M3-Closure fuer `DeviceProtocolPort`-
-  Protocol-Surface + TickLoop-FIFO/LIFO + Partial-Start-Failure-
-  Context-Chain); Coverage 96 % total.
+- **Tests:** 1161 Unit + 21 Integration gruen (Stand nach
+  M4-Welle-1-Closure; +23 Unit-Tests ggue. M3-Closure: 12 fuer
+  `DeviceProtocolPort`-Protocol-Surface + 11 fuer TickLoop-FIFO/
+  LIFO + Partial-Start-Failure-Context-Chain); Coverage 96 % total.
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
   Fix `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
   M3-Welle-7-`c61ab0d`, **nicht durch M4-Welle-1-Code verursacht**;
   Base-Image-Bump in separatem Stack.
-- **Contracts:** 19 A-1 (6 import-linter + 13 arch_check inkl.
-  `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-RESUME-
-  ERRORS`); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*` weiter
-  via `tools/arch_check.py:1089` (Regression-Schutz in Welle-1-C2
-  verifiziert).
+- **Contracts:** 19 A-1 (7 lint-imports + 12 `tools/arch_check.py`
+  inkl. `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-
+  RESUME-ERRORS`); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
+  weiter via `tools/arch_check.py:1089` (Regression-Schutz in
+  Welle-1-C2 verifiziert).
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
@@ -207,14 +213,17 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Naechster aktiver Slice: M4.** M3 ist `Done` (2026-05-25,
+**Aktiver Slice: M4.** M3 ist `Done` (2026-05-25,
 siehe [`done/M3-results.md`](../done/M3-results.md)): drei Sub-
 Bereiche (Faults, Multi-Agent, Observability) ueber Welle 0..7
 geliefert; sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
 `Accepted`; `make fullbuild` cache-frei gruen ohne Override mit
-OTLP-Collector-Sibling; 1138 Unit-Tests + 21 Integration-Tests;
-96 % Total-Coverage; 19 A-1-Contracts (6 import-linter + 13
-arch_check).
+OTLP-Collector-Sibling; **bei M3-Closure 1138 Unit-Tests + 21
+Integration-Tests**; 96 % Total-Coverage; 19 A-1-Contracts
+(M3-Closure-Stand: in M3-Doku als „6 import-linter + 13
+arch_check" beschrieben; tatsaechlicher Split ueber alle M3+M4-
+Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
+19, siehe Welle-1-Linter-Folge `82f947c`).
 
 ### M3 — Faults + Multi-Agent + Observability (`Done` 2026-05-25)
 

@@ -303,15 +303,30 @@ Welle 2; werden nicht in Welle 1 angelegt):
 
 ## 5. Critical Files
 
-| Pfad                                                                | Commit | Aktion                                |
-| ------------------------------------------------------------------- | ------ | ------------------------------------- |
-| `docs/plan/planning/in-progress/M4-welle-1.md`                      | C0     | NEU                                   |
-| `docs/plan/adr/0030-device-protocol-port-surface.md`                | C1     | NEU (`Proposed`)                      |
-| `src/grid_gym/hexagon/ports/driven/device_protocol.py`              | C2     | NEU (`DeviceProtocolPort`-Protocol)   |
-| `tests/unit/hexagon/ports/test_device_protocol.py`                  | C2     | NEU (Protocol-Vertragsverhalten-Tests)|
-| `docs/plan/adr/0030-device-protocol-port-surface.md`                | C3     | EDIT (`Proposed → Provisional`)       |
-| `docs/plan/planning/in-progress/M4-welle-1.md`                      | C3     | EDIT (Status → Done; Hashes)          |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`            | C3     | EDIT (§3 Welle 1 Done-Sync)           |
+Stand: ex-post nach Welle-1-Closure (C0..C3 + Review-Folge
+`ad3dff8` + H4-Korrektur `111c464` + Linter-Folge `82f947c` +
+Self-Close-Move `81b5cba` + Pre-C0-Sync `f1f9db1`). Tabelle
+ist um die in C2 tatsaechlich gelandeten 5 Dateien erweitert
+und auf die Closure-Pfade umgestellt.
+
+| Pfad                                                                       | Commit | Aktion                                                          |
+| -------------------------------------------------------------------------- | ------ | --------------------------------------------------------------- |
+| `docs/plan/planning/done/M4-welle-1.md`                                    | C0     | NEU (eroeffnet in `in-progress/`; mit `81b5cba` nach `done/`)   |
+| `docs/plan/adr/0030-device-protocol-port-surface.md`                       | C1     | NEU (`Proposed`)                                                |
+| `src/grid_gym/hexagon/ports/driven/device_protocol.py`                     | C2     | NEU (`DeviceProtocolPort`-Protocol + `*Error`-Hierarchie)       |
+| `src/grid_gym/hexagon/core/simulation/tick_loop.py`                        | C2     | EDIT (`protocol_ports`-Kwarg + `start_/stop_protocol_ports()`)  |
+| `src/grid_gym/hexagon/core/scenario/loader.py`                             | C2     | EDIT (Builder-Symmetrie: `protocol_ports` in `TickLoopWiring` + `build_tick_loop`-Threading; +8 Zeilen, kein Schema-/Validator-Touch) |
+| `tests/unit/hexagon/ports/driven/test_device_protocol.py`                  | C2     | NEU (12 Protocol-Vertragsverhalten-Tests)                       |
+| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py` | C2  | NEU (11 TickLoop-Lifecycle-Tests: FIFO/LIFO/Idempotenz/Cleanup) |
+| `docs/plan/adr/0030-device-protocol-port-surface.md`                       | C3     | EDIT (`Proposed → Provisional`)                                 |
+| `docs/plan/planning/done/M4-welle-1.md`                                    | C3     | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) |
+| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | C3     | EDIT (§3 Welle 1 Done-Sync)                                     |
+| `docs/plan/adr/0030-device-protocol-port-surface.md`                       | Linter-Folge `82f947c` | EDIT (arch-check 16/16 → 19/19 = 7 lint-imports + 12 `tools/arch_check.py`) |
+| `docs/plan/planning/done/M4-welle-1.md`                                    | Linter-Folge `82f947c` | EDIT (gleiche Korrektur in §0 + §9)                            |
+| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | Linter-Folge `82f947c` | EDIT (gleiche Korrektur in §3 Welle 1)                         |
+| `docs/plan/planning/done/README.md`                                        | Pre-C0-Sync `f1f9db1`  | EDIT (Bestand-Tabelle-Zeile + Closure-Stack)                   |
+| `docs/plan/planning/in-progress/README.md`                                 | Pre-C0-Sync `f1f9db1`  | EDIT (Naechster-aktiver-Schritt → M4-Welle-2)                  |
+| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | Pre-C0-Sync `f1f9db1`  | EDIT (§3 Welle 1 Slice-Doc-Ref auf `../done/`)                 |
 
 ---
 
@@ -326,15 +341,21 @@ Welle 2; werden nicht in Welle 1 angelegt):
 2. **C1 (ADR Proposed)**: `make docs-check` gruen (neuer
    ADR-Pfad existiert, `docs/plan/adr/README.md` ggf.
    syncen).
-3. **C2 (feat)**:
-   - `make test-unit` gruen (neue Protocol-Tests + alle
-     bestehenden 1138 Unit-Tests bleiben gruen).
-   - `make arch-check` gruen (`AC-ADAPTER-LIGHTWEIGHT`-
-     Pfad-Filter erfasst weiterhin `protocol_*` —
-     Regression-Schutz).
+3. **C2 (feat) — ex-post belegt**:
+   - `make test-unit` gruen (1138 → **1161 Tests**: 12 neue
+     Protocol-Surface-Tests + 11 neue TickLoop-Lifecycle-
+     Tests).
+   - `make arch-check` gruen — **19/19 Contracts KEPT**
+     (7 lint-imports + 12 `tools/arch_check.py`);
+     `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter erfasst weiterhin
+     `protocol_*` (Regression-Schutz, kein neuer Test).
    - `make gates` cache-frei gruen ohne
      `CRITICAL_COV_TARGETS`-Override.
-   - `make fullbuild` gruen (Compose-Smoke unveraendert).
+   - `make fullbuild` **rot** aus Pre-existing-Grund
+     (`image-audit`: krb5-CVE `CVE-2026-40356` in
+     Debian-13-Base seit M3-Welle-7 `c61ab0d`; **nicht
+     durch M4-Welle-1-Code verursacht**; Base-Image-Bump
+     in separatem Stack). Compose-Smoke selbst unveraendert.
 4. **C3 (Doc-Sync)**: `make docs-check` gruen mit
    geupdateten Status-Headern.
 
@@ -364,11 +385,19 @@ Welle 2; werden nicht in Welle 1 angelegt):
   Refactoring**: ein paralleler Welle-2-Commit koennte
   versehentlich den Filter aufweichen (z. B. wenn der
   `bucket.startswith("protocol_")`-Check umgeschrieben
-  wird). *Mitigation*: Welle 1 C2 fuegt einen
-  Architektur-Test hinzu, der die Filter-Wirksamkeit
-  verifiziert (Property-Test: ein
-  `protocol_dummy/`-Modul mit hoher Komplexitaet **muss**
-  ein `AC-ADAPTER-LIGHTWEIGHT`-Violation triggern).
+  wird). *Mitigation (Welle-1-Stand)*: nur
+  Smoke-Regression-Schutz durch `make arch-check` (der
+  bestehende `protocol_*`-Filter bleibt gruen) — **der in
+  C0 vorgeschlagene Property-Test mit `protocol_dummy/`-
+  Planted-Violator wurde in C2 NICHT geliefert**, da er
+  ueber die Welle-1-Sub-Slicing-Schwelle geschoben haette
+  (Port-Surface + Lifecycle + Tests fuellten die Welle
+  bereits). *Folge-Mitigation*: Welle 2 (MQTT-Adapter)
+  muss vor dem ersten produktiven `protocol_mqtt/`-Push
+  entweder den Property-Test nachziehen ODER explizit auf
+  Welle 6 (Cross-Adapter-Hardening) verschieben — und
+  bis dahin mit Code-Review allein gegen Filter-
+  Aufweichungen schuetzen.
 - **Decision 7 (stateless) bricht Welle 3 (Modbus)**:
   Modbus-Read-Cursor (falls produktiv-noetig) braucht
   evtl. Persistenz ueber TickLoop-Restarts. *Mitigation*:
@@ -461,7 +490,15 @@ per-Commit-Aktion.
   unveraendert.
 - [x] **Keine Scenario-Schema-Erweiterung** fuer
   Protokoll-Profile — verifiziert: kein Touch an
-  `scenario/`-Validator/Loader in C2.
+  `scenario/validator.py` und kein YAML-Schema-Feld in
+  C2. `scenario/loader.py` wurde **mit Bedacht** um
+  Builder-Symmetrie erweitert (+8 Zeilen:
+  `DeviceProtocolPort`-Import + `protocol_ports`-Feld in
+  `TickLoopWiring` + Threading durch `build_tick_loop`)
+  — Pattern analog ADR 0021/0022/0023/0024-Kwarg-
+  Symmetrie. Decision 4 (Topic/Register/Node-Profil-
+  Deklaration) als YAML-Schema-Sache bleibt unangetastet
+  und wandert in Welle 2 (MQTT-Adapter-ADR).
 - [x] **Keine Bewegung der 17 Open-Trigger** —
   verifiziert: `docs/plan/planning/open/` unveraendert.
 - [x] **Kein M4-DoD-Checkbox-Abhaken in `roadmap.md`** —
