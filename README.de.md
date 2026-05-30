@@ -23,20 +23,19 @@ abgeschlossen (Slice-Plan eroeffnet + Trigger-Triage;
 `done/M4-welle-0.md` nach Self-Close-Move `556ae9f`); **Welle 1
 (`DeviceProtocolPort`-Foundation) ist `Done`**
 (`done/M4-welle-1.md` nach Self-Close-Move `81b5cba` + Pre-C0-
-Sync `f1f9db1`): C0 `f8cbe9d` (Slice-Doc), C1 `b840e7a`
-(ADR 0030 `Proposed`), Review-Folge `ad3dff8` (3H+4M+5L),
-H4-Korrektur `111c464` (`TickLoop.run()` existiert nicht —
-Decision 3 auf Caller-Scope `start_protocol_ports()`/
-`stop_protocol_ports()` umgeformt), C2 `d09adf3` (`feat` —
-Port + `*Error`-Hierarchie + TickLoop-Lifecycle-Methoden + 23
-neue Unit-Tests = 1161 gruen), EoD-Sync `f8ed791`, C3
-`5f03bbf` (Status/DoD-Sync + ADR 0030 `Proposed → Provisional`)
-und C3-Linter-Folge `82f947c` (arch-check Split 7 lint-imports +
-12 `tools/arch_check.py`). **Naechster aktiver Schritt:** M4
-Welle 2 (MQTT-Adapter — `paho-mqtt`-Wrapper + Topic-Schema +
-Mosquitto-Sibling-Smoke). Trigger 029 (vermuteter
-OTLP-Span-Export-Bug) wurde als Fehlbefund geschlossen — der
-eigentliche Bug lag am Span-Regex im Smoke-Test.
+Sync `f1f9db1`); **Welle 2 (MQTT-Adapter) ist `Done`**
+(`in-progress/M4-welle-2.md`): C0 `3b633f6` (Slice-Doc),
+C1 `4e102b8` (ADR 0031 `Proposed`), C2 `f33bb4e` (`feat` —
+`protocol_mqtt/`-7-Modul-Paket + 50 neue Unit-Tests = 1211 gruen
++ Mosquitto-Integration-Smoke via testcontainers = 22
+Integration-Tests gruen + `pyproject.toml`/`uv.lock`/`Dockerfile`/
+`compose.yml`-Edits) und C3 (dieser Commit, ADR 0031
+`Proposed → Provisional`). **Naechster aktiver Schritt:** M4
+Welle 3 (Modbus-TCP-Adapter — `pymodbus`-Wrapper +
+Register-Schema + Modbus-Server-Container-Smoke). Trigger 029
+(vermuteter OTLP-Span-Export-Bug) wurde als Fehlbefund
+geschlossen — der eigentliche Bug lag am Span-Regex im
+Smoke-Test.
 
 **Slice 027 (Noqa-Abbau) `Done`** zwischengeschoben: alle 36
 bestehenden `# noqa`-Marker entfernt; `tools/check_noqa.py --fail-on-
@@ -56,14 +55,16 @@ noqa` ist 9. Pflicht-Gate in `make gates`. Neue Envelope-Types
 | OTLP-Adapter (M3 Welle 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` mit `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper. ADR 0024 §4.5 mit 8 normativen Decisions. arch_check-Contract `AC-OTLP-ADAPTER-NO-TIME` (12. Custom-Contract). `deploy/compose.yml`-`otel-collector`-Sibling + `tools/wait_otel_collector.py`-Liveness-Poll + `make image-audit`-Trivy-Erweiterung (C2). Integration-Smoke `tests/integration/test_otlp_compose_smoke.py` (volles Tripel Span+Metric+Log) + Runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
 | Noqa-Hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa`-Marker, `make gates` um `noqa-gate` erweitert (9-stufig). |
 | Tick-Loop-Private-Import-Contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 12. `tools/arch_check.py`-Contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1-Contracts insgesamt = 7 lint-imports + 12 `tools/arch_check.py`). |
-| Protokolladapter (M4) | `In Progress` (Welle 1 `Done`) | Welle 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Welle 1 `Done` ([`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md)) — geliefert: `DeviceProtocolPort` (`src/grid_gym/hexagon/ports/driven/device_protocol.py`) + `*Error`-Hierarchie + TickLoop-`start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + Partial-Cleanup mit `__context__`-Chain) + Scenario-Loader-Builder-Symmetrie (+8 Zeilen). ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` (Caller-Scope-Lifecycle, Decisions 2/3/7 final + Decision 1 provisorisch). **Naechster aktiver Schritt:** Welle 2 (MQTT-Adapter). Konkrete Adapter (MQTT, Modbus, OPC-UA, DNP3, IEC 61850) folgen ab Welle 2. |
+| Protokolladapter (M4) | `In Progress` (Welle 2 `Done`) | Welle 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Welle 1 `Done` ([`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md)) — geliefert: `DeviceProtocolPort` + `*Error`-Hierarchie + TickLoop-`start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + Partial-Cleanup mit `__context__`-Chain) + Scenario-Loader-Builder-Symmetrie (+8 Zeilen); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`. **Welle 2 `Done`** ([`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md)) — geliefert: erster konkreter Adapter `MqttDeviceProtocolPort` unter `src/grid_gym/adapters/driven/protocol_mqtt/` (7-Modul-Paket: Config + Codec + Topic-Resolver + Port + Errors + Error-Translation; paho-mqtt 2.x mit `CallbackAPIVersion.VERSION2`; Per-Target `queue.Queue`-Marshal am paho-Loop-Thread-Boundary) + Mosquitto-Integration-Smoke via testcontainers; ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` (4a inline Topic-Schema, 4b `canonical_json`-Codec, 4c QoS 0/1, 4d Per-Target-Queue-Marshal). **Naechster aktiver Schritt:** Welle 3 (Modbus-TCP-Adapter). Konkrete Adapter Modbus / OPC-UA / DNP3 / IEC 61850 folgen ab Welle 3. |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 
-**Testbilanz:** 1161 Unit-Tests + 21 Integration-Tests gruen
-(Stand nach M4-Welle-1-Closure — +23 Unit-Tests ggue.
-M3-Closure: 12 `DeviceProtocolPort`-Protocol-Surface + 11
-TickLoop-FIFO/LIFO + Partial-Start-Failure-Context-Chain).
+**Testbilanz:** 1211 Unit-Tests + 22 Integration-Tests gruen
+(Stand nach M4-Welle-2-Closure — +73 Unit-Tests ggue. M3-Closure
+[+23 in Welle 1 + +50 in Welle 2: 11 MQTT-Codec-Roundtrip + 16
+Topic-Resolver/Config-Validation + 17 Lifecycle/Read+Write mit
+mocked paho-Client + 6 Callback-Marshal] + 1 Integration-Test
+[Mosquitto-Sibling-MQTT-Roundtrip-Smoke]).
 `make gates` ist 9-stufig (lint, format-check, mypy `--strict`,
 arch-check **19/19 contracts kept** [7 lint-imports +
 12 `tools/arch_check.py` inkl. `AC-OTLP-ADAPTER-NO-TIME` und
@@ -189,8 +190,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT (M1 Welle 6b/6c)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (1161 Stand 2026-05-30)
-│   ├── integration/             ← Compose-basierte Integration-Tests (21 Tests; OTLP-Smoke inkl.)
+│   ├── unit/                    ← pytest-Unit-Tests (1211 Stand 2026-05-30, Welle-2-Stand)
+│   ├── integration/             ← Compose-basierte Integration-Tests (22 Tests; OTLP- + MQTT-Smoke inkl.)
 │   └── unit/_arch_check_*       ← Architektur-Tests (7 lint-imports + 12 custom AC-Checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)

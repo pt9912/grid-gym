@@ -306,27 +306,78 @@ C2 `d09adf3` (feat) + EoD-Sync `f8ed791` (Top-Level-Doku) +
 C3 (dieser Commit; ADR 0030 → `Provisional`, `M4-welle-1.md`
 → `Done`, diese §3-Welle-1-Section auf Done).
 
-### Welle 2 — MQTT-Adapter
+### Welle 2 — MQTT-Adapter (Done 2026-05-30)
 
-- ADR-Folge (geplant **MQTT-Adapter-ADR**) mit Decision 4
-  (Profile-Deklaration; MQTT setzt das Pattern: Topic
-  inline im Szenario-YAML, separat oder hybrid).
-- NEU `src/grid_gym/adapters/driven/protocol_mqtt/` mit
-  `paho-mqtt`-Wrapper:
-  - Topic-Schema-Mapping (Device-ID → Topic).
-  - Payload-Codec (Telemetry → JSON, Command → JSON;
-    Trigger-004-Drift bleibt parkbar).
-  - QoS-Default, Pub/Sub-Richtung, Fehlerverhalten.
-- NEU Integration-Smoke via testcontainers
-  (`eclipse-mosquitto:2`; Reserve `flashmq`/`amqtt` als
-  in-process Broker bei Lizenz-Bruch — siehe
-  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision 5).
-- `tests/integration/compose.yml`-Erweiterung um
-  Mosquitto-Sibling.
+**Status:** Done. Slice-Begleit-Doc
+[`M4-welle-2.md`](M4-welle-2.md) (bleibt vorerst in
+`in-progress/`; Move nach `done/` mit M4-Welle-3-Pre-C0
+analog M4-Welle-2-Pre-C0-Pattern). ADR 0031 ist
+`Provisional`.
 
-**Welle-2-Gate:** `make test-integration` gruen mit
-MQTT-Smoke. Default-`CRITICAL_COV_TARGETS` um
-`adapters/driven/protocol_mqtt` erweitert.
+- [x] **ADR 0031** (zweiter M4-ADR) — `Provisional`
+  mit C3 (2026-05-30) nach C1 `4e102b8` (Proposed) und
+  C2 `f33bb4e` (feat-Merge). Vier Decisions aus
+  [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+  Decision 4 alle **final**:
+  - [x] Decision 4a (Topic-Schema, **final**): inline im
+    `protocol_ports`-Scenario-YAML-Block;
+    `MqttProtocolPortConfig.topics: Mapping[device_id,
+    MqttTopicConfig]`. Kein separater
+    `mqtt_profiles`-Top-Level (YAGNI; Welle-6-
+    Schaerfungspfad bleibt offen via ADR 0011).
+  - [x] Decision 4b (Payload-Codec, **final**):
+    `canonical_json` (Trigger-014-Quelle); Trigger 004
+    bleibt in `open/` mit Re-Eval-Bedingung „messbarer
+    Perf-Druck am MQTT-Publish-Throughput in Welle 6".
+  - [x] Decision 4c (QoS, **final**): `QoS 0` Telemetry,
+    `QoS 1` Commands, `QoS 1` Subscribe — pro Topic
+    ueberschreibbar.
+  - [x] Decision 4d (Callback->Sync-Marshal, **final**):
+    Per-Target `queue.Queue` mit Lazy-Init im paho-mqtt-
+    `on_message`-Callback. `read()` macht `get_nowait()`
+    (nicht-blockierend); `write()` ruft
+    `client.publish()` direkt (thread-safe per
+    paho-Doku). Callback-Exceptions werden via
+    `safe_callback` geschluckt+geloggt (`error_translation.py`
+    mit BLE001-per-file-ignore aus Welle-0-Vorbelegung).
+- [x] **NEU**
+  `src/grid_gym/adapters/driven/protocol_mqtt/`-Modul
+  (7 Dateien): `__init__.py` (Public-Reexports +
+  Lastenheft-Z.-1161–1163-Pflichtnotiz) + `_config.py`
+  (Decision 4a) + `_codec.py` (Decision 4b) +
+  `_topic_resolver.py` (Decision 4d-Helper) + `_port.py`
+  (Decision 4d Hauptklasse) + `_errors.py` (5 typed
+  Sub-Errors) + `error_translation.py`
+  (BLE001-Callback-Boundary).
+- [x] **NEU Integration-Smoke** via testcontainers
+  (`eclipse-mosquitto:2`-Sibling mit Inline-Anonymous-
+  Config). End-to-End-Pub/Sub-Roundtrip gegen
+  `MqttDeviceProtocolPort` mit Bounded-Poll-Loops.
+- [x] **EDIT `tests/integration/compose.yml`** (Header-
+  Kommentar-Sync: Postgres + otel-collector + Mosquitto
+  als testcontainers-Siblings dokumentiert).
+- [x] **EDIT `pyproject.toml`** (`paho-mqtt>=2.0` in
+  `[project] dependencies`); **EDIT `uv.lock`**
+  (`paho-mqtt v2.1.0` via `make lock-refresh`); **EDIT
+  `Dockerfile`** (`CRITICAL_COV_TARGETS`-Erweiterung um
+  `adapters/driven/protocol_mqtt`).
+- [x] `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter — erfasst
+  `protocol_mqtt` ohne Filter-Aenderung; 19/19 Contracts
+  KEPT.
+
+**Welle-2-Gate (Done 2026-05-30):** `make test-integration`
+gruen mit MQTT-Smoke gegen Mosquitto-Sibling (21 → 22
+Integration-Tests). `make test-unit` gruen (1161 → 1211 =
++50 Unit-Tests). `make arch-check` gruen (19/19 = 7
+lint-imports + 12 `tools/arch_check.py`). `make gates`
+cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override
+(Default-Liste um `adapters/driven/protocol_mqtt`
+erweitert). **Commit-Belege:** C0 `3b633f6` (Slice-Doc) +
+C1 `4e102b8` (ADR 0031 Proposed) + C2 `f33bb4e` (feat:
+protocol_mqtt + Tests + Integration-Smoke + Compose/
+pyproject/Dockerfile-Edits) + C3 (dieser Commit; ADR 0031
+→ `Provisional`, `M4-welle-2.md` → `Done`, diese §3-
+Welle-2-Section auf Done, Top-Level-Doku-Sync in 5 Docs).
 
 ### Welle 3 — Modbus-TCP-Adapter
 

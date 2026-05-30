@@ -4,7 +4,7 @@
 **Dokumenttyp:** Architekturbeschreibung
 **Format:** Markdown
 **Version:** 0.3.0
-**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle-2-Vorbereitung — Welle 1 `Done`, `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`)
+**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle-3-Vorbereitung — Welle 1 + Welle 2 `Done`, `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`, MQTT-Adapter-Profile per [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional`)
 **Bezug:** [`lastenheft.md`](lastenheft.md)
 
 ---

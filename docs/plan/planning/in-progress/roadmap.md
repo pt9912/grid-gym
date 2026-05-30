@@ -1,30 +1,35 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 2-Vorbereitung (Welle 1 `Done`)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle-3-Vorbereitung (Welle 2 `Done`)
 **Stand:** 2026-05-30
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
-  **Welle 1 `Done`** geschlossen 2026-05-30 mit
-  C0 `f8cbe9d` + C1 `b840e7a` + Review-Folge `ad3dff8` +
-  H4-Korrektur `111c464` + C2 `d09adf3` + EoD-Sync `f8ed791` +
-  C3 `5f03bbf` + Linter-Folge `82f947c` + Self-Close-Move
-  `81b5cba` + Pre-C0-Sync `f1f9db1`).
+  **Welle 1 `Done`** geschlossen 2026-05-30 mit C0 `f8cbe9d` +
+  C1 `b840e7a` + Review-Folge `ad3dff8` + H4-Korrektur `111c464`
+  + C2 `d09adf3` + EoD-Sync `f8ed791` + C3 `5f03bbf` +
+  Linter-Folge `82f947c` + Self-Close-Move `81b5cba` +
+  Pre-C0-Sync `f1f9db1`; **Welle 2 `Done`** geschlossen
+  2026-05-30 mit C0 `3b633f6` + C1 `4e102b8` + C2 `f33bb4e` +
+  C3 dieser Commit).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-2 (MQTT-Adapter — `paho-mqtt`-Wrapper + Topic-
-  Schema + Mosquitto-Sibling-Smoke).
+  M4-Welle-3 (Modbus-TCP-Adapter — `pymodbus`-Wrapper +
+  Register-Schema + Modbus-Server-Container-Smoke).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
-  (M4-Welle-1-C1 `b840e7a` `DeviceProtocolPort`-Surface mit
-  Caller-Scope-Lifecycle; `Proposed → Provisional` mit M4-Welle-1-
-  C3 `5f03bbf` nach C2-Merge `d09adf3`; `Accepted` geplant mit
-  M4-Welle-7-Closure).
-- **Tests:** 1161 Unit + 21 Integration gruen (Stand nach
-  M4-Welle-1-Closure; +23 Unit-Tests ggue. M3-Closure: 12 fuer
-  `DeviceProtocolPort`-Protocol-Surface + 11 fuer TickLoop-FIFO/
-  LIFO + Partial-Start-Failure-Context-Chain); Coverage 96 % total.
+  (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted` geplant
+  mit M4-Welle-7-Closure); **0031 `Provisional`** (M4-Welle-2
+  `4e102b8` MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle
+  final; `Proposed → Provisional` mit M4-Welle-2-C3 nach
+  C2-Merge `f33bb4e`; `Accepted` geplant mit M4-Welle-7-Closure).
+- **Tests:** 1211 Unit + 22 Integration gruen (Stand nach
+  M4-Welle-2-Closure; +73 Unit-Tests ggue. M3-Closure
+  [+23 in Welle 1 + +50 in Welle 2: 11 Codec + 16
+  Topic-Resolver + 17 Lifecycle/Read+Write + 6 Callback-
+  Marshal] + 1 Integration-Test [Mosquitto-MQTT-Smoke]);
+  Coverage 96 % total.
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,

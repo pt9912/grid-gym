@@ -1,17 +1,64 @@
 # Welle 2 — M4 MQTT-Adapter
 
-**Status:** In Progress — eroeffnet 2026-05-30 nach
-M4-Welle-1-Closure (`5f03bbf` C3 + `82f947c` Linter-Folge +
-`81b5cba` Self-Close-Move + `f1f9db1` Pre-C0-Sync +
-`b7bf40d` Review-Folge + `51b8694` `M4-protocol-adapters.md`
-§2.1-Stale-Notiz-Sync). Welle 2 ist die **zweite Code-Welle**
-in M4 und der **erste konkrete Adapter** auf der
-`DeviceProtocolPort`-Surface (`GG-AR-PORT-DRN-007`): MQTT
-ueber `paho-mqtt`. Welle 2 setzt das Pattern fuer
-Decision 4 (Topic/Register/Node-Profil-Deklaration aus
+**Status:** Done — geschlossen 2026-05-30 mit M4-Welle-2-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-05-30 nach M4-Welle-1-Closure (`5f03bbf` C3 + `82f947c`
+Linter-Folge + `81b5cba` Self-Close-Move + `f1f9db1`
+Pre-C0-Sync + `b7bf40d` Review-Folge + `51b8694`
+`M4-protocol-adapters.md` §2.1-Stale-Notiz-Sync). Welle 2 war
+die **zweite Code-Welle** in M4 und hat den **ersten
+konkreten Adapter** auf der `DeviceProtocolPort`-Surface
+(`GG-AR-PORT-DRN-007`) geliefert: MQTT ueber `paho-mqtt 2.x`
+mit Mosquitto-Sibling-Integration-Smoke. Welle 2 hat das
+Pattern fuer Decision 4 (Topic/Register/Node-Profil-
+Deklaration aus
 [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
-Decision 4) und legt die Mosquitto-Sibling-Test-Praezedenz
-fuer Welle 3 (Modbus) und Welle 4 (OPC-UA).
+Decision 4) gesetzt und die Mosquitto-Sibling-Test-Praezedenz
+fuer Welle 3 (Modbus) und Welle 4 (OPC-UA) etabliert.
+
+**Liefer-Hashes:**
+
+- C0 `3b633f6` — `docs(plan): M4-welle-2 Slice-Doc (M4 Welle-2 Beginn)`.
+- C1 `4e102b8` — `docs(adr): ADR 0031 Proposed — MQTT-Adapter-Profile (M4 Welle 2)`.
+- C2 `f33bb4e` — `feat(welle-2): protocol_mqtt + Tests + Integration-Smoke + Compose-Edit`.
+- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-2-C3 — Status/DoD-Sync + ADR 0031 -> Provisional + Top-Level-Doku-Sync`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `f33bb4e` C2 +
+dieser Commit):**
+
+- `make test-unit`: **1211 Tests gruen** (Pre-Welle-2-Stand
+  1161 → Welle-2-Endstand 1211 = +50 Unit-Tests; davon 11
+  Codec-Roundtrip
+  (`tests/unit/adapters/driven/protocol_mqtt/test_mqtt_codec.py`),
+  16 Topic-Resolver + Config-Validation
+  (`test_mqtt_topic_resolver.py`), 17 Lifecycle + Read/Write
+  mit mocked paho-Client (`test_mqtt_protocol_port.py`) und
+  6 Callback-Marshal (`test_mqtt_callback_marshal.py`:
+  Per-Target-Queue-Lazy-Init, FIFO-Drain, Decode-Fehler-
+  Swallowing)).
+- `make test-integration`: **22 Tests gruen** (Pre-Welle-2-
+  Stand 21 → Welle-2-Endstand 22 = +1 MQTT-Compose-Smoke
+  gegen Mosquitto-Sibling via testcontainers; End-to-End-
+  Pub/Sub-Roundtrip + Bounded-Poll-Loop).
+- `make arch-check`: **19/19 Contracts KEPT** (7
+  lint-imports + 12 `tools/arch_check.py`);
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_mqtt` ohne
+  Filter-Edit (Pfad-Filter `bucket.startswith("protocol_")`
+  greift; McCabe-Komplexitaets-Schwelle in
+  `_config._validate_topics` per Refactor in 3 modul-lokale
+  Helpers eingehalten).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+  `src/grid_gym/adapters/driven/protocol_mqtt` erweitert).
+- `make fullbuild`: `image-audit` weiter rot aus
+  **dokumentiertem** Pre-existing krb5-CVE-Grund
+  (`CVE-2026-40356`-Drift seit M3-Welle-7-`c61ab0d`,
+  **nicht durch M4-Welle-2-Code verursacht**); Compose-Smoke
+  selbst (mit neuem Mosquitto-Sibling) gruen.
+- ADR 0031: `Proposed → Provisional` (Decisions 4a/4b/4c/4d
+  alle **final**; Status-Pfad in
+  [`../../adr/0031-mqtt-adapter-profile.md`](../../adr/0031-mqtt-adapter-profile.md) §5
+  mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 2`](M4-protocol-adapters.md)
@@ -317,10 +364,10 @@ Welle 3; werden nicht in Welle 2 angelegt):
 
 ## 4. Liefer-Reihenfolge (4 Commits)
 
-### C0 — `docs(plan)`: M4-welle-2 Slice-Doc (Welle-Beginn)
+### C0 — `docs(plan)`: M4-welle-2 Slice-Doc (Welle-Beginn) — **Done `3b633f6`**
 
 - Dieses Dokument als Welle-Start-Marker. Status:
-  `In Progress`.
+  `In Progress` → (in C3) `Done`.
 - Kein README-Sync noetig: `in-progress/README.md` zeigt
   bereits nach M4-Welle-2-Pre-C0-Sync `f1f9db1` „Naechster
   aktiver Schritt: M4-Welle-2 (MQTT-Adapter …)". Welle-2-
@@ -329,7 +376,7 @@ Welle 3; werden nicht in Welle 2 angelegt):
   M3-Welle-1..6 + M4-Welle-1; Welle-N-Docs sind Tracking,
   nicht Roadmap-Bestand).
 
-### C1 — `docs(adr)`: ADR 0031 Proposed — MQTT-Adapter-Profile
+### C1 — `docs(adr)`: ADR 0031 Proposed — MQTT-Adapter-Profile — **Done `4e102b8`**
 
 - NEU `docs/plan/adr/0031-mqtt-adapter-profile.md` als
   `Proposed`. Inhalts-Skizze:
@@ -352,7 +399,7 @@ Welle 3; werden nicht in Welle 2 angelegt):
 - Pattern analog M4-Welle-1-C1 `b840e7a` (ADR 0030
   Proposed).
 
-### C2 — `feat(welle-2)`: protocol_mqtt + Tests + Integration-Smoke + Compose-Edit
+### C2 — `feat(welle-2)`: protocol_mqtt + Tests + Integration-Smoke + Compose-Edit — **Done `f33bb4e`**
 
 - NEU `src/grid_gym/adapters/driven/protocol_mqtt/__init__.py`
   (+ optional `_codec.py`, falls noetig — AC-ADAPTER-
@@ -375,7 +422,7 @@ Welle 3; werden nicht in Welle 2 angelegt):
   `AC-ADAPTER-LIGHTWEIGHT` greift fuer `protocol_mqtt`
   ohne Code-Aenderung.
 
-### C3 — `docs(plan|adr)`: Welle-2 Status/DoD-Sync + ADR-Schaerfung
+### C3 — `docs(plan|adr)`: Welle-2 Status/DoD-Sync + ADR-Schaerfung — **Done (dieser Commit)**
 
 - ADR 0031 `Proposed → Provisional` mit C2-Merge-Beleg.
 - `M4-welle-2.md`-Status `In Progress → Done` mit
@@ -561,58 +608,103 @@ Welle 3; werden nicht in Welle 2 angelegt):
 
 ## 9. DoD-Checkliste (Welle-Schluss, mit C3 abgehakt)
 
-Skelett — wird in C3 abgehakt. Pattern analog
-M4-welle-1.md §9.
+Pattern analog M4-welle-1.md §9. Belege siehe
+**DoD-Verifikation**-Block im Status-Header oben + §4
+Liefer-Reihenfolge fuer die per-Commit-Aktion.
 
-**In-Scope-Items (alle abzuhaken mit C3):**
+**In-Scope-Items (alle abgehakt mit C3):**
 
-- [ ] **ADR 0031 angelegt** — `Proposed` (C1) →
-  `Provisional` (C3), mit Decisions 4a/4b/4c/4d **final**.
-- [ ] **MQTT-Port produktiv** — `MqttDeviceProtocolPort`
+- [x] **ADR 0031 angelegt** — `Proposed` (C1 `4e102b8`) →
+  `Provisional` (dieser Commit), mit Decisions 4a/4b/4c/4d
+  alle **final** (Topic-Schema inline, `canonical_json`-
+  Codec, QoS 0/1, Per-Target `queue.Queue` mit Lazy-Init).
+  Code:
+  [`../../adr/0031-mqtt-adapter-profile.md`](../../adr/0031-mqtt-adapter-profile.md).
+- [x] **MQTT-Port produktiv** — `MqttDeviceProtocolPort`
   als `DeviceProtocolPort`-Implementer unter
-  `src/grid_gym/adapters/driven/protocol_mqtt/`; Modul-
-  Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
-  (Simulations-/Testadapter-Notiz).
-- [ ] **Unit-Tests fuer 4 Test-Aspekte** —
-  Lifecycle/Read+Write + Codec + Topic-Resolver +
-  Callback-Marshal; ~24 neue Tests (feste Zahl in C3).
-- [ ] **Integration-Smoke produktiv** —
-  `tests/integration/test_mqtt_compose_smoke.py` mit
-  Mosquitto-Sibling via testcontainers + End-to-End-Pub/
-  Sub gegen TickLoop.
-- [ ] **`tests/integration/compose.yml` erweitert** —
-  `mosquitto`-Sibling-Service mit Healthcheck +
-  Lizenz-/Image-Pin-Notiz.
-- [ ] **`pyproject.toml` erweitert** — `paho-mqtt>=2.0`
-  in `[project] dependencies`; `paho`-Eintrag in den
-  AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen unveraendert.
-- [ ] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
-  Default um `src/grid_gym/adapters/driven/protocol_mqtt`.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  [`../../../../src/grid_gym/adapters/driven/protocol_mqtt/`](../../../../src/grid_gym/adapters/driven/protocol_mqtt/)
+  (7 Dateien: `__init__.py` + `_config.py` + `_codec.py` +
+  `_topic_resolver.py` + `_port.py` + `_errors.py` +
+  `error_translation.py`). Modul-Docstring in
+  `__init__.py` traegt Lastenheft-Z.-1161–1163-Pflicht
+  (Simulations-/Testadapter, **keine** produktive
+  Anlagensteuerung). NEU mit C2 `f33bb4e`.
+- [x] **Unit-Tests fuer 4 Test-Aspekte** — 50 neue Tests
+  (1161 → 1211): 11 Codec-Roundtrip + 16 Topic-Resolver +
+  17 Lifecycle/Read+Write + 6 Callback-Marshal. Code:
+  [`../../../../tests/unit/adapters/driven/protocol_mqtt/`](../../../../tests/unit/adapters/driven/protocol_mqtt/).
+- [x] **Integration-Smoke produktiv** —
+  [`../../../../tests/integration/test_mqtt_compose_smoke.py`](../../../../tests/integration/test_mqtt_compose_smoke.py)
+  spawnt `eclipse-mosquitto:2`-Sibling via testcontainers
+  (Inline-Config mit `allow_anonymous true`); End-to-End-
+  Pub/Sub-Roundtrip gegen `MqttDeviceProtocolPort` +
+  Bounded-Poll-Loops mit 5-Sekunden-Timeout.
+- [x] **`tests/integration/compose.yml` syncht** —
+  Header-Kommentar listet `mosquitto`-Sibling neben
+  Postgres + otel-collector (alle via testcontainers,
+  kein eigener Compose-Service). Lizenz EPL-2.0/EDL-1.0
+  redistributable.
+- [x] **`pyproject.toml` erweitert** — `paho-mqtt>=2.0`
+  in `[project] dependencies` (Floor 2.0 wegen
+  `CallbackAPIVersion.VERSION2`); `paho`-Eintrag in den
+  AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen unveraendert
+  (Welle-0-Vorbelegung). `uv.lock` via `make lock-refresh`
+  aktualisiert: `paho-mqtt v2.1.0`.
+- [x] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
+  Default um
+  `src/grid_gym/adapters/driven/protocol_mqtt` ergaenzt
+  (Pattern analog `telemetry_otlp`-Eintrag aus
+  M3-Welle-6-`c61ab0d`).
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
   `protocol_mqtt`** — `tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`-Filter erfasst den
-  neuen Pfad ohne Code-Aenderung; `make arch-check`
-  weiter `19/19 Contracts KEPT`.
-- [ ] **C3-Doc-Sync** — `M4-welle-2.md` Status
-  `In Progress → Done`, ADR 0031 `Proposed → Provisional`,
-  `M4-protocol-adapters.md §3 Welle 2` Done-Markierung,
-  Top-Level-Doku-Sync (README/README.de/roadmap/spec/
-  architecture/adr/README/done/README) auf den Welle-2-
-  Endstand.
+  neuen Pfad **ohne Code-Aenderung**; `make arch-check`
+  weiter `19/19 Contracts KEPT`. McCabe-Komplexitaets-
+  Schwelle in `_config._validate_topics` per Refactor in
+  drei modul-lokale Helpers (`_validate_single_topic_config`/
+  `_collect_topic_strings`/`_assert_unique_topics`) eingehalten.
+- [x] **C3-Doc-Sync** — `M4-welle-2.md` Status
+  `In Progress → Done` (dieser Commit), ADR 0031
+  `Proposed → Provisional` (dieser Commit),
+  `M4-protocol-adapters.md §3 Welle 2` Done-Markierung
+  (dieser Commit), Top-Level-Doku-Sync in 5 Docs
+  (`README.md` + `README.de.md` + `roadmap.md` +
+  `spec/architecture.md` + `adr/README.md`-Zeile 31)
+  auf den Welle-2-Endstand. `done/README.md`-Bestand-Zeile
+  folgt mit M4-Welle-3-Pre-C0-Sync (Pattern analog
+  M4-Welle-1 `f1f9db1`).
 
-**Anti-Scope-Items (alle zu halten):**
+**Anti-Scope-Items (alle gehalten):**
 
-- [ ] **Keine Modbus-/OPC-UA-/DNP3-/IEC-Adapter** in C2.
-- [ ] **Kein OTel-Span-Wrap** der MQTT-Adapter-Calls.
-- [ ] **Kein RandomPort-Determinismus** fuer Topic-/
-  Client-IDs.
-- [ ] **Keine Scenario-Schema-Erweiterung jenseits des
-  Decision-4a-Pattern** (kein generisches Topic-/Register-
-  /Node-Schema).
-- [ ] **Keine Bewegung der 17 Open-Trigger** (insbesondere
-  Trigger 004 bleibt in `open/`).
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md`
-  (nur 1 DoD-Item geliefert; Sweep in Welle 6).
-- [ ] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
-  Property-Test** in Welle 2 (bewusst nach Welle 6
-  verschoben; Welle-1-§7-Folge-Pflicht honoriert).
+- [x] **Keine Modbus-/OPC-UA-/DNP3-/IEC-Adapter** in C2 —
+  verifiziert: keine neue Datei unter
+  `adapters/driven/protocol_{modbus,opcua,dnp3,iec}/`.
+- [x] **Kein OTel-Span-Wrap** der MQTT-Adapter-Calls —
+  verifiziert: kein Import von
+  `adapters/driven/telemetry_otlp/` in `protocol_mqtt/`;
+  TracePort-Wrap bleibt Welle-6-Material.
+- [x] **Kein RandomPort-Determinismus** fuer Topic-/
+  Client-IDs — verifiziert: `MqttProtocolPortConfig.client_id`
+  ist explizites Pflichtfeld (kein Auto-Generierungs-Pfad);
+  paho-mqtt-Default-Client-ID kommt nie zum Einsatz.
+- [x] **Keine Scenario-Schema-Erweiterung jenseits des
+  Decision-4a-Pattern** — verifiziert: kein Touch an
+  `scenario/validator.py` und kein neuer YAML-Top-Level-
+  Block. `MqttProtocolPortConfig` ist Adapter-intern,
+  Loader bleibt MQTT-frei per AC-HEXAGON-PURE (Scenario-
+  YAML-Parsing via separater `parse_mqtt_config`-Factory
+  ist Welle-3-Material oder Folge-Welle-Schaerfungspfad).
+- [x] **Keine Bewegung der 17 Open-Trigger** — verifiziert:
+  `docs/plan/planning/open/` unveraendert. Trigger 004
+  (`canonical encoder`-Alternative) bleibt offen; Re-Eval
+  durch Welle 6 (Cross-Adapter-Hardening).
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+  verifiziert: `roadmap.md` §3 M4 Checkboxen alle
+  weiterhin ungehakt (1 von 7 DoD-Items geliefert; Sweep
+  in Welle 6).
+- [x] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
+  Property-Test** in Welle 2 — verifiziert: nur Smoke-
+  Regression-Schutz via `make arch-check`. Welle-1-§7-
+  Folge-Pflicht bleibt auf Welle 6 verschoben (siehe
+  [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
+  Folge-Mitigation).

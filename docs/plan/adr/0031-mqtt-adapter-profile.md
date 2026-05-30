@@ -1,11 +1,13 @@
 # ADR 0031 — MQTT-Adapter-Profile (M4 Welle 2)
 
-**Status:** Proposed — Initial-Entwurf 2026-05-30 (M4-Welle-2-C1).
-Status-Pfad: `Proposed → Provisional` (M4-Welle-2-C2-Merge
-nach feat-Commit mit `protocol_mqtt`-Modul + Unit-Tests +
-Integration-Smoke gegen Mosquitto-Sibling gruen) →
-`Accepted` (M4-Welle-7-Closure).
-**Datum:** 2026-05-30
+**Status:** Provisional — geschaerft 2026-05-30 (M4-Welle-2-C3,
+dieser Commit) nach M4-Welle-2-C2-Merge `f33bb4e` (feat:
+`protocol_mqtt`-Modul + 50 neue Unit-Tests + Mosquitto-
+Integration-Smoke; `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override; 19/19 Contracts KEPT).
+Status-Pfad: Proposed (2026-05-30 `4e102b8`) → Provisional
+(dieser Commit) → Accepted (geplant mit M4-Welle-7-Closure).
+**Datum:** 2026-05-30 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-ohne-Supersede-Pattern — ADR 0031 schaerft
@@ -541,15 +543,24 @@ SDK uebernimmt).
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-05-30 (M4-Welle-2-C1, dieser
-  Commit). Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — geplant mit M4-Welle-2-C2-Merge
-  (feat-Commit: `protocol_mqtt/`-Modul + 4 Unit-Test-
-  Module + Integration-Smoke + `compose.yml`-Edit +
-  `pyproject.toml`-Edit + `Dockerfile`-Edit; `make
-  test-unit` gruen, `make test-integration` gruen mit
-  Mosquitto-Sibling, `make arch-check` weiter 19/19,
-  `make gates` cache-frei gruen ohne Override).
+- **Proposed** — 2026-05-30 (M4-Welle-2-C1 `4e102b8`).
+  Initial-Entwurf.
+- **Provisional** — 2026-05-30 (M4-Welle-2-C3, dieser
+  Commit). M4-Welle-2-C2-Merge `f33bb4e` (feat) lieferte
+  `src/grid_gym/adapters/driven/protocol_mqtt/`-Modul
+  (7 Dateien: `__init__.py` + `_config.py` + `_codec.py` +
+  `_topic_resolver.py` + `_port.py` + `_errors.py` +
+  `error_translation.py`), 4 Unit-Test-Module (50 neue
+  Tests: 1161 → 1211), Integration-Smoke gegen
+  Mosquitto-Sibling (`tests/integration/test_mqtt_compose_smoke.py`,
+  21 → 22 Integration-Tests), `compose.yml`-Kommentar-Sync,
+  `pyproject.toml`-Erweiterung (`paho-mqtt>=2.0`),
+  `uv.lock`-Refresh (`paho-mqtt v2.1.0`),
+  `Dockerfile`-`CRITICAL_COV_TARGETS`-Erweiterung um
+  `adapters/driven/protocol_mqtt`. `make arch-check` 19/19
+  KEPT (7 lint-imports + 12 `tools/arch_check.py`);
+  `make gates` cache-frei gruen ohne Override (alle 9
+  A-1-Gates).
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027 + 0030). Voraussetzung: Welle 3
   (Modbus) und Welle 4 (OPC-UA) implementieren ihre
