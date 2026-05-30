@@ -309,10 +309,9 @@ C3 (dieser Commit; ADR 0030 → `Provisional`, `M4-welle-1.md`
 ### Welle 2 — MQTT-Adapter (Done 2026-05-30)
 
 **Status:** Done. Slice-Begleit-Doc
-[`M4-welle-2.md`](M4-welle-2.md) (bleibt vorerst in
-`in-progress/`; Move nach `done/` mit M4-Welle-3-Pre-C0
-analog M4-Welle-2-Pre-C0-Pattern). ADR 0031 ist
-`Provisional`.
+[`../done/M4-welle-2.md`](../done/M4-welle-2.md) (gewandert
+nach `done/` mit M4-Welle-3-Pre-C0 `0d6ad6c` + Pre-C0-Sync).
+ADR 0031 ist `Provisional`.
 
 - [x] **ADR 0031** (zweiter M4-ADR) — `Provisional`
   mit C3 (2026-05-30) nach C1 `4e102b8` (Proposed) und

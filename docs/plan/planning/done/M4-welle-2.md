@@ -12,7 +12,7 @@ konkreten Adapter** auf der `DeviceProtocolPort`-Surface
 mit Mosquitto-Sibling-Integration-Smoke. Welle 2 hat das
 Pattern fuer Decision 4 (Topic/Register/Node-Profil-
 Deklaration aus
-[`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+[`M4-welle-0.md`](M4-welle-0.md) §3
 Decision 4) gesetzt und die Mosquitto-Sibling-Test-Praezedenz
 fuer Welle 3 (Modbus) und Welle 4 (OPC-UA) etabliert.
 
@@ -61,12 +61,12 @@ dieser Commit):**
   mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 2`](M4-protocol-adapters.md)
+[`../in-progress/M4-protocol-adapters.md §3 Welle 2`](../in-progress/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
 **Spec-Reife:** Inhaltlich final. Decisions aus
-[`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+[`M4-welle-0.md`](M4-welle-0.md) §3
 Decision 4 (Profile-Deklaration; MQTT setzt das Pattern)
 werden in C1 (ADR 0031 Proposed) konkret gewaehlt; C2
 (feat) implementiert die gewaehlte Variante.
@@ -103,7 +103,7 @@ Surface:
   Implementer (`GG-MQTT-001`).
 - NEU ADR 0031 (MQTT-Adapter-Profile) als Surface-relevanter
   Adapter-ADR. Decisions aus
-  [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+  [`M4-welle-0.md`](M4-welle-0.md) §3
   Decision 4 (Topic/Register/Node-Profil-Deklaration):
   MQTT setzt das Pattern (inline-YAML vs. separat vs.
   hybrid; Welle 3 Modbus + Welle 4 OPC-UA folgen dem
@@ -236,8 +236,7 @@ Adapter-Calls (Welle 6).
    Pin: `eclipse-mosquitto:2` ist EPL-2.0/EDL-1.0
    (Eclipse-Distribution; free + redistributable;
    siehe Welle-2-Decision-5-Note in
-   [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
-   Decision 5).
+   [`M4-welle-0.md`](M4-welle-0.md) §3 Decision 5).
 7. EDIT `pyproject.toml`: `paho-mqtt`-Dependency in
    `[project] dependencies` mit Floor `>=2.0` (aktueller
    PyPI-Stand-Verifikation in C2). `paho`-Import-Linter-
@@ -324,11 +323,11 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   Z. 1120–1133 (`GG-MQTT-001`: SOLLTE-Cluster fuer
   Topic-Schema + Payload-Format + QoS + Pub/Sub-Richtung +
   Adapter-Smoke).
-- [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+- [`M4-welle-0.md`](M4-welle-0.md) §3
   Decision-Liste (Item 4 Profile-Deklaration + Item 5
   Test-Sibling-Container + Item 6
   `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 2 (kanonische Slice-Spezifikation).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   §2.1 (Sync-Vertrag + paho-mqtt-Halb-Sync-Begruendung;
@@ -706,5 +705,5 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion.
   Property-Test** in Welle 2 — verifiziert: nur Smoke-
   Regression-Schutz via `make arch-check`. Welle-1-§7-
   Folge-Pflicht bleibt auf Welle 6 verschoben (siehe
-  [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
+  [`M4-welle-1.md`](M4-welle-1.md) §7
   Folge-Mitigation).
