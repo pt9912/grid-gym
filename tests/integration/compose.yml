@@ -15,6 +15,15 @@
 #   (`test_mqtt_compose_smoke.py`; eclipse-mosquitto:2 mit
 #   inline-Config fuer Anonymous-Access; EPL-2.0/EDL-1.0).
 #
+# M4 Welle 3 (ADR 0032 §2.6 Decision M-f) **weicht ab**: der
+# Modbus-TCP-Smoke (`test_modbus_in_process_smoke.py`) spawnt
+# **keinen** Sibling-Container, sondern einen pymodbus-Server
+# in einem Daemon-Thread innerhalb des Test-Prozesses (Lizenz-
+# Pragmatik: kommerziell-restriktive Modbus-Server-Container
+# vermeiden; pymodbus selbst ist BSD-3-Clause). Pattern-
+# Praezedenz fuer Folge-Wellen mit Lizenz-sensiblen Sibling-
+# Servern (z. B. potenziell Welle 4 asyncua).
+#
 # Aufruf: `make test-integration` (Makefile-Target, das `docker
 # compose up --abort-on-container-exit` aufruft).
 

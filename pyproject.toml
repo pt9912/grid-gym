@@ -73,6 +73,14 @@ dependencies = [
     # Adapter-Sichtbarkeit ist per AC-PORTS-NO-FW / AC-NO-FW Forbidden-
     # List bereits seit Spike-0 vorbelegt (siehe `paho`-Eintraege dort).
     "paho-mqtt>=2.0",
+    # M4-Welle-3 — Modbus-TCP-Adapter unter
+    # `adapters/driven/protocol_modbus/`. Floor `>=3.6,<4.0` pinnt die
+    # 3.x-Sync-API-Linie (`ModbusTcpClient` + `slave=`-Kwarg seit 3.x);
+    # 4.x deprecated potenziell die Sync-API zugunsten der Async-Linie
+    # — Welle 3 setzt explizit auf Sync (ADR 0032 §2.3 Decision M-c).
+    # `pymodbus`-Sichtbarkeit ist per AC-PORTS-NO-FW / AC-NO-FW
+    # Forbidden-List bereits Welle-0-vorbelegt.
+    "pymodbus>=3.6,<4.0",
 ]
 
 [build-system]
