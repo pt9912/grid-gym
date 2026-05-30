@@ -105,66 +105,63 @@ logic.
 
 ## Status
 
-**As of 2026-05-30:** M1 (Tick-Loop Spine), M2 (Device Models) and
-M3 (Faults + Multi-Agent + Observability) are all `Done`. **M4
-(Protocol Adapters) is `In Progress`** — Wave 0 is closed
-(slice plan opened + trigger triage; `done/M4-welle-0.md` after
-self-close move `556ae9f`); **Wave 1 (`DeviceProtocolPort`
-foundation) is `Done`** (`done/M4-welle-1.md` after self-close
-move `81b5cba` + Pre-C0-Sync `f1f9db1`); **Wave 2 (MQTT
-adapter) is `Done`** (`in-progress/M4-welle-2.md`): C0
-`3b633f6` (slice doc), C1 `4e102b8` (ADR 0031 `Proposed`),
-C2 `f33bb4e` (`feat` — `protocol_mqtt/` 7-module package +
-50 new unit tests = 1211 green + Mosquitto integration smoke
-via testcontainers = 22 integration tests green +
-`pyproject.toml`/`uv.lock`/`Dockerfile`/`compose.yml`
-edits), and C3 (ADR 0031 `Proposed → Provisional`).
-**Next active step:** M4 Wave 3 (Modbus-TCP adapter —
-`pymodbus` wrapper + register schema + Modbus-server-
-container smoke). Trigger 029 (suspected OTLP span export
-bug) was closed as a false finding — the real bug was a
-span-name regex in the smoke test.
+As of **2026-05-30**:
 
-**Slice 027 (Noqa cleanup) `Done`** as an in-between slice: all 36
-existing `# noqa` markers removed; `tools/check_noqa.py --fail-on-
-noqa` is now the 9th mandatory gate in `make gates`. New envelope
-types (`LogEntry`, `OtlpAdapterConfigOverrides`, `TickLoopWiring`,
-`RuleBasedAgentConfig`) plus 15 typed exception sub-classes.
+- **M1 — Tick-Loop Spine** · `Done`
+- **M2 — Device Models** · `Done`
+- **M3 — Faults + Multi-Agent + Observability** · `Done`
+  (six ADRs `Accepted`)
+- **M4 — Protocol Adapters** · `In Progress`
+  - Wave 0 — slice plan + trigger triage · `Done`
+  - Wave 1 — `DeviceProtocolPort` foundation
+    (ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md)
+    `Provisional`) · `Done`
+  - Wave 2 — MQTT adapter
+    (ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Wave 3 — Modbus-TCP adapter (`pymodbus` wrapper + register
+    schema + container smoke) · **active**
+  - Waves 4–7 — OPC-UA / DNP3 / IEC 61850 / closure · `Pending`
+- **M5 — UI + Demo** · `Pending`
+- **M6 — Performance + Security + CI/CD** · `Pending`
+
+**Test balance:** 1211 unit tests + 22 integration tests green.
+
+**`make gates`** is 9-stage and cache-free green without override:
+lint, format-check, `mypy --strict`, arch-check
+(19 contracts: 7 `lint-imports` + 12 `tools/arch_check.py`),
+test-unit, coverage (90 % line per module / 85 % critical / 96 %
+total), critical-coverage, dep-audit, `# noqa` ban.
+
+For per-wave commits, ADR pointers, and detail breakdown see the
+slice plans under [`docs/plan/planning/`](docs/plan/planning/) and
+the per-milestone detail table below.
+
+### Status details
 
 | Subsystem | Status | References |
 | --- | --- | --- |
 | Tick-Loop Spine (M1) | `Done` | [`done/M1-tick-loop-results.md`](docs/plan/planning/done/M1-tick-loop-results.md) |
-| Device Models (M2) | `Done` | [`done/M2-devices-results.md`](docs/plan/planning/done/M2-devices-results.md); Battery, PV, Load, GridConnection, SmartMeter + GridModel balance productive |
-| Faults + Multi-Agent + Observability (M3) | `Done` | [`done/M3-results.md`](docs/plan/planning/done/M3-results.md); Waves 0..7 closed. Six M3 ADRs `Accepted` (see detail rows below). |
-| Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) `Accepted` + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md) `Accepted`; `BatteryFaultAdapter` + `GridFaultAdapter` with `cell_failure`/`voltage_drop` and recovery logic |
-| Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) `Accepted` + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md) `Accepted`; `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry + step A0v/A0a drain + Agent Foundation state snapshot |
-| Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) `Accepted`; `RuleBasedAgent` with hybrid rules + plugin hook + scenario `agents` top-level block + bidirectional `agents.<type>.<id>` sub-snapshot resume match + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
-| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) `Accepted`; `LogPort`/`MetricsPort`/`TracePort` + `SpanContext` + Null-Adapter-Trio + additive TickLoop/Agent/Fault hooks. Plus ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md) `Accepted` (`AC-NO-COVERAGE-PRAGMA`). |
-| OTLP Adapter (M3 Wave 6) | `Done` (2026-05-25) | `adapters/driven/telemetry_otlp/` with `OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` (gRPC) + `build_otlp_adapters` factory + `flush_and_shutdown` helper. ADR 0024 §4.5 with 8 normative decisions. arch_check contract `AC-OTLP-ADAPTER-NO-TIME` (12th custom contract). `deploy/compose.yml` `otel-collector` sibling + `tools/wait_otel_collector.py` liveness poll + `make image-audit` Trivy extension (C2). Integration smoke `tests/integration/test_otlp_compose_smoke.py` (full triple span+metric+log) + runbook [`docs/user/observability.md`](docs/user/observability.md) (C3). |
-| Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md); 36 → 0 `# noqa` markers, `make gates` extended with `noqa-gate` (9-stage). |
-| Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md); 12th `tools/arch_check.py` contract `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` (19 A-1 contracts total = 7 lint-imports + 12 `tools/arch_check.py`). |
-| Protocol Adapters (M4) | `In Progress` (Wave 2 `Done`) | Wave 0 `Done` ([`done/M4-welle-0.md`](docs/plan/planning/done/M4-welle-0.md)); Wave 1 `Done` ([`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md)) — delivered `DeviceProtocolPort` (`src/grid_gym/hexagon/ports/driven/device_protocol.py`) + `*Error` hierarchy + TickLoop `start_protocol_ports()`/`stop_protocol_ports()` (FIFO/LIFO + partial-cleanup with `__context__` chain) + scenario-loader builder symmetry (+8 lines); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`. **Wave 2 `Done`** ([`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md)) — delivered first concrete adapter `MqttDeviceProtocolPort` under `src/grid_gym/adapters/driven/protocol_mqtt/` (7-module package: config + codec + topic-resolver + port + errors + error-translation; paho-mqtt 2.x with CallbackAPIVersion.VERSION2; per-target `queue.Queue` marshalling at the paho-loop-thread boundary) + Mosquitto integration smoke via testcontainers; ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` (4a inline topic schema, 4b `canonical_json` codec, 4c QoS 0/1, 4d per-target queue marshal). **Next active step:** Wave 3 (Modbus-TCP adapter). Concrete adapters Modbus / OPC-UA / DNP3 / IEC 61850 follow from Wave 3. |
+| Device Models (M2) | `Done` | [`done/M2-devices-results.md`](docs/plan/planning/done/M2-devices-results.md) — Battery, PV, Load, GridConnection, SmartMeter + GridModel balance |
+| Faults + Multi-Agent + Observability (M3) | `Done` | [`done/M3-results.md`](docs/plan/planning/done/M3-results.md) — Waves 0..7 closed, six M3 ADRs `Accepted` (detail rows below) |
+| Fault Subsystem (M3 Waves 1+2) | `Done` | ADR [0022](docs/plan/adr/0022-fault-injection-protocol.md) + ADR [0025](docs/plan/adr/0025-fault-recovery-pattern.md); `BatteryFaultAdapter` + `GridFaultAdapter` with recovery logic |
+| Multi-Agent Foundation (M3 Waves 3+4a) | `Done` | ADR [0023](docs/plan/adr/0023-agent-bus-protocol.md) + ADR [0026](docs/plan/adr/0026-agent-drain-registry-pattern.md); `Agent` protocol + `AgentMessageBus` + TickLoop `agents` registry |
+| Multi-Agent concrete (M3 Wave 4b) | `Done` | ADR [0027](docs/plan/adr/0027-rule-based-agent-scenario-pattern.md); `RuleBasedAgent` with hybrid rules + scenario `agents` block + end-to-end demo (`tests/integration/scenarios/agents_demo.yaml`) |
+| Observability Foundation (M3 Wave 5) | `Done` | ADR [0024](docs/plan/adr/0024-observability-port-trio.md) + ADR [0029](docs/plan/adr/0029-no-coverage-pragma-contract.md); `LogPort` / `MetricsPort` / `TracePort` + null-adapter trio |
+| OTLP Adapter (M3 Wave 6) | `Done` | `adapters/driven/telemetry_otlp/` — gRPC log/metric/trace adapters + Compose `otel-collector` sibling + integration smoke + runbook [`docs/user/observability.md`](docs/user/observability.md) |
+| Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md) — 36 → 0 `# noqa` markers, `noqa-gate` added to `make gates` |
+| Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md) — 12th `tools/arch_check.py` contract |
+| `DeviceProtocolPort` foundation (M4 Wave 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — port + `*Error` hierarchy + TickLoop FIFO/LIFO lifecycle |
+| MQTT adapter (M4 Wave 2) | `Done` | [`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
+| Modbus-TCP adapter (M4 Wave 3) | `In Progress` | `pymodbus` wrapper + register schema + Modbus-server-container smoke |
+| OPC-UA / DNP3 / IEC 61850 (M4 Waves 4–6) | `Pending` | Concrete adapters land in subsequent M4 waves |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
-**Test balance:** 1211 unit tests + 22 integration tests green
-(state after M4 Wave 2 Closure — +73 unit tests vs. M3 closure
-[+23 in Wave 1 + +50 in Wave 2: 11 MQTT codec roundtrip + 16
-topic-resolver/config validation + 17 lifecycle/read+write with
-mocked paho client + 6 callback marshal] and +1 integration test
-[Mosquitto-sibling MQTT-roundtrip smoke]). `make gates`
-is 9-stage (lint, format-check, mypy `--strict`, arch-check
-**19/19 contracts kept** [7 lint-imports + 12 `tools/arch_check.py`
-incl. `AC-OTLP-ADAPTER-NO-TIME` and `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`],
-test-unit, coverage-gate 90/85 line + 96 % total, critical-coverage
-90 incl. `telemetry_otlp`, dep-audit, **noqa-gate**
-[`tools/check_noqa.py --fail-on-noqa`, Slice 027]) — cache-free
-green without override.
-
 **AI-coding-agent briefing:** [`AGENTS.md`](AGENTS.md) — hard rules
 (Docker-only, `# noqa` ban, `git mv` two-commit pattern,
-Wave-Self-Close commit convention, architecture-spec language-/
-milestone-free) and pointers to canonical sources.
+Wave-Self-Close commit convention, language-/milestone-free
+architecture spec).
 
 ## Build, Test, Lint
 
