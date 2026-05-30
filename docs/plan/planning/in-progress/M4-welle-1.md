@@ -1,13 +1,57 @@
 # Welle 1 — M4 DeviceProtocolPort-Foundation
 
-**Status:** In Progress — eroeffnet 2026-05-26 nach
-M4-Welle-0-Closure (`f832048` C2 + `556ae9f` Self-Close-Move
-+ `24b32ca` Pre-C0-Sync). Welle 1 ist die **erste
-Code-Welle** in M4; legt die `DeviceProtocolPort`-Surface
-(`GG-AR-PORT-DRN-007`) plus ersten M4-ADR an. Welle 1
-schreibt **noch keine konkreten Protokoll-Adapter** (das ist
+**Status:** Done — geschlossen 2026-05-30 mit M4-Welle-1-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-05-26 nach M4-Welle-0-Closure (`f832048` C2 + `556ae9f`
+Self-Close-Move + `24b32ca` Pre-C0-Sync). Welle 1 war die
+**erste Code-Welle** in M4 und hat die
+`DeviceProtocolPort`-Surface (`GG-AR-PORT-DRN-007`) plus
+ersten M4-ADR (0030 `Provisional`) geliefert. Welle 1
+schreibt **keine** konkreten Protokoll-Adapter (das ist
 Welle 2: MQTT als erster konkreter Implementer; Welle 3:
 Modbus; Welle 4: OPC-UA; Welle 5: DNP3+IEC-Disposition).
+
+**Liefer-Hashes:**
+
+- C0 `f8cbe9d` — `docs(plan): M4-welle-1 Slice-Doc (M4 Welle-1 Beginn)`.
+- C1 `b840e7a` — `docs(adr): ADR 0030 Proposed — DeviceProtocolPort-Surface (M4 Welle 1)`.
+- Review-Folge `ad3dff8` — `fix(welle-1): ADR-0030 Review-Folge — 3H + 4M + 5L Findings`.
+- H4-Korrektur `111c464` — `fix(welle-1): ADR-0030 H4 — Decision 3 auf Caller-Scope (TickLoop.run() existiert nicht)`.
+- C2 `d09adf3` — `feat(welle-1): DeviceProtocolPort + TickLoop-Lifecycle-Methoden + Tests`.
+- EoD-Sync `f8ed791` — `docs: EoD-Sync 2026-05-26 — M4-Welle-1-C2-Stand in 4 Top-Level-Docs`.
+- C3 (dieser Commit) — `docs(plan|adr): Welle-1 Status/DoD-Sync + ADR-0030 → Provisional`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `d09adf3` C2 +
+`f8ed791` EoD-Sync + dieser Commit):**
+
+- `make test-unit`: **1161 Tests gruen** (Pre-Welle-1-Stand
+  1138 → Welle-1-Endstand 1161 = +23 Unit-Tests; davon 12
+  fuer `DeviceProtocolPort`-Protocol-Surface
+  (`tests/unit/hexagon/ports/driven/test_device_protocol.py`)
+  und 11 fuer TickLoop-Lifecycle
+  (`tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py`:
+  FIFO-Start, LIFO-Stop, idempotenter Stop, Partial-Start-
+  Failure-LIFO-Cleanup mit `__context__`-Chain)).
+- `make test-integration`: **unveraendert gruen** (Welle 1
+  ist Unit-Test-only; Integration-Smoke beginnt mit Welle 2
+  / Mosquitto-Sibling).
+- `make arch-check`: **16/16 Contracts KEPT**;
+  `AC-ADAPTER-LIGHTWEIGHT`-`protocol_*`-Pfad-Filter
+  (`tools/arch_check.py:1089`
+  `bucket.startswith("protocol_")`) Regression-geprueft.
+- `make gates`: **cache-frei gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste
+  unveraendert — Adapter-Erweiterung kommt mit
+  Welle 2/3/4).
+- `make fullbuild`: **Pre-existing Drift** (krb5-CVEs
+  `CVE-2026-40356` im Debian-13-Base-Image, seit
+  M3-Welle-7 `c61ab0d`; **nicht durch M4-Welle-1-Code
+  verursacht**; Base-Image-Bump in separatem Stack).
+- ADR 0030: `Proposed → Provisional` (Decisions 2/3/7
+  final, Decision 1 provisorisch Verzicht-Default;
+  Status-Pfad in
+  [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md) §5
+  mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 1`](M4-protocol-adapters.md)
@@ -186,10 +230,10 @@ Welle 2; werden nicht in Welle 1 angelegt):
   Memory-Konvention `feedback_git_mv`).
 - Folge-Sync-Commit `24b32ca` (Link-/README-Pfade).
 
-### C0 — `docs(plan)`: M4-welle-1 Slice-Doc (Welle-Beginn)
+### C0 — `docs(plan)`: M4-welle-1 Slice-Doc (Welle-Beginn) — **Done `f8cbe9d`**
 
 - Dieses Dokument als Welle-Start-Marker. Status:
-  `In Progress`.
+  `In Progress` → (in C3) `Done`.
 - Kein README-Sync noetig: `in-progress/README.md` zeigt
   bereits den Welle-0-Closure-Stand inkl. „Naechster
   aktiver Schritt: M4-Welle-1". Welle-1-Doc-Eintrag in
@@ -197,7 +241,7 @@ Welle 2; werden nicht in Welle 1 angelegt):
   Bestand-Tabellen-Zeile (analog M3-Welle-1; Welle-N-Docs
   ab Welle 1 sind Tracking, nicht Roadmap-Bestand).
 
-### C1 — `docs(adr)`: ADR 0030 Proposed — DeviceProtocolPort-Surface
+### C1 — `docs(adr)`: ADR 0030 Proposed — DeviceProtocolPort-Surface — **Done `b840e7a`** (+ Review-Folge `ad3dff8` + H4-Korrektur `111c464`)
 
 - NEU `docs/plan/adr/0030-device-protocol-port-surface.md`
   als `Proposed`. Inhalts-Skizze:
@@ -214,30 +258,44 @@ Welle 2; werden nicht in Welle 1 angelegt):
     Welle-2+-Implementer-Auflagen, Schema-Bump-Pfad).
   - §5 Status-Pfad (`Proposed → Provisional → Accepted`).
 - Kein Code-Pfad-Touch.
+- Review-Folge `ad3dff8`: 3 High + 4 Medium + 5 Low
+  Findings adressiert.
+- H4-Korrektur `111c464`: Decision 3 auf expliziten
+  Caller-Scope gezogen (`TickLoop.run()` existiert nicht).
 
-### C2 — `feat(welle-1)`: DeviceProtocolPort + Tests
+### C2 — `feat(welle-1)`: DeviceProtocolPort + TickLoop-Lifecycle-Methoden + Tests — **Done `d09adf3`**
 
 - NEU `src/grid_gym/hexagon/ports/driven/device_protocol.py`
   mit `DeviceProtocolPort`-`Protocol`-Klasse +
-  `*Error`-Subsystem.
-- NEU `tests/unit/hexagon/ports/test_device_protocol.py`
-  mit Vertragsverhalten (Lifecycle-Reihenfolge,
-  `*Error`-Hierarchie, optional Stub-Adapter).
+  `*Error`-Subsystem (`DeviceProtocolPortError` Root +
+  `Start/Stop/Read/Write/UnknownTarget`-Sub-Errors).
+- EDIT `src/grid_gym/hexagon/core/simulation/tick_loop.py`:
+  `protocol_ports`-Konstruktor-Kwarg (Tuple, keyword-only,
+  `None`-Default) + `start_protocol_ports()` (FIFO) +
+  `stop_protocol_ports()` (LIFO, idempotent, Best-Effort-
+  Partial-Cleanup mit `__context__`-Chain).
+- NEU `tests/unit/hexagon/ports/driven/test_device_protocol.py`
+  (12 Tests: Protocol-Adherence, Lifecycle-Aufzeichnung,
+  Read/Write, `*Error`-Subsystem inkl. parametrize-5).
+- NEU `tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py`
+  (11 Tests: FIFO/LIFO/Idempotenz/Partial-Cleanup/Context-
+  Chain).
 - `make gates` cache-frei gruen ohne
-  `CRITICAL_COV_TARGETS`-Override (Default-Liste muss noch
-  **nicht** um `ports/driven/device_protocol` erweitert
-  werden — neue Port-Datei ist trivial und faellt unter
-  bestehende `ports/driven`-Coverage-Sweep, falls
-  vorhanden; sonst in C3 nachziehen).
+  `CRITICAL_COV_TARGETS`-Override (Adapter-Erweiterung
+  kommt mit Welle 2/3/4).
+- EoD-Sync `f8ed791` zog Top-Level-Doku
+  (`README.md`/`README.de.md`/`roadmap.md`/
+  `spec/architecture.md`) auf den C2-Stand.
 
-### C3 — `docs(plan|adr)`: Welle-1 Status/DoD-Sync + ADR-Schaerfung
+### C3 — `docs(plan|adr)`: Welle-1 Status/DoD-Sync + ADR-Schaerfung — **Done (dieser Commit)**
 
-- ADR 0030 `Proposed → Provisional` mit C2-Merge-Beleg.
+- ADR 0030 `Proposed → Provisional` mit C2-Merge-Beleg
+  `d09adf3` (Status-Header + §5 Status-Pfad mit Hashes).
 - `M4-welle-1.md`-Status `In Progress → Done` mit
-  C0/C1/C2-Hashes.
+  C0/C1/C2-Hashes + DoD-Verifikation-Block (oben) +
+  DoD-Checkliste (§9 unten).
 - `M4-protocol-adapters.md §3 Welle 1`: Done-Status mit
-  Commit-Belegen; Decisions-Vorbelegung-Liste in C3
-  durchgehakt.
+  Commit-Belegen; Welle-1-Gate als erfuellt markiert.
 
 ---
 
@@ -334,3 +392,76 @@ Welle 2; werden nicht in Welle 1 angelegt):
   Status-Updates).
 - `M4-protocol-adapters.md` bleibt in `in-progress/` bis
   M4-Welle-7-Closure.
+
+---
+
+## 9. DoD-Checkliste (Welle-Schluss, mit C3 abgehakt)
+
+Diese Liste spiegelt die §2 Scope-Items als
+Checkbox-Sicht. Belege siehe **DoD-Verifikation**-Block
+im Status-Header oben + §4 Liefer-Reihenfolge fuer die
+per-Commit-Aktion.
+
+**In-Scope-Items (alle abgehakt mit C3):**
+
+- [x] **Port-Surface produktiv** — `DeviceProtocolPort`-
+  `Protocol` mit `start`/`stop`/`read`/`write` + `*Error`-
+  Subsystem (`DeviceProtocolPortError`-Wurzel + 5 typed
+  Sub-Errors). Code:
+  [`src/grid_gym/hexagon/ports/driven/device_protocol.py`](../../../../src/grid_gym/hexagon/ports/driven/device_protocol.py)
+  (NEU mit C2 `d09adf3`).
+- [x] **ADR 0030 angelegt** — `Proposed` (C1 `b840e7a`) →
+  `Provisional` (dieser Commit), mit Decisions 2/3/7
+  final und Decision 1 provisorisch Verzicht-Default.
+  Code:
+  [`docs/plan/adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md).
+- [x] **Unit-Tests fuer Protocol-Vertragsverhalten** —
+  12 Tests (Protocol-Adherence, Lifecycle-Reihenfolge,
+  Read/Write-Vertrag, `*Error`-Hierarchie inkl.
+  parametrize-5). Code:
+  [`tests/unit/hexagon/ports/driven/test_device_protocol.py`](../../../../tests/unit/hexagon/ports/driven/test_device_protocol.py)
+  (NEU mit C2).
+- [x] **`tools/arch_check.py`-Sanity** — `make arch-check`
+  cache-frei gruen; 16/16 Contracts KEPT;
+  `AC-ADAPTER-LIGHTWEIGHT`-`protocol_*`-Pfad-Filter
+  (`tools/arch_check.py:1089`
+  `bucket.startswith("protocol_")`) Regression-geprueft.
+- [x] **C3-Doc-Sync** — `M4-welle-1.md` Status
+  `In Progress → Done` (dieser Commit), ADR 0030
+  `Proposed → Provisional` (dieser Commit),
+  `M4-protocol-adapters.md §3 Welle 1` Done-Markierung
+  (dieser Commit).
+
+**Welle-1-Boni (ueber §2 Scope hinaus, in C2 mitgeliefert):**
+
+- [x] **`TickLoop`-Lifecycle-Methoden** —
+  `start_protocol_ports()` (FIFO) +
+  `stop_protocol_ports()` (LIFO, idempotent,
+  Best-Effort-Partial-Cleanup mit `__context__`-Chain).
+  Code:
+  [`src/grid_gym/hexagon/core/simulation/tick_loop.py`](../../../../src/grid_gym/hexagon/core/simulation/tick_loop.py)
+  (EDIT mit C2).
+- [x] **TickLoop-Lifecycle-Unit-Tests** — 11 Tests
+  (FIFO/LIFO/Idempotenz/Partial-Cleanup/Context-Chain).
+  Code:
+  [`tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py`](../../../../tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py)
+  (NEU mit C2).
+
+**Anti-Scope-Items (alle gehalten):**
+
+- [x] **Keine konkreten Adapter-Module** unter
+  `src/grid_gym/adapters/driven/protocol_*/` —
+  verifiziert: keine neue Datei unter dem Pfad in C2.
+- [x] **Keine Integration-Tests via testcontainers** —
+  verifiziert: `make test-integration` Test-Zahl
+  unveraendert.
+- [x] **Keine Scenario-Schema-Erweiterung** fuer
+  Protokoll-Profile — verifiziert: kein Touch an
+  `scenario/`-Validator/Loader in C2.
+- [x] **Keine Bewegung der 17 Open-Trigger** —
+  verifiziert: `docs/plan/planning/open/` unveraendert.
+- [x] **Kein M4-DoD-Checkbox-Abhaken in `roadmap.md`** —
+  verifiziert: `roadmap.md` §3 M4 Checkboxen weiterhin
+  alle ungehakt (Welle 2..5 liefert die 5 Adapter,
+  Welle 6 liefert Integration-Tests +
+  `AC-ADAPTER-LIGHTWEIGHT`-Sweep-Beleg).

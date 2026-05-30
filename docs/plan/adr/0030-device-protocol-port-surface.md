@@ -1,10 +1,14 @@
 # ADR 0030 — DeviceProtocolPort-Surface (M4 Welle 1)
 
-**Status:** Proposed — Initial-Entwurf 2026-05-26 (M4-Welle-1-C1).
-Status-Pfad: `Proposed → Provisional` (M4-Welle-1-C2-Merge
-nach feat-Commit mit Port + Tests gruen) → `Accepted`
-(M4-Welle-7-Closure).
-**Datum:** 2026-05-26
+**Status:** Provisional — geschaerft 2026-05-30 (M4-Welle-1-C3,
+dieser Commit) nach M4-Welle-1-C2-Merge `d09adf3` (feat:
+`DeviceProtocolPort`-Protocol-Surface + `TickLoop`-Lifecycle-
+Methoden + 23 neue Unit-Tests; `make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override).
+Status-Pfad: `Proposed (2026-05-26 `b840e7a` + Review-Folge
+`ad3dff8` + H4-Korrektur `111c464`) → Provisional (dieser
+Commit) → Accepted (geplant mit M4-Welle-7-Closure)`.
+**Datum:** 2026-05-26 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-/Erweiterungs-ADR-Pattern — ADR 0030 ist
@@ -440,12 +444,25 @@ Bedarf konkret ist.
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-05-26 (M4-Welle-1-C1, dieser
-  Commit). Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — geplant mit M4-Welle-1-C2-Merge
-  (feat-Commit: `device_protocol.py` neu, Unit-Tests
-  gruen, `make arch-check`/`make gates` gruen ohne
-  Override).
+- **Proposed** — 2026-05-26 (M4-Welle-1-C1 `b840e7a`).
+  Initial-Entwurf. Review-Folge `ad3dff8` (3 High + 4 Medium
+  + 5 Low Findings, alle adressiert) und H4-Korrektur
+  `111c464` (Decision 3 auf Caller-Scope —
+  `TickLoop.run()` existiert nicht, der Caller pumpt
+  einzelne Ticks) sind eingearbeitet.
+- **Provisional** — 2026-05-30 (M4-Welle-1-C3, dieser
+  Commit). M4-Welle-1-C2-Merge `d09adf3` (feat) lieferte
+  `src/grid_gym/hexagon/ports/driven/device_protocol.py`
+  (Protocol-Surface + `*Error`-Hierarchie) und die
+  `TickLoop.start_protocol_ports()` /
+  `stop_protocol_ports()`-Methoden (FIFO-Start, LIFO-Stop,
+  idempotenter Stop, Best-Effort-Partial-Cleanup mit
+  `__context__`-Chain). 23 neue Unit-Tests (1138 → 1161:
+  12 Protocol-Surface + 11 TickLoop-Lifecycle). EoD-Sync
+  `f8ed791` hat die Top-Level-Doku auf den C2-Stand
+  gezogen. `make arch-check` (16/16 Contracts KEPT) und
+  `make gates` cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override.
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027). Voraussetzung: drei
   produktive Adapter (Welle 2/3/4) implementieren

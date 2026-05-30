@@ -240,50 +240,68 @@ in den jeweiligen Adapter-Wellen (Welle 2/3/4).
 Arbeitspaket. `make docs-check` cache-frei gruen
 (Verifikation in C0/C1/C2).
 
-### Welle 1 — DeviceProtocolPort-Foundation
+### Welle 1 — DeviceProtocolPort-Foundation (Done 2026-05-30)
 
-- ADR-Folge (geplant **erster M4-ADR**) fuer
+**Status:** Done. Slice-Begleit-Doc
+[`M4-welle-1.md`](M4-welle-1.md) (bleibt vorerst in
+`in-progress/`; Move nach `done/` mit M4-Welle-2-Pre-C0
+analog M3-Pattern). ADR 0030 ist `Provisional`.
+
+- [x] **ADR 0030** (erster M4-ADR) fuer
   `DeviceProtocolPort`-Surface mit Entscheidungen aus
-  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision-Liste:
-  - Decision 2 (Sync vs. async Vertrag, **final**):
-    sync-`Protocol` mit Adapter-internem Thread/Queue
-    **oder** async-`Protocol` mit TickLoop-Shim — ADR
-    setzt die Antwort scharf. Vergleichsmuster
-    [`telemetry_otlp/`](../../../../src/grid_gym/adapters/driven/telemetry_otlp/)
-    pruefen.
-  - Decision 3 (Lifecycle, **final**): `start`/`stop` bei
-    Service-Boot in `bootstrap`, interner `TickLoop.run()`-
-    Schleife, Context-Manager, Runner-Wrapper **oder**
-    explizitem Caller-Scope via
-    `start_protocol_ports()`/`stop_protocol_ports()` —
-    ADR setzt die Antwort scharf.
-  - Decision 7 (Snapshot-Pflicht, **final**): ADR schreibt
-    den stateless-Default aus Replay-Sicht fest
-    (Reconnect-State volatile); Reversibilitaet ist via
-    ADR-0015-Pattern dokumentiert (Schema-Bump faellig,
-    falls Welle 3+ Persistenz-Bedarf zeigt).
-  - Decision 1 (DNP3 + IEC-61850 Disposition,
-    **provisorisch**): ADR schreibt den Verzicht-Default
-    provisorisch fest (Option a aus
-    [`M4-welle-0.md`](../done/M4-welle-0.md) §3 Decision 1).
-    Finale Disposition in Welle 5, informiert durch
-    asyncua-Erfahrung aus Welle 4.
-- NEU `src/grid_gym/hexagon/ports/driven/device_protocol.py`
-  mit `DeviceProtocolPort`-Protocol + Read/Write-Methode(n)
-  + Lifecycle-Hooks + `*Error`-Subsystem.
-- `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter (Decision 6) ist
-  bereits aktiv (`tools/arch_check.py:1089`
-  `bucket.startswith("protocol_")`). Welle 1 prueft nur,
-  dass die `protocol_*`-Erfassung gruen ist (Sanity
-  `make arch-check`), **bevor** Welle 2 den ersten
-  Adapter liefert — keine Filter-Aenderung noetig.
-- Unit-Tests fuer das Protocol (Pattern aus
-  `tests/unit/hexagon/ports/`).
+  [`M4-welle-0.md`](../done/M4-welle-0.md) §3
+  Decision-Liste — `Provisional` mit C3 (2026-05-30):
+  - [x] Decision 2 (Sync vs. async Vertrag, **final**):
+    sync-`Protocol`; Adapter-interner Thread/Queue oder
+    asyncio-Event-Loop-Thread fuer async-Stacks
+    (`asyncua`, ggf. DNP3/IEC). ADR §2.1.
+  - [x] Decision 3 (Lifecycle, **final**): expliziter
+    Caller-Scope via
+    `TickLoop.start_protocol_ports()` /
+    `stop_protocol_ports()` (FIFO-Start, LIFO-Stop,
+    idempotent, Best-Effort-Partial-Cleanup mit
+    `__context__`-Chain). **Kein** `TickLoop.run()`.
+    ADR §2.2.
+  - [x] Decision 7 (Snapshot-Pflicht, **final**):
+    stateless aus Replay-Sicht; Reconnect-State volatile.
+    Reversibilitaet via ADR-0015-Pattern (Schema-Bump
+    v2 → v3 als Folge-ADR, falls Welle 3+ Persistenz-
+    Bedarf zeigt). ADR §2.3.
+  - [x] Decision 1 (DNP3 + IEC-61850 Disposition,
+    **provisorisch**): Verzicht-Default. Finale
+    Disposition in Welle 5, informiert durch
+    asyncua-Erfahrung aus Welle 4. ADR §2.4 +
+    §6 Verzicht-Anhang-Slot.
+- [x] **NEU**
+  `src/grid_gym/hexagon/ports/driven/device_protocol.py`
+  mit `DeviceProtocolPort`-Protocol +
+  `start`/`stop`/`read`/`write` + `*Error`-Subsystem.
+- [x] **EDIT**
+  `src/grid_gym/hexagon/core/simulation/tick_loop.py`:
+  `protocol_ports`-Konstruktor-Kwarg (Tuple, keyword-only,
+  `None`-Default) + Lifecycle-Methoden (Welle-1-C2-Bonus
+  ueber das urspruengliche Scope hinaus — die Lifecycle-
+  Mechanik gehoert organisch zum Port-Vertrag).
+- [x] `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter (Decision 6) —
+  Regression-geprueft (`tools/arch_check.py:1089`
+  `bucket.startswith("protocol_")` greift unveraendert);
+  16/16 Contracts KEPT.
+- [x] **Unit-Tests** (+23: 1138 → 1161): 12 fuer
+  Port-Protocol-Vertragsverhalten + 11 fuer
+  TickLoop-Lifecycle.
 
-**Welle-1-Gate:** `make test-unit` gruen mit
-`DeviceProtocolPort`-Protocol-Test. Default-
-`CRITICAL_COV_TARGETS` bleibt unveraendert (Adapter-
-Erweiterung kommt mit Welle 2).
+**Welle-1-Gate (Done 2026-05-30):** `make test-unit` gruen
+mit `DeviceProtocolPort`-Protocol- und TickLoop-Lifecycle-
+Tests (1138 → 1161 = +23). `make arch-check` + `make gates`
+cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override.
+Default-`CRITICAL_COV_TARGETS` unveraendert (Adapter-
+Erweiterung kommt mit Welle 2/3/4).
+**Commit-Belege:** C0 `f8cbe9d` (Slice-Doc) + C1 `b840e7a`
+(ADR 0030 Proposed) + Review-Folge `ad3dff8` (3H + 4M + 5L)
++ H4-Korrektur `111c464` (Decision 3 auf Caller-Scope) +
+C2 `d09adf3` (feat) + EoD-Sync `f8ed791` (Top-Level-Doku) +
+C3 (dieser Commit; ADR 0030 → `Provisional`, `M4-welle-1.md`
+→ `Done`, diese §3-Welle-1-Section auf Done).
 
 ### Welle 2 — MQTT-Adapter
 
