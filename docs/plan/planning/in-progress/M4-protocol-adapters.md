@@ -655,10 +655,21 @@ erweitert; Total-Coverage 95.16%, Critical-Coverage
 Belege:** C0 `7937e70` (Slice-Doc) + C1 `74ed35b` (ADR
 0033 Proposed) + C2 `78fdd7a` (feat: protocol_opcua + 81
 Unit-Tests + In-Process-Integration-Smoke + pyproject/
-uv.lock/Dockerfile/compose.yml-Edits) + C3 (dieser Commit;
-ADR 0033 → `Provisional`, `M4-welle-4.md` → `Done`, diese
-§3-Welle-4-Section auf Done, Top-Level-Doku-Sync in 5
-Docs).
+uv.lock/Dockerfile/compose.yml-Edits) + C3 `7ad5baf`
+(ADR 0033 → `Provisional`, `M4-welle-4.md` → `Done`,
+diese §3-Welle-4-Section auf Done, Top-Level-Doku-Sync
+in 5 Docs).
+
+**Slice-032-Review-Folge (2026-05-31):** Code-Review der
+Welle-4-Commits hat 6 HIGH + 11 MEDIUM Findings ergeben;
+[`../done/032-opcua-adapter-review-folge.md`](../done/032-opcua-adapter-review-folge.md)
+hat alle 17 umgesetzt — Lifecycle-Lock + Start-Timeout in
+`OpcuaLoopThread`, Exception-Filter-Erweiterung um
+`RuntimeError`/`CancelledError` im Port,
+`Quality.INVALID`-Markierung fuer String-Reads,
+`Float`-32bit-Quantisierung im Codec, ADR-Body-
+Schaerfungen an §2.1/§2.5. ADR 0033 bleibt `Provisional`.
+Tests: 1395 → 1401 Unit-Tests, 31 Integration-Tests gruen.
 
 ### Welle 5 — DNP3 + IEC-61850 Disposition
 

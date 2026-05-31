@@ -25,10 +25,17 @@
   **Welle 4 `Done`** geschlossen 2026-05-31 mit C0 `7937e70`
   + C1 `74ed35b` + C2 `78fdd7a` (feat: `protocol_opcua/`-6-
   Modul-Paket + 81 Unit-Tests + 8 In-Process-Integration-
-  Smokes + asyncua-Pin auf `==1.2b2` wegen Python-3.14-
+  Smokes + asyncua-Pin auf `>=1.2b2,<2.0` wegen Python-3.14-
   Inkompat in 1.1.8 + mypy-Override `implicit_reexport`)
-  + C3 (dieser Commit; ADR 0033 → `Provisional`,
-  `M4-welle-4.md` → `Done`, Top-Level-Doku-Sync in 5 Docs)).
+  + C3 `7ad5baf` (ADR 0033 → `Provisional`, `M4-welle-4.md`
+  → `Done`, Top-Level-Doku-Sync in 5 Docs) + Slice-032-
+  Review-Folge 2026-05-31
+  ([`../done/032-opcua-adapter-review-folge.md`](../done/032-opcua-adapter-review-folge.md);
+  6 HIGH + 11 MEDIUM Code-Review-Findings adressiert:
+  Lifecycle-Lock + Start-Timeout in `OpcuaLoopThread`,
+  Port-Exception-Filter um `RuntimeError`/`CancelledError`,
+  Quality.INVALID fuer String-Reads, Float32-Quantisierung,
+  Pin-Range, Smoke-Server-`asyncio.Event`)).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-5 (DNP3/IEC-Disposition — Variante A Verzicht-
@@ -57,11 +64,13 @@
   8-Datatype-Set, Polling-Read + Direct-Write, in-process
   `asyncua.Server`-Smoke; `Accepted` geplant mit
   M4-Welle-7-Closure).
-- **Tests:** 1395 Unit + 31 Integration gruen (Stand nach
-  M4-Welle-4-Closure; +257 Unit-Tests ggue. M3-Closure
-  [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 + +8 Review-
-  Folge 031 + +81 Welle 4 fuer OPC-UA] + 10 Integration-
-  Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
+- **Tests:** 1401 Unit + 31 Integration gruen (Stand nach
+  M4-Welle-4-Closure + Slice-032-Review-Folge; +263 Unit-
+  Tests ggue. M3-Closure [+23 Welle 1 + +50 Welle 2 + +95
+  Welle 3 + +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA
+  + +6 Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
+  String-Read-Quality.INVALID/Float32-Quantisierung] + 10
+  Integration-Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
   in-process-pymodbus-Server-Smoke aus Welle 3 + 8
   in-process-`asyncua.Server`-Smokes aus Welle 4]);
   Coverage 95.16 % total, 90.95 % Branch-Critical.

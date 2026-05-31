@@ -37,7 +37,7 @@ make help
 make gates              # 9 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # unit test suite (1395 tests as of 2026-05-31)
+make test-unit          # unit test suite (1401 tests as of 2026-05-31)
 make test-integration   # Compose/testcontainers integration suite
                         # (31 tests incl. OTLP, MQTT, Modbus and OPC-UA smokes)
 ```
@@ -129,12 +129,12 @@ As of **2026-05-30**:
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** 1395 unit tests + 31 integration tests green
-(state after M4 Wave 4 closure — +81 unit tests vs. Wave 3 review
-follow-up for the OPC-UA adapter: 10 config validation + 34 codec
-roundtrip with `hypothesis` property tests + 9 loop-thread
-lifecycle + 16 protocol-port lifecycle with AsyncMock + 8 in-process
-integration smoke tests parameterised over all 8 datatypes).
+**Test balance:** 1401 unit tests + 31 integration tests green
+(state after M4 Wave 4 closure + Slice-032 review follow-up — +81
+unit tests vs. Wave 3 closure for the OPC-UA adapter plus +6 review
+follow-up tests for lifecycle-lock, start-timeout, marshal-path,
+quality-invalid string read, float32 quantisation, and overflow
+handling).
 
 **`make gates`** is 9-stage and cache-free green without override:
 lint, format-check, `mypy --strict`, arch-check
@@ -163,7 +163,7 @@ the per-milestone detail table below.
 | `DeviceProtocolPort` foundation (M4 Wave 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — port + `*Error` hierarchy + TickLoop FIFO/LIFO lifecycle |
 | MQTT adapter (M4 Wave 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
 | Modbus-TCP adapter (M4 Wave 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes, FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke for the default profile. Follow-up [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) implemented the FC06 multi-register guard, read/write error taxonomy, and deliberate smoke boundary. Trigger-006-Re-Eval (`mypy --strict-bytes`) is positive; activation remains a separate follow-up. |
-| OPC-UA adapter (M4 Wave 4) | `Done` | [`in-progress/M4-welle-4.md`](docs/plan/planning/in-progress/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/` 6-module package (asyncua 1.2b2; **first async-only stack** in the repo with a dedicated `OpcuaLoopThread` running an asyncio event loop in a daemon thread — Decision O-b; 8 datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), polling read + direct write, Subscription-Pfad deferred to Wave 6) + in-process `asyncua.Server` integration smoke parameterised over all 8 datatypes (Decision O-e; LGPL-3.0 library-linking, avoids `open62541/open62541` MPL-2.0 container drama). asyncua pin `==1.2b2` is a beta release that ships the Python-3.14 forward-reference fix missing in 1.1.8. |
+| OPC-UA adapter (M4 Wave 4) | `Done` | [`in-progress/M4-welle-4.md`](docs/plan/planning/in-progress/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/` 6-module package (asyncua 1.2b2; **first async-only stack** in the repo with a dedicated `OpcuaLoopThread` running an asyncio event loop in a daemon thread — Decision O-b; 8 datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), polling read + direct write, Subscription-Pfad deferred to Wave 6) + in-process `asyncua.Server` integration smoke parameterised over all 8 datatypes (Decision O-e; LGPL-3.0 library-linking, avoids `open62541/open62541` MPL-2.0 container drama). asyncua pin `>=1.2b2,<2.0` accepts pre-release upgrades and ships the Python-3.14 forward-reference fix missing in 1.1.8. Follow-up [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) addressed 6 HIGH + 11 MEDIUM code-review findings (lifecycle-lock for `OpcuaLoopThread`, port exception filter, Quality.INVALID for string reads, float32 quantisation). |
 | OPC-UA / DNP3 / IEC 61850 (M4 Waves 4–6) | `Pending` | Concrete adapters land in subsequent M4 waves |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
@@ -257,7 +257,7 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Waves 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1395 as of 2026-05-31, M4-Welle-4 closure)
+│   ├── unit/                    ← pytest unit tests (1401 as of 2026-05-31, M4-Welle-4 + Slice-032 closure)
 │   ├── integration/             ← Compose-based integration tests (31 tests; OTLP + MQTT + Modbus + OPC-UA smoke incl.)
 │   └── unit/_arch_check_*       ← architecture tests (7 lint-imports + 12 custom AC checks = 19 A-1)
 ├── tools/

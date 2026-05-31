@@ -1,7 +1,10 @@
 # Welle 4 — M4 OPC-UA-Adapter
 
 **Status:** Done — geschlossen 2026-05-31 mit M4-Welle-4-C3
-(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+`7ad5baf`. **Slice-032-Schaerfung** 2026-05-31 (Review-
+Folge): 6 HIGH + 11 MEDIUM Code-Review-Findings adressiert
+ohne Welle-4-Scope-Erweiterung; siehe
+[`../done/032-opcua-adapter-review-folge.md`](../done/032-opcua-adapter-review-folge.md). Eroeffnet
 2026-05-31 nach M4-Welle-3-Closure (`8ef1e72` C0 + `a86ac46`
 C1 + `d721982` C2 + `2b84361` EoD-Sync + `0ce578a` C3 +
 `506c8ca` Self-Close-Move + `0ab956a` Slice-031-feat +

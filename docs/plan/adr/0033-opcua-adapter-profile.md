@@ -1,9 +1,13 @@
 # ADR 0033 — OPC-UA-Adapter-Profile (M4 Welle 4)
 
 **Status:** Provisional — geschaerft 2026-05-31 mit M4-Welle-4-C3
-(`docs(plan|adr)` Doc-Sync, dieser Commit). Initial-Entwurf
-(`Proposed`) 2026-05-31 mit M4-Welle-4-C1 `74ed35b`; C2-Merge
-`78fdd7a` (feat `protocol_opcua/`-6-Modul-Paket + 81 neue
+`7ad5baf`. Zusatz-Schaerfung 2026-05-31 durch Slice 032
+(Welle-4-Review-Folge): Body geschaerft an §2.1
+(Optional-Felder-Klarstellung), §2.5 (Test-Server-Loop-Thread-
+Klarstellung) und §5 (Slice-032-Entry); Code-Fixes
+in separatem feat-Commit. ADR-Status bleibt `Provisional`.
+Initial-Entwurf (`Proposed`) 2026-05-31 mit M4-Welle-4-C1
+`74ed35b`; C2-Merge `78fdd7a` (feat `protocol_opcua/`-6-Modul-Paket + 81 neue
 Unit-Tests + in-process asyncua-Server-Integration-Smoke +
 `pyproject.toml`/`uv.lock`/`Dockerfile`/`compose.yml`-Edits;
 `make test-unit` 1395 gruen, `make test-integration` 31 gruen
@@ -216,10 +220,9 @@ protocol_ports:
         datatype: "Int16"
         access: "write"
       pv1_yield:
-        node_id: "ns=3;i=42"
+        node_id: "ns=3;i=42"  # Namespace 3 wird aus node_id extrahiert
         datatype: "Double"
         access: "read"
-        namespace_index: 3  # Override: anderer Namespace
 ```
 
 Konkretes YAML-Schema (Pflicht-Felder, Optional-Felder,
@@ -257,12 +260,17 @@ mit Pflicht-Feldern `endpoint_url: str`, `timeout_s: float
 von `device_id` auf Node-Profil). `OpcuaNodeConfig` mit
 Pflicht-Feldern `node_id: str` (Format `"ns=N;i=M"` oder
 `"ns=N;s=Identifier"`), `datatype: OpcuaDatatype`,
-`access: Literal["read", "write"]`; Optional-Feldern
-`namespace_index: int | None = None` (None ->
-aus `node_id` extrahiert), `identifier_type: Literal["numeric",
-"string"] | None = None` (None -> aus `node_id` extrahiert).
-Konstruktor-Validation mit `OpcuaConfigError`-Familie
-(analog `ModbusConfigError`-Familie aus Welle 3).
+`access: Literal["read", "write"]`. Konstruktor-Validation
+mit `OpcuaConfigError`-Familie (analog `ModbusConfigError`-
+Familie aus Welle 3). **Slice-032-Schaerfung (Welle-4-Review-
+Folge Finding 6.4):** Namespace-Index und Identifier-Type
+werden direkt aus dem `node_id`-String extrahiert
+(`_NODE_ID_PATTERN`-Regex in `_config.py`); separate
+Optional-Felder `namespace_index`/`identifier_type` sind
+**nicht** Teil des Welle-4-Schemas (YAGNI — kein Welle-4-
+Use-Case fuer Override). Welle-6-Schaerfung kann sie via
+ADR-0011-Pattern nachziehen, falls Multi-Namespace-Targets
+sie tatsaechlich brauchen.
 
 ### 2.2 Decision O-b — Async-Bridge via dediziertem asyncio-Loop-Thread (final)
 
@@ -496,17 +504,26 @@ Loop — Caller-Pflicht, falls noetig.
 ```text
 1. Test setzt einen `asyncua.Server` mit Node-Default-
    Werten auf (Endpoint `opc.tcp://localhost:<port>`).
-2. Eigener `OpcuaLoopThread`-Helfer im Test-Code spawnt
-   den Server-Loop:
-   `loop_thread.run_coroutine(server.init() ...
-   server.start(), timeout_s=...)`.
-3. Test wartet via Connect-Check (Client-Side `Client.connect()`)
-   bis Server bereit ist.
+2. Eigener Test-internes Loop-Thread-Konstrukt
+   (`_InProcessOpcuaServer` in
+   `tests/integration/test_opcua_in_process_smoke.py`) mit
+   `asyncio.new_event_loop()` + `Thread(daemon=True)`
+   spawnt den Server-Loop. Slice-032-Schaerfung (Welle-4-
+   Review-Folge Finding 6.3): Test verwendet **bewusst
+   NICHT** die produktive `OpcuaLoopThread`-Klasse —
+   der Server-Lifecycle (asyncio.Event-basiertes Stop-
+   Signal + `server.stop()`-Coroutine) ist substanziell
+   anders als der Client-Lifecycle (Connect/Disconnect),
+   und Test-Server-Loop-Logik gehoert nicht in die
+   produktive `OpcuaLoopThread`-Surface.
+3. Test wartet via Connect-Check (`_wait_for_port_open`)
+   bis Server bereit ist; Init-Errors werden im Thread
+   gecaped und im Caller reraised (Slice-032 Finding 7.3).
 4. End-to-End-Read/Write-Roundtrip via
    `OpcuaDeviceProtocolPort` durch alle 8 Datatypes
    (Decision-O-c-Set).
-5. Teardown: `loop_thread.run_coroutine(server.stop(), ...)`
-   + `loop_thread.stop()`.
+5. Teardown: `server.stop()`-Coroutine + `stop_signal.set()`
+   + `loop.stop()` + `thread.join(timeout=5.0)`.
 ```
 
 **Begruendung:**
@@ -767,8 +784,8 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
 
 - **Proposed** — 2026-05-31 (M4-Welle-4-C1 `74ed35b`).
   Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — 2026-05-31 (M4-Welle-4-C3, dieser
-  Commit) nach C2-Merge `78fdd7a` (feat-Commit:
+- **Provisional** — 2026-05-31 (M4-Welle-4-C3 `7ad5baf`)
+  nach C2-Merge `78fdd7a` (feat-Commit:
   `protocol_opcua/`-6-Modul-Paket — `__init__.py` +
   `_config.py` + `_codec.py` + `_loop_thread.py` +
   `_port.py` + `_errors.py` — mit 81 neuen Unit-Tests
@@ -790,6 +807,20 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
   31 gruen (23 → 31, +8 OPC-UA-Roundtrips), `make
   arch-check` 19/19 KEPT, `make gates` 9 A-1-Gates
   gruen ohne `CRITICAL_COV_TARGETS`-Override.
+- **Slice-032-Schaerfung** — 2026-05-31 (Welle-4-Review-
+  Folge,
+  [`done/032-opcua-adapter-review-folge.md`](../planning/done/032-opcua-adapter-review-folge.md)).
+  ADR bleibt `Provisional`, Body geschaerft an drei
+  Stellen: §2.1 Konsequenz (Optional-Felder
+  `namespace_index`/`identifier_type` aus dem Schema
+  entfernt; Welle-4-YAGNI), §2.5 Setup-Skizze (Test-
+  Server-Loop ist bewusst getrennt von der produktiven
+  `OpcuaLoopThread`-Klasse), §2.2 Doku-Drift zum
+  `loop.close()`-Konditional. Code-Schaerfungen
+  (Lifecycle-Lock, Start-Timeout, Exception-Filter-
+  Erweiterung, String-Read-Quality.INVALID,
+  Float-32bit-Quantisierung, Surrogate-Blacklist) in
+  separatem feat-Commit.
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027 + 0030 + 0031 + 0032).
   Voraussetzung: Welle 5 (DNP3/IEC) klaert ihre
