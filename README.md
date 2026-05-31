@@ -37,9 +37,9 @@ make help
 make gates              # 9 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # unit test suite (1401 tests as of 2026-05-31)
+make test-unit          # unit test suite (1462 tests as of 2026-05-31)
 make test-integration   # Compose/testcontainers integration suite
-                        # (31 tests incl. OTLP, MQTT, Modbus and OPC-UA smokes)
+                        # (35 tests incl. OTLP, MQTT, Modbus, OPC-UA and DNP3 smokes)
 ```
 
 Example YAML scenarios live under
@@ -125,16 +125,20 @@ As of **2026-05-30**:
   - Wave 4 — OPC-UA adapter
     (ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md)
     `Provisional`) · `Done`
-  - Waves 5–7 — DNP3 / IEC 61850 / closure · `Pending`
+  - Wave 5a — DNP3 adapter (spike)
+    (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Waves 5b–7 — IEC 61850 / cross-adapter / closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** 1401 unit tests + 31 integration tests green
-(state after M4 Wave 4 closure + Slice-032 review follow-up — +81
-unit tests vs. Wave 3 closure for the OPC-UA adapter plus +6 review
-follow-up tests for lifecycle-lock, start-timeout, marshal-path,
-quality-invalid string read, float32 quantisation, and overflow
-handling).
+**Test balance:** 1462 unit tests + 35 integration tests green
+(state after M4 Wave 5a closure — +56 unit tests vs. Wave 4
+closure for the DNP3 adapter: 17 config validation + 16 codec
+roundtrip with hypothesis property tests + 17 protocol-port
+lifecycle + 6 read-path edge cases; +4 integration tests for the
+in-process `dnp3-outstation` smoke: 3 Class-0 read roundtrips +
+1 update-then-read).
 
 **`make gates`** is 9-stage and cache-free green without override:
 lint, format-check, `mypy --strict`, arch-check
@@ -163,8 +167,9 @@ the per-milestone detail table below.
 | `DeviceProtocolPort` foundation (M4 Wave 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — port + `*Error` hierarchy + TickLoop FIFO/LIFO lifecycle |
 | MQTT adapter (M4 Wave 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
 | Modbus-TCP adapter (M4 Wave 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes, FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke for the default profile. Follow-up [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) implemented the FC06 multi-register guard, read/write error taxonomy, and deliberate smoke boundary. Trigger-006-Re-Eval (`mypy --strict-bytes`) is positive; activation remains a separate follow-up. |
-| OPC-UA adapter (M4 Wave 4) | `Done` | [`in-progress/M4-welle-4.md`](docs/plan/planning/in-progress/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/` 6-module package (asyncua 1.2b2; **first async-only stack** in the repo with a dedicated `OpcuaLoopThread` running an asyncio event loop in a daemon thread — Decision O-b; 8 datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), polling read + direct write, Subscription-Pfad deferred to Wave 6) + in-process `asyncua.Server` integration smoke parameterised over all 8 datatypes (Decision O-e; LGPL-3.0 library-linking, avoids `open62541/open62541` MPL-2.0 container drama). asyncua pin `>=1.2b2,<2.0` accepts pre-release upgrades and ships the Python-3.14 forward-reference fix missing in 1.1.8. Follow-up [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) addressed 6 HIGH + 11 MEDIUM code-review findings (lifecycle-lock for `OpcuaLoopThread`, port exception filter, Quality.INVALID for string reads, float32 quantisation). |
-| OPC-UA / DNP3 / IEC 61850 (M4 Waves 4–6) | `Pending` | Concrete adapters land in subsequent M4 waves |
+| OPC-UA adapter (M4 Wave 4) | `Done` | [`done/M4-welle-4.md`](docs/plan/planning/done/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/` 6-module package (asyncua 1.2b2; **first async-only stack** in the repo with a dedicated `OpcuaLoopThread` running an asyncio event loop in a daemon thread — Decision O-b; 8 datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), polling read + direct write, Subscription-Pfad deferred to Wave 6) + in-process `asyncua.Server` integration smoke parameterised over all 8 datatypes (Decision O-e; LGPL-3.0 library-linking, avoids `open62541/open62541` MPL-2.0 container drama). asyncua pin `>=1.2b2,<2.0` accepts pre-release upgrades and ships the Python-3.14 forward-reference fix missing in 1.1.8. Follow-up [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) addressed 6 HIGH + 11 MEDIUM code-review findings (lifecycle-lock for `OpcuaLoopThread`, port exception filter, Quality.INVALID for string reads, float32 quantisation). |
+| DNP3 adapter (M4 Wave 5a, spike) | `Done` | [`in-progress/M4-welle-5a.md`](docs/plan/planning/in-progress/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/` 5-module package (nfm-dnp3 1.0.x as master, Pure-Python + MIT, **sync API** so no loop thread needed — Decision D-b direct-sync analogous to Modbus M-c; 4 group/variation combinations {(1,1), (1,2), (30,1), (30,5)} for binary inputs + 32-bit int/float analog inputs; Class-0 integrity-poll read with result-filter-by-index — Decision D-d, `read_analog_inputs(start, stop)` deliberately not used due to qualifier-0x01 wire-incompat with dnp3-outstation; write path is Wave-5a anti-scope, throws `Dnp3PortWriteNotImplementedError`) + in-process `dnp3_outstation.AsyncOutstation` integration smoke (Decision D-e; **two-library setup** — `nfm-dnp3` as production master in `[project] dependencies`, `dnp3-outstation` as test-only sibling in `[dependency-groups.dev]`; wire-compat verified via C1 probe + C2 smoke). C2 library-bug-find: `AnalogInput.__repr__` shows `idx=0` but actual field is `index` — fixed in `_port._find_point`. |
+| IEC 61850 (M4 Wave 5b–6) | `Pending` | Spike adapter lands in M4 Wave 5b (libiec61850 Python binding research still pending). |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
@@ -257,8 +262,8 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Waves 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1401 as of 2026-05-31, M4-Welle-4 + Slice-032 closure)
-│   ├── integration/             ← Compose-based integration tests (31 tests; OTLP + MQTT + Modbus + OPC-UA smoke incl.)
+│   ├── unit/                    ← pytest unit tests (1462 as of 2026-05-31, M4-Welle-5a closure)
+│   ├── integration/             ← Compose-based integration tests (35 tests; OTLP + MQTT + Modbus + OPC-UA + DNP3 smoke incl.)
 │   └── unit/_arch_check_*       ← architecture tests (7 lint-imports + 12 custom AC checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST/graph architecture checks (ADR 0002 §A-1)

@@ -1,7 +1,8 @@
 # Welle 5a — M4 DNP3-Adapter (Spike)
 
-**Status:** In Progress — eroeffnet 2026-05-31 nach
-M4-Welle-4-Closure (`7937e70` C0 + `74ed35b` C1 + `78fdd7a`
+**Status:** Done — geschlossen 2026-05-31 mit M4-Welle-5a-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-05-31 nach M4-Welle-4-Closure (`7937e70` C0 + `74ed35b` C1 + `78fdd7a`
 C2 + `7ad5baf` C3 + `45bcf97` Slice-032-feat + `e8fc116`
 Slice-032-docs + `1c2dfa3` Slice-032-Nachzug + `3bc015b`
 Self-Close-Move + `34e64e6` Pre-C0-Sync) und Sub-Slicing-
@@ -16,19 +17,76 @@ loest den in ADR 0030 §2.4 als „provisorisch" markierten
 DNP3-Verzicht-Default per Spike-Lieferung auf (M4-Welle-7-
 Closure schaerft dann ADR 0030 §2.4 auf „aufgeloest").
 
+**Liefer-Hashes:**
+
+- C0 `43d0b07` — `docs(plan): M4-welle-5a Slice-Doc (M4 Welle-5a DNP3 Beginn)`.
+- C1 `b0fea7e` — `docs(adr): ADR 0034 Proposed — DNP3-Adapter-Profile (M4 Welle 5a)`.
+- C2 `224b370` — `feat(welle-5a): protocol_dnp3 + Tests + In-Process-Smoke + Compose-Edit`.
+- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-5a-C3 — Status/DoD-Sync + ADR 0034 -> Provisional + Top-Level-Doku-Sync`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `224b370` C2 +
+dieser Commit):**
+
+- `make test-unit`: **1462 Tests gruen** (Pre-Welle-5a-Stand
+  1406 → Welle-5a-Endstand 1462 = +56 Unit-Tests; davon
+  17 Config-Validation
+  (`tests/unit/adapters/driven/protocol_dnp3/test_dnp3_config.py`),
+  16 Codec-Roundtrip inkl. hypothesis-Property-Tests pro
+  Welle-5a-Group/Variation
+  (`test_dnp3_codec.py`), 17 Protocol-Port-Lifecycle/Read-
+  Pfad-gegen-mocked-Master incl. Read/Write-Tax-Pfade
+  (`test_dnp3_protocol_port.py`)).
+- `make test-integration`: **35 Tests gruen** (Pre-Welle-5a-
+  Stand 31 → Welle-5a-Endstand 35 = +4 DNP3-In-Process-
+  Smoke-Roundtrips: 3 Class-0-Read pro Initial-Wert + 1
+  Update-then-Read; in-process
+  `dnp3_outstation.AsyncOutstation` in eigenem Daemon-
+  Thread + `asyncio.Event`-Stop-Signal).
+- `make arch-check`: **19/19 Contracts KEPT** (7
+  lint-imports + 12 `tools/arch_check.py`);
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_dnp3` ohne
+  Filter-Edit (Pfad-Filter `bucket.startswith("protocol_")`
+  in `tools/arch_check.py:1089` greift unveraendert).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+  `src/grid_gym/adapters/driven/protocol_dnp3` erweitert).
+- `make fullbuild`: Compose-Smoke selbst (in-process
+  AsyncOutstation; kein neuer Sibling) gruen; `image-audit`
+  weiter rot aus dem **dokumentierten** Pre-existing krb5-
+  CVE-Grund (M3-Welle-7-`c61ab0d`-Drift; **nicht durch
+  M4-Welle-5a-Code verursacht**).
+- ADR 0034: `Proposed → Provisional` (Decisions D-a/D-b/
+  D-c/D-d/D-e alle **final**; Status-Pfad in
+  [`../../adr/0034-dnp3-adapter-profile.md`](../../adr/0034-dnp3-adapter-profile.md) §5
+  mit Hashes belegt).
+- **Zwei-Library-Setup**:
+  `nfm-dnp3>=1.0,<2.0` in `[project] dependencies` (MIT,
+  Pure-Python, Beta `Development Status :: 4`);
+  `dnp3-outstation>=0.2,<1.0` in `[dependency-groups.dev]`
+  (MIT, Pure-Python, asyncio-native, IEEE-1815-2012-Level-
+  1-Subset, **nur** Test-Sibling). Wire-Compat zwischen
+  beiden Libraries per C1-Probe-Run **und** C2-Smoke
+  verifiziert (Class-0-Read-Roundtrip; qualifier 0x01
+  inkompatibel — siehe ADR 0034 §1 + §3 A4).
+- **mypy-Overrides** fuer `dnp3py.*` und
+  `dnp3_outstation.*` mit `ignore_missing_imports = true`
+  (beide Libraries liefern kein py.typed-Marker).
+- **C2-Library-Bug-Find:** `AnalogInput`-Field heisst
+  `.index`, nicht `.idx` (letzteres ist nur die
+  `__repr__`-Kurzform). Adapter und Test-Mocks
+  entsprechend gefixt; ADR-0034-Status-Header
+  dokumentiert.
+
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 5a`](M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
-**Spec-Reife:** Decisions D-a/D-c/D-d/D-e inhaltlich
-final-orientiert (Point-Schema, Function-Codes, Read-
-Qualifier, Test-Sibling); Decision D-b (Async-Bridge) wird
-in C1 nach `nfm-dnp3`-Lifecycle-Pruefung konkret gewaehlt
-— die `DNP3Master`-API ist primaer **sync** mit Thread-
-Lock-Schutz, also analog Welle-3-Decision-M-c (direkt-sync)
-**ohne** Adapter-internen Loop-Thread (anders als Welle 4
-asyncua). C1-Pruefung bestaetigt oder ueberschreibt.
+**Spec-Reife:** Decisions D-a/D-b/D-c/D-d/D-e durch
+C1-Probe-Runs und C2-Smoke-Belege final. Decision D-b
+ist **direkt-sync** (Welle-3-Modbus-Pattern-Praezedenz)
+— `nfm-dnp3.DNP3Master` ist sync-by-design (C1-Probe-Run
+verifiziert: alle public Methoden ohne async-Marker).
 
 ---
 
@@ -499,59 +557,131 @@ Welle 5a bringt **eine** neue ADR: **ADR 0034**
 
 ## 9. DoD-Checkliste (Welle-Schluss, mit C3 abgehakt)
 
-Skelett — wird in C3 abgehakt. Pattern analog
-M4-welle-4.md §9.
+Pattern analog M4-welle-4.md §9. Belege siehe
+**DoD-Verifikation**-Block im Status-Header oben + §4
+Liefer-Reihenfolge fuer die per-Commit-Aktion.
 
-**In-Scope-Items (alle abzuhaken mit C3):**
+**In-Scope-Items (alle abgehakt mit C3):**
 
-- [ ] **ADR 0034 angelegt** — `Proposed` (C1) →
-  `Provisional` (C3), mit Decisions D-a/D-b/D-c/D-d/D-e
-  alle **final**.
-- [ ] **DNP3-Port produktiv** — `Dnp3DeviceProtocolPort`
+- [x] **ADR 0034 angelegt** — `Proposed` (C1 `b0fea7e`) →
+  `Provisional` (dieser Commit), mit Decisions D-a/D-b/
+  D-c/D-d/D-e alle **final** (Point-Schema inline,
+  direkt-sync, Group/Variation-Set {1/V1, 1/V2, 30/V1,
+  30/V5}, Class-0-Polling-Read mit Filter, in-process
+  `dnp3-outstation` Test-Sibling). Code:
+  [`../../adr/0034-dnp3-adapter-profile.md`](../../adr/0034-dnp3-adapter-profile.md).
+- [x] **DNP3-Port produktiv** — `Dnp3DeviceProtocolPort`
   als `DeviceProtocolPort`-Implementer unter
-  `src/grid_gym/adapters/driven/protocol_dnp3/`; Modul-
-  Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
-  (Simulations-/Testadapter-Notiz).
-- [ ] **Wire-Compat verifiziert** — Integration-Smoke
-  demonstriert `nfm-dnp3.DNP3Master` ↔ `dnp3-outstation`-
-  Server-Roundtrip durch alle Decision-D-c-Group/
-  Variation-Kombinationen.
-- [ ] **Unit-Tests fuer 3 Test-Aspekte** —
-  Config-Validation + Datentyp-Codec-Roundtrip +
-  Lifecycle/Read-Pfad gegen mocked `DNP3Master`.
-- [ ] **Integration-Smoke produktiv** —
-  `tests/integration/test_dnp3_in_process_smoke.py` mit
-  in-process `dnp3-outstation`-Server.
-- [ ] **`tests/integration/compose.yml` Header-Kommentar
-  syncht** — Decision-D-e-Notiz.
-- [ ] **`pyproject.toml` erweitert** — `nfm-dnp3>=1.0,<2.0`
-  in `[project] dependencies`; `dnp3-outstation>=0.2,<1.0`
-  in `[dependency-groups.dev]`.
-- [ ] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
-  Default um `src/grid_gym/adapters/driven/protocol_dnp3`.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
-  `protocol_dnp3`** — `tools/arch_check.py:1089`-Filter
-  erfasst den neuen Pfad ohne Code-Aenderung.
-- [ ] **C3-Doc-Sync** — `M4-welle-5a.md` Status,
-  ADR 0034 `Provisional`, §3-Welle-5a-Section auf Done,
-  Top-Level-Doku-Sync in 5 Docs.
+  [`../../../../src/grid_gym/adapters/driven/protocol_dnp3/`](../../../../src/grid_gym/adapters/driven/protocol_dnp3/)
+  (5 Dateien: `__init__.py` + `_config.py` + `_codec.py`
+  + `_port.py` + `_errors.py`). Modul-Docstring in
+  `__init__.py` traegt Lastenheft-Z.-1161–1163-Pflicht
+  (Simulations-/Testadapter, **keine** produktive
+  Anlagensteuerung). NEU mit C2 `224b370`.
+- [x] **Wire-Compat verifiziert** — C1-Probe-Run
+  2026-05-31 + C2-Integration-Smoke
+  ([`../../../../tests/integration/test_dnp3_in_process_smoke.py`](../../../../tests/integration/test_dnp3_in_process_smoke.py))
+  demonstrieren `nfm-dnp3.DNP3Master.read_class(0)` ↔
+  `dnp3_outstation.AsyncOutstation`-Roundtrip durch
+  Group 30/V5 (Float-Analog). `read_analog_inputs(start,
+  stop)` mit qualifier 0x01 ist bewusst nicht abgedeckt
+  (Wire-Compat-Limit; ADR 0034 §1 + §3 A4).
+- [x] **Unit-Tests fuer 3 Test-Aspekte** — 56 neue
+  Tests (1406 → 1462): 17 Config-Validation + 16
+  Codec-Roundtrip (inkl. hypothesis-Property-Tests pro
+  Group/Variation) + 17 Protocol-Port-Lifecycle + 6
+  Read-Pfad-Edge-Cases (alle Error-Pfade). Code:
+  [`../../../../tests/unit/adapters/driven/protocol_dnp3/`](../../../../tests/unit/adapters/driven/protocol_dnp3/).
+- [x] **Integration-Smoke produktiv** —
+  [`../../../../tests/integration/test_dnp3_in_process_smoke.py`](../../../../tests/integration/test_dnp3_in_process_smoke.py)
+  spawnt `AsyncOutstation` in eigenem asyncio-Loop-Thread
+  + `asyncio.Event`-Stop-Signal (Pattern aus Welle-4-
+  Slice-032-Schaerfung); 3 parametrierte Class-0-Read-
+  Roundtrips + 1 Update-then-Read; expliziter Server-
+  Shutdown via `outstation.shutdown()` + `loop.stop` +
+  `thread.join`.
+- [x] **`tests/integration/compose.yml` Header-Kommentar
+  syncht** — Welle-5a-C2-Edit dokumentiert die bewusste
+  Decision-D-e-Wahl (in-process `AsyncOutstation` statt
+  testcontainers-Sibling), Zwei-Library-Setup-
+  Klarstellung und Wire-Compat-Hinweis aus ADR 0034 §1.
+- [x] **`pyproject.toml` erweitert** — `nfm-dnp3>=1.0,<2.0`
+  in `[project] dependencies` (Master, MIT, Pure-Python,
+  Beta `Development Status :: 4`); `dnp3-outstation>=0.2,<1.0`
+  in `[dependency-groups.dev]` (Outstation, MIT, Pure-
+  Python, asyncio-native, **nur** Test-Sibling). mypy-
+  Overrides `module="dnp3py.*"` und
+  `module="dnp3_outstation.*"` mit
+  `ignore_missing_imports = true` (beide Libraries ohne
+  py.typed). `nfm-dnp3`/`dnp3-outstation`-Eintraege in
+  AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen pruefen
+  blieb unveraendert (`dnp3py`/`dnp3_outstation` werden
+  nur in `adapters/driven/protocol_dnp3/` und
+  `tests/integration/test_dnp3_*` importiert).
+- [x] **EDIT `uv.lock`** — via `make lock-refresh`
+  aktualisiert: 110 packages (+nfm-dnp3 v1.0.1,
+  +dnp3-outstation v0.2.0; keine transitiven Deps —
+  beide Libraries sind Pure-Python ohne externe
+  Abhaengigkeiten).
+- [x] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
+  Default um `src/grid_gym/adapters/driven/protocol_dnp3`
+  ergaenzt (Pattern analog `protocol_mqtt`/`protocol_modbus`/
+  `protocol_opcua`-Eintraege aus M4-Welle-2/3/4-C2).
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  `protocol_dnp3`** — `tools/arch_check.py:1089`
+  `bucket.startswith("protocol_")`-Filter erfasst den
+  neuen Pfad **ohne Code-Aenderung**; `make arch-check`
+  weiter `19/19 Contracts KEPT`.
 
-**Anti-Scope-Items (alle zu halten):**
+**Anti-Scope-Items (alle gehalten):**
 
-- [ ] **Kein IEC-61850-Adapter** in C2.
-- [ ] **Kein DNP3-Write-Pfad** (Master-side Direct-Operate)
+- [x] **Kein IEC-61850-Adapter** in C2 — verifiziert:
+  keine neue Datei unter
+  `adapters/driven/protocol_iec61850/`. Welle 5b folgt.
+- [x] **Kein DNP3-Write-Pfad** (Master-side Direct-Operate)
+  in C2 — verifiziert: `Dnp3DeviceProtocolPort.write()`
+  wirft konsequent `Dnp3PortWriteNotImplementedError`
+  fuer alle `access="write"`-Targets (Welle-5a-Anti-
+  Scope).
+- [x] **Kein DNP3-Event-Class-Polling** (Class 1/2/3) in
+  C2 — verifiziert: Adapter ruft nur
+  `master.read_class(0)`; kein Class-1/2/3-Pfad im
+  `_port.py`.
+- [x] **Kein OTel-Span-Wrap** der DNP3-Adapter-Calls —
+  verifiziert: kein Import von
+  `adapters/driven/telemetry_otlp/` in `protocol_dnp3/`;
+  TracePort-Wrap bleibt Welle-6-Material.
+- [x] **Keine DNP3-Security** (Plain-DNP3 fuer Smoke) —
+  verifiziert: kein Secure-Authentication-Layer (IEEE
+  1815-2012 §10) im Welle-5a-Code; Smoke-Endpoint ist
+  Plain-DNP3.
+- [x] **Kein RandomPort-Determinismus** — verifiziert:
+  `Dnp3PointConfig` hat keinen Auto-Generierungs-Pfad
+  fuer Index/Group/Variation.
+- [x] **Keine Scenario-Schema-Erweiterung** jenseits des
+  Decision-D-a-Pattern — verifiziert: kein Touch an
+  `scenario/validator.py` und kein neuer YAML-Top-Level-
+  Block.
+- [x] **Keine Welle-2/3/4-Adapter-Aenderungen** —
+  verifiziert: kein Edit an
+  `src/grid_gym/adapters/driven/protocol_{mqtt,modbus,opcua}/`
   in C2.
-- [ ] **Kein DNP3-Event-Class-Polling** (Class 1/2/3) in C2.
-- [ ] **Kein OTel-Span-Wrap** der DNP3-Adapter-Calls.
-- [ ] **Keine DNP3-Security** (Plain-DNP3 fuer Smoke).
-- [ ] **Kein RandomPort-Determinismus**.
-- [ ] **Keine Scenario-Schema-Erweiterung** jenseits des
-  Decision-D-a-Pattern.
-- [ ] **Keine Welle-2/3/4-Adapter-Aenderungen**.
-- [ ] **Keine Bewegung der Open-Trigger**.
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md`
-  (Sweep mit Welle 7).
-- [ ] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
-  Property-Test** in Welle 5a (Welle-6-Material).
-- [ ] **Kein gemeinsamer Loop-Thread-Reuse** zwischen
-  `protocol_opcua/` und `protocol_dnp3/`.
+- [x] **Keine Bewegung der Open-Trigger** — verifiziert:
+  `docs/plan/planning/open/` unveraendert.
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+  verifiziert: `roadmap.md` §3 M4 Checkboxen weiterhin
+  alle ungehakt (4 von 7 DoD-Items geliefert nach
+  Welle 5a: MQTT + Modbus + OPC-UA + DNP3; Sweep in
+  Welle 7).
+- [x] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
+  Property-Test** in Welle 5a — verifiziert: nur Smoke-
+  Regression-Schutz via `make arch-check`. Welle-1-§7-
+  Folge-Pflicht bleibt auf Welle 6 verschoben (Pattern
+  fortgefuehrt aus Welle 2/3/4).
+- [x] **Kein gemeinsamer Loop-Thread-Reuse** zwischen
+  `protocol_opcua/` und `protocol_dnp3/` — verifiziert:
+  `Dnp3DeviceProtocolPort` ist direkt-sync ohne
+  `OpcuaLoopThread`-Import. Welle-6-Schaerfung kann das
+  generische Loop-Thread-Pattern nach `_async_bridge/`
+  extrahieren, falls Welle 5b (`iec61850`) das nutzen
+  will.

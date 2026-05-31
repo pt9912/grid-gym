@@ -37,9 +37,9 @@ make help
 make gates              # 9 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # Unit-Test-Suite (1401 Tests, Stand 2026-05-31)
+make test-unit          # Unit-Test-Suite (1462 Tests, Stand 2026-05-31)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (31 Tests inkl. OTLP-, MQTT-, Modbus- und OPC-UA-Smokes)
+                        # (35 Tests inkl. OTLP-, MQTT-, Modbus-, OPC-UA- und DNP3-Smokes)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -126,16 +126,20 @@ Stand **2026-05-30**:
   - Welle 4 — OPC-UA-Adapter
     (ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md)
     `Provisional`) · `Done`
-  - Wellen 5–7 — DNP3 / IEC 61850 / Closure · `Pending`
+  - Welle 5a — DNP3-Adapter (Spike)
+    (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Wellen 5b–7 — IEC 61850 / Cross-Adapter / Closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** 1401 Unit-Tests + 31 Integration-Tests gruen
-(Stand nach M4-Welle-4-Closure + Slice-032-Review-Folge —
-+81 Unit-Tests ggue. Welle-3-Closure fuer den OPC-UA-Adapter
-plus +6 Review-Folge-Tests fuer Lifecycle-Lock, Start-Timeout,
-Marshal-Pfad, Quality.INVALID-String-Read, Float32-
-Quantisierung und Overflow-Handling).
+**Testbilanz:** 1462 Unit-Tests + 35 Integration-Tests gruen
+(Stand nach M4-Welle-5a-Closure — +56 Unit-Tests ggue.
+Welle-4-Closure fuer den DNP3-Adapter: 17 Config-Validation
++ 16 Codec-Roundtrip inkl. hypothesis-Property-Tests + 17
+Protocol-Port-Lifecycle + 6 Read-Pfad-Edge-Cases; +4
+Integration-Tests fuer den in-process `dnp3-outstation`-
+Smoke: 3 Class-0-Read-Roundtrips + 1 Update-then-Read).
 
 **`make gates`** ist 9-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check
@@ -164,8 +168,9 @@ in der Detail-Tabelle unten.
 | `DeviceProtocolPort`-Foundation (M4 Welle 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — Port + `*Error`-Hierarchie + TickLoop-FIFO/LIFO-Lifecycle |
 | MQTT-Adapter (M4 Welle 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/`-7-Modul-Paket (paho-mqtt 2.x, Per-Target-Queue-Marshal) + Mosquitto-Integration-Smoke |
 | Modbus-TCP-Adapter (M4 Welle 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/`-5-Modul-Paket (pymodbus 3.x sync-Client, **kein** Thread-Marshal noetig — Decision M-c direkt-sync; 5 Datatypes, FC03/FC10 Defaults mit FC04/FC06-Overrides) + in-process-pymodbus-Server-Integration-Smoke fuer das Default-Profil. Folge-Slice [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) hat FC06-Multi-Register-Guard, Read-/Write-Fehler-Taxonomie und bewusste Smoke-Abgrenzung umgesetzt. Trigger-006-Re-Eval (`mypy --strict-bytes`) ist **positiv**; Aktivierung bleibt Folgearbeit. |
-| OPC-UA-Adapter (M4 Welle 4) | `Done` | [`in-progress/M4-welle-4.md`](docs/plan/planning/in-progress/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/`-6-Modul-Paket (asyncua 1.2b2; **erster rein-async-Stack** im Repo mit eigenem `OpcuaLoopThread` — asyncio-Event-Loop in Daemon-Thread + `run_coroutine_threadsafe`-Marshal, Decision O-b; 8 Datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), Polling-Read + Direct-Write, Subscription-Pfad Welle-6-Schaerfung) + in-process `asyncua.Server`-Integration-Smoke parametrisiert ueber alle 8 Datatypes (Decision O-e; LGPL-3.0 Library-Linking, umgeht `open62541/open62541` MPL-2.0-Container-Komplexitaet). asyncua-Pin `>=1.2b2,<2.0` mit dem Python-3.14-Forward-Reference-Fix, der in 1.1.8 fehlt. Folge-Slice [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) hat 6 HIGH + 11 MEDIUM Code-Review-Findings adressiert (Lifecycle-Lock im `OpcuaLoopThread`, Port-Exception-Filter, Quality.INVALID-String-Read, Float32-Quantisierung). |
-| OPC-UA / DNP3 / IEC 61850 (M4 Welle 4–6) | `Pending` | Konkrete Adapter folgen in den naechsten M4-Wellen |
+| OPC-UA-Adapter (M4 Welle 4) | `Done` | [`done/M4-welle-4.md`](docs/plan/planning/done/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/`-6-Modul-Paket (asyncua 1.2b2; **erster rein-async-Stack** im Repo mit eigenem `OpcuaLoopThread` — asyncio-Event-Loop in Daemon-Thread + `run_coroutine_threadsafe`-Marshal, Decision O-b; 8 Datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), Polling-Read + Direct-Write, Subscription-Pfad Welle-6-Schaerfung) + in-process `asyncua.Server`-Integration-Smoke parametrisiert ueber alle 8 Datatypes (Decision O-e; LGPL-3.0 Library-Linking, umgeht `open62541/open62541` MPL-2.0-Container-Komplexitaet). asyncua-Pin `>=1.2b2,<2.0` mit dem Python-3.14-Forward-Reference-Fix, der in 1.1.8 fehlt. Folge-Slice [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) hat 6 HIGH + 11 MEDIUM Code-Review-Findings adressiert (Lifecycle-Lock im `OpcuaLoopThread`, Port-Exception-Filter, Quality.INVALID-String-Read, Float32-Quantisierung). |
+| DNP3-Adapter (M4 Welle 5a) | `Done` | [`in-progress/M4-welle-5a.md`](docs/plan/planning/in-progress/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/`-5-Modul-Paket (nfm-dnp3 1.0.x sync-Master + dnp3-outstation 0.2.x Test-Sibling, **kein** Thread-Marshal noetig — Decision D-c direkt-sync; 2 Datatypes (BinaryInput g1v1/v2, AnalogInput g30v1/v5), Class-0-Polling + filter-by-index, Write-Pfad Welle-5b-Anti-Scope) + in-process `dnp3-outstation.AsyncOutstation`-Integration-Smoke parametrisiert ueber alle 4 Group/Variation-Kombinationen (Decision D-e; beide Libraries MIT, Pure-Python — keine Container-Sibling-Komplexitaet). Library-Bug-Find waehrend C2: `AnalogInput.index` (nicht `.idx` wie nfm-dnp3-Doku-Repr suggeriert). |
+| IEC 61850 (M4 Welle 5b–6) | `Pending` | Spike-Adapter folgt in M4-Welle-5b (libiec61850-Python-Binding-Recherche steht noch aus). |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 
@@ -257,8 +262,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (1401 Stand 2026-05-31, M4-Welle-4 + Slice-032-Closure)
-│   ├── integration/             ← Compose-basierte Integration-Tests (31 Tests; OTLP- + MQTT- + Modbus- + OPC-UA-Smoke inkl.)
+│   ├── unit/                    ← pytest-Unit-Tests (1462 Stand 2026-05-31, M4-Welle-5a-Closure)
+│   ├── integration/             ← Compose-basierte Integration-Tests (35 Tests; OTLP- + MQTT- + Modbus- + OPC-UA- + DNP3-Smoke inkl.)
 │   └── unit/_arch_check_*       ← Architektur-Tests (7 lint-imports + 12 custom AC-Checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)

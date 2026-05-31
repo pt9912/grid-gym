@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 4 (Done; Welle 5 DNP3/IEC-Disposition als naechstes)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 5a (Done; Welle 5b IEC-61850-Spike als naechstes)
 **Stand:** 2026-05-31
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -38,12 +38,24 @@
   Pin-Range, Smoke-Server-`asyncio.Event`) + Nachzug
   `1c2dfa3` (3 Findings: Node-ID-Integer-Check, Codec-
   Overflow-Wrap, Doku-Drift) + Self-Close-Move `3bc015b`
-  (`M4-welle-4.md` aus `in-progress/` nach `done/`)).
+  (`M4-welle-4.md` aus `in-progress/` nach `done/`));
+  **Welle 5 Sub-Slicing** in 5a/5b nach Library-Recherche
+  (`8f022a3` + Pre-C0-Sync `34e64e6`); **Welle 5a `Done`**
+  geschlossen 2026-05-31 mit C0 `43d0b07` + C1 `b0fea7e`
+  (ADR 0034 Proposed nach zwei C1-Probes — `nfm-dnp3`-Master-
+  API-Inspektion + `dnp3-outstation`-Wire-Compat-Probe) +
+  C2 `224b370` (feat: `protocol_dnp3/`-5-Modul-Paket + 56
+  Unit-Tests inkl. hypothesis-Codec-Properties + 4 In-
+  Process-`dnp3-outstation.AsyncOutstation`-Smokes + Pin
+  `nfm-dnp3>=1.0,<2.0` produktiv und `dnp3-outstation>=0.2,<1.0`
+  als dev-only Test-Sibling + mypy-Overrides + C2-Library-
+  Bug-Find: `AnalogInput.index` statt `.idx` aus `__repr__`).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-5 (DNP3/IEC-Disposition — Variante A Verzicht-
-  Default, Variante B Mini-Spike als Opt-In; Entscheidung
-  informiert durch asyncua-Erfahrung aus Welle 4).
+  M4-Welle-5b (IEC-61850-Spike — `libiec61850`-Python-
+  Binding-Recherche steht noch aus; Sub-Slicing-Entscheidung
+  per `M4-protocol-adapters.md`-§3 begruendet durch Variante C
+  „beide Spikes" und unabhaengige Library-Pfade).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -66,17 +78,29 @@
   `OpcuaLoopThread` (erstes Repo-Pattern dieser Art),
   8-Datatype-Set, Polling-Read + Direct-Write, in-process
   `asyncua.Server`-Smoke; `Accepted` geplant mit
-  M4-Welle-7-Closure).
-- **Tests:** 1401 Unit + 31 Integration gruen (Stand nach
-  M4-Welle-4-Closure + Slice-032-Review-Folge; +263 Unit-
-  Tests ggue. M3-Closure [+23 Welle 1 + +50 Welle 2 + +95
-  Welle 3 + +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA
-  + +6 Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
-  String-Read-Quality.INVALID/Float32-Quantisierung] + 10
-  Integration-Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
-  in-process-pymodbus-Server-Smoke aus Welle 3 + 8
-  in-process-`asyncua.Server`-Smokes aus Welle 4]);
-  Coverage 95.16 % total, 90.95 % Branch-Critical.
+  M4-Welle-7-Closure). **0034 `Provisional`** (M4-Welle-5a
+  DNP3-Adapter-Profile mit Decisions D-a/D-b/D-c/D-d/D-e
+  alle final — inline Point-Schema mit
+  Group/Variation-Allowlist `{(1,1),(1,2),(30,1),(30,5)}`,
+  zwei-Library-Setup `nfm-dnp3` produktiv +
+  `dnp3-outstation` dev-only, direkt-sync wie Modbus,
+  Class-0-Integrity-Poll + filter-by-index, write-Pfad
+  Welle-5b-Anti-Scope; `Accepted` geplant mit M4-Welle-7-
+  Closure).
+- **Tests:** 1462 Unit + 35 Integration gruen (Stand nach
+  M4-Welle-5a-Closure; +319 Unit-Tests ggue. M3-Closure
+  [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 + +8 Review-Folge
+  031 + +81 Welle 4 fuer OPC-UA + +6 Slice-032 fuer Loop-
+  Thread-Lifecycle/Marshal-Pfad/String-Read-Quality.INVALID/
+  Float32-Quantisierung + +56 Welle 5a fuer DNP3
+  (17 Config-Validation + 16 Codec-Roundtrip inkl.
+  hypothesis-Property-Tests + 17 Protocol-Port-Lifecycle +
+  6 Read-Pfad-Edge-Cases)] + 14 Integration-Tests
+  [Mosquitto-MQTT-Smoke aus Welle 2 + in-process-pymodbus-
+  Server-Smoke aus Welle 3 + 8 in-process-`asyncua.Server`-
+  Smokes aus Welle 4 + 4 in-process-`dnp3-outstation.
+  AsyncOutstation`-Smokes aus Welle 5a (3 Class-0-Read-
+  Roundtrips + 1 Update-then-Read)]).
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
@@ -352,17 +376,23 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
   (`DeviceProtocolPort`), pro Protokoll ein
   `adapters/driven/protocol_<name>/`-Modul.
 - **DoD-Checkliste:**
-  - [ ] MQTT-Adapter (paho-mqtt) mit Topic-Mapping zu Geraete-
-        Telemetry/Commands.
-  - [ ] Modbus-Adapter (pymodbus).
-  - [ ] OPC-UA-Adapter (asyncua).
-  - [ ] DNP3-Adapter (oder dokumentierter Verzicht via
-        `Out-of-Scope`-Note).
-  - [ ] IEC-61850-Adapter (oder dokumentierter Verzicht).
-  - [ ] AC-ADAPTER-LIGHTWEIGHT bleibt fuer alle protocol_*-Module
-        gruen (kein Fachlogik-Sickern).
-  - [ ] Integration-Tests pro Adapter via testcontainers (analog
-        Welle 6c).
+  - [x] MQTT-Adapter (paho-mqtt) mit Topic-Mapping zu Geraete-
+        Telemetry/Commands. — Welle 2 `Done`.
+  - [x] Modbus-Adapter (pymodbus). — Welle 3 `Done` +
+        Slice-031-Review-Folge.
+  - [x] OPC-UA-Adapter (asyncua). — Welle 4 `Done` +
+        Slice-032-Review-Folge.
+  - [x] DNP3-Adapter (oder dokumentierter Verzicht via
+        `Out-of-Scope`-Note). — Welle 5a `Done` (Spike-Adapter
+        mit `nfm-dnp3` + `dnp3-outstation`).
+  - [ ] IEC-61850-Adapter (oder dokumentierter Verzicht). —
+        Welle 5b ausstehend.
+  - [x] AC-ADAPTER-LIGHTWEIGHT bleibt fuer alle protocol_*-Module
+        gruen (kein Fachlogik-Sickern). — Welle 1..5a green.
+  - [x] Integration-Tests pro Adapter via testcontainers (analog
+        Welle 6c). — In-Process-Smokes statt testcontainers wo
+        moeglich (Modbus, OPC-UA, DNP3); Mosquitto-MQTT-Smoke
+        via Compose-Sibling.
 
 ### M5 — UI + Demo (Vorbelegung)
 
