@@ -23,8 +23,9 @@ Aufbau (Module unter diesem Paket):
   `ModbusCodecError`-Familie fuer Range-/Decode-Fehler.
 - `_port` — `ModbusDeviceProtocolPort` + Default-Client-Factory
   (Decision M-c: direkt-sync; kein Background-Thread).
-- `_errors` — 7 Modbus-spezifische `DeviceProtocolPort*Error`-
-  Subclasses mit strukturierten Konstruktor-Parametern.
+- `_errors` — Modbus-spezifische `DeviceProtocolPort*Error`-
+  Subclasses mit strukturierten Konstruktor-Parametern und
+  operation-spezifischer Read-/Write-Taxonomie.
 
 Konsumenten importieren ueber dieses Paket. Decisions:
 
@@ -52,6 +53,7 @@ from grid_gym.adapters.driven.protocol_modbus._config import (
     ModbusConfigEmptyRegistersError,
     ModbusConfigError,
     ModbusConfigFunctionCodeAccessMismatchError,
+    ModbusConfigFunctionCodeDatatypeMismatchError,
     ModbusConfigInvalidAccessError,
     ModbusConfigInvalidAddressError,
     ModbusConfigInvalidByteOrderError,
@@ -72,8 +74,12 @@ from grid_gym.adapters.driven.protocol_modbus._errors import (
     ModbusPortDisconnectError,
     ModbusPortMissingCommandPayloadError,
     ModbusPortNotStartedError,
+    ModbusPortReadAccessMismatchError,
     ModbusPortReadFailedError,
+    ModbusPortReadNotStartedError,
+    ModbusPortWriteAccessMismatchError,
     ModbusPortWriteFailedError,
+    ModbusPortWriteNotStartedError,
 )
 from grid_gym.adapters.driven.protocol_modbus._port import (
     ModbusDeviceProtocolPort,
@@ -89,6 +95,7 @@ __all__ = [
     "ModbusConfigEmptyRegistersError",
     "ModbusConfigError",
     "ModbusConfigFunctionCodeAccessMismatchError",
+    "ModbusConfigFunctionCodeDatatypeMismatchError",
     "ModbusConfigInvalidAccessError",
     "ModbusConfigInvalidAddressError",
     "ModbusConfigInvalidByteOrderError",
@@ -103,8 +110,12 @@ __all__ = [
     "ModbusPortDisconnectError",
     "ModbusPortMissingCommandPayloadError",
     "ModbusPortNotStartedError",
+    "ModbusPortReadAccessMismatchError",
     "ModbusPortReadFailedError",
+    "ModbusPortReadNotStartedError",
+    "ModbusPortWriteAccessMismatchError",
     "ModbusPortWriteFailedError",
+    "ModbusPortWriteNotStartedError",
     "ModbusProtocolPortConfig",
     "ModbusRegisterConfig",
     "datatype_register_count",

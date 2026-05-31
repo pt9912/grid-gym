@@ -10,6 +10,7 @@ from grid_gym.adapters.driven.protocol_modbus import (
     ModbusConfigEmptyFieldError,
     ModbusConfigEmptyRegistersError,
     ModbusConfigFunctionCodeAccessMismatchError,
+    ModbusConfigFunctionCodeDatatypeMismatchError,
     ModbusConfigInvalidAccessError,
     ModbusConfigInvalidAddressError,
     ModbusConfigInvalidByteOrderError,
@@ -165,6 +166,47 @@ def test_register_rejects_fc06_with_read_access() -> None:
                 )
             },
         )
+
+
+@pytest.mark.parametrize(
+    "datatype",
+    [ModbusDatatype.INT32, ModbusDatatype.UINT32, ModbusDatatype.FLOAT32],
+)
+def test_register_rejects_fc06_with_multi_register_datatype(
+    datatype: ModbusDatatype,
+) -> None:
+    with pytest.raises(ModbusConfigFunctionCodeDatatypeMismatchError) as exc_info:
+        ModbusProtocolPortConfig(
+            host="localhost",
+            registers={
+                "x": ModbusRegisterConfig(
+                    address=0,
+                    datatype=datatype,
+                    access="write",
+                    function_code=6,
+                )
+            },
+        )
+    assert exc_info.value.datatype is datatype
+    assert exc_info.value.function_code == 6
+
+
+@pytest.mark.parametrize("datatype", [ModbusDatatype.INT16, ModbusDatatype.UINT16])
+def test_register_accepts_fc06_with_single_register_datatype(
+    datatype: ModbusDatatype,
+) -> None:
+    config = ModbusProtocolPortConfig(
+        host="localhost",
+        registers={
+            "x": ModbusRegisterConfig(
+                address=0,
+                datatype=datatype,
+                access="write",
+                function_code=6,
+            )
+        },
+    )
+    assert config.registers["x"].function_code == 6
 
 
 @pytest.mark.parametrize("unit_id", [0, 248, 1000])

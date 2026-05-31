@@ -18,8 +18,12 @@ from grid_gym.adapters.driven.protocol_modbus import (
     ModbusPortConnectError,
     ModbusPortMissingCommandPayloadError,
     ModbusPortNotStartedError,
+    ModbusPortReadAccessMismatchError,
     ModbusPortReadFailedError,
+    ModbusPortReadNotStartedError,
+    ModbusPortWriteAccessMismatchError,
     ModbusPortWriteFailedError,
+    ModbusPortWriteNotStartedError,
     ModbusProtocolPortConfig,
     ModbusRegisterConfig,
 )
@@ -27,7 +31,9 @@ from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPort,
+    DeviceProtocolPortReadError,
     DeviceProtocolPortUnknownTargetError,
+    DeviceProtocolPortWriteError,
 )
 
 
@@ -177,15 +183,19 @@ def test_read_rejects_write_access_target() -> None:
     client.connect.return_value = True
     port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
     port.start()
-    with pytest.raises(ModbusPortAccessMismatchError):
+    with pytest.raises(ModbusPortReadAccessMismatchError) as exc_info:
         port.read("setpoint")  # setpoint is access="write"
+    assert isinstance(exc_info.value, ModbusPortAccessMismatchError)
+    assert isinstance(exc_info.value, DeviceProtocolPortReadError)
 
 
 def test_read_before_start_raises_not_started() -> None:
     client = MagicMock()
     port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
-    with pytest.raises(ModbusPortNotStartedError):
+    with pytest.raises(ModbusPortReadNotStartedError) as exc_info:
         port.read("soc")
+    assert isinstance(exc_info.value, ModbusPortNotStartedError)
+    assert isinstance(exc_info.value, DeviceProtocolPortReadError)
 
 
 def test_read_translates_modbus_response_error_into_read_failed() -> None:
@@ -198,6 +208,18 @@ def test_read_translates_modbus_response_error_into_read_failed() -> None:
     port.start()
     with pytest.raises(ModbusPortReadFailedError):
         port.read("soc")
+
+
+def test_read_translates_decode_error_into_read_failed() -> None:
+    client = MagicMock()
+    client.connect.return_value = True
+    # "power" ist int32 und braucht 2 Register; 1 Register ist ein Decode-Fehler.
+    client.read_holding_registers.return_value = _make_read_response([0x0001])
+    port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
+    port.start()
+    with pytest.raises(ModbusPortReadFailedError) as exc_info:
+        port.read("power")
+    assert isinstance(exc_info.value, DeviceProtocolPortReadError)
 
 
 def test_write_single_register_uses_fc06() -> None:
@@ -248,8 +270,19 @@ def test_write_rejects_read_access_target() -> None:
     client.connect.return_value = True
     port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
     port.start()
-    with pytest.raises(ModbusPortAccessMismatchError):
+    with pytest.raises(ModbusPortWriteAccessMismatchError) as exc_info:
         port.write("soc", _sample_command(42))
+    assert isinstance(exc_info.value, ModbusPortAccessMismatchError)
+    assert isinstance(exc_info.value, DeviceProtocolPortWriteError)
+
+
+def test_write_before_start_raises_write_not_started() -> None:
+    client = MagicMock()
+    port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
+    with pytest.raises(ModbusPortWriteNotStartedError) as exc_info:
+        port.write("setpoint", _sample_command(42))
+    assert isinstance(exc_info.value, ModbusPortNotStartedError)
+    assert isinstance(exc_info.value, DeviceProtocolPortWriteError)
 
 
 def test_write_rejects_command_payload_without_value_key() -> None:
@@ -268,6 +301,26 @@ def test_write_rejects_command_payload_without_value_key() -> None:
     )
     with pytest.raises(ModbusPortMissingCommandPayloadError):
         port.write("setpoint", command)
+
+
+def test_write_translates_invalid_payload_type_into_write_failed() -> None:
+    client = MagicMock()
+    client.connect.return_value = True
+    port = ModbusDeviceProtocolPort(_build_config(), client_factory=_make_factory(client))
+    port.start()
+    command = Command(
+        command_id="c",
+        simulation_time=0,
+        target_device_id="setpoint",
+        type="x",
+        payload=MappingProxyType({"value": "not-a-number"}),
+        validation_status="v",
+        result=CommandResult.ACCEPTED,
+    )
+    with pytest.raises(ModbusPortWriteFailedError) as exc_info:
+        port.write("setpoint", command)
+    assert isinstance(exc_info.value, DeviceProtocolPortWriteError)
+    client.write_register.assert_not_called()
 
 
 def test_write_translates_modbus_response_error_into_write_failed() -> None:

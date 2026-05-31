@@ -223,6 +223,20 @@ class ModbusConfigFunctionCodeAccessMismatchError(ModbusConfigError):
         self.device_id: str = device_id
 
 
+class ModbusConfigFunctionCodeDatatypeMismatchError(ModbusConfigError):
+    """`function_code` passt nicht zur Register-Breite des Datatypes."""
+
+    def __init__(self, function_code: int, datatype: ModbusDatatype, device_id: str) -> None:
+        super().__init__(
+            f"ModbusRegisterConfig({device_id!r}): function_code={function_code} "
+            f"passt nicht zu datatype={datatype.value!r} (FC06 ist nur fuer "
+            "Single-Register-Datatypes erlaubt)."
+        )
+        self.function_code: int = function_code
+        self.datatype: ModbusDatatype = datatype
+        self.device_id: str = device_id
+
+
 @dataclass(frozen=True, slots=True)
 class ModbusRegisterConfig:
     """Register-Profil fuer ein einzelnes Target (Decision M-a inline-
@@ -289,6 +303,7 @@ def _validate_single_register_config(device_id: str, reg_cfg: ModbusRegisterConf
         raise ModbusConfigInvalidAccessError(reg_cfg.access, device_id)
     if reg_cfg.function_code is not None:
         _validate_function_code(reg_cfg.function_code, reg_cfg.access, device_id)
+        _validate_function_code_datatype(reg_cfg.function_code, reg_cfg.datatype, device_id)
     if reg_cfg.unit_id is not None and not (_MIN_UNIT_ID <= reg_cfg.unit_id <= _MAX_UNIT_ID):
         raise ModbusConfigInvalidUnitIdError(reg_cfg.unit_id, device_id)
 
@@ -305,6 +320,17 @@ def _validate_function_code(function_code: int, access: str, device_id: str) -> 
     is_write_fc = function_code in _WRITE_FUNCTION_CODES
     if (access == "read" and not is_read_fc) or (access == "write" and not is_write_fc):
         raise ModbusConfigFunctionCodeAccessMismatchError(function_code, access, device_id)
+
+
+def _validate_function_code_datatype(
+    function_code: int, datatype: ModbusDatatype, device_id: str
+) -> None:
+    """Prueft FC06 gegen die Single-Register-Pflicht."""
+    if (
+        function_code == _FC_WRITE_SINGLE_REGISTER
+        and datatype_register_count(datatype) != _SINGLE_REGISTER
+    ):
+        raise ModbusConfigFunctionCodeDatatypeMismatchError(function_code, datatype, device_id)
 
 
 def resolve_function_code(reg_cfg: ModbusRegisterConfig) -> int:

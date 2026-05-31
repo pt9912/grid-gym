@@ -12,6 +12,7 @@ Message in `__init__` — das loest `TRY003` per Codebase-Konvention.
 from __future__ import annotations
 
 from grid_gym.hexagon.ports.driven.device_protocol import (
+    DeviceProtocolPortError,
     DeviceProtocolPortReadError,
     DeviceProtocolPortStartError,
     DeviceProtocolPortStopError,
@@ -36,9 +37,15 @@ class ModbusPortDisconnectError(DeviceProtocolPortStopError):
         super().__init__(f"Modbus-TCP-Disconnect fehlgeschlagen: {cause}")
 
 
-class ModbusPortNotStartedError(DeviceProtocolPortReadError):
+class ModbusPortNotStartedError(DeviceProtocolPortError):
     """`read()`/`write()` wurde aufgerufen, bevor `start()`
-    erfolgreich war."""
+    erfolgreich war.
+
+    Operation-spezifische Subclasses haengen am passenden
+    `DeviceProtocolPortReadError`/`DeviceProtocolPortWriteError`.
+    Diese Basisklasse bleibt als stabiler Catch-All fuer beide Pfade
+    erhalten.
+    """
 
     def __init__(self, target: str, operation: str) -> None:
         super().__init__(
@@ -47,6 +54,20 @@ class ModbusPortNotStartedError(DeviceProtocolPortReadError):
         )
         self.target: str = target
         self.operation: str = operation
+
+
+class ModbusPortReadNotStartedError(ModbusPortNotStartedError, DeviceProtocolPortReadError):
+    """`read()` wurde vor erfolgreichem `start()` aufgerufen."""
+
+    def __init__(self, target: str) -> None:
+        super().__init__(target, "read")
+
+
+class ModbusPortWriteNotStartedError(ModbusPortNotStartedError, DeviceProtocolPortWriteError):
+    """`write()` wurde vor erfolgreichem `start()` aufgerufen."""
+
+    def __init__(self, target: str) -> None:
+        super().__init__(target, "write")
 
 
 class ModbusPortReadFailedError(DeviceProtocolPortReadError):
@@ -86,8 +107,14 @@ class ModbusPortMissingCommandPayloadError(DeviceProtocolPortWriteError):
         self.target: str = target
 
 
-class ModbusPortAccessMismatchError(DeviceProtocolPortReadError):
-    """`read()` auf einem `access="write"`-Target oder umgekehrt."""
+class ModbusPortAccessMismatchError(DeviceProtocolPortError):
+    """`read()` auf einem `access="write"`-Target oder umgekehrt.
+
+    Operation-spezifische Subclasses haengen am passenden
+    `DeviceProtocolPortReadError`/`DeviceProtocolPortWriteError`.
+    Diese Basisklasse bleibt als stabiler Catch-All fuer beide Pfade
+    erhalten.
+    """
 
     def __init__(self, target: str, configured: str, attempted: str) -> None:
         super().__init__(
@@ -96,3 +123,19 @@ class ModbusPortAccessMismatchError(DeviceProtocolPortReadError):
         self.target: str = target
         self.configured: str = configured
         self.attempted: str = attempted
+
+
+class ModbusPortReadAccessMismatchError(ModbusPortAccessMismatchError, DeviceProtocolPortReadError):
+    """`read()` wurde auf einem nicht lesbaren Target versucht."""
+
+    def __init__(self, target: str, configured: str) -> None:
+        super().__init__(target, configured, "read")
+
+
+class ModbusPortWriteAccessMismatchError(
+    ModbusPortAccessMismatchError, DeviceProtocolPortWriteError
+):
+    """`write()` wurde auf einem nicht schreibbaren Target versucht."""
+
+    def __init__(self, target: str, configured: str) -> None:
+        super().__init__(target, configured, "write")

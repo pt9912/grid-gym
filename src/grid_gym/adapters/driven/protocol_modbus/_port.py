@@ -21,6 +21,7 @@ from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException, ModbusException
 
 from grid_gym.adapters.driven.protocol_modbus._codec import (
+    ModbusCodecError,
     ModbusCodecPayloadTypeError,
     decode_registers_to_value,
     encode_value_to_registers,
@@ -33,13 +34,15 @@ from grid_gym.adapters.driven.protocol_modbus._config import (
     resolve_unit_id,
 )
 from grid_gym.adapters.driven.protocol_modbus._errors import (
-    ModbusPortAccessMismatchError,
     ModbusPortConnectError,
     ModbusPortDisconnectError,
     ModbusPortMissingCommandPayloadError,
-    ModbusPortNotStartedError,
+    ModbusPortReadAccessMismatchError,
     ModbusPortReadFailedError,
+    ModbusPortReadNotStartedError,
+    ModbusPortWriteAccessMismatchError,
     ModbusPortWriteFailedError,
+    ModbusPortWriteNotStartedError,
 )
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.quality import Quality
@@ -154,12 +157,12 @@ class ModbusDeviceProtocolPort:
         `TelemetryPoint` (Decision M-c direkt-sync).
 
         Wirft `DeviceProtocolPortUnknownTargetError`, wenn das Target
-        nicht im Profil ist. Wirft `ModbusPortAccessMismatchError`,
+        nicht im Profil ist. Wirft `ModbusPortReadAccessMismatchError`,
         wenn das Target als `access="write"` konfiguriert ist.
         """
         reg_cfg = self._resolve_register_config(target)
         if reg_cfg.access != "read":
-            raise ModbusPortAccessMismatchError(target, reg_cfg.access, "read")
+            raise ModbusPortReadAccessMismatchError(target, reg_cfg.access)
         client = self._require_client(target, "read")
         request = _ModbusRequest(
             function_code=resolve_function_code(reg_cfg),
@@ -169,9 +172,12 @@ class ModbusDeviceProtocolPort:
         )
         register_count = datatype_register_count(reg_cfg.datatype)
         registers = self._do_read(client, request, register_count)
-        value = decode_registers_to_value(
-            registers, reg_cfg.datatype, reg_cfg.byte_order, reg_cfg.word_swap
-        )
+        try:
+            value = decode_registers_to_value(
+                registers, reg_cfg.datatype, reg_cfg.byte_order, reg_cfg.word_swap
+            )
+        except ModbusCodecError as exc:
+            raise ModbusPortReadFailedError(target, reg_cfg.address, str(exc)) from exc
         return _build_telemetry_point(target, reg_cfg, value)
 
     def write(self, target: str, command: Command) -> None:
@@ -179,23 +185,26 @@ class ModbusDeviceProtocolPort:
         sendet sie an den Server (Decision M-c direkt-sync).
 
         Wirft `DeviceProtocolPortUnknownTargetError` bei unbekanntem
-        Target, `ModbusPortAccessMismatchError` bei
+        Target, `ModbusPortWriteAccessMismatchError` bei
         `access="read"`-Targets, `ModbusPortMissingCommandPayloadError`
         wenn `command.payload` keinen `value`-Key hat.
         """
         reg_cfg = self._resolve_register_config(target)
         if reg_cfg.access != "write":
-            raise ModbusPortAccessMismatchError(target, reg_cfg.access, "write")
+            raise ModbusPortWriteAccessMismatchError(target, reg_cfg.access)
         client = self._require_client(target, "write")
         value = command.payload.get("value")
         if value is None:
             raise ModbusPortMissingCommandPayloadError(target)
-        registers = encode_value_to_registers(
-            _coerce_value(value),
-            reg_cfg.datatype,
-            reg_cfg.byte_order,
-            reg_cfg.word_swap,
-        )
+        try:
+            registers = encode_value_to_registers(
+                _coerce_value(value),
+                reg_cfg.datatype,
+                reg_cfg.byte_order,
+                reg_cfg.word_swap,
+            )
+        except (ModbusCodecError, ModbusCodecPayloadTypeError) as exc:
+            raise ModbusPortWriteFailedError(target, reg_cfg.address, str(exc)) from exc
         request = _ModbusRequest(
             function_code=resolve_function_code(reg_cfg),
             address=reg_cfg.address,
@@ -218,7 +227,9 @@ class ModbusDeviceProtocolPort:
 
     def _require_client(self, target: str, operation: str) -> ModbusTcpClient:
         if self._client is None:
-            raise ModbusPortNotStartedError(target, operation)
+            if operation == "write":
+                raise ModbusPortWriteNotStartedError(target)
+            raise ModbusPortReadNotStartedError(target)
         return self._client
 
     def _do_read(
