@@ -98,6 +98,19 @@ dependencies = [
     # per AC-PORTS-NO-FW / AC-NO-FW Forbidden-List bereits Welle-0-
     # vorbelegt.
     "asyncua>=1.2b2,<2.0",
+    # M4-Welle-5a — DNP3-Adapter unter
+    # `adapters/driven/protocol_opcua/`. Master/Client via
+    # `nfm-dnp3` 1.0.x (PyPI, MIT, Pure-Python, Beta `Development
+    # Status :: 4`). `DNP3Master`-Klasse ist sync-by-design (C1-
+    # Probe-Run verifiziert: alle public Methoden ohne async-Marker;
+    # Thread-Lock-Schutz fuer Concurrent-Use per Library-Doku) und
+    # passt damit direkt in die Sync-`DeviceProtocolPort`-Surface
+    # ohne Adapter-internen Thread-Marshal (ADR 0034 §2.2 Decision
+    # D-b). Pin `>=1.0,<2.0` schuetzt vor 2.x-Major-API-Drift.
+    # Import-Name: `dnp3py` (Library-eigene Naming-Konvention).
+    # MIT-Lizenz, Pure-Python — keine native-Compile-Notwendigkeit,
+    # aarch64-Linux-Support automatisch.
+    "nfm-dnp3>=1.0,<2.0",
 ]
 
 [build-system]
@@ -140,6 +153,14 @@ test = [
     "httpx>=0.27",
     # Welle 6c — Integration-Tests gegen ephemeren Postgres.
     "testcontainers[postgres]>=4.0",
+    # M4-Welle-5a — DNP3-Outstation als Test-Sibling im
+    # in-process-Smoke (ADR 0034 §2.5 Decision D-e).
+    # `dnp3-outstation` ist MIT, Pure-Python, asyncio-native,
+    # IEEE-1815-2012-Level-1-Subset. **Nur Test-Dependency** —
+    # Production-Adapter laeuft mit `nfm-dnp3` (Master) allein.
+    # Pin `>=0.2,<1.0` — Pre-1.0-Library, Wire-Compat gegen
+    # `nfm-dnp3` per C1-Probe verifiziert (siehe ADR 0034 §1).
+    "dnp3-outstation>=0.2,<1.0",
 ]
 audit = [
     "pip-audit>=2.7",
@@ -334,6 +355,23 @@ warn_return_any = false
 [[tool.mypy.overrides]]
 module = "asyncua.*"
 implicit_reexport = true
+
+# nfm-dnp3 1.0.1 (Pure-Python Beta) liefert keinen py.typed-Marker;
+# `ignore_missing_imports` deaktiviert die `import-untyped`-Warnung,
+# damit der M4-Welle-5a-Adapter (`adapters/driven/protocol_dnp3/`)
+# `mypy --strict` ohne Inflation passieren kann. Aufgerufene
+# `DNP3Master`-APIs sind in ADR 0034 §2.2/§2.4 als Vertragsschnitt
+# explizit dokumentiert.
+[[tool.mypy.overrides]]
+module = "dnp3py.*"
+ignore_missing_imports = true
+
+# dnp3-outstation 0.2.0 ist Test-only-Dependency (Pre-1.0); kein
+# py.typed-Marker. Nur in `tests/integration/test_dnp3_in_process_smoke.py`
+# importiert.
+[[tool.mypy.overrides]]
+module = "dnp3_outstation.*"
+ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------
 # import-linter (ADR 0002 §A-1, AC-CORE-NO-ADAPTERS bis AC-NO-IO-MOD)

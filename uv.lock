@@ -431,6 +431,15 @@ wheels = [
 ]
 
 [[package]]
+name = "dnp3-outstation"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/34/cb829526c4050c85b991fafcd25a87b6c0b0c2aed5626eb06e667177b6b1/dnp3_outstation-0.2.0.tar.gz", hash = "sha256:9ce59cfed4b05c0d06db9ff02d683aa65272f409dbe6c78e53db65ddcf5736f9", size = 17622 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/75/22f52d92b77e480715948d96dff909ee4347b698dca2024aaa7eb54cb5f0/dnp3_outstation-0.2.0-py3-none-any.whl", hash = "sha256:ffd7e8cfef9001f4510a6e92d2d9e6a9b28b4f693dbb0d0c877093454feee66e", size = 24761 },
+]
+
+[[package]]
 name = "docker"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -526,6 +535,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asyncua" },
     { name = "fastapi" },
+    { name = "nfm-dnp3" },
     { name = "opentelemetry-exporter-otlp-proto-grpc" },
     { name = "opentelemetry-sdk" },
     { name = "paho-mqtt" },
@@ -545,6 +555,7 @@ audit = [
     { name = "pip-audit" },
 ]
 dev = [
+    { name = "dnp3-outstation" },
     { name = "grimp" },
     { name = "httpx" },
     { name = "hypothesis" },
@@ -561,6 +572,7 @@ lint = [
     { name = "ruff" },
 ]
 test = [
+    { name = "dnp3-outstation" },
     { name = "httpx" },
     { name = "hypothesis" },
     { name = "pytest" },
@@ -576,6 +588,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.18" },
     { name = "asyncua", specifier = ">=1.2b2,<2.0" },
     { name = "fastapi", specifier = ">=0.136" },
+    { name = "nfm-dnp3", specifier = ">=1.0,<2.0" },
     { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.42,<1.43" },
     { name = "opentelemetry-sdk", specifier = ">=1.42,<1.43" },
     { name = "paho-mqtt", specifier = ">=2.0" },
@@ -595,6 +608,7 @@ audit = [
     { name = "pip-audit", specifier = ">=2.7" },
 ]
 dev = [
+    { name = "dnp3-outstation", specifier = ">=0.2,<1.0" },
     { name = "grimp", specifier = ">=3.4" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", specifier = ">=6.0" },
@@ -609,6 +623,7 @@ dev = [
 ]
 lint = [{ name = "ruff", specifier = ">=0.15" }]
 test = [
+    { name = "dnp3-outstation", specifier = ">=0.2,<1.0" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", specifier = ">=6.0" },
     { name = "pytest", specifier = ">=8.0" },
@@ -1097,6 +1112,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963 },
+]
+
+[[package]]
+name = "nfm-dnp3"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/c7/f89bc06729c8930042abab8b87c54930aa4d706e013c364c01db3f7f22fc/nfm_dnp3-1.0.1.tar.gz", hash = "sha256:9473240833e4547fb8dcbb3883db456b54b4c9cb578660c8d6700c82283ab6d7", size = 63519 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/ef/d21a8c20a09b432b63479b37458118e1625ecfe5d755f4e49da1e4eb8587/nfm_dnp3-1.0.1-py3-none-any.whl", hash = "sha256:aafb2416e3ad52cc1812bfd6a6dc2ee7459a92a0c95da94b6da62c70a69c3cc0", size = 56705 },
 ]
 
 [[package]]
