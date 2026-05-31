@@ -88,14 +88,16 @@ schliesst M4 in `done/M4-protocol-adapters.md` ab.
    + Modbus (Welle 3) + OPC-UA (Welle 4). DNP3 und
    IEC 61850 (Welle 5) sind entweder produktiv **oder**
    dokumentiert verzichtet.
-3. **Pro Adapter ein Integration-Smoke via
-   testcontainers**: Pattern analog Welle 6c
-   ([`../done/009-tests-integration-compose.md`](../done/009-tests-integration-compose.md)).
-   Mosquitto fuer MQTT, Modbus-Server-Container fuer Modbus,
-   OPC-UA-Server-Container fuer OPC-UA. (Begriff
-   „Adapter-Smoke" aus Lastenheft Z. 1126/1135 ist
-   inhaltlich identisch — dieser Slice-Plan verwendet
-   konsequent „Integration-Smoke".)
+3. **Pro Adapter ein Integration-Smoke**: Pattern analog
+   Welle 6c
+   ([`../done/009-tests-integration-compose.md`](../done/009-tests-integration-compose.md)),
+   aber Adapter duerfen begruendet auf in-process Server
+   ausweichen, wenn Container-Lizenz oder Wartbarkeit dagegen
+   sprechen. MQTT nutzt Mosquitto via testcontainers; Modbus
+   nutzt seit Welle 3 bewusst einen in-process pymodbus-Server;
+   OPC-UA entscheidet in Welle 4. (Begriff „Adapter-Smoke" aus
+   Lastenheft Z. 1126/1135 ist inhaltlich identisch — dieser
+   Slice-Plan verwendet konsequent „Integration-Smoke".)
 4. **`AC-ADAPTER-LIGHTWEIGHT` greift fuer alle
    `adapters/driven/protocol_*`-Module**: kein Sickern von
    Fachlogik in Adapter (Roadmap §3 M4 DoD). Code-Pfad:
@@ -381,8 +383,9 @@ Welle-2-Section auf Done, Top-Level-Doku-Sync in 5 Docs).
 ### Welle 3 — Modbus-TCP-Adapter (Done 2026-05-30)
 
 **Status:** Done. Slice-Begleit-Doc
-[`M4-welle-3.md`](M4-welle-3.md) (bleibt in `in-progress/`
-bis M4-Welle-4-Pre-C0-Move; Pattern analog M4-Welle-1/2).
+[`../done/M4-welle-3.md`](../done/M4-welle-3.md) (nach
+`done/` verschoben mit der Doku-Review-Folge 2026-05-31;
+Welle-4-Pre-C0-Move entfaellt).
 ADR 0032 ist `Provisional`.
 
 - [x] **ADR 0032** (dritter M4-ADR) — `Provisional`
@@ -421,14 +424,18 @@ ADR 0032 ist `Provisional`.
     `access: "write"`; Per-Target ueberschreibbar fuer
     FC04 (Read Input Registers) und Multi-Register-
     Writes. Coil-Codes (FC01/FC02/FC05/FC0F) bleiben
-    Welle-6-Schaerfung.
+    Welle-6-Schaerfung. Review-Folge 2026-05-31:
+    FC06 wird seit
+    [`../done/031-modbus-adapter-review-folge.md`](../done/031-modbus-adapter-review-folge.md)
+    im Config-Validator fail-fast auf Single-Register-
+    Datatypes begrenzt.
   - [x] Decision M-e (Slave-Unit-ID, **final**): pro
     `ModbusRegisterConfig` optionales `unit_id: int |
     None = None` mit Parent-Fallback (Default `1`);
     Range `[1, 247]` per Modbus-Spec §4.1; Multi-Slave-
     Bus-Scenarios setzen ueberschreibend.
   - [x] Decision M-f (Test-Sibling, **final**): in-process
-    `pymodbus.server.StartTcpServer` im Test-Code
+    `pymodbus.server.ModbusTcpServer` im Test-Code
     (`tests/integration/test_modbus_in_process_smoke.py`),
     **kein** testcontainers-Container. Lizenz-Sicherheit
     (pymodbus BSD-3-Clause statt restriktiver Modbus-
@@ -445,11 +452,16 @@ ADR 0032 ist `Provisional`.
   `_errors.py` (typed `DeviceProtocolPort*Error`-
   Subclasses).
 - [x] **NEU Integration-Smoke** via in-process
-  `pymodbus.server.StartTcpServer`-Thread (Decision M-f).
+  `pymodbus.server.ModbusTcpServer`-Thread (Decision M-f).
   End-to-End-Read/Write-Roundtrip gegen
-  `ModbusDeviceProtocolPort` durch alle 5 Datatypes +
-  Byte-Order-/Word-Swap-Matrix; expliziter
-  `server.shutdown()` + `thread.join(timeout=5.0)`-Teardown.
+  `ModbusDeviceProtocolPort` durch alle 5 Datatypes im
+  Default-Profil (`big_endian`, kein Word-Swap,
+  Parent-`unit_id=1`); expliziter `server.shutdown()` +
+  `thread.join(timeout=5.0)`-Teardown. Byte-Order-/
+  Word-Swap-Matrix und Unit-ID-Override sind Unit-/Mock-
+  Test-Abdeckung; die bewusste E2E-Abgrenzung ist in
+  [`../done/031-modbus-adapter-review-folge.md`](../done/031-modbus-adapter-review-folge.md)
+  dokumentiert.
 - [x] **EDIT `tests/integration/compose.yml`** (Header-
   Kommentar-Sync: bewusste Decision-M-f-Notiz —
   in-process-Modbus-Server statt Sibling-Service als
@@ -468,10 +480,15 @@ ADR 0032 ist `Provisional`.
   zusaetzliche `# type: ignore`-Inflation (bestehende 2
   `# type: ignore[no-untyped-call]` in `_port.py:128/148`
   sind pymodbus-API-spezifisch, kein bytes-Bezug).
-  Trigger wandert nach `next/` als separater Folge-Slice
-  (Memory-Konvention `feedback_git_mv`: erst `git mv`,
-  dann Body-Schaerfung). Re-Eval-Notiz im Trigger-Body
-  syncht mit Modbus-Beleg in C3.
+  Trigger ist aktivierungs-reif; die eigentliche
+  Aktivierung bleibt ein separater Folge-Slice. Re-Eval-
+  Notiz im Trigger-Body syncht mit Modbus-Beleg in C3.
+- [x] **Review-Folge 2026-05-31** — Welle-3-Status
+  bleibt `Done`; der eigene Folge-Slice
+  [`031-modbus-adapter-review-folge.md`](../done/031-modbus-adapter-review-folge.md)
+  hat FC06-Multi-Register-Guard, Read-/Write-
+  Fehler-Taxonomie und die bewusste Smoke-Abgrenzung
+  umgesetzt.
 
 **Welle-3-Gate (Done 2026-05-30):** `make test-integration`
 gruen mit Modbus-In-Process-Smoke (22 → 23 Integration-
@@ -486,10 +503,12 @@ ohne `CRITICAL_COV_TARGETS`-Override (Default-Liste um
 + C2 `d721982` (feat: protocol_modbus + 95 Unit-Tests +
 In-Process-Integration-Smoke + Compose/pyproject/Dockerfile-
 Edits) + EoD-Sync `2b84361` (3 Top-Level-Docs auf C2-Stand,
-kein C3-Ersatz) + C3 (dieser Commit; ADR 0032 →
+kein C3-Ersatz) + C3 (ADR 0032 →
 `Provisional`, `M4-welle-3.md` → `Done`, diese §3-Welle-3-
 Section auf Done, Top-Level-Doku-Sync in 6 Docs, Trigger-006-
-Re-Eval mit Modbus-Beleg in Body).
+Re-Eval mit Modbus-Beleg in Body) + Doku-Review-Folge
+2026-05-31 (Move nach `done/`, Smoke-Abdeckung praezisiert,
+Follow-up-Slice 031 angelegt).
 
 ### Welle 4 — OPC-UA-Adapter
 
@@ -693,7 +712,7 @@ nach M1/M2/M3-Pattern).
 | ----------------------------------------------------- | ------------ |
 | `DeviceProtocolPort`-Surface + Lifecycle              | `make test-unit` mit Protocol-Test (Welle 1) |
 | MQTT-Adapter + Topic-Mapping                          | `make test-integration` mit Mosquitto-Sibling-Smoke (Welle 2) |
-| Modbus-Adapter + Register-Mapping + R/W-Smoke         | `make test-integration` mit Modbus-Sibling-Smoke (Welle 3) |
+| Modbus-Adapter + Register-Mapping + R/W-Smoke         | `make test-integration` mit in-process Modbus-Smoke (Welle 3) |
 | OPC-UA-Adapter + Node-ID-Schema + R/W-Smoke           | `make test-integration` mit OPC-UA-Sibling-Smoke (Welle 4) |
 | DNP3/IEC: produktiv ODER Verzicht-Notiz               | `make test-integration` (Spike) ODER `make docs-check` (Verzicht-Anhang) (Welle 5) |
 | `AC-ADAPTER-LIGHTWEIGHT` fuer alle `protocol_*`       | `make arch-check` gruen (Default, ueber alle Wellen) |

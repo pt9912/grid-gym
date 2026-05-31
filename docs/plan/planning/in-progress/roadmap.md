@@ -14,16 +14,19 @@
   C3 `7e161f5` + Self-Close-Move `0d6ad6c` + Pre-C0-Sync
   `9ba768b`; **Welle 3 `Done`** geschlossen 2026-05-30 mit
   C0 `8ef1e72` + C1 `a86ac46` + C2 `d721982` + EoD-Sync
-  `2b84361` (3 Top-Level-Docs auf C2-Stand) + C3 (dieser
-  Commit; ADR 0032 → `Provisional`, `M4-welle-3.md` →
-  `Done`, Top-Level-Doku-Sync in 6 Docs, Trigger-006-Re-Eval
-  mit Modbus-Beleg positiv)).
+  `2b84361` (3 Top-Level-Docs auf C2-Stand) + C3
+  (ADR 0032 → `Provisional`, `M4-welle-3.md` → `Done`,
+  Top-Level-Doku-Sync in 6 Docs, Trigger-006-Re-Eval mit
+  Modbus-Beleg positiv) + Doku-Review-Folge 2026-05-31
+  (Move von `M4-welle-3.md` nach `done/`, Smoke-Abdeckung
+  praezisiert, Folge-Slice
+  [`031`](../done/031-modbus-adapter-review-folge.md)
+  mit FC06-Guard und Fehler-Taxonomie umgesetzt)).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-4 (OPC-UA-Adapter — `asyncua`-Wrapper, **erster**
   rein-async-Stack; traegt die Thread+Loop-Marshal-
-  Konstruktion produktiv vor; Pre-C0-Move von
-  `M4-welle-3.md` nach `done/` als Pre-C0-Schritt).
+  Konstruktion produktiv vor).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -36,15 +39,18 @@
   5 Datatypes mit Byte-Order-Matrix, direkt-sync ohne
   Thread-Marshal, FC03/FC10-Defaults, Slave-Unit-ID per Target,
   in-process pymodbus-Server-Smoke; `Accepted` geplant mit
-  M4-Welle-7-Closure).
-- **Tests:** 1306 Unit + 23 Integration gruen (Stand nach
-  M4-Welle-3-Closure; +168 Unit-Tests ggue. M3-Closure [+23
-  Welle 1 + +50 Welle 2 + +95 Welle 3: ~25 Modbus-Config +
-  ~30 Modbus-Codec inkl. hypothesis-Property-Tests + ~24
-  Lifecycle/Read+Write + ~16 Function-Code-Override] + 2
-  Integration-Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
-  in-process-pymodbus-Server-Smoke aus Welle 3]); Coverage
-  96 % total.
+  M4-Welle-7-Closure). Review-Folge
+  [`031`](../done/031-modbus-adapter-review-folge.md)
+  hat FC06-Multi-Register-Guard, Read-/Write-
+  Fehler-Taxonomie und bewusste Smoke-Abgrenzung
+  umgesetzt.
+- **Tests:** 1314 Unit + 23 Integration gruen (Stand nach
+  M4-Welle-3-Review-Folge; +176 Unit-Tests ggue.
+  M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
+  +8 Review-Folge 031 fuer FC06-Guard und Read-/Write-
+  Fehler-Taxonomie] + 2 Integration-Tests [Mosquitto-MQTT-
+  Smoke aus Welle 2 + in-process-pymodbus-Server-Smoke
+  aus Welle 3]); Coverage 95.45 % total.
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
@@ -57,8 +63,7 @@
   zusaetzliche `# type: ignore`-Inflation (bestehende 2
   `# type: ignore[no-untyped-call]` in `_port.py:128/148`
   sind pymodbus-API-spezifisch, kein bytes-Bezug). Trigger
-  wandert in Folge-Slice nach `next/` (Memory-Konvention
-  `feedback_git_mv`); Aktivierung selbst ist Folge-Slice
+  ist aktivierungs-reif; Aktivierung selbst ist Folge-Slice
   (`[tool.mypy] strict_bytes = true` plus Sweep-Pruefung).
 - **Contracts:** 19 A-1 (7 lint-imports + 12 `tools/arch_check.py`
   inkl. `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-

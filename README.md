@@ -37,7 +37,7 @@ make help
 make gates              # 9 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # unit test suite (1306 tests as of 2026-05-30)
+make test-unit          # unit test suite (1314 tests as of 2026-05-31)
 make test-integration   # Compose/testcontainers integration suite
                         # (23 tests incl. OTLP, MQTT and Modbus smokes)
 ```
@@ -126,12 +126,11 @@ As of **2026-05-30**:
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** 1306 unit tests + 23 integration tests green
-(state after M4 Wave 3 closure — +95 unit tests vs. Wave 2
-closure for Modbus config validation, codec roundtrip with
-`hypothesis` property tests, lifecycle/read+write with mocked
-pymodbus client, and function-code overrides; +1 integration
-test for the in-process pymodbus-server Modbus smoke).
+**Test balance:** 1314 unit tests + 23 integration tests green
+(state after M4 Wave 3 review follow-up — +95 unit tests vs.
+Wave 2 closure for the Modbus adapter plus +8 review-follow-up
+tests for the FC06 guard and read/write error taxonomy; +1
+integration test for the in-process pymodbus-server Modbus smoke).
 
 **`make gates`** is 9-stage and cache-free green without override:
 lint, format-check, `mypy --strict`, arch-check
@@ -158,8 +157,8 @@ the per-milestone detail table below.
 | Noqa hygiene (Slice 027) | `Done` | [`done/027-noqa-abbau.md`](docs/plan/planning/done/027-noqa-abbau.md) — 36 → 0 `# noqa` markers, `noqa-gate` added to `make gates` |
 | Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md) — 12th `tools/arch_check.py` contract |
 | `DeviceProtocolPort` foundation (M4 Wave 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — port + `*Error` hierarchy + TickLoop FIFO/LIFO lifecycle |
-| MQTT adapter (M4 Wave 2) | `Done` | [`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
-| Modbus-TCP adapter (M4 Wave 3) | `Done` | [`in-progress/M4-welle-3.md`](docs/plan/planning/in-progress/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes with byte-order/word-swap matrix; FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke (Decision M-f avoids the Modbus-server-container licensing issue). Trigger-006-Re-Eval (`mypy --strict-bytes`) positive: cache-free green against the Modbus code with no extra `# type: ignore` inflation — trigger moves to `next/` as a follow-up slice |
+| MQTT adapter (M4 Wave 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
+| Modbus-TCP adapter (M4 Wave 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes, FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke for the default profile. Follow-up [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) implemented the FC06 multi-register guard, read/write error taxonomy, and deliberate smoke boundary. Trigger-006-Re-Eval (`mypy --strict-bytes`) is positive; activation remains a separate follow-up. |
 | OPC-UA / DNP3 / IEC 61850 (M4 Waves 4–6) | `Pending` | Concrete adapters land in subsequent M4 waves |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
@@ -253,7 +252,7 @@ According to the requirements specification, the MVP comprises at least:
 │       ├── driving/             ← HTTP API (FastAPI, M1 Wave 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Waves 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1306 as of 2026-05-30, Welle-3-C2 Stand)
+│   ├── unit/                    ← pytest unit tests (1314 as of 2026-05-31, M4-Welle-3 review follow-up)
 │   ├── integration/             ← Compose-based integration tests (23 tests; OTLP + MQTT + Modbus smoke incl.)
 │   └── unit/_arch_check_*       ← architecture tests (7 lint-imports + 12 custom AC checks = 19 A-1)
 ├── tools/

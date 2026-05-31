@@ -5,5 +5,6 @@ aktive** Arbeit.
 
 ## Bestand
 
-Aktuell keine `next/`-Bestandseintraege. (Slice 027 ist mit
-`c0159dd` nach `done/027-noqa-abbau.md` gewandert.)
+| Datei                                                                 | Gegenstand |
+| --------------------------------------------------------------------- | ---------- |
+| _keine_ | Der zuletzt geplante Folge-Slice [`031`](../done/031-modbus-adapter-review-folge.md) ist abgeschlossen. |

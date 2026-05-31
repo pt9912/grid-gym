@@ -3,7 +3,7 @@
 **Status:** Open — Trigger-Watch (M3-Welle-7-Closure-Decision
 2026-05-25: verschoben auf M4-Vorlauf mit geschaerftem
 Aktivierungs-Kriterium; M4-Welle-3-C3-Re-Eval 2026-05-30:
-**positive Re-Eval, Move nach `next/` als Folge-Slice
+**positive Re-Eval, Aktivierung als separater Folge-Slice
 geplant** — siehe §Decision + §M4-Welle-3-Re-Eval unten).
 **Datum:** 2026-05-15 (eroeffnet), 2026-05-25 (Welle-7-Closure-
 Decision), 2026-05-30 (M4-Welle-3-C3-Re-Eval).
@@ -121,24 +121,23 @@ am Ende von `_registers_to_bytes` ist explizit). Damit ist
 das Repo `--strict-bytes`-aktivierungs-faehig **ohne neue
 Ignores im Modbus-Code**.
 
-**Entscheidung:** Trigger 006 ist **aktivierungs-reif** und
-wandert in einen separaten Folge-Slice nach
-`docs/plan/planning/next/006-mypy-strict-bytes.md`. Die
-physische `git mv`-Aktion + Slice-Plan-Body sind Folge-
-Commits (Memory-Konvention `feedback_git_mv`: erst
-`chore: git mv` allein, dann Body-Schaerfung). M4-Welle-3-C3
-selbst aktiviert `--strict-bytes` noch **nicht** — der
-Welle-3-Scope ist Modbus-Adapter, nicht mypy-Config (vgl.
-`docs/plan/planning/in-progress/M4-welle-3.md` §7
+**Entscheidung:** Trigger 006 ist **aktivierungs-reif**.
+Die Aktivierung selbst bleibt ein separater Folge-Slice
+(`strict_bytes = true` plus Repo-Sweep); bis dieser Slice
+gestartet wird, bleibt diese Trigger-Notiz in `open/`.
+M4-Welle-3-C3 selbst aktiviert `--strict-bytes` noch
+**nicht** — der Welle-3-Scope ist Modbus-Adapter, nicht
+mypy-Config (vgl.
+`docs/plan/planning/done/M4-welle-3.md` §7
 Risiko-Bullet „Trigger 006 sprengt Welle-3-Scope").
 
 ## Wandert nach
 
-- `next/`: Move mit M4-Welle-3-Folge-Slice (Memory-
-  Konvention `feedback_git_mv`); konkreter Slice-Plan
-  beschreibt die drei Erwartete-Lieferung-Items oben
-  (mypy-Config-Erweiterung, Kern-Pruefung, Test-Suite-
-  Anpassung) plus den Aktivierungs-Commit.
+- `next/`: wenn der Aktivierungs-Slice geplant wird;
+  konkreter Slice-Plan beschreibt die drei Erwartete-
+  Lieferung-Items oben (mypy-Config-Erweiterung, Kern-
+  Pruefung, Test-Suite-Anpassung) plus den Aktivierungs-
+  Commit.
 - `in-progress/`, wenn der `next/`-Slice-Plan in Arbeit
   geht.
 - `done/`, wenn `[tool.mypy]` `strict_bytes = true` aktiv

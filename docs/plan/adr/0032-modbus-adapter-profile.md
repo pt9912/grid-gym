@@ -1,7 +1,11 @@
 # ADR 0032 — Modbus-TCP-Adapter-Profile (M4 Welle 3)
 
 **Status:** Provisional — geschaerft 2026-05-30 mit M4-Welle-3-C3
-(`docs(plan|adr)` Doc-Sync, dieser Commit). Initial-Entwurf
+(`docs(plan|adr)` Doc-Sync). Review-Folge 2026-05-31:
+Welle-3-Smoke-Abdeckung praezisiert, FC06-Multi-Register-
+Guard und Read-/Write-Fehler-Taxonomie in
+[`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+umgesetzt. Initial-Entwurf
 (`Proposed`) 2026-05-30 mit M4-Welle-3-C1 `a86ac46`; C2-Merge
 `d721982` (feat `protocol_modbus/`-5-Modul-Paket + 95 neue
 Unit-Tests + in-process pymodbus-Server-Integration-Smoke +
@@ -10,7 +14,7 @@ test-unit` 1306 gruen, `make test-integration` 23 gruen,
 `make arch-check` 19/19 KEPT, `make gates` cache-frei gruen
 ohne `CRITICAL_COV_TARGETS`-Override) belegt die Decisions
 M-a/M-b/M-c/M-d/M-e/M-f produktiv. Status-Pfad:
-`Proposed → Provisional` (mit C3, dieser Commit) → `Accepted`
+`Proposed → Provisional` (mit C3) → `Accepted`
 (M4-Welle-7-Closure analog ADR 0022..0027 + 0030 + 0031).
 **Datum:** 2026-05-30
 **Bezug:**
@@ -308,9 +312,9 @@ greift; Entscheidung im Trigger-006-Body.
 `ModbusDeviceProtocolPort` benutzt **keinen** Background-
 Polling-Thread. `read(target)` ruft
 `client.read_holding_registers(address, count,
-slave=unit_id)` **direkt synchron** gegen den Modbus-
+device_id=unit_id)` **direkt synchron** gegen den Modbus-
 Server. `write(target, command)` ruft analog
-`client.write_register(address, value, slave=unit_id)`
+`client.write_register(address, value, device_id=unit_id)`
 oder `client.write_registers(...)` direkt.
 
 pymodbus-`ModbusTcpClient` ist sync-by-design (siehe
@@ -375,22 +379,28 @@ falls noetig.
   Register hinausgeht.
 
 **Override-Pfad:** `function_code: int | None = None`
-pro `ModbusRegisterConfig`. Erlaubte Override-Werte:
+pro `ModbusRegisterConfig`. Erlaubte Welle-3-Werte sind
+`3`, `4`, `6` und `16`:
 
-- `1` (Read Coils, FC01) — nur fuer `bool`-Datatypes
-  (Welle 6+).
-- `2` (Read Discrete Inputs, FC02) — analog FC01.
+- `3` (Read Holding Registers, FC03) — explizite Default-
+  Wahl fuer Read-Targets.
 - `4` (Read Input Registers, FC04) — fuer read-only-
   Devices; statt FC03.
-- `5` (Write Single Coil, FC05) — analog FC06 fuer
-  Coil-Writes (Welle 6+).
-- `15` (Write Multiple Coils, FC0F) — analog FC10 (Welle
-  6+).
+- `6` (Write Single Register, FC06) — fuer Single-Register-
+  Writes.
+- `16` (Write Multiple Registers, FC10) — fuer Multi-
+  Register-Writes oder Slaves, die auch Single-Register-
+  Writes nur ueber FC10 akzeptieren.
 
-**Validation:** `ModbusRegisterConfig`-Validator prueft,
-dass `(access, function_code, datatype)` ein konsistentes
-Tripel ist (kein FC03 mit `access="write"`, kein FC01 mit
-`int16`-Datatype etc.).
+Coil-/Discrete-Input-Codes (`1`, `2`, `5`, `15`) bleiben
+Welle-6-Schaerfungspfad.
+
+**Validation:** `ModbusRegisterConfig`-Validator prueft in
+Welle 3 Allow-List, Access-Vertraeglichkeit (kein FC03
+mit `access="write"`, kein FC06 mit `access="read"`) und
+seit Review-Folge 2026-05-31 datatype-spezifisch, dass
+FC06 nur fuer Single-Register-Datatypes erlaubt ist
+([`done/031`](../planning/done/031-modbus-adapter-review-folge.md)).
 
 **Begruendung:**
 
@@ -409,7 +419,10 @@ function_code -> `client.read_holding_registers(...)`
 oder `client.read_input_registers(...)`; `write()`
 dispatcht function_code -> `client.write_register(...)`
 oder `client.write_registers(...)`. Default-Resolver
-(`access -> function_code`) im `_config.py`.
+(`access -> function_code`) im `_config.py`. FC06 fuer
+Multi-Register-Datatypes wird seit
+[`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+fail-fast als Config-Fehler abgelehnt.
 
 ### 2.5 Decision M-e — Slave-Unit-ID per Target (final)
 
@@ -434,14 +447,15 @@ reserviert). Konstruktor-Validation in
 `ModbusConfigError`-Familie.
 
 **Konsequenz:** `_port.py` reicht `unit_id` als
-`slave=`-Kwarg an pymodbus-Calls weiter. pymodbus 3.x
-benutzt `slave` (vorher `unit` in 2.x) — der Pin
-`pymodbus>=3.6` macht das API-stabil.
+`device_id=`-Kwarg an pymodbus-Calls weiter. Die aktuelle
+pymodbus-3.13-API benutzt `device_id`; Tests pinnen diesen
+konkreten Kwarg-Namen, `uv.lock` haelt die aufgeloeste
+Version fest.
 
 ### 2.6 Decision M-f — In-Process pymodbus-Server fuer Integration-Smoke (final)
 
 **Test-Sibling-Variante in Welle 3:** **in-process
-`pymodbus.server.StartTcpServer`** im Test-Code
+`pymodbus.server.ModbusTcpServer`** im Test-Code
 (`tests/integration/test_modbus_in_process_smoke.py`),
 **kein** testcontainers-Container.
 
@@ -450,14 +464,14 @@ benutzt `slave` (vorher `unit` in 2.x) — der Pin
 ```text
 1. Test setzt eine `ModbusDataStore` mit Register-
    Default-Werten auf.
-2. `threading.Thread(target=lambda:
-   StartTcpServer(context=..., address=("localhost",
-   <port>)), daemon=True)` spawnt den Server.
+2. `threading.Thread(target=server.serve_forever,
+   daemon=True)` spawnt den `ModbusTcpServer`.
 3. Test wartet ~100 ms auf Server-Bereitschaft (oder
    pollt mit Connect-Check).
 4. End-to-End-Read/Write-Roundtrip via
-   `ModbusDeviceProtocolPort` durch alle 5 Datatypes
-   und beide Byte-Order-Varianten.
+   `ModbusDeviceProtocolPort` durch alle 5 Datatypes im
+   Default-Profil (`big_endian`, kein Word-Swap,
+   Parent-`unit_id=1`).
 5. Teardown: `server.shutdown()` + `thread.join(timeout=5.0)`.
 ```
 
@@ -676,8 +690,8 @@ offen.
 
 - **Proposed** — 2026-05-30 (M4-Welle-3-C1 `a86ac46`).
   Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — 2026-05-30 (M4-Welle-3-C3, dieser
-  Commit) nach C2-Merge `d721982` (feat-Commit:
+- **Provisional** — 2026-05-30 (M4-Welle-3-C3) nach
+  C2-Merge `d721982` (feat-Commit:
   `protocol_modbus/`-5-Modul-Paket + 95 neue Unit-Tests
   (~25 Config-Validation + ~30 Codec-Roundtrip inkl.
   hypothesis-Property-Tests + ~24 Lifecycle/Read+Write
@@ -697,7 +711,15 @@ offen.
   zusaetzliche `# type: ignore`-Inflation gegen den
   Modbus-Code (siehe
   [`open/006`](../planning/open/006-mypy-strict-bytes.md);
-  Trigger wandert in Folge-Slice nach `next/`).
+  Trigger ist aktivierungs-reif; Aktivierung bleibt
+  separater Folge-Slice).
+  Doku-Review-Folge 2026-05-31: Integration-Smoke ist
+  als Default-Profil-E2E-Test dokumentiert; Byte-Order-/
+  Word-Swap-Matrix und Unit-ID-Override sind nicht als
+  E2E-Smoke geliefert. Review-Folge
+  [`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+  hat FC06-Multi-Register-Guard, Read-/Write-Fehler-
+  Taxonomie und Adapter-Rand-Fehleruebersetzung umgesetzt.
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027 + 0030 + 0031). Voraussetzung:
   Welle 4 (OPC-UA) implementiert ihren Adapter ohne
