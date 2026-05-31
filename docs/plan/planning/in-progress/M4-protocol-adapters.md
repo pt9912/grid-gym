@@ -154,23 +154,40 @@ in einem Commit landen wuerde:
 Default: Welle-Bezeichnung `Welle Na/Nb/...` mit Eintrag in
 den Closure-Ergebnissen.
 
-Wellen sind atomar; jede Welle endet mit einem gruenen
-`make fullbuild`-Lauf oder einem dokumentierten Welle-lokalen
-`CRITICAL_COV_TARGETS`-Override. Default-Gate-Sprung erfolgt
-in den jeweiligen Adapter-Wellen (Welle 2/3/4).
+Wellen sind atomar; jede Welle endet mit den im jeweiligen
+Gate-Block benannten gruenen Gates. Code-Wellen 1..5 belegen
+mindestens `make gates` ohne `CRITICAL_COV_TARGETS`-Override
+sowie den jeweils noetigen Unit-/Integration-/Docs-Check;
+`make fullbuild` ist das M4-Abschluss-Gate in Welle 6 (und
+Closure-Sanity in Welle 7, falls Welle 6 nicht den finalen
+Stand abdeckt). Ein Welle-lokaler `CRITICAL_COV_TARGETS`-
+Override ist nur zulaessig, wenn der Gate-Block ihn explizit
+dokumentiert. Default-Gate-Sprung erfolgt in den jeweiligen
+Adapter-Wellen (Welle 2/3/4).
 
-### Welle 0 — Vorabraeumung + Slice-Plan-Eroeffnung (in progress)
+### Welle 0 — Vorabraeumung + Slice-Plan-Eroeffnung (Done 2026-05-26)
 
-- Slice-Begleit-Doc [`M4-welle-0.md`](../done/M4-welle-0.md) (C0
-  `d0bb16e`).
-- M4-Slice-Plan (dieses Dokument, C1 `4451c60`).
-- Review-Folge `9f4ee74` (3 High + 5 Medium + 5 Low
-  Findings; Decision-1-Widerspruch geloest, Checkbox-Zahl
-  korrigiert, `AC-ADAPTER-LIGHTWEIGHT`-Status-Drift
-  entschaerft).
-- M4-Welle-0-Trigger-Triage (C2): Drift-Check der 17 Open-
-  Trigger gegen M4-Scope; Detail-Begruendung in
-  [`M4-welle-0.md`](../done/M4-welle-0.md) §3 „Trigger-Drift-Notiz".
+**Status:** Done. Slice-Begleit-Doc
+[`../done/M4-welle-0.md`](../done/M4-welle-0.md) (gewandert
+nach `done/` mit M4-Welle-1-Pre-C0 `556ae9f`). Reine
+Doc-Welle ohne ADR-Lieferung.
+
+- [x] **Slice-Begleit-Doc** —
+  [`../done/M4-welle-0.md`](../done/M4-welle-0.md) als
+  Welle-0-Decision-Liste + Trigger-Triage-Container; C0
+  `d0bb16e`.
+- [x] **M4-Slice-Plan** (dieses Dokument) — initiale
+  Welle-Tabelle + Sub-Slicing-Schwelle + Anti-Erfolgs-
+  kriterien; C1 `4451c60`.
+- [x] **Review-Folge** — `9f4ee74` mit 3 High + 5 Medium +
+  5 Low Findings: Decision-1-Widerspruch geloest, Checkbox-
+  Zahl auf 7 korrigiert, `AC-ADAPTER-LIGHTWEIGHT`-Status-
+  Drift entschaerft.
+- [x] **Trigger-Triage (C2 `f832048`)** — Drift-Check
+  der 17 Open-Trigger gegen M4-Scope (Detail-Begruendung
+  in [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+  „Trigger-Drift-Notiz"; 13 Trigger triaged, davon 3
+  M4-Drift mit Re-Eval-Pfad):
   - Open-Trigger
     [`004`](../open/004-canonical-encoder-alternative-adr.md)
     (`canonical encoder` Alternative `orjson`/`msgspec`) —
@@ -239,9 +256,16 @@ in den jeweiligen Adapter-Wellen (Welle 2/3/4).
     Slice. **Aktivierung**: unveraendert; bleibt in
     `open/`.
 
-**Welle-0-Gate:** kein Default-Gate-Sprung; reines Doc-
-Arbeitspaket. `make docs-check` cache-frei gruen
-(Verifikation in C0/C1/C2).
+- [x] **Self-Close-Move** — `chore: git mv M4-welle-0.md
+  -> done/` als M4-Welle-1-Pre-C0 (`556ae9f`, rename-only,
+  memory-konform per `feedback_git_mv`).
+
+**Welle-0-Gate (Done 2026-05-26):** kein Default-Gate-
+Sprung; reines Doc-Arbeitspaket. `make docs-check` cache-
+frei gruen (Verifikation in C0/C1/C2).
+**Commit-Belege:** C0 `d0bb16e` + C1 `4451c60` +
+Review-Folge `9f4ee74` + C2 `f832048` + Self-Close-Move
+`556ae9f`.
 
 ### Welle 1 — DeviceProtocolPort-Foundation (Done 2026-05-30)
 
@@ -512,45 +536,137 @@ Follow-up-Slice 031 angelegt).
 
 ### Welle 4 — OPC-UA-Adapter
 
-- ADR-Folge (geplant **OPC-UA-Adapter-ADR**) mit
-  OPC-UA-spezifischen Profil-Entscheidungen (Node-ID-Schema,
-  Sub/Pub-Verhalten, async->sync-Bridge konkret an
-  `asyncua`).
-- NEU `src/grid_gym/adapters/driven/protocol_opcua/` mit
-  `asyncua`-Wrapper:
-  - Node-ID-Schema (Device-ID → Node-ID-Konvention).
-  - Read/Write-Pfade, Fehlerverhalten.
-  - async->sync-Bridge nach Welle-1-Entscheidung.
-- Integration-Smoke via testcontainers
-  (`open62541/open62541` o. ae. — Lizenz **vorher**
-  pruefen; Fallback in-process `asyncua`-Server).
+**Status:** Pending. Vierte Code-Welle in M4 und der
+**dritte konkrete Adapter** auf der `DeviceProtocolPort`-
+Surface (`GG-AR-PORT-DRN-007`): OPC-UA ueber `asyncua`.
+Welle 4 traegt erstmals einen **rein-async-Stack** produktiv
+vor — ADR 0030 §2.1 hat die Sync-Surface-Brueckenkonstruktion
+fuer asyncua bereits vorbelegt; Welle 4 implementiert sie
+konkret.
+
+- [ ] **ADR 0033** (vierter M4-ADR) — `Proposed` (C1) →
+  `Provisional` (C3), mit OPC-UA-spezifischen Profil-
+  Entscheidungen (Pattern analog ADR 0031/0032):
+  - [ ] Decision O-a (Node-ID-Schema): inline im
+    `protocol_ports`-Scenario-YAML-Block (Pattern-
+    Praezedenz ADR 0031 §2.1 + ADR 0032 §2.1); pro
+    `device_id` ein `OpcuaNodeConfig` mit Pflicht-Feldern
+    `node_id`/`datatype`/`access`.
+  - [ ] Decision O-b (async→sync-Bridge): asyncio-Loop in
+    dediziertem Daemon-Thread (`run_coroutine_threadsafe`-
+    Marshal); pymodbus-Direct-Sync-Decision-M-c ist **nicht**
+    wiederverwendbar — asyncua erzwingt das Thread+Loop-
+    Pattern.
+  - [ ] Decision O-c (Datentyp-Set): OPC-UA-Built-In-Types-
+    Mapping zu Python-`Decimal`/`int`/`str`/`bool`;
+    konkretes Set in C1 fixiert.
+  - [ ] Decision O-d (Read/Write-Pfad): `client.read_node()`
+    + `client.write_node()` via Marshal; Subscription-Pfad
+    bleibt Welle-6-Schaerfung offen.
+  - [ ] Decision O-e (Test-Sibling): Wahl zwischen
+    testcontainers (`open62541` o. ae. — Lizenz **vorher**
+    pruefen!) und in-process `asyncua`-Server (Pattern-
+    Praezedenz Welle 3 Decision M-f). Entscheidung in C1
+    nach Lizenz-Check.
+- [ ] **NEU** `src/grid_gym/adapters/driven/protocol_opcua/`-
+  Modul (geplant ~6-7 Dateien analog `protocol_mqtt/`):
+  `__init__.py` (Public-Reexports + Lastenheft-Z.-1161–1163-
+  Pflichtnotiz) + `_config.py` (Decision O-a/O-c) +
+  `_codec.py` (Datentyp-Konvertierung) + `_loop_thread.py`
+  (Decision O-b async-Loop-Thread + Marshal) + `_port.py`
+  (Decision O-b/O-d) + `_errors.py` (typed
+  `DeviceProtocolPort*Error`-Subclasses).
+  Modul-Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
+  (Simulations-/Testadapter, **keine** produktive
+  Anlagensteuerung).
+- [ ] **Unit-Tests** unter
+  `tests/unit/adapters/driven/protocol_opcua/`:
+  Config-Validation + Datentyp-Codec-Roundtrip +
+  Async-Loop-Marshal + Lifecycle/Read+Write gegen mocked
+  asyncua-Client.
+- [ ] **Integration-Smoke** — `tests/integration/test_opcua_*_smoke.py`
+  mit Server-Variante aus Decision O-e (Sibling-Container
+  ODER in-process-`asyncua.Server`); End-to-End-Read/Write-
+  Roundtrip durch das Decision-O-c-Datentyp-Set.
+- [ ] **EDIT `tests/integration/compose.yml`** — Header-
+  Kommentar-Sync zur Decision-O-e-Wahl (Sibling-Service
+  hinzu **oder** in-process-Hinweis analog Welle 3).
+- [ ] **EDIT `pyproject.toml`** — `asyncua>=1.1` (Pin nach
+  C1-API-Stabilitaets-Check) in `[project] dependencies`;
+  `asyncua`-Eintrag in AC-PORTS-NO-FW/AC-NO-FW-Forbidden-
+  Listen pruefen (Welle-0-Vorbelegung).
+- [ ] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
+  Default um `adapters/driven/protocol_opcua` erweitert
+  (Pattern analog Welle 2/3).
+- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  `protocol_opcua`** — `tools/arch_check.py:1089`
+  `bucket.startswith("protocol_")`-Filter erfasst den
+  neuen Pfad **ohne Code-Aenderung**; Regression-geprueft
+  via `make arch-check` (19/19 Contracts KEPT).
+- [ ] **C3-Doc-Sync** — `M4-welle-4.md` Status
+  `In Progress → Done`, ADR 0033 `Proposed → Provisional`,
+  diese §3-Welle-4-Section auf Done, Top-Level-Doku-Sync
+  (README + README.de + roadmap + spec/architecture +
+  adr/README + done/README) auf den Welle-4-Endstand.
 
 **Welle-4-Gate:** `make test-integration` gruen mit
-OPC-UA-Smoke. Default-`CRITICAL_COV_TARGETS` um
-`adapters/driven/protocol_opcua` erweitert.
+OPC-UA-Smoke (Sibling-Container nach Lizenzfreigabe oder
+begruendeter in-process `asyncua`-Server analog Welle-3-
+Decision-M-f). `make test-unit` gruen mit den neuen
+Unit-Test-Modulen. `make arch-check` weiter `19/19
+Contracts KEPT`. `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override (Default-Liste um
+`adapters/driven/protocol_opcua` erweitert).
 
 ### Welle 5 — DNP3 + IEC-61850 Disposition
 
-- Roadmap §3 M4 DoD erlaubt explizit „dokumentierter
-  Verzicht via Out-of-Scope-Note".
-- Default: **dokumentierter Verzicht** mit klarer
-  Begruendung (Lizenz/Maintenance-Last der
+**Status:** Pending. Disposition-Welle, **keine** zweite
+Code-Welle wie 2/3/4. Roadmap §3 M4 DoD erlaubt explizit
+„dokumentierter Verzicht via Out-of-Scope-Note". Welle 1
+hat den Verzicht-Default bereits **provisorisch** in ADR
+0030 §2.4 festgeschrieben; Welle 5 finalisiert ihn
+(Variante A) **oder** zieht einen Mini-Spike (Variante B)
+auf — Entscheidung faellt **erst zum Welle-5-Zeitpunkt**
+nach asyncua-Erfahrung aus Welle 4.
+
+**Variante A — dokumentierter Verzicht (Default):**
+
+- [ ] **ADR-0030-§6-Verzicht-Anhang gefuellt** — DNP3-
+  und IEC-61850-Verzicht-Begruendung im
+  `DeviceProtocolPort`-Surface-ADR aus Welle 1
+  konkret eingetragen (Lizenz/Maintenance-Last der
   `pydnp3`/`asyncio-iec61850`-Bibliotheken; Test-Sibling-
-  Container schwer verfuegbar). Opt-In: **sehr kleiner
-  Spike** (nur Read-Pfad, ein Profil) — die Entscheidung
-  faellt **erst zum Welle-5-Zeitpunkt**, abhaengig von
-  der Bibliotheks-/Testcontainer-Lage und der
-  asyncua-Erfahrung aus Welle 4. Welle 1 hat den Verzicht
-  bereits **provisorisch** im Surface-ADR festgeschrieben
-  (siehe Welle 1 oben + Decision 1 in
-  [`M4-welle-0.md`](../done/M4-welle-0.md)).
-- Bei Verzicht: keine eigene ADR — Verzicht-Notiz wird
-  Anhang zum `DeviceProtocolPort`-Surface-ADR aus Welle 1
-  (siehe [`M4-welle-0.md`](../done/M4-welle-0.md) §3
-  ADR-Vorbelegung „Obergrenze").
-- Bei Spike: ADR-Folge (geplant **DNP3-/IEC-Spike-ADR**)
-  mit reduziertem Scope + Integration-Smoke (oder
-  Mock-only, falls kein Testcontainer verfuegbar).
+  Container schwer verfuegbar). Schaerfung des Welle-1-
+  Decision-1-provisorisch-Default; **kein** Supersedes
+  (Pattern ADR 0011).
+- [ ] **Keine neue ADR** — Verzicht-Notiz ist Teil des
+  Welle-1-ADR-Anhangs; kein separater DNP3-/IEC-ADR
+  noetig (M4-Welle-0 §3 ADR-Vorbelegung „Obergrenze"
+  honoriert).
+- [ ] **`roadmap.md §3 M4 DoD` syncht** — `DNP3-Adapter`
+  + `IEC-61850-Adapter`-Checkboxen als „dokumentierter
+  Verzicht" markiert mit Verweis auf ADR-0030-Anhang.
+- [ ] **Lastenheft §16-Notiz** — `GG-DNP3-001`/`GG-IEC-001`
+  als „verschoben mit Begruendung" (Welle-6-Lastenheft-
+  Sync-Material).
+
+**Variante B — sehr kleiner Spike (Opt-In):**
+
+- [ ] **NEU ADR fuer DNP3-/IEC-Spike** (geplant
+  **DNP3-/IEC-Spike-ADR**) mit reduziertem Scope (nur
+  Read-Pfad, ein Profil). Pattern-Praezedenz ADR 0031/0032.
+- [ ] **NEU** `src/grid_gym/adapters/driven/protocol_dnp3/`
+  ODER `protocol_iec61850/` mit Library-Wrapper —
+  konkret eine der beiden, nicht beide (Sub-Slicing-
+  Schwelle); andere bleibt Verzicht-Variante A.
+- [ ] **Integration-Smoke ODER Mock-only-Unit-Test** —
+  abhaengig von Test-Sibling-Verfuegbarkeit; in-process-
+  Pattern analog Welle-3-Decision-M-f bevorzugt.
+- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift** fuer den neuen
+  Protokoll-Pfad ohne Filter-Edit.
+- [ ] **C3-Doc-Sync** — `M4-welle-5.md` Status, ADR
+  `Proposed → Provisional`, diese §3-Welle-5-Section auf
+  Done, Top-Level-Doku-Sync.
 
 **Welle-5-Gate (Verzicht-Variante):** `make docs-check`
 gruen mit Verzicht-Anhang im Welle-1-ADR.
@@ -559,61 +675,116 @@ gruen mit Spike-Smoke (oder Mock-only-Unit-Test).
 
 ### Welle 6 — Cross-Adapter-Hardening
 
-- Gemeinsame Mapping-Doku unter
-  `docs/spec/protocol_profiles/` o. ae. (genaue Lokation in
-  Welle 6): Adapter-Profil-Index mit Verweisen auf die
-  Pro-Adapter-ADRs aus Welle 2/3/4.
-- `tests/integration/compose.yml`-Aufraeumung: Konsolidierung
-  der Sibling-Services, Healthcheck-Sync, Volume-Hygiene.
-- Lastenheft- + Architektur-Sync:
-  - Lastenheft §16-Implementierungs-Matrix: `🔲 M4` → `✅ M4`
-    fuer alle umgesetzten Adapter; `🟡 M4` mit
-    Verzicht-Notiz fuer DNP3/IEC, falls Decision 1a
-    gewinnt.
-  - Architektur §8.2 + §16: Adapter-Verortung scharf
-    setzen (Welle-1-ADR-Pfad).
-- Trigger 004/006 Re-Eval-Notiz: nach Welle 2/3 Drift
-  pruefen, Entscheidung in C-Body dokumentieren.
+**Status:** Pending. Querschnitts-Welle ohne weiteren
+konkreten Adapter; haertet die in Welle 2/3/4 angesammelten
+Decisions und schliesst die in den frueheren Wellen bewusst
+verschobenen Folge-Pflichten (`AC-ADAPTER-LIGHTWEIGHT`-
+Planted-Violator-Property-Test, OTel-Span-Wrap der Adapter-
+Calls, Trigger-004/006-Re-Eval-Notizen).
 
-**Welle-6-Gate:** `make fullbuild` gruen ohne Override
-(M4-Abschluss-Gate). Default-`CRITICAL_COV_TARGETS` final.
+- [ ] **Adapter-Profil-Index** unter
+  `spec/protocol_profiles/` als kanonischem Spec-Pfad
+  (oder begruendete andere Lokation): Profil-Index mit
+  Verweisen auf die Pro-Adapter-ADRs aus Welle 2/3/4
+  (0031/0032/0033 + ggf. Welle-5-Spike-ADR).
+- [ ] **`tests/integration/compose.yml`-Aufraeumung** —
+  Konsolidierung der Sibling-Services, Healthcheck-Sync,
+  Volume-Hygiene; Header-Kommentar fuehrt jeden Sibling
+  mit Lizenz + Test-Pfad-Referenz.
+- [ ] **Lastenheft §16-Implementierungs-Matrix-Sync** —
+  `🔲 M4` → `✅ M4` fuer alle umgesetzten Adapter;
+  `🟡 M4` mit Verzicht-Notiz fuer DNP3/IEC, falls
+  Welle 5 Variante A gewaehlt hat.
+- [ ] **Architektur §8.2 + §16-Sync** — Adapter-Verortung
+  scharf setzen mit Welle-1-ADR-Pfad; OTel-Span-Wrap-
+  Pattern dokumentiert.
+- [ ] **OTel-Span-Wrap fuer `protocol_*`-Adapter** —
+  TracePort-Wrap der Read/Write-Calls (in Welle 2/3/4
+  bewusst verschoben; ADR 0024 §4.5 als Bezug).
+- [ ] **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-
+  Test** — die in
+  [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
+  als Folge-Pflicht markierte Welle-2-Mitigation
+  (in Welle 2/3 bewusst auf Welle 6 verschoben) wird
+  jetzt eingezogen.
+- [ ] **Trigger-004-Re-Eval** — `canonical encoder`-
+  Alternative (`orjson`/`msgspec`) gegen MQTT-Publish-
+  Throughput-Druck pruefen; Entscheidung im Trigger-Body.
+- [ ] **Trigger-006-Folge-Slice eingezogen** —
+  `--strict-bytes`-Aktivierung in `[tool.mypy]` plus
+  Repo-Sweep (Slice 031-Folge; Re-Eval ist in M4-Welle-3
+  positiv gelaufen, M4-Welle-6 zieht die Aktivierung
+  produktiv).
+- [ ] **C3-Doc-Sync** — `M4-welle-6.md` Status, diese
+  §3-Welle-6-Section auf Done, Top-Level-Doku-Sync.
+
+**Welle-6-Gate:** `make fullbuild` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override (M4-Abschluss-Gate; analog
+M3-Welle-6-Gate). Default-`CRITICAL_COV_TARGETS` final.
+`make arch-check` 19/19 (oder +1 falls ein neuer Contract
+aus Welle 6 entsteht, z. B. `AC-ADAPTER-NO-TIME`).
 
 ### Welle 7 — Closure (1/2 Tag)
 
-- Alle M4-ADRs (Welle 1/2/3/4 + ggf. Welle 5-Spike) auf
-  `Accepted`.
-- `done/M4-protocol-adapters.md` Closure-Notiz +
-  `done/M4-results.md` Welle-Tabelle (Pattern analog
-  `done/M3-results.md`).
-- `roadmap.md`: M4 auf `Done`, M4-DoD-Checkboxen
-  aktivieren, `Naechster aktiver Slice: M5` setzen.
-- `README.md` / `README.de.md` / `AGENTS.md` / Status-Header
-  in `roadmap.md` auf M4-Done-Stand syncen (Pattern aus
-  M3-Welle-7-Folge `52fa4f8`/`6c5df38`/`0b3164a`).
-- Self-Close-Move: `M4-protocol-adapters.md` per `git mv`
-  nach `done/` (Memory-Konvention `feedback_git_mv`:
-  Move-Only-Commit, kein Rewrite). `M4-welle-0.md` wurde
-  bereits mit M4-Welle-1-Pre-C0-Move (`556ae9f`) nach
-  `done/M4-welle-0.md` ueberfuehrt — kein erneuter Move in
-  Welle 7.
-- Open-Trigger fuer M4-Restposten (z. B. neue MQTT-Codec-
-  Optimierungs-Trigger aus 004-Re-Eval).
-- M4-Welle-7-End-to-End-Sweep (analog M3-Welle-7 §4):
-  S-1..S-6-Verification ist Pflicht-Punkt:
-  - S-1 — M4-spezifisches Vorabraeumungs-Item
-    (Trigger-Triage in Welle 0).
-  - S-2 — Sub-Slicing-Schwelle (§3 Praeambel oben).
-  - S-3 — Default-Gate ohne Override.
-  - S-4 — kein M4-spezifisches Image-Hardening-Trigger
-    erwartet; aber `make image-audit` pruefen, ob die neu
-    eingefuehrten Adapter-Deps (`paho-mqtt`, `pymodbus`,
-    `asyncua` sowie ggf. DNP3/IEC-Stack) die Runtime-
-    Image-Size-Schwelle ueberschreiten. Falls ja:
+**Status:** Pending. M4-Closure-Welle analog M3-Welle 7;
+zieht alle M4-ADRs auf `Accepted`, etabliert
+`done/M4-results.md` und faehrt den End-to-End-Sweep
+S-1..S-6.
+
+- [ ] **Alle M4-ADRs auf `Accepted`** — ADR
+  0030/0031/0032/0033 + ggf. Welle-5-Spike-ADR;
+  Pattern analog M3-Welle-7-C1.1..C1.6.
+- [ ] **`done/M4-protocol-adapters.md` Closure-Notiz** —
+  zusammenfassende Welle-Tabelle mit C0/C1/C2/C3-Hashes
+  pro Welle, Test-Counts, Sub-Slicing-Belege, DoD-Erfuellung.
+- [ ] **`done/M4-results.md`** — Detail-Welle-Tabelle +
+  Abnahme-Belege (Pattern analog
+  [`../done/M3-results.md`](../done/M3-results.md)):
+  `make fullbuild`-Stand, Test-Bilanz (Unit + Integration),
+  Coverage, Contracts, Per-Welle-Reviews.
+- [ ] **`roadmap.md` M4-DoD-Checkboxen aktiviert** — alle
+  7 Checkboxen in `roadmap.md §3 M4` als `[x]` markiert;
+  M4 auf `Done`; „Naechster aktiver Slice: M5" gesetzt.
+- [ ] **Top-Level-Doku-Sync** —
+  `README.md` / `README.de.md` / `AGENTS.md` / Status-
+  Header in `roadmap.md` auf M4-Done-Stand syncen
+  (Pattern aus M3-Welle-7-Folge `52fa4f8` / `6c5df38` /
+  `0b3164a`).
+- [ ] **Self-Close-Move** — `chore: git mv
+  M4-protocol-adapters.md → done/` (Memory-Konvention
+  `feedback_git_mv`: Move-Only-Commit ohne Inhalts-Edit;
+  Body-Updates folgen in separatem Commit). `M4-welle-0.md`
+  wurde bereits mit M4-Welle-1-Pre-C0 (`556ae9f`) gemoved
+  — **kein** erneuter Move in Welle 7.
+- [ ] **ADR-0028-Linkpflege nach Self-Close-Move** — alle
+  M4-ADRs mit `Bezug:` auf
+  `planning/in-progress/M4-protocol-adapters.md` werden auf
+  `planning/done/M4-protocol-adapters.md` nachgezogen.
+  Kein Forwarder-Stub im alten `in-progress/`-Pfad.
+- [ ] **Open-Trigger fuer M4-Restposten erzeugt** — z. B.
+  neue MQTT-Codec-Optimierungs-Trigger aus 004-Re-Eval
+  (falls Welle 6 ihn nicht produktiv eingezogen hat).
+- [ ] **M4-Welle-7-End-to-End-Sweep S-1..S-6** (analog
+  M3-Welle-7 §4) — dokumentiert in
+  `done/M4-results.md §4`:
+  - [ ] **S-1** — M4-spezifisches Vorabraeumungs-Item
+    (Trigger-Triage in Welle 0; Resultat-Sweep in Welle 7).
+  - [ ] **S-2** — Sub-Slicing-Schwelle (§3 Praeambel oben)
+    eingehalten ueber Welle 1..6; Beleg-Tabelle.
+  - [ ] **S-3** — Default-`make gates` ohne
+    `CRITICAL_COV_TARGETS`-Override cache-frei gruen am
+    Welle-7-Closure-Hash.
+  - [ ] **S-4** — `make image-audit` cache-frei gruen
+    (oder dokumentierter Defer-Pfad). Pruefung, ob die
+    neu eingefuehrten Adapter-Deps (`paho-mqtt`,
+    `pymodbus`, `asyncua` + ggf. DNP3/IEC-Stack) die
+    Runtime-Image-Size-Schwelle ueberschreiten. Falls ja:
     Image-Pin-Trigger erstellen.
-  - S-5 — ADR-Erweiterungs-Pattern fortgefuehrt (1..5
-    neue ADRs ohne Supersedes).
-  - S-6 — Lastenheft-Coverage-Sweep nach M4-Closure (M5-
-    Trigger erstellen, falls relevant).
+  - [ ] **S-5** — ADR-Erweiterungs-Pattern fortgefuehrt
+    (4..5 neue ADRs ohne Supersedes; `Schaerfung-ohne-
+    Supersedes` per ADR 0011 dokumentiert).
+  - [ ] **S-6** — Lastenheft-Coverage-Sweep nach
+    M4-Closure (M5-Trigger erstellen, falls relevant).
 
 ---
 
@@ -699,10 +870,11 @@ gruen mit Spike-Smoke (oder Mock-only-Unit-Test).
   nur MQTT/Modbus, M5 = OPC-UA + DNP3 + IEC, M6+ neu
   nummeriert).
 
-Forwarder-Stub-Pflicht entsteht erst, wenn ein
-`Accepted`-ADR auf den `in-progress/`-Pfad zeigt (M4-Welle-1
-liefert den ersten M4-ADR; der Stub kommt dann mit Welle 7
-nach M1/M2/M3-Pattern).
+Beim Welle-7-Move entstehen keine Forwarder-Stubs. Wenn dann
+`Accepted`-ADRs auf den bisherigen `in-progress/`-Pfad zeigen,
+werden deren `Bezug:`-Links gemaess
+[`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
+direkt auf den neuen `done/`-Pfad gepflegt.
 
 ---
 
@@ -713,7 +885,7 @@ nach M1/M2/M3-Pattern).
 | `DeviceProtocolPort`-Surface + Lifecycle              | `make test-unit` mit Protocol-Test (Welle 1) |
 | MQTT-Adapter + Topic-Mapping                          | `make test-integration` mit Mosquitto-Sibling-Smoke (Welle 2) |
 | Modbus-Adapter + Register-Mapping + R/W-Smoke         | `make test-integration` mit in-process Modbus-Smoke (Welle 3) |
-| OPC-UA-Adapter + Node-ID-Schema + R/W-Smoke           | `make test-integration` mit OPC-UA-Sibling-Smoke (Welle 4) |
+| OPC-UA-Adapter + Node-ID-Schema + R/W-Smoke           | `make test-integration` mit OPC-UA-Smoke gegen Sibling-Container oder begruendeten in-process `asyncua`-Server (Welle 4) |
 | DNP3/IEC: produktiv ODER Verzicht-Notiz               | `make test-integration` (Spike) ODER `make docs-check` (Verzicht-Anhang) (Welle 5) |
 | `AC-ADAPTER-LIGHTWEIGHT` fuer alle `protocol_*`       | `make arch-check` gruen (Default, ueber alle Wellen) |
 | „Simulations-/Testadapter"-Dokumentationspflicht      | `make docs-check` + Adapter-Modul-Docstring-Review (Welle 6) |
