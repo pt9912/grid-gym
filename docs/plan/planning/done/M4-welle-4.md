@@ -78,7 +78,7 @@ dieser Commit):**
   Client` analog asyncua-eigener Konvention.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 4`](M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 4`](../in-progress/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -392,7 +392,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   inline-Pattern aus ADR 0031/0032 wird uebernommen;
   Item 5 Test-Sibling — in-process bevorzugt analog
   Welle-3-Decision-M-f).
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 4 (kanonische Slice-Spezifikation mit DoD-
   Checkliste).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)

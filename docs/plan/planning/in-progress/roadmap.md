@@ -35,7 +35,10 @@
   Lifecycle-Lock + Start-Timeout in `OpcuaLoopThread`,
   Port-Exception-Filter um `RuntimeError`/`CancelledError`,
   Quality.INVALID fuer String-Reads, Float32-Quantisierung,
-  Pin-Range, Smoke-Server-`asyncio.Event`)).
+  Pin-Range, Smoke-Server-`asyncio.Event`) + Nachzug
+  `1c2dfa3` (3 Findings: Node-ID-Integer-Check, Codec-
+  Overflow-Wrap, Doku-Drift) + Self-Close-Move `3bc015b`
+  (`M4-welle-4.md` aus `in-progress/` nach `done/`)).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-5 (DNP3/IEC-Disposition — Variante A Verzicht-

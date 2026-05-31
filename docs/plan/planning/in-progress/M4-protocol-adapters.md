@@ -537,9 +537,9 @@ Follow-up-Slice 031 angelegt).
 ### Welle 4 — OPC-UA-Adapter (Done 2026-05-31)
 
 **Status:** Done. Slice-Begleit-Doc
-[`M4-welle-4.md`](M4-welle-4.md) (bleibt in `in-progress/`
-bis M4-Welle-5-Pre-C0-Move; Pattern analog M4-Welle-1/2/3).
-ADR 0033 ist `Provisional`. Vierte Code-Welle in M4 und der
+[`../done/M4-welle-4.md`](../done/M4-welle-4.md) (gewandert
+nach `done/` mit M4-Welle-5-Pre-C0 `3bc015b`; Pattern
+analog M4-Welle-1/2/3). ADR 0033 ist `Provisional`. Vierte Code-Welle in M4 und der
 **dritte konkrete Adapter** auf der `DeviceProtocolPort`-
 Surface (`GG-AR-PORT-DRN-007`): OPC-UA ueber `asyncua 1.2b2`.
 Welle 4 traegt erstmals einen **rein-async-Stack** produktiv
