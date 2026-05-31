@@ -534,89 +534,131 @@ Re-Eval mit Modbus-Beleg in Body) + Doku-Review-Folge
 2026-05-31 (Move nach `done/`, Smoke-Abdeckung praezisiert,
 Follow-up-Slice 031 angelegt).
 
-### Welle 4 — OPC-UA-Adapter
+### Welle 4 — OPC-UA-Adapter (Done 2026-05-31)
 
-**Status:** Pending. Vierte Code-Welle in M4 und der
+**Status:** Done. Slice-Begleit-Doc
+[`M4-welle-4.md`](M4-welle-4.md) (bleibt in `in-progress/`
+bis M4-Welle-5-Pre-C0-Move; Pattern analog M4-Welle-1/2/3).
+ADR 0033 ist `Provisional`. Vierte Code-Welle in M4 und der
 **dritte konkrete Adapter** auf der `DeviceProtocolPort`-
-Surface (`GG-AR-PORT-DRN-007`): OPC-UA ueber `asyncua`.
+Surface (`GG-AR-PORT-DRN-007`): OPC-UA ueber `asyncua 1.2b2`.
 Welle 4 traegt erstmals einen **rein-async-Stack** produktiv
 vor — ADR 0030 §2.1 hat die Sync-Surface-Brueckenkonstruktion
-fuer asyncua bereits vorbelegt; Welle 4 implementiert sie
-konkret.
+fuer asyncua vorbelegt; Welle 4 implementiert sie konkret in
+`_loop_thread.py` mit eigener `OpcuaLoopThread`-Klasse.
 
-- [ ] **ADR 0033** (vierter M4-ADR) — `Proposed` (C1) →
-  `Provisional` (C3), mit OPC-UA-spezifischen Profil-
-  Entscheidungen (Pattern analog ADR 0031/0032):
-  - [ ] Decision O-a (Node-ID-Schema): inline im
-    `protocol_ports`-Scenario-YAML-Block (Pattern-
+- [x] **ADR 0033** (vierter M4-ADR) — `Provisional` mit
+  C3 (2026-05-31) nach C1 `74ed35b` (Proposed) und C2
+  `78fdd7a` (feat-Merge). Fuenf Decisions alle **final**:
+  - [x] Decision O-a (Node-ID-Schema, **final**): inline
+    im `protocol_ports`-Scenario-YAML-Block (Pattern-
     Praezedenz ADR 0031 §2.1 + ADR 0032 §2.1); pro
     `device_id` ein `OpcuaNodeConfig` mit Pflicht-Feldern
-    `node_id`/`datatype`/`access`.
-  - [ ] Decision O-b (async→sync-Bridge): asyncio-Loop in
-    dediziertem Daemon-Thread (`run_coroutine_threadsafe`-
-    Marshal); pymodbus-Direct-Sync-Decision-M-c ist **nicht**
-    wiederverwendbar — asyncua erzwingt das Thread+Loop-
-    Pattern.
-  - [ ] Decision O-c (Datentyp-Set): OPC-UA-Built-In-Types-
-    Mapping zu Python-`Decimal`/`int`/`str`/`bool`;
-    konkretes Set in C1 fixiert.
-  - [ ] Decision O-d (Read/Write-Pfad): `client.read_node()`
-    + `client.write_node()` via Marshal; Subscription-Pfad
-    bleibt Welle-6-Schaerfung offen.
-  - [ ] Decision O-e (Test-Sibling): Wahl zwischen
-    testcontainers (`open62541` o. ae. — Lizenz **vorher**
-    pruefen!) und in-process `asyncua`-Server (Pattern-
-    Praezedenz Welle 3 Decision M-f). Entscheidung in C1
-    nach Lizenz-Check.
-- [ ] **NEU** `src/grid_gym/adapters/driven/protocol_opcua/`-
-  Modul (geplant ~6-7 Dateien analog `protocol_mqtt/`):
-  `__init__.py` (Public-Reexports + Lastenheft-Z.-1161–1163-
-  Pflichtnotiz) + `_config.py` (Decision O-a/O-c) +
-  `_codec.py` (Datentyp-Konvertierung) + `_loop_thread.py`
-  (Decision O-b async-Loop-Thread + Marshal) + `_port.py`
-  (Decision O-b/O-d) + `_errors.py` (typed
-  `DeviceProtocolPort*Error`-Subclasses).
-  Modul-Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
-  (Simulations-/Testadapter, **keine** produktive
-  Anlagensteuerung).
-- [ ] **Unit-Tests** unter
+    `node_id`/`datatype`/`access`. Numerische
+    (`ns=N;i=M`) und String-Identifier (`ns=N;s=Ident`)
+    in Welle 4; GUID/ByteString Welle-6-Schaerfung.
+  - [x] Decision O-b (Async-Bridge, **final**): dedizierter
+    `asyncio.AbstractEventLoop` in
+    `threading.Thread(daemon=True)` mit
+    `run_coroutine_threadsafe`-Marshal. Eigene Klasse
+    `OpcuaLoopThread` als **erstes Repo-Pattern** dieser
+    Art (ADR 0030 §2.1-Konsequenz produktiv vorgetragen);
+    normativer Teardown-Vertrag (pending-Task-Cancel +
+    `asyncio.gather(return_exceptions)` + `loop.stop` +
+    `thread.join(timeout=5.0)`). pymodbus-Direct-Sync-
+    Decision-M-c ist **nicht** wiederverwendbar.
+  - [x] Decision O-c (Datentyp-Set, **final**): Welle-4-
+    Minimum `{Boolean, Int16, UInt16, Int32, UInt32,
+    Float, Double, String}` (8 Werte). Float/Double ->
+    `Decimal(repr(float_value))` (Praezisions-Konsistenz
+    mit ADR 0032 §2.2). `Byte`/`SByte`/`Int64`/`UInt64`/
+    `DateTime`/`Guid`/`ByteString`/`ExtensionObject`
+    Welle-6-Schaerfung offen.
+  - [x] Decision O-d (Read/Write-Pfad, **final**):
+    Polling-Read via `client.get_node(node_id).read_value()`
+    + Direct-Write via `node.write_value(variant)`, beide
+    gemarshalt durch `OpcuaLoopThread.run_coroutine`.
+    Subscription-Pfad mit Monitored Items als Welle-6-
+    Forward-Pointer.
+  - [x] Decision O-e (Test-Sibling, **final**): in-process
+    `asyncua.Server` (LGPL-3.0; Pattern-Praezedenz
+    Welle-3-Decision-M-f). Verworfene Alternativen:
+    `open62541/open62541` MPL-2.0 mit nicht-trivialer
+    Container-Config; `OPCFoundation/UA-CPPServer` RCL mit
+    Kommerz-Pfad; `prosysopc` proprietaer.
+- [x] **NEU** `src/grid_gym/adapters/driven/protocol_opcua/`-
+  Modul (6 Dateien): `__init__.py` (Public-Reexports +
+  Lastenheft-Z.-1161–1163-Pflichtnotiz) + `_config.py`
+  (Decision O-a/O-c mit Node-ID-Format-Validation) +
+  `_codec.py` (Decision O-c `encode_value_to_variant` /
+  `decode_variant_to_value`; `OpcuaCodecError`-Familie) +
+  `_loop_thread.py` (Decision O-b `OpcuaLoopThread`-Klasse;
+  geordneter Teardown-Vertrag) + `_port.py` (Decision O-b/
+  O-d Lifecycle + Polling-Read + Direct-Write) +
+  `_errors.py` (typed `DeviceProtocolPort*Error`-Subclasses
+  inkl. Read/Write-Operation-Tax analog Slice-031-Pattern).
+- [x] **Async-Loop-Thread produktiv** — `OpcuaLoopThread`-
+  Klasse in `_loop_thread.py` mit geordnetem
+  `start()`/`stop()`-Lifecycle und
+  `run_coroutine_threadsafe`-Marshal-Helper. **Erstes
+  produktives Thread+Loop-Konstruktions-Pattern im Repo.**
+- [x] **NEU 81 Unit-Tests** unter
   `tests/unit/adapters/driven/protocol_opcua/`:
-  Config-Validation + Datentyp-Codec-Roundtrip +
-  Async-Loop-Marshal + Lifecycle/Read+Write gegen mocked
-  asyncua-Client.
-- [ ] **Integration-Smoke** — `tests/integration/test_opcua_*_smoke.py`
-  mit Server-Variante aus Decision O-e (Sibling-Container
-  ODER in-process-`asyncua.Server`); End-to-End-Read/Write-
-  Roundtrip durch das Decision-O-c-Datentyp-Set.
-- [ ] **EDIT `tests/integration/compose.yml`** — Header-
-  Kommentar-Sync zur Decision-O-e-Wahl (Sibling-Service
-  hinzu **oder** in-process-Hinweis analog Welle 3).
-- [ ] **EDIT `pyproject.toml`** — `asyncua>=1.1` (Pin nach
-  C1-API-Stabilitaets-Check) in `[project] dependencies`;
-  `asyncua`-Eintrag in AC-PORTS-NO-FW/AC-NO-FW-Forbidden-
-  Listen pruefen (Welle-0-Vorbelegung).
-- [ ] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
+  10 Config-Validation + 34 Codec-Roundtrip (inkl.
+  hypothesis-Property-Tests pro Datatype) + 9 Loop-Thread-
+  Lifecycle/Cancellation/Timeout + 16 Protocol-Port-
+  Lifecycle/Read+Write mit AsyncMock-`asyncua.Client` +
+  8 Smoke-parametrisiert ueber alle 8 Datatypes.
+- [x] **NEU Integration-Smoke** —
+  `tests/integration/test_opcua_in_process_smoke.py` mit
+  in-process `asyncua.Server` in eigenem asyncio-Loop-
+  Thread (Decision O-e); Anonymous-Endpoint; End-to-End-
+  Read/Write-Roundtrip durch alle 8 Datatypes
+  (Decision O-c); expliziter `server.stop()` +
+  `thread.join(timeout=5.0)`-Teardown.
+- [x] **EDIT `tests/integration/compose.yml`** — Header-
+  Kommentar-Sync ergaenzt um Decision-O-e-Notiz
+  (in-process `asyncua.Server`, Pattern-Fortfuehrung aus
+  Welle 3; Lizenz-Pragmatik LGPL-3.0 vs. MPL-2.0-
+  Container-Alternativen).
+- [x] **EDIT `pyproject.toml`** — `asyncua==1.2b2` in
+  `[project] dependencies` (Beta-Pin wegen Python-3.14-
+  Forward-Reference-Inkompat in 1.1.8; asyncua 1.2b2
+  traegt den Python-3.14-Fix vor 1.2-final). mypy-Override
+  `module = "asyncua.*"` mit `implicit_reexport=true`
+  (1.2b2 hat py.typed aber kein `__all__`). `asyncua`-
+  Eintrag in den AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen
+  unveraendert (Welle-0-Vorbelegung).
+- [x] **EDIT `uv.lock`** — via `make lock-refresh`
+  aktualisiert: 108 packages, asyncua 1.1.8 -> 1.2b2 +
+  8 transitive Deps (aiosqlite, cffi, cryptography,
+  pycparser, pyopenssl, python-dateutil, pytz).
+- [x] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
   Default um `adapters/driven/protocol_opcua` erweitert
   (Pattern analog Welle 2/3).
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
   `protocol_opcua`** — `tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`-Filter erfasst den
-  neuen Pfad **ohne Code-Aenderung**; Regression-geprueft
-  via `make arch-check` (19/19 Contracts KEPT).
-- [ ] **C3-Doc-Sync** — `M4-welle-4.md` Status
-  `In Progress → Done`, ADR 0033 `Proposed → Provisional`,
-  diese §3-Welle-4-Section auf Done, Top-Level-Doku-Sync
-  (README + README.de + roadmap + spec/architecture +
-  adr/README + done/README) auf den Welle-4-Endstand.
+  neuen Pfad **ohne Code-Aenderung**; `make arch-check`
+  weiter `19/19 Contracts KEPT`.
 
-**Welle-4-Gate:** `make test-integration` gruen mit
-OPC-UA-Smoke (Sibling-Container nach Lizenzfreigabe oder
-begruendeter in-process `asyncua`-Server analog Welle-3-
-Decision-M-f). `make test-unit` gruen mit den neuen
-Unit-Test-Modulen. `make arch-check` weiter `19/19
-Contracts KEPT`. `make gates` cache-frei gruen ohne
-`CRITICAL_COV_TARGETS`-Override (Default-Liste um
-`adapters/driven/protocol_opcua` erweitert).
+**Welle-4-Gate (Done 2026-05-31):** `make test-integration`
+gruen mit OPC-UA-In-Process-Smoke (23 → 31 Integration-
+Tests, +8 Roundtrips). `make test-unit` gruen (1314 → 1395
+= +81 Unit-Tests). `make arch-check` gruen (19/19 = 7
+lint-imports + 12 `tools/arch_check.py`). `make gates`
+cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override
+(Default-Liste um `adapters/driven/protocol_opcua`
+erweitert; Total-Coverage 95.16%, Critical-Coverage
+90.95% Branch). `mypy --strict-bytes` cache-frei gruen
+(OPC-UA-Adapter ist `--strict-bytes`-clean). **Commit-
+Belege:** C0 `7937e70` (Slice-Doc) + C1 `74ed35b` (ADR
+0033 Proposed) + C2 `78fdd7a` (feat: protocol_opcua + 81
+Unit-Tests + In-Process-Integration-Smoke + pyproject/
+uv.lock/Dockerfile/compose.yml-Edits) + C3 (dieser Commit;
+ADR 0033 → `Provisional`, `M4-welle-4.md` → `Done`, diese
+§3-Welle-4-Section auf Done, Top-Level-Doku-Sync in 5
+Docs).
 
 ### Welle 5 — DNP3 + IEC-61850 Disposition
 

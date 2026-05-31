@@ -1,11 +1,12 @@
 # Welle 4 — M4 OPC-UA-Adapter
 
-**Status:** In Progress — eroeffnet 2026-05-31 nach
-M4-Welle-3-Closure (`8ef1e72` C0 + `a86ac46` C1 + `d721982`
-C2 + `2b84361` EoD-Sync + `0ce578a` C3 + `506c8ca`
-Self-Close-Move + `0ab956a` Slice-031-feat + `faa3ecc`
-Slice-031-docs). Welle 4 ist die **vierte Code-Welle** in
-M4 und der **dritte konkrete Adapter** auf der
+**Status:** Done — geschlossen 2026-05-31 mit M4-Welle-4-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-05-31 nach M4-Welle-3-Closure (`8ef1e72` C0 + `a86ac46`
+C1 + `d721982` C2 + `2b84361` EoD-Sync + `0ce578a` C3 +
+`506c8ca` Self-Close-Move + `0ab956a` Slice-031-feat +
+`faa3ecc` Slice-031-docs). Welle 4 ist die **vierte Code-
+Welle** in M4 und der **dritte konkrete Adapter** auf der
 `DeviceProtocolPort`-Surface (`GG-AR-PORT-DRN-007`):
 OPC-UA ueber `asyncua`. Welle 4 traegt erstmals einen
 **rein-async-Stack** produktiv vor — ADR 0030 §2.1 hat
@@ -13,6 +14,65 @@ die Sync-Surface-Brueckenkonstruktion fuer asyncua bereits
 vorbelegt (Thread+Loop-Marshal); Welle 4 implementiert sie
 konkret und etabliert das Pattern fuer Welle 5 (DNP3/IEC,
 falls Spike).
+
+**Liefer-Hashes:**
+
+- C0 `7937e70` — `docs(plan): M4-welle-4 Slice-Doc (M4 Welle-4 Beginn)`.
+- C1 `74ed35b` — `docs(adr): ADR 0033 Proposed — OPC-UA-Adapter-Profile (M4 Welle 4)`.
+- C2 `78fdd7a` — `feat(welle-4): protocol_opcua + Tests + In-Process-Smoke + Compose-Edit`.
+- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-4-C3 — Status/DoD-Sync + ADR 0033 -> Provisional + Top-Level-Doku-Sync`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `78fdd7a` C2 +
+dieser Commit):**
+
+- `make test-unit`: **1395 Tests gruen** (Pre-Welle-4-Stand
+  1314 → Welle-4-Endstand 1395 = +81 Unit-Tests; davon
+  10 Config-Validation
+  (`tests/unit/adapters/driven/protocol_opcua/test_opcua_config.py`),
+  34 Codec-Roundtrip mit hypothesis-Property-Tests pro
+  8 Datatypes (`test_opcua_codec.py`), 9 Loop-Thread-
+  Lifecycle/Cancellation/Timeout
+  (`test_opcua_loop_thread.py`), 16 Protocol-Port-Lifecycle
+  + Read/Write mit AsyncMock-`asyncua.Client` und alle
+  Error-Pfade incl. Read/Write-Tax
+  (`test_opcua_protocol_port.py`); 8 Integration-Smoke-
+  parametrisiert ueber alle 8 Datatypes
+  (`test_opcua_in_process_smoke.py`)).
+- `make test-integration`: **31 Tests gruen** (Pre-Welle-4-
+  Stand 23 → Welle-4-Endstand 31 = +8 OPC-UA-In-Process-
+  Smokes; in-process `asyncua.Server` in eigenem
+  asyncio-Loop-Thread mit Anonymous-Endpoint; End-to-End-
+  Read/Write-Roundtrip durch alle 8 Datatypes; expliziter
+  `server.stop()` + `thread.join(timeout=5.0)`-Teardown).
+- `make arch-check`: **19/19 Contracts KEPT** (7
+  lint-imports + 12 `tools/arch_check.py`);
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_opcua` ohne
+  Filter-Edit (Pfad-Filter `bucket.startswith("protocol_")`
+  in `tools/arch_check.py:1089` greift unveraendert).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+  `src/grid_gym/adapters/driven/protocol_opcua` erweitert).
+  Total-Coverage 95.16%, Critical-Coverage 90.95% Branch.
+- `make fullbuild`: `image-audit` weiter rot aus
+  **dokumentiertem** Pre-existing krb5-CVE-Grund
+  (`CVE-2026-40356`-Drift seit M3-Welle-7-`c61ab0d`,
+  **nicht durch M4-Welle-4-Code verursacht**); Compose-
+  Smoke selbst (in-process-asyncua-Server; kein neuer
+  Sibling) gruen.
+- ADR 0033: `Proposed → Provisional` (Decisions O-a/O-b/
+  O-c/O-d/O-e alle **final**; Status-Pfad in
+  [`../../adr/0033-opcua-adapter-profile.md`](../../adr/0033-opcua-adapter-profile.md) §5
+  mit Hashes belegt).
+- **asyncua-Pin auf `==1.2b2`** (Beta-Release): asyncua 1.1.8
+  ist Python-3.14-inkompatibel (`issubclass() arg 1 must be
+  a class` in `create_type_serializer` via Forward-References
+  von `from __future__ import annotations`); 1.2b2 traegt den
+  Python-3.14-Fix vor 1.2-final. Pin wandert auf `>=1.2,<2.0`
+  sobald 1.2 final auf PyPI ist (Welle-6- oder M6-Material).
+- **mypy-Override fuer `asyncua.*`**: 1.2b2 liefert py.typed,
+  exportiert aber kein `__all__` im Top-Level —
+  `implicit_reexport=true` toleriert `from asyncua import
+  Client` analog asyncua-eigener Konvention.
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 4`](M4-protocol-adapters.md)
@@ -631,76 +691,134 @@ Welle 5; werden nicht in Welle 4 angelegt):
 
 ## 9. DoD-Checkliste (Welle-Schluss, mit C3 abgehakt)
 
-Skelett — wird in C3 abgehakt. Pattern analog
-M4-welle-3.md §9.
+Pattern analog M4-welle-3.md §9. Belege siehe
+**DoD-Verifikation**-Block im Status-Header oben + §4
+Liefer-Reihenfolge fuer die per-Commit-Aktion.
 
-**In-Scope-Items (alle abzuhaken mit C3):**
+**In-Scope-Items (alle abgehakt mit C3):**
 
-- [ ] **ADR 0033 angelegt** — `Proposed` (C1) →
-  `Provisional` (C3), mit Decisions O-a/O-b/O-c/O-d/O-e
-  alle **final**.
-- [ ] **OPC-UA-Port produktiv** — `OpcuaDeviceProtocolPort`
+- [x] **ADR 0033 angelegt** — `Proposed` (C1 `74ed35b`) →
+  `Provisional` (dieser Commit), mit Decisions O-a/O-b/
+  O-c/O-d/O-e alle **final** (Node-ID-Schema inline,
+  async-Bridge via Loop-Thread, 8-Datatype-Set, Polling-
+  Read + Direct-Write, in-process `asyncua.Server`). Code:
+  [`../../adr/0033-opcua-adapter-profile.md`](../../adr/0033-opcua-adapter-profile.md).
+- [x] **OPC-UA-Port produktiv** — `OpcuaDeviceProtocolPort`
   als `DeviceProtocolPort`-Implementer unter
-  `src/grid_gym/adapters/driven/protocol_opcua/`; Modul-
-  Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
-  (Simulations-/Testadapter-Notiz).
-- [ ] **Async-Loop-Thread produktiv** —
+  [`../../../../src/grid_gym/adapters/driven/protocol_opcua/`](../../../../src/grid_gym/adapters/driven/protocol_opcua/)
+  (6 Dateien: `__init__.py` + `_config.py` + `_codec.py` +
+  `_loop_thread.py` + `_port.py` + `_errors.py`). Modul-
+  Docstring in `__init__.py` traegt Lastenheft-Z.-1161–
+  1163-Pflicht (Simulations-/Testadapter, **keine**
+  produktive Anlagensteuerung). NEU mit C2 `78fdd7a`.
+- [x] **Async-Loop-Thread produktiv** —
   `OpcuaLoopThread`-Klasse in `_loop_thread.py` mit
-  geordnetem `start()`/`stop()`-Lifecycle und
-  `run_coroutine_threadsafe`-Marshal-Helper; erstes
-  produktives Thread+Loop-Konstruktions-Pattern im Repo
-  (ADR 0030 §2.1-Konsequenz produktiv vorgetragen).
-- [ ] **Unit-Tests fuer 4 Test-Aspekte** —
-  Config-Validation + Datentyp-Codec-Roundtrip +
-  Loop-Thread-Lifecycle + Protocol-Port-Lifecycle/Read+Write;
-  ~45-50 neue Tests (feste Zahl in C3).
-- [ ] **Integration-Smoke produktiv** —
-  `tests/integration/test_opcua_*_smoke.py` mit
-  Variante nach Decision O-e (in-process `asyncua.Server`
-  ODER `open62541`-Sibling) + End-to-End-Read/Write-
-  Roundtrip durch das Decision-O-c-Datatype-Set.
-- [ ] **`tests/integration/compose.yml` Header-Kommentar
-  syncht** — Decision-O-e-Notiz zur Smoke-Variante
-  (in-process oder Sibling-Service).
-- [ ] **`pyproject.toml` erweitert** — `asyncua>=1.1`
-  in `[project] dependencies`; `asyncua`-Eintrag in den
-  AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen ggf. korrigiert
-  (Welle-0-Vorbelegung pruefen).
-- [ ] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
-  Default um `src/grid_gym/adapters/driven/protocol_opcua`.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  geordnetem `start()`/`stop()`-Lifecycle (pending-Task-
+  Cancel + `asyncio.gather(return_exceptions)` + `loop.stop`
+  + `thread.join(timeout=5.0)`) und
+  `run_coroutine_threadsafe`-Marshal-Helper. **Erstes
+  produktives Thread+Loop-Konstruktions-Pattern im Repo**
+  — ADR 0030 §2.1-Konsequenz produktiv vorgetragen.
+- [x] **Unit-Tests fuer 4 Test-Aspekte** — 81 neue Tests
+  (1314 → 1395): 10 Config-Validation + 34 Codec-Roundtrip
+  (inkl. hypothesis-Property-Tests pro Datatype) +
+  9 Loop-Thread-Lifecycle + 16 Protocol-Port-Lifecycle/
+  Read+Write mit AsyncMock + 8 Integration-Smoke-
+  parametrisiert ueber alle 8 Datatypes. Code:
+  [`../../../../tests/unit/adapters/driven/protocol_opcua/`](../../../../tests/unit/adapters/driven/protocol_opcua/).
+- [x] **Integration-Smoke produktiv** —
+  [`../../../../tests/integration/test_opcua_in_process_smoke.py`](../../../../tests/integration/test_opcua_in_process_smoke.py)
+  spawnt `asyncua.Server` in eigenem asyncio-Loop-Thread
+  (Decision O-e); Anonymous-Endpoint; End-to-End-Read/
+  Write-Roundtrip gegen `OpcuaDeviceProtocolPort` durch
+  alle 8 Datatypes (Decision O-c); expliziter
+  `server.stop()` + `thread.join(timeout=5.0)`-Teardown.
+- [x] **`tests/integration/compose.yml` Header-Kommentar
+  syncht** — Welle-4-C2-Edit dokumentiert die bewusste
+  Decision-O-e-Wahl (in-process `asyncua.Server` statt
+  testcontainers-Sibling) als Pattern-Fortfuehrung aus
+  Welle 3 Decision M-f; Lizenz-Pragmatik LGPL-3.0 vs.
+  MPL-2.0-Container-Alternativen.
+- [x] **`pyproject.toml` erweitert** — `asyncua==1.2b2`
+  in `[project] dependencies` (Beta-Pin wegen
+  Python-3.14-Forward-Reference-Inkompat in 1.1.8;
+  asyncua 1.2b2 traegt den Python-3.14-Fix vor 1.2-final).
+  mypy-Override `module = "asyncua.*"` mit
+  `implicit_reexport=true` (1.2b2 hat py.typed aber kein
+  `__all__`). `asyncua`-Eintrag in den AC-PORTS-NO-FW/
+  AC-NO-FW-Forbidden-Listen unveraendert (Welle-0-
+  Vorbelegung). `uv.lock` aktualisiert (108 packages;
+  asyncua 1.1.8 -> 1.2b2 + 8 transitive Deps).
+- [x] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
+  Default um `src/grid_gym/adapters/driven/protocol_opcua`
+  ergaenzt (Pattern analog `protocol_mqtt`/`protocol_modbus`-
+  Eintraege aus M4-Welle-2-C2 / M4-Welle-3-C2).
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
   `protocol_opcua`** — `tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`-Filter erfasst den
-  neuen Pfad ohne Code-Aenderung; `make arch-check`
+  neuen Pfad **ohne Code-Aenderung**; `make arch-check`
   weiter `19/19 Contracts KEPT`.
-- [ ] **C3-Doc-Sync** — `M4-welle-4.md` Status
-  `In Progress → Done`, ADR 0033 `Proposed → Provisional`,
+- [x] **C3-Doc-Sync** — `M4-welle-4.md` Status
+  `In Progress → Done` (dieser Commit), ADR 0033
+  `Proposed → Provisional` (dieser Commit),
   `M4-protocol-adapters.md §3 Welle 4` DoD-Checkboxen
-  alle abgehakt, Top-Level-Doku-Sync (README/README.de/
-  roadmap/adr/README/in-progress/README) auf den
-  Welle-4-Endstand.
+  alle abgehakt (dieser Commit), Top-Level-Doku-Sync in
+  5 Docs (`README.md` + `README.de.md` + `roadmap.md` +
+  `adr/README.md`-Zeile 53 + `in-progress/README.md`)
+  auf den Welle-4-Endstand. `done/README.md`-Bestand-
+  Zeile fuer `M4-welle-4.md`-Move folgt mit M4-Welle-5-
+  Pre-C0 (Pattern analog M4-Welle-3 `506c8ca` +
+  `faa3ecc`).
 
-**Anti-Scope-Items (alle zu halten):**
+**Anti-Scope-Items (alle gehalten):**
 
-- [ ] **Keine DNP3-/IEC-Adapter** in C2.
-- [ ] **Kein OPC-UA-Subscription-Pfad** (Monitored
-  Items) in C2; Polling-Read reicht.
-- [ ] **Kein OTel-Span-Wrap** der OPC-UA-Adapter-Calls.
-- [ ] **Keine OPC-UA-Security** (User/X509/Encryption);
-  Anonymous-Endpoint fuer Smoke.
-- [ ] **Kein RandomPort-Determinismus** fuer Node-IDs.
-- [ ] **Keine Scenario-Schema-Erweiterung jenseits des
-  Decision-O-a-Pattern** (kein neuer YAML-Top-Level-
-  Block).
-- [ ] **Keine Welle-2-MQTT-/Welle-3-Modbus-Adapter-
-  Aenderungen**.
-- [ ] **Keine Bewegung der Open-Trigger**.
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md`
-  (3 von 7 DoD-Items geliefert nach Welle 4: MQTT +
-  Modbus + OPC-UA; Sweep in Welle 7).
-- [ ] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
-  Property-Test** in Welle 4 (bewusst nach Welle 6
-  verschoben; Welle-1-§7-Folge-Pflicht honoriert).
-- [ ] **Keine in-Welle-4-Schaerfungs-ADR** fuer den
-  ADR-0030-Sync-Vertrag (Reversibilitaet dokumentiert,
-  Schaerfung ist Welle-6-Material).
+- [x] **Keine DNP3-/IEC-Adapter** in C2 — verifiziert:
+  keine neue Datei unter
+  `adapters/driven/protocol_{dnp3,iec}/`. Welle-5-
+  Disposition kommt als naechster Schritt.
+- [x] **Kein OPC-UA-Subscription-Pfad** (Monitored
+  Items) in C2 — verifiziert: kein
+  `Subscription.subscribe_data_change`-Aufruf in
+  `protocol_opcua/`; Polling-Read produktiv genug.
+  Welle-6-Schaerfungs-Pfad offen.
+- [x] **Kein OTel-Span-Wrap** der OPC-UA-Adapter-Calls —
+  verifiziert: kein Import von
+  `adapters/driven/telemetry_otlp/` in `protocol_opcua/`;
+  TracePort-Wrap bleibt Welle-6-Material.
+- [x] **Keine OPC-UA-Security** (User/X509/Encryption) —
+  verifiziert: Integration-Smoke nutzt
+  `ua.SecurityPolicyType.NoSecurity`-Endpoint;
+  produktive OPC-UA-Security ist Welle-6- oder M6-Material
+  (`GG-SAFE-*`).
+- [x] **Kein RandomPort-Determinismus** fuer Node-IDs —
+  verifiziert: `OpcuaNodeConfig.node_id` ist Pflichtfeld;
+  kein Auto-Generierungs-Pfad.
+- [x] **Keine Scenario-Schema-Erweiterung jenseits des
+  Decision-O-a-Pattern** — verifiziert: kein Touch an
+  `scenario/validator.py` und kein neuer YAML-Top-Level-
+  Block. `OpcuaProtocolPortConfig` ist Adapter-intern;
+  Scenario-Integration bleibt Welle-4-frei per
+  AC-HEXAGON-PURE.
+- [x] **Keine Welle-2-MQTT-/Welle-3-Modbus-Adapter-
+  Aenderungen** — verifiziert: kein Edit an
+  `src/grid_gym/adapters/driven/protocol_{mqtt,modbus}/`
+  in C2.
+- [x] **Keine Bewegung der Open-Trigger** — verifiziert:
+  `docs/plan/planning/open/` unveraendert. Trigger 006
+  bleibt mit „aktivierungs-reif"-Notiz in `open/`.
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+  verifiziert: `roadmap.md` §3 M4 Checkboxen weiterhin
+  alle ungehakt (3 von 7 DoD-Items geliefert nach
+  Welle 4: MQTT + Modbus + OPC-UA; Sweep in Welle 7).
+- [x] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
+  Property-Test** in Welle 4 — verifiziert: nur Smoke-
+  Regression-Schutz via `make arch-check`. Welle-1-§7-
+  Folge-Pflicht bleibt auf Welle 6 verschoben (Pattern
+  fortgefuehrt aus Welle 2/3).
+- [x] **Keine in-Welle-4-Schaerfungs-ADR** fuer den
+  ADR-0030-Sync-Vertrag — verifiziert: ADR 0033 schaerft
+  nur das OPC-UA-spezifische Profil (Decisions O-a..O-e);
+  der `DeviceProtocolPort`-Sync-Vertrag ist unangetastet.
+  Reversibilitaet via ADR-0011-Pattern dokumentiert
+  (ADR 0033 §4 Konsequenzen — Welle 6 kann Schwester-
+  Port-ADR ziehen, falls noetig).

@@ -1,10 +1,18 @@
 # ADR 0033 — OPC-UA-Adapter-Profile (M4 Welle 4)
 
-**Status:** Proposed — Initial-Entwurf 2026-05-31 (M4-Welle-4-C1).
-Status-Pfad: `Proposed → Provisional` (M4-Welle-4-C2-Merge
-nach feat-Commit mit `protocol_opcua`-Modul + Unit-Tests +
-in-process-Integration-Smoke gruen) → `Accepted`
-(M4-Welle-7-Closure).
+**Status:** Provisional — geschaerft 2026-05-31 mit M4-Welle-4-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Initial-Entwurf
+(`Proposed`) 2026-05-31 mit M4-Welle-4-C1 `74ed35b`; C2-Merge
+`78fdd7a` (feat `protocol_opcua/`-6-Modul-Paket + 81 neue
+Unit-Tests + in-process asyncua-Server-Integration-Smoke +
+`pyproject.toml`/`uv.lock`/`Dockerfile`/`compose.yml`-Edits;
+`make test-unit` 1395 gruen, `make test-integration` 31 gruen
+(8 OPC-UA-Smokes), `make arch-check` 19/19 KEPT, `make gates`
+cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override) belegt
+die Decisions O-a/O-b/O-c/O-d/O-e produktiv. Status-Pfad:
+`Proposed → Provisional` (mit C3, dieser Commit) → `Accepted`
+(M4-Welle-7-Closure analog ADR 0022..0027 + 0030 + 0031 +
+0032).
 **Datum:** 2026-05-31
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
@@ -757,20 +765,37 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-05-31 (M4-Welle-4-C1, dieser
-  Commit). Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — geplant mit M4-Welle-4-C2-Merge
-  (feat-Commit: `protocol_opcua/`-Modul + 4 Unit-Test-
-  Module + In-Process-Integration-Smoke +
-  `compose.yml`-Kommentar-Sync + `pyproject.toml`-Edit
-  + `Dockerfile`-Edit; `make test-unit` gruen, `make
-  test-integration` gruen mit OPC-UA-In-Process-Smoke,
-  `make arch-check` weiter 19/19, `make gates` cache-
-  frei gruen ohne Override).
+- **Proposed** — 2026-05-31 (M4-Welle-4-C1 `74ed35b`).
+  Initial-Entwurf; Review-Schleife offen.
+- **Provisional** — 2026-05-31 (M4-Welle-4-C3, dieser
+  Commit) nach C2-Merge `78fdd7a` (feat-Commit:
+  `protocol_opcua/`-6-Modul-Paket — `__init__.py` +
+  `_config.py` + `_codec.py` + `_loop_thread.py` +
+  `_port.py` + `_errors.py` — mit 81 neuen Unit-Tests
+  (10 Config-Validation + 34 Codec-Roundtrip inkl.
+  hypothesis-Property-Tests + 9 Loop-Thread-Lifecycle +
+  16 Protocol-Port-Lifecycle/Read+Write mit AsyncMock +
+  8 In-Process-Integration-Smoke parametrisiert ueber
+  alle 8 Datatypes); `pyproject.toml`-Pin
+  `asyncua==1.2b2` (Beta-Release wegen Python-3.14-
+  Forward-Reference-Inkompat in 1.1.8) + mypy-Override
+  `implicit_reexport=true` fuer `asyncua.*`;
+  `uv.lock`-Refresh mit 108 packages (asyncua 1.1.8
+  -> 1.2b2 + 8 transitive Deps); `Dockerfile`-Edit
+  (`CRITICAL_COV_TARGETS` um
+  `adapters/driven/protocol_opcua` erweitert);
+  `compose.yml`-Header-Kommentar-Sync zu Decision-O-e
+  in-process-asyncua-Server. Verifikation cache-frei:
+  `make test-unit` 1395 gruen, `make test-integration`
+  31 gruen (23 → 31, +8 OPC-UA-Roundtrips), `make
+  arch-check` 19/19 KEPT, `make gates` 9 A-1-Gates
+  gruen ohne `CRITICAL_COV_TARGETS`-Override.
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027 + 0030 + 0031 + 0032).
   Voraussetzung: Welle 5 (DNP3/IEC) klaert ihre
   Disposition; Welle 6 (Cross-Adapter-Hardening)
   prueft, ob die Thread+Loop-Konstruktion Welle-6-
   Schaerfungs-Bedarf zeigt (Schwester-Port-ADR vs.
-  Reuse-as-is).
+  Reuse-as-is). Folge-Pflicht: asyncua-Pin auf
+  `>=1.2,<2.0` ziehen, sobald 1.2 final auf PyPI ist
+  (Welle-6- oder M6-Material).

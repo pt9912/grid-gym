@@ -37,9 +37,9 @@ make help
 make gates              # 9 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate)
-make test-unit          # Unit-Test-Suite (1314 Tests, Stand 2026-05-31)
+make test-unit          # Unit-Test-Suite (1395 Tests, Stand 2026-05-31)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (23 Tests inkl. OTLP-, MQTT- und Modbus-Smokes)
+                        # (31 Tests inkl. OTLP-, MQTT-, Modbus- und OPC-UA-Smokes)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -123,16 +123,20 @@ Stand **2026-05-30**:
   - Welle 3 — Modbus-TCP-Adapter
     (ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
     `Provisional`) · `Done`
-  - Wellen 4–7 — OPC-UA / DNP3 / IEC 61850 / Closure · `Pending`
+  - Welle 4 — OPC-UA-Adapter
+    (ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Wellen 5–7 — DNP3 / IEC 61850 / Closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** 1314 Unit-Tests + 23 Integration-Tests gruen
-(Stand nach M4-Welle-3-Review-Folge — +95 Unit-Tests ggue.
-Welle-2-Closure fuer den Modbus-Adapter plus +8 Review-
-Folge-Tests fuer FC06-Guard und Read-/Write-Fehler-
-Taxonomie; +1 Integration-Test fuer den
-in-process-pymodbus-Server-Smoke).
+**Testbilanz:** 1395 Unit-Tests + 31 Integration-Tests gruen
+(Stand nach M4-Welle-4-Closure — +81 Unit-Tests ggue. Welle-3-
+Review-Folge fuer den OPC-UA-Adapter: 10 Config-Validation +
+34 Codec-Roundtrip inkl. hypothesis-Property-Tests + 9 Loop-
+Thread-Lifecycle + 16 Protocol-Port-Lifecycle mit AsyncMock +
+8 In-Process-Integration-Smoke-Tests parametrisiert ueber
+alle 8 Datatypes).
 
 **`make gates`** ist 9-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check
@@ -161,6 +165,7 @@ in der Detail-Tabelle unten.
 | `DeviceProtocolPort`-Foundation (M4 Welle 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — Port + `*Error`-Hierarchie + TickLoop-FIFO/LIFO-Lifecycle |
 | MQTT-Adapter (M4 Welle 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/`-7-Modul-Paket (paho-mqtt 2.x, Per-Target-Queue-Marshal) + Mosquitto-Integration-Smoke |
 | Modbus-TCP-Adapter (M4 Welle 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/`-5-Modul-Paket (pymodbus 3.x sync-Client, **kein** Thread-Marshal noetig — Decision M-c direkt-sync; 5 Datatypes, FC03/FC10 Defaults mit FC04/FC06-Overrides) + in-process-pymodbus-Server-Integration-Smoke fuer das Default-Profil. Folge-Slice [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) hat FC06-Multi-Register-Guard, Read-/Write-Fehler-Taxonomie und bewusste Smoke-Abgrenzung umgesetzt. Trigger-006-Re-Eval (`mypy --strict-bytes`) ist **positiv**; Aktivierung bleibt Folgearbeit. |
+| OPC-UA-Adapter (M4 Welle 4) | `Done` | [`in-progress/M4-welle-4.md`](docs/plan/planning/in-progress/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/`-6-Modul-Paket (asyncua 1.2b2; **erster rein-async-Stack** im Repo mit eigenem `OpcuaLoopThread` — asyncio-Event-Loop in Daemon-Thread + `run_coroutine_threadsafe`-Marshal, Decision O-b; 8 Datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), Polling-Read + Direct-Write, Subscription-Pfad Welle-6-Schaerfung) + in-process `asyncua.Server`-Integration-Smoke parametrisiert ueber alle 8 Datatypes (Decision O-e; LGPL-3.0 Library-Linking, umgeht `open62541/open62541` MPL-2.0-Container-Komplexitaet). asyncua-Pin `==1.2b2` ist eine Beta-Release mit dem Python-3.14-Forward-Reference-Fix, der in 1.1.8 fehlt. |
 | OPC-UA / DNP3 / IEC 61850 (M4 Welle 4–6) | `Pending` | Konkrete Adapter folgen in den naechsten M4-Wellen |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
@@ -253,8 +258,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (1314 Stand 2026-05-31, M4-Welle-3-Review-Folge)
-│   ├── integration/             ← Compose-basierte Integration-Tests (23 Tests; OTLP- + MQTT- + Modbus-Smoke inkl.)
+│   ├── unit/                    ← pytest-Unit-Tests (1395 Stand 2026-05-31, M4-Welle-4-Closure)
+│   ├── integration/             ← Compose-basierte Integration-Tests (31 Tests; OTLP- + MQTT- + Modbus- + OPC-UA-Smoke inkl.)
 │   └── unit/_arch_check_*       ← Architektur-Tests (7 lint-imports + 12 custom AC-Checks = 19 A-1)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)

@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 3 (Done; Welle 4 OPC-UA als naechstes)
-**Stand:** 2026-05-30
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 4 (Done; Welle 5 DNP3/IEC-Disposition als naechstes)
+**Stand:** 2026-05-31
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
@@ -21,12 +21,19 @@
   (Move von `M4-welle-3.md` nach `done/`, Smoke-Abdeckung
   praezisiert, Folge-Slice
   [`031`](../done/031-modbus-adapter-review-folge.md)
-  mit FC06-Guard und Fehler-Taxonomie umgesetzt)).
+  mit FC06-Guard und Fehler-Taxonomie umgesetzt);
+  **Welle 4 `Done`** geschlossen 2026-05-31 mit C0 `7937e70`
+  + C1 `74ed35b` + C2 `78fdd7a` (feat: `protocol_opcua/`-6-
+  Modul-Paket + 81 Unit-Tests + 8 In-Process-Integration-
+  Smokes + asyncua-Pin auf `==1.2b2` wegen Python-3.14-
+  Inkompat in 1.1.8 + mypy-Override `implicit_reexport`)
+  + C3 (dieser Commit; ADR 0033 → `Provisional`,
+  `M4-welle-4.md` → `Done`, Top-Level-Doku-Sync in 5 Docs)).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-4 (OPC-UA-Adapter — `asyncua`-Wrapper, **erster**
-  rein-async-Stack; traegt die Thread+Loop-Marshal-
-  Konstruktion produktiv vor).
+  M4-Welle-5 (DNP3/IEC-Disposition — Variante A Verzicht-
+  Default, Variante B Mini-Spike als Opt-In; Entscheidung
+  informiert durch asyncua-Erfahrung aus Welle 4).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -43,14 +50,21 @@
   [`031`](../done/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-
   Fehler-Taxonomie und bewusste Smoke-Abgrenzung
-  umgesetzt.
-- **Tests:** 1314 Unit + 23 Integration gruen (Stand nach
-  M4-Welle-3-Review-Folge; +176 Unit-Tests ggue.
-  M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
-  +8 Review-Folge 031 fuer FC06-Guard und Read-/Write-
-  Fehler-Taxonomie] + 2 Integration-Tests [Mosquitto-MQTT-
-  Smoke aus Welle 2 + in-process-pymodbus-Server-Smoke
-  aus Welle 3]); Coverage 95.45 % total.
+  umgesetzt. **0033 `Provisional`** (M4-Welle-4 OPC-UA-
+  Adapter-Profile mit Decisions O-a/O-b/O-c/O-d/O-e alle
+  final — inline Node-ID-Schema, Async-Bridge via
+  `OpcuaLoopThread` (erstes Repo-Pattern dieser Art),
+  8-Datatype-Set, Polling-Read + Direct-Write, in-process
+  `asyncua.Server`-Smoke; `Accepted` geplant mit
+  M4-Welle-7-Closure).
+- **Tests:** 1395 Unit + 31 Integration gruen (Stand nach
+  M4-Welle-4-Closure; +257 Unit-Tests ggue. M3-Closure
+  [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 + +8 Review-
+  Folge 031 + +81 Welle 4 fuer OPC-UA] + 10 Integration-
+  Tests [Mosquitto-MQTT-Smoke aus Welle 2 +
+  in-process-pymodbus-Server-Smoke aus Welle 3 + 8
+  in-process-`asyncua.Server`-Smokes aus Welle 4]);
+  Coverage 95.16 % total, 90.95 % Branch-Critical.
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
