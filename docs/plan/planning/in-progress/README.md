@@ -23,7 +23,8 @@ Doku-Review-Folge 2026-05-31 (Slice 031) nach `done/`
 gewandert, Welle 4 mit Slice-032 + Nachzug-Commit
 `1c2dfa3` und Self-Close-Move `3bc015b`, Welle 5a mit
 ADR 0034 `Provisional` (`Proposed` per `b0fea7e` →
-`Provisional` per C3) und C2-Merge `224b370`. Welle-0-,
+`Provisional` per C3 `6903a08`) und C2-Merge `224b370`.
+Welle-0-,
 Welle-1-, Welle-2-, Welle-3- und Welle-4-Docs sind alle
 nach
 [`../done/M4-welle-0.md`](../done/M4-welle-0.md),

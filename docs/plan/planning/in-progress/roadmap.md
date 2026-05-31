@@ -49,7 +49,13 @@
   Process-`dnp3-outstation.AsyncOutstation`-Smokes + Pin
   `nfm-dnp3>=1.0,<2.0` produktiv und `dnp3-outstation>=0.2,<1.0`
   als dev-only Test-Sibling + mypy-Overrides + C2-Library-
-  Bug-Find: `AnalogInput.index` statt `.idx` aus `__repr__`).
+  Bug-Find: `AnalogInput.index` statt `.idx` aus `__repr__`)
+  + C3 `6903a08` (ADR 0034 → `Provisional`, `M4-welle-5a.md`
+  → `Done` mit Liefer-Hashes + DoD-Verifikation + §9 DoD-
+  Checkliste komplett abgehakt, Top-Level-Doku-Sync in 5
+  Docs); Self-Close-Move (`M4-welle-5a.md` aus
+  `in-progress/` nach `done/`) folgt als Pre-C0-Sync vor
+  Welle 5b.
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-5b (IEC-61850-Spike — `libiec61850`-Python-
