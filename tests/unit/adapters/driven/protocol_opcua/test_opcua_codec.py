@@ -325,6 +325,35 @@ def test_decode_float_overflow_int_returns_typed_error() -> None:
         decode_variant_to_value(variant, OpcuaDatatype.DOUBLE)
 
 
+def test_encode_float_with_huge_int_returns_typed_error() -> None:
+    """Slice-032-Nachzug (Welle-4-Review Finding 2):
+    `float(10**400)` wirft `OverflowError` — Codec muss das in
+    typed `OpcuaCodecNonFiniteError` umwandeln, damit die
+    Adapter-Surface dem `DeviceProtocolPort`-Vertrag entspricht."""
+    with pytest.raises(OpcuaCodecNonFiniteError):
+        encode_value_to_variant(10**400, OpcuaDatatype.FLOAT)
+
+
+def test_encode_double_with_huge_int_returns_typed_error() -> None:
+    """Slice-032-Nachzug: gleiches Pattern fuer Double."""
+    with pytest.raises(OpcuaCodecNonFiniteError):
+        encode_value_to_variant(10**400, OpcuaDatatype.DOUBLE)
+
+
+def test_encode_int_with_decimal_infinity_returns_typed_error() -> None:
+    """Slice-032-Nachzug (Welle-4-Review Finding 2):
+    `int(Decimal('Infinity'))` wirft `OverflowError` — Codec muss
+    das in typed `OpcuaCodecOutOfRangeError` umwandeln."""
+    with pytest.raises(OpcuaCodecOutOfRangeError):
+        encode_value_to_variant(Decimal("Infinity"), OpcuaDatatype.INT32)
+
+
+def test_encode_int_with_decimal_nan_returns_typed_error() -> None:
+    """Slice-032-Nachzug: `int(Decimal('NaN'))` wirft `ValueError`."""
+    with pytest.raises(OpcuaCodecOutOfRangeError):
+        encode_value_to_variant(Decimal("NaN"), OpcuaDatatype.INT32)
+
+
 def test_decode_float_quantizes_to_32bit_precision() -> None:
     """Finding 3.2: konkreter Roundtrip-Beleg mit 64-bit-Wert, der
     in 32-bit andere Stellen hat."""

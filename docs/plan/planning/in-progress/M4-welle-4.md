@@ -172,8 +172,10 @@ Doku „Synchronous wrapper" zeigt den Pfad.
      Scenario-YAML-Block (Pattern-Praezedenz ADR 0031 §2.1
      + ADR 0032 §2.1). Pro `device_id` ein
      `OpcuaNodeConfig` mit Pflicht-Feldern
-     `node_id`/`datatype`/`access`; Optional-Feldern
-     `namespace_index`/`identifier_type`.
+     `node_id`/`datatype`/`access`. Namespace-Index und
+     Identifier-Type werden direkt aus dem `node_id`-String
+     extrahiert (Slice-032-Nachzug: keine separaten
+     Optional-Felder; YAGNI).
    - **Decision O-b (Async-Bridge, in C1 fixiert)**:
      Adapter-interner asyncio-Loop in eigenem Daemon-Thread
      (`start()` spawnt; `stop()` schliesst geordnet ab) +
@@ -625,10 +627,11 @@ Welle 5; werden nicht in Welle 4 angelegt):
   Loop diese Exception nicht sauber an den Sync-Aufrufer
   zurueckpropagiert, bleibt der Caller blockiert.
   *Mitigation*: `run_coroutine_threadsafe(coro,
-  loop).result(timeout=...)` mit expliziten Timeouts
-  (`OpcuaProtocolPortConfig.read_timeout_s`,
-  `.write_timeout_s`); Exception-Translation in
-  `ModbusPortReadFailedError`-aequivalente
+  loop).result(timeout=...)` mit explizitem Timeout aus
+  `OpcuaProtocolPortConfig.timeout_s` (Welle-4-Welle-Schema:
+  ein gemeinsames Timeout fuer Connect/Read/Write; Welle-6-
+  Schaerfung kann pro Operation differenzieren); Exception-
+  Translation in `ModbusPortReadFailedError`-aequivalente
   `OpcuaPortReadFailedError`-Familie analog Slice-031-Pattern.
 - **Decision-O-c-Datatype-Wahl bricht reale OPC-UA-
   Server-Profile**: konkrete Geraete (Wechselrichter,
@@ -636,9 +639,11 @@ Welle 5; werden nicht in Welle 4 angelegt):
   herstellerspezifische `ExtensionObject`-Strukturen
   oder `ByteString`-Felder, die im Welle-4-Minimum-Set
   fehlen. *Mitigation*: ADR 0033 §2.3 dokumentiert die
-  Welle-4-Wahl als `Provisional`; Per-Target-Override
-  (`identifier_type`) haelt den Konfig-Pfad fuer Welle-6-
-  Schaerfung offen.
+  Welle-4-Wahl als `Provisional`; Welle-6-Schaerfung via
+  ADR 0011 kann das Datatype-Set erweitern (separate ADR
+  + Codec-Erweiterung). Slice-032-Nachzug: `identifier_type`
+  ist nicht Teil des Schemas — Welle-6-Schaerfung kann
+  Optional-Felder via ADR-0011-Pattern ergaenzen.
 - **Decision-O-e-Lizenz-Pruefung scheitert**: falls
   `open62541/open62541`-Image-Lizenz (MPL-2.0) nicht
   redistributable ist oder fuer den Container-Pull aus
@@ -742,10 +747,12 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion.
   testcontainers-Sibling) als Pattern-Fortfuehrung aus
   Welle 3 Decision M-f; Lizenz-Pragmatik LGPL-3.0 vs.
   MPL-2.0-Container-Alternativen.
-- [x] **`pyproject.toml` erweitert** — `asyncua==1.2b2`
-  in `[project] dependencies` (Beta-Pin wegen
+- [x] **`pyproject.toml` erweitert** — `asyncua>=1.2b2,<2.0`
+  in `[project] dependencies` (Beta-Range-Pin wegen
   Python-3.14-Forward-Reference-Inkompat in 1.1.8;
   asyncua 1.2b2 traegt den Python-3.14-Fix vor 1.2-final).
+  Slice-032-Nachzug: Pin auf Range gezogen — Auto-Upgrade-
+  Pfad fuer 1.2b3/1.2-final, Major-Drift weiter gesperrt.
   mypy-Override `module = "asyncua.*"` mit
   `implicit_reexport=true` (1.2b2 hat py.typed aber kein
   `__all__`). `asyncua`-Eintrag in den AC-PORTS-NO-FW/

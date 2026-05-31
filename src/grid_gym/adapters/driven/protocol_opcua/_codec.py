@@ -62,12 +62,15 @@ class OpcuaCodecOutOfRangeError(OpcuaCodecError):
     """Eingabewert liegt ausserhalb des Datatype-Wertebereichs."""
 
     def __init__(
-        self, value: int | float, datatype: OpcuaDatatype, allowed: tuple[int, int]
+        self,
+        value: int | float | Decimal,
+        datatype: OpcuaDatatype,
+        allowed: tuple[int, int],
     ) -> None:
         super().__init__(
             f"Wert {value!r} liegt ausserhalb des {datatype.value}-Wertebereichs {allowed}."
         )
-        self.value: int | float = value
+        self.value: int | float | Decimal = value
         self.datatype: OpcuaDatatype = datatype
         self.allowed: tuple[int, int] = allowed
 
@@ -212,13 +215,23 @@ def _coerce_string(value: object, datatype: OpcuaDatatype) -> str:
 
 
 def _coerce_int(value: object, datatype: OpcuaDatatype) -> int:
-    """Akzeptiert int/Decimal/float (kein bool) und range-checkt."""
+    """Akzeptiert int/Decimal/float (kein bool) und range-checkt.
+
+    Slice-032-Nachzug (Welle-4-Review Finding 2):
+    `int(Decimal("Infinity"))` wirft `OverflowError`,
+    `int(float("nan"))` wirft `ValueError`. Beide werden in
+    typed `OpcuaCodecOutOfRangeError` umgemantelt, damit die
+    Adapter-Surface dem `DeviceProtocolPort`-Vertrag entspricht.
+    """
     if isinstance(value, bool):
         raise OpcuaCodecPayloadTypeError("bool", datatype)
     if isinstance(value, int):
         as_int = value
     elif isinstance(value, (Decimal, float)):
-        as_int = int(value)
+        try:
+            as_int = int(value)
+        except (OverflowError, ValueError) as exc:
+            raise OpcuaCodecOutOfRangeError(value, datatype, _INT_RANGES[datatype]) from exc
     else:
         raise OpcuaCodecPayloadTypeError(type(value).__name__, datatype)
     low, high = _INT_RANGES[datatype]
@@ -228,13 +241,28 @@ def _coerce_int(value: object, datatype: OpcuaDatatype) -> int:
 
 
 def _coerce_float(value: object, datatype: OpcuaDatatype) -> float:
-    """Akzeptiert int/Decimal/float (kein bool) und NaN-Check."""
+    """Akzeptiert int/Decimal/float (kein bool) und NaN-Check.
+
+    Slice-032-Nachzug (Welle-4-Review Finding 2):
+    `float(10**400)` wirft `OverflowError`,
+    `float(Decimal("Infinity"))` ist ein finiter Float ueber
+    `inf`, der vom `math.isfinite`-Check abgefangen wird —
+    aber `float(Decimal("NaN"))` kommt durch. Beide Pfade
+    werden in typed `OpcuaCodecNonFiniteError` umgemantelt
+    (NaN/Inf werden als nicht-finit klassifiziert).
+    """
     if isinstance(value, bool):
         raise OpcuaCodecPayloadTypeError("bool", datatype)
     if isinstance(value, float):
         as_float = value
     elif isinstance(value, (int, Decimal)):
-        as_float = float(value)
+        try:
+            as_float = float(value)
+        except (OverflowError, ValueError) as exc:
+            # Riesige Integer / Decimal-Inf wandern in
+            # NonFiniteError (semantisch: nicht-darstellbarer
+            # Float-Wert).
+            raise OpcuaCodecNonFiniteError(float("inf"), datatype) from exc
     else:
         raise OpcuaCodecPayloadTypeError(type(value).__name__, datatype)
     if not math.isfinite(as_float):

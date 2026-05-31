@@ -65,6 +65,20 @@ def test_node_id_must_match_pattern() -> None:
     assert exc_info.value.value == "i=1001"
 
 
+def test_node_id_numeric_identifier_must_be_int() -> None:
+    """Slice-032-Nachzug (Welle-4-Review Finding 1):
+    `ns=N;i=<ident>` muss einen parsbaren Integer-Identifier
+    tragen — bisher matchte das Regex auch `ns=2;i=abc`."""
+    bad = {
+        "device1": OpcuaNodeConfig(
+            node_id="ns=2;i=abc", datatype=OpcuaDatatype.INT32, access="read"
+        ),
+    }
+    with pytest.raises(OpcuaConfigInvalidNodeIdError) as exc_info:
+        OpcuaProtocolPortConfig(endpoint_url="opc.tcp://localhost:4840", nodes=bad)
+    assert exc_info.value.value == "ns=2;i=abc"
+
+
 def test_node_id_string_identifier_accepted() -> None:
     nodes = {
         "device1": OpcuaNodeConfig(

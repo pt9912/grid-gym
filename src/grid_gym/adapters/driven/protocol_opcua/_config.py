@@ -178,12 +178,25 @@ class OpcuaProtocolPortConfig:
 
 def _validate_single_node_config(device_id: str, node_cfg: OpcuaNodeConfig) -> None:
     """Prueft Pflicht-Felder und Wertebereiche fuer einen einzelnen
-    `OpcuaNodeConfig`. Wirft typed Errors mit Kontext."""
+    `OpcuaNodeConfig`. Wirft typed Errors mit Kontext.
+
+    Slice-032-Nachzug (Welle-4-Review Finding 1): `i=`-Variante muss
+    einen parsbaren Integer-Identifier tragen — `ns=2;i=abc` matchte
+    bisher den Regex (`.+` ist beliebig), wurde aber nie weiter
+    geprueft.
+    """
     match = _NODE_ID_PATTERN.match(node_cfg.node_id)
     if match is None:
         raise OpcuaConfigInvalidNodeIdError(node_cfg.node_id, device_id)
     namespace = int(match.group("ns"))
     if not (_MIN_NAMESPACE <= namespace <= _MAX_NAMESPACE):
         raise OpcuaConfigInvalidNamespaceError(namespace, device_id)
+    kind = match.group("kind")
+    ident = match.group("ident")
+    if kind == "i":
+        try:
+            int(ident)
+        except ValueError as exc:
+            raise OpcuaConfigInvalidNodeIdError(node_cfg.node_id, device_id) from exc
     if node_cfg.access not in ("read", "write"):
         raise OpcuaConfigInvalidAccessError(node_cfg.access, device_id)
