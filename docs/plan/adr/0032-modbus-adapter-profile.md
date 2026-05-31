@@ -1,10 +1,17 @@
 # ADR 0032 — Modbus-TCP-Adapter-Profile (M4 Welle 3)
 
-**Status:** Proposed — Initial-Entwurf 2026-05-30 (M4-Welle-3-C1).
-Status-Pfad: `Proposed → Provisional` (M4-Welle-3-C2-Merge
-nach feat-Commit mit `protocol_modbus`-Modul + Unit-Tests +
-in-process-Integration-Smoke gruen) → `Accepted`
-(M4-Welle-7-Closure).
+**Status:** Provisional — geschaerft 2026-05-30 mit M4-Welle-3-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Initial-Entwurf
+(`Proposed`) 2026-05-30 mit M4-Welle-3-C1 `a86ac46`; C2-Merge
+`d721982` (feat `protocol_modbus/`-5-Modul-Paket + 95 neue
+Unit-Tests + in-process pymodbus-Server-Integration-Smoke +
+`pyproject.toml`/`Dockerfile`/`compose.yml`-Edits; `make
+test-unit` 1306 gruen, `make test-integration` 23 gruen,
+`make arch-check` 19/19 KEPT, `make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override) belegt die Decisions
+M-a/M-b/M-c/M-d/M-e/M-f produktiv. Status-Pfad:
+`Proposed → Provisional` (mit C3, dieser Commit) → `Accepted`
+(M4-Welle-7-Closure analog ADR 0022..0027 + 0030 + 0031).
 **Datum:** 2026-05-30
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
@@ -667,16 +674,30 @@ offen.
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-05-30 (M4-Welle-3-C1, dieser
-  Commit). Initial-Entwurf; Review-Schleife offen.
-- **Provisional** — geplant mit M4-Welle-3-C2-Merge
-  (feat-Commit: `protocol_modbus/`-Modul + 4 Unit-Test-
-  Module + In-Process-Integration-Smoke +
-  `compose.yml`-Kommentar-Sync + `pyproject.toml`-Edit
-  + `Dockerfile`-Edit; `make test-unit` gruen, `make
-  test-integration` gruen mit Modbus-In-Process-Smoke,
-  `make arch-check` weiter 19/19, `make gates` cache-
-  frei gruen ohne Override).
+- **Proposed** — 2026-05-30 (M4-Welle-3-C1 `a86ac46`).
+  Initial-Entwurf; Review-Schleife offen.
+- **Provisional** — 2026-05-30 (M4-Welle-3-C3, dieser
+  Commit) nach C2-Merge `d721982` (feat-Commit:
+  `protocol_modbus/`-5-Modul-Paket + 95 neue Unit-Tests
+  (~25 Config-Validation + ~30 Codec-Roundtrip inkl.
+  hypothesis-Property-Tests + ~24 Lifecycle/Read+Write
+  mit mocked pymodbus-Client + ~16 Function-Code-
+  Override) + 1 In-Process-Integration-Smoke
+  (`tests/integration/test_modbus_in_process_smoke.py`)
+  + `compose.yml`-Kommentar-Sync + `pyproject.toml`-Edit
+  (`pymodbus>=3.6,<4.0`) + `Dockerfile`-Edit
+  (`CRITICAL_COV_TARGETS` um
+  `adapters/driven/protocol_modbus`); `make test-unit`
+  1306 gruen, `make test-integration` 23 gruen mit
+  Modbus-In-Process-Smoke, `make arch-check` weiter
+  19/19 Contracts KEPT, `make gates` cache-frei gruen
+  ohne `CRITICAL_COV_TARGETS`-Override). Trigger
+  006-Re-Eval mit Modbus-Code-Beleg ebenfalls in C3
+  abgeschlossen: `mypy --strict-bytes` laeuft ohne
+  zusaetzliche `# type: ignore`-Inflation gegen den
+  Modbus-Code (siehe
+  [`open/006`](../planning/open/006-mypy-strict-bytes.md);
+  Trigger wandert in Folge-Slice nach `next/`).
 - **Accepted** — geplant mit M4-Welle-7-Closure
   (analog ADR 0022..0027 + 0030 + 0031). Voraussetzung:
   Welle 4 (OPC-UA) implementiert ihren Adapter ohne

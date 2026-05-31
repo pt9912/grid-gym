@@ -1,10 +1,12 @@
 # 006 — `--strict-bytes`-Modus aktivieren
 
 **Status:** Open — Trigger-Watch (M3-Welle-7-Closure-Decision
-2026-05-25: **verschoben auf M4-Vorlauf** mit geschaerftem
-Aktivierungs-Kriterium; siehe §Decision unten).
+2026-05-25: verschoben auf M4-Vorlauf mit geschaerftem
+Aktivierungs-Kriterium; M4-Welle-3-C3-Re-Eval 2026-05-30:
+**positive Re-Eval, Move nach `next/` als Folge-Slice
+geplant** — siehe §Decision + §M4-Welle-3-Re-Eval unten).
 **Datum:** 2026-05-15 (eroeffnet), 2026-05-25 (Welle-7-Closure-
-Decision).
+Decision), 2026-05-30 (M4-Welle-3-C3-Re-Eval).
 **Quelle:** [`ADR 0005`](../../adr/0005-type-check-gate.md) §6.
 
 ---
@@ -71,10 +73,73 @@ Bei Aktivierung wandert Trigger 006 nach `next/` mit einem
 Slice-Plan, der die drei Erwartete-Lieferung-Items oben (mypy-
 Config, Kern-Pruefung, Test-Suite-Anpassung) konkret schedulet.
 
+## M4-Welle-3-Re-Eval (2026-05-30)
+
+**Befund (positiv):** Aktivierungs-Kriterium 1 (M4-
+Protokolladapter bringt einen ersten produktiven `bytes`-
+Pfad) ist mit M4-Welle-3-C2 `d721982` real eingetroffen:
+`src/grid_gym/adapters/driven/protocol_modbus/_codec.py`
+ist der erste produktive `bytes`/`int`/`float`-Konvertierungs-
+Pfad im Repo (`struct.pack`/`struct.unpack` mit
+`_registers_to_bytes`/`_bytes_to_registers`-Helpern).
+
+**`# type: ignore`-Zaehlung im Modbus-Modul** (Stand
+`d721982` + C3):
+
+| Datei                                               | `# type: ignore` |
+| --------------------------------------------------- | ---------------- |
+| `protocol_modbus/__init__.py`                       | 0                |
+| `protocol_modbus/_config.py`                        | 0                |
+| `protocol_modbus/_codec.py`                         | 0                |
+| `protocol_modbus/_port.py`                          | 2                |
+| `protocol_modbus/_errors.py`                        | 0                |
+
+Die zwei `# type: ignore[no-untyped-call]` in
+`_port.py:128/148` decken pymodbus-API-Aufrufe
+(`client.connect()`/`client.close()`) ab, fuer die
+pymodbus 3.x keine Type-Stubs ausliefert. **Sie sind
+nicht bytes-bezogen** — `--strict-bytes` aendert ihren
+Status nicht.
+
+**Re-Eval-Lauf (cache-frei, 2026-05-30):**
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" \
+  -e UV_CACHE_DIR=/tmp/uv-cache \
+  -e UV_PROJECT_ENVIRONMENT=/tmp/uv-venv \
+  -v "$(pwd)":/src -w /src grid-gym-source:latest \
+  uv run mypy --config-file pyproject.toml --strict-bytes
+```
+
+Ausgabe: `Success: no issues found in 116 source files`.
+
+**Folgerung:** `--strict-bytes` bringt am Modbus-Code
+**null zusaetzliche Findings** ueber das `mypy --strict`-
+Baseline hinaus. `_codec.py` benutzt `bytes` strikt
+(kein `bytearray`/`memoryview`-Drift; `bytes(out)`-Konvertierung
+am Ende von `_registers_to_bytes` ist explizit). Damit ist
+das Repo `--strict-bytes`-aktivierungs-faehig **ohne neue
+Ignores im Modbus-Code**.
+
+**Entscheidung:** Trigger 006 ist **aktivierungs-reif** und
+wandert in einen separaten Folge-Slice nach
+`docs/plan/planning/next/006-mypy-strict-bytes.md`. Die
+physische `git mv`-Aktion + Slice-Plan-Body sind Folge-
+Commits (Memory-Konvention `feedback_git_mv`: erst
+`chore: git mv` allein, dann Body-Schaerfung). M4-Welle-3-C3
+selbst aktiviert `--strict-bytes` noch **nicht** — der
+Welle-3-Scope ist Modbus-Adapter, nicht mypy-Config (vgl.
+`docs/plan/planning/in-progress/M4-welle-3.md` §7
+Risiko-Bullet „Trigger 006 sprengt Welle-3-Scope").
+
 ## Wandert nach
 
-- `next/`, sobald eines der drei Aktivierungs-Kriterien oben
-  eintritt; mit konkretem Slice-Plan,
-- `in-progress/`, wenn Konfigurations-Slice geplant ist,
-- `done/`, wenn `[tool.mypy]` `strict_bytes = true` aktiv ist und
-  `make gates` ohne Override gruen bleibt.
+- `next/`: Move mit M4-Welle-3-Folge-Slice (Memory-
+  Konvention `feedback_git_mv`); konkreter Slice-Plan
+  beschreibt die drei Erwartete-Lieferung-Items oben
+  (mypy-Config-Erweiterung, Kern-Pruefung, Test-Suite-
+  Anpassung) plus den Aktivierungs-Commit.
+- `in-progress/`, wenn der `next/`-Slice-Plan in Arbeit
+  geht.
+- `done/`, wenn `[tool.mypy]` `strict_bytes = true` aktiv
+  ist und `make gates` ohne Override gruen bleibt.

@@ -119,19 +119,15 @@ As of **2026-05-30**:
   - Wave 2 — MQTT adapter
     (ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md)
     `Provisional`) · `Done`
-  - Wave 3 — Modbus-TCP adapter (`pymodbus` wrapper, register
-    schema, in-process pymodbus-server smoke instead of a
-    container — Decision M-f in ADR 0032 §2.6 avoids the
-    Modbus-server-container licensing issue) · **C0/C1/C2
-    shipped, C3 doc-sync outstanding** — ADR
-    [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
-    `Proposed` (will become `Provisional` with C3)
+  - Wave 3 — Modbus-TCP adapter
+    (ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
+    `Provisional`) · `Done`
   - Waves 4–7 — OPC-UA / DNP3 / IEC 61850 / closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
 **Test balance:** 1306 unit tests + 23 integration tests green
-(state `d721982` after M4 Wave 3 C2 — +95 unit tests vs. Wave 2
+(state after M4 Wave 3 closure — +95 unit tests vs. Wave 2
 closure for Modbus config validation, codec roundtrip with
 `hypothesis` property tests, lifecycle/read+write with mocked
 pymodbus client, and function-code overrides; +1 integration
@@ -163,7 +159,7 @@ the per-milestone detail table below.
 | Tick-Loop private-import contract (Slice 028) | `Done` | [`done/028-tick-loop-private-error-import-contract.md`](docs/plan/planning/done/028-tick-loop-private-error-import-contract.md) — 12th `tools/arch_check.py` contract |
 | `DeviceProtocolPort` foundation (M4 Wave 1) | `Done` | [`done/M4-welle-1.md`](docs/plan/planning/done/M4-welle-1.md); ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional` — port + `*Error` hierarchy + TickLoop FIFO/LIFO lifecycle |
 | MQTT adapter (M4 Wave 2) | `Done` | [`in-progress/M4-welle-2.md`](docs/plan/planning/in-progress/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
-| Modbus-TCP adapter (M4 Wave 3) | `In Progress` (C0/C1/C2 shipped, C3 outstanding) | [`in-progress/M4-welle-3.md`](docs/plan/planning/in-progress/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Proposed` (Decisions M-a/M-b/M-c/M-d/M-e/M-f all final; → `Provisional` with C3 doc-sync) — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes with byte-order/word-swap matrix; FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke (Decision M-f avoids the Modbus-server-container licensing issue) + Trigger-006-Re-Eval pending in C3 (Modbus is the first productive `bytes`/`int`/`float` conversion path in the repo) |
+| Modbus-TCP adapter (M4 Wave 3) | `Done` | [`in-progress/M4-welle-3.md`](docs/plan/planning/in-progress/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes with byte-order/word-swap matrix; FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke (Decision M-f avoids the Modbus-server-container licensing issue). Trigger-006-Re-Eval (`mypy --strict-bytes`) positive: cache-free green against the Modbus code with no extra `# type: ignore` inflation — trigger moves to `next/` as a follow-up slice |
 | OPC-UA / DNP3 / IEC 61850 (M4 Waves 4–6) | `Pending` | Concrete adapters land in subsequent M4 waves |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |

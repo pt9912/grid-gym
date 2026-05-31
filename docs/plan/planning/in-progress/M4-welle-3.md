@@ -1,16 +1,72 @@
 # Welle 3 — M4 Modbus-TCP-Adapter
 
-**Status:** In Progress — eroeffnet 2026-05-30 nach
-M4-Welle-2-Closure (`3b633f6` C0 + `4e102b8` C1 + `f33bb4e` C2
-+ `7e161f5` C3 + `0d6ad6c` Self-Close-Move + `9ba768b`
-Pre-C0-Sync). Welle 3 ist die **dritte Code-Welle** in M4
-und der **zweite konkrete Adapter** auf der
+**Status:** Done — geschlossen 2026-05-30 mit M4-Welle-3-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-05-30 nach M4-Welle-2-Closure (`3b633f6` C0 + `4e102b8`
+C1 + `f33bb4e` C2 + `7e161f5` C3 + `0d6ad6c` Self-Close-Move
++ `9ba768b` Pre-C0-Sync). Welle 3 ist die **dritte Code-Welle**
+in M4 und der **zweite konkrete Adapter** auf der
 `DeviceProtocolPort`-Surface (`GG-AR-PORT-DRN-007`):
 Modbus-TCP ueber `pymodbus 3.x`. Welle 3 nutzt das in
 ADR 0031 §2.1 etablierte Decision-4a-Inline-Profile-Pattern
 und schaerft es Modbus-spezifisch (Register-Schema statt
 Topic-Schema, Datentyp- und Byte-Reihenfolge-Konvention,
 Slave-Unit-ID).
+
+**Liefer-Hashes:**
+
+- C0 `8ef1e72` — `docs(plan): M4-welle-3 Slice-Doc (M4 Welle-3 Beginn)`.
+- C1 `a86ac46` — `docs(adr): ADR 0032 Proposed — Modbus-TCP-Adapter-Profile (M4 Welle 3)`.
+- C2 `d721982` — `feat(welle-3): protocol_modbus + Tests + In-Process-Smoke + Compose-Edit`.
+- EoD-Sync `2b84361` — `docs: EoD-Sync 2026-05-30 — M4-Welle-3-C2-Stand in 3 Top-Level-Docs` (Zwischenstand, kein C3-Ersatz).
+- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-3-C3 — Status/DoD-Sync + ADR 0032 -> Provisional + Trigger-006-Re-Eval + Top-Level-Doku-Sync`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `d721982` C2 +
+dieser Commit):**
+
+- `make test-unit`: **1306 Tests gruen** (Pre-Welle-3-Stand
+  1211 → Welle-3-Endstand 1306 = +95 Unit-Tests; davon
+  ~25 Config-Validation
+  (`tests/unit/adapters/driven/protocol_modbus/test_modbus_config.py`),
+  ~30 Codec-Roundtrip mit hypothesis-Property-Tests pro
+  5 Datatypes x 2 Byte-Order-Varianten + Word-Swap-Matrix
+  (`test_modbus_codec.py`), ~24 Lifecycle + Read/Write
+  mit mocked pymodbus-`ModbusTcpClient`
+  (`test_modbus_protocol_port.py`), ~16 Function-Code-
+  Override FC03/FC04/FC06/FC10
+  (`test_modbus_function_codes.py`)).
+- `make test-integration`: **23 Tests gruen** (Pre-Welle-3-
+  Stand 22 → Welle-3-Endstand 23 = +1 Modbus-In-Process-
+  Smoke; in-process `pymodbus.server.StartTcpServer` in
+  `threading.Thread(daemon=True)`, End-to-End-Read/Write-
+  Roundtrip durch alle 5 Datatypes + Byte-Order-/Word-Swap-
+  Varianten + Multi-Slave-Unit-ID; expliziter
+  `server.shutdown()` + `thread.join(timeout=5.0)`-Teardown).
+- `make arch-check`: **19/19 Contracts KEPT** (7
+  lint-imports + 12 `tools/arch_check.py`);
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_modbus` ohne
+  Filter-Edit (Pfad-Filter `bucket.startswith("protocol_")`
+  in `tools/arch_check.py:1089` greift unveraendert).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+  `src/grid_gym/adapters/driven/protocol_modbus` erweitert).
+- `make fullbuild`: `image-audit` weiter rot aus
+  **dokumentiertem** Pre-existing krb5-CVE-Grund
+  (`CVE-2026-40356`-Drift seit M3-Welle-7-`c61ab0d`,
+  **nicht durch M4-Welle-3-Code verursacht**); Compose-Smoke
+  selbst (in-process-Modbus-Server; kein neuer Sibling) gruen.
+- ADR 0032: `Proposed → Provisional` (Decisions M-a/M-b/M-c/
+  M-d/M-e/M-f alle **final**; Status-Pfad in
+  [`../../adr/0032-modbus-adapter-profile.md`](../../adr/0032-modbus-adapter-profile.md) §5
+  mit Hashes belegt).
+- **Trigger-006-Re-Eval (`--strict-bytes`):** `mypy
+  --strict-bytes` laeuft cache-frei **gruen** gegen
+  `src/grid_gym/adapters/driven/protocol_modbus/` ohne
+  zusaetzliche `# type: ignore`-Inflation (bestehende 2
+  `# type: ignore[no-untyped-call]` in `_port.py:128/148`
+  sind pymodbus-API-spezifisch, kein bytes-Bezug). Trigger
+  wandert in Folge-Slice nach `next/` (siehe
+  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)).
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 3`](M4-protocol-adapters.md)
@@ -621,67 +677,126 @@ Welle 4; werden nicht in Welle 3 angelegt):
 
 ## 9. DoD-Checkliste (Welle-Schluss, mit C3 abgehakt)
 
-Skelett — wird in C3 abgehakt. Pattern analog
-M4-welle-2.md §9.
+Pattern analog M4-welle-2.md §9. Belege siehe
+**DoD-Verifikation**-Block im Status-Header oben + §4
+Liefer-Reihenfolge fuer die per-Commit-Aktion.
 
-**In-Scope-Items (alle abzuhaken mit C3):**
+**In-Scope-Items (alle abgehakt mit C3):**
 
-- [ ] **ADR 0032 angelegt** — `Proposed` (C1) →
-  `Provisional` (C3), mit Decisions M-a/M-b/M-c/M-d/M-e/M-f
-  alle **final**.
-- [ ] **Modbus-Port produktiv** — `ModbusDeviceProtocolPort`
+- [x] **ADR 0032 angelegt** — `Proposed` (C1 `a86ac46`) →
+  `Provisional` (dieser Commit), mit Decisions M-a/M-b/M-c/
+  M-d/M-e/M-f alle **final** (inline Register-Schema, 5
+  Datatypes mit Byte-Order-/Word-Swap-Matrix, direkt-sync
+  ohne Thread-Marshal, FC03/FC10-Defaults mit FC04/FC06-
+  Overrides, Slave-Unit-ID per Target, in-process
+  pymodbus-Server fuer Smoke). Code:
+  [`../../adr/0032-modbus-adapter-profile.md`](../../adr/0032-modbus-adapter-profile.md).
+- [x] **Modbus-Port produktiv** — `ModbusDeviceProtocolPort`
   als `DeviceProtocolPort`-Implementer unter
-  `src/grid_gym/adapters/driven/protocol_modbus/`; Modul-
-  Docstring traegt Lastenheft-Z.-1161–1163-Pflicht
-  (Simulations-/Testadapter-Notiz).
-- [ ] **Unit-Tests fuer 4 Test-Aspekte** —
-  Config-Validation + Datentyp-Codec-Roundtrip +
-  Lifecycle/Read+Write + Function-Code-Override;
-  ~30 neue Tests (feste Zahl in C3).
-- [ ] **Integration-Smoke produktiv** —
-  `tests/integration/test_modbus_in_process_smoke.py` mit
-  in-process `pymodbus.server.StartTcpServer` +
-  End-to-End-Read/Write-Roundtrip durch alle 5 Datatypes.
-- [ ] **`tests/integration/compose.yml` Header-Kommentar
-  syncht** — bewusste Decision-M-f-Notiz zum in-process-
-  Smoke (kein eigener Sibling-Service).
-- [ ] **`pyproject.toml` erweitert** — `pymodbus>=3.6`
-  in `[project] dependencies`; `pymodbus`-Eintrag in den
-  AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen unveraendert.
-- [ ] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
-  Default um `src/grid_gym/adapters/driven/protocol_modbus`.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  [`../../../../src/grid_gym/adapters/driven/protocol_modbus/`](../../../../src/grid_gym/adapters/driven/protocol_modbus/)
+  (5 Dateien: `__init__.py` + `_config.py` + `_codec.py`
+  + `_port.py` + `_errors.py`). Modul-Docstring in
+  `__init__.py` traegt Lastenheft-Z.-1161–1163-Pflicht
+  (Simulations-/Testadapter, **keine** produktive
+  Anlagensteuerung). NEU mit C2 `d721982`.
+- [x] **Unit-Tests fuer 4 Test-Aspekte** — 95 neue Tests
+  (1211 → 1306): ~25 Config-Validation + ~30 Codec-
+  Roundtrip (inkl. hypothesis-Property-Tests pro
+  Datatype + Byte-Order/Word-Swap-Matrix) + ~24 Lifecycle/
+  Read+Write mit mocked pymodbus-Client + ~16 Function-
+  Code-Override. Code:
+  [`../../../../tests/unit/adapters/driven/protocol_modbus/`](../../../../tests/unit/adapters/driven/protocol_modbus/).
+- [x] **Integration-Smoke produktiv** —
+  [`../../../../tests/integration/test_modbus_in_process_smoke.py`](../../../../tests/integration/test_modbus_in_process_smoke.py)
+  spawnt `pymodbus.server.StartTcpServer` in
+  `threading.Thread(daemon=True)`; End-to-End-Read/Write-
+  Roundtrip gegen `ModbusDeviceProtocolPort` durch alle
+  5 Datatypes + Byte-Order/Word-Swap-Matrix; expliziter
+  `server.shutdown()` + `thread.join(timeout=5.0)`-Teardown.
+- [x] **`tests/integration/compose.yml` Header-Kommentar
+  syncht** — Welle-3-C2-Edit dokumentiert die bewusste
+  Decision-M-f-Wahl (in-process pymodbus-Server statt
+  testcontainers-Sibling) als Pattern-Praezedenz fuer
+  Welle 4 (asyncua) und Welle 5 (DNP3/IEC).
+- [x] **`pyproject.toml` erweitert** — `pymodbus>=3.6,<4.0`
+  in `[project] dependencies` (Floor 3.6 wegen API-Stabilitaet;
+  Pin `<4.0` schuetzt gegen Sync-API-Deprecation in 4.x —
+  ADR 0032 §2.3 Konsequenz-Hinweis); `pymodbus`-Eintrag in
+  den AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen unveraendert
+  (Welle-0-Vorbelegung).
+- [x] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
+  Default um
+  `src/grid_gym/adapters/driven/protocol_modbus` ergaenzt
+  (Pattern analog `protocol_mqtt`-Eintrag aus
+  M4-Welle-2-C2 `f33bb4e`).
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
   `protocol_modbus`** — `tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`-Filter erfasst den
-  neuen Pfad ohne Code-Aenderung; `make arch-check`
+  neuen Pfad **ohne Code-Aenderung**; `make arch-check`
   weiter `19/19 Contracts KEPT`.
-- [ ] **C3-Doc-Sync** — `M4-welle-3.md` Status
-  `In Progress → Done`, ADR 0032 `Proposed → Provisional`,
-  `M4-protocol-adapters.md §3 Welle 3` Done-Markierung,
-  Top-Level-Doku-Sync (README/README.de/roadmap/spec/
-  architecture/adr/README) auf den Welle-3-Endstand.
-- [ ] **Trigger-006-Re-Eval** —
-  `docs/plan/planning/open/006-mypy-strict-bytes.md`
-  syncht mit konkretem Modbus-Code-Beleg (`# type: ignore`-
-  Zahlen) und Entscheidung (Trigger nach `next/` oder
-  weiter in `open/`).
+- [x] **C3-Doc-Sync** — `M4-welle-3.md` Status
+  `In Progress → Done` (dieser Commit), ADR 0032
+  `Proposed → Provisional` (dieser Commit),
+  `M4-protocol-adapters.md §3 Welle 3` Done-Markierung
+  (dieser Commit), Top-Level-Doku-Sync in 6 Docs
+  (`README.md` + `README.de.md` + `roadmap.md` +
+  `spec/architecture.md` (keine §7-Aenderung — ADR 0030
+  bleibt Surface-Vertrag) + `adr/README.md`-Zeile 52
+  (ADR 0032 `Proposed → Provisional`) + `done/README.md`-
+  Bestand-Zeile fuer `M4-welle-3.md`-Move folgt mit
+  M4-Welle-4-Pre-C0-Sync) auf den Welle-3-Endstand.
+- [x] **Trigger-006-Re-Eval** —
+  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+  syncht mit konkretem Modbus-Code-Beleg: `mypy
+  --strict-bytes` laeuft cache-frei **gruen** gegen
+  `src/grid_gym/adapters/driven/protocol_modbus/` ohne
+  zusaetzliche `# type: ignore`-Inflation (bestehende 2
+  `# type: ignore[no-untyped-call]` in `_port.py:128/148`
+  sind pymodbus-API-spezifisch, kein bytes-Bezug).
+  Entscheidung: Trigger wandert in Folge-Slice nach
+  `next/` (separater Slice-Plan, `git mv` per
+  Memory-Konvention `feedback_git_mv`).
 
-**Anti-Scope-Items (alle zu halten):**
+**Anti-Scope-Items (alle gehalten):**
 
-- [ ] **Keine OPC-UA-/DNP3-/IEC-Adapter** in C2.
-- [ ] **Kein OTel-Span-Wrap** der Modbus-Adapter-Calls.
-- [ ] **Kein RandomPort-Determinismus** fuer Slave-/
-  Register-Adressen.
-- [ ] **Keine Scenario-Schema-Erweiterung jenseits des
-  Decision-M-a-Pattern** (kein neuer YAML-Top-Level-
-  Block).
-- [ ] **Keine Welle-2-MQTT-Adapter-Aenderungen**.
-- [ ] **Keine testcontainers-Modbus-Server-Sibling**
-  (Decision M-f).
-- [ ] **Keine Bewegung der 17 Open-Trigger** (mit
-  Ausnahme der Trigger-006-Re-Eval-Notiz).
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md`
-  (nur 1 DoD-Item geliefert; Sweep in Welle 6).
-- [ ] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
-  Property-Test** in Welle 3 (bewusst nach Welle 6
-  verschoben; Welle-1-§7-Folge-Pflicht honoriert).
+- [x] **Keine OPC-UA-/DNP3-/IEC-Adapter** in C2 —
+  verifiziert: keine neue Datei unter
+  `adapters/driven/protocol_{opcua,dnp3,iec}/`.
+- [x] **Kein OTel-Span-Wrap** der Modbus-Adapter-Calls —
+  verifiziert: kein Import von
+  `adapters/driven/telemetry_otlp/` in `protocol_modbus/`;
+  TracePort-Wrap bleibt Welle-6-Material.
+- [x] **Kein RandomPort-Determinismus** fuer Slave-/
+  Register-Adressen — verifiziert: `ModbusRegisterConfig`
+  hat keinen Auto-Generierungs-Pfad fuer Adressen;
+  Welle-3-Default-Werte und explizite Per-Target-Config
+  decken alle Use-Cases ab.
+- [x] **Keine Scenario-Schema-Erweiterung jenseits des
+  Decision-M-a-Pattern** — verifiziert: kein Touch an
+  `scenario/validator.py` und kein neuer YAML-Top-Level-
+  Block. `ModbusProtocolPortConfig` ist Adapter-intern;
+  Scenario-Integration bleibt Welle-3-frei per
+  AC-HEXAGON-PURE.
+- [x] **Keine Welle-2-MQTT-Adapter-Aenderungen** —
+  verifiziert: kein Edit an
+  `src/grid_gym/adapters/driven/protocol_mqtt/` in C2.
+- [x] **Keine testcontainers-Modbus-Server-Sibling**
+  (Decision M-f) — verifiziert: in-process-Pfad
+  produktiv via `pymodbus.server.StartTcpServer`-Thread;
+  kein neuer `compose.yml`-Sibling-Service; keine
+  Docker-Image-Pull-Latenz.
+- [x] **Keine Bewegung der 17 Open-Trigger** mit
+  Ausnahme der Trigger-006-Re-Eval-Notiz — verifiziert:
+  `docs/plan/planning/open/` unveraendert; nur Body von
+  `006-mypy-strict-bytes.md` mit Modbus-Beleg
+  aktualisiert. Physischer Move (`git mv open/ → next/`)
+  ist Folge-Slice.
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+  verifiziert: `roadmap.md` §3 M4 Checkboxen weiterhin
+  alle ungehakt (2 von 7 DoD-Items geliefert: MQTT
+  Welle 2 + Modbus Welle 3; Sweep in Welle 6).
+- [x] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
+  Property-Test** in Welle 3 — verifiziert: nur Smoke-
+  Regression-Schutz via `make arch-check`. Welle-1-§7-
+  Folge-Pflicht bleibt auf Welle 6 verschoben (Pattern
+  fortgefuehrt aus M4-Welle-2-C3 `7e161f5`).

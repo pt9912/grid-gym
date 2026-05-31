@@ -378,30 +378,118 @@ pyproject/Dockerfile-Edits) + C3 (dieser Commit; ADR 0031
 → `Provisional`, `M4-welle-2.md` → `Done`, diese §3-
 Welle-2-Section auf Done, Top-Level-Doku-Sync in 5 Docs).
 
-### Welle 3 — Modbus-TCP-Adapter
+### Welle 3 — Modbus-TCP-Adapter (Done 2026-05-30)
 
-- ADR-Folge (geplant **Modbus-TCP-Adapter-ADR**) mit
-  Modbus-spezifischen Profil-Entscheidungen (Register-
-  Mapping, Byte-Reihenfolge, Datentyp-Konvention).
-- NEU `src/grid_gym/adapters/driven/protocol_modbus/` mit
-  `pymodbus`-Wrapper (Sync- oder Async-Client je nach
-  Welle-1-Entscheidung):
-  - Register-Mapping (Device-ID → Coil/Holding-Register-
-    Adressraum).
-  - Datentypen (`int16`/`int32`/`float32`), Byte-
-    Reihenfolge (Big/Little-Endian, Word-Swap).
-  - Timeout-Verhalten + Read/Write-Smoke (Lese- und
-    Schreibpfad als Lastenheft-Akzeptanz Z. 1135–1136).
-- Trigger-006-Re-Eval: `--strict-bytes` an den
-  Modbus-Bytes-Pfaden pruefen. Falls scharf machbar:
-  Trigger nach `next/` ziehen.
-- Integration-Smoke via testcontainers (Modbus-Server-
-  Container — Lizenz **vorher** pruefen; Fallback in-process
-  Mini-Server).
+**Status:** Done. Slice-Begleit-Doc
+[`M4-welle-3.md`](M4-welle-3.md) (bleibt in `in-progress/`
+bis M4-Welle-4-Pre-C0-Move; Pattern analog M4-Welle-1/2).
+ADR 0032 ist `Provisional`.
 
-**Welle-3-Gate:** `make test-integration` gruen mit
-Modbus-Smoke. Default-`CRITICAL_COV_TARGETS` um
-`adapters/driven/protocol_modbus` erweitert.
+- [x] **ADR 0032** (dritter M4-ADR) — `Provisional`
+  mit C3 (2026-05-30) nach C1 `a86ac46` (Proposed) und
+  C2 `d721982` (feat-Merge). Sechs Decisions aus
+  [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
+  Decision-Liste (analog ADR-0031-Pattern fuer Modbus
+  uebertragen) alle **final**:
+  - [x] Decision M-a (Register-Schema, **final**):
+    inline im `protocol_ports`-Scenario-YAML-Block
+    (Pattern-Praezedenz ADR 0031 §2.1);
+    `ModbusProtocolPortConfig.registers: Mapping[device_id,
+    ModbusRegisterConfig]` mit Pflicht-Feldern
+    `address`/`datatype`/`access` und Optional-Feldern
+    `byte_order`/`word_swap`/`unit_id`/`function_code`.
+  - [x] Decision M-b (Datatype + Byte/Word-Order,
+    **final**): erlaubter Datatype-Set
+    `{int16, uint16, int32, uint32, float32}`; Byte-Order-
+    Default `big_endian` (Modbus-TCP-Spec §4.1), Word-
+    Swap-Default `false`; Per-Target ueberschreibbar.
+    `int64`/`float64`/`string`/`bool-array` bleiben
+    Welle-6-Schaerfungspfad offen via ADR 0011.
+  - [x] Decision M-c (Polling-Pattern, **final**):
+    **kein** Background-Polling-Thread; `read(target)`
+    ruft `client.read_holding_registers(...)` direkt
+    synchron — pymodbus-`ModbusTcpClient` passt **ohne
+    Thread-Marshal** in die Sync-`DeviceProtocolPort`-
+    Surface (ADR 0030 §2.1). Signifikant einfacher als
+    MQTT-Decision-4d (keine `queue.Queue`-Marshal,
+    keine Callback-Boundary). Tick-Latenz-Implikation
+    als reversibel dokumentiert.
+  - [x] Decision M-d (Function-Code-Mapping, **final**):
+    Defaults FC03 (Read Holding Registers) fuer
+    `access: "read"` und FC10 (Write Multiple Registers)
+    bzw. FC06 (Write Single Register) fuer
+    `access: "write"`; Per-Target ueberschreibbar fuer
+    FC04 (Read Input Registers) und Multi-Register-
+    Writes. Coil-Codes (FC01/FC02/FC05/FC0F) bleiben
+    Welle-6-Schaerfung.
+  - [x] Decision M-e (Slave-Unit-ID, **final**): pro
+    `ModbusRegisterConfig` optionales `unit_id: int |
+    None = None` mit Parent-Fallback (Default `1`);
+    Range `[1, 247]` per Modbus-Spec §4.1; Multi-Slave-
+    Bus-Scenarios setzen ueberschreibend.
+  - [x] Decision M-f (Test-Sibling, **final**): in-process
+    `pymodbus.server.StartTcpServer` im Test-Code
+    (`tests/integration/test_modbus_in_process_smoke.py`),
+    **kein** testcontainers-Container. Lizenz-Sicherheit
+    (pymodbus BSD-3-Clause statt restriktiver Modbus-
+    Server-Container-Lizenzen) + CI-Latenz-Reduktion
+    (kein Docker-Image-Pull); Pattern-Praezedenz fuer
+    Welle 4 (asyncua) und Welle 5 (DNP3/IEC).
+- [x] **NEU**
+  `src/grid_gym/adapters/driven/protocol_modbus/`-Modul
+  (5 Dateien): `__init__.py` (Public-Reexports +
+  Lastenheft-Z.-1161–1163-Pflichtnotiz) + `_config.py`
+  (Decision M-a/M-b/M-d/M-e) + `_codec.py` (Decision M-b
+  mit `struct.pack`/`struct.unpack`) + `_port.py`
+  (Decision M-c direkt-sync; Function-Code-Dispatcher) +
+  `_errors.py` (typed `DeviceProtocolPort*Error`-
+  Subclasses).
+- [x] **NEU Integration-Smoke** via in-process
+  `pymodbus.server.StartTcpServer`-Thread (Decision M-f).
+  End-to-End-Read/Write-Roundtrip gegen
+  `ModbusDeviceProtocolPort` durch alle 5 Datatypes +
+  Byte-Order-/Word-Swap-Matrix; expliziter
+  `server.shutdown()` + `thread.join(timeout=5.0)`-Teardown.
+- [x] **EDIT `tests/integration/compose.yml`** (Header-
+  Kommentar-Sync: bewusste Decision-M-f-Notiz —
+  in-process-Modbus-Server statt Sibling-Service als
+  Pattern-Praezedenz fuer Folge-Wellen).
+- [x] **EDIT `pyproject.toml`** (`pymodbus>=3.6,<4.0` in
+  `[project] dependencies`); **EDIT `Dockerfile`**
+  (`CRITICAL_COV_TARGETS`-Erweiterung um
+  `adapters/driven/protocol_modbus`).
+- [x] `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter — erfasst
+  `protocol_modbus` ohne Filter-Aenderung; 19/19 Contracts
+  KEPT.
+- [x] **Trigger-006-Re-Eval (`--strict-bytes`):**
+  positive Re-Eval. `mypy --strict-bytes` laeuft
+  cache-frei gruen gegen
+  `src/grid_gym/adapters/driven/protocol_modbus/` ohne
+  zusaetzliche `# type: ignore`-Inflation (bestehende 2
+  `# type: ignore[no-untyped-call]` in `_port.py:128/148`
+  sind pymodbus-API-spezifisch, kein bytes-Bezug).
+  Trigger wandert nach `next/` als separater Folge-Slice
+  (Memory-Konvention `feedback_git_mv`: erst `git mv`,
+  dann Body-Schaerfung). Re-Eval-Notiz im Trigger-Body
+  syncht mit Modbus-Beleg in C3.
+
+**Welle-3-Gate (Done 2026-05-30):** `make test-integration`
+gruen mit Modbus-In-Process-Smoke (22 → 23 Integration-
+Tests). `make test-unit` gruen (1211 → 1306 = +95
+Unit-Tests). `make arch-check` gruen (19/19 = 7 lint-imports
++ 12 `tools/arch_check.py`). `make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+`adapters/driven/protocol_modbus` erweitert). `mypy
+--strict-bytes` cache-frei gruen am Modbus-Bytes-Pfad
+(Trigger-006-Re-Eval positiv). **Commit-Belege:** C0
+`8ef1e72` (Slice-Doc) + C1 `a86ac46` (ADR 0032 Proposed)
++ C2 `d721982` (feat: protocol_modbus + 95 Unit-Tests +
+In-Process-Integration-Smoke + Compose/pyproject/Dockerfile-
+Edits) + EoD-Sync `2b84361` (3 Top-Level-Docs auf C2-Stand,
+kein C3-Ersatz) + C3 (dieser Commit; ADR 0032 →
+`Provisional`, `M4-welle-3.md` → `Done`, diese §3-Welle-3-
+Section auf Done, Top-Level-Doku-Sync in 6 Docs, Trigger-006-
+Re-Eval mit Modbus-Beleg in Body).
 
 ### Welle 4 — OPC-UA-Adapter
 
