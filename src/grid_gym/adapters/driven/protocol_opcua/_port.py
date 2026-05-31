@@ -17,17 +17,13 @@ produktive Anlagensteuerung**.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from decimal import Decimal
-from typing import Protocol, cast
+from typing import Final, Literal, Protocol, cast
 
 from asyncua import Client, ua
 from asyncua.ua import uaerrors
-
-from grid_gym.adapters.driven.protocol_opcua._loop_thread import (
-    OpcuaLoopThread,
-    OpcuaLoopThreadError,
-)
 
 from grid_gym.adapters.driven.protocol_opcua._codec import (
     OpcuaCodecError,
@@ -50,11 +46,32 @@ from grid_gym.adapters.driven.protocol_opcua._errors import (
     OpcuaPortWriteFailedError,
     OpcuaPortWriteNotStartedError,
 )
+from grid_gym.adapters.driven.protocol_opcua._loop_thread import (
+    OpcuaLoopThread,
+    OpcuaLoopThreadError,
+)
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPortUnknownTargetError,
+)
+
+
+# Slice-032-Schaerfung (Welle-4-Review-Folge Finding 2.3): Exception-
+# Filter um `RuntimeError` (Loop-Crash; siehe `OpcuaLoopThread.is_running`-
+# Schaerfung) und `asyncio.CancelledError` (Coroutine-Cancel durch
+# parallelen `stop()`) erweitert. Beide kommen aus `run_coroutine_threadsafe`-
+# Pfaden und sollen am Adapter-Rand in typed `OpcuaPort*Error`
+# uebersetzt werden, damit Caller den `DeviceProtocolPort`-Vertrag
+# (typed Errors) sehen.
+_LOOP_EXCEPTIONS: Final[tuple[type[BaseException], ...]] = (
+    OSError,
+    TimeoutError,
+    RuntimeError,
+    asyncio.CancelledError,
+    uaerrors.UaError,
+    OpcuaLoopThreadError,
 )
 
 
@@ -127,7 +144,7 @@ class OpcuaDeviceProtocolPort:
         client = self._client_factory(self._config)
         try:
             self._loop_thread.run_coroutine(client.connect(), timeout_s=self._config.timeout_s)
-        except (OSError, TimeoutError, uaerrors.UaError, OpcuaLoopThreadError) as exc:
+        except _LOOP_EXCEPTIONS as exc:
             # Loop-Thread sauber abbauen, dann Original-Exception
             # als typed Connect-Fehler propagieren.
             self._loop_thread.stop()
@@ -144,7 +161,7 @@ class OpcuaDeviceProtocolPort:
         self._started = False
         try:
             self._loop_thread.run_coroutine(client.disconnect(), timeout_s=self._config.timeout_s)
-        except (OSError, TimeoutError, uaerrors.UaError, OpcuaLoopThreadError) as exc:
+        except _LOOP_EXCEPTIONS as exc:
             # Loop-Thread trotzdem abbauen, dann typed Stop-Fehler
             # propagieren.
             self._loop_thread.stop()
@@ -168,7 +185,7 @@ class OpcuaDeviceProtocolPort:
                 _read_node_value(client, node_cfg.node_id),
                 timeout_s=self._config.timeout_s,
             )
-        except (OSError, TimeoutError, uaerrors.UaError, OpcuaLoopThreadError) as exc:
+        except _LOOP_EXCEPTIONS as exc:
             raise OpcuaPortReadFailedError(target, node_cfg.node_id, str(exc)) from exc
         try:
             value = decode_variant_to_value(variant, node_cfg.datatype)
@@ -207,7 +224,7 @@ class OpcuaDeviceProtocolPort:
                 _write_node_value(client, node_cfg.node_id, variant),
                 timeout_s=self._config.timeout_s,
             )
-        except (OSError, TimeoutError, uaerrors.UaError, OpcuaLoopThreadError) as exc:
+        except _LOOP_EXCEPTIONS as exc:
             raise OpcuaPortWriteFailedError(target, node_cfg.node_id, str(exc)) from exc
 
     # ------------------------------------------------------------------
@@ -222,7 +239,10 @@ class OpcuaDeviceProtocolPort:
             )
         return self._config.nodes[target]
 
-    def _require_client(self, target: str, operation: str) -> _AsyncClient:
+    def _require_client(self, target: str, operation: Literal["read", "write"]) -> _AsyncClient:
+        """Slice-032-Schaerfung (Welle-4-Review-Folge Finding 2.6):
+        `operation` ist `Literal["read", "write"]` statt freier `str`
+        — mypy faengt Typos jetzt am Aufrufer."""
         if self._client is None:
             if operation == "write":
                 raise OpcuaPortWriteNotStartedError(target)
@@ -257,33 +277,53 @@ def _build_telemetry_point(
     Pattern analog Welle-3 `protocol_modbus._port._build_telemetry_point`:
     `run_id`/`tick`/`simulation_time`/`sequence` sind Caller-
     Verantwortung; der Adapter weiss nichts ueber Simulationszeit.
+
+    Slice-032-Schaerfung (Welle-4-Review-Folge Finding 3.1):
+    String-Werte (Datatype `STRING`) sind in `TelemetryPoint.value`
+    nicht numerisch repraesentierbar — die `value`-Surface ist
+    `Decimal`. Damit der Original-String nicht stillschweigend
+    verloren geht, wird er im `source`-Feld als
+    `protocol_opcua.<target>#string=<value>` mitgegeben **und** die
+    Quality auf `INVALID` gesetzt — Downstream-Konsumenten sehen
+    explizit, dass `value=Decimal(0)` ein Sentinel ist, nicht ein
+    echter Messwert. Welle-6-Schaerfung kann `TelemetryPoint` um
+    nicht-numerische Werte erweitern (separate ADR).
     """
+    decoded_value, quality, source = _telemetry_payload(target, value)
     return TelemetryPoint(
         run_id="",
         tick=0,
         simulation_time=0,
         device_id=target,
         metric=node_cfg.datatype.value,
-        value=_to_decimal(value),
+        value=decoded_value,
         unit="",
-        quality=Quality.VALID,
-        source=f"protocol_opcua.{target}",
+        quality=quality,
+        source=source,
         sequence=0,
     )
 
 
-def _to_decimal(value: bool | int | Decimal | str) -> Decimal:
+def _telemetry_payload(
+    target: str, value: bool | int | Decimal | str
+) -> tuple[Decimal, Quality, str]:
+    """Liefert `(value, quality, source)` fuer den TelemetryPoint.
+
+    Slice-032 Finding 3.1: String-Werte markieren `Quality.INVALID`
+    und kodieren den Original-String im `source`-Feld; alle anderen
+    Datatypes laufen ueber `_to_decimal` und bleiben `Quality.VALID`.
+    """
+    if isinstance(value, str):
+        return (Decimal(0), Quality.INVALID, f"protocol_opcua.{target}#string={value}")
+    return (_to_decimal(value), Quality.VALID, f"protocol_opcua.{target}")
+
+
+def _to_decimal(value: bool | int | Decimal) -> Decimal:
     """`TelemetryPoint.value` ist `Decimal`. Bool/int -> Decimal,
-    Decimal bleibt, String -> Decimal via repr (Praezisions-
-    Konsistenz mit ADR 0032 §2.2)."""
+    Decimal bleibt. String-Werte werden VOR diesem Call durch
+    `_telemetry_payload` abgefangen (Slice-032 Finding 3.1)."""
     if isinstance(value, Decimal):
         return value
     if isinstance(value, bool):
         return Decimal(int(value))
-    if isinstance(value, int):
-        return Decimal(value)
-    # String — TelemetryPoint.value erwartet numerisch; Welle-6
-    # koennte ein nicht-numerisches Telemetry-Schema einfuehren.
-    # Welle 4 setzt `Decimal(0)` als Platzhalter und legt den
-    # Original-String in `source`-Feld ab.
-    return Decimal(0)
+    return Decimal(value)

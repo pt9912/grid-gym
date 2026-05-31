@@ -14,6 +14,7 @@ Deckt:
 from __future__ import annotations
 
 import math
+import struct
 from decimal import Decimal
 
 import pytest
@@ -253,18 +254,52 @@ def test_uint32_roundtrip(value: int) -> None:
     )
 )
 def test_double_roundtrip_within_precision(value: float) -> None:
+    """Slice-032-Schaerfung (Finding 4.3): Double-Roundtrip muss
+    `rel_tol=1e-15` halten (IEEE-754 double bietet ~15 signifikante
+    Stellen). Locker `1e-9` haette Roundtrip-Bugs verstecken
+    koennen."""
     variant = encode_value_to_variant(value, OpcuaDatatype.DOUBLE)
     result = decode_variant_to_value(variant, OpcuaDatatype.DOUBLE)
     assert isinstance(result, Decimal)
-    # Double-Roundtrip muss innerhalb von 1e-9-relativem Fehler liegen.
     if value == 0:
         assert math.isclose(float(result), 0.0, abs_tol=1e-30)
     else:
-        assert math.isclose(float(result), value, rel_tol=1e-9)
+        assert math.isclose(float(result), value, rel_tol=1e-15)
 
 
-@given(value=st.text(max_size=64))
+@given(
+    value=st.floats(
+        allow_nan=False,
+        allow_infinity=False,
+        width=32,
+    )
+)
+def test_float_roundtrip_within_32bit_precision(value: float) -> None:
+    """Slice-032-Schaerfung (Finding 3.2): `Float`-Roundtrip wird auf
+    32-bit-Wire-Praezision quantisiert. `width=32` bei
+    `st.floats` produziert exakt-darstellbare Single-Precision-Werte
+    → Roundtrip ist exakt."""
+    variant = encode_value_to_variant(value, OpcuaDatatype.FLOAT)
+    result = decode_variant_to_value(variant, OpcuaDatatype.FLOAT)
+    assert isinstance(result, Decimal)
+    if value == 0:
+        assert math.isclose(float(result), 0.0, abs_tol=1e-30)
+    else:
+        # 32-bit-Quantisierung; rel_tol matched die Maschinen-Praezision.
+        assert math.isclose(float(result), value, rel_tol=1e-6)
+
+
+@given(
+    value=st.text(
+        alphabet=st.characters(blacklist_categories=("Cs",)),
+        max_size=64,
+    )
+)
 def test_string_roundtrip(value: str) -> None:
+    """Slice-032-Schaerfung (Finding 4.2): Surrogate-Codepoints
+    (`\\ud800`-`\\udfff`) sind UTF-8-nicht-serialisierbar; asyncua
+    wuerde sie defekt durchreichen. Blacklist via Category `Cs` filtert
+    sie aus dem Hypothesis-Generator."""
     variant = encode_value_to_variant(value, OpcuaDatatype.STRING)
     assert decode_variant_to_value(variant, OpcuaDatatype.STRING) == value
 
@@ -273,3 +308,30 @@ def test_string_roundtrip(value: str) -> None:
 def test_bool_roundtrip(value: bool) -> None:
     variant = encode_value_to_variant(value, OpcuaDatatype.BOOLEAN)
     assert decode_variant_to_value(variant, OpcuaDatatype.BOOLEAN) is value
+
+
+# ---------------------------------------------------------------------------
+# Slice-032-Schaerfungen: explizite Edge-Cases
+# ---------------------------------------------------------------------------
+
+
+def test_decode_float_overflow_int_returns_typed_error() -> None:
+    """Slice-032-Schaerfung (Finding 3.3): ein riesiger int aus dem
+    Server (z. B. Misconfig) wird in typed `OpcuaCodecDecodeError`
+    umgemantelt statt `OverflowError` durchzulassen."""
+    huge = 10**400  # weit jenseits float-Range
+    variant = ua.Variant(huge, ua.VariantType.Int64)
+    with pytest.raises(OpcuaCodecDecodeError):
+        decode_variant_to_value(variant, OpcuaDatatype.DOUBLE)
+
+
+def test_decode_float_quantizes_to_32bit_precision() -> None:
+    """Finding 3.2: konkreter Roundtrip-Beleg mit 64-bit-Wert, der
+    in 32-bit andere Stellen hat."""
+    # 0.1 in float64 ≠ 0.1 in float32; Beleg-Test:
+    variant = ua.Variant(0.1, ua.VariantType.Float)
+    result = decode_variant_to_value(variant, OpcuaDatatype.FLOAT)
+    assert isinstance(result, Decimal)
+    # 32-bit-Quantisierung: 0.1 -> ~0.10000000149011612
+    quantized = struct.unpack("!f", struct.pack("!f", 0.1))[0]
+    assert float(result) == pytest.approx(quantized)

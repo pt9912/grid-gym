@@ -105,6 +105,13 @@ class _InProcessOpcuaServer:
         self._namespace_idx: int = 0
         # `(node_name) -> node_id_string` Map fuer Tests.
         self._node_ids: dict[str, str] = {}
+        # Slice-032 Finding 7.3: Init-Error wird im Thread gecaped und
+        # im Caller reraised, sobald `ready.wait()` reisst — sonst
+        # bleibt das Setup-Problem unsichtbar.
+        self._init_error: BaseException | None = None
+        # Slice-032 Finding 7.1: `asyncio.Event` als Stop-Signal statt
+        # `while True: asyncio.sleep(0.5)`-Loop (effizient + sauberer).
+        self._stop_signal: asyncio.Event | None = None
 
     @property
     def endpoint_url(self) -> str:
@@ -121,7 +128,9 @@ class _InProcessOpcuaServer:
             server = Server()
             await server.init()
             server.set_endpoint(self._endpoint_url)
-            # Server-Application-Settings: minimal anonymous endpoint.
+            # Server-Application-Settings: minimal anonymous endpoint
+            # (Slice-032 Finding 7.2: nur fuer in-process-Smoke;
+            # Production-Adapter braucht Security-Hardening, Welle 6).
             server.set_security_policy([ua.SecurityPolicyType.NoSecurity])
             self._namespace_idx = await server.register_namespace(_NAMESPACE_URI)
             objects = server.nodes.objects
@@ -135,21 +144,32 @@ class _InProcessOpcuaServer:
                 self._node_ids[name] = node.nodeid.to_string()
             self._server = server
             await server.start()
+            # Slice-032 Finding 7.1: `asyncio.Event` als effizientes
+            # Stop-Signal statt Polling-Loop. Event wird in `stop()`
+            # via `call_soon_threadsafe(self._stop_signal.set)`
+            # gesetzt.
+            self._stop_signal = asyncio.Event()
             ready.set()
-            # Block bis loop.stop() aufgerufen wird.
-            while True:
-                await asyncio.sleep(0.5)
+            await self._stop_signal.wait()
 
         def _thread_target() -> None:
             loop = asyncio.new_event_loop()
             self._loop = loop
             asyncio.set_event_loop(loop)
-            with contextlib.suppress(Exception):
+            try:
                 loop.run_until_complete(_run_server())
+            except BaseException as exc:  # Setup-Capture
+                # Slice-032 Finding 7.3: Init-Errors capen statt
+                # schweigend zu suppressen.
+                self._init_error = exc
+                ready.set()  # Caller-Wakeup, damit reraise greift.
 
         self._thread = threading.Thread(target=_thread_target, daemon=True)
         self._thread.start()
-        ready.wait(timeout=_CONNECT_TIMEOUT_S)
+        if not ready.wait(timeout=_CONNECT_TIMEOUT_S):
+            pytest.fail(f"OPC-UA-Test-Server kam nicht innerhalb {_CONNECT_TIMEOUT_S}s hoch")
+        if self._init_error is not None:
+            raise self._init_error
         _wait_for_port_open(_LOCALHOST, self._port, _CONNECT_TIMEOUT_S)
 
     def stop(self) -> None:
@@ -157,6 +177,10 @@ class _InProcessOpcuaServer:
             future = asyncio.run_coroutine_threadsafe(self._server.stop(), self._loop)
             with contextlib.suppress(Exception):
                 future.result(timeout=_SERVER_STOP_TIMEOUT_S)
+            # Stop-Signal setzen, damit `_run_server` aus `await wait()`
+            # zurueckkehrt und der Loop sauber endet.
+            if self._stop_signal is not None:
+                self._loop.call_soon_threadsafe(self._stop_signal.set)
             self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread is not None:
             self._thread.join(timeout=_SERVER_STOP_TIMEOUT_S)

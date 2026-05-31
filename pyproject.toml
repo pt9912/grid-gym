@@ -82,19 +82,22 @@ dependencies = [
     # Forbidden-List bereits Welle-0-vorbelegt.
     "pymodbus>=3.6,<4.0",
     # M4-Welle-4 — OPC-UA-Adapter unter
-    # `adapters/driven/protocol_opcua/`. Pin `==1.2b2` weil asyncua
-    # 1.1.8 (letzte stabile 1.x) unter Python 3.14 in der internen
-    # `create_type_serializer`-Pipeline an Forward-References von
-    # `from __future__ import annotations` scheitert (`issubclass()
+    # `adapters/driven/protocol_opcua/`. Pin `>=1.2b2,<2.0` weil
+    # asyncua 1.1.8 (letzte stabile 1.x) unter Python 3.14 in der
+    # internen `create_type_serializer`-Pipeline an Forward-References
+    # von `from __future__ import annotations` scheitert (`issubclass()
     # arg 1 must be a class`). asyncua 1.2b2 (Beta) tragt den
-    # Python-3.14-Fix vor der 1.2-final-Release; sobald 1.2-final
-    # erscheint, wandert der Pin auf `>=1.2,<2.0`. `Client.connect()`/
+    # Python-3.14-Fix vor der 1.2-final-Release; das `>=1.2b2`-Range-
+    # Pin (Slice-032-Schaerfung Finding 5.1) erlaubt Auto-Upgrade auf
+    # 1.2b3/1.2-final ohne `pyproject.toml`-Edit. `<2.0` schuetzt vor
+    # Major-API-Drift. Sobald 1.2-final auf PyPI ist, wandert der Pin
+    # auf `>=1.2,<2.0` (Folge-Pflicht; ADR 0033 §5). `Client.connect()`/
     # `Node.read_value()`/`Node.write_value(Variant)`-API sind in 1.2
     # rueckwaerts-kompatibel zu 1.1.x. asyncua ist LGPL-3.0 —
     # Library-Linking unter MIT-Repo ok; `asyncua`-Sichtbarkeit ist
     # per AC-PORTS-NO-FW / AC-NO-FW Forbidden-List bereits Welle-0-
     # vorbelegt.
-    "asyncua==1.2b2",
+    "asyncua>=1.2b2,<2.0",
 ]
 
 [build-system]

@@ -81,6 +81,7 @@ from grid_gym.adapters.driven.protocol_opcua._loop_thread import (
     OpcuaLoopThread,
     OpcuaLoopThreadError,
     OpcuaLoopThreadNotStartedError,
+    OpcuaLoopThreadStartTimeoutError,
 )
 from grid_gym.adapters.driven.protocol_opcua._port import (
     OpcuaDeviceProtocolPort,
@@ -104,6 +105,7 @@ __all__ = [
     "OpcuaLoopThread",
     "OpcuaLoopThreadError",
     "OpcuaLoopThreadNotStartedError",
+    "OpcuaLoopThreadStartTimeoutError",
     "OpcuaNodeConfig",
     "OpcuaPortAccessMismatchError",
     "OpcuaPortConnectError",

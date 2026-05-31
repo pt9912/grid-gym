@@ -293,9 +293,13 @@ def test_write_translates_codec_encode_error_to_write_failed() -> None:
         port.stop()
 
 
-def test_read_string_target_returns_telemetry_with_decimal_zero_placeholder() -> None:
-    """String-Reads bekommen Decimal(0) als Platzhalter (TelemetryPoint
-    erwartet numerisch; siehe `_port._to_decimal`)."""
+def test_read_string_target_marks_quality_invalid_with_original_string() -> None:
+    """Slice-032-Schaerfung (Finding 3.1): String-Reads markieren
+    `Quality.INVALID` und kodieren den Original-String im
+    `source`-Feld, damit Downstream-Konsumenten den Sentinel-Wert
+    `Decimal(0)` nicht als echten Messwert missinterpretieren."""
+    from grid_gym.hexagon.core.domain.quality import Quality
+
     config = OpcuaProtocolPortConfig(
         endpoint_url="opc.tcp://localhost:14840",
         nodes={
@@ -313,6 +317,8 @@ def test_read_string_target_returns_telemetry_with_decimal_zero_placeholder() ->
         point = port.read("string_r")
         assert point is not None
         assert point.value == Decimal(0)
+        assert point.quality is Quality.INVALID
+        assert point.source == "protocol_opcua.string_r#string=SN-12345"
     finally:
         port.stop()
 
@@ -351,5 +357,49 @@ def test_write_unsupported_payload_type_raises_write_failed() -> None:
                 "battery1_setpoint",
                 _make_command("battery1_setpoint", {"value": [1, 2, 3]}),
             )
+    finally:
+        port.stop()
+
+
+def test_read_marshals_coroutine_through_loop_thread() -> None:
+    """Slice-032-Schaerfung (Finding 4.1): explizit pruefen, dass
+    `read()` die Coroutine ueber den Loop-Thread marshalt — nicht
+    direkt im Caller-Thread ausfuehrt. Bei einer Refactor-Regression
+    (z. B. `asyncio.run` statt `run_coroutine`) muss der Test rot
+    werden.
+
+    Mechanik: AsyncMock-`read_value` cached die `current_thread`-ID
+    und der Test verifiziert, dass diese **nicht** der Test-Thread-ID
+    entspricht."""
+    import threading as _threading
+
+    config = _make_config()
+    captured: dict[str, int] = {}
+
+    async def _capturing_read() -> float:
+        # `await asyncio.sleep(0)` macht die Coroutine wirklich async
+        # und triggert ruff's RUF029 nicht; gleichzeitig laesst es den
+        # Loop-Thread-Marshal real laufen.
+        import asyncio as _asyncio
+
+        await _asyncio.sleep(0)
+        captured["thread_id"] = _threading.get_ident()
+        return 42.5
+
+    client = MagicMock()
+    client.connect = AsyncMock()
+    client.disconnect = AsyncMock()
+    node = MagicMock()
+    node.read_value = _capturing_read
+    client.get_node = MagicMock(return_value=node)
+
+    port = OpcuaDeviceProtocolPort(config, client_factory=lambda _cfg: client)
+    port.start()
+    try:
+        caller_thread_id = _threading.get_ident()
+        port.read("battery1_soc")
+        assert "thread_id" in captured
+        # Coroutine wurde im Loop-Thread ausgefuehrt, NICHT im Caller-Thread.
+        assert captured["thread_id"] != caller_thread_id
     finally:
         port.stop()

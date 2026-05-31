@@ -19,6 +19,7 @@ analog Modbus-`float32`-Pfad (ADR 0032 §2.2; gleiche Wahl).
 from __future__ import annotations
 
 import math
+import struct
 from decimal import Decimal
 from typing import Any, Final
 
@@ -163,9 +164,28 @@ def _decode_string(raw: Any, datatype: OpcuaDatatype) -> str:
 
 
 def _decode_float(raw: Any, datatype: OpcuaDatatype) -> Decimal:
+    """Decode `Float`/`Double` aus Variant-Value zu `Decimal`.
+
+    Slice-032-Schaerfung (Welle-4-Review-Folge Finding 3.2 + 3.3):
+
+    - `Float` (32-bit): quantisiere auf 32-bit-Praezision via
+      `struct.pack('!f', x)` / `struct.unpack`, damit das `Decimal`
+      nur die im Wire-Format transportierten Stellen traegt
+      (sonst speichert `repr(float)` 17 Stellen, die nicht real sind).
+    - `OverflowError` aus `float(int)` bei riesigen Integern faengt
+      in typed `OpcuaCodecDecodeError`.
+    """
     if not isinstance(raw, (float, int)) or isinstance(raw, bool):
         raise OpcuaCodecDecodeError(type(raw).__name__, datatype)
-    return Decimal(repr(float(raw)))
+    try:
+        as_float = float(raw)
+    except OverflowError as exc:
+        raise OpcuaCodecDecodeError("OverflowError", datatype) from exc
+    if datatype is OpcuaDatatype.FLOAT:
+        # 32-bit-Quantisierung: pack/unpack erzwingt IEEE-754 single
+        # precision; das `Decimal` traegt nur die Wire-Praezision.
+        as_float = struct.unpack("!f", struct.pack("!f", as_float))[0]
+    return Decimal(repr(as_float))
 
 
 def _decode_int(raw: Any, datatype: OpcuaDatatype) -> int:
