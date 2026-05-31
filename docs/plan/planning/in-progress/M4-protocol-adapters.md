@@ -671,60 +671,171 @@ hat alle 17 umgesetzt — Lifecycle-Lock + Start-Timeout in
 Schaerfungen an §2.1/§2.5. ADR 0033 bleibt `Provisional`.
 Tests: 1395 → 1401 Unit-Tests, 31 Integration-Tests gruen.
 
-### Welle 5 — DNP3 + IEC-61850 Disposition
+### Welle 5 — DNP3 + IEC-61850 (Sub-Slicing in 5a + 5b)
 
-**Status:** Pending. Disposition-Welle, **keine** zweite
-Code-Welle wie 2/3/4. Roadmap §3 M4 DoD erlaubt explizit
-„dokumentierter Verzicht via Out-of-Scope-Note". Welle 1
-hat den Verzicht-Default bereits **provisorisch** in ADR
-0030 §2.4 festgeschrieben; Welle 5 finalisiert ihn
-(Variante A) **oder** zieht einen Mini-Spike (Variante B)
-auf — Entscheidung faellt **erst zum Welle-5-Zeitpunkt**
-nach asyncua-Erfahrung aus Welle 4.
+**Status:** Pending. Disposition-Welle nach Welle-4-
+Library-Recherche (2026-05-31): Python-Library-Lage fuer
+DNP3 und IEC-61850 ist **besser als beim Welle-1-Provisional-
+Verzicht angenommen**:
 
-**Variante A — dokumentierter Verzicht (Default):**
+- **DNP3:** `dnp3-outstation` 0.2.0 (PyPI, MIT, Pure-Python,
+  asyncio-native, IEEE-1815-2012-Level-1-Subset, aarch64-
+  compatible) bietet eine produktiv-stabile Outstation-
+  Implementierung ohne C-Backend-Lock-in. Strukturell
+  sauberer als `asyncua` (LGPL + komplexe Wire-Pipeline).
+- **IEC-61850:** `iec61850` 0.12.1 (PyPI, Apache-2.0,
+  async-first, Rust-Backend via `iec61850-rust`, Py≥3.11)
+  ist „Pre-Alpha" markiert, aber API-stabil genug fuer
+  einen Spike.
 
-- [ ] **ADR-0030-§6-Verzicht-Anhang gefuellt** — DNP3-
-  und IEC-61850-Verzicht-Begruendung im
-  `DeviceProtocolPort`-Surface-ADR aus Welle 1
-  konkret eingetragen (Lizenz/Maintenance-Last der
-  `pydnp3`/`asyncio-iec61850`-Bibliotheken; Test-Sibling-
-  Container schwer verfuegbar). Schaerfung des Welle-1-
-  Decision-1-provisorisch-Default; **kein** Supersedes
-  (Pattern ADR 0011).
-- [ ] **Keine neue ADR** — Verzicht-Notiz ist Teil des
-  Welle-1-ADR-Anhangs; kein separater DNP3-/IEC-ADR
-  noetig (M4-Welle-0 §3 ADR-Vorbelegung „Obergrenze"
-  honoriert).
-- [ ] **`roadmap.md §3 M4 DoD` syncht** — `DNP3-Adapter`
-  + `IEC-61850-Adapter`-Checkboxen als „dokumentierter
-  Verzicht" markiert mit Verweis auf ADR-0030-Anhang.
-- [ ] **Lastenheft §16-Notiz** — `GG-DNP3-001`/`GG-IEC-001`
-  als „verschoben mit Begruendung" (Welle-6-Lastenheft-
-  Sync-Material).
+**Sub-Slicing-Entscheidung** (per §3-Praeambel: > 1 Adapter
++ > 1 ADR + > 1 Smoke wuerde Schwelle reissen): Welle 5
+wird in **Welle 5a** (DNP3) und **Welle 5b** (IEC-61850)
+geteilt. Beide Sub-Wellen sind eigenstaendige Code-Wellen
+mit eigenem Slice-Doc + ADR + protocol_*-Modul +
+Integration-Smoke + DoD-Checkliste.
 
-**Variante B — sehr kleiner Spike (Opt-In):**
+ADR 0030 §2.4 (Welle-1-provisorisches Verzicht-Default)
+wird mit M4-Welle-7-Closure auf „aufgeloest durch Welle 5a/5b
+Spike-Lieferung" geschaerft (ADR-0011-Pattern; kein
+Supersedes). `roadmap.md §3 M4 DoD`-Checkboxen `DNP3-Adapter`
+und `IEC-61850-Adapter` werden durch die Welle-5a/5b-
+Lieferung produktiv abgehakt (statt „dokumentierter
+Verzicht").
 
-- [ ] **NEU ADR fuer DNP3-/IEC-Spike** (geplant
-  **DNP3-/IEC-Spike-ADR**) mit reduziertem Scope (nur
-  Read-Pfad, ein Profil). Pattern-Praezedenz ADR 0031/0032.
-- [ ] **NEU** `src/grid_gym/adapters/driven/protocol_dnp3/`
-  ODER `protocol_iec61850/` mit Library-Wrapper —
-  konkret eine der beiden, nicht beide (Sub-Slicing-
-  Schwelle); andere bleibt Verzicht-Variante A.
-- [ ] **Integration-Smoke ODER Mock-only-Unit-Test** —
-  abhaengig von Test-Sibling-Verfuegbarkeit; in-process-
-  Pattern analog Welle-3-Decision-M-f bevorzugt.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift** fuer den neuen
-  Protokoll-Pfad ohne Filter-Edit.
-- [ ] **C3-Doc-Sync** — `M4-welle-5.md` Status, ADR
-  `Proposed → Provisional`, diese §3-Welle-5-Section auf
-  Done, Top-Level-Doku-Sync.
+#### Welle 5a — DNP3-Adapter (Spike, Pending)
 
-**Welle-5-Gate (Verzicht-Variante):** `make docs-check`
-gruen mit Verzicht-Anhang im Welle-1-ADR.
-**Welle-5-Gate (Spike-Variante):** `make test-integration`
-gruen mit Spike-Smoke (oder Mock-only-Unit-Test).
+**Status:** Pending. **Vierter rein-async-Stack**-Adapter
+nach Welle 4 (OPC-UA). `dnp3-outstation` ist asyncio-native
+mit Server-/Outstation-Implementierung; Welle 5a baut den
+Master-/Client-seitigen Adapter und nutzt die Outstation
+fuer den in-process-Integration-Smoke (Pattern-Praezedenz
+Welle-3-Decision-M-f + Welle-4-Decision-O-e).
+
+- [ ] **ADR 0034** (fuenfter M4-ADR) — `Proposed` (C1) →
+  `Provisional` (C3), mit DNP3-spezifischen Profil-
+  Entscheidungen (Pattern analog ADR 0031/0032/0033):
+  - [ ] Decision D-a (Point-Schema): inline im
+    `protocol_ports`-Block; pro `device_id` ein
+    `Dnp3PointConfig` mit Pflicht-Feldern
+    `group`/`variation`/`index`/`access`. Welle-5a-
+    Minimum: Group 30 / Variation 5 (32-bit float
+    analog input).
+  - [ ] Decision D-b (Async-Bridge): **reuse**
+    `OpcuaLoopThread`-Pattern aus Welle 4 oder eigene
+    `Dnp3LoopThread`-Klasse; Entscheidung in C1 nach
+    `dnp3-outstation`-Lifecycle-Pruefung. Welle-6-
+    Forward-Pointer: ggf. extrahiere
+    Loop-Thread-Pattern nach `_async_bridge/`.
+  - [ ] Decision D-c (Function-Code-Mapping):
+    DNP3-Function-Codes — READ (FC=0x01) als Default
+    fuer `access="read"`; WRITE (FC=0x02) fuer Master-
+    seitige Writes (falls Welle 5a Write-Pfad
+    abdeckt).
+  - [ ] Decision D-d (Read-Qualifier): qualifier 0x06
+    (class-0/integrity poll) oder qualifier 0x00
+    (8-bit range); Welle-5a-Minimum: qualifier 0x06.
+  - [ ] Decision D-e (Test-Sibling): in-process
+    `dnp3-outstation`-Server in eigenem asyncio-Loop-
+    Thread (Pattern-Praezedenz Welle-3-M-f +
+    Welle-4-O-e).
+- [ ] **NEU**
+  `src/grid_gym/adapters/driven/protocol_dnp3/`-Modul
+  (geplant ~6 Dateien analog `protocol_opcua/`):
+  `__init__.py` + `_config.py` (Decision D-a) +
+  `_codec.py` (Group-30-V5-Float-Codec) +
+  `_loop_thread.py` (oder reuse von `protocol_opcua/`)
+  + `_port.py` (Decision D-c/D-d) + `_errors.py`
+  (Read/Write-Operation-Tax analog Slice-031/032-Pattern).
+- [ ] **Unit-Tests** unter
+  `tests/unit/adapters/driven/protocol_dnp3/`:
+  Config-Validation + Codec-Roundtrip + Lifecycle/
+  Read-Pfad gegen mocked DNP3-Master-Client.
+- [ ] **Integration-Smoke** —
+  `tests/integration/test_dnp3_in_process_smoke.py`
+  mit in-process `dnp3-outstation`-Server in eigenem
+  Loop-Thread; End-to-End-Read-Roundtrip durch
+  Decision-D-a/D-d-Profil.
+- [ ] **EDIT `tests/integration/compose.yml`** — Header-
+  Kommentar-Sync zur Decision-D-e-in-process-Wahl
+  (Pattern-Fortfuehrung aus Welle 3/4).
+- [ ] **EDIT `pyproject.toml`** —
+  `dnp3-outstation>=0.2,<1.0` in `[project]
+  dependencies`; ggf. mypy-Override falls library kein
+  py.typed liefert.
+- [ ] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
+  Default um `adapters/driven/protocol_dnp3` erweitert.
+- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+  `protocol_dnp3`** — Filter erfasst den neuen Pfad
+  ohne Code-Aenderung.
+- [ ] **C3-Doc-Sync** — `M4-welle-5a.md` Status, ADR
+  0034 `Proposed → Provisional`, diese §3-Welle-5a-
+  Section auf Done, Top-Level-Doku-Sync.
+
+**Welle-5a-Gate:** `make test-integration` gruen mit
+DNP3-In-Process-Smoke. `make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+`adapters/driven/protocol_dnp3` erweitert).
+
+#### Welle 5b — IEC-61850-Adapter (Spike, Pending)
+
+**Status:** Pending. Wird **nach** Welle 5a angefangen
+(asyncio-Marshal-Pattern produktiv-erprobt; `iec61850`-
+Library-Reifegrad „Pre-Alpha" macht Welle-5b-Risiko hoeher
+— Welle-5a-Erfahrung informiert die Decision-Klasse).
+
+- [ ] **ADR 0035** (sechster M4-ADR) — `Proposed` (C1) →
+  `Provisional` (C3), mit IEC-61850-spezifischen
+  Profil-Entscheidungen (Pattern analog ADR 0031..0034):
+  - [ ] Decision I-a (LN/CDC-Schema): inline im
+    `protocol_ports`-Block; pro `device_id` ein
+    `Iec61850LnConfig` mit Pflicht-Feldern
+    `logical_node`/`data_object`/`data_attribute`/
+    `access`. Welle-5b-Minimum: MMS-Read.
+  - [ ] Decision I-b (Async-Bridge): reuse oder eigene
+    Loop-Thread-Konstruktion analog Welle 5a Decision
+    D-b.
+  - [ ] Decision I-c (Datatype-Set): IEC-61850-MMS-Typen
+    Welle-5b-Minimum (Boolean, Int32, Float32, String);
+    erweitert sich in Welle 6+.
+  - [ ] Decision I-d (Read-Pfad): MMS-Read via
+    `iec61850.Client.read(...)` — Welle-5b-Pre-Alpha-
+    Wahl konkret in C1.
+  - [ ] Decision I-e (Test-Sibling): in-process-Server
+    der `iec61850`-Library (falls die Library einen
+    Server liefert) ODER Mock-only-Smoke (falls
+    nicht).
+- [ ] **NEU**
+  `src/grid_gym/adapters/driven/protocol_iec61850/`-Modul
+  (analog Welle 5a Struktur).
+- [ ] **Unit-Tests** unter
+  `tests/unit/adapters/driven/protocol_iec61850/`.
+- [ ] **Integration-Smoke ODER Mock-only-Test** je nach
+  Decision I-e.
+- [ ] **EDIT `tests/integration/compose.yml`** — Header-
+  Kommentar-Sync.
+- [ ] **EDIT `pyproject.toml`** — `iec61850>=0.12,<1.0`
+  in `[project] dependencies`; mypy-Override falls
+  noetig (Pre-Alpha-Library hat ggf. keine py.typed).
+- [ ] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
+  Default um `adapters/driven/protocol_iec61850`
+  erweitert.
+- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift** ohne Filter-
+  Edit.
+- [ ] **C3-Doc-Sync** — `M4-welle-5b.md` Status, ADR
+  0035 `Proposed → Provisional`, diese §3-Welle-5b-
+  Section auf Done, Top-Level-Doku-Sync.
+
+**Welle-5b-Gate:** `make test-integration` gruen mit
+IEC-61850-Smoke (oder Mock-only-Unit-Test). `make gates`
+cache-frei gruen ohne Override.
+
+**Welle-5b-Risiko:** `iec61850` ist „Pre-Alpha"; API kann
+breaking changes haben. Falls Welle-5b-C1-Pruefung zeigt,
+dass die Library nicht stabil genug ist, kann Welle 5b zur
+**Variante A** (dokumentierter Verzicht via ADR-0030-§6-
+Anhang nur fuer IEC-61850) ueberfuehrt werden — die
+Disposition bleibt bis Welle-5b-C1 offen.
 
 ### Welle 6 — Cross-Adapter-Hardening
 
