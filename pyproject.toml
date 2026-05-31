@@ -81,6 +81,20 @@ dependencies = [
     # `pymodbus`-Sichtbarkeit ist per AC-PORTS-NO-FW / AC-NO-FW
     # Forbidden-List bereits Welle-0-vorbelegt.
     "pymodbus>=3.6,<4.0",
+    # M4-Welle-4 — OPC-UA-Adapter unter
+    # `adapters/driven/protocol_opcua/`. Pin `==1.2b2` weil asyncua
+    # 1.1.8 (letzte stabile 1.x) unter Python 3.14 in der internen
+    # `create_type_serializer`-Pipeline an Forward-References von
+    # `from __future__ import annotations` scheitert (`issubclass()
+    # arg 1 must be a class`). asyncua 1.2b2 (Beta) tragt den
+    # Python-3.14-Fix vor der 1.2-final-Release; sobald 1.2-final
+    # erscheint, wandert der Pin auf `>=1.2,<2.0`. `Client.connect()`/
+    # `Node.read_value()`/`Node.write_value(Variant)`-API sind in 1.2
+    # rueckwaerts-kompatibel zu 1.1.x. asyncua ist LGPL-3.0 —
+    # Library-Linking unter MIT-Repo ok; `asyncua`-Sichtbarkeit ist
+    # per AC-PORTS-NO-FW / AC-NO-FW Forbidden-List bereits Welle-0-
+    # vorbelegt.
+    "asyncua==1.2b2",
 ]
 
 [build-system]
@@ -306,6 +320,17 @@ enable_error_code = [
 module = "tests.*"
 disallow_untyped_defs = false
 warn_return_any = false
+
+# asyncua 1.2b2 liefert py.typed-Marker, exportiert aber kein `__all__`
+# im Top-Level. `no_implicit_reexport=true` (strict-Default) wuerde
+# damit `from asyncua import Client` als nicht-exportiert melden.
+# `implicit_reexport = true` toleriert die Re-Exports analog zu
+# asyncua's eigener `__init__.py`-Konvention; alle aufgerufenen
+# asyncua-APIs sind in ADR 0033 §2.2/§2.3 als Vertragsschnitt
+# explizit dokumentiert.
+[[tool.mypy.overrides]]
+module = "asyncua.*"
+implicit_reexport = true
 
 # ---------------------------------------------------------------------------
 # import-linter (ADR 0002 §A-1, AC-CORE-NO-ADAPTERS bis AC-NO-IO-MOD)

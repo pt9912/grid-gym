@@ -20,9 +20,15 @@
 # **keinen** Sibling-Container, sondern einen pymodbus-Server
 # in einem Daemon-Thread innerhalb des Test-Prozesses (Lizenz-
 # Pragmatik: kommerziell-restriktive Modbus-Server-Container
-# vermeiden; pymodbus selbst ist BSD-3-Clause). Pattern-
-# Praezedenz fuer Folge-Wellen mit Lizenz-sensiblen Sibling-
-# Servern (z. B. potenziell Welle 4 asyncua).
+# vermeiden; pymodbus selbst ist BSD-3-Clause).
+#
+# M4 Welle 4 (ADR 0033 §2.5 Decision O-e) folgt der Welle-3-
+# Praezedenz: der OPC-UA-Smoke (`test_opcua_in_process_smoke.py`)
+# spawnt einen `asyncua.Server` in einem eigenen asyncio-Loop-
+# Thread innerhalb des Test-Prozesses, **kein** Sibling-Container.
+# asyncua ist LGPL-3.0 fuer Library-Linking; `open62541/open62541`-
+# Image waere MPL-2.0 mit nicht-trivialer Container-Config gewesen.
+# Pattern bleibt fuer Welle 5 (DNP3/IEC, falls Spike) verfuegbar.
 #
 # Aufruf: `make test-integration` (Makefile-Target, das `docker
 # compose up --abort-on-container-exit` aufruft).
