@@ -8,7 +8,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-0.md`](M5-welle-0.md) | Welle-0-Slice-Doc (M5 Slice-Plan-Eroeffnung + Trigger-Triage) — `Done` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-1-Pre-C0 (Pattern Welle 0..6b aus M4). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -90,23 +89,26 @@ Verfahren).
 **Welle 0 (M5-Slice-Plan-Eroeffnung + Trigger-Triage)
 abgeschlossen 2026-06-01** mit C0 `d93ae57` (Slice-Doc)
 + C0-Review `aa1db52` (12 Findings) + C1 `b8bef6c` (NEU
-`M5-ui-demo.md`) + C2 (dieser Commit; Trigger-Triage +
-Status-Flip). NEU `open/010-base-image-krb5-cve-bump.md`
-als expliziter Trigger der M4-Welle-7-Erbschaft;
-`roadmap.md §3 M5` von `Vorbelegung` auf `In Progress`
-geflippt (Decision 10 in Welle-0-C2 entschieden);
-Pre-M5-Welle-0-Sondierungs-ADR
+`M5-ui-demo.md`) + C2 `112efd3` (Trigger-Triage +
+Status-Flip) + Self-Close-Move `fd642df` (rename-only) +
+Pre-C0-Sync (dieser Commit). NEU
+`open/010-base-image-krb5-cve-bump.md` als expliziter
+Trigger der M4-Welle-7-Erbschaft; `roadmap.md §3 M5`
+von `Vorbelegung` auf `In Progress` geflippt (Decision 10
+in Welle-0-C2 entschieden); Pre-M5-Welle-0-Sondierungs-
+ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 verankert mit Maintainer-Decision-Indication „Option 1
 (FastAPI + HTMX + Jinja2 + Chart.js)" (`f4a9ced` +
-`e0c3f66`).
+`e0c3f66`). Welle-0-Slice-Doc nach `done/M5-welle-0.md`
+gewandert (`fd642df` rename-only; Pattern analog M4-Welle-
+0 Self-Close-Move `556ae9f`).
 
 **Aktiver Slice: M5 (UI + Demo).** Naechster aktiver
 Schritt: **M5-Welle-1** (HTTP-API-Surface +
-ADR-0036-Schaerfung auf `Provisional`) — Pre-C0
-HTMX-FastAPI-Smoke-Probe-Run + C0 Slice-Doc + C1
-ADR-Schaerfung + C2 HTTP-API-Implementation + C3
-Doc-Sync. Welle-1-Probe-Run validiert die Maintainer-
-Decision-Indication aus ADR 0036 vor Code-Lieferung
-(Pattern analog M4-Welle-5a-C1-Probe-Run fuer
-nfm-dnp3-Wire-Compat).
+ADR-0036-Schaerfung auf `Provisional`) — verbleibendes
+Pre-C0-Item ist der HTMX-FastAPI-Smoke-Probe-Run zur
+Validierung der Maintainer-Decision-Indication aus
+ADR 0036 (Pattern analog M4-Welle-5a-C1-Probe-Run fuer
+`nfm-dnp3`-Wire-Compat). C0..C3 folgen nach Probe-
+Run-Beleg.

@@ -12,7 +12,7 @@ Festschreibung in M5-Welle-1.
 
 **Datum:** 2026-06-01 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
-Hintergrund liegt in [`M5-welle-0.md`](M5-welle-0.md) §1).
+Hintergrund liegt in [`M5-welle-0.md`](../done/M5-welle-0.md) §1).
 
 **Bezug:**
 
@@ -21,7 +21,7 @@ Hintergrund liegt in [`M5-welle-0.md`](M5-welle-0.md) §1).
 - M4-Closure-Notiz
   [`../done/M4-results.md`](../done/M4-results.md) §5
   „Welle-7-Erbschaft fuer M5+/M6+".
-- [`M5-welle-0.md`](M5-welle-0.md) §3 Decision-Liste
+- [`M5-welle-0.md`](../done/M5-welle-0.md) §3 Decision-Liste
   (10 offene Decisions fuer Welle 1+) + §3 Trigger-
   Drift-Notiz.
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
@@ -124,7 +124,7 @@ vorab vorbelegt.
 ### Welle 0 — Slice-Plan-Eroeffnung + Trigger-Triage (Done 2026-06-01)
 
 **Status:** Done. Welle-Slice-Begleit-Doc
-[`M5-welle-0.md`](M5-welle-0.md). Liefer-Hashes: C0
+[`M5-welle-0.md`](../done/M5-welle-0.md). Liefer-Hashes: C0
 `d93ae57` (Slice-Doc) + C0-Review `aa1db52` (12 Findings
 adressiert) + C1 `b8bef6c` (Slice-Plan-Eroeffnung —
 dieses Dokument) + C2 (dieser Commit; Trigger-Triage +

@@ -546,7 +546,7 @@ Slice-Plan in
 ### M5 — UI + Demo (`In Progress` 2026-06-01)
 
 Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
-([`M5-welle-0.md`](M5-welle-0.md) + [`M5-ui-demo.md`](M5-ui-demo.md))
+([`M5-welle-0.md`](../done/M5-welle-0.md) + [`M5-ui-demo.md`](M5-ui-demo.md))
 + Pre-M5-Welle-0-Sondierungs-ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 mit Maintainer-Decision-Indication „Option 1 (FastAPI +

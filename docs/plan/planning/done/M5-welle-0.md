@@ -60,7 +60,7 @@ Welle 1 und werden im jeweiligen M5-ADR konkretisiert.
 
 M4 ist seit 2026-06-01 mit Welle-7-Closure abgeschlossen
 ([`../done/M4-results.md`](../done/M4-results.md)). M5 ist
-laut [`roadmap.md §3 M5`](roadmap.md) der naechste aktive
+laut [`roadmap.md §3 M5`](../in-progress/roadmap.md) der naechste aktive
 Slice mit zwei Sub-Bereichen entlang
 [`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
 plus Cross-Cutting aus
@@ -274,7 +274,7 @@ ADR konkretisiert werden:
   Asset-Bundle). Diese Decision ist also degradiert von
   „Wahlfrage" zu „Welle-2-Bestaetigung".
 - **Decision 9 (UICommandPort-Separation):**
-  [`roadmap.md §3 M5`](roadmap.md) erwaehnt
+  [`roadmap.md §3 M5`](../in-progress/roadmap.md) erwaehnt
   „`GG-AR-PORT-DRG-002` (`UICommandPort`, sofern getrennt
   vom HTTP-API)". Frage: separater Port fuer UI-getriebene
   Commands (Replay-Steuerung, Fault-Injection-Form-
@@ -468,6 +468,6 @@ Bestand-Eintrag.
 - [`../../../spec/architecture.md §5`](../../../../spec/architecture.md)
   — `GG-AR-COMP-UI`-Slot in `ui/`-Top-Level-Verzeichnis;
   `GG-AR-COMP-API` in `adapters/driving/http_api`.
-- [`roadmap.md §3 M5`](roadmap.md) — M5-Vorbelegung
+- [`roadmap.md §3 M5`](../in-progress/roadmap.md) — M5-Vorbelegung
   (Lieferziel, Lastenheft-IDs, Architekturartefakte,
   DoD-Checkliste).
