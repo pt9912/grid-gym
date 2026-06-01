@@ -500,7 +500,7 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
 M4-Abschluss-Belege in
 [`../done/M4-results.md`](../done/M4-results.md);
 Slice-Plan in
-[`M4-protocol-adapters.md`](M4-protocol-adapters.md)
+[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md)
 (wandert nach `done/` mit Welle-7-C4-Self-Close-Move).
 9 Wellen 0..6b geliefert (5 produktive Adapter +
 2 Cross-Adapter-Hardening-Wellen); 6 M4-ADRs

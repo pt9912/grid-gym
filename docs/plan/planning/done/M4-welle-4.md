@@ -78,7 +78,7 @@ dieser Commit):**
   Client` analog asyncua-eigener Konvention.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 4`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 4`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -392,7 +392,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   inline-Pattern aus ADR 0031/0032 wird uebernommen;
   Item 5 Test-Sibling — in-process bevorzugt analog
   Welle-3-Decision-M-f).
-- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 4 (kanonische Slice-Spezifikation mit DoD-
   Checkliste).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
@@ -555,7 +555,7 @@ Welle 5; werden nicht in Welle 4 angelegt):
 | `docs/plan/adr/0033-opcua-adapter-profile.md`                                     | C3     | EDIT (`Proposed → Provisional`)                 |
 | `docs/plan/adr/README.md`                                                         | C3     | EDIT (Status-Spalte `Provisional`)              |
 | `docs/plan/planning/in-progress/M4-welle-4.md`                                    | C3     | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 4 DoD-Checkboxen abgehakt)       |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 4 DoD-Checkboxen abgehakt)       |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `docs/plan/adr/README.md` | C3 | EDIT (M4-Status-Sync — Welle 4 `Done`, ADR 0033 `Provisional`, „Naechster aktiver Schritt: M4-Welle-5") |
 | `docs/plan/planning/in-progress/README.md`                                        | C3     | EDIT („Naechster aktiver Schritt"-Zeile auf M4-Welle-5) |
 

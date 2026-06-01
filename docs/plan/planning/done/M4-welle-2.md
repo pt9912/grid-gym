@@ -61,7 +61,7 @@ dieser Commit):**
   mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
-[`../in-progress/M4-protocol-adapters.md §3 Welle 2`](../in-progress/M4-protocol-adapters.md)
+[`../done/M4-protocol-adapters.md §3 Welle 2`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -327,7 +327,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   Decision-Liste (Item 4 Profile-Deklaration + Item 5
   Test-Sibling-Container + Item 6
   `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
-- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`../done/M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 2 (kanonische Slice-Spezifikation).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   §2.1 (Sync-Vertrag + paho-mqtt-Halb-Sync-Begruendung;
@@ -466,7 +466,7 @@ Welle 3; werden nicht in Welle 2 angelegt):
 | `docs/plan/adr/0031-mqtt-adapter-profile.md`                                  | C3     | EDIT (`Proposed → Provisional`)                 |
 | `docs/plan/adr/README.md`                                                     | C3     | EDIT (Status-Spalte `Provisional`)              |
 | `docs/plan/planning/in-progress/M4-welle-2.md`                                | C3     | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                      | C3     | EDIT (§3 Welle 2 Done-Sync)                     |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                      | C3     | EDIT (§3 Welle 2 Done-Sync)                     |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `spec/architecture.md` | C3 | EDIT (M4-Status-Sync — Welle 2 `Done`, ADR 0031 `Provisional`, „Naechster aktiver Schritt: M4-Welle-3") |
 | `docs/plan/planning/done/README.md`                                           | C3     | EDIT (M4-welle-2.md-Bestand-Zeile; analog M4-welle-1.md-Zeile) |
 

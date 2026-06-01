@@ -119,14 +119,14 @@ Welle 7 liefert **fuenf Closure-Items** ueber 4 Commits:
    mit Bezug-Linkpflege an ADR 0030..0035 (Verfahren per
    [`../../adr/0028-link-maintenance-accepted-adr-bezug.md`](../../adr/0028-link-maintenance-accepted-adr-bezug.md);
    alle sechs M4-ADRs zeigen aktuell mit `Bezug:` auf
-   `planning/in-progress/M4-protocol-adapters.md` und
+   `planning/done/M4-protocol-adapters.md` und
    werden auf `planning/done/M4-protocol-adapters.md`
    nachgezogen) plus Cross-Doc-Refs in READMEs/Slice-
    Docs.
 
 **Slice-Spec-DoD-Streichung (B3):** die kanonische Slice-
 Spec
-[`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
 Welle 7 listet „Open-Trigger fuer M4-Restposten erzeugt"
 als Item. Welle-7-Plan streicht dieses Item bewusst:
 **Welle-6b-C3 hat bereits Trigger 009 (IedServer-Smoke-
@@ -181,7 +181,7 @@ Bestand-Eintrag.
   analog `M3-results.md`.
 - ADR 0028 (`tick-loop-private-error-import-contract.md`)
   „Bezug"-Section: Verweis auf
-  `planning/in-progress/M4-protocol-adapters.md` ggf.
+  `planning/done/M4-protocol-adapters.md` ggf.
   nachziehen auf `planning/done/M4-protocol-adapters.md`
   (falls noetig nach C4-Self-Close-Move; alternativ in C4
   zusammen).
@@ -240,7 +240,7 @@ Bestand-Eintrag.
 | `docs/plan/planning/in-progress/README.md`                  | C3    | EDIT (M5-Naechster-Schritt; M4-Bestand abschliessend)               |
 | `README.md` + `README.de.md`                                | C3    | EDIT (Status-Header + Wave-Tabelle abschliessend)                   |
 | `AGENTS.md`                                                 | C3    | EDIT (M4-Status-Sync analog M3-Welle-7-Pattern)                     |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`    | C4    | MOVE → `done/` (rename-only, separater Commit)                      |
+| `docs/plan/planning/done/M4-protocol-adapters.md`    | C4    | MOVE → `done/` (rename-only, separater Commit)                      |
 | `docs/plan/adr/0030..0035-*.md`                             | C4    | EDIT (Bezug-Linkpflege auf done/M4-protocol-adapters.md, Verfahren per ADR 0028) |
 
 ## 6. Verifikationspfad
@@ -263,7 +263,7 @@ Bestand-Eintrag.
    ausserhalb Welle 7. M4-results.md §2 dokumentiert das
    als Defer-Pfad (analog S-4-Klausel „oder
    dokumentierter Defer-Pfad" aus
-   [`M4-protocol-adapters.md`](M4-protocol-adapters.md)
+   [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md)
    §3 Welle-7-S-4). Welle 7 selbst macht keinen Base-
    Image-Bump.
 6. `make docs-check` cache-frei gruen.
@@ -411,7 +411,7 @@ only-Fallback mit Trigger 009).
 - [`../done/M3-results.md`](../done/M3-results.md) —
   M3-Closure-Pattern (Welle-Tabelle, Abnahme-Belege,
   S-1..S-6, Wandert-Nach).
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 7 (kanonische Slice-Spezifikation).
 - [`../done/M4-welle-6b.md`](../done/M4-welle-6b.md) —
   Welle-6b-Closure (letzte Pre-Welle-7).

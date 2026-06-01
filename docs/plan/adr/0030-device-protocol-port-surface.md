@@ -40,7 +40,7 @@ Decision 2 „Port bleibt Protokoll-Library-frei";
 Trio-Definitionen in §2.2–§2.4 spiegeln das Pattern
 pro Port).
 M4-Slice-Plan
-[`in-progress/M4-protocol-adapters.md`](../planning/in-progress/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
 §3 Welle 1; M4-Welle-0-Decision-Liste
 [`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
 (Items 1, 2, 3, 7).

@@ -67,7 +67,7 @@ direkte Pattern-Praezedenz fuer Decision D-e),
 fuer Decision D-e mit `dnp3-outstation` als
 Test-Sibling).
 M4-Slice-Plan
-[`in-progress/M4-protocol-adapters.md`](../planning/in-progress/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
 §3 Welle 5a; M4-Welle-0-Decision-Liste
 [`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
 Decision 1 (DNP3/IEC-Disposition — Welle 1 hat den

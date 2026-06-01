@@ -56,7 +56,7 @@ Modbus; Welle 4: OPC-UA; Welle 5: DNP3+IEC-Disposition).
   mit Hashes belegt).
 
 Kanonische Slice-Spezifikation:
-[`../in-progress/M4-protocol-adapters.md §3 Welle 1`](../in-progress/M4-protocol-adapters.md)
+[`../done/M4-protocol-adapters.md §3 Welle 1`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -200,7 +200,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
 - [`M4-welle-0.md`](M4-welle-0.md) §3
   Decision-Liste (Items 1, 2, 3, 7) als Quelle der
   Decision-Vorbelegung.
-- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`../done/M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 1 (kanonische Slice-Spezifikation).
 - [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)
   als Pattern-Anker: ADR 0030 ist neuer Port-Slot, kein
@@ -320,13 +320,13 @@ und auf die Closure-Pfade umgestellt.
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_1_protocol_ports.py` | C2  | NEU (11 TickLoop-Lifecycle-Tests: FIFO/LIFO/Idempotenz/Cleanup) |
 | `docs/plan/adr/0030-device-protocol-port-surface.md`                       | C3     | EDIT (`Proposed → Provisional`)                                 |
 | `docs/plan/planning/done/M4-welle-1.md`                                    | C3     | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | C3     | EDIT (§3 Welle 1 Done-Sync)                                     |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                   | C3     | EDIT (§3 Welle 1 Done-Sync)                                     |
 | `docs/plan/adr/0030-device-protocol-port-surface.md`                       | Linter-Folge `82f947c` | EDIT (arch-check 16/16 → 19/19 = 7 lint-imports + 12 `tools/arch_check.py`) |
 | `docs/plan/planning/done/M4-welle-1.md`                                    | Linter-Folge `82f947c` | EDIT (gleiche Korrektur in §0 + §9)                            |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | Linter-Folge `82f947c` | EDIT (gleiche Korrektur in §3 Welle 1)                         |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                   | Linter-Folge `82f947c` | EDIT (gleiche Korrektur in §3 Welle 1)                         |
 | `docs/plan/planning/done/README.md`                                        | Pre-C0-Sync `f1f9db1`  | EDIT (Bestand-Tabelle-Zeile + Closure-Stack)                   |
 | `docs/plan/planning/in-progress/README.md`                                 | Pre-C0-Sync `f1f9db1`  | EDIT (Naechster-aktiver-Schritt → M4-Welle-2)                  |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                   | Pre-C0-Sync `f1f9db1`  | EDIT (§3 Welle 1 Slice-Doc-Ref auf `../done/`)                 |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                   | Pre-C0-Sync `f1f9db1`  | EDIT (§3 Welle 1 Slice-Doc-Ref auf `../done/`)                 |
 
 ---
 

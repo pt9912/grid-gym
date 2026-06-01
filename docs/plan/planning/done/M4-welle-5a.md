@@ -78,7 +78,7 @@ dieser Commit):**
   dokumentiert.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 5a`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 5a`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -339,7 +339,7 @@ Welle 5a bringt **eine** neue ADR: **ADR 0034**
   (`GG-DNP3-001` Cluster).
 - [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
   Decision-Liste.
-- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`../done/M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 5a (kanonische Slice-Spezifikation).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   §2.1 (Sync-Vertrag — `nfm-dnp3` ist sync und passt
@@ -469,7 +469,7 @@ Welle 5a bringt **eine** neue ADR: **ADR 0034**
 | `docs/plan/adr/0034-dnp3-adapter-profile.md`                                      | C3     | EDIT (`Proposed → Provisional`)                 |
 | `docs/plan/adr/README.md`                                                         | C3     | EDIT (Status-Spalte `Provisional`)              |
 | `docs/plan/planning/in-progress/M4-welle-5a.md`                                   | C3     | EDIT (Status → Done; DoD)                       |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 5a DoD-Checkboxen abgehakt)      |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 5a DoD-Checkboxen abgehakt)      |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `docs/plan/planning/in-progress/README.md` | C3 | EDIT (M4-Status-Sync — Welle 5a `Done`, ADR 0034 `Provisional`) |
 
 ---

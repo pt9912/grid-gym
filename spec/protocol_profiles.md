@@ -26,7 +26,7 @@ Pattern-Praezedenz: jedes Profil ist inline im
 
 **Status-Pfad:** Alle 5 ADRs sind aktuell `Provisional`. Die
 geplante M4-Welle-7-Closure schaerft alle 5 auf `Accepted`
-(siehe [M4-Slice-Plan](../docs/plan/planning/in-progress/M4-protocol-adapters.md)
+(siehe [M4-Slice-Plan](../docs/plan/planning/done/M4-protocol-adapters.md)
 §3 Welle 7).
 
 ---

@@ -58,7 +58,7 @@ fuer Decision O-e: pymodbus liefert Server in derselben
 BSD-Library, asyncua liefert Server in derselben
 LGPL-Library; gleiches Pattern).
 M4-Slice-Plan
-[`in-progress/M4-protocol-adapters.md`](../planning/in-progress/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
 §3 Welle 4; M4-Welle-0-Decision-Liste
 [`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
 Decision 2 (Sync vs. async-Vertrag — Welle-1-final

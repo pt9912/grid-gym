@@ -25,7 +25,7 @@ Hintergrund liegt in [`M4-welle-0.md`](../done/M4-welle-0.md) §1).
 
 **Bezug:**
 
-- [`roadmap.md`](roadmap.md) §3 M4 (Lieferziel, DoD-
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M4 (Lieferziel, DoD-
   Checkliste, Architekturartefakte).
 - M3-Closure-Notiz
   [`../done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md) +
@@ -1216,7 +1216,7 @@ S-1..S-6.
   — **kein** erneuter Move in Welle 7.
 - [ ] **ADR-0028-Linkpflege nach Self-Close-Move** — alle
   M4-ADRs mit `Bezug:` auf
-  `planning/in-progress/M4-protocol-adapters.md` werden auf
+  `planning/done/M4-protocol-adapters.md` werden auf
   `planning/done/M4-protocol-adapters.md` nachgezogen.
   Kein Forwarder-Stub im alten `in-progress/`-Pfad.
 - [ ] **Open-Trigger fuer M4-Restposten erzeugt** — z. B.
@@ -1317,7 +1317,7 @@ S-1..S-6.
 
 ## 6. Wandert nach
 
-- ✓ `in-progress/M4-protocol-adapters.md` (dieses
+- ✓ `done/M4-protocol-adapters.md` (dieses
   Dokument, eroeffnet 2026-05-26 mit M4-Welle-0).
 - `done/M4-protocol-adapters.md` mit Closure-Notiz nach
   Welle 7.

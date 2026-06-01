@@ -55,7 +55,7 @@ ist strikt, Roundtrip ist tolerant),
 (OTLP-Adapter-Praezedenz fuer Welle-6-Span-Wrap-Forward-
 Pointer — Welle 3 wrappt **noch keine** Adapter-Calls).
 M4-Slice-Plan
-[`in-progress/M4-protocol-adapters.md`](../planning/in-progress/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
 §3 Welle 3; M4-Welle-0-Decision-Liste
 [`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
 Decision 4 (Profile-Deklaration) + Decision 5

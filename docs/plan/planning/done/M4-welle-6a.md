@@ -103,7 +103,7 @@ dieser Commit):**
   I-f) explizit.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 6a`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 6a`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -315,7 +315,7 @@ otel_wrap.py`-Wrapper braucht keinen eigenen ADR.
 - [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
   (Folge-Pflicht-Liste — `AC-ADAPTER-LIGHTWEIGHT`-
   Planted-Violator-Property-Test).
-- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 6a (kanonische Slice-Spezifikation).
 - [`../../adr/0024-observability-port-trio.md`](../../adr/0024-observability-port-trio.md)
   §4.5 (OTel-Span-Wrap-Pattern; Welle-6+-Forward-Pointer).
@@ -460,7 +460,7 @@ oder nach 6a):
 | `docs/plan/planning/open/004-canonical-encoder-alternative-adr.md`                | C3     | EDIT (Trigger-Body-Notiz oder Closure)                |
 | `docs/plan/planning/done/006-mypy-strict-bytes.md`                                | C3     | EDIT (Closure-Notiz nach Aktivierung)                 |
 | `docs/plan/planning/in-progress/M4-welle-6a.md`                                   | C4     | EDIT (Status → Done; DoD)                             |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C4     | EDIT (§3 Welle 6a DoD-Checkboxen abgehakt)            |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                          | C4     | EDIT (§3 Welle 6a DoD-Checkboxen abgehakt)            |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `docs/plan/planning/in-progress/README.md` | C4 | EDIT (M4-Status-Sync — Welle 6a `Done`) |
 
 ---

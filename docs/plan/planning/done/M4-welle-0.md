@@ -7,7 +7,7 @@ Low Findings adressiert) + diesem C2 (Trigger-Triage +
 Status-Flip). Vorabraeumung + Slice-Plan-Eroeffnung fuer M4
 (Protokolladapter — MQTT, Modbus, OPC-UA, DNP3, IEC 61850)
 ist geliefert. Kanonische M4-Slice-Spezifikation:
-[`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md)
 (bleibt in `in-progress/` bis M4-Welle-7-Closure) — dieses
 Welle-0-Doc ist der Index zur Welle, nicht der Meilenstein-
 Slice-Plan selbst.
@@ -95,7 +95,7 @@ M3-Welle-0-Pattern (reine Doc-Welle).
 
 **In Scope:**
 
-1. `docs/plan/planning/in-progress/M4-protocol-adapters.md`
+1. `docs/plan/planning/done/M4-protocol-adapters.md`
    als neuer M4-Slice-Plan mit Vorbelegung Welle 0..7,
    Out-of-Scope, Risiken + Fallback, Akzeptanz-/Exit-Kriterien
    (Pattern analog
@@ -307,7 +307,7 @@ Sub-Welle.
 
 ### C1 — `docs(plan)`: M4-Slice-Plan eroeffnen — protocol-adapters
 
-- NEU `docs/plan/planning/in-progress/M4-protocol-adapters.md`
+- NEU `docs/plan/planning/done/M4-protocol-adapters.md`
   mit Vorbelegung:
   - §1 Zweck (fuenf Sub-Adapter, Lastenheft-Anschluss,
     Cross-Cutting-Pflicht „Simulations-/Testadapter").
@@ -350,9 +350,9 @@ Sub-Welle.
 | ------------------------------------------------------------------- | ------ | --------------------------------- |
 | `docs/plan/planning/in-progress/M4-welle-0.md`                      | C0     | NEU                               |
 | `docs/plan/planning/in-progress/README.md`                          | C0     | EDIT (M4-welle-0.md ergaenzt)     |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`            | C1     | NEU                               |
+| `docs/plan/planning/done/M4-protocol-adapters.md`            | C1     | NEU                               |
 | `docs/plan/planning/in-progress/README.md`                          | C1     | EDIT (M4-Slice-Plan ergaenzt)     |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`            | C2     | EDIT (Welle-0-Triage-Notiz)       |
+| `docs/plan/planning/done/M4-protocol-adapters.md`            | C2     | EDIT (Welle-0-Triage-Notiz)       |
 | `docs/plan/planning/in-progress/M4-welle-0.md`                      | C2     | EDIT (Status → Done)              |
 
 ## 6. Verifikationspfad

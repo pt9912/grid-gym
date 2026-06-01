@@ -7,7 +7,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
-| [`M4-protocol-adapters.md`](M4-protocol-adapters.md) | M4-Slice-Plan (MQTT/Modbus/OPC-UA/DNP3/IEC; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M3-faults-agents-observability.md`). |
 | [`M4-welle-7.md`](M4-welle-7.md) | Welle-7-Slice-Doc (M4-Closure) — `Done` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-0-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
@@ -50,8 +49,10 @@ Welle-0..5b- und Welle-6a-Docs sind alle nach
 gewandert (Self-Close-Moves `556ae9f` / `81b5cba` /
 `0d6ad6c` / `506c8ca` / `3bc015b` / `9fea2be` / `30860ed`
 / `d1cb65d` / `bf23458`). Der kanonische M4-Slice-Plan
-[`M4-protocol-adapters.md`](M4-protocol-adapters.md)
-bleibt in `in-progress/` bis M4-Welle-7-Closure.
+[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md)
+ist nach `done/` gewandert (Self-Close-Move `e745f10` als
+M4-Welle-7-C4; Bezug-Linkpflege an ADR 0030..0035 per
+ADR-0028-Verfahren).
 **Welle 6b (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-
 Erbschaft + Slice-034-F13-Vorlauf-Item) abgeschlossen
 2026-06-01** mit C0 `14d1bcb` (Slice-Doc) + C1 `8947c62`

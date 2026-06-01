@@ -118,7 +118,7 @@ dieser Commit):**
     libiec61850-nativen Format (kein SCL-XML).
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 5b`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 5b`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -479,7 +479,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   Welle 5b liefert die SOLLTE-Erfuellung).
 - [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
   Decision-Liste.
-- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`../done/M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 5b (kanonische Slice-Spezifikation).
 - [`../done/M4-welle-5a.md`](../done/M4-welle-5a.md) als
   Pattern-Praezedenz: Adapter-Modul-Struktur (5 Dateien:
@@ -645,7 +645,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
 | `docs/plan/adr/0035-iec61850-adapter-profile.md`                                  | C3     | EDIT (`Proposed → Provisional`)                       |
 | `docs/plan/adr/README.md`                                                         | C3     | EDIT (Status-Spalte `Provisional`)                    |
 | `docs/plan/planning/in-progress/M4-welle-5b.md`                                   | C3     | EDIT (Status → Done; DoD)                             |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 5b DoD-Checkboxen abgehakt)            |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 5b DoD-Checkboxen abgehakt)            |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `docs/plan/planning/in-progress/README.md` | C3 | EDIT (M4-Status-Sync — Welle 5b `Done`, ADR 0035 `Provisional`) |
 
 ---

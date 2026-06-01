@@ -9,7 +9,7 @@ verursacht; siehe §2 Defer-Pfad). Alle sechs M4-ADRs
 (0030/0031/0032/0033/0034/0035) sind mit Welle-7-C1
 `d2071f0` auf `Accepted` promoted.
 **Bezug:** Slice-Plan
-[`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md);
+[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md);
 Welle-Slice-Begleit-Docs
 [`M4-welle-0.md`](M4-welle-0.md),
 [`M4-welle-1.md`](M4-welle-1.md),
@@ -156,7 +156,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 
 Spiegelt das M3-Welle-7-Pattern (siehe
 [`M3-results.md §4`](M3-results.md)); referenziert
-[`M4-protocol-adapters.md §3 Welle 7`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 7`](../done/M4-protocol-adapters.md)
 S-1..S-6-Items:
 
 - **S-1 (M4-Vorabraeumungs-Item, Trigger-Triage in
@@ -172,7 +172,7 @@ S-1..S-6-Items:
   `done/` produktiv eingezogen, keine weitere M4-Folge-
   Pflicht verbleibt.
 - **S-2 (Sub-Slicing-Schwelle)** — erfuellt in
-  [`M4-protocol-adapters.md §3 Praeambel`](../in-progress/M4-protocol-adapters.md);
+  [`M4-protocol-adapters.md §3 Praeambel`](../done/M4-protocol-adapters.md);
   **aktiv eingesetzt** in zwei Faellen:
   - **Welle 5 → 5a / 5b**: DNP3-Spike (5a) und IEC-61850-
     Spike (5b) waren zu unterschiedlich (Wire-Compat-
@@ -349,7 +349,7 @@ aktiv (siehe
   Closure-Dokument lebt parallel dazu) → `done/M4-welle-
   7.md` mit End-of-Wave-Move folgt als M5-Welle-0-Pre-C0
   (analog M3-Welle-7-Pattern).
-- ⏳ `in-progress/M4-protocol-adapters.md` →
+- ⏳ `done/M4-protocol-adapters.md` →
   `done/M4-protocol-adapters.md` folgt in M4-Welle-7-C4
   als Self-Close-Move (rename-only) + Welle-7-Folge-
   Commit fuer Cross-Doc-Refs + Bezug-Linkpflege an

@@ -355,7 +355,7 @@ Welle 6b liefert **fuenf Scope-Items** ueber 4-5 Commits:
 | `pyproject.toml` (Pfad A) **oder** `Dockerfile` (Pfad B) **oder** test-skip (Pfad C) | C3   | EDIT (IedServer-Smoke-Reaktivierungs-Pfad)            |
 | `tools/arch_check.py`                                                              | C3     | EDIT (Slice-034-F13 `_is_adapter_lightweight_path`)   |
 | `CONTRIBUTING.md`                                                                  | C4     | CREATE / EDIT (Dual-License-Policy)                   |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                           | C4     | EDIT (§3 Welle 6b DoD-Checkboxen)                     |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                           | C4     | EDIT (§3 Welle 6b DoD-Checkboxen)                     |
 | `docs/plan/planning/in-progress/README.md`                                         | C4     | EDIT (Welle-6b-Status + Naechster-Schritt)            |
 | `docs/plan/planning/in-progress/roadmap.md`                                        | C4     | EDIT (Welle-6b-Bullet + Tests-Count)                  |
 | `README.md` + `README.de.md`                                                       | C4     | EDIT (Wave-6b-Status)                                 |
@@ -519,7 +519,7 @@ gehalten):**
   Welle-6a-Closure (Cross-Adapter-Mainstream).
 - [`../done/034-iec61850-otel-wrap-review-folge.md`](../done/034-iec61850-otel-wrap-review-folge.md)
   — Welle-6a-Review-Folge mit F13-Vorlauf-Item.
-- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 6b (kanonische Slice-Spezifikation).
 - [`../../adr/0035-iec61850-adapter-profile.md`](../../adr/0035-iec61850-adapter-profile.md)
   — IEC-61850-Adapter-Profile mit Decision I-f

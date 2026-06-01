@@ -87,7 +87,7 @@ C3):**
   E2E-Test.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 3`](../in-progress/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 3`](../done/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -397,7 +397,7 @@ Status-Pfad `Proposed → Provisional → Accepted`:
   Test-Sibling-Container — **explizit Lizenz-Risiko
   fuer Modbus dokumentiert**; Item 6
   `AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
-- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md) §3
   Welle 3 (kanonische Slice-Spezifikation).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   §2.1 (Sync-Vertrag — pymodbus-Sync-Client passt **ohne**
@@ -550,7 +550,7 @@ Welle 4; werden nicht in Welle 3 angelegt):
 | `docs/plan/adr/0032-modbus-adapter-profile.md`                                    | C3     | EDIT (`Proposed → Provisional`)                 |
 | `docs/plan/adr/README.md`                                                         | C3     | EDIT (Status-Spalte `Provisional`)              |
 | `docs/plan/planning/done/M4-welle-3.md`                                           | C3/self-close | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) + Move nach `done/` |
-| `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 3 Done-Sync)                     |
+| `docs/plan/planning/done/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 3 Done-Sync)                     |
 | `docs/plan/planning/done/006-mypy-strict-bytes.md`                                | C3     | EDIT (Trigger-006-Re-Eval-Notiz mit Modbus-Beleg) |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `spec/architecture.md` | C3 | EDIT (M4-Status-Sync — Welle 3 `Done`, ADR 0032 `Provisional`, „Naechster aktiver Schritt: M4-Welle-4") |
 | `docs/plan/planning/done/README.md`                                               | C3     | EDIT (M4-welle-3.md-Bestand-Zeile; analog M4-welle-2.md-Zeile) |
