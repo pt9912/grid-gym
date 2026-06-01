@@ -7,6 +7,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
+| [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
 | [`M5-welle-0.md`](M5-welle-0.md) | Welle-0-Slice-Doc (M5 Slice-Plan-Eroeffnung + Trigger-Triage) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-1-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
