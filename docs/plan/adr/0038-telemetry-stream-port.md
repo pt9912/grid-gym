@@ -1,7 +1,14 @@
 # ADR 0038 — TelemetryStreamPort (M5 Welle 3)
 
-**Status:** Proposed — angelegt 2026-06-01 mit M5-Welle-3-C1
-(dieser Commit). Die ADR schaerft die Telemetry-Source-
+**Status:** Provisional — angelegt 2026-06-01 mit M5-Welle-3-
+C1 `9f3c00d` (Status `Proposed`); auf `Provisional` gezogen
+2026-06-01 mit M5-Welle-3-C3 (dieser Commit) nach C2-Code-
+Merge `82bdf39` (NEU `TelemetryStreamPort` + NEU
+`InMemoryTelemetryStream` + `DemoTelemetryGenerator` +
+WS-Subscribe-Wiring + Dashboard-UI-Page + 6-Zustands-
+Quality-Marker; 16 neue Unit + 2 Integration-Tests
++ Welle-1-Smoke-Anpassung; 10/10 A-1-Gates gruen
+ohne Override). Die ADR schaerft die Telemetry-Source-
 Architektur fuer die Live-Telemetry-Dashboard-Welle und
 schliesst Welle-0-Decision 11 (siehe
 [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)).
@@ -11,7 +18,8 @@ Sie verankert eine NEUE Driving-Port-Surface
 `InMemoryTelemetryStream` als asyncio-Pub/Sub-Implementation
 mit bounded Queues + Drop-Oldest-Backpressure.
 
-**Datum:** 2026-06-01 (M5-Welle-3-C1)
+**Datum:** 2026-06-01 (M5-Welle-3-C1 `9f3c00d` → C3 dieser
+Commit)
 
 **Bezug:**
 
@@ -309,14 +317,20 @@ deterministisch (kein Wait-on-GC).
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-06-01 mit M5-Welle-3-C1 (dieser
-  Commit). Decision 11a/b/c alle final entschieden im
-  ADR-Body; Probe-Run `5349923` belegt das Pattern
-  server-side.
-- **Provisional** — geplant mit M5-Welle-3-C3 nach C2-Code-
-  Merge. Pattern analog ADR 0030..0037 in M4/M5
-  (`Proposed → Provisional` mit C3 nach C2-Implementation-
-  Merge; C2 belegt die Decisions produktiv im Code).
+- **Proposed** — 2026-06-01 mit M5-Welle-3-C1 `9f3c00d`.
+  Decision 11a/b/c alle final entschieden im ADR-Body;
+  Probe-Run `5349923` belegt das Pattern server-side.
+- **Provisional** — 2026-06-01 mit M5-Welle-3-C3 (dieser
+  Commit) nach C2-Code-Merge `82bdf39`. Pattern analog
+  ADR 0030..0037 in M4/M5 (`Proposed → Provisional` mit
+  C3 nach C2-Implementation-Merge; C2 belegt die
+  Decisions produktiv im Code). Belege: Decision 11a
+  produktiv in `hexagon/ports/driving/telemetry_stream.
+  py`-Protocol + `TelemetryPoint`-Dataclass; Decision 11b
+  produktiv in `adapters/driven/telemetry_stream_inmemory/
+  stream.py:publish` mit `contextlib.suppress(asyncio.
+  QueueEmpty)`-Drain; Decision 11c produktiv im
+  `subscribe`-AsyncGenerator-`try/finally`-Block.
 - **Accepted** — geplant mit M5-Welle-7-Closure (analog
   ADR 0030..0037).
 

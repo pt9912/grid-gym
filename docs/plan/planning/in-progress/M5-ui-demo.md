@@ -258,32 +258,62 @@ integration Tests passed). **UI lokal erreichbar nach
 `docker compose up`** (`GG-UI-001`) per Integration-
 Smoke-Test verifiziert.
 
-### Welle 3 — Live-Telemetry-Dashboard (Pending)
+### Welle 3 — Live-Telemetry-Dashboard (Done 2026-06-01)
 
-**Status:** Pending. Erfuellt `GG-UI-002/003/009` (Live-
-Telemetry-Anzeige + Zeitreihen + Quality-Marker).
+**Status:** Done 2026-06-01. Erfuellt `GG-UI-002/003/009`
++ `GG-API-002`. Welle-Slice-Begleit-Doc
+[`M5-welle-3.md`](M5-welle-3.md). Liefer-Hashes: Pre-C0a
+`8d60e16` + Pre-C0b `159f537` + Pre-C0c `5349923`
+(Asyncio-Pub/Sub-Probe) + C0 `ab55ec7` + CI-Hotfix
+`3ba74ef` + C1 `9f3c00d` (NEU ADR 0038) + C2 `82bdf39`
+(Code) + C3 (dieser Commit).
 
-- [ ] **Decision 3 (WebSocket vs SSE)** final im Slice-
-  Doc mit Probe-Run-Beleg. Default-Indication: FastAPI
-  `@app.websocket` (Welle-1-Surface bereits da). SSE-
-  Alternative nur falls WebSocket-Setup im Demo-Compose
-  fragiler ist als Server-Sent-Events.
-- [ ] **Decision 7 (Charting-Library-Final)** final =
-  Chart.js (ADR-0036-§2.5-Maintainer-Indication
-  bestaetigt im Slice-Doc).
-- [ ] **Live-Telemetry-Page** unter `/runs/{id}/telemetry`:
-  - HTMX-Element mit `hx-ext="ws"` (oder SSE-Aequivalent)
-    fuer WS-Subscription.
-  - Telemetry-Tabelle (Geraet/Metrik/Wert/Einheit/Sim-
-    Zeit/Quality) als HTMX-Partial-Refresh.
-  - Zeitreihen-Chart fuer mind. 1 Leistung + 1 SOC
-    (Chart.js `update()`-Pattern bei WS-Push).
-- [ ] **Quality-Marker-Visualisierung** (`GG-UI-009`):
-  Quality-Statuse `stale`/`invalid`/`nan`/`missing`/
-  `fault_injected` per Custom-Point-Style + Tabellen-
-  Row-Highlight unterscheidbar.
-- [ ] **Unit-Tests** + Integration-Test (WS-Smoke).
-- [ ] **C3 Doc-Sync**.
+- [x] **Decision 3 (WebSocket vs SSE)** durch
+  [Lastenheft §16 `GG-API-002`](../../../../spec/lastenheft.md)
+  als **WebSocket Pflicht** vorgegeben — SSE-Fallback
+  auf M6-Wishlist deferred.
+- [x] **Decision 7 (Charting-Library-Final)** final =
+  **Chart.js 4.5.1** (ADR-0036-§2.5-Indication
+  bestaetigt durch produktiven Einsatz im Dashboard-
+  Inline-JS).
+- [x] **NEU Decision 11 (Telemetry-Source-Architektur)**
+  final in **NEU ADR 0038** (TelemetryStreamPort) — neue
+  Driving-Port-Surface + `InMemoryTelemetryStream`-
+  Adapter mit asyncio-Pub/Sub + Drop-Oldest-
+  Backpressure.
+- [x] **Live-Telemetry-Page** unter
+  `/runs/{run_id}/dashboard` (verschoben vom Welle-0-
+  Vorbelegungs-Pfad `/runs/{id}/telemetry`, weil WS-
+  Endpoint denselben Pfad belegt):
+  - HTMX-Element mit `hx-ext="ws"
+    ws-connect="/runs/{run_id}/telemetry"`.
+  - Telemetry-Tabelle mit 7 Spalten (Device/Metric/Value/
+    Unit/Sim-Time/Quality/Sequence) als Inline-JS-Update
+    bei `htmx:wsAfterMessage`-Event.
+  - Zeitreihen-Chart fuer 3 Datensaetze (battery-power +
+    battery-soc + grid-power) per Chart.js
+    `chart.update("none")`-Pattern mit MAX_POINTS=200
+    Sliding-Window.
+- [x] **Quality-Marker-Visualisierung** (`GG-UI-009`):
+  6 CSS-Klassen `quality-ok` / `stale` / `invalid` /
+  `nan` / `missing` / `fault_injected` mit Background-
+  Color + Font-Style; Row-Class-Update im Inline-JS.
+- [x] **Unit-Tests** (16 neu): 3 Port-Surface, 6
+  Adapter-Pub/Sub (Drop-Oldest, Order, Filter, Cleanup,
+  Fan-out), 4 Demo-Generator (Tick-Shape, Quality-
+  Periodicity, Lifecycle, Stop-Without-Start), 3
+  Dashboard-Route (Full-Page, HTMX-Partial, 404).
+- [x] **Integration-Test**
+  `test_m5_welle_3_live_telemetry_smoke.py` produktiv
+  (2 Tests: End-to-End-Workflow + OpenAPI-Schema-Check).
+- [x] **C3 Doc-Sync** (dieser Commit) — Status/DoD-Sync
+  + Top-Level-Doku-Sync (6 Docs) + ADR 0038 `Proposed
+  → Provisional`.
+
+**Welle-3-Gate:** `make gates` + `make test-integration`
+mit Live-Telemetry-Smoke gruen **erfuellt** (10/10 A-1-
+Gates ohne Override; ~1626 unit + 49 integration Tests
+passed). **GG-UI-001/002/003/009 + GG-API-002 produktiv.**
 
 **Welle-3-Gate:** `make gates` + `make test-integration`
 mit Live-Telemetry-Smoke gruen.

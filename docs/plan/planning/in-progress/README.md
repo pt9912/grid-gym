@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-3.md`](M5-welle-3.md) | Welle-3-Slice-Doc (M5 Live-Telemetry-Dashboard: NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe-Pattern + Chart.js-Time-Series + Quality-Marker; `GG-UI-002/003/009` + `GG-API-002`) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-4-Pre-C0. |
+| [`M5-welle-3.md`](M5-welle-3.md) | Welle-3-Slice-Doc (M5 Live-Telemetry-Dashboard: NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe-Pattern + Chart.js-Time-Series + Quality-Marker; `GG-UI-002/003/009` + `GG-API-002`) — **Done 2026-06-01**; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-4-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -158,19 +158,38 @@ Beleg auf, Pattern analog ADR 0030 §6). 1600 → 1610
 Unit-Tests (+10); 41 → 43 Integration (+2). 10/10 A-1-
 Gates gruen cache-frei ohne Override.
 
-**Aktive Welle:** M5-Welle-3 (Live-Telemetry-Dashboard)
-eroeffnet 2026-06-01 mit Pre-C0a `8d60e16` (Self-Close-
-Move `M5-welle-2.md → done/`, rename-only) + Pre-C0b
-`159f537` (Cross-Doc-Refs-Sync nach Move) + Pre-C0c
-`5349923` (Asyncio-Pub/Sub-Smoke-Probe-Run mit 4 Probe-
-Tests gruen — Pattern fuer Welle-3-`TelemetryStreamPort`
-server-side validiert) + C0 (dieser Commit; Slice-Doc-
-Anlage [`M5-welle-3.md`](M5-welle-3.md) mit **Decision
-3** WebSocket per Lastenheft-Pflicht (`GG-API-002`) +
-**Decision 7** Chart.js 4.5.1 bestaetigt produktiv +
-**NEU Decision 11** `TelemetryStreamPort` (Driving) +
-`InMemoryTelemetryStream`-Adapter; Surface in C1
-verankert). Geplante Lieferung in 3 weiteren Commits:
-C1 (NEU ADR 0038 fuer Decision 11), C2 (Port + Adapter
-+ WS-Wiring + UI-Page + Quality-Marker + Tests), C3
-(Status/DoD-Sync).
+**Welle 3 (M5-Welle-3 Live-Telemetry-Dashboard)
+abgeschlossen 2026-06-01** mit Pre-C0a `8d60e16` (Self-
+Close-Move `M5-welle-2.md → done/`, rename-only) +
+Pre-C0b `159f537` (Cross-Doc-Refs-Sync nach Move) +
+Pre-C0c `5349923` (Asyncio-Pub/Sub-Smoke-Probe-Run mit
+4 Probe-Tests; Pattern server-side validiert) + C0
+`ab55ec7` (Slice-Doc mit **Decision 3** WebSocket per
+Lastenheft-Pflicht (`GG-API-002`) + **Decision 7**
+Chart.js 4.5.1 bestaetigt + **NEU Decision 11**
+`TelemetryStreamPort`) + CI-Hotfix `3ba74ef` (Ruff
+SIM105 + format in der Pre-C0c-Probe-Datei) + C1
+`9f3c00d` (NEU ADR 0038 `Proposed`) + C2 `82bdf39`
+(Live-Telemetry produktiv: NEU `TelemetryStreamPort`
+unter `hexagon/ports/driving/` + NEU
+`InMemoryTelemetryStream` + `DemoTelemetryGenerator`
+unter `adapters/driven/telemetry_stream_inmemory/` +
+WS-Subscribe-Wiring + NEU UI-Page
+`GET /runs/{run_id}/dashboard` mit HTMX-`hx-ext="ws"` +
+Chart.js-Time-Series + 6-Zustands-Quality-Marker; 16
+neue Unit + 2 Integration-Tests + Welle-1-Smoke-
+Anpassung) + C3 (dieser Commit; ADR 0038 `Proposed →
+Provisional` + Status/DoD-Sync + Top-Level-Doku-Sync).
+1610 → 1626 Unit-Tests (+16); 43 → 49 Integration (+6).
+Lastenheft-Akzeptanz `GG-API-002` + `GG-UI-002/003/009`
+produktiv. 10/10 A-1-Gates gruen cache-frei ohne
+Override.
+
+**Aktive Welle:** M5-Welle-4 (Replay-Controls + Alarme)
+als naechster aktiver Schritt: `POST /runs/{id}/control`-
+Wiring an `TickLoop` (statt Welle-1-Stub `accepted=True`),
+Replay-Controls-UI mit Pause/Resume/Stop-Buttons,
+Alarm-Tabelle, Demo-Generator gegen echtes TickLoop-
+Wiring ersetzen. Self-Close-Move
+`in-progress/M5-welle-3.md → done/` folgt als Welle-4-
+Pre-C0 (rename-only).

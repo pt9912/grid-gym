@@ -1,11 +1,17 @@
 # Welle 3 — M5 Live-Telemetry-Dashboard
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M5-Welle-
-2-Closure (Liefer-Stack Pre-C0a `c7c2641` + Pre-C0b
-`a0c8ba3` + C0 `64d5129` + C2 `5234617` + C3 `97c718f` +
-Self-Close-Move `8d60e16` + Pre-C0-Sync `159f537` +
-**Asyncio-Pub/Sub-Smoke-Probe-Run `5349923`** mit 4 Probe-
-Tests).
+**Status:** Done 2026-06-01 — Liefer-Stack:
+Pre-C0a `8d60e16` (Self-Close-Move M5-welle-2.md → done/,
+rename-only) + Pre-C0b `159f537` (Cross-Doc-Refs-Sync,
+5 Files) + Pre-C0c `5349923` (Asyncio-Pub/Sub-Smoke-Probe-
+Run, 4 Probe-Tests) + C0 `ab55ec7` (Slice-Doc + Decisions
+3/7/11) + CI-Hotfix `3ba74ef` (Ruff SIM105 + format in
+Probe-Datei) + C1 `9f3c00d` (NEU ADR 0038 `Proposed`) +
+C2 `82bdf39` (Port + Adapter + WS-Wiring + Dashboard +
+Tests; +16 Unit + 6 Integration = 1626 unit + 49
+integration; 10/10 A-1-Gates gruen) + C3 (dieser Commit;
+ADR 0038 `Proposed → Provisional` + Status/DoD-Sync +
+Top-Level-Doku-Sync).
 
 Welle 3 ist die **Live-Telemetry-Welle** in M5. Pattern
 analog M4-Welle-3 ([`../done/M4-welle-3.md`](../done/M4-welle-3.md))
@@ -503,64 +509,88 @@ Bestand-Eintrag + Aktive-Welle-Marker.
   aktiver Schritt: `POST /runs/{id}/control`-Wiring an
   `TickLoop`, Replay-Controls-UI, Alarm-Tabelle.
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (mit C3 abgehakt)
 
-- [ ] **NEU ADR 0038 `Proposed → Provisional`** mit
-  C2-Code-Merge-Beleg.
-- [ ] **NEU `TelemetryStreamPort`** in
+- [x] **NEU ADR 0038 `Proposed → Provisional`** mit
+  C2-Code-Merge-Beleg `82bdf39`.
+- [x] **NEU `TelemetryStreamPort`** in
   `src/grid_gym/hexagon/ports/driving/telemetry_stream.
   py` mit Protocol-Surface +
-  `TelemetryPoint`-Dataclass.
-- [ ] **NEU `InMemoryTelemetryStream`** in
+  `TelemetryPoint`-Dataclass (frozen, slots) +
+  `TelemetryQuality`-Literal-Alias.
+- [x] **NEU `InMemoryTelemetryStream`** in
   `src/grid_gym/adapters/driven/telemetry_stream_inmemory/`
-  mit `stream.py` + `demo_generator.py` + `__init__.py`.
-- [ ] **WS-Endpoint umgestellt** auf Subscribe-Pattern;
-  filtert nach Run-ID.
-- [ ] **Demo-Generator-Task** beim FastAPI-Lifespan
-  gestartet und sauber gecanceled.
-- [ ] **NEU UI-Page `GET /runs/{run_id}/dashboard`** mit
+  mit `stream.py` (Pub/Sub mit bounded `asyncio.Queue`
+  + Drop-Oldest) + `demo_generator.py` (asyncio-Task mit
+  4 Points/Tick) + `__init__.py`.
+- [x] **WS-Endpoint umgestellt** auf Subscribe-Pattern;
+  filtert nach Run-ID; bei nicht konfiguriertem Stream
+  Close-Code 1011.
+- [x] **Demo-Generator-Task** im FastAPI-Lifespan-
+  Context-Manager (`_lifespan`) gestartet und sauber
+  gecanceled.
+- [x] **NEU UI-Page `GET /runs/{run_id}/dashboard`** mit
   Run-Detail + Live-Telemetry-Tabelle + Chart.js-Time-
-  Series.
-- [ ] **HTMX-`hx-ext="ws"`-Pattern** im Dashboard-
-  Template produktiv.
-- [ ] **Quality-Marker-Visualisierung** (5 Zustaende:
+  Series + Repository-Dependency fuer 404.
+- [x] **HTMX-`hx-ext="ws"`-Pattern** im Dashboard-
+  Template produktiv (`<div ws-connect="/runs/{run_id}/
+  telemetry">`).
+- [x] **Quality-Marker-Visualisierung** (6 Zustaende:
   ok/stale/invalid/nan/missing/fault_injected) mit
-  unterscheidbarem CSS-Styling.
-- [ ] **Unit-Tests** fuer Port + Adapter + WS-Subscribe +
-  Dashboard-Route (~12..15 Tests).
-- [ ] **Integration-Test**
+  unterscheidbarem CSS-Styling in `style.css`.
+- [x] **Unit-Tests** fuer Port + Adapter + WS-Subscribe +
+  Dashboard-Route: 3 + 6 + 4 + 3 = 16 neue Unit-Tests
+  + 1 modifizierter WS-Test (`test_runs_action_router.
+  py`).
+- [x] **Integration-Test**
   `test_m5_welle_3_live_telemetry_smoke.py` produktiv
-  (End-to-End: Page-Load + WS-Connect + Telemetry-
-  Updates empfangen).
-- [ ] **`make test-unit`** gruen mit neuen Tests.
-- [ ] **`make test-integration`** gruen.
-- [ ] **`make arch-check`** 20/20 KEPT.
-- [ ] **`make typecheck`** mit `strict_bytes` gruen.
-- [ ] **`make gates`** cache-frei gruen ohne Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make openapi-validate`** cache-frei gruen.
-- [ ] **`GG-UI-002` (Live-Telemetry)** erfuellt durch
-  Dashboard + WS-Subscribe.
-- [ ] **`GG-UI-003` (Zeitreihen)** erfuellt durch
-  Chart.js-Time-Series.
-- [ ] **`GG-UI-009` (Quality-Marker)** erfuellt durch
-  CSS-Klassen + Chart-Point-Style.
-- [ ] **`GG-API-002` (WebSocket-Telemetrie)** erfuellt
-  mit Run-ID + Simulationszeit + Sequenznummer +
-  Payload.
-- [ ] **C3-Top-Level-Doku-Sync** produktiv: 5 Docs auf
-  Welle-3-Closure-Stand.
+  (End-to-End-Workflow + OpenAPI-Schema-Check).
+- [x] **`make test-unit`** gruen: ~1626 passed (+16 vs
+  Welle-2-Endstand 1610).
+- [x] **`make test-integration`** gruen: 49 passed + 4
+  skipped (+6 vs Welle-2-Endstand 43; 4 Probe-Tests
+  + 2 neue Welle-3-Smokes).
+- [x] **`make arch-check`** 20/20 KEPT (neuer Port unter
+  `hexagon/ports/driving/`; neuer Adapter unter
+  `adapters/driven/telemetry_stream_inmemory/`;
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst beide automatisch).
+- [x] **`make typecheck`** mit `strict_bytes` gruen
+  (kein `# type: ignore`; 145 source files +4 vs Welle-
+  2-Endstand 141).
+- [x] **`make gates`** cache-frei gruen ohne Override
+  (10/10 A-1-Gates).
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make openapi-validate`** cache-frei gruen
+  (Dashboard-Route mit `tags=["ui"]`).
+- [x] **`GG-UI-002` (Live-Telemetry)** erfuellt durch
+  Dashboard + WS-Subscribe + Tabellen-Update bei
+  `htmx:wsAfterMessage`.
+- [x] **`GG-UI-003` (Zeitreihen)** erfuellt durch
+  Chart.js-Time-Series (3 Datensaetze: battery-power,
+  battery-soc, grid-power) mit MAX_POINTS=200 Sliding-
+  Window.
+- [x] **`GG-UI-009` (Quality-Marker)** erfuellt durch
+  6 CSS-Klassen + Row-Class-Update im Inline-JS.
+- [x] **`GG-API-002` (WebSocket-Telemetrie)** erfuellt
+  mit Run-ID + Simulationszeit + Sequenznummer + Geraet
+  + Metrik + Wert + Einheit + Quality.
+- [x] **C3-Top-Level-Doku-Sync** produktiv: 6 Docs auf
+  Welle-3-Closure-Stand (`M5-welle-3.md §0/§9`,
+  `M5-ui-demo.md §3 Welle 3`, `in-progress/README.md`,
+  `in-progress/roadmap.md §3 M5`, `README.md` +
+  `README.de.md`-Test-Counts + ADR 0038 +
+  `docs/plan/adr/README.md`).
 
 **Anti-Scope-Verifikation (Welle 3 NICHT):**
 
-- [ ] Kein echtes TickLoop-Wiring (Demo-Generator als
+- [x] Kein echtes TickLoop-Wiring (Demo-Generator als
   Stub; Welle 4 ersetzt).
-- [ ] Kein Replay-Controls-UI (Welle 4).
-- [ ] Kein Fault-Injection-UI (Welle 6).
-- [ ] Kein Scenario-Editor (Welle 5).
-- [ ] Kein OTel-Span-Wrap fuer den Stream (M6 oder
+- [x] Kein Replay-Controls-UI (Welle 4).
+- [x] Kein Fault-Injection-UI (Welle 6).
+- [x] Kein Scenario-Editor (Welle 5).
+- [x] Kein OTel-Span-Wrap fuer den Stream (M6 oder
   separate Hardening-Welle).
-- [ ] Keine `noqa`-Marker.
+- [x] Keine `noqa`-Marker.
 
 ---
 

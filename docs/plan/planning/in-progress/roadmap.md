@@ -578,11 +578,30 @@ Pre-C0b `a0c8ba3` (Cross-Doc-Refs-Sync) + C0 `64d5129`
 (UI-Foundation produktiv: Jinja2-Dep + vendored HTMX
 2.0.9 + Chart.js 4.5.1 + StaticFiles-Mount +
 `ui_router` mit 2 Page-Routes + 6 Templates + 18 Tests)
-+ C3 (dieser Commit). Welle 2 verzichtete bewusst auf
++ C3 `97c718f`. Welle 2 verzichtete bewusst auf
 C1-ADR-Commit (Decision 2 im Slice-Doc-Body fixiert;
 ADR 0036 nimmt Layout-Realisierung bei M5-Welle-7-Closure
 auf). 1600 → 1610 Unit-Tests (+10); 41 → 43 Integration
 (+2). 10/10 A-1-Gates gruen.
+
+**Welle 3 (Live-Telemetry-Dashboard) abgeschlossen
+2026-06-01** mit Pre-C0a `8d60e16` (Self-Close-Move) +
+Pre-C0b `159f537` (Cross-Doc-Refs-Sync) + Pre-C0c
+`5349923` (Asyncio-Pub/Sub-Smoke-Probe-Run; 4 Probe-
+Tests) + C0 `ab55ec7` (Slice-Doc mit Decisions 3/7/11
+final) + CI-Hotfix `3ba74ef` (Ruff SIM105 + format in
+Probe-Datei) + C1 `9f3c00d` (NEU ADR 0038 `Proposed`)
++ C2 `82bdf39` (Live-Telemetry produktiv: NEU
+`TelemetryStreamPort` Driving-Port + NEU
+`InMemoryTelemetryStream`-Adapter mit
+`DemoTelemetryGenerator` als Stub-Producer + WS-
+Subscribe-Pattern + Dashboard-UI mit Chart.js-Time-
+Series + 6-Zustands-Quality-Marker; 16 neue Unit + 2
+Integration-Tests) + C3 (dieser Commit; ADR 0038
+`Proposed → Provisional`). 1610 → 1626 Unit-Tests
+(+16); 43 → 49 Integration (+6 inkl. 4 Probe-Tests).
+Lastenheft-Akzeptanz `GG-API-002` + `GG-UI-002/003/009`
+produktiv. 10/10 A-1-Gates gruen.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).
