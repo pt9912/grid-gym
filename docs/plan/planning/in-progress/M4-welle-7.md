@@ -1,9 +1,42 @@
 # Welle 7 — M4 Closure (1/2 Tag)
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M4-
-Welle-6b-Closure (Liefer-Stack `14d1bcb` C0 + `8947c62` C1
-+ `9e2bf39` C2 + `2539574` C3 + `314ccae` C4 + Self-Close-
-Move `bf23458` + Pre-C0-Sync `5b2dc24`).
+**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-7-
+C4-Folge (`docs(plan|adr)` Cross-Doc-Refs + Bezug-
+Linkpflege an ADR 0030..0035, `72e8357`). Eroeffnet
+2026-06-01 nach M4-Welle-6b-Closure (Welle-6b-Stack
+`14d1bcb` C0 + `8947c62` C1 + `9e2bf39` C2 + `2539574` C3
++ `314ccae` C4 + Self-Close-Move `bf23458` + Pre-C0-Sync
+`5b2dc24`).
+
+**Liefer-Hashes (8 Commits):**
+
+- Pre-C0a `bf23458` — `chore(welle-6b): git mv in-progress/
+  M4-welle-6b.md -> done/ (rename-only)`.
+- Pre-C0b `5b2dc24` — `docs(plan): M4-Welle-7-Pre-C0-Sync
+  — Cross-Doc-Refs nach Welle-6b-Self-Close-Move`.
+- C0 `af97fd7` — `docs(plan): M4-welle-7 Slice-Doc
+  (M4-Closure-Welle Beginn)`.
+- C0-Review `05a1417` — `docs(plan): M4-welle-7 Slice-Doc
+  Review-Folge — 8 Findings adressiert (3 Blocker +
+  3 Schaerfungen + 5 Polish)`.
+- C1 `d2071f0` — `docs(adr): M4-Welle-7-C1 — 6 M4-ADRs
+  von Provisional auf Accepted (M4-Closure-Welle)`.
+- C2 `0c644f0` — `docs(plan): M4-Welle-7-C2 — NEU done/
+  M4-results.md + done/README.md-Bestand-Eintrag`.
+- C3 `121e255` — `docs(plan): M4-Welle-7-C3 — Roadmap-
+  M4-DoD-Sweep + Top-Level-Doku-Sync (M4 → Done; M5 als
+  naechster aktiver Slice)`.
+- C4a `e745f10` — `chore(welle-7): git mv in-progress/
+  M4-protocol-adapters.md -> done/ (rename-only)`.
+- C4b `72e8357` — `docs(plan|adr): M4-Welle-7-C4-Folge —
+  Cross-Doc-Refs + Bezug-Linkpflege an ADR 0030..0035
+  nach Self-Close-Move`.
+- Audit-Folge (dieser Commit) — Welle-7-Closure-
+  Konsistenz-Audit: §0 Status `In Progress → Done`, §9
+  DoD-Checkliste abgehakt, parallele Doku-Inkonsistenzen
+  in `done/M4-protocol-adapters.md §3 Welle 7`,
+  `done/M4-results.md §1 Welle-7-Zeile`, `AGENTS.md §3
+  Quality-Gates` gefixt.
 
 Welle 7 ist die **M4-Closure-Welle**. Pattern analog
 M3-Welle-7 (siehe
@@ -350,59 +383,71 @@ only-Fallback mit Trigger 009).
 
 ## 9. DoD-Checkliste (mit C3/C4 abzuhaken)
 
-- [ ] **6 M4-ADRs auf `Accepted`** — 0030/0031/0032/
-  0033/0034/0035 (jedes ADR Body-verifiziert + Status-
-  Header + Status-Pfad-Body-Block mit Datum + M4-Welle-
-  7-Closure-Referenz aktualisiert).
-- [ ] **`done/M4-results.md` produktiv** mit Welle-
-  Tabelle + Abnahme-Belegen + Pro-Welle-Reviews + S-1..
-  S-6-Sweep + Wandert-Nach-Section.
-- [ ] **`roadmap.md §3 M4`-DoD** alle 7 Checkboxen
-  abgehakt; **IEC-61850-Box-Beschriftung von „Welle 5b
-  ausstehend" auf „Welle 5b `Done`" gezogen** vor
-  `[x]`-Setzen (S2-Vorabschaerfung); M4 auf `Done`; M5
-  als naechster aktiver Slice.
-- [ ] **Top-Level-Doku-Sync produktiv** — `README.md`,
-  `README.de.md`, `AGENTS.md`, `in-progress/README.md`,
-  Status-Header.
-- [ ] **`M4-protocol-adapters.md` nach `done/`
-  gewandert** (Self-Close-Move-Hash dokumentiert in
-  done/README.md + Welle-7-Folge-Commit fuer Cross-Doc-
-  Refs).
-- [ ] **Bezug-Linkpflege an ADR 0030..0035** (Verfahren
-  per ADR 0028) — alle sechs M4-ADRs zeigen aktuell mit
-  `Bezug:` auf `planning/in-progress/M4-protocol-
-  adapters.md` und werden auf `planning/done/`
-  nachgezogen.
-- [ ] **`make gates` cache-frei gruen** am Welle-7-
-  Closure-Hash (10 A-1-Gates; der **harte** Welle-7-
-  DoD-Gate).
-- [ ] **`make fullbuild`-Stand dokumentiert** —
+- [x] **6 M4-ADRs auf `Accepted`** — 0030/0031/0032/
+  0033/0034/0035; Body verifiziert + Status-Header +
+  Status-Pfad-Body-Block (Datum + M4-Welle-7-Closure-
+  Referenz) aktualisiert — C1 `d2071f0`.
+- [x] **`done/M4-results.md` produktiv** mit §1-§7
+  (Welle-Tabelle + Abnahme-Belegen + Pro-Welle-Reviews
+  + S-1..S-6-Sweep + Welle-7-Erbschaft + Wandert-Nach
+  + Nicht-vollzogene Items) — C2 `0c644f0`.
+- [x] **`roadmap.md §3 M4`-DoD** alle 7 Checkboxen
+  abgehakt; IEC-61850-Box-Beschriftung von „Welle 5b
+  ausstehend" auf „Welle 5b `Done`" gezogen vor
+  `[x]`-Setzen (S2-Vorabschaerfung); M4 auf `Done`;
+  M5 als naechster aktiver Slice — C3 `121e255`.
+- [x] **Top-Level-Doku-Sync produktiv** — `README.md`,
+  `README.de.md`, `in-progress/README.md`, Status-
+  Header. `AGENTS.md` per Audit-Folge nachgezogen (10
+  A-1-Gates) — C3 `121e255` + Audit-Folge (dieser
+  Commit).
+- [x] **`M4-protocol-adapters.md` nach `done/`
+  gewandert** (Self-Close-Move-Hash `e745f10` in
+  `done/README.md` dokumentiert; Welle-7-Folge-Commit
+  `72e8357` fuer Cross-Doc-Refs) — C4a + C4b.
+- [x] **Bezug-Linkpflege an ADR 0030..0035** (Verfahren
+  per ADR 0028) — alle sechs M4-ADR-Bezug-Blocks von
+  `planning/in-progress/M4-protocol-adapters.md` auf
+  `planning/done/M4-protocol-adapters.md` umgelinkt —
+  C4b `72e8357`.
+- [x] **`make gates` cache-frei gruen** am Welle-7-
+  Closure-Hash — 10 A-1-Gates (der **harte** Welle-7-
+  DoD-Gate). Verifikation in C4b post-mortem.
+- [x] **`make fullbuild`-Stand dokumentiert** —
   Pre-existing-rot wegen krb5-CVE-Drift seit M3-Welle-
-  7-`c61ab0d` in M4-results.md §2 als Defer-Pfad
-  vermerkt; **Welle 7 macht keinen Base-Image-Bump**
-  (separater Stack ausserhalb Welle 7-Scope).
-- [ ] **`make docs-check` cache-frei gruen**.
-- [ ] **S-1..S-6-Sweep** in `M4-results.md §4` voll-
-  staendig dokumentiert.
+  7-`c61ab0d` in `M4-results.md §2 + §4 S-4 + §7` als
+  Defer-Pfad vermerkt; Welle 7 macht keinen Base-Image-
+  Bump (separater Stack ausserhalb Welle-7-Scope) —
+  C2/C3.
+- [x] **`make docs-check` cache-frei gruen** — alle
+  Cross-Doc-Refs aufgeloest nach Self-Close-Move-Folge.
+- [x] **S-1..S-6-Sweep** in `M4-results.md §4` voll-
+  staendig dokumentiert — C2 `0c644f0`.
 
-**Anti-Scope-Verifikation (Welle 7 NICHT):**
+**Anti-Scope-Verifikation (Welle 7 NICHT, alles
+gehalten):**
 
-- [ ] Kein Code-Diff (kein `src/`, `tools/`, `tests/`-
-  Touch).
-- [ ] Keine ADR-Status-Rueckwaertswechsel.
-- [ ] Keine `noqa`-Marker.
-- [ ] Kein neues arch_check-Contract.
-- [ ] Kein M5-Slice-Plan-Material in Welle-7-Closure.
-- [ ] **Kein neuer M4-Restposten-Trigger** — Slice-Spec-
+- [x] Kein Code-Diff (kein `src/`, `tools/`, `tests/`-
+  Touch). Verifiziert via `git diff` ueber `bf23458..
+  HEAD` — nur `docs/`, `spec/`, `README*`, `AGENTS.md`,
+  `CONTRIBUTING.md`-Edits.
+- [x] Keine ADR-Status-Rueckwaertswechsel — alle 6
+  M4-ADRs nur forward von `Provisional` → `Accepted`.
+- [x] Keine `noqa`-Marker (Slice 027 Compliance).
+- [x] Kein neues arch_check-Contract — `AC-IEC61850-GPL-
+  BOUNDARY` aus Welle-6b-C2 ist letzter Contract;
+  Welle 7 fuegt keine Contracts hinzu.
+- [x] Kein M5-Slice-Plan-Material in Welle-7-Closure.
+- [x] **Kein neuer M4-Restposten-Trigger** — Slice-Spec-
   DoD-Streichung (B3): Welle-6b-C3 hat Trigger 009
   (IedServer-Smoke-Reaktivierung) bereits aufgemacht;
   alle anderen Welle-Folge-Slices (031..034) sind
   produktiv in `done/`; keine offene M4-Folge-Pflicht
   verbleibt.
-- [ ] **Kein Base-Image-Bump** (krb5-CVE-Drift bleibt
-  als Defer-Trigger fuer separaten Slice; siehe §7-
-  Risiken).
+- [x] **Kein Base-Image-Bump** (krb5-CVE-Drift bleibt
+  als Defer-Trigger fuer separaten Slice in M5-Welle-0
+  oder fruehestmoeglicher Schaerfungs-Welle; siehe §7-
+  Risiken + `M4-results.md §5`-Erbschaft).
 
 ---
 

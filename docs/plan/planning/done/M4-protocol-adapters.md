@@ -1182,67 +1182,82 @@ reduziert (keine Smoke-Reaktivierung mehr). Aktueller
 Welle-5b-Stand: 2c-Mock-only-Fallback aktiv; Smoke-
 Reaktivierung steht.
 
-### Welle 7 — Closure (1/2 Tag)
+### Welle 7 — Closure (`Done` 2026-06-01)
 
-**Status:** Pending. M4-Closure-Welle analog M3-Welle 7;
-zieht alle M4-ADRs auf `Accepted`, etabliert
-`done/M4-results.md` und faehrt den End-to-End-Sweep
-S-1..S-6.
+**Status:** Done. M4-Closure-Welle abgeschlossen
+2026-06-01 mit Welle-7-Stack (Pre-C0a `bf23458` +
+Pre-C0b `5b2dc24` + C0 `af97fd7` + C0-Review `05a1417`
++ C1 `d2071f0` + C2 `0c644f0` + C3 `121e255` + C4a
+`e745f10` + C4b `72e8357`). Detail-Belege in
+[`../done/M4-results.md`](../done/M4-results.md);
+Slice-Begleit-Doc
+[`../in-progress/M4-welle-7.md`](../in-progress/M4-welle-7.md)
+(bleibt vorerst in `in-progress/`; Self-Close-Move folgt
+als M5-Welle-0-Pre-C0).
 
-- [ ] **Alle M4-ADRs auf `Accepted`** — ADR
+- [x] **Alle M4-ADRs auf `Accepted`** — ADR
   0030/0031/0032/0033/0034/0035 (6 M4-ADRs); Pattern
-  analog M3-Welle-7-C1.1..C1.6.
-- [ ] **`done/M4-protocol-adapters.md` Closure-Notiz** —
-  zusammenfassende Welle-Tabelle mit C0/C1/C2/C3-Hashes
-  pro Welle, Test-Counts, Sub-Slicing-Belege, DoD-Erfuellung.
-- [ ] **`done/M4-results.md`** — Detail-Welle-Tabelle +
-  Abnahme-Belege (Pattern analog
-  [`../done/M3-results.md`](../done/M3-results.md)):
-  `make fullbuild`-Stand, Test-Bilanz (Unit + Integration),
-  Coverage, Contracts, Per-Welle-Reviews.
-- [ ] **`roadmap.md` M4-DoD-Checkboxen aktiviert** — alle
-  7 Checkboxen in `roadmap.md §3 M4` als `[x]` markiert;
-  M4 auf `Done`; „Naechster aktiver Slice: M5" gesetzt.
-- [ ] **Top-Level-Doku-Sync** —
+  analog M3-Welle-7-C1.1..C1.6 — C1 `d2071f0`.
+- [x] **`done/M4-protocol-adapters.md` Closure-Notiz** —
+  dieses Dokument; Top-Status auf `Done` gezogen mit
+  Welle-7-C3 `121e255` (vor dem `git mv` `e745f10`).
+- [x] **`done/M4-results.md`** — Detail-Welle-Tabelle +
+  Abnahme-Belege analog
+  [`../done/M3-results.md`](../done/M3-results.md):
+  10 A-1-Gates, 1584 Unit + 35 passed + 4 skipped
+  Integration, 20 Contracts, Pro-Welle-Reviews —
+  C2 `0c644f0`.
+- [x] **`roadmap.md` M4-DoD-Checkboxen aktiviert** — alle
+  7 Checkboxen `[x]`; IEC-61850-Box-Beschriftung
+  S2-vorabschaerft; M4 auf `Done`; „Naechster aktiver
+  Slice: M5" gesetzt — C3 `121e255`.
+- [x] **Top-Level-Doku-Sync** —
   `README.md` / `README.de.md` / `AGENTS.md` / Status-
-  Header in `roadmap.md` auf M4-Done-Stand syncen
-  (Pattern aus M3-Welle-7-Folge `52fa4f8` / `6c5df38` /
-  `0b3164a`).
-- [ ] **Self-Close-Move** — `chore: git mv
-  M4-protocol-adapters.md → done/` (Memory-Konvention
-  `feedback_git_mv`: Move-Only-Commit ohne Inhalts-Edit;
-  Body-Updates folgen in separatem Commit). `M4-welle-0.md`
-  wurde bereits mit M4-Welle-1-Pre-C0 (`556ae9f`) gemoved
-  — **kein** erneuter Move in Welle 7.
-- [ ] **ADR-0028-Linkpflege nach Self-Close-Move** — alle
-  M4-ADRs mit `Bezug:` auf
-  `planning/done/M4-protocol-adapters.md` werden auf
-  `planning/done/M4-protocol-adapters.md` nachgezogen.
-  Kein Forwarder-Stub im alten `in-progress/`-Pfad.
-- [ ] **Open-Trigger fuer M4-Restposten erzeugt** — z. B.
-  neue MQTT-Codec-Optimierungs-Trigger aus 004-Re-Eval
-  (falls Welle 6 ihn nicht produktiv eingezogen hat).
-- [ ] **M4-Welle-7-End-to-End-Sweep S-1..S-6** (analog
+  Header in `roadmap.md` auf M4-Done-Stand. AGENTS.md
+  §3 Quality-Gates auf 10 A-1-Gates gezogen (NEU
+  `spdx-check`) per Audit-Folge — C3 `121e255` +
+  Audit-Folge.
+- [x] **Self-Close-Move** — `chore(welle-7): git mv
+  in-progress/M4-protocol-adapters.md -> done/` —
+  C4a `e745f10` (rename-only Commit per
+  `feedback_git_mv`-Memory-Konvention).
+- [x] **ADR-Bezug-Linkpflege an ADR 0030..0035** (Verfahren
+  per ADR 0028 — Subjekte sind die 6 M4-ADRs, nicht
+  ADR 0028 selbst): alle Bezug-Refs auf
+  `planning/done/M4-protocol-adapters.md` umgelinkt —
+  C4b `72e8357`. Kein Forwarder-Stub im alten
+  `in-progress/`-Pfad.
+- [x] **Open-Trigger fuer M4-Restposten** — Slice-Spec-
+  DoD-Streichung (Welle-7-Slice-Doc-Review B3-Finding):
+  Welle-6b-C3 hat Trigger 009 (IedServer-Smoke-
+  Reaktivierung) bereits aufgemacht als einzige offene
+  M4-Folge-Pflicht; alle anderen Welle-Folge-Slices
+  (031..034) sind in `done/`. Welle 7 selbst macht
+  keinen neuen Trigger.
+- [x] **M4-Welle-7-End-to-End-Sweep S-1..S-6** (analog
   M3-Welle-7 §4) — dokumentiert in
-  `done/M4-results.md §4`:
-  - [ ] **S-1** — M4-spezifisches Vorabraeumungs-Item
-    (Trigger-Triage in Welle 0; Resultat-Sweep in Welle 7).
-  - [ ] **S-2** — Sub-Slicing-Schwelle (§3 Praeambel oben)
-    eingehalten ueber Welle 1..6; Beleg-Tabelle.
-  - [ ] **S-3** — Default-`make gates` ohne
+  [`../done/M4-results.md §4`](../done/M4-results.md):
+  - [x] **S-1** — Welle-0-Trigger-Triage + Welle-7-Sweep
+    (Trigger 009 als einzige offene M4-Folge-Pflicht).
+  - [x] **S-2** — Sub-Slicing-Schwelle aktiv eingesetzt
+    (Welle 5 → 5a/5b; Welle 6 → 6a/6b); Beleg-Tabelle
+    in `M4-results.md §4`.
+  - [x] **S-3** — Default-`make gates` ohne
     `CRITICAL_COV_TARGETS`-Override cache-frei gruen am
-    Welle-7-Closure-Hash.
-  - [ ] **S-4** — `make image-audit` cache-frei gruen
-    (oder dokumentierter Defer-Pfad). Pruefung, ob die
-    neu eingefuehrten Adapter-Deps (`paho-mqtt`,
-    `pymodbus`, `asyncua` + ggf. DNP3/IEC-Stack) die
-    Runtime-Image-Size-Schwelle ueberschreiten. Falls ja:
-    Image-Pin-Trigger erstellen.
-  - [ ] **S-5** — ADR-Erweiterungs-Pattern fortgefuehrt
-    (4..5 neue ADRs ohne Supersedes; `Schaerfung-ohne-
-    Supersedes` per ADR 0011 dokumentiert).
-  - [ ] **S-6** — Lastenheft-Coverage-Sweep nach
-    M4-Closure (M5-Trigger erstellen, falls relevant).
+    Welle-7-Closure-Hash (10 A-1-Gates).
+  - [x] **S-4** — `make image-audit` **Defer-Pfad
+    aktiviert** (pre-existing rot wegen krb5-CVE-Drift
+    seit M3-Welle-7-`c61ab0d`; nicht durch M4-Code
+    verursacht; Base-Image-Bump als M5-Welle-0-Trigger
+    in `M4-results.md §5`-Erbschaft).
+  - [x] **S-5** — ADR-Erweiterungs-Pattern fortgefuehrt:
+    6 neue M4-ADRs (0030..0035) ohne Supersedes
+    (ADR-0011-Pattern; manuell per `grep -l Supersedes:`
+    verifiziert).
+  - [x] **S-6** — Lastenheft-Coverage-Sweep nach
+    M4-Closure: alle 5 `GG-*-001`-Cluster auf `✅ M4`
+    (mit Slice-034-F15-Audit-Trail-Note); M5-Trigger
+    bleibt UI/Demo-Material.
 
 ---
 

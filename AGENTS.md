@@ -86,7 +86,7 @@ und den `M*-results.md`-Closure-Notizen.
 
 | Befehl                  | Was es prueft                                                         |
 | ----------------------- | --------------------------------------------------------------------- |
-| `make gates`            | 9 A-1-Pflicht-Gates (lint, format-check, mypy --strict, arch-check `N` contracts, test-unit, coverage-gate 90/85, critical-coverage 90, dep-audit, noqa-gate). |
+| `make gates`            | 10 A-1-Pflicht-Gates (lint, format-check, mypy --strict, arch-check `N` contracts, test-unit, coverage-gate 90/85, critical-coverage 90, dep-audit, noqa-gate, spdx-check). |
 | `make test-integration` | Sibling-Container-Tests (testcontainers; Postgres, OTLP-Collector).   |
 | `make fullbuild`        | `ci` + Runtime-Image + Compose-Smoke + Trivy-Image-Audit fuer alle relevanten Tags. |
 | `make docs-check`       | Markdown-Link-Validator (`tools/check_refs.py`). Prueft alle Bezuege im Repo. |
