@@ -1,0 +1,76 @@
+/* M5-Welle-2 UI-Foundation — minimaler CSS-Skeleton. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fafafa;
+}
+
+header {
+    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+}
+
+.primary-nav {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.primary-nav > a {
+    font-weight: 600;
+    text-decoration: none;
+    color: #1a1a1a;
+}
+
+.primary-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+}
+
+.primary-nav a {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+.primary-nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.status-ok {
+    color: #1f7a1f;
+}
+
+.probe-result {
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+    color: #555;
+}
+
+button[type="button"] {
+    padding: 0.4rem 1rem;
+    border: 1px solid #1a1a1a;
+    background: #ffffff;
+    cursor: pointer;
+}

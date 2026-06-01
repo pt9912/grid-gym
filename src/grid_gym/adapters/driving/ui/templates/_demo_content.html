@@ -1,0 +1,11 @@
+<section class="demo">
+    <h1>grid-gym demo</h1>
+    <p>UI-Foundation aktiv (M5 Welle 2). HTMX und Chart.js sind vendored.</p>
+    <button type="button"
+            hx-get="/ui/health"
+            hx-target="#htmx-probe-result"
+            hx-swap="innerHTML">
+        HTMX-Sanity-Probe
+    </button>
+    <div id="htmx-probe-result" class="probe-result"></div>
+</section>

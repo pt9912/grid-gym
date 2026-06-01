@@ -1,5 +1,5 @@
 """FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a/6b
-+ M5 Welle 1).
++ M5 Welle 1/2).
 
 Endpoints (M1 Welle 6a/6b):
 
@@ -20,6 +20,14 @@ Endpoints (M5 Welle 1, ADR 0037):
 - `WS   /runs/{run_id}/telemetry` — Live-Telemetry-Stream
   (`GG-API-002`; Welle-1-Skeleton mit Counter-Push, echtes
   TelemetrySinkPort-Wiring folgt in Welle 3).
+
+Endpoints + Mounts (M5 Welle 2, ADR 0036):
+
+- `GET  /`               — Demo-Hello-Page (UI-Adapter).
+- `GET  /ui/health`      — Healthcheck-UI-Seite mit HTMX-Partial-
+  Refresh-Pfad.
+- `MOUNT /static/*`      — StaticFiles-Mount fuer vendored HTMX +
+  Chart.js + CSS unter `adapters/driving/ui/static/`.
 
 Welle-1-Anti-Scope: `POST /runs/{run_id}/control` und
 `POST /runs/{run_id}/faults` sowie `WS /runs/{run_id}/
@@ -188,3 +196,21 @@ from grid_gym.adapters.driving.http_api._runs_router import runs_router
 
 app.include_router(runs_router)
 app.include_router(runs_action_router)
+
+# ---------------------------------------------------------------------------
+# M5 Welle 2 — UI-Adapter-Mount (ADR 0036)
+# ---------------------------------------------------------------------------
+#
+# Vendored Static-Assets (HTMX 2.0.9 + Chart.js 4.5.1) unter
+# `adapters/driving/ui/static/` werden via `StaticFiles` an
+# `/static/*` gemountet. Welle-2-Anti-Scope: kein Live-Telemetry
+# (Welle 3), keine Replay-Controls (Welle 4).
+from pathlib import Path
+
+from fastapi.staticfiles import StaticFiles
+
+from grid_gym.adapters.driving.ui.routes import ui_router
+
+_UI_STATIC_DIR: Final[Path] = Path(__file__).parent.parent / "ui" / "static"
+app.mount("/static", StaticFiles(directory=str(_UI_STATIC_DIR)), name="static")
+app.include_router(ui_router)

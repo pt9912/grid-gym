@@ -120,6 +120,17 @@ dependencies = [
     # MIT-Lizenz, Pure-Python — keine native-Compile-Notwendigkeit,
     # aarch64-Linux-Support automatisch.
     "nfm-dnp3>=1.0,<2.0",
+    # M5-Welle-2 — UI-Adapter unter `adapters/driving/ui/`. Jinja2 ist
+    # FastAPI-Standard-Templating-Backend (`fastapi.templating.Jinja2
+    # Templates`), aber NICHT in der FastAPI-Default-Installation
+    # enthalten — ohne Jinja2-Dep wirft `Jinja2Templates(directory=...)`
+    # einen `RuntimeError`. Floor `>=3.1,<4.0` pinnt die 3.x-stable-
+    # Linie; 3.0/2.x-API ist semantisch zu unterschiedlich, 4.x existiert
+    # zur Zeit noch nicht. ADR 0036 §2.1 (Maintainer-Indication
+    # FastAPI + HTMX + Jinja2 + Chart.js). MIT-Lizenz, Pure-Python.
+    # Sichtbarkeit per AC-PORTS-NO-FW / AC-NO-FW Forbidden-List
+    # eingegrenzt: nur `adapters/driving/ui/**` darf jinja2 importieren.
+    "jinja2>=3.1,<4.0",
 ]
 
 # ---------------------------------------------------------------------------
@@ -492,6 +503,10 @@ forbidden_modules = [
     # ADR 0024 §2.1 (keine OTLP-/SDK-Typen im Port-Layer).
     "opentelemetry",
     "grpc",
+    # M5-Welle-2 — Jinja2 ist FastAPI-Templating-Backend und darf
+    # nur unter `adapters/driving/ui/` erscheinen (ADR 0036 §2.1).
+    # Ports/Core duerfen keine Template-Engine kennen.
+    "jinja2",
     "socket",
     "pathlib",
 ]
@@ -534,6 +549,9 @@ forbidden_modules = [
     # geschuetzt durch AC-NO-FW + AC-NO-TIME).
     "opentelemetry",
     "grpc",
+    # M5-Welle-2 — Jinja2 nur in `adapters/driving/ui/` (ADR 0036
+    # §2.1). Core kennt keine Template-Engine.
+    "jinja2",
 ]
 
 [[tool.importlinter.contracts]]
