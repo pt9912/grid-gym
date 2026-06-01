@@ -1,13 +1,32 @@
 # 006 — `--strict-bytes`-Modus aktivieren
 
-**Status:** Open — Trigger-Watch (M3-Welle-7-Closure-Decision
-2026-05-25: verschoben auf M4-Vorlauf mit geschaerftem
-Aktivierungs-Kriterium; M4-Welle-3-C3-Re-Eval 2026-05-30:
-**positive Re-Eval, Aktivierung als separater Folge-Slice
-geplant** — siehe §Decision + §M4-Welle-3-Re-Eval unten).
+**Status:** Done — Aktivierung produktiv mit
+M4-Welle-6a-C3 2026-06-01. `[tool.mypy] strict_bytes = true`
+in `pyproject.toml` aktiv; `make typecheck` cache-frei
+gruen ohne neue ignores. Pattern analog Slice 027 / Slice
+028 (Trigger-Closure als done/-Move bei Aktivierung).
 **Datum:** 2026-05-15 (eroeffnet), 2026-05-25 (Welle-7-Closure-
-Decision), 2026-05-30 (M4-Welle-3-C3-Re-Eval).
+Decision), 2026-05-30 (M4-Welle-3-C3-Re-Eval), 2026-06-01
+(M4-Welle-6a-C3 Aktivierung + Self-Close-Move).
 **Quelle:** [`ADR 0005`](../../adr/0005-type-check-gate.md) §6.
+
+## Closure-Notiz (M4-Welle-6a-C3, 2026-06-01)
+
+Die M4-Welle-3-C3-Re-Eval hat das Aktivierungs-Kriterium
+positiv bestaetigt (Modbus-Codec `bytes`-Pfade explizit-
+typed; keine impliziten `bytes ↔ str`-Coercions im Repo).
+M4-Welle-6a-C3 zieht die Aktivierung produktiv:
+
+- `[tool.mypy] strict_bytes = true` im
+  `pyproject.toml`-Block ergaenzt (zwischen
+  `extra_checks = true` und `enable_error_code = [...]`).
+- `make typecheck` cache-frei gruen — kein Repo-Sweep-
+  Folge-Fix notwendig (Welle-3-Re-Eval hatte das schon
+  vorbereitet, Modbus-Codec ist explizit).
+- Keine neuen `# type: ignore`-Marker (Welle-1-Pflicht:
+  Slice 027 / `noqa-gate` greift unveraendert).
+- Diese Datei wandert von `open/` nach `done/`
+  (`git mv`-Pattern analog Slice 028).
 
 ---
 

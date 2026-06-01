@@ -368,6 +368,12 @@ no_implicit_optional = true
 no_implicit_reexport = true
 strict_equality = true
 extra_checks = true
+# Trigger 006 closure (M4-Welle-6a-C3, 2026-06-01): `--strict-bytes`-
+# Aktivierung produktiv (positive Re-Eval in M4-Welle-3-C3 2026-05-30
+# — `bytes`/`str`-Trenn-Schaerfe im Modbus-Codec produktiv; UTF-8-
+# Vertrag aus `GG-DATA-005` ueber `canonical_json`-Konsumenten
+# eingehalten). Verbietet implizite `bytes ↔ str`-Coercion in mypy.
+strict_bytes = true
 enable_error_code = [
     "redundant-self",
     "possibly-undefined",

@@ -1,4 +1,5 @@
-# Integration-Test-Stack (M1 Welle 6c, Trigger 009).
+# Integration-Test-Stack (M1 Welle 6c, Trigger 009;
+# konsolidiert in M4-Welle-6a-C3 2026-06-01).
 #
 # `test-runner` baut den `source`-Stage des Dockerfiles und ruft
 # pytest gegen `tests/integration/` auf. testcontainers spawnt
@@ -6,54 +7,51 @@
 # docker-in-docker, kein eigener Service hier (siehe
 # `deploy/compose.yml` fuer den Production-Stack).
 #
-# Per Welle aktive Siblings (alle via testcontainers gespawnt,
-# nicht hier deklariert):
-# - Postgres (M1 Welle 6c, Trigger 009) fuer `RunRepositoryPort`.
-# - otel-collector (M3 Welle 6, ADR 0024 §4.5.7) fuer den
-#   OTLP-Compose-Smoke (`test_otlp_compose_smoke.py`).
-# - Mosquitto (M4 Welle 2, ADR 0031) fuer den MQTT-Smoke
-#   (`test_mqtt_compose_smoke.py`; eclipse-mosquitto:2 mit
-#   inline-Config fuer Anonymous-Access; EPL-2.0/EDL-1.0).
+# ============================================================
+# Sibling-Inventar (alle via testcontainers gespawnt, nicht
+# hier deklariert)
+# ============================================================
 #
-# M4 Welle 3 (ADR 0032 §2.6 Decision M-f) **weicht ab**: der
-# Modbus-TCP-Smoke (`test_modbus_in_process_smoke.py`) spawnt
-# **keinen** Sibling-Container, sondern einen pymodbus-Server
-# in einem Daemon-Thread innerhalb des Test-Prozesses (Lizenz-
-# Pragmatik: kommerziell-restriktive Modbus-Server-Container
-# vermeiden; pymodbus selbst ist BSD-3-Clause).
+# CONTAINER-Siblings (echte Docker-Images):
 #
-# M4 Welle 4 (ADR 0033 §2.5 Decision O-e) folgt der Welle-3-
-# Praezedenz: der OPC-UA-Smoke (`test_opcua_in_process_smoke.py`)
-# spawnt einen `asyncua.Server` in einem eigenen asyncio-Loop-
-# Thread innerhalb des Test-Prozesses, **kein** Sibling-Container.
-# asyncua ist LGPL-3.0 fuer Library-Linking; `open62541/open62541`-
-# Image waere MPL-2.0 mit nicht-trivialer Container-Config gewesen.
+# | Welle      | Sibling         | Image                            | Lizenz       | Test                                    |
+# | ---------- | --------------- | -------------------------------- | ------------ | --------------------------------------- |
+# | M1 6c     | postgres        | postgres:16-alpine               | PostgreSQL   | test_postgres_run_repository.py         |
+# | M3 6      | otel-collector  | otel/opentelemetry-collector:0.x | Apache-2.0   | test_otlp_compose_smoke.py              |
+# | M4 2      | mosquitto       | eclipse-mosquitto:2              | EPL-2.0      | test_mqtt_compose_smoke.py              |
 #
-# M4 Welle 5a (ADR 0034 §2.5 Decision D-e) zieht das Pattern fort:
-# der DNP3-Smoke (`test_dnp3_in_process_smoke.py`) spawnt
-# `dnp3_outstation.AsyncOutstation` in einem eigenen asyncio-Loop-
-# Thread, **kein** Sibling-Container. **Zwei-Library-Setup:** Master
-# via `nfm-dnp3` (PyPI, MIT, Pure-Python) als `[project] dependencies`;
-# Outstation via `dnp3-outstation` (PyPI, MIT, Pure-Python, asyncio-
-# native, IEEE-1815-2012-Level-1-Subset) nur als
-# `[dependency-groups.dev]`. Wire-Compat zwischen den beiden Libraries
-# wurde per C1-Probe verifiziert (Class-0-Polling-Read; qualifier 0x01
-# inkompatibel — siehe ADR 0034 §1 + §3 A4).
+# IN-PROCESS-Siblings (Server laeuft im Test-Prozess; kein
+# Container-Spawn; Decision-Praezedenz Welle-3-M-f, Welle-4-O-e,
+# Welle-5a-D-e, Welle-5b-I-e):
 #
-# M4 Welle 5b (ADR 0035 §2.5 Decision I-e) zieht das in-process-
-# Pattern fort, aber kehrt zum Welle-3/4-**ein-Library-Setup** zurueck
-# (anders als Welle 5a): der IEC-61850-Smoke
-# (`test_iec61850_in_process_smoke.py`) spawnt einen
-# `pyiec61850.server.IedServer` aus **derselben** Library wie der
-# Adapter-`MMSClient` — beide aus `pyiec61850-ng` (GPLv3, optional
-# Extra `pip install grid-gym[iec61850]`; ADR 0035 Decision I-f).
-# Server-Modell wird aus dem CFG-Fixture
-# `tests/integration/fixtures/iec61850/simpleIO.cfg` geladen
-# (libiec61850-natives Modell-Konfig-Format, kein SCL-XML; 4 Welle-
-# 5b-Datatypes: bool/int32/float/string). Wire-Compat zwischen
-# MMSClient-1.6.1.2 und IedServer-0.1.0-Pre-Alpha per Welle-5b-Probe-
-# Run 2026-06-01 verifiziert (float/int32/string roundtrip OK; bool
-# bleibt im Mock-Unit-Test, CFG-DO-Struktur-Issue Welle-6-Schaerfung).
+# | Welle      | Sibling                              | Library              | Lizenz   | Test                                       |
+# | ---------- | ------------------------------------ | -------------------- | -------- | ------------------------------------------ |
+# | M4 3      | pymodbus-Server (Daemon-Thread)      | pymodbus 3.x         | BSD-3    | test_modbus_in_process_smoke.py            |
+# | M4 4      | asyncua.Server (asyncio-Loop-Thread) | asyncua 1.2b2        | LGPL-3.0 | test_opcua_in_process_smoke.py             |
+# | M4 5a     | dnp3_outstation.AsyncOutstation      | dnp3-outstation 0.2  | MIT      | test_dnp3_in_process_smoke.py              |
+# | M4 5b     | pyiec61850.server.IedServer          | pyiec61850-ng 1.6.x  | **GPLv3** | test_iec61850_in_process_smoke.py (skip)  |
+#
+# **Welle-5b-Sonderfall (ADR 0035 Decision I-e + I-f):**
+# IEC-61850-Smoke laeuft aktuell unter **2c-Mock-only-Fallback**
+# (Python-3.14-SWIG-Inkompat des `pyiec61850-ng`-Wheels). Der
+# Test ist via `pytest.mark.skip` deaktiviert; Mock-Unit-Tests
+# decken den Vertrag ab. Welle-6b adressiert Reaktivierung
+# (Python-3.12-Runtime / Library-Upgrade / Wheel-Rebuild).
+#
+# **GPL-Lizenz-Boundary (ADR 0035 Decision I-f):** das
+# `pyiec61850-ng` Sibling-Wheel ist GPLv3; `protocol_iec61850/*`
+# + zugehoerige Tests sind via SPDX-Header GPL-3.0-isoliert.
+# `pyiec61850-ng` ist `[project.optional-dependencies.iec61850]`
+# (opt-in via `pip install grid-gym[iec61850]`). Im Dockerfile
+# wird das Extra ueber `uv sync --extra iec61850` in deps/source/
+# build-app-Stages installiert (Welle-5b-Slice-033-Fix).
+#
+# **Lizenz-Pragmatik fuer in-process-Wahl** (gegen Container-
+# Sibling): kommerziell-restriktive Modbus-/IEC-61850-Server-
+# Container vermeiden; `open62541/open62541`-Image (MPL-2.0)
+# braucht non-triviale Config; in-process-Pattern bringt
+# pymodbus/asyncua/dnp3-outstation/pyiec61850 als Python-
+# Wheels rein, keine Container-Pull-Latenz.
 #
 # Aufruf: `make test-integration` (Makefile-Target, das `docker
 # compose up --abort-on-container-exit` aufruft).
