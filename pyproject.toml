@@ -113,6 +113,35 @@ dependencies = [
     "nfm-dnp3>=1.0,<2.0",
 ]
 
+# ---------------------------------------------------------------------------
+# Optional Dependencies (PEP 621)
+# Welle-5b Decision I-f (ADR 0035): `pyiec61850-ng` ist GPLv3 und
+# wird deshalb als **opt-in Extra** ausgeliefert. `pip install grid-gym`
+# bleibt MIT-sauber; `pip install grid-gym[iec61850]` zieht den GPL-
+# isolierten Adapter unter `protocol_iec61850/` plus die Library rein.
+# Keine doppelte Eintragung in `[dependency-groups.dev]` (User-Vorgabe:
+# Drift-Risiko vermeiden); CI/Tests muessen das Extra explizit via
+# `uv sync --extra iec61850` installieren.
+# ---------------------------------------------------------------------------
+
+[project.optional-dependencies]
+iec61850 = [
+    # M4-Welle-5b — IEC-61850-Adapter unter
+    # `adapters/driven/protocol_iec61850/` (GPL-3.0-isoliert via SPDX-
+    # Header pro Datei; ADR 0035 Decision I-f). `pyiec61850-ng`
+    # 1.6.1.2 ist GPLv3 (SWIG-Bindings zu MZ Automation's libiec61850
+    # 1.6), Beta `Development Status :: 4`, Python >=3.9, manylinux1_x86_64
+    # + Windows-Wheels fuer CPython 3.9..3.14. Liefert sowohl
+    # `pyiec61850.mms.MMSClient` (Client-Context-Manager, sync API,
+    # `__version__ = "1.6.1.2"`) **als auch** `pyiec61850.server.IedServer`
+    # (in-process Server, `__version__ = "0.1.0"` Pre-Alpha im
+    # Submodul) — Pattern-Praezedenz Welle-3-Modbus mit pymodbus.
+    # Wire-Compat zwischen Client+Server per Welle-5b-Probe-Run
+    # 2026-06-01 verifiziert (Float/Int32/String roundtrip OK; Bool
+    # ist Welle-6-Schaerfung).
+    "pyiec61850-ng>=1.6,<2.0",
+]
+
 [build-system]
 requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
@@ -373,6 +402,15 @@ ignore_missing_imports = true
 module = "dnp3_outstation.*"
 ignore_missing_imports = true
 
+# pyiec61850-ng 1.6.1.2 ist GPLv3, Beta, SWIG-Bindings zu libiec61850
+# 1.6 — kein py.typed-Marker. Nur bei installiertem Optional-Extra
+# `grid-gym[iec61850]` verfuegbar (ADR 0035 Decision I-f). Wird
+# importiert in `adapters/driven/protocol_iec61850/` und
+# `tests/integration/test_iec61850_in_process_smoke.py`.
+[[tool.mypy.overrides]]
+module = "pyiec61850.*"
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------------------
 # import-linter (ADR 0002 §A-1, AC-CORE-NO-ADAPTERS bis AC-NO-IO-MOD)
 # Layer- und Forbidden-Contracts; ergaenzt durch tools/arch_check.py
@@ -430,6 +468,10 @@ forbidden_modules = [
     "paho",
     "pymodbus",
     "asyncua",
+    # M4-Welle-5b — pyiec61850-ng ist GPLv3-isoliert im
+    # `adapters/driven/protocol_iec61850/`-Sub-Paket (ADR 0035
+    # Decision I-f). Darf nicht in Ports/Core leaken.
+    "pyiec61850",
     # M3-Welle-6 — OTel-SDK + gRPC duerfen nur im OTLP-Adapter
     # (`adapters/driven/telemetry_otlp/`) erscheinen, nicht in Ports.
     # ADR 0024 §2.1 (keine OTLP-/SDK-Typen im Port-Layer).
@@ -466,6 +508,10 @@ forbidden_modules = [
     "paho",
     "pymodbus",
     "asyncua",
+    # M4-Welle-5b — pyiec61850-ng ist GPLv3-isoliert im
+    # `adapters/driven/protocol_iec61850/`-Sub-Paket (ADR 0035
+    # Decision I-f). Darf nicht in Ports/Core leaken.
+    "pyiec61850",
     # M3-Welle-6 — OTel-SDK + gRPC duerfen nur im OTLP-Adapter
     # (`adapters/driven/telemetry_otlp/`) erscheinen, nicht im Core.
     # ADR 0024 §2.1 + M3-Welle-6-D-4 (kein `time.*` im Adapter-Code

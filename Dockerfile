@@ -52,7 +52,11 @@ WORKDIR /src
 # ---------------------------------------------------------------------------
 FROM base AS deps
 COPY pyproject.toml uv.lock .python-version ./
-RUN uv sync --frozen --no-install-project --all-groups
+# M4-Welle-5b — `--extra iec61850` zieht `pyiec61850-ng` (GPLv3,
+# optional Extra; ADR 0035 Decision I-f). CI/Tests muessen die
+# Library explizit installieren, weil der Default-Install MIT-
+# sauber bleibt (kein automatisches Pull von GPL-Dependencies).
+RUN uv sync --frozen --no-install-project --all-groups --extra iec61850
 
 # ---------------------------------------------------------------------------
 # source: Projektcode dazu, dann editable-install via `uv sync` ohne
@@ -83,7 +87,7 @@ COPY alembic.ini ./
 # [project].readme) referenziert — hatchling braucht beide fuer den
 # editable Install im naechsten `uv sync`.
 COPY LICENSE README.md ./
-RUN uv sync --frozen --all-groups
+RUN uv sync --frozen --all-groups --extra iec61850
 
 # ---------------------------------------------------------------------------
 # lint: ruff check mit A-1-Regelgruppen (BLE, TRY, DTZ, S, TID, B904 +
@@ -266,7 +270,7 @@ ARG CRITICAL_COVERAGE_THRESHOLD
 # Roundtrip; konkrete Agent-Implementer (`RuleBasedAgent`) kommen
 # mit Welle 4 unter dem gleichen Paket-Pfad und sind damit
 # automatisch von der Default-Schwelle erfasst.
-ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults src/grid_gym/hexagon/core/agents src/grid_gym/adapters/driven/telemetry_otlp src/grid_gym/adapters/driven/protocol_mqtt src/grid_gym/adapters/driven/protocol_modbus src/grid_gym/adapters/driven/protocol_opcua src/grid_gym/adapters/driven/protocol_dnp3"
+ARG CRITICAL_COV_TARGETS="src/grid_gym/hexagon/core/simulation src/grid_gym/hexagon/core/devices/battery src/grid_gym/hexagon/core/devices/pv src/grid_gym/hexagon/core/devices/load src/grid_gym/hexagon/core/devices/grid_connection src/grid_gym/hexagon/core/devices/smart_meter src/grid_gym/hexagon/core/grid_model src/grid_gym/hexagon/core/scenario src/grid_gym/hexagon/core/replay src/grid_gym/hexagon/core/faults src/grid_gym/hexagon/core/agents src/grid_gym/adapters/driven/telemetry_otlp src/grid_gym/adapters/driven/protocol_mqtt src/grid_gym/adapters/driven/protocol_modbus src/grid_gym/adapters/driven/protocol_opcua src/grid_gym/adapters/driven/protocol_dnp3 src/grid_gym/adapters/driven/protocol_iec61850"
 RUN set -eu; \
     for target in ${CRITICAL_COV_TARGETS}; do \
         if [ ! -d "${target}" ]; then \

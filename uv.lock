@@ -545,6 +545,11 @@ dependencies = [
     { name = "uvicorn", extra = ["standard"] },
 ]
 
+[package.optional-dependencies]
+iec61850 = [
+    { name = "pyiec61850-ng" },
+]
+
 [package.dev-dependencies]
 arch = [
     { name = "grimp" },
@@ -594,6 +599,7 @@ requires-dist = [
     { name = "paho-mqtt", specifier = ">=2.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
     { name = "pydantic", specifier = ">=2.13" },
+    { name = "pyiec61850-ng", marker = "extra == 'iec61850'", specifier = ">=1.6,<2.0" },
     { name = "pymodbus", specifier = ">=3.6,<4.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.47" },
 ]
@@ -1530,6 +1536,16 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c3/b2/bc9c9196916376152d655522fdcebac55e66de6603a76a02bca1b6414f6c/pygments-2.20.0.tar.gz", hash = "sha256:6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f", size = 4955991 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/7e/a72dd26f3b0f4f2bf1dd8923c85f7ceb43172af56d63c7383eb62b332364/pygments-2.20.0-py3-none-any.whl", hash = "sha256:81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176", size = 1231151 },
+]
+
+[[package]]
+name = "pyiec61850-ng"
+version = "1.6.1.2"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/81/497589869193402195bd5a7156905eef5ca43760ce3e86e97d132b450e05/pyiec61850_ng-1.6.1.2-cp313-cp313-win_amd64.whl", hash = "sha256:6e96c6494ea99f6df27dbd207a9489a7580e8a531db7949e3187854afdbab123", size = 1107489 },
+    { url = "https://files.pythonhosted.org/packages/68/0f/1381e172973f9d90729c536d434eb670f4c465f9f8aa4a026f01c261de78/pyiec61850_ng-1.6.1.2-cp314-cp314-win_amd64.whl", hash = "sha256:71e7c896ccc8d09144f16dcbcfccf4bbcff9dedbb6ece459d43c0afed95b7104", size = 1133672 },
+    { url = "https://files.pythonhosted.org/packages/6c/66/877a86a198f7a445ac48d555b37d5f3d6c6bff22a857e22915d6df878a80/pyiec61850_ng-1.6.1.2-py3-none-manylinux1_x86_64.whl", hash = "sha256:96751efbf94f14085612eb9e7f00b445b1a87ee94560c96ae9a42696c9699045", size = 2027990 },
 ]
 
 [[package]]

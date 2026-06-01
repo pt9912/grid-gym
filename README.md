@@ -305,4 +305,24 @@ consult [`README.de.md`](README.de.md) or the German source documents.
 
 ## License
 
-This project is licensed under the MIT License. Details are in [`LICENSE`](LICENSE).
+This project is **MIT-licensed** by default — see [`LICENSE`](LICENSE).
+
+**Exception: GPLv3-isolated IEC-61850 adapter** (M4 Wave 5b, ADR
+[0035](docs/plan/adr/0035-iec61850-adapter-profile.md) Decision I-f):
+the sub-paths `src/grid_gym/adapters/driven/protocol_iec61850/`,
+`tests/unit/adapters/driven/protocol_iec61850/`,
+`tests/integration/test_iec61850_*.py`, and
+`tests/integration/fixtures/iec61850/` link against the GPLv3-
+licensed [`pyiec61850-ng`](https://pypi.org/project/pyiec61850-ng/)
+/ libiec61850 library and are therefore distributed under
+**GPL-3.0-only**. The GPLv3 text is in [`LICENSES/GPL-3.0.txt`](LICENSES/GPL-3.0.txt).
+
+The `pyiec61850-ng` library itself is shipped as an **optional
+extra**. The default install ships only MIT-licensed code; users
+opt into the IEC-61850 adapter — and the GPL distribution terms
+that come with it — by explicitly installing the extra:
+
+```bash
+pip install grid-gym                  # MIT-only
+pip install 'grid-gym[iec61850]'      # MIT + GPLv3 IEC-61850 adapter
+```

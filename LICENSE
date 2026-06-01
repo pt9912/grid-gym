@@ -19,3 +19,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+EXCEPTION: GPLv3-isolierter IEC-61850-Adapter
+(M4 Welle 5b, ADR 0035 Decision I-f)
+
+Except for the following sub-paths, which link against the
+GPLv3-licensed `pyiec61850-ng` / `libiec61850` library and are
+therefore distributed under GPL-3.0-only:
+
+  - `src/grid_gym/adapters/driven/protocol_iec61850/`
+  - `tests/unit/adapters/driven/protocol_iec61850/`
+  - `tests/integration/test_iec61850_*.py`
+  - `tests/integration/fixtures/iec61850/`
+
+These files carry an explicit `SPDX-License-Identifier:
+GPL-3.0-only` header. The full GPLv3 text is available in
+`LICENSES/GPL-3.0.txt`.
+
+The `pyiec61850-ng` library itself is installed via the
+optional extra `pip install grid-gym[iec61850]`; the default
+`pip install grid-gym` ships only MIT-licensed code and does
+not pull GPLv3 dependencies. Users who explicitly install the
+IEC-61850 extra accept the GPLv3 distribution terms for the
+resulting combined work.
