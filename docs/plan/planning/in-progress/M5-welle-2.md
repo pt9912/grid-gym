@@ -1,10 +1,15 @@
 # Welle 2 — M5 UI-Foundation (Jinja2 + HTMX + Chart.js)
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M5-Welle-
-1-Closure (Liefer-Stack Pre-C0a `fd642df` + Pre-C0b
-`fb417b9` + Pre-C0c `9c20dad` + C0 `e573f67` + C1 `d468e68`
-+ C2 `ae630ce` + C3 `f9f514d` + Self-Close-Move `c7c2641` +
-Pre-C0-Sync `a0c8ba3`).
+**Status:** Done 2026-06-01 — Liefer-Stack:
+Pre-C0a `c7c2641` (Self-Close-Move M5-welle-1.md → done/,
+rename-only) + Pre-C0b `a0c8ba3` (Cross-Doc-Refs-Sync,
+6 Files) + C0 `64d5129` (Slice-Doc + Decision 2 final
+fixiert) + C2 `5234617` (UI-Foundation: Jinja2-Dep +
+vendored HTMX/Chart.js + StaticFiles-Mount + 2 Page-
+Routes + 4 Templates + 2 Partials + 18 Tests; +10 unit
++ 2 integration = 1610 unit + 43 integration; 10/10
+A-1-Gates gruen) + C3 (dieser Commit; Status/DoD-Sync +
+Top-Level-Doku-Sync).
 
 Welle 2 ist die **UI-Foundation-Welle** in M5. Pattern
 analog M4-Welle-2 ([`../done/M4-welle-2.md`](../done/M4-welle-2.md))
@@ -461,56 +466,71 @@ Bestand-Eintrag.
   Schritt mit Decision 3 (WebSocket vs SSE) + Decision 7
   (Charting-Library-Final).
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (mit C3 abgehakt)
 
-- [ ] **UI-Adapter-Modul produktiv** unter
-  `src/grid_gym/adapters/driving/ui/`: 4 Templates + 3
-  Static-Assets + `VENDORED.md` + `routes.py` +
+- [x] **UI-Adapter-Modul produktiv** unter
+  `src/grid_gym/adapters/driving/ui/`: 6 Templates
+  (`base.html`, `navigation.html`, `demo.html` +
+  `_demo_content.html` Partial, `health.html` +
+  `_health_content.html` Partial) + 3 Static-Assets
+  (`htmx.min.js` 51 KB, `chart.umd.min.js` 204 KB,
+  `style.css`) + `VENDORED.md` + `routes.py` +
   `_templates.py` + `__init__.py`.
-- [ ] **`jinja2 >= 3.1, < 4.0`** in
+- [x] **`jinja2>=3.1,<4.0`** in
   `pyproject.toml`-`[project] dependencies` produktiv
-  (uv.lock-Sync via Docker-Build).
-- [ ] **`StaticFiles`-Mount auf `/static`** produktiv in
-  `app.py` (FastAPI-Standard-Pattern; absoluter Pfad via
-  `Path(__file__).parent / ".." / "ui" / "static"` oder
-  via Modul-Pfad).
-- [ ] **`app.include_router(ui_router)`** produktiv in
-  `app.py`.
-- [ ] **Unit-Tests** fuer Templates + Routes:
-  `test_templates.py` (Factory + Render-Smoke) +
-  `test_routes.py` (3 Tests: GET / + GET /ui/health full +
-  GET /ui/health mit HX-Request).
-- [ ] **Integration-Test** `test_m5_welle_2_ui_smoke.py`
-  produktiv mit `TestClient` (5 Sub-Tests: HTML + 2
-  Static-Assets + Full-Page + HTMX-Partial).
-- [ ] **`make test-unit`** gruen mit neuen Tests; Test-
-  Count-Increment dokumentiert.
-- [ ] **`make test-integration`** gruen.
-- [ ] **`make arch-check`** 20/20 KEPT (kein
-  `AC-ADAPTER-LIGHTWEIGHT`-Verstoss).
-- [ ] **`make typecheck`** mit `strict_bytes` gruen (kein
-  neuer `# type: ignore`-Marker ohne Begruendung).
-- [ ] **`make gates`** cache-frei gruen ohne Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make openapi-validate`** cache-frei gruen
+  (uv.lock-Sync `Added jinja2 v3.1.6`). Plus
+  `AC-PORTS-NO-FW` + `AC-NO-FW` Forbidden-Listen um
+  `jinja2` erweitert (analog Pattern fuer `fastapi` etc.).
+- [x] **`StaticFiles`-Mount auf `/static`** produktiv in
+  `app.py` mit absolutem Pfad
+  `Path(__file__).parent.parent / "ui" / "static"`.
+- [x] **`app.include_router(ui_router)`** produktiv in
+  `app.py` direkt nach den Welle-1-Run-Routern.
+- [x] **Unit-Tests** fuer Templates + Routes:
+  `test_templates.py` (3 Tests: Factory-Type + Pfad-
+  Resolution + Render-Smoke) + `test_routes.py` (7 Tests:
+  GET / Full + HTMX-Partial; GET /ui/health Full + HTMX-
+  Partial; HTMX-JS + Chart-JS + CSS Static-Mount).
+- [x] **Integration-Test** `test_m5_welle_2_ui_smoke.py`
+  produktiv mit `TestClient` (2 Tests: End-to-End-
+  Workflow + OpenAPI-Schema-Check mit `tags=["ui"]`-
+  Marker).
+- [x] **`make test-unit`** gruen: 1610 passed (+10 vs
+  Welle-1-Endstand 1600).
+- [x] **`make test-integration`** gruen: 43 passed + 4
+  skipped (+2 vs Welle-1-Endstand 41).
+- [x] **`make arch-check`** 20/20 KEPT (7 import-linter
+  inkl. `jinja2`-Forbidden-Erweiterung + 13 arch_check).
+- [x] **`make typecheck`** mit `strict_bytes` gruen
+  (kein neuer `# type: ignore`-Marker; 141 source files
+  +3 vs Welle-1-Endstand 138).
+- [x] **`make gates`** cache-frei gruen ohne Override
+  (10/10 A-1-Gates).
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make openapi-validate`** cache-frei gruen
   (`GG-API-003`; UI-Routes mit `tags=["ui"]`).
-- [ ] **`VENDORED.md`** produktiv unter `static/` mit
-  HTMX-Version + Chart.js-Version + SHA256-Hashes.
-- [ ] **`GG-UI-001`-Akzeptanz** (UI lokal erreichbar)
-  erfuellt durch Smoke-Test.
-- [ ] **C3-Top-Level-Doku-Sync** produktiv: 5 Docs auf
-  Welle-2-Closure-Stand.
+- [x] **`VENDORED.md`** produktiv unter `static/` mit
+  HTMX 2.0.9 + Chart.js 4.5.1 + SHA256-Hashes +
+  Upstream-URLs + MIT-Lizenz-Refs + Pflegeanleitung.
+- [x] **`GG-UI-001`-Akzeptanz** (UI lokal erreichbar)
+  erfuellt durch `test_full_ui_foundation_workflow`-
+  Smoke-Test.
+- [x] **C3-Top-Level-Doku-Sync** produktiv: 5 Docs auf
+  Welle-2-Closure-Stand (`M5-welle-2.md §0/§9`,
+  `M5-ui-demo.md §3 Welle 2`, `in-progress/README.md`,
+  `in-progress/roadmap.md §3 M5`, `README.md` +
+  `README.de.md`-Test-Counts).
 
 **Anti-Scope-Verifikation (Welle 2 NICHT):**
 
-- [ ] Kein Live-Telemetry-Code (kein WS-Subscribe,
+- [x] Kein Live-Telemetry-Code (kein WS-Subscribe,
   kein Chart.js-Update; das ist Welle 3).
-- [ ] Kein Replay-Controls-UI (Welle 4).
-- [ ] Kein Scenario-Editor (Welle 5).
-- [ ] Kein Fault-Injection-UI (Welle 6).
-- [ ] Kein Demo-Compose-Service (Welle 5).
-- [ ] Kein Frontend-Build-Step (Vite/Webpack/etc.).
-- [ ] Keine `noqa`-Marker.
+- [x] Kein Replay-Controls-UI (Welle 4).
+- [x] Kein Scenario-Editor (Welle 5).
+- [x] Kein Fault-Injection-UI (Welle 6).
+- [x] Kein Demo-Compose-Service (Welle 5).
+- [x] Kein Frontend-Build-Step (Vite/Webpack/etc.).
+- [x] Keine `noqa`-Marker.
 
 ---
 

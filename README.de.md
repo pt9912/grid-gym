@@ -37,12 +37,12 @@ make help
 make gates              # 10 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # Unit-Test-Suite (1600 Tests, Stand 2026-06-01,
-                        # M5-Welle-1-Closure)
+make test-unit          # Unit-Test-Suite (1610 Tests, Stand 2026-06-01,
+                        # M5-Welle-2-Closure)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (41 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
-                        # Modbus-, OPC-UA-, DNP3-, IEC-61850- und
-                        # M5-HTTP-API-Smokes)
+                        # (43 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
+                        # Modbus-, OPC-UA-, DNP3-, IEC-61850-, M5-HTTP-API-
+                        # und M5-UI-Foundation-Smokes)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -145,13 +145,21 @@ Stand **2026-06-01**:
 - **M5 — UI + Demo** · `In Progress` 2026-06-01
   - Welle 0 — Slice-Plan + Trigger-Triage · `Done`
   - Welle 1 — HTTP-API-Surface + ADR-0036/0037-Schaerfung · `Done`
-  - Welle 2 — UI-Foundation (Jinja2 + HTMX + Chart.js) · `Pending`
-    (naechster aktiver Slice)
+  - Welle 2 — UI-Foundation (Jinja2 + vendored HTMX + Chart.js
+    + StaticFiles-Mount + 2 Page-Routes) · `Done`
+  - Welle 3 — Live-Telemetry-Dashboard · `Pending` (naechster
+    aktiver Slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** 1600 Unit-Tests + 41 Integration-Tests passed + 4 skipped
-(Stand nach M5-Welle-1-Closure 2026-06-01 — +16 Unit-Tests
-ggue. M4-Welle-7 fuer HTTP-API-Surface: 6 in
+**Testbilanz:** 1610 Unit-Tests + 43 Integration-Tests passed + 4 skipped
+(Stand nach M5-Welle-2-Closure 2026-06-01 — +10 Unit-Tests
+ggue. M5-Welle-1 fuer UI-Foundation: 3 in `test_templates.py`
+(Jinja2-Factory + Pfad-Resolution + Render-Smoke) + 7 in
+`test_routes.py` (2 Page-Route-Full + 2 HTMX-Partial-Pfade +
+3 Static-Mount-Assets); +2 Integration-Tests fuer End-to-End-
+UI-Foundation-Smoke + OpenAPI-Schema-Check mit
+`tags=["ui"]`-Marker. Stand nach M5-Welle-1-Closure: +16
+Unit-Tests ggue. M4-Welle-7 fuer HTTP-API-Surface: 6 in
 `test_runs_router.py` (3 GET × Happy/404) + 10 in
 `test_runs_action_router.py` (POST: Happy/422/404; WS:
 3-Counter-Push + 1008-Close); +2 Integration-Tests fuer
@@ -210,7 +218,7 @@ in der Detail-Tabelle unten.
 | Cross-Adapter-Hardening (M4 Welle 6a) | `Done` | [`done/M4-welle-6a.md`](docs/plan/planning/done/M4-welle-6a.md) (Self-Close-Move `d1cb65d`; Slice 034 Review-Folge `bde8fdb` adressiert 15 Findings) — OTel-Span-Wrap via `OtelSpanWrappedDeviceProtocolPort`-Composition-Wrapper fuer alle 5 Adapter (ADR 0024 §4.5; Standard-Attribute `adapter_type`/`target`/`operation`/`latency_ms`; Adapter-Code-Diff: NULL), Adapter-Profil-Index unter [`spec/protocol_profiles.md`](spec/protocol_profiles.md) mit 5 Eintraegen + ADR-Links + Lastenheft-IDs, Lastenheft-§16-Implementierungs-Matrix auf `✅ M4` x 5 synchronisiert, Architektur-§8.2 mit OTel-Wrap-Pattern geschaerft. AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Property-Test (Welle-1-§7-Folge-Pflicht-Closure) verifiziert Arch-Check-Filter-Korrektheit. Trigger-006-Closure: `[tool.mypy] strict_bytes = true` aktiviert. `compose.yml`-Header konsolidiert in 2 Sibling-Tabellen (Container + In-Process) mit Lizenz-Spalten. Trigger 004 auf M5/M6 verschoben. |
 | M4-Closure (Welle 7) | `Done` | [`done/M4-welle-7.md`](docs/plan/planning/done/M4-welle-7.md) + [`done/M4-results.md`](docs/plan/planning/done/M4-results.md) — 6 M4-ADRs (0030..0035) `Provisional → Accepted` (C1 `d2071f0`); `done/M4-results.md` mit Welle-Tabelle / Abnahme-Belegen (10 A-1-Gates, 1584 Unit + 35+4 Integration, 20 Contracts) / Pro-Welle-Reviews / S-1..S-6-Verification / Erbschaft-Section (C2 `0c644f0`); Roadmap M4 → `Done`, M5 als naechster aktiver Slice (C3, dieser Commit). `make fullbuild` pre-existing rot wegen krb5-CVE-Drift seit M3-Welle-7-`c61ab0d` — Base-Image-Bump als M5-Welle-0-Trigger. IEC-61850-In-Process-Smoke bleibt unter 2c-Mock-only-Fallback mit Trigger 009. |
 | IEC-61850-Lizenz-und-Smoke-Hardening (M4 Welle 6b) | `Done` | [`done/M4-welle-6b.md`](docs/plan/planning/done/M4-welle-6b.md) (Self-Close-Move `bf23458`) — SPDX-License-Identifier-Lint via NEU `tools/check_spdx.py` (10. A-1-Gate `make spdx-check`; 11 GPL-Boundary-Files Lint-clean), NEU arch_check-Contract `AC-IEC61850-GPL-BOUNDARY` (14. arch_check-Contract; 19 → 20 Contracts KEPT; AST-Import-Scan ueber MIT-Code), NEU `CONTRIBUTING.md` mit Dual-License-Policy (Default MIT, GPL-3.0-only opt-in fuer `protocol_iec61850/*`-Boundary), IedServer-Smoke-Reaktivierungs-Probe-Pfad-A-Befund (PyPI `pyiec61850-ng 1.6.1.2` identisch zu Welle 5b, kein cp314-Manylinux-Wheel) → Pfad C aktiv mit konkretem Trigger 009 (passiv: Library publishet cp314-Wheel; aktiv: eigener Slice fuer Dockerfile-Multi-Python-Test-Stage), plus Slice-034-F13-Folge (`_is_adapter_lightweight_path` erweitert um flat-file `_protocol_*.py`-Cross-Adapter-Helper unter `adapters/driven/`). |
-| UI + Demo (M5) | `In Progress` 2026-06-01 | Web-UI, Scenario-Editor, Live-Telemetry-Stream. **Welle 0 abgeschlossen 2026-06-01** ([`done/M5-welle-0.md`](docs/plan/planning/done/M5-welle-0.md)) — Slice-Plan + Trigger-Triage + Pre-M5-Welle-0-Sondierungs-ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` (Option 1: FastAPI + HTMX + Jinja2 + Chart.js). **Welle 1 abgeschlossen 2026-06-01** ([`done/M5-welle-1.md`](docs/plan/planning/done/M5-welle-1.md)) — HTTP-API-Surface produktiv (5 REST + 1 WebSocket-Endpunkt unter `src/grid_gym/adapters/driving/http_api/` in 4 neuen Modulen mit APIRouter-Splitting wegen `AC-NO-GOD-UTILS`; Pydantic-Schemas mit `ErrorResponse`-Standard-Format gemaess `GG-API-004`); ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` mit HTMX-FastAPI-Smoke-Probe-Beleg `9c20dad`; NEU ADR [0037](docs/plan/adr/0037-http-api-surface-pattern.md) `Provisional` — Decision API-1 (`POST /runs/{id}/control` mit Action-Body), Decision API-2 (kein separater `UICommandPort`-Slot; UI nutzt HTTP-API direkt), Decision API-3 (Roadmap-Typo `GG-AR-PORT-DRG-002` verworfen). +16 Unit + 2 Integration-Tests; 10/10 A-1-Gates gruen. |
+| UI + Demo (M5) | `In Progress` 2026-06-01 | Web-UI, Scenario-Editor, Live-Telemetry-Stream. **Welle 0 abgeschlossen 2026-06-01** ([`done/M5-welle-0.md`](docs/plan/planning/done/M5-welle-0.md)) — Slice-Plan + Trigger-Triage + Pre-M5-Welle-0-Sondierungs-ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` (Option 1: FastAPI + HTMX + Jinja2 + Chart.js). **Welle 1 abgeschlossen 2026-06-01** ([`done/M5-welle-1.md`](docs/plan/planning/done/M5-welle-1.md)) — HTTP-API-Surface produktiv (5 REST + 1 WebSocket-Endpunkt unter `src/grid_gym/adapters/driving/http_api/` in 4 neuen Modulen mit APIRouter-Splitting wegen `AC-NO-GOD-UTILS`; Pydantic-Schemas mit `ErrorResponse`-Standard-Format gemaess `GG-API-004`); ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` mit HTMX-FastAPI-Smoke-Probe-Beleg `9c20dad`; NEU ADR [0037](docs/plan/adr/0037-http-api-surface-pattern.md) `Provisional` — Decision API-1 (`POST /runs/{id}/control` mit Action-Body), Decision API-2 (kein separater `UICommandPort`-Slot; UI nutzt HTTP-API direkt), Decision API-3 (Roadmap-Typo `GG-AR-PORT-DRG-002` verworfen). +16 Unit + 2 Integration-Tests; 10/10 A-1-Gates gruen. **Welle 2 abgeschlossen 2026-06-01** ([`in-progress/M5-welle-2.md`](docs/plan/planning/in-progress/M5-welle-2.md)) — UI-Foundation produktiv: Decision 2 final fixiert auf `src/grid_gym/adapters/driving/ui/` (Hexagonal-Architektur-Konsistenz); 6 Jinja2-Templates inkl. 2 HTMX-Partials (`base.html` + `navigation.html` + `demo.html`/`_demo_content.html` + `health.html`/`_health_content.html`); 3 vendored Static-Assets HTMX 2.0.9 (51 KB, MIT) + Chart.js 4.5.1 UMD-Build (208 KB, MIT) + `style.css`-Skeleton + `VENDORED.md` mit SHA256 + Upstream-URLs + Pflegeanleitung; `jinja2>=3.1,<4.0` neue Runtime-Dep mit `AC-PORTS-NO-FW` + `AC-NO-FW`-Forbidden-Listen-Erweiterung; `StaticFiles`-Mount auf `/static` + `ui_router` mit 2 Page-Routes (`GET /` Demo-Hello + `GET /ui/health`); HTMX-Partial-Pattern via `HX-Request`-Header-Inspektion. +10 Unit + 2 Integration-Tests; 10/10 A-1-Gates gruen. |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 
 **Briefing fuer AI-Coding-Agenten:** [`AGENTS.md`](AGENTS.md) — harte

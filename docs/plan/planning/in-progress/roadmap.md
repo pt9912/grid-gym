@@ -564,11 +564,25 @@ Tests) + C0 `e573f67` (Slice-Doc) + C1 `d468e68` (ADR
 `ae630ce` (HTTP-API-Surface produktiv: 5 REST + 1 WS-
 Endpunkt unter `src/grid_gym/adapters/driving/http_api/`
 in 4 Modulen + Pydantic-Schemas + 16 Unit + 2 Integration-
-Tests) + C3 (dieser Commit; ADR 0037 → `Provisional` +
+Tests) + C3 `f9f514d` (ADR 0037 → `Provisional` +
 Status/DoD-Sync + Roadmap-Typo-Fix `GG-AR-PORT-DRG-002`
 → Verwerfung per ADR 0037 Decision API-3). 1584 → 1600
 Unit-Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-
 Gates gruen.
+
+**Welle 2 (UI-Foundation) abgeschlossen 2026-06-01** mit
+Pre-C0a `c7c2641` (Self-Close-Move; rename-only) +
+Pre-C0b `a0c8ba3` (Cross-Doc-Refs-Sync) + C0 `64d5129`
+(Slice-Doc mit Decision 2 final auf
+`src/grid_gym/adapters/driving/ui/`) + C2 `5234617`
+(UI-Foundation produktiv: Jinja2-Dep + vendored HTMX
+2.0.9 + Chart.js 4.5.1 + StaticFiles-Mount +
+`ui_router` mit 2 Page-Routes + 6 Templates + 18 Tests)
++ C3 (dieser Commit). Welle 2 verzichtete bewusst auf
+C1-ADR-Commit (Decision 2 im Slice-Doc-Body fixiert;
+ADR 0036 nimmt Layout-Realisierung bei M5-Welle-7-Closure
+auf). 1600 → 1610 Unit-Tests (+10); 41 → 43 Integration
+(+2). 10/10 A-1-Gates gruen.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

@@ -200,35 +200,61 @@ Pre-C0a `fd642df` + Pre-C0b `fb417b9` + Pre-C0c `9c20dad`
 Override **erfuellt** (10/10 A-1-Gates; 1600 unit + 41
 integration Tests passed).
 
-### Welle 2 — UI-Foundation (Pending)
+### Welle 2 — UI-Foundation (Done 2026-06-01)
 
-**Status:** Pending. UI-Layout + Chart.js-Vendoring +
-Routing-Layer.
+**Status:** Done 2026-06-01. UI-Layout + HTMX/Chart.js-
+Vendoring + Routing-Layer produktiv. Welle-Slice-Begleit-
+Doc [`M5-welle-2.md`](M5-welle-2.md). Liefer-Hashes:
+Pre-C0a `c7c2641` + Pre-C0b `a0c8ba3` + C0 `64d5129`
+(Slice-Doc + Decision 2) + C2 `5234617` (Code) + C3
+(dieser Commit). Welle 2 verzichtete bewusst auf einen
+C1-ADR-Commit: Decision 2 ist im Slice-Doc-§3-Body
+fixiert; ADR 0036 nimmt die Layout-Realisierung bei
+M5-Welle-7-Closure als Welle-2-Beleg auf.
 
-- [ ] **UI-Layout-Lokation final** (Welle-0-Decision 2):
-  `src/grid_gym/adapters/driving/ui/` (Hexagonal-
-  Architektur-Konsistenz) ODER `ui/` Top-Level
-  (architecture.md §5 vorbelegt). Slice-Doc-Decision.
-- [ ] **Jinja2-Templates-Skeleton** unter
-  `<ui-lokation>/templates/`: Base-Layout, Navigation,
-  Healthcheck-Page, „Hello"-Demo-Page.
-- [ ] **Static-Assets** unter `<ui-lokation>/static/`:
-  Chart.js vendored (~70 KB Single-File ohne CDN, gemaess
-  Welle-0-Decision 8 = ADR-0036-§2.1-Bestaetigung), CSS-
-  Skeleton, HTMX-Vendored (`htmx.min.js`, ~14 KB).
-- [ ] **FastAPI-Mount** in `app.py`: Jinja2-Templates +
-  StaticFiles-Mount; Routing fuer Base-Pages.
-- [ ] **AC-ADAPTER-LIGHTWEIGHT-Filter-Erweiterung** falls
-  Cross-Driving-Helper unter `adapters/driving/_*.py`
-  entstehen (Welle-0-Welle-6b-C3-F13-Erbschafts-Hinweis;
-  ggf. analog zu Welle-6b-C3-Pfad-Filter-Update).
-- [ ] **Unit-Tests** fuer Template-Rendering-Pattern +
-  Static-Asset-Mount.
-- [ ] **C3 Doc-Sync** — Status/DoD-Sync.
+- [x] **UI-Layout-Lokation final** (Welle-0-Decision 2):
+  **`src/grid_gym/adapters/driving/ui/`** (Hexagonal-
+  Architektur-Konsistenz; im Welle-2-Slice-Doc §3.1
+  begruendet). `AC-ADAPTER-LIGHTWEIGHT`-Filter erfasst
+  den Pfad ohne Erweiterung.
+- [x] **Jinja2-Templates-Skeleton** unter
+  `src/grid_gym/adapters/driving/ui/templates/`: 6 Files
+  (Base-Layout `base.html`, Navigation `navigation.html`,
+  Healthcheck-Page `health.html` + `_health_content.html`
+  Partial, Demo-Hello-Page `demo.html` +
+  `_demo_content.html` Partial). HTMX-Partial-Pattern:
+  Routes inspizieren `HX-Request: true`-Header und
+  rendern bei Sub-Requests nur den Content-Partial.
+- [x] **Static-Assets** unter
+  `src/grid_gym/adapters/driving/ui/static/`: Chart.js
+  4.5.1 als `chart.umd.min.js` (208 KB UMD-Build),
+  HTMX 2.0.9 als `htmx.min.js` (51 KB), `style.css`
+  (CSS-Skeleton), `VENDORED.md` (Vendor-Doku mit SHA256
+  + MIT-Lizenz-Refs + Pflegeanleitung).
+- [x] **FastAPI-Mount** in `app.py`: `Jinja2Templates`-
+  Factory in `_templates.py`; `StaticFiles`-Mount auf
+  `/static` mit absolutem `Path(__file__).parent.parent
+  / "ui" / "static"`; `app.include_router(ui_router)`
+  direkt nach Welle-1-Run-Routern. `jinja2>=3.1,<4.0`
+  als neue Runtime-Dep mit `uv lock`-Sync; plus
+  `AC-PORTS-NO-FW` + `AC-NO-FW` um `jinja2` erweitert.
+- [x] **AC-ADAPTER-LIGHTWEIGHT-Filter-Erweiterung
+  unnoetig** (Welle-2-Slice-Doc §3 dokumentiert: das
+  Welle-6b-C3-F13-Fix war Driven-Layer-spezifisch; der
+  Driving-Layer war schon vorher tief abgedeckt).
+- [x] **Unit-Tests** fuer Template-Rendering-Pattern +
+  Static-Asset-Mount: 3 Tests `test_templates.py` +
+  7 Tests `test_routes.py`. Plus 2 Integration-Tests
+  `test_m5_welle_2_ui_smoke.py` (End-to-End-Workflow +
+  OpenAPI-Schema-Check mit `tags=["ui"]`).
+- [x] **C3 Doc-Sync** — Status/DoD-Sync + Top-Level-
+  Doku-Sync (5 Docs).
 
 **Welle-2-Gate:** `make gates` cache-frei gruen ohne
-Override. **UI lokal erreichbar nach `docker compose up`**
-(`GG-UI-001` MUSS erfuellt).
+Override **erfuellt** (10/10 A-1-Gates; 1610 unit + 43
+integration Tests passed). **UI lokal erreichbar nach
+`docker compose up`** (`GG-UI-001`) per Integration-
+Smoke-Test verifiziert.
 
 ### Welle 3 — Live-Telemetry-Dashboard (Pending)
 

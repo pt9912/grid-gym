@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-2.md`](M5-welle-2.md) | Welle-2-Slice-Doc (M5 UI-Foundation: Jinja2-Templates + HTMX/Chart.js-Vendored + StaticFiles-Mount + Decision 2 UI-Layout-Lokation auf `src/grid_gym/adapters/driving/ui/`) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-3-Pre-C0. |
+| [`M5-welle-2.md`](M5-welle-2.md) | Welle-2-Slice-Doc (M5 UI-Foundation: Jinja2-Templates + HTMX/Chart.js-Vendored + StaticFiles-Mount + Decision 2 UI-Layout-Lokation auf `src/grid_gym/adapters/driving/ui/`) — **Done 2026-06-01**; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-3-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -131,21 +131,35 @@ Roadmap-Typo-Fix `GG-AR-PORT-DRG-002` → Verwerfung in
 Unit-Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-
 Gates gruen cache-frei ohne Override.
 
-**Aktive Welle:** M5-Welle-2 (UI-Foundation) eroeffnet
-2026-06-01 mit Pre-C0a `c7c2641` (Self-Close-Move
+**Welle 2 (M5-Welle-2 UI-Foundation) abgeschlossen
+2026-06-01** mit Pre-C0a `c7c2641` (Self-Close-Move
 `M5-welle-1.md → done/`, rename-only) + Pre-C0b `a0c8ba3`
-(Cross-Doc-Refs-Sync nach Move) + C0 (dieser Commit;
-Slice-Doc-Anlage [`M5-welle-2.md`](M5-welle-2.md) mit
+(Cross-Doc-Refs-Sync nach Move) + C0 `64d5129` (Slice-
+Doc-Anlage [`M5-welle-2.md`](M5-welle-2.md) mit
 **Decision 2 final fixiert** auf
 `src/grid_gym/adapters/driving/ui/` per Hexagonal-
-Architektur-Konsistenz). Pre-C0c entfaellt (Welle-1-
-Probe `9c20dad` deckt HTMX/Jinja2/WS bereits server-
-side ab). Geplante Lieferung in 2 weiteren Commits:
-C2 (UI-Adapter-Code: 4 Templates + 3 vendored Static-
-Assets + Jinja2-Dep-Add + StaticFiles-Mount +
-`include_router(ui_router)` + Unit + Integration-Tests)
-+ C3 (Status/DoD-Sync + Top-Level-Doku-Sync). Welle 2
-verzichtet bewusst auf einen C1-ADR-Commit, weil
-Decision 2 im Slice-Doc-§3-Body fixiert wird und
-ADR 0036 bei M5-Welle-7-Closure die Layout-Realisierung
-als Welle-2-Beleg aufnimmt (Pattern analog ADR 0030 §6).
+Architektur-Konsistenz; Pre-C0c entfiel weil Welle-1-
+Probe `9c20dad` HTMX/Jinja2/WS bereits server-side
+deckte) + C2 `5234617` (UI-Foundation produktiv: 6
+Templates inkl. 2 Partials + 3 vendored Static-Assets
+HTMX 2.0.9 + Chart.js 4.5.1 + `style.css` + `VENDORED.
+md` + `_templates.py`-Jinja2-Factory + `routes.py`-
+APIRouter mit 2 Page-Routes + 18 neuen Tests; Jinja2-
+Dep `>=3.1,<4.0` mit `uv lock`-Sync `Added jinja2
+v3.1.6`; `AC-PORTS-NO-FW` + `AC-NO-FW`-Forbidden-Listen
+um `jinja2` erweitert; `StaticFiles`-Mount auf `/static`
++ `include_router(ui_router)` in `app.py`) + C3 (dieser
+Commit; Status/DoD-Sync + Top-Level-Doku-Sync). Welle 2
+verzichtete bewusst auf einen C1-ADR-Commit (Decision 2
+im Slice-Doc-§3-Body fixiert; ADR 0036 nimmt Layout-
+Realisierung bei M5-Welle-7-Closure als Welle-2-Beleg
+auf, Pattern analog ADR 0030 §6). 1600 → 1610 Unit-Tests
+(+10); 41 → 43 Integration (+2). 10/10 A-1-Gates gruen
+cache-frei ohne Override.
+
+**Aktive Welle:** M5-Welle-3 (Live-Telemetry-Dashboard)
+als naechster aktiver Schritt mit Decision 3 (WebSocket
+vs SSE) + Decision 7 (Charting-Library-Final) +
+`/runs/{id}/telemetry`-Frontend-Wiring. Self-Close-Move
+`in-progress/M5-welle-2.md → done/` folgt als Welle-3-
+Pre-C0 (rename-only).
