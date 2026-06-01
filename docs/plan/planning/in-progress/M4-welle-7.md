@@ -5,16 +5,16 @@ Welle-6b-Closure (Liefer-Stack `14d1bcb` C0 + `8947c62` C1
 + `9e2bf39` C2 + `2539574` C3 + `314ccae` C4 + Self-Close-
 Move `bf23458` + Pre-C0-Sync `5b2dc24`).
 
-Welle 7 ist die **neunte und letzte Welle** in M4 und die
-**M4-Closure-Welle**. Pattern analog M3-Welle-7 (siehe
+Welle 7 ist die **M4-Closure-Welle**. Pattern analog
+M3-Welle-7 (siehe
 [`../done/M3-results.md`](../done/M3-results.md)): keine
 neuen Code-Diffs, sondern (a) ADR-Status-Wechsel auf
 `Accepted`, (b) Closure-Artefakte (`M4-results.md`),
 (c) Roadmap-DoD-Sweep, (d) End-to-End-Sweep S-1..S-6,
-(e) Self-Close-Moves der M4-Slice-Plan-Doku.
+(e) Self-Close-Move der M4-Slice-Plan-Doku.
 
 **Liefer-Reihenfolge (geplant, 4 Commits + Self-Close-
-Moves):**
+Move-Folge):**
 
 - C0 (dieser Commit) — `docs(plan): M4-welle-7 Slice-Doc`
   (Welle-Beginn).
@@ -41,7 +41,8 @@ Moves):**
 
 ## 1. Context
 
-M4 hat ueber 9 Code-Wellen (0..6b) **alle 5
+M4 hat ueber 9 Wellen 0..6b (davon 8 Code-Wellen 1..6b;
+Welle 0 ist Doku-Vorabraeumung analog Welle 7) **alle 5
 `DeviceProtocolPort`-Implementer** geliefert plus Cross-
 Adapter-Hardening:
 
@@ -76,15 +77,18 @@ Welle 7 liefert **fuenf Closure-Items** ueber 4 Commits:
    (0030/0031/0032/0033/0034/0035) von `Provisional` auf
    `Accepted`. Pro-ADR Body-Verifikation: Decisions sind
    alle final, Welle-Lieferung deckt sie produktiv,
-   keine offenen Sub-Decisions. Plus Status-Header-Update
-   im ADR-Header-Block. Pattern analog M3-Welle-7-
-   C1.1..C1.6.
+   keine offenen Sub-Decisions. Plus **Status-Header +
+   Status-Pfad-Body-Block** aktualisieren (Datum +
+   M4-Welle-7-Closure-Referenz; ADR 0032/0033 haben den
+   Status-Pfad-Block bereits vorbelegt mit
+   `→ Accepted (M4-Welle-7-Closure)`, die anderen sind
+   nachzuziehen). Pattern analog M3-Welle-7-C1.1..C1.6.
 
 2. **NEU `done/M4-results.md`** — Closure-Artefakt mit:
    - Welle-Tabelle (9 Wellen 0..6b mit Liefer-Hashes +
      Test-Counts).
-   - Abnahme-Belege (`make fullbuild`-Lauf, A-1-Gates,
-     Contracts, Lastenheft-Coverage).
+   - Abnahme-Belege (`make gates`/`make fullbuild`-
+     Stand, A-1-Gates, Contracts, Lastenheft-Coverage).
    - Pro-Welle-Reviews (zusammenfassende Bewertung pro
      Welle).
    - S-1..S-6-End-to-End-Sweep-Dokumentation.
@@ -96,16 +100,40 @@ Welle 7 liefert **fuenf Closure-Items** ueber 4 Commits:
 3. **Roadmap-M4-DoD-Sweep** — `roadmap.md §3 M4` DoD-
    Checkboxen-Sweep (7 Items abhaken); M4-Status-Header
    auf `Done`; „Naechster aktiver Slice: M5"-Setzung.
+   **Vorab-Schaerfung** (S2-Lehre): die IEC-61850-DoD-
+   Box-Beschriftung (`roadmap.md:505-506`) lautet aktuell
+   noch „— Welle 5b ausstehend" — vor dem `[x]`-Setzen
+   muss die Beschriftung auf „Welle 5b `Done` (Spike-
+   Adapter; Welle-6b-Lizenz-/Smoke-Hardening produktiv)"
+   gezogen werden.
 
 4. **Top-Level-Doku-Sync** — `README.md` / `README.de.md`
-   / `in-progress/README.md` / Status-Headers auf
-   M4-Done-Stand syncen.
+   / `AGENTS.md` / `in-progress/README.md` / Status-
+   Headers auf M4-Done-Stand syncen. (`AGENTS.md` ist
+   per M4-Slice-Spec-§3-Welle-7 ausdruecklich Sync-Ziel
+   neben den READMEs.)
 
-5. **Self-Close-Moves + ADR-0028-Linkpflege** —
-   `M4-protocol-adapters.md` nach `done/` (rename-only),
-   plus Content-Sync (Cross-Doc-Refs). ADR-0028 (TickLoop-
-   Private-Resume-Errors)-Bezug aktualisieren auf
-   `planning/done/M4-protocol-adapters.md` falls noetig.
+5. **Self-Close-Move + Bezug-Linkpflege an 6 M4-ADRs** —
+   `M4-protocol-adapters.md` nach `done/` (rename-only,
+   separater Commit per `feedback_git_mv`); Folge-Commit
+   mit Bezug-Linkpflege an ADR 0030..0035 (Verfahren per
+   [`../../adr/0028-link-maintenance-accepted-adr-bezug.md`](../../adr/0028-link-maintenance-accepted-adr-bezug.md);
+   alle sechs M4-ADRs zeigen aktuell mit `Bezug:` auf
+   `planning/in-progress/M4-protocol-adapters.md` und
+   werden auf `planning/done/M4-protocol-adapters.md`
+   nachgezogen) plus Cross-Doc-Refs in READMEs/Slice-
+   Docs.
+
+**Slice-Spec-DoD-Streichung (B3):** die kanonische Slice-
+Spec
+[`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+Welle 7 listet „Open-Trigger fuer M4-Restposten erzeugt"
+als Item. Welle-7-Plan streicht dieses Item bewusst:
+**Welle-6b-C3 hat bereits Trigger 009 (IedServer-Smoke-
+Reaktivierung) aufgemacht** als einzige offene M4-Folge-
+Pflicht; alle anderen Welle-spezifischen Folge-Slices
+(031..034) sind in `done/` produktiv eingezogen. Keine
+weitere M4-Restposten-Triage in Welle 7 noetig.
 
 ## 3. Anti-Scope (Welle 7 NICHT)
 
@@ -116,8 +144,8 @@ Welle 7 liefert **fuenf Closure-Items** ueber 4 Commits:
   Pflichten gibt es nicht).
 - **Keine ADR-Status-Rueckwaertswechsel** (kein ADR von
   `Accepted` zurueck auf `Provisional`).
-- **Kein M5-Slice-Plan-Material** (M5 ist Welle-0
-  M5-Slice-Plan-Material; Welle 7 oeffnet das nicht).
+- **Kein M5-Slice-Plan-Material** — der M5-Slice-Plan
+  wird mit M5-Welle-0-Start eroeffnet, nicht in Welle 7.
 - **Keine `noqa`-Marker** (Slice 027 Compliance).
 - **Kein neues Contract** (`AC-IEC61850-GPL-BOUNDARY` aus
   Welle 6b ist das letzte arch_check-Contract dieser
@@ -162,26 +190,39 @@ Bestand-Eintrag.
 
 **Diff:**
 - `docs/plan/planning/in-progress/roadmap.md §3 M4`-
-  DoD-Checkboxen-Sweep (alle 7 Items abhaken); M4-
-  Status `Done`; „Naechster aktiver Slice: M5" setzen.
+  DoD-Checkboxen-Sweep (alle 7 Items abhaken); IEC-61850-
+  Box-Beschriftung von „Welle 5b ausstehend" auf
+  „Welle 5b `Done`" gezogen (S2-Vorabschaerfung) vor
+  `[x]`-Setzen; M4-Status `Done`; „Naechster aktiver
+  Slice: M5" setzen.
 - `docs/plan/planning/in-progress/README.md` „Aktive
   Welle"-Block auf M5 ausrichten; M4-Bestand-Bereich
   abschliessend dokumentieren.
 - `README.md` / `README.de.md` Status-Header + Wave-Welle-
   6b-Done-Confirmation; M4-Bestand-Liste abschliessend.
+- `AGENTS.md` — M4-Status-Hinweise (falls vorhanden) auf
+  `M4 Done`-Stand syncen (Pattern aus M3-Welle-7-Folge-
+  Commits, vgl. M3-results.md §6).
 
-### C4 — `chore(welle-7)`: Self-Close-Move M4-protocol-adapters.md
+### C4 — `chore(welle-7)`: `make fullbuild`-Probe + Self-Close-Move
 
 **Diff:**
+- `make fullbuild`-Probe-Run (siehe §6/§7
+  Defer-Pfad — `image-audit` ist seit M3-Welle-7
+  `c61ab0d` pre-existing rot wegen krb5-CVE-Drift;
+  Welle-7-Closure dokumentiert das als Defer, nicht als
+  Welle-7-Verzoegerung).
 - `git mv docs/plan/planning/in-progress/M4-protocol-
   adapters.md docs/plan/planning/done/M4-protocol-
-  adapters.md` (rename-only).
+  adapters.md` (rename-only; per `feedback_git_mv`-
+  Memory-Konvention separater Commit).
 - Folge-Commit: Cross-Doc-Refs nach Move
-  (alle Verweise in ADRs / Welle-Docs / READMEs / etc. auf
-  `done/M4-protocol-adapters.md` umgelinkt).
-- ggf. `M4-welle-7.md` selbst nach `done/` (oder bleibt
-  in `in-progress/` analog Welle-6b-Pattern — Self-Close-
-  Move folgt erst als M5-Welle-0-Pre-C0).
+  (alle Verweise in ADR 0030..0035 / Welle-Docs / READMEs
+  / etc. auf `done/M4-protocol-adapters.md` umgelinkt —
+  Bezug-Linkpflege per ADR-0028-Verfahren).
+- `M4-welle-7.md` selbst bleibt in `in-progress/` analog
+  Welle-6b-Pattern; Self-Close-Move folgt als M5-Welle-0-
+  Pre-C0.
 
 ## 5. Critical Files
 
@@ -195,11 +236,12 @@ Bestand-Eintrag.
 | `docs/plan/adr/0034-dnp3-adapter-profile.md`                | C1    | EDIT (Status `Provisional → Accepted`)                              |
 | `docs/plan/adr/0035-iec61850-adapter-profile.md`            | C1    | EDIT (Status `Provisional → Accepted`)                              |
 | `docs/plan/planning/done/M4-results.md`                     | C2    | CREATE (analog `M3-results.md`)                                     |
-| `docs/plan/adr/0028-tick-loop-private-error-import-contract.md` | C2/C4 | EDIT (Bezug-Linkpflege auf done/M4-protocol-adapters.md)        |
-| `docs/plan/planning/in-progress/roadmap.md`                 | C3    | EDIT (M4-DoD-Checkboxen abgehakt; M4-Status `Done`)                 |
+| `docs/plan/planning/in-progress/roadmap.md`                 | C3    | EDIT (M4-DoD-Checkboxen abgehakt; M4-Status `Done`; IEC-61850-Box-Beschriftung) |
 | `docs/plan/planning/in-progress/README.md`                  | C3    | EDIT (M5-Naechster-Schritt; M4-Bestand abschliessend)               |
 | `README.md` + `README.de.md`                                | C3    | EDIT (Status-Header + Wave-Tabelle abschliessend)                   |
+| `AGENTS.md`                                                 | C3    | EDIT (M4-Status-Sync analog M3-Welle-7-Pattern)                     |
 | `docs/plan/planning/in-progress/M4-protocol-adapters.md`    | C4    | MOVE → `done/` (rename-only, separater Commit)                      |
+| `docs/plan/adr/0030..0035-*.md`                             | C4    | EDIT (Bezug-Linkpflege auf done/M4-protocol-adapters.md, Verfahren per ADR 0028) |
 
 ## 6. Verifikationspfad
 
@@ -210,11 +252,20 @@ Bestand-Eintrag.
    Abnahme-Belegen + S-1..S-6-Sweep.
 3. `roadmap.md §3 M4`-DoD-Checkboxen alle abgehakt; M4
    auf `Done`; M5 als naechster Slice gesetzt.
-4. `make gates` cache-frei gruen am Welle-7-Closure-Hash.
-5. `make fullbuild` cache-frei gruen am Welle-7-Closure-
-   Hash (Welle-7-Closure-Gate; geht ueber `make gates`
-   hinaus mit `image-audit` + `test-integration` +
-   `openapi-validate`).
+4. `make gates` cache-frei gruen am Welle-7-Closure-Hash
+   (10 A-1-Gates, der **harte** Welle-7-DoD-Gate).
+5. `make fullbuild`-Stand am Welle-7-Closure-Hash
+   dokumentiert. **Pre-existing-rot** seit M3-Welle-7-
+   `c61ab0d` wegen `image-audit` + krb5-CVE-Drift (4 neue
+   HIGH-CVEs in Debian-13-Base, `CVE-2026-40356` u. a.,
+   Fix `1.21.3-5+deb13u1` verfuegbar); **nicht durch M4
+   verursacht**, Base-Image-Bump ist separater Stack
+   ausserhalb Welle 7. M4-results.md §2 dokumentiert das
+   als Defer-Pfad (analog S-4-Klausel „oder
+   dokumentierter Defer-Pfad" aus
+   [`M4-protocol-adapters.md`](M4-protocol-adapters.md)
+   §3 Welle-7-S-4). Welle 7 selbst macht keinen Base-
+   Image-Bump.
 6. `make docs-check` cache-frei gruen.
 7. `M4-protocol-adapters.md` nach `done/` gewandert
    (Self-Close-Move-Hash dokumentiert).
@@ -254,12 +305,30 @@ only-Fallback mit Trigger 009).
 
 ## 7. Risiken
 
-- **`make fullbuild`-Lauf moeglicherweise rot:**
-  `image-audit` ist die unbekannte Komponente — kann
-  failen wenn Runtime-Image-Size durch Adapter-Deps die
-  Schwelle ueberschreitet. Mitigation: falls rot →
-  Trigger-Doc fuer Image-Pin-Optimierung + `make
-  fullbuild`-Bypass mit dokumentierter Begruendung.
+- **`make fullbuild`-Pre-existing-Drift (krb5-CVE-Stack):**
+  `image-audit` ist seit M3-Welle-7-`c61ab0d` pre-existing
+  rot wegen 4 neuer HIGH-CVEs in Debian-13-Base
+  (`CVE-2026-40356` u. a. in krb5-Paketen; Fix
+  `1.21.3-5+deb13u1` verfuegbar; siehe
+  [`roadmap.md`](roadmap.md):222-226). **Nicht durch M4-
+  Code verursacht** — Base-Image-Bump ist separater
+  Stack, der Welle 7 sprengen wuerde. Mitigation:
+  Welle 7 dokumentiert den Defer-Pfad in
+  `M4-results.md §2` mit konkretem Folge-Trigger (Base-
+  Image-Bump-Slice in M5-Welle-0 oder fruehestens
+  moeglicher Schaerfungs-Welle); `make gates` (10 A-1-
+  Gates ohne `image-audit`) bleibt der **harte**
+  Welle-7-DoD-Gate. Falls Base-Image-Bump zwischen
+  Welle-6b-Closure und Welle-7-C4 unabhaengig gemerged
+  wird, kann `make fullbuild` produktiv gegruent werden;
+  default-Annahme bleibt Defer.
+- **Image-Size-Risiko (zusaetzlich zur krb5-CVE):**
+  `image-audit` ueberprueft auch Runtime-Image-Size. M4-
+  Adapter-Deps (`paho-mqtt`, `pymodbus`, `asyncua`,
+  `nfm-dnp3`, `dnp3-outstation`; `pyiec61850-ng` als
+  Optional-Extra) koennten die Schwelle ueberschreiten.
+  Falls das ein zusaetzlicher Bypass-Grund ist:
+  Trigger-Doc fuer Image-Pin-Optimierung.
 - **ADR-Body-Verifikation:** vor Status-Wechsel auf
   `Accepted` muss jedes ADR-Body konsistent mit Welle-
   Stand sein. Wenn ein ADR noch eine offene Decision-
@@ -283,24 +352,36 @@ only-Fallback mit Trigger 009).
 
 - [ ] **6 M4-ADRs auf `Accepted`** — 0030/0031/0032/
   0033/0034/0035 (jedes ADR Body-verifiziert + Status-
-  Header aktualisiert).
+  Header + Status-Pfad-Body-Block mit Datum + M4-Welle-
+  7-Closure-Referenz aktualisiert).
 - [ ] **`done/M4-results.md` produktiv** mit Welle-
   Tabelle + Abnahme-Belegen + Pro-Welle-Reviews + S-1..
   S-6-Sweep + Wandert-Nach-Section.
 - [ ] **`roadmap.md §3 M4`-DoD** alle 7 Checkboxen
-  abgehakt; M4 auf `Done`; M5 als naechster aktiver
-  Slice.
+  abgehakt; **IEC-61850-Box-Beschriftung von „Welle 5b
+  ausstehend" auf „Welle 5b `Done`" gezogen** vor
+  `[x]`-Setzen (S2-Vorabschaerfung); M4 auf `Done`; M5
+  als naechster aktiver Slice.
 - [ ] **Top-Level-Doku-Sync produktiv** — `README.md`,
-  `README.de.md`, `in-progress/README.md`,
+  `README.de.md`, `AGENTS.md`, `in-progress/README.md`,
   Status-Header.
 - [ ] **`M4-protocol-adapters.md` nach `done/`
   gewandert** (Self-Close-Move-Hash dokumentiert in
-  done/README.md + Pre-C0-Sync fuer Cross-Doc-Refs).
-- [ ] **ADR-0028-Linkpflege** falls noetig.
+  done/README.md + Welle-7-Folge-Commit fuer Cross-Doc-
+  Refs).
+- [ ] **Bezug-Linkpflege an ADR 0030..0035** (Verfahren
+  per ADR 0028) — alle sechs M4-ADRs zeigen aktuell mit
+  `Bezug:` auf `planning/in-progress/M4-protocol-
+  adapters.md` und werden auf `planning/done/`
+  nachgezogen.
 - [ ] **`make gates` cache-frei gruen** am Welle-7-
-  Closure-Hash.
-- [ ] **`make fullbuild` cache-frei gruen** (Welle-7-
-  Closure-Gate) oder dokumentierter Defer mit Trigger.
+  Closure-Hash (10 A-1-Gates; der **harte** Welle-7-
+  DoD-Gate).
+- [ ] **`make fullbuild`-Stand dokumentiert** —
+  Pre-existing-rot wegen krb5-CVE-Drift seit M3-Welle-
+  7-`c61ab0d` in M4-results.md §2 als Defer-Pfad
+  vermerkt; **Welle 7 macht keinen Base-Image-Bump**
+  (separater Stack ausserhalb Welle 7-Scope).
 - [ ] **`make docs-check` cache-frei gruen**.
 - [ ] **S-1..S-6-Sweep** in `M4-results.md §4` voll-
   staendig dokumentiert.
@@ -313,6 +394,15 @@ only-Fallback mit Trigger 009).
 - [ ] Keine `noqa`-Marker.
 - [ ] Kein neues arch_check-Contract.
 - [ ] Kein M5-Slice-Plan-Material in Welle-7-Closure.
+- [ ] **Kein neuer M4-Restposten-Trigger** — Slice-Spec-
+  DoD-Streichung (B3): Welle-6b-C3 hat Trigger 009
+  (IedServer-Smoke-Reaktivierung) bereits aufgemacht;
+  alle anderen Welle-Folge-Slices (031..034) sind
+  produktiv in `done/`; keine offene M4-Folge-Pflicht
+  verbleibt.
+- [ ] **Kein Base-Image-Bump** (krb5-CVE-Drift bleibt
+  als Defer-Trigger fuer separaten Slice; siehe §7-
+  Risiken).
 
 ---
 
