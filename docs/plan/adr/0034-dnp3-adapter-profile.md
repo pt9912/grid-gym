@@ -1,15 +1,19 @@
 # ADR 0034 — DNP3-Adapter-Profile (M4 Welle 5a)
 
-**Status:** Provisional — geschaerft 2026-05-31 mit M4-Welle-5a-C3
-(`docs(plan|adr)` Doc-Sync, dieser Commit). Initial-Entwurf
-(`Proposed`) 2026-05-31 mit M4-Welle-5a-C1 `b0fea7e`; C2-Merge
-`224b370` (feat `protocol_dnp3/`-5-Modul-Paket + 56 neue Unit-
-Tests + 4 in-process `dnp3-outstation`-Integration-Smoke-Tests +
-`pyproject.toml`/`uv.lock`/`Dockerfile`/`compose.yml`-Edits;
-`make test-unit` 1462 gruen, `make test-integration` 35 gruen,
-`make arch-check` 19/19 KEPT, `make gates` cache-frei gruen
-ohne `CRITICAL_COV_TARGETS`-Override) belegt die Decisions
-D-a/D-b/D-c/D-d/D-e produktiv.
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-05-31 mit M4-Welle-5a-C3 (`docs(plan|adr)` Doc-Sync).
+Initial-Entwurf (`Proposed`) 2026-05-31 mit M4-Welle-5a-C1
+`b0fea7e`; C2-Merge `224b370` (feat `protocol_dnp3/`-5-Modul-
+Paket + 56 neue Unit-Tests + 4 in-process `dnp3-outstation`-
+Integration-Smoke-Tests + `pyproject.toml`/`uv.lock`/
+`Dockerfile`/`compose.yml`-Edits; `make test-unit` 1462 gruen,
+`make test-integration` 35 gruen, `make arch-check` 19/19
+KEPT, `make gates` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override) belegt die Decisions
+D-a/D-b/D-c/D-d/D-e produktiv. Cross-Adapter-OTel-Span-Wrap
+aus Welle 6a wrappt auch den DNP3-Adapter ohne Adapter-
+Code-Diff.
 
 **Library-Bug-Find waehrend C2:** `nfm-dnp3.AnalogInput`-
 `__repr__` zeigt `AnalogInput(idx=0, ...)` als Kurzform, aber
@@ -24,10 +28,11 @@ Kommentar — Welle-6-Verallgemeinerung kann ein typed
 Protocol fuer Point-Wire-Repr einfuehren, falls
 weitere Libraries andere Field-Namen nutzen.
 
-Status-Pfad: `Proposed → Provisional` (mit C3, dieser
-Commit) → `Accepted` (M4-Welle-7-Closure analog ADR
-0022..0027 + 0030 + 0031 + 0032 + 0033).
-**Datum:** 2026-05-31
+Status-Pfad: `Proposed → Provisional` (2026-05-31
+M4-Welle-5a-C3) → **Accepted** (2026-06-01 M4-Welle-7-C1,
+dieser Commit, analog ADR 0022..0027 + 0030 + 0031 +
+0032 + 0033).
+**Datum:** 2026-05-31 (Erstfassung) / 2026-06-01 (Accepted, M4-Welle-7-C1)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-ohne-Supersede-Pattern — ADR 0034 schaerft
@@ -719,11 +724,15 @@ ziehen.
   `CRITICAL_COV_TARGETS`-Override. C2-Library-Bug-Find
   (`AnalogInput.idx` vs. `.index`, siehe Status-Header)
   in C3 dokumentiert.
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027 + 0030 + 0031 + 0032 + 0033).
-  Voraussetzung: Welle 5b (IEC-61850) klaert ihre
-  Disposition; Welle 6 (Cross-Adapter-Hardening)
-  prueft, ob die zwei-Library-Konstruktion (Master+
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027 + 0030
+  + 0031 + 0032 + 0033). Voraussetzung erfuellt: Welle 5b
+  (IEC-61850, ADR 0035) ist per ADR-0011-Pattern
+  dokumentiert; Welle 6 (Cross-Adapter-Hardening:
+  Welle 6a OTel-Span-Wrap + Welle 6b GPL-Boundary) ist
+  orthogonal zur DNP3-Zwei-Library-Konstruktion — keine
+  Schaerfungs-Folge fuer DNP3-Decisions. Welle 6 prueft,
+  ob die zwei-Library-Konstruktion (Master+
   Outstation als separate Pakete) Welle-6-Schaerfungs-
   Bedarf zeigt. Folge-Pflicht: M4-Welle-7-Closure
   schaerft ADR 0030 §2.4 (Welle-1-DNP3-Verzicht-

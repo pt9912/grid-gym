@@ -1,23 +1,28 @@
 # ADR 0033 — OPC-UA-Adapter-Profile (M4 Welle 4)
 
-**Status:** Provisional — geschaerft 2026-05-31 mit M4-Welle-4-C3
-`7ad5baf`. Zusatz-Schaerfung 2026-05-31 durch Slice 032
-(Welle-4-Review-Folge): Body geschaerft an §2.1
-(Optional-Felder-Klarstellung), §2.5 (Test-Server-Loop-Thread-
-Klarstellung) und §5 (Slice-032-Entry); Code-Fixes
-in separatem feat-Commit. ADR-Status bleibt `Provisional`.
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-05-31 mit M4-Welle-4-C3 `7ad5baf`. Zusatz-Schaerfung
+2026-05-31 durch Slice 032 (Welle-4-Review-Folge): Body
+geschaerft an §2.1 (Optional-Felder-Klarstellung), §2.5
+(Test-Server-Loop-Thread-Klarstellung) und §5 (Slice-032-
+Entry); Code-Fixes in separatem feat-Commit.
 Initial-Entwurf (`Proposed`) 2026-05-31 mit M4-Welle-4-C1
-`74ed35b`; C2-Merge `78fdd7a` (feat `protocol_opcua/`-6-Modul-Paket + 81 neue
-Unit-Tests + in-process asyncua-Server-Integration-Smoke +
-`pyproject.toml`/`uv.lock`/`Dockerfile`/`compose.yml`-Edits;
-`make test-unit` 1395 gruen, `make test-integration` 31 gruen
-(8 OPC-UA-Smokes), `make arch-check` 19/19 KEPT, `make gates`
-cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override) belegt
-die Decisions O-a/O-b/O-c/O-d/O-e produktiv. Status-Pfad:
-`Proposed → Provisional` (mit C3, dieser Commit) → `Accepted`
-(M4-Welle-7-Closure analog ADR 0022..0027 + 0030 + 0031 +
-0032).
-**Datum:** 2026-05-31
+`74ed35b`; C2-Merge `78fdd7a` (feat `protocol_opcua/`-6-
+Modul-Paket + 81 neue Unit-Tests + in-process asyncua-
+Server-Integration-Smoke + `pyproject.toml`/`uv.lock`/
+`Dockerfile`/`compose.yml`-Edits; `make test-unit` 1395
+gruen, `make test-integration` 31 gruen (8 OPC-UA-Smokes),
+`make arch-check` 19/19 KEPT, `make gates` cache-frei
+gruen ohne `CRITICAL_COV_TARGETS`-Override) belegt die
+Decisions O-a/O-b/O-c/O-d/O-e produktiv. Cross-Adapter-
+OTel-Span-Wrap aus Welle 6a wrappt auch den OPC-UA-
+Adapter ohne Adapter-Code-Diff. Status-Pfad:
+`Proposed → Provisional` (2026-05-31 M4-Welle-4-C3 +
+Slice-032-Schaerfung) → **Accepted** (2026-06-01
+M4-Welle-7-C1, dieser Commit, analog ADR 0022..0027 +
+0030 + 0031 + 0032).
+**Datum:** 2026-05-31 (Erstfassung) / 2026-05-31 (Slice-032-Review-Folge) / 2026-06-01 (Accepted, M4-Welle-7-C1)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-ohne-Supersede-Pattern — ADR 0033 schaerft
@@ -821,11 +826,16 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
   Erweiterung, String-Read-Quality.INVALID,
   Float-32bit-Quantisierung, Surrogate-Blacklist) in
   separatem feat-Commit.
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027 + 0030 + 0031 + 0032).
-  Voraussetzung: Welle 5 (DNP3/IEC) klaert ihre
-  Disposition; Welle 6 (Cross-Adapter-Hardening)
-  prueft, ob die Thread+Loop-Konstruktion Welle-6-
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027 + 0030
+  + 0031 + 0032). Voraussetzung erfuellt: Welle 5a
+  (DNP3, ADR 0034), Welle 5b (IEC-61850, ADR 0035) per
+  ADR-0011-Pattern dokumentiert; Welle 6a (Cross-Adapter-
+  OTel-Span-Wrap) und Welle 6b (GPL-Boundary) sind
+  orthogonal zur Thread+Loop-Konstruktion — keine
+  Schwester-Port-ADR notwendig (`OpcuaLoopThread`-Pattern
+  ist OPC-UA-spezifisch und bleibt in §2.5 dokumentiert).
+  Welle 6 prueft, ob die Thread+Loop-Konstruktion Welle-6-
   Schaerfungs-Bedarf zeigt (Schwester-Port-ADR vs.
   Reuse-as-is). Folge-Pflicht: asyncua-Pin auf
   `>=1.2,<2.0` ziehen, sobald 1.2 final auf PyPI ist

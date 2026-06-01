@@ -1,7 +1,8 @@
 # ADR 0035 — IEC-61850-Adapter-Profile (M4 Welle 5b)
 
-**Status:** Provisional — geschaerft 2026-06-01 mit
-M4-Welle-5b-C3 (`docs(plan|adr)` Doc-Sync, dieser Commit).
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-06-01 mit M4-Welle-5b-C3 (`docs(plan|adr)` Doc-Sync).
 Initial-Entwurf (`Proposed`) 2026-06-01 mit M4-Welle-5b-C1
 `88c1a33`; C1-Review-Folge `da8aed9` (API-Korrektur +
 Lizenz-Refit + M4-protocol-adapters.md-Sync nach 4 Findings);
@@ -12,7 +13,14 @@ compose-Edits + uv.lock-Refresh; `make test-unit` 1537 gruen,
 `make test-integration` 35 passed + 4 skipped, `make arch-check`
 19/19 KEPT, `make gates` 9 A-1-Gates gruen ohne
 `CRITICAL_COV_TARGETS`-Override) belegt die Decisions
-I-a/I-b/I-c/I-d/I-e/I-f produktiv.
+I-a/I-b/I-c/I-d/I-e/I-f produktiv. Welle 6a + 6b haben die
+Decision I-f (GPL-Boundary) per Static-Enforcement
+gehaertet: SPDX-Header-Lint `make spdx-check` (10. A-1-
+Gate) + `AC-IEC61850-GPL-BOUNDARY` arch_check-Contract
+(14. Contract; 19 → 20 KEPT) + NEU `CONTRIBUTING.md` mit
+Dual-License-Policy + Cross-Adapter-OTel-Span-Wrap aus
+Welle 6a wrappt auch den IEC-61850-Adapter ohne
+Adapter-Code-Diff.
 
 **2c-Mock-only-Fallback aktiviert** (Decision I-e §2.5):
 Probe-Run auf Python 3.12 lief sauber (Float/Int32/String-
@@ -31,11 +39,12 @@ Schaerfungspfade**: (a) Python-3.12-Runtime fixieren ODER
 (b) pyiec61850-ng-Library-Upgrade abwarten ODER (c) Wheel
 selbst gegen Python 3.14 rebuild.
 
-Status-Pfad: `Proposed → Provisional` (mit C3, dieser
-Commit) → `Accepted` (M4-Welle-7-Closure analog ADR
-0022..0027 + 0030 + 0031 + 0032 + 0033 + 0034). Pattern
-analog ADR 0034 (M4-Welle-5a) und ADR 0033 (M4-Welle-4)
-und ADR 0032 (M4-Welle-3) und ADR 0031 (M4-Welle-2).
+Status-Pfad: `Proposed → Provisional` (2026-06-01
+M4-Welle-5b-C3) → **Accepted** (2026-06-01 M4-Welle-7-C1,
+dieser Commit, analog ADR 0022..0027 + 0030 + 0031 +
+0032 + 0033 + 0034). Pattern analog ADR 0034 (M4-Welle-5a)
+und ADR 0033 (M4-Welle-4) und ADR 0032 (M4-Welle-3) und
+ADR 0031 (M4-Welle-2).
 
 **Slice 033 (M4-Welle-5b-C2-Review-Folge 2026-06-01,
 [`../planning/done/033-iec61850-adapter-review-folge.md`](../planning/done/033-iec61850-adapter-review-folge.md)):**
@@ -1111,13 +1120,20 @@ XML-Konfigurationsformat. Verworfen, weil:
   (oder Mock-only-Fallback bei Wire-Compat-Bruch),
   `make arch-check` 19/19 KEPT, `make gates` 9 A-1-
   Gates gruen ohne `CRITICAL_COV_TARGETS`-Override.
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027 + 0030 + 0031 + 0032 + 0033 +
-  0034). Voraussetzung: Welle 6 (Cross-Adapter-Hardening)
-  prueft, ob die GPL-Boundary-Decision I-f
-  Welle-6-Schaerfungs-Bedarf zeigt (z. B.
-  `tools/check_refs.py`-SPDX-Erweiterung,
-  `arch_check.py`-Contract gegen GPL-Boundary-Crossing).
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027 + 0030
+  + 0031 + 0032 + 0033 + 0034). Voraussetzung erfuellt:
+  Welle 6a (Cross-Adapter-OTel-Span-Wrap) wrappt auch
+  IEC-61850 ohne Adapter-Code-Diff; Welle 6b (Lizenz-
+  Smoke-Hardening) hat die GPL-Boundary-Decision I-f
+  per zwei Static-Checks gehaertet (`make spdx-check` als
+  10. A-1-Gate + `AC-IEC61850-GPL-BOUNDARY` als 14.
+  arch_check-Contract) + NEU `CONTRIBUTING.md` mit Dual-
+  License-Policy. IedServer-Smoke-Reaktivierung bleibt
+  unter 2c-Mock-only-Fallback mit Trigger 009 (Welle-6b-
+  C3-Pfad-A-Probe-Run-Befund: pyiec61850-ng 1.6.1.2
+  identisch zu Welle-5b-Stand, kein cp314-Manylinux-
+  Wheel).
   Folge-Pflicht: M4-Welle-7-Closure schaerft ADR 0030
   §2.4 (Welle-1-IEC-61850-Verzicht-Default) auf „durch
   Welle-5a-Spike-Lieferung (DNP3) **und** Welle-5b-

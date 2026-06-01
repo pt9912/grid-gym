@@ -1,14 +1,21 @@
 # ADR 0030 — DeviceProtocolPort-Surface (M4 Welle 1)
 
-**Status:** Provisional — geschaerft 2026-05-30 (M4-Welle-1-C3,
-dieser Commit) nach M4-Welle-1-C2-Merge `d09adf3` (feat:
-`DeviceProtocolPort`-Protocol-Surface + `TickLoop`-Lifecycle-
-Methoden + 23 neue Unit-Tests; `make gates` cache-frei gruen
-ohne `CRITICAL_COV_TARGETS`-Override).
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-05-30 mit M4-Welle-1-C3 nach M4-Welle-1-C2-Merge
+`d09adf3` (feat: `DeviceProtocolPort`-Protocol-Surface +
+`TickLoop`-Lifecycle-Methoden + 23 neue Unit-Tests; `make
+gates` cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override).
+M4-Wellen 2..6b haben den `DeviceProtocolPort`-Vertrag mit
+allen 5 produktiven Implementern (MQTT/Modbus/OPC-UA/DNP3/
+IEC-61850) belegt; Cross-Adapter-OTel-Span-Wrap (Welle 6a)
+und GPL-Boundary-Static-Enforcement (Welle 6b) bestaetigen
+die Surface-Stabilitaet.
 Status-Pfad: Proposed (2026-05-26 `b840e7a` + Review-Folge
-`ad3dff8` + H4-Korrektur `111c464`) → Provisional (dieser
-Commit) → Accepted (geplant mit M4-Welle-7-Closure).
-**Datum:** 2026-05-26 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung)
+`ad3dff8` + H4-Korrektur `111c464`) → Provisional
+(2026-05-30 M4-Welle-1-C3) → **Accepted** (2026-06-01
+M4-Welle-7-C1, dieser Commit).
+**Datum:** 2026-05-26 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung) / 2026-06-01 (Accepted, M4-Welle-7-C1)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-/Erweiterungs-ADR-Pattern — ADR 0030 ist
@@ -465,12 +472,16 @@ Bedarf konkret ist.
   Gates-Echo: `arch-check (19 contracts)`) und
   `make gates` cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027). Voraussetzung: drei
-  produktive Adapter (Welle 2/3/4) implementieren
-  die Surface ohne Folge-ADR-Schaerfung, oder die
-  Folge-ADR-Schaerfung ist explizit dokumentiert
-  (ADR-0011-Pattern).
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027).
+  Voraussetzung erfuellt: **alle 5 Adapter** (Welle
+  2/3/4/5a/5b) implementieren die Surface produktiv
+  ohne Folge-ADR-Schaerfung; ADR 0031/0032/0033/0034/
+  0035 sind Adapter-Profile per ADR-0011-Pattern
+  (Schaerfung-ohne-Supersede). Welle 6a (Cross-
+  Adapter-OTel-Span-Wrap) und Welle 6b (GPL-Boundary-
+  Static-Enforcement) bestaetigen die Surface-
+  Stabilitaet zusaetzlich.
 
 ---
 

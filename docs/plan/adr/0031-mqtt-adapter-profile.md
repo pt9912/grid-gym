@@ -1,13 +1,18 @@
 # ADR 0031 — MQTT-Adapter-Profile (M4 Welle 2)
 
-**Status:** Provisional — geschaerft 2026-05-30 (M4-Welle-2-C3,
-dieser Commit) nach M4-Welle-2-C2-Merge `f33bb4e` (feat:
-`protocol_mqtt`-Modul + 50 neue Unit-Tests + Mosquitto-
-Integration-Smoke; `make gates` cache-frei gruen ohne
-`CRITICAL_COV_TARGETS`-Override; 19/19 Contracts KEPT).
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-05-30 mit M4-Welle-2-C3 nach M4-Welle-2-C2-Merge
+`f33bb4e` (feat: `protocol_mqtt`-Modul + 50 neue Unit-Tests
++ Mosquitto-Integration-Smoke; `make gates` cache-frei gruen
+ohne `CRITICAL_COV_TARGETS`-Override; 19/19 Contracts KEPT).
+Decisions 4a/4b/4c/4d sind produktiv ueber M4-Welle-2..6b
+gehalten; Cross-Adapter-OTel-Span-Wrap aus Welle 6a wrappt
+auch den MQTT-Adapter ohne Adapter-Code-Diff.
 Status-Pfad: Proposed (2026-05-30 `4e102b8`) → Provisional
-(dieser Commit) → Accepted (geplant mit M4-Welle-7-Closure).
-**Datum:** 2026-05-30 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung)
+(2026-05-30 M4-Welle-2-C3) → **Accepted** (2026-06-01
+M4-Welle-7-C1, dieser Commit).
+**Datum:** 2026-05-30 (Erstfassung) / 2026-05-30 (Provisional-Schaerfung) / 2026-06-01 (Accepted, M4-Welle-7-C1)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-ohne-Supersede-Pattern — ADR 0031 schaerft
@@ -561,9 +566,10 @@ SDK uebernimmt).
   KEPT (7 lint-imports + 12 `tools/arch_check.py`);
   `make gates` cache-frei gruen ohne Override (alle 9
   A-1-Gates).
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027 + 0030). Voraussetzung: Welle 3
-  (Modbus) und Welle 4 (OPC-UA) implementieren ihre
-  Adapter ohne Decision-4a-Pattern-Schaerfungs-ADR (oder
-  die Schaerfung ist explizit dokumentiert,
-  ADR-0011-Pattern).
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027 + 0030).
+  Voraussetzung erfuellt: Welle 3 (Modbus, ADR 0032),
+  Welle 4 (OPC-UA, ADR 0033), Welle 5a (DNP3, ADR 0034)
+  und Welle 5b (IEC-61850, ADR 0035) haben ihre Profile
+  per ADR-0011-Pattern (Schaerfung-ohne-Supersede)
+  dokumentiert; keine 4a-Pattern-Rueckwirkungs-Schaerfung.

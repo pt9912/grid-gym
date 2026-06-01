@@ -1,9 +1,11 @@
 # ADR 0032 — Modbus-TCP-Adapter-Profile (M4 Welle 3)
 
-**Status:** Provisional — geschaerft 2026-05-30 mit M4-Welle-3-C3
-(`docs(plan|adr)` Doc-Sync). Review-Folge 2026-05-31:
-Welle-3-Smoke-Abdeckung praezisiert, FC06-Multi-Register-
-Guard und Read-/Write-Fehler-Taxonomie in
+**Status:** Accepted — gezogen 2026-06-01 mit M4-Welle-7-C1
+(dieser Commit; M4-Closure-Welle). Provisional-Schritt
+2026-05-30 mit M4-Welle-3-C3 (`docs(plan|adr)` Doc-Sync).
+Review-Folge 2026-05-31: Welle-3-Smoke-Abdeckung praezisiert,
+FC06-Multi-Register-Guard und Read-/Write-Fehler-Taxonomie
+in
 [`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
 umgesetzt. Initial-Entwurf
 (`Proposed`) 2026-05-30 mit M4-Welle-3-C1 `a86ac46`; C2-Merge
@@ -13,10 +15,13 @@ Unit-Tests + in-process pymodbus-Server-Integration-Smoke +
 test-unit` 1306 gruen, `make test-integration` 23 gruen,
 `make arch-check` 19/19 KEPT, `make gates` cache-frei gruen
 ohne `CRITICAL_COV_TARGETS`-Override) belegt die Decisions
-M-a/M-b/M-c/M-d/M-e/M-f produktiv. Status-Pfad:
-`Proposed → Provisional` (mit C3) → `Accepted`
-(M4-Welle-7-Closure analog ADR 0022..0027 + 0030 + 0031).
-**Datum:** 2026-05-30
+M-a/M-b/M-c/M-d/M-e/M-f produktiv. Cross-Adapter-OTel-Span-
+Wrap aus Welle 6a wrappt auch den Modbus-Adapter ohne
+Adapter-Code-Diff. Status-Pfad: `Proposed → Provisional`
+(2026-05-30 M4-Welle-3-C3) → **Accepted** (2026-06-01
+M4-Welle-7-C1, dieser Commit, analog ADR 0022..0027 +
+0030 + 0031).
+**Datum:** 2026-05-30 (Erstfassung) / 2026-05-31 (Slice-031-Review-Folge) / 2026-06-01 (Accepted, M4-Welle-7-C1)
 **Bezug:**
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
 (Schaerfungs-ohne-Supersede-Pattern — ADR 0032 schaerft
@@ -720,10 +725,12 @@ offen.
   [`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-Fehler-
   Taxonomie und Adapter-Rand-Fehleruebersetzung umgesetzt.
-- **Accepted** — geplant mit M4-Welle-7-Closure
-  (analog ADR 0022..0027 + 0030 + 0031). Voraussetzung:
-  Welle 4 (OPC-UA) implementiert ihren Adapter ohne
-  Decision-M-a-Pattern-Schaerfungs-ADR (oder die
-  Schaerfung ist explizit dokumentiert,
-  ADR-0011-Pattern); Welle 5 (DNP3/IEC) klaert ihre
-  Disposition.
+- **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser
+  Commit, M4-Closure-Welle; analog ADR 0022..0027 + 0030
+  + 0031). Voraussetzung erfuellt: Welle 4 (OPC-UA,
+  ADR 0033), Welle 5a (DNP3, ADR 0034) und Welle 5b
+  (IEC-61850, ADR 0035) sind alle per ADR-0011-Pattern
+  dokumentiert; keine Decision-M-a-Pattern-Rueckwirkungs-
+  Schaerfung. Welle 6a (Cross-Adapter-OTel-Span-Wrap)
+  und Welle 6b (GPL-Boundary) sind orthogonal zu den
+  Modbus-Decisions.
