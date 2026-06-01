@@ -1,21 +1,41 @@
-"""FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a/6b).
+"""FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a/6b
++ M5 Welle 1).
 
-Endpoints:
+Endpoints (M1 Welle 6a/6b):
+
 - `GET  /health`  — Liveness-Probe (`HEALTHCHECK` im Dockerfile).
 - `POST /runs`    — `GG-API-001`: persistiert einen neuen Lauf via
-  `RunRepositoryPort` (Welle 6b). Welle 6c haengt
-  `PostgresRunRepository` als Production-Implementation an;
-  Welle-6a/6b nutzt die `InMemoryRunRepository` aus
-  `tests/unit/hexagon/ports/driven/_fakes.py` als Default.
+  `RunRepositoryPort` (Welle 6b).
 - `GET  /openapi.json` — automatisch von FastAPI generiert
   (`GG-QG-006`/`GG-API-003`).
+
+Endpoints (M5 Welle 1, ADR 0037):
+
+- `GET  /runs/{run_id}`         — Run-Detail (`GG-API-001`).
+- `GET  /runs/{run_id}/status`  — Kompakter Run-Status.
+- `POST /runs/{run_id}/control` — Steuerung mit Action-Body
+  (`pause`/`resume`/`stop`; ADR 0037 Decision API-1).
+- `GET  /runs/{run_id}/snapshot`— Snapshot-Export (Stub).
+- `POST /runs/{run_id}/faults`  — Fault-Injection (Stub).
+- `WS   /runs/{run_id}/telemetry` — Live-Telemetry-Stream
+  (`GG-API-002`; Welle-1-Skeleton mit Counter-Push, echtes
+  TelemetrySinkPort-Wiring folgt in Welle 3).
+
+Welle-1-Anti-Scope: `POST /runs/{run_id}/control` und
+`POST /runs/{run_id}/faults` sowie `WS /runs/{run_id}/
+telemetry` sind **Stubs** — kein TickLoop-Pause/Resume-
+Wiring (Welle 4), kein FaultPort-Submit (Welle 6), kein
+TelemetrySinkPort-Producer (Welle 3).
 
 Port-Injektion: `app.state.run_repository` haelt die
 `RunRepositoryPort`-Instanz. Aufrufer (uvicorn-Entry, Tests)
 setzen das vor der ersten Anfrage; `get_run_repository`-Dependency
-liest aus dem State. Standard-Fallback (`set_default_run_
-repository_for_local_use`) bleibt fuer M1-Welle-6a/b in-process
-in Kraft, bis Welle 6c einen Postgres-Adapter konfiguriert.
+liest aus dem State.
+
+Standardisiertes Fehler-Format (`GG-API-004`): siehe
+`_schemas.ErrorResponse` mit `code`/`message`/`details`/
+`run_id`. 404-Antworten fuer nicht-existente Runs nutzen
+das Format.
 """
 
 from __future__ import annotations
@@ -23,10 +43,13 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Final
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
-from typing import cast
 
+from grid_gym.adapters.driving.http_api._dependencies import (
+    _RunRepositoryNotConfiguredError,
+    get_run_repository,
+)
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
@@ -91,35 +114,14 @@ def configure_run_repository(repository: RunRepositoryPort) -> None:
     app.state.run_repository = repository
 
 
-class _RunRepositoryNotConfiguredError(RuntimeError):
-    """Konfigurations-Fehler: HTTP-API ohne `RunRepositoryPort` gestartet.
-
-    Erbt von `RuntimeError`, damit FastAPI das ohne Mapper-Konfig auf
-    `500 Internal Server Error` mappt. Message in `__init__` (Slice 027
-    Paket B TRY003-Drop).
-    """
-
-    def __init__(self) -> None:
-        super().__init__(
-            "RunRepositoryPort is not configured. Call "
-            "grid_gym.adapters.driving.http_api.app.configure_run_repository "
-            "before serving requests."
-        )
-
-
-def get_run_repository(request: Request) -> RunRepositoryPort:
-    """Dependency-Provider fuer `RunRepositoryPort`.
-
-    Wirft `_RunRepositoryNotConfiguredError`, wenn die App nicht
-    konfiguriert ist — Endpoints muessen vor dem ersten Aufruf
-    `configure_run_repository` durchlaufen haben. Verhindert,
-    dass ein nicht konfigurierter Welle-6-Stand stillschweigend
-    nichts persistiert.
-    """
-    repository = getattr(request.app.state, "run_repository", None)
-    if repository is None:
-        raise _RunRepositoryNotConfiguredError
-    return cast(RunRepositoryPort, repository)
+# Re-export fuer Backward-Compat (Welle-6b-Tests + uvicorn-Entry-
+# Module nutzen `from .app import get_run_repository`).
+__all__ = (
+    "_RunRepositoryNotConfiguredError",
+    "app",
+    "configure_run_repository",
+    "get_run_repository",
+)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
@@ -168,3 +170,21 @@ def post_runs(
         seed=request.seed,
         tick_ms=request.tick_ms,
     )
+
+
+# ---------------------------------------------------------------------------
+# M5 Welle 1 — APIRouter-Mounts (ADR 0037)
+# ---------------------------------------------------------------------------
+#
+# Welle-1-Endpunkte sind ueber zwei Router-Module verteilt
+# (siehe `_runs_router.py` + `_runs_action_router.py`), damit
+# der `AC-NO-GOD-UTILS`-Contract (max 5 public top-level
+# functions pro Modul) eingehalten wird.
+
+from grid_gym.adapters.driving.http_api._runs_action_router import (
+    runs_action_router,
+)
+from grid_gym.adapters.driving.http_api._runs_router import runs_router
+
+app.include_router(runs_router)
+app.include_router(runs_action_router)
