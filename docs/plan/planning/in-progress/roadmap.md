@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 mit Welle 6a (Done inkl. Slice 034 Review-Folge + Self-Close-Move) abgeschlossen; Welle 6b (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft) als naechstes
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6b (In Progress; IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft + Slice-034-F13-Vorlauf; Welle 6a Done inkl. Slice 034)
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
