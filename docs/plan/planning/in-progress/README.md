@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-1.md`](M5-welle-1.md) | Welle-1-Slice-Doc (M5 HTTP-API-Surface + ADR-0036-Schaerfung auf Provisional) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-2-Pre-C0. |
+| [`M5-welle-1.md`](M5-welle-1.md) | Welle-1-Slice-Doc (M5 HTTP-API-Surface + ADR-0036/0037-Schaerfung) — **Done 2026-06-01**; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-2-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -105,18 +105,34 @@ verankert mit Maintainer-Decision-Indication „Option 1
 gewandert (`fd642df` rename-only; Pattern analog M4-Welle-
 0 Self-Close-Move `556ae9f`).
 
-**Aktive Welle:** M5-Welle-1 (HTTP-API-Surface +
-ADR-0036-Schaerfung auf `Provisional`) eroeffnet
-2026-06-01 mit Pre-C0a `fd642df` (`git mv M5-welle-0.md
-→ done/`) + Pre-C0b `fb417b9` (Cross-Doc-Refs-Sync) +
-Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe-Run
-erfolgreich; 4 Probe-Tests in
-`tests/integration/test_m5_welle_1_htmx_probe.py`
-gruen — ADR-0036-Maintainer-Decision-Indication server-
-side validiert) + C0 (dieser Commit; Slice-Doc-Anlage
-[`M5-welle-1.md`](M5-welle-1.md)). Geplante Lieferung in
-4 Commits: C1 ADR 0036 → `Provisional` + ggf. NEU
-ADR 0037 (Decisions 4 + 9 + Roadmap-Typo-Fix), C2
-HTTP-API-Surface-Implementation (5 REST + 1 WS-Endpunkt
-+ Pydantic-Schema), C3 Status/DoD-Sync + Top-Level-
-Doku-Sync.
+**Welle 1 (M5-Welle-1 HTTP-API-Surface + ADR-0036/0037-
+Schaerfung) abgeschlossen 2026-06-01** mit Pre-C0a
+`fd642df` (`git mv M5-welle-0.md → done/`) + Pre-C0b
+`fb417b9` (Cross-Doc-Refs-Sync) + Pre-C0c `9c20dad`
+(HTMX-FastAPI-Smoke-Probe-Run; 4 Probe-Tests gruen) +
+C0 `e573f67` (Slice-Doc [`M5-welle-1.md`](M5-welle-1.md))
++ C1 `d468e68` (ADR 0036 `Proposed → Provisional` mit
+Probe-Run-Beleg `9c20dad` + NEU ADR 0037 `Proposed`
+„HTTP-API-Surface-Pattern" mit Decisions API-1 = Replay-
+Controls via `POST /runs/{id}/control`-Action-Body +
+API-2 = kein separater `UICommandPort`-Slot + API-3 =
+Roadmap-Typo `GG-AR-PORT-DRG-002` verworfen) + C2
+`ae630ce` (HTTP-API-Surface-Implementation: 5 REST + 1
+WebSocket-Endpunkt unter
+`src/grid_gym/adapters/driving/http_api/` in 4 neuen
+Modulen — `_dependencies.py` + `_schemas.py` +
+`_runs_router.py` + `_runs_action_router.py`; APIRouter-
+Splitting wegen `AC-NO-GOD-UTILS`-Limit; +16 Unit + +2
+Integration-Tests) + C3 (dieser Commit; ADR 0037
+`Proposed → Provisional` + Status/DoD-Sync + Top-Level-
+Doku-Sync inkl. Roadmap-Typo-Fix `GG-AR-PORT-DRG-002` →
+Verwerfung in `roadmap.md §3 M5`). 1584 → 1600 Unit-
+Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-Gates
+gruen cache-frei ohne Override.
+
+**Aktive Welle:** M5-Welle-2 (UI-Foundation; Decision 2
+UI-Layout-Lokation; Jinja2-Templates + Static-Assets +
+HTMX/Chart.js-Vendoring; Pattern analog M4-Welle-2 nach
+Surface-Foundation). Self-Close-Move
+`in-progress/M5-welle-1.md → done/` folgt als M5-Welle-2-
+Pre-C0 (rename-only; Pattern analog M4-Welle-Lifecycle).

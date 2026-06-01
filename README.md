@@ -37,10 +37,11 @@ make help
 make gates              # 10 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # unit test suite (1584 tests as of 2026-06-01)
+make test-unit          # unit test suite (1600 tests as of 2026-06-01,
+                        # M5-Welle-1 closure)
 make test-integration   # Compose/testcontainers integration suite
-                        # (35 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
-                        # OPC-UA, DNP3 and IEC-61850 smokes)
+                        # (41 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
+                        # OPC-UA, DNP3, IEC-61850 and M5-HTTP-API smokes)
 ```
 
 Example YAML scenarios live under
@@ -139,11 +140,20 @@ As of **2026-06-01**:
     `strict_bytes`) · `Done`
   - Wave 6b — IEC-61850 license/smoke hardening · `Done`
   - Wave 7 — closure · `Done`
-- **M5 — UI + Demo** · `Pending` (next active slice)
+- **M5 — UI + Demo** · `In Progress` 2026-06-01
+  - Wave 0 — slice plan + trigger triage · `Done`
+  - Wave 1 — HTTP API surface + ADR 0036/0037 sharpening · `Done`
+  - Wave 2 — UI foundation (Jinja2 + HTMX + Chart.js) · `Pending` (next active slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** 1584 unit tests + 35 integration tests passed + 4 skipped
-(state after M4 Wave 6b closure incl. M4 Wave 7 closure 2026-06-01
+**Test balance:** 1600 unit tests + 41 integration tests passed + 4 skipped
+(state after M5 Wave 1 closure 2026-06-01 — +16 unit tests vs. M4
+Wave 7 for HTTP-API-Surface: 6 in `test_runs_router.py` (3 GET ×
+Happy/404) + 10 in `test_runs_action_router.py` (POST: Happy/422/404;
+WS: 3-counter-push + 1008-close); +2 integration tests for the
+end-to-end HTTP-API smoke + OpenAPI-schema validation incl.
+Decision-API-1 enum validation. State after M4 Wave 6b closure incl.
+M4 Wave 7 closure 2026-06-01
 — +20 unit tests vs. Wave 6a for Wave 6b: 9 SPDX lint + 8
 AC-IEC61850-GPL-BOUNDARY property + 1 F13 cross-adapter helper
 positive + 2 Slice-034 Wave-6a adapter updates. Wave 6a added
@@ -194,7 +204,7 @@ the per-milestone detail table below.
 | Cross-adapter hardening (M4 Wave 6a) | `Done` | [`done/M4-welle-6a.md`](docs/plan/planning/done/M4-welle-6a.md) (self-close-move `d1cb65d`; slice 034 review-folge `bde8fdb` addresses 15 findings) — OTel-span-wrap via `OtelSpanWrappedDeviceProtocolPort` composition wrapper for all 5 adapters (ADR 0024 §4.5; standard attributes `adapter_type`/`target`/`operation`/`latency_ms`; adapter code diff: zero), adapter profile index under [`spec/protocol_profiles.md`](spec/protocol_profiles.md) with 5 entries + ADR links + Lastenheft IDs, Lastenheft §16 implementation matrix synced to `✅ M4` × 5, architecture §8.2 sharpened with OTel-wrap pattern. AC-ADAPTER-LIGHTWEIGHT planted-violator property test (Wave-1-§7 follow-up closure) verifies arch-check filter correctness. Trigger 006 closure: `[tool.mypy] strict_bytes = true` activated. compose.yml header consolidated into 2 sibling tables (container + in-process) with license columns. Trigger 004 deferred to M5/M6. |
 | M4 closure (Wave 7) | `Done` | [`done/M4-welle-7.md`](docs/plan/planning/done/M4-welle-7.md) + [`done/M4-results.md`](docs/plan/planning/done/M4-results.md) — 6 M4-ADRs (0030..0035) `Provisional → Accepted` (C1 `d2071f0`); `done/M4-results.md` with wave table / acceptance evidence (10 A-1 gates, 1584 unit + 35+4 integration, 20 contracts) / per-wave reviews / S-1..S-6 verification / heritage section (C2 `0c644f0`); roadmap M4 → `Done`, M5 as next active slice (C3, this commit). `make fullbuild` pre-existing red due to krb5 CVE drift since M3 Wave-7 `c61ab0d` — Base-Image-Bump as M5-Wave-0 trigger. IEC-61850 in-process smoke remains under 2c mock-only fallback with trigger 009. |
 | IEC 61850 license/smoke hardening (M4 Wave 6b) | `Done` | [`done/M4-welle-6b.md`](docs/plan/planning/done/M4-welle-6b.md) (self-close-move `bf23458`) — SPDX-License-Identifier lint via new `tools/check_spdx.py` (10th A-1 gate `make spdx-check`; 11 GPL-boundary files lint-clean), new arch_check contract `AC-IEC61850-GPL-BOUNDARY` (14th arch_check contract; 19 → 20 contracts kept; AST import scan over MIT code), new `CONTRIBUTING.md` with dual-license policy (default MIT, GPL-3.0-only opt-in for `protocol_iec61850/*` boundary), IedServer-smoke reactivation probe path-A finding (PyPI `pyiec61850-ng 1.6.1.2` identical to Wave 5b, no cp314-manylinux wheel) → path C active with concrete trigger 009 (passive: library publishes cp314-wheel; active: separate slice for Dockerfile multi-Python test stage), plus Slice 034 F13 follow-up (`_is_adapter_lightweight_path` extended to flat-file `_protocol_*.py` cross-adapter helpers under `adapters/driven/`). |
-| UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
+| UI + Demo (M5) | `In Progress` 2026-06-01 | Web UI, scenario editor, live telemetry stream. **Wave 0 done 2026-06-01** ([`done/M5-welle-0.md`](docs/plan/planning/done/M5-welle-0.md)) — slice plan + trigger triage + pre-M5-Wave-0 sondierungs-ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` (Option 1: FastAPI + HTMX + Jinja2 + Chart.js). **Wave 1 done 2026-06-01** ([`in-progress/M5-welle-1.md`](docs/plan/planning/in-progress/M5-welle-1.md)) — HTTP API surface produktiv (5 REST + 1 WebSocket endpoint under `src/grid_gym/adapters/driving/http_api/` in 4 new modules with APIRouter splitting due to `AC-NO-GOD-UTILS`; Pydantic schemas with `ErrorResponse` standard format per `GG-API-004`); ADR [0036](docs/plan/adr/0036-ui-stack-choice.md) `Provisional` with HTMX-FastAPI smoke probe evidence `9c20dad`; NEW ADR [0037](docs/plan/adr/0037-http-api-surface-pattern.md) `Provisional` — Decision API-1 (`POST /runs/{id}/control` with action body), Decision API-2 (no separate `UICommandPort`; UI uses HTTP API directly), Decision API-3 (roadmap typo `GG-AR-PORT-DRG-002` discarded). +16 unit + 2 integration tests; 10/10 A-1 gates green. |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 
 **AI-coding-agent briefing:** [`AGENTS.md`](AGENTS.md) — hard rules

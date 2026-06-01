@@ -131,50 +131,72 @@ dieses Dokument) + C2 (dieser Commit; Trigger-Triage +
 NEU `open/010-base-image-krb5-cve-bump.md` +
 Roadmap-Status-Flip via Decision 10).
 
-### Welle 1 — HTTP-API-Surface + ADR 0036-Schaerfung (Pending)
+### Welle 1 — HTTP-API-Surface + ADR 0036-Schaerfung (Done 2026-06-01)
 
-**Status:** Pending. Foundation-Welle. Pattern analog
-M4-Welle-1 (Surface-Foundation vor konkreten
-Implementern).
+**Status:** Done 2026-06-01. Foundation-Welle. Pattern
+analog M4-Welle-1 (Surface-Foundation vor konkreten
+Implementern). Welle-Slice-Begleit-Doc
+[`M5-welle-1.md`](M5-welle-1.md). Liefer-Hashes:
+Pre-C0a `fd642df` + Pre-C0b `fb417b9` + Pre-C0c `9c20dad`
+(HTMX-Probe) + C0 `e573f67` (Slice-Doc) + C1 `d468e68`
+(ADRs) + C2 `ae630ce` (Code) + C3 (dieser Commit).
 
-- [ ] **Pre-C0** — HTMX-FastAPI-Smoke-Probe-Run
+- [x] **Pre-C0** — HTMX-FastAPI-Smoke-Probe-Run `9c20dad`
   (Maintainer-Decision-Indication-Validierung; Welle-0-
   Decision 1 / N1-Review-Folge). Probe verifiziert:
   FastAPI rendert Jinja2-Template, HTMX-Element triggert
-  Server-Call, WS-Push aktualisiert Partial. Bei Erfolg:
-  C0..C3 produktiv durchgezogen mit Option-1-Stack. Bei
-  Misserfolg: Welle-1-Sub-Slicing oder Stack-Wahl-
-  Re-Sondierung (sehr unwahrscheinlich, weil HTMX +
-  FastAPI etablierte Patterns).
-- [ ] **ADR 0036 `Proposed → Provisional`** mit Probe-
-  Run-Beleg.
-- [ ] **HTTP-API-Surface produktiv** unter
-  `src/grid_gym/adapters/driving/http_api/app.py`:
+  Server-Call, WS-Push aktualisiert Partial. 4 Probe-
+  Tests in
+  `tests/integration/test_m5_welle_1_htmx_probe.py`
+  gruen — ADR-0036-Maintainer-Decision-Indication
+  server-side validiert.
+- [x] **ADR 0036 `Proposed → Provisional`** mit Probe-
+  Run-Beleg `9c20dad` (Welle-1-C1 `d468e68`).
+- [x] **HTTP-API-Surface produktiv** unter
+  `src/grid_gym/adapters/driving/http_api/` (Welle-1-C2
+  `ae630ce`):
   - REST-Endpunkte: `GET /runs/{id}`, `GET /runs/{id}/
     status`, `POST /runs/{id}/control` (action: pause/
-    resume/stop, gemaess Welle-0-Decision 4), `GET /runs/
-    {id}/snapshot`, `POST /runs/{id}/faults`.
+    resume/stop, gemaess Welle-0-Decision 4 = ADR 0037
+    Decision API-1), `GET /runs/{id}/snapshot`,
+    `POST /runs/{id}/faults`. Aufgeteilt auf 2 APIRouter-
+    Module (`_runs_router.py` GET + `_runs_action_router.
+    py` POST/WS) wegen `AC-NO-GOD-UTILS`.
   - WebSocket: `WS /runs/{id}/telemetry` fuer Live-
-    Telemetry-Stream (`GG-API-002`).
+    Telemetry-Stream (`GG-API-002`); Welle-1-Skeleton
+    pusht 3 Counter-Messages + Close; 1008-Close fuer
+    nicht-existente Runs.
   - OpenAPI-Schema produktiv erweitert (`make openapi-
-    validate` weiterhin gruen).
+    validate` gruen; WS bewusst nicht im Schema, ADR
+    0037 §3-Klarstellung).
   - Standardisierte Fehlerformate (`GG-API-004`: `code`,
-    `message`, `details`, `run_id`).
-- [ ] **Decision 4 (Replay-Controls-API-Vertrag)** final
-  im Welle-1-Slice-Doc + ggf. NEU ADR 0037.
-- [ ] **Decision 9 (UICommandPort-Separation)** final im
-  Welle-1-Slice-Doc + ggf. ADR 0037 §X. Plus Roadmap-
-  Typo-Fix `DRG-002 → DRV-?` (siehe Welle-0-Decision 9-
-  Notiz).
-- [ ] **Unit-Tests** fuer alle neuen Endpunkte (HTTP-
-  Status-Codes, Body-Schemas, WebSocket-Connect-Lifecycle).
-- [ ] **Integration-Test** mit `httpx.AsyncClient` gegen
-  In-Process-TestClient.
-- [ ] **C3 Doc-Sync** — Status/DoD-Sync + Top-Level-
-  Doku-Sync.
+    `message`, `details`, `run_id`) via
+    `ErrorResponse`-Pydantic-Model.
+- [x] **Decision 4 (Replay-Controls-API-Vertrag)** final
+  im Welle-1-C1-ADR 0037 §2.1 als **Decision API-1**:
+  `POST /runs/{id}/control` mit Action-Body
+  (Variante B; kompakte Surface, erweiterungs-fest).
+- [x] **Decision 9 (UICommandPort-Separation)** final im
+  Welle-1-C1-ADR 0037 §2.2 als **Decision API-2**:
+  **kein separater Slot**; UI nutzt HTTP-API direkt via
+  REST + WebSocket (YAGNI). Plus Roadmap-Typo-Fix
+  `GG-AR-PORT-DRG-002 → Verwerfung` (ADR 0037 §2.3
+  Decision API-3); in C3 in `roadmap.md §3 M5`
+  produktiv.
+- [x] **Unit-Tests** fuer alle neuen Endpunkte: 6 Tests
+  in `test_runs_router.py` + 10 Tests in
+  `test_runs_action_router.py` (HTTP-Status-Codes,
+  Body-Schemas, WebSocket-Connect-Lifecycle).
+- [x] **Integration-Test**
+  `test_m5_welle_1_http_api_smoke.py` produktiv mit
+  `fastapi.testclient.TestClient`-Pattern (End-to-End-
+  Workflow + OpenAPI-Schema-Validation).
+- [x] **C3 Doc-Sync** — Status/DoD-Sync + Top-Level-
+  Doku-Sync (5 Docs).
 
 **Welle-1-Gate:** `make gates` cache-frei gruen ohne
-Override.
+Override **erfuellt** (10/10 A-1-Gates; 1600 unit + 41
+integration Tests passed).
 
 ### Welle 2 — UI-Foundation (Pending)
 

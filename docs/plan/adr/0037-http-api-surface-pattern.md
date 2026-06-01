@@ -1,8 +1,12 @@
 # ADR 0037 — HTTP-API-Surface-Pattern (M5 Welle 1)
 
-**Status:** Proposed — angelegt 2026-06-01 mit M5-Welle-1-C1
-(dieser Commit). Die ADR schaerft die HTTP-API-Surface
-(`GG-API-001..004`) aus
+**Status:** Provisional — angelegt 2026-06-01 mit M5-Welle-1-C1
+`d468e68` (Status `Proposed`); auf `Provisional` gezogen
+2026-06-01 mit M5-Welle-1-C3 (dieser Commit) nach C2-Code-
+Merge `ae630ce` (5 REST + 1 WebSocket + Pydantic-Schemas +
+1600 unit + 41 integration Tests; 10/10 A-1-Gates gruen).
+Die ADR schaerft die HTTP-API-Surface (`GG-API-001..004`)
+aus
 [`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md)
 konkret fuer M5-Welle-1-Implementation und schliesst zwei
 Decisions aus der M5-Welle-0-Decision-Liste (siehe
@@ -10,7 +14,8 @@ Decisions aus der M5-Welle-0-Decision-Liste (siehe
 Decisions 4 + 9). Plus ein Roadmap-Typo-Fix als Welle-1-
 Folge.
 
-**Datum:** 2026-06-01 (M5-Welle-1-C1)
+**Datum:** 2026-06-01 (M5-Welle-1-C1 `d468e68` → C3 dieser
+Commit)
 
 **Bezug:**
 
@@ -232,14 +237,21 @@ zugewiesen).
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-06-01 (dieser Commit; M5-Welle-1-C1
-  zusammen mit ADR-0036-Schaerfung auf `Provisional`).
+- **Proposed** — 2026-06-01 mit M5-Welle-1-C1 `d468e68`
+  (zusammen mit ADR-0036-Schaerfung auf `Provisional`).
   Decision API-1/2/3 alle final entschieden im ADR-Body.
-- **Provisional** — geplant mit M5-Welle-1-C3-Schaerfung
-  nach C2-Code-Merge (Pattern analog ADR 0030..0035 in
-  M4-Welle-1-bis-5b — `Proposed → Provisional` mit C3 nach
-  C2-Implementation-Merge; C2 belegt die Decisions
-  produktiv im Code).
+- **Provisional** — 2026-06-01 mit M5-Welle-1-C3 (dieser
+  Commit) nach C2-Code-Merge `ae630ce`. Pattern analog
+  ADR 0030..0035 in M4-Welle-1-bis-5b (`Proposed →
+  Provisional` mit C3 nach C2-Implementation-Merge; C2
+  belegt die Decisions produktiv im Code). Belege:
+  Decision API-1 produktiv in
+  `_runs_action_router.py:post_run_control` mit
+  `ControlRequest.action: Literal["pause","resume","stop"]`-
+  Body-Validation; Decision API-2 produktiv durch
+  Abwesenheit eines `UICommandPort`-Slots im Repo;
+  Decision API-3 in C3 (dieser Commit) durch
+  `roadmap.md §3 M5`-Edit (`GG-AR-PORT-DRG-002` → Verwerfung).
 - **Accepted** — geplant mit M5-Welle-7-Closure (analog
   ADR 0030..0036).
 

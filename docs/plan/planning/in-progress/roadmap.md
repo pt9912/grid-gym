@@ -550,24 +550,44 @@ Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
 + Pre-M5-Welle-0-Sondierungs-ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 mit Maintainer-Decision-Indication „Option 1 (FastAPI +
-HTMX + Jinja2 + Chart.js)". Liefer-Stack zur Zeit: C0
-`d93ae57` + C0-Review `aa1db52` (12 Findings) + C1
-`b8bef6c` (NEU `M5-ui-demo.md`) + C2 (dieser Commit;
-Trigger-Triage + Status-Flip).
+HTMX + Jinja2 + Chart.js)". **Welle 0 abgeschlossen
+2026-06-01** mit C0 `d93ae57` + C0-Review `aa1db52` (12
+Findings) + C1 `b8bef6c` (NEU `M5-ui-demo.md`) + C2
+`112efd3` (Trigger-Triage + Status-Flip).
+
+**Welle 1 (HTTP-API-Surface + ADR-0036-Schaerfung)
+abgeschlossen 2026-06-01** mit Pre-C0a `fd642df`
+(`git mv`) + Pre-C0b `fb417b9` (Cross-Doc-Refs-Sync) +
+Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe-Run; 4 Probe-
+Tests) + C0 `e573f67` (Slice-Doc) + C1 `d468e68` (ADR
+0036 → `Provisional` + NEU ADR 0037 `Proposed`) + C2
+`ae630ce` (HTTP-API-Surface produktiv: 5 REST + 1 WS-
+Endpunkt unter `src/grid_gym/adapters/driving/http_api/`
+in 4 Modulen + Pydantic-Schemas + 16 Unit + 2 Integration-
+Tests) + C3 (dieser Commit; ADR 0037 → `Provisional` +
+Status/DoD-Sync + Roadmap-Typo-Fix `GG-AR-PORT-DRG-002`
+→ Verwerfung per ADR 0037 Decision API-3). 1584 → 1600
+Unit-Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-
+Gates gruen.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).
 - **Lastenheft-IDs:** `GG-UI-001..009`, Demo-System aus Spec §24.
-- **Architekturartefakte:** `GG-AR-COMP-UI`,
-  `GG-AR-PORT-DRG-002` (`UICommandPort`, sofern getrennt vom
-  HTTP-API).
+- **Architekturartefakte:** `GG-AR-COMP-UI`. **Hinweis:**
+  Slot `GG-AR-PORT-DRG-002` (`UICommandPort`) ist mit
+  M5-Welle-1-C3 [`verworfen`](../../adr/0037-http-api-surface-pattern.md)
+  (ADR 0037 Decision API-3 — Typo gegen `GG-AR-PORT-DRV-*`-
+  Konvention und semantisch ueberfluessig nach Decision
+  API-2: UI nutzt HTTP-API direkt via REST + WebSocket
+  ohne separaten Driving-Port-Slot).
 - **DoD-Checkliste:**
   - [ ] Web-UI mit Live-Telemetry-Stream
         (`GG-UI-001..006`).
   - [ ] Scenario-Editor (`GG-UI-006..008`).
   - [ ] Demo-Lauf reproduzierbar via `make demo` o. ae.
   - [ ] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
-        Kern-Zugriff.
+        Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
+        verwendet** (ADR 0037 Decision API-2).
 
 ### M6 — Performance + Security + CI/CD-Haertung (Vorbelegung)
 

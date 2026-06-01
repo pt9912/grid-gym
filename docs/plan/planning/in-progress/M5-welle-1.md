@@ -1,10 +1,16 @@
 # Welle 1 — M5 HTTP-API-Surface + ADR-0036-Schaerfung
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M5-Welle-
-0-Closure (Liefer-Stack `d93ae57` C0 + `aa1db52` C0-Review +
-`b8bef6c` C1 + `112efd3` C2 + Self-Close-Move `fd642df` +
-Pre-C0-Sync `fb417b9` + **HTMX-FastAPI-Smoke-Probe-Run
-`9c20dad`** mit 4 Probe-Tests).
+**Status:** Done 2026-06-01 — Liefer-Stack:
+Pre-C0a `fd642df` (`git mv`) + Pre-C0b `fb417b9` (Cross-
+Doc-Refs-Sync) + Pre-C0c `9c20dad` (**HTMX-FastAPI-Smoke-
+Probe-Run** mit 4 Probe-Tests) + C0 `e573f67` (Slice-Doc)
++ C1 `d468e68` (ADR 0036 → `Provisional` + NEU ADR 0037)
++ C2 `ae630ce` (HTTP-API-Surface-Implementation: 5 REST +
+1 WS + Pydantic-Schemas + Tests; +16 Unit-Tests +2
+Integration-Tests = 1600 unit + 41 integration; 10/10
+A-1-Gates gruen) + C3 (dieser Commit; Status/DoD-Sync +
+Top-Level-Doku-Sync inkl. Roadmap-Typo-Fix
+`GG-AR-PORT-DRG-002 → Verwerfung`).
 
 Welle 1 ist die **erste Code-Welle in M5** und die
 **Foundation-Welle** fuer den UI-Layer. Pattern analog
@@ -380,56 +386,84 @@ Bestand-Eintrag.
 - Welle 2 (UI-Foundation) als naechster aktiver Schritt
   mit ggf. NEU ADR fuer UI-Layout-Lokation (Decision 2).
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (mit C3 abgehakt)
 
-- [ ] **ADR 0036 auf `Provisional`** mit Probe-Run-Beleg
-  `9c20dad` (Welle-1-C1).
-- [ ] **ADR 0037 NEU** (Decisions 4 + 9 + Roadmap-Typo-
-  Fix) mit Status `Proposed` (Welle-1-C1).
-- [ ] **ADR-0036-Bezug-Linie** in ADR-Body verlinkt auf
-  Welle-1-C1-Commit-Hash als Provisional-Schaerfungs-
-  Beleg.
-- [ ] **5 REST-Endpunkte produktiv** unter
-  `src/grid_gym/adapters/driving/http_api/app.py`:
+- [x] **ADR 0036 auf `Provisional`** mit Probe-Run-Beleg
+  `9c20dad` (Welle-1-C1 `d468e68`).
+- [x] **ADR 0037 NEU** (Decisions 4 + 9 + Roadmap-Typo-
+  Fix als Decisions API-1/API-2/API-3) mit Status
+  `Proposed` (Welle-1-C1 `d468e68`); in C3 (dieser
+  Commit) auf `Provisional` mit C2-Code-Merge-Beleg
+  `ae630ce`.
+- [x] **ADR-0036-Bezug-Linie** in ADR-Body verlinkt auf
+  Welle-1-C1-Commit-Hash `d468e68` als Provisional-
+  Schaerfungs-Beleg.
+- [x] **5 REST-Endpunkte produktiv** unter
+  `src/grid_gym/adapters/driving/http_api/`:
   `GET /runs/{id}`, `GET /runs/{id}/status`,
   `POST /runs/{id}/control`, `GET /runs/{id}/snapshot`,
-  `POST /runs/{id}/faults`.
-- [ ] **WebSocket-Endpunkt produktiv:**
-  `WS /runs/{id}/telemetry` mit Skeleton-Push.
-- [ ] **Pydantic-Schema-Models** in
-  `_schemas.py` produktiv (Request + Response + Error).
-- [ ] **Unit-Tests** fuer alle neuen Endpunkte (HTTP-
-  Codes, Body-Schemas, WS-Lifecycle).
-- [ ] **Integration-Test**
-  `test_m5_welle_1_http_api_smoke.py` produktiv mit
-  `httpx.AsyncClient`-Pattern.
-- [ ] **`make test-unit`** gruen mit neuen Tests; Test-
-  Count-Increment dokumentiert.
-- [ ] **`make test-integration`** gruen (40+ Tests).
-- [ ] **`make arch-check`** 20/20 KEPT.
-- [ ] **`make typecheck`** mit `strict_bytes` gruen
-  (kein neuer `# type: ignore`-Marker).
-- [ ] **`make gates`** cache-frei gruen ohne Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make openapi-validate`** cache-frei gruen
-  (`GG-API-003`).
-- [ ] **Roadmap-Typo-Fix** `GG-AR-PORT-DRG-002` →
-  Verwerfung in `roadmap.md §3 M5` (Welle-1-C3).
-- [ ] **C3-Top-Level-Doku-Sync** produktiv: 5 Docs auf
-  Welle-1-Closure-Stand.
+  `POST /runs/{id}/faults`. Verteilt ueber 2 APIRouter-
+  Module (`_runs_router.py` GET + `_runs_action_router.
+  py` POST/WS) wegen `AC-NO-GOD-UTILS` (max 5 public
+  functions/Modul).
+- [x] **WebSocket-Endpunkt produktiv:**
+  `WS /runs/{id}/telemetry` in `_runs_action_router.py`
+  mit Skeleton-Counter-Push (3 Messages + close);
+  Close-Code 1008 fuer nicht-existente Runs.
+- [x] **Pydantic-Schema-Models** in
+  `_schemas.py` produktiv (7 Modelle + 2 Literal-Type-
+  Aliases): `RunDetailResponse`, `RunStatusResponse`,
+  `ControlRequest`/`ControlResponse`, `SnapshotResponse`,
+  `FaultInjectionRequest`/`FaultInjectionResponse`,
+  `ErrorResponse` als `GG-API-004`-Standard.
+- [x] **Unit-Tests** fuer alle neuen Endpunkte: 6 in
+  `test_runs_router.py` (3 GET × Happy/404) + 10 in
+  `test_runs_action_router.py` (POST: Happy/422/404;
+  WS: 3-Counter-Push + 1008-Close).
+- [x] **Integration-Test**
+  `test_m5_welle_1_http_api_smoke.py` produktiv: End-to-
+  End-Workflow (POST /runs → 5 GET/POST + 1 WS) +
+  OpenAPI-Schema-Check inkl. Decision-API-1-Enum-Validation
+  + WebSocket-Nicht-im-OpenAPI-Klarstellung.
+- [x] **`make test-unit`** gruen mit 1600 passed (+16 vs
+  Welle-0-Endstand 1584).
+- [x] **`make test-integration`** gruen mit 41 passed + 4
+  skipped (+2 vs Welle-0-Endstand 39).
+- [x] **`make arch-check`** 20/20 KEPT (`AC-NO-GOD-UTILS`
+  via APIRouter-Splitting eingehalten).
+- [x] **`make typecheck`** mit `strict_bytes` gruen
+  (kein neuer `# type: ignore`-Marker; 138 source files
+  +3 vs Welle-0-Endstand 135).
+- [x] **`make gates`** cache-frei gruen ohne Override
+  (10/10 A-1-Gates).
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make openapi-validate`** cache-frei gruen
+  (`GG-API-003`; 5 neue REST-Pfade im Schema; WS
+  bewusst nicht im OpenAPI per ADR-0037-§3-Klarstellung).
+- [x] **Roadmap-Typo-Fix** `GG-AR-PORT-DRG-002` →
+  Verwerfung in `roadmap.md §3 M5` (Welle-1-C3, dieser
+  Commit; Begruendung in ADR 0037 §2.3 Decision API-3).
+- [x] **C3-Top-Level-Doku-Sync** produktiv: 5 Docs auf
+  Welle-1-Closure-Stand (`M5-welle-1.md §0/§9`,
+  `M5-ui-demo.md §3 Welle 1`, `in-progress/README.md`,
+  `in-progress/roadmap.md §3 M5`, `README.md` +
+  `README.de.md`-Test-Counts).
 
 **Anti-Scope-Verifikation (Welle 1 NICHT):**
 
-- [ ] Kein UI-Layout-Code (kein `ui/`-Verzeichnis-
+- [x] Kein UI-Layout-Code (kein `ui/`-Verzeichnis-
   Anlage; das ist Welle 2).
-- [ ] Kein Jinja2-Dep-Add (kommt mit Welle 2).
-- [ ] Kein WebSocket-Daten-Producer-Wiring (Welle 3).
-- [ ] Kein Replay-Steuerungs-Backend-Code (`POST
-  /control` ist Stub; Welle 4 wirkt).
-- [ ] Kein Demo-Compose-Service (Welle 5).
-- [ ] Kein Fault-Injection-Backend (`POST /faults` ist
-  Stub; Welle 6).
-- [ ] Keine `noqa`-Marker.
+- [x] Kein Jinja2-Dep-Add (kommt mit Welle 2).
+- [x] Kein WebSocket-Daten-Producer-Wiring (Welle 3);
+  WS-Endpoint pusht nur Timer-Counter-Stub.
+- [x] Kein Replay-Steuerungs-Backend-Code (`POST
+  /control` ist Stub mit `accepted=True`; echtes
+  TickLoop-Wiring in Welle 4).
+- [x] Kein Demo-Compose-Service (Welle 5).
+- [x] Kein Fault-Injection-Backend (`POST /faults` ist
+  Stub mit `fault_id` + `accepted=True`; echtes
+  `FaultPort`-Wiring in Welle 6).
+- [x] Keine `noqa`-Marker.
 
 ---
 
