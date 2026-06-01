@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
+| [`M5-welle-2.md`](M5-welle-2.md) | Welle-2-Slice-Doc (M5 UI-Foundation: Jinja2-Templates + HTMX/Chart.js-Vendored + StaticFiles-Mount + Decision 2 UI-Layout-Lokation auf `src/grid_gym/adapters/driving/ui/`) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-3-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -132,10 +133,19 @@ Gates gruen cache-frei ohne Override.
 
 **Aktive Welle:** M5-Welle-2 (UI-Foundation) eroeffnet
 2026-06-01 mit Pre-C0a `c7c2641` (Self-Close-Move
-`M5-welle-1.md → done/`, rename-only) + Pre-C0b (dieser
-Commit; Cross-Doc-Refs-Sync nach Move). Geplant: C0
-(Slice-Doc + **Decision 2** UI-Layout-Lokation:
-`src/grid_gym/adapters/driving/ui/` vs `ui/`-Top-Level)
-+ ggf. NEU ADR fuer Decision 2 (C1) + C2 (Jinja2-
-Templates-Skeleton + HTMX/Chart.js-Vendored + Static-
-Mount + FastAPI-Routing) + C3 (Status/DoD-Sync).
+`M5-welle-1.md → done/`, rename-only) + Pre-C0b `a0c8ba3`
+(Cross-Doc-Refs-Sync nach Move) + C0 (dieser Commit;
+Slice-Doc-Anlage [`M5-welle-2.md`](M5-welle-2.md) mit
+**Decision 2 final fixiert** auf
+`src/grid_gym/adapters/driving/ui/` per Hexagonal-
+Architektur-Konsistenz). Pre-C0c entfaellt (Welle-1-
+Probe `9c20dad` deckt HTMX/Jinja2/WS bereits server-
+side ab). Geplante Lieferung in 2 weiteren Commits:
+C2 (UI-Adapter-Code: 4 Templates + 3 vendored Static-
+Assets + Jinja2-Dep-Add + StaticFiles-Mount +
+`include_router(ui_router)` + Unit + Integration-Tests)
++ C3 (Status/DoD-Sync + Top-Level-Doku-Sync). Welle 2
+verzichtet bewusst auf einen C1-ADR-Commit, weil
+Decision 2 im Slice-Doc-§3-Body fixiert wird und
+ADR 0036 bei M5-Welle-7-Closure die Layout-Realisierung
+als Welle-2-Beleg aufnimmt (Pattern analog ADR 0030 §6).
