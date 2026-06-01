@@ -49,17 +49,26 @@ das Format.
 from __future__ import annotations
 
 import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated, Final
 
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
 
+from grid_gym.adapters.driven.telemetry_stream_inmemory import (
+    DemoTelemetryGenerator,
+    InMemoryTelemetryStream,
+)
 from grid_gym.adapters.driving.http_api._dependencies import (
     _RunRepositoryNotConfiguredError,
+    _TelemetryStreamNotConfiguredError,
     get_run_repository,
+    get_telemetry_stream,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 _APP_TITLE: Final[str] = "grid-gym HTTP API"
 _APP_VERSION: Final[str] = "0.1.0"
@@ -104,10 +113,36 @@ class RunCreateResponse(BaseModel):
     tick_ms: int = Field(description="Echo des `tick_ms`-Eingangs.")
 
 
+@asynccontextmanager
+async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
+    """FastAPI-Lifespan: startet/stoppt den Demo-Telemetry-Generator.
+
+    Welle 3 (ADR 0038 §3.1): wenn ein
+    `DemoTelemetryGenerator`-Singleton vor App-Start gesetzt
+    wurde (via `configure_telemetry_stream` + Wiring durch
+    Production-Code), startet er hier seinen periodischen
+    Producer-Task; bei Shutdown wird er sauber gecanceled.
+    Tests koennen den Generator weglassen — der Lifespan ist
+    dann no-op.
+    """
+    generator = getattr(app_.state, "demo_telemetry_generator", None)
+    stream = getattr(app_.state, "telemetry_stream", None)
+    if isinstance(generator, DemoTelemetryGenerator) and isinstance(
+        stream, InMemoryTelemetryStream
+    ):
+        generator.start(stream)
+    try:
+        yield
+    finally:
+        if isinstance(generator, DemoTelemetryGenerator):
+            await generator.stop()
+
+
 app: Final[FastAPI] = FastAPI(
     title=_APP_TITLE,
     version=_APP_VERSION,
     description=_APP_DESCRIPTION,
+    lifespan=_lifespan,
 )
 
 
@@ -122,13 +157,36 @@ def configure_run_repository(repository: RunRepositoryPort) -> None:
     app.state.run_repository = repository
 
 
+def configure_telemetry_stream(
+    stream: TelemetryStreamPort,
+    *,
+    demo_generator: DemoTelemetryGenerator | None = None,
+) -> None:
+    """Setzt den Telemetry-Stream + optional einen Demo-Generator
+    fuer die laufende App (M5 Welle 3, ADR 0038).
+
+    ``demo_generator`` ist optional: wenn gesetzt **und** der
+    Stream eine ``InMemoryTelemetryStream``-Instanz ist, startet
+    der FastAPI-Lifespan-Hook den Generator als Background-Task
+    (Welle-3-Demo-Producer). Tests koennen den Generator
+    weglassen oder den Stream direkt mit synthetischen Points
+    fuettern.
+    """
+    app.state.telemetry_stream = stream
+    if demo_generator is not None:
+        app.state.demo_telemetry_generator = demo_generator
+
+
 # Re-export fuer Backward-Compat (Welle-6b-Tests + uvicorn-Entry-
 # Module nutzen `from .app import get_run_repository`).
 __all__ = (
     "_RunRepositoryNotConfiguredError",
+    "_TelemetryStreamNotConfiguredError",
     "app",
     "configure_run_repository",
+    "configure_telemetry_stream",
     "get_run_repository",
+    "get_telemetry_stream",
 )
 
 

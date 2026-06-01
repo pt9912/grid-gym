@@ -1,4 +1,4 @@
-"""FastAPI-Router fuer Run-Action-Endpunkte (M5 Welle 1, ADR 0037).
+"""FastAPI-Router fuer Run-Action-Endpunkte (M5 Welle 1/3, ADR 0037 + 0038).
 
 Drei Endpunkte (2 REST + 1 WebSocket):
 
@@ -7,8 +7,8 @@ Drei Endpunkte (2 REST + 1 WebSocket):
 - `POST /runs/{run_id}/faults`  — Fault-Injection-Submit
   (Welle-1-Stub; echtes `FaultPort.activate` in Welle 6).
 - `WS   /runs/{run_id}/telemetry` — Live-Telemetry-Stream
-  (`GG-API-002`; Welle-1-Skeleton mit Counter-Push, echtes
-  `TelemetrySinkPort`-Wiring in Welle 3).
+  (`GG-API-002`; Welle-3-Subscribe-Pattern auf
+  `TelemetryStreamPort`, ADR 0038).
 
 Trennung von den GET-Endpunkten in `_runs_router.py` ist
 `AC-NO-GOD-UTILS`-getrieben (max 5 public functions pro
@@ -23,11 +23,11 @@ Violation).
 
 from __future__ import annotations
 
-import asyncio
+import dataclasses
 import uuid
 from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
 from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
 from grid_gym.adapters.driving.http_api._schemas import (
@@ -38,6 +38,7 @@ from grid_gym.adapters.driving.http_api._schemas import (
     FaultInjectionResponse,
 )
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 
 runs_action_router = APIRouter(tags=["runs"])
@@ -109,20 +110,19 @@ def post_run_faults(
 
 @runs_action_router.websocket("/runs/{run_id}/telemetry")
 async def ws_run_telemetry(websocket: WebSocket, run_id: str) -> None:
-    """Live-Telemetry-WebSocket (`GG-API-002`).
+    """Live-Telemetry-WebSocket (`GG-API-002`, ADR 0038).
 
-    Welle-1-Skeleton: pusht Counter-Updates (`tick`/`value`)
-    und schliesst nach 3 Iterationen. Echtes
-    `TelemetrySinkPort`-Wiring + Backpressure-Pattern folgt
-    in Welle 3 (Live-Telemetry-Dashboard).
-
-    Welle-1-Verhalten:
+    Welle-3-Verhalten:
 
     - Accept Connection.
     - Pruefe Run-Existenz (falls nicht persistiert: close
       mit Code 1008 = Policy-Violation analog 404-REST).
-    - Pusht 3 Counter-Tick-Messages als JSON.
-    - Close Connection.
+    - Subscribt am `TelemetryStreamPort` mit `run_id`-Filter.
+    - Pusht jeden `TelemetryPoint` als JSON
+      (`asdict`-Serialisierung).
+    - Bei `WebSocketDisconnect` (Browser-Tab schliesst) gibt
+      der AsyncIterator-`finally`-Block den Subscriber-Slot
+      frei (ADR 0038 §2.3).
     """
     await websocket.accept()
     repository = cast(
@@ -132,15 +132,23 @@ async def ws_run_telemetry(websocket: WebSocket, run_id: str) -> None:
     if repository is None or not repository.exists(run_id):
         await websocket.close(code=1008, reason=f"Run '{run_id}' not found.")
         return
+    stream = cast(
+        TelemetryStreamPort | None,
+        getattr(websocket.app.state, "telemetry_stream", None),
+    )
+    if stream is None:
+        await websocket.close(code=1011, reason="TelemetryStreamPort is not configured.")
+        return
     try:
-        for tick in range(3):
-            await websocket.send_json(
-                {
-                    "run_id": run_id,
-                    "tick": tick,
-                    "value": tick * 10,
-                }
-            )
-            await asyncio.sleep(0.01)
+        async for point in stream.subscribe(run_id=run_id):
+            await websocket.send_json(dataclasses.asdict(point))
+    except WebSocketDisconnect:
+        return
     finally:
-        await websocket.close()
+        # Ensure socket is closed even if subscribe-loop exits
+        # for non-Disconnect reasons (e.g., app shutdown).
+        try:
+            await websocket.close()
+        except RuntimeError:
+            # Already closed by client; swallow.
+            return

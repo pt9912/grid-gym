@@ -74,3 +74,75 @@ button[type="button"] {
     background: #ffffff;
     cursor: pointer;
 }
+
+/* M5-Welle-3 Dashboard + Quality-Marker (GG-UI-009). */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.telemetry-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.telemetry-table th,
+.telemetry-table td {
+    border: 1px solid #e0e0e0;
+    padding: 0.35rem 0.5rem;
+    text-align: left;
+}
+
+.telemetry-table thead {
+    background: #f0f0f0;
+}
+
+.telemetry-table td.empty {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+.chart-wrap {
+    background: #ffffff;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+}
+
+.ws-bridge {
+    display: none;
+}
+
+/* Sechs Quality-Marker-Zustaende (GG-UI-009). */
+.telemetry-table tr.quality-ok {
+    background: #ffffff;
+}
+
+.telemetry-table tr.quality-stale {
+    background: #fff8e1;
+    color: #6b5500;
+}
+
+.telemetry-table tr.quality-invalid {
+    background: #ffe0e0;
+    color: #a40000;
+}
+
+.telemetry-table tr.quality-nan {
+    background: #ffd8d8;
+    color: #800000;
+    font-style: italic;
+}
+
+.telemetry-table tr.quality-missing {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.telemetry-table tr.quality-fault_injected {
+    background: #ffd1f2;
+    color: #6f005f;
+    font-weight: 600;
+}

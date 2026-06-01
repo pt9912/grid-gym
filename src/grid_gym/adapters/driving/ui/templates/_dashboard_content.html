@@ -1,0 +1,139 @@
+<section class="dashboard" data-run-id="{{ run_id }}">
+    <h1>Live Dashboard — {{ run_id }}</h1>
+
+    <h2>Telemetry feed</h2>
+    <table class="telemetry-table">
+        <thead>
+            <tr>
+                <th>Device</th>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Unit</th>
+                <th>Sim time (ms)</th>
+                <th>Quality</th>
+                <th>Sequence</th>
+            </tr>
+        </thead>
+        <tbody id="telemetry-rows">
+            <tr><td colspan="7" class="empty">Waiting for live data...</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Time series</h2>
+    <div class="chart-wrap">
+        <canvas id="telemetry-chart" height="180"></canvas>
+    </div>
+
+    <div hx-ext="ws" ws-connect="/runs/{{ run_id }}/telemetry"
+         id="telemetry-ws" class="ws-bridge" aria-hidden="true"></div>
+
+    <script>
+    (function () {
+        const MAX_ROWS = 16;
+        const MAX_POINTS = 200;
+        const runId = "{{ run_id }}";
+        const tbody = document.getElementById("telemetry-rows");
+        const canvas = document.getElementById("telemetry-chart");
+        const wsBridge = document.getElementById("telemetry-ws");
+        let chart = null;
+        let emptyRowRemoved = false;
+
+        function ensureChart() {
+            if (chart || typeof Chart === "undefined") {
+                return chart;
+            }
+            chart = new Chart(canvas, {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: "battery-1.power (kW)", data: [], borderColor: "#1f7a1f", tension: 0.2 },
+                        { label: "battery-1.soc (%)", data: [], borderColor: "#1a4fa6", tension: 0.2 },
+                        { label: "grid-1.power (kW)", data: [], borderColor: "#a64a1f", tension: 0.2 },
+                    ],
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    scales: { x: { display: false } },
+                },
+            });
+            return chart;
+        }
+
+        function updateRow(point) {
+            if (!emptyRowRemoved) {
+                tbody.innerHTML = "";
+                emptyRowRemoved = true;
+            }
+            const rowId = `row-${point.device_id}-${point.metric}`;
+            let row = document.getElementById(rowId);
+            if (!row) {
+                row = document.createElement("tr");
+                row.id = rowId;
+                row.innerHTML = `
+                    <td class="device">${point.device_id}</td>
+                    <td class="metric">${point.metric}</td>
+                    <td class="value"></td>
+                    <td class="unit">${point.unit}</td>
+                    <td class="sim-time"></td>
+                    <td class="quality"></td>
+                    <td class="sequence"></td>`;
+                tbody.appendChild(row);
+            }
+            row.querySelector(".value").textContent = point.value;
+            row.querySelector(".sim-time").textContent = point.simulation_time_ms;
+            row.querySelector(".sequence").textContent = point.sequence;
+            const qcell = row.querySelector(".quality");
+            qcell.textContent = point.quality;
+            row.className = `quality-${point.quality}`;
+            // Keep the table size bounded so the page doesn't grow unboundedly.
+            while (tbody.children.length > MAX_ROWS) {
+                tbody.removeChild(tbody.firstChild);
+            }
+        }
+
+        function updateChart(point) {
+            const c = ensureChart();
+            if (!c) {
+                return;
+            }
+            const datasetIndex = {
+                "battery-1|power": 0,
+                "battery-1|soc": 1,
+                "grid-1|power": 2,
+            }[`${point.device_id}|${point.metric}`];
+            if (datasetIndex === undefined) {
+                return;
+            }
+            const ds = c.data.datasets[datasetIndex];
+            ds.data.push({ x: point.simulation_time_ms, y: point.value });
+            if (ds.data.length > MAX_POINTS) {
+                ds.data.shift();
+            }
+            const longest = Math.max(...c.data.datasets.map((d) => d.data.length));
+            while (c.data.labels.length < longest) {
+                c.data.labels.push("");
+            }
+            while (c.data.labels.length > longest) {
+                c.data.labels.shift();
+            }
+            c.update("none");
+        }
+
+        wsBridge.addEventListener("htmx:wsAfterMessage", function (event) {
+            let point;
+            try {
+                point = JSON.parse(event.detail.message);
+            } catch (err) {
+                return;
+            }
+            if (point.run_id !== runId) {
+                return;
+            }
+            updateRow(point);
+            updateChart(point);
+        });
+    })();
+    </script>
+</section>

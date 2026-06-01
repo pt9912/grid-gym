@@ -13,12 +13,15 @@ deckt dieser Test einen kompletten Workflow ab:
    akzeptiert.
 5. `POST /runs/{id}/faults` legt einen (Stub-)Fault an.
 6. `GET /runs/{id}/snapshot` liefert den Schema-Ref.
-7. `WS /runs/{id}/telemetry` pusht 3 Counter-Updates.
+7. `WS /runs/{id}/telemetry` empfaengt subscribte Telemetry-
+   Points (Welle 3 hat den Counter-Stub durch
+   `TelemetryStreamPort.subscribe`-Pattern ersetzt).
 
-Welle-1-Anti-Scope: alle Calls sind Stubs; keine echte
-TickLoop/FaultPort/TelemetrySink-Wiring (Welle 3/4/6).
-Dieser Smoke validiert nur die HTTP-Surface, das
-OpenAPI-Schema und die Stub-Response-Shapes.
+Welle-1-Anti-Scope: alle REST-Calls sind Stubs; keine echte
+TickLoop/FaultPort-Wiring (Welle 4/6). Der WS-Pfad ist seit
+Welle 3 Subscribe-getrieben (ADR 0038); dieser Smoke
+verifiziert nur die HTTP-Surface, das OpenAPI-Schema und
+die Stub-Response-Shapes.
 """
 
 from __future__ import annotations
@@ -29,8 +32,15 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
+from grid_gym.adapters.driven.telemetry_stream_inmemory import (
+    InMemoryTelemetryStream,
+)
 from grid_gym.adapters.driving.http_api import app
-from grid_gym.adapters.driving.http_api.app import configure_run_repository
+from grid_gym.adapters.driving.http_api.app import (
+    configure_run_repository,
+    configure_telemetry_stream,
+)
+from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryPoint
 from tests.unit.hexagon.ports.driven._fakes import InMemoryRunRepository
 
 
@@ -50,29 +60,40 @@ _VALID_FAULT_PAYLOAD: dict[str, object] = {
 
 
 @pytest.fixture
-def smoke_client() -> Iterator[TestClient]:
-    """Frische App + InMemoryRunRepository pro Test."""
+def smoke_client() -> Iterator[tuple[TestClient, InMemoryTelemetryStream]]:
+    """Frische App + InMemoryRunRepository + InMemoryTelemetryStream pro Test.
+
+    Welle-3-Anpassung: WS-Endpoint braucht einen
+    `TelemetryStreamPort`. Stream-Instanz wird hier injiziert
+    + Smoke publisht 3 Test-Points fuer den Subscribe-Pfad.
+    """
     configure_run_repository(InMemoryRunRepository())
+    stream = InMemoryTelemetryStream(queue_maxsize=8)
+    configure_telemetry_stream(stream)
     with TestClient(app) as client:
-        yield client
+        yield client, stream
 
 
-def test_full_run_lifecycle_workflow(smoke_client: TestClient) -> None:
+def test_full_run_lifecycle_workflow(
+    smoke_client: tuple[TestClient, InMemoryTelemetryStream],
+) -> None:
     """End-to-End-Smoke: POST + 5 GET/POST + 1 WS in Sequence.
 
     Welle-1-Stub: jeder Schritt validiert die Surface-Shape,
-    nicht das tatsaechliche Verhalten. Welle 3/4/6 ersetzen
-    die Stubs durch echte TickLoop/FaultPort/TelemetrySink-
-    Wiring.
+    nicht das tatsaechliche Verhalten. Welle 3 hat den
+    WS-Schritt auf `TelemetryStreamPort.subscribe` umgestellt
+    (ADR 0038); Welle 4/6 ersetzen weitere Stubs durch
+    echte TickLoop/FaultPort-Wiring.
     """
+    client, stream = smoke_client
     # 1. POST /runs → 201 + run_id
-    create_response = smoke_client.post("/runs", json=_VALID_RUN_PAYLOAD)
+    create_response = client.post("/runs", json=_VALID_RUN_PAYLOAD)
     assert create_response.status_code == 201
     run_id = create_response.json()["run_id"]
     uuid.UUID(run_id)  # validate UUID format
 
     # 2. GET /runs/{id} → Full Metadata
-    detail_response = smoke_client.get(f"/runs/{run_id}")
+    detail_response = client.get(f"/runs/{run_id}")
     assert detail_response.status_code == 200
     detail = detail_response.json()
     assert detail["run_id"] == run_id
@@ -81,7 +102,7 @@ def test_full_run_lifecycle_workflow(smoke_client: TestClient) -> None:
     assert detail["tick_ms"] == 100
 
     # 3. GET /runs/{id}/status → Stub-Status
-    status_response = smoke_client.get(f"/runs/{run_id}/status")
+    status_response = client.get(f"/runs/{run_id}/status")
     assert status_response.status_code == 200
     status = status_response.json()
     assert status["state"] == "pending"
@@ -89,7 +110,7 @@ def test_full_run_lifecycle_workflow(smoke_client: TestClient) -> None:
     assert status["tick_count"] == 0
 
     # 4. POST /runs/{id}/control mit `pause` → accepted=True
-    control_response = smoke_client.post(
+    control_response = client.post(
         f"/runs/{run_id}/control",
         json={"action": "pause"},
     )
@@ -97,7 +118,7 @@ def test_full_run_lifecycle_workflow(smoke_client: TestClient) -> None:
     assert control_response.json()["accepted"] is True
 
     # 5. POST /runs/{id}/faults → 201 + fault_id
-    faults_response = smoke_client.post(
+    faults_response = client.post(
         f"/runs/{run_id}/faults",
         json=_VALID_FAULT_PAYLOAD,
     )
@@ -107,24 +128,38 @@ def test_full_run_lifecycle_workflow(smoke_client: TestClient) -> None:
     uuid.UUID(fault_body["fault_id"])
 
     # 6. GET /runs/{id}/snapshot → schema_ref
-    snapshot_response = smoke_client.get(f"/runs/{run_id}/snapshot")
+    snapshot_response = client.get(f"/runs/{run_id}/snapshot")
     assert snapshot_response.status_code == 200
     assert snapshot_response.json()["schema_ref"] == "grid-gym.snapshot.envelope.v2"
 
-    # 7. WS /runs/{id}/telemetry → 3 Counter-Pushes
-    with smoke_client.websocket_connect(f"/runs/{run_id}/telemetry") as ws:
+    # 7. WS /runs/{id}/telemetry → 3 Subscribed Points (Welle 3, ADR 0038)
+    with client.websocket_connect(f"/runs/{run_id}/telemetry") as ws:
+        for sequence in range(3):
+            stream.publish(
+                TelemetryPoint(
+                    run_id=run_id,
+                    device_id="battery-1",
+                    metric="power",
+                    value=float(sequence),
+                    unit="kW",
+                    simulation_time_ms=sequence * 100,
+                    quality="ok",
+                    sequence=sequence,
+                )
+            )
         messages = [ws.receive_json() for _ in range(3)]
-    assert [m["tick"] for m in messages] == [0, 1, 2]
+    assert [m["sequence"] for m in messages] == [0, 1, 2]
     assert all(m["run_id"] == run_id for m in messages)
 
 
 def test_openapi_schema_contains_welle_1_endpoints(
-    smoke_client: TestClient,
+    smoke_client: tuple[TestClient, InMemoryTelemetryStream],
 ) -> None:
     """Welle-1-Endpunkte muessen im OpenAPI-Schema auftauchen
     (`GG-API-003`); `make openapi-validate` prueft das Schema
     gegen den OpenAPI-Spec-Validator."""
-    response = smoke_client.get("/openapi.json")
+    client, _ = smoke_client
+    response = client.get("/openapi.json")
     assert response.status_code == 200
     spec = response.json()
     paths = spec["paths"]

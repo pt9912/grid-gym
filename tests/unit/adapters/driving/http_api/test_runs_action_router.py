@@ -1,4 +1,4 @@
-"""Tests fuer `_runs_action_router.py` (M5 Welle 1, ADR 0037).
+"""Tests fuer `_runs_action_router.py` (M5 Welle 1/3, ADR 0037 + 0038).
 
 Drei Endpunkte:
 
@@ -7,7 +7,7 @@ Drei Endpunkte:
 - `POST /runs/{run_id}/faults` — Fault-Injection-Submit
   (Welle-1-Stub).
 - `WS /runs/{run_id}/telemetry` — Live-Telemetry-Stream
-  (Welle-1-Skeleton mit Counter-Push).
+  (Welle-3 mit `TelemetryStreamPort.subscribe`-Pattern; ADR 0038).
 
 Plus 404-Pfade fuer REST und Close-Code 1008 fuer WebSocket
 bei nicht-existenten Runs.
@@ -22,19 +22,28 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
+from grid_gym.adapters.driven.telemetry_stream_inmemory import (
+    InMemoryTelemetryStream,
+)
 from grid_gym.adapters.driving.http_api import app
-from grid_gym.adapters.driving.http_api.app import configure_run_repository
+from grid_gym.adapters.driving.http_api.app import (
+    configure_run_repository,
+    configure_telemetry_stream,
+)
 from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryPoint
 from tests.unit.hexagon.ports.driven._fakes import InMemoryRunRepository
 
 
 @pytest.fixture
-def configured_app() -> Iterator[tuple[TestClient, InMemoryRunRepository]]:
-    """App mit frischem `InMemoryRunRepository` pro Test."""
+def configured_app() -> Iterator[tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream]]:
+    """App mit frischem `InMemoryRunRepository` + `InMemoryTelemetryStream`."""
     repository = InMemoryRunRepository()
     configure_run_repository(repository)
+    stream = InMemoryTelemetryStream(queue_maxsize=16)
+    configure_telemetry_stream(stream)
     with TestClient(app) as client:
-        yield client, repository
+        yield client, repository, stream
 
 
 def _seed_run(repository: InMemoryRunRepository) -> RunMetadata:
@@ -59,12 +68,12 @@ def _seed_run(repository: InMemoryRunRepository) -> RunMetadata:
 
 @pytest.mark.parametrize("action", ["pause", "resume", "stop"])
 def test_post_run_control_accepts_valid_action(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
     action: str,
 ) -> None:
     """Welle-1-Stub: jede der drei Actions wird mit
     `accepted=True` quittiert (ADR 0037 Decision API-1)."""
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.post(
         f"/runs/{metadata.run_id}/control",
@@ -78,10 +87,10 @@ def test_post_run_control_accepts_valid_action(
 
 
 def test_post_run_control_rejects_invalid_action(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
     """Pydantic-Literal-Validation fuer ungueltige Actions → 422."""
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.post(
         f"/runs/{metadata.run_id}/control",
@@ -91,9 +100,9 @@ def test_post_run_control_rejects_invalid_action(
 
 
 def test_post_run_control_returns_404_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
-    client, _ = configured_app
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.post(
         f"/runs/{run_id}/control",
@@ -109,10 +118,10 @@ def test_post_run_control_returns_404_for_unknown_run(
 
 
 def test_post_run_faults_returns_fault_id_with_201(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
     """Welle-1-Stub: 201 + UUID-Fault-ID + accepted=True."""
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.post(
         f"/runs/{metadata.run_id}/faults",
@@ -133,10 +142,10 @@ def test_post_run_faults_returns_fault_id_with_201(
 
 
 def test_post_run_faults_rejects_invalid_body(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
     """Pydantic-Validation: Missing-Field → 422."""
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.post(
         f"/runs/{metadata.run_id}/faults",
@@ -146,9 +155,9 @@ def test_post_run_faults_rejects_invalid_body(
 
 
 def test_post_run_faults_returns_404_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
-    client, _ = configured_app
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.post(
         f"/runs/{run_id}/faults",
@@ -169,27 +178,57 @@ def test_post_run_faults_returns_404_for_unknown_run(
 # ---------------------------------------------------------------------------
 
 
-def test_ws_telemetry_pushes_three_counter_messages(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+def _make_point(run_id: str, sequence: int) -> TelemetryPoint:
+    return TelemetryPoint(
+        run_id=run_id,
+        device_id="battery-1",
+        metric="power",
+        value=float(sequence),
+        unit="kW",
+        simulation_time_ms=sequence * 100,
+        quality="ok",
+        sequence=sequence,
+    )
+
+
+def test_ws_telemetry_pushes_subscribed_points(
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
-    """Welle-1-Skeleton: Server pusht 3 Counter-Updates + close."""
-    client, repository = configured_app
+    """Welle-3 (ADR 0038): WS-Endpoint pusht JSON-Serialized
+    Telemetry-Points aus dem `TelemetryStreamPort.subscribe()`-
+    Stream; filtert nach `run_id`.
+    """
+    client, repository, stream = configured_app
     metadata = _seed_run(repository)
     with client.websocket_connect(f"/runs/{metadata.run_id}/telemetry") as ws:
-        msg0 = ws.receive_json()
-        msg1 = ws.receive_json()
-        msg2 = ws.receive_json()
-    assert msg0 == {"run_id": metadata.run_id, "tick": 0, "value": 0}
-    assert msg1 == {"run_id": metadata.run_id, "tick": 1, "value": 10}
-    assert msg2 == {"run_id": metadata.run_id, "tick": 2, "value": 20}
+        # Publishe drei Points fuer den seeded Run + einen fuer einen
+        # anderen Run (der vom Subscribe-Filter verworfen wird).
+        stream.publish(_make_point(metadata.run_id, sequence=0))
+        stream.publish(_make_point("other-run", sequence=99))
+        stream.publish(_make_point(metadata.run_id, sequence=1))
+        stream.publish(_make_point(metadata.run_id, sequence=2))
+        msgs = [ws.receive_json() for _ in range(3)]
+    assert [m["sequence"] for m in msgs] == [0, 1, 2]
+    assert all(m["run_id"] == metadata.run_id for m in msgs)
+    expected_fields = {
+        "run_id",
+        "device_id",
+        "metric",
+        "value",
+        "unit",
+        "simulation_time_ms",
+        "quality",
+        "sequence",
+    }
+    assert set(msgs[0].keys()) == expected_fields
 
 
 def test_ws_telemetry_closes_with_1008_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, InMemoryTelemetryStream],
 ) -> None:
-    """Welle-1-Skeleton: nicht-existenter Run → Close-Code 1008
+    """Welle-3 (ADR 0038): nicht-existenter Run → Close-Code 1008
     (Policy-Violation, analog 404-REST)."""
-    client, _ = configured_app
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     with (
         pytest.raises(WebSocketDisconnect) as exc_info,
