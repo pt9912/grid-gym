@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
+| [`M5-welle-1.md`](M5-welle-1.md) | Welle-1-Slice-Doc (M5 HTTP-API-Surface + ADR-0036-Schaerfung auf Provisional) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-2-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -104,11 +105,18 @@ verankert mit Maintainer-Decision-Indication „Option 1
 gewandert (`fd642df` rename-only; Pattern analog M4-Welle-
 0 Self-Close-Move `556ae9f`).
 
-**Aktiver Slice: M5 (UI + Demo).** Naechster aktiver
-Schritt: **M5-Welle-1** (HTTP-API-Surface +
-ADR-0036-Schaerfung auf `Provisional`) — verbleibendes
-Pre-C0-Item ist der HTMX-FastAPI-Smoke-Probe-Run zur
-Validierung der Maintainer-Decision-Indication aus
-ADR 0036 (Pattern analog M4-Welle-5a-C1-Probe-Run fuer
-`nfm-dnp3`-Wire-Compat). C0..C3 folgen nach Probe-
-Run-Beleg.
+**Aktive Welle:** M5-Welle-1 (HTTP-API-Surface +
+ADR-0036-Schaerfung auf `Provisional`) eroeffnet
+2026-06-01 mit Pre-C0a `fd642df` (`git mv M5-welle-0.md
+→ done/`) + Pre-C0b `fb417b9` (Cross-Doc-Refs-Sync) +
+Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe-Run
+erfolgreich; 4 Probe-Tests in
+`tests/integration/test_m5_welle_1_htmx_probe.py`
+gruen — ADR-0036-Maintainer-Decision-Indication server-
+side validiert) + C0 (dieser Commit; Slice-Doc-Anlage
+[`M5-welle-1.md`](M5-welle-1.md)). Geplante Lieferung in
+4 Commits: C1 ADR 0036 → `Provisional` + ggf. NEU
+ADR 0037 (Decisions 4 + 9 + Roadmap-Typo-Fix), C2
+HTTP-API-Surface-Implementation (5 REST + 1 WS-Endpunkt
++ Pydantic-Schema), C3 Status/DoD-Sync + Top-Level-
+Doku-Sync.
