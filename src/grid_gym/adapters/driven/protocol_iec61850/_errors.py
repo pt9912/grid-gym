@@ -112,6 +112,30 @@ class Iec61850PortReadFailedError(DeviceProtocolPortReadError):
         self.fc: str = fc
 
 
+class Iec61850PortReadConnectionLostError(Iec61850PortReadFailedError):
+    """Library hat `NotConnectedError` waehrend `read_value()`
+    geworfen, **nachdem** `start()` erfolgreich gelaufen war —
+    Session-Drop mid-flight (Server-Reboot, TCP-RST, Network-
+    Partition).
+
+    Semantisch verschieden zu `Iec61850PortReadNotStartedError`
+    (Caller hat `start()` nie aufgerufen): der Read war legal,
+    die Session ist mitten in der Simulation kollabiert. Caller-
+    Recovery-Logik kann z. B. eine Backoff-Reconnect-Strategie
+    ziehen statt `start()` neu aufzurufen (was bei einem nicht-
+    gestarteten Adapter sinnvoll waere, aber nicht bei mid-flight-
+    Drop).
+    """
+
+    def __init__(self, target: str, reference: str, fc: str) -> None:
+        super().__init__(
+            target,
+            reference,
+            fc,
+            "connection lost mid-session (NotConnectedError post-start)",
+        )
+
+
 class Iec61850PortPointNotFoundError(Iec61850PortReadFailedError):
     """`read_value()` ist mit einer Object-Reference-Not-Found-
     Message gescheitert.

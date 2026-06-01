@@ -169,11 +169,17 @@ def _iec61850_server() -> Iterator[tuple[IedServer, int]]:
     `update_*` fuer Smoke-Werte -> yield -> `stop()`. Server
     arbeitet intern mit Daemon-Threads — kein eigener asyncio-Loop
     noetig (anders als Welle 5a mit dnp3-outstation).
+
+    Welle-5b-C2-Review-Folge 2026-06-01: `IedServer(...)` und
+    `server.start(port)` sind jetzt **innerhalb** des try/finally
+    (vorher: ausserhalb → bei start-Exception lief das `stop()`
+    im finally nicht und libiec61850-Daemon-Threads leckten).
     """
     port = _find_free_port()
-    server = IedServer(model_path=str(_FIXTURE_PATH))
-    server.start(port=port)
+    server: IedServer | None = None
     try:
+        server = IedServer(model_path=str(_FIXTURE_PATH))
+        server.start(port=port)
         _wait_for_port_open(_LOCALHOST, port, _CONNECT_TIMEOUT_S)
         # Seed all smoke targets.
         for _target_id, reference, _fc, datatype, value in _SMOKE_TARGETS:
@@ -193,8 +199,9 @@ def _iec61850_server() -> Iterator[tuple[IedServer, int]]:
         time.sleep(0.5)
         yield server, port
     finally:
-        with contextlib.suppress(Exception):
-            server.stop()
+        if server is not None:
+            with contextlib.suppress(Exception):
+                server.stop()
 
 
 def _build_config(port: int) -> Iec61850ProtocolPortConfig:

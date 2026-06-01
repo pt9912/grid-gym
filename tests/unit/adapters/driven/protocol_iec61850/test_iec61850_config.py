@@ -174,6 +174,27 @@ def test_config_rejects_invalid_access() -> None:
     assert exc_info.value.value == "readwrite"
 
 
+def test_config_rejects_write_access_welle5b_anti_scope() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: Anti-Scope-Hardening —
+    `access="write"` wird **bei Konstruktion** abgelehnt statt erst
+    zur Laufzeit in `port.write()` mit
+    `Iec61850PortWriteNotImplementedError`. Welle-6 fuehrt den
+    Write-Pfad ein und wird diese Validation entsprechend lockern.
+    """
+    bad = {
+        "device1": Iec61850LnConfig(
+            object_reference="LD0/LN.DO",
+            functional_constraint="MX",
+            datatype="float",
+            access="write",
+        ),
+    }
+    with pytest.raises(Iec61850ConfigInvalidAccessError) as exc_info:
+        Iec61850ProtocolPortConfig(host="127.0.0.1", ied_name="SimpleIO", points=bad)
+    assert exc_info.value.value == "write"
+    assert "Anti-Scope" in str(exc_info.value)
+
+
 def test_points_become_immutable_after_construction() -> None:
     config = Iec61850ProtocolPortConfig(
         host="127.0.0.1", ied_name="SimpleIO", points=_basic_point()

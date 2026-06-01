@@ -107,10 +107,12 @@ def test_decode_float_returns_decimal_via_repr() -> None:
     assert float(result) == pytest.approx(3.14)
 
 
-def test_decode_float_accepts_int() -> None:
-    result = decode_mms_value(42, "float", "LD/LN.DO", "MX")
-    assert isinstance(result, Decimal)
-    assert float(result) == pytest.approx(42.0)
+def test_decode_float_rejects_int() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: `int` ist **kein**
+    valider Wert fuer `datatype="float"` (vorher: silent
+    `float(int)` mit Praezisionsverlust fuer Ints > 2**53)."""
+    with pytest.raises(Iec61850CodecValueTypeError):
+        decode_mms_value(42, "float", "LD/LN.DO", "MX")
 
 
 def test_decode_float_rejects_bool() -> None:
@@ -121,6 +123,27 @@ def test_decode_float_rejects_bool() -> None:
 def test_decode_float_rejects_string() -> None:
     with pytest.raises(Iec61850CodecValueTypeError):
         decode_mms_value("3.14", "float", "LD/LN.DO", "MX")
+
+
+def test_decode_float_rejects_nan() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: NaN wird typed
+    `Iec61850CodecOverflowError` — verhindert
+    `Decimal('NaN')`-Poisoning der Tick-Loop-Math."""
+    with pytest.raises(Iec61850CodecOverflowError):
+        decode_mms_value(float("nan"), "float", "LD/LN.DO", "MX")
+
+
+def test_decode_float_rejects_inf() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: Infinity wird typed
+    `Iec61850CodecOverflowError` — verhindert
+    `Decimal('Infinity')`-Poisoning."""
+    with pytest.raises(Iec61850CodecOverflowError):
+        decode_mms_value(float("inf"), "float", "LD/LN.DO", "MX")
+
+
+def test_decode_float_rejects_neg_inf() -> None:
+    with pytest.raises(Iec61850CodecOverflowError):
+        decode_mms_value(float("-inf"), "float", "LD/LN.DO", "MX")
 
 
 # ---------------------------------------------------------------------------
@@ -158,11 +181,21 @@ def test_decode_rejects_mms_container_repr_for_float() -> None:
         decode_mms_value("<MmsValue type=15>", "float", "LD/LN.DO", "MX")
 
 
-def test_decode_rejects_mms_container_repr_for_string() -> None:
-    # Auch fuer datatype="string" lehnen wir den Container-Repr ab —
-    # wir wollen den echten Daten-String, nicht den Type-Wrapper.
-    with pytest.raises(Iec61850CodecValueTypeError):
-        decode_mms_value("<MmsValue type=4>", "string", "LD/LN.DO", "DC")
+def test_decode_accepts_mms_container_prefix_for_string() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: Der Container-Repr-Check
+    gilt **nicht** fuer `datatype="string"` — sonst wuerde ein
+    legitimer String-DA-Wert (z. B. NamPlt.d-Label mit
+    `'<MmsValue is cool>'`) faelschlich verworfen werden.
+    """
+    result = decode_mms_value("<MmsValue type=4>", "string", "LD/LN.DO", "DC")
+    assert result == "<MmsValue type=4>"
+
+
+def test_decode_accepts_legit_string_starting_with_mms_value() -> None:
+    """Konkretes Beispiel: NamPlt.d-Label, das zufaellig mit
+    `<MmsValue` anfaengt (Phase-1-Review-Finding #7)."""
+    result = decode_mms_value("<MmsValue is cool>", "string", "LD/LN.DO", "DC")
+    assert result == "<MmsValue is cool>"
 
 
 # ---------------------------------------------------------------------------

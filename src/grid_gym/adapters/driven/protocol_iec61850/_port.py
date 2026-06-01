@@ -25,7 +25,8 @@ produktive Anlagensteuerung**.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Final, Literal, Protocol, cast
+from decimal import Decimal
+from typing import Any, Literal, Protocol, cast
 
 from grid_gym.adapters.driven.protocol_iec61850._codec import (
     decode_mms_value,
@@ -41,6 +42,7 @@ from grid_gym.adapters.driven.protocol_iec61850._errors import (
     Iec61850PortLibraryNotInstalledError,
     Iec61850PortPointNotFoundError,
     Iec61850PortReadAccessMismatchError,
+    Iec61850PortReadConnectionLostError,
     Iec61850PortReadFailedError,
     Iec61850PortReadNotStartedError,
     Iec61850PortWriteAccessMismatchError,
@@ -60,6 +62,15 @@ from grid_gym.hexagon.ports.driven.device_protocol import (
 # nicht in `[project] dependencies`. Ohne `pip install grid-gym[iec61850]`
 # ist das Modul nicht importierbar — Adapter-Konstruktor faengt das
 # und wirft `Iec61850PortLibraryNotInstalledError`.
+#
+# **Wichtig (Welle-5b-C2-Review-Folge 2026-06-01):** Im Optional-Extra-
+# Off-Pfad benutzen wir **private Sentinel-Exception-Klassen** statt
+# `Exception` als Alias. Damit faengt die `except _PyIecXyzError`-Klausel
+# in `start()`/`read()`/`stop()` im Off-Pfad **nichts** (Sentinel ist
+# niemals geraised), statt **alles** zu fangen wie der naive
+# `= Exception`-Alias. Das verhindert Maskierung von Test-Bugs
+# (AssertionError, TypeError aus dem MagicMock) und behaelt die except-
+# Reihenfolge auch ohne installiertes Extra korrekt.
 try:
     from pyiec61850.mms import (
         ConnectionError as _PyIecConnectionError,
@@ -75,19 +86,26 @@ try:
     _HAS_PYIEC61850 = True
 except ImportError:
     # Optional-Extra-Off-Pfad: `pip install grid-gym` ohne `[iec61850]`-
-    # Extra installiert pyiec61850-ng nicht. Der Adapter-Konstruktor
-    # wirft dann `Iec61850PortLibraryNotInstalledError` mit Install-
-    # Hinweis (Decision I-f). Mock-Tests koennen das via
-    # `client_factory`-Hook umgehen.
+    # Extra installiert pyiec61850-ng nicht. Adapter-Konstruktor wirft
+    # `Iec61850PortLibraryNotInstalledError` mit Install-Hinweis
+    # (Decision I-f). Mock-Tests koennen das via `client_factory`-Hook
+    # umgehen.
+    #
+    # Sentinel-Exception-Klassen (Welle-5b-C2-Review-Folge):
+    class _IecExtraOffSentinelError(Exception):
+        """Privater Sentinel — wird niemals geraised; haelt die
+        except-Klauseln in `start()`/`read()`/`stop()` im Off-Pfad
+        narrow statt sie auf `Exception` zu kollabieren."""
+
     _HAS_PYIEC61850 = False
     _PyIecMMSClient = None
-    _PyIecMMSError = Exception
-    _PyIecReadError = Exception
-    _PyIecWriteError = Exception
-    _PyIecConnectionError = Exception
-    _PyIecConnectionFailedError = Exception
-    _PyIecConnectionTimeoutError = Exception
-    _PyIecNotConnectedError = Exception
+    _PyIecMMSError = _IecExtraOffSentinelError
+    _PyIecReadError = _IecExtraOffSentinelError
+    _PyIecWriteError = _IecExtraOffSentinelError
+    _PyIecConnectionError = _IecExtraOffSentinelError
+    _PyIecConnectionFailedError = _IecExtraOffSentinelError
+    _PyIecConnectionTimeoutError = _IecExtraOffSentinelError
+    _PyIecNotConnectedError = _IecExtraOffSentinelError
 
 
 # Strukturelles Protocol fuer den MMSClient.
@@ -113,7 +131,12 @@ def _default_client_factory(config: Iec61850ProtocolPortConfig) -> _MmsClientLik
     """
     if not _HAS_PYIEC61850 or _PyIecMMSClient is None:
         raise Iec61850PortLibraryNotInstalledError
-    timeout_ms = int(config.response_timeout_s * 1000)
+    # Welle-5b-C2-Review-Folge: `int(0.0005 * 1000) == 0` ist eine
+    # libiec61850-Falle (0 ms = "no timeout" oder "fail-immediately"
+    # je nach Library-Version). `max(1, ...)` floort auf 1 ms
+    # garantiert. `_config._validate` erlaubt jeden timeout > 0,
+    # also bleibt der Adapter-seitige Floor die zweite Verteidigung.
+    timeout_ms = max(1, int(config.response_timeout_s * 1000))
     return cast(
         "_MmsClientLike",
         _PyIecMMSClient(host=config.host, port=config.port, timeout=timeout_ms),
@@ -161,16 +184,29 @@ class Iec61850DeviceProtocolPort:
     # ------------------------------------------------------------------
 
     def start(self) -> None:
-        """Connect zum IEC-61850-Server. Idempotent."""
+        """Connect zum IEC-61850-Server. Idempotent.
+
+        Welle-5b-C2-Review-Folge 2026-06-01:
+
+        - Factory-Call ist im try-Block (vorher außerhalb — bypasste
+          die typed `Iec61850PortConnectError`-Translation).
+        - except-Tuple inklusive `_PyIecMMSError` als Catch-All-Basis
+          (`MMSError` ist die Library-Wurzel; `ConnectionError`/
+          `ConnectionFailedError`/`ConnectionTimeoutError`/
+          `NotConnectedError` sind Subklassen, brauchen wir aber nicht
+          mehr explizit weil `MMSError` sie umfasst — wir behalten sie
+          fuer Lesbarkeit + Pattern-Konsistenz mit Welle 5a).
+        """
         if self._started:
             return
-        client = self._client_factory(self._config)
         try:
+            client = self._client_factory(self._config)
             client.connect(self._config.host, self._config.port)
         except (
             _PyIecConnectionFailedError,
             _PyIecConnectionTimeoutError,
             _PyIecConnectionError,
+            _PyIecMMSError,
             OSError,
         ) as exc:
             raise Iec61850PortConnectError(self._config.host, self._config.port, str(exc)) from exc
@@ -178,16 +214,27 @@ class Iec61850DeviceProtocolPort:
         self._started = True
 
     def stop(self) -> None:
-        """Disconnect. Idempotent — Doppel-Stop ist No-op."""
+        """Disconnect. Idempotent — Doppel-Stop ist No-op.
+
+        Welle-5b-C2-Review-Folge 2026-06-01: State-Mutation
+        (`self._client = None`, `self._started = False`) erfolgt erst
+        **nach** erfolgreichem `client.disconnect()`. Damit kann der
+        Caller bei `Iec61850PortDisconnectError` erkennen, dass der
+        Adapter noch im 'started'-Status haengt und ein zweites
+        `stop()` versuchen (oder den Process-Exit als Cleanup-Pfad
+        nutzen). Vorher: State wurde vor disconnect mutiert → bei
+        disconnect-Exception ging der Client-Handle verloren, native
+        Library-Threads liefen weiter.
+        """
         if not self._started or self._client is None:
             return
-        client = self._client
+        try:
+            self._client.disconnect()
+        except (_PyIecMMSError, OSError) as exc:
+            # State bleibt unveraendert — Caller kann retry/cleanup.
+            raise Iec61850PortDisconnectError(str(exc)) from exc
         self._client = None
         self._started = False
-        try:
-            client.disconnect()
-        except (_PyIecMMSError, OSError) as exc:
-            raise Iec61850PortDisconnectError(str(exc)) from exc
 
     def read(self, target: str) -> TelemetryPoint | None:
         """Liest Point vom Server via `read_value(reference, fc)`
@@ -207,7 +254,17 @@ class Iec61850DeviceProtocolPort:
         try:
             raw_value = client.read_value(ln_cfg.object_reference, ln_cfg.functional_constraint)
         except _PyIecNotConnectedError as exc:
-            raise Iec61850PortReadNotStartedError(target) from exc
+            # Welle-5b-C2-Review-Folge 2026-06-01: `_require_client`
+            # garantiert oben, dass `self._client is not None`.
+            # Ein `NotConnectedError` von der Library kann hier nur
+            # auftreten, wenn die Session **nach** `start()` weggebrochen
+            # ist (Server-Reboot, TCP-RST, Network-Partition). Caller
+            # bekommt einen typed `Iec61850PortReadConnectionLostError`
+            # → unterscheidet 'forgot-start' (= `ReadNotStartedError`
+            # vom `_require_client`-Pfad) von 'session-dropped'.
+            raise Iec61850PortReadConnectionLostError(
+                target, ln_cfg.object_reference, ln_cfg.functional_constraint
+            ) from exc
         except _PyIecReadError as exc:
             if _looks_like_object_not_found(str(exc)):
                 raise Iec61850PortPointNotFoundError(
@@ -293,29 +350,62 @@ def _looks_like_object_not_found(message: str) -> bool:
     )
 
 
-def _build_telemetry_point(target: str, ln_cfg: Iec61850LnConfig, value: Any) -> TelemetryPoint:
+def _build_telemetry_point(
+    target: str, ln_cfg: Iec61850LnConfig, value: bool | int | Decimal | str
+) -> TelemetryPoint:
     """Verpackt einen dekodierten Wert in einen `TelemetryPoint` mit
     Welle-5b-Defaults.
 
     Pattern analog Welle-3 `protocol_modbus._port._build_telemetry_point`,
-    Welle-4 `protocol_opcua._port._build_telemetry_point`, Welle-5a
-    `protocol_dnp3._port._build_telemetry_point`.
+    Welle-4 `protocol_opcua._port._build_telemetry_point` (Slice-032
+    Finding 3.1), Welle-5a `protocol_dnp3._port._build_telemetry_point`.
+
+    Welle-5b-C2-Review-Folge 2026-06-01: `TelemetryPoint.value` ist
+    per Domain-Modell `Decimal` (`hexagon/core/domain/telemetry.py:43`).
+    Bool/Int werden ueber `Decimal(int(...))` gewandelt;
+    Decimal bleibt; **String** kollidiert mit der numerischen Surface
+    — Pattern-Praezedenz Welle-4-Slice-032 Finding 3.1:
+    `Quality.INVALID` + Original-String im `source`-Feld als
+    `protocol_iec61850.<target>#string=<value>`, `value=Decimal(0)`
+    als Sentinel. Welle-6-Schaerfung kann `TelemetryPoint` um
+    nicht-numerische Werte erweitern (eigene ADR).
     """
+    decoded_value, quality, source = _telemetry_payload(target, value)
     return TelemetryPoint(
         run_id="",
         tick=0,
         simulation_time=0,
         device_id=target,
         metric=f"{ln_cfg.functional_constraint}.{ln_cfg.datatype}",
-        value=value,
+        value=decoded_value,
         unit="",
-        quality=Quality.VALID,
-        source=f"protocol_iec61850.{target}",
+        quality=quality,
+        source=source,
         sequence=0,
     )
 
 
-if TYPE_CHECKING:
-    # Type-Checker sieht ein nicht-Optional `_PyIecMMSClient`;
-    # Runtime-`None`-Pfad ist durch _HAS_PYIEC61850-Guard geschuetzt.
-    _MmsClient = _PyIecMMSClient
+def _telemetry_payload(
+    target: str, value: bool | int | Decimal | str
+) -> tuple[Decimal, Quality, str]:
+    """Liefert `(value, quality, source)` fuer den TelemetryPoint.
+
+    Pattern aus Welle-4-Slice-032 Finding 3.1: String-Werte
+    markieren `Quality.INVALID` und kodieren den Original-String im
+    `source`-Feld; alle anderen Datatypes laufen ueber `_to_decimal`
+    und bleiben `Quality.VALID`.
+    """
+    if isinstance(value, str):
+        return (Decimal(0), Quality.INVALID, f"protocol_iec61850.{target}#string={value}")
+    return (_to_decimal(value), Quality.VALID, f"protocol_iec61850.{target}")
+
+
+def _to_decimal(value: bool | int | Decimal) -> Decimal:
+    """`TelemetryPoint.value` ist `Decimal`. Bool/int -> Decimal,
+    Decimal bleibt. String-Werte werden VOR diesem Call durch
+    `_telemetry_payload` abgefangen (Welle-4-Slice-032-Pattern)."""
+    if isinstance(value, Decimal):
+        return value
+    if isinstance(value, bool):
+        return Decimal(int(value))
+    return Decimal(value)

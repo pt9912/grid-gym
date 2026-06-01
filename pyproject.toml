@@ -22,6 +22,15 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
+    # Welle-5b-C2-Review-Folge 2026-06-01 (ADR 0035 Decision I-f):
+    # Optional-Extra `iec61850` zieht `pyiec61850-ng` (GPLv3) +
+    # `adapters/driven/protocol_iec61850/*` ist SPDX-`GPL-3.0-only`-
+    # isoliert. Default-Install bleibt MIT-sauber, aber das
+    # Dual-License-Klassifizier-Tupel macht SBOM-Tools (FOSSA,
+    # ScanCode, GitHub Linguist, Debian cme) auf die GPL-Lieferkette
+    # aufmerksam. PEP 621 erlaubt mehrere License-Classifier
+    # explizit.
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: POSIX :: Linux",
     "Topic :: Scientific/Engineering",
 ]

@@ -143,11 +143,21 @@ class Iec61850ConfigInvalidDatatypeError(Iec61850ConfigError):
 
 
 class Iec61850ConfigInvalidAccessError(Iec61850ConfigError):
-    """`access` ist nicht `"read"` oder `"write"`."""
+    """`access` ist nicht `"read"`.
+
+    Welle-5b-C2-Review-Folge 2026-06-01: Anti-Scope-Hardening —
+    `access="write"` wird **bei Konstruktion** abgelehnt statt erst
+    zur Laufzeit in `port.write()` mit
+    `Iec61850PortWriteNotImplementedError` zu crashen. Welle-6 fuehrt
+    den Write-Pfad ein und wird diese Validation entsprechend
+    erweitern.
+    """
 
     def __init__(self, value: str, device_id: str) -> None:
         super().__init__(
-            f'Iec61850LnConfig({device_id!r}).access={value!r}: muss "read" oder "write" sein.'
+            f"Iec61850LnConfig({device_id!r}).access={value!r}: "
+            'muss "read" sein (Welle-5b-Anti-Scope; Write-Pfad ist '
+            "Welle-6-Schaerfung — ADR 0035 §2.4)."
         )
         self.value: str = value
         self.device_id: str = device_id
@@ -215,5 +225,8 @@ def _validate_single_ln_config(device_id: str, ln_cfg: Iec61850LnConfig) -> None
         raise Iec61850ConfigInvalidFcError(ln_cfg.functional_constraint, device_id)
     if ln_cfg.datatype not in _ALLOWED_DATATYPES:
         raise Iec61850ConfigInvalidDatatypeError(ln_cfg.datatype, device_id)
-    if ln_cfg.access not in ("read", "write"):
+    # Welle-5b-C2-Review-Folge 2026-06-01: Anti-Scope-Hardening —
+    # nur `"read"` ist erlaubt (vorher: `("read", "write")`, wobei
+    # `"write"` erst zur Laufzeit in `port.write()` crashte).
+    if ln_cfg.access != "read":
         raise Iec61850ConfigInvalidAccessError(ln_cfg.access, device_id)

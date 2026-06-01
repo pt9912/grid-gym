@@ -38,11 +38,10 @@ from grid_gym.adapters.driven.protocol_iec61850 import (
     Iec61850LnConfig,
     Iec61850PortConnectError,
     Iec61850PortPointNotFoundError,
-    Iec61850PortReadAccessMismatchError,
+    Iec61850PortReadConnectionLostError,
     Iec61850PortReadFailedError,
     Iec61850PortReadNotStartedError,
     Iec61850PortWriteAccessMismatchError,
-    Iec61850PortWriteNotImplementedError,
     Iec61850PortWriteNotStartedError,
     Iec61850ProtocolPortConfig,
 )
@@ -79,11 +78,18 @@ def _make_config() -> Iec61850ProtocolPortConfig:
                 datatype="float",
                 access="read",
             ),
+            # Welle-5b-C2-Review-Folge 2026-06-01: `access="write"`
+            # wird jetzt **bei Konstruktion** abgelehnt
+            # (`Iec61850ConfigInvalidAccessError`). Wir verwenden
+            # daher ein zweites read-Target, das ueber den
+            # `_resolve_ln_config`-Pfad fuer Access-Mismatch-Tests
+            # dient. Echte Write-Access-Tests adressieren die
+            # Config-Validation direkt (`test_iec61850_config.py`).
             "battery1_setpoint": Iec61850LnConfig(
                 object_reference="simpleIOGenericIO/GGIO1.SPCSO1.Oper.ctlVal",
                 functional_constraint="CF",
                 datatype="float",
-                access="write",
+                access="read",
             ),
             "battery1_status": Iec61850LnConfig(
                 object_reference="simpleIOGenericIO/GGIO1.Ind1.stVal",
@@ -163,30 +169,41 @@ def test_read_before_start_raises_typed_error() -> None:
     assert isinstance(exc_info.value, DeviceProtocolPortReadError)
 
 
-def test_write_before_start_raises_typed_error() -> None:
+def test_write_before_start_raises_access_mismatch_in_welle5b() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: alle Welle-5b-Config-
+    Targets haben `access="read"` (Anti-Scope-Hardening). `write()`
+    triggert daher **immer** `Iec61850PortWriteAccessMismatchError`
+    — und zwar **vor** dem `_require_client`-Check, also auch ohne
+    `start()`. Damit ist der Welle-5b-Adapter-Surface end-to-end
+    read-only. Welle-6 reaktiviert den Write-Pfad und damit den
+    `Iec61850PortWriteNotStartedError`-Test-Anker.
+
+    Wir verifizieren hier den Welle-5b-Surface-Vertrag: write()
+    schlaegt immer fehl. Der typed `Iec61850PortWriteNotStartedError`
+    bleibt im `__all__`-Export erhalten fuer Welle-6.
+    """
     config = _make_config()
     client = _make_mock_client()
     port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
 
-    with pytest.raises(Iec61850PortWriteNotStartedError) as exc_info:
-        port.write("battery1_setpoint", _make_command("battery1_setpoint", {"value": 1.0}))
-    assert exc_info.value.target == "battery1_setpoint"
+    with pytest.raises(Iec61850PortWriteAccessMismatchError) as exc_info:
+        port.write("battery1_voltage", _make_command("battery1_voltage", {"value": 1.0}))
+    assert exc_info.value.target == "battery1_voltage"
     assert isinstance(exc_info.value, DeviceProtocolPortWriteError)
-
-
-def test_read_on_write_target_raises_access_mismatch() -> None:
-    config = _make_config()
-    client = _make_mock_client()
-    port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
-    port.start()
-    try:
-        with pytest.raises(Iec61850PortReadAccessMismatchError):
-            port.read("battery1_setpoint")
-    finally:
-        port.stop()
+    # Welle-6-Anker: der typed Error-Class existiert weiter.
+    assert Iec61850PortWriteNotStartedError is not None
 
 
 def test_write_on_read_target_raises_access_mismatch() -> None:
+    """Welle-5b-Anti-Scope (post-Review-Folge 2026-06-01):
+    `access="write"` ist Config-Anti-Scope; alle Config-Targets sind
+    `"read"`. `write()` auf ein read-Target wirft entsprechend
+    `Iec61850PortWriteAccessMismatchError`. (Der zuvor existierende
+    `test_read_on_write_target_raises_access_mismatch` und
+    `test_write_with_write_target_raises_not_implemented` testen
+    den write-target-Pfad, der jetzt durch die Config-Validation
+    abgefangen wird — die Adapter-Surface ist read-only.)
+    """
     config = _make_config()
     client = _make_mock_client()
     port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
@@ -194,24 +211,6 @@ def test_write_on_read_target_raises_access_mismatch() -> None:
     try:
         with pytest.raises(Iec61850PortWriteAccessMismatchError):
             port.write("battery1_voltage", _make_command("battery1_voltage", {"value": 1.0}))
-    finally:
-        port.stop()
-
-
-def test_write_with_write_target_raises_not_implemented() -> None:
-    """Welle-5b-Anti-Scope: Write-Pfad ist nicht produktiv."""
-    config = _make_config()
-    client = _make_mock_client()
-    port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
-    port.start()
-    try:
-        with pytest.raises(Iec61850PortWriteNotImplementedError) as exc_info:
-            port.write(
-                "battery1_setpoint",
-                _make_command("battery1_setpoint", {"value": 100.0}),
-            )
-        assert exc_info.value.target == "battery1_setpoint"
-        assert isinstance(exc_info.value, DeviceProtocolPortWriteError)
     finally:
         port.stop()
 
@@ -248,6 +247,9 @@ def test_read_returns_telemetry_with_decoded_float() -> None:
 
 
 def test_read_returns_telemetry_with_decoded_int32() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: int32 wird zu Decimal
+    gewandelt (TelemetryPoint.value-Vertrag, ADR 0035 §2.3-Schaerfung
+    in Anlehnung an Welle-4-Slice-032 Finding 3.1)."""
     config = _make_config()
     client = _make_mock_client(read_value_return=42)
     port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
@@ -256,12 +258,23 @@ def test_read_returns_telemetry_with_decoded_int32() -> None:
         point = port.read("battery1_count")
         assert point is not None
         assert point.metric == "MX.int32"
-        assert point.value == 42
+        assert isinstance(point.value, Decimal)
+        assert point.value == Decimal(42)
+        # Quality bleibt VALID — numerischer Wert.
+        from grid_gym.hexagon.core.domain.quality import Quality
+
+        assert point.quality == Quality.VALID
     finally:
         port.stop()
 
 
 def test_read_returns_telemetry_with_decoded_string() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: string wird zu `Decimal(0)`
+    + `Quality.INVALID` + Original-String im `source`-Feld als
+    `protocol_iec61850.<target>#string=<value>` gewandelt
+    (Welle-4-Slice-032 Finding 3.1-Pattern)."""
+    from grid_gym.hexagon.core.domain.quality import Quality
+
     config = _make_config()
     client = _make_mock_client(read_value_return="battery-1")
     port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
@@ -270,13 +283,19 @@ def test_read_returns_telemetry_with_decoded_string() -> None:
         point = port.read("battery1_label")
         assert point is not None
         assert point.metric == "DC.string"
-        assert point.value == "battery-1"
+        assert isinstance(point.value, Decimal)
+        assert point.value == Decimal(0)
+        assert point.quality == Quality.INVALID
+        assert point.source == "protocol_iec61850.battery1_label#string=battery-1"
         client.read_value.assert_called_once_with("simpleIOGenericIO/GGIO1.NamPlt.d", "DC")
     finally:
         port.stop()
 
 
 def test_read_returns_telemetry_with_decoded_bool() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: bool wird zu
+    `Decimal(int(bool))` gewandelt — `True` → `Decimal(1)`,
+    `False` → `Decimal(0)` (Welle-5a-DNP3-Pattern)."""
     config = _make_config()
     client = _make_mock_client(read_value_return=True)
     port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
@@ -285,7 +304,8 @@ def test_read_returns_telemetry_with_decoded_bool() -> None:
         point = port.read("battery1_status")
         assert point is not None
         assert point.metric == "ST.bool"
-        assert point.value is True
+        assert isinstance(point.value, Decimal)
+        assert point.value == Decimal(1)
     finally:
         port.stop()
 
@@ -339,6 +359,31 @@ def test_read_translates_codec_value_type_error_to_read_failed() -> None:
     try:
         with pytest.raises(Iec61850PortReadFailedError):
             port.read("battery1_voltage")
+    finally:
+        port.stop()
+
+
+def test_read_translates_not_connected_to_connection_lost_error() -> None:
+    """Welle-5b-C2-Review-Folge 2026-06-01: `_PyIecNotConnectedError`
+    mid-flight (nach erfolgreichem `start()`) ist semantisch
+    'Session-Drop', nicht 'Caller-vergaß-start' — der Adapter mappt
+    auf typed `Iec61850PortReadConnectionLostError` (Subclass von
+    `Iec61850PortReadFailedError`), nicht auf
+    `Iec61850PortReadNotStartedError`."""
+    from grid_gym.adapters.driven.protocol_iec61850 import _port
+
+    library_error = _port._PyIecNotConnectedError("session dropped")
+    config = _make_config()
+    client = _make_mock_client(read_value_raises=library_error)
+    port = Iec61850DeviceProtocolPort(config, client_factory=lambda _cfg: client)
+    port.start()
+    try:
+        with pytest.raises(Iec61850PortReadConnectionLostError) as exc_info:
+            port.read("battery1_voltage")
+        assert exc_info.value.target == "battery1_voltage"
+        assert exc_info.value.reference == "simpleIOGenericIO/GGIO1.AnIn1.mag.f"
+        # Subclass-Vertrag: ConnectionLostError ist ein ReadFailedError.
+        assert isinstance(exc_info.value, Iec61850PortReadFailedError)
     finally:
         port.stop()
 

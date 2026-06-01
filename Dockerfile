@@ -348,9 +348,21 @@ print(json.dumps(app.openapi(), sort_keys=True, indent=2))" \
 # werden.
 # Trigger 015 (M2 Welle 0b): `--no-editable` ersetzt den Welle-6d-
 # `PYTHONPATH=/app/src`-Workaround.
+#
+# Welle-5b-C2-Review-Folge 2026-06-01: `--extra iec61850` propagiert
+# auch in den build-app-Stage. Ohne diesen Flag hatte der Runtime-
+# venv **kein** `pyiec61850-ng` (deps/source-Stages installieren das
+# Extra, aber build-app ueberschrieb das mit `--frozen --no-dev
+# --no-editable`). Ein produktiver Scenario mit `type: iec61850`
+# crashte erst zur Laufzeit mit `Iec61850PortLibraryNotInstalledError`.
+# Mit `--extra iec61850` ist die Library im Runtime-venv enthalten.
+# **Achtung Distribution-Implication** (Decision I-f): Docker-Images,
+# die so gebaut werden, enthalten produktiv pyiec61850-ng/libiec61850
+# unter GPLv3 — der distribuierende Operator muss Source-Availability-
+# Pflichten beachten (siehe LICENSE-Hinweis + README-Sektion).
 # ---------------------------------------------------------------------------
 FROM source AS build-app
-RUN uv sync --frozen --no-dev --no-editable
+RUN uv sync --frozen --no-dev --no-editable --extra iec61850
 
 # ---------------------------------------------------------------------------
 # runtime: minimales Image fuer den Produktivlauf. Non-root, /health-

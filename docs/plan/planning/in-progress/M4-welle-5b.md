@@ -39,7 +39,8 @@ im Repo ein:
 - C1 `88c1a33` — `docs(adr): ADR 0035 Proposed — IEC-61850-Adapter-Profile (M4 Welle 5b)`.
 - C1-Review-Folge `da8aed9` — `docs(plan|adr): M4-Welle-5b-C1-Review-Folge — API-Korrektur + Lizenz-Refit + M4-protocol-adapters.md-Sync` (4 Findings adressiert: API-Namen read_value/write_value/Exception-Famille, IedServer-Modell-Pflicht via CFG-Fixture, Lizenz-Metadaten via Optional-Extra statt [project] dependencies, M4-protocol-adapters.md §3 Welle 5b Sync).
 - C2 `944bca5` — `feat(welle-5b): protocol_iec61850 + Tests + 2c-Mock-Fallback + GPL-Lizenz-Boundary`.
-- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-5b-C3 — Status/DoD-Sync + ADR 0035 -> Provisional + Top-Level-Doku-Sync`.
+- C3 `ca96bca` — `docs(plan|adr): M4-Welle-5b-C3 — Status/DoD-Sync + ADR 0035 -> Provisional + Top-Level-Doku-Sync`.
+- **C2-Review-Folge (Slice 033, dieser Commit)** — `feat+docs(slice-033): IEC-61850-Adapter-Review-Folge — 15 Findings (10 HIGH + 5 MEDIUM) adressiert ohne ADR-Status-Aenderung` (siehe [`../done/033-iec61850-adapter-review-folge.md`](../done/033-iec61850-adapter-review-folge.md)).
 
 **DoD-Verifikation (Welle-Schluss, Stand `944bca5` C2 +
 dieser Commit):**

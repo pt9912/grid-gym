@@ -37,6 +37,64 @@ Commit) → `Accepted` (M4-Welle-7-Closure analog ADR
 analog ADR 0034 (M4-Welle-5a) und ADR 0033 (M4-Welle-4)
 und ADR 0032 (M4-Welle-3) und ADR 0031 (M4-Welle-2).
 
+**Slice 033 (M4-Welle-5b-C2-Review-Folge 2026-06-01,
+[`../planning/done/033-iec61850-adapter-review-folge.md`](../planning/done/033-iec61850-adapter-review-folge.md)):**
+15 Findings adressiert (10 HIGH + 5 MEDIUM) ohne ADR-Status-
+Aenderung. Wichtigste Schaerfungen:
+
+- **Optional-Extra-Off-Pfad-Hardening:** `_port.py` benutzt
+  jetzt eine **private Sentinel-Exception-Klasse**
+  (`_IecExtraOffSentinelError`) statt `Exception` als Alias
+  fuer alle `_PyIec*Error`-Namen — die except-Reihenfolge
+  in `start()`/`read()`/`stop()` bleibt auch ohne installiertes
+  Extra korrekt narrow.
+- **Decision I-b**: `start()` Factory-Call ist jetzt im
+  try-Block; except-Tupel um `_PyIecMMSError` (Catch-All-
+  Basis) erweitert. `stop()` State-Mutation **nach**
+  `disconnect()` (vorher: vorher).
+- **Decision I-c (Codec-Schaerfung)**: NaN/Infinity wird
+  rejected (`Iec61850CodecOverflowError`); `int` ist kein
+  valider `datatype='float'`-Wert mehr (silent
+  Praezisionsverlust fuer Ints > 2**53 verhindert);
+  Container-Repr-Check gated auf `datatype != "string"`
+  (legitime `<MmsValue ...>`-Strings als Daten erlaubt).
+- **Decision I-d (Read-Pfad-Schaerfung)**: NEU
+  `Iec61850PortReadConnectionLostError` (Subclass von
+  `Iec61850PortReadFailedError`) fuer mid-flight
+  `NotConnectedError`. Caller kann jetzt 'forgot-start'
+  (`ReadNotStartedError`) von 'session-dropped'
+  (`ReadConnectionLostError`) unterscheiden.
+- **Anti-Scope-Hardening (Decision I-c+I-d Folge)**:
+  `_config._validate_single_ln_config` lehnt
+  `access="write"` **bei Konstruktion** ab (vorher: erst
+  zur Laufzeit in `port.write()`). Welle-6 reaktiviert den
+  Write-Pfad.
+- **TelemetryPoint.value-Vertrag (cross-Adapter-Pattern-
+  Konsistenz)**: Bool/Int werden zu `Decimal(int(...))`
+  gewandelt; String-Wert mappt auf `Decimal(0)` +
+  `Quality.INVALID` + `source="protocol_iec61850.{target}#string={value}"`
+  (Welle-4-Slice-032-Finding-3.1-Pattern).
+- **Decision I-e (Test-Fixture-Hardening)**: Integration-
+  Smoke-Fixture wrappt `IedServer`-Construction + `start()`
+  jetzt im try-Block; `server: IedServer | None = None`-
+  Sentinel mit `finally`-Gating fuer Welle-6-Reaktivierung.
+- **Decision I-f (Lizenz-Boundary-Hardening)**:
+  Dockerfile-`build-app`-Stage propagiert `--extra iec61850`
+  (vorher: nur `deps`+`source` → Runtime-venv ohne
+  Library, Production-Crash bei `type: iec61850`).
+  `pyproject.toml`-Classifier ergaenzt um
+  `License :: OSI Approved :: GNU General Public License v3 (GPLv3)`
+  (SBOM-Tools sahen vorher nur MIT). `simpleIO.cfg`-Fixture
+  hat jetzt SPDX-Header + Derivative-Work-Attribution zu
+  `libiec61850/examples/server_example_config_file/model.cfg`.
+- **Edge-Case**: `_default_client_factory` floort sub-
+  Millisekunden-Timeouts auf 1ms (`max(1, int(...))`) —
+  vorher konnte `response_timeout_s=0.0005` zu `timeout=0`
+  werden, was libiec61850 uneinheitlich interpretierte.
+
+Slice 033 ist Schaerfung-ohne-Supersede (Pattern ADR 0011);
+ADR 0035 Status bleibt `Provisional`.
+
 **Datum:** 2026-06-01
 
 **Bezug:**
