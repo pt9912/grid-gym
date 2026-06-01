@@ -25,6 +25,7 @@ Probe-Aussage (4 Tests):
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
@@ -56,17 +57,13 @@ class _ProbeStream:
         """
         for subscriber in self._subscribers:
             if subscriber.full():
-                try:
+                with contextlib.suppress(asyncio.QueueEmpty):
                     subscriber.get_nowait()
-                except asyncio.QueueEmpty:
-                    pass
             subscriber.put_nowait(message)
 
     async def subscribe(self) -> AsyncIterator[dict[str, Any]]:
         """Liefert einen AsyncIterator ueber alle publishten Messages."""
-        queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue(
-            maxsize=self._queue_maxsize
-        )
+        queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=self._queue_maxsize)
         self._subscribers.append(queue)
         try:
             while True:
@@ -128,10 +125,14 @@ def test_two_subscribers_get_same_messages_fanout(
         stream.publish({"tick": 1, "value": 200})
         msgs_a = [ws_a.receive_json() for _ in range(2)]
         msgs_b = [ws_b.receive_json() for _ in range(2)]
-    assert msgs_a == msgs_b == [
-        {"tick": 0, "value": 100},
-        {"tick": 1, "value": 200},
-    ]
+    assert (
+        msgs_a
+        == msgs_b
+        == [
+            {"tick": 0, "value": 100},
+            {"tick": 1, "value": 200},
+        ]
+    )
 
 
 def test_drop_oldest_backpressure_on_full_queue() -> None:
