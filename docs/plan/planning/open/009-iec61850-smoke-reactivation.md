@@ -5,7 +5,7 @@
 **Quelle:** M4-Welle-5b-Closure (`ca96bca`) + Slice 033
 ([`../done/033-iec61850-adapter-review-folge.md`](../done/033-iec61850-adapter-review-folge.md))
 + M4-Welle-6b-C3-Pfad-A-Probe-Run-Befund (Slice
-[`../in-progress/M4-welle-6b.md`](../in-progress/M4-welle-6b.md)).
+[`../done/M4-welle-6b.md`](../done/M4-welle-6b.md)).
 
 ---
 
@@ -116,7 +116,7 @@ Pfad C (Mock-only-Defer) ist aktiv mit explizitem Trigger
 - Slice 033 (IEC-61850-Review-Folge):
   [`../done/033-iec61850-adapter-review-folge.md`](../done/033-iec61850-adapter-review-folge.md).
 - M4-Welle-6b-Slice-Doc:
-  [`../in-progress/M4-welle-6b.md`](../in-progress/M4-welle-6b.md)
+  [`../done/M4-welle-6b.md`](../done/M4-welle-6b.md)
   §2 Scope-Item 4 (IedServer-Smoke-Reaktivierungs-Probe)
   + Risk-Section.
 - ADR 0035 §2.5 (Mock-only-Fallback-Begruendung).

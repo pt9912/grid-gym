@@ -519,7 +519,7 @@ gehalten):**
   Welle-6a-Closure (Cross-Adapter-Mainstream).
 - [`../done/034-iec61850-otel-wrap-review-folge.md`](../done/034-iec61850-otel-wrap-review-folge.md)
   — Welle-6a-Review-Folge mit F13-Vorlauf-Item.
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 6b (kanonische Slice-Spezifikation).
 - [`../../adr/0035-iec61850-adapter-profile.md`](../../adr/0035-iec61850-adapter-profile.md)
   — IEC-61850-Adapter-Profile mit Decision I-f
