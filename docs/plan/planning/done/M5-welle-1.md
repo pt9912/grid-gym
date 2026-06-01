@@ -50,7 +50,7 @@ deferred.
 M5-Welle-0
 ([`../done/M5-welle-0.md`](../done/M5-welle-0.md)) hat den
 M5-Slice-Plan
-([`M5-ui-demo.md`](M5-ui-demo.md)) produktiv eroeffnet mit
+([`M5-ui-demo.md`](../in-progress/M5-ui-demo.md)) produktiv eroeffnet mit
 7 Wellen 0..7. Welle 1 traegt die HTTP-API-Surface, die
 Welle 2 (UI-Foundation) und Welle 3 (Live-Telemetry) als
 Driving-Port-Schnittstelle benoetigen.
@@ -472,8 +472,8 @@ Bestand-Eintrag.
 - [`../done/M5-welle-0.md`](../done/M5-welle-0.md) — Welle-
   0-Closure mit 10-Item-Decision-Liste (Welle 1 schliesst
   Decisions 1 + 4 + 9).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 1 (kanonische
-  Slice-Spezifikation).
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle 1
+  (kanonische Slice-Spezifikation).
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   — Pre-M5-Welle-0-Sondierungs-ADR (Welle 1 zieht es auf
   `Provisional`).

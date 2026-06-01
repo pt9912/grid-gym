@@ -40,8 +40,9 @@ Commit)
   (`GG-AR-COMP-API`-Slot in `adapters/driving/http_api/`).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
-- [`../planning/in-progress/M5-welle-1.md §3`](../planning/in-progress/M5-welle-1.md)
-  (Welle-1-Indications fuer beide Decisions).
+- [`../planning/done/M5-welle-1.md §3`](../planning/done/M5-welle-1.md)
+  (Welle-1-Indications fuer beide Decisions; Self-Close-
+  Move M5-Welle-2-Pre-C0a `c7c2641`).
 - HTTP-API-Stub aus M1-Welle-7 in
   [`../../../src/grid_gym/adapters/driving/http_api/app.py`](../../../src/grid_gym/adapters/driving/http_api/app.py)
   (`/health` + `POST /runs`-Stub als M5-Welle-1-Foundation).
@@ -283,7 +284,8 @@ zugewiesen).
   `GG-AR-COMP-API`-Slot).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
-- [`../planning/in-progress/M5-welle-1.md §3`](../planning/in-progress/M5-welle-1.md)
-  (Welle-1-Indications fuer beide Decisions).
+- [`../planning/done/M5-welle-1.md §3`](../planning/done/M5-welle-1.md)
+  (Welle-1-Indications fuer beide Decisions; Self-Close-
+  Move M5-Welle-2-Pre-C0a `c7c2641`).
 - **HTMX-FastAPI-Smoke-Probe-Run** `9c20dad` (validiert
   die Composition-Pattern, auf denen ADR 0037 aufbaut).

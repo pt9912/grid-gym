@@ -136,10 +136,12 @@ Roadmap-Status-Flip via Decision 10).
 **Status:** Done 2026-06-01. Foundation-Welle. Pattern
 analog M4-Welle-1 (Surface-Foundation vor konkreten
 Implementern). Welle-Slice-Begleit-Doc
-[`M5-welle-1.md`](M5-welle-1.md). Liefer-Hashes:
+[`M5-welle-1.md`](../done/M5-welle-1.md). Liefer-Hashes:
 Pre-C0a `fd642df` + Pre-C0b `fb417b9` + Pre-C0c `9c20dad`
 (HTMX-Probe) + C0 `e573f67` (Slice-Doc) + C1 `d468e68`
-(ADRs) + C2 `ae630ce` (Code) + C3 (dieser Commit).
+(ADRs) + C2 `ae630ce` (Code) + C3 `f9f514d`
+(Status/DoD-Sync) + Self-Close-Move `c7c2641`
+(M5-Welle-2-Pre-C0a, rename-only).
 
 - [x] **Pre-C0** — HTMX-FastAPI-Smoke-Probe-Run `9c20dad`
   (Maintainer-Decision-Indication-Validierung; Welle-0-
