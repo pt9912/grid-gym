@@ -996,56 +996,152 @@ Stage.
 - **Kein aarch64-Wheel** (LOW): grid-gym laeuft primaer
   x86_64; Welle-6-Material falls Bedarf.
 
-### Welle 6 — Cross-Adapter-Hardening
+### Welle 6 — Sub-Slicing in 6a + 6b nach Welle-5b-Erbschaft
 
-**Status:** Pending. Querschnitts-Welle ohne weiteren
-konkreten Adapter; haertet die in Welle 2/3/4 angesammelten
-Decisions und schliesst die in den frueheren Wellen bewusst
-verschobenen Folge-Pflichten (`AC-ADAPTER-LIGHTWEIGHT`-
-Planted-Violator-Property-Test, OTel-Span-Wrap der Adapter-
-Calls, Trigger-004/006-Re-Eval-Notizen).
+**Sub-Slicing-Begruendung** (2026-06-01, M4-Welle-6-Sub-
+Slicing-Refactor, dieser Commit-Anker): die in Welle 0
+vorgesehene Welle 6 deckt **zwei strukturell verschiedene
+Arten Arbeit** ab, die nach Welle-5b-Closure (insbesondere
+nach Slice 033 Review-Folge) klar trennbar sind:
+
+1. **Cross-Adapter-Mainstream-Hardening** — Items, die ueber
+   alle 5 `protocol_*`-Adapter (Welle 2/3/4/5a/5b) hinweg
+   wirken: Profil-Index, Lastenheft-/Architektur-Sync, OTel-
+   Span-Wrap, AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-
+   Property-Test, Trigger-004/006-Re-Eval, compose.yml-
+   Aufraeumung. **Welle 6a**.
+2. **Welle-5b-Erbschaft** — Items, die spezifisch aus der
+   Welle-5b-IEC-61850-Lieferung haengenbleiben: GPL-Boundary-
+   Hardening (SPDX-Header-Konsistenz-Check in
+   `tools/check_refs.py`, neuer arch_check-Contract gegen
+   GPL-Boundary-Crossing aus MIT-Code), CONTRIBUTING.md-Sync
+   mit GPL-Boundary-Policy, IedServer-Smoke-Reaktivierungs-
+   Versuch (Python-3.12-Runtime / Library-Upgrade / Wheel-
+   Rebuild). **Welle 6b**.
+
+Pattern-Praezedenz: Welle-5-Sub-Slicing-Refactor
+(`8f022a3`) trennte 5a (DNP3) und 5b (IEC-61850) wegen
+unterschiedlicher Library-Pfade. Welle-6-Sub-Slicing trennt
+6a (cross-adapter) und 6b (welle-5b-spezifisch) wegen
+verschiedener Domain-Schwerpunkte (Mainstream-Pattern vs
+Lizenz-/Distribution-Policy).
+
+#### Welle 6a — Cross-Adapter-Hardening
+
+**Status:** Pending. Mainstream-Querschnitts-Welle ohne
+konkreten Adapter; haertet die in Welle 2/3/4/5a/5b
+angesammelten Decisions und schliesst die in den frueheren
+Wellen bewusst verschobenen Folge-Pflichten
+(`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-Test,
+OTel-Span-Wrap der Adapter-Calls, Trigger-004/006-Re-Eval-
+Notizen).
 
 - [ ] **Adapter-Profil-Index** unter
   `spec/protocol_profiles/` als kanonischem Spec-Pfad
   (oder begruendete andere Lokation): Profil-Index mit
-  Verweisen auf die Pro-Adapter-ADRs aus Welle 2/3/4
-  (0031/0032/0033 + ggf. Welle-5-Spike-ADR).
+  Verweisen auf die Pro-Adapter-ADRs 0031/0032/0033/0034/0035
+  (alle 5 Welle-2..5b-Adapter-Profile).
 - [ ] **`tests/integration/compose.yml`-Aufraeumung** —
   Konsolidierung der Sibling-Services, Healthcheck-Sync,
   Volume-Hygiene; Header-Kommentar fuehrt jeden Sibling
   mit Lizenz + Test-Pfad-Referenz.
 - [ ] **Lastenheft §16-Implementierungs-Matrix-Sync** —
-  `🔲 M4` → `✅ M4` fuer alle umgesetzten Adapter;
-  `🟡 M4` mit Verzicht-Notiz fuer DNP3/IEC, falls
-  Welle 5 Variante A gewaehlt hat.
+  `🔲 M4` → `✅ M4` fuer alle 5 umgesetzten Adapter
+  (MQTT/Modbus/OPC-UA/DNP3/IEC-61850).
 - [ ] **Architektur §8.2 + §16-Sync** — Adapter-Verortung
   scharf setzen mit Welle-1-ADR-Pfad; OTel-Span-Wrap-
   Pattern dokumentiert.
 - [ ] **OTel-Span-Wrap fuer `protocol_*`-Adapter** —
-  TracePort-Wrap der Read/Write-Calls (in Welle 2/3/4
-  bewusst verschoben; ADR 0024 §4.5 als Bezug).
+  TracePort-Wrap der Read/Write-Calls fuer alle 5 Adapter
+  (in Welle 2/3/4/5a/5b bewusst verschoben; ADR 0024 §4.5
+  als Bezug).
 - [ ] **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-
   Test** — die in
   [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
   als Folge-Pflicht markierte Welle-2-Mitigation
-  (in Welle 2/3 bewusst auf Welle 6 verschoben) wird
-  jetzt eingezogen.
+  (in Welle 2/3/4/5a/5b bewusst auf Welle 6 verschoben)
+  wird jetzt eingezogen.
 - [ ] **Trigger-004-Re-Eval** — `canonical encoder`-
   Alternative (`orjson`/`msgspec`) gegen MQTT-Publish-
   Throughput-Druck pruefen; Entscheidung im Trigger-Body.
 - [ ] **Trigger-006-Folge-Slice eingezogen** —
   `--strict-bytes`-Aktivierung in `[tool.mypy]` plus
   Repo-Sweep (Slice 031-Folge; Re-Eval ist in M4-Welle-3
-  positiv gelaufen, M4-Welle-6 zieht die Aktivierung
+  positiv gelaufen, M4-Welle-6a zieht die Aktivierung
   produktiv).
-- [ ] **C3-Doc-Sync** — `M4-welle-6.md` Status, diese
-  §3-Welle-6-Section auf Done, Top-Level-Doku-Sync.
+- [ ] **C4-Doc-Sync** — `M4-welle-6a.md` Status, diese
+  §3-Welle-6a-Section auf Done, Top-Level-Doku-Sync.
 
-**Welle-6-Gate:** `make fullbuild` cache-frei gruen ohne
-`CRITICAL_COV_TARGETS`-Override (M4-Abschluss-Gate; analog
-M3-Welle-6-Gate). Default-`CRITICAL_COV_TARGETS` final.
+**Welle-6a-Gate:** `make fullbuild` cache-frei gruen ohne
+`CRITICAL_COV_TARGETS`-Override. Default-
+`CRITICAL_COV_TARGETS` final fuer alle 5 Adapter.
 `make arch-check` 19/19 (oder +1 falls ein neuer Contract
-aus Welle 6 entsteht, z. B. `AC-ADAPTER-NO-TIME`).
+aus Welle 6a entsteht, z. B. `AC-ADAPTER-NO-TIME`).
+
+#### Welle 6b — IEC-61850-Lizenz-und-Smoke-Hardening (Welle-5b-Erbschaft)
+
+**Status:** Pending. Welle-5b-Slice-033-Review-Folge hat
+die Welle-6-spezifischen Schaerfungspfade identifiziert
+und dokumentiert. Welle 6b zieht diese Folge-Pflichten
+produktiv ein, plus den IedServer-Smoke-Reaktivierungs-
+Versuch.
+
+- [ ] **SPDX-Header-Konsistenz-Check** —
+  `tools/check_refs.py` (oder neues `tools/check_spdx.py`)
+  verifiziert, dass alle Dateien unter
+  `src/grid_gym/adapters/driven/protocol_iec61850/`,
+  `tests/unit/adapters/driven/protocol_iec61850/`,
+  `tests/integration/test_iec61850_*.py` und
+  `tests/integration/fixtures/iec61850/` einen
+  `SPDX-License-Identifier: GPL-3.0-only`-Header tragen.
+  Lint-Failure bei fehlendem Header; in `make gates`
+  eingebunden.
+- [ ] **`arch_check.py`-Contract gegen GPL-Boundary-Crossing**
+  — neuer Contract `AC-IEC61850-GPL-BOUNDARY`: kein Code
+  unter `src/grid_gym/` (ausser `protocol_iec61850/*`) darf
+  `grid_gym.adapters.driven.protocol_iec61850.*` direkt
+  importieren. Damit bleibt MIT-Code MIT-konform und der
+  Welle-1-`build_protocol_ports`-Hook ist der einzige
+  Bruecken-Pfad (via ImportError-tolerantem Plugin-Pattern).
+  19/19 → 20/20 Contracts KEPT.
+- [ ] **CONTRIBUTING.md-Sync mit GPL-Boundary-Policy** —
+  NEU `CONTRIBUTING.md` (oder bestehende Datei erweitert)
+  mit Dual-License-Policy: Default-Contribs sind MIT;
+  Aenderungen unter `protocol_iec61850/*` sind GPL-3.0-only
+  und brauchen SPDX-Header. Pattern-Praezedenz: ffmpeg-
+  Python-Wrapper, GTK-Bindings.
+- [ ] **IedServer-Smoke-Reaktivierungs-Probe** — Drei-
+  Pfad-Vorgehen:
+  - **Pfad A**: `pyiec61850-ng`-Library-Upgrade pruefen
+    (PyPI-Stand 2026-XX gegen 1.6.1.2; neuere Wheels mit
+    Python-3.14-Support?).
+  - **Pfad B**: Dockerfile-Python-Downgrade auf 3.12 fuer
+    den Test-Stage (separater `iec61850-test`-Stage statt
+    Default-3.14).
+  - **Pfad C**: Mock-only-Fallback bleibt aktiv (Status quo).
+  - Entscheidung im C3-Probe-Run; `pytest.mark.skip` in
+    `test_iec61850_in_process_smoke.py` aufheben bei
+    Erfolg.
+- [ ] **Welle-6b-Smoke-Reaktivierung dokumentiert** — bei
+  Erfolg: Integration-Smoke laeuft produktiv mit
+  `IedServer`-Roundtrip fuer Float/Int32/String (Bool
+  bleibt CFG-DO-Struktur-Issue Welle-7+). Bei Fehlschlag:
+  Dokumentierter Defer auf M5/M6 mit konkretem Trigger.
+- [ ] **C4-Doc-Sync** — `M4-welle-6b.md` Status, diese
+  §3-Welle-6b-Section auf Done, Top-Level-Doku-Sync.
+
+**Welle-6b-Gate:** `make gates` cache-frei gruen mit
+20/20 Contracts (neuer GPL-Boundary-Contract); SPDX-Header-
+Lint integriert; entweder Integration-Smoke reaktiviert
+**oder** Mock-only-Fallback explizit als M5/M6-Defer
+dokumentiert.
+
+**Welle-6b-Scope-Risiko:** falls Welle 5b in C2 bereits
+den echten IedServer-Smoke geschafft haette (Pfad-B-
+Variante), wuerde 6b auf Lizenz-/Boundary-Hardening
+reduziert (keine Smoke-Reaktivierung mehr). Aktueller
+Welle-5b-Stand: 2c-Mock-only-Fallback aktiv; Smoke-
+Reaktivierung steht.
 
 ### Welle 7 — Closure (1/2 Tag)
 
@@ -1055,8 +1151,8 @@ zieht alle M4-ADRs auf `Accepted`, etabliert
 S-1..S-6.
 
 - [ ] **Alle M4-ADRs auf `Accepted`** — ADR
-  0030/0031/0032/0033 + ggf. Welle-5-Spike-ADR;
-  Pattern analog M3-Welle-7-C1.1..C1.6.
+  0030/0031/0032/0033/0034/0035 (6 M4-ADRs); Pattern
+  analog M3-Welle-7-C1.1..C1.6.
 - [ ] **`done/M4-protocol-adapters.md` Closure-Notiz** —
   zusammenfassende Welle-Tabelle mit C0/C1/C2/C3-Hashes
   pro Welle, Test-Counts, Sub-Slicing-Belege, DoD-Erfuellung.
