@@ -183,6 +183,34 @@ def test_planted_violator_under_driving_path_is_caught(
     assert any(v.contract_id == "AC-ADAPTER-LIGHTWEIGHT" for v in violations)
 
 
+def test_planted_violator_in_cross_adapter_helper_is_caught(
+    _arch_check_module: object, tmp_path: Path
+) -> None:
+    """Welle-6b-C3 / Slice-034-F13: ein Cross-Adapter-Helper direkt
+    unter `adapters/driven/_protocol_*.py` mit komplexer Funktion
+    muss vom Filter erfasst werden.
+
+    Vor Welle-6b-C3 fiel `_protocol_otel_wrap.py` aus dem Filter
+    (parts[4]-Praefix-Check fuer `protocol_`/`persistence_` greift
+    Underscore-Prefix-Files nicht). Welle-6b-C3 hat den Filter
+    erweitert."""
+    rel = "src/grid_gym/adapters/driven/_protocol_planted_violator.py"
+    repo_root, src_root = _write_temp_repo(tmp_path, rel, _HIGH_COMPLEXITY_SOURCE)
+
+    violations = list(
+        _arch_check_module._check_adapter_lightweight(repo_root, src_root)  # type: ignore[attr-defined]
+    )
+
+    matching = [
+        v
+        for v in violations
+        if v.contract_id == "AC-ADAPTER-LIGHTWEIGHT" and "_protocol_planted_violator" in v.location
+    ]
+    assert matching, (
+        f"erwartet AC-ADAPTER-LIGHTWEIGHT-Violation fuer Cross-Adapter-Helper; got {violations}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Negativ: Pfade ausserhalb der Adapter-Boundary triggern den Check NICHT
 # ---------------------------------------------------------------------------
@@ -210,13 +238,24 @@ def test_path_filter_rejects_paths_outside_adapter_boundary(
     assert is_adapter_path("tests/unit/foo.py") is False
     # Pfade UNTER adapters/ aber im falschen Layer.
     assert is_adapter_path("src/grid_gym/adapters/observability_null/x.py") is False
-    # Driven-Layer, aber kein protocol_*/persistence_*-Bucket.
+    # Driven-Layer, aber kein protocol_*/persistence_*-Bucket und kein
+    # _protocol_*.py-Cross-Adapter-Helper.
     assert is_adapter_path("src/grid_gym/adapters/driven/observability_null/x.py") is False
-    assert is_adapter_path("src/grid_gym/adapters/driven/_protocol_otel_wrap.py") is False
     # Positiv-Kontrollen (zur Sicherheit dass die Funktion nicht trivial False ist).
     assert is_adapter_path("src/grid_gym/adapters/driving/http_api/v1/x.py") is True
     assert is_adapter_path("src/grid_gym/adapters/driven/protocol_modbus/foo.py") is True
     assert is_adapter_path("src/grid_gym/adapters/driven/persistence_postgres/foo.py") is True
+    # Welle-6b-C3 / Slice-034-F13: Cross-Adapter-Helper direkt unter
+    # `driven/` mit `_protocol_*.py`-Prefix sind jetzt erfasst.
+    assert is_adapter_path("src/grid_gym/adapters/driven/_protocol_otel_wrap.py") is True
+    # Aber: nur flache `.py`-Dateien direkt unter `driven/` (keine
+    # Unterverzeichnisse mit `_protocol_`-Prefix).
+    assert is_adapter_path("src/grid_gym/adapters/driven/_protocol_helpers/foo.py") is False
+    # Und nur `.py` (kein `.pyi`, kein anderes Suffix).
+    assert is_adapter_path("src/grid_gym/adapters/driven/_protocol_otel_wrap.pyi") is False
+    # Und nur mit dem Underscore-Prefix `_protocol_` (nicht etwa
+    # `_persistence_*.py`-Variante).
+    assert is_adapter_path("src/grid_gym/adapters/driven/_helper.py") is False
 
 
 def test_high_complexity_under_unrelated_adapter_bucket_is_ignored(

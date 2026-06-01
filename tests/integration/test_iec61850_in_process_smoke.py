@@ -89,9 +89,15 @@ pytest.importorskip(
 # selbst gegen Python 3.14 rebuild.
 pytestmark = pytest.mark.skip(
     reason=(
-        "2c-Mock-only-Fallback aktiv (ADR 0035 §2.5): pyiec61850-ng "
-        "1.6.1.2 Segfault auf Python 3.14 (Probe-Run lief auf 3.12). "
-        "Welle-6-Schaerfung: Python-3.12-Runtime oder Library-Rebuild."
+        "2c-Mock-only-Fallback aktiv (ADR 0035 §2.5; Welle-6b-C3-Defer): "
+        "pyiec61850-ng 1.6.1.2 (Stand 2026-06-01 PyPI-Latest) Segfault "
+        "auf Python 3.14. Welle-6b-C3-Pfad-A (Library-Upgrade) tot: keine "
+        "neuere Version verfuegbar, einziger Linux-Wheel ist "
+        "`py3-none-manylinux1_x86_64.whl` ohne cp-Tag. Defer-Trigger 009 "
+        "verfolgt Reaktivierung (siehe docs/plan/planning/open/"
+        "009-iec61850-smoke-reactivation.md): entweder pyiec61850-ng 2.0.x "
+        "mit cp314-Manylinux-Wheel ODER Dockerfile-Python-3.12-Test-Stage "
+        "als eigener Slice (Pfad-B Repo-Novum)."
     )
 )
 

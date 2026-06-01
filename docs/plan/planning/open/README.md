@@ -27,6 +27,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md) | `--strict-bytes`-Aktivierung (ADR 0005) | **Closed 2026-06-01** (M4-Welle-6a-C3) — `[tool.mypy] strict_bytes = true` aktiv; Trigger gewandert nach `done/` |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md)                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | [`008-sbom-activation.md`](008-sbom-activation.md)                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
+| [`009-iec61850-smoke-reactivation.md`](009-iec61850-smoke-reactivation.md) | IEC-61850 In-Process-Smoke reaktivieren (`tests/integration/test_iec61850_in_process_smoke.py`-Skip aufheben) | pyiec61850-ng publishet cp314-Manylinux-Wheel (Pfad A) ODER Pfad-B-Slice (Multi-Python-Test-Stage) wird angepackt |
 
 **M3-/Multi-Agent-Folge:**
 

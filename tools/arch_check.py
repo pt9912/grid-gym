@@ -1141,13 +1141,23 @@ _ADAPTER_PATH_MIN_PARTS = 5
 
 def _is_adapter_lightweight_path(rel: str) -> bool:
     """True wenn `rel` unter `src/grid_gym/adapters/driving/` (beliebige
-    Tiefe) oder `src/grid_gym/adapters/driven/protocol_*` /
-    `persistence_*` liegt.
+    Tiefe), `src/grid_gym/adapters/driven/protocol_*` /
+    `persistence_*` ODER ein Cross-Adapter-Helper direkt unter
+    `src/grid_gym/adapters/driven/` mit `_protocol_*.py`-Prefix liegt
+    (Welle-6b-C3-Slice-034-F13-Schaerfung).
 
     Eigener Matcher statt `fnmatch`, weil `fnmatch` `**` nicht als
     rekursive Wildcard unterstuetzt — und Adapter-Module duerfen direkt
     unter dem Driving-/Driven-Layer oder beliebig tief verschachtelt
     liegen.
+
+    Welle-6a hat den Cross-Adapter-Helper
+    `src/grid_gym/adapters/driven/_protocol_otel_wrap.py` eingefuehrt;
+    der ist KEIN Bucket-Verzeichnis, sondern eine flache `_*.py`-Datei
+    direkt unter `driven/`. Slice 034 F13 hat identifiziert, dass der
+    bisherige Filter (`parts[4]` muss `protocol_`/`persistence_`
+    starten) das nicht erfasst — Welle-6b-C3 erweitert den Filter um
+    die `_protocol_*.py`-Cross-Adapter-Helper.
     """
     parts = Path(rel).parts
     if len(parts) < _ADAPTER_PATH_MIN_PARTS or parts[:3] != (
@@ -1161,7 +1171,18 @@ def _is_adapter_lightweight_path(rel: str) -> bool:
         return True
     if layer == "driven":
         bucket = parts[4]
-        return bucket.startswith("protocol_") or bucket.startswith("persistence_")
+        # Bucket-Verzeichnisse: protocol_mqtt/, persistence_postgres/, ...
+        if bucket.startswith("protocol_") or bucket.startswith("persistence_"):
+            return True
+        # Welle-6b-C3 / Slice-034-F13: flat `_protocol_*.py`-Cross-
+        # Adapter-Helper direkt unter `driven/` (z. B.
+        # `_protocol_otel_wrap.py`).
+        if (
+            len(parts) == _ADAPTER_PATH_MIN_PARTS
+            and bucket.startswith("_protocol_")
+            and bucket.endswith(".py")
+        ):
+            return True
     return False
 
 
