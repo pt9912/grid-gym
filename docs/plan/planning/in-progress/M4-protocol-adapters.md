@@ -36,7 +36,7 @@ Hintergrund liegt in [`M4-welle-0.md`](../done/M4-welle-0.md) §1).
 - Offene Trigger
   [`../open/004`](../open/004-canonical-encoder-alternative-adr.md)
   (canonical encoder — potenziell MQTT-Payload-relevant) und
-  [`../open/006`](../open/006-mypy-strict-bytes.md)
+  [`../open/006`](../done/006-mypy-strict-bytes.md)
   (`--strict-bytes` — potenziell Modbus-Register-relevant).
 
 ---
@@ -204,7 +204,7 @@ Doc-Welle ohne ADR-Lieferung.
     ein. **Aktivierung**: unveraendert (bei generischen
     Protocols in `ports/*`); bleibt in `open/`.
   - Open-Trigger
-    [`006`](../open/006-mypy-strict-bytes.md)
+    [`006`](../done/006-mypy-strict-bytes.md)
     (`--strict-bytes`) — **M4-Drift**: Modbus-Register
     forcieren erstmals produktive `bytes`/`int`/`float`-
     Konvertierungen im Adapter-Code (Welle 3); MQTT-
@@ -1026,50 +1026,56 @@ unterschiedlicher Library-Pfade. Welle-6-Sub-Slicing trennt
 verschiedener Domain-Schwerpunkte (Mainstream-Pattern vs
 Lizenz-/Distribution-Policy).
 
-#### Welle 6a — Cross-Adapter-Hardening
+#### Welle 6a — Cross-Adapter-Hardening (Done 2026-06-01)
 
-**Status:** Pending. Mainstream-Querschnitts-Welle ohne
-konkreten Adapter; haertet die in Welle 2/3/4/5a/5b
-angesammelten Decisions und schliesst die in den frueheren
-Wellen bewusst verschobenen Folge-Pflichten
-(`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-Test,
-OTel-Span-Wrap der Adapter-Calls, Trigger-004/006-Re-Eval-
-Notizen).
+**Status:** Done — geschlossen 2026-06-01 mit
+M4-Welle-6a-C4 (dieser Commit). Per-Commit-Liefer-Hashes:
+C0 `9776dd9` (Slice-Doc), C1 `9312239` (Profil-Index +
+Architektur/Lastenheft-Sync), C2 `9d3912f` (OTel-Span-
+Wrap via Composition-Wrapper), Pre-C3 `81140e2` (git mv
+trigger-006 → done/, rename-only), C3 `0a5e895` (Planted-
+Violator-Test + `strict_bytes = true` + compose-
+Aufraeumung + Trigger-004-Re-Eval-Defer), C4 (dieser
+Commit; Status/DoD-Sync + Top-Level-Doku-Sync). Slice-
+Begleit-Doc
+[`M4-welle-6a.md`](M4-welle-6a.md) (bleibt in
+`in-progress/` bis M4-Welle-6b-Pre-C0-Move; Pattern
+analog Welle 1..5b).
 
-- [ ] **Adapter-Profil-Index** unter
+- [x] **Adapter-Profil-Index** unter
   `spec/protocol_profiles/` als kanonischem Spec-Pfad
   (oder begruendete andere Lokation): Profil-Index mit
   Verweisen auf die Pro-Adapter-ADRs 0031/0032/0033/0034/0035
   (alle 5 Welle-2..5b-Adapter-Profile).
-- [ ] **`tests/integration/compose.yml`-Aufraeumung** —
+- [x] **`tests/integration/compose.yml`-Aufraeumung** —
   Konsolidierung der Sibling-Services, Healthcheck-Sync,
   Volume-Hygiene; Header-Kommentar fuehrt jeden Sibling
   mit Lizenz + Test-Pfad-Referenz.
-- [ ] **Lastenheft §16-Implementierungs-Matrix-Sync** —
+- [x] **Lastenheft §16-Implementierungs-Matrix-Sync** —
   `🔲 M4` → `✅ M4` fuer alle 5 umgesetzten Adapter
   (MQTT/Modbus/OPC-UA/DNP3/IEC-61850).
-- [ ] **Architektur §8.2 + §16-Sync** — Adapter-Verortung
+- [x] **Architektur §8.2 + §16-Sync** — Adapter-Verortung
   scharf setzen mit Welle-1-ADR-Pfad; OTel-Span-Wrap-
   Pattern dokumentiert.
-- [ ] **OTel-Span-Wrap fuer `protocol_*`-Adapter** —
+- [x] **OTel-Span-Wrap fuer `protocol_*`-Adapter** —
   TracePort-Wrap der Read/Write-Calls fuer alle 5 Adapter
   (in Welle 2/3/4/5a/5b bewusst verschoben; ADR 0024 §4.5
   als Bezug).
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-
+- [x] **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-
   Test** — die in
   [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
   als Folge-Pflicht markierte Welle-2-Mitigation
   (in Welle 2/3/4/5a/5b bewusst auf Welle 6 verschoben)
   wird jetzt eingezogen.
-- [ ] **Trigger-004-Re-Eval** — `canonical encoder`-
+- [x] **Trigger-004-Re-Eval** — `canonical encoder`-
   Alternative (`orjson`/`msgspec`) gegen MQTT-Publish-
   Throughput-Druck pruefen; Entscheidung im Trigger-Body.
-- [ ] **Trigger-006-Folge-Slice eingezogen** —
+- [x] **Trigger-006-Folge-Slice eingezogen** —
   `--strict-bytes`-Aktivierung in `[tool.mypy]` plus
   Repo-Sweep (Slice 031-Folge; Re-Eval ist in M4-Welle-3
   positiv gelaufen, M4-Welle-6a zieht die Aktivierung
   produktiv).
-- [ ] **C4-Doc-Sync** — `M4-welle-6a.md` Status, diese
+- [x] **C4-Doc-Sync** — `M4-welle-6a.md` Status, diese
   §3-Welle-6a-Section auf Done, Top-Level-Doku-Sync.
 
 **Welle-6a-Gate:** `make fullbuild` cache-frei gruen ohne

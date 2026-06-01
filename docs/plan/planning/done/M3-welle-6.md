@@ -404,7 +404,7 @@ Quellen:
 - [`ADR 0029`](../../adr/0029-no-coverage-pragma-contract.md)
   (Adapter-Pragmas verboten).
 - Trigger 006
-  [`open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+  [`open/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
   (`--strict-bytes`-Entscheidung am OTLP-Bytes-Vertrag — Welle-6-
   Konsument).
 

@@ -219,7 +219,7 @@ Quellen:
   [`done/welle-4b.md`](../done/welle-4b.md)
   (Welle-4-Abnahme-Belege als Ausgangsbasis).
 - Trigger 006
-  [`open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+  [`open/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
   (`--strict-bytes`-Entscheidung am Bytes-Vertrag — moeglicher Welle-5-
   oder Welle-6-Konsument).
 

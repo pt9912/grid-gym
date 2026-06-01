@@ -75,7 +75,7 @@ Mosquitto-Sibling-Pattern als Praezedenz fuer Sibling-
 im-Test; **Welle 3 weicht bewusst ab** (siehe §2.6
 Decision M-f).
 Trigger 006
-[`open/006`](../planning/open/006-mypy-strict-bytes.md)
+[`open/006`](../planning/done/006-mypy-strict-bytes.md)
 (`mypy --strict-bytes`) — Modbus ist die erste produktive
 `bytes`/`int`/`float`-Konvertierungs-Stelle im Repo;
 C3-Re-Eval folgt mit konkretem Code-Beleg.
@@ -665,7 +665,7 @@ offen.
   Konvertierungs-Pfad im Repo. C3 prueft mit konkretem
   `_codec.py`-Code, ob `mypy --strict-bytes` jetzt ohne
   `# type: ignore`-Inflation greift. Trigger-006-Body
-  in `docs/plan/planning/open/006-mypy-strict-bytes.md`
+  in `docs/plan/planning/done/006-mypy-strict-bytes.md`
   wird mit Modbus-Beleg synced (Zahlen vor/nach
   potentieller Aktivierung) und entweder nach `next/`
   gezogen (positiv) oder bleibt in `open/` (negativ).
@@ -710,7 +710,7 @@ offen.
   abgeschlossen: `mypy --strict-bytes` laeuft ohne
   zusaetzliche `# type: ignore`-Inflation gegen den
   Modbus-Code (siehe
-  [`open/006`](../planning/open/006-mypy-strict-bytes.md);
+  [`open/006`](../planning/done/006-mypy-strict-bytes.md);
   Trigger ist aktivierungs-reif; Aktivierung bleibt
   separater Folge-Slice).
   Doku-Review-Folge 2026-05-31: Integration-Smoke ist

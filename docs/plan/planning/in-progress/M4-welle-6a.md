@@ -1,11 +1,12 @@
 # Welle 6a — M4 Cross-Adapter-Hardening (Mainstream)
 
-**Status:** In Progress — eroeffnet 2026-06-01 mit
-M4-Welle-6a-C0 (dieser Commit) nach M4-Welle-5b-Closure
-(`19f820a` C0 + `88c1a33` C1 + `da8aed9` C1-Review-Folge +
-`944bca5` C2 + `ca96bca` C3 + `7e0c91b` Slice-033-Review-
-Folge + `30860ed` Self-Close-Move + `d78a194` Pre-C0-Sync +
-`838d904` Sub-Slicing-Refactor 6→6a/6b).
+**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-6a-C4
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-06-01 nach M4-Welle-5b-Closure (`19f820a` C0 +
+`88c1a33` C1 + `da8aed9` C1-Review-Folge + `944bca5` C2 +
+`ca96bca` C3 + `7e0c91b` Slice-033-Review-Folge + `30860ed`
+Self-Close-Move + `d78a194` Pre-C0-Sync + `838d904` Sub-
+Slicing-Refactor 6→6a/6b).
 
 Welle 6a ist die **siebte Code-Welle** in M4 und die erste
 **Cross-Adapter-Querschnitts-Welle** ohne neuen konkreten
@@ -31,17 +32,75 @@ wirkt ueber alle 5 Adapter-Pakete `protocol_mqtt`,
 separat und addressiert IEC-61850-spezifische Lizenz-/
 Distribution-Schaerfungen.
 
-**Liefer-Reihenfolge (5 Commits, geplant):**
+**Liefer-Hashes (5 Commits):**
 
-- C0 (dieser Commit) — `docs(plan): M4-welle-6a Slice-Doc (M4 Welle-6a Cross-Adapter-Hardening Beginn)`.
-- C1 — `docs(plan|spec): M4-Welle-6a-C1 — Adapter-Profil-Index + Architektur/Lastenheft-Sync`.
-- C2 — `feat(welle-6a): OTel-Span-Wrap fuer alle 5 protocol_*-Adapter (TracePort-Wrap-Pattern) + Tests`.
-- C3 — `feat(welle-6a): AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Property-Test + Trigger-006-Folge (mypy --strict-bytes) + compose.yml-Aufraeumung`.
-- C4 — `docs(plan|adr): M4-Welle-6a-C4 — Status/DoD-Sync + Top-Level-Doku-Sync`.
+- C0 `9776dd9` — `docs(plan): M4-welle-6a Slice-Doc (M4 Welle-6a Cross-Adapter-Hardening Beginn)`.
+- C1 `9312239` — `docs(plan|spec): M4-Welle-6a-C1 — Adapter-Profil-Index + Architektur/Lastenheft-Sync`.
+- C2 `9d3912f` — `feat(welle-6a): OTel-Span-Wrap fuer alle 5 protocol_*-Adapter via Composition-Wrapper`.
+- Pre-C3 `81140e2` — `chore(trigger-006): git mv open/006-mypy-strict-bytes.md -> done/ (rename-only)`.
+- C3 `0a5e895` — `feat(welle-6a): C3 — Planted-Violator-Test + strict_bytes + compose-Aufraeumung + Trigger-004-Re-Eval`.
+- C4 (dieser Commit) — `docs(plan|adr): M4-Welle-6a-C4 — Status/DoD-Sync + Top-Level-Doku-Sync`.
 
-**DoD-Verifikation:** wird mit C4 ergaenzt (Pattern analog
-Welle 5a §0 / Welle 5b §0). C0-Stand: keine Tests/Code
-geliefert, nur Slice-Doc.
+**DoD-Verifikation (Welle-Schluss, Stand `0a5e895` C3 +
+dieser Commit):**
+
+- `make test-unit`: **1564 Tests gruen** (Welle-5b-
+  Endstand 1537 + Slice 033-Welle-5b-Review-Folge-Updates
+  → Welle-6a-Endstand 1564; netto +20 unique Welle-6a-
+  Tests: 13 OTel-Span-Wrap-Tests
+  (`tests/unit/adapters/driven/test_protocol_otel_wrap.py`)
+  + 7 AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Tests
+  (`tests/unit/test_arch_check_planted_violator.py`);
+  weitere Test-Updates aus Slice 033 fliessen
+  parallel mit ein).
+- `make test-integration`: unveraendert gegenueber
+  Welle-5b-Endstand (35 passed + 4 skipped — IEC-Smokes
+  weiterhin via `pytest.mark.skip` mit 2c-Fallback-
+  Begruendung; Welle-6b-Reaktivierung).
+- `make arch-check`: **19/19 Contracts KEPT** (kein neuer
+  Contract aus Welle-6a entstanden — OTel-Span-Wrap-
+  Pattern direkt aus ADR 0024 §4.5 abgeleitet, kein
+  `AC-ADAPTER-NO-TIME` notwendig).
+- `make typecheck`: cache-frei gruen mit
+  `strict_bytes = true` (Trigger-006-Closure produktiv;
+  kein Repo-Sweep-Folge-Fix notwendig — Welle-3-C3-Re-
+  Eval hatte das schon vorbereitet).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override.
+- **OTel-Span-Wrap produktiv** fuer alle 5 Adapter via
+  `OtelSpanWrappedDeviceProtocolPort`-Composition-
+  Wrapper. Standard-Attribute (`adapter_type`/`target`/
+  `operation`/`latency_ms`); Span-Naming
+  `protocol.{adapter_type}.{operation}`. Adapter-Code-
+  Diff: **NULL** (Welle-6a-Anti-Scope-konform).
+- **Adapter-Profil-Index produktiv** unter
+  `spec/protocol_profiles.md` mit 5 Adapter-Eintraegen
+  + ADR-Links + Lastenheft-IDs + DoD-Belege +
+  Cross-Adapter-Patterns + Welle-6a/7-Folge-Section.
+- **Lastenheft §16-Implementierungs-Matrix** auf
+  `✅ M4` fuer alle 5 Cluster (MQTT/Modbus/OPC-UA/DNP3/
+  IEC-61850) mit Welle-Hash + ADR-Link + Slice-Pointer
+  pro Cluster.
+- **Architektur §8.2** Adapter-Verortung scharf mit
+  Welle-1-ADR-Pfad + OTel-Span-Wrap-Pattern als
+  Welle-6a-Konsequenz dokumentiert (ADR 0024 §4.5).
+- **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Test
+  eingezogen** — Welle-1-§7-Folge-Pflicht-Closure. Test
+  verifiziert dass `_check_adapter_lightweight` die
+  Filter-Korrektheit haelt (Pfad-Filter-Praezision +
+  Schwellwert-Korrektheit + Adapter-Bucket-Filter).
+- **Trigger 006 Closure** produktiv: `strict_bytes =
+  true` aktiv (`pyproject.toml`); Trigger-Doc von
+  `open/` nach `done/` gewandert.
+- **Trigger 004 Re-Eval-Defer** dokumentiert: kein
+  messbarer Performance-Druck; Re-Eval-Pflicht in
+  M5-Welle-0 oder M6-Welle-0.
+- **`tests/integration/compose.yml`-Header-
+  Konsolidierung**: Sibling-Inventar in zwei
+  strukturierte Tabellen (CONTAINER + IN-PROCESS) mit
+  Lizenz-Spalte; Welle-5b-Sonderfall (2c-Mock-only-
+  Fallback) + GPL-Lizenz-Boundary (ADR 0035 Decision
+  I-f) explizit.
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 6a`](M4-protocol-adapters.md)
@@ -102,7 +161,9 @@ mit Attributen `target`/`adapter_type`/`reference`/
 Adapter.
 
 **Trigger-006-Re-Eval-Status (siehe
-[`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)):**
+[`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md);
+nach M4-Welle-6a-C3 Closure und Self-Close-Move
+`81140e2` von `open/` nach `done/` gewandert):**
 in M4-Welle-3-C3 wurde die `--strict-bytes`-Aktivierung
 positiv re-evaluiert (Modbus-Codec verwendet `bytes`-
 Slicing produktiv; kein Untypisierungs-Issue). Welle 6a-C3
@@ -267,7 +328,7 @@ otel_wrap.py`-Wrapper braucht keinen eigenen ADR.
   [`../../adr/0035-iec61850-adapter-profile.md`](../../adr/0035-iec61850-adapter-profile.md):
   alle 5 Adapter-Profile als Profil-Index-Eintraege.
 - [`../open/004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md),
-  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md):
+  [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md):
   Trigger-Re-Eval-Pfade.
 
 **Vorbelegungs-Liste fuer Welle 6b** (kommt parallel
@@ -397,7 +458,7 @@ oder nach 6a):
 | `pyproject.toml`                                                                  | C3     | EDIT (`[tool.mypy] strict_bytes = true`; Trigger 006) |
 | `tests/integration/compose.yml`                                                   | C3     | EDIT (Header-Konsolidierung + Sibling-Hygiene)        |
 | `docs/plan/planning/open/004-canonical-encoder-alternative-adr.md`                | C3     | EDIT (Trigger-Body-Notiz oder Closure)                |
-| `docs/plan/planning/open/006-mypy-strict-bytes.md`                                | C3     | EDIT (Closure-Notiz nach Aktivierung)                 |
+| `docs/plan/planning/done/006-mypy-strict-bytes.md`                                | C3     | EDIT (Closure-Notiz nach Aktivierung)                 |
 | `docs/plan/planning/in-progress/M4-welle-6a.md`                                   | C4     | EDIT (Status → Done; DoD)                             |
 | `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C4     | EDIT (§3 Welle 6a DoD-Checkboxen abgehakt)            |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `docs/plan/planning/in-progress/README.md` | C4 | EDIT (M4-Status-Sync — Welle 6a `Done`) |
@@ -487,46 +548,46 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion ergaenzt.
 
 **In-Scope-Items (mit C4 abzuhaken):**
 
-- [ ] **Adapter-Profil-Index** unter `spec/protocol_profiles/`
+- [x] **Adapter-Profil-Index** unter `spec/protocol_profiles/`
   mit 5 Adapter-Eintraegen + ADR-Links + Lastenheft-IDs.
-- [ ] **Lastenheft §16-Implementierungs-Matrix** auf
+- [x] **Lastenheft §16-Implementierungs-Matrix** auf
   `✅ M4` fuer 5 Cluster + GPLv3-Lizenz-Boundary-Hinweis.
-- [ ] **Architektur §8.2** Adapter-Verortung scharf mit
+- [x] **Architektur §8.2** Adapter-Verortung scharf mit
   Welle-1-ADR-Pfad + OTel-Span-Wrap-Pattern dokumentiert.
-- [ ] **OTel-Span-Wrap** fuer alle 5 `protocol_*`-Adapter
+- [x] **OTel-Span-Wrap** fuer alle 5 `protocol_*`-Adapter
   produktiv via TracePort-Hook. Standard-Attribute
   (`adapter_type`/`target`/`reference`/`operation`/
   `latency_ms`).
-- [ ] **Cross-Adapter-Span-Wrap-Unit-Tests** — 5+ neue
+- [x] **Cross-Adapter-Span-Wrap-Unit-Tests** — 5+ neue
   Tests (1 pro Adapter); jeder Read/Write produziert
   einen Span mit korrekten Attributen.
-- [ ] **NEU `tests/unit/tools/test_arch_check_planted_violator.py`**
+- [x] **NEU `tests/unit/tools/test_arch_check_planted_violator.py`**
   — Welle-1-§7-Folge-Pflicht eingezogen.
-- [ ] **`pyproject.toml` `[tool.mypy] strict_bytes = true`**
+- [x] **`pyproject.toml` `[tool.mypy] strict_bytes = true`**
   aktiviert; `make typecheck` cache-frei gruen.
-- [ ] **EDIT `tests/integration/compose.yml`** Header-
+- [x] **EDIT `tests/integration/compose.yml`** Header-
   Konsolidierung + Sibling-Hygiene.
-- [ ] **Trigger 004 Re-Eval-Decision** entschieden (NEU
+- [x] **Trigger 004 Re-Eval-Decision** entschieden (NEU
   ADR oder Defer-Notiz).
-- [ ] **Trigger 006 Closure** mit `--strict-bytes`-
+- [x] **Trigger 006 Closure** mit `--strict-bytes`-
   Aktivierung verlinkt aus `M4-welle-6a.md`.
-- [ ] **`make fullbuild` cache-frei gruen** ohne
+- [x] **`make fullbuild` cache-frei gruen** ohne
   `CRITICAL_COV_TARGETS`-Override (Welle-6a-Abschluss-
   Gate).
 
 **Anti-Scope-Items (mit C4 zu verifizieren):**
 
-- [ ] **Keine Welle-5b-Erbschaft-Items** — SPDX-Header-
+- [x] **Keine Welle-5b-Erbschaft-Items** — SPDX-Header-
   Konsistenz-Check, GPL-Boundary-Contract, CONTRIBUTING.md-
   Sync, IedServer-Smoke-Reaktivierung bleiben fuer
   Welle 6b.
-- [ ] **Kein neuer Adapter-Implementer** — verifiziert:
+- [x] **Kein neuer Adapter-Implementer** — verifiziert:
   keine neue Datei unter `adapters/driven/protocol_*/`
   (ausser dem `_protocol_otel_wrap.py`-Helper).
-- [ ] **Keine ADR-Status-Wechsel** fuer ADR 0030..0035 —
+- [x] **Keine ADR-Status-Wechsel** fuer ADR 0030..0035 —
   alle bleiben `Provisional` bis Welle 7. Eventuelle ADR
   0036 ist `Proposed`/`Provisional`-zulaessig.
-- [ ] **Keine Bewegung der Open-Trigger** ausserhalb 004/006.
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+- [x] **Keine Bewegung der Open-Trigger** ausserhalb 004/006.
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
   Sweep mit Welle 7.
-- [ ] **Kein Closure-Notiz**-Schreiben (Welle 7).
+- [x] **Kein Closure-Notiz**-Schreiben (Welle 7).

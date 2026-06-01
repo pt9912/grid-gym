@@ -66,7 +66,7 @@ offen; Haken wandern mit C1/C2/C3-Beleg.
       `next/`, sobald M4-Protokolladapter (MQTT/Modbus/OPC-UA),
       Snapshot-v2→v3-Lese-Migrations-Pfad oder ein OTLP-Trace-
       Roundtrip-Test einen ersten echten Binaer-Pfad einfuehrt.
-      Detail-Dokumentation: [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+      Detail-Dokumentation: [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
       §Decision + §Aktivierungs-Kriterium.
 - [x] **`done/M3-results.md`** angelegt, Pattern analog
       [`done/M2-devices-results.md`](../done/M2-devices-results.md):
@@ -218,7 +218,7 @@ Code-, Tooling- oder Gate-Konfigurationsaenderungen in Welle 7.
   konkrete `bytes`-Pfade"). Begruendung dokumentiert.
 
 Decision-Commit aktualisiert
-[`docs/plan/planning/open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+[`docs/plan/planning/done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
 und dieses Dokument (DoD-Haken).
 
 ### C3 — `docs(plan)`: M3-results.md + roadmap.md + Open-Trigger
@@ -422,7 +422,7 @@ liefert.
   selbst nach `done/`).
 - `docs/plan/planning/in-progress/M3-welle-7.md` (dieses
   Dokument; DoD-Haken; wandert selbst nach `done/`).
-- `docs/plan/planning/open/006-mypy-strict-bytes.md` (Decision-
+- `docs/plan/planning/done/006-mypy-strict-bytes.md` (Decision-
   Dokumentation).
 - `docs/plan/planning/done/README.md` (neue Eintraege fuer
   M3-results, M3-faults-agents-observability, M3-welle-7).

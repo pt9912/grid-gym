@@ -106,7 +106,7 @@ Reihenfolge-Vertraege, die Welle-5-Hooks **nicht antasten** duerfen
 (nur additive Anhaengung).
 
 `Open-Trigger 006` (`--strict-bytes`-Aktivierung,
-[`open/006-mypy-strict-bytes.md`](../planning/open/006-mypy-strict-bytes.md))
+[`open/006-mypy-strict-bytes.md`](../planning/done/006-mypy-strict-bytes.md))
 ist potentieller Konsument: OTLP-Adapter (Welle 6) arbeitet auf
 Protobuf-Bytes-Pfaden. Welle 5 fuehrt **noch keinen** Bytes-Vertrag
 ein — Trigger 006 bleibt mit Welle-6-Aktivierungs-Notiz offen.

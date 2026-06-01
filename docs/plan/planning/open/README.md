@@ -24,7 +24,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | ---------------------------------------------- | ------------------------------------------------------------------------- | ----------- |
 | [`004-canonical-encoder-alternative-adr.md`](004-canonical-encoder-alternative-adr.md)     | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec)      | bei messbarem Perf-Druck am Telemetrie-Pfad |
 | [`005-pyright-vs-mypy-reeval.md`](005-pyright-vs-mypy-reeval.md)                | Re-Eval mypy vs. pyright bei generischen Protocols                        | sobald `ports/*` Generic-Protocols einfuehrt |
-| [`006-mypy-strict-bytes.md`](006-mypy-strict-bytes.md)                     | `--strict-bytes`-Aktivierung (ADR 0005)                                   | nach Konsolidierung des `GG-DATA-005`-Bytes-Vertrags |
+| [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md) | `--strict-bytes`-Aktivierung (ADR 0005) | **Closed 2026-06-01** (M4-Welle-6a-C3) — `[tool.mypy] strict_bytes = true` aktiv; Trigger gewandert nach `done/` |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md)                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | [`008-sbom-activation.md`](008-sbom-activation.md)                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 

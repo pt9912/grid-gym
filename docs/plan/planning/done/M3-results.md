@@ -168,7 +168,7 @@ re-triaged):
 
 - Trigger 006 (`--strict-bytes`) — *verschoben mit geschaerftem
   Aktivierungs-Kriterium* (M3-Welle-7-C2-Decision, siehe
-  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+  [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
   §Decision). Aktivierung bei M4-Protokolladapter-Binaer-Pfad,
   Snapshot-v2→v3-Migrations-Lese-Pfad oder OTLP-Trace-Roundtrip-
   Test.

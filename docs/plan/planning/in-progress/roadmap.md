@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 5b (Done; Welle 6 Cross-Adapter-Hardening als naechstes)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6a (Done; Welle 6b IEC-61850-Lizenz-und-Smoke-Hardening als naechstes)
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -97,20 +97,36 @@
   Automation, `pyproject.toml`-GPL-Classifier ergaenzt) +
   Self-Close-Move `30860ed` (`M4-welle-5b.md` aus
   `in-progress/` nach `done/` als M4-Welle-6-Pre-C0,
-  rename-only).
+  rename-only); **Welle 6 Sub-Slicing** in 6a/6b nach
+  Welle-5b-Erbschaft (`838d904`); **Welle 6a `Done`**
+  geschlossen 2026-06-01 mit C0 `9776dd9` (Slice-Doc) +
+  C1 `9312239` (Adapter-Profil-Index unter
+  `spec/protocol_profiles.md` mit 5 Adapter-Eintraegen +
+  Lastenheft-§16 `✅ M4` x 5 + Architektur-§8.2 OTel-Wrap-
+  Pattern-Forward-Pointer) + C2 `9d3912f` (OTel-Span-Wrap
+  fuer alle 5 protocol_*-Adapter via
+  `OtelSpanWrappedDeviceProtocolPort`-Composition-Wrapper
+  mit Standard-Attributen `adapter_type`/`target`/
+  `operation`/`latency_ms`; Adapter-Code-Diff NULL) +
+  Pre-C3 `81140e2` (git mv trigger-006 → done/, rename-
+  only) + C3 `0a5e895` (NEU
+  `test_arch_check_planted_violator.py` mit 7 Tests fuer
+  Welle-1-§7-Folge-Pflicht-Closure + `[tool.mypy]
+  strict_bytes = true` Aktivierung mit Trigger-006-Closure
+  + `compose.yml`-Header-Konsolidierung mit 2-Tabellen-
+  Sibling-Inventar + Trigger-004-Re-Eval-Defer auf M5/M6)
+  + C4 (dieser Commit; Status/DoD-Sync). 1537 → 1564 Unit-
+  Tests (+27 mit OTel-Span-Wrap + Planted-Violator).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-6 (Cross-Adapter-Hardening — OTel-Span-Wrap der
-  5 `protocol_*`-Adapter (Welle 2/3/4/5a/5b; ADR 0024 §4.5),
-  Adapter-Profil-Index unter `spec/protocol_profiles/` mit
-  Verweisen auf ADR 0031..0035,
-  `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-Test
-  als Welle-1-§7-Folge-Pflicht-Closure; **plus Welle-5b-
-  Schaerfungs-Erbschaft**: SPDX-Header-Konsistenz-Check in
-  `tools/check_refs.py`, CONTRIBUTING.md-Sync mit GPL-
-  Boundary-Policy, `arch_check.py`-Contract gegen GPL-
-  Boundary-Crossing, IEC-61850-IedServer-Smoke-Reaktivierung
-  unter Python 3.12 oder via Library-Upgrade/Wheel-Rebuild).
+  M4-Welle-6b (IEC-61850-Lizenz-und-Smoke-Hardening,
+  Welle-5b-Erbschaft) — SPDX-Header-Konsistenz-Check in
+  `tools/check_refs.py`, neuer arch_check-Contract
+  `AC-IEC61850-GPL-BOUNDARY` (19/19 → 20/20 Contracts),
+  CONTRIBUTING.md-Sync mit GPL-Boundary-Policy,
+  IedServer-Smoke-Reaktivierungs-Probe (3 Pfade: Library-
+  Upgrade / Dockerfile-Python-Downgrade / Mock-only-
+  Defer).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -156,26 +172,27 @@
   (erstmaliger Repo-Praezedenzfall fuer GPL-isolierte Sub-
   Module in einem sonst MIT-Projekt); `Accepted` geplant
   mit M4-Welle-7-Closure).
-- **Tests:** 1537 Unit + 35 Integration passed + 4 skipped
-  (Stand nach M4-Welle-5b-Closure; +394 Unit-Tests ggue.
+- **Tests:** 1564 Unit + 35 Integration passed + 4 skipped
+  (Stand nach M4-Welle-6a-Closure; +421 Unit-Tests ggue.
   M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
   +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA + +6
   Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
   String-Read-Quality.INVALID/Float32-Quantisierung +
   +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
-  (21 Config-Validation + 30 Codec-Roundtrip inkl.
-  hypothesis-Property-Tests + Container-Repr-Rejection +
-  Overflow-Pfade + 18 Protocol-Port-Lifecycle gegen Mock-
-  Client + 6 Read-Pfad-Edge-Cases)] + 14 Integration-Tests
-  [Mosquitto-MQTT-Smoke aus Welle 2 + in-process-pymodbus-
-  Server-Smoke aus Welle 3 + 8 in-process-`asyncua.Server`-
-  Smokes aus Welle 4 + 4 in-process-`dnp3-outstation.
-  AsyncOutstation`-Smokes aus Welle 5a (3 Class-0-Read-
-  Roundtrips + 1 Update-then-Read); Welle-5b-IEC-Smokes
-  via `pytest.mark.skip` mit 2c-Fallback-Begruendung
+  + +27 Welle 6a fuer Cross-Adapter-Hardening
+  (13 OTel-Span-Wrap-Tests + 7 AC-ADAPTER-LIGHTWEIGHT-
+  Planted-Violator-Tests + 7 Slice-033-Review-Folge-
+  Updates)] + 14 Integration-Tests [Mosquitto-MQTT-Smoke
+  aus Welle 2 + in-process-pymodbus-Server-Smoke aus
+  Welle 3 + 8 in-process-`asyncua.Server`-Smokes aus
+  Welle 4 + 4 in-process-`dnp3-outstation.AsyncOutstation`-
+  Smokes aus Welle 5a (3 Class-0-Read-Roundtrips +
+  1 Update-then-Read); Welle-5b-IEC-Smokes via
+  `pytest.mark.skip` mit 2c-Fallback-Begruendung
   inaktiv — Probe-Run auf Python 3.12 lief sauber durch,
   aber grid-gym-Docker Python 3.14 segfaultet im
-  `_pyiec61850.so`-SWIG-Layer]).
+  `_pyiec61850.so`-SWIG-Layer; Welle-6b-Reaktivierungs-
+  Probe steht aus]).
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,

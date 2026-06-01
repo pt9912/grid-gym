@@ -77,7 +77,7 @@ C3):**
   sind pymodbus-API-spezifisch, kein bytes-Bezug). Trigger
   ist aktivierungs-reif; die physische Bewegung bleibt ein
   separater Folge-Slice (siehe
-  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)).
+  [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)).
 - **Review-Folge 2026-05-31:** Welle 3 bleibt geliefert;
   Folge-Slice [`031`](031-modbus-adapter-review-folge.md)
   hat die Code-Schaerfungen umgesetzt: FC06 wird fuer
@@ -312,7 +312,7 @@ in `open/` bleibt mit konkretem M4-Welle-3-Code-Beleg.
     `# type: ignore`-Inflation greift; Entscheidung
     dokumentieren (Trigger nach `next/` ziehen ODER
     Welle-6-Forward-Pointer). Trigger-Body in
-    `docs/plan/planning/open/006-mypy-strict-bytes.md`
+    `docs/plan/planning/done/006-mypy-strict-bytes.md`
     aktualisieren.
 11. C3-Doc-Sync zieht `M4-welle-3.md`-Status auf `Done`
     und schaerft ADR 0032 von `Proposed` auf
@@ -518,7 +518,7 @@ Welle 4; werden nicht in Welle 3 angelegt):
 - done/README.md: M4-welle-3.md-Bestand-Zeile (analog
   M4-welle-2.md-Zeile).
 - **Trigger-006-Re-Eval-Notiz** in
-  `docs/plan/planning/open/006-mypy-strict-bytes.md`:
+  `docs/plan/planning/done/006-mypy-strict-bytes.md`:
   konkrete Pruefung mit dem Modbus-Code; Entscheidung
   dokumentieren (`# type: ignore`-Zahlen vor/nach
   `--strict-bytes`-Aktivierung). Wenn positiv: Trigger
@@ -551,7 +551,7 @@ Welle 4; werden nicht in Welle 3 angelegt):
 | `docs/plan/adr/README.md`                                                         | C3     | EDIT (Status-Spalte `Provisional`)              |
 | `docs/plan/planning/done/M4-welle-3.md`                                           | C3/self-close | EDIT (Status → Done; Hashes; DoD-Verifikation; §9 DoD-Checkliste) + Move nach `done/` |
 | `docs/plan/planning/in-progress/M4-protocol-adapters.md`                          | C3     | EDIT (§3 Welle 3 Done-Sync)                     |
-| `docs/plan/planning/open/006-mypy-strict-bytes.md`                                | C3     | EDIT (Trigger-006-Re-Eval-Notiz mit Modbus-Beleg) |
+| `docs/plan/planning/done/006-mypy-strict-bytes.md`                                | C3     | EDIT (Trigger-006-Re-Eval-Notiz mit Modbus-Beleg) |
 | `README.md` + `README.de.md` + `docs/plan/planning/in-progress/roadmap.md` + `spec/architecture.md` | C3 | EDIT (M4-Status-Sync — Welle 3 `Done`, ADR 0032 `Provisional`, „Naechster aktiver Schritt: M4-Welle-4") |
 | `docs/plan/planning/done/README.md`                                               | C3     | EDIT (M4-welle-3.md-Bestand-Zeile; analog M4-welle-2.md-Zeile) |
 
@@ -770,7 +770,7 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion.
   (ADR 0032 `Proposed → Provisional`) + `done/README.md`)
   auf den Welle-3-Endstand.
 - [x] **Trigger-006-Re-Eval** —
-  [`../open/006-mypy-strict-bytes.md`](../open/006-mypy-strict-bytes.md)
+  [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md)
   syncht mit konkretem Modbus-Code-Beleg: `mypy
   --strict-bytes` laeuft cache-frei **gruen** gegen
   `src/grid_gym/adapters/driven/protocol_modbus/` ohne
