@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6b (Done; IEC-61850-Lizenz-und-Smoke-Hardening + Slice-034-F13-Coverage-Schaerfung). Welle 7 (M4-Closure: ADRs 0030..0035 → `Accepted`, M4-results.md, S-1..S-6-Sweep, make fullbuild) als naechstes
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 7 (In Progress; M4-Closure analog M3-Welle-7: 6 M4-ADRs auf `Accepted`, NEU `done/M4-results.md`, Roadmap-M4-DoD-Sweep, S-1..S-6-Sweep, `make fullbuild` als Closure-Gate)
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),

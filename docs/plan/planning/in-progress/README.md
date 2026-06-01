@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M4-protocol-adapters.md`](M4-protocol-adapters.md) | M4-Slice-Plan (MQTT/Modbus/OPC-UA/DNP3/IEC; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M3-faults-agents-observability.md`). |
+| [`M4-welle-7.md`](M4-welle-7.md) | Welle-7-Slice-Doc (M4-Closure analog M3-Welle-7) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-0-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -72,13 +73,15 @@ Cross-Adapter-Helper-Positiv). 10/10 A-1-Gates gruen (10.
 NEU `spdx-check`); 20/20 Contracts KEPT (14. NEU
 `AC-IEC61850-GPL-BOUNDARY`).
 
-**Aktiver Slice:** M4 (Protokolladapter). **Naechster
-aktiver Schritt:** M4-Welle-7 (M4-Closure analog
-M3-Welle-7) — ADR 0030..0035 von `Provisional` auf
-`Accepted`; NEU `done/M4-results.md` mit
-Meilenstein-Zusammenfassung; Roadmap-M4-DoD-Checkboxen-
-Sweep; End-to-End-Sweep S-1..S-6; `make fullbuild` cache-
-frei gruen als Welle-7-Closure-Gate; Self-Close-Move
-Welle-6b-Doc nach `done/` als Welle-7-Pre-C0; Self-Close-
-Move `M4-protocol-adapters.md` nach `done/` mit Welle-7-
-Closure-Hash.
+**Aktive Welle:** M4-Welle-7 (M4-Closure) eroeffnet
+2026-06-01 mit C0 (dieser Commit; Slice-Doc-Anlage
+[`M4-welle-7.md`](M4-welle-7.md)). Geplante Lieferung in
+4 Commits + Self-Close-Move-Folge: C1 ADR-Status-Wechsel
+0030..0035 von `Provisional` auf `Accepted`, C2 NEU
+`done/M4-results.md` mit Welle-Tabelle/Abnahme-Belegen/
+Pro-Welle-Reviews/S-1..S-6-Sweep/Wandert-Nach + ADR-0028-
+Linkpflege, C3 M4-Closure-Top-Level-Sync (Roadmap-DoD,
+M4 auf `Done`, M5 als naechster aktiver Slice, READMEs),
+C4 `make fullbuild` cache-frei gruen als Welle-7-Closure-
+Gate + Self-Close-Move `M4-protocol-adapters.md` nach
+`done/`.
