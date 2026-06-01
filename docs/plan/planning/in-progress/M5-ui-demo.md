@@ -204,13 +204,15 @@ integration Tests passed).
 
 **Status:** Done 2026-06-01. UI-Layout + HTMX/Chart.js-
 Vendoring + Routing-Layer produktiv. Welle-Slice-Begleit-
-Doc [`M5-welle-2.md`](M5-welle-2.md). Liefer-Hashes:
-Pre-C0a `c7c2641` + Pre-C0b `a0c8ba3` + C0 `64d5129`
-(Slice-Doc + Decision 2) + C2 `5234617` (Code) + C3
-(dieser Commit). Welle 2 verzichtete bewusst auf einen
-C1-ADR-Commit: Decision 2 ist im Slice-Doc-§3-Body
-fixiert; ADR 0036 nimmt die Layout-Realisierung bei
-M5-Welle-7-Closure als Welle-2-Beleg auf.
+Doc [`M5-welle-2.md`](../done/M5-welle-2.md). Liefer-
+Hashes: Pre-C0a `c7c2641` + Pre-C0b `a0c8ba3` + C0
+`64d5129` (Slice-Doc + Decision 2) + C2 `5234617` (Code)
++ C3 `97c718f` (Status/DoD-Sync) + Self-Close-Move
+`8d60e16` (M5-Welle-3-Pre-C0a, rename-only). Welle 2
+verzichtete bewusst auf einen C1-ADR-Commit: Decision 2
+ist im Slice-Doc-§3-Body fixiert; ADR 0036 nimmt die
+Layout-Realisierung bei M5-Welle-7-Closure als Welle-2-
+Beleg auf.
 
 - [x] **UI-Layout-Lokation final** (Welle-0-Decision 2):
   **`src/grid_gym/adapters/driving/ui/`** (Hexagonal-

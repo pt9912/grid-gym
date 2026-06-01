@@ -542,8 +542,8 @@ Bestand-Eintrag.
 - [`../done/M5-welle-0.md`](../done/M5-welle-0.md) §3
   Decision 2 (UI-Layout-Lokation; Welle 2 trifft die finale
   Wahl).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 2 (kanonische
-  Slice-Spezifikation).
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle 2
+  (kanonische Slice-Spezifikation).
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   §2.1 (Maintainer-Indication „FastAPI + HTMX + Jinja2 +
   Chart.js"; vendored Static-Asset-Pattern).
