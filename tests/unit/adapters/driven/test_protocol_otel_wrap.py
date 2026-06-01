@@ -1,10 +1,12 @@
-"""Cross-Adapter-OTel-Span-Wrap-Tests (M4 Welle 6a, ADR 0024 §4.5).
+"""Cross-Adapter-OTel-Span-Wrap-Tests (M4 Welle 6a, ADR 0024 §4.5;
+Slice 034 Review-Folge).
 
 Verifiziert dass der `OtelSpanWrappedDeviceProtocolPort`-
 Composition-Wrapper:
 
 - `read()` und `write()` in einem Span mit Standard-Attributen
-  (`adapter_type`/`target`/`operation`/`latency_ms`) wrappt.
+  (`adapter_type`/`target`/`operation`/optional `reference`)
+  und `latency`-Event wrappt.
 - Span auch bei Exception schliesst (`finally`-Pfad);
   Exception wird re-raised.
 - Bei TracePort=None Pass-Through bleibt (kein Span,
@@ -12,10 +14,20 @@ Composition-Wrapper:
 - Lifecycle-Calls (`start()`/`stop()`) ungewrappt durchreicht.
 - Adapter-spezifische Errors (z. B. `Iec61850PortReadFailedError`)
   als `record_event("error", ...)` registriert werden.
+- Slice 034 F1: Span-Lifecycle-Garantie auch wenn
+  `record_event("latency")` selbst raised.
+- Slice 034 F2: optionales `reference`-Constructor-Argument
+  wird als Span-Attribut emittiert.
+- Slice 034 F3: `read()`-Wrapper faengt nur `ReadError`;
+  `write()`-Wrapper faengt nur `WriteError`. Misclassified
+  errors propagieren raw ohne `error`-Event.
+- Slice 034 F7: Tests verwenden `MagicMock(spec=
+  DeviceProtocolPort)` — Protocol-Surface-Drift wird
+  erkannt.
 
-Tests verwenden Mock-Adapter und einen NullTraceAdapter
-(`RecordingNullTraceAdapter`) zur Span-Aufzeichnung —
-keine echte OTel-Library-Dependency.
+Tests verwenden Mock-Adapter und einen RecordingNullTraceAdapter
+(`_RecordingTracePort`) zur Span-Aufzeichnung — keine echte
+OTel-Library-Dependency.
 """
 
 from __future__ import annotations
@@ -35,6 +47,7 @@ from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.ports.driven.device_protocol import (
+    DeviceProtocolPort,
     DeviceProtocolPortReadError,
     DeviceProtocolPortWriteError,
 )
@@ -137,9 +150,10 @@ def _make_mock_adapter(
     read_raises: BaseException | None = None,
     write_raises: BaseException | None = None,
 ) -> Any:
-    adapter = MagicMock()
-    adapter.start = MagicMock()
-    adapter.stop = MagicMock()
+    """Slice 034 F7: `spec=DeviceProtocolPort` aktiviert
+    Protocol-Surface-Drift-Detection — versehentliche Calls
+    auf non-Protocol-Methoden werfen `AttributeError`."""
+    adapter = MagicMock(spec=DeviceProtocolPort)
     if read_raises is not None:
         adapter.read = MagicMock(side_effect=read_raises)
     else:
@@ -172,6 +186,8 @@ def test_read_opens_and_ends_span_with_standard_attributes() -> None:
     assert span.attributes["adapter_type"] == "iec61850"
     assert span.attributes["target"] == "battery1_voltage"
     assert span.attributes["operation"] == "read"
+    # Slice 034 F2: `reference` nicht gesetzt → kein Attribut.
+    assert "reference" not in span.attributes
     assert span.ended is True
 
 
@@ -195,7 +211,7 @@ def test_read_exception_records_error_event_and_reraises() -> None:
     # Welle-6a-Convention: Adapter werfen typed
     # `DeviceProtocolPortReadError`-Subclasses (Vertrag aus
     # ADR 0030 §2.1). Library-Errors werden adapter-intern
-    # gemappt. Der Wrapper fängt nur typed DPP-Errors;
+    # gemappt. Der Wrapper faengt nur typed DPP-Errors;
     # Library-Bugs propagieren raw.
     library_error = DeviceProtocolPortReadError("read failed at server")
     adapter = _make_mock_adapter(read_raises=library_error)
@@ -269,6 +285,90 @@ def test_write_exception_records_error_event_and_reraises() -> None:
     assert len(error_events) == 1
     _, error_attrs = error_events[0]
     assert error_attrs["exception.type"] == "DeviceProtocolPortWriteError"
+
+
+# ---------------------------------------------------------------------------
+# Slice 034 F3: Operation-spezifischer Catch
+# ---------------------------------------------------------------------------
+
+
+def test_read_does_not_catch_write_error() -> None:
+    """Slice 034 F3: ein versehentlich aus `read()` geworfener
+    `WriteError` propagiert raw, OHNE `error`-Event-Attribution
+    auf dem read-Span (Adapter-Bug, kein Wrapper-Bug)."""
+    misclassified = DeviceProtocolPortWriteError("wrong category")
+    adapter = _make_mock_adapter(read_raises=misclassified)
+    trace = _RecordingTracePort()
+    wrapped = OtelSpanWrappedDeviceProtocolPort(adapter, trace_port=trace, adapter_type="modbus")
+
+    with pytest.raises(DeviceProtocolPortWriteError, match="wrong category"):
+        wrapped.read("t1")
+
+    # Span wird trotzdem geschlossen (finally-Pfad).
+    assert trace.spans[0].ended is True
+    # Aber KEIN error-Event — wrong-category propagiert raw.
+    error_events = [e for e in trace.spans[0].events if e[0] == "error"]
+    assert error_events == []
+
+
+def test_write_does_not_catch_read_error() -> None:
+    """Slice 034 F3: ein versehentlich aus `write()` geworfener
+    `ReadError` propagiert raw, OHNE `error`-Event-Attribution
+    auf dem write-Span."""
+    misclassified = DeviceProtocolPortReadError("wrong category")
+    adapter = _make_mock_adapter(write_raises=misclassified)
+    trace = _RecordingTracePort()
+    wrapped = OtelSpanWrappedDeviceProtocolPort(adapter, trace_port=trace, adapter_type="modbus")
+    cmd = _make_command("t1")
+
+    with pytest.raises(DeviceProtocolPortReadError, match="wrong category"):
+        wrapped.write("t1", cmd)
+
+    assert trace.spans[0].ended is True
+    error_events = [e for e in trace.spans[0].events if e[0] == "error"]
+    assert error_events == []
+
+
+# ---------------------------------------------------------------------------
+# Slice 034 F2: reference-Attribut
+# ---------------------------------------------------------------------------
+
+
+def test_reference_attribute_emitted_when_constructor_supplies_it() -> None:
+    """Slice 034 F2: optionales `reference`-Constructor-arg
+    wird als Span-Attribut emittiert."""
+    adapter = _make_mock_adapter(read_return=_make_telemetry_point("t1"))
+    trace = _RecordingTracePort()
+    wrapped = OtelSpanWrappedDeviceProtocolPort(
+        adapter,
+        trace_port=trace,
+        adapter_type="iec61850",
+        reference="IED1/LD0",
+    )
+
+    wrapped.read("battery1_voltage")
+
+    span = trace.spans[0]
+    assert span.attributes["reference"] == "IED1/LD0"
+
+
+def test_reference_attribute_present_on_write_span_too() -> None:
+    """Slice 034 F2: `reference` ist sowohl auf read- als
+    auch write-Spans."""
+    adapter = _make_mock_adapter()
+    trace = _RecordingTracePort()
+    wrapped = OtelSpanWrappedDeviceProtocolPort(
+        adapter,
+        trace_port=trace,
+        adapter_type="dnp3",
+        reference="outstation:1",
+    )
+    cmd = _make_command("breaker-1")
+
+    wrapped.write("breaker-1", cmd)
+
+    span = trace.spans[0]
+    assert span.attributes["reference"] == "outstation:1"
 
 
 # ---------------------------------------------------------------------------
@@ -360,8 +460,7 @@ def test_read_succeeds_when_start_span_raises() -> None:
 
 def test_read_succeeds_when_end_span_raises() -> None:
     """Falls `TracePort.end_span` eine Exception wirft, wird
-    der Adapter-Returnwert trotzdem zurueckgegeben — die
-    Span-Cleanup-Exception ist Adapter-intern."""
+    der Adapter-Returnwert trotzdem zurueckgegeben."""
     expected_point = _make_telemetry_point("t1")
     adapter = _make_mock_adapter(read_return=expected_point)
     semi_broken_trace = MagicMock()
@@ -376,3 +475,54 @@ def test_read_succeeds_when_end_span_raises() -> None:
     result = wrapped.read("t1")
 
     assert result is expected_point
+
+
+# ---------------------------------------------------------------------------
+# Slice 034 F1: Span-Lifecycle bei record_event-raises
+# ---------------------------------------------------------------------------
+
+
+def test_end_span_still_called_when_latency_record_event_raises() -> None:
+    """Slice 034 F1: bricht `record_event('latency')`, muss
+    `end_span` trotzdem laufen (Span-Lifecycle-Garantie)."""
+    expected_point = _make_telemetry_point("t1")
+    adapter = _make_mock_adapter(read_return=expected_point)
+    end_span_calls: list[SpanContext] = []
+    fake_context = SpanContext(trace_id="t", span_id="s", parent_span_id=None)
+    broken_trace = MagicMock()
+    broken_trace.start_span = MagicMock(return_value=fake_context)
+    broken_trace.record_event = MagicMock(side_effect=RuntimeError("record_event bug"))
+    broken_trace.end_span = MagicMock(side_effect=lambda ctx: end_span_calls.append(ctx))
+    wrapped = OtelSpanWrappedDeviceProtocolPort(
+        adapter, trace_port=broken_trace, adapter_type="modbus"
+    )
+
+    result = wrapped.read("t1")
+
+    # Adapter-Call lief durch.
+    assert result is expected_point
+    # end_span wurde trotz record_event-Bug aufgerufen.
+    assert end_span_calls == [fake_context]
+
+
+def test_end_span_still_called_when_error_record_event_raises() -> None:
+    """Slice 034 F1: bricht `record_event('error')`, muss
+    `end_span` trotzdem laufen — Exception aus dem Adapter-
+    Call wird wie gewohnt re-raised."""
+    library_error = DeviceProtocolPortReadError("read fail")
+    adapter = _make_mock_adapter(read_raises=library_error)
+    end_span_calls: list[SpanContext] = []
+    fake_context = SpanContext(trace_id="t", span_id="s", parent_span_id=None)
+    broken_trace = MagicMock()
+    broken_trace.start_span = MagicMock(return_value=fake_context)
+    broken_trace.record_event = MagicMock(side_effect=RuntimeError("record_event bug"))
+    broken_trace.end_span = MagicMock(side_effect=lambda ctx: end_span_calls.append(ctx))
+    wrapped = OtelSpanWrappedDeviceProtocolPort(
+        adapter, trace_port=broken_trace, adapter_type="modbus"
+    )
+
+    with pytest.raises(DeviceProtocolPortReadError):
+        wrapped.read("t1")
+
+    # end_span wurde trotz record_event-Bug aufgerufen.
+    assert end_span_calls == [fake_context]

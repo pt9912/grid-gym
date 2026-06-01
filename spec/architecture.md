@@ -525,14 +525,20 @@ Simulationskern validiert (`GG-SAFE-008`).
     (GPLv3-isoliert per SPDX-Header; **erster GPL-isolierter Sub-Module-
     Praezedenzfall** im sonst MIT-Repo; opt-in Extra
     `pip install grid-gym[iec61850]`) (ADR 0035 `Provisional`).
-- **OTel-Span-Wrap** (M4-Welle-6a-Pattern;
+- **OTel-Span-Wrap** (M4-Welle-6a-Pattern + Slice 034
+  Schaerfung;
   [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5):
   jeder `read(target)`/`write(target, command)`-Call wird in einen
-  TracePort-Span mit Standard-Attributen (`adapter_type`, `target`,
-  `reference`, `operation`, `latency_ms`) umschlossen. Implementation
-  in [Welle 6a](../docs/plan/planning/in-progress/M4-welle-6a.md) ueber
-  alle 5 Adapter-Pakete via Decorator-/Composition-/Welle-1-Factory-
-  Hook-Pattern.
+  TracePort-Span mit Standard-Span-Attributen (`adapter_type`,
+  `target`, `operation`; optional `reference` falls Caller eines
+  am Wrapper-Constructor uebergeben hat) umschlossen. Zusaetzlich
+  wird ein `latency`-Event mit Attribut `latency_ms` emittiert
+  (Event-encoded statt Span-Attribut, weil `TracePort` keine
+  `set_attribute`-Surface kennt und Latency erst nach Span-Open
+  bekannt ist; Slice-034-F2/F10-Schaerfung). Implementation in
+  [Welle 6a](../docs/plan/planning/in-progress/M4-welle-6a.md) ueber
+  alle 5 Adapter-Pakete via `OtelSpanWrappedDeviceProtocolPort`-
+  Composition-Wrapper.
 - `TelemetrySinkPort` — Append-only, deterministische Sortierung;
   Persistenzadapter sind austauschbar (Postgres → Timescale → Influx).
 - `ReplaySourcePort` — liefert Samples mit Originalzeitstempel +

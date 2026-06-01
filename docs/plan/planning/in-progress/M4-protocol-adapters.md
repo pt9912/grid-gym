@@ -1133,6 +1133,19 @@ Versuch.
   `IedServer`-Roundtrip fuer Float/Int32/String (Bool
   bleibt CFG-DO-Struktur-Issue Welle-7+). Bei Fehlschlag:
   Dokumentierter Defer auf M5/M6 mit konkretem Trigger.
+- [ ] **AC-ADAPTER-LIGHTWEIGHT-Coverage-Schaerfung** (Slice
+  034 F13 Vorlauf-Item) — `_is_adapter_lightweight_path`
+  (`tools/arch_check.py:1067-1090`) erfasst die Pfade
+  `src/grid_gym/adapters/driven/_protocol_*.py` NICHT, weil
+  `parts[4]` mit `protocol_`/`persistence_` starten muss
+  und Underscore-Prefix-Files dieses Praefix nicht erfuellen.
+  Cross-Adapter-Helper wie `_protocol_otel_wrap.py` (Welle
+  6a) sind damit aus der Komplexitaets-Gating-Pflicht
+  ausgenommen. Welle 6b zieht den Filter so weiter, dass
+  `_protocol_*.py`-Files unter `adapters/driven/` ebenfalls
+  unter AC-ADAPTER-LIGHTWEIGHT fallen (oder ein dediziertes
+  Contract `AC-CROSS-ADAPTER-LIGHTWEIGHT` fuer diese
+  Helper-Gruppe).
 - [ ] **C4-Doc-Sync** — `M4-welle-6b.md` Status, diese
   §3-Welle-6b-Section auf Done, Top-Level-Doku-Sync.
 

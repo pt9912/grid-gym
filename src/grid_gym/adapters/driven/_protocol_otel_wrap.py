@@ -1,5 +1,5 @@
 """Cross-Adapter-OTel-Span-Wrapper fuer `DeviceProtocolPort`-
-Implementer (M4 Welle 6a, ADR 0024 §4.5).
+Implementer (M4 Welle 6a, ADR 0024 §4.5; Slice 034 Review-Folge).
 
 Composition-Wrapper, der einen bereits-konstruierten konkreten
 `DeviceProtocolPort` (MQTT/Modbus/OPC-UA/DNP3/IEC-61850) mit
@@ -31,49 +31,85 @@ Welle-1-Factory-Hook (Variante C, im Repo nicht vorhanden —
 `"protocol.{adapter_type}.{operation}"` → `"protocol.iec61850.read"`,
 `"protocol.modbus.write"` usw.
 
-**Standard-Attribute pro Span:**
+**Standard-Attribute pro Span** (Slice 034 Schaerfung):
 
-- `adapter_type` — `"mqtt"` / `"modbus"` / `"opcua"` / `"dnp3"`
-  / `"iec61850"` (vom Wrapper-Constructor).
-- `target` — die Target-ID-String, wie sie an `read(target)`
-  oder `write(target, command)` uebergeben wurde.
+- `adapter_type` — eines aus `{"mqtt","modbus","opcua","dnp3",
+  "iec61850"}` (Constructor-Whitelist via `Literal`-Typ).
+- `target` — die Target-ID-String aus dem `read`/`write`-Call.
 - `operation` — `"read"` oder `"write"`.
-- `latency_ms` — `time.monotonic_ns()`-gemessen, gerundet
-  auf 3 Nachkommastellen.
+- `reference` — Adapter-spezifische Referenz-ID (z. B. IEC-61850
+  `IED/LD/LN.Object`-Path); **optional**, nur gesetzt falls
+  Caller eine `reference` am Constructor uebergeben hat.
 
-**Exception-Pfad:** Bei Exception im wrapped-Call:
+**Event-encoded Latency** (Slice 034 Schaerfung):
+
+`latency_ms` ist KEIN Span-Attribut (TracePort-Protocol hat
+keine `set_attribute`-Surface; Attribute koennen nur bei
+`start_span` gesetzt werden, latency ist da noch nicht bekannt).
+Stattdessen wird ein separates `record_event(span, "latency",
+attributes={"latency_ms": float})` emittiert. Downstream-OTLP-
+Collector kann zusaetzlich die Span-Duration (start_time →
+end_time) auswerten — beide Werte sind konsistent, da der
+Latency-Capture die gesamte Span-Dauer inkl. `start_span`-
+Overhead abbildet (Slice 034 F12: `start_ns` wird VOR
+`_safe_start_span` gemessen).
+
+**Exception-Pfad:** Bei typed `DeviceProtocolPort{Read,Write}Error`:
 
 1. `record_event(span, "error", attributes={"exception.type":
    exc.__class__.__name__, "exception.message": str(exc)})`.
-2. Attribute `error=True` am Span (via separate
-   `record_event`-Conventions; OTel-Style).
-3. Span wird im `finally` geschlossen (Span-Lifecycle bleibt
-   garantiert).
-4. Exception wird re-raised (Adapter-Vertrag bleibt
+2. Span wird im `finally` geschlossen (Span-Lifecycle bleibt
+   garantiert — Slice 034 F1: `record_event` + `end_span` in
+   separaten Try/Except-Bloecken, nicht im gemeinsamen
+   `suppress(Exception)`).
+3. Exception wird re-raised (Adapter-Vertrag bleibt
    unveraendert).
+
+**Operation-spezifischer Catch** (Slice 034 F3): `read()`-
+Wrapper faengt nur `DeviceProtocolPortReadError`; `write()`-
+Wrapper faengt nur `DeviceProtocolPortWriteError`. Falsche
+Operation-zugeordnete Errors (z. B. `ReadError` aus `write()`)
+propagieren raw OHNE `error`-Event-Attribution — der Wrapper
+attribuiert nur typed-korrekte Adapter-Fehler. Library-Bugs
+oder Adapter-Bugs (raw `RuntimeError`, `socket.timeout`)
+propagieren ebenfalls raw.
 
 **TracePort `None`-Pfad:** Falls `trace_port=None`, ist der
 Wrapper ein **Pass-Through** ohne Span — Adapter-Methoden
 werden direkt durchgereicht ohne OTel-Overhead. Pattern
 analog `_obs_start_span` in `tick_loop.py:373-375`.
 
-**Adapter-Robustheit (ADR 0024 §2.4):** Falls `start_span`
-selbst eine Exception wirft (z. B. TracePort-Adapter-Bug),
-laeuft der Adapter-Call trotzdem; Span-Wrap ist Observability,
-nicht Pflicht-Pfad. **Mitigation:** `start_span`-Exception
-wird abgefangen und der Adapter-Call ungewrappt ausgefuehrt
-(Best-Effort-Observability).
+**Adapter-Robustheit (ADR 0024 §2.4):** TracePort-Adapter-
+Bugs (Exceptions aus `start_span`/`record_event`/`end_span`
+selbst) duerfen den Adapter-Call nicht crashen. Best-Effort-
+Observability — eng-gefasste Exception-Tuples in allen drei
+Best-Effort-Helpern (`_safe_start_span`, `_safe_end_span`,
+`_record_exception`) sorgen fuer **sichtbare Signale** bei
+unbekannten Library-Exceptions statt stiller Swallow (Slice
+034 F9: einheitliches Catch-Tupel ueber alle drei Helper).
+
+**Trace-Parent-Span-Anti-Scope (Slice 034 F5):** Der Wrapper
+ruft `TracePort.start_span` OHNE `parent=`-Argument auf —
+Adapter-Spans sind aus Wrapper-Sicht Root-Spans. Trace-
+Chain-Propagation (Tick → Phase → Adapter) ist OTLP-
+Adapter-Sache via OTel-ContextVars (W3C-Trace-Context-
+Standard); der Wrapper bleibt context-var-naiv und delegiert
+die Parent-Detection an die OTel-SDK-Schicht. Welle-7-
+Closure pruft ob ein expliziter `parent_provider`-Hook
+notwendig ist.
 """
 
 from __future__ import annotations
 
 import contextlib
 import time
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
 from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPort,
-    DeviceProtocolPortError,
+    DeviceProtocolPortReadError,
+    DeviceProtocolPortWriteError,
 )
 
 if TYPE_CHECKING:
@@ -87,11 +123,29 @@ if TYPE_CHECKING:
 
 _NS_PER_MS = 1_000_000
 
+AdapterType = Literal["mqtt", "modbus", "opcua", "dnp3", "iec61850"]
+"""Welle-6a-Whitelist fuer `adapter_type`. Slice 034 F11:
+typed-narrow statt freier String — Caller-Mistakes
+(`"IEC61850"` vs `"iec61850"`) sind static-type-errors."""
+
+# Slice 034 F9: einheitliches Best-Effort-Catch-Tupel ueber
+# alle drei Helper. ADR 0024 §2.4-Adapter-Robustheit; unbekannte
+# Exceptions duerfen propagieren (sichtbares Signal statt
+# stiller Swallow).
+_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS: tuple[type[BaseException], ...] = (
+    RuntimeError,
+    AttributeError,
+    TypeError,
+    ValueError,
+    KeyError,
+    OSError,
+)
+
 
 class OtelSpanWrappedDeviceProtocolPort:
     """Composition-Wrapper um einen `DeviceProtocolPort`-
     Implementer mit OTel-Span-Wrap der `read()`/`write()`-
-    Calls (M4 Welle 6a, ADR 0024 §4.5).
+    Calls (M4 Welle 6a, ADR 0024 §4.5; Slice 034 Review-Folge).
 
     Implementiert selbst das `DeviceProtocolPort`-Protocol;
     `start()`/`stop()` werden ungewrappt durchgereicht
@@ -106,21 +160,26 @@ class OtelSpanWrappedDeviceProtocolPort:
     - `trace_port` — optionaler `TracePort` aus dem
       Observability-Trio. `None` macht den Wrapper zum
       Pass-Through.
-    - `adapter_type` — String-Identifier fuer das
-      `adapter_type`-Span-Attribut. Welle-6a-Convention:
-      `"mqtt"` / `"modbus"` / `"opcua"` / `"dnp3"` /
-      `"iec61850"`.
+    - `adapter_type` — `AdapterType`-Literal aus der
+      Welle-6a-Whitelist (`"mqtt"`/`"modbus"`/`"opcua"`/
+      `"dnp3"`/`"iec61850"`). Slice 034 F11.
+    - `reference` — optionaler Adapter-spezifischer
+      Referenz-Identifier (z. B. IEC-61850 IED/LD-Path);
+      wird als Span-Attribut emittiert falls != None.
+      Slice 034 F2.
     """
 
     def __init__(
         self,
         wrapped: DeviceProtocolPort,
         trace_port: "TracePort | None",
-        adapter_type: str,
+        adapter_type: AdapterType,
+        reference: str | None = None,
     ) -> None:
         self._wrapped: DeviceProtocolPort = wrapped
         self._trace_port: "TracePort | None" = trace_port
-        self._adapter_type: str = adapter_type
+        self._adapter_type: AdapterType = adapter_type
+        self._reference: str | None = reference
 
     # ------------------------------------------------------------------
     # `DeviceProtocolPort`-Surface
@@ -140,42 +199,40 @@ class OtelSpanWrappedDeviceProtocolPort:
     def read(self, target: str) -> "TelemetryPoint | None":
         """`read()` gewrappt in einen OTel-Span mit Standard-
         Attributen (`adapter_type`/`target`/`operation`/
-        `latency_ms`).
+        optional `reference`) und `latency`-Event.
 
-        Bei Exception wird ein `record_event("error", ...)`
-        am Span angehaengt; Span wird im `finally`
-        geschlossen; Exception re-raised.
+        Bei `DeviceProtocolPortReadError` (Slice 034 F3:
+        operation-spezifischer Catch) wird ein
+        `record_event("error", ...)` am Span angehaengt;
+        Span wird im `finally` geschlossen; Exception
+        re-raised.
         """
-        return self._call_with_span("read", target, self._wrapped.read)
+        return self._call_with_span_read(target)
 
     def write(self, target: str, command: "Command") -> None:
         """`write()` gewrappt in einen OTel-Span; analog
-        `read()`."""
-        # Lambdaesque-Currying haetten wir gerne; aber wir
-        # halten den Lifecycle-Code simpel und duplizieren
-        # die Span-Wrap-Struktur fuer `write` direkt.
+        `read()`, faengt nur `DeviceProtocolPortWriteError`
+        (Slice 034 F3)."""
         self._call_with_span_write(target, command)
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _call_with_span(
+    def _call_with_span_read(
         self,
-        operation: Literal["read"],
         target: str,
-        method: object,
     ) -> "TelemetryPoint | None":
-        """Span-gewrappter `read`-Call. Eigener Helper, weil
-        `read` und `write` unterschiedliche Returntypes haben
-        und mypy --strict-mode `Any`-Returns nicht akzeptiert.
-        """
-        span = self._safe_start_span(operation, target)
+        """Span-gewrappter `read`-Call. Slice 034 F12:
+        `start_ns` VOR `_safe_start_span` (inkludiert
+        `start_span`-Overhead in `latency_ms`)."""
         start_ns = time.monotonic_ns()
+        span = self._safe_start_span("read", target)
+        # Slice 034 F8: properly typed Callable statt `object`.
+        method: Callable[[str], "TelemetryPoint | None"] = self._wrapped.read
         try:
-            # method ist self._wrapped.read; bound method.
-            result: "TelemetryPoint | None" = method(target)  # type: ignore[operator]
-        except DeviceProtocolPortError as exc:
+            result = method(target)
+        except DeviceProtocolPortReadError as exc:
             self._record_exception(span, exc)
             raise
         else:
@@ -188,14 +245,15 @@ class OtelSpanWrappedDeviceProtocolPort:
         target: str,
         command: "Command",
     ) -> None:
-        """Span-gewrappter `write`-Call. Analog
-        `_call_with_span` aber mit `command`-Argument und
-        `None`-Returntype."""
-        span = self._safe_start_span("write", target)
+        """Span-gewrappter `write`-Call. Slice 034 F12:
+        `start_ns` VOR `_safe_start_span`. Slice 034 F3:
+        operation-spezifischer Catch (nur
+        `DeviceProtocolPortWriteError`)."""
         start_ns = time.monotonic_ns()
+        span = self._safe_start_span("write", target)
         try:
             self._wrapped.write(target, command)
-        except DeviceProtocolPortError as exc:
+        except DeviceProtocolPortWriteError as exc:
             self._record_exception(span, exc)
             raise
         finally:
@@ -205,54 +263,63 @@ class OtelSpanWrappedDeviceProtocolPort:
         self, operation: Literal["read", "write"], target: str
     ) -> "SpanContext | None":
         """Oeffnet einen Span; Best-Effort-Observability —
-        Exception aus `start_span` selbst (Adapter-Bug)
-        wird abgefangen und der Adapter-Call laeuft trotzdem
-        (ADR 0024 §2.4 Adapter-Robustheit)."""
+        TracePort-Adapter-Bugs (eng-gefasstes Catch-Tupel)
+        crashen den Adapter-Call nicht (ADR 0024 §2.4)."""
         if self._trace_port is None:
             return None
-        # Best-Effort-Observability: TracePort-Adapter-Bugs (Runtime/
-        # Attribute/Type/Value/Key/OSError-Famille; ADR 0024 §2.4)
-        # duerfen den Adapter-Call nicht crashen. Eng-gefasste Exception-
-        # Liste statt blind `Exception` — falls neue Library-Exceptions
-        # auftauchen, faellt der Adapter mit dem unbekannten Fehler
-        # (sichtbares Signal statt stiller Swallow).
+        attributes: dict[str, object] = {
+            "adapter_type": self._adapter_type,
+            "target": target,
+            "operation": operation,
+        }
+        # Slice 034 F2: `reference` ist optional Span-Attribut.
+        if self._reference is not None:
+            attributes["reference"] = self._reference
         try:
             return self._trace_port.start_span(
                 f"protocol.{self._adapter_type}.{operation}",
-                attributes={
-                    "adapter_type": self._adapter_type,
-                    "target": target,
-                    "operation": operation,
-                },
+                attributes=attributes,
             )
-        except (RuntimeError, AttributeError, TypeError, ValueError, KeyError, OSError):
+        except _BEST_EFFORT_OBSERVABILITY_EXCEPTIONS:
             return None
 
     def _safe_end_span(self, span: "SpanContext | None", start_ns: int) -> None:
-        """Schliesst einen offenen Span mit `latency_ms`-
-        Event. Best-Effort: Exception aus `end_span` selbst
-        wird abgefangen (ADR 0024 §2.4 Adapter-Robustheit)."""
+        """Schliesst einen offenen Span mit `latency`-Event.
+
+        Slice 034 F1 + F9: `record_event` und `end_span`
+        sind in SEPARATEN Best-Effort-Try-Bloecken — bricht
+        `record_event` selbst (z. B. Library-Bug), wird
+        `end_span` trotzdem ausgefuehrt. Span-Lifecycle-
+        Garantie wiederhergestellt.
+        """
         if self._trace_port is None or span is None:
             return
         latency_ms = round((time.monotonic_ns() - start_ns) / _NS_PER_MS, 3)
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(*_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS):
             self._trace_port.record_event(
                 span,
                 "latency",
                 attributes={"latency_ms": latency_ms},
             )
+        with contextlib.suppress(*_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS):
             self._trace_port.end_span(span)
 
-    def _record_exception(self, span: "SpanContext | None", exc: BaseException) -> None:
+    def _record_exception(
+        self,
+        span: "SpanContext | None",
+        exc: DeviceProtocolPortReadError | DeviceProtocolPortWriteError,
+    ) -> None:
         """Haengt ein `error`-Event an den offenen Span.
-        Best-Effort; falls TracePort/Span `None` oder
-        Library-Exception aus `record_event` selbst,
-        wird der Adapter-Call-Exception trotzdem
-        weiterpropagiert (re-raise im aufrufenden
-        `_call_with_span`/`_call_with_span_write`)."""
+
+        Slice 034 F9: gleiches Catch-Tupel wie
+        `_safe_start_span`/`_safe_end_span`. Slice 034
+        Doc-Schaerfung: `exc`-Typ ist auf die typed-
+        DPP-Errors verengt (wird nur aus den Operation-
+        spezifischen Except-Klauseln aufgerufen).
+        """
         if self._trace_port is None or span is None:
             return
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(*_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS):
             self._trace_port.record_event(
                 span,
                 "error",

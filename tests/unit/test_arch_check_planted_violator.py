@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -48,20 +49,28 @@ _TOOLS_PATH = Path(__file__).resolve().parents[2] / "tools" / "arch_check.py"
 
 
 @pytest.fixture(scope="module")
-def _arch_check_module() -> object:
+def _arch_check_module() -> Iterator[object]:
     """Importiert `tools/arch_check.py` als Modul fuer
     direkten Zugriff auf `_check_adapter_lightweight`.
 
     `tools/arch_check.py` ist kein installiertes Paket; wir
     laden es via `importlib.util.spec_from_file_location`.
+
+    Slice 034 F6: `sys.modules`-Eintrag wird durch Yield-
+    Cleanup wieder entfernt — keine process-wide Mutation,
+    pytest-xdist-Race-frei. Zuvor: direkte `sys.modules[...]
+    = module`-Assignment ohne Teardown.
     """
     spec = importlib.util.spec_from_file_location("_arch_check_under_test", _TOOLS_PATH)
     if spec is None or spec.loader is None:
         pytest.fail(f"konnte arch_check.py nicht laden: {_TOOLS_PATH}")
     module = importlib.util.module_from_spec(spec)
     sys.modules["_arch_check_under_test"] = module
-    spec.loader.exec_module(module)
-    return module
+    try:
+        spec.loader.exec_module(module)
+        yield module
+    finally:
+        sys.modules.pop("_arch_check_under_test", None)
 
 
 def _write_temp_repo(tmp_path: Path, rel_path: str, source: str) -> tuple[Path, Path]:
@@ -179,23 +188,35 @@ def test_planted_violator_under_driving_path_is_caught(
 # ---------------------------------------------------------------------------
 
 
-def test_high_complexity_outside_adapter_paths_is_ignored(
-    _arch_check_module: object, tmp_path: Path
+def test_path_filter_rejects_paths_outside_adapter_boundary(
+    _arch_check_module: object,
 ) -> None:
-    """Datei unter `hexagon/core/` mit complex Funktion soll
-    `_check_adapter_lightweight` ignorieren (Pfad-Filter)."""
-    rel = "src/grid_gym/hexagon/core/simulation/some_module.py"
-    repo_root, src_root = _write_temp_repo(tmp_path, rel, _HIGH_COMPLEXITY_SOURCE)
+    """Slice 034 F4: zuvor war dieser Test vacuous — er schrieb
+    eine Datei unter `hexagon/core/` und assertierte
+    `violations == []`, aber `_check_adapter_lightweight` ruft
+    `_iter_py_files(adapters_root)` auf, das hexagon-Pfade
+    niemals erreicht. Der Test war false-clean.
 
-    violations = list(
-        _arch_check_module._check_adapter_lightweight(repo_root, src_root)  # type: ignore[attr-defined]
-    )
+    Korrekter Filter-Praezisions-Test: direktes Pruefen von
+    `_is_adapter_lightweight_path` mit Pfaden ausserhalb der
+    Adapter-Boundary — die einzige Schicht, die die Property
+    'hexagon/ wird ignoriert' tatsaechlich enforced."""
+    is_adapter_path = _arch_check_module._is_adapter_lightweight_path  # type: ignore[attr-defined]
 
-    # Pfad ist nicht unter den AC-ADAPTER-LIGHTWEIGHT-Filtern;
-    # _iter_py_files startet bei adapters/, also keine Iteration.
-    assert violations == [], (
-        f"hexagon/core soll von AC-ADAPTER-LIGHTWEIGHT ignoriert werden; got {violations}"
-    )
+    # Pfade ausserhalb adapters/ muessen False zurueckgeben.
+    assert is_adapter_path("src/grid_gym/hexagon/core/simulation/foo.py") is False
+    assert is_adapter_path("src/grid_gym/hexagon/ports/driven/bar.py") is False
+    assert is_adapter_path("tools/arch_check.py") is False
+    assert is_adapter_path("tests/unit/foo.py") is False
+    # Pfade UNTER adapters/ aber im falschen Layer.
+    assert is_adapter_path("src/grid_gym/adapters/observability_null/x.py") is False
+    # Driven-Layer, aber kein protocol_*/persistence_*-Bucket.
+    assert is_adapter_path("src/grid_gym/adapters/driven/observability_null/x.py") is False
+    assert is_adapter_path("src/grid_gym/adapters/driven/_protocol_otel_wrap.py") is False
+    # Positiv-Kontrollen (zur Sicherheit dass die Funktion nicht trivial False ist).
+    assert is_adapter_path("src/grid_gym/adapters/driving/http_api/v1/x.py") is True
+    assert is_adapter_path("src/grid_gym/adapters/driven/protocol_modbus/foo.py") is True
+    assert is_adapter_path("src/grid_gym/adapters/driven/persistence_postgres/foo.py") is True
 
 
 def test_high_complexity_under_unrelated_adapter_bucket_is_ignored(
