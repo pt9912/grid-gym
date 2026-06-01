@@ -156,44 +156,13 @@ Stand **2026-06-01**:
     (naechster aktiver Slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** ~1626 Unit-Tests + 49 Integration-Tests passed + 4 skipped
-(Stand nach M5-Welle-3-Closure 2026-06-01 — +16 Unit-Tests
-ggue. M5-Welle-2 fuer Live-Telemetry: 3 Port-Surface +
-6 Adapter-Pub/Sub + 4 Demo-Generator + 3 Dashboard-Route;
-+6 Integration-Tests = 4 Async-Pub/Sub-Probe-Run + 2 End-
-to-End-Live-Telemetry-Smoke. Stand nach M5-Welle-2-Closure:
-+10 Unit-Tests ggue. M5-Welle-1 fuer UI-Foundation: 3 in
-`test_templates.py` (Jinja2-Factory + Pfad-Resolution +
-Render-Smoke) + 7 in `test_routes.py` (2 Page-Route-Full +
-2 HTMX-Partial-Pfade + 3 Static-Mount-Assets); +2
-Integration-Tests fuer End-to-End-UI-Foundation-Smoke +
-OpenAPI-Schema-Check mit `tags=["ui"]`-Marker. Stand nach
-M5-Welle-1-Closure: +16 Unit-Tests ggue. M4-Welle-7 fuer
-HTTP-API-Surface: 6 in
-`test_runs_router.py` (3 GET × Happy/404) + 10 in
-`test_runs_action_router.py` (POST: Happy/422/404; WS:
-3-Counter-Push + 1008-Close); +2 Integration-Tests fuer
-End-to-End-HTTP-API-Smoke + OpenAPI-Schema-Validation inkl.
-Decision-API-1-Enum-Validation. Stand nach M4-Welle-6b-
-Closure inkl. M4-Welle-7-Closure 2026-06-01 — +20 Unit-
-Tests ggue. Welle 6a fuer Welle 6b:
-9 SPDX-Lint + 8 AC-IEC61850-GPL-BOUNDARY-Property + 1
-F13-Cross-Adapter-Helper-Positiv + 2 Slice-034-Welle-6a-
-Adapter-Updates. Welle 6a hatte +27 Unit-Tests ggue. Welle 5b
-fuer Cross-Adapter-Hardening: 13 OTel-Span-Wrap-Tests +
-7 AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Property-Tests +
-7 Slice-033-Review-Folge-Updates. Welle 5b hatte +75 Unit-Tests ggue.
-Welle-5a-Closure fuer den IEC-61850-Adapter: 21 Config-
-Validation + 30 Codec-Roundtrip inkl. hypothesis-Property-
-Tests + Container-Repr-Rejection + Overflow-Pfade + 18
-Protocol-Port-Lifecycle gegen Mock-Client + 6 Read-Pfad-
-Edge-Cases; 4 Integration-Smokes fuer den in-process
-`IedServer` per `pytest.mark.skip` deaktiviert unter dem
-**2c-Mock-only-Fallback** aktiv in Welle 5b — Probe-Run
-auf Python 3.12 hat den vollen MMSClient↔IedServer-
-Roundtrip verifiziert, aber der grid-gym-Docker-Stack
-mit Python 3.14 segfaultet im `_pyiec61850.so`-SWIG-Layer;
-Welle-6-Schaerfungspfade in ADR 0035 §2.5 dokumentiert).
+**Testbilanz (Stand 2026-06-01 nach M5-Welle-3-Closure):**
+~1626 Unit-Tests + 49 Integration-Tests passed + 4 skipped.
+Die 4 skipped Tests sind der **2c-Mock-only-Fallback** fuer
+den IEC-61850-In-Process-`IedServer`-Smoke (ADR 0035 §2.5;
+Trigger 009). Pro-Welle-Test-Inkremente + Begruendungen
+leben kanonisch in den Slice-Docs unter
+[`docs/plan/planning/`](docs/plan/planning/).
 
 **`make gates`** ist 10-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check

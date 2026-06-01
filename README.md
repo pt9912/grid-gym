@@ -149,39 +149,13 @@ As of **2026-06-01**:
   - Wave 4 — Replay-Controls + Alarms · `Pending` (next active slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** ~1626 unit tests + 49 integration tests passed + 4 skipped
-(state after M5 Wave 3 closure 2026-06-01 — +16 unit tests vs. M5
-Wave 2 for Live-Telemetry: 3 port-surface + 6 adapter pub/sub +
-4 demo-generator + 3 dashboard-route; +6 integration tests = 4 async-
-pub/sub probe-run + 2 end-to-end live-telemetry smoke. State after
-M5 Wave 2 closure: +10 unit tests vs. M5 Wave 1 for UI-Foundation:
-3 in `test_templates.py` (Jinja2-Factory + path resolution + render
-smoke) + 7 in `test_routes.py` (2 page-route full + 2 HTMX-partial
-paths + 3 static-mount assets); +2 integration tests for the
-end-to-end UI-Foundation smoke + OpenAPI-schema check with
-`tags=["ui"]` marker. State after M5 Wave 1 closure: +16 unit tests vs.
-M4 Wave 7 for HTTP-API-Surface: 6 in `test_runs_router.py` (3 GET ×
-Happy/404) + 10 in `test_runs_action_router.py` (POST: Happy/422/404;
-WS: 3-counter-push + 1008-close); +2 integration tests for the
-end-to-end HTTP-API smoke + OpenAPI-schema validation incl.
-Decision-API-1 enum validation. State after M4 Wave 6b closure incl.
-M4 Wave 7 closure 2026-06-01
-— +20 unit tests vs. Wave 6a for Wave 6b: 9 SPDX lint + 8
-AC-IEC61850-GPL-BOUNDARY property + 1 F13 cross-adapter helper
-positive + 2 Slice-034 Wave-6a adapter updates. Wave 6a added
-+27 vs. Wave 5b for cross-adapter hardening: 13 OTel-span-wrap tests +
-7 AC-ADAPTER-LIGHTWEIGHT planted-violator property tests +
-7 Slice-033 review-folge updates. Wave 5b added +75 vs. Wave 5a
-for the IEC-61850 adapter: 21 config validation + 30
-codec roundtrip with hypothesis property tests + container-repr
-rejection + overflow paths + 18 protocol-port lifecycle against
-mock-client + 6 read-path edge cases; 4 integration smokes for
-the in-process `IedServer` deferred via `pytest.mark.skip` under
-the **2c mock-only fallback** active in Wave 5b — the probe-run
-on Python 3.12 verified full MMSClient↔IedServer roundtrip, but
-the grid-gym Docker stack on Python 3.14 segfaults inside the
-`_pyiec61850.so` SWIG layer; Wave 6 sharpening paths documented
-in ADR 0035 §2.5).
+**Test balance (state after M5 Wave 3 closure 2026-06-01):**
+~1626 unit tests + 49 integration tests passed + 4 skipped. The
+4 skipped tests are the **2c mock-only fallback** for the
+IEC-61850 in-process `IedServer` smoke (ADR 0035 §2.5;
+trigger 009). Per-wave test increments + rationale live
+canonically in the slice docs under
+[`docs/plan/planning/`](docs/plan/planning/).
 
 **`make gates`** is 10-stage and cache-free green without override:
 lint, format-check, `mypy --strict`, arch-check
