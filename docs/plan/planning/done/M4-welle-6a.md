@@ -103,7 +103,7 @@ dieser Commit):**
   I-f) explizit.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 6a`](M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 6a`](../in-progress/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -315,7 +315,7 @@ otel_wrap.py`-Wrapper braucht keinen eigenen ADR.
 - [`../done/M4-welle-1.md`](../done/M4-welle-1.md) §7
   (Folge-Pflicht-Liste — `AC-ADAPTER-LIGHTWEIGHT`-
   Planted-Violator-Property-Test).
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 6a (kanonische Slice-Spezifikation).
 - [`../../adr/0024-observability-port-trio.md`](../../adr/0024-observability-port-trio.md)
   §4.5 (OTel-Span-Wrap-Pattern; Welle-6+-Forward-Pointer).

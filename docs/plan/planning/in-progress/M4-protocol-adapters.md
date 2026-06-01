@@ -1038,9 +1038,9 @@ Violator-Test + `strict_bytes = true` + compose-
 Aufraeumung + Trigger-004-Re-Eval-Defer), C4 (dieser
 Commit; Status/DoD-Sync + Top-Level-Doku-Sync). Slice-
 Begleit-Doc
-[`M4-welle-6a.md`](M4-welle-6a.md) (bleibt in
-`in-progress/` bis M4-Welle-6b-Pre-C0-Move; Pattern
-analog Welle 1..5b).
+[`../done/M4-welle-6a.md`](../done/M4-welle-6a.md)
+(Self-Close-Move `d1cb65d` als M4-Welle-6b-Pre-C0;
+Pattern analog Welle 1..5b).
 
 - [x] **Adapter-Profil-Index** unter
   `spec/protocol_profiles/` als kanonischem Spec-Pfad

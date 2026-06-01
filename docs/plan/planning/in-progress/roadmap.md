@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6a (Done; Welle 6b IEC-61850-Lizenz-und-Smoke-Hardening als naechstes)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 mit Welle 6a (Done inkl. Slice 034 Review-Folge + Self-Close-Move) abgeschlossen; Welle 6b (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft) als naechstes
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -115,8 +115,13 @@
   strict_bytes = true` Aktivierung mit Trigger-006-Closure
   + `compose.yml`-Header-Konsolidierung mit 2-Tabellen-
   Sibling-Inventar + Trigger-004-Re-Eval-Defer auf M5/M6)
-  + C4 (dieser Commit; Status/DoD-Sync). 1537 → 1564 Unit-
-  Tests (+27 mit OTel-Span-Wrap + Planted-Violator).
+  + C4 `69b37f1` (Status/DoD-Sync) + **Slice 034 `bde8fdb`**
+  (Review-Folge: 1 HIGH + 6 MEDIUM + 4 LOW-MEDIUM + 4 LOW
+  Findings adressiert; F13 als Welle-6b-Vorlauf-Item) +
+  Hash-Sync `b6a778d` + **Self-Close-Move `d1cb65d`** als
+  M4-Welle-6b-Pre-C0 (rename-only). 1537 → 1566 Unit-Tests
+  (+29 unique mit 19 OTel-Span-Wrap inkl. Slice-034-Fixes
+  + 6 Planted-Violator + 4 Slice-034-Adapter-Tests).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-6b (IEC-61850-Lizenz-und-Smoke-Hardening,
@@ -172,16 +177,17 @@
   (erstmaliger Repo-Praezedenzfall fuer GPL-isolierte Sub-
   Module in einem sonst MIT-Projekt); `Accepted` geplant
   mit M4-Welle-7-Closure).
-- **Tests:** 1564 Unit + 35 Integration passed + 4 skipped
-  (Stand nach M4-Welle-6a-Closure; +421 Unit-Tests ggue.
-  M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
-  +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA + +6
-  Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
-  String-Read-Quality.INVALID/Float32-Quantisierung +
-  +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
-  + +27 Welle 6a fuer Cross-Adapter-Hardening
-  (13 OTel-Span-Wrap-Tests + 7 AC-ADAPTER-LIGHTWEIGHT-
-  Planted-Violator-Tests + 7 Slice-033-Review-Folge-
+- **Tests:** 1566 Unit + 35 Integration passed + 4 skipped
+  (Stand nach M4-Welle-6a-Closure inkl. Slice 034; +423
+  Unit-Tests ggue. M3-Closure [+23 Welle 1 + +50 Welle 2
+  + +95 Welle 3 + +8 Review-Folge 031 + +81 Welle 4 fuer
+  OPC-UA + +6 Slice-032 fuer Loop-Thread-Lifecycle/Marshal-
+  Pfad/String-Read-Quality.INVALID/Float32-Quantisierung
+  + +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
+  + +29 Welle 6a fuer Cross-Adapter-Hardening inkl. Slice
+  034 (19 OTel-Span-Wrap-Tests inkl. F1/F2/F3-Negativ-
+  Tests + 6 AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Tests
+  + 4 Slice-034-Adapter-Tests + 7 Slice-033-Review-Folge-
   Updates)] + 14 Integration-Tests [Mosquitto-MQTT-Smoke
   aus Welle 2 + in-process-pymodbus-Server-Smoke aus
   Welle 3 + 8 in-process-`asyncua.Server`-Smokes aus

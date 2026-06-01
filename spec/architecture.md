@@ -536,7 +536,7 @@ Simulationskern validiert (`GG-SAFE-008`).
   (Event-encoded statt Span-Attribut, weil `TracePort` keine
   `set_attribute`-Surface kennt und Latency erst nach Span-Open
   bekannt ist; Slice-034-F2/F10-Schaerfung). Implementation in
-  [Welle 6a](../docs/plan/planning/in-progress/M4-welle-6a.md) ueber
+  [Welle 6a](../docs/plan/planning/done/M4-welle-6a.md) ueber
   alle 5 Adapter-Pakete via `OtelSpanWrappedDeviceProtocolPort`-
   Composition-Wrapper.
 - `TelemetrySinkPort` — Append-only, deterministische Sortierung;
