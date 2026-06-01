@@ -157,6 +157,18 @@ FROM source AS docs-check
 RUN uv run python tools/check_refs.py
 
 # ---------------------------------------------------------------------------
+# spdx-check: tools/check_spdx.py — SPDX-License-Identifier-Lint fuer die
+# IEC-61850-GPL-Boundary (Welle-5b Decision I-f, ADR 0035; Welle-6b C1).
+# Verifiziert, dass alle Dateien unter protocol_iec61850/ + tests/.../iec61850/
+# + tests/integration/test_iec61850_*.py + tests/integration/fixtures/iec61850/
+# einen `SPDX-License-Identifier: GPL-3.0-only`-Header tragen.
+# Lint-Failure bei fehlendem oder falschem Identifier; in `make gates`
+# integriert.
+# ---------------------------------------------------------------------------
+FROM source AS spdx-check
+RUN uv run python tools/check_spdx.py
+
+# ---------------------------------------------------------------------------
 # noqa-check: tools/check_noqa.py — `# noqa`-Marker-Reporter (Slice 027).
 # Standardmodus: Report mit Exit-Code 0. Vor dem Plan-§4-Scharfschalten
 # nuetzlich fuer einen aktuellen Bestands-Lauf.

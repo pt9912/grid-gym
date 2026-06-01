@@ -48,7 +48,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 
 .PHONY: help \
 	lint format-check typecheck \
-	arch-check arch-check-imports arch-check-custom docs-check \
+	arch-check arch-check-imports arch-check-custom docs-check spdx-check \
 	test test-unit test-determinism test-replay test-fault \
 	test-integration \
 	coverage-gate coverage-gate-critical \
@@ -85,6 +85,7 @@ help:
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
 	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"
+	@echo "  make spdx-check        tools/check_spdx.py — SPDX-License-Identifier-Lint fuer IEC-61850-GPL-Boundary (ADR 0035, M4 Welle 6b)"
 	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
 	@echo "  make noqa-gate         tools/check_noqa.py --fail-on-noqa (Plan §4 hart in 'make gates'; FILES=... fuer paketweise Scope-Eingrenzung)"
 	@echo ""
@@ -105,7 +106,7 @@ help:
 	@echo "  make openapi-validate  GG-QG-006 — OpenAPI-Spec aus FastAPI exportieren und validieren"
 	@echo ""
 	@echo "Aggregator:"
-	@echo "  make gates             lint + format-check + typecheck + arch-check + test-unit + coverage-gate + coverage-gate-critical + dep-audit + noqa-gate"
+	@echo "  make gates             lint + format-check + typecheck + arch-check + test-unit + coverage-gate + coverage-gate-critical + dep-audit + noqa-gate + spdx-check"
 	@echo "  make ci                gates + test-integration + openapi-validate + image-audit"
 	@echo "  make fullbuild         ci + build + runtime"
 	@echo ""
@@ -157,6 +158,13 @@ arch-check-custom:
 
 docs-check:
 	$(DOCKER_BUILD) --target docs-check -t $(IMAGE_PREFIX)-docs-check:latest
+
+# `tools/check_spdx.py` — SPDX-License-Identifier-Lint fuer die
+# IEC-61850-GPL-Boundary (ADR 0035 Decision I-f, M4 Welle 6b C1).
+# Lint-Failure bei fehlendem oder falschem Identifier; in `make gates`
+# integriert.
+spdx-check:
+	$(DOCKER_BUILD) --target spdx-check -t $(IMAGE_PREFIX)-spdx-check:latest
 
 # `tools/check_noqa.py` — `# noqa`-Marker-Reporter (Slice 027 Plan).
 # Default-Modus ist Report-only (Exit 0); fuer einen Bestands-Lauf vor
@@ -290,8 +298,8 @@ openapi-validate:
 
 # --- Aggregierte Gates -----------------------------------------------------
 
-gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate
-	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (19 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker)"
+gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
+	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (19 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
 
 # M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen
 # heute ein explizites `CRITICAL_COV_TARGETS`-Override, weil der
