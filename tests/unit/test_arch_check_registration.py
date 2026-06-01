@@ -46,6 +46,12 @@ _EXPECTED_CHECK_FUNCTIONS: frozenset[str] = frozenset(
         # `from grid_gym.hexagon.core.simulation.tick_loop import _<...>`
         # ausserhalb des `tick_loop.py`-Moduls; Whitelist via pyproject.
         "_check_tick_loop_private_resume_errors",
+        # AC-IEC61850-GPL-BOUNDARY (M4 Welle 6b C2, ADR 0035 Decision
+        # I-f; 14. arch_check-Contract). Verbietet direkten Import von
+        # `grid_gym.adapters.driven.protocol_iec61850.*` aus MIT-Code
+        # (Welle-5b-Decision-I-f-Static-Enforcement: bisher Konvention,
+        # jetzt Static-Check).
+        "_check_iec61850_gpl_boundary",
     }
 )
 
@@ -111,17 +117,20 @@ def test_no_unexpected_checks_registered_in_main() -> None:
 
 
 def test_registered_count_matches_adr_count() -> None:
-    """Die Zahl ist heute genau 13: sechzehn urspruengliche A-1-Contracts
+    """Die Zahl ist heute genau 14: zehn urspruengliche A-1-Contracts
     (`ADR 0002 §A-1`) plus AC-NO-COVERAGE-PRAGMA per `ADR 0029` plus
     AC-OTLP-ADAPTER-NO-TIME per M3-Welle-6-Review-Folge-H-2
     (Schaerfung-ohne-Supersedes von `ADR 0024 §4.5.5 D-4` per ADR 0011-
     Pattern) plus AC-TICK-LOOP-PRIVATE-RESUME-ERRORS per Slice 028
-    (Slice 027 Review-Folge L-5); davon sechs ueber `import-linter` und
-    dreizehn ueber `tools/arch_check.py`."""
-    expected_arch_check_contracts = 13
+    (Slice 027 Review-Folge L-5) plus AC-IEC61850-GPL-BOUNDARY per
+    M4-Welle-6b-C2 (Welle-5b-Decision-I-f-Static-Enforcement,
+    ADR 0035); zusammen 14 ueber `tools/arch_check.py` und 6 ueber
+    `import-linter`."""
+    expected_arch_check_contracts = 14
     registered = _extract_main_check_calls()
     assert len(registered) == expected_arch_check_contracts, (
         f"arch_check.py main() registriert {len(registered)} Contracts, "
         f"erwartet {expected_arch_check_contracts} "
-        "(ADR 0002 §A-1 + ADR 0029 + ADR 0024 §4.5.5 + Slice 028)."
+        "(ADR 0002 §A-1 + ADR 0029 + ADR 0024 §4.5.5 + Slice 028 + "
+        "ADR 0035 §I-f Welle-6b-C2)."
     )

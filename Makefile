@@ -81,7 +81,7 @@ help:
 	@echo "  make lint              ruff check (BLE/TRY/B/DTZ/S/TID/C901/PLR*/N/RET/SIM/ARG/RUF + banned-api)"
 	@echo "  make format-check      ruff format --check (kein Auto-Fix)"
 	@echo "  make typecheck         mypy --strict (ADR 0005, GG-QG-005, GG-PRINC-004/005 LSP/ISP)"
-	@echo "  make arch-check        import-linter + tools/arch_check.py (19 A-1-Contracts: 6 import-linter + 13 arch_check)"
+	@echo "  make arch-check        import-linter + tools/arch_check.py (20 A-1-Contracts: 6 import-linter + 14 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
 	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"
@@ -299,7 +299,7 @@ openapi-validate:
 # --- Aggregierte Gates -----------------------------------------------------
 
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
-	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (19 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
+	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
 
 # M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen
 # heute ein explizites `CRITICAL_COV_TARGETS`-Override, weil der

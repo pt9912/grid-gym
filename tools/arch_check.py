@@ -43,6 +43,15 @@ Welle 3 deckt:
   Helfer vor Aufruf-Site-Fixierung. Whitelist via `[tool.grid_gym.
   arch_check] tick-loop-private-import-exempt` als `"<rel-pfad>:
   <symbol>"`-Paare
+- AC-IEC61850-GPL-BOUNDARY — kein Code unter `src/grid_gym/` (ausser
+  `adapters/driven/protocol_iec61850/*` selbst) darf
+  `grid_gym.adapters.driven.protocol_iec61850.*` direkt importieren
+  (Welle-5b Decision I-f, ADR 0035; M4 Welle 6b C2). Schuetzt die
+  MIT-Reinheit des Aggregats: statischer Import in MIT-Code wuerde
+  das Aggregat GPL-pflichtig machen. Welle-1-`build_protocol_ports`-
+  Factory bleibt als Bruecken-Pfad ueber ImportError-tolerantes
+  Plugin-Pattern. Whitelist: nur Dateien unter
+  `protocol_iec61850/*` selbst.
 
 Konfiguration kommt aus `[tool.grid_gym.arch_check]` in
 `pyproject.toml`. Exit-Code 0 = alle Contracts kept, 1 = mindestens
@@ -219,6 +228,7 @@ def main() -> int:
         violations.extend(_check_adapter_lightweight(repo_root, src_root))
         violations.extend(_check_no_coverage_pragma(repo_root, src_root))
         violations.extend(_check_otlp_adapter_no_time(repo_root, src_root))
+        violations.extend(_check_iec61850_gpl_boundary(repo_root, src_root))
         violations.extend(_check_tick_loop_private_resume_errors(repo_root, src_root, config))
 
     for violation in violations:
@@ -456,6 +466,71 @@ def _otlp_adapter_no_time_violations(node: ast.AST, rel: str) -> Iterator[Violat
                 f"{rel}:{node.lineno}",
                 f"from {node.module} import {imported} — Wall-Clock im OTLP-Adapter "
                 "verboten (ADR 0024 §4.5.5 D-4)",
+            )
+
+
+# ---------------------------------------------------------------------------
+# AC-IEC61850-GPL-BOUNDARY (M4 Welle 6b C2, ADR 0035 Decision I-f)
+# ---------------------------------------------------------------------------
+
+
+_IEC61850_MODULE_PREFIX = "grid_gym.adapters.driven.protocol_iec61850"
+_IEC61850_BOUNDARY_PREFIX = "src/grid_gym/adapters/driven/protocol_iec61850/"
+
+
+def _check_iec61850_gpl_boundary(repo_root: Path, src_root: Path) -> Iterator[Violation]:
+    """`grid_gym.adapters.driven.protocol_iec61850.*` darf nur aus
+    `protocol_iec61850/*` selbst importiert werden (ADR 0035
+    Decision I-f, M4 Welle 6b C2).
+
+    Schuetzt die MIT-Lizenz-Reinheit des restlichen Code: ein
+    statischer Import in MIT-Code wuerde das Aggregat GPL-pflichtig
+    machen (GPLv3 §5). Welle-1-`build_protocol_ports`-Factory bleibt
+    als Bruecken-Pfad ueber ImportError-tolerantes Plugin-Pattern
+    (kein direkter `import grid_gym.adapters.driven.protocol_iec61850`-
+    Knoten im AST).
+    """
+    for py_file in _iter_py_files(src_root):
+        rel = _rel(repo_root, py_file)
+        if rel.startswith(_IEC61850_BOUNDARY_PREFIX):
+            continue
+        tree = _parse(py_file)
+        for node in ast.walk(tree):
+            yield from _iec61850_gpl_boundary_violations(node, rel)
+
+
+def _iec61850_gpl_boundary_violations(node: ast.AST, rel: str) -> Iterator[Violation]:
+    """Per-Knoten-Check: `import grid_gym.adapters.driven.protocol_iec61850`
+    oder `from grid_gym.adapters.driven.protocol_iec61850 import ...`
+    triggert."""
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            if alias.name == _IEC61850_MODULE_PREFIX or alias.name.startswith(
+                f"{_IEC61850_MODULE_PREFIX}."
+            ):
+                yield Violation(
+                    "AC-IEC61850-GPL-BOUNDARY",
+                    f"{rel}:{node.lineno}",
+                    f"import {alias.name} — direkter Import des GPL-isolierten "
+                    "protocol_iec61850-Moduls aus MIT-Code verboten "
+                    "(ADR 0035 Decision I-f); Bruecken-Pfad via Welle-1-"
+                    "build_protocol_ports-Factory mit ImportError-Toleranz",
+                )
+        return
+    if isinstance(node, ast.ImportFrom):
+        if node.module is None:
+            return
+        if node.module == _IEC61850_MODULE_PREFIX or node.module.startswith(
+            f"{_IEC61850_MODULE_PREFIX}."
+        ):
+            imported = ", ".join(a.asname or a.name for a in node.names)
+            yield Violation(
+                "AC-IEC61850-GPL-BOUNDARY",
+                f"{rel}:{node.lineno}",
+                f"from {node.module} import {imported} — direkter Import des "
+                "GPL-isolierten protocol_iec61850-Moduls aus MIT-Code verboten "
+                "(ADR 0035 Decision I-f); Bruecken-Pfad via Welle-1-"
+                "build_protocol_ports-Factory mit ImportError-Toleranz",
             )
 
 
