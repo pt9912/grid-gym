@@ -263,6 +263,6 @@ in den Welle-6b-`arch_check.py`-Slice).
 
 ## Slice-Schluss-Hash
 
-`<wird im Commit eingetragen>` — `feat(welle-6a): Slice
-034 — OTel-Span-Wrap + Planted-Violator Review-Folge
-(15 Findings)`.
+`bde8fdb` — `feat(welle-6a): Slice 034 — OTel-Span-Wrap
++ Planted-Violator Review-Folge (15 Findings)`. 8 Files,
++644/-118.
