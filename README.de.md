@@ -34,12 +34,13 @@ Die aktuellen Gates und Szenarien laufen mit:
 
 ```bash
 make help
-make gates              # 9 Pflicht-Gates (lint, format, typecheck,
+make gates              # 10 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
-                        # dep-audit, noqa-gate)
-make test-unit          # Unit-Test-Suite (1462 Tests, Stand 2026-05-31)
+                        # dep-audit, noqa-gate, spdx-check)
+make test-unit          # Unit-Test-Suite (1584 Tests, Stand 2026-06-01)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (35 Tests inkl. OTLP-, MQTT-, Modbus-, OPC-UA- und DNP3-Smokes)
+                        # (35 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
+                        # Modbus-, OPC-UA-, DNP3- und IEC-61850-Smokes)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -59,21 +60,22 @@ Keine lokale Python-/uv-Installation.
 - **Deterministische Ausfuehrung.** Ein zentraler Tick-Loop treibt ein
   diskretes Zeitmodell; Snapshot-Envelopes und Replay-Samples sind
   byte-reproduzierbar via Canonical-JSON-Serialisierung.
-- **Erzwungene Architektur.** 19 Architektur-Contracts laufen bei
-  jedem `make arch-check`: 7 Forbidden-Import-Contracts via
-  `lint-imports` plus 12 Custom-AST-/Graph-Checks in
+- **Erzwungene Architektur.** 20 Architektur-Contracts laufen bei
+  jedem `make arch-check`: 6 Forbidden-Import-Contracts via
+  `lint-imports` plus 14 Custom-AST-/Graph-Checks in
   [`tools/arch_check.py`](tools/arch_check.py) (u. a.
   `AC-ADAPTER-LIGHTWEIGHT`, `AC-OTLP-ADAPTER-NO-TIME`,
-  `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`).
-- **Neunstufiges Pflicht-Gate.** `make gates` laeuft Lint, Format-Check,
+  `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS` und `AC-IEC61850-GPL-BOUNDARY`).
+- **Zehnstufiges Pflicht-Gate.** `make gates` laeuft Lint, Format-Check,
   `mypy --strict`, Arch-Check, Unit-Tests, Coverage (90 % Line pro
-  Modul / 85 % kritisch / 96 % gesamt), Critical-Coverage,
-  Dependency-Audit und ein `# noqa`-Verbot — alles cache-frei gruen
-  ohne lokalen Override.
+  Modul / 85 % kritisch), Critical-Coverage, Dependency-Audit, ein
+  `# noqa`-Verbot und `spdx-check` (GPL-3.0-only-Header-Lint fuer die
+  IEC-61850-Boundary) — alles cache-frei gruen ohne lokalen Override.
 - **ADR-getriebene Entscheidungen.** Jede tragende Entscheidung wird
   als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
-  M1..M3-Closure-ADRs sind `Accepted`, M4-Wellen-ADRs landen als
-  `Provisional` und werden mit Meilenstein-Closure `Accepted`.
+  M1..M4-Closure-ADRs sind `Accepted`, zukuenftige Meilenstein-Wellen-
+  ADRs landen als `Provisional` und werden mit Meilenstein-Closure
+  `Accepted`.
 - **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
   `lint-imports`-, `ruff check`-, `tools/arch_check.py`- und
   `mypy --strict`-Gates auf jedem Pull Request und `main`-Push
@@ -106,13 +108,14 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-05-30**:
+Stand **2026-06-01**:
 
 - **M1 — Tick-Loop-Spine** · `Done`
 - **M2 — Geraetemodelle** · `Done`
 - **M3 — Faults + Multi-Agent + Observability** · `Done`
   (sechs ADRs `Accepted`)
-- **M4 — Protokolladapter** · `In Progress`
+- **M4 — Protokolladapter** · `Done`
+  (sechs ADRs 0030..0035 `Accepted` 2026-06-01)
   - Welle 0 — Slice-Plan + Trigger-Triage · `Done`
   - Welle 1 — `DeviceProtocolPort`-Foundation
     (ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md)
@@ -161,11 +164,11 @@ Roundtrip verifiziert, aber der grid-gym-Docker-Stack
 mit Python 3.14 segfaultet im `_pyiec61850.so`-SWIG-Layer;
 Welle-6-Schaerfungspfade in ADR 0035 §2.5 dokumentiert).
 
-**`make gates`** ist 9-stufig und cache-frei gruen ohne Override:
+**`make gates`** ist 10-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check
-(19 Contracts: 7 `lint-imports` + 12 `tools/arch_check.py`),
-Test-Unit, Coverage (90 % Line pro Modul / 85 % kritisch / 96 %
-gesamt), Critical-Coverage, Dep-Audit, `# noqa`-Verbot.
+(20 Contracts: 6 `lint-imports` + 14 `tools/arch_check.py`),
+Test-Unit, Coverage (90 % Line pro Modul / 85 % kritisch),
+Critical-Coverage, Dep-Audit, `# noqa`-Verbot, `spdx-check`.
 
 Per-Wellen-Commits, ADR-Pointer und Detail-Aufschluesselung in den
 Slice-Plaenen unter [`docs/plan/planning/`](docs/plan/planning/) und
@@ -192,7 +195,7 @@ in der Detail-Tabelle unten.
 | DNP3-Adapter (M4 Welle 5a) | `Done` | [`done/M4-welle-5a.md`](docs/plan/planning/done/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Accepted` — `protocol_dnp3/`-5-Modul-Paket (nfm-dnp3 1.0.x sync-Master + dnp3-outstation 0.2.x Test-Sibling, **kein** Thread-Marshal noetig — Decision D-c direkt-sync; 2 Datatypes (BinaryInput g1v1/v2, AnalogInput g30v1/v5), Class-0-Polling + filter-by-index, Write-Pfad Welle-5b-Anti-Scope) + in-process `dnp3-outstation.AsyncOutstation`-Integration-Smoke parametrisiert ueber alle 4 Group/Variation-Kombinationen (Decision D-e; beide Libraries MIT, Pure-Python — keine Container-Sibling-Komplexitaet). Library-Bug-Find waehrend C2: `AnalogInput.index` (nicht `.idx` wie nfm-dnp3-Doku-Repr suggeriert). |
 | IEC-61850-Adapter (M4 Welle 5b, Spike, GPL-isoliert) | `Done` | [`in-progress/M4-welle-5b.md`](docs/plan/planning/in-progress/M4-welle-5b.md); ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md) `Accepted` — `protocol_iec61850/`-5-Modul-Paket (pyiec61850-ng 1.6.x als **eine** Library fuer Client (`MMSClient`) **und** in-process-Server (`IedServer`), sync API — Decision I-b direkt-sync analog Modbus M-c + DNP3 D-b; 4 Datatypes (bool/int32/float/string) × FC-Allow-List `{MX,ST,SP,CF,DC}` mit Adapter-Default `MX`; Per-Target `MMSClient.read_value(reference, fc)` — Decision I-d, RCB-Subscription + GOOSE Welle-6+; Write-Pfad Welle-5b-Anti-Scope, wirft `Iec61850PortWriteNotImplementedError`) + in-process `IedServer(model_path=fixture)`-Integration-Smoke unter **2c-Mock-only-Fallback** aktiv (Decision I-e + I-f; **erstes GPL-isoliertes Sub-Modul** im Repo via `SPDX-License-Identifier: GPL-3.0-only` pro Datei + `LICENSES/GPL-3.0.txt` + LICENSE-Hinweis + `pyiec61850-ng` als opt-in `pip install grid-gym[iec61850]`-Extra, **nicht** in `[project] dependencies`; Probe-Run auf Python 3.12 hat MMSClient↔IedServer-Roundtrip mit libiec61850-nativem CFG-Fixture verifiziert, aber grid-gym-Docker auf Python 3.14 segfaultet im `_pyiec61850.so`-SWIG-Layer — DoD via 18 Mock-Client-Unit-Tests erfuellt, Welle-6-Schaerfungspfade: Python-3.12-Runtime / Library-Upgrade / Wheel-Rebuild). Probe-Run-Library-Findings 2026-06-01: Reference-Konvention konkateniert MODEL+LD-Namen ohne Trennzeichen (`simpleIO`+`GenericIO`→`simpleIOGenericIO`), MMSClient-FC akzeptiert Two-Letter-String, IedServer braucht `model_path` sonst wirft `start()` `ModelError`. |
 | Cross-Adapter-Hardening (M4 Welle 6a) | `Done` | [`done/M4-welle-6a.md`](docs/plan/planning/done/M4-welle-6a.md) (Self-Close-Move `d1cb65d`; Slice 034 Review-Folge `bde8fdb` adressiert 15 Findings) — OTel-Span-Wrap via `OtelSpanWrappedDeviceProtocolPort`-Composition-Wrapper fuer alle 5 Adapter (ADR 0024 §4.5; Standard-Attribute `adapter_type`/`target`/`operation`/`latency_ms`; Adapter-Code-Diff: NULL), Adapter-Profil-Index unter [`spec/protocol_profiles.md`](spec/protocol_profiles.md) mit 5 Eintraegen + ADR-Links + Lastenheft-IDs, Lastenheft-§16-Implementierungs-Matrix auf `✅ M4` x 5 synchronisiert, Architektur-§8.2 mit OTel-Wrap-Pattern geschaerft. AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Property-Test (Welle-1-§7-Folge-Pflicht-Closure) verifiziert Arch-Check-Filter-Korrektheit. Trigger-006-Closure: `[tool.mypy] strict_bytes = true` aktiviert. `compose.yml`-Header konsolidiert in 2 Sibling-Tabellen (Container + In-Process) mit Lizenz-Spalten. Trigger 004 auf M5/M6 verschoben. |
-| M4-Closure (Welle 7) | `Done` | [`in-progress/M4-welle-7.md`](docs/plan/planning/in-progress/M4-welle-7.md) + [`done/M4-results.md`](docs/plan/planning/done/M4-results.md) — 6 M4-ADRs (0030..0035) `Provisional → Accepted` (C1 `d2071f0`); `done/M4-results.md` mit Welle-Tabelle / Abnahme-Belegen (10 A-1-Gates, 1584 Unit + 35+4 Integration, 20 Contracts) / Pro-Welle-Reviews / S-1..S-6-Verification / Erbschaft-Section (C2 `0c644f0`); Roadmap M4 → `Done`, M5 als naechster aktiver Slice (C3, dieser Commit). `make fullbuild` pre-existing rot wegen krb5-CVE-Drift seit M3-Welle-7-`c61ab0d` — Base-Image-Bump als M5-Welle-0-Trigger. IEC-61850-In-Process-Smoke bleibt unter 2c-Mock-only-Fallback mit Trigger 009. |
+| M4-Closure (Welle 7) | `Done` | [`done/M4-welle-7.md`](docs/plan/planning/done/M4-welle-7.md) + [`done/M4-results.md`](docs/plan/planning/done/M4-results.md) — 6 M4-ADRs (0030..0035) `Provisional → Accepted` (C1 `d2071f0`); `done/M4-results.md` mit Welle-Tabelle / Abnahme-Belegen (10 A-1-Gates, 1584 Unit + 35+4 Integration, 20 Contracts) / Pro-Welle-Reviews / S-1..S-6-Verification / Erbschaft-Section (C2 `0c644f0`); Roadmap M4 → `Done`, M5 als naechster aktiver Slice (C3, dieser Commit). `make fullbuild` pre-existing rot wegen krb5-CVE-Drift seit M3-Welle-7-`c61ab0d` — Base-Image-Bump als M5-Welle-0-Trigger. IEC-61850-In-Process-Smoke bleibt unter 2c-Mock-only-Fallback mit Trigger 009. |
 | IEC-61850-Lizenz-und-Smoke-Hardening (M4 Welle 6b) | `Done` | [`done/M4-welle-6b.md`](docs/plan/planning/done/M4-welle-6b.md) (Self-Close-Move `bf23458`) — SPDX-License-Identifier-Lint via NEU `tools/check_spdx.py` (10. A-1-Gate `make spdx-check`; 11 GPL-Boundary-Files Lint-clean), NEU arch_check-Contract `AC-IEC61850-GPL-BOUNDARY` (14. arch_check-Contract; 19 → 20 Contracts KEPT; AST-Import-Scan ueber MIT-Code), NEU `CONTRIBUTING.md` mit Dual-License-Policy (Default MIT, GPL-3.0-only opt-in fuer `protocol_iec61850/*`-Boundary), IedServer-Smoke-Reaktivierungs-Probe-Pfad-A-Befund (PyPI `pyiec61850-ng 1.6.1.2` identisch zu Welle 5b, kein cp314-Manylinux-Wheel) → Pfad C aktiv mit konkretem Trigger 009 (passiv: Library publishet cp314-Wheel; aktiv: eigener Slice fuer Dockerfile-Multi-Python-Test-Stage), plus Slice-034-F13-Folge (`_is_adapter_lightweight_path` erweitert um flat-file `_protocol_*.py`-Cross-Adapter-Helper unter `adapters/driven/`). |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |

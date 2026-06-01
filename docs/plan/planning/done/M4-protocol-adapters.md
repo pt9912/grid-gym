@@ -1191,7 +1191,7 @@ Pre-C0b `5b2dc24` + C0 `af97fd7` + C0-Review `05a1417`
 `e745f10` + C4b `72e8357`). Detail-Belege in
 [`../done/M4-results.md`](../done/M4-results.md);
 Slice-Begleit-Doc
-[`../in-progress/M4-welle-7.md`](../in-progress/M4-welle-7.md)
+[`../done/M4-welle-7.md`](../done/M4-welle-7.md)
 (bleibt vorerst in `in-progress/`; Self-Close-Move folgt
 als M5-Welle-0-Pre-C0).
 

@@ -261,7 +261,7 @@ Bestand-Eintrag.
 
 | Datei                                                       | Phase | Aktion                                                              |
 | ----------------------------------------------------------- | ----- | ------------------------------------------------------------------- |
-| `docs/plan/planning/in-progress/M4-welle-7.md`              | C0    | CREATE (dieses Dokument)                                            |
+| `docs/plan/planning/done/M4-welle-7.md`              | C0    | CREATE (dieses Dokument)                                            |
 | `docs/plan/adr/0030-device-protocol-port-surface.md`        | C1    | EDIT (Status `Provisional → Accepted`)                              |
 | `docs/plan/adr/0031-mqtt-adapter-profile.md`                | C1    | EDIT (Status `Provisional → Accepted`)                              |
 | `docs/plan/adr/0032-modbus-adapter-profile.md`              | C1    | EDIT (Status `Provisional → Accepted`)                              |
@@ -343,7 +343,7 @@ only-Fallback mit Trigger 009).
   rot wegen 4 neuer HIGH-CVEs in Debian-13-Base
   (`CVE-2026-40356` u. a. in krb5-Paketen; Fix
   `1.21.3-5+deb13u1` verfuegbar; siehe
-  [`roadmap.md`](roadmap.md):222-226). **Nicht durch M4-
+  [`roadmap.md`](../in-progress/roadmap.md):222-226). **Nicht durch M4-
   Code verursacht** — Base-Image-Bump ist separater
   Stack, der Welle 7 sprengen wuerde. Mitigation:
   Welle 7 dokumentiert den Defer-Pfad in

@@ -345,7 +345,7 @@ aktiv (siehe
   (Self-Close-Move `d1cb65d`).
 - ✓ `in-progress/M4-welle-6b.md` → ✓ `done/M4-welle-6b.md`
   (Self-Close-Move `bf23458`).
-- ⏳ `in-progress/M4-welle-7.md` (Slice-Begleit, dieses
+- ⏳ `done/M4-welle-7.md` (Slice-Begleit, dieses
   Closure-Dokument lebt parallel dazu) → `done/M4-welle-
   7.md` mit End-of-Wave-Move folgt als M5-Welle-0-Pre-C0
   (analog M3-Welle-7-Pattern).
