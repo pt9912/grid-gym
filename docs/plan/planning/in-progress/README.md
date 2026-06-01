@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
+| [`M5-welle-3.md`](M5-welle-3.md) | Welle-3-Slice-Doc (M5 Live-Telemetry-Dashboard: NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe-Pattern + Chart.js-Time-Series + Quality-Marker; `GG-UI-002/003/009` + `GG-API-002`) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-4-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -160,12 +161,16 @@ Gates gruen cache-frei ohne Override.
 **Aktive Welle:** M5-Welle-3 (Live-Telemetry-Dashboard)
 eroeffnet 2026-06-01 mit Pre-C0a `8d60e16` (Self-Close-
 Move `M5-welle-2.md → done/`, rename-only) + Pre-C0b
-(dieser Commit; Cross-Doc-Refs-Sync nach Move). Geplant:
-C0 (Slice-Doc + **Decision 3** WebSocket vs SSE +
-**Decision 7** Charting-Library-Final = Chart.js
-bestaetigt) + ggf. NEU ADR fuer Decision 3 (C1) + C2
-(Live-Telemetry-Page `/runs/{id}/dashboard` + HTMX-WS-
-Subscribe + Chart.js-Time-Series-Pattern + Quality-
-Marker-Visualisierung + `TelemetrySinkPort`-Producer-
-Wiring auf den Welle-1-WS-Endpunkt) + C3 (Status/DoD-
-Sync).
+`159f537` (Cross-Doc-Refs-Sync nach Move) + Pre-C0c
+`5349923` (Asyncio-Pub/Sub-Smoke-Probe-Run mit 4 Probe-
+Tests gruen — Pattern fuer Welle-3-`TelemetryStreamPort`
+server-side validiert) + C0 (dieser Commit; Slice-Doc-
+Anlage [`M5-welle-3.md`](M5-welle-3.md) mit **Decision
+3** WebSocket per Lastenheft-Pflicht (`GG-API-002`) +
+**Decision 7** Chart.js 4.5.1 bestaetigt produktiv +
+**NEU Decision 11** `TelemetryStreamPort` (Driving) +
+`InMemoryTelemetryStream`-Adapter; Surface in C1
+verankert). Geplante Lieferung in 3 weiteren Commits:
+C1 (NEU ADR 0038 fuer Decision 11), C2 (Port + Adapter
++ WS-Wiring + UI-Page + Quality-Marker + Tests), C3
+(Status/DoD-Sync).
