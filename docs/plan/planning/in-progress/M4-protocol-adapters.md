@@ -1,10 +1,23 @@
-# Slice-Plan — M4 Protokolladapter — In Progress
+# Slice-Plan — M4 Protokolladapter — Done
 
-**Status:** In Progress — eroeffnet 2026-05-26 mit M4-Welle-0
-(`d0bb16e` Slice-Doc + diesem Commit). Fuenf Sub-Adapter
-(MQTT, Modbus TCP, OPC-UA, DNP3, IEC 61850) werden ueber
-Welle 0..7 verteilt geliefert. M4-Slice-Plan wandert nach
-`done/` mit Welle-7-Closure.
+**Status:** Done 2026-06-01 mit M4-Welle-7-Closure. Closure-
+Belege in
+[`../done/M4-results.md`](../done/M4-results.md);
+6 M4-ADRs (0030..0035) auf `Accepted` (Welle-7-C1
+`d2071f0`); 9 Wellen 0..6b geliefert + Welle 7 Closure.
+**Self-Close-Move dieses Slice-Plans nach `done/` folgt
+mit Welle-7-C4** (rename-only Commit per
+`feedback_git_mv`-Konvention; Bezug-Linkpflege an
+ADR 0030..0035 per ADR-0028-Verfahren als Folge-Commit).
+Der Datei-Body unterhalb dieser Status-Klausel bleibt
+historisches Artefakt der laufenden M4-Phase (Pattern aus
+`done/M3-faults-agents-observability.md` und
+`done/M2-devices.md`).
+
+**Historischer Eroeffnungs-Header (Welle 0, 2026-05-26):**
+In Progress mit M4-Welle-0 (`d0bb16e` Slice-Doc). Fuenf
+Sub-Adapter (MQTT, Modbus TCP, OPC-UA, DNP3, IEC 61850)
+ueber Welle 0..7 verteilt geliefert.
 
 **Datum:** 2026-05-26 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den

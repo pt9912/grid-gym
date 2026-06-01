@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 7 (In Progress; M4-Closure analog M3-Welle-7: 6 M4-ADRs auf `Accepted`, NEU `done/M4-results.md`, Roadmap-M4-DoD-Sweep, S-1..S-6-Sweep, `make fullbuild` als Closure-Gate)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3+M4 abgeschlossen (M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Naechster aktiver Slice: M5** (UI + Demo).
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -153,11 +153,11 @@
   nach `done/` mit Welle-7-Closure-Hash.
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
-  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
+  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
   (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted` geplant
-  mit M4-Welle-7-Closure); **0031 `Provisional`** (M4-Welle-2
+  mit M4-Welle-7-Closure); **0031 `Accepted`** (M4-Welle-2
   MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle final;
-  `Accepted` geplant mit M4-Welle-7-Closure); **0032 `Provisional`**
+  `Accepted` 2026-06-01 mit M4-Welle-7-C1 `d2071f0`); **0032 `Accepted`**
   (M4-Welle-3 Modbus-TCP-Adapter-Profile mit Decisions
   M-a/M-b/M-c/M-d/M-e/M-f alle final — inline Register-Schema,
   5 Datatypes mit Byte-Order-Matrix, direkt-sync ohne
@@ -167,13 +167,13 @@
   [`031`](../done/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-
   Fehler-Taxonomie und bewusste Smoke-Abgrenzung
-  umgesetzt. **0033 `Provisional`** (M4-Welle-4 OPC-UA-
+  umgesetzt. **0033 `Accepted`** (M4-Welle-4 OPC-UA-
   Adapter-Profile mit Decisions O-a/O-b/O-c/O-d/O-e alle
   final — inline Node-ID-Schema, Async-Bridge via
   `OpcuaLoopThread` (erstes Repo-Pattern dieser Art),
   8-Datatype-Set, Polling-Read + Direct-Write, in-process
   `asyncua.Server`-Smoke; `Accepted` geplant mit
-  M4-Welle-7-Closure). **0034 `Provisional`** (M4-Welle-5a
+  M4-Welle-7-Closure). **0034 `Accepted`** (M4-Welle-5a
   DNP3-Adapter-Profile mit Decisions D-a/D-b/D-c/D-d/D-e
   alle final — inline Point-Schema mit
   Group/Variation-Allowlist `{(1,1),(1,2),(30,1),(30,5)}`,
@@ -181,7 +181,7 @@
   `dnp3-outstation` dev-only, direkt-sync wie Modbus,
   Class-0-Integrity-Poll + filter-by-index, write-Pfad
   Welle-5b-Anti-Scope; `Accepted` geplant mit M4-Welle-7-
-  Closure). **0035 `Provisional`** (M4-Welle-5b IEC-61850-
+  Closure). **0035 `Accepted`** (M4-Welle-5b IEC-61850-
   Adapter-Profile mit Decisions I-a/I-b/I-c/I-d/I-e/I-f
   alle final — inline LN/CDC-Schema mit FC-Allow-List
   `{MX,ST,SP,CF,DC}` und Datatype-Allow-List
@@ -258,8 +258,9 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Aktiver Slice: **M4 (Protokolladapter)** — Slice-Plan wird mit
-M4-Welle-0-Start eroeffnet.
+Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan wird mit
+M5-Welle-0-Start eroeffnet. (M4 ist abgeschlossen, siehe
+[`done/M4-results.md`](../done/M4-results.md).)
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
 ([`done/M2-devices.md`](../done/M2-devices.md)) inkl. Welle-7-Closure
@@ -414,7 +415,18 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Aktiver Slice: M4.** M3 ist `Done` (2026-05-25,
+**Aktiver Slice: M5.** M4 ist `Done` (2026-06-01,
+siehe [`done/M4-results.md`](../done/M4-results.md)): 9
+Wellen 0..6b geliefert (5 produktive Adapter + 2 Cross-
+Adapter-Hardening-Wellen); sechs M4-ADRs (0030/0031/0032/
+0033/0034/0035) auf `Accepted`; `make gates` cache-frei
+gruen ohne Override mit 10 A-1-Gates inkl. NEU
+`spdx-check`; 1584 Unit-Tests + 35 passed + 4 skipped
+Integration-Tests; 20 A-1-Contracts (14 arch_check inkl.
+NEU `AC-IEC61850-GPL-BOUNDARY`). `make fullbuild`
+pre-existing rot wegen krb5-CVE-Drift seit M3-Welle-7-
+`c61ab0d` (nicht durch M4 verursacht; Base-Image-Bump
+als M5-Welle-0-Trigger). M3 ist `Done` (2026-05-25,
 siehe [`done/M3-results.md`](../done/M3-results.md)): drei Sub-
 Bereiche (Faults, Multi-Agent, Observability) ueber Welle 0..7
 geliefert; sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
@@ -483,7 +495,17 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
         §4) — dokumentiert in
         [`done/M3-results.md`](../done/M3-results.md) §4.
 
-### M4 — Protokolladapter (Naechster aktiver Slice)
+### M4 — Protokolladapter (`Done` 2026-06-01)
+
+M4-Abschluss-Belege in
+[`../done/M4-results.md`](../done/M4-results.md);
+Slice-Plan in
+[`M4-protocol-adapters.md`](M4-protocol-adapters.md)
+(wandert nach `done/` mit Welle-7-C4-Self-Close-Move).
+9 Wellen 0..6b geliefert (5 produktive Adapter +
+2 Cross-Adapter-Hardening-Wellen); 6 M4-ADRs
+(0030..0035) auf `Accepted` mit M4-Welle-7-C1
+`d2071f0`.
 
 - **Lieferziel:** produktive Driven-Adapter fuer die in Spec §16
   genannten Protokolle (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
@@ -502,14 +524,24 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
   - [x] DNP3-Adapter (oder dokumentierter Verzicht via
         `Out-of-Scope`-Note). — Welle 5a `Done` (Spike-Adapter
         mit `nfm-dnp3` + `dnp3-outstation`).
-  - [ ] IEC-61850-Adapter (oder dokumentierter Verzicht). —
-        Welle 5b ausstehend.
+  - [x] IEC-61850-Adapter (oder dokumentierter Verzicht). —
+        Welle 5b `Done` (Spike-Adapter mit `pyiec61850-ng` als
+        GPL-isoliertes Optional-Extra; Decision I-f via SPDX-
+        Header pro Datei) + Slice 033 Review-Folge + Welle 6b
+        Lizenz-/Smoke-Hardening (SPDX-Lint, AC-IEC61850-GPL-
+        BOUNDARY-Contract, CONTRIBUTING.md). IedServer-In-
+        Process-Smoke aktuell unter 2c-Mock-only-Fallback mit
+        Trigger 009 (Welle-6b-C3-Pfad-A-Befund: PyPI-Stand
+        identisch zu Welle 5b).
   - [x] AC-ADAPTER-LIGHTWEIGHT bleibt fuer alle protocol_*-Module
-        gruen (kein Fachlogik-Sickern). — Welle 1..5a green.
+        gruen (kein Fachlogik-Sickern). — Welle 1..6b green;
+        Welle-6b-C3 erweitert den Filter um Cross-Adapter-Helper
+        `_protocol_*.py` (Slice-034-F13-Folge).
   - [x] Integration-Tests pro Adapter via testcontainers (analog
         Welle 6c). — In-Process-Smokes statt testcontainers wo
         moeglich (Modbus, OPC-UA, DNP3); Mosquitto-MQTT-Smoke
-        via Compose-Sibling.
+        via Compose-Sibling; IEC-61850-Smoke via 2c-Mock-only-
+        Fallback (Trigger 009).
 
 ### M5 — UI + Demo (Vorbelegung)
 
