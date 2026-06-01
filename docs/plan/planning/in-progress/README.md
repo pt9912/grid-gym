@@ -7,6 +7,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
+| [`M5-welle-0.md`](M5-welle-0.md) | Welle-0-Slice-Doc (M5 Slice-Plan-Eroeffnung + Trigger-Triage) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M5-Welle-1-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -85,8 +86,16 @@ C4 (Self-Close-Move `M4-protocol-adapters.md` nach
 `done/` + ADR-0030..0035-Bezug-Linkpflege per ADR-0028-
 Verfahren).
 
-**Aktiver Slice: M5 (UI + Demo).** Naechster aktiver
-Schritt: M5-Welle-0 (Slice-Plan-Eroeffnung + Trigger-
-Triage). Pattern analog M4-Welle-0 (`d0bb16e..C2`-
-Trigger-Triage); M5-Slice-Plan wird mit M5-Welle-0-Start
-eroeffnet.
+**Aktiver Slice: M5 (UI + Demo).** Welle 0 eroeffnet
+2026-06-01 mit C0 (dieser Commit; Slice-Doc-Anlage
+[`M5-welle-0.md`](M5-welle-0.md)). Geplante Lieferung
+in 3 Commits: C1 M5-Slice-Plan-Eroeffnung
+(`M5-ui-demo.md` mit Welle 0..7-Vorbelegung +
+Lastenheft-Cluster-Mapping + Decision-Liste), C2
+Welle-0-Trigger-Triage + Status-Flip. Pre-M5-Welle-0-
+Sondierungs-ADR
+[`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
+ist mit Maintainer-Decision-Indication „Option 1
+(HTMX + Jinja2 + Chart.js)" vor M5-Welle-0 angelegt
+(`f4a9ced` + `e0c3f66`); formale Festschreibung in
+M5-Welle-1.
