@@ -116,13 +116,34 @@ Plotly Dash) wurde sondiert und als **untauglich** ausgewaehlt
 
 ## 2. Entscheidung
 
-**Diese ADR ist im Status `Proposed` und enthaelt explizit
-keine Decision-Festlegung.** Sie listet drei realistische
-UI-Stack-Optionen plus eine ausgeschlossene vierte Option,
-inklusive Trade-off-Analyse, Welle-Plan-Impact und
-empfohlenem Naechste-Schritt-Pfad. Die finale Decision wird
-**in M5-Welle-1-ADR-Schaerfung** auf `Provisional` gezogen
-(Pattern analog ADR 0030 → 0035).
+**Diese ADR ist im Status `Proposed` mit Maintainer-
+Decision-Indication 2026-06-01** (siehe Block direkt
+unter §2-Header). Sie
+listet drei realistische UI-Stack-Optionen plus eine
+ausgeschlossene vierte Option, inklusive Trade-off-
+Analyse, Welle-Plan-Impact und Sub-Decisions (Charting-
+Library). Die finale Decision-Festschreibung erfolgt **in
+M5-Welle-1-ADR-Schaerfung** auf `Provisional` (Pattern
+analog ADR 0030 → 0035 — `Provisional` nach C2-Merge mit
+Code-Beleg, `Accepted` mit M5-Welle-7-Closure).
+
+**Maintainer-Decision-Indication 2026-06-01 (vor M5-Welle-
+0-Eroeffnung):**
+
+- **UI-Stack:** Option 1 (FastAPI + HTMX + Jinja2).
+- **Charting-Library:** Chart.js (Default-Sub-Wahl gemaess
+  §2.5-Empfehlungs-Matrix fuer Option-1-Stack).
+
+Begruendung (zusammengefasst aus Sondierungs-Gespraech
+2026-06-01): Architektur-Reinheit + Single-Stack-Python +
+10 statt 15 A-1-Gates + Welle-Tempo + `feedback_docker_
+only`-Treue priorisiert ueber UX-Glanz. Migrationspfad zu
+Option 1b oder Charting-Upgrade auf Plotly.js/ECharts
+bleibt in M5-Welle-6 offen falls Stakeholder-Druck
+spaeter aufkommt (siehe §2.5-Welle-Plan-Impact-Tabelle).
+Vollstaendige Decision-Festschreibung erfolgt in M5-Welle-
+1 mit Probe-Run-Beleg (Pattern analog ADR 0030 §2.1
+„Welle 4 traegt die Konstruktion zuerst real").
 
 ### 2.1 Option 1 — FastAPI + HTMX + Jinja2 + Chart.js
 
@@ -254,6 +275,104 @@ ausgewaehlt aus folgenden Gruenden:
 
 Diese Option ist **bewusst nicht** als Empfehlung in §2.1-§2.3
 gefuehrt.
+
+### 2.5 Charting-Library-Sub-Decision (orthogonal zur Stack-Wahl)
+
+Drei realistische Charting-Libraries fuer
+`GG-UI-002/003/009` (Live-Telemetry + Zeitreihen + Quality-
+Status). Diese Sub-Decision ist **orthogonal zur Stack-Wahl
+in §2.1/2.2/2.3** — jede der UI-Stack-Optionen kann mit
+jeder der drei Charting-Libraries kombiniert werden. Final-
+Decision-Schritt: **M5-Welle-3-Slice-Doc** (Live-Telemetry-
+Dashboard) verankert die konkrete Wahl als Implementations-
+Detail; ADR 0036 listet hier die drei Optionen + Trade-offs.
+
+#### Option Chart.js (Default in §2.1)
+
+| Aspekt              | Wert                                  |
+| ------------------- | ------------------------------------- |
+| Lizenz              | MIT                                   |
+| Bundle-Size         | **~70 KB** minified                   |
+| Rendering           | Canvas                                |
+| Time-Series-Support | OK (line/area/scatter)                |
+| Live-Streaming      | Native `update()`-API; ~30 FPS OK     |
+| Multi-Axis          | Ja                                    |
+| Zoom/Pan            | Plugin (`chartjs-plugin-zoom` ~10 KB) |
+| Scientific-Grade    | **Mittel** — keine echte time-Axis    |
+
+**Passt zu:** Option 1 (HTMX) als Single-File-Vendoring
+trivial; passt zur Single-Stack-Philosophie.
+
+#### Option Plotly.js
+
+| Aspekt              | Wert                                                                  |
+| ------------------- | --------------------------------------------------------------------- |
+| Lizenz              | MIT                                                                   |
+| Bundle-Size         | **~3 MB** (Full) / **~1.5 MB** (Basic) / **~250 KB** (`plotly.js-strict`) |
+| Rendering           | SVG + WebGL (fuer grosse Datasets)                                    |
+| Time-Series-Support | **Excellent** (native `datetime`-Axis)                                |
+| Live-Streaming      | `Plotly.extendTraces()` fuer Append; `Plotly.animate()` smooth        |
+| Multi-Axis          | Ja, native; auch 3D + Maps                                            |
+| Zoom/Pan            | Eingebaut                                                             |
+| Scientific-Grade    | **Hoch** — Error-Bars, Statistical-Plots, Export-PNG/SVG eingebaut    |
+
+**Passt zu:** Option 1b (SvelteKit-SPA) als
+tree-shaking-faehiges npm-Modul; oder Option 1 (HTMX) mit
+`plotly.js-strict`-Sub-Bundle (~250 KB) falls Maintainer
+scientific-Replay-Reports priorisiert.
+
+#### Option Apache ECharts
+
+| Aspekt              | Wert                                              |
+| ------------------- | ------------------------------------------------- |
+| Lizenz              | **Apache-2.0** (nicht MIT, aber kompatibel)       |
+| Bundle-Size         | **~1 MB** (Full) / **~300 KB** (tree-shaken Subset) |
+| Rendering           | Canvas + SVG (waehlbar)                           |
+| Time-Series-Support | **Excellent** (native `time`-Axis)                |
+| Live-Streaming      | `setOption({...})` Dynamic-Data; auf grosse Datasets ausgelegt |
+| Multi-Axis          | Ja, Dashboard-fokussiert                          |
+| Zoom/Pan            | Eingebaut (`dataZoom`-Komponente)                 |
+| Scientific-Grade    | **Hoch** — gut fuer Dashboards, weniger fuer scientific notation |
+
+**Passt zu:** Option 1b (SvelteKit-SPA) als
+tree-shaking-faehiges npm-Modul mit besserer Live-
+Streaming-Performance bei grossen Datasets (Canvas-Render
+vs Plotly-SVG).
+
+#### Trade-off-Matrix Charting-Libraries
+
+| Kriterium fuer grid-gym                | Chart.js                | Plotly.js                          | ECharts                          |
+| -------------------------------------- | ----------------------- | ---------------------------------- | -------------------------------- |
+| Bundle-Size Production                 | **~70 KB ✅**           | 250 KB-3 MB ⚠️                     | 300 KB-1 MB ⚠️                   |
+| Lizenz                                 | MIT ✅                  | MIT ✅                             | Apache-2.0 (kompatibel)          |
+| Time-Series-Qualitaet                  | OK                      | **Excellent**                      | **Excellent**                    |
+| Live-Streaming-Performance             | OK (~30 FPS)            | Mittel (SVG-lag bei 1000+ Points)  | **Gut** (Canvas-Render)          |
+| Replay-Diagramme (Audit-Trail-Export)  | OK                      | **Excellent** (PNG/SVG nativ)      | **Gut**                          |
+| Quality-Marker (`stale/nan/fault`)     | Custom Point-Style      | Native `marker.color`-Array        | Native Symbol-Mapping            |
+| Multi-Metric-Dashboard                 | OK                      | **Excellent**                      | **Excellent** (Dashboard-DNA)    |
+| Lernkurve                              | **Leicht**              | Mittel (grosse API-Surface)        | Mittel (Config-Object-getrieben) |
+| Build-Pipeline-Impact                  | Vendoring trivial       | Tree-shaking noetig                | Tree-shaking noetig              |
+
+#### Empfehlungs-Matrix pro UI-Stack-Option
+
+| UI-Stack (§2.1/2.2) | **Chart.js** | **Plotly.js (strict)** | **ECharts** |
+| ------------------- | ------------ | ---------------------- | ----------- |
+| Option 1 (HTMX)     | **Empfohlen** — Single-File-Vendoring; passt zur Single-Stack-Philosophie; +70 KB | Moeglich (mit `plotly.js-strict ~250 KB`); falls scientific Replay-Reports Prioritaet sind | Weniger geeignet (Apache-2.0 nicht MIT; +300 KB als Static-Asset ohne Tree-Shaking-Build-Pipeline aufwendiger) |
+| Option 1b (SvelteKit-SPA) | Moeglich (kein Vorteil aus SPA-Setup); +70 KB im Bundle | **Empfohlen** falls scientific-Grade gefragt — Tree-shaking via Vite reduziert auf ~250 KB | **Empfohlen** falls Dashboard-Look gefragt — Tree-shaking auf ~300 KB; Canvas-Performance bei grossen Datasets besser als Plotly |
+
+#### Per-Welle-Plan-Impact
+
+- **Welle 1 (HTTP-API-Surface):** unverändert; Charting-
+  Library ist UI-spezifisch.
+- **Welle 3 (Live-Telemetry-Dashboard):** Charting-Library-
+  Wahl wird hier final festgelegt im Welle-3-Slice-Doc.
+  Pattern analog M4-Welle-2-MQTT-Library-Wahl (`paho-mqtt
+  2.x`) im Welle-2-Slice-Doc + ADR-Body.
+- **Welle 6 (SOLLTE-Features GG-UI-006/007/008):** falls
+  Welle 3 mit Chart.js startet, kann hier ein Upgrade auf
+  Plotly.js/ECharts erwogen werden, falls UX-Druck steigt.
+  Migration ist nicht trivial (Config-Modelle unterschied-
+  lich), aber Welle-Sub-Slicing kann das auffangen.
 
 ---
 
@@ -429,18 +548,31 @@ folgendem Kriterium:
 ## 7. Folge-Pflichten
 
 - **M5-Welle-0** (Slice-Plan-Eroeffnung): Diese ADR in
-  Decision-Liste §3 als „Decision 1 (UI-Stack-Wahl)"
-  vermerken; M5-Welle-1 als Decision-Welle markieren.
-- **M5-Welle-1** (UI-Stack-Decision + HTTP-API-Surface):
-  - ADR-Schaerfung auf `Provisional` mit Choice-Festlegung.
-  - Falls Option 1b (SvelteKit-SPA): Welle 1 enthaelt das
-    Dockerfile-`ui-build`-Stage-Skelett + `make gates`-5-
-    neue-Stages-Setup. Welle 2 wird dann reine
-    Foundation-Welle.
-  - Falls Option 1 (HTMX): Welle 1 enthaelt nur die HTTP-
-    API-Surface-Erweiterung (`GG-API-001/002` Endpoint-
-    Vervollstaendigung + WebSocket-Route); UI-Foundation
-    folgt in Welle 2 (Jinja2-Templates).
+  Decision-Liste §3 als „Decision 1 (UI-Stack-Wahl)" mit
+  **Maintainer-Decision-Indication „Option 1 + Chart.js"**
+  (siehe §2-Header) vermerken; M5-Welle-1 als Decision-
+  Welle markieren.
+- **M5-Welle-1** (UI-Stack-Decision-Festschreibung + HTTP-
+  API-Surface):
+  - ADR-Schaerfung auf `Provisional` mit Choice-
+    Festlegung (Maintainer-Indication validiert oder
+    revidiert nach Probe-Run).
+  - Welle 1 enthaelt die HTTP-API-Surface-Erweiterung
+    (`GG-API-001/002` Endpoint-Vervollstaendigung +
+    WebSocket-Route fuer Live-Telemetry). UI-Foundation
+    (Jinja2-Templates + `adapters/driving/ui/`-Layout +
+    Chart.js-Vendoring) folgt in Welle 2.
+  - **Frueher Plan-Entwurf (Option 1b SvelteKit-SPA)
+    ist NICHT mehr Welle-1-Material** — diese Pfade
+    sind durch die Maintainer-Indication ausgeklammert,
+    bleiben aber als dokumentierte Fallback-Optionen
+    in §2.2 + §2.3 fuer Welle-6+/M6-Migration falls
+    spaeter Stakeholder-Druck steigt.
+- **M5-Welle-3** (Live-Telemetry-Dashboard): Charting-
+  Library-Sub-Decision in Welle-3-Slice-Doc verankern
+  (Maintainer-Indication: **Chart.js**; Welle 3 entscheidet
+  endgueltig im Slice-Doc-Body und Welle 3 C2 traegt es
+  produktiv).
 - **M5-Welle-7-Closure:** ADR 0036 auf `Accepted` gezogen
   (analog ADR 0030..0035 in M4-Welle-7-C1 `d2071f0`).
 
