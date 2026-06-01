@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6b (In Progress; IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft + Slice-034-F13-Vorlauf; Welle 6a Done inkl. Slice 034)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 6b (Done; IEC-61850-Lizenz-und-Smoke-Hardening + Slice-034-F13-Coverage-Schaerfung). Welle 7 (M4-Closure: ADRs 0030..0035 → `Accepted`, M4-results.md, S-1..S-6-Sweep, make fullbuild) als naechstes
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -119,19 +119,38 @@
   (Review-Folge: 1 HIGH + 6 MEDIUM + 4 LOW-MEDIUM + 4 LOW
   Findings adressiert; F13 als Welle-6b-Vorlauf-Item) +
   Hash-Sync `b6a778d` + **Self-Close-Move `d1cb65d`** als
-  M4-Welle-6b-Pre-C0 (rename-only). 1537 → 1566 Unit-Tests
-  (+29 unique mit 19 OTel-Span-Wrap inkl. Slice-034-Fixes
-  + 6 Planted-Violator + 4 Slice-034-Adapter-Tests).
+  M4-Welle-6b-Pre-C0 (rename-only) + Pre-C0-Sync `7b0e3e4`.
+  1537 → 1566 Unit-Tests (+29 unique mit 19 OTel-Span-Wrap
+  inkl. Slice-034-Fixes + 6 Planted-Violator + 4 Slice-034-
+  Adapter-Tests). **Welle 6b (IEC-61850-Lizenz-und-Smoke-
+  Hardening) abgeschlossen 2026-06-01** mit C0 `14d1bcb`
+  (Slice-Doc) + C1 `8947c62` (NEU `tools/check_spdx.py` +
+  10. A-1-Gate `make spdx-check`; 11 GPL-Boundary-Files
+  Lint-clean) + C2 `9e2bf39` (NEU `AC-IEC61850-GPL-
+  BOUNDARY`-arch_check-Contract, 19 → 20 KEPT;
+  AST-Import-Scan ueber MIT-Code) + C3 `2539574`
+  (IedServer-Smoke-Probe Pfad-A-Befund: PyPI-Stand
+  identisch zu Welle 5b, kein cp314-Manylinux-Wheel
+  → Pfad C aktiv mit Trigger 009; plus Slice-034-F13-
+  Coverage-Schaerfung `_is_adapter_lightweight_path`
+  erweitert um `_protocol_*.py`-Cross-Adapter-Helper)
+  + C4 (dieser Commit; Status/DoD-Sync + NEU
+  `CONTRIBUTING.md` mit Dual-License-Policy). 1566 →
+  1584 Unit-Tests (+18 unique: 9 SPDX-Lint + 8 GPL-
+  Boundary-Property + 1 F13-Cross-Adapter-Helper-
+  Positiv). 10/10 A-1-Gates gruen (NEU 10.
+  `spdx-check`); 20/20 Contracts KEPT (NEU 14.
+  `AC-IEC61850-GPL-BOUNDARY`).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-6b (IEC-61850-Lizenz-und-Smoke-Hardening,
-  Welle-5b-Erbschaft) — SPDX-Header-Konsistenz-Check in
-  `tools/check_refs.py`, neuer arch_check-Contract
-  `AC-IEC61850-GPL-BOUNDARY` (19/19 → 20/20 Contracts),
-  CONTRIBUTING.md-Sync mit GPL-Boundary-Policy,
-  IedServer-Smoke-Reaktivierungs-Probe (3 Pfade: Library-
-  Upgrade / Dockerfile-Python-Downgrade / Mock-only-
-  Defer).
+  M4-Welle-7 (M4-Closure analog M3-Welle-7) — ADR 0030..
+  0035 von `Provisional` auf `Accepted`; NEU `done/
+  M4-results.md` mit Meilenstein-Zusammenfassung;
+  Roadmap-M4-DoD-Checkboxen-Sweep; End-to-End-Sweep
+  S-1..S-6; `make fullbuild` cache-frei gruen als
+  Welle-7-Closure-Gate; Self-Close-Move Welle-6b-Doc
+  nach `done/`; Self-Close-Move `M4-protocol-adapters.md`
+  nach `done/` mit Welle-7-Closure-Hash.
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -177,13 +196,13 @@
   (erstmaliger Repo-Praezedenzfall fuer GPL-isolierte Sub-
   Module in einem sonst MIT-Projekt); `Accepted` geplant
   mit M4-Welle-7-Closure).
-- **Tests:** 1566 Unit + 35 Integration passed + 4 skipped
-  (Stand nach M4-Welle-6a-Closure inkl. Slice 034; +423
-  Unit-Tests ggue. M3-Closure [+23 Welle 1 + +50 Welle 2
-  + +95 Welle 3 + +8 Review-Folge 031 + +81 Welle 4 fuer
-  OPC-UA + +6 Slice-032 fuer Loop-Thread-Lifecycle/Marshal-
-  Pfad/String-Read-Quality.INVALID/Float32-Quantisierung
-  + +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
+- **Tests:** 1584 Unit + 35 Integration passed + 4 skipped
+  (Stand nach M4-Welle-6b-Closure; +441 Unit-Tests ggue.
+  M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
+  +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA + +6
+  Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
+  String-Read-Quality.INVALID/Float32-Quantisierung +
+  +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
   + +29 Welle 6a fuer Cross-Adapter-Hardening inkl. Slice
   034 (19 OTel-Span-Wrap-Tests inkl. F1/F2/F3-Negativ-
   Tests + 6 AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Tests

@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M4-protocol-adapters.md`](M4-protocol-adapters.md) | M4-Slice-Plan (MQTT/Modbus/OPC-UA/DNP3/IEC; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M3-faults-agents-observability.md`). |
-| [`M4-welle-6b.md`](M4-welle-6b.md) | Welle-6b-Slice-Doc (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft + Slice-034-F13-Vorlauf-Item) — `In Progress` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M4-Welle-7-Pre-C0. |
+| [`M4-welle-6b.md`](M4-welle-6b.md) | Welle-6b-Slice-Doc (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-Erbschaft + Slice-034-F13-Vorlauf-Item) — `Done` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` als M4-Welle-7-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -51,15 +51,32 @@ gewandert (Self-Close-Moves `556ae9f` / `81b5cba` /
 / `d1cb65d`). Der kanonische M4-Slice-Plan
 [`M4-protocol-adapters.md`](M4-protocol-adapters.md)
 bleibt in `in-progress/` bis M4-Welle-7-Closure.
-**Aktive Welle:** M4-Welle-6b (IEC-61850-Lizenz-und-Smoke-
-Hardening, Welle-5b-Erbschaft + Slice-034-F13-Vorlauf-Item)
-eroeffnet 2026-06-01 mit C0 (dieser Commit; Slice-Doc-
-Anlage [`M4-welle-6b.md`](M4-welle-6b.md)). Geplante
-Lieferung in 4-5 Commits: C1 SPDX-Header-Konsistenz-Check
-(`tools/check_spdx.py` oder Erweiterung), C2 NEU
-`AC-IEC61850-GPL-BOUNDARY` arch_check-Contract (Contracts
-ergaenzt), C3 IedServer-Smoke-Reaktivierungs-Probe (3
-Pfade: Library-Upgrade / Dockerfile-Python-Downgrade /
-Mock-only-Defer) plus Slice-034-F13-Coverage-Schaerfung,
-C4 Status/DoD-Sync + Top-Level-Doku-Sync + NEU/erweiterte
-CONTRIBUTING.md mit Dual-License-Policy.
+**Welle 6b (IEC-61850-Lizenz-und-Smoke-Hardening, Welle-5b-
+Erbschaft + Slice-034-F13-Vorlauf-Item) abgeschlossen
+2026-06-01** mit C0 `14d1bcb` (Slice-Doc) + C1 `8947c62`
+(SPDX-Header-Lint via NEU `tools/check_spdx.py` + 10.
+A-1-Gate `make spdx-check`) + C2 `9e2bf39` (NEU
+`AC-IEC61850-GPL-BOUNDARY` arch_check-Contract, 19 → 20
+KEPT; AST-Import-Scan; 8 Property-Tests) + C3 `2539574`
+(IedServer-Smoke-Probe Pfad C aktiv mit Trigger 009 nach
+PyPI-Pfad-A-Befund: Library-Stand identisch zu Welle 5b,
+kein cp314-Manylinux-Wheel; plus Slice-034-F13-Coverage-
+Schaerfung `_is_adapter_lightweight_path` erweitert um
+flat-file `_protocol_*.py`-Cross-Adapter-Helper) + C4
+(dieser Commit; Status/DoD-Sync + NEU `CONTRIBUTING.md`
+mit Dual-License-Policy + Top-Level-Doku-Sync). 1566 →
+1584 Unit-Tests (+18 unique: 9 SPDX-Lint + 8 GPL-Boundary-
+Property + 1 F13-Cross-Adapter-Helper-Positiv). 10/10
+A-1-Gates gruen (10. NEU `spdx-check`); 20/20 Contracts
+KEPT (14. NEU `AC-IEC61850-GPL-BOUNDARY`).
+
+**Aktiver Slice:** M4 (Protokolladapter). **Naechster
+aktiver Schritt:** M4-Welle-7 (M4-Closure analog
+M3-Welle-7) — ADR 0030..0035 von `Provisional` auf
+`Accepted`; NEU `done/M4-results.md` mit
+Meilenstein-Zusammenfassung; Roadmap-M4-DoD-Checkboxen-
+Sweep; End-to-End-Sweep S-1..S-6; `make fullbuild` cache-
+frei gruen als Welle-7-Closure-Gate; Self-Close-Move
+Welle-6b-Doc nach `done/` als Welle-7-Pre-C0; Self-Close-
+Move `M4-protocol-adapters.md` nach `done/` mit Welle-7-
+Closure-Hash.

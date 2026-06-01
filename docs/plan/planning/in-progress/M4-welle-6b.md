@@ -1,11 +1,92 @@
 # Welle 6b — M4 IEC-61850-Lizenz-und-Smoke-Hardening (Welle-5b-Erbschaft)
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M4-
-Welle-6a-Closure inkl. Slice 034 Review-Folge (Liefer-Stack
+**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-6b-
+C4 (`docs(plan|adr)` Doc-Sync + NEU `CONTRIBUTING.md`,
+dieser Commit). Eroeffnet 2026-06-01 nach M4-Welle-6a-
+Closure inkl. Slice 034 Review-Folge (Welle-6a-Stack
 `838d904` Sub-Slicing + C0 `9776dd9` + C1 `9312239` + C2
 `9d3912f` + Pre-C3 `81140e2` + C3 `0a5e895` + C4 `69b37f1` +
 **Slice 034 `bde8fdb`** Review-Folge + Hash-Sync `b6a778d` +
 **Self-Close-Move `d1cb65d`** + Pre-C0-Sync `7b0e3e4`).
+
+**Liefer-Hashes (5 Commits):**
+
+- C0 `14d1bcb` — `docs(plan): M4-welle-6b Slice-Doc`
+  (Welle-Beginn).
+- C1 `8947c62` — `feat(welle-6b): C1 — SPDX-License-
+  Identifier-Lint fuer IEC-61850-GPL-Boundary` (NEU
+  `tools/check_spdx.py` + Dockerfile/Makefile-Stage +
+  `make gates`-Integration; 9 → 10 A-1-Gates).
+- C2 `9e2bf39` — `feat(welle-6b): C2 — AC-IEC61850-GPL-
+  BOUNDARY arch_check-Contract (19 → 20)` (AST-Import-
+  Scan ueber `src/grid_gym/**/*.py` ausser
+  `protocol_iec61850/*`; 8 Property-Tests).
+- C3 `2539574` — `feat(welle-6b): C3 — IedServer-Smoke-
+  Probe (Pfad C / Defer) + Slice-034-F13-Coverage-
+  Schaerfung` (Pfad-A-Befund: Library-Stand tot,
+  Trigger 009 verankert; F13:
+  `_is_adapter_lightweight_path` erweitert um
+  `_protocol_*.py`-Cross-Adapter-Helper).
+- C4 (dieser Commit) — `docs(plan|adr): M4-Welle-6b-C4
+  — Status/DoD-Sync + NEU CONTRIBUTING.md + Top-Level-
+  Doku-Sync`.
+
+**DoD-Verifikation (Welle-Schluss, Stand `2539574` C3 +
+dieser Commit):**
+
+- `make test-unit`: **1584 Tests gruen** (Welle-6a-
+  Endstand 1566 + 9 Slice-034 + 9 C1-check_spdx + 8 C2-
+  iec61850-gpl-boundary + 1 C3-F13 = 1584; netto +18
+  unique Welle-6b-Tests: 9 SPDX-Lint + 8 GPL-Boundary-
+  Property + 1 Cross-Adapter-Helper-Positiv).
+- `make test-integration`: 35 passed + 4 skipped
+  (unveraendert; IEC-Smokes weiterhin via 2c-Mock-only-
+  Fallback skipped — Welle-6b-C3-Pfad-A-Probe-Run-Befund
+  bestaetigt PyPI-Stand identisch zu Welle 5b; Trigger
+  009 verankert die Reaktivierungs-Pfade).
+- `make arch-check`: **20/20 Contracts KEPT** (NEU
+  `AC-IEC61850-GPL-BOUNDARY` aus C2; bestehende 19
+  unveraendert; Welle-6a-Cross-Adapter-Helper
+  `_protocol_otel_wrap.py` haelt unter dem F13-
+  erweiterten `_is_adapter_lightweight_path` complexity
+  <= 8).
+- `make typecheck`: cache-frei gruen mit `strict_bytes =
+  true` (Trigger-006-Closure aus Welle-6a-C3 weiterhin
+  produktiv).
+- `make gates`: **alle 10 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (NEU 10. Gate
+  `spdx-check`).
+- `make docs-check`: cache-frei gruen (NEU 009-Trigger-
+  Cross-Doc-Refs aufgeloest).
+- **SPDX-Header-Lint produktiv** via `tools/check_spdx.py`
+  in `make gates` integriert; **11 GPL-Boundary-Files**
+  haben `SPDX-License-Identifier: GPL-3.0-only` (5 src +
+  4 unit-tests + 1 fixture + 1 integration-test).
+- **`AC-IEC61850-GPL-BOUNDARY` produktiv** via
+  `tools/arch_check.py` — AST-Import-Scan verifiziert dass
+  kein MIT-Code direkt `grid_gym.adapters.driven.
+  protocol_iec61850.*` importiert. Welle-1-Factory-
+  Bruecken-Pfad ueber dynamischen `importlib.import_module`
+  ist contract-konform (kein AST-Import-Knoten in MIT-
+  Code).
+- **CONTRIBUTING.md produktiv** mit Dual-License-Policy
+  (MIT default, GPL-3.0-only fuer IEC-61850-Boundary mit
+  SPDX-Header-Pflicht); Anleitung fuer "Add a new GPL-
+  isolated path" mit Verweis auf C1/C2-Tooling.
+- **IedServer-Smoke-Reaktivierungs-Decision dokumentiert**
+  — Pfad C aktiv (Mock-only-Fallback bleibt) mit
+  konkretem Trigger in
+  [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md):
+  Pfad A passiv (Library publishet cp314-Manylinux-
+  Wheel) ODER Pfad B aktiv (eigener Slice
+  `036-iec61850-multi-python-test-stage.md` mit
+  Dockerfile-Multi-Python-Setup; ggf. ADR 0036).
+- **Slice-034-F13-Coverage-Schaerfung produktiv** —
+  `_is_adapter_lightweight_path` erweitert um Cross-
+  Adapter-Helper unter `_protocol_*.py` direkt unter
+  `adapters/driven/` (flat-file mit `_protocol_`-Prefix
+  + `.py`-Suffix); Property-Test mit 4 Praezisions-
+  Assertions + 1 Positiv-Test im Planted-Violator-Suite.
 
 Welle 6b ist die **achte Code-Welle** in M4 und die zweite
 Cross-Adapter-Welle (analog Welle 6a). Sie ist die **erste
@@ -348,54 +429,79 @@ explizit als M5/M6-Defer dokumentiert.
 
 ## 9. DoD-Checkliste (mit C4 abzuhaken)
 
-- [ ] **SPDX-Header-Konsistenz-Check produktiv** —
-  `tools/check_spdx.py` oder Erweiterung; in `make gates`
-  integriert; alle IEC-61850-Dateien Lint-clean.
-- [ ] **`AC-IEC61850-GPL-BOUNDARY`-Contract produktiv** —
-  20/20 Contracts KEPT; Property-Test fuer Negativ-Pfad
-  (file outside `protocol_iec61850/*` importiert es) und
-  Positiv-Pfad (file in `protocol_iec61850/*` darf
-  importieren).
-- [ ] **CONTRIBUTING.md mit Dual-License-Policy
-  produktiv** — Default-MIT + GPL-3.0-only-Subset
-  `protocol_iec61850/*` + SPDX-Header-Pflicht.
-- [ ] **IedServer-Smoke-Reaktivierungs-Decision** — eine
-  von drei Optionen verfolgt (Pfad A oder B
-  produktiviert; Pfad C als dokumentierter Defer auf
-  M5/M6 mit konkretem Trigger).
-- [ ] **Slice-034-F13-Coverage-Schaerfung** —
-  `_is_adapter_lightweight_path` (oder NEU
-  `AC-CROSS-ADAPTER-LIGHTWEIGHT`) deckt Cross-Adapter-
-  Helper unter `_protocol_*.py` ab; Planted-Violator-
-  Test erweitert.
-- [ ] **`make test-unit` gruen** — Welle-6b-Endstand,
-  Test-Count festgehalten.
-- [ ] **`make test-integration` gruen** mit reaktivierten
-  Smokes ODER unveraendertem Skip-Count + dokumentiertem
-  Defer.
-- [ ] **`make arch-check` 20/20 KEPT** (Welle-6b-neuer
-  Contract).
-- [ ] **`make gates` cache-frei gruen** ohne
-  `CRITICAL_COV_TARGETS`-Override.
-- [ ] **`make docs-check` cache-frei gruen**.
-- [ ] **C4-Doc-Sync produktiv** — `M4-welle-6b.md`
-  Status `Done`, `M4-protocol-adapters.md §3 Welle 6b`
-  DoD-Checkboxen abgehakt, Top-Level-Doku-Sync
-  (in-progress/README.md, roadmap.md, README(s)).
-- [ ] **Welle-7-Naechster-Schritt verankert** — M4-Welle-
-  7-Closure-Pflichten in `in-progress/README.md` als
-  naechster aktiver Schritt sichtbar.
+- [x] **SPDX-Header-Konsistenz-Check produktiv** —
+  `tools/check_spdx.py` (NEU) + Dockerfile-Stage
+  `spdx-check` + Makefile-Target + `make gates`-
+  Integration (9 → 10 A-1-Gates); 11 GPL-Boundary-Files
+  Lint-clean (5 src + 4 unit-tests + 1 fixture + 1
+  integration-test) — C1 `8947c62`.
+- [x] **`AC-IEC61850-GPL-BOUNDARY`-Contract produktiv** —
+  20/20 Contracts KEPT; AST-Import-Scan ueber `src/
+  grid_gym/**/*.py` ausser `protocol_iec61850/*`;
+  Property-Test mit 4 Positiv-Pfaden (direct/from/sub-
+  modul/TYPE_CHECKING-Imports) + 3 Negativ-Pfaden
+  (clean-Import via Port-Surface + intra-Boundary +
+  unrelated MIT-Modul) + 1 Live-Repo-Check — C2
+  `9e2bf39`.
+- [x] **CONTRIBUTING.md mit Dual-License-Policy
+  produktiv** — NEU
+  [`../../../../CONTRIBUTING.md`](../../../../CONTRIBUTING.md):
+  Default-MIT + GPL-3.0-only-Subset
+  `protocol_iec61850/*` + SPDX-Header-Pflicht;
+  Anleitung "Add a new GPL-isolated path" mit Verweis
+  auf C1/C2-Tooling — C4 (dieser Commit).
+- [x] **IedServer-Smoke-Reaktivierungs-Decision** —
+  Pfad C aktiv (Mock-only-Fallback) mit konkretem
+  Defer-Trigger
+  [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md);
+  Pfad A tot (Library-Stand identisch zu Welle 5b;
+  PyPI-Wheel-Manifest 1.6.1.2 ohne cp314-Manylinux);
+  Pfad B als eigenstaendiger Slice-Trigger (Repo-
+  Novum, ggf. ADR 0036) — C3 `2539574`.
+- [x] **Slice-034-F13-Coverage-Schaerfung** —
+  `_is_adapter_lightweight_path` erweitert um flat-
+  file `_protocol_*.py`-Cross-Adapter-Helper direkt
+  unter `adapters/driven/`; Planted-Violator-Test mit
+  1 neuen Positiv-Pfad + 4 Praezisions-Assertions
+  (Subdir-Negativ, `.pyi`-Negativ, Prefix-Praezision)
+  — C3 `2539574`.
+- [x] **`make test-unit` gruen** — 1566 → 1584 Unit-
+  Tests (+18 unique Welle-6b: 9 SPDX-Lint + 8 GPL-
+  Boundary-Property + 1 F13-Cross-Adapter-Helper-
+  Positiv).
+- [x] **`make test-integration` gruen** mit
+  unveraendertem Skip-Count (35 passed + 4 skipped;
+  IEC-Smokes weiterhin via 2c-Mock-only-Fallback;
+  Pfad-C-Defer dokumentiert).
+- [x] **`make arch-check` 20/20 KEPT** (Welle-6b-neuer
+  `AC-IEC61850-GPL-BOUNDARY`-Contract).
+- [x] **`make gates` cache-frei gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (10 A-1-Gates inkl.
+  NEU `spdx-check`).
+- [x] **`make docs-check` cache-frei gruen** (NEU
+  009-Trigger-Cross-Doc-Refs aufgeloest).
+- [x] **C4-Doc-Sync produktiv** — `M4-welle-6b.md`
+  Status `Done` (dieses Dokument), `M4-protocol-
+  adapters.md §3 Welle 6b` DoD-Checkboxen abgehakt,
+  Top-Level-Doku-Sync (in-progress/README.md,
+  roadmap.md, README(s)).
+- [x] **Welle-7-Naechster-Schritt verankert** —
+  M4-Welle-7-Closure-Pflichten in `in-progress/
+  README.md` als naechster aktiver Schritt sichtbar.
 
-**Anti-Scope-Verifikation (Welle-6b NICHT):**
+**Anti-Scope-Verifikation (Welle-6b NICHT, alles
+gehalten):**
 
-- [ ] Keine Aenderungen in `protocol_mqtt`/`protocol_
+- [x] Keine Aenderungen in `protocol_mqtt`/`protocol_
   modbus`/`protocol_opcua`/`protocol_dnp3`.
-- [ ] Keine Aenderung der OTel-Wrap-Implementation aus
-  Welle 6a.
-- [ ] Keine ADR-Status-Wechsel (es sei denn Pfad-B-Probe
-  rechtfertigt ein neues ADR — Entscheidung im C3-
-  Probe-Run dokumentiert).
-- [ ] Kein `make fullbuild`-Lauf als C4-Pflicht (analog
+- [x] Keine Aenderung der OTel-Wrap-Implementation aus
+  Welle 6a (`_protocol_otel_wrap.py` unveraendert).
+- [x] Keine ADR-Status-Wechsel (ADR 0024 bleibt
+  `Accepted`; ADR 0035 bleibt `Provisional` — Welle 7
+  zieht es auf `Accepted`; Pfad-B-Probe wurde als
+  eigenstaendiger Slice-Trigger ausgegliedert, kein
+  ADR 0036 in Welle 6b noetig).
+- [x] Kein `make fullbuild`-Lauf als C4-Pflicht (analog
   Welle-6a-Pattern: `make gates` reicht; `fullbuild`
   ist Welle-7-Closure-Pflicht).
 
