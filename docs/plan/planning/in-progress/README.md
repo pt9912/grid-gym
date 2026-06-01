@@ -8,7 +8,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M4-protocol-adapters.md`](M4-protocol-adapters.md) | M4-Slice-Plan (MQTT/Modbus/OPC-UA/DNP3/IEC; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M3-faults-agents-observability.md`). |
-| [`M4-welle-5b.md`](M4-welle-5b.md) | Welle-5b-Slice-Doc (IEC-61850-Adapter-Spike) — `Done` 2026-06-01; bleibt in `in-progress/` bis Self-Close-Move nach `done/` (Pattern Welle 1..5a). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -27,19 +26,19 @@ C3 dieser Commit) und C2-Merge `944bca5`. 2c-Mock-only-
 Fallback aktiviert (Probe-Run auf Python 3.12 lief, aber
 grid-gym-Docker-Stack Python 3.14 segfaultet im
 `_pyiec61850.so`-SWIG-Layer; Welle-6-Schaerfungspfade
-dokumentiert). Welle-0-, Welle-1-, Welle-2-, Welle-3-,
-Welle-4- und Welle-5a-Docs sind alle nach
+dokumentiert; Slice 033 `7e0c91b` als C2-Review-Folge hat 15
+Findings 10 HIGH + 5 MEDIUM ohne ADR-Status-Aenderung
+adressiert). Welle-0-, Welle-1-, Welle-2-, Welle-3-, Welle-4-,
+Welle-5a- und Welle-5b-Docs sind alle nach
 [`../done/M4-welle-0.md`](../done/M4-welle-0.md),
 [`../done/M4-welle-1.md`](../done/M4-welle-1.md),
 [`../done/M4-welle-2.md`](../done/M4-welle-2.md),
 [`../done/M4-welle-3.md`](../done/M4-welle-3.md),
-[`../done/M4-welle-4.md`](../done/M4-welle-4.md) bzw.
-[`../done/M4-welle-5a.md`](../done/M4-welle-5a.md) gewandert
+[`../done/M4-welle-4.md`](../done/M4-welle-4.md),
+[`../done/M4-welle-5a.md`](../done/M4-welle-5a.md) bzw.
+[`../done/M4-welle-5b.md`](../done/M4-welle-5b.md) gewandert
 (Self-Close-Moves `556ae9f` / `81b5cba` / `0d6ad6c` /
-`506c8ca` / `3bc015b` / `9fea2be`); der Welle-5b-Doc
-[`M4-welle-5b.md`](M4-welle-5b.md) bleibt vorerst in
-`in-progress/`, der Self-Close-Move folgt im naechsten
-Pre-C0-Sync vor Welle 6. Der kanonische M4-Slice-Plan
+`506c8ca` / `3bc015b` / `9fea2be` / `30860ed`). Der kanonische M4-Slice-Plan
 [`M4-protocol-adapters.md`](M4-protocol-adapters.md) bleibt
 in `in-progress/` bis M4-Welle-7-Closure. **Naechster
 aktiver Schritt:** M4-Welle-6 (Cross-Adapter-Hardening —

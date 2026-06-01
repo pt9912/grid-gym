@@ -76,10 +76,28 @@
   Probe-Run auf Python 3.12 lief Float/Int32/String-
   Roundtrip sauber durch, aber grid-gym-Docker Python 3.14
   segfaultet im `_pyiec61850.so`-SWIG-Layer — Welle-6-
-  Schaerfungspfade dokumentiert) + C3 (dieser Commit;
-  ADR 0035 → `Provisional`, `M4-welle-5b.md` → `Done` mit
+  Schaerfungspfade dokumentiert) + C3 `ca96bca`
+  (ADR 0035 → `Provisional`, `M4-welle-5b.md` → `Done` mit
   Liefer-Hashes + DoD-Verifikation + §9 DoD-Checkliste
-  komplett abgehakt, Top-Level-Doku-Sync in 5 Docs).
+  komplett abgehakt, Top-Level-Doku-Sync in 5 Docs) +
+  **Slice 033 `7e0c91b`** (C2-Review-Folge: 15 Findings
+  10 HIGH + 5 MEDIUM aus 5-Angle-Code-Review adressiert ohne
+  ADR-Status-Aenderung — Sentinel-Exception-Klasse statt
+  `Exception`-Alias im Optional-Extra-Off-Pfad,
+  `_PyIecMMSError`-Catch-All in `start()`, `stop()`
+  State-Mutation NACH `disconnect()`, NaN/Inf-Reject +
+  int-Reject in `_decode_float`, Container-Check gated auf
+  non-string-Datatype, NEU `Iec61850PortReadConnectionLostError`
+  fuer mid-flight-NotConnected, Config-Anti-Scope-write-Reject
+  bei Konstruktion, `TelemetryPoint.value`-Decimal-Wrap mit
+  `Quality.INVALID`-String-Fallback Welle-4-Pattern,
+  Sub-Millisekunden-Timeout-Floor, `Dockerfile`-`build-app`-
+  Stage `--extra iec61850`-Propagation, `simpleIO.cfg`-SPDX-
+  Header + Derivative-Work-Attribution zu libiec61850/MZ
+  Automation, `pyproject.toml`-GPL-Classifier ergaenzt) +
+  Self-Close-Move `30860ed` (`M4-welle-5b.md` aus
+  `in-progress/` nach `done/` als M4-Welle-6-Pre-C0,
+  rename-only).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
   M4-Welle-6 (Cross-Adapter-Hardening — OTel-Span-Wrap der

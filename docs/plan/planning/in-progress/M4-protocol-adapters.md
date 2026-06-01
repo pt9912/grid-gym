@@ -830,18 +830,25 @@ Done, Top-Level-Doku-Sync in 5 Docs).
 
 #### Welle 5b — IEC-61850-Adapter (Spike, Done 2026-06-01)
 
-**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-5b-C3
-(dieser Commit). Per-Commit-Liefer-Hashes: C0 `19f820a`
-(Slice-Doc), C1 `88c1a33` (ADR 0035 `Proposed`),
+**Status:** Done. Slice-Begleit-Doc
+[`../done/M4-welle-5b.md`](../done/M4-welle-5b.md) (gewandert
+nach `done/` mit M4-Welle-6-Pre-C0 `30860ed`; Pattern analog
+M4-Welle-1..5a mit `556ae9f` / `81b5cba` / `0d6ad6c` /
+`506c8ca` / `3bc015b` / `9fea2be`).
+ADR 0035 ist `Provisional`. Per-Commit-Liefer-Hashes:
+C0 `19f820a` (Slice-Doc), C1 `88c1a33` (ADR 0035 `Proposed`),
 C1-Review-Folge `da8aed9` (API-Korrektur + Lizenz-Refit +
 M4-protocol-adapters.md-Sync nach 4 Findings), C2 `944bca5`
 (feat: `protocol_iec61850/`-5-Modul-Paket + 75 Unit-Tests +
 Integration-Smoke unter 2c-Mock-only-Fallback + GPL-Lizenz-
 Boundary-Files; 1537 Unit + 35 passed + 4 skipped
 Integration; 19/19 Contracts KEPT; 9/9 Gates gruen ohne
-Override), C3 (dieser Commit; ADR 0035 → `Provisional`,
+Override), C3 `ca96bca` (ADR 0035 → `Provisional`,
 M4-welle-5b.md → `Done`, diese §3-Section auf Done,
-Top-Level-Doku-Sync).
+Top-Level-Doku-Sync), Slice 033 `7e0c91b` (C2-Review-Folge:
+15 Findings 10 HIGH + 5 MEDIUM adressiert ohne ADR-Status-
+Aenderung; siehe
+[`../done/033-iec61850-adapter-review-folge.md`](../done/033-iec61850-adapter-review-folge.md)).
 
 **Library-Lage (verifiziert 2026-06-01):** produktive
 Library ist `pyiec61850-ng>=1.6,<2.0` (PyPI, manylinux1_x86_64
