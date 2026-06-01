@@ -509,7 +509,30 @@ Simulationskern validiert (`GG-SAFE-008`).
 
 - `DeviceProtocolPort` — Read- und Write-Operationen mit Mapping auf
   `TelemetryPoint` / `Command`; Adapter dokumentieren Topic-, Register-,
-  Node- bzw. LN/CDC-Profile (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
+  Node-, Point- bzw. LN/CDC-Profile (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
+  Spezifiziert in [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md)
+  §2.1 (Sync-Vertrag) / §2.2 (Caller-Scope-Lifecycle) / §2.3 (stateless
+  aus Replay-Sicht). **Fuenf konkrete Implementer** unter
+  `src/grid_gym/adapters/driven/protocol_*/` (M4-Welle 2..5b) — siehe
+  Adapter-Profil-Index in [`spec/protocol_profiles.md`](protocol_profiles.md):
+  - `protocol_mqtt/` — MQTT via paho-mqtt 2.x (ADR 0031 `Provisional`).
+  - `protocol_modbus/` — Modbus-TCP via pymodbus 3.x (ADR 0032 `Provisional`).
+  - `protocol_opcua/` — OPC-UA via asyncua 1.2b2 mit eigenem
+    `OpcuaLoopThread`; **erster async-Stack** im Repo (ADR 0033 `Provisional`).
+  - `protocol_dnp3/` — DNP3 via zwei-Library-Setup (`nfm-dnp3` + `dnp3-outstation`,
+    beide MIT, Pure-Python) (ADR 0034 `Provisional`).
+  - `protocol_iec61850/` — IEC-61850 via `pyiec61850-ng` SWIG-Bindings
+    (GPLv3-isoliert per SPDX-Header; **erster GPL-isolierter Sub-Module-
+    Praezedenzfall** im sonst MIT-Repo; opt-in Extra
+    `pip install grid-gym[iec61850]`) (ADR 0035 `Provisional`).
+- **OTel-Span-Wrap** (M4-Welle-6a-Pattern;
+  [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5):
+  jeder `read(target)`/`write(target, command)`-Call wird in einen
+  TracePort-Span mit Standard-Attributen (`adapter_type`, `target`,
+  `reference`, `operation`, `latency_ms`) umschlossen. Implementation
+  in [Welle 6a](../docs/plan/planning/in-progress/M4-welle-6a.md) ueber
+  alle 5 Adapter-Pakete via Decorator-/Composition-/Welle-1-Factory-
+  Hook-Pattern.
 - `TelemetrySinkPort` — Append-only, deterministische Sortierung;
   Persistenzadapter sind austauschbar (Postgres → Timescale → Influx).
 - `ReplaySourcePort` — liefert Samples mit Originalzeitstempel +
