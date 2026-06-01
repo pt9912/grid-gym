@@ -78,7 +78,7 @@ dieser Commit):**
   dokumentiert.
 
 Kanonische Slice-Spezifikation:
-[`M4-protocol-adapters.md §3 Welle 5a`](M4-protocol-adapters.md)
+[`M4-protocol-adapters.md §3 Welle 5a`](../in-progress/M4-protocol-adapters.md)
 — dieses Dokument ist lesefreundlicher Index + per-Welle-
 Tracking, nicht Ersatz.
 
@@ -339,7 +339,7 @@ Welle 5a bringt **eine** neue ADR: **ADR 0034**
   (`GG-DNP3-001` Cluster).
 - [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
   Decision-Liste.
-- [`M4-protocol-adapters.md`](M4-protocol-adapters.md) §3
+- [`../in-progress/M4-protocol-adapters.md`](../in-progress/M4-protocol-adapters.md) §3
   Welle 5a (kanonische Slice-Spezifikation).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   §2.1 (Sync-Vertrag — `nfm-dnp3` ist sync und passt

@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 5a (Done; Welle 5b IEC-61850-Spike als naechstes)
-**Stand:** 2026-05-31
+**Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
@@ -53,15 +53,23 @@
   + C3 `6903a08` (ADR 0034 → `Provisional`, `M4-welle-5a.md`
   → `Done` mit Liefer-Hashes + DoD-Verifikation + §9 DoD-
   Checkliste komplett abgehakt, Top-Level-Doku-Sync in 5
-  Docs); Self-Close-Move (`M4-welle-5a.md` aus
-  `in-progress/` nach `done/`) folgt als Pre-C0-Sync vor
-  Welle 5b.
+  Docs) + Self-Close-Move `9fea2be` (`M4-welle-5a.md` aus
+  `in-progress/` nach `done/` als M4-Welle-5b-Pre-C0,
+  rename-only).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-5b (IEC-61850-Spike — `libiec61850`-Python-
-  Binding-Recherche steht noch aus; Sub-Slicing-Entscheidung
-  per `M4-protocol-adapters.md`-§3 begruendet durch Variante C
-  „beide Spikes" und unabhaengige Library-Pfade).
+  M4-Welle-5b (IEC-61850-Spike — Library-Recherche
+  2026-06-01 abgeschlossen: produktive Library
+  `pyiec61850-ng>=1.6,<2.0` (PyPI, manylinux1+Win-Wheels,
+  **GPLv3**, Beta, SWIG-Bindings zu libiec61850 1.6); eine
+  Library liefert Client (`MMSClient`) **und** in-process-
+  Server (`IedServer` mit Context-Manager) — Pattern analog
+  Welle-3-Modbus mit pymodbus, **nicht** Welle-5a-zwei-
+  Library-Setup. Lizenz-Boundary-Decision: `protocol_iec61850/`
+  + zugehoerige Tests werden GPLv3-isoliert via SPDX-Header,
+  Rest grid-gym bleibt MIT (Dual-License-Policy, neu fuer
+  grid-gym; Pattern-Praezedenz: ffmpeg-Python-Wrappern und
+  GTK-Bindings in MIT-Tools).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**

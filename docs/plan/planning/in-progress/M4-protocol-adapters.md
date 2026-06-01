@@ -706,8 +706,10 @@ Verzicht").
 #### Welle 5a — DNP3-Adapter (Spike, Done 2026-05-31)
 
 **Status:** Done. Slice-Begleit-Doc
-[`M4-welle-5a.md`](M4-welle-5a.md) (bleibt in `in-progress/`
-bis M4-Welle-5b-Pre-C0-Move; Pattern analog M4-Welle-1..4).
+[`../done/M4-welle-5a.md`](../done/M4-welle-5a.md) (gewandert
+nach `done/` mit M4-Welle-5b-Pre-C0 `9fea2be`; Pattern analog
+M4-Welle-1..4 mit `556ae9f` / `81b5cba` / `0d6ad6c` /
+`506c8ca` / `3bc015b`).
 ADR 0034 ist `Provisional`. Fuenfte Code-Welle in M4 und
 der **vierte konkrete Adapter** auf der
 `DeviceProtocolPort`-Surface (`GG-AR-PORT-DRN-007`): DNP3
