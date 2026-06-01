@@ -121,14 +121,15 @@ und M4-Welle-6 → 6a/6b). Welle-Sub-Slicing wird in der
 betreffenden Welle-C0-Slice-Doc beschlossen, nicht hier
 vorab vorbelegt.
 
-### Welle 0 — Slice-Plan-Eroeffnung + Trigger-Triage (In Progress 2026-06-01)
+### Welle 0 — Slice-Plan-Eroeffnung + Trigger-Triage (Done 2026-06-01)
 
-**Status:** In Progress. Welle-Slice-Begleit-Doc
+**Status:** Done. Welle-Slice-Begleit-Doc
 [`M5-welle-0.md`](M5-welle-0.md). Liefer-Hashes: C0
 `d93ae57` (Slice-Doc) + C0-Review `aa1db52` (12 Findings
-adressiert) + C1 (dieser Commit; Slice-Plan-Eroeffnung —
-dieses Dokument) + C2 (folgt; Trigger-Triage +
-Status-Flip).
+adressiert) + C1 `b8bef6c` (Slice-Plan-Eroeffnung —
+dieses Dokument) + C2 (dieser Commit; Trigger-Triage +
+NEU `open/010-base-image-krb5-cve-bump.md` +
+Roadmap-Status-Flip via Decision 10).
 
 ### Welle 1 — HTTP-API-Surface + ADR 0036-Schaerfung (Pending)
 

@@ -1,6 +1,34 @@
 # Welle 0 — M5 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach
+**Status:** Done — geschlossen 2026-06-01 mit M5-Welle-0-
+C2 (`docs(plan)` Trigger-Triage + Status-Flip, dieser
+Commit). Liefer-Hashes: C0 `d93ae57` (Slice-Doc) +
+C0-Review `aa1db52` (12 Findings — 3 Blocker + 4
+Should-Fix + 5 Nits) + C1 `b8bef6c` (NEU `M5-ui-demo.md`
+Slice-Plan-Eroeffnung) + C2 (dieser Commit; NEU
+`open/010-base-image-krb5-cve-bump.md` + Trigger-004 +
+Trigger-008-Re-Eval-Notizen + roadmap.md §3 M5
+„Vorbelegung → In Progress" via Decision 10).
+
+**Welle-0-DoD verifiziert (alle 7 Items aus §6):**
+
+1. ✅ `M5-welle-0.md` produktiv mit §1-§8.
+2. ✅ `M5-ui-demo.md` produktiv (C1 `b8bef6c`).
+3. ✅ `in-progress/README.md`-Bestand-Tabelle hat beide
+   Eintraege (C0 + C1).
+4. ✅ `in-progress/README.md`-Aktive-Welle-Block auf
+   M5-Welle-1 ausgerichtet (C2, dieser Commit).
+5. ✅ `roadmap.md §3 M5`-Header **auf `In Progress`
+   geflippt** (Decision 10 in M5-Welle-0-C2 entschieden:
+   Flip wie M4-Welle-0-Pattern).
+6. ✅ Welle-0-Trigger-Triage durchgefuehrt: Trigger 004
+   (canonical-encoder) + 008 (SBOM) Re-Eval-Notizen
+   ergaenzt; Trigger 009 (IEC-Smoke) orthogonal zu M5
+   unveraendert; NEU Trigger 010 (Base-Image-Bump
+   krb5-CVE) angelegt.
+7. ✅ `make docs-check` cache-frei gruen.
+
+**Status-Pfad:** In Progress — eroeffnet 2026-06-01 nach
 M4-Welle-7-Closure (Liefer-Stack `bf23458` Pre-C0a +
 `5b2dc24` Pre-C0b + `af97fd7` C0 + `05a1417` C0-Review
 + `d2071f0` C1 + `0c644f0` C2 + `121e255` C3 + `e745f10`

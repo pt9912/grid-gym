@@ -86,7 +86,7 @@ COPY alembic.ini ./
 # LICENSE und README.md sind in pyproject.toml ([project].license,
 # [project].readme) referenziert — hatchling braucht beide fuer den
 # editable Install im naechsten `uv sync`.
-COPY LICENSE README.md CONTRIBUTING.md ./
+COPY LICENSE README.md README.de.md CONTRIBUTING.md ./
 RUN uv sync --frozen --all-groups --extra iec61850
 
 # ---------------------------------------------------------------------------

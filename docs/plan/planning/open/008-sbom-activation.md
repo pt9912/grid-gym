@@ -37,3 +37,13 @@ Container-Registry-Push).
 
 - `next/`, sobald Release-Pipeline skizziert ist,
 - `in-progress/`, wenn aktiver Release-Slice geplant ist.
+
+## M5-Welle-0-C2-Triage 2026-06-01
+
+Verbleibt in `open/`. M5-Closure liefert keine produktive
+Release-Pipeline (M5 ist UI + Demo, kein Release-Workflow).
+M5-Welle-7-Closure koennte allerdings SBOM-Aktivierung
+mitnehmen falls ein Demo-Release-Tag erwogen wird —
+optional, kein DoD-Pflicht-Punkt. Realistischer
+Aktivierungs-Pfad bleibt M6 (`GG-CICD-007` Release-
+Workflow als Pflicht-Lieferung).

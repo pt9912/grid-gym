@@ -77,3 +77,14 @@ re-evaluiert werden.
 
 **Welle-6a-C3-Action**: Verbleibt in `open/`; diese Re-Eval-
 Notiz dokumentiert die Decision.
+
+**M5-Welle-0-C2-Triage 2026-06-01:** verbleibt in `open/`.
+M5-Welle-3 (Live-Telemetry-Dashboard mit WebSocket-Stream)
+ist der natuerliche M5-Touch-Point, an dem ein messbarer
+Throughput-Druck am Telemetrie-Pfad sichtbar werden koennte
+(WebSocket-Push mit `canonical_json`-Serialisierung pro
+Telemetrie-Tick). M5-Welle-3-Slice-Doc soll diesen Trigger
+als Re-Eval-Pflicht-Punkt im DoD listen. Falls Welle 3
+einen messbaren Druck zeigt, kann der Trigger dort
+aktiviert werden; sonst bleibt er bis M6-Welle-0
+deferred.

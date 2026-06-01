@@ -543,7 +543,17 @@ Slice-Plan in
         via Compose-Sibling; IEC-61850-Smoke via 2c-Mock-only-
         Fallback (Trigger 009).
 
-### M5 — UI + Demo (Vorbelegung)
+### M5 — UI + Demo (`In Progress` 2026-06-01)
+
+Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
+([`M5-welle-0.md`](M5-welle-0.md) + [`M5-ui-demo.md`](M5-ui-demo.md))
++ Pre-M5-Welle-0-Sondierungs-ADR
+[`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
+mit Maintainer-Decision-Indication „Option 1 (FastAPI +
+HTMX + Jinja2 + Chart.js)". Liefer-Stack zur Zeit: C0
+`d93ae57` + C0-Review `aa1db52` (12 Findings) + C1
+`b8bef6c` (NEU `M5-ui-demo.md`) + C2 (dieser Commit;
+Trigger-Triage + Status-Flip).
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

@@ -28,6 +28,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md)                 | ADR fuer pyright als Pre-Commit-Hook                                      | bei Editor-Parity-Druck |
 | [`008-sbom-activation.md`](008-sbom-activation.md)                       | `make sbom` scharfschalten (`GG-CICD-007`)                                | mit erster Artefakt-Veroeffentlichung |
 | [`009-iec61850-smoke-reactivation.md`](009-iec61850-smoke-reactivation.md) | IEC-61850 In-Process-Smoke reaktivieren (`tests/integration/test_iec61850_in_process_smoke.py`-Skip aufheben) | pyiec61850-ng publishet cp314-Manylinux-Wheel (Pfad A) ODER Pfad-B-Slice (Multi-Python-Test-Stage) wird angepackt |
+| [`010-base-image-krb5-cve-bump.md`](010-base-image-krb5-cve-bump.md) | Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild` pre-existing rot seit M3-Welle-7-`c61ab0d`; `CVE-2026-40356` + 3 weitere HIGH-CVEs) | `make fullbuild` als CI-Pflicht-Gate ODER externer Compliance-Druck ODER Library-Bump-Folge ODER Maintainer-Entscheidung |
 
 **M3-/Multi-Agent-Folge:**
 
