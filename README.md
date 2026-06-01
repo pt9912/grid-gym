@@ -128,17 +128,25 @@ As of **2026-05-30**:
   - Wave 5a — DNP3 adapter (spike)
     (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
     `Provisional`) · `Done`
-  - Waves 5b–7 — IEC 61850 / cross-adapter / closure · `Pending`
+  - Wave 5b — IEC 61850 adapter (spike, GPL-isolated)
+    (ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Waves 6–7 — cross-adapter / closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance:** 1462 unit tests + 35 integration tests green
-(state after M4 Wave 5a closure — +56 unit tests vs. Wave 4
-closure for the DNP3 adapter: 17 config validation + 16 codec
-roundtrip with hypothesis property tests + 17 protocol-port
-lifecycle + 6 read-path edge cases; +4 integration tests for the
-in-process `dnp3-outstation` smoke: 3 Class-0 read roundtrips +
-1 update-then-read).
+**Test balance:** 1537 unit tests + 35 integration tests passed + 4 skipped
+(state after M4 Wave 5b closure — +75 unit tests vs. Wave 5a
+closure for the IEC-61850 adapter: 21 config validation + 30
+codec roundtrip with hypothesis property tests + container-repr
+rejection + overflow paths + 18 protocol-port lifecycle against
+mock-client + 6 read-path edge cases; 4 integration smokes for
+the in-process `IedServer` deferred via `pytest.mark.skip` under
+the **2c mock-only fallback** active in Wave 5b — the probe-run
+on Python 3.12 verified full MMSClient↔IedServer roundtrip, but
+the grid-gym Docker stack on Python 3.14 segfaults inside the
+`_pyiec61850.so` SWIG layer; Wave 6 sharpening paths documented
+in ADR 0035 §2.5).
 
 **`make gates`** is 9-stage and cache-free green without override:
 lint, format-check, `mypy --strict`, arch-check
@@ -168,8 +176,9 @@ the per-milestone detail table below.
 | MQTT adapter (M4 Wave 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/` 7-module package (paho-mqtt 2.x, per-target queue marshal) + Mosquitto integration smoke |
 | Modbus-TCP adapter (M4 Wave 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/` 5-module package (pymodbus 3.x sync client, no thread marshal needed — Decision M-c direct-sync; 5 datatypes, FC03/FC10 defaults with FC04/FC06 overrides) + in-process pymodbus-server integration smoke for the default profile. Follow-up [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) implemented the FC06 multi-register guard, read/write error taxonomy, and deliberate smoke boundary. Trigger-006-Re-Eval (`mypy --strict-bytes`) is positive; activation remains a separate follow-up. |
 | OPC-UA adapter (M4 Wave 4) | `Done` | [`done/M4-welle-4.md`](docs/plan/planning/done/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/` 6-module package (asyncua 1.2b2; **first async-only stack** in the repo with a dedicated `OpcuaLoopThread` running an asyncio event loop in a daemon thread — Decision O-b; 8 datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), polling read + direct write, Subscription-Pfad deferred to Wave 6) + in-process `asyncua.Server` integration smoke parameterised over all 8 datatypes (Decision O-e; LGPL-3.0 library-linking, avoids `open62541/open62541` MPL-2.0 container drama). asyncua pin `>=1.2b2,<2.0` accepts pre-release upgrades and ships the Python-3.14 forward-reference fix missing in 1.1.8. Follow-up [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) addressed 6 HIGH + 11 MEDIUM code-review findings (lifecycle-lock for `OpcuaLoopThread`, port exception filter, Quality.INVALID for string reads, float32 quantisation). |
-| DNP3 adapter (M4 Wave 5a, spike) | `Done` | [`in-progress/M4-welle-5a.md`](docs/plan/planning/in-progress/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/` 5-module package (nfm-dnp3 1.0.x as master, Pure-Python + MIT, **sync API** so no loop thread needed — Decision D-b direct-sync analogous to Modbus M-c; 4 group/variation combinations {(1,1), (1,2), (30,1), (30,5)} for binary inputs + 32-bit int/float analog inputs; Class-0 integrity-poll read with result-filter-by-index — Decision D-d, `read_analog_inputs(start, stop)` deliberately not used due to qualifier-0x01 wire-incompat with dnp3-outstation; write path is Wave-5a anti-scope, throws `Dnp3PortWriteNotImplementedError`) + in-process `dnp3_outstation.AsyncOutstation` integration smoke (Decision D-e; **two-library setup** — `nfm-dnp3` as production master in `[project] dependencies`, `dnp3-outstation` as test-only sibling in `[dependency-groups.dev]`; wire-compat verified via C1 probe + C2 smoke). C2 library-bug-find: `AnalogInput.__repr__` shows `idx=0` but actual field is `index` — fixed in `_port._find_point`. |
-| IEC 61850 (M4 Wave 5b–6) | `Pending` | Spike adapter lands in M4 Wave 5b (libiec61850 Python binding research still pending). |
+| DNP3 adapter (M4 Wave 5a, spike) | `Done` | [`done/M4-welle-5a.md`](docs/plan/planning/done/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/` 5-module package (nfm-dnp3 1.0.x as master, Pure-Python + MIT, **sync API** so no loop thread needed — Decision D-b direct-sync analogous to Modbus M-c; 4 group/variation combinations {(1,1), (1,2), (30,1), (30,5)} for binary inputs + 32-bit int/float analog inputs; Class-0 integrity-poll read with result-filter-by-index — Decision D-d, `read_analog_inputs(start, stop)` deliberately not used due to qualifier-0x01 wire-incompat with dnp3-outstation; write path is Wave-5a anti-scope, throws `Dnp3PortWriteNotImplementedError`) + in-process `dnp3_outstation.AsyncOutstation` integration smoke (Decision D-e; **two-library setup** — `nfm-dnp3` as production master in `[project] dependencies`, `dnp3-outstation` as test-only sibling in `[dependency-groups.dev]`; wire-compat verified via C1 probe + C2 smoke). C2 library-bug-find: `AnalogInput.__repr__` shows `idx=0` but actual field is `index` — fixed in `_port._find_point`. |
+| IEC-61850 adapter (M4 Wave 5b, spike, GPL-isolated) | `Done` | [`in-progress/M4-welle-5b.md`](docs/plan/planning/in-progress/M4-welle-5b.md); ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md) `Provisional` — `protocol_iec61850/` 5-module package (pyiec61850-ng 1.6.x as the single library covering both `MMSClient` and in-process `IedServer`, **sync API** so no loop thread needed — Decision I-b direct-sync analogous to Modbus M-c and DNP3 D-b; 4 datatypes (bool/int32/float/string) × FC allow-list `{MX,ST,SP,CF,DC}` with adapter-default `MX`; per-target `MMSClient.read_value(reference, fc)` — Decision I-d, RCB subscription + GOOSE deferred to Wave 6; write path is Wave-5b anti-scope, throws `Iec61850PortWriteNotImplementedError`) + in-process `IedServer(model_path=fixture)` integration smoke under **2c mock-only fallback** active (Decision I-e + I-f; **first GPL-isolated sub-module** in the repo via `SPDX-License-Identifier: GPL-3.0-only` per file + `LICENSES/GPL-3.0.txt` + LICENSE notice + `pyiec61850-ng` as opt-in `pip install grid-gym[iec61850]` extra, not in `[project] dependencies`; probe-run on Python 3.12 verified MMSClient↔IedServer roundtrip with the libiec61850-native CFG fixture, but grid-gym Docker on Python 3.14 segfaults inside `_pyiec61850.so` SWIG layer — DoD satisfied via 18 mock-client unit tests, Wave-6 sharpening paths: Python-3.12-runtime / library upgrade / wheel rebuild). Probe-run library findings 2026-06-01: reference convention concatenates MODEL+LD names without separator (`simpleIO`+`GenericIO`→`simpleIOGenericIO`), MMSClient FC argument accepts two-letter string, IedServer requires `model_path` else `start()` raises `ModelError`. |
+| IEC 61850 (M4 Wave 6+) | `Pending` | Wave 6 integration-smoke reactivation (Python-3.12-runtime / library upgrade / wheel rebuild) + SPDX header consistency check + GPL-boundary arch contract + CONTRIBUTING.md sync. |
 | UI + Demo (M5) | `Pending` | Web UI, scenario editor, live telemetry stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10,000-points/s benchmark, SBOM, multi-version matrix |
 

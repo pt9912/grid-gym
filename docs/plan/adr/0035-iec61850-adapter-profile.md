@@ -1,12 +1,41 @@
 # ADR 0035 — IEC-61850-Adapter-Profile (M4 Welle 5b)
 
-**Status:** Proposed — Initial-Entwurf 2026-06-01 mit
-M4-Welle-5b-C1 (dieser Commit). C2-Merge zementiert die
-sechs Decisions I-a/I-b/I-c/I-d/I-e/I-f produktiv und
-schaerft ADR 0035 zu `Provisional`; M4-Welle-7-Closure
-schaerft auf `Accepted`. Pattern analog ADR 0034 (M4-Welle-
-5a) und ADR 0033 (M4-Welle-4) und ADR 0032 (M4-Welle-3) und
-ADR 0031 (M4-Welle-2).
+**Status:** Provisional — geschaerft 2026-06-01 mit
+M4-Welle-5b-C3 (`docs(plan|adr)` Doc-Sync, dieser Commit).
+Initial-Entwurf (`Proposed`) 2026-06-01 mit M4-Welle-5b-C1
+`88c1a33`; C1-Review-Folge `da8aed9` (API-Korrektur +
+Lizenz-Refit + M4-protocol-adapters.md-Sync nach 4 Findings);
+C2-Merge `944bca5` (feat: `protocol_iec61850/`-5-Modul-Paket
++ 75 neue Unit-Tests + Integration-Smoke unter 2c-Mock-only-
+Fallback + GPL-Lizenz-Boundary-Files + pyproject/Dockerfile/
+compose-Edits + uv.lock-Refresh; `make test-unit` 1537 gruen,
+`make test-integration` 35 passed + 4 skipped, `make arch-check`
+19/19 KEPT, `make gates` 9 A-1-Gates gruen ohne
+`CRITICAL_COV_TARGETS`-Override) belegt die Decisions
+I-a/I-b/I-c/I-d/I-e/I-f produktiv.
+
+**2c-Mock-only-Fallback aktiviert** (Decision I-e §2.5):
+Probe-Run auf Python 3.12 lief sauber (Float/Int32/String-
+Roundtrip MMSClient↔IedServer per CFG-Fixture verifiziert).
+Auf dem grid-gym-Docker-Stack (Python 3.14) crasht
+`_pyiec61850.so` aber im ersten `IedServer.start()`-Call mit
+Segfault (exit 139, Stack-Trace in SWIG-`.so`). Vermutete
+Ursache: pyiec61850-ng 1.6.1.2 manylinux1_x86_64-Wheel
+deklariert zwar Python-3.14-Support in den Classifiers, aber
+die SWIG-Bindings sind unter 3.14-ABI-Conditions nicht
+erprobt. Integration-Smoke ist mit `pytest.mark.skip` und
+expliziter Begruendung deaktiviert; Welle-5b-DoD ist via
+18 Mock-Unit-Tests erfuellt (Lifecycle + Read-Pfad +
+Error-Translation + Anti-Scope-Verifikation). **Welle-6-
+Schaerfungspfade**: (a) Python-3.12-Runtime fixieren ODER
+(b) pyiec61850-ng-Library-Upgrade abwarten ODER (c) Wheel
+selbst gegen Python 3.14 rebuild.
+
+Status-Pfad: `Proposed → Provisional` (mit C3, dieser
+Commit) → `Accepted` (M4-Welle-7-Closure analog ADR
+0022..0027 + 0030 + 0031 + 0032 + 0033 + 0034). Pattern
+analog ADR 0034 (M4-Welle-5a) und ADR 0033 (M4-Welle-4)
+und ADR 0032 (M4-Welle-3) und ADR 0031 (M4-Welle-2).
 
 **Datum:** 2026-06-01
 

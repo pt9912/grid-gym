@@ -1,10 +1,10 @@
 # Welle 5b — M4 IEC-61850-Adapter (Spike)
 
-**Status:** In Progress — eroeffnet 2026-06-01 mit
-M4-Welle-5b-C0 (dieser Commit) nach M4-Welle-5a-Closure
-(`43d0b07` C0 + `b0fea7e` C1 + `224b370` C2 + `6903a08` C3
-+ `76cbdcf` EoD-Sync + `9fea2be` Self-Close-Move + `7b5abee`
-Pre-C0-Sync).
+**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-5b-C3
+(`docs(plan|adr)` Doc-Sync, dieser Commit). Eroeffnet
+2026-06-01 nach M4-Welle-5a-Closure (`43d0b07` C0 + `b0fea7e`
+C1 + `224b370` C2 + `6903a08` C3 + `76cbdcf` EoD-Sync +
+`9fea2be` Self-Close-Move + `7b5abee` Pre-C0-Sync).
 
 Welle 5b ist die **sechste Code-Welle** in M4 und der
 **fuenfte konkrete Adapter** auf der `DeviceProtocolPort`-
@@ -33,16 +33,88 @@ im Repo ein:
    Windows; **kein** aarch64-Wheel (Raspberry-Pi-64-bit
    bleibt Welle-6-Material).
 
-**Liefer-Reihenfolge (4 Commits, geplant):**
+**Liefer-Hashes:**
 
-- C0 (dieser Commit) — `docs(plan): M4-welle-5b Slice-Doc (M4 Welle-5b IEC-61850 Beginn)`.
-- C1 — `docs(adr): ADR 0035 Proposed — IEC-61850-Adapter-Profile (M4 Welle 5b)`.
-- C2 — `feat(welle-5b): protocol_iec61850 + Tests + In-Process-Smoke + GPL-Lizenz-Boundary`.
-- C3 — `docs(plan|adr): M4-Welle-5b-C3 — Status/DoD-Sync + ADR 0035 -> Provisional + Top-Level-Doku-Sync`.
+- C0 `19f820a` — `docs(plan): M4-welle-5b Slice-Doc (M4 Welle-5b IEC-61850 Beginn)`.
+- C1 `88c1a33` — `docs(adr): ADR 0035 Proposed — IEC-61850-Adapter-Profile (M4 Welle 5b)`.
+- C1-Review-Folge `da8aed9` — `docs(plan|adr): M4-Welle-5b-C1-Review-Folge — API-Korrektur + Lizenz-Refit + M4-protocol-adapters.md-Sync` (4 Findings adressiert: API-Namen read_value/write_value/Exception-Famille, IedServer-Modell-Pflicht via CFG-Fixture, Lizenz-Metadaten via Optional-Extra statt [project] dependencies, M4-protocol-adapters.md §3 Welle 5b Sync).
+- C2 `944bca5` — `feat(welle-5b): protocol_iec61850 + Tests + 2c-Mock-Fallback + GPL-Lizenz-Boundary`.
+- C3 (dieser Commit) — `docs(plan|adr): M4-Welle-5b-C3 — Status/DoD-Sync + ADR 0035 -> Provisional + Top-Level-Doku-Sync`.
 
-**DoD-Verifikation:** wird mit C3 ergaenzt (Pattern analog
-Welle 5a §0). C0-Stand: keine Tests/Code geliefert, nur
-Slice-Doc.
+**DoD-Verifikation (Welle-Schluss, Stand `944bca5` C2 +
+dieser Commit):**
+
+- `make test-unit`: **1537 Tests gruen** (Pre-Welle-5b-Stand
+  1462 → Welle-5b-Endstand 1537 = +75 Unit-Tests; davon
+  21 Config-Validation
+  (`tests/unit/adapters/driven/protocol_iec61850/test_iec61850_config.py`),
+  30 Codec-Roundtrip inkl. 4 hypothesis-Property-Tests pro
+  Welle-5b-Datatype + Container-Repr-Rejection + Overflow-
+  Pfade (`test_iec61850_codec.py`), 18 Protocol-Port-Lifecycle
+  + Read-Pfad-Mock + Error-Translation + Anti-Scope-
+  Verifikation (`test_iec61850_protocol_port.py`)).
+- `make test-integration`: **35 passed + 4 skipped**
+  (Pre-Welle-5b-Stand 35 → Welle-5b-Endstand 35 + 4 IEC-
+  Smokes via `pytest.mark.skip` mit expliziter 2c-Fallback-
+  Begruendung). Probe-Run-Befund 2026-06-01 hat MMSClient↔
+  IedServer-Roundtrip auf Python 3.12 verifiziert (Float
+  230.5→230.5, Int32 42→42, String "battery-1"→"battery-1");
+  auf grid-gym-Docker-Stack Python 3.14 crasht
+  `_pyiec61850.so` aber im SWIG-Layer (exit 139). Welle-6-
+  Schaerfungspfade dokumentiert.
+- `make arch-check`: **19/19 Contracts KEPT** (7
+  lint-imports + 12 `tools/arch_check.py`);
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_iec61850` ohne
+  Filter-Edit (Pfad-Filter `bucket.startswith("protocol_")`
+  in `tools/arch_check.py:1089` greift unveraendert).
+- `make gates`: **alle 9 A-1-Gates gruen** ohne
+  `CRITICAL_COV_TARGETS`-Override (Default-Liste um
+  `src/grid_gym/adapters/driven/protocol_iec61850` erweitert).
+- ADR 0035: `Proposed → Provisional` (Decisions I-a/I-b/
+  I-c/I-d/I-e/I-f alle **final**; Status-Pfad in
+  [`../../adr/0035-iec61850-adapter-profile.md`](../../adr/0035-iec61850-adapter-profile.md) §5
+  mit Hashes belegt).
+- **Eine-Library-Setup**:
+  `pyiec61850-ng>=1.6,<2.0` in
+  `[project.optional-dependencies.iec61850]` (GPLv3, Beta
+  `Development Status :: 4`, SWIG-Bindings zu libiec61850 1.6
+  + Mbed TLS Apache 2.0; manylinux1_x86_64 + Windows-Wheels).
+  **Nicht** in `[project] dependencies` und **nicht** in
+  `[dependency-groups.dev]` (Drift-Risiko vermeiden,
+  User-Vorgabe). Pattern-Praezedenz: Welle-3-Modbus mit
+  pymodbus (eine Library fuer Client+Server), **nicht**
+  Welle-5a-zwei-Library-Setup.
+- **mypy-Override** fuer `pyiec61850.*` mit
+  `ignore_missing_imports = true` (kein py.typed-Marker).
+- **2c-Mock-only-Fallback aktiviert** (Decision I-e §2.5):
+  Integration-Smoke wartet auf Welle-6-Schaerfung (Python-
+  3.12-Runtime / Library-Upgrade / Wheel-Rebuild). Welle-5b-
+  DoD ist via 18 Mock-Unit-Tests erfuellt.
+- **NEU Lizenz-Boundary** (Decision I-f, **erstmaliger Repo-
+  Praezedenzfall**): GPLv3-Isolation auf `protocol_iec61850/*`
+  + zugehoerige Tests via SPDX-Header pro Datei
+  (`# SPDX-License-Identifier: GPL-3.0-only`). NEU
+  `LICENSES/GPL-3.0.txt` (Standard-GPL-3.0-Volltext); EDIT
+  Top-Level-`LICENSE` mit Hinweis-Block; EDIT `README.md` +
+  `README.de.md` mit Lizenz-Sektion + Optional-Extra-
+  Install-Beispielen. Rest grid-gym bleibt MIT (Top-Level-
+  MIT-Classifier unveraendert).
+- **Probe-Run-Library-Findings 2026-06-01**:
+  - Reference-Konvention: pyiec61850-ng konkateniert
+    MODEL-Name + LD-Name ohne Trennzeichen
+    (`simpleIO`+`GenericIO` → `simpleIOGenericIO`).
+  - MMSClient-API: `read_value(reference, fc)`/
+    `write_value(reference, value)` mit FC-Default `"ST"`
+    (Library); Adapter-Default `"MX"` ueberschreibt explizit.
+  - Exception-Famille: `MMSError`/`LibraryNotFoundError`/
+    `ConnectionFailedError`/`NotConnectedError`/`ReadError`/
+    `WriteError`/`MemoryError`/`FileTransferError` (kein
+    `MMSClientError`/`ObjectReferenceError` wie urspruenglich
+    angenommen — siehe C1-Review-Folge).
+  - IedServer-Modell-Pflicht: `IedServer()` ohne `model_path`
+    wirft `start()` `ModelError("No data model loaded")` —
+    Welle-5b liefert deshalb `simpleIO.cfg`-Fixture im
+    libiec61850-nativen Format (kein SCL-XML).
 
 Kanonische Slice-Spezifikation:
 [`M4-protocol-adapters.md §3 Welle 5b`](M4-protocol-adapters.md)
@@ -695,10 +767,10 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion ergaenzt.
 
 **In-Scope-Items (mit C3 abzuhaken):**
 
-- [ ] **ADR 0035 angelegt** — `Proposed` (C1) →
+- [x] **ADR 0035 angelegt** — `Proposed` (C1) →
   `Provisional` (C3), mit Decisions I-a/I-b/I-c/I-d/I-e/I-f
   alle **final**.
-- [ ] **IEC-61850-Port produktiv** —
+- [x] **IEC-61850-Port produktiv** —
   `Iec61850DeviceProtocolPort` als `DeviceProtocolPort`-
   Implementer unter
   `src/grid_gym/adapters/driven/protocol_iec61850/` (5
@@ -707,17 +779,17 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion ergaenzt.
   `__init__.py` traegt Lastenheft-Z.-1155–1157-Pflicht
   (Simulations-/Testadapter, **keine** produktive
   Anlagensteuerung) + GPLv3-Lizenz-Hinweis.
-- [ ] **Wire-Compat verifiziert** — C1-Probe-Run +
+- [x] **Wire-Compat verifiziert** — C1-Probe-Run +
   C2-Integration-Smoke demonstrieren
   `MMSClient.read_value(...)` ↔ `IedServer(model_path=fixture)`-
   Roundtrip durch alle Welle-5b-Datatypes
   (bool/int32/float/string); ODER 2c-Mock-only-Fallback,
   falls CFG-Format-/Wire-Compat-Verifikation in C2 nicht
   stabil aufgeht.
-- [ ] **Unit-Tests fuer 3 Test-Aspekte** — Config-
+- [x] **Unit-Tests fuer 3 Test-Aspekte** — Config-
   Validation + Codec-Roundtrip (inkl. hypothesis-
   Property-Tests pro Datatype) + Protocol-Port-Lifecycle.
-- [ ] **Integration-Smoke produktiv** —
+- [x] **Integration-Smoke produktiv** —
   `tests/integration/test_iec61850_in_process_smoke.py`
   spawnt `IedServer(model_path=fixture)` in eigenem
   Daemon-Thread mit Context-Manager-Cleanup;
@@ -725,97 +797,97 @@ Liefer-Reihenfolge fuer die per-Commit-Aktion ergaenzt.
   CFG-Fixture. ALTERNATIV (2c-Fallback): Mock-only-Smoke
   in `tests/unit/adapters/driven/protocol_iec61850/`
   falls CFG-Format oder Wire-Compat in C2 nicht stabil.
-- [ ] **NEU `tests/integration/fixtures/iec61850/simpleIO.cfg`**
+- [x] **NEU `tests/integration/fixtures/iec61850/simpleIO.cfg`**
   als minimales Welle-5b-Test-Modell (4 Datatypes:
   `AnIn1.mag.f`/`IntIn1.stVal`/`Ind1.stVal`/`NamPlt.d`
   in `simpleIOGenericIO/GGIO1`). libiec61850-natives
   CFG-Format (kein SCL-XML). Falls 2c-Fallback aktiv:
   Fixture wird **nicht** geliefert; DoD-Item wird
   „n/a (Mock-only-Fallback)" markiert.
-- [ ] **NEU Loader-Hook ImportError-tolerant** —
+- [x] **NEU Loader-Hook ImportError-tolerant** —
   `protocol_iec61850/__init__.py` faengt `ImportError`
   beim `import pyiec61850`-Versuch und wirft typed
   `Iec61850PortLibraryNotInstalledError("Install with:
   pip install grid-gym[iec61850]")`. Welle-1-
   `build_protocol_ports`-Hook propagiert das als
   ScenarioConfigError o.ä.
-- [ ] **`tests/integration/compose.yml` Header-Kommentar
+- [x] **`tests/integration/compose.yml` Header-Kommentar
   syncht** — Welle-5b-C2-Edit dokumentiert die Decision-
   I-e-Wahl (in-process `IedServer`, eine-Library wie
   Welle 3, anders als Welle 5a).
-- [ ] **`pyproject.toml` erweitert** —
+- [x] **`pyproject.toml` erweitert** —
   `pyiec61850-ng>=1.6,<2.0` in
   `[project.optional-dependencies.iec61850]` (Decision
   I-f opt-in; **nicht** in `[project] dependencies`);
   mypy-Override `module="pyiec61850.*"` mit
   `ignore_missing_imports = true`. Top-Level-MIT-
   Classifier bleibt unveraendert.
-- [ ] **EDIT `uv.lock`** — via `make lock-refresh`
+- [x] **EDIT `uv.lock`** — via `make lock-refresh`
   aktualisiert.
-- [ ] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
+- [x] **`Dockerfile` erweitert** — `CRITICAL_COV_TARGETS`-
   Default um `src/grid_gym/adapters/driven/protocol_iec61850`
   ergaenzt.
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift fuer
   `protocol_iec61850`** — `tools/arch_check.py:1089`
   `bucket.startswith("protocol_")`-Filter erfasst den
   neuen Pfad **ohne Code-Aenderung**; `make arch-check`
   weiter `19/19 Contracts KEPT`.
-- [ ] **NEU `LICENSES/GPL-3.0.txt`** — Standard-GPL-3.0-
+- [x] **NEU `LICENSES/GPL-3.0.txt`** — Standard-GPL-3.0-
   Volltext.
-- [ ] **EDIT Top-Level-`LICENSE`** — Hinweis-Block am Ende
+- [x] **EDIT Top-Level-`LICENSE`** — Hinweis-Block am Ende
   fuer GPL-Boundary auf `protocol_iec61850/*`.
-- [ ] **EDIT `README.md` + `README.de.md`** — Lizenz-
+- [x] **EDIT `README.md` + `README.de.md`** — Lizenz-
   Hinweis-Sektion.
-- [ ] **SPDX-Header in allen 12 neuen Files** —
+- [x] **SPDX-Header in allen 12 neuen Files** —
   `# SPDX-License-Identifier: GPL-3.0-only` (Python-Style)
   verbatim.
 
 **Anti-Scope-Items (mit C3 zu verifizieren):**
 
-- [ ] **Kein IEC-61850-Write-Pfad** in C2 — verifiziert:
+- [x] **Kein IEC-61850-Write-Pfad** in C2 — verifiziert:
   `Iec61850DeviceProtocolPort.write()` wirft konsequent
   `Iec61850PortWriteNotImplementedError`.
-- [ ] **Kein IEC-61850-Report-Control-Block-Subscription**
+- [x] **Kein IEC-61850-Report-Control-Block-Subscription**
   in C2 — verifiziert: Adapter ruft nur
   `MMSClient.read_value(...)`; kein RCB-Pfad im `_port.py`;
   kein direkter Low-Level-`pyiec61850.pyiec61850`-Import.
-- [ ] **Kein GOOSE-Publishing/Subscription** in C2 —
+- [x] **Kein GOOSE-Publishing/Subscription** in C2 —
   verifiziert: kein Aufruf von
   `IedServer.enable_goose_publishing()`.
-- [ ] **Kein IEC-61850-9-2 Sampled-Values** in C2 —
+- [x] **Kein IEC-61850-9-2 Sampled-Values** in C2 —
   verifiziert: keine Imports aus `pyiec61850.sv`-Submodul.
-- [ ] **Kein OTel-Span-Wrap** der IEC-61850-Adapter-Calls
+- [x] **Kein OTel-Span-Wrap** der IEC-61850-Adapter-Calls
   — verifiziert: kein Import von
   `adapters/driven/telemetry_otlp/` in `protocol_iec61850/`.
-- [ ] **Keine IEC-61850-Security** — verifiziert: kein
+- [x] **Keine IEC-61850-Security** — verifiziert: kein
   TLS-Init im Welle-5b-Code; Smoke-Endpoint ist Plain-MMS.
-- [ ] **Kein RandomPort-Determinismus** — verifiziert:
+- [x] **Kein RandomPort-Determinismus** — verifiziert:
   `Iec61850LnConfig` hat keinen Auto-Generierungs-Pfad
   fuer Object-Reference-Strings.
-- [ ] **Keine Scenario-Schema-Erweiterung** jenseits des
+- [x] **Keine Scenario-Schema-Erweiterung** jenseits des
   Decision-I-a-Pattern — verifiziert: kein Touch an
   `scenario/validator.py`.
-- [ ] **Keine Welle-2/3/4/5a-Adapter-Aenderungen** —
+- [x] **Keine Welle-2/3/4/5a-Adapter-Aenderungen** —
   verifiziert: kein Edit an
   `src/grid_gym/adapters/driven/protocol_{mqtt,modbus,opcua,dnp3}/`.
-- [ ] **Keine Bewegung der Open-Trigger** — verifiziert:
+- [x] **Keine Bewegung der Open-Trigger** — verifiziert:
   `docs/plan/planning/open/` unveraendert.
-- [ ] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
+- [x] **Kein M4-DoD-Checkbox-Abhaken** in `roadmap.md` —
   verifiziert: `roadmap.md` §3 M4 Checkboxen weiterhin
   alle ungehakt (5 von 7 DoD-Items geliefert nach
   Welle 5b: MQTT + Modbus + OPC-UA + DNP3 + IEC-61850;
   Sweep in Welle 7).
-- [ ] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
+- [x] **Kein `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-
   Property-Test** in Welle 5b — verifiziert: nur Smoke-
   Regression-Schutz via `make arch-check`. Welle-1-§7-
   Folge-Pflicht bleibt auf Welle 6 verschoben.
-- [ ] **Kein gemeinsamer Loop-Thread-Reuse** —
+- [x] **Kein gemeinsamer Loop-Thread-Reuse** —
   verifiziert: `Iec61850DeviceProtocolPort` ist direkt-
   sync ohne `OpcuaLoopThread`-Import.
-- [ ] **Kein aarch64-Wheel-Support** — verifiziert:
+- [x] **Kein aarch64-Wheel-Support** — verifiziert:
   keine Build-Pfad-Erweiterung im Dockerfile fuer
   aarch64; piwheels-Lage als Risiko dokumentiert,
   Welle-6-Material.
-- [ ] **Kein Anschluss von `pyiec61850.{tase2,sv,goose}`-
+- [x] **Kein Anschluss von `pyiec61850.{tase2,sv,goose}`-
   Submodulen** — verifiziert: nur Imports aus
   `pyiec61850.mms` und `pyiec61850.server`.

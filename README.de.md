@@ -129,17 +129,26 @@ Stand **2026-05-30**:
   - Welle 5a — DNP3-Adapter (Spike)
     (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
     `Provisional`) · `Done`
-  - Wellen 5b–7 — IEC 61850 / Cross-Adapter / Closure · `Pending`
+  - Welle 5b — IEC-61850-Adapter (Spike, GPL-isoliert)
+    (ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md)
+    `Provisional`) · `Done`
+  - Wellen 6–7 — Cross-Adapter / Closure · `Pending`
 - **M5 — UI + Demo** · `Pending`
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz:** 1462 Unit-Tests + 35 Integration-Tests gruen
-(Stand nach M4-Welle-5a-Closure — +56 Unit-Tests ggue.
-Welle-4-Closure fuer den DNP3-Adapter: 17 Config-Validation
-+ 16 Codec-Roundtrip inkl. hypothesis-Property-Tests + 17
-Protocol-Port-Lifecycle + 6 Read-Pfad-Edge-Cases; +4
-Integration-Tests fuer den in-process `dnp3-outstation`-
-Smoke: 3 Class-0-Read-Roundtrips + 1 Update-then-Read).
+**Testbilanz:** 1537 Unit-Tests + 35 Integration-Tests passed + 4 skipped
+(Stand nach M4-Welle-5b-Closure — +75 Unit-Tests ggue.
+Welle-5a-Closure fuer den IEC-61850-Adapter: 21 Config-
+Validation + 30 Codec-Roundtrip inkl. hypothesis-Property-
+Tests + Container-Repr-Rejection + Overflow-Pfade + 18
+Protocol-Port-Lifecycle gegen Mock-Client + 6 Read-Pfad-
+Edge-Cases; 4 Integration-Smokes fuer den in-process
+`IedServer` per `pytest.mark.skip` deaktiviert unter dem
+**2c-Mock-only-Fallback** aktiv in Welle 5b — Probe-Run
+auf Python 3.12 hat den vollen MMSClient↔IedServer-
+Roundtrip verifiziert, aber der grid-gym-Docker-Stack
+mit Python 3.14 segfaultet im `_pyiec61850.so`-SWIG-Layer;
+Welle-6-Schaerfungspfade in ADR 0035 §2.5 dokumentiert).
 
 **`make gates`** ist 9-stufig und cache-frei gruen ohne Override:
 Lint, Format-Check, `mypy --strict`, Arch-Check
@@ -169,8 +178,9 @@ in der Detail-Tabelle unten.
 | MQTT-Adapter (M4 Welle 2) | `Done` | [`done/M4-welle-2.md`](docs/plan/planning/done/M4-welle-2.md); ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional` — `protocol_mqtt/`-7-Modul-Paket (paho-mqtt 2.x, Per-Target-Queue-Marshal) + Mosquitto-Integration-Smoke |
 | Modbus-TCP-Adapter (M4 Welle 3) | `Done` | [`done/M4-welle-3.md`](docs/plan/planning/done/M4-welle-3.md); ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional` — `protocol_modbus/`-5-Modul-Paket (pymodbus 3.x sync-Client, **kein** Thread-Marshal noetig — Decision M-c direkt-sync; 5 Datatypes, FC03/FC10 Defaults mit FC04/FC06-Overrides) + in-process-pymodbus-Server-Integration-Smoke fuer das Default-Profil. Folge-Slice [`031`](docs/plan/planning/done/031-modbus-adapter-review-folge.md) hat FC06-Multi-Register-Guard, Read-/Write-Fehler-Taxonomie und bewusste Smoke-Abgrenzung umgesetzt. Trigger-006-Re-Eval (`mypy --strict-bytes`) ist **positiv**; Aktivierung bleibt Folgearbeit. |
 | OPC-UA-Adapter (M4 Welle 4) | `Done` | [`done/M4-welle-4.md`](docs/plan/planning/done/M4-welle-4.md); ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional` — `protocol_opcua/`-6-Modul-Paket (asyncua 1.2b2; **erster rein-async-Stack** im Repo mit eigenem `OpcuaLoopThread` — asyncio-Event-Loop in Daemon-Thread + `run_coroutine_threadsafe`-Marshal, Decision O-b; 8 Datatypes (Boolean/Int16/UInt16/Int32/UInt32/Float/Double/String), Polling-Read + Direct-Write, Subscription-Pfad Welle-6-Schaerfung) + in-process `asyncua.Server`-Integration-Smoke parametrisiert ueber alle 8 Datatypes (Decision O-e; LGPL-3.0 Library-Linking, umgeht `open62541/open62541` MPL-2.0-Container-Komplexitaet). asyncua-Pin `>=1.2b2,<2.0` mit dem Python-3.14-Forward-Reference-Fix, der in 1.1.8 fehlt. Folge-Slice [`032`](docs/plan/planning/done/032-opcua-adapter-review-folge.md) hat 6 HIGH + 11 MEDIUM Code-Review-Findings adressiert (Lifecycle-Lock im `OpcuaLoopThread`, Port-Exception-Filter, Quality.INVALID-String-Read, Float32-Quantisierung). |
-| DNP3-Adapter (M4 Welle 5a) | `Done` | [`in-progress/M4-welle-5a.md`](docs/plan/planning/in-progress/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/`-5-Modul-Paket (nfm-dnp3 1.0.x sync-Master + dnp3-outstation 0.2.x Test-Sibling, **kein** Thread-Marshal noetig — Decision D-c direkt-sync; 2 Datatypes (BinaryInput g1v1/v2, AnalogInput g30v1/v5), Class-0-Polling + filter-by-index, Write-Pfad Welle-5b-Anti-Scope) + in-process `dnp3-outstation.AsyncOutstation`-Integration-Smoke parametrisiert ueber alle 4 Group/Variation-Kombinationen (Decision D-e; beide Libraries MIT, Pure-Python — keine Container-Sibling-Komplexitaet). Library-Bug-Find waehrend C2: `AnalogInput.index` (nicht `.idx` wie nfm-dnp3-Doku-Repr suggeriert). |
-| IEC 61850 (M4 Welle 5b–6) | `Pending` | Spike-Adapter folgt in M4-Welle-5b (libiec61850-Python-Binding-Recherche steht noch aus). |
+| DNP3-Adapter (M4 Welle 5a) | `Done` | [`done/M4-welle-5a.md`](docs/plan/planning/done/M4-welle-5a.md); ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional` — `protocol_dnp3/`-5-Modul-Paket (nfm-dnp3 1.0.x sync-Master + dnp3-outstation 0.2.x Test-Sibling, **kein** Thread-Marshal noetig — Decision D-c direkt-sync; 2 Datatypes (BinaryInput g1v1/v2, AnalogInput g30v1/v5), Class-0-Polling + filter-by-index, Write-Pfad Welle-5b-Anti-Scope) + in-process `dnp3-outstation.AsyncOutstation`-Integration-Smoke parametrisiert ueber alle 4 Group/Variation-Kombinationen (Decision D-e; beide Libraries MIT, Pure-Python — keine Container-Sibling-Komplexitaet). Library-Bug-Find waehrend C2: `AnalogInput.index` (nicht `.idx` wie nfm-dnp3-Doku-Repr suggeriert). |
+| IEC-61850-Adapter (M4 Welle 5b, Spike, GPL-isoliert) | `Done` | [`in-progress/M4-welle-5b.md`](docs/plan/planning/in-progress/M4-welle-5b.md); ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md) `Provisional` — `protocol_iec61850/`-5-Modul-Paket (pyiec61850-ng 1.6.x als **eine** Library fuer Client (`MMSClient`) **und** in-process-Server (`IedServer`), sync API — Decision I-b direkt-sync analog Modbus M-c + DNP3 D-b; 4 Datatypes (bool/int32/float/string) × FC-Allow-List `{MX,ST,SP,CF,DC}` mit Adapter-Default `MX`; Per-Target `MMSClient.read_value(reference, fc)` — Decision I-d, RCB-Subscription + GOOSE Welle-6+; Write-Pfad Welle-5b-Anti-Scope, wirft `Iec61850PortWriteNotImplementedError`) + in-process `IedServer(model_path=fixture)`-Integration-Smoke unter **2c-Mock-only-Fallback** aktiv (Decision I-e + I-f; **erstes GPL-isoliertes Sub-Modul** im Repo via `SPDX-License-Identifier: GPL-3.0-only` pro Datei + `LICENSES/GPL-3.0.txt` + LICENSE-Hinweis + `pyiec61850-ng` als opt-in `pip install grid-gym[iec61850]`-Extra, **nicht** in `[project] dependencies`; Probe-Run auf Python 3.12 hat MMSClient↔IedServer-Roundtrip mit libiec61850-nativem CFG-Fixture verifiziert, aber grid-gym-Docker auf Python 3.14 segfaultet im `_pyiec61850.so`-SWIG-Layer — DoD via 18 Mock-Client-Unit-Tests erfuellt, Welle-6-Schaerfungspfade: Python-3.12-Runtime / Library-Upgrade / Wheel-Rebuild). Probe-Run-Library-Findings 2026-06-01: Reference-Konvention konkateniert MODEL+LD-Namen ohne Trennzeichen (`simpleIO`+`GenericIO`→`simpleIOGenericIO`), MMSClient-FC akzeptiert Two-Letter-String, IedServer braucht `model_path` sonst wirft `start()` `ModelError`. |
+| IEC 61850 (M4 Welle 6+) | `Pending` | Welle-6-Integration-Smoke-Reaktivierung (Python-3.12-Runtime / Library-Upgrade / Wheel-Rebuild) + SPDX-Header-Konsistenz-Check + GPL-Boundary-Arch-Contract + CONTRIBUTING.md-Sync. |
 | UI + Demo (M5) | `Pending` | Web-UI, Scenario-Editor, Live-Telemetry-Stream |
 | Performance + Security + CI/CD (M6) | `Pending` | 10000-Points/s-Benchmark, SBOM, Multi-Version-Matrix |
 

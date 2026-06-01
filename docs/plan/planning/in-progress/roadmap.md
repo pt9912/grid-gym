@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 5a (Done; Welle 5b IEC-61850-Spike als naechstes)
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3 abgeschlossen, M4 in Welle 5b (Done; Welle 6 Cross-Adapter-Hardening als naechstes)
 **Stand:** 2026-06-01
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -55,21 +55,44 @@
   Checkliste komplett abgehakt, Top-Level-Doku-Sync in 5
   Docs) + Self-Close-Move `9fea2be` (`M4-welle-5a.md` aus
   `in-progress/` nach `done/` als M4-Welle-5b-Pre-C0,
-  rename-only).
+  rename-only); **Welle 5b `Done`** geschlossen 2026-06-01
+  mit C0 `19f820a` (Slice-Doc) + C1 `88c1a33` (ADR 0035
+  Proposed) + C1-Review-Folge `da8aed9` (API-Korrektur
+  read_value/write_value + Lizenz-Refit Optional-Extra +
+  M4-protocol-adapters.md-Sync nach 4 Findings) + C2
+  `944bca5` (feat: `protocol_iec61850/`-5-Modul-Paket inkl.
+  ImportError-Guard fuer Optional-Extra + 75 neue Unit-
+  Tests inkl. hypothesis-Codec-Properties + Integration-
+  Smoke unter **2c-Mock-only-Fallback** aktiv + NEU
+  `LICENSES/GPL-3.0.txt` + LICENSE-Hinweis-Block + READMEs-
+  Lizenz-Sektion + SPDX-Header in 11 Files + NEU
+  `tests/integration/fixtures/iec61850/simpleIO.cfg`
+  libiec61850-natives CFG-Modell + `pyproject.toml`-Pin
+  `pyiec61850-ng>=1.6,<2.0` als `[project.optional-dependencies.iec61850]`
+  opt-in + mypy-Override + `Dockerfile`-`uv sync --extra iec61850`
+  + `CRITICAL_COV_TARGETS`-Erweiterung +
+  `compose.yml`-Header-Sync; **erstmaliger Repo-Praezedenzfall**
+  fuer GPL-isolierte Sub-Module in einem sonst MIT-Projekt;
+  Probe-Run auf Python 3.12 lief Float/Int32/String-
+  Roundtrip sauber durch, aber grid-gym-Docker Python 3.14
+  segfaultet im `_pyiec61850.so`-SWIG-Layer — Welle-6-
+  Schaerfungspfade dokumentiert) + C3 (dieser Commit;
+  ADR 0035 → `Provisional`, `M4-welle-5b.md` → `Done` mit
+  Liefer-Hashes + DoD-Verifikation + §9 DoD-Checkliste
+  komplett abgehakt, Top-Level-Doku-Sync in 5 Docs).
 - **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
   OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-5b (IEC-61850-Spike — Library-Recherche
-  2026-06-01 abgeschlossen: produktive Library
-  `pyiec61850-ng>=1.6,<2.0` (PyPI, manylinux1+Win-Wheels,
-  **GPLv3**, Beta, SWIG-Bindings zu libiec61850 1.6); eine
-  Library liefert Client (`MMSClient`) **und** in-process-
-  Server (`IedServer` mit Context-Manager) — Pattern analog
-  Welle-3-Modbus mit pymodbus, **nicht** Welle-5a-zwei-
-  Library-Setup. Lizenz-Boundary-Decision: `protocol_iec61850/`
-  + zugehoerige Tests werden GPLv3-isoliert via SPDX-Header,
-  Rest grid-gym bleibt MIT (Dual-License-Policy, neu fuer
-  grid-gym; Pattern-Praezedenz: ffmpeg-Python-Wrappern und
-  GTK-Bindings in MIT-Tools).
+  M4-Welle-6 (Cross-Adapter-Hardening — OTel-Span-Wrap der
+  5 `protocol_*`-Adapter (Welle 2/3/4/5a/5b; ADR 0024 §4.5),
+  Adapter-Profil-Index unter `spec/protocol_profiles/` mit
+  Verweisen auf ADR 0031..0035,
+  `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-Test
+  als Welle-1-§7-Folge-Pflicht-Closure; **plus Welle-5b-
+  Schaerfungs-Erbschaft**: SPDX-Header-Konsistenz-Check in
+  `tools/check_refs.py`, CONTRIBUTING.md-Sync mit GPL-
+  Boundary-Policy, `arch_check.py`-Contract gegen GPL-
+  Boundary-Crossing, IEC-61850-IedServer-Smoke-Reaktivierung
+  unter Python 3.12 oder via Library-Upgrade/Wheel-Rebuild).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Provisional`**
@@ -100,21 +123,41 @@
   `dnp3-outstation` dev-only, direkt-sync wie Modbus,
   Class-0-Integrity-Poll + filter-by-index, write-Pfad
   Welle-5b-Anti-Scope; `Accepted` geplant mit M4-Welle-7-
-  Closure).
-- **Tests:** 1462 Unit + 35 Integration gruen (Stand nach
-  M4-Welle-5a-Closure; +319 Unit-Tests ggue. M3-Closure
-  [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 + +8 Review-Folge
-  031 + +81 Welle 4 fuer OPC-UA + +6 Slice-032 fuer Loop-
-  Thread-Lifecycle/Marshal-Pfad/String-Read-Quality.INVALID/
-  Float32-Quantisierung + +56 Welle 5a fuer DNP3
-  (17 Config-Validation + 16 Codec-Roundtrip inkl.
-  hypothesis-Property-Tests + 17 Protocol-Port-Lifecycle +
-  6 Read-Pfad-Edge-Cases)] + 14 Integration-Tests
+  Closure). **0035 `Provisional`** (M4-Welle-5b IEC-61850-
+  Adapter-Profile mit Decisions I-a/I-b/I-c/I-d/I-e/I-f
+  alle final — inline LN/CDC-Schema mit FC-Allow-List
+  `{MX,ST,SP,CF,DC}` und Datatype-Allow-List
+  `{bool,int32,float,string}`, eine-Library-Setup
+  `pyiec61850-ng` als Optional-Extra
+  `[project.optional-dependencies.iec61850]`, direkt-sync
+  wie Modbus + DNP3, Per-Target MMS-Read mit FC-Override,
+  in-process IedServer mit CFG-Fixture als Test-Sibling
+  **mit 2c-Mock-only-Fallback aktiv** (Python-3.14-SWIG-
+  Inkompat), **NEU Decision I-f Lizenz-Boundary** GPLv3-
+  Isolation auf `protocol_iec61850/*` per SPDX-Header
+  (erstmaliger Repo-Praezedenzfall fuer GPL-isolierte Sub-
+  Module in einem sonst MIT-Projekt); `Accepted` geplant
+  mit M4-Welle-7-Closure).
+- **Tests:** 1537 Unit + 35 Integration passed + 4 skipped
+  (Stand nach M4-Welle-5b-Closure; +394 Unit-Tests ggue.
+  M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
+  +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA + +6
+  Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
+  String-Read-Quality.INVALID/Float32-Quantisierung +
+  +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
+  (21 Config-Validation + 30 Codec-Roundtrip inkl.
+  hypothesis-Property-Tests + Container-Repr-Rejection +
+  Overflow-Pfade + 18 Protocol-Port-Lifecycle gegen Mock-
+  Client + 6 Read-Pfad-Edge-Cases)] + 14 Integration-Tests
   [Mosquitto-MQTT-Smoke aus Welle 2 + in-process-pymodbus-
   Server-Smoke aus Welle 3 + 8 in-process-`asyncua.Server`-
   Smokes aus Welle 4 + 4 in-process-`dnp3-outstation.
   AsyncOutstation`-Smokes aus Welle 5a (3 Class-0-Read-
-  Roundtrips + 1 Update-then-Read)]).
+  Roundtrips + 1 Update-then-Read); Welle-5b-IEC-Smokes
+  via `pytest.mark.skip` mit 2c-Fallback-Begruendung
+  inaktiv — Probe-Run auf Python 3.12 lief sauber durch,
+  aber grid-gym-Docker Python 3.14 segfaultet im
+  `_pyiec61850.so`-SWIG-Layer]).
 - **Build:** `make gates` cache-frei gruen ohne Override
   (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
   HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,

@@ -828,14 +828,20 @@ Dockerfile/compose.yml-Edits + Library-Bug-Find `idx` →
 `M4-welle-5a.md` → `Done`, diese §3-Welle-5a-Section auf
 Done, Top-Level-Doku-Sync in 5 Docs).
 
-#### Welle 5b — IEC-61850-Adapter (Spike, In Progress seit 2026-06-01)
+#### Welle 5b — IEC-61850-Adapter (Spike, Done 2026-06-01)
 
-**Status:** In Progress seit 2026-06-01 (M4-Welle-5b-C0
-`19f820a`). Per-Commit-Liefer-Hashes: C0 `19f820a`
+**Status:** Done — geschlossen 2026-06-01 mit M4-Welle-5b-C3
+(dieser Commit). Per-Commit-Liefer-Hashes: C0 `19f820a`
 (Slice-Doc), C1 `88c1a33` (ADR 0035 `Proposed`),
-C1-Review-Folge (dieser Commit; API-Korrektur + Lizenz-
-Refit + diese §3-Welle-5b-Section-Sync nach Library-
-Recherche-Befund). C2 + C3 stehen aus.
+C1-Review-Folge `da8aed9` (API-Korrektur + Lizenz-Refit +
+M4-protocol-adapters.md-Sync nach 4 Findings), C2 `944bca5`
+(feat: `protocol_iec61850/`-5-Modul-Paket + 75 Unit-Tests +
+Integration-Smoke unter 2c-Mock-only-Fallback + GPL-Lizenz-
+Boundary-Files; 1537 Unit + 35 passed + 4 skipped
+Integration; 19/19 Contracts KEPT; 9/9 Gates gruen ohne
+Override), C3 (dieser Commit; ADR 0035 → `Provisional`,
+M4-welle-5b.md → `Done`, diese §3-Section auf Done,
+Top-Level-Doku-Sync).
 
 **Library-Lage (verifiziert 2026-06-01):** produktive
 Library ist `pyiec61850-ng>=1.6,<2.0` (PyPI, manylinux1_x86_64
@@ -854,36 +860,36 @@ PyPI + GitHub `f0rw4rd/pyiec61850-ng`, `mz-automation/libiec61850`,
 `khawkings/py_iec61850_cdc` (nur Data-Classes),
 `robidev/iec61850_open_server` (libiec61850-derived).
 
-- [ ] **ADR 0035** (sechster M4-ADR) — `Proposed` (C1
+- [x] **ADR 0035** (sechster M4-ADR) — `Proposed` (C1
   `88c1a33`) → `Provisional` (C3), mit sechs IEC-61850-
   spezifischen Profil-Entscheidungen (Pattern analog
   ADR 0031..0034 + NEU Decision I-f):
-  - [ ] Decision I-a (LN/CDC-Schema, **final** mit C1-
+  - [x] Decision I-a (LN/CDC-Schema, **final** mit C1-
     Review-Folge): inline im `protocol_ports`-Block;
     pro `device_id` ein `Iec61850LnConfig` mit
     Pflicht-Feldern `object_reference` (LD/LN.DO.DA-
     Pfad), `functional_constraint` (`MX`/`ST`/`SP`/`CF`),
     `datatype` (`bool`/`int32`/`float`/`string`),
     `access` (`read`). Welle-5b-Minimum: MMS-Read.
-  - [ ] Decision I-b (Async-Bridge, **final**):
+  - [x] Decision I-b (Async-Bridge, **final**):
     **direkt-sync** wie Welle-3-Modbus-Decision-M-c und
     Welle-5a-DNP3-Decision-D-b. Kein OpcuaLoopThread-
     Reuse — `pyiec61850.mms.MMSClient` ist sync-Context-
     Manager (`__enter__`/`__exit__`/`connect`/`disconnect`/
     `read_value`/`write_value` alle sync).
-  - [ ] Decision I-c (Datatype-Set + FC-Mapping,
+  - [x] Decision I-c (Datatype-Set + FC-Mapping,
     **final**): `{bool, int32, float, string}` ×
     FC `{MX, ST, SP, CF}` mit Adapter-Default `MX`
     (Library-Default ist `ST`; Adapter setzt explizit).
     UINT/OCTET_STRING/UTC_TIME/Arrays/Structs Welle-6+-
     Schaerfung.
-  - [ ] Decision I-d (Read-Pfad, **final**): Per-Target
+  - [x] Decision I-d (Read-Pfad, **final**): Per-Target
     MMS-Read via
     `MMSClient.read_value(object_reference, fc)`. RCB-
     Subscription + GOOSE Welle-6+. Write-Pfad Welle-5b-
     Anti-Scope (`Iec61850PortWriteNotImplementedError`
     **vor** Library-Call).
-  - [ ] Decision I-e (Test-Sibling, **final mit 2c-Mock-
+  - [x] Decision I-e (Test-Sibling, **final mit 2c-Mock-
     only-Fallback**): in-process
     `pyiec61850.server.IedServer(model_path=fixture)`
     mit minimalem CFG-Fixture unter
@@ -897,7 +903,7 @@ PyPI + GitHub `f0rw4rd/pyiec61850-ng`, `mz-automation/libiec61850`,
     argumentloser `IedServer()`-Konstruktor wirft
     `ModelError("No data model loaded")` bei `start()`
     — Modell-Pflicht ist hart.
-  - [ ] **NEU Decision I-f** (Lizenz-Boundary,
+  - [x] **NEU Decision I-f** (Lizenz-Boundary,
     **final**): GPLv3-Isolation auf
     `protocol_iec61850/*` + zugehoerige Tests via
     SPDX-Header pro Datei
@@ -911,34 +917,34 @@ PyPI + GitHub `f0rw4rd/pyiec61850-ng`, `mz-automation/libiec61850`,
     Optional-Extra-Install-Hinweis. Rest grid-gym
     bleibt MIT. Erstmaliger Repo-Praezedenzfall fuer
     GPL-isolierte Sub-Module.
-- [ ] **NEU**
+- [x] **NEU**
   `src/grid_gym/adapters/driven/protocol_iec61850/`-Modul
   (5 Dateien mit SPDX-Header: `__init__.py` mit
   ImportError-Guard fuer Decision I-f, `_config.py`,
   `_codec.py`, `_port.py`, `_errors.py` inkl.
   `Iec61850PortLibraryNotInstalledError`).
-- [ ] **Unit-Tests** unter
+- [x] **Unit-Tests** unter
   `tests/unit/adapters/driven/protocol_iec61850/`
   (SPDX-Header).
-- [ ] **Integration-Smoke** unter
+- [x] **Integration-Smoke** unter
   `tests/integration/test_iec61850_in_process_smoke.py`
   mit `IedServer(model_path=fixture)` (SPDX-Header).
   ALTERNATIV (2c-Fallback): Mock-only-Smoke in
   `tests/unit/`.
-- [ ] **NEU `tests/integration/fixtures/iec61850/simpleIO.cfg`**
+- [x] **NEU `tests/integration/fixtures/iec61850/simpleIO.cfg`**
   minimales Welle-5b-Test-Modell (libiec61850-natives
   CFG-Format; 4 Datatypes; falls 2c-Fallback aktiv:
   Fixture entfaellt).
-- [ ] **NEU `LICENSES/GPL-3.0.txt`** Standard-GPL-3.0-
+- [x] **NEU `LICENSES/GPL-3.0.txt`** Standard-GPL-3.0-
   Volltext.
-- [ ] **EDIT Top-Level-`LICENSE`** Hinweis-Block fuer
+- [x] **EDIT Top-Level-`LICENSE`** Hinweis-Block fuer
   GPL-Boundary + Optional-Extra-Hinweis.
-- [ ] **EDIT `README.md` + `README.de.md`** Lizenz-
+- [x] **EDIT `README.md` + `README.de.md`** Lizenz-
   Hinweis-Sektion + Optional-Extra-Install-Hinweis.
-- [ ] **EDIT `tests/integration/compose.yml`** — Header-
+- [x] **EDIT `tests/integration/compose.yml`** — Header-
   Kommentar-Sync (Decision-I-e in-process IedServer +
   Decision-I-f GPL-Boundary).
-- [ ] **EDIT `pyproject.toml`** —
+- [x] **EDIT `pyproject.toml`** —
   `[project.optional-dependencies] iec61850 = ["pyiec61850-ng>=1.6,<2.0"]`
   (Decision I-f opt-in; **nicht** in
   `[project] dependencies`, **nicht** in
@@ -946,13 +952,13 @@ PyPI + GitHub `f0rw4rd/pyiec61850-ng`, `mz-automation/libiec61850`,
   `module="pyiec61850.*"` mit
   `ignore_missing_imports = true`. Top-Level-MIT-
   Classifier bleibt.
-- [ ] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
+- [x] **EDIT `Dockerfile`** — `CRITICAL_COV_TARGETS`-
   Default um `adapters/driven/protocol_iec61850`
   erweitert; Test-Stage installiert das Extra via
   `uv sync --extra iec61850` (oder aequivalent).
-- [ ] **`AC-ADAPTER-LIGHTWEIGHT` greift** ohne Filter-
+- [x] **`AC-ADAPTER-LIGHTWEIGHT` greift** ohne Filter-
   Edit (`bucket.startswith("protocol_")`).
-- [ ] **C3-Doc-Sync** — `M4-welle-5b.md` Status, ADR
+- [x] **C3-Doc-Sync** — `M4-welle-5b.md` Status, ADR
   0035 `Proposed → Provisional`, diese §3-Welle-5b-
   Section auf Done, Top-Level-Doku-Sync.
 
