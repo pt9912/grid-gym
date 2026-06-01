@@ -1,14 +1,27 @@
-# ADR 0036 — UI-Stack-Wahl (M5 Vorbelegung)
+# ADR 0036 — UI-Stack-Wahl (M5)
 
-**Status:** Proposed — vor-bereitend angelegt 2026-06-01 nach
-M4-Closure. Die ADR sammelt das Decision-Material fuer die
-M5-UI-Stack-Frage (`GG-AR-COMP-UI` aus
-[`spec/architecture.md`](../../../spec/architecture.md) §5) und
-zieht die drei sinnvollen Pfade explizit zur Vergleichbarkeit
-heran. Final-Decision-Schritt: **M5-Welle-1-ADR-Schaerfung**
-auf `Provisional` mit einer der drei Optionen, **Accepted**
-mit M5-Welle-7-Closure (Pattern analog ADR 0030..0035).
-**Datum:** 2026-06-01 (Pre-M5-Welle-0-Sondierungs-ADR)
+**Status:** Provisional — gezogen 2026-06-01 mit M5-Welle-1-
+C1 (dieser Commit) nach Pre-C0c-HTMX-FastAPI-Smoke-Probe-Run
+`9c20dad` (4 Probe-Tests in `tests/integration/
+test_m5_welle_1_htmx_probe.py` validieren die drei
+kritischen Composition-Punkte server-side:
+FastAPI-HTML-Response, HTMX-`HX-Request`-Pattern,
+WebSocket-Server-Push). Initial-Entwurf (`Proposed`)
+2026-06-01 mit Pre-M5-Welle-0-Sondierung (`f4a9ced`) +
+Charting-Library-Sub-Decision (`e0c3f66`). Die ADR fixiert
+**Option 1** (FastAPI + HTMX + Jinja2 + Chart.js) als
+M5-UI-Stack; die drei anderen Optionen (1b SvelteKit-SPA,
+2 React-SPA, 3 Streamlit ausgeschlossen) bleiben als
+dokumentierte Alternativen fuer Welle-6+/M6-Migration falls
+Stakeholder-Druck spaeter aufkommt. M5-Welle-7-Closure
+zieht die ADR auf `Accepted` (Pattern analog ADR
+0030..0035 in M4-Welle-7-C1 `d2071f0`).
+
+Status-Pfad: Proposed (2026-06-01 `f4a9ced` + Charting-Sub-
+Decision `e0c3f66`) → **Provisional** (dieser Commit;
+M5-Welle-1-C1 nach Probe-Run-Validation) → Accepted
+(geplant mit M5-Welle-7-Closure).
+**Datum:** 2026-06-01 (Erstfassung) / 2026-06-01 (Provisional-Schaerfung, M5-Welle-1-C1)
 **Bezug:**
 [`ADR 0001`](0001-documentation-and-planning-structure.md)
 (ADR-Pattern + Planning-Struktur);
@@ -495,14 +508,24 @@ mitbringen und kein Svelte lernen wollen.
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-06-01 (dieser Commit; Pre-M5-Welle-0-
-  Sondierungs-ADR). Decision-Material vollstaendig, finale
-  Decision **offen**.
-- **Provisional** — geplant mit M5-Welle-1-ADR-Schaerfung.
-  Eine der drei Optionen wird gewaehlt; Welle-1-Probe-Run
-  liefert konkrete Pattern-Belege. Pattern analog
-  [`ADR 0030`](0030-device-protocol-port-surface.md) (M4-
-  Welle-1-Proposed-zu-Provisional in einem Commit).
+- **Proposed** — 2026-06-01 (`f4a9ced` Pre-M5-Welle-0-
+  Sondierungs-ADR + `e0c3f66` Charting-Library-Sub-
+  Decision §2.5). Decision-Material vollstaendig mit
+  Maintainer-Decision-Indication „Option 1 (HTMX +
+  Chart.js)".
+- **Provisional** — 2026-06-01 (M5-Welle-1-C1, dieser
+  Commit) nach Pre-C0c-HTMX-FastAPI-Smoke-Probe-Run
+  `9c20dad` (Probe-Tests validierten Server-Side die drei
+  kritischen Composition-Punkte: FastAPI HTML-Response,
+  HTMX `HX-Request`-Pattern, WebSocket Server-Push).
+  **Option 1 (FastAPI + HTMX + Jinja2 + Chart.js)
+  fixiert**; Optionen 1b/2/3 bleiben als dokumentierte
+  Alternativen fuer Welle-6+/M6-Migration. Pattern analog
+  [`ADR 0030`](0030-device-protocol-port-surface.md)
+  (M4-Welle-1-Proposed-zu-Provisional nach C2-Code-Merge;
+  hier nach Pre-C0c-Probe-Run statt nach Welle-1-C2-Merge
+  weil die Stack-Validation **vor** der C0-Slice-Doc-
+  Anlage erfolgt ist).
 - **Accepted** — geplant mit M5-Welle-7-Closure (analog
   ADR 0030..0035, alle in M4-Welle-7-C1 `d2071f0` auf
   `Accepted` gezogen).
