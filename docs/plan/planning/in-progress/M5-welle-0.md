@@ -1,25 +1,29 @@
 # Welle 0 — M5 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — eroeffnet 2026-06-01 nach M4-Welle-
-7-Closure (Liefer-Stack `bf23458` Pre-C0a + `5b2dc24` Pre-C0b
-+ `af97fd7` C0 + `05a1417` C0-Review + `d2071f0` C1 + `0c644f0`
-C2 + `121e255` C3 + `e745f10` C4a + `72e8357` C4b + `4567222`
-Closure-Konsistenz-Audit + `e9aabd9` Self-Close-Move + `7f5beb8`
-Pre-C0b mit README-Front-Matter-Audit + `f4a9ced` NEU ADR 0036
+**Status:** In Progress — eroeffnet 2026-06-01 nach
+M4-Welle-7-Closure (Liefer-Stack `bf23458` Pre-C0a +
+`5b2dc24` Pre-C0b + `af97fd7` C0 + `05a1417` C0-Review
++ `d2071f0` C1 + `0c644f0` C2 + `121e255` C3 + `e745f10`
+C4a + `72e8357` C4b + `4567222` Closure-Konsistenz-Audit
++ `e9aabd9` Self-Close-Move + `7f5beb8` Pre-C0b mit
+README-Front-Matter-Audit + `f4a9ced` NEU ADR 0036
 + `e0c3f66` ADR 0036 §2.5 + Maintainer-Decision-Indication).
 Vorabraeumung + Slice-Plan-Eroeffnung fuer M5 (UI + Demo —
-`GG-UI-001..009` + `GG-DEMO-001..008`) ist diese Wellen-
-Aufgabe. Pattern analog M4-Welle-0
+`GG-UI-001..009` + `GG-DEMO-001..008`) ist diese
+Wellen-Aufgabe. Pattern analog M4-Welle-0
 ([`../done/M4-welle-0.md`](../done/M4-welle-0.md)).
 
 **Spec-Reife:** Inhaltlich final. Reines Doc-Arbeitspaket
-(kein Code-Pfad-Wechsel; Pattern analog M3-Welle-0 und
-M4-Welle-0). Welle-0-Decision-Liste (§3) sammelt offene
-Fragen, entscheidet sie aber nicht — Entscheidungen wandern
-in Welle 1 und werden im jeweiligen M5-ADR konkretisiert.
-**Bereits vor M5-Welle-0 angelegt:** ADR 0036 (UI-Stack-Wahl)
-mit Maintainer-Decision-Indication „Option 1 (HTMX) + Chart.
-js" (siehe [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
+(kein Code-Pfad-Wechsel; Pattern analog
+[`../done/welle-0.md`](../done/welle-0.md) (M3-Welle-0)
+und [`../done/M4-welle-0.md`](../done/M4-welle-0.md)).
+Welle-0-Decision-Liste (§3) sammelt offene Fragen,
+entscheidet sie aber nicht — Entscheidungen wandern in
+Welle 1 und werden im jeweiligen M5-ADR konkretisiert.
+**Bereits vor M5-Welle-0 angelegt:** ADR 0036
+(UI-Stack-Wahl) mit Maintainer-Decision-Indication
+„Option 1 (HTMX) + Chart.js" (siehe
+[`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 §2-Header).
 
 ---
@@ -30,26 +34,36 @@ M4 ist seit 2026-06-01 mit Welle-7-Closure abgeschlossen
 ([`../done/M4-results.md`](../done/M4-results.md)). M5 ist
 laut [`roadmap.md §3 M5`](roadmap.md) der naechste aktive
 Slice mit zwei Sub-Bereichen entlang
-[`../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md):
+[`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
+plus Cross-Cutting aus
+[`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md):
 
-- **UI** (`GG-UI-001..009`, fuenf MUSS + drei SOLLTE +
-  ein MUSS): Web-UI nach `docker compose up` lokal, Live-
-  Telemetry, Zeitreihen, Replay-Steuerung, Alarme,
-  Datenqualitaet, optional Geraete-Grafik, Fault-
-  Injection-Form, Simulationszustaende.
-- **Demo** (`GG-DEMO-001..008`, sieben MUSS + ein SOLLTE):
-  Lokale Demo-Umgebung, Netz + Batterie + Live-Telemetry
-  binnen 30s, Replay-Szenario, dokumentierte Abnahme-
-  reihenfolge.
+- **UI** (`GG-UI-001..009`, **sechs MUSS** —
+  `GG-UI-001..005` + `GG-UI-009` Datenqualitaet — und
+  **drei SOLLTE** — `GG-UI-006..008` Geraete-Grafik /
+  Fault-Injection-Form / Simulationszustaende): Web-UI
+  nach `docker compose up` lokal, Live-Telemetry,
+  Zeitreihen, Replay-Steuerung, Alarme, Datenqualitaet
+  visuell unterscheidbar.
+- **Demo** (`GG-DEMO-001..008`, **sechs MUSS** —
+  `GG-DEMO-001..005` + `GG-DEMO-008` — und **zwei SOLLTE**
+  — `GG-DEMO-006` Fault-Injection in Demo + `GG-DEMO-007`
+  Agent in Demo): Lokale Demo-Umgebung, Netz + Batterie +
+  Live-Telemetry binnen 30s, Replay-Szenario,
+  dokumentierte Abnahmereihenfolge.
 
 Plus Cross-Cutting:
 
-- **HTTP-API-Surface** (`GG-API-001..004`): die in M1
-  angelegte Stub-Surface (`POST /runs` + `/health`) wird
-  in M5 zur vollen REST + WebSocket vervollstaendigt
-  (Pattern aus
-  [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
-  fuer Driven-Ports gilt analog fuer Driving-Ports).
+- **HTTP-API-Surface** (`GG-API-001..004` aus
+  [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+  Kommunikationsschnittstellen): die in M1 angelegte
+  Stub-Surface (`POST /runs` + `/health`) wird in M5 zur
+  vollen REST + WebSocket vervollstaendigt. **Driving-
+  Port-Erweiterung** unter
+  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md)
+  `GG-AR-PORT-DRV-*`-Familie; nicht zu verwechseln mit
+  den Driven-Ports (DRN-007 `DeviceProtocolPort`)
+  aus M4.
 - **Demo-Pipeline:** `make demo` o. ae. als reproduzier-
   barer Abnahmebefehl (Lastenheft `GG-DEMO-008`).
 
@@ -128,10 +142,28 @@ Aus [`../done/M4-results.md §5`](../done/M4-results.md):
   M3-Welle-7-`c61ab0d`: eigener Slice-Trigger in
   M5-Welle-0 oder fruehestmoeglicher Schaerfungs-Welle
   (`make fullbuild` ist pre-existing rot).
-- **OTel-Span-Wrap-Pattern** aus M4-Welle-6a als
-  wiederverwendbares Pattern; ggf. fuer
-  `HttpApiPort`/`UiPort` falls als Driven-Ports
-  modelliert.
+- **OTel-Span-Wrap-Pattern** aus M4-Welle-6a — direkt
+  reusable nur fuer Driven-Boundaries (das Welle-6a-
+  `_protocol_otel_wrap.py`-Composition-Wrapper-Pattern
+  wrappt `DeviceProtocolPort.read/write`-Calls).
+  HTTP-API und UI sind **Driving-Ports**
+  (`GG-AR-PORT-DRV-*`, siehe
+  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md)),
+  nicht Driven. Driving-Side-Analogon waere
+  **FastAPI-Middleware** oder OpenTelemetry-ASGI-
+  Instrumentation (`opentelemetry-instrumentation-
+  fastapi`), nicht das gleiche Composition-Wrapper-
+  Pattern. Welle 3/4 entscheidet, ob OTel-Instrumentation
+  der HTTP-API als Driving-Side-Pattern eingezogen wird
+  (Folge-Trigger falls relevant).
+- **`AC-ADAPTER-LIGHTWEIGHT`-Coverage-Pfad-Filter** aus
+  Welle-6b-C3 (Slice-034-F13, `2539574`) — flat-file
+  `_protocol_*.py`-Helper unter `adapters/driven/`-Pfad
+  ist gegated. Falls M5 cross-Driving-Helper unter
+  `adapters/driving/_http_api_*.py` einfuehrt, koennte
+  ein analoger Filter-Eintrag in
+  `_is_adapter_lightweight_path` noetig werden
+  (Welle-?-Folge falls Cross-Driving-Helper auftauchen).
 - **GPL-Boundary-Pattern** aus M4-Welle-5b/6b
   (`check_spdx.py` + `AC-IEC61850-GPL-BOUNDARY`): nicht
   M5-relevant (keine GPL-isolierten UI-Komponenten
@@ -170,8 +202,11 @@ ADR konkretisiert werden:
 - **Decision 1 (UI-Stack-Wahl):** ADR 0036 Status
   `Proposed` mit Maintainer-Decision-Indication „Option 1
   (HTMX) + Chart.js". Formale Festschreibung auf
-  `Provisional` in M5-Welle-1-ADR-Schaerfung nach
-  Probe-Run.
+  `Provisional` in M5-Welle-1-ADR-Schaerfung **nach
+  HTMX-FastAPI-Smoke-Probe-Run in Welle-1-Pre-C0**
+  (Probe verifiziert: FastAPI rendert Jinja2-Template,
+  HTMX-Element triggert Server-Call, WS-Push aktualisiert
+  Partial — minimal-Pattern fuer Live-Update-Eignung).
 - **Decision 2 (UI-Layout-Lokation):** `ui/` als Top-Level-
   Verzeichnis (per Spec-§5-Architektur-Vorbelegung) ODER
   `src/grid_gym/adapters/driving/ui/` (per Hexagonal-
@@ -200,22 +235,47 @@ ADR konkretisiert werden:
   „reproduzierbaren Abnahmebefehl". Welle-5-Entscheidung.
 - **Decision 7 (Charting-Library-Final):** Chart.js als
   Maintainer-Indication; Welle-3-Slice-Doc-Final-Decision
-  (siehe ADR 0036 §2.5 + §7-Folge-Pflicht). Mögliche
+  (siehe ADR 0036 §2.5 + §7-Folge-Pflicht). Moegliche
   Upgrades auf Plotly.js/ECharts in Welle 6+/M6.
-- **Decision 8 (Bundle-Auslieferungs-Pattern):** Chart.js
-  als CDN-Link, vendored Static-Asset (~70 KB Single-
-  File), oder via `npm`-Compile (mit Sub-Stage-Build)?
-  Welle-2-Entscheidung; Single-Stack-Pattern (Maintainer-
-  Indication) bevorzugt vendored Static-Asset ohne
-  Build-Tooling.
+- **Decision 8 (Bundle-Auslieferungs-Pattern):**
+  **Maintainer-Default aus ADR 0036 §2.1: Chart.js
+  vendored als Single-File-Static-Asset (~70 KB) ohne
+  Build-Tooling.** Welle-2-Slice-Doc bestaetigt diesen
+  Default; Re-Eval nur falls Static-Asset-Footprint im
+  Welle-2-Probe-Run kippt (z. B. > 500 KB Total-UI-
+  Asset-Bundle). Diese Decision ist also degradiert von
+  „Wahlfrage" zu „Welle-2-Bestaetigung".
+- **Decision 9 (UICommandPort-Separation):**
+  [`roadmap.md §3 M5`](roadmap.md) erwaehnt
+  „`GG-AR-PORT-DRG-002` (`UICommandPort`, sofern getrennt
+  vom HTTP-API)". Frage: separater Port fuer UI-getriebene
+  Commands (Replay-Steuerung, Fault-Injection-Form-
+  Submit) oder Wiederverwendung der `GG-API-001`-REST-
+  Surface? Welle-1-Entscheidung im HTTP-API-Surface-ADR
+  (zusammen mit Decision 4 — Replay-Controls-API-
+  Vertrag). **Anmerkung:** Roadmap-Suffix
+  `GG-AR-PORT-DRG-002` ist ein Typo gegen
+  `../../../../spec/architecture.md §4.2`-Namens-Konvention
+  `GG-AR-PORT-DRV-*` (Driving). `GG-AR-PORT-DRV-002` ist
+  bereits `ScenarioPort`; ein neuer Driving-Port-Slot
+  brauchte eine freie Nummer. Roadmap-Bug zu fixen in
+  Welle-1-Top-Level-Doku-Sync.
+- **Decision 10 (Roadmap-M5-Status-Header):** Aktuell ist
+  `roadmap.md §3 M5` mit Header „Vorbelegung" markiert.
+  Frage: in Welle-0-C2 auf „In Progress" flippen (analog
+  M4-Welle-0-C2-Status-Flip) oder bewusst auf
+  „Vorbelegung" belassen bis M5-Welle-1-Code-Lieferung
+  (analog ADR-Lifecycle `Proposed → Provisional` nach
+  C2-Code-Merge)? Welle-0-C2-Entscheidung, nicht hier.
 
 ### Trigger-Drift-Notiz (zur Aufnahme in C2)
 
 Folgende offene Trigger sind potenziell M5-relevant
 (in C2-Trigger-Triage zu pruefen):
 
-- **Trigger 004** (`open/004-canonical-encoder-
-  alternative-adr.md`): Re-Eval auf M5/M6 verschoben in
+- **Trigger 004**
+  ([`open/004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md)):
+  Re-Eval auf M5/M6 verschoben in
   M4-Welle-6a-C3; pruefen ob WebSocket-Live-Telemetry-
   Throughput im Demo-Szenario Performance-Druck erzeugt
   und Re-Eval ausloest.
@@ -284,8 +344,8 @@ Bestand-Eintrag.
 | `docs/plan/planning/in-progress/M5-ui-demo.md`       | C1    | CREATE (M5-Slice-Plan; Welle 0..7-Vorbelegung)            |
 | `docs/plan/planning/in-progress/README.md`           | C0/C1 | EDIT (Bestand-Eintraege + Aktive-Welle-Block)             |
 | `docs/plan/planning/in-progress/roadmap.md`          | C2    | EDIT (M5-Status-Header auf In Progress)                   |
-| `docs/plan/planning/open/010-base-image-krb5-cve-bump.md` | C2 | CREATE (falls Triage entscheidet, dass Trigger explizit angelegt wird) |
-| `docs/plan/planning/open/README.md`                  | C2    | EDIT (NEU 010-Trigger-Eintrag)                            |
+| `docs/plan/planning/open/010-base-image-krb5-cve-bump.md` | C2 | CREATE (bedingt — falls C2-Triage entscheidet, dass Trigger explizit angelegt wird) |
+| `docs/plan/planning/open/README.md`                  | C2    | EDIT (bedingt — NEU 010-Trigger-Eintrag, nur wenn Datei oben angelegt) |
 
 ---
 
@@ -301,10 +361,12 @@ Bestand-Eintrag.
    `M5-welle-0.md` + `M5-ui-demo.md` als Eintraege.
 4. `in-progress/README.md`-Aktive-Welle-Block auf
    M5-Welle-1 ausgerichtet.
-5. `roadmap.md §3 M5`-Header von `Vorbelegung` auf
-   `In Progress` ggf. aktualisiert (oder bewusst auf
-   `Vorbelegung` belassen bis M5-Welle-1-Code-Lieferung
-   — Welle-0-C2-Decision).
+5. `roadmap.md §3 M5`-Header gemaess **Decision 10**
+   (§3 Welle-0-Decision-Liste) — entweder auf
+   `In Progress` flippen (analog M4-Welle-0-C2-
+   Status-Flip-Pattern) oder bewusst auf `Vorbelegung`
+   belassen bis M5-Welle-1-Code-Lieferung. C2-
+   Entscheidungspunkt; in §3 als Decision 10 verankert.
 6. Welle-0-Trigger-Triage durchgefuehrt; M5-relevante
    Trigger markiert; ggf. NEU
    `open/010-base-image-krb5-cve-bump.md`.
