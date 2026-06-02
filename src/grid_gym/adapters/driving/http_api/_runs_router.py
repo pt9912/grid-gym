@@ -33,9 +33,8 @@ from __future__ import annotations
 import dataclasses
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
-from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driving.http_api._dependencies import (
     get_alarm_history_buffer,
     get_run_repository,
@@ -190,13 +189,10 @@ def get_run_snapshot(
 )
 def get_run_alarms_history(
     run_id: str,
+    request: Request,
     repository: Annotated[
         RunRepositoryPort,
         Depends(get_run_repository),
-    ],
-    history_buffer: Annotated[
-        AlarmHistoryBuffer,
-        Depends(get_alarm_history_buffer),
     ],
     limit: int = 50,
 ) -> AlarmsResponse:
@@ -207,8 +203,15 @@ def get_run_alarms_history(
     Initial-Hydration aufgerufen; Live-Updates kommen via
     WS-`/alarms-stream`. Welle-4b-Default `limit=50`; max
     `200` durch Buffer-Capacity.
+
+    Welle-4b-Review-Fix #7: `get_alarm_history_buffer` wird hier
+    NACH `_resolve_repository(...)` aufgerufen — sonst feuert
+    `_AlarmHistoryBufferNotConfiguredError` (500) bevor der
+    404-Check fuer einen unbekannten `run_id` laufen kann. FastAPI
+    `Depends` resolved sonst eagerly vor der Handler-Body-Logik.
     """
     _resolve_repository(run_id, repository)
+    history_buffer = get_alarm_history_buffer(request)
     clamped_limit = min(max(limit, 0), 200)
     alarms = history_buffer.get_recent(run_id=run_id, limit=clamped_limit)
     return AlarmsResponse(

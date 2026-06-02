@@ -94,7 +94,7 @@ class _AlarmStreamNotConfiguredError(RuntimeError):
     def __init__(self) -> None:
         super().__init__(
             "AlarmStreamPort is not configured. Call "
-            "grid_gym.adapters.driving.http_api.app.configure_alarm_stream "
+            "grid_gym.adapters.driving.http_api._alarm_setup.configure_alarm_stream "
             "before serving requests."
         )
 
@@ -119,7 +119,7 @@ class _AlarmHistoryBufferNotConfiguredError(RuntimeError):
     def __init__(self) -> None:
         super().__init__(
             "AlarmHistoryBuffer is not configured. Call "
-            "grid_gym.adapters.driving.http_api.app.configure_alarm_stream "
+            "grid_gym.adapters.driving.http_api._alarm_setup.configure_alarm_stream "
             "before serving requests."
         )
 

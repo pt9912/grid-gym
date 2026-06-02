@@ -26,22 +26,58 @@
     <script>
     (function () {
         const MAX_ROWS = 200;
-        const runId = "{{ run_id }}";
+        const ALLOWED_SEVERITIES = ["info", "warning", "critical"];
+        const runId = {{ run_id|tojson }};
         const tbody = document.getElementById("alarms-tbody");
         const wsBridge = document.getElementById("alarms-ws");
         let emptyRowRemoved = false;
 
+        function makeCell(cls, value) {
+            const td = document.createElement("td");
+            td.className = cls;
+            td.textContent = value == null ? "" : String(value);
+            return td;
+        }
+
+        function safeSeverity(value) {
+            return ALLOWED_SEVERITIES.includes(value) ? value : "info";
+        }
+
         function renderAlarmRow(alarm) {
+            const severity = safeSeverity(alarm.severity);
             const row = document.createElement("tr");
-            row.className = `severity-${alarm.severity}`;
-            row.innerHTML = `
-                <td class="sim-time">${alarm.simulation_time_ms}</td>
-                <td class="target">${alarm.target}</td>
-                <td class="severity"><span class="severity-badge severity-${alarm.severity}">${alarm.severity}</span></td>
-                <td class="code">${alarm.code}</td>
-                <td class="message">${alarm.message}</td>
-                <td class="status">${alarm.status}</td>`;
+            row.className = "severity-" + severity;
+            row.appendChild(makeCell("sim-time", alarm.simulation_time_ms));
+            row.appendChild(makeCell("target", alarm.target));
+            const sevCell = document.createElement("td");
+            sevCell.className = "severity";
+            const badge = document.createElement("span");
+            badge.className = "severity-badge severity-" + severity;
+            badge.textContent = severity;
+            sevCell.appendChild(badge);
+            row.appendChild(sevCell);
+            row.appendChild(makeCell("code", alarm.code));
+            row.appendChild(makeCell("message", alarm.message));
+            row.appendChild(makeCell("status", alarm.status));
             return row;
+        }
+
+        function renderEmptyRow(label) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 6;
+            cell.className = "empty";
+            cell.textContent = label;
+            row.appendChild(cell);
+            return row;
+        }
+
+        function tbodyHtmlOf(nodes) {
+            const tmp = document.createElement("tbody");
+            for (const node of nodes) {
+                tmp.appendChild(node);
+            }
+            return tmp.innerHTML;
         }
 
         function prependAlarm(alarm) {
@@ -55,35 +91,49 @@
             }
         }
 
-        // HTMX-Hydration via REST: Welle-4b-`/alarms`-Endpoint
-        // liefert `{run_id, alarms}`-JSON. Wir transformieren den
-        // Response in <tr>-Reihen vor dem Swap.
         document.body.addEventListener("htmx:beforeSwap", function (event) {
             const target = event.detail.target;
             if (!target || target.id !== "alarms-tbody") {
+                return;
+            }
+            const xhr = event.detail.xhr;
+            if (xhr && xhr.status >= 400) {
+                event.detail.serverResponse = tbodyHtmlOf([
+                    renderEmptyRow("Failed to load alarms (HTTP " + xhr.status + ").")
+                ]);
+                emptyRowRemoved = false;
                 return;
             }
             let payload;
             try {
                 payload = JSON.parse(event.detail.serverResponse);
             } catch (err) {
-                return;
-            }
-            const alarms = payload.alarms || [];
-            if (alarms.length === 0) {
-                event.detail.serverResponse = `<tr><td colspan="6" class="empty">No alarms yet.</td></tr>`;
+                event.detail.serverResponse = tbodyHtmlOf([
+                    renderEmptyRow("Failed to parse alarms response.")
+                ]);
                 emptyRowRemoved = false;
                 return;
             }
-            const tmp = document.createElement("tbody");
-            for (const alarm of alarms) {
-                tmp.appendChild(renderAlarmRow(alarm));
+            const alarms = Array.isArray(payload && payload.alarms) ? payload.alarms : null;
+            if (alarms === null) {
+                event.detail.serverResponse = tbodyHtmlOf([
+                    renderEmptyRow("Unexpected alarms response shape.")
+                ]);
+                emptyRowRemoved = false;
+                return;
             }
-            event.detail.serverResponse = tmp.innerHTML;
+            if (alarms.length === 0) {
+                event.detail.serverResponse = tbodyHtmlOf([
+                    renderEmptyRow("No alarms yet.")
+                ]);
+                emptyRowRemoved = false;
+                return;
+            }
+            const rows = alarms.map(renderAlarmRow);
+            event.detail.serverResponse = tbodyHtmlOf(rows);
             emptyRowRemoved = true;
         });
 
-        // WS-Live-Updates: prependt jeden neuen Alarm.
         wsBridge.addEventListener("htmx:wsAfterMessage", function (event) {
             let alarm;
             try {

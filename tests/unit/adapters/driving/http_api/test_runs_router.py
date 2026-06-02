@@ -264,3 +264,28 @@ def test_get_run_alarms_returns_404_for_unknown_run(
     response = client.get(f"/runs/{run_id}/alarms-history")
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "run_not_found"
+
+
+def test_get_run_alarms_returns_404_when_buffer_not_configured(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
+) -> None:
+    """Welle-4b-Review-Fix #7: bei unbekanntem `run_id` muss der
+    404-Pfad ueber den `_AlarmHistoryBufferNotConfiguredError`-500-
+    Pfad gewinnen. Vorher loeste FastAPI `Depends` den Buffer eagerly
+    auf und 500 ueberschrieb die 404-Antwort fuer unbekannte runs.
+    """
+    client, _, _ = configured_app
+    # Buffer explizit aus app.state entfernen — der Code-Pfad soll
+    # trotzdem 404 (nicht 500) liefern.
+    app.state.alarm_history_buffer = None
+    run_id = str(uuid.uuid4())
+    try:
+        response = client.get(f"/runs/{run_id}/alarms-history")
+    finally:
+        # Buffer-Slot zuruecksetzen, damit andere Tests in derselben
+        # App-Instanz nicht stolpern (Fixture-Reset).
+        from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+
+        app.state.alarm_history_buffer = AlarmHistoryBuffer()
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "run_not_found"

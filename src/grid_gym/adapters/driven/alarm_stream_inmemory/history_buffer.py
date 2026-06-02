@@ -48,13 +48,20 @@ class AlarmHistoryBuffer:
     def get_recent(self, run_id: str | None = None, *, limit: int = 50) -> tuple[Alarm, ...]:
         """Liefert die neuesten ``limit`` Alarms, optional nach
         ``run_id`` gefiltert. Neueste zuerst (LIFO der internen
-        deque)."""
+        deque).
+
+        Welle-4b-Review-Fix #5: Sync-REST-Handler laeuft im FastAPI-
+        Threadpool, waehrend der asyncio-Driver-Task `append(...)`
+        ruft — `reversed(self._buffer)` waehrend gleichzeitigem
+        Append wirft `RuntimeError: deque mutated during iteration`.
+        `tuple(self._buffer)` ist in CPython atomar (GIL-Schutz
+        ueber den C-Level-Copy) und liefert einen stabilen Snapshot.
+        """
         if limit <= 0:
             return ()
+        snapshot = tuple(self._buffer)
         filtered: list[Alarm] = []
-        # Iteriere rueckwaerts (neueste zuerst) und sammle bis
-        # `limit` erreicht ist.
-        for alarm in reversed(self._buffer):
+        for alarm in reversed(snapshot):
             if run_id is not None and alarm.run_id != run_id:
                 continue
             filtered.append(alarm)
