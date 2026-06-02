@@ -230,75 +230,74 @@ According to the requirements specification, the MVP comprises at least:
 
 ```text
 .
-├── .github/workflows/ci.yml     ← CI: 4 mandatory gates (Trigger 025)
-├── Dockerfile, Makefile, pyproject.toml, uv.lock, alembic.ini, .python-version
-│                                ← build/gate/dependency layer (ADR 0002 §6.1; alembic for M1 Wave 6c Postgres migrations)
-├── LICENSE + LICENSES/GPL-3.0.txt
-│                                ← MIT default + GPL-3.0-only for the IEC-61850 boundary (ADR 0035 Decision I-f, M4 Waves 5b/6b)
-├── README.md + README.de.md + CHANGELOG.md + CONTRIBUTING.md + AGENTS.md
-│                                ← project docs + dual-license policy + AI-coding-agent briefing
+├── .github/workflows/ci.yml     ← CI: 4 mandatory gates
+├── AGENTS.md, CHANGELOG.md, CONTRIBUTING.md, README.de.md, README.md
+│                                ← project docs + dual-license policy + AI-agent briefing
+├── Dockerfile, Makefile, alembic.ini, pyproject.toml, uv.lock, .python-version
+│                                ← build / gate / dependency layer (ADR 0002 §6.1)
+├── LICENSE + LICENSES/          ← MIT default + GPL-3.0-only for the IEC-61850 boundary
 ├── deploy/
-│   ├── compose.yml              ← productive Compose stack + OTLP collector sibling (M3 Wave 6)
-│   └── otel-collector-config.yaml ← collector config (gRPC :4317, debug + file exporters)
-├── harness/                     ← agent harness contracts: README + roles + review + verification + replay
+│   ├── compose.yml              ← productive Compose stack + OTLP collector sibling
+│   └── otel-collector-config.yaml ← collector config (gRPC :4317)
+├── docs/
+│   ├── archive/                 ← discarded / historical drafts
+│   ├── plan/
+│   │   ├── adr/                 ← Architecture Decision Records (0001..0040)
+│   │   └── planning/
+│   │       ├── done/            ← completed slices + closure notes
+│   │       ├── in-progress/     ← active roadmap + slice plans
+│   │       ├── next/            ← planned but not yet active
+│   │       └── open/            ← trigger watch, open follow-ups
+│   └── user/                    ← user-/operator-facing docs (code review etc.)
+├── harness/                     ← agent harness (roles, review, verification, replay)
 ├── spec/
-│   ├── lastenheft.md            ← normative requirements (GG-*)
 │   ├── architecture.md          ← architecture (GG-AR-*)
-│   └── protocol_profiles.md     ← per-protocol adapter profile index (M4 Wave 6a)
+│   ├── lastenheft.md            ← normative requirements (GG-*)
+│   └── protocol_profiles.md     ← per-protocol adapter profile index
 ├── src/grid_gym/
-│   ├── hexagon/
-│   │   ├── core/
-│   │   │   ├── agents/          ← Agent protocol + AgentMessageBus + RuleBasedAgent (M3 Waves 3+4a+4b)
-│   │   │   ├── devices/         ← battery/, pv/, load/, grid_connection/, smart_meter/ (M2)
-│   │   │   ├── domain/          ← frozen dataclasses (Command, Event, Alarm, ScenarioFault, ...)
-│   │   │   ├── faults/          ← Battery + GridFaultAdapter (M3 Wave 2)
-│   │   │   ├── grid_model/      ← balance model + LoadEvent/LoadProfile (M2 Wave 5)
-│   │   │   ├── replay/          ← replay sample codec (M1 Wave 5)
-│   │   │   ├── scenario/        ← YAML loader + validator (M1 Wave 5)
-│   │   │   ├── serialization/   ← canonical_json (M1 Wave 0a, Trigger 014)
-│   │   │   └── simulation/      ← TickLoop + scheduler + alarm_mappers (M5 Wave 4b)
-│   │   └── ports/
-│   │       ├── driven/          ← Clock, Random, Fault, RunRepository, Observability (Log/Metrics/Trace), DeviceProtocol (M4 Wave 1)
-│   │       └── driving/         ← TelemetryStream (M5 Wave 3), AlarmStream (M5 Wave 4b)
-│   └── adapters/
-│       ├── driving/
-│       │   ├── http_api/        ← FastAPI app + REST + WebSocket + composition roots (M5 Waves 1/4a/4b)
-│       │   └── ui/              ← Jinja2 templates + vendored HTMX + Chart.js + StaticFiles (M5 Wave 2)
-│       └── driven/
-│           ├── persistence_postgres/    ← Postgres RunRepository + alembic migrations (M1 Wave 6c)
-│           ├── random_mt/               ← MersenneTwisterRandomPort (M1 Wave 2)
-│           ├── observability_null/      ← Null Log/Metrics/Trace fallback (M3 Wave 5)
-│           ├── telemetry_otlp/          ← OTLP gRPC adapter (M3 Wave 6, ADR 0024)
-│           ├── telemetry_stream_inmemory/ ← InMemoryTelemetryStream + DemoTelemetryGenerator (M5 Wave 3)
-│           ├── alarm_stream_inmemory/   ← InMemoryAlarmStream + AlarmHistoryBuffer (M5 Wave 4b)
-│           ├── protocol_mqtt/           ← paho-mqtt (M4 Wave 2, ADR 0031)
-│           ├── protocol_modbus/         ← pymodbus (M4 Wave 3, ADR 0032)
-│           ├── protocol_opcua/          ← asyncua + OpcuaLoopThread async-bridge (M4 Wave 4, ADR 0033)
-│           ├── protocol_dnp3/           ← nfm-dnp3 productive + dnp3-outstation dev-only (M4 Wave 5a, ADR 0034)
-│           ├── protocol_iec61850/       ← pyiec61850-ng GPLv3-isolated optional extra (M4 Wave 5b, ADR 0035 Decision I-f)
-│           └── _protocol_otel_wrap.py   ← OtelSpanWrappedDeviceProtocolPort cross-adapter wrapper (M4 Wave 6a)
+│   ├── adapters/
+│   │   ├── driven/
+│   │   │   ├── _protocol_otel_wrap.py     ← OtelSpanWrappedDeviceProtocolPort wrapper
+│   │   │   ├── alarm_stream_inmemory/     ← InMemoryAlarmStream + AlarmHistoryBuffer
+│   │   │   ├── observability_null/        ← Null Log / Metrics / Trace fallback
+│   │   │   ├── persistence_postgres/      ← Postgres RunRepository + alembic migrations
+│   │   │   ├── protocol_dnp3/             ← nfm-dnp3 productive + dnp3-outstation dev-only
+│   │   │   ├── protocol_iec61850/         ← pyiec61850-ng GPLv3-isolated optional extra
+│   │   │   ├── protocol_modbus/           ← pymodbus
+│   │   │   ├── protocol_mqtt/             ← paho-mqtt
+│   │   │   ├── protocol_opcua/            ← asyncua + OpcuaLoopThread async bridge
+│   │   │   ├── random_mt/                 ← MersenneTwisterRandomPort
+│   │   │   ├── telemetry_otlp/            ← OTLP gRPC adapter (log / metric / trace exporters)
+│   │   │   └── telemetry_stream_inmemory/ ← InMemoryTelemetryStream + DemoTelemetryGenerator
+│   │   └── driving/
+│   │       ├── http_api/        ← FastAPI app + REST + WebSocket + composition roots
+│   │       └── ui/              ← Jinja2 templates + vendored HTMX + Chart.js + StaticFiles
+│   └── hexagon/
+│       ├── core/
+│       │   ├── agents/          ← Agent protocol + AgentMessageBus + RuleBasedAgent
+│       │   ├── devices/         ← battery/, grid_connection/, load/, pv/, smart_meter/
+│       │   ├── domain/          ← frozen dataclasses (Command, Event, Alarm, ScenarioFault, ...)
+│       │   ├── faults/          ← Battery + GridFaultAdapter
+│       │   ├── grid_model/      ← balance model + LoadEvent / LoadProfile
+│       │   ├── replay/          ← replay sample codec
+│       │   ├── scenario/        ← YAML loader + validator
+│       │   ├── serialization/   ← canonical_json
+│       │   └── simulation/      ← TickLoop + scheduler + alarm_mappers
+│       └── ports/
+│           ├── driven/         ← Clock, DeviceProtocol, Fault, Observability, Random, RunRepository
+│           └── driving/        ← AlarmStream, TelemetryStream
 ├── tests/
-│   ├── unit/                    ← pytest unit tests (1696 as of 2026-06-02, M5-Welle-4b closure + review-folge)
-│   ├── integration/             ← Compose-based integration tests (51 passed + 4 skipped; OTLP + MQTT + Modbus + OPC-UA + DNP3 + IEC-61850 (mock-only fallback) + M5-HTTP-API + UI-Foundation + Live-Telemetry + Replay-Controls + Alarms smokes incl.)
-│   └── unit/_arch_check_*       ← architecture tests (6 lint-imports + 14 custom AC checks = 20 A-1; AC-NO-IO-MOD enforced in both tools, counted once)
-├── tools/
-│   ├── arch_check.py            ← AST/graph architecture checks (ADR 0002 §A-1)
-│   ├── check_noqa.py            ← `# noqa` ban gate (Slice 027)
-│   ├── check_spdx.py            ← SPDX header lint for the GPL-3.0-only boundary (M4 Wave 6b)
-│   ├── check_refs.py            ← Markdown link validator (`make docs-check`)
-│   ├── check_core_determinism.py ← core determinism sweep
-│   ├── wait_otel_collector.py   ← bounded liveness poll for distroless OTLP collector
-│   └── diagnose_otlp_span_export.py ← OTLP debug matrix script (Trigger 029 pattern)
-└── docs/
-    ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0040)
-    │   └── planning/
-    │       ├── open/            ← trigger watch, open follow-ups
-    │       ├── next/            ← planned but not yet active
-    │       ├── in-progress/     ← active roadmap + slice plans
-    │       └── done/            ← completed slices + closure notes
-    ├── user/                    ← user-/operator-facing (code review etc.)
-    └── archive/                 ← discarded/historical drafts
+│   ├── integration/             ← Compose-based integration tests (51 passed + 4 skipped)
+│   ├── unit/                    ← pytest unit tests (1696 as of 2026-06-02)
+│   └── unit/_arch_check_*       ← architecture tests (6 lint + 14 custom = 20 contracts)
+└── tools/
+    ├── arch_check.py                ← AST / graph architecture checks (ADR 0002 §A-1)
+    ├── check_core_determinism.py    ← core determinism sweep
+    ├── check_noqa.py                ← `# noqa` ban gate
+    ├── check_refs.py                ← Markdown link validator (`make docs-check`)
+    ├── check_spdx.py                ← SPDX header lint for the GPL-3.0-only boundary
+    ├── diagnose_otlp_span_export.py ← OTLP debug matrix script
+    └── wait_otel_collector.py       ← bounded liveness poll for distroless OTLP collector
 ```
 
 Source code, tests, and tooling scripts (`src/grid_gym/`, `tests/`,
