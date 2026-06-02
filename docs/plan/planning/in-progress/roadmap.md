@@ -1,10 +1,15 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3+M4 abgeschlossen (M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Naechster aktiver Slice: M5** (UI + Demo).
-**Stand:** 2026-06-01
+**Stand:** 2026-06-02
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
-  M3 `Done` (Welle 0..7), **M4 `In Progress`** (Welle 0 `Done`;
+  M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
+  2026-06-01 mit Welle-7-Closure `4567222`/`72e8357`/`e9aabd9` +
+  Pre-M5-Sync `7f5beb8`; 6 M4-ADRs 0030..0035 auf `Accepted`; Slice-
+  Plan + Welle-7-Doc nach `done/` gewandert; M4-Abschluss-Belege in
+  [`../done/M4-results.md`](../done/M4-results.md). Welle-Detail
+  unten zur Historie erhalten: Welle 0 `Done`;
   **Welle 1 `Done`** geschlossen 2026-05-30 mit C0 `f8cbe9d` +
   C1 `b840e7a` + Review-Folge `ad3dff8` + H4-Korrektur `111c464`
   + C2 `d09adf3` + EoD-Sync `f8ed791` + C3 `5f03bbf` +
@@ -141,29 +146,40 @@
   Positiv). 10/10 A-1-Gates gruen (NEU 10.
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
   `AC-IEC61850-GPL-BOUNDARY`).
-- **Aktiver Slice:** M4 (Protokolladapter — MQTT, Modbus,
-  OPC-UA, DNP3, IEC 61850). **Naechster aktiver Schritt:**
-  M4-Welle-7 (M4-Closure analog M3-Welle-7) — ADR 0030..
-  0035 von `Provisional` auf `Accepted`; NEU `done/
-  M4-results.md` mit Meilenstein-Zusammenfassung;
-  Roadmap-M4-DoD-Checkboxen-Sweep; End-to-End-Sweep
-  S-1..S-6; `make fullbuild` cache-frei gruen als
-  Welle-7-Closure-Gate; Self-Close-Move Welle-6b-Doc
-  nach `done/`; Self-Close-Move `M4-protocol-adapters.md`
-  nach `done/` mit Welle-7-Closure-Hash.
+- **Aktiver Slice:** M5 (UI + Demo). Slice-Plan
+  [`M5-ui-demo.md`](M5-ui-demo.md). Welle 0..4b
+  abgeschlossen (Welle 4b 2026-06-02 mit `b7ac7b3` +
+  C3 `4dca6aa` + Review-Folge `52afd1a`/`fe1db21`/
+  `ced9661`/`1fba165` — 15 Findings adressiert).
+  **Aktive Welle:** **Welle 5 (Demo-Pipeline +
+  Scenario-Loader-Wiring)** eroeffnet 2026-06-02 mit
+  Pre-C0a `a030c0e` (Self-Close-Move
+  `M5-welle-4b.md → done/`) + Pre-C0b `45335eb`
+  (Cross-Doc-Refs-Sync) + C0 `155c421` (Slice-Doc +
+  Decisions 5/6/18 final — kanonisches Demo-YAML,
+  `make demo`-Target mit `python -m grid_gym demo`-
+  Sekundaer-Surface, keine neue Compose-Topologie).
+  Welle 5 ist Single-Slice ohne Sub-Splittung;
+  Decision-Setup an `GG-DEMO-001..005 + 008` (6 MUSS)
+  + `GG-DEMO-007` (1 SOLLTE) gekoppelt;
+  `GG-DEMO-006` deferiert auf Welle 6 (an
+  `GG-UI-007`-Form-Substanz gebunden). **Naechster
+  Schritt:** C1 (kein ADR-Commit; Pattern analog
+  Welle 2 `64d5129`) → C2 (Code-Lieferung) → C3
+  (Status/DoD-Sync).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
-  (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted` geplant
-  mit M4-Welle-7-Closure); **0031 `Accepted`** (M4-Welle-2
+  (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted`
+  2026-06-01 mit M4-Welle-7-C1); **0031 `Accepted`** (M4-Welle-2
   MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle final;
   `Accepted` 2026-06-01 mit M4-Welle-7-C1 `d2071f0`); **0032 `Accepted`**
   (M4-Welle-3 Modbus-TCP-Adapter-Profile mit Decisions
   M-a/M-b/M-c/M-d/M-e/M-f alle final — inline Register-Schema,
   5 Datatypes mit Byte-Order-Matrix, direkt-sync ohne
   Thread-Marshal, FC03/FC10-Defaults, Slave-Unit-ID per Target,
-  in-process pymodbus-Server-Smoke; `Accepted` geplant mit
-  M4-Welle-7-Closure). Review-Folge
+  in-process pymodbus-Server-Smoke; `Accepted` 2026-06-01 mit
+  M4-Welle-7-C1). Review-Folge
   [`031`](../done/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-
   Fehler-Taxonomie und bewusste Smoke-Abgrenzung
@@ -172,16 +188,16 @@
   final — inline Node-ID-Schema, Async-Bridge via
   `OpcuaLoopThread` (erstes Repo-Pattern dieser Art),
   8-Datatype-Set, Polling-Read + Direct-Write, in-process
-  `asyncua.Server`-Smoke; `Accepted` geplant mit
-  M4-Welle-7-Closure). **0034 `Accepted`** (M4-Welle-5a
+  `asyncua.Server`-Smoke; `Accepted` 2026-06-01 mit
+  M4-Welle-7-C1). **0034 `Accepted`** (M4-Welle-5a
   DNP3-Adapter-Profile mit Decisions D-a/D-b/D-c/D-d/D-e
   alle final — inline Point-Schema mit
   Group/Variation-Allowlist `{(1,1),(1,2),(30,1),(30,5)}`,
   zwei-Library-Setup `nfm-dnp3` produktiv +
   `dnp3-outstation` dev-only, direkt-sync wie Modbus,
   Class-0-Integrity-Poll + filter-by-index, write-Pfad
-  Welle-5b-Anti-Scope; `Accepted` geplant mit M4-Welle-7-
-  Closure). **0035 `Accepted`** (M4-Welle-5b IEC-61850-
+  Welle-5b-Anti-Scope; `Accepted` 2026-06-01 mit
+  M4-Welle-7-C1). **0035 `Accepted`** (M4-Welle-5b IEC-61850-
   Adapter-Profile mit Decisions I-a/I-b/I-c/I-d/I-e/I-f
   alle final — inline LN/CDC-Schema mit FC-Allow-List
   `{MX,ST,SP,CF,DC}` und Datatype-Allow-List
@@ -194,10 +210,28 @@
   Inkompat), **NEU Decision I-f Lizenz-Boundary** GPLv3-
   Isolation auf `protocol_iec61850/*` per SPDX-Header
   (erstmaliger Repo-Praezedenzfall fuer GPL-isolierte Sub-
-  Module in einem sonst MIT-Projekt); `Accepted` geplant
-  mit M4-Welle-7-Closure).
-- **Tests:** 1584 Unit + 35 Integration passed + 4 skipped
-  (Stand nach M4-Welle-6b-Closure; +441 Unit-Tests ggue.
+  Module in einem sonst MIT-Projekt); `Accepted` 2026-06-01
+  mit M4-Welle-7-C1). **M5-ADRs:** **0036 `Provisional`**
+  (Pre-M5-Welle-0 UI-Stack-Choice — FastAPI + HTMX + Jinja2
+  + Chart.js; Maintainer-Decision in M5-Welle-0); **0037
+  `Provisional`** (M5-Welle-1 HTTP-API-Surface-Pattern;
+  Decision API-3 verwirft `UICommandPort`-Slot
+  `GG-AR-PORT-DRG-002` zugunsten direkter REST+WS-Nutzung);
+  **0038 `Provisional`** (M5-Welle-3 TelemetryStreamPort);
+  **0039 `Provisional`** (M5-Welle-4a Run-Control +
+  RunStatus-Tracking); **0040 `Provisional`** (M5-Welle-4b
+  Alarm-Aggregation + AlarmStreamPort). `Accepted` geplant
+  mit M5-Welle-7-Closure.
+- **Tests:** 1696 Unit + 51 Integration passed + 4 skipped
+  (Stand nach M5-Welle-4b-Closure inkl. Review-Folge; +112
+  Unit ggue. M4-Welle-6b: +16 Welle 1 HTTP-API + +10 Welle 2
+  UI-Foundation + +16 Welle 3 Live-Telemetry + +24 Welle 4a
+  Replay-Controls + +31 Welle 4b Alarm-Aggregation + +15
+  Welle-4b-Review-Folge. +16 Integration: +2 Welle 1 +
+  +2 Welle 2 + +6 Welle 3 + +1 Welle 4a + +1 Welle 4b. M4-
+  Closure-Snapshot ist die Basis-Linie: 1584 Unit + 35
+  passed + 4 skipped Integration nach M4-Welle-6b; +441 Unit
+  ggue.
   M3-Closure [+23 Welle 1 + +50 Welle 2 + +95 Welle 3 +
   +8 Review-Folge 031 + +81 Welle 4 fuer OPC-UA + +6
   Slice-032 fuer Loop-Thread-Lifecycle/Marshal-Pfad/
@@ -219,11 +253,12 @@
   `_pyiec61850.so`-SWIG-Layer; Welle-6b-Reaktivierungs-
   Probe steht aus]).
 - **Build:** `make gates` cache-frei gruen ohne Override
-  (9 A-1-Gates). `make fullbuild` aktuell rot wegen 4 neuer
-  HIGH-CVEs in Debian-13-Base (`CVE-2026-40356` in krb5-Paketen,
-  Fix `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
-  M3-Welle-7-`c61ab0d`, **nicht durch M4-Welle-3-Code verursacht**;
-  Base-Image-Bump in separatem Stack.
+  (10 A-1-Gates inkl. `spdx-check` aus M4-Welle-6b).
+  `make fullbuild` aktuell rot wegen 4 neuer HIGH-CVEs in
+  Debian-13-Base (`CVE-2026-40356` in krb5-Paketen, Fix
+  `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
+  M3-Welle-7-`c61ab0d`, **nicht durch M4- oder M5-Code
+  verursacht**; Base-Image-Bump in separatem Stack.
 - **Trigger-006-Re-Eval (M4-Welle-3-C3, 2026-05-30):**
   positiv. `mypy --strict-bytes` laeuft cache-frei gruen gegen
   `src/grid_gym/adapters/driven/protocol_modbus/` ohne
@@ -232,11 +267,14 @@
   sind pymodbus-API-spezifisch, kein bytes-Bezug). Trigger
   ist aktivierungs-reif; Aktivierung selbst ist Folge-Slice
   (`[tool.mypy] strict_bytes = true` plus Sweep-Pruefung).
-- **Contracts:** 19 A-1 (7 lint-imports + 12 `tools/arch_check.py`
-  inkl. `AC-OTLP-ADAPTER-NO-TIME` und `AC-TICK-LOOP-PRIVATE-
-  RESUME-ERRORS`); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
+- **Contracts:** 20 A-1 (7 lint-imports + 13 `tools/arch_check.py`
+  inkl. `AC-OTLP-ADAPTER-NO-TIME`, `AC-TICK-LOOP-PRIVATE-
+  RESUME-ERRORS` und NEU `AC-IEC61850-GPL-BOUNDARY` aus
+  M4-Welle-6b); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
   weiter via `tools/arch_check.py:1089` (Regression-Schutz in
-  Welle-1-C2 verifiziert, in Welle 2 + 3 produktiv bestaetigt).
+  Welle-1-C2 verifiziert, in Welle 2 + 3 produktiv bestaetigt;
+  Welle-6b-C3 erweitert den Filter um Cross-Adapter-Helper
+  `_protocol_*.py` per Slice-034-F13-Folge).
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md), [Architektur](../../../../spec/architecture.md)
 
@@ -258,9 +296,12 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan wird mit
-M5-Welle-0-Start eroeffnet. (M4 ist abgeschlossen, siehe
-[`done/M4-results.md`](../done/M4-results.md).)
+Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
+[`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
+eroeffnet; Welle 0..4b abgeschlossen, **Welle 5 (Demo-
+Pipeline) `In Progress` seit 2026-06-02** mit Slice-Doc
+[`M5-welle-5.md`](M5-welle-5.md). (M4 ist abgeschlossen,
+siehe [`done/M4-results.md`](../done/M4-results.md).)
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
 ([`done/M2-devices.md`](../done/M2-devices.md)) inkl. Welle-7-Closure
@@ -655,6 +696,38 @@ effort `/code-review` deckte 15 Findings auf — alle in
 einer Folge-Lieferung adressiert ohne ADR-Aenderung
 (rein Bug-Fixes + Forward-Defense; siehe `M5-welle-4b.md
 §10`). 1681 → 1696 Unit-Tests (+15).
+
+**Welle 5 (Demo-Pipeline + Scenario-Loader-Wiring) `In
+Progress`** — eroeffnet 2026-06-02 mit Pre-C0a `a030c0e`
+(Self-Close-Move `M5-welle-4b.md → done/`, rename-only) +
+Pre-C0b `45335eb` (Cross-Doc-Refs-Sync nach Move, 5 Files) +
+C0 `155c421` (Slice-Doc
+[`M5-welle-5.md`](M5-welle-5.md) + Decisions 5/6/18 final +
+Sub-Slicing-Risk-Verifikation — Single-Slice ohne
+Splittung). Welle 5 ist die **Demo-Welle** in M5: erfuellt
+`GG-DEMO-001..005 + 008` (6 MUSS) plus `GG-DEMO-007` (1
+SOLLTE eng inkludiert: RuleBasedAgent im kanonischen Demo-
+YAML ohne Agent-UI). Lieferziel: (1) kanonisches Demo-YAML
+unter `deploy/scenarios/demo.yaml` mit 5 MVP-Devices + 1
+LoadProfile + 1 LoadEvent + 1 RuleBasedAgent + `seed=42`-
+Determinismus; (2) `make demo`-Pflicht-Target mit
+`docker compose up` + Healthcheck-Wait + UI unter
+`http://localhost:8000` in unter 30s; (3) Lifespan-Demo-
+Pfad-Erweiterung in `_demo_setup.py` ueber
+`GRID_GYM_DEMO_SCENARIO_PATH`-Env (Default-Pfad
+unveraendert fuer Welle-4a/4b-Integration-Tests); (4)
+`python -m grid_gym demo`-Sekundaer-Surface mit
+`__main__.py`-Entry-Point; (5) `docs/user/demo.md`
+Abnahmereihenfolge fuer `GG-DEMO-008`; (6) Integration-
+Smoke-Test `test_m5_welle_5_demo_smoke.py` ohne Container.
+**Anti-Scope:** keine Multi-Run-Driver-Registry
+(`_DemoTickLoopDriverAlreadyConfiguredError` aus Welle-4b-
+Fix #13 schuetzt Single-Run), kein Snapshot-Resume in Demo
+(Welle-6+/M6-Material), `GG-DEMO-006` Fault-Injection
+deferiert auf Welle 6 (`GG-UI-007`-Form-Substanz-
+Kopplung), keine neue Compose-Topologie (Decision 18),
+kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
+**Naechster Schritt:** C1 → C2 → C3.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).
