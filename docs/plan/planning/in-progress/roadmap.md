@@ -623,14 +623,33 @@ Tests (+24); 49 → 50 Integration (+1). Lastenheft-
 Akzeptanz `GG-UI-004` + Replay-Restcompletion-Anteil
 `GG-API-001` produktiv. 10/10 A-1-Gates gruen. **Welle-
 4-Subdivision** (4a/4b; Pattern analog M4-Welle-5a/5b und
-M4-Welle-6a/6b): Welle 4b (Alarme: Aggregation +
-AlarmStreamPort + Alarm-Tabelle) in Pre-C0a `d1b0eb7` +
-Pre-C0b `e325307` + C0 (siehe
-[`M5-welle-4b.md`](M5-welle-4b.md)); NEU ADR 0040 geplant
-mit **3 Decisions 15/16/17** (Schema+Mapper / TickLoop-
-Aggregation / AlarmStreamPort+History-Endpoint —
-Welle-4b-C0-Pre-Research erweiterte den Welle-4a-Era-
-Plan von 2 auf 3 Decisions).
+M4-Welle-6a/6b) komplett abgeschlossen 2026-06-02.
+
+**Welle 4b (Alarm-Aggregation + AlarmStreamPort + Alarm-
+Tabelle-UI) abgeschlossen 2026-06-02** mit Pre-C0a
+`d1b0eb7` (Self-Close-Move) + Pre-C0b `e325307` (Cross-
+Doc-Refs-Sync) + C0 `08b5ba7` (Slice-Doc mit 3 Decisions
+15/16/17 + Retro-Sync der Welle-4a-Era-2→3-Decision-
+Forward-Pointer in 3 Docs) + C1 `850cf85` (NEU ADR 0040
+`Proposed`) + C2 `b7ac7b3` (NEU `Alarm`-Domain-Type mit
+9-Feld-Schema per `spec/architecture.md §Alarm` + Mapper-
+Familie in `core/simulation/alarm_mappers.py` mit Union-
+typed `alarm_from_power_device_alarm` konsolidiert + NEU
+`TickResult.emitted_alarms`-Feld + TickLoop-Drain-Hook
+mit `alarm_id_source`-Kwarg + NEU `AlarmStreamPort` +
+NEU `InMemoryAlarmStream` mit Drop-Oldest-Backpressure +
+NEU `AlarmHistoryBuffer`-Ring-Buffer (N=200) + NEU REST-
+`/alarms-history`-Endpoint + NEU WS-`/alarms-stream`-
+Endpoint + NEU UI-Page mit 6-Spalten-Tabelle + HTMX-
+Hydration + WS-Live-Update + NEU `_alarm_setup.py`-
+Komposition-Root + DemoTickLoopDriver-Erweiterung; 31
+neue Unit + 1 Integration-Test) + C3 (dieser Commit;
+ADR 0040 `Proposed → Provisional` + 4 C2-Realization-
+Notes). 1650 → 1681 Unit-Tests (+31); 50 → 51 Integration
+(+1). Lastenheft-Akzeptanz `GG-UI-005` produktiv;
+ADR-0014-§6-Forward-Pointer („AlarmSinkPort kommt mit
+M3") Driving-Side-Anteil produktiv aufgeloest (Postgres-
+Persistenz bleibt M3-Welle-6c). 10/10 A-1-Gates gruen.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

@@ -378,60 +378,71 @@ Override **erfuellt** (10/10 A-1-Gates; 1650 unit + 50
 integration Tests passed). **GG-UI-004 + GG-API-001-
 Replay-Restcompletion produktiv.**
 
-#### Welle 4b — Alarme (In Progress 2026-06-02)
+#### Welle 4b — Alarme (Done 2026-06-02)
 
-**Status:** In Progress 2026-06-02. Erfuellt `GG-UI-005`
+**Status:** Done 2026-06-02. Erfuellt `GG-UI-005`
 (Alarm-Visualisierung) und schliesst die Welle-2-Review-
 M-3-Forward-Pointer-Erbschaft aus
 [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)
 §6 („AlarmSinkPort kommt mit M3"; M3 ohne Sink
-geschlossen; Welle 4b liefert Driving-Port + History-
-Snapshot, Postgres-Persistenz bleibt M3-Welle-6c).
-Welle-Slice-Begleit-Doc
-[`M5-welle-4b.md`](M5-welle-4b.md). Welle-4b-C0-Pre-
-Research (siehe Slice-Doc §0) deckte 3 distinkte
-Architektur-Concerns auf (Schema+Mapper / Aggregation /
-Surface); die ursprueglich angekuendigten 2 Decisions
-wurden auf 3 erweitert.
+geschlossen). Welle-Slice-Begleit-Doc
+[`M5-welle-4b.md`](M5-welle-4b.md). Liefer-Hashes:
+Pre-C0a `d1b0eb7` + Pre-C0b `e325307` + C0 `08b5ba7`
+(Slice-Doc + Decisions 15/16/17 + Retro-Sync) + C1
+`850cf85` (NEU ADR 0040 `Proposed`) + C2 `b7ac7b3`
+(Code) + C3 (dieser Commit; ADR 0040 → `Provisional`).
 
-- [ ] **NEU Decision 15 (Unified `Alarm`-Domain-Schema +
-  Mapper-Familie)** — kanonisches 9-Feld-Schema per
+- [x] **Decision 15 (Unified `Alarm`-Domain-Schema +
+  Mapper-Familie)** final in **NEU ADR 0040** —
+  kanonisches 9-Feld-Schema per
   [`../../../../spec/architecture.md §Alarm`](../../../../spec/architecture.md)
-  (`alarm_id`/`run_id`/`simulation_time_ms`/`target`/
-  `code`/`severity`/`message`/`status`/`fault_id?`); 5
-  typisierte Mapper-Funktionen aus device-spezifischen
-  Raw-Events (`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/
-  `GridConnectionAlarm`/`SmartMeterAlarm`) auf Unified-
-  Form. Device-Alarm-Klassen bleiben unveraendert
-  (keine 41+-Test-Migration). `AlarmStatus` nur
-  `"active"` (Lifecycle-Erweiterung Welle 6+/M6).
-- [ ] **NEU Decision 16 (TickLoop-Alarm-Aggregation
-  via `TickResult.emitted_alarms`)** — TickLoop drainst
-  alle Device-Alarms am Tick-Ende, mapped sie auf
-  Unified-`Alarm`-Tupel und ergaenzt `TickResult` um ein
-  neues `emitted_alarms: tuple[Alarm, ...] = ()`-Feld
-  (parallel zu `emitted_telemetry`; Backward-Compat).
-  Deterministisch in Device-Konstruktor-Reihenfolge;
-  `alarm_id_source: Callable[[], str] | None = None`-
+  + Mapper-Familie in
+  `core/simulation/alarm_mappers.py` (C2-Realization-
+  Note 2: ausgelagert wegen AC-PORTS-NO-OUT) mit 3
+  public functions (Power-Mapper Union-typed
+  konsolidiert per C2-Realization-Note 3; SmartMeter-
+  Mapper separat; dispatch_alarm_mapper als Routing-
+  Entry-Point). Device-Alarm-Klassen bleiben
+  unveraendert.
+- [x] **Decision 16 (TickLoop-Alarm-Aggregation via
+  `TickResult.emitted_alarms`)** final in **NEU ADR
+  0040** — TickLoop drainst alle Device-Alarms am
+  Tick-Ende, mapped sie auf Unified-`Alarm`-Tupel und
+  ergaenzt `TickResult` um ein neues `emitted_alarms:
+  tuple[Alarm, ...] = ()`-Feld; deterministisch in
+  Device-Konstruktor-Reihenfolge; `alarm_id_source`-
   Konstruktor-Param fuer testbare UUIDs.
-- [ ] **NEU Decision 17 (AlarmStreamPort-Surface +
-  `GET /runs/{id}/alarms`-History-Endpoint)** — NEU
-  `AlarmStreamPort` analog `TelemetryStreamPort`
+- [x] **Decision 17 (AlarmStreamPort-Surface + REST-
+  History + WS-Live)** final in **NEU ADR 0040** —
+  NEU `AlarmStreamPort` analog `TelemetryStreamPort`
   (ADR 0038) + asyncio-Pub/Sub-`InMemoryAlarmStream`-
   Adapter + adapter-interner `AlarmHistoryBuffer`-Ring-
-  Buffer (N=200). UI nutzt `GET /alarms` fuer Initial-
-  Hydration + `WS /alarms-stream` fuer Live-Updates
-  (Best-of-both gegen Tab-Reload-Resilience).
-- [ ] **NEU ADR 0040** (Alarm-Aggregation +
+  Buffer (N=200). UI nutzt `GET /alarms-history`
+  (C2-Realization-Note 1: Pfad-Anpassung wegen FastAPI-
+  Routenkonflikt) fuer Initial-Hydration + `WS /alarms-
+  stream` fuer Live-Updates.
+- [x] **NEU ADR 0040** (Alarm-Aggregation +
   AlarmStreamPort) mit Decisions 15/16/17.
-- [ ] **Alarme-Tabelle** unter `/runs/{id}/alarms`:
+- [x] **Alarme-Tabelle** unter `/runs/{id}/alarms`:
   6-Spalten-Layout (Zeit/Ziel/Schweregrad/Code/
   Nachricht/Status) mit HTMX-Hydration via
-  `hx-get="/runs/{id}/alarms"` + Live-Updates via
-  `hx-ext="ws" ws-connect="/runs/{id}/alarms-stream"`.
-- [ ] **Unit-Tests** (~25-28 neue) + Integration-Test
+  `hx-get="/runs/{id}/alarms-history"` + Live-Updates
+  via `hx-ext="ws" ws-connect="/runs/{id}/alarms-stream"`.
+- [x] **Unit-Tests** (31 neue) + Integration-Test
   `test_m5_welle_4b_alarms_smoke.py`.
-- [ ] **C3 Doc-Sync**.
+- [x] **C3 Doc-Sync** — Status/DoD-Sync + ADR 0040
+  → `Provisional` + Top-Level-Doku-Sync (8 Docs) +
+  4 C2-Realization-Notes verankert.
+
+**Welle-4b-Gate:** `make gates` cache-frei gruen ohne
+Override **erfuellt** (10/10 A-1-Gates; 1681 unit + 51
+integration Tests passed). **GG-UI-005 produktiv;
+ADR-0014-§6-Forward-Pointer (Driving-Side-Anteil)
+aufgeloest.**
+
+**Welle-4-Subdivision (4a + 4b) komplett abgeschlossen
+2026-06-02.** Welle 5 (Demo-Pipeline + Scenario-Loader)
+ist der naechste aktive Slice.
 
 **Welle-4b-Gate:** `make gates` cache-frei gruen ohne
 Override.

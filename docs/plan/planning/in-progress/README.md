@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-4b.md`](M5-welle-4b.md) | Welle-4b-Slice-Doc (M5 Alarm-Aggregation + AlarmStreamPort + Alarm-Tabelle-UI: NEU Unified `Alarm`-Domain-Schema + 5 Mapper-Funktionen aus device-Alarms + TickLoop-Drain-Hook + `TickResult.emitted_alarms` + NEU `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + `GET /runs/{id}/alarms` + `WS /alarms-stream` + UI-Tabelle mit 6 Pflicht-Spalten per `GG-UI-005`; loest ADR-0014-§6-Forward-Pointer „AlarmSinkPort kommt mit M3") — **In Progress 2026-06-02**; zweiter Sub-Slice der Welle-4-Subdivision (4a/4b). |
+| [`M5-welle-4b.md`](M5-welle-4b.md) | Welle-4b-Slice-Doc (M5 Alarm-Aggregation + AlarmStreamPort + Alarm-Tabelle-UI: NEU Unified `Alarm`-Domain-Schema + Mapper-Familie in `core/simulation/alarm_mappers.py` + TickLoop-Drain-Hook + `TickResult.emitted_alarms` + NEU `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + `GET /runs/{id}/alarms-history` + `WS /alarms-stream` + UI-Tabelle mit 6 Pflicht-Spalten per `GG-UI-005`; loest ADR-0014-§6-Forward-Pointer „AlarmSinkPort kommt mit M3") — **Done 2026-06-02**; zweiter Sub-Slice der Welle-4-Subdivision (4a/4b); bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-5-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -214,36 +214,47 @@ ausgelagert (AC-NO-GOD-UTILS); `AC-ADAPTER-PURE`-
 `ignore_imports`-Block verankert ADR-0039-§2.2-Option-C-
 Begruendung (kein separater `ControlPort`-Slot).
 
-**Aktive Welle:** M5-Welle-4b (Alarme: Aggregation +
-AlarmStreamPort + Alarm-Tabelle-UI) mit Pre-C0a `d1b0eb7`
-(Self-Close-Move `M5-welle-4a.md → done/`, rename-only) +
-Pre-C0b `e325307` (Cross-Doc-Refs-Sync nach Move) + C0
-(dieser Commit; Slice-Doc-Anlage
-[`M5-welle-4b.md`](M5-welle-4b.md) + **NEU Decisions
-15/16/17** final fixiert aus C0-Pre-Research + Retro-Sync
-der Welle-4a-Era-2→3-Decision-Forward-Pointer in
-`M5-ui-demo.md §3 Welle 4b`, `roadmap.md §3 M5`, ADR
-0039 §3.2); naechster Schritt C1 (NEU ADR 0040
-`Proposed`). Welle-4b-C0-Pre-Research deckte 3 distinkte
-Architektur-Concerns auf (Schema+Mapper / Aggregation /
-Surface) statt der Welle-4a-Era-angekuendigten 2 Decisions.
-Welle-4b-Lieferziel: NEU `Alarm`-Domain-Type mit
-kanonischem 9-Feld-Schema per
-[`../../../../spec/architecture.md §Alarm`](../../../../spec/architecture.md)
-+ 5 typisierte Mapper-Funktionen aus device-spezifischen
-Raw-Events (`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/
-`GridConnectionAlarm`/`SmartMeterAlarm`; device-Klassen
-bleiben unveraendert) + TickLoop-Drain-Hook am Tick-Ende
-+ `TickResult.emitted_alarms` (parallel zu
-`emitted_telemetry`) + NEU `AlarmStreamPort` (Pattern
-analog `TelemetryStreamPort` aus Welle 3, ADR 0038) +
-NEU REST-Endpoint `GET /runs/{id}/alarms` (History-
-Hydration) + NEU WS-Endpoint `WS /runs/{id}/alarms-
-stream` (Live-Updates) + NEU UI-Tabelle unter `/runs/
-{id}/alarms` mit 6 Pflicht-Spalten per `GG-UI-005`-
-Akzeptanz + NEU ADR 0040 mit Decisions 15/16/17.
-Welle 5 (Demo-Pipeline + Scenario-Loader) folgt nach
-Welle-4b-Self-Close-Move; Welle-4-Container damit
-komplett bei Welle-4b-C3-Closure. Erfuellt `GG-UI-005`
-+ loest ADR-0014-§6-Forward-Pointer-Erbschaft
-„AlarmSinkPort kommt mit M3" (M3 ohne Sink geschlossen).
+**Welle 4b (M5-Welle-4b Alarm-Aggregation + AlarmStreamPort
++ Alarm-Tabelle-UI) abgeschlossen 2026-06-02** mit Pre-C0a
+`d1b0eb7` (Self-Close-Move `M5-welle-4a.md → done/`,
+rename-only) + Pre-C0b `e325307` (Cross-Doc-Refs-Sync nach
+Move) + C0 `08b5ba7` (Slice-Doc mit Decisions 15/16/17
+final + Retro-Sync der Welle-4a-Era-2→3-Decision-Forward-
+Pointer in `M5-ui-demo.md §3 Welle 4b`, `roadmap.md §3
+M5`, ADR 0039 §3.2) + C1 `850cf85` (NEU ADR 0040
+`Proposed`) + C2 `b7ac7b3` (NEU `Alarm`-Domain-Type +
+Mapper-Familie in `core/simulation/alarm_mappers.py` +
+`TickResult.emitted_alarms`-Feld + TickLoop-Drain-Hook +
+NEU `AlarmStreamPort` + NEU `InMemoryAlarmStream` + NEU
+`AlarmHistoryBuffer` + NEU REST-`/alarms-history` + NEU
+WS-`/alarms-stream` + NEU UI-Page mit 6-Spalten-Tabelle +
+NEU `_alarm_setup.py`-Komposition-Root + 31 neue Unit +
+1 Integration-Test) + C3 (dieser Commit; ADR 0040
+`Proposed → Provisional` + Status/DoD-Sync + Top-Level-
+Doku-Sync + 4 C2-Realization-Notes verankert). 1650 → 1681
+Unit-Tests (+31); 50 → 51 Integration (+1). Lastenheft-
+Akzeptanz `GG-UI-005` produktiv; ADR-0014-§6-Forward-
+Pointer („AlarmSinkPort kommt mit M3") Driving-Side-Anteil
+produktiv aufgeloest (Postgres-Persistenz bleibt M3-Welle-
+6c). 10/10 A-1-Gates gruen cache-frei ohne Override.
+**C2-Realization-Notes** (Welle-4b-C3-Sync, siehe Slice-Doc
+§0 + ADR 0040 §0): REST-Pfad `/alarms-history` statt
+`/alarms` (FastAPI-Routenkonflikt mit UI-Page); Mapper-
+Familie in `core/simulation/alarm_mappers.py` statt
+`core/domain/alarm.py` (AC-PORTS-NO-OUT); Power-Mapper-
+Konsolidierung 4→1 zu `alarm_from_power_device_alarm`
+Union-typed (AC-NO-GOD-UTILS); `_alarm_setup.py`-
+Auslagerung aus `app.py` (AC-NO-GOD-UTILS).
+
+**Welle-4-Subdivision (4a + 4b) komplett abgeschlossen
+2026-06-02.**
+
+**Aktive Welle:** M5-Welle-5 (Demo-Pipeline + Scenario-
+Loader) als naechster aktiver Schritt nach Welle-4b-
+Self-Close-Move. Lieferziel per `M5-ui-demo.md §3 Welle 5`:
+Decision 5 (Demo-Szenario-Inhalt) + Decision 6 (Demo-
+Reproduzierbarkeits-Pflicht: `make demo`-Target) + NEU
+Demo-Compose-Erweiterung + NEU Demo-Szenario-YAML + NEU
+`docs/user/demo.md` + optional Fault-Injection +
+RuleBasedAgent-Setup. Erfuellt `GG-DEMO-001..005 + 008`
+(6 MUSS).

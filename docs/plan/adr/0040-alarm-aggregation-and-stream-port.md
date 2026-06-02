@@ -1,21 +1,78 @@
 # ADR 0040 — Alarm-Aggregation + AlarmStreamPort (M5 Welle 4b)
 
-**Status:** Proposed — angelegt 2026-06-02 mit M5-Welle-4b-
-C1 (dieser Commit). Die ADR verankert die Alarm-Architektur
-fuer die Welle-4b-Lieferung und schliesst drei NEUE
-Decisions (15/16/17) aus dem Welle-4b-Slice-Doc. Sie
-definiert eine **NEU Domain-Type-Familie** (Unified `Alarm`
-+ `AlarmSeverity` + `AlarmStatus`-Literals + 5 typisierte
-Mapper-Funktionen aus den device-spezifischen Alarm-
-Familien) plus eine **TickLoop-interne Aggregations-
+**Status:** Provisional — angelegt 2026-06-02 mit M5-Welle-4b-
+C1 `850cf85` (Status `Proposed`); auf `Provisional` gezogen
+2026-06-02 mit M5-Welle-4b-C3 (dieser Commit) nach C2-Code-
+Merge `b7ac7b3` (NEU `Alarm`-Domain-Type + NEU Mapper-
+Familie unter `core/simulation/alarm_mappers.py` mit
+Union-typed `alarm_from_power_device_alarm` + dispatch-
+Entry-Point + `TickResult.emitted_alarms`-Feld + TickLoop-
+Drain-Hook + NEU `AlarmStreamPort` + NEU
+`InMemoryAlarmStream` + NEU `AlarmHistoryBuffer` + NEU
+REST-`/alarms-history`-Endpoint + NEU WS-`/alarms-stream`-
+Endpoint + NEU UI-Page mit 6-Spalten-Tabelle + NEU
+`_alarm_setup.py`-Komposition-Root + DemoTickLoopDriver-
+Erweiterung; +31 Unit + 1 Integration-Test = 1681 unit +
+51 integration Tests gruen; 10/10 A-1-Gates ohne Override).
+Die ADR verankert die Alarm-Architektur fuer die Welle-4b-
+Lieferung und schliesst drei NEUE Decisions (15/16/17) aus
+dem Welle-4b-Slice-Doc. Sie definiert eine **NEU Domain-
+Type-Familie** (Unified `Alarm` + `AlarmSeverity` +
+`AlarmStatus`-Literals in `core/domain/alarm.py` pure +
+Mapper-Familie in `core/simulation/alarm_mappers.py`
+ausgelagert) plus eine **TickLoop-interne Aggregations-
 Sequenz** (`TickResult.emitted_alarms`-Feld + Drain-Hook
 am Tick-Ende) plus eine **NEU Driving-Port-Surface**
 (`AlarmStreamPort` analog `TelemetryStreamPort` aus
 ADR 0038) plus einen **REST-History-Endpoint** + **WS-
 Live-Endpoint** mit adapter-internem Ring-Buffer.
 
-**Datum:** 2026-06-02 (M5-Welle-4b-C1 dieser Commit; C3
-zieht auf `Provisional` nach C2-Code-Merge)
+**C2-Realization-Notes (Welle-4b-C3-Sync):**
+
+C2-Code-Merge `b7ac7b3` zog gegenueber dem C1-ADR-Original
+vier produktive Anpassungen ein. Die Decisions 15/16/17
+bleiben semantisch unveraendert; die Realization-Notes
+sind Layering- und API-Surface-Anpassungen:
+
+1. **REST-Pfad `/runs/{id}/alarms-history`** statt
+   ADR-Original `/runs/{id}/alarms`. FastAPI-Routenkonflikt:
+   UI-Page belegt `GET /runs/{id}/alarms` (HTML); REST-
+   Endpoint kann nicht auf demselben Path+Method registrieren.
+   UI behaelt Navigations-Convention (`/alarms`); REST
+   bekommt Sub-Pfad. HTMX-`hx-get` in der UI ruft den
+   Sub-Pfad. §2.3 Pseudocode + §6 Folge-Pflichten-Liste
+   updated.
+2. **Mapper-Modul-Lokation** `core/simulation/alarm_mappers.py`
+   statt ADR-Original `core/domain/alarm.py`. Per
+   `AC-PORTS-NO-OUT`-Contract darf `hexagon.ports` nicht
+   transitiv auf `hexagon.core.devices` zugreifen —
+   `core/domain/alarm.py` wird von `hexagon/ports/driving/
+   alarm_stream.py` ueber den `Alarm`-Type konsumiert, also
+   muessen die Mapper-Funktionen (die `core/devices/*/
+   commands.py` importieren) in einem anderen Modul leben.
+   `core/domain/alarm.py` bleibt pure (nur `Alarm` +
+   `AlarmSeverity` + `AlarmStatus`). §2.1 + §3.5 + §6
+   updated.
+3. **Power-Mapper-Konsolidierung** 4→1: die 4 strukturell
+   identischen Power-Device-Mapper sind zu einem Union-
+   typed `alarm_from_power_device_alarm(PowerDeviceAlarm
+   = BatteryAlarm | PvAlarm | LoadAlarm | GridConnectionAlarm,
+   ...)` konsolidiert. Per `AC-NO-GOD-UTILS max=5 public
+   functions` pro Modul; SmartMeter-Mapper bleibt separat
+   (abweichendes 4-Feld-Schema mit `reason: str`).
+   `alarm_mappers.py` hat 3 public functions. §2.1 +
+   Mapping-Heuristik-Tabelle in §2.1 unangetastet
+   (Heuristik ist 1:1 erhalten — nur die Code-Struktur ist
+   konsolidiert).
+4. **`_alarm_setup.py`-Auslagerung** aus `app.py` wegen
+   `AC-NO-GOD-UTILS max=5 public top-level functions` —
+   `app.py` war bereits bei 5. NEU `configure_alarm_stream`
+   lebt unter NEU `_alarm_setup.py` (Pattern analog
+   Welle-4a-`_demo_setup.py`). §6 Folge-Pflichten-Liste
+   updated.
+
+**Datum:** 2026-06-02 (M5-Welle-4b-C1 `850cf85` → C3 dieser
+Commit)
 
 **Bezug:**
 
@@ -519,28 +576,40 @@ Quality-Marker-Pattern: `severity-info` (neutral),
 
 ### 3.1 Welle-4b-Folge
 
-- **Code-Merge (C2):** NEU `Alarm`-Domain-Type +
-  Literals + 5 Mapper in `hexagon/core/domain/alarm.py`;
-  `TickResult.emitted_alarms`-Feld; TickLoop-Drain-Hook
-  + `alarm_id_source`-Kwarg; NEU `AlarmStreamPort` unter
-  `hexagon/ports/driving/`; NEU `InMemoryAlarmStream` +
-  `AlarmHistoryBuffer` unter `adapters/driven/alarm_
-  stream_inmemory/`; NEU REST-Endpoint
-  `GET /runs/{run_id}/alarms` + NEU WS-Endpoint
-  `WS /runs/{run_id}/alarms-stream` + NEU UI-Page +
-  Templates + CSS + Tests (~25-28 Unit + 1 Integration).
+- **Code-Merge (C2 `b7ac7b3`):** NEU `Alarm`-Domain-Type +
+  Literals in `hexagon/core/domain/alarm.py` (pure Domain);
+  NEU Mapper-Familie in `hexagon/core/simulation/alarm_
+  mappers.py` (C2-Realization-Note 2: ausgelagert wegen
+  AC-PORTS-NO-OUT; 3 public functions per C2-Realization-
+  Note 3 — `alarm_from_power_device_alarm` Union-typed +
+  `alarm_from_smart_meter_alarm` + `dispatch_alarm_mapper`);
+  NEU `TickResult.emitted_alarms`-Feld; TickLoop-Drain-
+  Hook + `alarm_id_source`-Kwarg; NEU `AlarmStreamPort`
+  unter `hexagon/ports/driving/`; NEU
+  `InMemoryAlarmStream` + `AlarmHistoryBuffer` unter
+  `adapters/driven/alarm_stream_inmemory/`; NEU REST-
+  Endpoint `GET /runs/{run_id}/alarms-history`
+  (C2-Realization-Note 1: Pfad-Anpassung) + NEU WS-
+  Endpoint `WS /runs/{run_id}/alarms-stream`; NEU
+  `_alarm_setup.py`-Komposition-Root (C2-Realization-
+  Note 4); NEU UI-Page + Templates + CSS + Navigation-
+  Link + 31 Unit + 1 Integration-Test (1681 unit + 51
+  integration; 10/10 A-1-Gates gruen).
 - **HTTP-API-Erweiterung:** OpenAPI-Schema waechst um
-  `/runs/{run_id}/alarms`-Path (REST) + `AlarmsResponse`-
-  Schema. WS bewusst nicht im Schema (analog ADR 0037
-  §3-Klarstellung + ADR 0038-Pattern).
-- **UI-Page:** NEU `GET /runs/{run_id}/control`-
-  Naviga­tion-Link auf Alarms-Page; 6-Spalten-Tabelle
-  per `GG-UI-005`; 3 `severity-*`-CSS-Klassen.
-- **Lifespan-Wiring:** `_demo_setup.py` bekommt eine
-  optionale `BatteryDevice`-Instanz im Demo-TickLoop +
-  `DemoTickLoopDriver` publisht `TickResult.emitted_
-  alarms` auf den Stream + History-Buffer.
-- **Tests:** ~25-28 neue Unit + 1 neue Integration
+  `/runs/{run_id}/alarms-history`-Path (REST) +
+  `AlarmsResponse`-Schema. WS bewusst nicht im Schema
+  (analog ADR 0037 §3-Klarstellung + ADR 0038-Pattern).
+- **UI-Page:** NEU `/runs/{run_id}/alarms`-Page mit
+  6-Spalten-Tabelle per `GG-UI-005` + 3 `severity-*`-
+  CSS-Klassen; HTMX-`hx-get` auf REST-`/alarms-history`-
+  Endpoint fuer Initial-Hydration + `hx-ext="ws"` auf
+  `/alarms-stream` fuer Live-Updates.
+- **Lifespan-Wiring:** `_demo_setup.py` reicht
+  `alarm_stream` + `alarm_history_buffer` aus
+  `app.state` an den `DemoTickLoopDriver` weiter;
+  Driver publisht `TickResult.emitted_alarms` nach
+  jedem Tick.
+- **Tests:** 31 neue Unit + 1 neue Integration
   (`test_m5_welle_4b_alarms_smoke.py`).
 
 ### 3.2 Welle-5-Folge
@@ -672,65 +741,94 @@ Quality-Marker-Pattern: `severity-info` (neutral),
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-06-02 mit M5-Welle-4b-C1 (dieser
-  Commit). Decisions 15/16/17 alle final entschieden im
-  ADR-Body; Vorlaeufer-Probes Welle-3 `5349923`
-  (Asyncio-Pub/Sub) + Welle-4a `f1284c4`+`9c188e0`
-  (HTMX-Polling + REST-Hydration) decken Surface-
-  Mechanik bereits ab.
-- **Provisional** — geplant mit M5-Welle-4b-C3 nach
-  C2-Code-Merge. Pattern analog ADR 0030..0039
-  (`Proposed → Provisional` mit C3 nach C2-
-  Implementation-Merge; C2 belegt die Decisions
-  produktiv im Code).
+- **Proposed** — 2026-06-02 mit M5-Welle-4b-C1 `850cf85`.
+  Decisions 15/16/17 alle final entschieden im ADR-Body;
+  Vorlaeufer-Probes Welle-3 `5349923` (Asyncio-Pub/Sub) +
+  Welle-4a `f1284c4`+`9c188e0` (HTMX-Polling + REST-
+  Hydration) decken Surface-Mechanik bereits ab.
+- **Provisional** — 2026-06-02 mit M5-Welle-4b-C3 (dieser
+  Commit) nach C2-Code-Merge `b7ac7b3`. Pattern analog
+  ADR 0030..0039 (`Proposed → Provisional` mit C3 nach
+  C2-Implementation-Merge; C2 belegt die Decisions
+  produktiv im Code). C2-Realization-Notes (siehe oben
+  unter „Bezug") dokumentieren vier Layering- und
+  API-Surface-Anpassungen — Decisions semantisch
+  unveraendert.
 - **Accepted** — geplant mit M5-Welle-7-Closure (analog
   ADR 0030..0039).
 
 ## 6. Folge-Pflichten
 
-- **M5-Welle-4b-C2-Code-Merge** belegt Decisions
-  15/16/17 produktiv:
+- **M5-Welle-4b-C2-Code-Merge `b7ac7b3`** belegt
+  Decisions 15/16/17 produktiv:
   - `src/grid_gym/hexagon/core/domain/alarm.py` — NEU
     `Alarm` + `AlarmSeverity` + `AlarmStatus` Literals
-    + 5 Mapper-Funktionen.
+    (pure Domain; C2-Realization-Note 2: Mapper raus).
+  - `src/grid_gym/hexagon/core/simulation/alarm_mappers.py`
+    — NEU Mapper-Familie + `dispatch_alarm_mapper` +
+    `UnknownRawAlarmTypeError` (C2-Realization-Note 2:
+    ausgelagert aus `core/domain/alarm.py` wegen
+    AC-PORTS-NO-OUT). 3 public functions
+    (`alarm_from_power_device_alarm` Union-typed
+    konsolidiert aus 4 strukturell identischen Power-
+    Device-Familien per C2-Realization-Note 3;
+    `alarm_from_smart_meter_alarm` separat;
+    `dispatch_alarm_mapper` als Routing-Entry-Point).
   - `src/grid_gym/hexagon/core/domain/tick_result.py`
     — NEU `emitted_alarms: tuple[Alarm, ...] = ()`-
     Feld.
   - `src/grid_gym/hexagon/core/simulation/tick_loop.py`
     — NEU `alarm_id_source: Callable[[], str] | None
-    = None`-Konstruktor-Kwarg +
-    `_attach_alarm_id_source`-Helper + Drain+Map+
-    Aggregate-Hook im `_run_tick_body` vor `return`.
+    = None`-Konstruktor-Kwarg + NEU
+    `_attach_alarm_id_source`-Helper + NEU
+    `_attach_welle_4_state`-Bundle (PLR0915 max=30
+    im `__init__`) + NEU `_drain_and_map_device_alarms`-
+    Helper-Methode (PLR0915 max=30 im `_run_tick_body`).
   - `src/grid_gym/hexagon/ports/driving/alarm_stream.py`
     — NEU `AlarmStreamPort`-Protocol.
   - `src/grid_gym/adapters/driven/alarm_stream_inmemory/`
     — NEU Paket mit `__init__.py` + `stream.py` (Pub/
-    Sub) + `history_buffer.py` (Ring-Buffer).
+    Sub mit `asyncio.Queue(maxsize=64)`) +
+    `history_buffer.py` (Ring-Buffer N=200).
   - `src/grid_gym/adapters/driving/http_api/_dependencies.py`
     — NEU `get_alarm_stream` +
     `get_alarm_history_buffer`-FastAPI-Dependencies +
-    Not-Configured-Errors.
+    `_AlarmStreamNotConfiguredError` +
+    `_AlarmHistoryBufferNotConfiguredError`.
   - `src/grid_gym/adapters/driving/http_api/_runs_router.py`
-    — NEU `GET /runs/{run_id}/alarms`-Endpoint.
+    — NEU `GET /runs/{run_id}/alarms-history`-Endpoint
+    (C2-Realization-Note 1: Pfad-Anpassung wegen
+    FastAPI-Routenkonflikt mit UI-Page).
   - `src/grid_gym/adapters/driving/http_api/_runs_action_router.py`
     — NEU `WS /runs/{run_id}/alarms-stream`-Endpoint.
   - `src/grid_gym/adapters/driving/http_api/_schemas.py`
     — NEU `AlarmDto` + `AlarmsResponse`-Pydantic-
     Models.
+  - `src/grid_gym/adapters/driving/http_api/_alarm_setup.py`
+    — NEU `configure_alarm_stream`-Komposition-Root
+    (C2-Realization-Note 4: ausgelagert aus `app.py`
+    wegen `AC-NO-GOD-UTILS max=5`; Pattern analog
+    Welle-4a-`_demo_setup.py`).
+  - `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
+    — DemoTickLoopDriver-Erweiterung um optionale
+    `alarm_stream`/`alarm_history_buffer`-Kwargs +
+    NEU `_publish_emitted_alarms`-Helper (AC-ADAPTER-
+    LIGHTWEIGHT-Cyclomatic-Drop).
   - `src/grid_gym/adapters/driving/http_api/_demo_setup.py`
-    — Demo-TickLoop bekommt optionale Battery-Device-
-    Instanz + Driver publisht
-    `TickResult.emitted_alarms`.
-  - `src/grid_gym/adapters/driving/http_api/app.py`
-    — NEU `configure_alarm_stream` + Lifespan-Wiring.
+    — liest `alarm_stream` + `alarm_history_buffer`
+    aus `app.state` und reicht sie an den
+    `DemoTickLoopDriver` weiter.
   - `src/grid_gym/adapters/driving/ui/routes.py` +
     `templates/alarms.html` +
     `_alarms_content.html` +
     `static/style.css` (3 `severity-*`-CSS-Klassen) +
-    `templates/navigation.html` — NEU UI-Page.
+    `templates/navigation.html` — NEU UI-Page mit
+    HTMX-Hydration via REST-`/alarms-history` +
+    WS-Live-Update.
 - **M5-Welle-4b-C3 (dieser Commit)** zieht diese ADR
-  auf `Provisional` mit C2-Code-Merge-Beleg + Status/
-  DoD-Sync + Top-Level-Doku-Sync.
+  auf `Provisional` mit C2-Code-Merge-Beleg +
+  C2-Realization-Notes (4 Anpassungen dokumentiert) +
+  Status/DoD-Sync + Top-Level-Doku-Sync.
 - **M5-Welle-5** (Demo-Pipeline + Scenario-Loader)
   liefert echte Scenario-Devices, die produktive
   Alarms emittieren; ADR 0040 bleibt unveraendert
