@@ -267,10 +267,13 @@
   sind pymodbus-API-spezifisch, kein bytes-Bezug). Trigger
   ist aktivierungs-reif; Aktivierung selbst ist Folge-Slice
   (`[tool.mypy] strict_bytes = true` plus Sweep-Pruefung).
-- **Contracts:** 20 A-1 (7 lint-imports + 13 `tools/arch_check.py`
+- **Contracts:** 20 A-1 (6 lint-imports + 14 `tools/arch_check.py`
   inkl. `AC-OTLP-ADAPTER-NO-TIME`, `AC-TICK-LOOP-PRIVATE-
   RESUME-ERRORS` und NEU `AC-IEC61850-GPL-BOUNDARY` aus
-  M4-Welle-6b); `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
+  M4-Welle-6b; `AC-NO-IO-MOD` ist in beiden Tools enforced
+  und zaehlt als ein logischer Contract — kanonische
+  Konvention per [`../done/M4-results.md`](../done/M4-results.md));
+  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
   weiter via `tools/arch_check.py:1089` (Regression-Schutz in
   Welle-1-C2 verifiziert, in Welle 2 + 3 produktiv bestaetigt;
   Welle-6b-C3 erweitert den Filter um Cross-Adapter-Helper

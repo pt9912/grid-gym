@@ -112,7 +112,7 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-01**:
+Stand **2026-06-02**:
 
 - **M1 — Tick-Loop-Spine** · `Done`
 - **M2 — Geraetemodelle** · `Done`
@@ -166,8 +166,13 @@ Stand **2026-06-01**:
     UI-Page + ADR 0040; loest ADR-0014-§6-Forward-Pointer
     „AlarmSinkPort kommt mit M3" Driving-Side-Anteil) ·
     `Done`
-  - Welle 5 — Demo-Pipeline (Scenario-Loader +
-    `make demo`) · `Pending` (naechster aktiver Slice)
+  - Welle 5 — Demo-Pipeline (kanonisches Demo-YAML +
+    `make demo` + `python -m grid_gym demo` +
+    Lifespan-Demo-Pfad via `GRID_GYM_DEMO_SCENARIO_PATH`
+    + `docs/user/demo.md` + Integration-Smoke) ·
+    `In Progress` 2026-06-02 (Slice-Doc `155c421` —
+    `GG-DEMO-001..005+008` + `GG-DEMO-007` eng
+    inkludiert; `GG-DEMO-006` deferiert auf Welle 6)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
 **Testbilanz (Stand 2026-06-02 nach M5-Welle-4b-Closure + Review-Folge):**
@@ -278,9 +283,9 @@ Der MVP umfasst laut Lastenheft mindestens:
 │       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
 │       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
 ├── tests/
-│   ├── unit/                    ← pytest-Unit-Tests (1462 Stand 2026-05-31, M4-Welle-5a-Closure)
-│   ├── integration/             ← Compose-basierte Integration-Tests (35 Tests; OTLP- + MQTT- + Modbus- + OPC-UA- + DNP3-Smoke inkl.)
-│   └── unit/_arch_check_*       ← Architektur-Tests (7 lint-imports + 12 custom AC-Checks = 19 A-1)
+│   ├── unit/                    ← pytest-Unit-Tests (1696 Stand 2026-06-02, M5-Welle-4b-Closure + Review-Folge)
+│   ├── integration/             ← Compose-basierte Integration-Tests (51 passed + 4 skipped; OTLP- + MQTT- + Modbus- + OPC-UA- + DNP3- + IEC-61850- (Mock-only-Fallback) + M5-HTTP-API- + UI-Foundation- + Live-Telemetry- + Replay-Controls- + Alarms-Smokes inkl.)
+│   └── unit/_arch_check_*       ← Architektur-Tests (6 lint-imports + 14 custom AC-Checks = 20 A-1; AC-NO-IO-MOD in beiden Tools enforced, einmal gezaehlt)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)
 │   ├── check_noqa.py            ← `# noqa`-Verbots-Gate (9. A-1-Gate, Slice 027)
@@ -292,7 +297,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 │   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
-    │   ├── adr/                 ← Architecture Decision Records (0001..0031)
+    │   ├── adr/                 ← Architecture Decision Records (0001..0040)
     │   └── planning/
     │       ├── open/            ← Trigger-Watch, offene Folgearbeiten
     │       ├── next/            ← geplant, aber noch nicht aktiv
