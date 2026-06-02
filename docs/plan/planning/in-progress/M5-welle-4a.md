@@ -1,10 +1,16 @@
 # Welle 4a — M5 Replay-Controls + TickLoop-Wiring
 
-**Status:** In Progress 2026-06-02 — Pre-C0-Stack:
+**Status:** Done 2026-06-02 — Liefer-Stack:
 Pre-C0a `4517f51` (Self-Close-Move M5-welle-3.md → done/,
 rename-only) + Pre-C0b `79c9712` (Cross-Doc-Refs-Sync,
-4 Files) + C0 (dieser Commit; Slice-Doc + Decisions
-12/13/14).
+4 Files) + C0 `3544dee` (Slice-Doc + Decisions 12/13/14) +
+C1 `f1284c4` (NEU ADR 0039 `Proposed`) + C2 `9c188e0`
+(RunStatus + RunRepository-Extension + TickLoop-Control-
+Surface + 2 Endpoint-Wirings + TickLoopRegistry + UI-Page
++ Demo-Driver; +24 Unit + 1 Integration = 1650 unit + 50
+integration; 10/10 A-1-Gates gruen) + C3 (dieser Commit;
+ADR 0039 `Proposed → Provisional` + Status/DoD-Sync +
+Top-Level-Doku-Sync).
 
 Welle 4a ist die **Replay-Controls-Welle** in M5 und der
 erste Sub-Slice einer **scope-induzierten Welle-4-
@@ -60,14 +66,70 @@ decken die FastAPI-/HTMX-Mechanik bereits ab.
 - **NEU Decision 12 (RunStatus-Tracking-Architektur)** —
   RunRepository-Extension mit `update_status` +
   `get_status`; NEU `RunStatus`-Literal-Alias
-  (`idle`/`running`/`paused`/`stopped`/`ended`).
+  (`pending`/`running`/`paused`/`stopped`/`completed`;
+  Welle-1-`RunState`-Vokabel-aligned — C2-Realization-
+  Anpassung gegenueber dem Slice-Doc-Original
+  `idle`/`ended`).
 - **NEU Decision 13 (TickLoop-Control-Surface)** —
-  Cooperative state-machine mit `request_pause`/
-  `request_resume`/`request_stop`; Guard vor `tick()`.
+  Cooperative state-machine mit konsolidierter
+  `request(action)`-Methode (C2-Realization-Anpassung
+  statt der Slice-Doc-Original-3-`request_pause`/
+  `request_resume`/`request_stop` aus
+  `PLR0904 max-public-methods=12`-Bestand); Guard vor
+  `tick()`.
 - **NEU Decision 14 (Replay-Status-Update-Pattern)** —
   HTMX-Polling auf `GET /runs/{id}/status` (1s-Trigger);
   WS-Surface bleibt fuer High-Frequency-Telemetry
   reserviert.
+
+**C2-Realization-Notes (Welle-4a-C3-Sync):**
+
+C2-Code-Merge `9c188e0` zog gegenueber dem C0-Slice-Doc-
+Original vier produktive Anpassungen ein, die alle in
+C3 (dieser Commit) dokumentiert sind:
+
+1. **RunStatus-Vokabel** auf `pending`/`completed`
+   umgestellt (statt `idle`/`ended`), weil Welle-1 das
+   `RunState`-Literal in `_schemas.py` bereits mit
+   diesen Werten ausgeliefert hat. Domain owns the
+   type — `_schemas.py:RunState` ist jetzt direkter
+   Re-Export von `domain.run.RunStatus`. ADR 0039 §2.1
+   in C3 nachgezogen.
+2. **`request(action)`-Konsolidierung** statt 3
+   separater `request_pause`/`_resume`/`_stop`-
+   Methoden, weil TickLoop bereits 11 Public-Methoden/
+   Properties hat und die Welle-4a-Decision-13-
+   Erweiterung um 3 weitere die `PLR0904
+   max-public-methods=12`-Schwelle riss. Eine einzige
+   `request(action: ControlAction)`-Methode dispatched
+   ueber eine Modul-Konstante `_CONTROL_ACTION_TRANSITIONS`
+   (pro Action `(target_state, allowed_from)`-Paarung).
+   PLR0904-Per-File-Ignore in `pyproject.toml` aus
+   demselben Grund ergaenzt (Pattern analog
+   `devices/*/model.py` + `grid_model/bilanz.py`).
+3. **`configure_demo_run`-Auslagerung** aus `app.py`
+   nach NEU `_demo_setup.py`, weil
+   `AC-NO-GOD-UTILS max=5 public top-level functions`
+   pro Modul gilt. `app.py` exportiert nur die drei
+   `configure_*`-Injection-Punkte + `get_health` +
+   `post_runs` (genau 5); `_demo_setup.py` kombiniert
+   die drei zu einem Demo-Run-Bundle inkl. inline-
+   `_DemoSimulationClock`.
+4. **`AC-ADAPTER-PURE`-`ignore_imports`** in
+   `pyproject.toml` verankert die Komposition-Root-
+   Brueck-Erlaubnis fuer `_demo_setup.py` +
+   `_tick_loop_registry.py` + `_tick_loop_driver.py`
+   → `hexagon.core.simulation.{tick_loop,scheduler}`.
+   ADR 0039 §2.2 Option C verwarf einen separaten
+   `ControlPort` (YAGNI: Control-Flag triviales Enum-
+   Triple, keine Substituierbarkeit noetig); die
+   Hexagonal-Architektur-Ausnahme ist damit produktiv
+   verankert. Andere Adapter-Pakete duerfen
+   `simulation` weiterhin nicht touchen.
+
+Substanziell hat sich keine Decision veraendert — die
+Realization-Notes sind Nomenklatur- und Architektur-
+Layering-Anpassungen, keine semantischen Bruchstellen.
 
 ---
 
@@ -642,67 +704,103 @@ Status-/DoD-Sync nach C2-Code-Merge:
   Single-Run-Demo-TickLoop durch Multi-Run-Scenario-
   Setup; `TickLoopRegistry` wird produktiv.
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (mit C3 abgehakt)
 
-- [ ] **NEU ADR 0039 `Proposed → Provisional`** mit
-  C2-Code-Merge-Beleg.
-- [ ] **NEU `RunStatus`-Literal-Alias** + Re-Export.
-- [ ] **RunRepositoryPort-Extension** mit
+- [x] **NEU ADR 0039 `Proposed → Provisional`** mit
+  C2-Code-Merge-Beleg `9c188e0`.
+- [x] **NEU `RunStatus`-Literal-Alias** in
+  `hexagon/core/domain/run.py` mit 5 Welle-1-aligned-
+  Werten (`pending`/`running`/`paused`/`stopped`/
+  `completed`); `_schemas.py:RunState` als
+  Re-Export-Alias.
+- [x] **RunRepositoryPort-Extension** mit
   `update_status` + `get_status`; InMemory-Helper
-  aktualisiert; Welle-1-Methoden unveraendert.
-- [ ] **TickLoop-Control-Surface** produktiv:
-  `_control_state` + 3 `request_*`-Methoden + Tick-
-  Guard + `TickResult.paused()` + NEU Errors.
-- [ ] **NEU `GET /runs/{id}/status`** produktiv mit
-  `RunStatusResponse`-Schema + OpenAPI-Eintrag.
-- [ ] **POST `/runs/{id}/control`-Wiring** produktiv;
+  + `PostgresRunRepository`-Stub
+  (`NotImplementedError` mit M3-Welle-6c-Forward-
+  Pointer) aktualisiert; Welle-1-Methoden
+  (`save`/`get_by_id`/`exists`) unveraendert.
+- [x] **TickLoop-Control-Surface** produktiv:
+  `_control_state` + `control_state`-Property +
+  konsolidierte `request(action: ControlAction)`-
+  Methode (Konsolidierung statt 3 `request_*` aus
+  `PLR0904`-Bestand; siehe C2-Realization-Notes §0)
+  + Pre-Tick-Guard + `TickResult.paused_result(...)`-
+  Classmethod + NEU `TickLoopStoppedError` +
+  `TickLoopInvalidTransitionError`.
+- [x] **`GET /runs/{id}/status`** produktiv mit
+  `RunStatusResponse`-Schema + OpenAPI-Eintrag
+  (Welle-1-Stub aus `_runs_router.py` produktiv
+  ausgewirt — kein NEU-Endpoint, sondern Wiring auf
+  RunRepository + TickLoopRegistry).
+- [x] **POST `/runs/{id}/control`-Wiring** produktiv;
   Welle-1-Stub-Verhalten abgeschafft; 409 bei Invalid-
-  Transition.
-- [ ] **NEU `TickLoopRegistry`-Adapter** unter
-  `adapters/driving/http_api/`.
-- [ ] **NEU UI-Page `GET /runs/{run_id}/control`** mit
-  3 HTMX-POST-Buttons + 1s-Status-Polling-Block.
-- [ ] **RunStatus-CSS-Klassen** (5 Zustaende) in
-  `style.css`.
-- [ ] **Lifespan-Demo-TickLoop** + Tick-Driver-Task
-  produktiv mit sauberem Shutdown-Cleanup.
-- [ ] **Unit-Tests** (~12 neue) — Domain + Control-
-  State-Machine + Status-Endpoint + Control-Wiring +
-  UI-Route.
-- [ ] **Integration-Test**
+  Transition; 503 bei `tick_loop_not_active`.
+- [x] **NEU `TickLoopRegistry`-Adapter** unter
+  `adapters/driving/http_api/_tick_loop_registry.py`.
+- [x] **NEU UI-Page `GET /runs/{run_id}/control`** mit
+  3 HTMX-POST-Buttons + 1s-Status-Polling-Block +
+  Inline-JSON-Encoding-Helper (HTMX-default form-encodes;
+  Welle-1-`ControlRequest` erwartet JSON).
+- [x] **RunStatus-CSS-Klassen** (5 Zustaende) in
+  `style.css` (Color-Schema pro State + Button-Styling).
+- [x] **Lifespan-Demo-TickLoop** + Tick-Driver-Task
+  produktiv via NEU `_demo_setup.py:configure_demo_run`
+  (Auslagerung aus `app.py` wegen
+  `AC-NO-GOD-UTILS max=5 public top-level functions`;
+  siehe C2-Realization-Notes §0); sauberes Shutdown-
+  Task-Cancel.
+- [x] **Unit-Tests** (24 neue) — Domain (`test_run_
+  status.py` 2) + TickLoop-Control-State-Machine
+  (`test_tick_loop_control.py` 13) + `/status`-Wiring
+  (`test_runs_router.py` +2) + `/control`-Wiring
+  (`test_runs_action_router.py` +3) + UI-Route
+  (`test_control_route.py` 3) + Welle-1-Smoke
+  Anpassungen.
+- [x] **Integration-Test**
   `test_m5_welle_4a_replay_controls_smoke.py` produktiv
-  (End-to-End-Workflow).
-- [ ] **`make test-unit`** gruen (~1638 passed).
-- [ ] **`make test-integration`** gruen (50 passed).
-- [ ] **`make arch-check`** 20/20 KEPT (keine neuen
-  Ports — Repository-Extension; keine neuen Adapter-
-  Forbidden-Items).
-- [ ] **`make typecheck`** mit `strict_bytes` gruen.
-- [ ] **`make gates`** cache-frei gruen ohne Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make openapi-validate`** cache-frei gruen.
-- [ ] **`GG-UI-004` (Replay-Controls)** erfuellt durch
+  (End-to-End-Workflow: Run + TickLoop + pause/resume/
+  stop ueber HTTP + Status-Polling + UI-Page-Render).
+- [x] **`make test-unit`** gruen: **1650 passed** (+24
+  vs Welle-3-Endstand 1626).
+- [x] **`make test-integration`** gruen: **50 passed**
+  + 4 skipped (+1 vs Welle-3-Endstand 49).
+- [x] **`make arch-check`** 20/20 KEPT (keine neuen
+  Ports — Repository-Extension; NEU `AC-ADAPTER-PURE`-
+  `ignore_imports`-Block fuer `_demo_setup.py` +
+  `_tick_loop_registry.py` + `_tick_loop_driver.py` →
+  `hexagon.core.simulation.{tick_loop,scheduler}` als
+  Komposition-Root-Brueck-Erlaubnis verankert ADR 0039
+  §2.2 Option C produktiv).
+- [x] **`make typecheck`** mit `strict_bytes` gruen
+  (kein `# type: ignore`).
+- [x] **`make gates`** cache-frei gruen ohne Override
+  (10/10 A-1-Gates).
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make openapi-validate`** cache-frei gruen
+  (`/control`-UI-Route mit `tags=["ui"]`).
+- [x] **`GG-UI-004` (Replay-Controls)** erfuellt durch
   Control-Page + Pause/Resume/Stop-Buttons +
-  Status-Anzeige.
-- [ ] **`GG-API-001` (Replay-Restcompletion)** erfuellt
-  durch `POST /control`-Wiring + `GET /status`-
-  Endpoint.
-- [ ] **C3-Top-Level-Doku-Sync** produktiv: 6 Docs auf
+  Status-Anzeige (Sim-Zeit + Tick-Counter + Run-State).
+- [x] **`GG-API-001` (Replay-Restcompletion)** erfuellt
+  durch `POST /control`-Wiring + `GET /status`-Wiring.
+- [x] **C3-Top-Level-Doku-Sync** produktiv: 8 Docs auf
   Welle-4a-Closure-Stand (`M5-welle-4a.md §0/§9`,
-  `M5-ui-demo.md §3 Welle 4a` (refactored aus Welle 4),
+  `M5-ui-demo.md §3 Welle 4 → Welle 4a + Welle 4b`,
   `in-progress/README.md`, `in-progress/roadmap.md §3
   M5`, `README.md` + `README.de.md`-Test-Counts + ADR
   0039 + `docs/plan/adr/README.md`).
 
 **Anti-Scope-Verifikation (Welle 4a NICHT):**
 
-- [ ] Keine Alarm-Aggregation / AlarmStreamPort / Alarm-
+- [x] Keine Alarm-Aggregation / AlarmStreamPort / Alarm-
   Tabelle-UI (Welle 4b).
-- [ ] Kein Scenario-Loader / Multi-Run-Registry (Welle 5).
-- [ ] Keine Postgres-Status-Persistenz (M3-Welle-6c).
-- [ ] Kein Fault-Injection-UI (Welle 6).
-- [ ] Kein OTel-Span-Wrap fuer Control-Actions (M6).
-- [ ] Keine `noqa`-Marker.
+- [x] Kein Scenario-Loader / Multi-Run-Registry (Welle 5).
+- [x] Keine Postgres-Status-Persistenz (M3-Welle-6c;
+  `PostgresRunRepository.update_status`/`get_status`
+  werfen `NotImplementedError` mit Forward-Pointer).
+- [x] Kein Fault-Injection-UI (Welle 6).
+- [x] Kein OTel-Span-Wrap fuer Control-Actions (M6).
+- [x] Keine `noqa`-Marker.
 
 ---
 

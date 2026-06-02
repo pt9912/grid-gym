@@ -597,11 +597,35 @@ Probe-Datei) + C1 `9f3c00d` (NEU ADR 0038 `Proposed`)
 `DemoTelemetryGenerator` als Stub-Producer + WS-
 Subscribe-Pattern + Dashboard-UI mit Chart.js-Time-
 Series + 6-Zustands-Quality-Marker; 16 neue Unit + 2
-Integration-Tests) + C3 (dieser Commit; ADR 0038
-`Proposed → Provisional`). 1610 → 1626 Unit-Tests
-(+16); 43 → 49 Integration (+6 inkl. 4 Probe-Tests).
-Lastenheft-Akzeptanz `GG-API-002` + `GG-UI-002/003/009`
-produktiv. 10/10 A-1-Gates gruen.
+Integration-Tests) + C3 `0e0473d` (ADR 0038 `Proposed →
+Provisional`). 1610 → 1626 Unit-Tests (+16); 43 → 49
+Integration (+6 inkl. 4 Probe-Tests). Lastenheft-Akzeptanz
+`GG-API-002` + `GG-UI-002/003/009` produktiv. 10/10 A-1-
+Gates gruen.
+
+**Welle 4a (Replay-Controls + TickLoop-Wiring) abgeschlossen
+2026-06-02** mit Pre-C0a `4517f51` (Self-Close-Move) +
+Pre-C0b `79c9712` (Cross-Doc-Refs-Sync) + C0 `3544dee`
+(Slice-Doc mit Decisions 12/13/14 final + Welle-4-
+Subdivision-Motivation) + C1 `f1284c4` (NEU ADR 0039
+`Proposed`) + C2 `9c188e0` (RunStatus-Literal-Alias +
+RunRepository-Extension `update_status`/`get_status` +
+TickLoop-Control-Surface mit konsolidierter
+`request(action)`-Methode + Pre-Tick-Guard +
+`TickResult.paused_result`-Factory + 2 Endpoint-Wirings
+auf existierenden Welle-1-Stubs `GET /status` +
+`POST /control` + NEU `TickLoopRegistry`-Adapter + NEU
+`DemoTickLoopDriver` + NEU UI-Page `GET /control` mit
+HTMX-Polling + NEU `_demo_setup.py`-Komposition-Root;
+24 neue Unit + 1 Integration-Test) + C3 (dieser Commit;
+ADR 0039 `Proposed → Provisional`). 1626 → 1650 Unit-
+Tests (+24); 49 → 50 Integration (+1). Lastenheft-
+Akzeptanz `GG-UI-004` + Replay-Restcompletion-Anteil
+`GG-API-001` produktiv. 10/10 A-1-Gates gruen. **Welle-
+4-Subdivision** (4a/4b; Pattern analog M4-Welle-5a/5b und
+M4-Welle-6a/6b): Welle 4b (Alarme: Aggregation +
+AlarmStreamPort + Alarm-Tabelle) folgt nach 4a-Self-Close-
+Move; NEU ADR 0040 geplant mit Decisions 15/16.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

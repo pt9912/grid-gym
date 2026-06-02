@@ -37,13 +37,13 @@ make help
 make gates              # 10 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # Unit-Test-Suite (~1626 Tests, Stand 2026-06-01,
-                        # M5-Welle-3-Closure)
+make test-unit          # Unit-Test-Suite (~1650 Tests, Stand 2026-06-02,
+                        # M5-Welle-4a-Closure)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (49 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
+                        # (50 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
                         # Modbus-, OPC-UA-, DNP3-, IEC-61850-, M5-HTTP-API-,
-                        # M5-UI-Foundation- und M5-Live-Telemetry-Smokes
-                        # + Async-Pub/Sub-Probe)
+                        # M5-UI-Foundation-, M5-Live-Telemetry- und
+                        # M5-Replay-Controls-Smokes + Async-Pub/Sub-Probe)
 ```
 
 Beispiel-YAML-Szenarien liegen unter
@@ -152,12 +152,18 @@ Stand **2026-06-01**:
     `TelemetryStreamPort` + `InMemoryTelemetryStream` +
     WS-Subscribe + Chart.js-Time-Series + 6-Zustands-
     Quality-Marker + ADR 0038) · `Done`
-  - Welle 4 — Replay-Controls + Alarme · `Pending`
+  - Welle 4a — Replay-Controls + TickLoop-Wiring (NEU
+    `RunStatus` + RunRepository-Extension + TickLoop-
+    Control-Surface + `request(action)` + 2 Endpoint-
+    Wirings + `TickLoopRegistry` + `DemoTickLoopDriver` +
+    Control-UI + ADR 0039) · `Done`
+  - Welle 4b — Alarme (Aggregation + AlarmStreamPort +
+    Alarm-Tabelle; ADR 0040 geplant) · `Pending`
     (naechster aktiver Slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz (Stand 2026-06-01 nach M5-Welle-3-Closure):**
-~1626 Unit-Tests + 49 Integration-Tests passed + 4 skipped.
+**Testbilanz (Stand 2026-06-02 nach M5-Welle-4a-Closure):**
+~1650 Unit-Tests + 50 Integration-Tests passed + 4 skipped.
 Die 4 skipped Tests sind der **2c-Mock-only-Fallback** fuer
 den IEC-61850-In-Process-`IedServer`-Smoke (ADR 0035 §2.5;
 Trigger 009). Pro-Welle-Test-Inkremente + Begruendungen

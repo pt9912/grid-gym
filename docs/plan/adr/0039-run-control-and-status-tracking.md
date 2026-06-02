@@ -1,19 +1,27 @@
 # ADR 0039 — Run-Control + RunStatus-Tracking (M5 Welle 4a)
 
-**Status:** Proposed — angelegt 2026-06-02 mit M5-Welle-4a-
-C1 (dieser Commit). Die ADR verankert die Replay-Controls-
-Architektur fuer die `POST /runs/{id}/control`-Wiring-
-Welle und schliesst drei NEUE Decisions (12/13/14) aus dem
-Welle-4a-Slice-Doc. Sie definiert eine **Driven-Port-
-Extension** (`RunRepositoryPort.update_status` +
+**Status:** Provisional — angelegt 2026-06-02 mit M5-Welle-4a-
+C1 `f1284c4` (Status `Proposed`); auf `Provisional` gezogen
+2026-06-02 mit M5-Welle-4a-C3 (dieser Commit) nach C2-Code-
+Merge `9c188e0` (RunStatus-Literal-Alias + RunRepository-
+Extension + TickLoop-Control-Surface mit konsolidierter
+`request(action)`-Methode + 2 Endpoint-Wirings auf
+existierenden Welle-1-Stubs + NEU `TickLoopRegistry`-Adapter
++ NEU `DemoTickLoopDriver` + NEU UI-Page `GET /control` +
+NEU `_demo_setup.py`-Komposition-Root; +24 Unit + 1
+Integration = 1650 unit + 50 integration Tests gruen; 10/10
+A-1-Gates ohne Override). Die ADR verankert die Replay-
+Controls-Architektur fuer die `POST /runs/{id}/control`-
+Wiring-Welle und schliesst drei NEUE Decisions (12/13/14)
+aus dem Welle-4a-Slice-Doc. Sie definiert eine **Driven-
+Port-Extension** (`RunRepositoryPort.update_status` +
 `get_status`) plus eine **TickLoop-interne Cooperative-
-State-Machine** (`_control_state` + `request_pause`/
-`request_resume`/`request_stop` + Tick-Guard) plus ein
-**HTMX-Polling-Pattern** fuer den UI-Status-Block
-(`GET /runs/{id}/status` mit 1s-Trigger).
+State-Machine** (`_control_state` + `request(action)` +
+Pre-Tick-Guard) plus ein **HTMX-Polling-Pattern** fuer den
+UI-Status-Block (`GET /runs/{id}/status` mit 1s-Trigger).
 
-**Datum:** 2026-06-02 (M5-Welle-4a-C1 dieser Commit; C3
-zieht auf `Provisional` nach C2-Code-Merge)
+**Datum:** 2026-06-02 (M5-Welle-4a-C1 `f1284c4` → C3 dieser
+Commit)
 
 **Bezug:**
 
@@ -71,7 +79,8 @@ zieht auf `Provisional` nach C2-Code-Merge)
   erweitert den Vertrag um `update_status` + `get_status`,
   symmetrisch zur Welle-1-`exists`-Extension).
 - [`../planning/in-progress/M5-welle-4a.md §3`](../planning/in-progress/M5-welle-4a.md)
-  (Welle-4a-Slice-Doc mit Decisions 12/13/14 final).
+  (Welle-4a-Slice-Doc mit Decisions 12/13/14 final +
+  C2-Realization-Notes).
 - **Vorbild-Probes** — kein eigener Welle-4a-Probe noetig,
   weil Cooperative-State-Machine + HTMX-Polling-Pattern
   bereits durch zwei Vorlaeufer-Probes server-side
@@ -79,6 +88,51 @@ zieht auf `Provisional` nach C2-Code-Merge)
   - Welle-1-Probe `9c20dad` (HTMX-FastAPI-Smoke: Server-
     Templates rendern, HTMX-Request-Header, WS-Push).
   - Welle-3-Probe `5349923` (Asyncio-Pub/Sub-Smoke).
+
+**C2-Realization-Notes (Welle-4a-C3-Sync):**
+
+C2-Code-Merge `9c188e0` zog gegenueber dem C1-ADR-Original
+vier produktive Anpassungen ein. Die Decisions 12/13/14
+bleiben semantisch unveraendert; die Realization-Notes
+sind Nomenklatur- und Architektur-Layering-Anpassungen:
+
+1. **RunStatus-Vokabel** auf
+   `pending`/`running`/`paused`/`stopped`/`completed`
+   umgestellt (statt `idle`/`ended`-Original). Welle-1
+   hat das `RunState`-Literal in `_schemas.py` mit
+   diesen Werten ausgeliefert; Domain owns the type —
+   `_schemas.py:RunState` ist Re-Export von
+   `domain.run.RunStatus`. Pseudo-Code in §2.1/§2.2
+   nutzt die finale Vokabel.
+2. **`request(action)`-Konsolidierung** statt 3
+   separater `request_pause`/`_resume`/`_stop`-Methoden:
+   `TickLoop` hatte bereits 11 Public-Methoden/Properties
+   (`PLR0904 max-public-methods=12`); 3 weitere haetten
+   die Schwelle gerissen. Eine einzige `request(action:
+   ControlAction)`-Methode dispatched ueber eine Modul-
+   Konstante `_CONTROL_ACTION_TRANSITIONS` (pro Action
+   `(target_state, allowed_from)`-Paarung). Decision-13-
+   Transition-Matrix bleibt identisch; nur die
+   Surface-Form ist anders. PLR0904-Per-File-Ignore in
+   `pyproject.toml` ergaenzt (Pattern analog
+   `devices/*/model.py` + `grid_model/bilanz.py`).
+3. **`configure_demo_run`-Auslagerung** aus `app.py`
+   nach NEU `_demo_setup.py` wegen
+   `AC-NO-GOD-UTILS max=5 public top-level functions`
+   pro Modul. `app.py` exportiert nur die drei
+   `configure_*`-Injection-Punkte + `get_health` +
+   `post_runs` (genau 5); `_demo_setup.py` kombiniert
+   die drei zu einem Demo-Run-Bundle inkl. inline-
+   `_DemoSimulationClock`-`ClockPort`-Impl.
+4. **`AC-ADAPTER-PURE`-`ignore_imports`** in
+   `pyproject.toml` verankert die Komposition-Root-
+   Brueck-Erlaubnis fuer `_demo_setup.py` +
+   `_tick_loop_registry.py` + `_tick_loop_driver.py` →
+   `hexagon.core.simulation.{tick_loop,scheduler}`. Die
+   §2.2-Option-C-Begruendung (kein `ControlPort`-Slot;
+   YAGNI) ist damit architektonisch verankert; andere
+   Adapter-Pakete duerfen `simulation` weiterhin nicht
+   touchen.
 
 ---
 
@@ -110,8 +164,8 @@ Drei Architektur-Concerns formen das Welle-4a-Pattern:
 
 - **Run-Lifecycle-State.** Ein Lauf hat einen Status
   jenseits seiner Reproduzierbarkeits-Metadaten
-  (Scenario-Hash, Seed, tick_ms). `idle` → `running` →
-  `paused` ↔ `running` → `stopped`/`ended`. Wo lebt
+  (Scenario-Hash, Seed, tick_ms). `pending` → `running` →
+  `paused` ↔ `running` → `stopped`/`completed`. Wo lebt
   dieser State?
 - **TickLoop-Control-Surface.** TickLoop ist seit M1
   synchron (`tick() -> TickResult`); kein interner
@@ -135,7 +189,7 @@ bleibt frozen.
 
 ```python
 RunStatus = Literal[
-    "idle", "running", "paused", "stopped", "ended"
+    "pending", "running", "paused", "stopped", "completed"
 ]
 
 
@@ -163,11 +217,11 @@ class RunRepositoryPort(Protocol):
 
 | State        | Bedeutung                                                                  |
 | ------------ | -------------------------------------------------------------------------- |
-| `idle`       | Run persistiert, aber Tick-Driver noch nicht gestartet (initial)          |
+| `pending`       | Run persistiert, aber Tick-Driver noch nicht gestartet (initial)          |
 | `running`    | Tick-Driver aktiv; `tick()` fortschreitet                                  |
 | `paused`     | Tick-Driver aktiv, aber Tick-Guard blockt; `_tick_count` bleibt           |
 | `stopped`    | Final-Terminierung durch Benutzer; kein Resume moeglich                    |
-| `ended`      | Final-Terminierung durch Tick-Loop-Ende oder Lifespan-Shutdown            |
+| `completed`      | Final-Terminierung durch Tick-Loop-Ende oder Lifespan-Shutdown            |
 
 **Begruendung gegen Alternativen:**
 
@@ -195,8 +249,8 @@ class RunRepositoryPort(Protocol):
 - `update_status` schreibt zuerst ins Repository, dann
   setzt der Caller (TickLoop oder Lifespan-Driver) das
   interne Cache-Feld. Bei `save()`-initialem Setup ist
-  der Default-Status `"idle"` (Welle-4a-Spec; das
-  Repository setzt `idle` automatisch waehrend
+  der Default-Status `"pending"` (Welle-4a-Spec; das
+  Repository setzt `pending` automatisch waehrend
   `save()`).
 - `get_status` ist ein direkter Repository-Read — die
   UI-Polling-Schleife (Decision 14) liest den State
@@ -225,22 +279,22 @@ class TickLoop:
         run_repository: RunRepositoryPort | None = None,
     ) -> None:
         # ...
-        self._control_state: RunStatus = "idle"
+        self._control_state: RunStatus = "pending"
         self._run_repository: RunRepositoryPort | None = run_repository
 
     def request_pause(self) -> None:
         """Setzt _control_state auf 'paused'.
-        Erlaubt aus 'running' oder 'idle'; sonst
+        Erlaubt aus 'running' oder 'pending'; sonst
         TickLoopInvalidTransitionError."""
 
     def request_resume(self) -> None:
         """Setzt _control_state auf 'running'.
-        Erlaubt aus 'paused' oder 'idle'; sonst
+        Erlaubt aus 'paused' oder 'pending'; sonst
         TickLoopInvalidTransitionError."""
 
     def request_stop(self) -> None:
         """Setzt _control_state auf 'stopped'.
-        Erlaubt aus 'idle', 'running' oder 'paused';
+        Erlaubt aus 'pending', 'running' oder 'paused';
         sonst TickLoopInvalidTransitionError."""
 
     def tick(self) -> TickResult:
@@ -250,12 +304,12 @@ class TickLoop:
                 tick_count=self._tick_count,
                 simulation_time_ms=self._tick_count * self._tick_ms,
             )
-        if self._control_state in ("stopped", "ended"):
+        if self._control_state in ("stopped", "completed"):
             raise TickLoopStoppedError(
                 run_id=self._run_id,
                 control_state=self._control_state,
             )
-        if self._control_state == "idle":
+        if self._control_state == "pending":
             # Erster Tick flippt automatisch nach 'running'
             self._set_control_state("running")
         # ... existierender Welle-6a-Tick-Body
@@ -263,13 +317,13 @@ class TickLoop:
 
 **State-Transitions-Matrix:**
 
-| Aus / Nach   | `idle` | `running` | `paused` | `stopped` | `ended` |
+| Aus / Nach   | `pending` | `running` | `paused` | `stopped` | `completed` |
 | ------------ | ------ | --------- | -------- | --------- | ------- |
-| `idle`       | —      | auto via `tick()` | `request_pause` | `request_stop` | (kein) |
+| `pending`       | —      | auto via `tick()` | `request_pause` | `request_stop` | (kein) |
 | `running`    | —      | —         | `request_pause` | `request_stop` | auto bei Tick-Loop-Ende |
 | `paused`     | —      | `request_resume` | —    | `request_stop` | (kein) |
 | `stopped`    | —      | (Invalid) | (Invalid) | (idempotent no-op) | (kein) |
-| `ended`      | —      | (Invalid) | (Invalid) | (Invalid) | (idempotent no-op) |
+| `completed`      | —      | (Invalid) | (Invalid) | (Invalid) | (idempotent no-op) |
 
 **Invalid-Transitions** werfen
 `TickLoopInvalidTransitionError(current_state, target_state,
@@ -403,19 +457,24 @@ def get_run_status(
 
 ### 3.1 Welle-4a-Folge
 
-- **Code-Merge (C2):** NEU `RunStatus`-Literal-Alias in
-  `hexagon/core/domain/run.py`; RunRepositoryPort um 2
-  Methoden erweitert; InMemoryRunRepository-Helper
-  aktualisiert; TickLoop um 3 `request_*`-Methoden +
-  Pre-Tick-Guard erweitert; NEU `TickResult.paused`-
-  Factory; NEU Errors `TickLoopStoppedError` +
+- **Code-Merge (C2 `9c188e0`):** NEU `RunStatus`-Literal-
+  Alias in `hexagon/core/domain/run.py`; RunRepositoryPort
+  um 2 Methoden erweitert; InMemoryRunRepository-Helper
+  + `PostgresRunRepository`-`NotImplementedError`-Stub
+  aktualisiert; TickLoop um konsolidierte `request(action)`-
+  Methode (statt 3 `request_*`-Wrappern; C2-Realization-
+  Note) + Pre-Tick-Guard erweitert; NEU `TickResult.
+  paused_result`-Classmethod-Factory; NEU Errors
+  `TickLoopStoppedError` +
   `TickLoopInvalidTransitionError` in
   `hexagon/core/errors.py`.
-- **HTTP-Adapter:** `POST /runs/{id}/control` ruft die
-  passende `request_*`-Methode am TickLoop (Lookup
-  ueber NEU `TickLoopRegistry`); Invalid-Transition
-  mapped auf 409. NEU `GET /runs/{id}/status`-Endpoint
-  liefert das `RunStatusResponse`-DTO.
+- **HTTP-Adapter:** `POST /runs/{id}/control` ruft
+  `tick_loop.request(request.action)` am TickLoop
+  (Lookup ueber NEU `TickLoopRegistry`); Invalid-
+  Transition mapped auf 409, TickLoop-not-active auf
+  503. Welle-1-`GET /runs/{id}/status`-Stub ausgewirt
+  auf RunRepository + TickLoopRegistry (kein NEU-
+  Endpoint, sondern Wiring).
 - **UI-Page:** NEU `GET /runs/{run_id}/control` rendert
   3 HTMX-POST-Buttons + Status-Polling-Block mit
   1s-Trigger; RunStatus-CSS-Klassen visualisieren den
@@ -423,7 +482,7 @@ def get_run_status(
   Pattern).
 - **Lifespan-Demo-Driver:** FastAPI-Lifespan erzeugt
   einen Single-Demo-Run + Tick-Driver-asyncio-Task; bei
-  Shutdown sauberes Task-Cancel + RunStatus → `ended`.
+  Shutdown sauberes Task-Cancel + RunStatus → `completed`.
 - **Tests:** ~12 neue Unit + 1 neue Integration; alle
   Welle-1-Tests fuer `control`-Stub auf produktives
   Wiring umgestellt (statt geloescht).
@@ -524,8 +583,8 @@ def get_run_status(
   `action: "start"`.** Decision API-1 (ADR 0037 §2.1)
   listet nur `pause`/`resume`/`stop`; ein expliziter
   `start` ist semantisch redundant zu `resume` aus
-  `idle`. Decision 13 bietet einen idempotenten
-  `request_resume`-Pfad aus `idle`.
+  `pending`. Decision 13 bietet einen idempotenten
+  `request_resume`-Pfad aus `pending`.
 - **`request_resume` von `stopped`-State.** Welle 4a
   behandelt `stopped` als terminal. `Resume` von einem
   gestoppten Run wuerde einen neuen Lauf bedeuten
@@ -534,46 +593,81 @@ def get_run_status(
 
 ## 5. Status-Pfad
 
-- **Proposed** — 2026-06-02 mit M5-Welle-4a-C1 (dieser
-  Commit). Decisions 12/13/14 alle final entschieden im
-  ADR-Body; Vorlaeufer-Probes Welle-1 `9c20dad` +
-  Welle-3 `5349923` decken HTMX/Asyncio-Mechanik bereits
-  ab.
-- **Provisional** — geplant mit M5-Welle-4a-C3 nach
-  C2-Code-Merge. Pattern analog ADR 0030..0038
-  (`Proposed → Provisional` mit C3 nach C2-Implementation-
-  Merge; C2 belegt die Decisions produktiv im Code).
+- **Proposed** — 2026-06-02 mit M5-Welle-4a-C1 `f1284c4`.
+  Decisions 12/13/14 alle final entschieden im ADR-Body;
+  Vorlaeufer-Probes Welle-1 `9c20dad` + Welle-3 `5349923`
+  decken HTMX/Asyncio-Mechanik bereits ab.
+- **Provisional** — 2026-06-02 mit M5-Welle-4a-C3 (dieser
+  Commit) nach C2-Code-Merge `9c188e0`. Pattern analog
+  ADR 0030..0038 (`Proposed → Provisional` mit C3 nach
+  C2-Implementation-Merge; C2 belegt die Decisions
+  produktiv im Code). C2-Realization-Notes (siehe oben
+  unter „Bezug") dokumentieren vier Nomenklatur-/
+  Architektur-Layering-Anpassungen — Decisions
+  semantisch unveraendert.
 - **Accepted** — geplant mit M5-Welle-7-Closure (analog
   ADR 0030..0038).
 
 ## 6. Folge-Pflichten
 
-- **M5-Welle-4a-C2-Code-Merge** belegt Decisions 12/13/14
-  produktiv:
+- **M5-Welle-4a-C2-Code-Merge `9c188e0`** belegt Decisions
+  12/13/14 produktiv:
   - `src/grid_gym/hexagon/core/domain/run.py` — NEU
-    `RunStatus`-Literal-Alias.
-  - `src/grid_gym/hexagon/ports/driven/run_repository.
-    py` — `RunRepositoryPort` um `update_status` +
+    `RunStatus`-Literal-Alias
+    (`pending`/`running`/`paused`/`stopped`/`completed`).
+  - `src/grid_gym/hexagon/ports/driven/run_repository.py`
+    — `RunRepositoryPort` um `update_status` +
     `get_status` erweitert.
   - `src/grid_gym/hexagon/core/simulation/tick_loop.py`
-    — `_control_state`-Feld + 3 `request_*`-Methoden
-    + Pre-Tick-Guard.
+    — `_control_state`-Feld + `control_state`-Property
+    + konsolidierte `request(action)`-Methode (statt 3
+    `request_*`-Wrappern; C2-Realization-Note §0) +
+    Modul-Konstante `_CONTROL_ACTION_TRANSITIONS` +
+    `_attach_control_state`-Helper + Pre-Tick-Guard.
+  - `src/grid_gym/hexagon/core/domain/tick_result.py`
+    — NEU `paused: bool = False`-Feld + NEU
+    `TickResult.paused_result(...)`-Classmethod.
   - `src/grid_gym/hexagon/core/errors.py` — NEU
     `TickLoopStoppedError` +
     `TickLoopInvalidTransitionError`.
-  - `src/grid_gym/adapters/driving/http_api/_runs_
-    router.py` — NEU `GET /runs/{id}/status`-Endpoint.
-  - `src/grid_gym/adapters/driving/http_api/_runs_
-    action_router.py` — `POST /control`-Wiring an
-    `TickLoopRegistry.tick_loop_for(run_id).request_*`-
-    Aufruf; 409-Mapping.
-  - `src/grid_gym/adapters/driving/http_api/_tick_loop_
-    registry.py` — NEU (Single-Run-Demo-Registry).
+  - `src/grid_gym/adapters/driving/http_api/_runs_router.py`
+    — `GET /runs/{id}/status`-Welle-1-Stub auf
+    RunRepository + TickLoopRegistry ausgewirt.
+  - `src/grid_gym/adapters/driving/http_api/_runs_action_router.py`
+    — `POST /control`-Wiring an
+    `TickLoopRegistry.tick_loop_for(run_id).request(action)`-
+    Aufruf; 409-Mapping (Invalid-Transition) + 503-
+    Mapping (TickLoop-not-active).
+  - `src/grid_gym/adapters/driving/http_api/_schemas.py`
+    — `RunState`-Alias auf Domain-`RunStatus` umgestellt.
+  - `src/grid_gym/adapters/driving/http_api/_tick_loop_registry.py`
+    — NEU (Single-Run-Demo-Registry +
+    `get_tick_loop_registry`-Dependency).
+  - `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
+    — NEU `DemoTickLoopDriver`-Asyncio-Task-Wrapper
+    mit Cooperative-State-Loop.
+  - `src/grid_gym/adapters/driving/http_api/_demo_setup.py`
+    — NEU `configure_demo_run`-Komposition-Root
+    (Auslagerung aus `app.py` wegen
+    `AC-NO-GOD-UTILS max=5 public top-level functions`).
+  - `src/grid_gym/adapters/driving/http_api/app.py`
+    — NEU `configure_tick_loop_registry`-Injection-Punkt
+    + Lifespan-Driver-Start/Stop.
   - `src/grid_gym/adapters/driving/ui/routes.py` +
     `templates/control.html` +
-    `_control_content.html` — NEU UI-Page.
-- **M5-Welle-4a-C3** zieht diese ADR auf `Provisional`
-  mit C2-Code-Merge-Beleg.
+    `_control_content.html` +
+    `static/style.css` (5 RunStatus-CSS-Klassen) +
+    `templates/navigation.html` — NEU UI-Page +
+    HTMX-JSON-Encoding-Helper.
+  - `src/grid_gym/adapters/driven/persistence_postgres/run_repository.py`
+    — `update_status`/`get_status`-Stub mit
+    `NotImplementedError` + M3-Welle-6c-Forward-Pointer.
+  - `pyproject.toml` — PLR0904-Per-File-Ignore fuer
+    `tick_loop.py` + `AC-ADAPTER-PURE`-`ignore_imports`-
+    Block fuer Komposition-Root-Brueck-Erlaubnis.
+- **M5-Welle-4a-C3 (dieser Commit)** zieht diese ADR auf
+  `Provisional` mit C2-Code-Merge-Beleg + Status/DoD-
+  Sync + Top-Level-Doku-Sync.
 - **M5-Welle-4b** (Alarme) liefert ggf. eine
   symmetrische Status-Tracking-Erweiterung fuer
   Alarme; NEU ADR 0040 geplant (siehe §3.2).

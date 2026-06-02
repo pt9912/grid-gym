@@ -319,22 +319,87 @@ passed). **GG-UI-001/002/003/009 + GG-API-002 produktiv.**
 **Welle-3-Gate:** `make gates` + `make test-integration`
 mit Live-Telemetry-Smoke gruen.
 
-### Welle 4 — Replay-Controls + Alarme (Pending)
+### Welle 4 — Replay-Controls + Alarme (Subdivision 4a/4b)
 
-**Status:** Pending. Erfuellt `GG-UI-004/005` (Replay-
-Steuerung + Alarme).
+**Subdivision-Beschluss (M5-Welle-4a-C0 2026-06-02):** Die
+ursprueglich monolithische Welle 4 wurde an C0-Pre-Research-
+Zeitpunkt in zwei Sub-Slices unterteilt, weil sich zwei
+distinkte Architektur-Concerns mit eigenem ADR + Decisions-
+Slot herauskristallisiert haben (Pattern analog M4-Welle-
+5a/5b und M4-Welle-6a/6b). Welle 4a (RunStatus + TickLoop-
+Control-Surface + Replay-Controls-UI) und Welle 4b (Alarm-
+Aggregation + AlarmStreamPort + Alarm-Tabelle-UI) liefern
+zusammen `GG-UI-004` + `GG-UI-005`.
 
-- [ ] **Replay-Controls-Page** unter `/runs/{id}/control`:
-  Start/Pause/Resume/Stop-Buttons (HTMX-POST gegen
-  Welle-1-API); Status-Anzeige (Sim-Zeit, Tick-Zaehler,
-  Run-Status).
+#### Welle 4a — Replay-Controls + TickLoop-Wiring (Done 2026-06-02)
+
+**Status:** Done 2026-06-02. Erfuellt `GG-UI-004` (Replay-
+Steuerung) + Replay-Restcompletion-Anteil `GG-API-001`
+(`POST /control` produktiv, nicht mehr Welle-1-Stub).
+Welle-Slice-Begleit-Doc
+[`M5-welle-4a.md`](M5-welle-4a.md). Liefer-Hashes: Pre-C0a
+`4517f51` + Pre-C0b `79c9712` + C0 `3544dee` + C1 `f1284c4`
+(NEU ADR 0039 `Proposed`) + C2 `9c188e0` (Code) + C3 (dieser
+Commit; ADR 0039 → `Provisional` + Status/DoD-Sync).
+
+- [x] **Decision 12 (RunStatus-Tracking-Architektur)** final
+  in **NEU ADR 0039** — RunRepository-Extension mit
+  `update_status`/`get_status`; NEU `RunStatus`-Literal-
+  Alias (`pending`/`running`/`paused`/`stopped`/
+  `completed`).
+- [x] **Decision 13 (TickLoop-Control-Surface)** final in
+  **NEU ADR 0039** — Cooperative state-machine mit
+  konsolidierter `request(action: ControlAction)`-Methode
+  + Pre-Tick-Guard; externer asyncio-Tick-Driver im
+  FastAPI-Lifespan via NEU `_demo_setup.py`-Komposition-
+  Root + NEU `DemoTickLoopDriver`.
+- [x] **Decision 14 (Replay-Status-Update-Pattern)** final
+  in **NEU ADR 0039** — HTMX-Polling auf
+  `GET /runs/{id}/status` mit 1s-Trigger; WS-Surface aus
+  ADR 0038 bleibt fuer High-Frequency-Telemetry reserviert.
+- [x] **Replay-Controls-Page** unter `/runs/{id}/control`:
+  HTMX-POST-Buttons (Pause/Resume/Stop) mit Inline-JSON-
+  Encoding-Helper; Status-Anzeige mit Sim-Zeit, Tick-
+  Counter, Run-Status (5 CSS-Klassen pro State).
+- [x] **NEU `TickLoopRegistry`-Adapter** unter
+  `adapters/driving/http_api/` (Single-Run-Demo-Stub;
+  Multi-Run-Variante folgt mit Welle 5 Scenario-Loader).
+- [x] **`POST /runs/{id}/control`-Wiring** produktiv;
+  Welle-1-Stub-Verhalten abgeschafft; 409 bei Invalid-
+  Transition + 503 bei `tick_loop_not_active`.
+- [x] **Unit-Tests** (~24 neue) + Integration-Test
+  `test_m5_welle_4a_replay_controls_smoke.py`.
+- [x] **C3 Doc-Sync** — Status/DoD-Sync + ADR 0039 →
+  `Provisional` + Top-Level-Doku-Sync (8 Docs).
+
+**Welle-4a-Gate:** `make gates` cache-frei gruen ohne
+Override **erfuellt** (10/10 A-1-Gates; 1650 unit + 50
+integration Tests passed). **GG-UI-004 + GG-API-001-
+Replay-Restcompletion produktiv.**
+
+#### Welle 4b — Alarme (Pending)
+
+**Status:** Pending. Erfuellt `GG-UI-005` (Alarme-
+Visualisierung). Folgt nach Welle-4a-Self-Close-Move.
+
+- [ ] **NEU Decision 15 (Alarm-Aggregation-Architektur)** —
+  unified `Alarm`-Domain-Type aus device-spezifischen
+  Alarms (`BatteryAlarm`, `PvAlarm`, `LoadAlarm`,
+  `GridConnectionAlarm`, `SmartMeterAlarm`) +
+  `AlarmStreamPort` (analog `TelemetryStreamPort` aus
+  Welle 3, ADR 0038).
+- [ ] **NEU Decision 16 (Alarm-Subscription-Pattern)** —
+  WS vs HTMX-Polling fuer Alarm-Tabelle (Welle-4b-Slice-
+  Doc-Entscheidung).
+- [ ] **NEU ADR 0040** (Alarm-Aggregation + AlarmStreamPort)
+  mit Decisions 15/16.
 - [ ] **Alarme-Tabelle** unter `/runs/{id}/alarms`:
   Tabellen-Layout (Zeit/Ziel/Severity/Code/Message/
   Status) mit HTMX-Polling oder WS-Subscription.
 - [ ] **Unit-Tests** + Integration-Test.
 - [ ] **C3 Doc-Sync**.
 
-**Welle-4-Gate:** `make gates` gruen.
+**Welle-4b-Gate:** `make gates` gruen.
 
 ### Welle 5 — Demo-Pipeline (Pending)
 

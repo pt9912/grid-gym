@@ -37,12 +37,13 @@ make help
 make gates              # 10 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # unit test suite (~1626 tests as of 2026-06-01,
-                        # M5-Welle-3 closure)
+make test-unit          # unit test suite (~1650 tests as of 2026-06-02,
+                        # M5-Welle-4a closure)
 make test-integration   # Compose/testcontainers integration suite
-                        # (49 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
-                        # OPC-UA, DNP3, IEC-61850, M5-HTTP-API, M5-UI-Foundation
-                        # and M5-Live-Telemetry smokes + async pub/sub probe)
+                        # (50 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
+                        # OPC-UA, DNP3, IEC-61850, M5-HTTP-API, M5-UI-Foundation,
+                        # M5-Live-Telemetry and M5-Replay-Controls smokes +
+                        # async pub/sub probe)
 ```
 
 Example YAML scenarios live under
@@ -146,11 +147,12 @@ As of **2026-06-01**:
   - Wave 1 — HTTP API surface + ADR 0036/0037 sharpening · `Done`
   - Wave 2 — UI foundation (Jinja2 + vendored HTMX + Chart.js + StaticFiles mount + 2 page routes) · `Done`
   - Wave 3 — Live-Telemetry-Dashboard (NEW `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe + Chart.js time-series + 6-state Quality-Marker + ADR 0038) · `Done`
-  - Wave 4 — Replay-Controls + Alarms · `Pending` (next active slice)
+  - Wave 4a — Replay-Controls + TickLoop-Wiring (NEW `RunStatus` + RunRepository extension + TickLoop-Control-Surface + `request(action)` + 2 endpoint wirings + `TickLoopRegistry` + `DemoTickLoopDriver` + control UI + ADR 0039) · `Done`
+  - Wave 4b — Alarms (aggregation + AlarmStreamPort + alarm table; ADR 0040 planned) · `Pending` (next active slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance (state after M5 Wave 3 closure 2026-06-01):**
-~1626 unit tests + 49 integration tests passed + 4 skipped. The
+**Test balance (state after M5 Wave 4a closure 2026-06-02):**
+~1650 unit tests + 50 integration tests passed + 4 skipped. The
 4 skipped tests are the **2c mock-only fallback** for the
 IEC-61850 in-process `IedServer` smoke (ADR 0035 §2.5;
 trigger 009). Per-wave test increments + rationale live
