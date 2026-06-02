@@ -817,9 +817,9 @@ Status-/DoD-Sync nach C2-Code-Merge:
   Decision 4 (Replay-Controls-API-Vertrag bereits
   final via ADR 0037 Decision API-1; Welle 4a nutzt
   ohne Aenderung).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 4 (kanonische
-  Slice-Spezifikation; Welle-4a-C3 refactort die Section
-  in 4a + 4b).
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle
+  4 (kanonische Slice-Spezifikation; Welle-4a-C3 refactort
+  die Section in 4a + 4b).
 - [`../../adr/0037-http-api-surface-pattern.md`](../../adr/0037-http-api-surface-pattern.md)
   §2.1 Decision API-1 (POST-mit-Action-Body; Welle 4a
   wirt die produktive Logik).

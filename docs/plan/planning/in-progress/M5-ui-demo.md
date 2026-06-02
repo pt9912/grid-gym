@@ -337,10 +337,11 @@ zusammen `GG-UI-004` + `GG-UI-005`.
 Steuerung) + Replay-Restcompletion-Anteil `GG-API-001`
 (`POST /control` produktiv, nicht mehr Welle-1-Stub).
 Welle-Slice-Begleit-Doc
-[`M5-welle-4a.md`](M5-welle-4a.md). Liefer-Hashes: Pre-C0a
-`4517f51` + Pre-C0b `79c9712` + C0 `3544dee` + C1 `f1284c4`
-(NEU ADR 0039 `Proposed`) + C2 `9c188e0` (Code) + C3 (dieser
-Commit; ADR 0039 → `Provisional` + Status/DoD-Sync).
+[`M5-welle-4a.md`](../done/M5-welle-4a.md). Liefer-Hashes:
+Pre-C0a `4517f51` + Pre-C0b `79c9712` + C0 `3544dee` + C1
+`f1284c4` (NEU ADR 0039 `Proposed`) + C2 `9c188e0` (Code)
++ C3 `2b4e5b3` (ADR 0039 → `Provisional` + Status/DoD-Sync)
++ Self-Close-Move `d1b0eb7` (rename-only).
 
 - [x] **Decision 12 (RunStatus-Tracking-Architektur)** final
   in **NEU ADR 0039** — RunRepository-Extension mit

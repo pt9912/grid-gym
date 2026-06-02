@@ -78,7 +78,7 @@ Commit)
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort` — Welle 4a
   erweitert den Vertrag um `update_status` + `get_status`,
   symmetrisch zur Welle-1-`exists`-Extension).
-- [`../planning/in-progress/M5-welle-4a.md §3`](../planning/in-progress/M5-welle-4a.md)
+- [`../planning/done/M5-welle-4a.md §3`](../planning/done/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14 final +
   C2-Realization-Notes).
 - **Vorbild-Probes** — kein eigener Welle-4a-Probe noetig,
@@ -704,7 +704,7 @@ def get_run_status(
   `GG-UI-004` (Replay-Controls-UI-Akzeptanz).
 - [Architektur](../../../spec/architecture.md) §4.2
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort`).
-- [`../planning/in-progress/M5-welle-4a.md §3`](../planning/in-progress/M5-welle-4a.md)
+- [`../planning/done/M5-welle-4a.md §3`](../planning/done/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14).
 - **Vorbild-Probes** — keine eigene Welle-4a-Probe:
   - Welle-1-HTMX-FastAPI-Probe `9c20dad` — 4 Tests in

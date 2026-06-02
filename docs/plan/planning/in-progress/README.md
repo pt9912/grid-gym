@@ -8,7 +8,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-4a.md`](M5-welle-4a.md) | Welle-4a-Slice-Doc (M5 Replay-Controls + TickLoop-Wiring: NEU `RunStatus`-Literal-Alias + RunRepository-Extension + TickLoop-Control-Surface + `GET /runs/{id}/status` + `POST /runs/{id}/control`-Wiring + Replay-Controls-UI; `GG-UI-004` + Replay-Restcompletion-Anteil `GG-API-001`) — **Done 2026-06-02**; erster Sub-Slice der Welle-4-Subdivision (4a/4b); bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-4b-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -198,28 +197,32 @@ Motivation) + C1 `f1284c4` (NEU ADR 0039 `Proposed`) + C2
 existierenden Welle-1-Stubs + NEU `TickLoopRegistry`-Adapter
 + NEU `DemoTickLoopDriver` + NEU UI-Page `GET /control` +
 NEU `_demo_setup.py`-Komposition-Root + 24 neue Unit + 1
-Integration-Test) + C3 (dieser Commit; ADR 0039 `Proposed →
-Provisional` + Status/DoD-Sync + Top-Level-Doku-Sync).
-1626 → 1650 Unit-Tests (+24); 49 → 50 Integration (+1).
-Lastenheft-Akzeptanz `GG-UI-004` + Replay-Restcompletion-
-Anteil `GG-API-001` produktiv. 10/10 A-1-Gates gruen cache-
-frei ohne Override. **C2-Realization-Notes** (Welle-4a-C3-
-Sync, siehe Slice-Doc §0 + ADR 0039 §0): RunStatus-Vokabel
-auf `pending`/`completed` umgestellt (Welle-1-`RunState`-
-Alignment); `request(action)`-Konsolidierung statt 3
-`request_*`-Wrapper (PLR0904-Schwelle); `configure_demo_run`
-nach NEU `_demo_setup.py` ausgelagert (AC-NO-GOD-UTILS);
-`AC-ADAPTER-PURE`-`ignore_imports`-Block verankert ADR-0039-
-§2.2-Option-C-Begruendung (kein separater `ControlPort`-
-Slot).
+Integration-Test) + C3 `2b4e5b3` (ADR 0039 `Proposed →
+Provisional` + Status/DoD-Sync + Top-Level-Doku-Sync) +
+Self-Close-Move `d1b0eb7` (rename-only) + Pre-C0-Sync
+(dieser Commit). 1626 → 1650 Unit-Tests (+24); 49 → 50
+Integration (+1). Lastenheft-Akzeptanz `GG-UI-004` +
+Replay-Restcompletion-Anteil `GG-API-001` produktiv. 10/10
+A-1-Gates gruen cache-frei ohne Override. **C2-Realization-
+Notes** (Welle-4a-C3-Sync, siehe Slice-Doc §0 + ADR 0039
+§0): RunStatus-Vokabel auf `pending`/`completed` umgestellt
+(Welle-1-`RunState`-Alignment); `request(action)`-
+Konsolidierung statt 3 `request_*`-Wrapper (PLR0904-
+Schwelle); `configure_demo_run` nach NEU `_demo_setup.py`
+ausgelagert (AC-NO-GOD-UTILS); `AC-ADAPTER-PURE`-
+`ignore_imports`-Block verankert ADR-0039-§2.2-Option-C-
+Begruendung (kein separater `ControlPort`-Slot).
 
 **Aktive Welle:** M5-Welle-4b (Alarme: Aggregation +
-AlarmStreamPort + Alarm-Tabelle-UI) als naechster aktiver
-Schritt nach Welle-4a-Self-Close-Move. Lieferziel: unified
-`Alarm`-Domain-Type aus 5 device-spezifischen Alarms
-(`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/`GridConnectionAlarm`/
-`SmartMeterAlarm`) + NEU `AlarmStreamPort` (Pattern analog
-`TelemetryStreamPort` aus Welle 3, ADR 0038) + NEU Alarm-
-Tabelle-UI unter `/runs/{id}/alarms` (WS vs HTMX-Polling
-in Welle-4b-Decision-16 zu entscheiden) + NEU ADR 0040
-mit Decisions 15/16. Erfuellt `GG-UI-005`.
+AlarmStreamPort + Alarm-Tabelle-UI) mit Pre-C0a `d1b0eb7`
+(Self-Close-Move `M5-welle-4a.md → done/`, rename-only) +
+Pre-C0b (dieser Commit; Cross-Doc-Refs-Sync nach Move)
+abgeschlossen; naechster Schritt C0 (Slice-Doc-Anlage).
+Lieferziel: unified `Alarm`-Domain-Type aus 5 device-
+spezifischen Alarms (`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/
+`GridConnectionAlarm`/`SmartMeterAlarm`) + NEU
+`AlarmStreamPort` (Pattern analog `TelemetryStreamPort`
+aus Welle 3, ADR 0038) + NEU Alarm-Tabelle-UI unter
+`/runs/{id}/alarms` (WS vs HTMX-Polling in Welle-4b-
+Decision-16 zu entscheiden) + NEU ADR 0040 mit Decisions
+15/16. Erfuellt `GG-UI-005`.
