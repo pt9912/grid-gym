@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
+| [`M5-welle-4a.md`](M5-welle-4a.md) | Welle-4a-Slice-Doc (M5 Replay-Controls + TickLoop-Wiring: NEU `RunStatus`-Literal-Alias + RunRepository-Extension + TickLoop-Control-Surface + `GET /runs/{id}/status` + `POST /runs/{id}/control`-Wiring + Replay-Controls-UI; `GG-UI-004` + Replay-Restcompletion-Anteil `GG-API-001`) — **In Progress 2026-06-02**; erster Sub-Slice der Welle-4-Subdivision (4a/4b). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -185,13 +186,25 @@ Integration (+6). Lastenheft-Akzeptanz `GG-API-002` +
 `GG-UI-002/003/009` produktiv. 10/10 A-1-Gates gruen
 cache-frei ohne Override.
 
-**Aktive Welle:** M5-Welle-4 (Replay-Controls + Alarme)
-mit Pre-C0a `4517f51` (Self-Close-Move
-`M5-welle-3.md → done/`, rename-only) + Pre-C0b (dieser
-Commit; Cross-Doc-Refs-Sync nach Move) abgeschlossen;
-naechster Schritt C0 (Slice-Doc-Anlage). Lieferziel:
-`POST /runs/{id}/control`-Wiring an `TickLoop` (statt
-Welle-1-Stub `accepted=True`), Replay-Controls-UI mit
-Pause/Resume/Stop-Buttons, Alarm-Tabelle, Demo-Generator
-gegen echtes TickLoop-Wiring ersetzen. Erfuellt
-`GG-UI-004/005`.
+**Aktive Welle:** M5-Welle-4a (Replay-Controls +
+TickLoop-Wiring) mit Pre-C0a `4517f51` (Self-Close-Move
+`M5-welle-3.md → done/`, rename-only) + Pre-C0b
+`79c9712` (Cross-Doc-Refs-Sync nach Move) + C0 (dieser
+Commit; Slice-Doc-Anlage [`M5-welle-4a.md`](M5-welle-4a.md)
++ **NEU Decisions 12/13/14** final fixiert); naechster
+Schritt C1 (NEU ADR 0039 `Proposed`). Welle 4 wurde an
+C0 in **zwei Sub-Slices unterteilt** (Pattern analog
+M4-Welle-5a/5b und M4-Welle-6a/6b) wegen zweier
+distinkter Architektur-Concerns (RunStatus +
+TickLoop-Control in 4a; Alarm-Aggregation in 4b).
+Welle-4a-Lieferziel: NEU `RunStatus`-Literal-Alias +
+RunRepository-Extension (`update_status`/`get_status`)
++ TickLoop-Control-Surface (`request_pause`/`resume`/
+`stop` + Tick-Guard) + NEU `GET /runs/{id}/status`-
+Endpoint + `POST /runs/{id}/control`-Wiring an die
+neue Surface (statt Welle-1-Stub) + Replay-Controls-UI
+unter `/runs/{id}/control` mit HTMX-Polling-Status-
+Block. Welle 4b (Alarme: Aggregation + AlarmStreamPort +
+Alarm-Tabelle) folgt nach Welle-4a-Self-Close-Move.
+Erfuellt `GG-UI-004` + Replay-Restcompletion-Anteil
+`GG-API-001`.
