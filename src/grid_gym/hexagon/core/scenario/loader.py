@@ -73,6 +73,15 @@ from grid_gym.hexagon.ports.driven.device_protocol import DeviceProtocolPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.observability import LogPort, MetricsPort, TracePort
 from grid_gym.hexagon.ports.driven.random import RandomPort
+from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+
+
+AlarmIdSource = Callable[[], str]
+"""Welle-4b-Review-Fix #11: signature-alias fuer den
+``alarm_id_source``-Kwarg (Production-Default ``uuid.uuid4``;
+Tests injizieren einen monoton zaehlenden Stub fuer
+deterministische Alarm-IDs)."""
+
 
 _DEVICE_FACTORIES: Final[Mapping[str, Callable[[], DeviceModel]]] = {
     "battery": BatteryDevice,
@@ -386,6 +395,8 @@ class TickLoopWiring:
     metrics_port: MetricsPort | None = None
     trace_port: TracePort | None = None
     protocol_ports: tuple[DeviceProtocolPort, ...] | None = None
+    run_repository: RunRepositoryPort | None = None
+    alarm_id_source: AlarmIdSource | None = None
 
 
 def build_tick_loop(
@@ -488,6 +499,8 @@ def build_tick_loop(
         metrics_port=w.metrics_port,
         trace_port=w.trace_port,
         protocol_ports=w.protocol_ports,
+        run_repository=w.run_repository,
+        alarm_id_source=w.alarm_id_source,
     )
 
 

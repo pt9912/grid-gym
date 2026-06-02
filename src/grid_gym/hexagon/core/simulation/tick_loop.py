@@ -303,9 +303,7 @@ class TickLoop:
         # zwischen Agent-Tick und Folgetick keine Commands
         # verlieren.
         self._pending_agent_commands: list[Command] = []
-        # Welle-6a-Review M-3: Counter fuer unbekannte source-Tags
-        # (Welle-7+/M3-Forward-Compat-Defense gegen Silent-Skip).
-        self._unknown_source_count: int = 0
+        self._init_drift_counters()
         # Welle-6b (ADR 0021 §2.5): O(1)-Lookup-Tabelle fuer Devices
         # per device_id; einmal im Konstruktor aufgebaut, in
         # jedem Tick wiederverwendet.
@@ -332,6 +330,14 @@ class TickLoop:
         # (Welle-4b-Agents koennten Device-Referenzen brauchen).
         self._attach_agents()
         self._attach_welle_4_state(run_repository, alarm_id_source)
+
+    def _init_drift_counters(self) -> None:
+        """Welle-6a-Review M-3 + Welle-4b-Review-Fix #4: Forward-
+        Compat-Counter fuer Drift gegen die jeweils registrierten
+        Tabellen (`_BILANZ_SOURCE_BUCKETS` bzw. `dispatch_alarm_mapper`).
+        Bundle, damit `__init__` die PLR0915-Schwelle nicht reisst."""
+        self._unknown_source_count: int = 0
+        self._unknown_alarm_type_count: int = 0
 
     def _attach_devices(self) -> None:
         """Reicht `run_id` an alle Devices durch (Welle-3-Review-M-4-
@@ -388,12 +394,25 @@ class TickLoop:
         Familien implementiert; der `hasattr`-Guard skippt
         Welle-7+/M3-Geraete, die das Pattern noch nicht
         uebernommen haben.
+
+        Welle-4b-Review-Fix #4: erst ALLE Devices drainen, dann
+        mappen. Sonst koennte ein Mapper-Fehler in der Mitte des
+        Drain-Pfads die Raw-Alarms spaeterer Devices verschlucken
+        und den Tick zwischen `clock.advance` und `_tick_count += 1`
+        in einen inkonsistenten Zustand reissen. Unmappable Raw-
+        Alarms werden geloggt + im `_unknown_alarm_type_count`
+        gezaehlt, statt den ganzen Tick zu killen (Forward-Compat-
+        Defense fuer Welle-7+-Geraete, deren Raw-Klasse noch nicht
+        beim Mapper registriert ist).
         """
-        alarms: list[Alarm] = []
+        raw_alarms: list[object] = []
         for device in self._devices:
             if not hasattr(device, "drain_alarms"):
                 continue
-            for raw in device.drain_alarms():
+            raw_alarms.extend(device.drain_alarms())
+        alarms: list[Alarm] = []
+        for raw in raw_alarms:
+            try:
                 alarms.append(
                     dispatch_alarm_mapper(
                         raw,
@@ -401,6 +420,14 @@ class TickLoop:
                         simulation_time_ms=simulation_time_ms,
                         alarm_id=self._alarm_id_source(),
                     )
+                )
+            except TypeError:
+                self._unknown_alarm_type_count += 1
+                self._obs_log(
+                    "warning",
+                    "alarm_unknown_raw_type",
+                    event_id=f"alarm-unknown-{self._unknown_alarm_type_count}",
+                    attributes={"raw_type": type(raw).__name__},
                 )
         return tuple(alarms)
 
@@ -440,9 +467,12 @@ class TickLoop:
         (Default-Welle-1+M2-Tests) skippt die Repository-Mirror-
         Sequenz in `request`, der Pre-Tick-Guard greift trotzdem.
         Snapshot-Format aus ADR 0015 bleibt unveraendert —
-        `_control_state` ist Run-Lifecycle, nicht Tick-Determinismus;
-        `from_snapshot`-Resume setzt das Feld auf `"running"` (siehe
-        ADR 0039 §2.2)."""
+        `_control_state` ist Run-Lifecycle, nicht Tick-Determinismus.
+        Welle-4b-Review-Fix #3: `from_snapshot` nimmt jetzt einen
+        `control_state`-Kwarg, den der Caller (Welle-5-Scenario-
+        Loader) aus `RunRepository.get_status(run_id)` speist,
+        damit ein `paused`-Run nach Resume nicht stillschweigend
+        per First-Tick-Auto-Flip auf `running` springt."""
         self._control_state: RunStatus = "pending"
         self._run_repository: RunRepositoryPort | None = run_repository
 
@@ -600,6 +630,16 @@ class TickLoop:
         Welle-7+/M3-Geraete-Drift (z. B. `WindDevice` mit
         `source='wind'`)."""
         return self._unknown_source_count
+
+    @property
+    def unknown_alarm_type_count(self) -> int:
+        """Welle-4b-Review-Fix #4: kumulative Anzahl von Raw-Alarms,
+        deren Typ `dispatch_alarm_mapper` nicht kennt. Forward-
+        Looking-Defense fuer Welle-7+/M3-Geraete, die einen neuen
+        Raw-Alarm-Subtyp einfuehren, ohne den Mapper zu erweitern.
+        Der Tick laeuft trotzdem durch — der Counter macht die
+        Drift sichtbar."""
+        return self._unknown_alarm_type_count
 
     @property
     def pending_agent_commands(self) -> tuple[Command, ...]:
@@ -1243,6 +1283,9 @@ class TickLoop:
         metrics_port: MetricsPort | None = None,
         trace_port: TracePort | None = None,
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
+        run_repository: RunRepositoryPort | None = None,
+        alarm_id_source: Callable[[], str] | None = None,
+        control_state: RunStatus | None = None,
     ) -> TickLoop:
         """Stellt einen `TickLoop` aus einem Snapshot wieder her.
 
@@ -1278,6 +1321,21 @@ class TickLoop:
         Snapshot mit nicht-leeren `agents` injiziert bekommen
         einen leeren `AgentMessageBus` (gleiche Regel wie im
         Konstruktor).
+
+        Welle-4b-Review-Fix #8 + #3 ergaenzt drei Resume-Kwargs:
+
+        - ``run_repository``: erlaubt dem resumed Loop, weitere
+          `request(...)`-Transitions auf den Repository-Status zu
+          mirrorn. Ohne den Kwarg waere `_run_repository=None`
+          und Cache/Persistenz wuerden silently divergieren.
+        - ``alarm_id_source``: Test-Determinismus-Stub fuer
+          `Alarm.alarm_id`; Production-Default ist `uuid.uuid4`.
+        - ``control_state``: Run-Lifecycle-State (paused/running/
+          stopped/...), den der Caller aus
+          `RunRepository.get_status(run_id)` speist. `None`
+          behaelt das Default-`pending` und damit den
+          First-Tick-Auto-Flip-Pfad — produktiver Resume sollte
+          den State immer explizit setzen.
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:
@@ -1318,11 +1376,20 @@ class TickLoop:
             metrics_port=metrics_port,
             trace_port=trace_port,
             protocol_ports=protocol_ports,
+            run_repository=run_repository,
+            alarm_id_source=alarm_id_source,
         )
         # `_pending_agent_commands` muss nach Konstruktor-Init
         # gefuellt werden — der Konstruktor initialisiert es leer.
         loop._pending_agent_commands.extend(pending_commands)
         loop._tick_count = parsed.tick_count
+        # Welle-4b-Review-Fix #3: Run-Control-State explizit aus
+        # dem Caller (RunRepository.get_status) — sonst startet der
+        # resumed Loop als `pending` und der erste Tick flippt
+        # blind auf `running`, was den Resume eines `paused`-Runs
+        # silently aufhebt.
+        if control_state is not None:
+            loop._control_state = control_state
         return loop
 
 

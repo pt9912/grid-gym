@@ -217,3 +217,63 @@ def test_drain_alarms_consumes_buffer_no_re_emit_on_next_tick() -> None:
     second = loop.tick()
     assert len(first.emitted_alarms) == 1
     assert second.emitted_alarms == ()
+
+
+class _UnknownDeviceStub:
+    """Welle-4b-Review-Fix #4: Minimal-Stub mit `drain_alarms()`-
+    Surface, der eine fremde Raw-Alarm-Klasse liefert — simuliert
+    ein Welle-7+/M3-Geraet, dessen Raw-Typ der Mapper nicht kennt."""
+
+    def __init__(self, raw_alarm: object) -> None:
+        self._raw = raw_alarm
+        self._drained = False
+
+    @property
+    def device_id(self) -> str:
+        return "unknown-1"
+
+    def set_run_id(self, run_id: str) -> None:
+        return
+
+    def tick(self, context: object) -> object:
+        from grid_gym.hexagon.core.domain.device import DeviceTickOutcome
+
+        return DeviceTickOutcome(telemetry=())
+
+    def drain_alarms(self) -> tuple[object, ...]:
+        if self._drained:
+            return ()
+        self._drained = True
+        return (self._raw,)
+
+
+def test_tick_continues_when_mapper_does_not_know_raw_alarm_type() -> None:
+    """Welle-4b-Review-Fix #4: ein Welle-7+/M3-Geraet mit einer
+    nicht-registrierten Raw-Alarm-Klasse darf den Tick NICHT
+    abreissen — sonst staende `tick_count` nie wieder auf
+    `running` und der Clock waere bereits weiter."""
+    stub = _UnknownDeviceStub(raw_alarm=object())
+    loop = _make_loop_with_devices(devices=(stub,))
+    result = loop.tick()
+    assert result.tick == 0
+    # Counter wird inkrementiert, aber Tick laeuft durch.
+    assert loop.unknown_alarm_type_count == 1
+    assert loop.tick_count == 1
+    assert result.emitted_alarms == ()
+
+
+def test_tick_drains_all_devices_before_mapping_atomicity() -> None:
+    """Welle-4b-Review-Fix #4: erst ALLE Devices drainen, dann
+    mappen. Sonst koennte ein Mapper-Fehler in der Mitte des
+    Drain-Loops Raw-Alarms spaeterer Devices verschlucken."""
+    # Stub vor Battery: liefert unbekannten Raw, dahinter ein
+    # echtes Battery-LIMITED. Erwartung: Battery-Alarm wird trotzdem
+    # gemappt (kein Drop), nur der Unknown wird gezaehlt.
+    stub = _UnknownDeviceStub(raw_alarm=object())
+    battery = _make_battery(max_charge_kw=Decimal("50"))
+    battery.apply_command(_set_power_command(Decimal("500")))
+    loop = _make_loop_with_devices(devices=(stub, battery))
+    result = loop.tick()
+    assert loop.unknown_alarm_type_count == 1
+    assert len(result.emitted_alarms) == 1
+    assert result.emitted_alarms[0].target == "battery-1"
