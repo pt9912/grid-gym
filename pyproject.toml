@@ -618,6 +618,13 @@ typed-errors-exempt = [
     "src/grid_gym/adapters/driving/http_api/error_translation.py",
     "src/grid_gym/adapters/driven/protocol_*/error_translation.py",
     "src/grid_gym/adapters/driven/persistence_*/error_translation.py",
+    # M5-Welle-4b-Review-Fix #2 (2026-06-02): der asyncio-TickLoop-
+    # Driver ist ein Task-Boundary — ein unhandled Exception killt
+    # den Task stillschweigend und laesst den Repository-Status auf
+    # `running` haengen. Der Catch dient hier explizit der Boundary-
+    # Translation (log + Repository-Mirror auf `stopped`), gleiche
+    # Rolle wie die `error_translation.py`-Module.
+    "src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py",
 ]
 # AC-HEXAGON-PURE: Whitelist fuer Dritt-Pakete, die in
 # src/grid_gym/hexagon/** importiert werden duerfen (zusaetzlich zu

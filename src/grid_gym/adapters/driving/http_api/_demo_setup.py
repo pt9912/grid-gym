@@ -39,6 +39,22 @@ from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 
 
+class _DemoTickLoopDriverAlreadyConfiguredError(RuntimeError):
+    """Welle-4b-Review-Fix #13: zweiter `configure_demo_run`-Aufruf
+    mit anderem `run_id` orphant den bisherigen Driver. Statt
+    stiller Drop wird hier hart abgewiesen — Welle-5-Multi-Run
+    bekommt einen `MultiRunDriverRegistry`, Welle-4a/4b bleibt
+    Single-Run."""
+
+    def __init__(self, existing_run_id: str, new_run_id: str) -> None:
+        super().__init__(
+            f"DemoTickLoopDriver is already configured for run_id="
+            f"{existing_run_id!r}; refusing to overwrite with run_id="
+            f"{new_run_id!r}. Restart the app or extend "
+            "configure_demo_run for multi-run scenarios (Welle 5)."
+        )
+
+
 _DEMO_RUN_ID: Final[str] = "demo-run-0001"
 """Welle-4a-Demo-Run-ID fuer den Lifespan-TickLoop. Stabil ueber
 alle App-Starts, damit `templates/navigation.html` einen festen
@@ -114,6 +130,9 @@ def configure_demo_run(
     """
     repository = _cast_run_repository_or_raise()
     registry = _cast_tick_loop_registry_or_raise()
+    existing_driver = getattr(app.state, "demo_tick_loop_driver", None)
+    if existing_driver is not None and existing_driver.tick_loop_run_id != run_id:
+        raise _DemoTickLoopDriverAlreadyConfiguredError(existing_driver.tick_loop_run_id, run_id)
     if repository.exists(run_id):
         return
     metadata = RunMetadata(
@@ -140,19 +159,30 @@ def configure_demo_run(
     )
     registry.register(tick_loop)
     # M5-Welle-4b (ADR 0040 Decision 17): optional alarm-publish-
-    # Wiring. Liest `alarm_stream` + `alarm_history_buffer` von
-    # `app.state` (per `configure_alarm_stream` aus
-    # `_alarm_setup.py` injiziert); falls beide gesetzt, publisht
-    # der Driver nach jedem Tick die `emitted_alarms` auf den
-    # Stream + History-Buffer. Welle-4b-Demo (ohne Devices)
-    # publisht nichts produktiv — das Wiring ist da, falls die
-    # Welle-5-Demo-Pipeline Devices einzieht.
-    alarm_stream = getattr(app.state, "alarm_stream", None)
-    alarm_history_buffer = getattr(app.state, "alarm_history_buffer", None)
+    # Wiring. Provider-Callables (Welle-4b-Review-Fix #1) lesen
+    # `alarm_stream` + `alarm_history_buffer` bei jedem Tick aus
+    # `app.state`, damit ein nachtraegliches
+    # `configure_alarm_stream(...)` (nach `configure_demo_run`)
+    # nicht still in einen No-op-Publish-Pfad faellt.
     driver = DemoTickLoopDriver(
         tick_loop,
         tick_interval_s=tick_ms / 1000.0,
-        alarm_stream=cast(AlarmStreamPort | None, alarm_stream),
-        alarm_history_buffer=cast(AlarmHistoryBuffer | None, alarm_history_buffer),
+        alarm_stream_provider=_alarm_stream_from_app_state,
+        alarm_history_buffer_provider=_alarm_history_buffer_from_app_state,
     )
     app.state.demo_tick_loop_driver = driver
+
+
+def _alarm_stream_from_app_state() -> AlarmStreamPort | None:
+    """Welle-4b-Review-Fix #1: Late-Binding-Provider fuer den
+    `AlarmStreamPort`. Wird vom Driver bei jedem Tick aufgerufen,
+    damit ein spaeter Aufruf von `configure_alarm_stream(...)`
+    den Publish-Pfad noch aktiviert."""
+    return cast(AlarmStreamPort | None, getattr(app.state, "alarm_stream", None))
+
+
+def _alarm_history_buffer_from_app_state() -> AlarmHistoryBuffer | None:
+    """Welle-4b-Review-Fix #1: Late-Binding-Provider fuer den
+    `AlarmHistoryBuffer`. Symmetrisch zu
+    `_alarm_stream_from_app_state`."""
+    return cast(AlarmHistoryBuffer | None, getattr(app.state, "alarm_history_buffer", None))

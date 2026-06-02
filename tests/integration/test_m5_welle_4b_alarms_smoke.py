@@ -155,8 +155,8 @@ def test_alarms_full_lifecycle_workflow(
     # 3. Tick driver publisht emitted_alarms auf Stream + Buffer.
     driver = DemoTickLoopDriver(
         tick_loop,
-        alarm_stream=alarm_stream,
-        alarm_history_buffer=history_buffer,
+        alarm_stream_provider=lambda: alarm_stream,
+        alarm_history_buffer_provider=lambda: history_buffer,
     )
     # Wir treiben den Loop manuell (statt via asyncio-Task), um
     # deterministisch zu sein.
