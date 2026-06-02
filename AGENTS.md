@@ -5,6 +5,13 @@ Repo Code oder Doku aendert. Es traegt die **harten Regeln** und
 **Pointer auf die kanonischen Quellen**, nicht deren Inhalt — Drift
 zwischen `AGENTS.md` und ADRs/Slice-Plaenen wird so vermieden.
 
+Der operative Harness-Einstieg liegt in [`harness/README.md`](harness/README.md).
+Rollen, Reviews, Verification und Replay sind dort bzw. in
+[`harness/roles.md`](harness/roles.md),
+[`harness/review.md`](harness/review.md),
+[`harness/verification.md`](harness/verification.md) und
+[`harness/replay.md`](harness/replay.md) getrennt beschrieben.
+
 Ergaenzend zu diesem Dokument: [`README.md`](README.md) (Projekt-
 Ueberblick), [`README.de.md`](README.de.md) (deutsche Variante),
 [`spec/architecture.md`](spec/architecture.md) (Architektur),
@@ -12,6 +19,33 @@ Ueberblick), [`README.de.md`](README.de.md) (deutsche Variante),
 [`docs/plan/planning/README.md`](docs/plan/planning/README.md)
 (Slice-Plan-Workflow + Wave-Self-Close-Konvention),
 [`docs/plan/adr/README.md`](docs/plan/adr/README.md) (ADR-Index).
+
+---
+
+## Source Precedence
+
+In dieser Reihenfolge lesen und Konflikte aufloesen:
+
+1. [`spec/lastenheft.md`](spec/lastenheft.md) — normative
+   Anforderungen, `GG-*`-IDs, Akzeptanzkriterien.
+2. [`spec/architecture.md`](spec/architecture.md) — hexagonale
+   Architektur, Ports, Adapter, `GG-AR-*`-Tabus.
+3. [`spec/protocol_profiles.md`](spec/protocol_profiles.md) —
+   technische Protokollprofil-Details.
+4. [`docs/plan/adr/`](docs/plan/adr/) — Architekturentscheidungen.
+5. Aktiver Slice in [`docs/plan/planning/in-progress/`](docs/plan/planning/in-progress/)
+   oder [`docs/plan/planning/next/`](docs/plan/planning/next/) —
+   konkrete Arbeit, DoD und Closure-Bedingungen.
+6. Ausfuehrbare Vertraege: [`Makefile`](Makefile), [`Dockerfile`](Dockerfile),
+   [`pyproject.toml`](pyproject.toml) und [`.github/workflows/`](.github/workflows/).
+7. Nutzer- und Quality-Doku unter [`docs/user/`](docs/user/), besonders
+   [`docs/user/code-review.md`](docs/user/code-review.md).
+8. [`README.md`](README.md), [`README.de.md`](README.de.md) und
+   [`CHANGELOG.md`](CHANGELOG.md).
+9. [`harness/README.md`](harness/README.md) und diese Datei.
+
+Bei Konflikt zwischen dieser Datei und einer kanonischen Quelle gewinnt
+die Quelle, und diese Datei wird nachgezogen.
 
 ---
 
@@ -23,6 +57,7 @@ Ueberblick), [`README.de.md`](README.de.md) (deutsche Variante),
 | [`docs/plan/adr/`](docs/plan/adr/)         | Architecture Decision Records. Lifecycle in [`ADR 0006`](docs/plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md). |
 | [`docs/plan/planning/`](docs/plan/planning/) | Slice-Plaene + Roadmap, Lifecycle `open/` → `next/` → `in-progress/` → `done/`. |
 | [`docs/user/`](docs/user/)                 | Operations-/Runbook-Doku (z. B. Observability).                              |
+| [`harness/`](harness/)                     | Harness-Einstieg, Rollen, Review, Verification und Replay.                   |
 | [`src/grid_gym/`](src/grid_gym/)           | Produktiv-Code (hexagonale Architektur — `hexagon/`/`adapters/`).            |
 | [`tests/unit/`](tests/unit/)               | Unit-Tests (laufen via `make test-unit`).                                    |
 | [`tests/integration/`](tests/integration/) | Integration-Tests mit testcontainers (laufen via `make test-integration`).   |
@@ -80,6 +115,36 @@ Closure-Daten. Die zeitliche Schicht lebt in
 [`docs/plan/planning/in-progress/roadmap.md`](docs/plan/planning/in-progress/roadmap.md)
 und den `M*-results.md`-Closure-Notizen.
 
+### 2.6 Role Separation
+
+Rollen sind Kontextgrenzen. Nutze
+[`harness/roles.md`](harness/roles.md) fuer Planner-, Architect-,
+Implementation-, Reviewer-, Verifier- und Validator-Vertraege.
+
+Wer geplant oder implementiert hat, reviewt oder verifiziert nicht mit
+demselben Eingabe-Kontext. Jeder Rollenwechsel braucht ein
+Uebergabe-Artefakt: Plan, ADR-Bezug, Diff, Findings,
+Verification-Evidence, Validation-Evidence oder Closure-Notiz.
+
+### 2.7 Review und Verification sind getrennt
+
+Reviews folgen [`harness/review.md`](harness/review.md) und dem
+grid-gym-Code-Review-Leitfaden
+[`docs/user/code-review.md`](docs/user/code-review.md). Findings werden
+als HIGH/MEDIUM/LOW/INFO klassifiziert.
+
+Slice-Closure braucht Verification-Evidence nach
+[`harness/verification.md`](harness/verification.md). Gates allein
+reichen nicht: Die Evidence muss DoD, Spec-/ADR-IDs, ausgefuehrte
+Sensors, nicht ausgefuehrte Sensors und Risiken sichtbar verbinden.
+
+### 2.8 Replay- und Golden-Disziplin
+
+Aenderungen an Simulation, Determinismus, Replay, Fault-Injection oder
+Demo-Verhalten folgen [`harness/replay.md`](harness/replay.md). Neue
+oder geaenderte Verhaltensvertraege brauchen Happy-, Boundary- und
+Negative-Pins oder eine begruendete Carveout-/Folge-Slice-Notiz.
+
 ---
 
 ## 3. Quality Gates
@@ -93,6 +158,8 @@ und den `M*-results.md`-Closure-Notizen.
 
 **Vor jedem Push:** mindestens `make gates` + `make docs-check`
 gruen. Vor Welle-/Meilenstein-Closure zusaetzlich `make fullbuild`.
+Wenn ein naheliegender Sensor wegen Docker, Sandbox oder Umgebung nicht
+gelaufen ist, muss der Handoff den Grund nennen.
 
 ---
 
@@ -146,7 +213,29 @@ gruen. Vor Welle-/Meilenstein-Closure zusaetzlich `make fullbuild`.
 
 ---
 
-## 7. Was NICHT in `AGENTS.md` gehoert
+## 7. Minimal Agent Workflow
+
+1. [`harness/README.md`](harness/README.md) lesen.
+2. Rolle aus [`harness/roles.md`](harness/roles.md) bestimmen.
+3. Source Precedence anwenden und relevante Spec/ADR/Slice-Doku lesen.
+4. Betroffene `GG-*`-, `GG-AR-*`, `ADR-*`- und Slice-IDs benennen.
+5. Kleinste sinnvolle Aenderung umsetzen.
+6. Engsten passenden Sensor laufen lassen; bei Codeaenderungen nach
+   Moeglichkeit `make gates`.
+7. Bei Replay-, Fault-, Determinismus- oder Demo-Aenderungen Evidence
+   nach [`harness/replay.md`](harness/replay.md) festhalten.
+8. Verification-Evidence nach
+   [`harness/verification.md`](harness/verification.md) festhalten,
+   wenn ein Slice geschlossen oder ein oeffentlicher Vertrag beruehrt
+   wurde.
+9. Oeffentliche Vertraege in README, `docs/user/`, ADR-Index, Roadmap,
+   Slice oder CHANGELOG nachziehen.
+10. Im Handoff ausgefuehrte Sensors, nicht ausgefuehrte Sensors und
+    verbleibende Risiken klar nennen.
+
+---
+
+## 8. Was NICHT in `AGENTS.md` gehoert
 
 - **Konkrete ADR-Inhalte** — ADRs haben einen eigenen Lifecycle.
 - **Slice-Plan-Status** oder Commit-Hashes — leben in

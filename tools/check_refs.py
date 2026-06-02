@@ -1,8 +1,8 @@
 """Markdown-Link-Validator (Trigger 002, Welle-7-Audit-Erbe).
 
-Scant alle Markdown-Dateien unter `docs/` und `spec/` nach
-relativen `[text](path)`-Links und meldet alle nicht aufgeloesten
-Pfade. Externe Links (`http://`, `https://`, `mailto:`,
+Scant alle Markdown-Dateien unter `docs/`, `spec/`, `harness/` sowie
+`AGENTS.md` nach relativen `[text](path)`-Links und meldet alle nicht
+aufgeloesten Pfade. Externe Links (`http://`, `https://`, `mailto:`,
 `#anchor`-only) werden uebersprungen.
 
 Stdlib-only — kein Runtime-Dep. Aufruf: `make docs-check` oder
@@ -36,7 +36,7 @@ _LINK_PATTERN = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 # Zeile entfernt — Closure-Notizen demonstrieren Markdown-Patterns
 # in Backticks (z. B. ``[text](path)``-Demo-Strings), die sonst als
 # echte Links interpretiert wuerden.
-_INLINE_CODE_PATTERN = re.compile(r"`[^`]*`")
+_INLINE_CODE_PATTERN = re.compile(r"`+[^`]*`+")
 
 # Pfade mit einem dieser Praefixe sind keine relativen Filesystem-Refs.
 _EXTERNAL_PREFIXES: tuple[str, ...] = (
@@ -80,13 +80,16 @@ def main() -> int:
 
 
 def _iter_markdown_files(repo_root: Path) -> Iterator[Path]:
-    """Liefert alle `*.md`-Dateien in `docs/` und `spec/`.
+    """Liefert alle Harness-relevanten `*.md`-Dateien.
 
     Andere Top-Level-Verzeichnisse (z. B. `tests/`, `tools/`)
-    enthalten heute keine fachlichen Markdown-Querverweise; bei
-    Bedarf in spaeteren Wellen erweitern.
+    enthalten heute keine fachlichen Markdown-Querverweise; bei Bedarf
+    in spaeteren Wellen erweitern.
     """
-    for top in ("docs", "spec"):
+    agents = repo_root / "AGENTS.md"
+    if agents.exists():
+        yield agents
+    for top in ("docs", "spec", "harness"):
         root = repo_root / top
         if not root.exists():
             continue

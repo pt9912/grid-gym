@@ -6,8 +6,9 @@
 #
 # Was bleibt drin (vom Dockerfile per `COPY` explizit referenziert):
 #   pyproject.toml, uv.lock, .python-version,
-#   src/, tests/, tools/, spec/,
-#   LICENSE, README.md.
+#   src/, tests/, tools/, spec/, docs/, harness/, deploy/,
+#   .github/workflows/,
+#   AGENTS.md, LICENSE, README.md.
 #
 # Alles andere kann hier ausgeschlossen werden.
 
@@ -17,7 +18,9 @@
 .gitattributes
 
 # --- CI / GitHub --------------------------------------------------------
-.github/
+.github/*
+!.github/workflows/
+!.github/workflows/**
 
 # --- Editor / IDE -------------------------------------------------------
 .idea/
@@ -53,11 +56,12 @@ htmlcov/
 .claude/
 
 # --- Dokumentation und Planungsartefakte --------------------------------
-# `docs/`, `deploy/`, `CHANGELOG.md`, `Makefile`, `Dockerfile` sind
-# NICHT mehr ausgeschlossen seit Welle 7 — der `docs-check`-Stage
-# (Markdown-Link-Validator `tools/check_refs.py`, Trigger 002)
-# aufloest relative Pfade zwischen `spec/`, `docs/` und Top-Level-
-# Artefakten. Sie muessen im Build-Kontext sein.
+# `docs/`, `harness/`, `deploy/`, `.github/workflows/`, `AGENTS.md`,
+# `CHANGELOG.md`, `Makefile`, `Dockerfile` sind NICHT ausgeschlossen —
+# der `docs-check`-Stage (Markdown-Link-Validator `tools/check_refs.py`,
+# Trigger 002) loest relative Pfade zwischen `spec/`, `docs/`,
+# Harness- und Top-Level-Artefakten auf. Sie muessen im Build-Kontext
+# sein.
 
 # --- Build-Skripte, die nicht ins Image gehoeren ------------------------
 # `.dockerignore` selbst gehoert nicht ins Image. `Dockerfile` und

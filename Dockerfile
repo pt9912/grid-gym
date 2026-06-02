@@ -74,10 +74,15 @@ COPY spec/ spec/
 # `Dockerfile` und `CHANGELOG.md` werden ebenfalls per Markdown-
 # Ref aus `docs/` referenziert (Slice-Plan + Trigger-Notes); die
 # `docs-check`-Stage braucht sie im Build-Kontext, damit
-# relative-Pfad-Aufloesung gegen reale Targets prueft.
+# relative-Pfad-Aufloesung gegen reale Targets prueft. `AGENTS.md`
+# und `harness/` gehoeren seit der Harness-Schaerfung ebenfalls zum
+# docs-check-Scope, weil sie kanonische Quellen verlinken.
 COPY docs/ docs/
+COPY harness/ harness/
 COPY deploy/ deploy/
+COPY .github/workflows/ .github/workflows/
 COPY Makefile Dockerfile CHANGELOG.md ./
+COPY AGENTS.md ./
 # `alembic.ini` zeigt auf das Postgres-Adapter-Migrations-
 # Verzeichnis (`src/grid_gym/adapters/driven/persistence_postgres/
 # migrations`) und wird vom Integration-Test-Runner programmatisch
@@ -149,9 +154,10 @@ RUN uv run lint-imports \
 
 # ---------------------------------------------------------------------------
 # docs-check: Markdown-Link-Validator (Trigger 002 Welle 7).
-# Scant docs/ + spec/ nach relativen `[text](path)`-Links und meldet
-# nicht aufloesbare Pfade. Faengt Audit-Lecks wie post-Move-Drift
-# (z. B. `in-progress/ → done/`) automatisiert ab.
+# Scant docs/, spec/, harness/ und AGENTS.md nach relativen
+# `[text](path)`-Links und meldet nicht aufloesbare Pfade. Faengt
+# Audit-Lecks wie post-Move-Drift (z. B. `in-progress/ → done/`)
+# automatisiert ab.
 # ---------------------------------------------------------------------------
 FROM source AS docs-check
 RUN uv run python tools/check_refs.py
