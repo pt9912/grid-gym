@@ -26,7 +26,9 @@ from typing import cast
 
 from fastapi import Request
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 
@@ -83,3 +85,53 @@ def get_telemetry_stream(request: Request) -> TelemetryStreamPort:
     if stream is None:
         raise _TelemetryStreamNotConfiguredError
     return cast(TelemetryStreamPort, stream)
+
+
+class _AlarmStreamNotConfiguredError(RuntimeError):
+    """Konfigurations-Fehler: HTTP-API ohne `AlarmStreamPort` gestartet
+    (M5 Welle 4b, ADR 0040 Decision 17)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "AlarmStreamPort is not configured. Call "
+            "grid_gym.adapters.driving.http_api.app.configure_alarm_stream "
+            "before serving requests."
+        )
+
+
+def get_alarm_stream(request: Request) -> AlarmStreamPort:
+    """Dependency-Provider fuer `AlarmStreamPort` (M5 Welle 4b, ADR
+    0040 Decision 17). Wirft `_AlarmStreamNotConfiguredError`,
+    wenn die App nicht konfiguriert ist — der WS-Endpoint
+    `WS /runs/{run_id}/alarms-stream` benoetigt einen aktiven
+    Stream.
+    """
+    stream = getattr(request.app.state, "alarm_stream", None)
+    if stream is None:
+        raise _AlarmStreamNotConfiguredError
+    return cast(AlarmStreamPort, stream)
+
+
+class _AlarmHistoryBufferNotConfiguredError(RuntimeError):
+    """Konfigurations-Fehler: HTTP-API ohne `AlarmHistoryBuffer`
+    gestartet (M5 Welle 4b, ADR 0040 Decision 17)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "AlarmHistoryBuffer is not configured. Call "
+            "grid_gym.adapters.driving.http_api.app.configure_alarm_stream "
+            "before serving requests."
+        )
+
+
+def get_alarm_history_buffer(request: Request) -> AlarmHistoryBuffer:
+    """Dependency-Provider fuer den `AlarmHistoryBuffer` (M5 Welle
+    4b, ADR 0040 Decision 17). Der Buffer ist adapter-internes
+    Helper-Konzept (kein Driven-Port-Vertrag — M3-Welle-6c
+    ersetzt durch `PostgresAlarmRepository`); Adapter-zu-Adapter-
+    Import ist daher legal.
+    """
+    buffer = getattr(request.app.state, "alarm_history_buffer", None)
+    if buffer is None:
+        raise _AlarmHistoryBufferNotConfiguredError
+    return cast(AlarmHistoryBuffer, buffer)

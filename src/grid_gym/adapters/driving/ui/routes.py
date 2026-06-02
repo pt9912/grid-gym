@@ -92,6 +92,33 @@ def get_run_dashboard(
     )
 
 
+@ui_router.get("/runs/{run_id}/alarms", response_class=HTMLResponse)
+def get_run_alarms(
+    run_id: str,
+    request: Request,
+    repository: Annotated[RunRepositoryPort, Depends(get_run_repository)],
+) -> HTMLResponse:
+    """Alarm-Tabelle-Page (M5 Welle 4b, ADR 0040 Decision 17).
+
+    Rendert eine Page mit HTMX-`hx-get` auf
+    `/runs/{run_id}/alarms` (REST-History fuer Initial-
+    Hydration) + `hx-ext="ws" ws-connect="/runs/{run_id}/
+    alarms-stream"` (Live-Updates). 6-Spalten-Tabelle per
+    `GG-UI-005`-Akzeptanz (Zeit/Ziel/Schweregrad/Code/
+    Nachricht/Status). Bei nicht-existentem Run liefert die
+    Route 404 (analog Welle-3-Dashboard- und Welle-4a-
+    Control-Pattern).
+    """
+    if not repository.exists(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+    templates = get_templates()
+    template_name = "alarms.html" if not _is_htmx_request(request) else "_alarms_content.html"
+    return cast(
+        HTMLResponse,
+        templates.TemplateResponse(request, template_name, {"run_id": run_id}),
+    )
+
+
 @ui_router.get("/runs/{run_id}/control", response_class=HTMLResponse)
 def get_run_control(
     run_id: str,

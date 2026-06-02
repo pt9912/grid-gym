@@ -30,12 +30,19 @@ einzelner logischer Block.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
+from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driving.http_api._dependencies import (
+    get_alarm_history_buffer,
+    get_run_repository,
+)
 from grid_gym.adapters.driving.http_api._schemas import (
+    AlarmDto,
+    AlarmsResponse,
     ErrorResponse,
     RunDetailResponse,
     RunStatusResponse,
@@ -173,4 +180,38 @@ def get_run_snapshot(
     return SnapshotResponse(
         run_id=run_id,
         schema_ref="grid-gym.snapshot.envelope.v2",
+    )
+
+
+@runs_router.get(
+    "/runs/{run_id}/alarms-history",
+    response_model=AlarmsResponse,
+    responses={404: {"model": ErrorResponse}},
+)
+def get_run_alarms_history(
+    run_id: str,
+    repository: Annotated[
+        RunRepositoryPort,
+        Depends(get_run_repository),
+    ],
+    history_buffer: Annotated[
+        AlarmHistoryBuffer,
+        Depends(get_alarm_history_buffer),
+    ],
+    limit: int = 50,
+) -> AlarmsResponse:
+    """Liefert die letzten `limit` Alarms aus dem `AlarmHistoryBuffer`
+    (M5 Welle 4b, ADR 0040 Decision 17).
+
+    Wird vom UI per HTMX-`hx-get` beim Page-Load fuer die
+    Initial-Hydration aufgerufen; Live-Updates kommen via
+    WS-`/alarms-stream`. Welle-4b-Default `limit=50`; max
+    `200` durch Buffer-Capacity.
+    """
+    _resolve_repository(run_id, repository)
+    clamped_limit = min(max(limit, 0), 200)
+    alarms = history_buffer.get_recent(run_id=run_id, limit=clamped_limit)
+    return AlarmsResponse(
+        run_id=run_id,
+        alarms=[AlarmDto(**dataclasses.asdict(alarm)) for alarm in alarms],
     )

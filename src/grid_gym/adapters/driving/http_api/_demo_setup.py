@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import Final, cast
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.adapters.driving.http_api._dependencies import (
     _RunRepositoryNotConfiguredError,
@@ -35,6 +36,7 @@ from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 
 
 _DEMO_RUN_ID: Final[str] = "demo-run-0001"
@@ -137,5 +139,20 @@ def configure_demo_run(
         run_repository=repository,
     )
     registry.register(tick_loop)
-    driver = DemoTickLoopDriver(tick_loop, tick_interval_s=tick_ms / 1000.0)
+    # M5-Welle-4b (ADR 0040 Decision 17): optional alarm-publish-
+    # Wiring. Liest `alarm_stream` + `alarm_history_buffer` von
+    # `app.state` (per `configure_alarm_stream` aus
+    # `_alarm_setup.py` injiziert); falls beide gesetzt, publisht
+    # der Driver nach jedem Tick die `emitted_alarms` auf den
+    # Stream + History-Buffer. Welle-4b-Demo (ohne Devices)
+    # publisht nichts produktiv — das Wiring ist da, falls die
+    # Welle-5-Demo-Pipeline Devices einzieht.
+    alarm_stream = getattr(app.state, "alarm_stream", None)
+    alarm_history_buffer = getattr(app.state, "alarm_history_buffer", None)
+    driver = DemoTickLoopDriver(
+        tick_loop,
+        tick_interval_s=tick_ms / 1000.0,
+        alarm_stream=cast(AlarmStreamPort | None, alarm_stream),
+        alarm_history_buffer=cast(AlarmHistoryBuffer | None, alarm_history_buffer),
+    )
     app.state.demo_tick_loop_driver = driver

@@ -19,12 +19,18 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import (
+    AlarmHistoryBuffer,
+    InMemoryAlarmStream,
+)
 from grid_gym.adapters.driving.http_api import app
+from grid_gym.adapters.driving.http_api._alarm_setup import configure_alarm_stream
 from grid_gym.adapters.driving.http_api._tick_loop_registry import TickLoopRegistry
 from grid_gym.adapters.driving.http_api.app import (
     configure_run_repository,
     configure_tick_loop_registry,
 )
+from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
@@ -38,11 +44,12 @@ from tests.unit.hexagon.ports.driven._fakes import (
 @pytest.fixture
 def configured_app() -> Iterator[tuple[TestClient, InMemoryRunRepository, TickLoopRegistry]]:
     """App mit frischem `InMemoryRunRepository` + `TickLoopRegistry`
-    pro Test."""
+    + `AlarmStream` + `AlarmHistoryBuffer` pro Test."""
     repository = InMemoryRunRepository()
     configure_run_repository(repository)
     registry = TickLoopRegistry()
     configure_tick_loop_registry(registry)
+    configure_alarm_stream(InMemoryAlarmStream(), AlarmHistoryBuffer())
     with TestClient(app) as client:
         yield client, repository, registry
 
@@ -207,5 +214,53 @@ def test_get_run_snapshot_returns_404_for_unknown_run(
     client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.get(f"/runs/{run_id}/snapshot")
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "run_not_found"
+
+
+# ---------------------------------------------------------------------------
+# GET /runs/{run_id}/alarms (M5 Welle 4b, ADR 0040 Decision 17)
+# ---------------------------------------------------------------------------
+
+
+def _make_alarm(run_id: str, alarm_id: str = "a0") -> Alarm:
+    return Alarm(
+        alarm_id=alarm_id,
+        run_id=run_id,
+        simulation_time_ms=100,
+        target="battery-1",
+        code="power_clamp_limited",
+        severity="warning",
+        message="msg",
+        status="active",
+        fault_id=None,
+    )
+
+
+def test_get_run_alarms_returns_history_buffer_contents(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
+) -> None:
+    """Welle-4b (ADR 0040 Decision 17): GET /alarms liefert die
+    Alarms aus dem AlarmHistoryBuffer; neueste zuerst."""
+    client, repository, _ = configured_app
+    metadata = _seed_run(repository)
+    # Inject alarms direkt in den buffer ueber app.state.
+    buffer = app.state.alarm_history_buffer
+    for i in range(3):
+        buffer.append(_make_alarm(metadata.run_id, alarm_id=f"a-{i}"))
+    response = client.get(f"/runs/{metadata.run_id}/alarms-history")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["run_id"] == metadata.run_id
+    alarm_ids = [a["alarm_id"] for a in body["alarms"]]
+    assert alarm_ids == ["a-2", "a-1", "a-0"]
+
+
+def test_get_run_alarms_returns_404_for_unknown_run(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
+) -> None:
+    client, _, _ = configured_app
+    run_id = str(uuid.uuid4())
+    response = client.get(f"/runs/{run_id}/alarms-history")
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "run_not_found"

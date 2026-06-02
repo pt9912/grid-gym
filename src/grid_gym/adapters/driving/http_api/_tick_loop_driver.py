@@ -23,7 +23,10 @@ from __future__ import annotations
 import asyncio
 import contextlib
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 
 
 _DEFAULT_TICK_INTERVAL_S = 0.1
@@ -55,10 +58,14 @@ class DemoTickLoopDriver:
         tick_loop: TickLoop,
         *,
         tick_interval_s: float = _DEFAULT_TICK_INTERVAL_S,
+        alarm_stream: AlarmStreamPort | None = None,
+        alarm_history_buffer: AlarmHistoryBuffer | None = None,
     ) -> None:
         self._tick_loop = tick_loop
         self._tick_interval_s = tick_interval_s
         self._task: asyncio.Task[None] | None = None
+        self._alarm_stream: AlarmStreamPort | None = alarm_stream
+        self._alarm_history_buffer: AlarmHistoryBuffer | None = alarm_history_buffer
 
     def start(self) -> None:
         """Startet den Driver-Task (idempotent)."""
@@ -110,5 +117,19 @@ class DemoTickLoopDriver:
             if state == "paused":
                 await asyncio.sleep(_PAUSE_POLL_INTERVAL_S)
                 continue
-            self._tick_loop.tick()
+            result = self._tick_loop.tick()
+            self._publish_emitted_alarms(result)
             await asyncio.sleep(self._tick_interval_s)
+
+    def _publish_emitted_alarms(self, result: TickResult) -> None:
+        """M5-Welle-4b (ADR 0040 Decision 17): publish jeden
+        `emitted_alarm` auf den Stream + History-Buffer, sofern
+        konfiguriert. Pattern symmetrisch zur Telemetry-Publish-
+        Wiring; bei `None`-Defaults ist die Methode No-op."""
+        if self._alarm_stream is None and self._alarm_history_buffer is None:
+            return
+        for alarm in result.emitted_alarms:
+            if self._alarm_stream is not None:
+                self._alarm_stream.publish(alarm)
+            if self._alarm_history_buffer is not None:
+                self._alarm_history_buffer.append(alarm)

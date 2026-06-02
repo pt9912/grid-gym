@@ -49,6 +49,7 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
 )
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 
@@ -203,4 +204,47 @@ async def ws_run_telemetry(websocket: WebSocket, run_id: str) -> None:
             await websocket.close()
         except RuntimeError:
             # Already closed by client; swallow.
+            return
+
+
+@runs_action_router.websocket("/runs/{run_id}/alarms-stream")
+async def ws_run_alarms_stream(websocket: WebSocket, run_id: str) -> None:
+    """Live-Alarm-WebSocket (`GG-UI-005`, ADR 0040 Decision 17).
+
+    Welle-4b-Verhalten (Pattern 1:1 parallel zu
+    `ws_run_telemetry`):
+
+    - Accept Connection.
+    - Pruefe Run-Existenz (falls nicht persistiert: close
+      mit Code 1008 = Policy-Violation analog 404-REST).
+    - Subscribt am `AlarmStreamPort` mit `run_id`-Filter.
+    - Pusht jeden `Alarm` als JSON (`asdict`-Serialisierung).
+    - Bei `WebSocketDisconnect` (Browser-Tab schliesst) gibt
+      der AsyncIterator-`finally`-Block den Subscriber-Slot
+      frei (ADR 0040 §2.3; Pattern aus ADR 0038 §2.3).
+    """
+    await websocket.accept()
+    repository = cast(
+        RunRepositoryPort | None,
+        getattr(websocket.app.state, "run_repository", None),
+    )
+    if repository is None or not repository.exists(run_id):
+        await websocket.close(code=1008, reason=f"Run '{run_id}' not found.")
+        return
+    stream = cast(
+        AlarmStreamPort | None,
+        getattr(websocket.app.state, "alarm_stream", None),
+    )
+    if stream is None:
+        await websocket.close(code=1011, reason="AlarmStreamPort is not configured.")
+        return
+    try:
+        async for alarm in stream.subscribe(run_id=run_id):
+            await websocket.send_json(dataclasses.asdict(alarm))
+    except WebSocketDisconnect:
+        return
+    finally:
+        try:
+            await websocket.close()
+        except RuntimeError:
             return

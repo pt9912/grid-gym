@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.event import Event
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 
@@ -46,6 +47,12 @@ class TickResult:
       `popped_events` und `emitted_telemetry` leer und
       `simulation_time`/`tick` reflektieren den unveraenderten
       Stand vor dem Aufruf.
+    - `emitted_alarms`: deterministisch sortiertes Tupel der
+      Unified-`Alarm`-Eintraege, die in diesem Tick von den
+      registrierten Devices drained + gemapped wurden (M5
+      Welle 4b, ADR 0040 Decision 16). Default `()` — bestehende
+      `TickResult`-Konstruktionen bleiben kompatibel; Welle-4-
+      Tests ohne Devices bekommen leeres Tupel.
     """
 
     tick: int
@@ -53,6 +60,7 @@ class TickResult:
     popped_events: tuple[Event, ...]
     emitted_telemetry: tuple[TelemetryPoint, ...]
     paused: bool = False
+    emitted_alarms: tuple[Alarm, ...] = ()
 
     @classmethod
     def paused_result(

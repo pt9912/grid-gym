@@ -42,7 +42,8 @@ unveraendert.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping, Sequence
+import uuid
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
@@ -60,7 +61,9 @@ from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from typing import Literal
 
+from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.run import RunStatus
+from grid_gym.hexagon.core.simulation.alarm_mappers import dispatch_alarm_mapper
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
     AgentInvalidCommandTargetError,
@@ -165,6 +168,15 @@ _AGENT_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
 additiv). Welle 4c+/M5-Agent-Typen muessen sich hier eintragen,
 pattern-konsistent zu `_DEVICE_TYPE_BY_CLASS_NAME`."""
 
+
+def _default_alarm_id_source() -> str:
+    """Production-Default fuer die Alarm-ID-Generierung
+    (`uuid.uuid4` als String; M5 Welle 4b, ADR 0040 Decision 16).
+    Tests injizieren einen monoton zaehlenden Stub via
+    `alarm_id_source`-Konstruktor-Kwarg."""
+    return str(uuid.uuid4())
+
+
 ControlAction = Literal["pause", "resume", "stop"]
 """M5-Welle-4a (ADR 0037 Decision API-1 + ADR 0039 Decision 13)
 Control-Action-Vokabel, gespiegelt aus dem HTTP-`ControlRequest`-
@@ -223,6 +235,7 @@ class TickLoop:
         trace_port: TracePort | None = None,
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
         run_repository: RunRepositoryPort | None = None,
+        alarm_id_source: Callable[[], str] | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -318,7 +331,7 @@ class TickLoop:
         # aufgerufen, damit `_device_by_id` schon gebaut ist
         # (Welle-4b-Agents koennten Device-Referenzen brauchen).
         self._attach_agents()
-        self._attach_control_state(run_repository)
+        self._attach_welle_4_state(run_repository, alarm_id_source)
 
     def _attach_devices(self) -> None:
         """Reicht `run_id` an alle Devices durch (Welle-3-Review-M-4-
@@ -362,6 +375,60 @@ class TickLoop:
         """
         self._protocol_ports: tuple[DeviceProtocolPort, ...] | None = protocol_ports
         self._started_protocol_port_indices: list[int] = []
+
+    def _drain_and_map_device_alarms(self, simulation_time_ms: int) -> tuple[Alarm, ...]:
+        """M5-Welle-4b (ADR 0040 Decision 16): drainst + mapped die
+        device-spezifischen Raw-Alarms am Tick-Ende.
+
+        Iteriert die Devices in Konstruktor-Reihenfolge
+        (Determinismus-Garantie), drainst pro Device, mapped jeden
+        raw-Alarm auf einen Unified-`Alarm` mit Run-Kontext
+        (run_id + simulation_time_ms + alarm_id aus dem injizierten
+        Source). `drain_alarms()` ist nur fuer die 5 device-
+        Familien implementiert; der `hasattr`-Guard skippt
+        Welle-7+/M3-Geraete, die das Pattern noch nicht
+        uebernommen haben.
+        """
+        alarms: list[Alarm] = []
+        for device in self._devices:
+            if not hasattr(device, "drain_alarms"):
+                continue
+            for raw in device.drain_alarms():
+                alarms.append(
+                    dispatch_alarm_mapper(
+                        raw,
+                        run_id=self._run_id,
+                        simulation_time_ms=simulation_time_ms,
+                        alarm_id=self._alarm_id_source(),
+                    )
+                )
+        return tuple(alarms)
+
+    def _attach_welle_4_state(
+        self,
+        run_repository: RunRepositoryPort | None,
+        alarm_id_source: Callable[[], str] | None,
+    ) -> None:
+        """Welle-4-State-Setup-Bundle (Welle-4a Control-State +
+        Welle-4b Alarm-ID-Source). Bewusst zwei Concerns in einem
+        Helper, um `PLR0915 max-statements=30` in `__init__` nicht
+        zu reissen — beide Welle-4-State-Slots sind klein und
+        verwandt (Run-Lifecycle vs. Alarm-Aggregation), beide
+        lesen optional `app.state`-Parameter aus dem Konstruktor."""
+        self._attach_control_state(run_repository)
+        self._attach_alarm_id_source(alarm_id_source)
+
+    def _attach_alarm_id_source(
+        self,
+        alarm_id_source: Callable[[], str] | None,
+    ) -> None:
+        """M5-Welle-4b (ADR 0040 Decision 16): UUIDv4-Source-
+        Injection fuer den `Alarm.alarm_id`-Slot. Production-
+        Default ist `uuid.uuid4` (kollisionsfrei in der Praxis);
+        Tests injizieren einen monoton zaehlenden Stub fuer
+        deterministische Snapshot-Asserts. Pattern analog
+        `random: RandomPort` aus M1."""
+        self._alarm_id_source: Callable[[], str] = alarm_id_source or _default_alarm_id_source
 
     def _attach_control_state(
         self,
@@ -828,6 +895,7 @@ class TickLoop:
             simulation_time=now,
             popped_events=popped,
             emitted_telemetry=tuple(emitted),
+            emitted_alarms=self._drain_and_map_device_alarms(now),
         )
         self._tick_count += 1
         # M3-Welle-5 (ADR 0024 §2.6) + Review-Folge L-1: Observability-

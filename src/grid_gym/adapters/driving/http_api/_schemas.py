@@ -31,6 +31,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from grid_gym.hexagon.core.domain.alarm import AlarmSeverity, AlarmStatus
 from grid_gym.hexagon.core.domain.run import RunStatus
 
 
@@ -181,6 +182,46 @@ class FaultInjectionResponse(BaseModel):
     fault_id: str = Field(description="UUIDv4-Identitaet des erzeugten Fault-Eintrags.")
     accepted: bool = Field(
         description="True wenn der Fault registriert wurde (Welle-1-Stub: immer True).",
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /runs/{run_id}/alarms (M5 Welle 4b, ADR 0040 Decision 17)
+# ---------------------------------------------------------------------------
+
+
+class AlarmDto(BaseModel):
+    """Pydantic-DTO fuer den Unified `Alarm`-Domain-Type
+    (`GG-UI-005`-6-Spalten-UI-Akzeptanz: Zeit/Ziel/Schweregrad/
+    Code/Nachricht/Status; plus `alarm_id`/`run_id`/`fault_id`-
+    Felder fuer kanonisches 9-Feld-Schema)."""
+
+    alarm_id: str = Field(description="UUIDv4-Identitaet des Alarms.")
+    run_id: str = Field(description="UUIDv4-Identitaet des Laufs.")
+    simulation_time_ms: int = Field(
+        description="Tick-Zeitpunkt in ms (ab Lauf-Start).",
+        ge=0,
+    )
+    target: str = Field(description="Ziel-Geraete-ID.")
+    code: str = Field(description="Stabile Fehler-ID (z. B. `power_clamp_limited`).")
+    severity: AlarmSeverity = Field(
+        description="Schweregrad-Hierarchie (`info`/`warning`/`critical`)."
+    )
+    message: str = Field(description="Mensch-lesbare Beschreibung.")
+    status: AlarmStatus = Field(description="Lifecycle-Status (Welle-4b: immer `active`).")
+    fault_id: str | None = Field(
+        default=None,
+        description="Optional; Welle-4b immer `None` (Fault-Injection-Mapping Welle 6+/M6).",
+    )
+
+
+class AlarmsResponse(BaseModel):
+    """Antwort auf `GET /runs/{run_id}/alarms`. Neueste zuerst
+    (LIFO der internen Ring-Buffer-deque)."""
+
+    run_id: str = Field(description="UUIDv4-Identitaet des Laufs.")
+    alarms: list[AlarmDto] = Field(
+        description="Liste der letzten Alarms; neueste zuerst.",
     )
 
 

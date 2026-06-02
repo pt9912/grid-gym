@@ -238,3 +238,63 @@ button[type="button"] {
     font-style: italic;
     color: #555;
 }
+
+/* M5-Welle-4b — Alarm-Tabelle (GG-UI-005; ADR 0040 Decision 17). */
+.alarms h1 {
+    margin-bottom: 0.5rem;
+}
+
+.alarms-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: ui-monospace, "SFMono-Regular", monospace;
+    font-size: 0.9rem;
+}
+
+.alarms-table th,
+.alarms-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+.alarms-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.alarms-table td.empty {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+
+/* Drei AlarmSeverity-Marker-Zustaende (GG-UI-005; ADR 0040). */
+.alarms-table tr.severity-info,
+.severity-badge.severity-info {
+    background: #e6f0ff;
+    color: #1a3a7a;
+}
+
+.alarms-table tr.severity-warning,
+.severity-badge.severity-warning {
+    background: #fff8e1;
+    color: #6b5500;
+}
+
+.alarms-table tr.severity-critical,
+.severity-badge.severity-critical {
+    background: #ffd1d1;
+    color: #800000;
+    font-weight: 600;
+}

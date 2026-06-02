@@ -25,16 +25,22 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import (
+    AlarmHistoryBuffer,
+    InMemoryAlarmStream,
+)
 from grid_gym.adapters.driven.telemetry_stream_inmemory import (
     InMemoryTelemetryStream,
 )
 from grid_gym.adapters.driving.http_api import app
+from grid_gym.adapters.driving.http_api._alarm_setup import configure_alarm_stream
 from grid_gym.adapters.driving.http_api._tick_loop_registry import TickLoopRegistry
 from grid_gym.adapters.driving.http_api.app import (
     configure_run_repository,
     configure_telemetry_stream,
     configure_tick_loop_registry,
 )
+from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
@@ -58,6 +64,7 @@ def configured_app() -> Iterator[
     configure_telemetry_stream(stream)
     registry = TickLoopRegistry()
     configure_tick_loop_registry(registry)
+    configure_alarm_stream(InMemoryAlarmStream(queue_maxsize=16), AlarmHistoryBuffer())
     with TestClient(app) as client:
         yield client, repository, stream, registry
 
@@ -336,6 +343,61 @@ def test_ws_telemetry_closes_with_1008_for_unknown_run(
     with (
         pytest.raises(WebSocketDisconnect) as exc_info,
         client.websocket_connect(f"/runs/{run_id}/telemetry") as ws,
+    ):
+        ws.receive_json()
+    assert exc_info.value.code == 1008
+
+
+# ---------------------------------------------------------------------------
+# WS /runs/{run_id}/alarms-stream (M5 Welle 4b, ADR 0040 Decision 17)
+# ---------------------------------------------------------------------------
+
+
+def _make_alarm(run_id: str, alarm_id: str = "a0") -> Alarm:
+    return Alarm(
+        alarm_id=alarm_id,
+        run_id=run_id,
+        simulation_time_ms=100,
+        target="battery-1",
+        code="power_clamp_limited",
+        severity="warning",
+        message="msg",
+        status="active",
+        fault_id=None,
+    )
+
+
+def test_ws_alarms_stream_pushes_subscribed_alarms(
+    configured_app: tuple[
+        TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
+    ],
+) -> None:
+    """Welle-4b (ADR 0040 Decision 17): WS pusht JSON-Serialized
+    Alarms aus dem AlarmStreamPort; filtert nach run_id."""
+    client, repository, _, _ = configured_app
+    metadata = _seed_run(repository)
+    alarm_stream = app.state.alarm_stream
+    with client.websocket_connect(f"/runs/{metadata.run_id}/alarms-stream") as ws:
+        alarm_stream.publish(_make_alarm(metadata.run_id, alarm_id="a-0"))
+        alarm_stream.publish(_make_alarm("other-run", alarm_id="a-99"))
+        alarm_stream.publish(_make_alarm(metadata.run_id, alarm_id="a-1"))
+        msgs = [ws.receive_json() for _ in range(2)]
+    assert [m["alarm_id"] for m in msgs] == ["a-0", "a-1"]
+    assert all(m["run_id"] == metadata.run_id for m in msgs)
+
+
+def test_ws_alarms_stream_closes_with_1008_for_unknown_run(
+    configured_app: tuple[
+        TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
+    ],
+) -> None:
+    """Welle-4b: nicht-existenter Run → Close-Code 1008
+    (Policy-Violation; Pattern aus Welle 3)."""
+    client, _, _, _ = configured_app
+    run_id = str(uuid.uuid4())
+    with (
+        pytest.raises(WebSocketDisconnect) as exc_info,
+        client.websocket_connect(f"/runs/{run_id}/alarms-stream") as ws,
     ):
         ws.receive_json()
     assert exc_info.value.code == 1008

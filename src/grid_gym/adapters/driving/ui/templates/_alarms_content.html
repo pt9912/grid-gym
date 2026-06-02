@@ -1,0 +1,101 @@
+<section class="alarms" data-run-id="{{ run_id }}">
+    <h1>Alarms — {{ run_id }}</h1>
+
+    <table class="alarms-table">
+        <thead>
+            <tr>
+                <th>Zeit (ms)</th>
+                <th>Ziel</th>
+                <th>Schweregrad</th>
+                <th>Code</th>
+                <th>Nachricht</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="alarms-tbody"
+               hx-get="/runs/{{ run_id }}/alarms-history?limit=50"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+            <tr><td colspan="6" class="empty">Loading alarms...</td></tr>
+        </tbody>
+    </table>
+
+    <div hx-ext="ws" ws-connect="/runs/{{ run_id }}/alarms-stream"
+         id="alarms-ws" class="ws-bridge" aria-hidden="true"></div>
+
+    <script>
+    (function () {
+        const MAX_ROWS = 200;
+        const runId = "{{ run_id }}";
+        const tbody = document.getElementById("alarms-tbody");
+        const wsBridge = document.getElementById("alarms-ws");
+        let emptyRowRemoved = false;
+
+        function renderAlarmRow(alarm) {
+            const row = document.createElement("tr");
+            row.className = `severity-${alarm.severity}`;
+            row.innerHTML = `
+                <td class="sim-time">${alarm.simulation_time_ms}</td>
+                <td class="target">${alarm.target}</td>
+                <td class="severity"><span class="severity-badge severity-${alarm.severity}">${alarm.severity}</span></td>
+                <td class="code">${alarm.code}</td>
+                <td class="message">${alarm.message}</td>
+                <td class="status">${alarm.status}</td>`;
+            return row;
+        }
+
+        function prependAlarm(alarm) {
+            if (!emptyRowRemoved) {
+                tbody.innerHTML = "";
+                emptyRowRemoved = true;
+            }
+            tbody.insertBefore(renderAlarmRow(alarm), tbody.firstChild);
+            while (tbody.children.length > MAX_ROWS) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        }
+
+        // HTMX-Hydration via REST: Welle-4b-`/alarms`-Endpoint
+        // liefert `{run_id, alarms}`-JSON. Wir transformieren den
+        // Response in <tr>-Reihen vor dem Swap.
+        document.body.addEventListener("htmx:beforeSwap", function (event) {
+            const target = event.detail.target;
+            if (!target || target.id !== "alarms-tbody") {
+                return;
+            }
+            let payload;
+            try {
+                payload = JSON.parse(event.detail.serverResponse);
+            } catch (err) {
+                return;
+            }
+            const alarms = payload.alarms || [];
+            if (alarms.length === 0) {
+                event.detail.serverResponse = `<tr><td colspan="6" class="empty">No alarms yet.</td></tr>`;
+                emptyRowRemoved = false;
+                return;
+            }
+            const tmp = document.createElement("tbody");
+            for (const alarm of alarms) {
+                tmp.appendChild(renderAlarmRow(alarm));
+            }
+            event.detail.serverResponse = tmp.innerHTML;
+            emptyRowRemoved = true;
+        });
+
+        // WS-Live-Updates: prependt jeden neuen Alarm.
+        wsBridge.addEventListener("htmx:wsAfterMessage", function (event) {
+            let alarm;
+            try {
+                alarm = JSON.parse(event.detail.message);
+            } catch (err) {
+                return;
+            }
+            if (alarm.run_id !== runId) {
+                return;
+            }
+            prependAlarm(alarm);
+        });
+    })();
+    </script>
+</section>
