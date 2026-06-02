@@ -624,8 +624,13 @@ Akzeptanz `GG-UI-004` + Replay-Restcompletion-Anteil
 `GG-API-001` produktiv. 10/10 A-1-Gates gruen. **Welle-
 4-Subdivision** (4a/4b; Pattern analog M4-Welle-5a/5b und
 M4-Welle-6a/6b): Welle 4b (Alarme: Aggregation +
-AlarmStreamPort + Alarm-Tabelle) folgt nach 4a-Self-Close-
-Move; NEU ADR 0040 geplant mit Decisions 15/16.
+AlarmStreamPort + Alarm-Tabelle) in Pre-C0a `d1b0eb7` +
+Pre-C0b `e325307` + C0 (siehe
+[`M5-welle-4b.md`](M5-welle-4b.md)); NEU ADR 0040 geplant
+mit **3 Decisions 15/16/17** (Schema+Mapper / TickLoop-
+Aggregation / AlarmStreamPort+History-Endpoint —
+Welle-4b-C0-Pre-Research erweiterte den Welle-4a-Era-
+Plan von 2 auf 3 Decisions).
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

@@ -489,10 +489,18 @@ def get_run_status(
 
 ### 3.2 Welle-4b-Folge
 
-- **Alarm-Aggregation + AlarmStreamPort** kommt in
-  Welle 4b mit NEU ADR 0040 (geplant). Pattern-Vorbild:
-  ADR 0038 `TelemetryStreamPort` (NEU Driving-Port +
-  asyncio-Pub/Sub-Adapter).
+- **Alarm-Aggregation + AlarmStreamPort** in Welle-4b-
+  Pre-C0a `d1b0eb7` + Pre-C0b `e325307` + C0 eroeffnet
+  (siehe
+  [`../planning/in-progress/M5-welle-4b.md`](../planning/in-progress/M5-welle-4b.md));
+  NEU ADR 0040 fuer C1 vorbereitet. **Welle-4b-C0-Pre-
+  Research erweiterte den Welle-4a-Era-Plan von 2 auf
+  3 Decisions** (15 NEU Unified `Alarm`-Domain-Schema +
+  Mapper-Familie; 16 TickLoop-Aggregation via
+  `TickResult.emitted_alarms`; 17 AlarmStreamPort-
+  Surface + `GET /runs/{id}/alarms`-History-Endpoint).
+  Pattern-Vorbild: ADR 0038 `TelemetryStreamPort` (NEU
+  Driving-Port + asyncio-Pub/Sub-Adapter).
 - **Alarm-Surface-Symmetrie:** Welle 4b kann den
   Cooperative-Pattern aus Decision 13 wiederverwenden,
   falls Alarm-Trigger den Run pausieren sollen

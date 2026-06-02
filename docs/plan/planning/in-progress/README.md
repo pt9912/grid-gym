@@ -8,6 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
+| [`M5-welle-4b.md`](M5-welle-4b.md) | Welle-4b-Slice-Doc (M5 Alarm-Aggregation + AlarmStreamPort + Alarm-Tabelle-UI: NEU Unified `Alarm`-Domain-Schema + 5 Mapper-Funktionen aus device-Alarms + TickLoop-Drain-Hook + `TickResult.emitted_alarms` + NEU `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + `GET /runs/{id}/alarms` + `WS /alarms-stream` + UI-Tabelle mit 6 Pflicht-Spalten per `GG-UI-005`; loest ADR-0014-§6-Forward-Pointer „AlarmSinkPort kommt mit M3") — **In Progress 2026-06-02**; zweiter Sub-Slice der Welle-4-Subdivision (4a/4b). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -216,13 +217,33 @@ Begruendung (kein separater `ControlPort`-Slot).
 **Aktive Welle:** M5-Welle-4b (Alarme: Aggregation +
 AlarmStreamPort + Alarm-Tabelle-UI) mit Pre-C0a `d1b0eb7`
 (Self-Close-Move `M5-welle-4a.md → done/`, rename-only) +
-Pre-C0b (dieser Commit; Cross-Doc-Refs-Sync nach Move)
-abgeschlossen; naechster Schritt C0 (Slice-Doc-Anlage).
-Lieferziel: unified `Alarm`-Domain-Type aus 5 device-
-spezifischen Alarms (`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/
-`GridConnectionAlarm`/`SmartMeterAlarm`) + NEU
-`AlarmStreamPort` (Pattern analog `TelemetryStreamPort`
-aus Welle 3, ADR 0038) + NEU Alarm-Tabelle-UI unter
-`/runs/{id}/alarms` (WS vs HTMX-Polling in Welle-4b-
-Decision-16 zu entscheiden) + NEU ADR 0040 mit Decisions
-15/16. Erfuellt `GG-UI-005`.
+Pre-C0b `e325307` (Cross-Doc-Refs-Sync nach Move) + C0
+(dieser Commit; Slice-Doc-Anlage
+[`M5-welle-4b.md`](M5-welle-4b.md) + **NEU Decisions
+15/16/17** final fixiert aus C0-Pre-Research + Retro-Sync
+der Welle-4a-Era-2→3-Decision-Forward-Pointer in
+`M5-ui-demo.md §3 Welle 4b`, `roadmap.md §3 M5`, ADR
+0039 §3.2); naechster Schritt C1 (NEU ADR 0040
+`Proposed`). Welle-4b-C0-Pre-Research deckte 3 distinkte
+Architektur-Concerns auf (Schema+Mapper / Aggregation /
+Surface) statt der Welle-4a-Era-angekuendigten 2 Decisions.
+Welle-4b-Lieferziel: NEU `Alarm`-Domain-Type mit
+kanonischem 9-Feld-Schema per
+[`../../../../spec/architecture.md §Alarm`](../../../../spec/architecture.md)
++ 5 typisierte Mapper-Funktionen aus device-spezifischen
+Raw-Events (`BatteryAlarm`/`PvAlarm`/`LoadAlarm`/
+`GridConnectionAlarm`/`SmartMeterAlarm`; device-Klassen
+bleiben unveraendert) + TickLoop-Drain-Hook am Tick-Ende
++ `TickResult.emitted_alarms` (parallel zu
+`emitted_telemetry`) + NEU `AlarmStreamPort` (Pattern
+analog `TelemetryStreamPort` aus Welle 3, ADR 0038) +
+NEU REST-Endpoint `GET /runs/{id}/alarms` (History-
+Hydration) + NEU WS-Endpoint `WS /runs/{id}/alarms-
+stream` (Live-Updates) + NEU UI-Tabelle unter `/runs/
+{id}/alarms` mit 6 Pflicht-Spalten per `GG-UI-005`-
+Akzeptanz + NEU ADR 0040 mit Decisions 15/16/17.
+Welle 5 (Demo-Pipeline + Scenario-Loader) folgt nach
+Welle-4b-Self-Close-Move; Welle-4-Container damit
+komplett bei Welle-4b-C3-Closure. Erfuellt `GG-UI-005`
++ loest ADR-0014-§6-Forward-Pointer-Erbschaft
+„AlarmSinkPort kommt mit M3" (M3 ohne Sink geschlossen).
