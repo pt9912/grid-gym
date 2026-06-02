@@ -437,6 +437,50 @@ class TickLoopInvalidTickMsError(TickLoopError):
         super().__init__(f"tick_ms must be positive, got {value}")
 
 
+class TickLoopStoppedError(TickLoopError):
+    """`TickLoop.tick()` mit `_control_state` in `stopped`/`completed`
+    (M5 Welle 4a, ADR 0039 Decision 13).
+
+    Wirft auf, wenn der externe Tick-Driver-Task einen Tick auf
+    einem bereits terminierten Run aufruft. Der HTTP-Adapter (M5
+    Welle 4a) faengt das normalerweise NICHT (kein 4xx-Mapping
+    noetig) — es ist Driver-Logik-Fehler; der Driver-Task soll
+    den Loop verlassen, sobald `tick_loop.control_state` auf
+    `stopped`/`completed` flippt.
+    """
+
+    def __init__(self, run_id: str, control_state: str) -> None:
+        super().__init__(
+            f"tick() called on terminated run {run_id!r} "
+            f"(control_state={control_state!r}); "
+            "driver task should exit the loop before calling tick()."
+        )
+
+
+class TickLoopInvalidTransitionError(TickLoopError):
+    """`TickLoop.request_*` mit unerlaubtem State-Uebergang
+    (M5 Welle 4a, ADR 0039 Decision 13).
+
+    Transitions-Matrix: pause aus `pending`/`running` ok; resume aus
+    `paused`/`pending` ok; stop aus jedem aktiven State ok;
+    idempotente Wiederholungen auf demselben State sind no-op (kein
+    Throw). Terminal-States `stopped`/`completed` lassen nur einen
+    erneuten `stop`-Idempotenz-No-op zu.
+
+    Der HTTP-Adapter (`_runs_action_router.py:post_run_control`)
+    mapped diese Exception auf 409 Conflict mit `GG-API-004`-
+    `ErrorResponse(code="invalid_transition")`.
+    """
+
+    def __init__(self, run_id: str, current_state: str, target_state: str) -> None:
+        super().__init__(
+            f"invalid run-control transition for {run_id!r}: {current_state!r} -> {target_state!r}"
+        )
+        self.run_id = run_id
+        self.current_state = current_state
+        self.target_state = target_state
+
+
 class TickLoopUnknownDeviceTypeError(TickLoopError):
     """Welle-6a-Review M-6: TickLoop kennt keinen `device_type` fuer
     den uebergebenen `DeviceModel`-Klassen-Namen. Schreib-Pfad-

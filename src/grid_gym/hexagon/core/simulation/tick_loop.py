@@ -58,6 +58,9 @@ from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
+from typing import Literal
+
+from grid_gym.hexagon.core.domain.run import RunStatus
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
     AgentInvalidCommandTargetError,
@@ -69,13 +72,16 @@ from grid_gym.hexagon.core.errors import (
     TickLoopAgentSnapshotMissingKeysError,
     TickLoopAgentSnapshotWrongTypeError,
     TickLoopInvalidTickMsError,
+    TickLoopInvalidTransitionError,
     TickLoopSnapshotClockMismatchError,
     TickLoopSnapshotMissingKeysError,
     TickLoopSnapshotRandomMismatchError,
     TickLoopSnapshotVersionError,
     TickLoopSnapshotWrongTypeError,
+    TickLoopStoppedError,
     TickLoopUnknownDeviceTypeError,
 )
+from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
@@ -159,6 +165,23 @@ _AGENT_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
 additiv). Welle 4c+/M5-Agent-Typen muessen sich hier eintragen,
 pattern-konsistent zu `_DEVICE_TYPE_BY_CLASS_NAME`."""
 
+ControlAction = Literal["pause", "resume", "stop"]
+"""M5-Welle-4a (ADR 0037 Decision API-1 + ADR 0039 Decision 13)
+Control-Action-Vokabel, gespiegelt aus dem HTTP-`ControlRequest`-
+Body. `TickLoop.request(action)` dispatched ueber diesen Literal."""
+
+_CONTROL_ACTION_TRANSITIONS: Final[
+    Mapping[ControlAction, tuple[RunStatus, tuple[RunStatus, ...]]]
+] = {
+    "pause": ("paused", ("pending", "running", "paused")),
+    "resume": ("running", ("pending", "paused", "running")),
+    "stop": ("stopped", ("pending", "running", "paused", "stopped")),
+}
+"""ADR 0039 Decision 13 Transitions-Matrix: pro ControlAction die
+``(target_state, allowed_from_states)``-Paarung. Idempotenter
+No-op-Pfad ist im Caller (`TickLoop.request`) — der Target-State
+ist in `allowed_from` enthalten."""
+
 _BILANZ_SOURCE_BUCKETS: Final[Mapping[str, str]] = {
     "pv": "generation",
     "load": "load",
@@ -199,6 +222,7 @@ class TickLoop:
         metrics_port: MetricsPort | None = None,
         trace_port: TracePort | None = None,
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
+        run_repository: RunRepositoryPort | None = None,
     ) -> None:
         if tick_ms <= 0:
             # Format-Validierung am Konstruktor. Policy-Validierung
@@ -294,6 +318,7 @@ class TickLoop:
         # aufgerufen, damit `_device_by_id` schon gebaut ist
         # (Welle-4b-Agents koennten Device-Referenzen brauchen).
         self._attach_agents()
+        self._attach_control_state(run_repository)
 
     def _attach_devices(self) -> None:
         """Reicht `run_id` an alle Devices durch (Welle-3-Review-M-4-
@@ -337,6 +362,22 @@ class TickLoop:
         """
         self._protocol_ports: tuple[DeviceProtocolPort, ...] | None = protocol_ports
         self._started_protocol_port_indices: list[int] = []
+
+    def _attach_control_state(
+        self,
+        run_repository: RunRepositoryPort | None,
+    ) -> None:
+        """M5-Welle-4a (ADR 0039 Decisions 12+13): Run-Control-State-
+        Mirror + optionale Repository-Persistenz. `_control_state`
+        ist Cache der Repository-Wahrheit; bei `run_repository=None`
+        (Default-Welle-1+M2-Tests) skippt die Repository-Mirror-
+        Sequenz in `request`, der Pre-Tick-Guard greift trotzdem.
+        Snapshot-Format aus ADR 0015 bleibt unveraendert —
+        `_control_state` ist Run-Lifecycle, nicht Tick-Determinismus;
+        `from_snapshot`-Resume setzt das Feld auf `"running"` (siehe
+        ADR 0039 §2.2)."""
+        self._control_state: RunStatus = "pending"
+        self._run_repository: RunRepositoryPort | None = run_repository
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
@@ -435,6 +476,54 @@ class TickLoop:
         """Anzahl bereits abgeschlossener Ticks (0 vor dem ersten
         `tick()`-Aufruf)."""
         return self._tick_count
+
+    @property
+    def control_state(self) -> RunStatus:
+        """Aktueller `RunStatus`-Lifecycle-State (M5 Welle 4a, ADR
+        0039 Decision 13).
+
+        Read-only Cache des Repository-Status; nur `request_*`-
+        Methoden mutieren das Feld. Default ``"pending"`` bis zum
+        ersten erfolgreichen `tick()` oder `request_resume()` —
+        der erste Tick flippt das State auf ``"running"`` als
+        Side-Effect (Pre-Tick-Guard-Pfad). Externer asyncio-Tick-
+        Driver liest dieses Property, um den Loop bei
+        ``stopped``/``completed`` zu verlassen.
+        """
+        return self._control_state
+
+    def request(self, action: ControlAction) -> None:
+        """Setzt `_control_state` gemaess Welle-4a-Transition-Matrix
+        (M5 Welle 4a, ADR 0039 Decision 13).
+
+        ``action`` ist eines von ``"pause"``/``"resume"``/``"stop"``
+        — gespiegelt aus dem HTTP-`ControlRequest`-Body (ADR 0037
+        Decision API-1). Erlaubte Transitions:
+
+        - ``pause`` aus ``pending``/``running`` → ``paused``.
+        - ``resume`` aus ``pending``/``paused`` → ``running``.
+        - ``stop`` aus ``pending``/``running``/``paused`` →
+          ``stopped``.
+        - Idempotente Wiederholung auf demselben State ist No-op.
+        - Sonst: `TickLoopInvalidTransitionError`.
+
+        Reihenfolge: Guard (Invalid-Transition-Check) → Repository-
+        Write (Persistenz-Wahrheit, sofern Port gesetzt) → Cache-
+        Set. Bei `run_repository=None` skippt der Mirror-Step;
+        der Cache-Set bleibt.
+        """
+        target_state, allowed_from = _CONTROL_ACTION_TRANSITIONS[action]
+        if self._control_state == target_state:
+            return
+        if self._control_state not in allowed_from:
+            raise TickLoopInvalidTransitionError(
+                run_id=self._run_id,
+                current_state=self._control_state,
+                target_state=target_state,
+            )
+        if self._run_repository is not None:
+            self._run_repository.update_status(self._run_id, target_state)
+        self._control_state = target_state
 
     @property
     def unknown_source_count(self) -> int:
@@ -574,6 +663,32 @@ class TickLoop:
         Welle-4-Scope: ohne Devices/grid_model bleibt das
         Verhalten identisch zur M1-Welle-4-Spine.
         """
+        # M5-Welle-4a (ADR 0039 Decision 13) — Pre-Tick-Guard
+        # GANZ am Anfang. `paused` skippt den kompletten Tick-Body
+        # (keine Agent-Validierung, kein Span, keine Clock-Advance);
+        # `stopped`/`completed` wirft `TickLoopStoppedError`. Der
+        # externe asyncio-Tick-Driver soll den Loop verlassen,
+        # sobald `control_state` auf terminal flippt — der Guard ist
+        # eine zweite Schutzschicht.
+        if self._control_state == "paused":
+            return TickResult.paused_result(
+                tick=self._tick_count,
+                simulation_time=self._clock.now(),
+            )
+        if self._control_state in ("stopped", "completed"):
+            raise TickLoopStoppedError(
+                run_id=self._run_id,
+                control_state=self._control_state,
+            )
+        # `pending` flippt beim ersten produktiven Tick auf
+        # `running` (mit Repository-Mirror, falls konfiguriert) —
+        # damit `GET /runs/{id}/status` nach dem ersten Tick den
+        # `running`-State sieht ohne explizites `request_resume`.
+        if self._control_state == "pending":
+            self._control_state = "running"
+            if self._run_repository is not None:
+                self._run_repository.update_status(self._run_id, "running")
+
         # Schritt A0v (M3-Welle-4a, ADR 0026 §2.1) — Pre-Clock-
         # Target-Validierung des Pending-Agent-Command-Buffers.
         # Laeuft VOR `clock.advance(...)` und `scheduler.pop_due(...)`,

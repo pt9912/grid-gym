@@ -26,7 +26,7 @@ from typing import Final
 import psycopg
 from psycopg import sql
 
-from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.domain.run import RunMetadata, RunStatus
 from grid_gym.hexagon.core.errors import (
     RunAlreadyExistsError,
     RunNotFoundError,
@@ -120,3 +120,33 @@ class PostgresRunRepository:
                 (run_id,),
             )
             return cursor.fetchone() is not None
+
+    def update_status(self, run_id: str, status: RunStatus) -> None:
+        """M5 Welle 4a (ADR 0039 Decision 12) — Status-Persistenz-Stub.
+
+        Welle 4a aktualisiert das `RunRepositoryPort`-Protocol um
+        ``update_status``/``get_status``; die produktive Postgres-
+        Status-Spalte folgt mit M3-Welle-6c (Schema-Migration +
+        Alembic-Revision). Welle-4a-Stand: Methode wirft
+        ``NotImplementedError``, damit Protocol-Konformitaet
+        gewahrt bleibt; produktive Runs laufen ueber den
+        `InMemoryRunRepository`-Lifespan-Setup, der den State
+        in-memory haelt.
+        """
+        raise NotImplementedError(
+            "PostgresRunRepository.update_status awaits M3-Welle-6c Postgres-"
+            "status column migration. Use InMemoryRunRepository for M5-Welle-4a "
+            "demo wiring."
+        )
+
+    def get_status(self, run_id: str) -> RunStatus:
+        """M5 Welle 4a (ADR 0039 Decision 12) — Status-Lese-Stub.
+
+        Siehe ``update_status`` fuer die Welle-6c-Verschiebungs-
+        Begruendung; Methode wirft ``NotImplementedError``.
+        """
+        raise NotImplementedError(
+            "PostgresRunRepository.get_status awaits M3-Welle-6c Postgres-"
+            "status column migration. Use InMemoryRunRepository for M5-Welle-4a "
+            "demo wiring."
+        )

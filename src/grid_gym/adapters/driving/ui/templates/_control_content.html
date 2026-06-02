@@ -1,0 +1,85 @@
+<section class="control" data-run-id="{{ run_id }}">
+    <h1>Replay Controls — {{ run_id }}</h1>
+
+    <h2>Status</h2>
+    <div id="run-status"
+         class="run-status"
+         hx-get="/runs/{{ run_id }}/status"
+         hx-trigger="every 1s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="status-line">Loading status...</p>
+    </div>
+
+    <h2>Actions</h2>
+    <div class="control-buttons">
+        <button type="button"
+                class="btn btn-pause"
+                hx-post="/runs/{{ run_id }}/control"
+                hx-ext="json-enc"
+                hx-vals='{"action": "pause"}'
+                hx-target="#control-feedback"
+                hx-swap="innerHTML">
+            Pause
+        </button>
+        <button type="button"
+                class="btn btn-resume"
+                hx-post="/runs/{{ run_id }}/control"
+                hx-ext="json-enc"
+                hx-vals='{"action": "resume"}'
+                hx-target="#control-feedback"
+                hx-swap="innerHTML">
+            Resume
+        </button>
+        <button type="button"
+                class="btn btn-stop"
+                hx-post="/runs/{{ run_id }}/control"
+                hx-ext="json-enc"
+                hx-vals='{"action": "stop"}'
+                hx-target="#control-feedback"
+                hx-swap="innerHTML">
+            Stop
+        </button>
+    </div>
+
+    <div id="control-feedback" class="control-feedback" aria-live="polite"></div>
+
+    <script>
+    (function () {
+        // Welle-4a: Inline-JSON-Encoding-Helper. HTMX kann standardmaessig
+        // form-encoded POST; das Welle-1-Schema erwartet JSON-Body. Wir
+        // ersetzen den hx-vals-Body in `htmx:configRequest` durch ein
+        // application/json-Encoding der serializerten Form-Daten.
+        document.body.addEventListener("htmx:configRequest", function (event) {
+            if (event.detail.verb !== "post" || !event.detail.path.endsWith("/control")) {
+                return;
+            }
+            const parameters = event.detail.parameters;
+            event.detail.headers["Content-Type"] = "application/json";
+            event.detail.parameters = JSON.stringify(parameters);
+        });
+
+        // Render the freshly-fetched /status JSON into the polling target.
+        document.body.addEventListener("htmx:beforeSwap", function (event) {
+            const target = event.detail.target;
+            if (!target || target.id !== "run-status") {
+                return;
+            }
+            let payload;
+            try {
+                payload = JSON.parse(event.detail.serverResponse);
+            } catch (err) {
+                return;
+            }
+            event.detail.serverResponse = `
+                <p class="status-line">
+                    <span class="run-state state-${payload.state}">${payload.state}</span>
+                    &middot;
+                    <span class="sim-time">sim time: ${payload.simulation_time} ms</span>
+                    &middot;
+                    <span class="tick-count">ticks: ${payload.tick_count}</span>
+                </p>`;
+        });
+    })();
+    </script>
+</section>

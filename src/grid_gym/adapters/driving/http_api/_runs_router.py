@@ -1,16 +1,22 @@
-"""FastAPI-Router fuer Run-GET-Endpunkte (M5 Welle 1, ADR 0037).
+"""FastAPI-Router fuer Run-GET-Endpunkte (M5 Welle 1 + Welle 4a,
+ADR 0037 + 0039).
 
 Drei REST-Endpunkte:
 
 - `GET /runs/{run_id}`         — Run-Detail (`GG-API-001`).
-- `GET /runs/{run_id}/status`  — Kompakter Run-Status.
+- `GET /runs/{run_id}/status`  — Kompakter Run-Status (Welle-4a
+  produktiv, Welle-1 war Stub).
 - `GET /runs/{run_id}/snapshot`— Snapshot-Export-Stub.
 
-Welle-1-Anti-Scope: alle drei Endpunkte sind **Stubs**
-hinsichtlich der dynamischen Werte (`state`/`simulation_
-time`/`tick_count`/Snapshot-Body); echte Werte kommen mit
-Welle 4 (`TickLoop`-Wiring) bzw. Welle 5 (Snapshot-Envelope-
-Serialisierung).
+Welle-4a-Wiring (ADR 0039 Decision 14): `GET /status` liest jetzt
+den `RunStatus`-Lifecycle-State aus dem RunRepository und holt
+`tick_count`/`simulation_time` aus dem im `TickLoopRegistry`
+hinterlegten `TickLoop` (sofern vorhanden); ohne aktiven
+TickLoop bleiben die Counter `0`.
+
+Welle-1-Stub-Erbschaft: `GET /runs/{run_id}/snapshot` bleibt
+Stub-Pointer; Welle 5 ersetzt es durch die `SnapshotEnvelope`-
+v2-Serialisierung.
 
 Standard-Fehler-Format `GG-API-004`: bei nicht-existentem
 Run gibt der Endpoint 404 mit `ErrorResponse`-Body
@@ -34,6 +40,10 @@ from grid_gym.adapters.driving.http_api._schemas import (
     RunDetailResponse,
     RunStatusResponse,
     SnapshotResponse,
+)
+from grid_gym.adapters.driving.http_api._tick_loop_registry import (
+    TickLoopRegistry,
+    get_tick_loop_registry,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -109,19 +119,35 @@ def get_run_status(
         RunRepositoryPort,
         Depends(get_run_repository),
     ],
+    tick_loop_registry: Annotated[
+        TickLoopRegistry,
+        Depends(get_tick_loop_registry),
+    ],
 ) -> RunStatusResponse:
-    """Kompakter Run-Status (`GG-API-001`).
+    """Kompakter Run-Status (`GG-API-001`, ADR 0039 Decision 14).
 
-    Welle-1-Stub: `state` ist immer `pending`,
-    `simulation_time` und `tick_count` immer `0`. Welle 4
-    bringt das echte TickLoop-Wiring.
+    Welle-4a-produktiv: `state` aus Repository, `tick_count` und
+    `simulation_time` aus dem im `TickLoopRegistry` registrierten
+    `TickLoop`. Ohne aktiven TickLoop (Welle-1-Pfad fuer rein-
+    persistierte Runs ohne Driver) bleiben die Counter `0`.
+
+    Wird vom UI per HTMX-Polling alle ~1s aufgerufen
+    (`hx-trigger="every 1s"`); 404 bei nicht-existentem Run.
     """
     _resolve_repository(run_id, repository)
+    status = repository.get_status(run_id)
+    tick_loop = tick_loop_registry.tick_loop_for(run_id)
+    if tick_loop is None:
+        tick_count = 0
+        simulation_time = 0
+    else:
+        tick_count = tick_loop.tick_count
+        simulation_time = tick_loop.tick_count * tick_loop.tick_ms
     return RunStatusResponse(
         run_id=run_id,
-        state="pending",
-        simulation_time=0,
-        tick_count=0,
+        state=status,
+        simulation_time=simulation_time,
+        tick_count=tick_count,
     )
 
 

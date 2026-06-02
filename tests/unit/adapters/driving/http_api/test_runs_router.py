@@ -1,9 +1,11 @@
-"""Tests fuer `_runs_router.py` (M5 Welle 1, ADR 0037).
+"""Tests fuer `_runs_router.py` (M5 Welle 1 + Welle 4a, ADR 0037 +
+0039).
 
 Drei GET-Endpunkte:
 
 - `GET /runs/{run_id}` — Run-Detail.
-- `GET /runs/{run_id}/status` — Kompakter Run-Status.
+- `GET /runs/{run_id}/status` — Kompakter Run-Status (Welle-4a-
+  Wiring auf RunRepository + TickLoopRegistry).
 - `GET /runs/{run_id}/snapshot` — Snapshot-Export-Stub.
 
 Plus 404-Pfade mit `GG-API-004`-Fehler-Format.
@@ -18,18 +20,31 @@ import pytest
 from fastapi.testclient import TestClient
 
 from grid_gym.adapters.driving.http_api import app
-from grid_gym.adapters.driving.http_api.app import configure_run_repository
+from grid_gym.adapters.driving.http_api._tick_loop_registry import TickLoopRegistry
+from grid_gym.adapters.driving.http_api.app import (
+    configure_run_repository,
+    configure_tick_loop_registry,
+)
 from grid_gym.hexagon.core.domain.run import RunMetadata
-from tests.unit.hexagon.ports.driven._fakes import InMemoryRunRepository
+from grid_gym.hexagon.core.simulation.scheduler import Scheduler
+from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from tests.unit.hexagon.ports.driven._fakes import (
+    FakeClock,
+    FixedSeedRandom,
+    InMemoryRunRepository,
+)
 
 
 @pytest.fixture
-def configured_app() -> Iterator[tuple[TestClient, InMemoryRunRepository]]:
-    """App mit frischem `InMemoryRunRepository` pro Test."""
+def configured_app() -> Iterator[tuple[TestClient, InMemoryRunRepository, TickLoopRegistry]]:
+    """App mit frischem `InMemoryRunRepository` + `TickLoopRegistry`
+    pro Test."""
     repository = InMemoryRunRepository()
     configure_run_repository(repository)
+    registry = TickLoopRegistry()
+    configure_tick_loop_registry(registry)
     with TestClient(app) as client:
-        yield client, repository
+        yield client, repository, registry
 
 
 def _seed_run(repository: InMemoryRunRepository) -> RunMetadata:
@@ -54,9 +69,9 @@ def _seed_run(repository: InMemoryRunRepository) -> RunMetadata:
 
 
 def test_get_run_returns_full_metadata(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.get(f"/runs/{metadata.run_id}")
     assert response.status_code == 200
@@ -72,9 +87,9 @@ def test_get_run_returns_full_metadata(
 
 
 def test_get_run_returns_404_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
-    client, _ = configured_app
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.get(f"/runs/{run_id}")
     assert response.status_code == 404
@@ -89,11 +104,13 @@ def test_get_run_returns_404_for_unknown_run(
 # ---------------------------------------------------------------------------
 
 
-def test_get_run_status_returns_pending_stub(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+def test_get_run_status_returns_pending_without_tick_loop(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
-    """Welle-1-Stub: Status ist immer `pending`, Counter `0`."""
-    client, repository = configured_app
+    """Welle-4a: ohne registrierten TickLoop ist Status `pending` und
+    Counter `0` (Welle-1-Stub-Erbschaft fuer rein persistierte
+    Runs)."""
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.get(f"/runs/{metadata.run_id}/status")
     assert response.status_code == 200
@@ -104,10 +121,62 @@ def test_get_run_status_returns_pending_stub(
     assert body["tick_count"] == 0
 
 
-def test_get_run_status_returns_404_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+def test_get_run_status_reflects_running_tick_loop_counters(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
-    client, _ = configured_app
+    """Welle-4a (ADR 0039 Decision 14): registrierter TickLoop + drei
+    Ticks → `state=running`, `tick_count=3`, `simulation_time=300`."""
+    client, repository, registry = configured_app
+    metadata = _seed_run(repository)
+    tick_loop = TickLoop(
+        run_id=metadata.run_id,
+        tick_ms=metadata.tick_ms,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=metadata.seed),
+        scheduler=Scheduler(),
+        run_repository=repository,
+    )
+    registry.register(tick_loop)
+    for _ in range(3):
+        tick_loop.tick()
+    response = client.get(f"/runs/{metadata.run_id}/status")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["state"] == "running"
+    assert body["tick_count"] == 3
+    assert body["simulation_time"] == 3 * metadata.tick_ms
+
+
+def test_get_run_status_reflects_paused_state_after_request_pause(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
+) -> None:
+    """Welle-4a: nach `request_pause` zeigt `/status` den `paused`-
+    State; `tick_count` wird durch nachfolgendes `tick()` nicht
+    weitergetrieben (Pre-Tick-Guard)."""
+    client, repository, registry = configured_app
+    metadata = _seed_run(repository)
+    tick_loop = TickLoop(
+        run_id=metadata.run_id,
+        tick_ms=metadata.tick_ms,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=metadata.seed),
+        scheduler=Scheduler(),
+        run_repository=repository,
+    )
+    registry.register(tick_loop)
+    tick_loop.tick()
+    tick_loop.request("pause")
+    tick_loop.tick()  # No-op durch Pre-Tick-Guard
+    response = client.get(f"/runs/{metadata.run_id}/status")
+    body = response.json()
+    assert body["state"] == "paused"
+    assert body["tick_count"] == 1
+
+
+def test_get_run_status_returns_404_for_unknown_run(
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
+) -> None:
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.get(f"/runs/{run_id}/status")
     assert response.status_code == 404
@@ -120,10 +189,10 @@ def test_get_run_status_returns_404_for_unknown_run(
 
 
 def test_get_run_snapshot_returns_schema_ref(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
     """Welle-1-Stub: nur `schema_ref`-Pointer, kein Snapshot-Body."""
-    client, repository = configured_app
+    client, repository, _ = configured_app
     metadata = _seed_run(repository)
     response = client.get(f"/runs/{metadata.run_id}/snapshot")
     assert response.status_code == 200
@@ -133,9 +202,9 @@ def test_get_run_snapshot_returns_schema_ref(
 
 
 def test_get_run_snapshot_returns_404_for_unknown_run(
-    configured_app: tuple[TestClient, InMemoryRunRepository],
+    configured_app: tuple[TestClient, InMemoryRunRepository, TickLoopRegistry],
 ) -> None:
-    client, _ = configured_app
+    client, _, _ = configured_app
     run_id = str(uuid.uuid4())
     response = client.get(f"/runs/{run_id}/snapshot")
     assert response.status_code == 404

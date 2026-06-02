@@ -10,11 +10,36 @@ Welle 6 entsteht.
 `started_at`/`ended_at` sind Wall-Clock-Zeiten in ISO-8601-UTC
 (`GG-DATA-005`), nicht Simulationszeit. Simulationszeit wird in
 `TelemetryPoint.simulation_time` als ganzzahlige ms gefuehrt.
+
+`RunStatus` (M5 Welle 4a, ADR 0039 Decision 12) ist der orthogonale
+Run-Lifecycle-State, der ausserhalb der Frozen-`RunMetadata` lebt:
+das Repository haelt ihn als zweiten Lookup neben den Metadaten,
+damit die Reproduzierbarkeits-Hash-Stabilitaet aus `RunMetadata`
+nicht durch mutable Status-Felder gebrochen wird.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
+
+
+RunStatus = Literal["pending", "running", "paused", "stopped", "completed"]
+"""Lifecycle-Status eines Simulationslaufs (M5 Welle 4a, ADR 0039
+Decision 12).
+
+- ``pending``  — Run persistiert, Tick-Driver noch nicht gestartet.
+- ``running``  — Tick-Driver aktiv; ``tick()`` fortschreitet.
+- ``paused``   — Tick-Driver aktiv, aber Pre-Tick-Guard blockt.
+- ``stopped``  — Final-Terminierung durch Benutzer.
+- ``completed``— Final-Terminierung durch Tick-Loop-Ende oder
+  Lifespan-Shutdown.
+
+Welle-1-`RunState`-Alias in `_schemas.py` zeigt auf denselben
+Literal-Set (Re-Export). Die fuenf Werte sind die kanonische
+Vokabel fuer alle Welle-4a-Schichten (Domain, Repository, HTTP-API,
+UI-CSS-Klassen).
+"""
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,9 +1,12 @@
-"""FastAPI-Router fuer Run-Action-Endpunkte (M5 Welle 1/3, ADR 0037 + 0038).
+"""FastAPI-Router fuer Run-Action-Endpunkte (M5 Welle 1/3/4a,
+ADR 0037 + 0038 + 0039).
 
 Drei Endpunkte (2 REST + 1 WebSocket):
 
 - `POST /runs/{run_id}/control` — Run-Steuerung mit Action-
-  Body (`pause`/`resume`/`stop`; ADR 0037 Decision API-1).
+  Body (`pause`/`resume`/`stop`; ADR 0037 Decision API-1;
+  Welle-4a-Wiring auf TickLoop-Control-Surface per ADR 0039
+  Decision 13).
 - `POST /runs/{run_id}/faults`  — Fault-Injection-Submit
   (Welle-1-Stub; echtes `FaultPort.activate` in Welle 6).
 - `WS   /runs/{run_id}/telemetry` — Live-Telemetry-Stream
@@ -16,7 +19,10 @@ Modul); semantisch waeren alle `/runs/{id}/*`-Endpunkte ein
 einzelner logischer Block.
 
 Standard-Fehler-Format `GG-API-004`: REST-Endpunkte geben
-404 mit `ErrorResponse`-Body bei nicht-existentem Run; der
+404 mit `ErrorResponse`-Body bei nicht-existentem Run, **409**
+mit `code="invalid_transition"` bei unerlaubtem Control-State-
+Uebergang (Welle 4a), **503** mit `code="tick_loop_not_active"`
+bei persistiertem Run ohne aktiven TickLoop-Driver; der
 WebSocket-Endpoint schliesst mit Close-Code `1008` (Policy-
 Violation).
 """
@@ -37,6 +43,11 @@ from grid_gym.adapters.driving.http_api._schemas import (
     FaultInjectionRequest,
     FaultInjectionResponse,
 )
+from grid_gym.adapters.driving.http_api._tick_loop_registry import (
+    TickLoopRegistry,
+    get_tick_loop_registry,
+)
+from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
@@ -62,20 +73,61 @@ def _ensure_run_exists(run_id: str, repository: RunRepositoryPort) -> None:
 @runs_action_router.post(
     "/runs/{run_id}/control",
     response_model=ControlResponse,
-    responses={404: {"model": ErrorResponse}},
+    responses={
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
+    },
 )
 def post_run_control(
     run_id: str,
     request: Annotated[ControlRequest, ...],
     repository: Annotated[RunRepositoryPort, Depends(get_run_repository)],
+    tick_loop_registry: Annotated[TickLoopRegistry, Depends(get_tick_loop_registry)],
 ) -> ControlResponse:
-    """Run-Steuerung mit Action-Body (ADR 0037 Decision API-1).
+    """Run-Steuerung mit Action-Body (ADR 0037 Decision API-1 +
+    ADR 0039 Decision 13).
 
-    Welle-1-Stub: nimmt die Action entgegen und gibt
-    `accepted=True` zurueck — kein echtes TickLoop-Pause/
-    Resume/Stop-Wiring (Welle 4).
+    Welle-4a-Wiring: ruft die passende
+    `TickLoop.request_*`-Methode (`request_pause`/
+    `request_resume`/`request_stop`); Repository-Mirror laeuft
+    transparent im TickLoop. Status-Codes:
+
+    - 404 — Run nicht persistiert.
+    - 409 — Invalid-Transition (z. B. `pause` auf bereits
+      gestopptem Run); `ErrorResponse.code="invalid_transition"`.
+    - 503 — Run persistiert, aber kein aktiver TickLoop-Driver
+      registriert; `ErrorResponse.code="tick_loop_not_active"`.
+      Welle-4a-Single-Demo-Run-Stand; produktive Multi-Run-
+      Variante in Welle 5.
+    - 200 — Action akzeptiert; `accepted=True`.
     """
     _ensure_run_exists(run_id, repository)
+    tick_loop = tick_loop_registry.tick_loop_for(run_id)
+    if tick_loop is None:
+        error = ErrorResponse(
+            code="tick_loop_not_active",
+            message=(
+                f"Run '{run_id}' is persisted but has no active TickLoop "
+                "driver. Welle 4a only wires the demo run; "
+                "production multi-run setup follows in Welle 5."
+            ),
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=503, detail=error.model_dump())
+    try:
+        tick_loop.request(request.action)
+    except TickLoopInvalidTransitionError as exc:
+        error = ErrorResponse(
+            code="invalid_transition",
+            message=str(exc),
+            details={
+                "current_state": exc.current_state,
+                "target_state": exc.target_state,
+            },
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=409, detail=error.model_dump()) from exc
     return ControlResponse(run_id=run_id, action=request.action, accepted=True)
 
 

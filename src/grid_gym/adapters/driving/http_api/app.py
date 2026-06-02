@@ -1,5 +1,5 @@
 """FastAPI-`app` fuer das HTTP-Driving-Interface (M1 Welle 6a/6b
-+ M5 Welle 1/2).
++ M5 Welle 1/2/3/4a).
 
 Endpoints (M1 Welle 6a/6b):
 
@@ -9,41 +9,51 @@ Endpoints (M1 Welle 6a/6b):
 - `GET  /openapi.json` — automatisch von FastAPI generiert
   (`GG-QG-006`/`GG-API-003`).
 
-Endpoints (M5 Welle 1, ADR 0037):
+Endpoints (M5 Welle 1/4a, ADR 0037 + 0039):
 
 - `GET  /runs/{run_id}`         — Run-Detail (`GG-API-001`).
-- `GET  /runs/{run_id}/status`  — Kompakter Run-Status.
+- `GET  /runs/{run_id}/status`  — Kompakter Run-Status (Welle-4a
+  produktiv mit RunStatus + TickLoop-Counter).
 - `POST /runs/{run_id}/control` — Steuerung mit Action-Body
-  (`pause`/`resume`/`stop`; ADR 0037 Decision API-1).
+  (`pause`/`resume`/`stop`; ADR 0037 Decision API-1; Welle-4a-
+  Wiring auf TickLoop-Control-Surface per ADR 0039 Decision 13).
 - `GET  /runs/{run_id}/snapshot`— Snapshot-Export (Stub).
 - `POST /runs/{run_id}/faults`  — Fault-Injection (Stub).
 - `WS   /runs/{run_id}/telemetry` — Live-Telemetry-Stream
-  (`GG-API-002`; Welle-1-Skeleton mit Counter-Push, echtes
-  TelemetrySinkPort-Wiring folgt in Welle 3).
+  (`GG-API-002`; Welle-3 Subscribe-Pattern auf
+  `TelemetryStreamPort`, ADR 0038).
 
-Endpoints + Mounts (M5 Welle 2, ADR 0036):
+Endpoints + Mounts (M5 Welle 2/3/4a, ADR 0036 + 0039):
 
 - `GET  /`               — Demo-Hello-Page (UI-Adapter).
 - `GET  /ui/health`      — Healthcheck-UI-Seite mit HTMX-Partial-
   Refresh-Pfad.
+- `GET  /runs/{run_id}/dashboard` — Live-Telemetry-Dashboard
+  (Welle 3, ADR 0038).
+- `GET  /runs/{run_id}/control`   — Replay-Controls-Page (Welle
+  4a, ADR 0039 Decision 14; HTMX-Polling auf `GET /status`).
 - `MOUNT /static/*`      — StaticFiles-Mount fuer vendored HTMX +
   Chart.js + CSS unter `adapters/driving/ui/static/`.
 
-Welle-1-Anti-Scope: `POST /runs/{run_id}/control` und
-`POST /runs/{run_id}/faults` sowie `WS /runs/{run_id}/
-telemetry` sind **Stubs** — kein TickLoop-Pause/Resume-
-Wiring (Welle 4), kein FaultPort-Submit (Welle 6), kein
-TelemetrySinkPort-Producer (Welle 3).
+Welle-1-Anti-Scope-Erbschaft (jetzt teilweise aufgeloest durch
+Welle 4a): `POST /faults` bleibt Welle-6-Material.
 
-Port-Injektion: `app.state.run_repository` haelt die
-`RunRepositoryPort`-Instanz. Aufrufer (uvicorn-Entry, Tests)
-setzen das vor der ersten Anfrage; `get_run_repository`-Dependency
-liest aus dem State.
+Port-Injektion: `app.state` haelt die Adapter-Instanzen
+(`run_repository`, `telemetry_stream`, `tick_loop_registry`).
+Aufrufer (uvicorn-Entry, Tests) setzen sie vor der ersten
+Anfrage; die Dependency-Provider in `_dependencies.py` +
+`_tick_loop_registry.py` lesen aus dem State.
+
+Welle-4a-Lifespan: wenn ein `demo_tick_loop_driver` auf
+`app.state` gesetzt ist, startet er beim App-Startup als
+asyncio-Task und wird beim Shutdown sauber gecanceled. Tests
+ohne demo Driver bekommen einen no-op Lifespan (Welle-3-Pattern).
 
 Standardisiertes Fehler-Format (`GG-API-004`): siehe
 `_schemas.ErrorResponse` mit `code`/`message`/`details`/
 `run_id`. 404-Antworten fuer nicht-existente Runs nutzen
-das Format.
+das Format; Welle 4a ergaenzt 409 (Invalid-Transition) und 503
+(TickLoop-not-active) auf `POST /control`.
 """
 
 from __future__ import annotations
@@ -65,6 +75,13 @@ from grid_gym.adapters.driving.http_api._dependencies import (
     _TelemetryStreamNotConfiguredError,
     get_run_repository,
     get_telemetry_stream,
+)
+from grid_gym.adapters.driving.http_api._tick_loop_driver import (
+    DemoTickLoopDriver,
+)
+from grid_gym.adapters.driving.http_api._tick_loop_registry import (
+    TickLoopRegistry,
+    _TickLoopRegistryNotConfiguredError,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -115,15 +132,23 @@ class RunCreateResponse(BaseModel):
 
 @asynccontextmanager
 async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
-    """FastAPI-Lifespan: startet/stoppt den Demo-Telemetry-Generator.
+    """FastAPI-Lifespan: startet/stoppt Welle-3-Demo-Generator und
+    Welle-4a-Demo-TickLoop-Driver, sofern konfiguriert.
 
-    Welle 3 (ADR 0038 §3.1): wenn ein
-    `DemoTelemetryGenerator`-Singleton vor App-Start gesetzt
-    wurde (via `configure_telemetry_stream` + Wiring durch
-    Production-Code), startet er hier seinen periodischen
-    Producer-Task; bei Shutdown wird er sauber gecanceled.
-    Tests koennen den Generator weglassen — der Lifespan ist
-    dann no-op.
+    Welle 3 (ADR 0038 §3.1): `DemoTelemetryGenerator`-Singleton +
+    `InMemoryTelemetryStream` werden via
+    `configure_telemetry_stream(stream, demo_generator=...)`
+    gesetzt; der Generator startet hier seinen periodischen
+    Producer-Task.
+
+    Welle 4a (ADR 0039 Decision 13): wenn ein
+    `DemoTickLoopDriver` ueber `configure_demo_run(...)` auf
+    `app.state` gelegt wurde, startet er hier seinen asyncio-
+    Driver-Task; bei Shutdown sauberes Cancel + RunStatus →
+    `completed` Update durch den ``stop()``-Pfad des Drivers.
+
+    Tests ohne die jeweiligen Demo-Komponenten bekommen einen
+    no-op Lifespan.
     """
     generator = getattr(app_.state, "demo_telemetry_generator", None)
     stream = getattr(app_.state, "telemetry_stream", None)
@@ -131,9 +156,14 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
         stream, InMemoryTelemetryStream
     ):
         generator.start(stream)
+    driver = getattr(app_.state, "demo_tick_loop_driver", None)
+    if isinstance(driver, DemoTickLoopDriver):
+        driver.start()
     try:
         yield
     finally:
+        if isinstance(driver, DemoTickLoopDriver):
+            await driver.stop()
         if isinstance(generator, DemoTelemetryGenerator):
             await generator.stop()
 
@@ -177,14 +207,29 @@ def configure_telemetry_stream(
         app.state.demo_telemetry_generator = demo_generator
 
 
+def configure_tick_loop_registry(registry: TickLoopRegistry) -> None:
+    """Setzt die `TickLoopRegistry` fuer die laufende App (M5 Welle
+    4a, ADR 0039 Decision 13).
+
+    Aufrufer (uvicorn-Entry, Tests, ``_demo_setup.configure_demo_run``)
+    injizieren die Registry vor dem ersten Request. Endpunkte
+    `POST /control` + `GET /status` lesen aus der Registry, um
+    den passenden `TickLoop` zu finden.
+    """
+    app.state.tick_loop_registry = registry
+
+
 # Re-export fuer Backward-Compat (Welle-6b-Tests + uvicorn-Entry-
 # Module nutzen `from .app import get_run_repository`).
 __all__ = (
+    "_APP_VERSION",
     "_RunRepositoryNotConfiguredError",
     "_TelemetryStreamNotConfiguredError",
+    "_TickLoopRegistryNotConfiguredError",
     "app",
     "configure_run_repository",
     "configure_telemetry_stream",
+    "configure_tick_loop_registry",
     "get_run_repository",
     "get_telemetry_stream",
 )

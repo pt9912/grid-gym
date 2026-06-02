@@ -39,9 +39,39 @@ class TickResult:
       `Scheduler` gepoppten Events (`GG-ARCH-006`-Tie-Breaking).
     - `emitted_telemetry`: Telemetry-Punkte aus
       Geraete-Tick-Ausgaben. In Welle 4 ohne Geraete: leeres Tupel.
+    - `paused`: ``True`` wenn der Tick durch den Pre-Tick-Guard
+      uebersprungen wurde (M5 Welle 4a, ADR 0039 Decision 13).
+      Default ``False`` — bestehende `TickResult`-Konstruktionen
+      bleiben kompatibel. Bei `paused=True` sind
+      `popped_events` und `emitted_telemetry` leer und
+      `simulation_time`/`tick` reflektieren den unveraenderten
+      Stand vor dem Aufruf.
     """
 
     tick: int
     simulation_time: int
     popped_events: tuple[Event, ...]
     emitted_telemetry: tuple[TelemetryPoint, ...]
+    paused: bool = False
+
+    @classmethod
+    def paused_result(
+        cls,
+        *,
+        tick: int,
+        simulation_time: int,
+    ) -> TickResult:
+        """Factory fuer einen Paused-`TickResult` (M5 Welle 4a, ADR
+        0039 Decision 13).
+
+        Liefert ein `TickResult` mit `paused=True` und leeren
+        Sequenzfeldern. `tick` und `simulation_time` reflektieren
+        den unveraenderten Stand vor dem Pre-Tick-Guard.
+        """
+        return cls(
+            tick=tick,
+            simulation_time=simulation_time,
+            popped_events=(),
+            emitted_telemetry=(),
+            paused=True,
+        )

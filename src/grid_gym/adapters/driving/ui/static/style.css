@@ -146,3 +146,95 @@ button[type="button"] {
     color: #6f005f;
     font-weight: 600;
 }
+
+/* M5-Welle-4a — Replay-Controls-Page (ADR 0039 Decision 14). */
+.control h1 {
+    margin-bottom: 0.5rem;
+}
+
+.control h2 {
+    margin-top: 1.5rem;
+}
+
+.run-status {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    font-family: ui-monospace, "SFMono-Regular", monospace;
+}
+
+.status-line {
+    margin: 0;
+}
+
+/* Fuenf RunStatus-Marker-Zustaende (GG-UI-004). */
+.run-state {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.run-state.state-pending {
+    background: #e0e0e0;
+    color: #404040;
+}
+
+.run-state.state-running {
+    background: #c9f2c9;
+    color: #1a4f1a;
+}
+
+.run-state.state-paused {
+    background: #fff3c4;
+    color: #6b5500;
+}
+
+.run-state.state-stopped {
+    background: #ffd1d1;
+    color: #800000;
+}
+
+.run-state.state-completed {
+    background: #d0e2ff;
+    color: #1a3a7a;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.btn {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border: 1px solid #c0c0c0;
+    background: #ffffff;
+    font: inherit;
+}
+
+.btn:hover {
+    background: #f0f0f0;
+}
+
+.btn-pause {
+    border-color: #b89400;
+}
+
+.btn-resume {
+    border-color: #1a4f1a;
+}
+
+.btn-stop {
+    border-color: #a40000;
+}
+
+.control-feedback {
+    margin-top: 1rem;
+    min-height: 1.5rem;
+    font-style: italic;
+    color: #555;
+}

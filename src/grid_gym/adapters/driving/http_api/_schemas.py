@@ -31,6 +31,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from grid_gym.hexagon.core.domain.run import RunStatus
+
 
 # ---------------------------------------------------------------------------
 # GET /runs/{run_id}
@@ -55,15 +57,25 @@ class RunDetailResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-RunState = Literal["pending", "running", "paused", "stopped", "completed"]
+RunState = RunStatus
+"""Welle-1-Alias auf den Domain-`RunStatus`-Literal (M5 Welle 4a,
+ADR 0039 Decision 12). Werte: ``pending``/``running``/``paused``/
+``stopped``/``completed``. Domain owns the type — der Schema-
+Layer re-exportiert nur, damit Pydantic-Modelle ohne Cross-Layer-
+Import konsumieren koennen.
+"""
 
 
 class RunStatusResponse(BaseModel):
     """Kompakter Run-Status (`GG-API-001`).
 
-    Welle-1-Stub-Felder: `simulation_time` und `tick_count`
-    sind in Welle 1 immer `0` (kein TickLoop-Wiring); Welle 4
-    bringt die echte Werte.
+    Welle-4a (ADR 0039 Decision 14): `state` reflektiert den
+    persistierten `RunStatus` aus dem RunRepository; `tick_count`
+    und `simulation_time` kommen aus dem aktiven `TickLoop`
+    (Welle-4a-Demo-Single-Run-Setup; produktive Multi-Run-
+    Variante folgt mit Welle 5). Wenn kein `TickLoop` registriert
+    ist (Welle-1-Stub-Pfad fuer reine Repository-only-Runs),
+    bleiben beide Felder ``0``.
     """
 
     run_id: str = Field(description="UUIDv4-Identitaet des Laufs.")
@@ -71,11 +83,11 @@ class RunStatusResponse(BaseModel):
         description="Lauf-Zustand (`pending`/`running`/`paused`/`stopped`/`completed`)."
     )
     simulation_time: int = Field(
-        description="Aktuelle Simulationszeit in ms (Welle-1-Stub: 0).",
+        description="Aktuelle Simulationszeit in ms (0 wenn kein aktiver TickLoop).",
         ge=0,
     )
     tick_count: int = Field(
-        description="Anzahl abgearbeiteter Ticks (Welle-1-Stub: 0).",
+        description="Anzahl abgearbeiteter Ticks (0 wenn kein aktiver TickLoop).",
         ge=0,
     )
 

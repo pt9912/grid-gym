@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
-from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.domain.run import RunMetadata, RunStatus
 from grid_gym.hexagon.core.errors import (
     RunAlreadyExistsError,
     RunNotFoundError,
@@ -67,6 +67,11 @@ class InMemoryRunRepository:
     `RunRepositoryPort` koennen dann gegen beide Implementationen
     laufen (testcontainers fuer Postgres).
 
+    Welle-4a-Extension (ADR 0039 Decision 12): zweiter Dict
+    `_status_store` haelt den `RunStatus`-Lifecycle-State neben den
+    Metadaten. `save` initialisiert auf ``"pending"``;
+    `update_status`/`get_status` mutieren bzw. lesen den State.
+
     `frozen=False`/keine Dataclass: explizit zustandsbehaftet,
     interne `_store`-Mutation. AC-DOMAIN-FROZEN gilt nicht (Test-
     Code unter `tests/`).
@@ -74,11 +79,13 @@ class InMemoryRunRepository:
 
     def __init__(self) -> None:
         self._store: dict[str, RunMetadata] = {}
+        self._status_store: dict[str, RunStatus] = {}
 
     def save(self, metadata: RunMetadata) -> None:
         if metadata.run_id in self._store:
             raise RunAlreadyExistsError(metadata.run_id)
         self._store[metadata.run_id] = metadata
+        self._status_store[metadata.run_id] = "pending"
 
     def get_by_id(self, run_id: str) -> RunMetadata:
         if run_id not in self._store:
@@ -87,3 +94,13 @@ class InMemoryRunRepository:
 
     def exists(self, run_id: str) -> bool:
         return run_id in self._store
+
+    def update_status(self, run_id: str, status: RunStatus) -> None:
+        if run_id not in self._store:
+            raise RunNotFoundError(run_id)
+        self._status_store[run_id] = status
+
+    def get_status(self, run_id: str) -> RunStatus:
+        if run_id not in self._store:
+            raise RunNotFoundError(run_id)
+        return self._status_store[run_id]

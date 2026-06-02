@@ -36,12 +36,20 @@ from grid_gym.adapters.driven.telemetry_stream_inmemory import (
     InMemoryTelemetryStream,
 )
 from grid_gym.adapters.driving.http_api import app
+from grid_gym.adapters.driving.http_api._tick_loop_registry import TickLoopRegistry
 from grid_gym.adapters.driving.http_api.app import (
     configure_run_repository,
     configure_telemetry_stream,
+    configure_tick_loop_registry,
 )
+from grid_gym.hexagon.core.simulation.scheduler import Scheduler
+from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryPoint
-from tests.unit.hexagon.ports.driven._fakes import InMemoryRunRepository
+from tests.unit.hexagon.ports.driven._fakes import (
+    FakeClock,
+    FixedSeedRandom,
+    InMemoryRunRepository,
+)
 
 
 _VALID_SCENARIO_HASH = "0" * 64
@@ -60,37 +68,59 @@ _VALID_FAULT_PAYLOAD: dict[str, object] = {
 
 
 @pytest.fixture
-def smoke_client() -> Iterator[tuple[TestClient, InMemoryTelemetryStream]]:
-    """Frische App + InMemoryRunRepository + InMemoryTelemetryStream pro Test.
+def smoke_client() -> Iterator[
+    tuple[TestClient, InMemoryTelemetryStream, InMemoryRunRepository, "TickLoopRegistry"]
+]:
+    """Frische App + InMemoryRunRepository + InMemoryTelemetryStream +
+    TickLoopRegistry pro Test.
 
-    Welle-3-Anpassung: WS-Endpoint braucht einen
-    `TelemetryStreamPort`. Stream-Instanz wird hier injiziert
-    + Smoke publisht 3 Test-Points fuer den Subscribe-Pfad.
+    Welle-3: WS-Endpoint braucht einen `TelemetryStreamPort`.
+    Welle-4a: Status- und Control-Endpoints brauchen einen
+    `TickLoopRegistry`; einzelne Tests registrieren ihre eigenen
+    TickLoops fuer das Action-Routing.
     """
-    configure_run_repository(InMemoryRunRepository())
+    repository = InMemoryRunRepository()
+    configure_run_repository(repository)
     stream = InMemoryTelemetryStream(queue_maxsize=8)
     configure_telemetry_stream(stream)
+    registry = TickLoopRegistry()
+    configure_tick_loop_registry(registry)
     with TestClient(app) as client:
-        yield client, stream
+        yield client, stream, repository, registry
 
 
 def test_full_run_lifecycle_workflow(
-    smoke_client: tuple[TestClient, InMemoryTelemetryStream],
+    smoke_client: tuple[
+        TestClient, InMemoryTelemetryStream, InMemoryRunRepository, TickLoopRegistry
+    ],
 ) -> None:
     """End-to-End-Smoke: POST + 5 GET/POST + 1 WS in Sequence.
 
-    Welle-1-Stub: jeder Schritt validiert die Surface-Shape,
-    nicht das tatsaechliche Verhalten. Welle 3 hat den
-    WS-Schritt auf `TelemetryStreamPort.subscribe` umgestellt
-    (ADR 0038); Welle 4/6 ersetzen weitere Stubs durch
-    echte TickLoop/FaultPort-Wiring.
+    Welle-1-Surface-Skeleton + Welle-3-WS-Subscribe + Welle-4a-
+    Control-Wiring. Welle 4a wirt `POST /control` produktiv aus
+    (`pause`/`resume`/`stop` rufen die TickLoop-Control-Surface);
+    der Test registriert einen TickLoop fuer den erstellten Run,
+    damit das Action-Routing den 503-Pfad vermeidet.
     """
-    client, stream = smoke_client
+    client, stream, repository, registry = smoke_client
     # 1. POST /runs → 201 + run_id
     create_response = client.post("/runs", json=_VALID_RUN_PAYLOAD)
     assert create_response.status_code == 201
     run_id = create_response.json()["run_id"]
     uuid.UUID(run_id)  # validate UUID format
+
+    # Welle-4a: TickLoop fuer den frischen Run registrieren, damit
+    # die Control- und Status-Endpoints (Schritte 3+4) produktiv
+    # routen koennen.
+    tick_loop = TickLoop(
+        run_id=run_id,
+        tick_ms=100,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=42),
+        scheduler=Scheduler(),
+        run_repository=repository,
+    )
+    registry.register(tick_loop)
 
     # 2. GET /runs/{id} → Full Metadata
     detail_response = client.get(f"/runs/{run_id}")
@@ -101,7 +131,8 @@ def test_full_run_lifecycle_workflow(
     assert detail["seed"] == 42
     assert detail["tick_ms"] == 100
 
-    # 3. GET /runs/{id}/status → Stub-Status
+    # 3. GET /runs/{id}/status → Welle-4a-Wiring zeigt `pending` +
+    #    Counter aus dem frisch registrierten TickLoop (noch 0).
     status_response = client.get(f"/runs/{run_id}/status")
     assert status_response.status_code == 200
     status = status_response.json()
@@ -109,13 +140,15 @@ def test_full_run_lifecycle_workflow(
     assert status["simulation_time"] == 0
     assert status["tick_count"] == 0
 
-    # 4. POST /runs/{id}/control mit `pause` → accepted=True
+    # 4. POST /runs/{id}/control mit `pause` → Welle-4a-Wiring auf
+    #    TickLoop.request_pause(); Repository persistiert `paused`.
     control_response = client.post(
         f"/runs/{run_id}/control",
         json={"action": "pause"},
     )
     assert control_response.status_code == 200
     assert control_response.json()["accepted"] is True
+    assert repository.get_status(run_id) == "paused"
 
     # 5. POST /runs/{id}/faults → 201 + fault_id
     faults_response = client.post(
@@ -153,12 +186,14 @@ def test_full_run_lifecycle_workflow(
 
 
 def test_openapi_schema_contains_welle_1_endpoints(
-    smoke_client: tuple[TestClient, InMemoryTelemetryStream],
+    smoke_client: tuple[
+        TestClient, InMemoryTelemetryStream, InMemoryRunRepository, TickLoopRegistry
+    ],
 ) -> None:
     """Welle-1-Endpunkte muessen im OpenAPI-Schema auftauchen
     (`GG-API-003`); `make openapi-validate` prueft das Schema
     gegen den OpenAPI-Spec-Validator."""
-    client, _ = smoke_client
+    client, _, _, _ = smoke_client
     response = client.get("/openapi.json")
     assert response.status_code == 200
     spec = response.json()
