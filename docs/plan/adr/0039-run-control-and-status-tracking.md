@@ -492,7 +492,7 @@ def get_run_status(
 - **Alarm-Aggregation + AlarmStreamPort** in Welle-4b-
   Pre-C0a `d1b0eb7` + Pre-C0b `e325307` + C0 eroeffnet
   (siehe
-  [`../planning/in-progress/M5-welle-4b.md`](../planning/in-progress/M5-welle-4b.md));
+  [`../planning/done/M5-welle-4b.md`](../planning/done/M5-welle-4b.md));
   NEU ADR 0040 fuer C1 vorbereitet. **Welle-4b-C0-Pre-
   Research erweiterte den Welle-4a-Era-Plan von 2 auf
   3 Decisions** (15 NEU Unified `Alarm`-Domain-Schema +

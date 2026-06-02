@@ -386,11 +386,16 @@ M-3-Forward-Pointer-Erbschaft aus
 [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)
 §6 („AlarmSinkPort kommt mit M3"; M3 ohne Sink
 geschlossen). Welle-Slice-Begleit-Doc
-[`M5-welle-4b.md`](M5-welle-4b.md). Liefer-Hashes:
-Pre-C0a `d1b0eb7` + Pre-C0b `e325307` + C0 `08b5ba7`
-(Slice-Doc + Decisions 15/16/17 + Retro-Sync) + C1
-`850cf85` (NEU ADR 0040 `Proposed`) + C2 `b7ac7b3`
-(Code) + C3 (dieser Commit; ADR 0040 → `Provisional`).
+[`../done/M5-welle-4b.md`](../done/M5-welle-4b.md).
+Liefer-Hashes: Pre-C0a `d1b0eb7` + Pre-C0b `e325307` +
+C0 `08b5ba7` (Slice-Doc + Decisions 15/16/17 + Retro-
+Sync) + C1 `850cf85` (NEU ADR 0040 `Proposed`) + C2
+`b7ac7b3` (Code) + C3 `4dca6aa` (ADR 0040 →
+`Provisional` + Status/DoD-Sync) + Welle-4b-Review-
+Folge-Stack `52afd1a` (F1+F2) + `fe1db21` (F3) +
+`ced9661` (F4) + `1fba165` (Doku-Sync;
+15/15 Findings adressiert) + Self-Close-Move
+`a030c0e` (M5-Welle-5-Pre-C0a).
 
 - [x] **Decision 15 (Unified `Alarm`-Domain-Schema +
   Mapper-Familie)** final in **NEU ADR 0040** —

@@ -132,7 +132,7 @@ Commit)
   simulation_time, target, code, severity, message,
   status, fault_id?}`; Welle 4b implementiert
   produktiv).
-- [`../planning/in-progress/M5-welle-4b.md §3`](../planning/in-progress/M5-welle-4b.md)
+- [`../planning/done/M5-welle-4b.md §3`](../planning/done/M5-welle-4b.md)
   (Welle-4b-Slice-Doc mit Decisions 15/16/17 final +
   Mapping-Heuristik-Tabelle).
 - **Vorbild-Probes** — kein eigener Welle-4b-Probe
@@ -872,7 +872,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   Welle-4b-Anti-Scope; M3-Welle-6c).
 - [Architektur](../../../spec/architecture.md) §Alarm
   (kanonisches 9-Feld-Schema).
-- [`../planning/in-progress/M5-welle-4b.md §3`](../planning/in-progress/M5-welle-4b.md)
+- [`../planning/done/M5-welle-4b.md §3`](../planning/done/M5-welle-4b.md)
   (Welle-4b-Slice-Doc mit Decisions 15/16/17 +
   Mapping-Heuristik-Tabelle).
 - **Vorbild-Probes** — keine eigene Welle-4b-Probe:

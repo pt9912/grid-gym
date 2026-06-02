@@ -8,7 +8,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-4b.md`](M5-welle-4b.md) | Welle-4b-Slice-Doc (M5 Alarm-Aggregation + AlarmStreamPort + Alarm-Tabelle-UI: NEU Unified `Alarm`-Domain-Schema + Mapper-Familie in `core/simulation/alarm_mappers.py` + TickLoop-Drain-Hook + `TickResult.emitted_alarms` + NEU `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + `GET /runs/{id}/alarms-history` + `WS /alarms-stream` + UI-Tabelle mit 6 Pflicht-Spalten per `GG-UI-005`; loest ADR-0014-§6-Forward-Pointer „AlarmSinkPort kommt mit M3") — **Done 2026-06-02**; zweiter Sub-Slice der Welle-4-Subdivision (4a/4b); bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-5-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -229,7 +228,7 @@ NEU `AlarmStreamPort` + NEU `InMemoryAlarmStream` + NEU
 `AlarmHistoryBuffer` + NEU REST-`/alarms-history` + NEU
 WS-`/alarms-stream` + NEU UI-Page mit 6-Spalten-Tabelle +
 NEU `_alarm_setup.py`-Komposition-Root + 31 neue Unit +
-1 Integration-Test) + C3 (dieser Commit; ADR 0040
+1 Integration-Test) + C3 `4dca6aa` (ADR 0040
 `Proposed → Provisional` + Status/DoD-Sync + Top-Level-
 Doku-Sync + 4 C2-Realization-Notes verankert). 1650 → 1681
 Unit-Tests (+31); 50 → 51 Integration (+1). Lastenheft-
@@ -249,27 +248,51 @@ Auslagerung aus `app.py` (AC-NO-GOD-UTILS).
 **Welle-4b-Review-Folge** (2026-06-02, nach C3): xhigh-
 effort `/code-review` deckte 15 Findings in der Welle-4b-
 Substanz auf — alle in einer Folge-Lieferung adressiert
-(siehe `M5-welle-4b.md §10`). 4 Cluster: F1 Template-
-Haertung (#6 XSS / #10 JSON-Parse / #14 `run_id`-
-Escape); F2 HTTP-Stabilitaet (#7 404-vs-500 / #15
-Modul-Pfad / #5 Deque-Race); F3 Driver-Lifecycle (#1
-Late-Wiring / #2 Task-Exception / #9 stop()-Mirror /
-#12 Buffer-vor-Stream / #13 Orphan-Guard); F4 Domain/
-Resume (#4 Tick-Atomicity / #11 Loader-Kwargs / #8
-`from_snapshot`-Kwargs / #3 `_control_state`-Resume).
-Keine ADR-Aenderung — rein Bug-Fixes + Forward-Defense.
-1681 → 1696 Unit-Tests (+15); 10/10 A-1-Gates gruen
-cache-frei.
+(siehe `done/M5-welle-4b.md §10`). 4 Cluster: F1 Template-
+Haertung `52afd1a` (#6 XSS / #10 JSON-Parse / #14
+`run_id`-Escape); F2 HTTP-Stabilitaet `52afd1a` (#7 404-
+vs-500 / #15 Modul-Pfad / #5 Deque-Race); F3 Driver-
+Lifecycle `fe1db21` (#1 Late-Wiring / #2 Task-Exception /
+#9 stop()-Mirror / #12 Buffer-vor-Stream / #13 Orphan-
+Guard); F4 Domain/Resume `ced9661` (#4 Tick-Atomicity /
+#11 Loader-Kwargs / #8 `from_snapshot`-Kwargs / #3
+`_control_state`-Resume); Doku-Sync `1fba165`. Keine
+ADR-Aenderung — rein Bug-Fixes + Forward-Defense. 1681
+→ 1696 Unit-Tests (+15); 10/10 A-1-Gates gruen cache-
+frei.
 
 **Welle-4-Subdivision (4a + 4b) komplett abgeschlossen
-2026-06-02.**
+2026-06-02.** Self-Close-Move `M5-welle-4b.md → done/`
+mit Welle-5-Pre-C0a `a030c0e` (rename-only;
+Pattern `feedback_git_mv`).
 
-**Aktive Welle:** M5-Welle-5 (Demo-Pipeline + Scenario-
-Loader) als naechster aktiver Schritt nach Welle-4b-
-Self-Close-Move. Lieferziel per `M5-ui-demo.md §3 Welle 5`:
-Decision 5 (Demo-Szenario-Inhalt) + Decision 6 (Demo-
-Reproduzierbarkeits-Pflicht: `make demo`-Target) + NEU
-Demo-Compose-Erweiterung + NEU Demo-Szenario-YAML + NEU
-`docs/user/demo.md` + optional Fault-Injection +
-RuleBasedAgent-Setup. Erfuellt `GG-DEMO-001..005 + 008`
-(6 MUSS).
+**Aktive Welle:** M5-Welle-5 (Demo-Pipeline +
+Scenario-Loader) **gestartet 2026-06-02** mit Pre-C0a
+`a030c0e` (Self-Close-Move) + Pre-C0b (dieser Commit;
+Cross-Doc-Refs-Sync nach Move). **3 Decisions** geplant
+(Welle-5-Scope-Bestaetigung 2026-06-02):
+
+- **Decision 5 (Demo-Szenario-Inhalt)** — kanonisches
+  YAML mit 1 Grid-Connection + 1 Battery + 1 Load + 1
+  PV + 1 SmartMeter + 1 LoadProfile/LoadEvent + 1
+  RuleBasedAgent (`GG-DEMO-007` eng integriert, keine
+  Agent-UI/Plugin/Learned-Substanz; aus `scenario.agents`
+  via bestehender `build_tick_loop`-Default).
+- **Decision 6 (Demo-Entry-Point-Surface)** — `make
+  demo` als Pflicht-Target (Lifespan = Scenario-Loader
+  statt `_demo_setup.configure_demo_run`); Sekundaer-
+  Surface `python -m grid_gym demo` als Modul-Form.
+- **NEU Decision 18 (Demo-Compose-Topologie)** —
+  Kernentscheidung: **Welle 5 bringt keine neue Demo-
+  Topologie und keinen Replay-Postgres-Speicher**;
+  `make demo` startet die vorhandene Runtime/UI-Demo
+  reproduzierbar gegen den bestehenden
+  `deploy/compose.yml`-Stack.
+
+Anti-Scope: Multi-Run-Driver-Registry (Welle-4b-Fix-#13-
+Forward → Welle 6+); Snapshot-Resume-Pfad (Welle-4b-Fix-
+#3/#8-Forward → Welle-6+/M6); Fault-Injection-Form
+`GG-DEMO-006` → Welle 6 (mit `GG-UI-007`); UI-Sub-
+Wellen-Features `GG-UI-006/007/008` → Welle 6; Postgres-
+Sibling in Compose → Welle 6c. Erfuellt `GG-DEMO-001..005
++ 007 + 008` (6 MUSS + 1 SOLLTE).

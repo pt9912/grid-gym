@@ -1285,7 +1285,7 @@ Forward-Defense).
 - [`../done/M5-welle-3.md`](../done/M5-welle-3.md) —
   Welle-3-Closure (TelemetryStreamPort als Pattern-
   Vorbild fuer `AlarmStreamPort` per Decision 17).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 4b
+- [`../in-progress/M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle 4b
   (kanonische Slice-Spezifikation; Welle-4b-C0
   Retro-Sync der 2→3-Decision-Forward-Pointer).
 - [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)
