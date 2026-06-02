@@ -53,7 +53,7 @@ Commit)
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
   Decision 11 (Telemetry-Source-Architektur war als offene
   Decision in Welle 0 hinterlegt; Welle 3 schliesst sie).
-- [`../planning/in-progress/M5-welle-3.md §3`](../planning/in-progress/M5-welle-3.md)
+- [`../planning/done/M5-welle-3.md §3`](../planning/done/M5-welle-3.md)
   (Welle-3-Slice-Doc mit Decision-3/7/11 final).
 - **Probe-Run-Beleg** `5349923` — 4 Tests gruen in
   [`../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py`](../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py)
@@ -373,7 +373,7 @@ deterministisch (kein Wait-on-GC).
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
   Decision 11 (offene Decision, hier final geschlossen).
-- [`../planning/in-progress/M5-welle-3.md §3`](../planning/in-progress/M5-welle-3.md)
+- [`../planning/done/M5-welle-3.md §3`](../planning/done/M5-welle-3.md)
   (Welle-3-Slice-Doc mit Decisions 3/7/11).
 - **Probe-Run-Beleg** `5349923` — 4 Tests gruen in
   [`../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py`](../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py)

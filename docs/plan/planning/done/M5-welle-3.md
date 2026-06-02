@@ -601,8 +601,8 @@ Bestand-Eintrag + Aktive-Welle-Marker.
   Telemetry-Inhalt fuellt).
 - [`../done/M5-welle-0.md`](../done/M5-welle-0.md) §3
   Decision 11 (Welle 3 trifft die finale Wahl).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 3 (kanonische
-  Slice-Spezifikation).
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3
+  Welle 3 (kanonische Slice-Spezifikation).
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   §2.5 (Chart.js-Sub-Decision, Welle 3 bestaetigt
   produktiv).

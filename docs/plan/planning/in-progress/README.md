@@ -8,7 +8,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-3.md`](M5-welle-3.md) | Welle-3-Slice-Doc (M5 Live-Telemetry-Dashboard: NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe-Pattern + Chart.js-Time-Series + Quality-Marker; `GG-UI-002/003/009` + `GG-API-002`) — **Done 2026-06-01**; bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-4-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -178,18 +177,21 @@ WS-Subscribe-Wiring + NEU UI-Page
 `GET /runs/{run_id}/dashboard` mit HTMX-`hx-ext="ws"` +
 Chart.js-Time-Series + 6-Zustands-Quality-Marker; 16
 neue Unit + 2 Integration-Tests + Welle-1-Smoke-
-Anpassung) + C3 (dieser Commit; ADR 0038 `Proposed →
-Provisional` + Status/DoD-Sync + Top-Level-Doku-Sync).
-1610 → 1626 Unit-Tests (+16); 43 → 49 Integration (+6).
-Lastenheft-Akzeptanz `GG-API-002` + `GG-UI-002/003/009`
-produktiv. 10/10 A-1-Gates gruen cache-frei ohne
-Override.
+Anpassung) + C3 `0e0473d` (ADR 0038 `Proposed →
+Provisional` + Status/DoD-Sync + Top-Level-Doku-Sync) +
+Self-Close-Move `4517f51` (rename-only) + Pre-C0-Sync
+(dieser Commit). 1610 → 1626 Unit-Tests (+16); 43 → 49
+Integration (+6). Lastenheft-Akzeptanz `GG-API-002` +
+`GG-UI-002/003/009` produktiv. 10/10 A-1-Gates gruen
+cache-frei ohne Override.
 
 **Aktive Welle:** M5-Welle-4 (Replay-Controls + Alarme)
-als naechster aktiver Schritt: `POST /runs/{id}/control`-
-Wiring an `TickLoop` (statt Welle-1-Stub `accepted=True`),
-Replay-Controls-UI mit Pause/Resume/Stop-Buttons,
-Alarm-Tabelle, Demo-Generator gegen echtes TickLoop-
-Wiring ersetzen. Self-Close-Move
-`in-progress/M5-welle-3.md → done/` folgt als Welle-4-
-Pre-C0 (rename-only).
+mit Pre-C0a `4517f51` (Self-Close-Move
+`M5-welle-3.md → done/`, rename-only) + Pre-C0b (dieser
+Commit; Cross-Doc-Refs-Sync nach Move) abgeschlossen;
+naechster Schritt C0 (Slice-Doc-Anlage). Lieferziel:
+`POST /runs/{id}/control`-Wiring an `TickLoop` (statt
+Welle-1-Stub `accepted=True`), Replay-Controls-UI mit
+Pause/Resume/Stop-Buttons, Alarm-Tabelle, Demo-Generator
+gegen echtes TickLoop-Wiring ersetzen. Erfuellt
+`GG-UI-004/005`.

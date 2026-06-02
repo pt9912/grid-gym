@@ -262,11 +262,12 @@ Smoke-Test verifiziert.
 
 **Status:** Done 2026-06-01. Erfuellt `GG-UI-002/003/009`
 + `GG-API-002`. Welle-Slice-Begleit-Doc
-[`M5-welle-3.md`](M5-welle-3.md). Liefer-Hashes: Pre-C0a
-`8d60e16` + Pre-C0b `159f537` + Pre-C0c `5349923`
+[`M5-welle-3.md`](../done/M5-welle-3.md). Liefer-Hashes:
+Pre-C0a `8d60e16` + Pre-C0b `159f537` + Pre-C0c `5349923`
 (Asyncio-Pub/Sub-Probe) + C0 `ab55ec7` + CI-Hotfix
 `3ba74ef` + C1 `9f3c00d` (NEU ADR 0038) + C2 `82bdf39`
-(Code) + C3 (dieser Commit).
+(Code) + C3 `0e0473d` + Self-Close-Move `4517f51`
+(rename-only).
 
 - [x] **Decision 3 (WebSocket vs SSE)** durch
   [Lastenheft §16 `GG-API-002`](../../../../spec/lastenheft.md)
