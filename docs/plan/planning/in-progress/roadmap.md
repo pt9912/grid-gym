@@ -650,6 +650,11 @@ Notes). 1650 → 1681 Unit-Tests (+31); 50 → 51 Integration
 ADR-0014-§6-Forward-Pointer („AlarmSinkPort kommt mit
 M3") Driving-Side-Anteil produktiv aufgeloest (Postgres-
 Persistenz bleibt M3-Welle-6c). 10/10 A-1-Gates gruen.
+**Welle-4b-Review-Folge** (2026-06-02, nach C3): xhigh-
+effort `/code-review` deckte 15 Findings auf — alle in
+einer Folge-Lieferung adressiert ohne ADR-Aenderung
+(rein Bug-Fixes + Forward-Defense; siehe `M5-welle-4b.md
+§10`). 1681 → 1696 Unit-Tests (+15).
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
   (`GG-UI-001..009`, `GG-DEMO-001..00X`).

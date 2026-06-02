@@ -1050,8 +1050,9 @@ Status-/DoD-Sync nach C2-Code-Merge:
   to-End-Workflow mit echtem BatteryDevice + Over-
   rated Command + Stream-Publish + REST-Hydration +
   UI-Render).
-- [x] **`make test-unit`** gruen: **1681 passed**
-  (+31 vs Welle-4a-Endstand 1650).
+- [x] **`make test-unit`** gruen: **1696 passed**
+  (+46 vs Welle-4a-Endstand 1650; davon +31 mit C2 und
+  +15 mit Welle-4b-Review-Folge — siehe §10).
 - [x] **`make test-integration`** gruen: **51 passed**
   + 4 skipped (+1 vs Welle-4a-Endstand 50).
 - [x] **`make arch-check`** 20/20 KEPT (alle 7 import-
@@ -1098,6 +1099,179 @@ Status-/DoD-Sync nach C2-Code-Merge:
   Symmetrie (Welle 6+).
 - [x] Keine UI-Action-Buttons fuer Status-Mutationen.
 - [x] Keine `noqa`-Marker.
+
+---
+
+## 10. Review-Folge (2026-06-02 — 15 Fixes auf Welle-4b-Substanz)
+
+Nach Welle-4b-C3-Closure lief eine **xhigh-effort Code-
+Review** (`/code-review --base origin/main`) ueber die 6
+Welle-4b-Commits (Pre-C0a..C3). 5 Finder-Angles + 1
+Sweep-Pass lieferten 15 verifizierte Findings — alle in
+einer Folge-Lieferung adressiert ohne Aenderung an den
+ADR-0040-Decisions 15/16/17 (rein Bug-Fixes +
+Forward-Defense).
+
+**Fix-Gruppen (4 Cluster):**
+
+1. **F1 Template-Haertung** (3 Fixes in `_alarms_content.html`):
+   - **#6 XSS** ueber `innerHTML`-Template-Literals →
+     refaktoriert auf `createElement` + `textContent` +
+     `safeSeverity`-Whitelist (`info`/`warning`/`critical`).
+   - **#10 JSON-Parse-Error-Masking** →
+     `htmx:beforeSwap` prueft jetzt `xhr.status`,
+     `Array.isArray(payload.alarms)` und faellt auf
+     strukturierte Error-Rows zurueck statt stiller
+     „No alarms yet".
+   - **#14 `run_id`-JS-Injection** →
+     `const runId = {{ run_id|tojson }}` statt
+     `"{{ run_id }}"`; latenter Pfad fuer
+     Welle-6+-`run_id`-Schemata abgesichert.
+
+2. **F2 HTTP-Stabilitaet** (3 Fixes):
+   - **#7 404-vs-500-Precedence** in
+     `GET /runs/{id}/alarms-history` →
+     `get_alarm_history_buffer` wird jetzt INNERHALB
+     des Handlers nach `_resolve_repository` aufgerufen;
+     unbekannte `run_id` liefert 404 statt 500.
+   - **#15 Wrong-Module-Path** in Error-Messages von
+     `_AlarmStreamNotConfiguredError` /
+     `_AlarmHistoryBufferNotConfiguredError` →
+     `_alarm_setup.configure_alarm_stream` statt
+     `app.configure_alarm_stream` (real existierender
+     Pfad).
+   - **#5 Deque-Mutation-Race** in
+     `AlarmHistoryBuffer.get_recent` → `tuple(self.
+     _buffer)`-GIL-Snapshot vor `reversed(...)`, damit
+     sync REST-Threadpool + asyncio-Driver-Task nicht
+     mit `RuntimeError: deque mutated during iteration`
+     kollidieren.
+
+3. **F3 Driver-Lifecycle** (5 Fixes in
+   `_tick_loop_driver.py` + `_demo_setup.py`):
+   - **#1 Late-Wiring** → Driver nimmt jetzt
+     `alarm_stream_provider`/`alarm_history_buffer_
+     provider`-Callables statt direkter Refs; jeder
+     Tick re-liest `app.state` via
+     `_alarm_stream_from_app_state` /
+     `_alarm_history_buffer_from_app_state` in
+     `_demo_setup.py`. Damit gewinnt ein
+     `configure_alarm_stream`-Aufruf NACH
+     `configure_demo_run` keinen Silent-No-op mehr.
+   - **#2 Task-Exception-Handling** → `_run_loop`
+     wrappt jetzt `_tick_forever()` in try/except
+     `(asyncio.CancelledError, Exception)`; eine
+     `tick()`-Exception loggt mit `_logger.exception`
+     und mirror'd den TickLoop-State via
+     `_force_stop_after_failure()` auf `stopped`
+     (Repository-Persistenz inklusive). Driver in
+     `typed-errors-exempt` aufgenommen — Boundary-
+     Translation analog `error_translation.py`-Module.
+   - **#9 stop() Terminal-State-Mirror** → die in der
+     Docstring versprochene Transition wird jetzt
+     tatsaechlich vorgenommen (`request("stop")` mit
+     `TickLoopInvalidTransitionError`-Guard fuer
+     Race-Faelle).
+   - **#12 Buffer-vor-Stream-Reihenfolge** →
+     `_publish_emitted_alarms` schreibt zuerst in den
+     History-Buffer, dann auf den Stream; eine
+     Stream-Exception starvt die History nicht mehr.
+   - **#13 Orphan-Driver-Guard** in
+     `configure_demo_run` → NEU
+     `_DemoTickLoopDriverAlreadyConfiguredError`
+     weist einen zweiten Aufruf mit anderem `run_id`
+     hart ab statt stiller Overwrite. Welle-5 (Multi-
+     Run) wird einen Driver-Registry-Pfad einziehen.
+
+4. **F4 Domain / Resume** (4 Fixes):
+   - **#4 Tick-Atomicity** in
+     `TickLoop._drain_and_map_device_alarms` → erst
+     ALLE Devices drainen, dann mappen; unbekannter
+     Raw-Alarm-Typ killt nicht mehr den Tick, sondern
+     wird via `_unknown_alarm_type_count` gezaehlt +
+     ueber LogPort `alarm_unknown_raw_type` (analog
+     Welle-6a-`unknown_source_count`-Pattern).
+   - **#11 Scenario-Loader-Kwargs** →
+     `TickLoopWiring` erhaelt `run_repository` +
+     `alarm_id_source`; `build_tick_loop` reicht sie
+     an den `TickLoop`-Konstruktor durch. Produktive
+     Scenarios koennen jetzt deterministische Alarm-
+     IDs injizieren.
+   - **#8 `from_snapshot`-Kwargs** → `TickLoop.
+     from_snapshot` akzeptiert jetzt `run_repository`
+     + `alarm_id_source`; nach Resume mirror'd
+     `request(...)` weiterhin in die persistierte
+     Repository und Test-Stubs ueberleben die Snapshot-
+     Grenze.
+   - **#3 `_control_state`-Resume** → NEU
+     `from_snapshot(control_state=...)`-Kwarg; ein
+     `paused`-Snapshot bleibt nach Resume `paused`
+     statt blind via First-Tick-Auto-Flip auf
+     `running` zu springen. Trennung „Snapshot =
+     Tick-Determinismus / Repository = Run-Lifecycle"
+     bleibt unveraendert — der Kwarg wird vom Caller
+     (Welle-5-Scenario-Loader) aus
+     `RunRepository.get_status(run_id)` gespeist.
+
+**Architektonische Entscheidungen der Folge-Lieferung:**
+
+- `_control_state` bleibt **explizit NICHT** im
+  Snapshot persistiert (vs. neuer Sub-Snapshot-Key).
+  Begruendung: Snapshot ist deterministischer Tick-
+  State, Repository ist Run-Lifecycle. Caller-
+  injizierter `control_state`-Kwarg ist die saubere
+  Variante; der Kwarg-Default `None` haelt Backward-
+  Compat mit Welle-4a/M3-Aufrufern.
+- `_tick_loop_driver.py` in
+  `pyproject.toml:tool.grid_gym.arch_check.typed-
+  errors-exempt` aufgenommen. Der asyncio-Driver ist
+  funktional Boundary-Translation (Task-Boundary →
+  Repository-State-Mirror); selbe Rolle wie die
+  bestehenden `error_translation.py`-Module.
+- **Keine ADR-Aenderung**. Decisions 15/16/17 bleiben
+  semantisch unveraendert; die 15 Fixes sind reine
+  Bug-Fixes plus Forward-Compat-Defense (Welle-7+/
+  Welle-5/Welle-6c-Antizipation). ADR 0040 Status
+  bleibt **Provisional** bis Welle-5-Integration.
+
+**Neue Tests (15 in 3 NEU Test-Files):**
+
+- `tests/unit/adapters/driven/alarm_stream_inmemory/
+  test_history_buffer.py` — 3 Tests fuer #5 (Thread-
+  Snapshot, Append-After-Snapshot-Isolation, Run-ID-
+  Filter).
+- `tests/unit/adapters/driving/http_api/
+  test_tick_loop_driver.py` — 5 Tests fuer #1, #2,
+  #9, #12, #13 (Buffer-vor-Stream, Late-Wiring,
+  Stop-Mirror, Tick-Exception-Catch, Orphan-Guard).
+- `tests/unit/hexagon/core/simulation/
+  test_tick_loop_welle_4b_resume.py` — 4 Tests fuer
+  #3 + #8 (`from_snapshot`-Kwargs + Resume-State-
+  Preservation).
+- Ergaenzungen in bestehenden Files:
+  - `test_runs_router.py` +1 Test fuer #7 (404
+    ohne Buffer-Config).
+  - `test_tick_loop_alarm_aggregation.py` +2 Tests
+    fuer #4 (`_UnknownDeviceStub`-Atomicity-Pin +
+    Drain-vor-Map-Reihenfolge).
+
+**Liefer-Diff:** +422 / −81 ueber 15 Dateien (10 src/
++ 5 test). **1696 unit + 51 integration tests** gruen.
+
+**Gates** (alle cache-frei):
+
+- `make format` — 323 files unchanged.
+- `make lint` — All checks passed.
+- `make typecheck` — Success: no issues in 155 files.
+- `make arch-check` — 7/7 contracts kept.
+- `make test-unit` — 1696 passed.
+- `make test-integration` — 51 passed, 4 skipped
+  (IEC61850-pre-existing).
+- `make coverage-gate` — 93.46 % line.
+- `make coverage-gate-critical` — 95.02 % line / 90.29
+  % branch.
+- `make docs-check` — all links resolved.
+- `make dep-audit` — No known vulnerabilities.
 
 ---
 

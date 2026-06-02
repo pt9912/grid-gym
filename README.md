@@ -37,8 +37,8 @@ make help
 make gates              # 10 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # unit test suite (~1681 tests as of 2026-06-02,
-                        # M5-Welle-4b closure)
+make test-unit          # unit test suite (~1696 tests as of 2026-06-02,
+                        # M5-Welle-4b closure + review-folge)
 make test-integration   # Compose/testcontainers integration suite
                         # (51 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
                         # OPC-UA, DNP3, IEC-61850, M5-HTTP-API, M5-UI-Foundation,
@@ -153,7 +153,8 @@ As of **2026-06-01**:
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
 **Test balance (state after M5 Wave 4b closure 2026-06-02):**
-~1681 unit tests + 51 integration tests passed + 4 skipped. The
+~1696 unit tests + 51 integration tests passed + 4 skipped (1681
+post-C3 + 15 from the review follow-up). The
 4 skipped tests are the **2c mock-only fallback** for the
 IEC-61850 in-process `IedServer` smoke (ADR 0035 §2.5;
 trigger 009). Per-wave test increments + rationale live

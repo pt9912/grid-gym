@@ -37,8 +37,8 @@ make help
 make gates              # 10 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # Unit-Test-Suite (~1681 Tests, Stand 2026-06-02,
-                        # M5-Welle-4b-Closure)
+make test-unit          # Unit-Test-Suite (~1696 Tests, Stand 2026-06-02,
+                        # M5-Welle-4b-Closure + Review-Folge)
 make test-integration   # Compose-/testcontainers-Integration-Suite
                         # (51 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
                         # Modbus-, OPC-UA-, DNP3-, IEC-61850-, M5-HTTP-API-,
@@ -170,8 +170,9 @@ Stand **2026-06-01**:
     `make demo`) · `Pending` (naechster aktiver Slice)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz (Stand 2026-06-02 nach M5-Welle-4b-Closure):**
-~1681 Unit-Tests + 51 Integration-Tests passed + 4 skipped.
+**Testbilanz (Stand 2026-06-02 nach M5-Welle-4b-Closure + Review-Folge):**
+~1696 Unit-Tests + 51 Integration-Tests passed + 4 skipped
+(1681 post-C3 + 15 aus der Review-Folge).
 Die 4 skipped Tests sind der **2c-Mock-only-Fallback** fuer
 den IEC-61850-In-Process-`IedServer`-Smoke (ADR 0035 §2.5;
 Trigger 009). Pro-Welle-Test-Inkremente + Begruendungen

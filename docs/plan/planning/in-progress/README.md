@@ -246,6 +246,21 @@ Konsolidierung 4→1 zu `alarm_from_power_device_alarm`
 Union-typed (AC-NO-GOD-UTILS); `_alarm_setup.py`-
 Auslagerung aus `app.py` (AC-NO-GOD-UTILS).
 
+**Welle-4b-Review-Folge** (2026-06-02, nach C3): xhigh-
+effort `/code-review` deckte 15 Findings in der Welle-4b-
+Substanz auf — alle in einer Folge-Lieferung adressiert
+(siehe `M5-welle-4b.md §10`). 4 Cluster: F1 Template-
+Haertung (#6 XSS / #10 JSON-Parse / #14 `run_id`-
+Escape); F2 HTTP-Stabilitaet (#7 404-vs-500 / #15
+Modul-Pfad / #5 Deque-Race); F3 Driver-Lifecycle (#1
+Late-Wiring / #2 Task-Exception / #9 stop()-Mirror /
+#12 Buffer-vor-Stream / #13 Orphan-Guard); F4 Domain/
+Resume (#4 Tick-Atomicity / #11 Loader-Kwargs / #8
+`from_snapshot`-Kwargs / #3 `_control_state`-Resume).
+Keine ADR-Aenderung — rein Bug-Fixes + Forward-Defense.
+1681 → 1696 Unit-Tests (+15); 10/10 A-1-Gates gruen
+cache-frei.
+
 **Welle-4-Subdivision (4a + 4b) komplett abgeschlossen
 2026-06-02.**
 
