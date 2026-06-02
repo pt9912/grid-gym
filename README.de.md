@@ -252,49 +252,65 @@ Der MVP umfasst laut Lastenheft mindestens:
 
 ```text
 .
-├── .github/workflows/ci.yml     ← GitHub-Actions: 4 Pflicht-Gates (Trigger 025)
-├── CHANGELOG.md
-├── Dockerfile                   ← Multi-Stage (Lint, Arch-Check, Test, Runtime)
-├── LICENSE
-├── Makefile                     ← Build-/Test-Gates pro Dockerfile-Stage
-├── alembic.ini                  ← Postgres-Migrationen (M1 Welle 6c)
-├── pyproject.toml               ← Build-/Tool-Konfiguration (ADR 0002 §6.1)
-├── uv.lock                      ← gepinnte Dependencies (uv)
-├── .python-version              ← 3.14 (uv-kompatibel)
-├── AGENTS.md                    ← Briefing fuer AI-Coding-Agenten (harte Regeln + Pointer)
-├── README.md                    ← englische Hauptversion
-├── README.de.md                 ← deutsche Version (dieses Dokument)
-├── deploy/compose.yml           ← Produktiver Compose-Stack + OTLP-Collector-Sibling (M3 Welle 6)
-├── deploy/otel-collector-config.yaml ← Collector-Konfig (gRPC :4317, Debug- + File-Exporter)
+├── .github/workflows/ci.yml     ← CI: 4 Pflicht-Gates (Trigger 025)
+├── Dockerfile, Makefile, pyproject.toml, uv.lock, alembic.ini, .python-version
+│                                ← Build-/Gate-/Dependency-Schicht (ADR 0002 §6.1; alembic fuer M1-Welle-6c-Postgres-Migrationen)
+├── LICENSE + LICENSES/GPL-3.0.txt
+│                                ← MIT-Default + GPL-3.0-only fuer die IEC-61850-Boundary (ADR 0035 Decision I-f, M4 Welle 5b/6b)
+├── README.md + README.de.md + CHANGELOG.md + CONTRIBUTING.md + AGENTS.md
+│                                ← Projekt-Doku + Dual-License-Policy + AI-Coding-Agenten-Briefing
+├── deploy/
+│   ├── compose.yml              ← Produktiver Compose-Stack + OTLP-Collector-Sibling (M3 Welle 6)
+│   └── otel-collector-config.yaml ← Collector-Konfig (gRPC :4317, Debug- + File-Exporter)
+├── harness/                     ← Agent-Harness-Contracts: README + roles + review + verification + replay
+├── spec/
+│   ├── lastenheft.md            ← normative Anforderungen (GG-*)
+│   ├── architecture.md          ← Architektur (GG-AR-*)
+│   └── protocol_profiles.md     ← Adapter-Profil-Index pro Protokoll (M4 Welle 6a)
 ├── src/grid_gym/
 │   ├── hexagon/
 │   │   ├── core/
 │   │   │   ├── agents/          ← Agent-Protocol + AgentMessageBus + RuleBasedAgent (M3 Welle 3+4a+4b)
-│   │   │   ├── devices/         ← Battery, PV, Load, GridConnection, SmartMeter (M2)
-│   │   │   ├── domain/          ← Frozen-Dataclasses (Command, Event, ScenarioFault, ...)
+│   │   │   ├── devices/         ← battery/, pv/, load/, grid_connection/, smart_meter/ (M2)
+│   │   │   ├── domain/          ← Frozen-Dataclasses (Command, Event, Alarm, ScenarioFault, ...)
 │   │   │   ├── faults/          ← Battery- + GridFaultAdapter (M3 Welle 2)
 │   │   │   ├── grid_model/      ← Bilanz-Modell + LoadEvent/LoadProfile (M2 Welle 5)
 │   │   │   ├── replay/          ← Replay-Sample-Codec (M1 Welle 5)
 │   │   │   ├── scenario/        ← YAML-Loader + Validator (M1 Welle 5)
 │   │   │   ├── serialization/   ← canonical_json (M1 Welle 0a, Trigger 014)
-│   │   │   └── simulation/      ← TickLoop + Scheduler
-│   │   └── ports/driven/        ← ClockPort, RandomPort, FaultPort, RunRepositoryPort
+│   │   │   └── simulation/      ← TickLoop + Scheduler + alarm_mappers (M5 Welle 4b)
+│   │   └── ports/
+│   │       ├── driven/          ← Clock, Random, Fault, RunRepository, Observability (Log/Metrics/Trace), DeviceProtocol (M4 Welle 1)
+│   │       └── driving/         ← TelemetryStream (M5 Welle 3), AlarmStream (M5 Welle 4b)
 │   └── adapters/
-│       ├── driving/             ← HTTP-API (FastAPI, M1 Welle 6a)
-│       └── driven/              ← Postgres, RandomMT, OTLP, MQTT (M1 Welle 6b/6c + M3/M4)
+│       ├── driving/
+│       │   ├── http_api/        ← FastAPI-App + REST + WebSocket + Komposition-Roots (M5 Welle 1/4a/4b)
+│       │   └── ui/              ← Jinja2-Templates + vendored HTMX + Chart.js + StaticFiles (M5 Welle 2)
+│       └── driven/
+│           ├── persistence_postgres/    ← Postgres-RunRepository + alembic-Migrationen (M1 Welle 6c)
+│           ├── random_mt/               ← MersenneTwisterRandomPort (M1 Welle 2)
+│           ├── observability_null/      ← Null-Log/Metrics/Trace-Fallback (M3 Welle 5)
+│           ├── telemetry_otlp/          ← OTLP-gRPC-Adapter (M3 Welle 6, ADR 0024)
+│           ├── telemetry_stream_inmemory/ ← InMemoryTelemetryStream + DemoTelemetryGenerator (M5 Welle 3)
+│           ├── alarm_stream_inmemory/   ← InMemoryAlarmStream + AlarmHistoryBuffer (M5 Welle 4b)
+│           ├── protocol_mqtt/           ← paho-mqtt (M4 Welle 2, ADR 0031)
+│           ├── protocol_modbus/         ← pymodbus (M4 Welle 3, ADR 0032)
+│           ├── protocol_opcua/          ← asyncua + OpcuaLoopThread Async-Bridge (M4 Welle 4, ADR 0033)
+│           ├── protocol_dnp3/           ← nfm-dnp3 produktiv + dnp3-outstation dev-only (M4 Welle 5a, ADR 0034)
+│           ├── protocol_iec61850/       ← pyiec61850-ng GPLv3-isoliertes Optional-Extra (M4 Welle 5b, ADR 0035 Decision I-f)
+│           └── _protocol_otel_wrap.py   ← OtelSpanWrappedDeviceProtocolPort Cross-Adapter-Wrapper (M4 Welle 6a)
 ├── tests/
 │   ├── unit/                    ← pytest-Unit-Tests (1696 Stand 2026-06-02, M5-Welle-4b-Closure + Review-Folge)
 │   ├── integration/             ← Compose-basierte Integration-Tests (51 passed + 4 skipped; OTLP- + MQTT- + Modbus- + OPC-UA- + DNP3- + IEC-61850- (Mock-only-Fallback) + M5-HTTP-API- + UI-Foundation- + Live-Telemetry- + Replay-Controls- + Alarms-Smokes inkl.)
 │   └── unit/_arch_check_*       ← Architektur-Tests (6 lint-imports + 14 custom AC-Checks = 20 A-1; AC-NO-IO-MOD in beiden Tools enforced, einmal gezaehlt)
 ├── tools/
 │   ├── arch_check.py            ← AST-/Graph-Architektur-Checks (ADR 0002 §A-1)
-│   ├── check_noqa.py            ← `# noqa`-Verbots-Gate (9. A-1-Gate, Slice 027)
+│   ├── check_noqa.py            ← `# noqa`-Verbots-Gate (Slice 027)
+│   ├── check_spdx.py            ← SPDX-Header-Lint fuer die GPL-3.0-only-Boundary (M4 Welle 6b)
 │   ├── check_refs.py            ← Markdown-Link-Validator (`make docs-check`)
+│   ├── check_core_determinism.py ← Core-Determinismus-Sweep
 │   ├── wait_otel_collector.py   ← Bounded-Liveness-Poll fuer distroless OTLP-Collector
 │   └── diagnose_otlp_span_export.py ← OTLP-Debug-Matrix-Skript (Trigger-029-Pattern)
-├── spec/
-│   ├── lastenheft.md            ← normative Anforderungen (GG-*)
-│   └── architecture.md          ← Architektur (GG-AR-*)
 └── docs/
     ├── plan/
     │   ├── adr/                 ← Architecture Decision Records (0001..0040)
