@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-5.md`](M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring: NEU kanonisches Demo-YAML mit 5 MVP-Devices + LoadProfile + LoadEvent + RuleBasedAgent + NEU `make demo`-Target + NEU `python -m grid_gym demo`-Modul-Form + Lifespan-env-var-Pfad fuer Scenario-Loader; 3 Decisions 5/6/18 final; **C1 entfaellt** — kein neuer Driving-Port, kein neuer Vertrag, Decision 18 explizit „keine neue Compose-Topologie"; erfuellt `GG-DEMO-001..005 + 007`; `GG-DEMO-006` Fault-Injection + `GG-DEMO-008` Abnahmedoku deferiert auf Welle 6 per C2-Folge-Entscheid 2026-06-03 fuer Range-Konsistenz). — **In Progress** seit 2026-06-02 (Pre-C0a `a030c0e` + Pre-C0b `45335eb` + C0 dieser Commit); bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-6-Pre-C0. |
+| [`M5-welle-5.md`](M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03**; Self-Close-Move folgt als M5-Welle-6-Pre-C0a. Lieferung in Welle-5-Closure-Block unten. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -267,33 +267,50 @@ frei.
 mit Welle-5-Pre-C0a `a030c0e` (rename-only;
 Pattern `feedback_git_mv`).
 
-**Aktive Welle:** M5-Welle-5 (Demo-Pipeline +
-Scenario-Loader) **gestartet 2026-06-02** mit Pre-C0a
-`a030c0e` (Self-Close-Move) + Pre-C0b (dieser Commit;
-Cross-Doc-Refs-Sync nach Move). **3 Decisions** geplant
-(Welle-5-Scope-Bestaetigung 2026-06-02):
+**Welle 5 (M5-Welle-5 Demo-Pipeline +
+Scenario-Loader-Wiring) abgeschlossen 2026-06-03** mit
+Pre-C0a `a030c0e` (Self-Close-Move
+`M5-welle-4b.md → done/`, rename-only) + Pre-C0b
+`45335eb` (Cross-Doc-Refs-Sync nach Move, 5 Files) +
+C0 `155c421` (Slice-Doc + Decisions 5/6/18 final +
+Sub-Slicing-Risk-Verifikation; Single-Slice ohne
+Splittung) + C2 `904ef47` (Code-Merge: NEU
+`deploy/scenarios/gg-demo.yaml` + NEU
+`src/grid_gym/__main__.py` + NEU
+`src/grid_gym/adapters/driven/persistence_inmemory/
+InMemoryRunRepository` + NEU
+`src/grid_gym/adapters/driving/http_api/
+_demo_scenario_setup.py` + Lifespan-env-var-Branch in
+`app.py` + NEU `make demo`/`make demo-stop` Targets +
+NEU `tests/integration/test_m5_welle_5_demo_smoke.py`
++ Decision-18-Praezisierung in `compose.yml` per
+Service-Konfiguration (Port-Mapping `8000:8080` +
+`GRID_GYM_DEMO_SCENARIO_PATH`-env + readonly
+Scenario-Volume-Mount) + Rename `demo.yaml →
+gg-demo.yaml` (range-neutral) + `GG-DEMO-008`-Defer
+auf Welle 6 fuer Range-Konsistenz). Plus Doku-Sibling-
+Stack `5ab0f67` (M5-ui-demo.md-Restrukturierung
+780→321 Zeilen mit NEU §3.1 Welle-Status-Tabelle) +
+C2-Plan-Sync `64c0fd9` (Slice-Doc §4 C3-Plan + §9
+DoD-Liste an C2-Realitaet angleichen) + Doku-Sibling
+`5fe5082` (README.md + README.de.md Status-Sections
+kondensieren — Per-Welle-Breakdowns raus). Plus C3
+(dieser Commit; Status/DoD-Sync + §10 C2-Realization-
+Notes). Ausstehend: C4a Self-Close-Move
+`M5-welle-5.md → done/` (rename-only) + C4b
+Cross-Doc-Refs-Sync nach Move (Pattern analog
+Welle-4b `a030c0e`/`45335eb`). 1681 → 1681 Unit-Tests
+(+0); 51 → 57 Integration (+6 Welle-5-Smoke inkl.
+Determinismus-Hash-Pin). Lastenheft-Akzeptanz
+`GG-DEMO-001..005 + 007` produktiv; `GG-DEMO-006`
+(Fault-Injection in Demo) + `GG-DEMO-008`
+(Abnahmedoku) explizit auf Welle 6 verschoben (§1.3
+Anti-Scope-Block; C2-Folge-Entscheid 2026-06-03 in
+§10.1).
 
-- **Decision 5 (Demo-Szenario-Inhalt)** — kanonisches
-  YAML mit 1 Grid-Connection + 1 Battery + 1 Load + 1
-  PV + 1 SmartMeter + 1 LoadProfile/LoadEvent + 1
-  RuleBasedAgent (`GG-DEMO-007` eng integriert, keine
-  Agent-UI/Plugin/Learned-Substanz; aus `scenario.agents`
-  via bestehender `build_tick_loop`-Default).
-- **Decision 6 (Demo-Entry-Point-Surface)** — `make
-  demo` als Pflicht-Target (Lifespan = Scenario-Loader
-  statt `_demo_setup.configure_demo_run`); Sekundaer-
-  Surface `python -m grid_gym demo` als Modul-Form.
-- **NEU Decision 18 (Demo-Compose-Topologie)** —
-  Kernentscheidung: **Welle 5 bringt keine neue Demo-
-  Topologie und keinen Replay-Postgres-Speicher**;
-  `make demo` startet die vorhandene Runtime/UI-Demo
-  reproduzierbar gegen den bestehenden
-  `deploy/compose.yml`-Stack.
-
-Anti-Scope: Multi-Run-Driver-Registry (Welle-4b-Fix-#13-
-Forward → Welle 6+); Snapshot-Resume-Pfad (Welle-4b-Fix-
-#3/#8-Forward → Welle-6+/M6); Fault-Injection-Form
-`GG-DEMO-006` → Welle 6 (mit `GG-UI-007`); UI-Sub-
-Wellen-Features `GG-UI-006/007/008` → Welle 6; Postgres-
-Sibling in Compose → Welle 6c. Erfuellt `GG-DEMO-001..005
-+ 007 + 008` (6 MUSS + 1 SOLLTE).
+**Aktive Welle:** M5-Welle-6 (SOLLTE-Features +
+Welle-5-Anti-Scope-Aufnahme) — Plan-Items in
+[`M5-ui-demo.md §3.2`](M5-ui-demo.md). Aktivierung
+mit M5-Welle-6-Pre-C0a (Self-Close-Move
+`M5-welle-5.md → done/`, rename-only) + Pre-C0b
+(Cross-Doc-Refs-Sync nach Move).

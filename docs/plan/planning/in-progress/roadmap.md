@@ -151,22 +151,34 @@
   abgeschlossen (Welle 4b 2026-06-02 mit `b7ac7b3` +
   C3 `4dca6aa` + Review-Folge `52afd1a`/`fe1db21`/
   `ced9661`/`1fba165` — 15 Findings adressiert).
-  **Aktive Welle:** **Welle 5 (Demo-Pipeline +
-  Scenario-Loader-Wiring)** eroeffnet 2026-06-02 mit
-  Pre-C0a `a030c0e` (Self-Close-Move
-  `M5-welle-4b.md → done/`) + Pre-C0b `45335eb`
-  (Cross-Doc-Refs-Sync) + C0 `155c421` (Slice-Doc +
-  Decisions 5/6/18 final — kanonisches Demo-YAML,
-  `make demo`-Target mit `python -m grid_gym demo`-
-  Sekundaer-Surface, keine neue Compose-Topologie).
-  Welle 5 ist Single-Slice ohne Sub-Splittung;
-  Decision-Setup an `GG-DEMO-001..005 + 008` (6 MUSS)
-  + `GG-DEMO-007` (1 SOLLTE) gekoppelt;
-  `GG-DEMO-006` deferiert auf Welle 6 (an
-  `GG-UI-007`-Form-Substanz gebunden). **Naechster
-  Schritt:** C1 (kein ADR-Commit; Pattern analog
-  Welle 2 `64d5129`) → C2 (Code-Lieferung) → C3
-  (Status/DoD-Sync).
+  **Welle 5 (Demo-Pipeline + Scenario-Loader-Wiring)
+  abgeschlossen 2026-06-03** mit Pre-C0a `a030c0e` +
+  Pre-C0b `45335eb` + C0 `155c421` (Slice-Doc +
+  Decisions 5/6/18 final) + C2 `904ef47` (Code-Merge:
+  NEU `deploy/scenarios/gg-demo.yaml` + NEU
+  `__main__.py` + NEU produktiver
+  `InMemoryRunRepository` + NEU
+  `_demo_scenario_setup.py` + `app.py`-Lifespan-env-
+  var-Branch + NEU `make demo`/`demo-stop` + NEU
+  Welle-5-Smoke + Decision-18-Praezisierung in
+  `compose.yml` per Service-Konfiguration +
+  `GG-DEMO-008`-Defer auf Welle 6) + Doku-Sibling-
+  Stack `5ab0f67`/`64c0fd9`/`5fe5082` + C3 (dieser
+  Commit; Status/DoD-Sync + §10 C2-Realization-
+  Notes). Ausstehend: C4a/C4b Self-Close-Move +
+  Cross-Doc-Refs-Sync. Lastenheft-Akzeptanz
+  `GG-DEMO-001..005 + 007` produktiv; `GG-DEMO-006` +
+  `GG-DEMO-008` Anti-Scope-Forward-Pointer auf
+  Welle 6.
+  **Aktive Welle:** **Welle 6 (SOLLTE-Features +
+  Welle-5-Anti-Scope-Aufnahme)** — Plan-Items in
+  [`M5-ui-demo.md §3.2`](M5-ui-demo.md); deckt
+  `GG-UI-006..008` + `GG-DEMO-006` (Fault-Injection
+  in Demo) + `GG-DEMO-008` (Abnahmedoku
+  `docs/user/gg-demo-008-abnahme.md`). **Naechster
+  Schritt:** M5-Welle-6-Pre-C0a Self-Close-Move
+  `M5-welle-5.md → done/` (rename-only) + Pre-C0b
+  Cross-Doc-Refs-Sync nach Move.
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
@@ -301,9 +313,12 @@ M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
 Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
 [`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
-eroeffnet; Welle 0..4b abgeschlossen, **Welle 5 (Demo-
-Pipeline) `In Progress` seit 2026-06-02** mit Slice-Doc
-[`M5-welle-5.md`](M5-welle-5.md). (M4 ist abgeschlossen,
+eroeffnet; Welle 0..5 abgeschlossen, **Welle 5 (Demo-
+Pipeline) `Done` 2026-06-03** mit Slice-Doc
+[`M5-welle-5.md`](M5-welle-5.md); **aktive Welle: Welle 6
+(SOLLTE-Features + Welle-5-Anti-Scope-Aufnahme)** mit
+Plan-Items in [`M5-ui-demo.md §3.2`](M5-ui-demo.md). (M4
+ist abgeschlossen,
 siehe [`done/M4-results.md`](../done/M4-results.md).)
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
@@ -700,8 +715,8 @@ einer Folge-Lieferung adressiert ohne ADR-Aenderung
 (rein Bug-Fixes + Forward-Defense; siehe `M5-welle-4b.md
 §10`). 1681 → 1696 Unit-Tests (+15).
 
-**Welle 5 (Demo-Pipeline + Scenario-Loader-Wiring) `In
-Progress`** — eroeffnet 2026-06-02 mit Pre-C0a `a030c0e`
+**Welle 5 (Demo-Pipeline + Scenario-Loader-Wiring) `Done`
+2026-06-03** — eroeffnet 2026-06-02 mit Pre-C0a `a030c0e`
 (Self-Close-Move `M5-welle-4b.md → done/`, rename-only) +
 Pre-C0b `45335eb` (Cross-Doc-Refs-Sync nach Move, 5 Files) +
 C0 `155c421` (Slice-Doc

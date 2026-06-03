@@ -112,17 +112,17 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-03**:
+Stand **2026-06-03** (nach M5-Welle-5-Closure):
 
 - **M1 — Tick-Loop-Spine** · `Done`
 - **M2 — Geraetemodelle** · `Done`
 - **M3 — Faults + Multi-Agent + Observability** · `Done` (sechs ADRs `Accepted`)
 - **M4 — Protokolladapter** · `Done` (sechs ADRs 0030..0035 `Accepted` 2026-06-01)
-- **M5 — UI + Demo** · `In Progress` seit 2026-06-01 — aktive Welle: **5 (Demo-Pipeline)**. Welle-Status-Tabelle: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
+- **M5 — UI + Demo** · `In Progress` seit 2026-06-01 — aktive Welle: **6 (SOLLTE-Features + Welle-5-Anti-Scope-Aufnahme: `GG-DEMO-006` + `GG-DEMO-008`)**. Welle 0..5 `Done` (Welle 5 `Done` 2026-06-03). Welle-Status-Tabelle: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz** (2026-06-02, nach M5-Welle-4b-Closure): 1681 Unit-
-Tests + 51 Integration-Tests passed + 4 skipped. Die 4 skipped
+**Testbilanz** (2026-06-03, nach M5-Welle-5-Closure): 1681 Unit-
+Tests + 57 Integration-Tests passed + 4 skipped. Die 4 skipped
 Tests sind der **2c-Mock-only-Fallback** fuer den IEC-61850-In-
 Process-`IedServer`-Smoke (ADR 0035 §2.5; Trigger 009). Pro-
 Welle-Test-Inkremente leben in den Slice-Docs unter

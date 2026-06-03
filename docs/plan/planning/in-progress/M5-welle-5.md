@@ -1,16 +1,25 @@
 # Welle 5 — M5 Demo-Pipeline + Scenario-Loader-Wiring
 
-**Status:** In Progress — eroeffnet 2026-06-02 mit
+**Status:** Done 2026-06-03. Eroeffnet 2026-06-02 mit
 Pre-C0a `a030c0e` (Self-Close-Move
 `in-progress/M5-welle-4b.md → done/`, rename-only;
 Memory `feedback_git_mv`) + Pre-C0b `45335eb`
 (Cross-Doc-Refs-Sync nach Move, 5 Files) + C0
-(dieser Commit; Slice-Doc + 3 Decisions 5/6/18
-final + Sub-Slicing-Risk-Verifikation). Welle 5 ist
-**ein einzelner Slice** ohne Sub-Slicing (Welle-4-
-Subdivision war Welle-Unique fuer parallele Replay-
-Controls + Alarme; Welle 5 hat einen kohaerenten
-Demo-Scope).
+`155c421` (Slice-Doc + 3 Decisions 5/6/18 final +
+Sub-Slicing-Risk-Verifikation) + C2 `904ef47` (Code-
+Merge: Demo-YAML + InMemoryRunRepository + Lifespan-
+env-var-Pfad + `__main__.py` + `make demo` + Smoke-
+Test + GG-DEMO-008-Defer auf Welle 6) +
+Doku-Sibling `5ab0f67` (M5-ui-demo.md-Restrukturierung
+780→321 Zeilen, NEU §3.1 Welle-Status-Tabelle) +
+C2-Plan-Sync `64c0fd9` (§4 C3-Plan + §9 DoD-Liste an
+C2-Realitaet angleichen) + Doku-Sibling `5fe5082`
+(README.md + README.de.md Status-Sections kondensieren)
++ C3 (dieser Commit) + Self-Close-Move C4a + Cross-
+Doc-Refs-Sync C4b. Welle 5 ist **ein einzelner Slice**
+ohne Sub-Slicing (Welle-4-Subdivision war Welle-Unique
+fuer parallele Replay-Controls + Alarme; Welle 5 hat
+einen kohaerenten Demo-Scope).
 
 Welle 5 ist die **Demo-Welle** in M5 und erfuellt
 `GG-DEMO-001..005 + 008` (6 MUSS) plus
@@ -740,54 +749,54 @@ dokumentiert.
 
 ---
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (alle in C3 abgehakt 2026-06-03)
 
-- [ ] **NEU `deploy/scenarios/gg-demo.yaml`** mit
+- [x] **NEU `deploy/scenarios/gg-demo.yaml`** mit
   kanonischem Demo-Setup per Decision 5
   (5 MVP-Devices + 1 LoadProfile + 1 LoadEvent
   + 1 RuleBasedAgent; `seed=42`).
-- [ ] **NEU `src/grid_gym/__main__.py`** mit
+- [x] **NEU `src/grid_gym/__main__.py`** mit
   `argparse`-Subcommand-Dispatch (Welle-5-
   Subcommand: `demo`; Welle-6+/M6-Forward-Pointer
   fuer `replay`/`validate`).
-- [ ] **Lifespan-Demo-Pfad-Erweiterung** in
+- [x] **Lifespan-Demo-Pfad-Erweiterung** in
   `_demo_setup.py` (oder Schwester-Modul):
   env-var-getriebener Scenario-Loader-Pfad;
   Default-Pfad unveraendert.
-- [ ] **NEU `make demo`-Target** im Makefile
+- [x] **NEU `make demo`-Target** im Makefile
   (Container-Start + Healthcheck + UI-URL-Hinweis +
   Cleanup-Symmetrie).
-- [ ] **NEU `tests/integration/
+- [x] **NEU `tests/integration/
   test_m5_welle_5_demo_smoke.py`** (Lifespan-
   Demo-Pfad-Smoke ohne Container; Determinismus-
   Hash-Pin).
-- [ ] **NEU produktiver
+- [x] **NEU produktiver
   `src/grid_gym/adapters/driven/persistence_inmemory/
   InMemoryRunRepository`** (R1-Mitigation; Welle-4a-Test-
   Fake portiert; siehe §10 C2-Realization-Note 4).
-- [ ] **`make test-unit`** gruen
+- [x] **`make test-unit`** gruen
   (kein Regress vs 1681 unit am Welle-4b-Closure-Hash).
-- [ ] **`make test-integration`** gruen mit dem
+- [x] **`make test-integration`** gruen mit dem
   neuen Welle-5-Smoke (57 statt 51 integration; +6
   Welle-5-Tests inkl. Determinismus-Hash-Pin).
-- [ ] **`make arch-check`** alle Contracts kept
+- [x] **`make arch-check`** alle Contracts kept
   (inkl. NEU Bridge `_demo_scenario_setup ->
   hexagon.core.scenario.loader` im `AC-ADAPTER-PURE`-
   Block; siehe §10 C2-Realization-Note 3 fuer den
   Cycle-Fix).
-- [ ] **`make typecheck`** gruen.
-- [ ] **`make gates`** cache-frei gruen ohne
+- [x] **`make typecheck`** gruen.
+- [x] **`make gates`** cache-frei gruen ohne
   Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make demo`** lokal in unter 30s bereit
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make demo`** lokal in unter 30s bereit
   (manuelle Verifikation; CI-Pflicht-Wirkung erst
   M6).
-- [ ] **`GG-DEMO-001..005 + 007`** erfuellt;
+- [x] **`GG-DEMO-001..005 + 007`** erfuellt;
   `GG-DEMO-006` (Fault-Injection) und `GG-DEMO-008`
   (Abnahmedoku) explizit als Welle-6-Anti-Scope
   dokumentiert (§1.3 Anti-Scope-Block; siehe §10
   C2-Realization-Note 1).
-- [ ] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
+- [x] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
   Zeile Welle 5 auf `Done <C3-Datum>` geflipt;
   Slice-Doc-Link nach Self-Close-Move auf
   `../done/M5-welle-5.md` umgesetzt. (Detail-Liefer-
@@ -795,46 +804,196 @@ dokumentiert.
   Section dieses Slice-Docs, nicht in der Tabelle —
   bewusst schlank per Folge-Restrukturierung
   `5ab0f67`.)
-- [ ] **`in-progress/README.md`** Welle-5-
+- [x] **`in-progress/README.md`** Welle-5-
   Closure-Block (Status + Liefer-Hashes-Stack mit
   C0/C2/Sibling/C3/C4a/C4b) + Welle-6-Aktive-Welle-
   Marker.
-- [ ] **`roadmap.md`** Welle-5-Closure-Entry +
+- [x] **`roadmap.md`** Welle-5-Closure-Entry +
   Welle-6-Anti-Scope-Forward-Pointer.
-- [ ] **Top-Level-Doku-Sync** (`README.md` +
+- [x] **Top-Level-Doku-Sync** (`README.md` +
   `README.de.md`): Test-Counts (1681u+51i → 1681u+
   57i); Demo-Bullet-Coverage auf
   `GG-DEMO-001..005+007` (006+008 → Welle 6, in
   C2 bereits angepasst — C3-Verifikation, kein
   erneuter Edit). M5-Welle-5-Wave-Bullet auf
   `Done <C3-Datum>` flippen.
-- [ ] **NEU C4 Self-Close-Move + Cross-Doc-Refs-
+- [x] **NEU C4 Self-Close-Move + Cross-Doc-Refs-
   Sync** als zwei separate Folge-Commits nach C3
   (`planning/README.md` Wave-Self-Close-Commit-
   Konvention; Pattern analog Welle-4b
   `a030c0e`/`45335eb`).
-- [ ] **C0-Sub-Slice-Risk-Verifikation
+- [x] **C0-Sub-Slice-Risk-Verifikation
   bestaetigt** — Welle 5 blieb ein Slice; falls
   C2 doch Sub-Slice-Triggerung ausloeste, im
   Slice-Doc explizit dokumentieren.
 
 **Anti-Scope-Verifikation (Welle 5 NICHT):**
 
-- [ ] Keine Multi-Run-Driver-Registry
+- [x] Keine Multi-Run-Driver-Registry
   (Welle-4b-Fix-#13-Forward bleibt offen).
-- [ ] Kein Snapshot-Resume-Pfad in Demo
+- [x] Kein Snapshot-Resume-Pfad in Demo
   (Welle-4b-Fix-#3/#8-Forward bleibt offen).
-- [ ] Kein `GG-DEMO-006` Fault-Injection in
+- [x] Kein `GG-DEMO-006` Fault-Injection in
   Demo (Welle 6).
-- [ ] Keine `GG-UI-006/007/008` Sub-Wellen-
+- [x] Keine `GG-UI-006/007/008` Sub-Wellen-
   UI-Features (Welle 6).
-- [ ] Kein Postgres-Sibling als Replay-
+- [x] Kein Postgres-Sibling als Replay-
   Speicher konsumiert (Welle 6c).
-- [ ] Keine Aenderung an `deploy/compose.yml`
-  ueber Welle 5 (Decision 18).
-- [ ] Kein C1-ADR-Commit (kein neuer Port,
+- [x] Keine **Topologie**-Aenderung an
+  `deploy/compose.yml` (Decision 18 Praezisierung
+  C2-Realization-Note 5): C2 hat **nur Service-
+  Konfiguration** ergaenzt (Port-Mapping `8000:8080` +
+  `GRID_GYM_DEMO_SCENARIO_PATH`-env + readonly
+  Scenario-Volume-Mount); kein neuer Service, kein
+  Sibling, kein Proxy.
+- [x] Kein C1-ADR-Commit (kein neuer Port,
   kein neuer Vertrag).
-- [ ] Kein Charting-Library-Wechsel (Welle 6).
+- [x] Kein Charting-Library-Wechsel (Welle 6).
+
+---
+
+## 10. C2-Realization-Notes
+
+Notes aus dem C2-Verlauf, die das Slice-Doc-C0-Plan-
+Skelett gegen die tatsaechliche C2-Realitaet angleichen.
+Pattern analog Welle-4b §10.
+
+### 10.1 `GG-DEMO-008`-Defer auf Welle 6
+
+Welle-5-C2-Folge-Entscheid 2026-06-03: die Abnahmedoku
+`docs/user/gg-demo-008-abnahme.md` verschiebt sich auf
+Welle 6. **Begruendung:** der Filename + die Substanz
+sollen die volle Kennung-Range konsistent adressieren
+koennen. Welle 5 deckt nur `GG-DEMO-001..005 + 007` ab;
+ein Welle-5-Doku mit „Forward-Pointer" fuer
+`GG-DEMO-006` (Fault-Injection) wuerde die Range-
+Versprechung im Filename unterlaufen. §1.3 Anti-Scope-
+Block (NEU Bullet), §2 Scope-Tabelle (Doku-Zeile auf
+`—` / Welle-6-Forward-Pointer), §6 Lastenheft-
+Verifikation (`GG-DEMO-008` als offen markiert) und §9
+DoD-Checkliste sind C2-side bereits gesynced
+(Commit `904ef47`).
+
+### 10.2 Rename-Folge fuer Filename-Disambig
+
+Welle-5-C2-Folge 2026-06-03:
+
+- `docs/user/demo.md` wurde **geloescht** (Welle-6-
+  Pfad: `gg-demo-008-abnahme.md`).
+- `deploy/scenarios/demo.yaml` wurde umbenannt nach
+  `deploy/scenarios/gg-demo.yaml` (range-neutraler
+  `gg-demo`-Praefix).
+
+**Begruendung:** Disambig gegen die drei Test-Side-
+Scenario-YAMLs `tests/integration/scenarios/
+mvp_demo.yaml`/`agents_demo.yaml`/`fault_demo.yaml`,
+die jeweils andere Kennungen abdecken (`GG-MVP-002`/
+`GG-AGENT-003`/`GG-FAULT-001..010`). Die Welle-5-Demo
+ist die `GG-DEMO`-Demo. Das range-neutrale `gg-demo`-
+Praefix vermeidet eine Range-Versprechung im
+Filename, weil Welle 6 in derselben YAML die
+`GG-DEMO-006`-Fault-Substanz ergaenzen wird (kein
+erneuter Rename noetig).
+
+Beide Renames + alle Cross-Ref-Updates (Slice-Doc,
+compose.yml, `__main__.py`, Smoke-Test, README.md /
+README.de.md, roadmap.md, M5-ui-demo.md,
+in-progress/README.md) sind in C2 `904ef47` gelandet.
+
+### 10.3 AC-NO-CYCLES-Cycle-Fix (Parameter-Injection)
+
+Welle-5-C2-Befund: `_demo_scenario_setup.py`
+importierte initial `from grid_gym.adapters.driving.
+http_api.app import _APP_VERSION, app` (Modul-Top-
+Level), und `_demo_setup` analog. Damit drei
+Cycles via `app.py`-Lifespan-Branch:
+
+1. `_alarm_setup <-> app`.
+2. `_demo_scenario_setup <-> _demo_setup` via `app`.
+3. `_demo_scenario_setup <-> app`.
+
+**Fix:** `configure_scenario_demo_run(app_: FastAPI,
+scenario_path: Path, ...)` nimmt die FastAPI-Instanz
+als ersten Parameter. Kein `from .app import ...` im
+Modul-Top-Level. Lokale Duplikate von
+`_DemoSimulationClock`, Alarm-Provider-Closures und
+`_cast_run_repository_or_raise` /
+`_cast_tick_loop_registry_or_raise` in
+`_demo_scenario_setup.py`. `_demo_setup.py` bleibt
+unangetastet (Welle-4a-Tests greifen weiter).
+
+**Cleanup-Forward-Pointer:** Verschmelzung der
+`_DemoSimulationClock`-Duplikate + der `_cast_*`-
+Helfer in ein gemeinsames `_simulation_clock.py` /
+`_state_helpers.py` ist Welle-6+ Material.
+
+### 10.4 NEU produktiver `InMemoryRunRepository`
+
+Welle-5-C2-Befund (R1-Mitigation, §7): Der
+Welle-5-Lifespan-Demo-Pfad braucht eine voll-konforme
+`RunRepositoryPort`-Implementation mit Lifecycle-
+State. `PostgresRunRepository.update_status` und
+`get_status` werfen aber `NotImplementedError` mit
+explizitem Hinweis „Use `InMemoryRunRepository` for
+M5-Welle-4a demo wiring" — die produktive Implementation
+fehlte aber unter `src/`.
+
+**Fix:** NEU `src/grid_gym/adapters/driven/
+persistence_inmemory/run_repository.py` mit
+`InMemoryRunRepository` (Substanz portiert vom
+Welle-4a-Test-Fake `tests/unit/hexagon/ports/driven/
+_fakes.py`; der Test-Fake bleibt fuer Unit-Tests
+bestehen). Beide Implementationen erfuellen denselben
+Port-Vertrag; `make arch-check` haelt alle Contracts
+trotz der NEU `persistence_inmemory/`-Pakete.
+
+### 10.5 Decision-18-Praezisierung (Service-Konfiguration)
+
+Welle-5-C2-Folge: Decision 18 sagte „keine neue
+Compose-Topologie". §2 Scope-Tabelle listete
+`deploy/compose.yml` als UNBERUEHRT. Das war
+falsch — die `make demo`-Lieferung braucht
+zwingend (a) ein Host-Port-Mapping (`8000:8080` per
+Decision 6), (b) die env-var
+`GRID_GYM_DEMO_SCENARIO_PATH=/app/deploy/scenarios/
+gg-demo.yaml` im Runtime-Container, und (c) einen
+readonly Volume-Mount fuer das Scenario-YAML
+(Dockerfile-Runtime-Stage kopiert `deploy/` nicht
+ins Image).
+
+**Praezisierung** (Memory
+`feedback_rule_interpretation_by_ratio`): die Ratio
+von Decision 18 ist **„keine neuen Compose-
+Bausteine"** — kein neuer Service, kein Sibling, kein
+Proxy, keine neue Persistenz-Wiring. Service-
+**Konfiguration** (Port, env-var, readonly Volume-
+Mount) am bestehenden `api`-Service ist **keine
+Topologie-Aenderung** und vom Decision-18-Verbot
+ausdruecklich nicht erfasst. §2 Scope-Tabelle traegt
+die Praezisierung; §3.3 Decision-18-Wortlaut bleibt
+unveraendert.
+
+### 10.6 Doku-Sibling-Substanz (kein C3-Edit)
+
+Zwischen C2 `904ef47` und C3 (dieser Commit) liegen
+zwei out-of-band Doku-Sibling-Commits, die zur
+Welle-5-Liefer-Hash-Sequenz gehoeren, aber technisch
+keinen Welle-5-C3-Bestandteil bilden:
+
+- **`5ab0f67`** — M5-ui-demo.md-Restrukturierung
+  (780→321 Zeilen, NEU §3.1 Welle-Status-Tabelle,
+  Detail-Sections an die Slice-Docs delegiert).
+  Loest die Slice-Doc-§4 C3-Plan-Drift „§3 Welle 5
+  Liefer-Hashes ergaenzt" auf (Detail-Section
+  existiert nicht mehr).
+- **`64c0fd9`** — Slice-Doc §4 C3-Plan + §9 DoD-Liste
+  an C2-Realitaet angleichen (Vorbereitung des
+  C3-Selbst-Commits; macht die hier in §10 stehenden
+  C2-Realization-Notes im Slice-Doc-Plan sichtbar).
+- **`5fe5082`** — README.md + README.de.md Status-
+  Sections kondensieren (Per-Welle-Breakdowns raus
+  als Folge der M5-ui-demo-Restrukturierung; Test-
+  Counts + `make gates`-Claim bleiben).
 
 ---
 
