@@ -9,7 +9,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
 | [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
-| [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move (C4a folgt) + Cross-Doc-Refs-Sync (C4b folgt). Lieferung in Welle-6a-Closure-Block unten. |
+| [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -338,10 +338,29 @@ Welle-2-Hardening-Material; `GG-DEMO-006`-Akzeptanz
 wird ueber Telemetry-Side-Effect von Faults + den
 vorhandenen Welle-5-LoadEvent-LIMITED-Alarm erfuellt.
 
-**Aktive Welle:** M5-Welle-6b (UI-Visualization:
-`GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-Zustand-
-Dashboard) — Plan-Items in
-[`M5-ui-demo.md §3.2`](M5-ui-demo.md). Aktivierung
-mit M5-Welle-6b-Pre-C0a (Self-Close-Move
-`M5-welle-6a.md → done/`) + Pre-C0b (Cross-Doc-Refs-
-Sync) + C0 (Slice-Doc-Anlage).
+**Aktive Welle:** M5-Welle-6b (UI-Visualization)
+**gestartet 2026-06-03** mit C0 (dieser Commit; Slice-
+Doc + Decisions 21/22/23 final). **3 Decisions:**
+
+- **Decision 21 (Devices-API-Surface)** — NEU
+  `GET /runs/{run_id}/devices` mit `{device_id,
+  device_type, state-subset per Device-Typ,
+  worst-case-quality}`. State-Subset pro Typ:
+  battery=(soc_kwh, current_power_kw,
+  cell_failure_active); pv/load=current_power_kw;
+  grid_connection=(current_power_kw,
+  current_voltage_v, voltage_drop_active);
+  smart_meter={}.
+- **Decision 22 (UI-Pages + Modul-Split)** — Zwei
+  UI-Pages (`/devices`-Tabelle mit HTMX-1s-Polling;
+  `/system`-Page mit HTMX-Polling auf /status +
+  /health). Beide in NEU `routes_visualization.py`
+  (AC-NO-GOD-UTILS-Split analog Welle-6a-
+  `routes_faults.py`).
+- **Decision 23 (Charting-Re-Eval)** — Chart.js
+  bleibt; kein Plotly/ECharts-Spike in Welle 6b.
+
+Anti-Scope: keine Inline-SVG-Anlagengrafik (Welle 7+/
+M6); kein WS-Live-Stream fuer /devices (HTMX-Polling
+reicht); keine Geraete-Detail-Page; kein C1-ADR.
+Erfuellt `GG-UI-006 + GG-UI-008` (2 SOLLTE).
