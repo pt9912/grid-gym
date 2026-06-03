@@ -170,15 +170,24 @@
   `GG-DEMO-001..005 + 007` produktiv; `GG-DEMO-006` +
   `GG-DEMO-008` Anti-Scope-Forward-Pointer auf
   Welle 6.
-  **Aktive Welle:** **Welle 6 (SOLLTE-Features +
-  Welle-5-Anti-Scope-Aufnahme)** — Plan-Items in
-  [`M5-ui-demo.md §3.2`](M5-ui-demo.md); deckt
-  `GG-UI-006..008` + `GG-DEMO-006` (Fault-Injection
-  in Demo) + `GG-DEMO-008` (Abnahmedoku
-  `docs/user/gg-demo-008-abnahme.md`). **Naechster
-  Schritt:** M5-Welle-6-Pre-C0a Self-Close-Move
-  `M5-welle-5.md → done/` (rename-only) + Pre-C0b
-  Cross-Doc-Refs-Sync nach Move.
+  **Welle 6 ist per Welle-6a-C0 (2026-06-03) sub-
+  gesliced** in 6a (Fault-Flow) + 6b (UI-
+  Visualization) + 6c (Abnahmedoku); pro Sub-Slice
+  eigener Slice-Doc. Pattern analog M4-Welle-6 →
+  6a/6b.
+  **Aktive Welle:** **Welle 6a (Fault-Flow: UI-Form-
+  Validation + YAML-Fault-Demo)** eroeffnet 2026-06-03
+  mit C0 (Slice-Doc
+  [`M5-welle-6a.md`](M5-welle-6a.md) + Sub-Slicing-
+  Beschluss + Decisions 19/20 final). Welle 6a ist
+  Welle-5-Anti-Scope-Aufnahme: erfuellt `GG-UI-007`
+  (Form-Validation-only) + `GG-DEMO-006` (YAML-side
+  per `gg-demo.yaml` `faults:`-Block via Battery+Grid-
+  FaultAdapter-Composition). Dynamic-FaultPort-
+  Mutation Anti-Scope (Welle-7+/M6). **Naechster
+  Schritt:** C2 (Code-Lieferung) → C3 (Status/DoD-
+  Sync) → C4a/b (Self-Close-Move + Cross-Doc-Refs-
+  Sync).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**

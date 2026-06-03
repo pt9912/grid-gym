@@ -8,7 +8,8 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03**; Self-Close-Move folgt als M5-Welle-6-Pre-C0a. Lieferung in Welle-5-Closure-Block unten. |
+| [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
+| [`M5-welle-6a.md`](M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). Sub-Slicing-Beschluss Welle 6 → 6a + 6b + 6c. Decisions 19/20 final; **C1 entfaellt**; erfuellt `GG-UI-007` + `GG-DEMO-006` (Welle-5-Anti-Scope-Aufnahme). — **In Progress** seit 2026-06-03 (C0 dieser Commit); bleibt in `in-progress/` bis Self-Close-Move als M5-Welle-6b-Pre-C0. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -308,9 +309,29 @@ Determinismus-Hash-Pin). Lastenheft-Akzeptanz
 Anti-Scope-Block; C2-Folge-Entscheid 2026-06-03 in
 §10.1).
 
-**Aktive Welle:** M5-Welle-6 (SOLLTE-Features +
-Welle-5-Anti-Scope-Aufnahme) — Plan-Items in
-[`M5-ui-demo.md §3.2`](M5-ui-demo.md). Aktivierung
-mit M5-Welle-6-Pre-C0a (Self-Close-Move
-`M5-welle-5.md → done/`, rename-only) + Pre-C0b
-(Cross-Doc-Refs-Sync nach Move).
+**Aktive Welle:** M5-Welle-6a (Fault-Flow: UI-Form-
+Validation + YAML-Fault-Demo) **gestartet 2026-06-03**
+mit C0 (dieser Commit; Slice-Doc + Sub-Slicing-
+Beschluss Welle 6 → 6a/6b/6c + Decisions 19/20
+final). **2 Decisions** geplant:
+
+- **Decision 19 (Fault-Injection-Production-Pattern)**
+  — YAML-side fuer `GG-DEMO-006` (`gg-demo.yaml`
+  `faults:`-Block via Battery+Grid-FaultAdapter-
+  Composition); Form-Validation-only fuer
+  `GG-UI-007` (Welle-1-Stub-Antwort bleibt
+  201+uuid). Dynamic-FaultPort-Mutation explizit
+  Anti-Scope (Welle-7+/M6).
+- **Decision 20 (UI-Form Cross-Field-Validation)** —
+  Whitelist `target_device_id` resolves + Device-Typ
+  ↔ Fault-Typ-Match (Battery+cell_failure /
+  GridConnection+voltage_drop); 422 mit HTMX-Partial-
+  Inline-Error-Block.
+
+Anti-Scope: kein Dynamic-FaultPort-Mutation (Welle-7+/
+M6); kein eigener FaultPort-Adapter unter
+`adapters/driven/fault_*/`; kein `GG-UI-006` Geraete-
+Grafik (Welle 6b); kein `GG-UI-008` Sim-Zustand-
+Dashboard (Welle 6b); kein `GG-DEMO-008` Abnahmedoku
+(Welle 6c). Erfuellt `GG-UI-007 + GG-DEMO-006` (2
+SOLLTE).
