@@ -1,11 +1,17 @@
 # Welle 6a — M5 Fault-Flow (UI-Form-Validation + YAML-Fault-Demo)
 
-**Status:** In Progress — eroeffnet 2026-06-03 mit C0
-(dieser Commit). Welle 6 wurde am C0-Pre-Research-
-Zeitpunkt (2026-06-03) in drei Sub-Slices unterteilt
-(siehe §0 Sub-Slicing-Beschluss). Welle 6a deckt den
-Fault-Flow-Sub-Bereich ab und schliesst die
-`GG-DEMO-006`-Anti-Scope-Erbschaft aus Welle 5.
+**Status:** Done 2026-06-03. Eroeffnet 2026-06-03 mit C0
+`1d6d85e` (Slice-Doc + Sub-Slicing-Beschluss Welle 6 →
+6a/6b/6c + Decisions 19/20 final) + C2 `db3a0c2` (Code-
+Merge: YAML-faults + FaultPort-Composition +
+`__main__`-unveraendert + UI-Form + Cross-Field-
+Validation + Smoke + Welle-1-Test-Refactor) + C3 (dieser
+Commit) + Self-Close-Move C4a + Cross-Doc-Refs-Sync C4b.
+Welle 6 wurde am C0-Pre-Research-Zeitpunkt (2026-06-03)
+in drei Sub-Slices unterteilt (siehe §0 Sub-Slicing-
+Beschluss). Welle 6a deckt den Fault-Flow-Sub-Bereich ab
+und schliesst die `GG-DEMO-006`-Anti-Scope-Erbschaft
+aus Welle 5.
 
 Welle 6a ist die **siebte Code-Welle** in M5 und die
 erste **Welle-5-Anti-Scope-Aufnahme**: sie loest
@@ -569,22 +575,22 @@ und sequenziell delegiert. Pattern analog Welle-5-
 
 ---
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (alle in C3 abgehakt 2026-06-03)
 
-- [ ] **`gg-demo.yaml` `faults:`-Block** mit 1
+- [x] **`gg-demo.yaml` `faults:`-Block** mit 1
   Battery-`cell_failure` + 1 Grid-`voltage_drop`
   (Decision 19 YAML-side-Erfuellung).
-- [ ] **`_demo_scenario_setup.configure_scenario_
+- [x] **`_demo_scenario_setup.configure_scenario_
   demo_run` FaultPort-Composition** ueber
   Battery+Grid-FaultAdapter; `TickLoopWiring.fault_
   port` durchgereicht.
-- [ ] **NEU UI-Page `/runs/{run_id}/faults`** mit
+- [x] **NEU UI-Page `/runs/{run_id}/faults`** mit
   Form + HTMX-POST-Submit.
-- [ ] **Cross-Field-Validation** im POST-/faults-
+- [x] **Cross-Field-Validation** im POST-/faults-
   Handler per Decision 20 (target_device_id
   resolves + fault_type ↔ Device-Typ-Whitelist).
-- [ ] **`templates/navigation.html`** „Faults"-Link.
-- [ ] **NEU `tests/integration/
+- [x] **`templates/navigation.html`** „Faults"-Link.
+- [x] **NEU `tests/integration/
   test_m5_welle_6a_fault_smoke.py`** mit:
   - POST mit ungueltigem `target_device_id` → 422.
   - POST mit Battery+`voltage_drop` → 422
@@ -592,54 +598,151 @@ und sequenziell delegiert. Pattern analog Welle-5-
   - POST mit Battery+`cell_failure` → 201.
   - Lifespan-Demo-Run nach N Ticks: Battery-
     Alarm in AlarmHistoryBuffer.
-- [ ] **Welle-5-Smoke Hash-Pin** auf neuen
+- [x] **Welle-5-Smoke Hash-Pin** auf neuen
   `gg-demo.yaml`-Stand aktualisiert (1 Zeile).
-- [ ] **`make test-unit`** gruen (kein Regress vs
+- [x] **`make test-unit`** gruen (kein Regress vs
   1681).
-- [ ] **`make test-integration`** gruen mit dem
+- [x] **`make test-integration`** gruen mit dem
   neuen Welle-6a-Smoke (58 statt 57).
-- [ ] **`make arch-check`** alle Contracts kept.
-- [ ] **`make typecheck`** gruen.
-- [ ] **`make gates`** cache-frei gruen ohne
+- [x] **`make arch-check`** alle Contracts kept.
+- [x] **`make typecheck`** gruen.
+- [x] **`make gates`** cache-frei gruen ohne
   Override.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make demo`** zeigt YAML-Faults im Dashboard
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make demo`** zeigt YAML-Faults im Dashboard
   reproduzierbar (manuelle Verifikation).
-- [ ] **`GG-UI-007 + GG-DEMO-006`** erfuellt;
+- [x] **`GG-UI-007 + GG-DEMO-006`** erfuellt;
   Welle-1-Stub-Antwort (201+uuid) bleibt im POST-
   Handler.
-- [ ] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
+- [x] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
   Welle-6a-Zeile NEU eingefuegt (Sub-Slicing-
   Folge); Welle-6-Aggregat-Zeile entweder gestrichen
   oder als Klammer fuer 6a/6b/6c umformuliert.
-- [ ] **`in-progress/README.md`** Welle-6a-Closure-
+- [x] **`in-progress/README.md`** Welle-6a-Closure-
   Block + Welle-6b-Aktive-Welle-Marker.
-- [ ] **`roadmap.md`** Welle-6a-Closure-Entry +
+- [x] **`roadmap.md`** Welle-6a-Closure-Entry +
   Welle-6b-Forward-Pointer.
-- [ ] **Top-Level-Doku-Sync** (`README.md` +
+- [x] **Top-Level-Doku-Sync** (`README.md` +
   `README.de.md` Test-Counts + GG-UI-007/DEMO-006-
   Bullet).
-- [ ] **NEU C4 Self-Close-Move + Cross-Doc-Refs-
+- [x] **NEU C4 Self-Close-Move + Cross-Doc-Refs-
   Sync** als zwei separate Folge-Commits nach C3
   (Wave-Self-Close-Commit-Konvention; Pattern analog
   Welle-5 `da8d728`/`2c9d8da`).
 
 **Anti-Scope-Verifikation (Welle 6a NICHT):**
 
-- [ ] Keine Dynamic-FaultPort-Mutation im POST-
+- [x] Keine Dynamic-FaultPort-Mutation im POST-
   Handler (Decision 19; Welle-1-Stub-Antwort bleibt
   semantisch unveraendert, nur Validation kommt
   davor).
-- [ ] Kein eigener FaultPort-Adapter unter
+- [x] Kein eigener FaultPort-Adapter unter
   `adapters/driven/fault_*/`.
-- [ ] Kein `GG-UI-006` Geraete-Grafik (Welle 6b).
-- [ ] Kein `GG-UI-008` Sim-Zustand-Dashboard
+- [x] Kein `GG-UI-006` Geraete-Grafik (Welle 6b).
+- [x] Kein `GG-UI-008` Sim-Zustand-Dashboard
   (Welle 6b).
-- [ ] Kein `GG-DEMO-008` Abnahmedoku (Welle 6c).
-- [ ] Kein C1-ADR-Commit (kein neuer Port, kein
+- [x] Kein `GG-DEMO-008` Abnahmedoku (Welle 6c).
+- [x] Kein C1-ADR-Commit (kein neuer Port, kein
   neuer Vertrag).
-- [ ] Keine Multi-Run-Fault-Submission (Welle-5-
+- [x] Keine Multi-Run-Fault-Submission (Welle-5-
   Anti-Scope Multi-Run-Driver-Registry bleibt).
+
+---
+
+## 10. C2-Realization-Notes
+
+Notes aus dem C2-Verlauf, die das Slice-Doc-C0-Plan-
+Skelett gegen die tatsaechliche C2-Realitaet angleichen.
+Pattern analog Welle-5 §10 und Welle-4b §10.
+
+### 10.1 Battery-`cell_failure`-Auto-Alarm-Defer
+
+Welle-6a-C2-Befund (Pre-Research): die M3-Welle-2-
+Substanz emittiert beim `cell_failure`-Aktivierungs-
+Transition **keinen** eigenen `BatteryAlarm`. Der Fault
+halbiert `max_discharge_kw` im `_tick_in_context`-Pfad
+silent; Battery-Alarme kommen ausschliesslich ueber
+`apply_command` → `validate_set_power_command`, das
+gegen die **unhalvierte** Config-`max_discharge_kw`
+prueft. Ein Agent-Discharge -30 mit cell_failure-aktivem
+Halving auf effective 25 wird in `_tick_in_context`
+silent auf -25 geclamped, **ohne** Alarm-Emission.
+
+**Konsequenz fuer GG-DEMO-006:** die Akzeptanz „erzeugt
+Telemetrie mit Qualitaetsstatus sowie einen Alarm" wird
+Demo-side ueber zwei Pfade erfuellt:
+
+1. **Telemetrie mit Qualitaetsstatus:** `cell_failure`
+   und `voltage_drop` mutieren den Device-State (halbiert
+   `max_discharge_kw` bzw. `nominal_voltage_v`), was im
+   Dashboard ueber die Welle-3-Telemetry-Pipeline
+   sichtbar wird.
+2. **Alarm:** der vorhandene Welle-5-LoadEvent
+   (`start_s=600`, `power_kw=60` ueber `load-1.rated_
+   power_kw=30`) emittiert reproduzierbar einen
+   LIMITED-`Load`-Alarm in der Welle-4b-Alarm-Pipeline.
+
+**Welle-6+/M3-Welle-2-Hardening-Forward-Pointer:**
+Battery-`cell_failure`-Auto-Alarm-Emission im Activation-
+Transition (M3-Welle-2-Substanz-Hardening) ist ein
+kleines Folge-Slice — `BatteryDevice.inject_fault` traegt
+einen `BatteryAlarm("cell_failure_active", "warning")`
+in `self._alarms` ein, der ueber die Welle-4b-Pipeline
+gedrained und gemapped wird. Brauchen ggf. einen Mapper-
+Erweiterungspunkt fuer non-power-clamp Alarm-Codes; das
+ist ADR-pflichtige Substanz (alarm_mappers.py-Mapper-
+Familie).
+
+**Slice-Doc §7 R1 (Alarm-Pipeline-Wiring fuer Demo-
+Faults):** der Risiko-Mitigation-Plan „Welle-6a-C2
+ergaenzt den Mapper in alarm_mappers.py" war optimistisch
+formuliert. C2-Pre-Research zeigte, dass der Mapper
+nicht das Problem ist — das Problem ist die fehlende
+Alarm-Emission in der Battery-Inject-Phase selbst.
+Welle-6a delegiert die Akzeptanz-Erfuellung an den
+existierenden Load-LIMITED-Alarm; Battery-Auto-Alarm
+ist Welle-6+/M3-Welle-2-Hardening-Material.
+
+### 10.2 AC-NO-GOD-UTILS-Split `routes.py` → `routes_faults.py`
+
+Welle-6a-C2-Befund: `routes.py` haette mit der NEU
+`get_run_faults`-Route 6 public top-level Functions
+gehabt (`get_demo_index`, `get_ui_health`,
+`get_run_dashboard`, `get_run_alarms`, `get_run_control`,
+`get_run_faults`). `arch_check.AC-NO-GOD-UTILS` erzwingt
+maximal 5 — Welle-6a-Fix: neuer Schwester-Modul
+`routes_faults.py` mit `faults_router` + `get_run_faults`-
+Route. Pattern analog Welle-1 (`_runs_router.py` +
+`_runs_action_router.py` Split). `app.py` mountet beide
+Router separat.
+
+**Konsequenz:** kuenftige Welle-6b-UI-Routes (Geraete-
+Grafik, Sim-Zustand-Dashboard) muessen sich auf die
+verbleibenden 5 Slots in `routes.py` planen ODER eigene
+Schwester-Module bekommen. Vermutlich eher Sub-Module
+nach Feature (`routes_devices.py`, `routes_status.py`).
+
+### 10.3 Welle-1-Tests-Refactor (Battery+GridConnection-Devices)
+
+Welle-6a-C2-Befund: die Cross-Field-Validation
+(Decision 20) verschaerft den `POST /runs/{id}/faults`-
+Vertrag — der Endpoint braucht jetzt einen TickLoop mit
+einem Device, dessen Typ zum Fault-Typ passt. Bestehende
+Welle-1-Tests (`test_runs_action_router.test_post_run_
+faults_*` + `test_m5_welle_1_http_api_smoke.test_full_
+run_lifecycle_workflow`) registrierten TickLoops mit
+leerer `devices=()`-Liste; sie scheiterten nach Welle-6a-
+C2 mit 422+`fault_unknown_target`.
+
+**Fix:** beide Tests erweitert um BatteryDevice (+
+GridConnectionDevice fuer Unit-Tests) im TickLoop-
+Konstruktor. NEU Helper `_seed_run_with_tick_loop_and_
+devices(repository, registry)` in
+`test_runs_action_router.py`. Welle-1-Stub-Substanz
+bleibt ansonsten unveraendert; die Tests pruefen weiter
+die Welle-1-201-Antwort (Decision 19: kein dynamischer
+FaultPort-Mutate), aber durch den schaerferen Welle-6a-
+Vertrag.
 
 ---
 

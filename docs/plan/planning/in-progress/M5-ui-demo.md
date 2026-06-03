@@ -138,7 +138,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4a | Replay-Controls + TickLoop-Wiring | Done 2026-06-02 | [`M5-welle-4a.md`](../done/M5-welle-4a.md) | `GG-UI-004` + Rest-`GG-API-001` | ADR 0039 `Provisional` |
 | 4b | Alarme | Done 2026-06-02 | [`M5-welle-4b.md`](../done/M5-welle-4b.md) | `GG-UI-005`; loest ADR-0014-§6 Driving-Side | ADR 0040 `Provisional` |
 | 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](../done/M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
-| 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | In Progress 2026-06-03 | [`M5-welle-6a.md`](M5-welle-6a.md) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
+| 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | Done 2026-06-03 | [`M5-welle-6a.md`](M5-welle-6a.md) (Self-Close-Move in C4a) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
 | 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Pending | TBD (entsteht in Welle-6b-C0) | `GG-UI-006` + `GG-UI-008` | TBD |
 | 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Pending | TBD (entsteht in Welle-6c-C0) | `GG-DEMO-008` | TBD |
 | 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
@@ -155,12 +155,14 @@ Welle 4b (Alarm-Aggregation + AlarmStreamPort + Alarm-
 Tabelle-UI) liefern zusammen `GG-UI-004` + `GG-UI-005`.
 Detail im jeweiligen Welle-Slice-Doc unter `done/`.
 
-**Naechster aktiver Slice:** Welle 6a (Fault-Flow) —
-[`M5-welle-6a.md`](M5-welle-6a.md). Welle 6 ist per
-Welle-6a-C0-Sub-Slicing-Beschluss 2026-06-03 in drei
-Sub-Slices unterteilt (6a Fault-Flow + 6b UI-
-Visualization + 6c Abnahmedoku); pro Sub-Slice eigener
-Slice-Doc. Pattern analog M4-Welle-6 → 6a/6b.
+**Naechster aktiver Slice:** Welle 6b (UI-Visualization:
+`GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-Zustand-
+Dashboard) — Slice-Doc entsteht in Welle-6b-C0.
+Welle 6 ist per Welle-6a-C0-Sub-Slicing-Beschluss
+2026-06-03 in drei Sub-Slices unterteilt (6a Fault-Flow
+**Done** + 6b UI-Visualization + 6c Abnahmedoku); pro
+Sub-Slice eigener Slice-Doc. Pattern analog M4-Welle-6
+→ 6a/6b.
 
 ### 3.2 Pending-Wellen-Plan-Items
 

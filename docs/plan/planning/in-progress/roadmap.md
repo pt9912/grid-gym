@@ -175,19 +175,30 @@
   Visualization) + 6c (Abnahmedoku); pro Sub-Slice
   eigener Slice-Doc. Pattern analog M4-Welle-6 →
   6a/6b.
-  **Aktive Welle:** **Welle 6a (Fault-Flow: UI-Form-
-  Validation + YAML-Fault-Demo)** eroeffnet 2026-06-03
-  mit C0 (Slice-Doc
-  [`M5-welle-6a.md`](M5-welle-6a.md) + Sub-Slicing-
-  Beschluss + Decisions 19/20 final). Welle 6a ist
-  Welle-5-Anti-Scope-Aufnahme: erfuellt `GG-UI-007`
-  (Form-Validation-only) + `GG-DEMO-006` (YAML-side
-  per `gg-demo.yaml` `faults:`-Block via Battery+Grid-
-  FaultAdapter-Composition). Dynamic-FaultPort-
-  Mutation Anti-Scope (Welle-7+/M6). **Naechster
-  Schritt:** C2 (Code-Lieferung) → C3 (Status/DoD-
-  Sync) → C4a/b (Self-Close-Move + Cross-Doc-Refs-
-  Sync).
+  **Welle 6a (Fault-Flow: UI-Form-Validation + YAML-
+  Fault-Demo) abgeschlossen 2026-06-03** mit C0
+  `1d6d85e` (Slice-Doc
+  [`M5-welle-6a.md`](M5-welle-6a.md) + Sub-
+  Slicing-Beschluss + Decisions 19/20 final) + C2
+  `db3a0c2` (Code-Merge: YAML-faults +
+  `_compose_fault_port` Battery+Grid-Composition + UI-
+  Faults-Page mit HTMX-Form + `routes_faults.py`-Split
+  AC-NO-GOD-UTILS + Cross-Field-Validation im POST-
+  Handler + `tick_loop.device_types`-Property + 7
+  Integration-Tests + Welle-1-Test-Refactor) + C3
+  (dieser Commit; Status/DoD-Sync + §10 C2-Realization-
+  Notes). Ausstehend: C4a/b. Lastenheft-Akzeptanz
+  `GG-UI-007` + `GG-DEMO-006` produktiv;
+  Welle-5-Anti-Scope-Aufnahme erfolgreich (Battery-
+  cell_failure-Auto-Alarm bleibt Welle-6+/M3-Welle-2-
+  Hardening-Material — Slice-Doc §10.1).
+  **Aktive Welle:** **Welle 6b (UI-Visualization:
+  `GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-
+  Zustand-Dashboard)** — Plan-Items in
+  [`M5-ui-demo.md §3.2`](M5-ui-demo.md). **Naechster
+  Schritt:** M5-Welle-6b-Pre-C0a Self-Close-Move
+  `M5-welle-6a.md → done/` + Pre-C0b Cross-Doc-Refs-
+  Sync + C0 (Slice-Doc-Anlage).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
@@ -322,12 +333,12 @@ M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
 Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
 [`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
-eroeffnet; Welle 0..5 abgeschlossen, **Welle 5 (Demo-
-Pipeline) `Done` 2026-06-03** mit Slice-Doc
-[`M5-welle-5.md`](../done/M5-welle-5.md); **aktive Welle: Welle 6
-(SOLLTE-Features + Welle-5-Anti-Scope-Aufnahme)** mit
-Plan-Items in [`M5-ui-demo.md §3.2`](M5-ui-demo.md). (M4
-ist abgeschlossen,
+eroeffnet; Welle 0..6a abgeschlossen, **Welle 6a (Fault-
+Flow) `Done` 2026-06-03** mit Slice-Doc
+[`M5-welle-6a.md`](M5-welle-6a.md); **aktive Welle:
+Welle 6b (UI-Visualization)** mit Plan-Items in
+[`M5-ui-demo.md §3.2`](M5-ui-demo.md). (M4 ist
+abgeschlossen,
 siehe [`done/M4-results.md`](../done/M4-results.md).)
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert

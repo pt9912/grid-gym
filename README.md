@@ -110,17 +110,17 @@ logic.
 
 ## Status
 
-As of **2026-06-03** (post M5 Wave 5 closure):
+As of **2026-06-03** (post M5 Wave 6a closure):
 
 - **M1 — Tick-Loop Spine** · `Done`
 - **M2 — Device Models** · `Done`
 - **M3 — Faults + Multi-Agent + Observability** · `Done` (six ADRs `Accepted`)
 - **M4 — Protocol Adapters** · `Done` (six ADRs 0030..0035 `Accepted` 2026-06-01)
-- **M5 — UI + Demo** · `In Progress` since 2026-06-01 — active wave: **6 (SOLLTE features + Wave-5 anti-scope absorption: `GG-DEMO-006` + `GG-DEMO-008`)**. Waves 0..5 `Done` (Wave 5 `Done` 2026-06-03). Wave status table: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
+- **M5 — UI + Demo** · `In Progress` since 2026-06-01 — active wave: **6b (UI Visualization: `GG-UI-006` + `GG-UI-008`)**. Waves 0..6a `Done` (Wave 6a Fault-Flow `Done` 2026-06-03; Wave 5 `Done` 2026-06-03). Wave 6 is sub-sliced into 6a/6b/6c. Wave status table: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance** (2026-06-03, post M5 Wave 5 closure): 1681 unit
-+ 57 integration passed + 4 skipped. The 4 skipped tests are the
+**Test balance** (2026-06-03, post M5 Wave 6a closure): 1681 unit
++ 64 integration passed + 4 skipped. The 4 skipped tests are the
 **2c mock-only fallback** for the IEC-61850 in-process `IedServer`
 smoke (ADR 0035 §2.5; trigger 009). Per-wave test increments live
 in the slice docs under
