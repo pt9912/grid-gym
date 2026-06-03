@@ -49,6 +49,10 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     get_tick_loop_registry,
 )
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
+from grid_gym.hexagon.core.faults.types import (
+    FAULT_TYPE_CELL_FAILURE,
+    FAULT_TYPE_VOLTAGE_DROP,
+)
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
@@ -134,12 +138,14 @@ def post_run_control(
 
 
 _FAULT_TYPE_TO_DEVICE_TYPE: Final[Mapping[str, str]] = {
-    "cell_failure": "battery",
-    "voltage_drop": "grid_connection",
+    FAULT_TYPE_CELL_FAILURE: "battery",
+    FAULT_TYPE_VOLTAGE_DROP: "grid_connection",
 }
 """M5-Welle-6a (Decision 20): Whitelist Fault-Typ ↔ Device-Typ.
 Welle-7+/M3-Fault-Typen muessen sich hier eintragen oder eine
-Plugin-Form an ADR 0022 §2.2 verankern."""
+Plugin-Form an ADR 0022 §2.2 verankern. Welle-6a-Review F9:
+Keys sind `FAULT_TYPE_*`-Konstanten aus
+`hexagon/core/faults/types.py` (Single-Source-of-Truth)."""
 
 
 @runs_action_router.post(
@@ -149,6 +155,7 @@ Plugin-Form an ADR 0022 §2.2 verankern."""
     responses={
         404: {"model": ErrorResponse},
         422: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def post_run_faults(
@@ -207,19 +214,36 @@ def post_run_faults(
         )
         raise HTTPException(status_code=422, detail=error.model_dump())
     expected_device_type = _FAULT_TYPE_TO_DEVICE_TYPE.get(request.fault_type)
-    if expected_device_type is None or expected_device_type != target_type:
+    if expected_device_type is None:
+        # Welle-6a-Review F5: separater Code fuer „unbekannter Typ"
+        # (vs. „Typ passt nicht zu Target"). Clients koennen die
+        # beiden Faelle programmatisch unterscheiden.
+        error = ErrorResponse(
+            code="fault_type_unknown",
+            message=(
+                f"Fault type '{request.fault_type}' is unknown. "
+                f"Welle-6a whitelist: {sorted(_FAULT_TYPE_TO_DEVICE_TYPE)}."
+            ),
+            details={
+                "fault_type": request.fault_type,
+                "known": sorted(_FAULT_TYPE_TO_DEVICE_TYPE),
+            },
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=422, detail=error.model_dump())
+    if expected_device_type != target_type:
         error = ErrorResponse(
             code="fault_invalid_type_for_target",
             message=(
                 f"Fault type '{request.fault_type}' is not allowed on "
                 f"device '{request.target}' (type '{target_type}'). "
-                "Welle-6a whitelist: cell_failure on battery, "
-                "voltage_drop on grid_connection."
+                f"Expected device type for this fault: '{expected_device_type}'."
             ),
             details={
                 "fault_type": request.fault_type,
                 "target": request.target,
                 "target_type": target_type,
+                "expected_target_type": expected_device_type,
             },
             run_id=run_id,
         )

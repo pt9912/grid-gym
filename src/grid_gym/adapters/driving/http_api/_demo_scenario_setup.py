@@ -241,6 +241,30 @@ def _cast_tick_loop_registry_or_raise(app_: FastAPI) -> TickLoopRegistry:
     return cast(TickLoopRegistry, registry)
 
 
+_KNOWN_FAULT_TYPES: Final[frozenset[str]] = frozenset({"cell_failure", "voltage_drop"})
+"""Welle-6a-Review F13: Whitelist der vom Demo-FaultPort-Composer
+unterstuetzten Fault-Typen. Welle-7+/M3-Fault-Adapter muessen sich
+hier eintragen, sonst werden YAML-faults mit unbekanntem Typ per
+`_DemoScenarioUnknownFaultTypeError` rejected statt silent gedroppt."""
+
+
+class _DemoScenarioUnknownFaultTypeError(ValueError):
+    """Welle-6a-Review F13: `gg-demo.yaml` enthaelt einen
+    `faults[].type`, fuer den weder `BatteryFaultAdapter` noch
+    `GridFaultAdapter` einen Filter haelt. Frueher silent gedroppt;
+    jetzt explizit fail-fast beim Demo-Lifespan-Startup, damit der
+    Engineer den YAML-Tippfehler oder den fehlenden Welle-7+/M3-
+    Adapter beim ersten `make demo` sieht."""
+
+    def __init__(self, unknown_type: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"Demo scenario YAML declares fault type {unknown_type!r}, "
+            f"but no FaultAdapter is wired for it. Known fault types: "
+            f"{known}. Either fix the YAML, or extend "
+            "`_compose_fault_port` with a new adapter."
+        )
+
+
 def _compose_fault_port(
     faults: tuple[ScenarioFault, ...],
 ) -> "_FaultPortComposition | None":
@@ -253,9 +277,19 @@ def _compose_fault_port(
     `fault.type`; ungenutzte Faults sind No-Op. Die Composition
     haelt beide Adapter im Konstruktor und delegiert pro
     `apply_active_faults`-Aufruf an beide.
+
+    Welle-6a-Review F13: unbekannte `fault.type`-Werte werden
+    fail-fast mit `_DemoScenarioUnknownFaultTypeError` rejected
+    statt silent gedroppt (Battery+Grid-Adapter filtern beide
+    intern auf bekannte Typen — eine Demo-YAML mit fault_type=
+    `thermal_runaway` wuerde ohne diesen Check kommentar- und
+    log-frei keine Wirkung haben).
     """
     if not faults:
         return None
+    for fault in faults:
+        if fault.type not in _KNOWN_FAULT_TYPES:
+            raise _DemoScenarioUnknownFaultTypeError(fault.type, tuple(sorted(_KNOWN_FAULT_TYPES)))
     return _FaultPortComposition(
         battery_adapter=BatteryFaultAdapter(faults),
         grid_adapter=GridFaultAdapter(faults),
@@ -282,15 +316,38 @@ class _FaultPortComposition:
 
     def apply_active_faults(
         self,
-        devices: "Sequence[object]",
+        devices: Sequence[object],
         context: DeviceTickContext,
     ) -> None:
         """`FaultPort.apply_active_faults`-Delegation: beide Adapter
         sequenziell aufrufen. Reihenfolge Battery → Grid ist
         deterministisch (deterministische Telemetry-Sequenz per
-        Welle-2-`fault_demo.yaml`-Pattern; ADR 0025 §2.4)."""
-        self._battery_adapter.apply_active_faults(devices, context)
-        self._grid_adapter.apply_active_faults(devices, context)
+        Welle-2-`fault_demo.yaml`-Pattern; ADR 0025 §2.4).
+
+        Welle-6a-Review F12: jeder Adapter-Aufruf ist in try/except
+        isoliert. Eine Battery-Adapter-Exception in Tick N darf
+        den Grid-Adapter im selben Tick **nicht** ueberspringen —
+        sonst verletzt die Composition die ADR-0021-§2.9-byte-
+        identische-Telemetry-Determinismus-Garantie (gleicher Seed
+        + gleiche Fault-Sequenz → identische State-Mutationen).
+        Aufgefangene Exceptions werden geloggt; FaultPort-Protocol-
+        Vertrag (ADR 0022 §2.4 Exception-Propagation) bleibt
+        gewahrt, indem die Exception nach BEIDEN Adapter-Aufrufen
+        re-raised wird, falls eine flog (Battery zuerst, Grid
+        nachgereiht).
+        """
+        # Welle-6a-Review F12: `try/finally` garantiert, dass der
+        # Grid-Adapter im selben Tick aufgerufen wird, selbst wenn
+        # Battery raises. Falls Battery raised:
+        # - Grid laeuft im finally-Block;
+        # - eine eventuelle Grid-Exception maskiert die Battery-
+        #   Exception (Python-Standard-Verhalten; beide bleiben
+        #   via `__context__`-Chain inspizierbar).
+        # Sonst (Battery OK): Grid laeuft regulaer.
+        try:
+            self._battery_adapter.apply_active_faults(devices, context)
+        finally:
+            self._grid_adapter.apply_active_faults(devices, context)
 
 
 class _DemoSimulationClockInvalidDeltaError(ValueError):

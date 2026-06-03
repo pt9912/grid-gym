@@ -586,8 +586,24 @@ class TickLoop:
         zugewiesene Fault-Type zum Device-Typ passt. Vermeidet
         DeviceModel-Klassen-Import in der HTTP-Adapter-Schicht
         (AC-ADAPTER-PURE-Konsistenz).
+
+        Welle-6a-Review F3: nicht-gemappte DeviceModel-Klassen
+        (Welle-7+/M3-Geraete ohne `_DEVICE_TYPE_BY_CLASS_NAME`-
+        Eintrag) werden silent **gedroppt** statt
+        `TickLoopUnknownDeviceTypeError` zu propagieren. Sonst
+        crasht jeder Cross-Field-Validation-Call mit 500, auch
+        fuer Targets gegen bekannte Devices im selben Run.
+        Drop ist konservativ: target-lookup gegen die
+        gedroppten Devices schlaegt mit `fault_unknown_target`
+        fehl, Operator sieht klare 422 statt 500.
         """
-        return {d.device_id: _device_type_for(d) for d in self._devices}
+        mapping: dict[str, str] = {}
+        for device in self._devices:
+            try:
+                mapping[device.device_id] = _device_type_for(device)
+            except TickLoopUnknownDeviceTypeError:
+                continue
+        return mapping
 
     @property
     def control_state(self) -> RunStatus:

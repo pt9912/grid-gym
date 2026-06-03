@@ -38,3 +38,31 @@ def test_templates_render_base_partial_without_crash() -> None:
     env = templates.env
     rendered = env.get_template("navigation.html").render()
     assert "grid-gym" in rendered
+
+
+def test_navigation_exposes_all_welle_5_and_6a_pages() -> None:
+    """Welle-6a-Review F15: Navigation muss alle 5 UI-Pages
+    sichtbar als Link tragen. Ohne diesen Assertion-Pin koennte
+    ein Templates-Refactor den Faults-Link still entfernen und
+    GG-UI-007 wuerde UI-side regressen, ohne CI-Signal.
+
+    Pflicht-Links:
+    - Demo (/)
+    - Health (/ui/health)
+    - Dashboard (/runs/.../dashboard)
+    - Control (/runs/.../control)
+    - Alarms (/runs/.../alarms)
+    - Faults (/runs/.../faults) — Welle-6a-NEU
+    """
+    templates = get_templates()
+    env = templates.env
+    rendered = env.get_template("navigation.html").render()
+    for href in (
+        '"/"',
+        '"/ui/health"',
+        "/dashboard",
+        "/control",
+        "/alarms",
+        "/faults",
+    ):
+        assert href in rendered, f"Navigation fehlt Link {href!r}"

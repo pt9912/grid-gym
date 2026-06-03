@@ -573,6 +573,7 @@ ignore_imports = [
     "grid_gym.adapters.driving.http_api._tick_loop_driver -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.scenario.loader",
     "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.faults",
+    "grid_gym.adapters.driving.http_api._runs_action_router -> grid_gym.hexagon.core.faults.types",
 ]
 
 [[tool.importlinter.contracts]]

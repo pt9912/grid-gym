@@ -13,8 +13,7 @@
     <form id="fault-form"
           hx-post="/runs/{{ run_id }}/faults"
           hx-target="#fault-feedback"
-          hx-swap="innerHTML"
-          hx-headers='{"Accept": "text/html"}'>
+          hx-swap="innerHTML">
         <label for="fault-type">Fault Type</label>
         <select id="fault-type" name="fault_type" required>
             <option value="">— bitte waehlen —</option>
@@ -58,44 +57,95 @@
 
     <script>
     (function () {
-        // Welle-6a: HTMX-Form-Submit als JSON. Das Welle-1-Schema
-        // erwartet application/json; Form-Encoding wird zu JSON
-        // umgewandelt. Numerische Felder werden korrekt geparst.
+        // Welle-6a-Review F6: Idempotenz-Guard auf document.body —
+        // HTMX evaluiert <script>-Tags in geswappten Partials erneut.
+        // Ohne Guard wuerde jeder Re-Render dupliziert listener
+        // anhaengen → Double-JSON-Stringify im configRequest und
+        // doppelt-gerenderte Antworten im beforeSwap.
+        if (document.body.dataset.faultFormListenersAttached === "true") {
+            return;
+        }
+        document.body.dataset.faultFormListenersAttached = "true";
+
+        function isFaultFormRequest(event) {
+            // Welle-6a-Review F6: Path-Filter nicht per endsWith
+            // (Substring-Match), sondern per Form-Element-Identity.
+            // Andere POSTs (auch zu spaeteren `/faults`-Endpunkten)
+            // werden NICHT vom Page-spezifischen Inline-JS gehijacked.
+            return event.detail && event.detail.elt
+                && event.detail.elt.id === "fault-form";
+        }
+
         document.body.addEventListener("htmx:configRequest", function (event) {
-            if (event.detail.verb !== "post" || !event.detail.path.endsWith("/faults")) {
+            if (event.detail.verb !== "post" || !isFaultFormRequest(event)) {
                 return;
             }
+            // Welle-6a-Review F11: leere numerische Felder vor parseInt
+            // pruefen; sonst NaN → JSON null → server-side 422.
             const parameters = event.detail.parameters;
+            const startRaw = parameters.start_at_tick;
+            const durationRaw = parameters.duration_ticks;
+            const startInt = startRaw === "" || startRaw == null ? 0 : parseInt(startRaw, 10);
+            const durationInt = durationRaw === "" || durationRaw == null ? 0 : parseInt(durationRaw, 10);
             const payload = {
                 fault_type: parameters.fault_type,
                 target: parameters.target,
-                start_at_tick: parseInt(parameters.start_at_tick, 10),
-                duration_ticks: parseInt(parameters.duration_ticks, 10),
+                start_at_tick: Number.isNaN(startInt) ? 0 : startInt,
+                duration_ticks: Number.isNaN(durationInt) ? 0 : durationInt,
                 recovery: parameters.recovery,
             };
             event.detail.headers["Content-Type"] = "application/json";
             event.detail.parameters = JSON.stringify(payload);
         });
 
-        // Render 201 vs 422 Antworten unterschiedlich. Server sendet
-        // HTMX-Partial-HTML bei 422 (Inline-Error-Block) und
-        // application/json bei 201 (Success-Echo).
+        function buildErrorMarkup(payload, status) {
+            // Welle-6a-Review F1: ErrorResponse-Body
+            // ({detail:{code,message,details,run_id}}) sauber rendern,
+            // nicht als „Fault registered: undefined".
+            const detail = (payload && payload.detail) || payload || {};
+            const code = detail.code || "unknown_error";
+            const message = detail.message || "Request failed.";
+            return "<p class=\"error\" data-status=\"" + status + "\" data-code=\"" + code + "\">"
+                + "Validation error: <strong>" + code + "</strong> — "
+                + message
+                + "</p>";
+        }
+
+        function buildSuccessMarkup(payload) {
+            const faultId = (payload && payload.fault_id) || "";
+            const accepted = payload && payload.accepted;
+            return "<p class=\"success\">Fault registered: <code>"
+                + faultId
+                + "</code> (accepted=" + accepted + ").</p>";
+        }
+
         document.body.addEventListener("htmx:beforeSwap", function (event) {
             const target = event.detail.target;
             if (!target || target.id !== "fault-feedback") {
                 return;
             }
-            // HTMX schluckt 4xx by default; explicit accept beibehalten.
-            if (event.detail.xhr.status >= 400) {
-                event.detail.shouldSwap = true;
-            }
+            // Welle-6a-Review F1: Status-Code differenzieren.
+            // 4xx/5xx werden gerendert (shouldSwap), aber als
+            // Error-Block — nicht als Success-Echo.
+            const status = event.detail.xhr.status;
             const contentType = event.detail.xhr.getResponseHeader("content-type") || "";
-            if (contentType.indexOf("application/json") >= 0) {
+            const isJson = contentType.indexOf("application/json") >= 0;
+            if (status >= 400) {
+                event.detail.shouldSwap = true;
+                if (isJson) {
+                    try {
+                        const payload = JSON.parse(event.detail.serverResponse);
+                        event.detail.serverResponse = buildErrorMarkup(payload, status);
+                    } catch (err) {
+                        event.detail.serverResponse = buildErrorMarkup(null, status);
+                    }
+                }
+                return;
+            }
+            if (isJson) {
                 try {
                     const payload = JSON.parse(event.detail.serverResponse);
-                    event.detail.serverResponse =
-                        `<p class="success">Fault registered: <code>${payload.fault_id}</code> ` +
-                        `(accepted=${payload.accepted}).</p>`;
+                    event.detail.serverResponse = buildSuccessMarkup(payload);
                 } catch (err) {
                     // fall-through; leave HTML body.
                 }

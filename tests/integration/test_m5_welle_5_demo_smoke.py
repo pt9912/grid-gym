@@ -138,13 +138,21 @@ def test_demo_scenario_hash_is_deterministic() -> None:
 def test_demo_scenario_hash_pin_for_drift_detection() -> None:
     """Slice-Doc §7 R5: Welle-5-Smoke pinnt den Hash, damit
     jeder spaetere Welle-6+/Device-Change in der Demo-YAML
-    bewusst sichtbar wird. Der Pin lebt nur hier (nicht in
-    den kritischen Determinism-Tests; siehe Slice-Doc §7
-    Mitigation)."""
+    bewusst sichtbar wird.
+
+    Welle-6a-Review F10: konkreten Hash-Wert pinnen statt nur
+    Laenge (64 hex chars). Ohne Wert-Pin passierte der
+    Welle-6a-faults+agent-Edit (`-20`→`-30`) den Test
+    unentdeckt; ADR-0021-§2.9-Determinismus-Garantie war
+    Demo-side ungesichert. Update-Pflicht bei jedem
+    bewussten YAML-Edit (siehe Welle-6a-§10.x-Realization-
+    Notes-Pflege).
+    """
     loaded = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
-    # Hash-Pin Welle-5-C2: aktualisieren beim naechsten bewussten
-    # Demo-YAML-Edit (Slice-Doc §7 R5).
-    assert len(loaded.scenario_hash) == 64, (
-        f"scenario_hash must be a 64-char sha256 hex; got {loaded.scenario_hash!r}"
+    expected_hash = "00ac59d8c2fb163a826e42d3da0f584400b7592915292caebb0a3ce879e591c6"
+    assert loaded.scenario_hash == expected_hash, (
+        f"scenario_hash drift! Expected {expected_hash} "
+        f"(post-Welle-6a-faults-block), got {loaded.scenario_hash}. "
+        "If the YAML edit was intentional, update the pin here "
+        "in the same PR + add a Welle-6a/6b/... §10 Realization-Note."
     )
-    assert all(c in "0123456789abcdef" for c in loaded.scenario_hash)

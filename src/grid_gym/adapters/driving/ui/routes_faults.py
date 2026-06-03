@@ -22,6 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
+from grid_gym.adapters.driving.http_api._schemas import ErrorResponse
 from grid_gym.adapters.driving.ui._templates import get_templates
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
@@ -37,7 +38,11 @@ def _is_htmx_request(request: Request) -> bool:
     return request.headers.get("hx-request", "").lower() == "true"
 
 
-@faults_router.get("/runs/{run_id}/faults", response_class=HTMLResponse)
+@faults_router.get(
+    "/runs/{run_id}/faults",
+    response_class=HTMLResponse,
+    responses={404: {"model": ErrorResponse}},
+)
 def get_run_faults(
     run_id: str,
     request: Request,
@@ -51,9 +56,20 @@ def get_run_faults(
     (Form-Validation-only; keine dynamische Fault-Aktivierung).
     Welle-6a-Substanz: Cross-Field-Validation laeuft server-
     side im POST-Handler (Decision 20).
+
+    Welle-6a-Review F4: 404 nutzt das GG-API-004-ErrorResponse-
+    Envelope (analog `_runs_router._require_run` /
+    `_runs_action_router._ensure_run_exists`) statt eines
+    plain-string `detail`. Sibling-Endpoints liefern alle das
+    strukturierte Envelope.
     """
     if not repository.exists(run_id):
-        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+        error = ErrorResponse(
+            code="run_not_found",
+            message=f"Run '{run_id}' not found.",
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=404, detail=error.model_dump())
     templates = get_templates()
     template_name = "faults.html" if not _is_htmx_request(request) else "_faults_content.html"
     return cast(

@@ -170,30 +170,38 @@ def test_get_faults_page_renders_form(demo_client: TestClient) -> None:
     assert 'hx-post="/runs/demo-run-0001/faults"' in html
 
 
-def test_demo_yaml_faults_compose_and_run_emits_alarms() -> None:
+def test_demo_yaml_faults_compose_and_apply_during_windows() -> None:
     """Decision 19 + GG-DEMO-006: YAML-side faults werden ueber
-    `_compose_fault_port` an `TickLoopWiring.fault_port` verdrahtet;
-    der Demo-Run laeuft mit aktivem FaultPort und emittiert ueber
-    Welle-4b-Pipeline mindestens einen Alarm (Welle-5-LoadEvent
-    triggert LIMITED-Load-Alarm reproduzierbar).
+    `_compose_fault_port` an `TickLoopWiring.fault_port` verdrahtet
+    UND wirken im laufenden Tick — Battery hat
+    `_cell_failure_active=True` waehrend Tick 900..949 (50 Ticks
+    cell_failure-Window) UND Grid hat `_voltage_drop_active=True`
+    waehrend Tick 1200..1259 (60 Ticks voltage_drop-Window).
 
-    Manueller TickLoop-Lauf statt asyncio-Driver, weil 600+ Ticks
-    bei 100ms-Wall-Clock-Interval > 60s waeren. Pattern analog
+    Welle-6a-Review F2: Vorgaengertest loopte nur 700 Ticks und
+    erreichte die fault-windows nie — die FaultPort-Wiring wurde
+    de facto nicht exerciert. Jetzt:
+
+    - Pre-window-Check (Tick 100): Battery._cell_failure_active is
+      False; Grid._voltage_drop_active is False.
+    - Mid-cell_failure-window-Check (Tick 920): Battery._cell_
+      failure_active is True (Battery+Adapter wirken).
+    - Mid-voltage_drop-window-Check (Tick 1220): Grid._voltage_
+      drop_active is True (Grid+Adapter wirken).
+    - Welle-4b-Alarm-Pipeline (Welle-5 LoadEvent-Erbe) zeigt
+      load-LIMITED-Alarm — beweist, dass die Welle-4b-
+      Drain-Pipeline durch den neuen FaultPort-Wiring nicht
+      verloren ging.
+
+    Manueller TickLoop-Lauf statt asyncio-Driver — 1300 Ticks bei
+    100ms-Wall-Clock-Interval waeren > 130s. Pattern analog
     Welle-4b-Alarms-Smoke (driver=None, manuelle `tick()`).
 
-    Welle-6a-Realization-Note (C3 §10 verankert): `cell_failure`
-    halbiert `max_discharge_kw` per `_tick_in_context`, aber die
-    M3-Welle-2-Substanz emittiert dabei **keinen** eigenen Alarm
-    (der Clamp in `_tick_in_context` ist silent; Battery-Alarme
-    kommen nur ueber `apply_command` → `validate_set_power_command`,
-    das gegen die unhalvierte Config-`max_discharge_kw` prueft).
-    `GG-DEMO-006`-Akzeptanz „erzeugt Telemetrie mit
-    Qualitaetsstatus sowie einen Alarm" wird Demo-side erfuellt
-    ueber: (a) Telemetry-Side-Effect von `cell_failure` +
-    `voltage_drop` (im Dashboard sichtbare State-Mutation) und
-    (b) Load-LIMITED-Alarm aus dem Welle-5-LoadEvent-Block.
-    Battery-cell_failure-Auto-Alarm ist Welle-6+/M3-Welle-2-
-    Hardening-Material.
+    Welle-6a-Realization-Note (Slice-Doc §10.1): `cell_failure`
+    emittiert dabei keinen eigenen Battery-Alarm; das Demo-side
+    sichtbare Alarm-Signal ist load-1-LIMITED aus dem Welle-5-
+    LoadEvent. Battery-cell_failure-Auto-Alarm-Emission ist
+    Welle-6+/M3-Welle-2-Hardening-Material.
     """
     from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
     from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
@@ -202,6 +210,8 @@ def test_demo_yaml_faults_compose_and_run_emits_alarms() -> None:
         _DemoSimulationClock,
         _load_scenario_from_yaml,
     )
+    from grid_gym.hexagon.core.devices.battery import BatteryDevice
+    from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
     from grid_gym.hexagon.core.scenario.loader import TickLoopWiring, build_tick_loop
 
     loaded = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
@@ -215,21 +225,50 @@ def test_demo_yaml_faults_compose_and_run_emits_alarms() -> None:
         random_root=MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed),
         wiring=wiring,
     )
+    battery = next(
+        d
+        for d in tick_loop._devices  # type: ignore[attr-defined]
+        if isinstance(d, BatteryDevice)
+    )
+    grid = next(
+        d
+        for d in tick_loop._devices  # type: ignore[attr-defined]
+        if isinstance(d, GridConnectionDevice)
+    )
     buffer = AlarmHistoryBuffer()
-    # LoadEvent ab sim_time=600 (Tick 600 bei tick_ms=1000) fuer
-    # duration_s=60 (60 Ticks), power_kw=60 ueber load-1.rated_
-    # power_kw=30 → LIMITED-Load-Alarm. cell_failure ab Tick 900
-    # fuer 50 Ticks: silent halving des Battery-max_discharge im
-    # Tick-Pfad (Slice-Doc §10 Welle-6a-Realization-Note).
+    snapshot_pre_window = False
+    snapshot_in_cell_failure = False
+    snapshot_in_voltage_drop = False
     load_alarm_seen = False
-    for _ in range(700):
+    for tick_index in range(1300):
         result = tick_loop.tick()
         for alarm in result.emitted_alarms:
             buffer.append(alarm)
             if alarm.target == "load-1" and alarm.code == "power_clamp_limited":
                 load_alarm_seen = True
+        if tick_index == 100:
+            snapshot_pre_window = (
+                battery._cell_failure_active is False  # type: ignore[attr-defined]
+                and grid._voltage_drop_active is False  # type: ignore[attr-defined]
+            )
+        if tick_index == 920:
+            snapshot_in_cell_failure = battery._cell_failure_active  # type: ignore[attr-defined]
+        if tick_index == 1220:
+            snapshot_in_voltage_drop = grid._voltage_drop_active  # type: ignore[attr-defined]
+    assert snapshot_pre_window, "Pre-Fault-Window (Tick 100): Battery+Grid sollten faultsfrei sein"
+    assert snapshot_in_cell_failure, (
+        "Mid-cell_failure-Window (Tick 920): Battery._cell_failure_active "
+        "muss True sein — _compose_fault_port hat BatteryFaultAdapter "
+        "nicht korrekt verdrahtet."
+    )
+    assert snapshot_in_voltage_drop, (
+        "Mid-voltage_drop-Window (Tick 1220): Grid._voltage_drop_active "
+        "muss True sein — _compose_fault_port hat GridFaultAdapter "
+        "nicht korrekt verdrahtet."
+    )
     assert load_alarm_seen, (
         "GG-DEMO-006-Alarm-Pfad: Welle-5-LoadEvent muss einen Load-"
-        "LIMITED-Alarm via Welle-4b-Pipeline emittieren; gesehen: "
+        "LIMITED-Alarm via Welle-4b-Pipeline emittieren (beweist "
+        f"intakte Drain-Pipeline); gesehen: "
         f"{[(a.target, a.code) for a in buffer.get_recent(limit=10)]}"
     )
