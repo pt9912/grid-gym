@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
 **Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3+M4 abgeschlossen (M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Naechster aktiver Slice: M5** (UI + Demo).
-**Stand:** 2026-06-02
+**Stand:** 2026-06-03
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
@@ -163,10 +163,18 @@
   Welle-5-Smoke + Decision-18-Praezisierung in
   `compose.yml` per Service-Konfiguration +
   `GG-DEMO-008`-Defer auf Welle 6) + Doku-Sibling-
-  Stack `5ab0f67`/`64c0fd9`/`5fe5082` + C3 (dieser
-  Commit; Status/DoD-Sync + §10 C2-Realization-
-  Notes). Ausstehend: C4a/C4b Self-Close-Move +
-  Cross-Doc-Refs-Sync. Lastenheft-Akzeptanz
+  Stack `5ab0f67`/`64c0fd9`/`5fe5082` + C3
+  `61f5156` (Status/DoD-Sync + §10 C2-Realization-
+  Notes) + C4a `da8d728` (Self-Close-Move) +
+  C4b `2c9d8da` (Cross-Doc-Refs-Sync, 5 Refs) +
+  Review-Folge `0e2bc41` (high-effort `/code-review`
+  → 15 Findings W5-F1..F15 adressiert: TickLoop-
+  Telemetry-Publish + Validation-First-Reorder +
+  Decimal-Coercion-Wrap + Lifespan-Sentinel +
+  Driver-Already-Configured-Guard + path.is_file-
+  Check + tick_interval_s=min(...) +
+  __main__-Path-Resolution + Makefile-Wait-Timeout +
+  dynamisches _reset_app_state). Lastenheft-Akzeptanz
   `GG-DEMO-001..005 + 007` produktiv; `GG-DEMO-006` +
   `GG-DEMO-008` Anti-Scope-Forward-Pointer auf
   Welle 6.
@@ -186,8 +194,11 @@
   AC-NO-GOD-UTILS + Cross-Field-Validation im POST-
   Handler + `tick_loop.device_types`-Property + 7
   Integration-Tests + Welle-1-Test-Refactor) + C3
-  (dieser Commit; Status/DoD-Sync + §10 C2-Realization-
-  Notes). Ausstehend: C4a/b. Lastenheft-Akzeptanz
+  `ed8fa74` (Status/DoD-Sync + §10 C2-Realization-
+  Notes) + C4a `70fb82c` (Self-Close-Move) +
+  C4b `b19aeae` (Cross-Doc-Refs-Sync, 8 Refs) +
+  Review-Folge `1e3a793` (high-effort `/code-review`
+  → 15 Findings F1..F15 adressiert). Lastenheft-Akzeptanz
   `GG-UI-007` + `GG-DEMO-006` produktiv;
   Welle-5-Anti-Scope-Aufnahme erfolgreich (Battery-
   cell_failure-Auto-Alarm bleibt Welle-6+/M3-Welle-2-
