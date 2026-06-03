@@ -575,6 +575,21 @@ class TickLoop:
         return self._tick_count
 
     @property
+    def device_types(self) -> Mapping[str, str]:
+        """Welle-6a (Decision 20): Mapping `device_id → device_type`
+        (`"battery"`/`"pv"`/`"load"`/`"grid_connection"`/`"smart_
+        meter"`) per `_DEVICE_TYPE_BY_CLASS_NAME`-Lookup.
+
+        Read-only public Surface fuer Cross-Field-Validation im
+        POST-/faults-Handler: der Handler prueft, ob ein Form-
+        eingegebenes `target_device_id` zum Run gehoert und ob das
+        zugewiesene Fault-Type zum Device-Typ passt. Vermeidet
+        DeviceModel-Klassen-Import in der HTTP-Adapter-Schicht
+        (AC-ADAPTER-PURE-Konsistenz).
+        """
+        return {d.device_id: _device_type_for(d) for d in self._devices}
+
+    @property
     def control_state(self) -> RunStatus:
         """Aktueller `RunStatus`-Lifecycle-State (M5 Welle 4a, ADR
         0039 Decision 13).

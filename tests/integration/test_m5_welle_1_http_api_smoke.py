@@ -42,6 +42,10 @@ from grid_gym.adapters.driving.http_api.app import (
     configure_telemetry_stream,
     configure_tick_loop_registry,
 )
+from decimal import Decimal
+
+from grid_gym.hexagon.core.devices.battery import BatteryDevice
+from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryPoint
@@ -112,12 +116,36 @@ def test_full_run_lifecycle_workflow(
     # Welle-4a: TickLoop fuer den frischen Run registrieren, damit
     # die Control- und Status-Endpoints (Schritte 3+4) produktiv
     # routen koennen.
+    # Welle-6a (Decision 20): Cross-Field-Validation im POST-/faults-
+    # Handler braucht ein Device im TickLoop, dessen Typ zum
+    # Fault-Typ (`cell_failure` ↔ Battery) passt. Welle-1-Stub-
+    # Verhalten war devices-frei — Welle-6a verschaerft den Vertrag.
+    battery = BatteryDevice()
+    battery.initialize(
+        ScenarioDevice(
+            id="battery-1",
+            type="battery",
+            params={
+                "capacity_kwh": Decimal("100"),
+                "initial_soc_pct": Decimal("50"),
+                "min_soc_pct": Decimal("0"),
+                "max_soc_pct": Decimal("100"),
+                "max_charge_kw": Decimal("50"),
+                "max_discharge_kw": Decimal("50"),
+                "charge_efficiency": Decimal("1"),
+                "discharge_efficiency": Decimal("1"),
+                "ramp_kw_per_s": Decimal("100"),
+            },
+        ),
+        FixedSeedRandom(seed=0),
+    )
     tick_loop = TickLoop(
         run_id=run_id,
         tick_ms=100,
         clock=FakeClock(),
         random=FixedSeedRandom(seed=42),
         scheduler=Scheduler(),
+        devices=(battery,),
         run_repository=repository,
     )
     registry.register(tick_loop)

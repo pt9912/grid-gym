@@ -559,12 +559,20 @@ forbidden_modules = [
 # parallel zu `_demo_setup` — beide sind Bootstrap-Module der
 # HTTP-Adapter-Komposition; andere Adapter-Pakete bleiben ohne
 # `scenario`-Bridge.
+#
+# M5-Welle-6a (Slice-Doc Decision 19): FaultPort-Composition
+# braucht `BatteryFaultAdapter` + `GridFaultAdapter` aus
+# `hexagon.core.faults` und `DeviceTickContext` aus
+# `hexagon.core.domain.device` (FaultPort-apply_active_faults-
+# Signatur). Pattern analog Welle-5-`scenario.loader`-Bridge;
+# nur im Bootstrap-Modul, andere Adapter-Pakete unberuehrt.
 ignore_imports = [
     "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.scheduler",
     "grid_gym.adapters.driving.http_api._tick_loop_registry -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._tick_loop_driver -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.scenario.loader",
+    "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.faults",
 ]
 
 [[tool.importlinter.contracts]]

@@ -1,0 +1,106 @@
+<section class="faults" data-run-id="{{ run_id }}">
+    <h1>Fault Injection — {{ run_id }}</h1>
+
+    <p class="form-intro">
+        Welle-6a (Decision 19): Form-Submit validiert die Eingaben
+        gegen das Run-Scenario (Target-Device existiert, Fault-Typ
+        passt zum Device-Typ) und antwortet 201 + Fault-ID. Die
+        dynamische Aktivierung des Faults im laufenden TickLoop ist
+        Anti-Scope (Welle 7+/M6); reproduzierbare Demo-Faults
+        leben im YAML-Scenario.
+    </p>
+
+    <form id="fault-form"
+          hx-post="/runs/{{ run_id }}/faults"
+          hx-target="#fault-feedback"
+          hx-swap="innerHTML"
+          hx-headers='{"Accept": "text/html"}'>
+        <label for="fault-type">Fault Type</label>
+        <select id="fault-type" name="fault_type" required>
+            <option value="">— bitte waehlen —</option>
+            <option value="cell_failure">cell_failure (Battery)</option>
+            <option value="voltage_drop">voltage_drop (GridConnection)</option>
+        </select>
+
+        <label for="fault-target">Target Device ID</label>
+        <input type="text"
+               id="fault-target"
+               name="target"
+               placeholder="battery-1 / grid-connection-1"
+               required>
+
+        <label for="fault-start">Start at Tick</label>
+        <input type="number"
+               id="fault-start"
+               name="start_at_tick"
+               min="0"
+               value="0"
+               required>
+
+        <label for="fault-duration">Duration (Ticks)</label>
+        <input type="number"
+               id="fault-duration"
+               name="duration_ticks"
+               min="0"
+               value="10"
+               required>
+
+        <label for="fault-recovery">Recovery</label>
+        <select id="fault-recovery" name="recovery" required>
+            <option value="auto-recover-after-N-ticks">auto-recover-after-N-ticks</option>
+            <option value="manual-via-command">manual-via-command</option>
+        </select>
+
+        <button type="submit" class="btn btn-submit">Submit</button>
+    </form>
+
+    <div id="fault-feedback" class="fault-feedback" aria-live="polite"></div>
+
+    <script>
+    (function () {
+        // Welle-6a: HTMX-Form-Submit als JSON. Das Welle-1-Schema
+        // erwartet application/json; Form-Encoding wird zu JSON
+        // umgewandelt. Numerische Felder werden korrekt geparst.
+        document.body.addEventListener("htmx:configRequest", function (event) {
+            if (event.detail.verb !== "post" || !event.detail.path.endsWith("/faults")) {
+                return;
+            }
+            const parameters = event.detail.parameters;
+            const payload = {
+                fault_type: parameters.fault_type,
+                target: parameters.target,
+                start_at_tick: parseInt(parameters.start_at_tick, 10),
+                duration_ticks: parseInt(parameters.duration_ticks, 10),
+                recovery: parameters.recovery,
+            };
+            event.detail.headers["Content-Type"] = "application/json";
+            event.detail.parameters = JSON.stringify(payload);
+        });
+
+        // Render 201 vs 422 Antworten unterschiedlich. Server sendet
+        // HTMX-Partial-HTML bei 422 (Inline-Error-Block) und
+        // application/json bei 201 (Success-Echo).
+        document.body.addEventListener("htmx:beforeSwap", function (event) {
+            const target = event.detail.target;
+            if (!target || target.id !== "fault-feedback") {
+                return;
+            }
+            // HTMX schluckt 4xx by default; explicit accept beibehalten.
+            if (event.detail.xhr.status >= 400) {
+                event.detail.shouldSwap = true;
+            }
+            const contentType = event.detail.xhr.getResponseHeader("content-type") || "";
+            if (contentType.indexOf("application/json") >= 0) {
+                try {
+                    const payload = JSON.parse(event.detail.serverResponse);
+                    event.detail.serverResponse =
+                        `<p class="success">Fault registered: <code>${payload.fault_id}</code> ` +
+                        `(accepted=${payload.accepted}).</p>`;
+                } catch (err) {
+                    // fall-through; leave HTML body.
+                }
+            }
+        });
+    })();
+    </script>
+</section>

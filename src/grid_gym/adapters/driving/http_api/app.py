@@ -381,7 +381,9 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 
 from grid_gym.adapters.driving.ui.routes import ui_router
+from grid_gym.adapters.driving.ui.routes_faults import faults_router
 
 _UI_STATIC_DIR: Final[Path] = Path(__file__).parent.parent / "ui" / "static"
 app.mount("/static", StaticFiles(directory=str(_UI_STATIC_DIR)), name="static")
 app.include_router(ui_router)
+app.include_router(faults_router)

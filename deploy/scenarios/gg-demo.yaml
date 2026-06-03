@@ -121,10 +121,43 @@ load_profiles:
       - "15"
       - "12"
 
+# Welle-6a Decision 19 (Fault-Injection-Production-Pattern):
+# YAML-side faults erfuellen `GG-DEMO-006` reproduzierbar.
+# - Battery cell_failure ab Tick 900 (Discharge-Phase, siehe
+#   Agent unten) fuer 50 Ticks: halbiert effektive
+#   max_discharge_kw auf 25; Agent-Discharge -30 wird auf
+#   -25 geclampt → LIMITED BatteryAlarm in Welle-4b-Pipeline.
+# - Grid voltage_drop ab Tick 1200 fuer 60 Ticks: halbiert
+#   Spannung als Telemetry-Effekt (kein Alarm; Dashboard zeigt
+#   den Spannungsabfall, GG-DEMO-006 „Telemetrie mit
+#   Qualitaetsstatus"-Anteil).
+faults:
+  - start_simulation_time: 900000
+    duration_ms: 50000
+    target: "battery-1"
+    type: "cell_failure"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"
+  - start_simulation_time: 1200000
+    duration_ms: 60000
+    target: "grid-connection-1"
+    type: "voltage_drop"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"
+
 # Decision 5: 1 RuleBasedAgent, der die Battery zeitgesteuert
 # steuert (Phasen analog `agents_demo.yaml`). first-match-wins —
 # spaete Phase steht zuerst. `set_power_kw`-payload-value ist
 # Decimal (positiv=charge, negativ=discharge).
+#
+# Welle-6a-MODIFY (C2-Realization Decision 19): Discharge-
+# Wert von -20 auf -30 erhoeht, damit der cell_failure-Fault
+# (start_simulation_time=900000ms = Tick 900) die effektive
+# max_discharge_kw=25 sprengt und ein LIMITED-Battery-Alarm
+# generiert wird (Welle-4b-Pipeline drainst ihn). Ohne
+# cell_failure ist -30 innerhalb max_discharge_kw=50, kein
+# Alarm — Welle-5-Demo-Verhalten bleibt fuer die
+# faults-leere Test-Konstellation gleich.
 agents:
   bess-controller:
     type: "rule_based"
@@ -138,7 +171,7 @@ agents:
           action:
             type: "set_power_kw"
             payload:
-              value: "-20"
+              value: "-30"
         - condition:
             metric: "tick"
             comparator: ">="

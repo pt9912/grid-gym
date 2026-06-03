@@ -40,8 +40,13 @@ from grid_gym.adapters.driving.http_api.app import (
     configure_telemetry_stream,
     configure_tick_loop_registry,
 )
+from decimal import Decimal
+
+from grid_gym.hexagon.core.devices.battery import BatteryDevice
+from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryPoint
@@ -97,6 +102,61 @@ def _seed_run_with_tick_loop(
         clock=FakeClock(),
         random=FixedSeedRandom(seed=metadata.seed),
         scheduler=Scheduler(),
+        run_repository=repository,
+    )
+    registry.register(tick_loop)
+    return metadata, tick_loop
+
+
+def _seed_run_with_tick_loop_and_devices(
+    repository: InMemoryRunRepository,
+    registry: TickLoopRegistry,
+) -> tuple[RunMetadata, TickLoop]:
+    """Welle-6a-Helper: wie `_seed_run_with_tick_loop`, aber mit
+    einer Battery + GridConnection im TickLoop. Welle-6a-Decision-20
+    Cross-Field-Validation braucht `tick_loop.device_types`-
+    Mapping (Battery → cell_failure / GridConnection →
+    voltage_drop)."""
+    metadata = _seed_run(repository)
+    battery = BatteryDevice()
+    battery.initialize(
+        ScenarioDevice(
+            id="battery-1",
+            type="battery",
+            params={
+                "capacity_kwh": Decimal("100"),
+                "initial_soc_pct": Decimal("50"),
+                "min_soc_pct": Decimal("0"),
+                "max_soc_pct": Decimal("100"),
+                "max_charge_kw": Decimal("50"),
+                "max_discharge_kw": Decimal("50"),
+                "charge_efficiency": Decimal("1"),
+                "discharge_efficiency": Decimal("1"),
+                "ramp_kw_per_s": Decimal("100"),
+            },
+        ),
+        FixedSeedRandom(seed=0),
+    )
+    grid = GridConnectionDevice()
+    grid.initialize(
+        ScenarioDevice(
+            id="grid-1",
+            type="grid_connection",
+            params={
+                "nominal_voltage_v": Decimal("400"),
+                "max_import_kw": Decimal("100"),
+                "max_export_kw": Decimal("100"),
+            },
+        ),
+        FixedSeedRandom(seed=0),
+    )
+    tick_loop = TickLoop(
+        run_id=metadata.run_id,
+        tick_ms=metadata.tick_ms,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=metadata.seed),
+        scheduler=Scheduler(),
+        devices=(battery, grid),
         run_repository=repository,
     )
     registry.register(tick_loop)
@@ -222,9 +282,11 @@ def test_post_run_faults_returns_fault_id_with_201(
         TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
     ],
 ) -> None:
-    """Welle-1-Stub: 201 + UUID-Fault-ID + accepted=True."""
-    client, repository, _, _ = configured_app
-    metadata = _seed_run(repository)
+    """Welle-6a Decision 19 + 20: 201 + UUID-Fault-ID + accepted=True
+    bei Battery+cell_failure (Welle-1-Stub-Antwort bleibt; Cross-
+    Field-Validation hat den Target gegen den TickLoop geprueft)."""
+    client, repository, _, registry = configured_app
+    metadata, _ = _seed_run_with_tick_loop_and_devices(repository, registry)
     response = client.post(
         f"/runs/{metadata.run_id}/faults",
         json={
@@ -249,8 +311,8 @@ def test_post_run_faults_rejects_invalid_body(
     ],
 ) -> None:
     """Pydantic-Validation: Missing-Field → 422."""
-    client, repository, _, _ = configured_app
-    metadata = _seed_run(repository)
+    client, repository, _, registry = configured_app
+    metadata, _ = _seed_run_with_tick_loop_and_devices(repository, registry)
     response = client.post(
         f"/runs/{metadata.run_id}/faults",
         json={"fault_type": "cell_failure"},  # missing other fields

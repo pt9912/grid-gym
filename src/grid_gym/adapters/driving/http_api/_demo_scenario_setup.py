@@ -37,7 +37,7 @@ Komposition-Root-Hinweis: importiert `load_scenario` +
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Final, cast
@@ -58,6 +58,12 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     _TickLoopRegistryNotConfiguredError,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.scenario import ScenarioFault
+from grid_gym.hexagon.core.faults import (
+    BatteryFaultAdapter,
+    GridFaultAdapter,
+)
 from grid_gym.hexagon.core.scenario.loader import (
     TickLoopWiring,
     build_tick_loop,
@@ -187,6 +193,7 @@ def configure_scenario_demo_run(
     wiring = TickLoopWiring(
         run_repository=repository,
         alarm_id_source=_alarm_id_source(),
+        fault_port=_compose_fault_port(loaded.scenario.faults),
     )
     tick_loop = build_tick_loop(
         loaded.scenario,
@@ -232,6 +239,58 @@ def _cast_tick_loop_registry_or_raise(app_: FastAPI) -> TickLoopRegistry:
     if registry is None:
         raise _TickLoopRegistryNotConfiguredError
     return cast(TickLoopRegistry, registry)
+
+
+def _compose_fault_port(
+    faults: tuple[ScenarioFault, ...],
+) -> "_FaultPortComposition | None":
+    """Welle-6a Decision 19: kombiniert `BatteryFaultAdapter` +
+    `GridFaultAdapter` zu einem FaultPort, der pro Tick beide
+    Adapter sequenziell delegiert. Liefert `None` bei leerer
+    Fault-Liste (Welle-5-Default-Verhalten unveraendert).
+
+    M3-Welle-2-Pattern: jeder Adapter filtert intern nach
+    `fault.type`; ungenutzte Faults sind No-Op. Die Composition
+    haelt beide Adapter im Konstruktor und delegiert pro
+    `apply_active_faults`-Aufruf an beide.
+    """
+    if not faults:
+        return None
+    return _FaultPortComposition(
+        battery_adapter=BatteryFaultAdapter(faults),
+        grid_adapter=GridFaultAdapter(faults),
+    )
+
+
+class _FaultPortComposition:
+    """Welle-6a-FaultPort-Composition (Decision 19): delegiert pro
+    `apply_active_faults`-Aufruf an `BatteryFaultAdapter` +
+    `GridFaultAdapter`. Pattern analog Welle-5-`_alarm_*_provider`-
+    Closures (kleine Adapter-Composition im
+    `_demo_scenario_setup`-Lifespan-Pfad statt eigener Adapter-
+    Klasse unter `adapters/driven/fault_*/`).
+    """
+
+    def __init__(
+        self,
+        *,
+        battery_adapter: BatteryFaultAdapter,
+        grid_adapter: GridFaultAdapter,
+    ) -> None:
+        self._battery_adapter = battery_adapter
+        self._grid_adapter = grid_adapter
+
+    def apply_active_faults(
+        self,
+        devices: "Sequence[object]",
+        context: DeviceTickContext,
+    ) -> None:
+        """`FaultPort.apply_active_faults`-Delegation: beide Adapter
+        sequenziell aufrufen. Reihenfolge Battery → Grid ist
+        deterministisch (deterministische Telemetry-Sequenz per
+        Welle-2-`fault_demo.yaml`-Pattern; ADR 0025 §2.4)."""
+        self._battery_adapter.apply_active_faults(devices, context)
+        self._grid_adapter.apply_active_faults(devices, context)
 
 
 class _DemoSimulationClockInvalidDeltaError(ValueError):

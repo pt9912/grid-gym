@@ -31,7 +31,8 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import Annotated, cast
+from collections.abc import Mapping
+from typing import Annotated, Final, cast
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
@@ -132,28 +133,97 @@ def post_run_control(
     return ControlResponse(run_id=run_id, action=request.action, accepted=True)
 
 
+_FAULT_TYPE_TO_DEVICE_TYPE: Final[Mapping[str, str]] = {
+    "cell_failure": "battery",
+    "voltage_drop": "grid_connection",
+}
+"""M5-Welle-6a (Decision 20): Whitelist Fault-Typ ↔ Device-Typ.
+Welle-7+/M3-Fault-Typen muessen sich hier eintragen oder eine
+Plugin-Form an ADR 0022 §2.2 verankern."""
+
+
 @runs_action_router.post(
     "/runs/{run_id}/faults",
     response_model=FaultInjectionResponse,
     status_code=201,
-    responses={404: {"model": ErrorResponse}},
+    responses={
+        404: {"model": ErrorResponse},
+        422: {"model": ErrorResponse},
+    },
 )
 def post_run_faults(
     run_id: str,
     request: Annotated[FaultInjectionRequest, ...],
     repository: Annotated[RunRepositoryPort, Depends(get_run_repository)],
+    tick_loop_registry: Annotated[
+        TickLoopRegistry,
+        Depends(get_tick_loop_registry),
+    ],
 ) -> FaultInjectionResponse:
-    """Fault-Injection-Submit (`GG-API-001`).
+    """Fault-Injection-Submit (`GG-API-001`, M5 Welle 6a Decision
+    19/20).
 
-    Welle-1-Stub: erzeugt eine `fault_id` (UUIDv4) und gibt
-    `accepted=True` zurueck — kein `FaultPort.activate`-Call
-    (Welle 6). Der `request`-Body wird gegen das Pydantic-
-    Schema validiert; ungueltige Bodies geben 422 zurueck.
+    Welle-1-Stub-Antwort bleibt: erzeugt `fault_id` (UUIDv4) +
+    `accepted=True`. Welle-6a-Erweiterung (Decision 19): kein
+    `FaultPort.activate`-Call (Dynamic-FaultPort-Mutation
+    Anti-Scope; YAML-side faults erfuellen `GG-DEMO-006`).
+    Welle-6a-Erweiterung (Decision 20): **Cross-Field-Validation**
+    pruefte vor dem Echo zwei Bedingungen:
+
+    1. `request.target` muss im aktiven Run-Scenario existieren
+       (Lookup ueber `tick_loop.device_types`).
+    2. `request.fault_type` muss zum Target-Device-Typ passen
+       (Whitelist `_FAULT_TYPE_TO_DEVICE_TYPE`).
+
+    Beide Fehler liefern 422 + `ErrorResponse`; wenn kein
+    TickLoop registriert ist (Welle-1-Stub-Pfad oder Multi-Run-
+    Anti-Scope), gibt der Endpunkt 503 mit
+    `code="tick_loop_not_active"` (analog Control-Pattern).
     """
     _ensure_run_exists(run_id, repository)
-    # Body wird durch Pydantic validiert; in Welle 6 wird das
-    # Request-Objekt an `FaultPort.activate(...)` weitergegeben.
-    _ = request
+    tick_loop = tick_loop_registry.tick_loop_for(run_id)
+    if tick_loop is None:
+        error = ErrorResponse(
+            code="tick_loop_not_active",
+            message=(
+                f"Run '{run_id}' is persisted but has no active TickLoop "
+                "driver. Welle-6a Cross-Field-Validation needs the "
+                "device-type mapping of the running TickLoop."
+            ),
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=503, detail=error.model_dump())
+    device_types = tick_loop.device_types
+    target_type = device_types.get(request.target)
+    if target_type is None:
+        error = ErrorResponse(
+            code="fault_unknown_target",
+            message=(
+                f"Target device '{request.target}' is not part of run "
+                f"'{run_id}'. Known device IDs: {sorted(device_types)}."
+            ),
+            details={"target": request.target, "known": sorted(device_types)},
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=422, detail=error.model_dump())
+    expected_device_type = _FAULT_TYPE_TO_DEVICE_TYPE.get(request.fault_type)
+    if expected_device_type is None or expected_device_type != target_type:
+        error = ErrorResponse(
+            code="fault_invalid_type_for_target",
+            message=(
+                f"Fault type '{request.fault_type}' is not allowed on "
+                f"device '{request.target}' (type '{target_type}'). "
+                "Welle-6a whitelist: cell_failure on battery, "
+                "voltage_drop on grid_connection."
+            ),
+            details={
+                "fault_type": request.fault_type,
+                "target": request.target,
+                "target_type": target_type,
+            },
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=422, detail=error.model_dump())
     return FaultInjectionResponse(
         run_id=run_id,
         fault_id=str(uuid.uuid4()),
