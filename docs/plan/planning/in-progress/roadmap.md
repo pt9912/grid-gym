@@ -315,7 +315,7 @@ Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
 [`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
 eroeffnet; Welle 0..5 abgeschlossen, **Welle 5 (Demo-
 Pipeline) `Done` 2026-06-03** mit Slice-Doc
-[`M5-welle-5.md`](M5-welle-5.md); **aktive Welle: Welle 6
+[`M5-welle-5.md`](../done/M5-welle-5.md); **aktive Welle: Welle 6
 (SOLLTE-Features + Welle-5-Anti-Scope-Aufnahme)** mit
 Plan-Items in [`M5-ui-demo.md §3.2`](M5-ui-demo.md). (M4
 ist abgeschlossen,
@@ -720,7 +720,7 @@ einer Folge-Lieferung adressiert ohne ADR-Aenderung
 (Self-Close-Move `M5-welle-4b.md → done/`, rename-only) +
 Pre-C0b `45335eb` (Cross-Doc-Refs-Sync nach Move, 5 Files) +
 C0 `155c421` (Slice-Doc
-[`M5-welle-5.md`](M5-welle-5.md) + Decisions 5/6/18 final +
+[`M5-welle-5.md`](../done/M5-welle-5.md) + Decisions 5/6/18 final +
 Sub-Slicing-Risk-Verifikation — Single-Slice ohne
 Splittung). Welle 5 ist die **Demo-Welle** in M5: erfuellt
 `GG-DEMO-001..005` (5 MUSS) plus `GG-DEMO-007` (1 SOLLTE

@@ -999,18 +999,18 @@ keinen Welle-5-C3-Bestandteil bilden:
 
 ## References
 
-- [`../done/M5-welle-4b.md`](../done/M5-welle-4b.md) —
+- [`M5-welle-4b.md`](M5-welle-4b.md) —
   Welle-4b-Closure (Alarm-Aggregation +
   AlarmStreamPort + Alarm-Tabelle-UI; Welle-4b-
   Review-Folge mit Fix #11 produktiv im Loader,
   Fix #13 als Welle-5-Anti-Scope verankert, Fix
   #3/#8 als Welle-6+/M6-Forward-Pointer).
-- [`../done/M5-welle-4a.md`](../done/M5-welle-4a.md) —
+- [`M5-welle-4a.md`](M5-welle-4a.md) —
   Welle-4a-Closure (RunStatus +
   TickLoop-Control-Surface; `_demo_setup.
   configure_demo_run`-Pattern als Welle-5-
   Erweiterungs-Ausgangspunkt).
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 5
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle 5
   (kanonische Slice-Spezifikation; Decisions 5/6
   pre-reserviert; NEU Decision 18 als Welle-5-
   C0-Resultat).
@@ -1037,7 +1037,7 @@ keinen Welle-5-C3-Bestandteil bilden:
   (kanonisches YAML-Schema; Welle-5-Demo nutzt
   produktiv).
 - Pattern-Vorbild **Welle-1-ohne-C1**:
-  [`../done/M5-welle-1.md`](../done/M5-welle-1.md)
+  [`M5-welle-1.md`](M5-welle-1.md)
   + Commit `64d5129` (Slice-Doc + Code-Merge
   ohne C1-ADR-Commit; Pattern-Praezedenz fuer
   Welle 5).

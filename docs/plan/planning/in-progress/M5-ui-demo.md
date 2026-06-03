@@ -137,7 +137,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 3 | Live-Telemetry-Dashboard | Done 2026-06-01 | [`M5-welle-3.md`](../done/M5-welle-3.md) | `GG-UI-001/002/003/009 + GG-API-002` | ADR 0038 `Provisional` |
 | 4a | Replay-Controls + TickLoop-Wiring | Done 2026-06-02 | [`M5-welle-4a.md`](../done/M5-welle-4a.md) | `GG-UI-004` + Rest-`GG-API-001` | ADR 0039 `Provisional` |
 | 4b | Alarme | Done 2026-06-02 | [`M5-welle-4b.md`](../done/M5-welle-4b.md) | `GG-UI-005`; loest ADR-0014-§6 Driving-Side | ADR 0040 `Provisional` |
-| 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
+| 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](../done/M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
 | 6 | SOLLTE-Features + Welle-5-Anti-Scope-Aufnahme | Pending | TBD (entsteht in Welle-6-C0) | `GG-UI-006..008` + `GG-DEMO-006` + `GG-DEMO-008` | TBD |
 | 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
 
