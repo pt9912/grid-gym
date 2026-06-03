@@ -114,8 +114,11 @@ help:
 	@echo "  make build             Multi-stage Runtime-Image (non-root, /health HEALTHCHECK)"
 	@echo "  make runtime           docker compose up + /health-Probe + down"
 	@echo "  make test-container    Alias fuer runtime"
-	@echo "  make demo              M5-Welle-5 Demo-Stack (compose up, UI auf http://localhost:8000)"
-	@echo "  make demo-stop         M5-Welle-5 Demo-Stack stoppen + Volumes cleanup"
+	@echo "  make demo              M5-Welle-5 Demo-Stack (compose up, UI auf http://localhost:8000;"
+	@echo "                          ~30s warm / ~70s cold cache; --wait-timeout=90s)"
+	@echo "  make demo-stop         M5-Welle-5 Demo-Stack stoppen + DESTRUKTIV Volumes cleanen"
+	@echo "                         (postgres-Daten gehen verloren — `docker compose -f deploy/compose.yml stop`"
+	@echo "                          ohne -v fuer Restart-mit-State)"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make lock-refresh      uv lock refresh (commit uv.lock alongside pyproject.toml)"
@@ -398,16 +401,18 @@ demo: build
 	@if [ ! -f $(COMPOSE_FILE) ]; then \
 		echo "[demo] $(COMPOSE_FILE) fehlt"; exit 1; \
 	fi
-	$(DOCKER) compose -f $(COMPOSE_FILE) up -d --wait --wait-timeout 60
+	@echo "[demo] starting stack (cold cache may take ~70s for postgres+otel pull)"
+	$(DOCKER) compose -f $(COMPOSE_FILE) up -d --wait --wait-timeout 90
 	@echo "[demo] stack is up; probing /health"
 	$(DOCKER) compose -f $(COMPOSE_FILE) exec -T api curl --fail --silent --show-error http://localhost:8080/health
 	@echo "[demo] /health ok; UI verfuegbar unter http://localhost:8000"
-	@echo "[demo] Stop mit 'make demo-stop' (compose down + volume cleanup)"
+	@echo "[demo] Stop mit 'make demo-stop' (DESTRUKTIV: -v entfernt postgres-data)"
 
 demo-stop:
 	@if [ ! -f $(COMPOSE_FILE) ]; then \
 		echo "[demo-stop] $(COMPOSE_FILE) fehlt"; exit 1; \
 	fi
+	@echo "[demo-stop] WARNING: -v removes postgres data volumes (Welle-5-Demo-Default)"
 	$(DOCKER) compose -f $(COMPOSE_FILE) down -v --remove-orphans
 	@echo "[demo-stop] stack down + volumes cleaned"
 

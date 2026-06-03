@@ -31,11 +31,34 @@ from pathlib import Path
 from typing import Final
 
 
-_DEFAULT_DEMO_SCENARIO_PATH: Final[Path] = (
-    Path(__file__).resolve().parents[2] / "deploy" / "scenarios" / "gg-demo.yaml"
-)
-"""Welle-5-Default: kanonisches Demo-YAML neben dem Repository-
-Root. Wird per `--scenario` ueberschrieben."""
+def _detect_default_scenario_path() -> Path:
+    """Welle-5-Review F7: robust gegenueber dev-checkout VS
+    installed-wheel-Layout.
+
+    Dev-Checkout: `__file__ = <repo>/src/grid_gym/__main__.py`,
+    `parents[2]` = `<repo>`, → `<repo>/deploy/scenarios/gg-demo.yaml`.
+
+    Installed wheel (`pip install grid_gym`): `__file__` lebt in
+    `site-packages/grid_gym/__main__.py`; `parents[2]` zeigt in den
+    venv-Layout (nicht repo-deploy/). Wir versuchen das Repo-Layout,
+    und fallen sonst zurueck auf cwd-relative `deploy/scenarios/
+    gg-demo.yaml` — der User muss `--scenario` explizit setzen oder
+    aus dem Repo-Root starten."""
+    repo_layout = Path(__file__).resolve().parents[2] / "deploy" / "scenarios" / "gg-demo.yaml"
+    if repo_layout.is_file():
+        return repo_layout
+    cwd_layout = Path.cwd() / "deploy" / "scenarios" / "gg-demo.yaml"
+    if cwd_layout.is_file():
+        return cwd_layout
+    # Letzter Fallback: repo-Layout-Pfad zurueckgeben, damit die
+    # Fehlermeldung wenigstens den erwarteten Pfad zeigt.
+    return repo_layout
+
+
+_DEFAULT_DEMO_SCENARIO_PATH: Final[Path] = _detect_default_scenario_path()
+"""Welle-5-Default: kanonisches Demo-YAML; Layout-Detection in
+`_detect_default_scenario_path` (dev-checkout vs. installed wheel
+vs. cwd-Relativ). Wird per `--scenario` ueberschrieben."""
 
 _DEFAULT_HOST: Final[str] = "127.0.0.1"
 """Welle-5-Local-Default: `python -m grid_gym demo` bindet auf
@@ -118,7 +141,11 @@ def _run_demo(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
-    os.environ["GRID_GYM_DEMO_SCENARIO_PATH"] = str(scenario_path)
+    # Welle-5-Review F8: absolute Pfad-Resolution VOR env-var-write.
+    # uvicorn (oder ein zukuenftiger `reload=True`-Worker-Fork)
+    # resolved die env-var relativ zur worker-cwd; absoluter Pfad
+    # immunisiert dagegen.
+    os.environ["GRID_GYM_DEMO_SCENARIO_PATH"] = str(scenario_path.resolve())
     import uvicorn
 
     uvicorn.run(

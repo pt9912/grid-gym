@@ -52,18 +52,13 @@ def _reset_app_state() -> None:
     """Welle-5-Smoke-Isolierung: vorhergehende Smoke-Tests setzen
     `configure_*` ueber Modul-globalen ``app.state``; ohne Reset
     wuerde der Welle-5-Lifespan-env-var-Branch die bereits
-    gesetzte Komponenten erkennen und skippen."""
-    for attr in (
-        "run_repository",
-        "telemetry_stream",
-        "demo_telemetry_generator",
-        "tick_loop_registry",
-        "demo_tick_loop_driver",
-        "alarm_stream",
-        "alarm_history_buffer",
-    ):
-        if hasattr(app.state, attr):
-            delattr(app.state, attr)
+    gesetzten Komponenten erkennen und skippen.
+
+    Welle-5-Review F15: dynamisches Reset ueber Starlette-internes
+    `_state`-Dict (kein hard-coded Allowlist). Zukuenftige Lifespan-
+    /Test-State-Erweiterungen werden automatisch erfasst."""
+    state_dict = app.state._state
+    state_dict.clear()
 
 
 @pytest.fixture

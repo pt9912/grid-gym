@@ -42,17 +42,9 @@ _DEMO_SCENARIO_PATH: Path = (
 
 
 def _reset_app_state() -> None:
-    for attr in (
-        "run_repository",
-        "telemetry_stream",
-        "demo_telemetry_generator",
-        "tick_loop_registry",
-        "demo_tick_loop_driver",
-        "alarm_stream",
-        "alarm_history_buffer",
-    ):
-        if hasattr(app.state, attr):
-            delattr(app.state, attr)
+    """Welle-5-Review F15: dynamisches Reset ueber Starlette-internes
+    `_state`-Dict (siehe test_m5_welle_5_demo_smoke)."""
+    app.state._state.clear()
 
 
 @pytest.fixture

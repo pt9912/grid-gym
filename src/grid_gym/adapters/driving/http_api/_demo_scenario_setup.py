@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable, Mapping, Sequence
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Final, cast
 
@@ -65,6 +65,7 @@ from grid_gym.hexagon.core.faults import (
     GridFaultAdapter,
 )
 from grid_gym.hexagon.core.scenario.loader import (
+    LoadedScenario,
     TickLoopWiring,
     build_tick_loop,
     load_scenario,
@@ -72,6 +73,7 @@ from grid_gym.hexagon.core.scenario.loader import (
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 
 _DEMO_RUN_ID: Final[str] = "demo-run-0001"
@@ -176,7 +178,36 @@ def configure_scenario_demo_run(
     registry = _cast_tick_loop_registry_or_raise(app_)
     if repository.exists(run_id):
         return
+    # Welle-5-Review F6: Already-Configured-Guard analog
+    # `_demo_setup.configure_demo_run`. Verhindert silent-overwrite
+    # eines bestehenden DemoTickLoopDrivers (orphaned-Task-Risk).
+    existing_driver = getattr(app_.state, "demo_tick_loop_driver", None)
+    if existing_driver is not None and existing_driver.tick_loop_run_id != run_id:
+        raise _ScenarioDemoTickLoopDriverAlreadyConfiguredError(
+            existing_driver.tick_loop_run_id, run_id
+        )
+    # Welle-5-Review F2: Validation-First. Erst Scenario laden, dann
+    # FaultPort komponieren, dann TickLoop bauen — alles BEVOR
+    # `repository.save`. Eine spaete Exception (UnknownFaultType,
+    # ScenarioWrongType, DecimalCoercion) hinterlaesst die Repository
+    # sonst befuellt, und der Skip-Guard im Lifespan blockt jeden
+    # Re-Try permanent.
     loaded = _load_scenario_from_yaml(scenario_path)
+    clock = _DemoSimulationClock()
+    random_root = MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed)
+    fault_port = _compose_fault_port(loaded.scenario.faults)
+    wiring = TickLoopWiring(
+        run_repository=repository,
+        alarm_id_source=_alarm_id_source(),
+        fault_port=fault_port,
+    )
+    tick_loop = build_tick_loop(
+        loaded.scenario,
+        run_id=run_id,
+        clock=clock,
+        random_root=random_root,
+        wiring=wiring,
+    )
     metadata = RunMetadata(
         run_id=run_id,
         scenario_hash=loaded.scenario_hash,
@@ -188,20 +219,6 @@ def configure_scenario_demo_run(
         tool_version=_APP_VERSION,
     )
     repository.save(metadata)
-    clock = _DemoSimulationClock()
-    random_root = MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed)
-    wiring = TickLoopWiring(
-        run_repository=repository,
-        alarm_id_source=_alarm_id_source(),
-        fault_port=_compose_fault_port(loaded.scenario.faults),
-    )
-    tick_loop = build_tick_loop(
-        loaded.scenario,
-        run_id=run_id,
-        clock=clock,
-        random_root=random_root,
-        wiring=wiring,
-    )
     registry.register(tick_loop)
 
     def _alarm_stream_provider() -> AlarmStreamPort | None:
@@ -213,13 +230,42 @@ def configure_scenario_demo_run(
             getattr(app_.state, "alarm_history_buffer", None),
         )
 
+    def _telemetry_stream_provider() -> TelemetryStreamPort | None:
+        return cast(
+            TelemetryStreamPort | None,
+            getattr(app_.state, "telemetry_stream", None),
+        )
+
+    # Welle-5-Review F10: tick_interval_s an scenario.tick_ms koppeln,
+    # mit Cap auf 0.1s damit Stunden-Profile (tick_ms=3600000) nicht
+    # 1h-wall-clock pro Tick brauchen. Reine 100ms-Wall-Clock-Konstante
+    # liess gg-demo.yaml (tick_ms=1000) 10x schneller laufen.
+    resolved_tick_interval_s = min(tick_interval_s, loaded.scenario.simulation.tick_ms / 1000.0)
     driver = DemoTickLoopDriver(
         tick_loop,
-        tick_interval_s=tick_interval_s,
+        tick_interval_s=resolved_tick_interval_s,
         alarm_stream_provider=_alarm_stream_provider,
         alarm_history_buffer_provider=_alarm_history_buffer_provider,
+        telemetry_stream_provider=_telemetry_stream_provider,
     )
     app_.state.demo_tick_loop_driver = driver
+
+
+class _ScenarioDemoTickLoopDriverAlreadyConfiguredError(RuntimeError):
+    """Welle-5-Review F6: schon ein DemoTickLoopDriver auf
+    `app_.state.demo_tick_loop_driver` registriert mit anderem
+    `run_id`. Pattern analog `_demo_setup.
+    _DemoTickLoopDriverAlreadyConfiguredError` (Welle-4b-Review-Fix
+    #13) — wir importieren NICHT, weil `_demo_setup` `app` direkt
+    importiert (Cycle-Vermeidung pro Slice-Doc §9)."""
+
+    def __init__(self, existing_run_id: str, new_run_id: str) -> None:
+        super().__init__(
+            f"DemoTickLoopDriver is already configured for run_id="
+            f"{existing_run_id!r}; refusing to overwrite with run_id="
+            f"{new_run_id!r}. Restart the app or use the same run_id "
+            "for multi-call scenarios."
+        )
 
 
 def _cast_run_repository_or_raise(app_: FastAPI) -> RunRepositoryPort:
@@ -395,7 +441,7 @@ def _alarm_id_source() -> Callable[[], str]:
     return lambda: uuid.uuid4().hex
 
 
-def _load_scenario_from_yaml(path: Path) -> Any:
+def _load_scenario_from_yaml(path: Path) -> LoadedScenario:
     """Welle-5-privater Demo-Loader: liest YAML, coerced Decimal-
     Pflichtfelder, ruft den I/O-freien Core-Loader.
 
@@ -463,7 +509,7 @@ def _coerce_decimal_fields(
     result: dict[str, Any] = {}
     for key, value in entry.items():
         if key in decimal_fields and isinstance(value, str):
-            result[key] = Decimal(value)
+            result[key] = _safe_decimal(value, key)
         else:
             result[key] = value
     return result
@@ -482,7 +528,8 @@ def _coerce_load_profile(entry: Any) -> Any:
     tick_values = result.get("tick_values")
     if isinstance(tick_values, list):
         result["tick_values"] = [
-            Decimal(value) if isinstance(value, str) else value for value in tick_values
+            _safe_decimal(value, "tick_values") if isinstance(value, str) else value
+            for value in tick_values
         ]
     return result
 
@@ -518,7 +565,7 @@ def _coerce_rule(rule: Any) -> Any:
         if isinstance(payload, Mapping):
             action_dict["payload"] = {
                 key: (
-                    Decimal(value)
+                    _safe_decimal(value, f"action.payload.{key}")
                     if key in _RULE_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
                     else value
                 )
@@ -526,3 +573,31 @@ def _coerce_rule(rule: Any) -> Any:
             }
         result["action"] = action_dict
     return result
+
+
+class _DemoScenarioDecimalCoercionError(ValueError):
+    """Welle-5-Review F3: ein YAML-Feld erwartet einen Decimal-
+    String, der Wert ist aber nicht in `Decimal(...)` konvertierbar
+    (z. B. `"100 kWh"`, `"1,00"` mit Komma, leerer String). Pre-Fix
+    propagierte bare `decimal.InvalidOperation` ohne Feld-Kontext.
+    Jetzt: typed-error mit Feldname + Wert."""
+
+    def __init__(self, field: str, value: str, source_exc: Exception) -> None:
+        super().__init__(
+            f"Demo scenario YAML field {field!r} expects a Decimal-coercible "
+            f"string; got {value!r} ({type(source_exc).__name__}: {source_exc})."
+        )
+
+
+def _safe_decimal(value: str, field: str) -> Decimal:
+    """Welle-5-Review F3: `Decimal(value)` mit typed-Error-Wrap.
+
+    Decimal raises `decimal.InvalidOperation` (subclass of
+    ArithmeticError, NOT ValueError) bei malformed strings;
+    Aufrufer wuerden das sonst als opake Exception sehen. Wir
+    propagieren mit Feldname-Kontext, damit der YAML-Editor den
+    Fehler sofort lokalisieren kann."""
+    try:
+        return Decimal(value)
+    except (InvalidOperation, TypeError) as exc:
+        raise _DemoScenarioDecimalCoercionError(field, value, exc) from exc

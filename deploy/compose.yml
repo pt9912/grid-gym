@@ -110,6 +110,14 @@ services:
       # damit `GRID_GYM_DEMO_SCENARIO_PATH` die YAML findet
       # (Slice-Doc §3.3 Decision-18-Praezisierung: keine neue
       # Topologie/Sibling/Proxy — nur Service-Konfiguration).
+      #
+      # Welle-5-Review F14: ohne diesen Mount existiert
+      # `/app/deploy/scenarios/` im Image NICHT (Dockerfile-
+      # Runtime-Stage ist auf `.venv` + `pyproject.toml`
+      # beschraenkt). Wer `docker run grid-gym-runtime:latest`
+      # ohne diesen Mount startet, bekommt einen klaren
+      # `_DemoScenarioPathNotFoundError`-Lifespan-Crash (per
+      # Welle-5-Review F5 implementiert).
       - ./scenarios:/app/deploy/scenarios:ro
     # Dockerfile-`ENTRYPOINT` startet `uvicorn` direkt (Trigger 015,
     # M2 Welle 0b: shebang-Rewrite und uv-`--no-editable` haben die

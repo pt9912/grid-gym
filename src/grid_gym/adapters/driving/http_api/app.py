@@ -103,6 +103,24 @@ _APP_DESCRIPTION: Final[str] = (
 )
 
 _DEMO_SCENARIO_ENV_VAR: Final[str] = "GRID_GYM_DEMO_SCENARIO_PATH"
+
+
+class _DemoScenarioPathNotFoundError(FileNotFoundError):
+    """Welle-5-Review F5: env-var `GRID_GYM_DEMO_SCENARIO_PATH`
+    zeigt auf eine nicht-existente Datei (Tippfehler oder fehlender
+    Volume-Mount). Fail-fast mit klarer Diagnose statt bare
+    `FileNotFoundError` aus `path.read_text()` mitten im YAML-
+    Loader."""
+
+    def __init__(self, path_str: str) -> None:
+        super().__init__(
+            f"Demo scenario YAML not found at GRID_GYM_DEMO_SCENARIO_PATH="
+            f"{path_str!r}. Check the env-var (typo?), the deploy/scenarios/"
+            "volume-mount in compose.yml, or pass --scenario explicitly via "
+            "`python -m grid_gym demo`."
+        )
+
+
 """M5-Welle-5 (Slice-Doc Decision 6): Pfad-zur-Demo-YAML-Datei.
 Wenn gesetzt, verdrahtet `_lifespan` beim Startup den
 produktiven Demo-Stack (Repository + Telemetry + Registry +
@@ -211,11 +229,25 @@ def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
     loader`` aus `pyproject.toml` ohne `app.py`-Wiederbruch
     greift.
     """
-    scenario_path_raw = os.environ.get(_DEMO_SCENARIO_ENV_VAR)
-    if scenario_path_raw is None:
+    # Welle-5-Review F11: leerer-String-Env-Var (`= ""`) gilt als
+    # nicht gesetzt (sonst Path("") → IsADirectoryError beim
+    # read_text).
+    scenario_path_raw = os.environ.get(_DEMO_SCENARIO_ENV_VAR, "").strip()
+    if not scenario_path_raw:
         return
-    if getattr(app_.state, "run_repository", None) is not None:
+    # Welle-5-Review F9: Skip-Guard auf Sentinel-Attr statt nur
+    # run_repository. Verhindert silent-overwrite vorhergehender
+    # Test-State, der run_repository geloescht hat aber andere attrs
+    # (tick_loop_registry, alarm_stream, ...) liegen liess.
+    if getattr(app_.state, "_lifespan_scenario_configured", False):
         return
+    # Welle-5-Review F5: pfad-validieren VOR lifespan-Setup. Ein
+    # Tippfehler im env-var (`/app/.../gg-demo.yml` ohne `a`) loest
+    # sonst eine bare FileNotFoundError mitten im Lifespan aus, der
+    # Container restartet im CrashLoop ohne klaren Hinweis.
+    scenario_path = Path(scenario_path_raw)
+    if not scenario_path.is_file():
+        raise _DemoScenarioPathNotFoundError(scenario_path_raw)
     # Inline-Import des Welle-5-Helpers (Slice-Doc §9 Cycle-
     # Vermeidung): `_demo_scenario_setup` selbst importiert
     # `app.py` nicht; der Inline-Import hier ist nur eine Lazy-
@@ -233,7 +265,13 @@ def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
     # `app` importiert (Cycle).
     app_.state.alarm_stream = InMemoryAlarmStream()
     app_.state.alarm_history_buffer = AlarmHistoryBuffer()
-    configure_scenario_demo_run(app_, Path(scenario_path_raw))
+    configure_scenario_demo_run(app_, scenario_path)
+    # Welle-5-Review F9: Sentinel-Attr erst NACH erfolgreichem
+    # `configure_scenario_demo_run` setzen — sonst blockt der Skip-
+    # Guard zukuenftige Retries nach einer Setup-Exception (F2
+    # macht configure_scenario_demo_run rollback-sicher, F5
+    # validiert den Pfad vor dem Setup).
+    app_.state._lifespan_scenario_configured = True
 
 
 app: Final[FastAPI] = FastAPI(

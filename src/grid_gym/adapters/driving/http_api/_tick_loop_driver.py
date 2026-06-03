@@ -24,12 +24,21 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Callable
+from typing import cast
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+from grid_gym.hexagon.ports.driving.telemetry_stream import (
+    TelemetryPoint as PortTelemetryPoint,
+)
+from grid_gym.hexagon.ports.driving.telemetry_stream import (
+    TelemetryQuality,
+    TelemetryStreamPort,
+)
 
 
 _DEFAULT_TICK_INTERVAL_S = 0.1
@@ -47,6 +56,7 @@ _logger = logging.getLogger(__name__)
 
 AlarmStreamProvider = Callable[[], AlarmStreamPort | None]
 AlarmHistoryBufferProvider = Callable[[], AlarmHistoryBuffer | None]
+TelemetryStreamProvider = Callable[[], TelemetryStreamPort | None]
 
 
 class DemoTickLoopDriver:
@@ -75,6 +85,7 @@ class DemoTickLoopDriver:
         tick_interval_s: float = _DEFAULT_TICK_INTERVAL_S,
         alarm_stream_provider: AlarmStreamProvider | None = None,
         alarm_history_buffer_provider: AlarmHistoryBufferProvider | None = None,
+        telemetry_stream_provider: TelemetryStreamProvider | None = None,
     ) -> None:
         self._tick_loop = tick_loop
         self._tick_interval_s = tick_interval_s
@@ -86,6 +97,14 @@ class DemoTickLoopDriver:
             alarm_history_buffer_provider
             if alarm_history_buffer_provider is not None
             else _none_provider
+        )
+        # Welle-5-Review F1: TickLoop-emitted_telemetry → TelemetryStream
+        # publishing. Pre-Welle-5 hatte DemoTelemetryGenerator den
+        # Stream gefuellt; Welle-5-Lifespan-Pfad wirt aber keinen
+        # Generator und die TickLoop selbst hat keinen Stream-Port
+        # (siehe TickLoopWiring). Driver publisht pro Tick.
+        self._telemetry_stream_provider: TelemetryStreamProvider = (
+            telemetry_stream_provider if telemetry_stream_provider is not None else _none_provider
         )
 
     def start(self) -> None:
@@ -167,6 +186,7 @@ class DemoTickLoopDriver:
                 continue
             result = self._tick_loop.tick()
             self._publish_emitted_alarms(result)
+            self._publish_emitted_telemetry(result)
             await asyncio.sleep(self._tick_interval_s)
 
     def _force_stop_after_failure(self) -> None:
@@ -206,6 +226,54 @@ class DemoTickLoopDriver:
                 history_buffer.append(alarm)
             if stream is not None:
                 stream.publish(alarm)
+
+    def _publish_emitted_telemetry(self, result: TickResult) -> None:
+        """Welle-5-Review F1: publish jeden `emitted_telemetry`-
+        Point auf den TelemetryStream. Pre-Welle-5 fuellte
+        `DemoTelemetryGenerator` den Stream synthetisch; der
+        Welle-5-env-var-Pfad hat aber keinen Generator wired —
+        ohne diesen Publish-Hook bleibt das Dashboard-WS leer
+        obwohl die TickLoop produktiv Telemetry-Points emittiert.
+
+        Provider-Pattern analog `_publish_emitted_alarms`: re-
+        evaluiert pro Tick, damit ein nachtraegliches
+        `configure_telemetry_stream(...)` greift. Domain-
+        `TelemetryPoint` (`Decimal`-value + `source`/`tick`-
+        Felder) wird auf Port-`TelemetryPoint` (`float`-value,
+        Subset-Schema) abgebildet.
+
+        Welle-5-Review-Folge: pro-Point try/except — eine einzelne
+        Conversion-Exception (z. B. Decimal-NaN-`float`-Cast oder
+        unbekannte Quality) darf nicht den ganzen Driver killen.
+        """
+        stream = self._telemetry_stream_provider()
+        if stream is None:
+            return
+        for point in result.emitted_telemetry:
+            try:
+                stream.publish(_to_port_telemetry_point(point))
+            except Exception:
+                _logger.exception(
+                    "Failed to publish telemetry point for run_id=%r device_id=%r",
+                    point.run_id,
+                    point.device_id,
+                )
+
+
+def _to_port_telemetry_point(point: DomainTelemetryPoint) -> PortTelemetryPoint:
+    """Welle-5-Review F1: Domain → Port-TelemetryPoint-Adapter.
+    Domain hat `value: Decimal` + `tick` + `source`; Port hat
+    `value: float` + `simulation_time_ms` (Subset)."""
+    return PortTelemetryPoint(
+        run_id=point.run_id,
+        device_id=point.device_id,
+        metric=point.metric,
+        value=float(point.value),
+        unit=point.unit,
+        simulation_time_ms=point.simulation_time,
+        quality=cast(TelemetryQuality, point.quality.value),
+        sequence=point.sequence,
+    )
 
 
 def _none_provider() -> None:
