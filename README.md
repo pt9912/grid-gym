@@ -110,72 +110,31 @@ logic.
 
 ## Status
 
-As of **2026-06-02**:
+As of **2026-06-03**:
 
 - **M1 — Tick-Loop Spine** · `Done`
 - **M2 — Device Models** · `Done`
-- **M3 — Faults + Multi-Agent + Observability** · `Done`
-  (six ADRs `Accepted`)
-- **M4 — Protocol Adapters** · `Done`
-  (six ADRs 0030..0035 `Accepted` 2026-06-01)
-  - Wave 0 — slice plan + trigger triage · `Done`
-  - Wave 1 — `DeviceProtocolPort` foundation
-    (ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md)
-    `Provisional`) · `Done`
-  - Wave 2 — MQTT adapter
-    (ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Wave 3 — Modbus-TCP adapter
-    (ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Wave 4 — OPC-UA adapter
-    (ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Wave 5a — DNP3 adapter (spike)
-    (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Wave 5b — IEC 61850 adapter (spike, GPL-isolated)
-    (ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Wave 6a — cross-adapter hardening (OTel-span-wrap +
-    AC-ADAPTER-LIGHTWEIGHT planted-violator test +
-    `strict_bytes`) · `Done`
-  - Wave 6b — IEC-61850 license/smoke hardening · `Done`
-  - Wave 7 — closure · `Done`
-- **M5 — UI + Demo** · `In Progress` 2026-06-01
-  - Wave 0 — slice plan + trigger triage · `Done`
-  - Wave 1 — HTTP API surface + ADR 0036/0037 sharpening · `Done`
-  - Wave 2 — UI foundation (Jinja2 + vendored HTMX + Chart.js + StaticFiles mount + 2 page routes) · `Done`
-  - Wave 3 — Live-Telemetry-Dashboard (NEW `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe + Chart.js time-series + 6-state Quality-Marker + ADR 0038) · `Done`
-  - Wave 4a — Replay-Controls + TickLoop-Wiring (NEW `RunStatus` + RunRepository extension + TickLoop-Control-Surface + `request(action)` + 2 endpoint wirings + `TickLoopRegistry` + `DemoTickLoopDriver` + control UI + ADR 0039) · `Done`
-  - Wave 4b — Alarms (NEW unified `Alarm` domain type + mapper family in `core/simulation/alarm_mappers.py` + `TickResult.emitted_alarms` + TickLoop drain hook + NEW `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + REST + WS endpoints + alarms UI page + ADR 0040; resolves ADR-0014-§6 forward pointer "AlarmSinkPort kommt mit M3" driving-side anteil) · `Done`
-  - Wave 5 — Demo pipeline (canonical demo YAML + `make demo` + `python -m grid_gym demo` + lifespan demo path via `GRID_GYM_DEMO_SCENARIO_PATH` + integration smoke) · `In Progress` 2026-06-02 (slice doc `155c421` — `GG-DEMO-001..005` + `GG-DEMO-007` eng inkludiert; `GG-DEMO-006` Fault-Injection + `GG-DEMO-008` Abnahmedoku deferiert auf Welle 6)
+- **M3 — Faults + Multi-Agent + Observability** · `Done` (six ADRs `Accepted`)
+- **M4 — Protocol Adapters** · `Done` (six ADRs 0030..0035 `Accepted` 2026-06-01)
+- **M5 — UI + Demo** · `In Progress` since 2026-06-01 — active wave: **5 (Demo pipeline)**. Wave status table: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance (state after M5 Wave 4b closure 2026-06-02):**
-~1696 unit tests + 51 integration tests passed + 4 skipped (1681
-post-C3 + 15 from the review follow-up). The
-4 skipped tests are the **2c mock-only fallback** for the
-IEC-61850 in-process `IedServer` smoke (ADR 0035 §2.5;
-trigger 009). Per-wave test increments + rationale live
-canonically in the slice docs under
+**Test balance** (2026-06-02, post M5 Wave 4b closure): 1681 unit
++ 51 integration passed + 4 skipped. The 4 skipped tests are the
+**2c mock-only fallback** for the IEC-61850 in-process `IedServer`
+smoke (ADR 0035 §2.5; trigger 009). Per-wave test increments live
+in the slice docs under
 [`docs/plan/planning/`](docs/plan/planning/).
 
-**`make gates`** is 10-stage and cache-free green without override:
-lint, format-check, `mypy --strict`, arch-check
-(20 contracts: 6 `lint-imports` + 14 `tools/arch_check.py`),
-test-unit, coverage (90 % line per module / 85 % critical),
-critical-coverage, dep-audit, `# noqa` ban, `spdx-check`.
+**`make gates`** is 10-stage cache-free green without override:
+lint, format-check, `mypy --strict`, arch-check (20 contracts:
+6 `lint-imports` + 14 `tools/arch_check.py`), test-unit, coverage
+(90 % line per module / 85 % critical), critical-coverage,
+dep-audit, `# noqa` ban, `spdx-check`.
 
-For per-wave commits, ADR pointers, and detail breakdown see the
-slice plans under [`docs/plan/planning/`](docs/plan/planning/) and
-the ADR index under
-[`docs/plan/adr/README.md`](docs/plan/adr/README.md).
-
-**AI-coding-agent briefing:** [`AGENTS.md`](AGENTS.md) — hard rules
-(Docker-only, `# noqa` ban, `git mv` two-commit pattern,
-Wave-Self-Close commit convention, language-/milestone-free
-architecture spec).
+For ADR pointers see
+[`docs/plan/adr/README.md`](docs/plan/adr/README.md). For
+AI-coding-agent briefing see [`AGENTS.md`](AGENTS.md).
 
 ## Build, Test, Lint
 

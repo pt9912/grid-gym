@@ -112,93 +112,31 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-02**:
+Stand **2026-06-03**:
 
 - **M1 — Tick-Loop-Spine** · `Done`
 - **M2 — Geraetemodelle** · `Done`
-- **M3 — Faults + Multi-Agent + Observability** · `Done`
-  (sechs ADRs `Accepted`)
-- **M4 — Protokolladapter** · `Done`
-  (sechs ADRs 0030..0035 `Accepted` 2026-06-01)
-  - Welle 0 — Slice-Plan + Trigger-Triage · `Done`
-  - Welle 1 — `DeviceProtocolPort`-Foundation
-    (ADR [0030](docs/plan/adr/0030-device-protocol-port-surface.md)
-    `Provisional`) · `Done`
-  - Welle 2 — MQTT-Adapter
-    (ADR [0031](docs/plan/adr/0031-mqtt-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Welle 3 — Modbus-TCP-Adapter
-    (ADR [0032](docs/plan/adr/0032-modbus-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Welle 4 — OPC-UA-Adapter
-    (ADR [0033](docs/plan/adr/0033-opcua-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Welle 5a — DNP3-Adapter (Spike)
-    (ADR [0034](docs/plan/adr/0034-dnp3-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Welle 5b — IEC-61850-Adapter (Spike, GPL-isoliert)
-    (ADR [0035](docs/plan/adr/0035-iec61850-adapter-profile.md)
-    `Provisional`) · `Done`
-  - Welle 6a — Cross-Adapter-Hardening (OTel-Span-Wrap +
-    AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Test +
-    `strict_bytes`) · `Done`
-  - Welle 6b — IEC-61850-Lizenz-und-Smoke-Hardening · `Done`
-  - Welle 7 — Closure · `Done`
-- **M5 — UI + Demo** · `In Progress` 2026-06-01
-  - Welle 0 — Slice-Plan + Trigger-Triage · `Done`
-  - Welle 1 — HTTP-API-Surface + ADR-0036/0037-Schaerfung · `Done`
-  - Welle 2 — UI-Foundation (Jinja2 + vendored HTMX + Chart.js
-    + StaticFiles-Mount + 2 Page-Routes) · `Done`
-  - Welle 3 — Live-Telemetry-Dashboard (NEU
-    `TelemetryStreamPort` + `InMemoryTelemetryStream` +
-    WS-Subscribe + Chart.js-Time-Series + 6-Zustands-
-    Quality-Marker + ADR 0038) · `Done`
-  - Welle 4a — Replay-Controls + TickLoop-Wiring (NEU
-    `RunStatus` + RunRepository-Extension + TickLoop-
-    Control-Surface + `request(action)` + 2 Endpoint-
-    Wirings + `TickLoopRegistry` + `DemoTickLoopDriver` +
-    Control-UI + ADR 0039) · `Done`
-  - Welle 4b — Alarme (NEU Unified `Alarm`-Domain-Type +
-    Mapper-Familie in `core/simulation/alarm_mappers.py` +
-    `TickResult.emitted_alarms` + TickLoop-Drain-Hook +
-    NEU `AlarmStreamPort` + `InMemoryAlarmStream` +
-    `AlarmHistoryBuffer` + REST + WS Endpoints + Alarms-
-    UI-Page + ADR 0040; loest ADR-0014-§6-Forward-Pointer
-    „AlarmSinkPort kommt mit M3" Driving-Side-Anteil) ·
-    `Done`
-  - Welle 5 — Demo-Pipeline (kanonisches Demo-YAML +
-    `make demo` + `python -m grid_gym demo` +
-    Lifespan-Demo-Pfad via `GRID_GYM_DEMO_SCENARIO_PATH`
-    + Integration-Smoke) ·
-    `In Progress` 2026-06-02 (Slice-Doc `155c421` —
-    `GG-DEMO-001..005` + `GG-DEMO-007` eng
-    inkludiert; `GG-DEMO-006` Fault-Injection +
-    `GG-DEMO-008` Abnahmedoku deferiert auf Welle 6)
+- **M3 — Faults + Multi-Agent + Observability** · `Done` (sechs ADRs `Accepted`)
+- **M4 — Protokolladapter** · `Done` (sechs ADRs 0030..0035 `Accepted` 2026-06-01)
+- **M5 — UI + Demo** · `In Progress` seit 2026-06-01 — aktive Welle: **5 (Demo-Pipeline)**. Welle-Status-Tabelle: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz (Stand 2026-06-02 nach M5-Welle-4b-Closure + Review-Folge):**
-~1696 Unit-Tests + 51 Integration-Tests passed + 4 skipped
-(1681 post-C3 + 15 aus der Review-Folge).
-Die 4 skipped Tests sind der **2c-Mock-only-Fallback** fuer
-den IEC-61850-In-Process-`IedServer`-Smoke (ADR 0035 §2.5;
-Trigger 009). Pro-Welle-Test-Inkremente + Begruendungen
-leben kanonisch in den Slice-Docs unter
+**Testbilanz** (2026-06-02, nach M5-Welle-4b-Closure): 1681 Unit-
+Tests + 51 Integration-Tests passed + 4 skipped. Die 4 skipped
+Tests sind der **2c-Mock-only-Fallback** fuer den IEC-61850-In-
+Process-`IedServer`-Smoke (ADR 0035 §2.5; Trigger 009). Pro-
+Welle-Test-Inkremente leben in den Slice-Docs unter
 [`docs/plan/planning/`](docs/plan/planning/).
 
-**`make gates`** ist 10-stufig und cache-frei gruen ohne Override:
-Lint, Format-Check, `mypy --strict`, Arch-Check
-(20 Contracts: 6 `lint-imports` + 14 `tools/arch_check.py`),
-Test-Unit, Coverage (90 % Line pro Modul / 85 % kritisch),
-Critical-Coverage, Dep-Audit, `# noqa`-Verbot, `spdx-check`.
+**`make gates`** ist 10-stufig cache-frei gruen ohne Override:
+Lint, Format-Check, `mypy --strict`, Arch-Check (20 Contracts:
+6 `lint-imports` + 14 `tools/arch_check.py`), Test-Unit, Coverage
+(90 % Line pro Modul / 85 % kritisch), Critical-Coverage,
+Dep-Audit, `# noqa`-Verbot, `spdx-check`.
 
-Per-Wellen-Commits, ADR-Pointer und Detail-Aufschluesselung in den
-Slice-Plaenen unter [`docs/plan/planning/`](docs/plan/planning/) und
-im ADR-Index unter
-[`docs/plan/adr/README.md`](docs/plan/adr/README.md).
-
-**Briefing fuer AI-Coding-Agenten:** [`AGENTS.md`](AGENTS.md) — harte
-Regeln (Docker-only, `# noqa`-Verbot, `git mv`-Zwei-Commit-Pattern,
-Wave-Self-Close-Konvention, sprach-/meilensteinfreie Architektur-Spec).
+ADR-Pointer im
+[`docs/plan/adr/README.md`](docs/plan/adr/README.md). Briefing
+fuer AI-Coding-Agenten: [`AGENTS.md`](AGENTS.md).
 
 ## Build, Test, Lint
 
