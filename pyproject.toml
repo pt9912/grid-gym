@@ -443,6 +443,18 @@ ignore_missing_imports = true
 module = "pyiec61850.*"
 ignore_missing_imports = true
 
+# PyYAML 6.x ist ueber `yaml.safe_load` produktiv im
+# `_demo_scenario_setup.py`-Demo-Loader (M5 Welle 5) und im
+# Welle-6c-Test-seitigen `_yaml_scenario_loader.py`. PyYAML
+# liefert keinen py.typed-Marker; `types-PyYAML` ist heute keine
+# pyproject-Dependency. Pattern parallel zu den `dnp3py`/
+# `dnp3_outstation`/`pyiec61850`-Overrides: `ignore_missing_
+# imports` deaktiviert die `import-untyped`-Warnung, ohne dass
+# wir einen separaten Stubs-Pin pflegen muessen.
+[[tool.mypy.overrides]]
+module = "yaml.*"
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------------------
 # import-linter (ADR 0002 §A-1, AC-CORE-NO-ADAPTERS bis AC-NO-IO-MOD)
 # Layer- und Forbidden-Contracts; ergaenzt durch tools/arch_check.py
@@ -540,11 +552,19 @@ forbidden_modules = [
 # `_tick_loop_registry.py` ist der adapter-interne Multi-Run-
 # Lookup. Andere Adapter-Pakete duerfen `simulation` weiterhin
 # nicht touchen.
+#
+# M5-Welle-5 (Slice-Doc Decision 6): scenario-getriebener Demo-
+# Lifespan-Pfad braucht zusaetzlich `load_scenario` +
+# `build_tick_loop` aus `hexagon.core.scenario.loader`. Pattern
+# parallel zu `_demo_setup` — beide sind Bootstrap-Module der
+# HTTP-Adapter-Komposition; andere Adapter-Pakete bleiben ohne
+# `scenario`-Bridge.
 ignore_imports = [
     "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.scheduler",
     "grid_gym.adapters.driving.http_api._tick_loop_registry -> grid_gym.hexagon.core.simulation.tick_loop",
     "grid_gym.adapters.driving.http_api._tick_loop_driver -> grid_gym.hexagon.core.simulation.tick_loop",
+    "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.scenario.loader",
 ]
 
 [[tool.importlinter.contracts]]

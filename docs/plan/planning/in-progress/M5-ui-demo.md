@@ -469,14 +469,24 @@ oder Welle 6).
   Postgres-Sibling fuer Replay-Telemetry-Speicher
   (`GG-PERSIST-001`-Stub aus M3).
 - [ ] **NEU Demo-Szenario-YAML** unter
-  `tests/integration/scenarios/demo.yaml` (oder
-  `deploy/demo-scenario.yaml`): Geraete-Konfiguration,
-  Initial-State, Tick-Anzahl.
+  `deploy/scenarios/gg-demo.yaml` (Welle-5-C2-
+  Realization 2026-06-03: range-neutraler Filename, der
+  gegen `tests/integration/scenarios/mvp_demo.yaml`/
+  `agents_demo.yaml`/`fault_demo.yaml` disambiguiert,
+  ohne eine bestimmte `GG-DEMO`-Range-Coverage zu
+  versprechen — Welle 6 ergaenzt 006-Substanz im selben
+  File): Geraete-Konfiguration, Initial-State, Tick-
+  Anzahl.
 - [ ] **NEU `make demo` Makefile-Target** (oder
   Aequivalent): `docker compose up` + Healthcheck +
   Szenario-Start + Live-Telemetry-Anzeige.
-- [ ] **NEU `docs/user/demo.md`** mit Abnahmereihenfolge
-  (`GG-DEMO-008`).
+- [ ] **NEU `docs/user/gg-demo-008-abnahme.md`** mit
+  Abnahmereihenfolge (`GG-DEMO-008`) — **Welle-6-Material**
+  (Welle-5-C2-Folge-Entscheid 2026-06-03: Doku-Lieferung
+  verschoben, damit Filename + Substanz die volle
+  Kennung-Range konsistent adressieren, sobald
+  `GG-DEMO-006`-Fault-Injection-Section mit-dokumentiert
+  werden kann).
 - [ ] **GG-DEMO-006 (Fault-Injection in Demo)** —
   optional in Welle 5 ODER in Welle 6 (mit `GG-UI-007`-
   Form).

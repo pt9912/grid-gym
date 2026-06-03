@@ -169,10 +169,11 @@ Stand **2026-06-02**:
   - Welle 5 — Demo-Pipeline (kanonisches Demo-YAML +
     `make demo` + `python -m grid_gym demo` +
     Lifespan-Demo-Pfad via `GRID_GYM_DEMO_SCENARIO_PATH`
-    + `docs/user/demo.md` + Integration-Smoke) ·
+    + Integration-Smoke) ·
     `In Progress` 2026-06-02 (Slice-Doc `155c421` —
-    `GG-DEMO-001..005+008` + `GG-DEMO-007` eng
-    inkludiert; `GG-DEMO-006` deferiert auf Welle 6)
+    `GG-DEMO-001..005` + `GG-DEMO-007` eng
+    inkludiert; `GG-DEMO-006` Fault-Injection +
+    `GG-DEMO-008` Abnahmedoku deferiert auf Welle 6)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
 **Testbilanz (Stand 2026-06-02 nach M5-Welle-4b-Closure + Review-Folge):**

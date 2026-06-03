@@ -108,10 +108,17 @@ statt `configure_demo_run` aufruft.
 Welle 5 liefert produktiv:
 
 1. **Kanonisches Demo-Szenario** unter
-   `deploy/scenarios/demo.yaml` (oder analog), das
-   alle 5 MVP-Devices + 1 LoadProfile + 1 LoadEvent
-   + 1 RuleBasedAgent ueber das bestehende YAML-
-   Schema konfiguriert. Determinismus-Pflicht:
+   `deploy/scenarios/gg-demo.yaml` (C2-Realization
+   2026-06-03: range-neutraler Filename mit
+   `gg-demo`-Praefix disambiguiert gegen
+   `tests/integration/scenarios/mvp_demo.yaml`/
+   `agents_demo.yaml`/`fault_demo.yaml`, ohne eine
+   bestimmte `GG-DEMO`-Range-Coverage zu versprechen
+   — Welle 5 deckt 001..005 + 007 ab, Welle 6 wird
+   006-Substanz im selben YAML ergaenzen), das alle
+   5 MVP-Devices + 1 LoadProfile + 1 LoadEvent + 1
+   RuleBasedAgent ueber das bestehende YAML-Schema
+   konfiguriert. Determinismus-Pflicht:
    `seed=42` (analog `_demo_setup.py`-Default) +
    reproduzierbarer canonical_json-Hash ueber
    N Ticks.
@@ -133,11 +140,7 @@ Welle 5 liefert produktiv:
    Surface — Modul-Form, die hinter `make demo`
    den eigentlichen Uvicorn-Start macht.
    `__main__.py`-Entry-Point unter `src/grid_gym/`.
-5. **`docs/user/demo.md`** mit Abnahmereihenfolge
-   (`GG-DEMO-008`): Start → Live-Telemetry pruefen
-   → Control-Pause/Resume pruefen → Alarms ggf.
-   ueber Fault-Override triggern → Stop.
-6. **Integration-Smoke-Test** unter
+5. **Integration-Smoke-Test** unter
    `tests/integration/test_m5_welle_5_demo_smoke.py`,
    der den Lifespan-Demo-Pfad ohne Container
    exerciert (TestClient gegen die App mit
@@ -163,6 +166,17 @@ Welle 5 liefert **explizit nicht**:
   Snapshot-Resume in `make demo`.
 - **`GG-DEMO-006` Fault-Injection in Demo** —
   Welle 6, gekoppelt an `GG-UI-007`-Form-Substanz.
+- **`GG-DEMO-008` Abnahmedoku unter
+  `docs/user/...`** — Welle-5-C2-Folge-Entscheid
+  (2026-06-03): die Abnahmedoku verschiebt sich auf
+  Welle 6, damit Filename + Substanz konsistent die
+  volle Kennung-Range adressieren koennen (heute
+  fehlt `GG-DEMO-006` Fault-Injection-Sub-Section,
+  und ein Welle-5-Doku mit „Forward-Pointer" wuerde
+  die Range-Versprechung unterlaufen). Welle 5
+  liefert `make demo` produktiv; die formale
+  `GG-DEMO-008`-Erfuellung erfolgt mit Welle 6
+  ueber `docs/user/gg-demo-008-abnahme.md`.
 - **`GG-UI-006/007/008` Sub-Wellen-UI-Features**
   (Geraete-Grafik / Fault-Form / Simulationszustaende-
   Dashboard) → Welle 6.
@@ -192,8 +206,8 @@ Welle 5 liefert **explizit nicht**:
 | Adapters/driven | — | Postgres-Replay-Stub bleibt M3-Welle-6c |
 | Adapters/driving | Lifespan-Demo-Pfad-Erweiterung (env-var-getrieben) | Multi-Run-Driver-Registry |
 | UI | — (Welle-4b-Pages reichen) | Geraete-Grafik, Fault-Form, Sim-Zustaende-Dashboard |
-| Konfiguration / Deploy | `deploy/scenarios/demo.yaml` + `make demo`-Target + `python -m grid_gym demo` | Compose-Topologie-Aenderung |
-| Doku | `docs/user/demo.md` | — |
+| Konfiguration / Deploy | `deploy/scenarios/gg-demo.yaml` + `make demo`-Target + `python -m grid_gym demo` | Compose-Topologie-Aenderung |
+| Doku | — | `docs/user/gg-demo-008-abnahme.md` → Welle 6 (Range-Konsistenz mit GG-DEMO-006-Verschiebung) |
 | Tests | 1 Integration-Smoke (Lifespan-Demo-Pfad) | Container-Smoke in CI (M6) |
 
 ---
@@ -203,7 +217,7 @@ Welle 5 liefert **explizit nicht**:
 ### 3.1 Decision 5 (Demo-Szenario-Inhalt) — final fixiert
 
 **Decision:** Das kanonische Demo-Szenario
-(`deploy/scenarios/demo.yaml`) konfiguriert **alle
+(`deploy/scenarios/gg-demo.yaml`) konfiguriert **alle
 5 MVP-Devices + 1 RuleBasedAgent + 1
 LoadProfile + 1 LoadEvent** und einen seed-
 deterministischen Run.
@@ -297,7 +311,7 @@ Surface (Modul-Form) hinter dem Make-Target.
 - Wartet auf Healthcheck (Runtime + UI
   erreichbar unter `http://localhost:8000`).
 - Setzt `GRID_GYM_DEMO_SCENARIO_PATH=/app/deploy/
-  scenarios/demo.yaml` in der Runtime-Container-
+  scenarios/gg-demo.yaml` in der Runtime-Container-
   Environment, sodass der Lifespan den Scenario-
   Loader-Pfad statt `configure_demo_run` nutzt.
 - SLA: lokal in **unter 30s** bereit
@@ -447,7 +461,7 @@ nachgereicht werden — heute kein Anlass.
 
 **Code-Merge** mit:
 
-- NEU `deploy/scenarios/demo.yaml` (kanonisches
+- NEU `deploy/scenarios/gg-demo.yaml` (kanonisches
   Demo-Szenario per Decision 5).
 - NEU `src/grid_gym/__main__.py` mit `argparse`-
   Subcommand-Dispatch (Demo als erstes
@@ -460,8 +474,6 @@ nachgereicht werden — heute kein Anlass.
   Scenario) bleibt unveraendert.
 - NEU `make demo`-Target im Makefile (inkl.
   Healthcheck-Wartedauer + Container-Cleanup).
-- NEU `docs/user/demo.md` mit Abnahmereihenfolge
-  (`GG-DEMO-008`).
 - NEU `tests/integration/test_m5_welle_5_demo_smoke.py`
   (Lifespan-Demo-Pfad-Smoke ohne Container,
   TestClient gegen die App mit
@@ -492,12 +504,11 @@ nachgereicht werden — heute kein Anlass.
 
 **Welle-5-NEU (geschrieben in C2):**
 
-- `deploy/scenarios/demo.yaml` — kanonisches
+- `deploy/scenarios/gg-demo.yaml` — kanonisches
   Demo-Szenario.
 - `src/grid_gym/__main__.py` — Modul-Form
   Entry-Point.
 - `Makefile` — neues `demo`-Target.
-- `docs/user/demo.md` — Abnahmereihenfolge.
 - `tests/integration/test_m5_welle_5_demo_smoke.py`
   — Lifespan-Demo-Pfad-Smoke.
 
@@ -551,8 +562,11 @@ nachgereicht werden — heute kein Anlass.
 - `GG-DEMO-005` (Demo-Inhalt: alle 5 MVP-
   Devices + Agent).
 - `GG-DEMO-007` (Agent in Demo, eng).
-- `GG-DEMO-008` (Abnahmereihenfolge in
-  `docs/user/demo.md`).
+- `GG-DEMO-008` — bleibt **offen bis Welle 6**
+  (Welle-5-Anti-Scope §1.3: Abnahmedoku
+  `gg-demo-008-abnahme.md` folgt mit Welle 6, wenn
+  GG-DEMO-006-Fault-Injection-Section
+  mit-dokumentiert werden kann).
 
 ---
 
@@ -625,7 +639,7 @@ dokumentiert.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **NEU `deploy/scenarios/demo.yaml`** mit
+- [ ] **NEU `deploy/scenarios/gg-demo.yaml`** mit
   kanonischem Demo-Setup per Decision 5
   (5 MVP-Devices + 1 LoadProfile + 1 LoadEvent
   + 1 RuleBasedAgent; `seed=42`).
@@ -640,8 +654,6 @@ dokumentiert.
 - [ ] **NEU `make demo`-Target** im Makefile
   (Container-Start + Healthcheck + UI-URL-Hinweis +
   Cleanup-Symmetrie).
-- [ ] **NEU `docs/user/demo.md`** mit
-  Abnahmereihenfolge (`GG-DEMO-008`).
 - [ ] **NEU `tests/integration/
   test_m5_welle_5_demo_smoke.py`** (Lifespan-
   Demo-Pfad-Smoke ohne Container; Determinismus-
@@ -658,9 +670,10 @@ dokumentiert.
 - [ ] **`make demo`** lokal in unter 30s bereit
   (manuelle Verifikation; CI-Pflicht-Wirkung erst
   M6).
-- [ ] **`GG-DEMO-001..005 + 007 + 008`**
-  erfuellt; `GG-DEMO-006` explizit als Welle-6-
-  Anti-Scope dokumentiert.
+- [ ] **`GG-DEMO-001..005 + 007`** erfuellt;
+  `GG-DEMO-006` (Fault-Injection) und `GG-DEMO-008`
+  (Abnahmedoku) explizit als Welle-6-Anti-Scope
+  dokumentiert (§1.3 Anti-Scope-Block).
 - [ ] **`M5-ui-demo.md §3 Welle 5`** Liefer-
   Hashes ergaenzt + Welle-6-Marker gesetzt.
 - [ ] **`in-progress/README.md`** Welle-5-

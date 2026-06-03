@@ -58,14 +58,21 @@ das Format; Welle 4a ergaenzt 409 (Invalid-Transition) und 503
 
 from __future__ import annotations
 
+import os
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated, Final
 
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
 
+from grid_gym.adapters.driven.alarm_stream_inmemory import (
+    AlarmHistoryBuffer,
+    InMemoryAlarmStream,
+)
+from grid_gym.adapters.driven.persistence_inmemory import InMemoryRunRepository
 from grid_gym.adapters.driven.telemetry_stream_inmemory import (
     DemoTelemetryGenerator,
     InMemoryTelemetryStream,
@@ -94,6 +101,15 @@ _APP_DESCRIPTION: Final[str] = (
     "Liefert `/health` als Liveness-Probe und `/runs` als Stub-Endpoint "
     "fuer Lauf-Erzeugung. Persistenz folgt in Welle 6b."
 )
+
+_DEMO_SCENARIO_ENV_VAR: Final[str] = "GRID_GYM_DEMO_SCENARIO_PATH"
+"""M5-Welle-5 (Slice-Doc Decision 6): Pfad-zur-Demo-YAML-Datei.
+Wenn gesetzt, verdrahtet `_lifespan` beim Startup den
+produktiven Demo-Stack (Repository + Telemetry + Registry +
+Alarm + TickLoop ueber `configure_scenario_demo_run`). Wenn
+ungesetzt, ist der Lifespan ein no-op fuer Tests, die ihre
+Komponenten ueber `configure_*` selbst injizieren (Welle-1..4b-
+Pattern)."""
 
 
 class HealthResponse(BaseModel):
@@ -147,9 +163,16 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
     Driver-Task; bei Shutdown sauberes Cancel + RunStatus →
     `completed` Update durch den ``stop()``-Pfad des Drivers.
 
+    Welle 5 (Slice-Doc Decision 6): wenn die env-var
+    ``GRID_GYM_DEMO_SCENARIO_PATH`` gesetzt ist UND der App-State
+    noch leer ist (Test-Pfade haben ihre Komponenten bereits
+    injiziert), verdrahtet der Lifespan den produktiven Demo-
+    Stack ueber `_demo_scenario_setup.configure_scenario_demo_run`.
+
     Tests ohne die jeweiligen Demo-Komponenten bekommen einen
     no-op Lifespan.
     """
+    _configure_scenario_demo_from_env_if_requested(app_)
     generator = getattr(app_.state, "demo_telemetry_generator", None)
     stream = getattr(app_.state, "telemetry_stream", None)
     if isinstance(generator, DemoTelemetryGenerator) and isinstance(
@@ -166,6 +189,51 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
             await driver.stop()
         if isinstance(generator, DemoTelemetryGenerator):
             await generator.stop()
+
+
+def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
+    """Welle-5-Lifespan-Branch (Slice-Doc Decision 6): scenario-
+    getriebener Demo-Setup nur, wenn die env-var
+    ``GRID_GYM_DEMO_SCENARIO_PATH`` gesetzt ist UND noch nichts
+    konfiguriert wurde.
+
+    Test-Pfade (Welle 1..4b Smoke + Unit) rufen die
+    ``configure_*``-Funktionen vor ``TestClient(app)`` explizit;
+    `app.state.run_repository` ist dann bereits gesetzt und der
+    Lifespan macht hier no-op. Production-Container und
+    `python -m grid_gym demo` setzen die env-var und treffen
+    `app.state` leer an — der Lifespan verdrahtet den vollen
+    Stack (Repository + Telemetry + Registry + Alarm + Scenario-
+    TickLoop) idempotent.
+
+    Import ist lokal (statt Modul-Top), damit der Import-Linter-
+    Bridge fuer ``_demo_scenario_setup → hexagon.core.scenario.
+    loader`` aus `pyproject.toml` ohne `app.py`-Wiederbruch
+    greift.
+    """
+    scenario_path_raw = os.environ.get(_DEMO_SCENARIO_ENV_VAR)
+    if scenario_path_raw is None:
+        return
+    if getattr(app_.state, "run_repository", None) is not None:
+        return
+    # Inline-Import des Welle-5-Helpers (Slice-Doc §9 Cycle-
+    # Vermeidung): `_demo_scenario_setup` selbst importiert
+    # `app.py` nicht; der Inline-Import hier ist nur eine Lazy-
+    # Optimierung, damit Tests ohne env-var keinen YAML-Helper
+    # initialisieren.
+    from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
+        configure_scenario_demo_run,
+    )
+
+    configure_run_repository(InMemoryRunRepository())
+    configure_telemetry_stream(InMemoryTelemetryStream())
+    configure_tick_loop_registry(TickLoopRegistry())
+    # `app.state.alarm_*` direkt gesetzt statt ueber
+    # `_alarm_setup.configure_alarm_stream`, weil `_alarm_setup`
+    # `app` importiert (Cycle).
+    app_.state.alarm_stream = InMemoryAlarmStream()
+    app_.state.alarm_history_buffer = AlarmHistoryBuffer()
+    configure_scenario_demo_run(app_, Path(scenario_path_raw))
 
 
 app: Final[FastAPI] = FastAPI(

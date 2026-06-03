@@ -1,0 +1,412 @@
+"""M5-Welle-5 Scenario-getriebener Demo-Setup (Decision 6 +
+Slice-Doc-§3 Decisions 5/6/18).
+
+Welle-5-Schwester zu `_demo_setup.py`: laedt ein YAML-Scenario
+(`GRID_GYM_DEMO_SCENARIO_PATH`-getrieben), kanonisiert es ueber
+den I/O-freien `hexagon.core.scenario.loader.load_scenario` und
+baut einen produktiven `TickLoop` ueber `build_tick_loop`. Der
+Lifespan (`app.py`) ruft `configure_scenario_demo_run(app_,
+scenario_path)` an Stelle von `configure_demo_run`, wenn die
+env-var gesetzt ist.
+
+Privater YAML-Loader: `_coerce_demo_yaml_mapping` macht
+Schema-bewusst `str → Decimal` fuer die Demo-Pflichtfelder.
+Pattern ist eine kompakte Variante von
+`tests/integration/_yaml_scenario_loader.py` (Welle-6c-Test-
+Helper) — Welle 5 hebt **keinen** generischen YAML-Adapter nach
+`adapters/driven/scenario_yaml/` (Decision 18 + Slice-Doc §4 C1-
+Verzicht); der minimale lokale Coercer reicht fuer Demo-Pflicht.
+Ein zukuenftiger produktiver YAML-Adapter (Welle 6c+/M6) ersetzt
+sowohl diesen Coercer als auch den Test-Loader.
+
+Cycle-Vermeidung (arch_check AC-NO-CYCLES): das Modul nimmt
+`app_: FastAPI` als ersten Parameter — kein Modul-Top-Level-
+Import aus `app.py`, kein Re-Use der `app`-bezogenen Helfer in
+`_demo_setup`. `_DemoSimulationClock` und die Alarm-Provider-
+Closures sind lokal dupliziert (klein); `_APP_VERSION` ist hier
+gepinnt und mit `app._APP_VERSION` per Konvention synchron zu
+halten. Welle-4a-Pfad (`_demo_setup`) bleibt fuer Welle-1..4b-
+Tests unangetastet, weil ihn `app.py` nicht importiert.
+
+Komposition-Root-Hinweis: importiert `load_scenario` +
+`build_tick_loop` + `TickLoopWiring` aus
+`hexagon.core.scenario.loader` (per Welle-5-Bridge im
+`AC-ADAPTER-PURE`-Block in `pyproject.toml`).
+"""
+
+from __future__ import annotations
+
+import uuid
+from collections.abc import Callable, Mapping
+from decimal import Decimal
+from pathlib import Path
+from typing import Any, Final, cast
+
+import yaml
+from fastapi import FastAPI
+
+from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
+from grid_gym.adapters.driving.http_api._dependencies import (
+    _RunRepositoryNotConfiguredError,
+)
+from grid_gym.adapters.driving.http_api._tick_loop_driver import (
+    DemoTickLoopDriver,
+)
+from grid_gym.adapters.driving.http_api._tick_loop_registry import (
+    TickLoopRegistry,
+    _TickLoopRegistryNotConfiguredError,
+)
+from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.scenario.loader import (
+    TickLoopWiring,
+    build_tick_loop,
+    load_scenario,
+)
+from grid_gym.hexagon.ports.driven.clock import SimulationTime
+from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+
+
+_DEMO_RUN_ID: Final[str] = "demo-run-0001"
+"""Welle-4a-/-5 stabile Demo-Run-ID. Symmetrie zu
+`_demo_setup._DEMO_RUN_ID`, damit `templates/navigation.html`
+und produktive UI-Bookmarks ueber beide Pfade konsistent
+sind."""
+
+
+_APP_VERSION: Final[str] = "0.1.0"
+"""Welle-5-Pin gegen `app._APP_VERSION`. Bewusste Duplikation
+zur Cycle-Vermeidung — `app.py` importiert dieses Modul, daher
+darf dieses Modul nicht aus `app.py` lesen. Pflege: Sync per
+Code-Review (zwei Worte; ein TODO im Slice-Doc §9 verankert
+ein Verschmelzen zu `_version.py` als Welle-6+ Cleanup)."""
+
+
+_DEFAULT_TICK_INTERVAL_S: Final[float] = 0.1
+"""Welle-5-Default: 100ms zwischen Wall-Clock-Ticks. Entkoppelt
+vom Scenario-`simulation.tick_ms`, damit ein Stunden-Profil
+(`tick_ms=3600000`) nicht eine Stunde Wall-Clock pro Tick
+bedeutet. Aequivalent zum `DemoTickLoopDriver._DEFAULT_TICK_
+INTERVAL_S` aus Welle 4a."""
+
+
+_DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
+    {
+        "rated_power_kw",
+        "capacity_kwh",
+        "initial_soc_pct",
+        "min_soc_pct",
+        "max_soc_pct",
+        "max_charge_kw",
+        "max_discharge_kw",
+        "charge_efficiency",
+        "discharge_efficiency",
+        "ramp_kw_per_s",
+        "nominal_voltage_v",
+        "max_import_kw",
+        "max_export_kw",
+    }
+)
+
+_GRID_MODEL_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "nominal_frequency_hz",
+        "frequency_sensitivity_hz_per_kw",
+        "frequency_clamp_min_hz",
+        "frequency_clamp_max_hz",
+        "nominal_voltage_v",
+        "voltage_sensitivity_v_per_kw",
+        "voltage_clamp_min_v",
+        "voltage_clamp_max_v",
+    }
+)
+
+_LOAD_EVENT_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset({"start_s", "duration_s", "power_kw"})
+
+_RULE_PAYLOAD_DECIMAL_KEYS: Final[frozenset[str]] = frozenset({"value", "power_kw"})
+
+
+class _DemoScenarioYamlInvalidRootError(TypeError):
+    """`GRID_GYM_DEMO_SCENARIO_PATH` zeigt auf eine YAML-Datei,
+    deren Root keine Mapping-Struktur ist (z. B. Liste oder
+    Skalar). Fail-fast vor `load_scenario`."""
+
+    def __init__(self, path: Path, root_type: str) -> None:
+        super().__init__(f"Demo scenario YAML root must be a mapping; got {root_type} from {path}")
+
+
+def configure_scenario_demo_run(
+    app_: FastAPI,
+    scenario_path: Path,
+    *,
+    run_id: str = _DEMO_RUN_ID,
+    tick_interval_s: float = _DEFAULT_TICK_INTERVAL_S,
+) -> None:
+    """Welle-5-Demo-Setup: laedt ein Scenario-YAML und baut den
+    produktiven Lifespan-`TickLoop` (Slice-Doc Decision 6).
+
+    Voraussetzung: ``configure_run_repository``,
+    ``configure_tick_loop_registry`` und (optional)
+    ``configure_alarm_stream`` wurden bereits aufgerufen — Lifespan
+    macht das in der env-var-Branch unmittelbar davor (Welle-5
+    Slice-Doc §4 C2 Schritt e).
+
+    `app_` ist die laufende `FastAPI`-Instanz; der Helfer liest
+    `app_.state` und schreibt den `DemoTickLoopDriver` zurueck.
+    Cycle-Vermeidung (Slice-Doc §9 + arch_check AC-NO-CYCLES):
+    bewusste Parameter-Injection statt Modul-Top-Level-Import von
+    `app`.
+
+    Idempotenz: wenn der Run bereits unter ``run_id`` persistiert
+    ist, ist der Aufruf ein No-op (Welle-4a-Pattern aus
+    `configure_demo_run`). Multi-Run-Driver-Registry ist
+    Anti-Scope (Welle-5 Slice-Doc §1.3); ein zweiter Aufruf mit
+    abweichendem `run_id` wird vom `DemoTickLoopDriver`-
+    Already-Configured-Pfad in `_demo_setup` abgewiesen, falls
+    der Default-Path zuerst lief.
+    """
+    repository = _cast_run_repository_or_raise(app_)
+    registry = _cast_tick_loop_registry_or_raise(app_)
+    if repository.exists(run_id):
+        return
+    loaded = _load_scenario_from_yaml(scenario_path)
+    metadata = RunMetadata(
+        run_id=run_id,
+        scenario_hash=loaded.scenario_hash,
+        schema_version=loaded.scenario.schema_version,
+        seed=loaded.scenario.simulation.seed,
+        tick_ms=loaded.scenario.simulation.tick_ms,
+        started_at="",
+        ended_at="",
+        tool_version=_APP_VERSION,
+    )
+    repository.save(metadata)
+    clock = _DemoSimulationClock()
+    random_root = MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed)
+    wiring = TickLoopWiring(
+        run_repository=repository,
+        alarm_id_source=_alarm_id_source(),
+    )
+    tick_loop = build_tick_loop(
+        loaded.scenario,
+        run_id=run_id,
+        clock=clock,
+        random_root=random_root,
+        wiring=wiring,
+    )
+    registry.register(tick_loop)
+
+    def _alarm_stream_provider() -> AlarmStreamPort | None:
+        return cast(AlarmStreamPort | None, getattr(app_.state, "alarm_stream", None))
+
+    def _alarm_history_buffer_provider() -> AlarmHistoryBuffer | None:
+        return cast(
+            AlarmHistoryBuffer | None,
+            getattr(app_.state, "alarm_history_buffer", None),
+        )
+
+    driver = DemoTickLoopDriver(
+        tick_loop,
+        tick_interval_s=tick_interval_s,
+        alarm_stream_provider=_alarm_stream_provider,
+        alarm_history_buffer_provider=_alarm_history_buffer_provider,
+    )
+    app_.state.demo_tick_loop_driver = driver
+
+
+def _cast_run_repository_or_raise(app_: FastAPI) -> RunRepositoryPort:
+    """Welle-5-Variante von `_demo_setup._cast_run_repository_or_
+    raise` — liest aus `app_.state` (Parameter) statt aus dem
+    Modul-Global `app`. Cycle-Vermeidung (Slice-Doc §9)."""
+    repository = getattr(app_.state, "run_repository", None)
+    if repository is None:
+        raise _RunRepositoryNotConfiguredError
+    return cast(RunRepositoryPort, repository)
+
+
+def _cast_tick_loop_registry_or_raise(app_: FastAPI) -> TickLoopRegistry:
+    """Welle-5-Variante von `_demo_setup._cast_tick_loop_registry_
+    or_raise`."""
+    registry = getattr(app_.state, "tick_loop_registry", None)
+    if registry is None:
+        raise _TickLoopRegistryNotConfiguredError
+    return cast(TickLoopRegistry, registry)
+
+
+class _DemoSimulationClockInvalidDeltaError(ValueError):
+    """Symmetrisch zu `_demo_setup._DemoSimulationClockInvalidDeltaError`.
+
+    Welle-5-Cycle-Fix-Duplikat (Slice-Doc §9) — Verschmelzung
+    mit `_demo_setup` ist Welle-6+ Cleanup."""
+
+    def __init__(self, value: int) -> None:
+        super().__init__(f"delta_ms must be positive, got {value}")
+
+
+class _DemoSimulationClock:
+    """In-Memory-`ClockPort`-Duplikat zu `_demo_setup.
+    _DemoSimulationClock`.
+
+    Welle-5-Cycle-Fix-Duplikat (Slice-Doc §9): das Original lebt
+    in `_demo_setup`, das `app.py` als Top-Level-Cycle braucht.
+    Welle 5 kann nicht von `_demo_setup` importieren, weil
+    `app.py` `_demo_scenario_setup` importiert — wir wuerden
+    sonst `_demo_scenario_setup → _demo_setup → app →
+    _demo_scenario_setup` als Cycle bekommen. Verschmelzung zu
+    einem gemeinsamen `_simulation_clock`-Modul ist Welle-6+
+    Cleanup.
+    """
+
+    def __init__(self) -> None:
+        self._now_ms: SimulationTime = 0
+
+    def now(self) -> SimulationTime:
+        return self._now_ms
+
+    def advance(self, delta_ms: int) -> None:
+        if delta_ms <= 0:
+            raise _DemoSimulationClockInvalidDeltaError(delta_ms)
+        self._now_ms += delta_ms
+
+
+def _alarm_id_source() -> Callable[[], str]:
+    """Welle-5: Production-Default per `TickLoopWiring.alarm_id_
+    source`-Vertrag (`uuid.uuid4().hex`). Tests koennen den Stub
+    durch einen monoton zaehlenden Generator ersetzen — Welle-5-
+    Smoke laesst den Production-Default laufen, weil Hash-Pin nur
+    den ersten Tick-Block pinnt (vor erstem Alarm-Emit)."""
+    return lambda: uuid.uuid4().hex
+
+
+def _load_scenario_from_yaml(path: Path) -> Any:
+    """Welle-5-privater Demo-Loader: liest YAML, coerced Decimal-
+    Pflichtfelder, ruft den I/O-freien Core-Loader.
+
+    Pattern aus `tests/integration/_yaml_scenario_loader.py`
+    (Welle-6c) — Welle 5 dupliziert die Coercion bewusst lokal
+    (Slice-Doc §3.3 Decision 18 verbietet einen neuen
+    YAML-Adapter unter `adapters/driven/scenario_yaml/`). Ein
+    spaeterer produktiver YAML-Adapter ersetzt beide Loader-
+    Varianten ueber ein eigenes Slice + ADR.
+    """
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, Mapping):
+        raise _DemoScenarioYamlInvalidRootError(path, type(raw).__name__)
+    return load_scenario(_coerce_demo_yaml_mapping(raw))
+
+
+def _coerce_demo_yaml_mapping(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Schema-bewusste `str → Decimal` Coercion. Symmetrisch zum
+    Test-Loader, aber kompakt auf die Demo-Pflichtfelder
+    beschraenkt.
+
+    Welle-6c-Review M-4 (geerbt): Nicht-Mapping/Nicht-List-
+    Strukturen werden unveraendert durchgereicht; der Validator
+    wirft `ScenarioWrongTypeError` mit korrektem Pfad."""
+    result: dict[str, Any] = dict(raw)
+
+    devices = result.get("devices")
+    if isinstance(devices, list):
+        result["devices"] = [_coerce_device(entry) for entry in devices]
+
+    grid_model = result.get("grid_model")
+    if isinstance(grid_model, Mapping):
+        result["grid_model"] = _coerce_decimal_fields(grid_model, _GRID_MODEL_DECIMAL_FIELDS)
+
+    load_events = result.get("load_events")
+    if isinstance(load_events, list):
+        result["load_events"] = [_coerce_load_event(entry) for entry in load_events]
+
+    load_profiles = result.get("load_profiles")
+    if isinstance(load_profiles, list):
+        result["load_profiles"] = [_coerce_load_profile(entry) for entry in load_profiles]
+
+    agents = result.get("agents")
+    if isinstance(agents, Mapping):
+        result["agents"] = {
+            agent_id: _coerce_agent(agent_def) for agent_id, agent_def in agents.items()
+        }
+
+    return result
+
+
+def _coerce_device(entry: Any) -> Any:
+    if not isinstance(entry, Mapping):
+        return entry
+    result = dict(entry)
+    params = result.get("params")
+    if isinstance(params, Mapping):
+        result["params"] = _coerce_decimal_fields(params, _DEVICE_DECIMAL_PARAMS)
+    return result
+
+
+def _coerce_decimal_fields(
+    entry: Mapping[str, Any], decimal_fields: frozenset[str]
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in entry.items():
+        if key in decimal_fields and isinstance(value, str):
+            result[key] = Decimal(value)
+        else:
+            result[key] = value
+    return result
+
+
+def _coerce_load_event(entry: Any) -> Any:
+    if not isinstance(entry, Mapping):
+        return entry
+    return _coerce_decimal_fields(entry, _LOAD_EVENT_DECIMAL_FIELDS)
+
+
+def _coerce_load_profile(entry: Any) -> Any:
+    if not isinstance(entry, Mapping):
+        return entry
+    result = dict(entry)
+    tick_values = result.get("tick_values")
+    if isinstance(tick_values, list):
+        result["tick_values"] = [
+            Decimal(value) if isinstance(value, str) else value for value in tick_values
+        ]
+    return result
+
+
+def _coerce_agent(entry: Any) -> Any:
+    """Welle-4b (geerbt aus Test-Loader): `params.rules[*].action.
+    payload`-Strang `str → Decimal`. Conditions sind int-typed."""
+    if not isinstance(entry, Mapping):
+        return entry
+    result = dict(entry)
+    params = result.get("params")
+    if isinstance(params, Mapping):
+        result["params"] = _coerce_agent_params(params)
+    return result
+
+
+def _coerce_agent_params(params: Mapping[str, Any]) -> dict[str, Any]:
+    result: dict[str, Any] = dict(params)
+    rules = result.get("rules")
+    if isinstance(rules, list):
+        result["rules"] = [_coerce_rule(rule) for rule in rules]
+    return result
+
+
+def _coerce_rule(rule: Any) -> Any:
+    if not isinstance(rule, Mapping):
+        return rule
+    result = dict(rule)
+    action = result.get("action")
+    if isinstance(action, Mapping):
+        action_dict = dict(action)
+        payload = action_dict.get("payload")
+        if isinstance(payload, Mapping):
+            action_dict["payload"] = {
+                key: (
+                    Decimal(value)
+                    if key in _RULE_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
+                    else value
+                )
+                for key, value in payload.items()
+            }
+        result["action"] = action_dict
+    return result

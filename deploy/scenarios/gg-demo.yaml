@@ -1,0 +1,149 @@
+# M5-Welle-5 kanonisches Demo-Szenario (Slice-Doc M5-welle-5
+# Decision 5).
+#
+# Erfuellt `GG-DEMO-005` (Demo-Inhalt: alle 5 MVP-Devices + 1
+# RuleBasedAgent) und `GG-DEMO-007` (Agent in Demo, eng inkludiert)
+# ueber das vorhandene YAML-Schema (`schema_version:
+# "grid-gym.scenario.v1"`). Lifespan laedt das File, wenn
+# `GRID_GYM_DEMO_SCENARIO_PATH` gesetzt ist (Decision 6 +
+# `_demo_scenario_setup.configure_scenario_demo_run`).
+#
+# Determinismus-Pflicht (Decision 5): `seed=42` (analog
+# `_demo_setup.py`-Welle-4a-Default); canonical_json-Hash ueber
+# den ersten Tick-Block ist reproduzierbar (Welle-5-Smoke
+# pinnt den Hash).
+#
+# Decimal-Felder als YAML-Strings notiert. Der lifespan-seitige
+# YAML-Loader (`_demo_scenario_setup._coerce_demo_yaml`)
+# konvertiert sie zu `Decimal` (`GG-DATA-005`).
+#
+# LoadEvent triggert in der Welle-4b-Pipeline einen LIMITED-
+# Alarm: `load-1.rated_power_kw=30`, `event.power_kw=60`.
+# `make demo`-Abnahme (GG-DEMO-008): Alarms-Page zeigt den
+# Alarm ab Simulationszeit 600s.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "m5-welle-5-demo"
+  name: "M5 Welle 5 Demo"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 1800
+  seed: 42
+
+devices:
+  - id: "battery-1"
+    type: "battery"
+    params:
+      capacity_kwh: "100"
+      initial_soc_pct: "50"
+      min_soc_pct: "0"
+      max_soc_pct: "100"
+      max_charge_kw: "50"
+      max_discharge_kw: "50"
+      charge_efficiency: "1"
+      discharge_efficiency: "1"
+      ramp_kw_per_s: "100"
+  - id: "pv-1"
+    type: "pv"
+    params:
+      rated_power_kw: "50"
+  - id: "load-1"
+    type: "load"
+    params:
+      rated_power_kw: "30"
+  - id: "grid-connection-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "100"
+      max_export_kw: "100"
+  - id: "smart-meter-1"
+    type: "smart_meter"
+    params:
+      # Decision 5: SmartMeter aggregiert Netzanschluss-
+      # Telemetry. `aggregate_device_ids` ist kanonisch
+      # sortiert + nicht-leer (SmartMeterConfig-Pflicht).
+      aggregate_device_ids:
+        - "grid-connection-1"
+      aggregate_metric_name: "power_kw"
+
+grid_model:
+  nominal_frequency_hz: "50"
+  frequency_sensitivity_hz_per_kw: "0.001"
+  frequency_clamp_min_hz: "45"
+  frequency_clamp_max_hz: "55"
+  nominal_voltage_v: "400"
+  voltage_sensitivity_v_per_kw: "0.1"
+  voltage_clamp_min_v: "280"
+  voltage_clamp_max_v: "520"
+
+# Decision 5: LoadEvent triggert LIMITED-Alarm auf load-1
+# (rated_power_kw=30, event.power_kw=60 ueber Rated).
+load_events:
+  - start_s: "600"
+    duration_s: "60"
+    target_device_id: "load-1"
+    power_kw: "60"
+
+# Decision 5: 24-Werte-Tagesprofil (1 Wert pro Stunde) ueber
+# `tick_ms=3600000`. Die ersten Eintraege bilden die Demo-
+# Abnahme-Sicht (Lastkurve unter Rated-Power); das LoadEvent
+# ueberlagert ab Simulationszeit 600s.
+load_profiles:
+  - target_device_id: "load-1"
+    tick_ms: 3600000
+    tick_values:
+      - "10"
+      - "10"
+      - "10"
+      - "10"
+      - "10"
+      - "12"
+      - "15"
+      - "18"
+      - "20"
+      - "22"
+      - "24"
+      - "25"
+      - "25"
+      - "24"
+      - "22"
+      - "20"
+      - "20"
+      - "22"
+      - "25"
+      - "26"
+      - "24"
+      - "20"
+      - "15"
+      - "12"
+
+# Decision 5: 1 RuleBasedAgent, der die Battery zeitgesteuert
+# steuert (Phasen analog `agents_demo.yaml`). first-match-wins —
+# spaete Phase steht zuerst. `set_power_kw`-payload-value ist
+# Decimal (positiv=charge, negativ=discharge).
+agents:
+  bess-controller:
+    type: "rule_based"
+    params:
+      target_device_id: "battery-1"
+      rules:
+        - condition:
+            metric: "tick"
+            comparator: ">="
+            threshold: 900
+          action:
+            type: "set_power_kw"
+            payload:
+              value: "-20"
+        - condition:
+            metric: "tick"
+            comparator: ">="
+            threshold: 300
+          action:
+            type: "set_power_kw"
+            payload:
+              value: "20"

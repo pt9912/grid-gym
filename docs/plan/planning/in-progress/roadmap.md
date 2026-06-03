@@ -708,10 +708,14 @@ C0 `155c421` (Slice-Doc
 [`M5-welle-5.md`](M5-welle-5.md) + Decisions 5/6/18 final +
 Sub-Slicing-Risk-Verifikation — Single-Slice ohne
 Splittung). Welle 5 ist die **Demo-Welle** in M5: erfuellt
-`GG-DEMO-001..005 + 008` (6 MUSS) plus `GG-DEMO-007` (1
-SOLLTE eng inkludiert: RuleBasedAgent im kanonischen Demo-
-YAML ohne Agent-UI). Lieferziel: (1) kanonisches Demo-YAML
-unter `deploy/scenarios/demo.yaml` mit 5 MVP-Devices + 1
+`GG-DEMO-001..005` (5 MUSS) plus `GG-DEMO-007` (1 SOLLTE
+eng inkludiert: RuleBasedAgent im kanonischen Demo-YAML
+ohne Agent-UI). `GG-DEMO-008` (Abnahmedoku) ist auf Welle 6
+verschoben (C2-Folge-Entscheid 2026-06-03: Filename +
+Substanz-Konsistenz mit `GG-DEMO-006`-Verschiebung;
+Welle-6-Pfad `docs/user/gg-demo-008-abnahme.md`).
+Lieferziel: (1) kanonisches Demo-YAML
+unter `deploy/scenarios/gg-demo.yaml` mit 5 MVP-Devices + 1
 LoadProfile + 1 LoadEvent + 1 RuleBasedAgent + `seed=42`-
 Determinismus; (2) `make demo`-Pflicht-Target mit
 `docker compose up` + Healthcheck-Wait + UI unter
@@ -720,15 +724,15 @@ Pfad-Erweiterung in `_demo_setup.py` ueber
 `GRID_GYM_DEMO_SCENARIO_PATH`-Env (Default-Pfad
 unveraendert fuer Welle-4a/4b-Integration-Tests); (4)
 `python -m grid_gym demo`-Sekundaer-Surface mit
-`__main__.py`-Entry-Point; (5) `docs/user/demo.md`
-Abnahmereihenfolge fuer `GG-DEMO-008`; (6) Integration-
+`__main__.py`-Entry-Point; (5) Integration-
 Smoke-Test `test_m5_welle_5_demo_smoke.py` ohne Container.
 **Anti-Scope:** keine Multi-Run-Driver-Registry
 (`_DemoTickLoopDriverAlreadyConfiguredError` aus Welle-4b-
 Fix #13 schuetzt Single-Run), kein Snapshot-Resume in Demo
-(Welle-6+/M6-Material), `GG-DEMO-006` Fault-Injection
-deferiert auf Welle 6 (`GG-UI-007`-Form-Substanz-
-Kopplung), keine neue Compose-Topologie (Decision 18),
+(Welle-6+/M6-Material), `GG-DEMO-006` Fault-Injection +
+`GG-DEMO-008` Abnahmedoku deferiert auf Welle 6
+(`GG-UI-007`-Form-Substanz-Kopplung + Range-Konsistenz),
+keine neue Compose-Topologie (Decision 18),
 kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 **Naechster Schritt:** C1 → C2 → C3.
 

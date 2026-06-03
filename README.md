@@ -149,7 +149,7 @@ As of **2026-06-02**:
   - Wave 3 — Live-Telemetry-Dashboard (NEW `TelemetryStreamPort` + `InMemoryTelemetryStream` + WS-Subscribe + Chart.js time-series + 6-state Quality-Marker + ADR 0038) · `Done`
   - Wave 4a — Replay-Controls + TickLoop-Wiring (NEW `RunStatus` + RunRepository extension + TickLoop-Control-Surface + `request(action)` + 2 endpoint wirings + `TickLoopRegistry` + `DemoTickLoopDriver` + control UI + ADR 0039) · `Done`
   - Wave 4b — Alarms (NEW unified `Alarm` domain type + mapper family in `core/simulation/alarm_mappers.py` + `TickResult.emitted_alarms` + TickLoop drain hook + NEW `AlarmStreamPort` + `InMemoryAlarmStream` + `AlarmHistoryBuffer` + REST + WS endpoints + alarms UI page + ADR 0040; resolves ADR-0014-§6 forward pointer "AlarmSinkPort kommt mit M3" driving-side anteil) · `Done`
-  - Wave 5 — Demo pipeline (canonical demo YAML + `make demo` + `python -m grid_gym demo` + lifespan demo path via `GRID_GYM_DEMO_SCENARIO_PATH` + `docs/user/demo.md` + integration smoke) · `In Progress` 2026-06-02 (slice doc `155c421` — `GG-DEMO-001..005+008` + `GG-DEMO-007` eng inkludiert; `GG-DEMO-006` deferiert auf Welle 6)
+  - Wave 5 — Demo pipeline (canonical demo YAML + `make demo` + `python -m grid_gym demo` + lifespan demo path via `GRID_GYM_DEMO_SCENARIO_PATH` + integration smoke) · `In Progress` 2026-06-02 (slice doc `155c421` — `GG-DEMO-001..005` + `GG-DEMO-007` eng inkludiert; `GG-DEMO-006` Fault-Injection + `GG-DEMO-008` Abnahmedoku deferiert auf Welle 6)
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
 **Test balance (state after M5 Wave 4b closure 2026-06-02):**

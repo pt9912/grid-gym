@@ -89,8 +89,28 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: grid-gym-api
+      # M5-Welle-5 (Slice-Doc Decision 6): scenario-getriebener
+      # Demo-Lifespan-Branch in `_lifespan` liest diesen Pfad und
+      # ruft `_demo_scenario_setup.configure_scenario_demo_run`.
+      # Pfad zeigt auf den read-only `scenarios`-Mount unten.
+      GRID_GYM_DEMO_SCENARIO_PATH: /app/deploy/scenarios/gg-demo.yaml
     ports:
-      - "8080:8080"
+      # M5-Welle-5 (Slice-Doc Decision 6): Host-Port 8000 ist die
+      # `make demo`-Abnahme-URL (GG-DEMO-001..004). Container-
+      # internes Binding bleibt 8080 (`GRID_GYM_PORT` +
+      # Dockerfile-ENTRYPOINT). `make runtime` probet weiterhin
+      # intern `api:8080/health`, nicht ueber Host-Port — der
+      # Host-Mapping-Wechsel beeinflusst die Compose-Smoke nicht.
+      - "8000:8080"
+    volumes:
+      # M5-Welle-5 (Slice-Doc Decision 6): kanonisches Demo-
+      # Szenario per readonly Volume-Mount neben Container-FS
+      # legen. Dockerfile-Runtime-Stage kopiert `deploy/` nicht
+      # ins Image; der Mount ist die kleinste, reversible Form,
+      # damit `GRID_GYM_DEMO_SCENARIO_PATH` die YAML findet
+      # (Slice-Doc §3.3 Decision-18-Praezisierung: keine neue
+      # Topologie/Sibling/Proxy — nur Service-Konfiguration).
+      - ./scenarios:/app/deploy/scenarios:ro
     # Dockerfile-`ENTRYPOINT` startet `uvicorn` direkt (Trigger 015,
     # M2 Welle 0b: shebang-Rewrite und uv-`--no-editable` haben die
     # Welle-6d-`entrypoint: []` + `python -m uvicorn`-Indirection

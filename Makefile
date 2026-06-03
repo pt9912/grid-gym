@@ -54,7 +54,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	coverage-gate coverage-gate-critical \
 	dep-audit image-audit openapi-validate \
 	gates ci fullbuild \
-	build runtime test-container \
+	build runtime test-container demo demo-stop \
 	lock-refresh rebase-base \
 	sbom \
 	clean
@@ -114,6 +114,8 @@ help:
 	@echo "  make build             Multi-stage Runtime-Image (non-root, /health HEALTHCHECK)"
 	@echo "  make runtime           docker compose up + /health-Probe + down"
 	@echo "  make test-container    Alias fuer runtime"
+	@echo "  make demo              M5-Welle-5 Demo-Stack (compose up, UI auf http://localhost:8000)"
+	@echo "  make demo-stop         M5-Welle-5 Demo-Stack stoppen + Volumes cleanup"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make lock-refresh      uv lock refresh (commit uv.lock alongside pyproject.toml)"
@@ -381,6 +383,33 @@ runtime: build
 
 test-container: runtime
 	@echo "[test-container] runtime smoke green"
+
+# --- M5-Welle-5 Demo-Stack ------------------------------------------------
+#
+# Slice-Doc M5-welle-5 Decision 6: `make demo` ist das Pflicht-
+# Target und der primaere Abnahme-Entry-Point fuer GG-DEMO-001..
+# 005 + 008. Es startet den vorhandenen `deploy/compose.yml`-
+# Stack (Decision 18 — keine neue Topologie); compose.yml
+# trägt das `GRID_GYM_DEMO_SCENARIO_PATH`-Env + das
+# `8000:8080`-Port-Mapping + den readonly Scenario-Mount, damit
+# der Lifespan-env-var-Branch (Welle-5 Slice-Doc §4 C2 Schritt e)
+# den scenario-getriebenen Demo-Stack verdrahtet.
+demo: build
+	@if [ ! -f $(COMPOSE_FILE) ]; then \
+		echo "[demo] $(COMPOSE_FILE) fehlt"; exit 1; \
+	fi
+	$(DOCKER) compose -f $(COMPOSE_FILE) up -d --wait --wait-timeout 60
+	@echo "[demo] stack is up; probing /health"
+	$(DOCKER) compose -f $(COMPOSE_FILE) exec -T api curl --fail --silent --show-error http://localhost:8080/health
+	@echo "[demo] /health ok; UI verfuegbar unter http://localhost:8000"
+	@echo "[demo] Stop mit 'make demo-stop' (compose down + volume cleanup)"
+
+demo-stop:
+	@if [ ! -f $(COMPOSE_FILE) ]; then \
+		echo "[demo-stop] $(COMPOSE_FILE) fehlt"; exit 1; \
+	fi
+	$(DOCKER) compose -f $(COMPOSE_FILE) down -v --remove-orphans
+	@echo "[demo-stop] stack down + volumes cleaned"
 
 # --- Maintenance -----------------------------------------------------------
 
