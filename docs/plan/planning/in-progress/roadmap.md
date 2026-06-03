@@ -178,7 +178,7 @@
   **Welle 6a (Fault-Flow: UI-Form-Validation + YAML-
   Fault-Demo) abgeschlossen 2026-06-03** mit C0
   `1d6d85e` (Slice-Doc
-  [`M5-welle-6a.md`](M5-welle-6a.md) + Sub-
+  [`M5-welle-6a.md`](../done/M5-welle-6a.md) + Sub-
   Slicing-Beschluss + Decisions 19/20 final) + C2
   `db3a0c2` (Code-Merge: YAML-faults +
   `_compose_fault_port` Battery+Grid-Composition + UI-
@@ -335,7 +335,7 @@ Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
 [`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
 eroeffnet; Welle 0..6a abgeschlossen, **Welle 6a (Fault-
 Flow) `Done` 2026-06-03** mit Slice-Doc
-[`M5-welle-6a.md`](M5-welle-6a.md); **aktive Welle:
+[`M5-welle-6a.md`](../done/M5-welle-6a.md); **aktive Welle:
 Welle 6b (UI-Visualization)** mit Plan-Items in
 [`M5-ui-demo.md §3.2`](M5-ui-demo.md). (M4 ist
 abgeschlossen,

@@ -421,7 +421,7 @@ nachgereicht werden — heute kein Anlass.
 ### C4 — `chore`: Self-Close-Move + Cross-Doc-Refs-Sync
 
 Pflicht-Closure-Sequenz per
-[`planning/README.md`](README.md) Wave-Self-Close-
+[`planning/README.md`](../README.md) Wave-Self-Close-
 Commit-Konvention:
 
 - **C4a** — `chore: git mv in-progress/M5-welle-6a.md
@@ -748,14 +748,14 @@ Vertrag.
 
 ## References
 
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3.2 Welle 6
+- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3.2 Welle 6
   Plan-Items (kanonische Sub-Slicing-Aufnahme; Welle-
   6a Fault-Flow-Sub-Bereich).
-- [`../done/M5-welle-5.md`](../done/M5-welle-5.md)
+- [`M5-welle-5.md`](M5-welle-5.md)
   §1.3 + §10.1 — Welle-5-Anti-Scope-Erbschaft fuer
   `GG-DEMO-006` und `GG-DEMO-008` (in Welle-6-Defer
   per Folge-Entscheid 2026-06-03).
-- [`../done/M5-welle-4b.md`](../done/M5-welle-4b.md)
+- [`M5-welle-4b.md`](M5-welle-4b.md)
   — Welle-4b-Alarm-Pipeline (Welle-6a-Demo-Faults
   nutzen sie unveraendert; Decision-19-YAML-side-
   Begruendung).
@@ -769,10 +769,10 @@ Vertrag.
 - [`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
   `GG-UI-007` + `GG-DEMO-006` Akzeptanztexte.
 - Pattern-Vorbild **Sub-Slicing-Beschluss**:
-  [`../done/M4-welle-6a.md`](../done/M4-welle-6a.md)
+  [`M4-welle-6a.md`](M4-welle-6a.md)
   §0 (Welle 6 → 6a Cross-Adapter + 6b IEC-61850-
   Hardening).
 - Pattern-Vorbild **Welle-ohne-C1**:
-  [`../done/M5-welle-5.md`](../done/M5-welle-5.md)
+  [`M5-welle-5.md`](M5-welle-5.md)
   + Welle-5-Slice-Doc §4 C1 (bewusst entfaellt;
   kein neuer Port, kein neuer Vertrag).
