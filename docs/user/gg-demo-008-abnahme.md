@@ -423,5 +423,5 @@ ohne Override; `make test-integration` gruen).
   (Trigger 009).
 
 Siehe
-[`docs/plan/planning/in-progress/M5-ui-demo.md §3.2 Welle 7`](../plan/planning/in-progress/M5-ui-demo.md)
+[`docs/plan/planning/in-progress/M5-ui-demo.md §3.2 Welle 7`](../plan/planning/done/M5-ui-demo.md)
 fuer den Welle-7-Closure-Plan.

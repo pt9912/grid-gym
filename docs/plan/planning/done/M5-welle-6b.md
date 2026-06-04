@@ -713,7 +713,7 @@ heben.
 
 ## References
 
-- [`../in-progress/M5-ui-demo.md`](../in-progress/M5-ui-demo.md)
+- [`M5-ui-demo.md`](M5-ui-demo.md)
   §3.2 Welle 6b Plan-Items (kanonische Sub-Slicing-Aufnahme;
   Welle-6b UI-Visualization-Sub-Bereich).
 - [`M5-welle-6a.md`](M5-welle-6a.md)

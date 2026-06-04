@@ -16,7 +16,7 @@ Hintergrund liegt in [`M5-welle-0.md`](../done/M5-welle-0.md) §1).
 
 **Bezug:**
 
-- [`roadmap.md`](roadmap.md) §3 M5 (Lieferziel, DoD-
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M5 (Lieferziel, DoD-
   Checkliste, Architekturartefakte).
 - M4-Closure-Notiz
   [`../done/M4-results.md`](../done/M4-results.md) §5

@@ -7,7 +7,7 @@ krb5-CVE-Drift in Debian-13-Base (M4-Welle-7-Erbschaft; siehe
 §2 Defer-Pfad). Alle fuenf M5-ADRs (0036/0037/0038/0039/0040)
 sind mit Welle-7-C1 `62f988d` auf `Accepted` promoted.
 **Bezug:** Slice-Plan
-[`M5-ui-demo.md`](../in-progress/M5-ui-demo.md);
+[`M5-ui-demo.md`](M5-ui-demo.md);
 Welle-Slice-Begleit-Docs
 [`M5-welle-0.md`](M5-welle-0.md),
 [`M5-welle-1.md`](M5-welle-1.md),
@@ -19,7 +19,7 @@ Welle-Slice-Begleit-Docs
 [`M5-welle-6a.md`](M5-welle-6a.md),
 [`M5-welle-6b.md`](M5-welle-6b.md),
 [`M5-welle-6c.md`](M5-welle-6c.md),
-[`M5-welle-7.md`](../in-progress/M5-welle-7.md);
+[`M5-welle-7.md`](M5-welle-7.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §3 M5.
 
@@ -343,7 +343,7 @@ per ADR 0011).
 
 ## References
 
-- Slice-Plan: [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md).
+- Slice-Plan: [`M5-ui-demo.md`](M5-ui-demo.md).
 - Welle-Slice-Docs: [`M5-welle-0.md`](M5-welle-0.md),
   [`M5-welle-1.md`](M5-welle-1.md),
   [`M5-welle-2.md`](M5-welle-2.md),
@@ -354,7 +354,7 @@ per ADR 0011).
   [`M5-welle-6a.md`](M5-welle-6a.md),
   [`M5-welle-6b.md`](M5-welle-6b.md),
   [`M5-welle-6c.md`](M5-welle-6c.md),
-  [`M5-welle-7.md`](../in-progress/M5-welle-7.md).
+  [`M5-welle-7.md`](M5-welle-7.md).
 - M5-ADRs:
   [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md),
   [`../../adr/0037-http-api-surface-pattern.md`](../../adr/0037-http-api-surface-pattern.md),

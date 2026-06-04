@@ -147,7 +147,7 @@
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
   `AC-IEC61850-GPL-BOUNDARY`).
 - **Aktiver Slice:** M5 (UI + Demo). Slice-Plan
-  [`M5-ui-demo.md`](M5-ui-demo.md). Welle 0..4b
+  [`M5-ui-demo.md`](../done/M5-ui-demo.md). Welle 0..4b
   abgeschlossen (Welle 4b 2026-06-02 mit `b7ac7b3` +
   C3 `4dca6aa` + Review-Folge `52afd1a`/`fe1db21`/
   `ced9661`/`1fba165` — 15 Findings adressiert).
@@ -254,7 +254,7 @@
   Fault-Flow + 6b UI-Visualization + 6c Abnahmedoku;
   drei Sub-Slices analog M4-Welle-6 → 6a/6b-Pattern).
   **Welle 7 (M5-Closure) eroeffnet 2026-06-04** mit C0
-  (Slice-Doc [`M5-welle-7.md`](M5-welle-7.md); Pattern
+  (Slice-Doc [`M5-welle-7.md`](../done/M5-welle-7.md); Pattern
   analog M4-Welle-7). Welle-7-Substanz: 5 M5-ADRs
   (0036..0040) `Provisional → Accepted` (C1), NEU
   `done/M5-results.md` mit Welle-Tabelle/Abnahme-Belegen/
@@ -696,7 +696,7 @@ Slice-Plan in
 ### M5 — UI + Demo (`Done` 2026-06-04)
 
 Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
-([`M5-welle-0.md`](../done/M5-welle-0.md) + [`M5-ui-demo.md`](M5-ui-demo.md))
+([`M5-welle-0.md`](../done/M5-welle-0.md) + [`M5-ui-demo.md`](../done/M5-ui-demo.md))
 + Pre-M5-Welle-0-Sondierungs-ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 mit Maintainer-Decision-Indication „Option 1 (FastAPI +

@@ -605,7 +605,7 @@ Self-Close-Commit-Konvention:
 - **C4b** — Cross-Doc-Refs-Sync nach Move: alle
   relativen Pfade in `done/M5-welle-5.md` auf den neuen
   Pfad anpassen (`../../adr/...` bleibt; `M5-ui-demo.md`
-  → `../in-progress/M5-ui-demo.md` etc.). Plus
+  → `M5-ui-demo.md` etc.). Plus
   Cross-Refs in `M5-ui-demo.md` §3.1-Tabelle Welle-5-
   Slice-Doc-Link auf `../done/M5-welle-5.md` umstellen.
   Pattern analog Welle-4b-Pre-C0b `45335eb`.
@@ -1010,7 +1010,7 @@ keinen Welle-5-C3-Bestandteil bilden:
   TickLoop-Control-Surface; `_demo_setup.
   configure_demo_run`-Pattern als Welle-5-
   Erweiterungs-Ausgangspunkt).
-- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3 Welle 5
+- [`M5-ui-demo.md`](M5-ui-demo.md) §3 Welle 5
   (kanonische Slice-Spezifikation; Decisions 5/6
   pre-reserviert; NEU Decision 18 als Welle-5-
   C0-Resultat).

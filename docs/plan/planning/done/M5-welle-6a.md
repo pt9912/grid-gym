@@ -748,7 +748,7 @@ Vertrag.
 
 ## References
 
-- [`M5-ui-demo.md`](../in-progress/M5-ui-demo.md) §3.2 Welle 6
+- [`M5-ui-demo.md`](M5-ui-demo.md) §3.2 Welle 6
   Plan-Items (kanonische Sub-Slicing-Aufnahme; Welle-
   6a Fault-Flow-Sub-Bereich).
 - [`M5-welle-5.md`](M5-welle-5.md)
