@@ -6,7 +6,7 @@ Triage) ist aktiv; Welle 1+-Substanz-Wellen folgen.
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
-Hintergrund liegt in [`M6-welle-0.md`](M6-welle-0.md) §1).
+Hintergrund liegt in [`M6-welle-0.md`](../done/M6-welle-0.md) §1).
 
 **Bezug:**
 
@@ -18,7 +18,7 @@ Hintergrund liegt in [`M6-welle-0.md`](M6-welle-0.md) §1).
 - M5-Closure-Notiz
   [`../done/M5-results.md`](../done/M5-results.md) §5
   „Welle-7-Erbschaft fuer M6+".
-- [`M6-welle-0.md`](M6-welle-0.md) §3 Decision-Liste
+- [`M6-welle-0.md`](../done/M6-welle-0.md) §3 Decision-Liste
   (7 offene Decisions fuer Welle 1+).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   + M4-/M5-ADRs (0030..0040) — M6 baut auf der voll-
@@ -110,7 +110,7 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
     pinned.
 - **ADR-Lifecycle:**
   - 1-3 M6-ADRs erwartet (Soll-Wert per ADR 0011);
-    Vorbelegung in [`M6-welle-0.md §3 M6-D-4`](M6-welle-0.md):
+    Vorbelegung in [`M6-welle-0.md §3 M6-D-4`](../done/M6-welle-0.md):
     NEU ADR 0041 (Performance-Bench-Pattern), NEU ADR 0042
     (SBOM-Tool + CI-Hook), ggf. NEU ADR 0043 (Image-Audit-
     Pflicht-Strategie).
@@ -128,7 +128,7 @@ betreffenden Welle-C0-Slice-Doc beschlossen, nicht hier
 vorab vorbelegt.
 
 **Welle-Strategie**: Vorbelegung **Option B** aus
-[`M6-welle-0.md §3 M6-D-1`](M6-welle-0.md) — pro Triggerebene
+[`M6-welle-0.md §3 M6-D-1`](../done/M6-welle-0.md) — pro Triggerebene
 (klein → mittel → gross), damit krb5-Bump + SBOM als
 Schnell-Wins vor den groesseren Performance-/Security-/CI-
 Vollausbau-Wellen laufen. Final entschieden mit Welle-1-C0.
@@ -143,7 +143,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 
 | # | Titel | Status | Slice-Doc | Lastenheft-Coverage / Trigger | ADRs |
 | - | ----- | ------ | --------- | ----------------------------- | ---- |
-| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | In Progress 2026-06-04 | [`M6-welle-0.md`](M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
+| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | In Progress 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Pending | TBD (entsteht in Welle-1-C0) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | TBD (ggf. ADR 0043 Image-Audit-Strategie) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
@@ -153,7 +153,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Naechster aktiver Slice:** Welle 0 (Slice-Plan-Eroeffnung
-+ Trigger-Triage) — siehe [`M6-welle-0.md`](M6-welle-0.md).
++ Trigger-Triage) — siehe [`M6-welle-0.md`](../done/M6-welle-0.md).
 Welle-1+-Aktivierung erfolgt mit Welle-0-Closure (C2-
 Sync).
 
@@ -209,7 +209,7 @@ final):
 - Lieferziel: `make perf`-Target + `GG-RT-005`-Benchmark
   (10 000 Points/s) + Tick-Drift-Schranken (`GG-RT-001..004`).
 - Bench-Framework: Vorbelegung pytest-benchmark per
-  [`M6-welle-0.md §3 M6-D-7`](M6-welle-0.md); Welle-4-C1-
+  [`M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md); Welle-4-C1-
   ADR entscheidet final.
 - Regression-Gate: Bench-Resultate gegen Baseline pinned;
   CI-Hook (oder lokaler Pflicht-Pfad) gegen Drift.

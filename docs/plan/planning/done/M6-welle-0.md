@@ -23,7 +23,7 @@ M4-Welle-0 ([`../done/M4-welle-0.md`](../done/M4-welle-0.md)).
   inkl. C2-Review-Folge).
 - M5-Closure-Konsistenz-Audit `dde9c7c` (Bestand-Bereinigung
   + Roadmap-M5→M6-Flip).
-- NEU [`../in-progress/carveouts.md`](carveouts.md) `fa032b1`
+- NEU [`../in-progress/carveouts.md`](../in-progress/carveouts.md) `fa032b1`
   + `40ce6ce` (Cross-Meilenstein-Carveout-Index mit
   4-Klassen-Typologie).
 
@@ -49,7 +49,7 @@ analoge Pre-Sondierung).
 
 M5 ist seit 2026-06-04 mit Welle-7-Closure abgeschlossen
 ([`../done/M5-results.md`](../done/M5-results.md)). M6 ist
-laut [`roadmap.md §3 M6`](roadmap.md) der naechste aktive
+laut [`roadmap.md §3 M6`](../in-progress/roadmap.md) der naechste aktive
 Slice mit **fuenf Sub-Bereichen** entlang
 [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md):
 
@@ -63,7 +63,7 @@ Slice mit **fuenf Sub-Bereichen** entlang
 
 ### 1.1 Carveout-Eingangsbestand
 
-Per [`carveouts.md`](carveouts.md) Stand 2026-06-04: **31
+Per [`carveouts.md`](../in-progress/carveouts.md) Stand 2026-06-04: **31
 Carveouts** im Cross-M-Index — davon **strict M6-Bezug
 (M5-Erbschaft + selbst-aktivierbare Trigger): 10**:
 
@@ -162,7 +162,7 @@ Welle 0 liefert **drei Closure-Items** ueber 3 Commits
    - §7 Verifikationspfad.
 
 3. **C2 — Trigger-Triage + Status-Flip:** pro Carveout in
-   [`carveouts.md`](carveouts.md) entscheiden, ob aktiv in
+   [`carveouts.md`](../in-progress/carveouts.md) entscheiden, ob aktiv in
    M6-Welle-X / `Trigger-Gated` bleibt / Out-of-Scope-Move
    (siehe Decision M6-D-2 unten). Plus `roadmap.md §3 M6`
    Status `Vorbelegung → In Progress`. Plus
@@ -209,7 +209,7 @@ final.
 **Frage:** Welche `Trigger-Gated`-Carveouts werden in M6
 aktiv geliefert, welche bleiben offen?
 
-Per [`carveouts.md`](carveouts.md) gibt es 18 `Trigger-
+Per [`carveouts.md`](../in-progress/carveouts.md) gibt es 18 `Trigger-
 Gated`-Items. Triage-Vorbelegung (C2-Substanz):
 
 | Trigger | Empfehlung | Begruendung |
@@ -539,10 +539,10 @@ Jobs in einem Commit (analog Slice 025).
 - [`../done/M5-welle-0.md`](../done/M5-welle-0.md) +
   [`../done/M4-welle-0.md`](../done/M4-welle-0.md) —
   Welle-0-Vorbild-Slice-Docs.
-- [`carveouts.md`](carveouts.md) — Cross-M-Carveout-
+- [`carveouts.md`](../in-progress/carveouts.md) — Cross-M-Carveout-
   Index (31 Eintraege; M6-Welle-0-C2-Triage ist die
   primaere Pflege-Welle).
-- [`roadmap.md §3 M6`](roadmap.md) — M6-Vorbelegung mit
+- [`roadmap.md §3 M6`](../in-progress/roadmap.md) — M6-Vorbelegung mit
   Lieferziel + Lastenheft-IDs + DoD-Checkboxen.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
   §22 (`GG-RT-*`) + §23 (`GG-SAFE-*` inkl. `GG-SAFE-008`

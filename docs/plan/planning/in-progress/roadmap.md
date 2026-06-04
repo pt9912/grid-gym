@@ -881,7 +881,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 0
 (Slice-Plan-Eroeffnung + Trigger-Triage)** mit Slice-Doc
-[`M6-welle-0.md`](M6-welle-0.md) (C0 `282a8cb` + Review-
+[`M6-welle-0.md`](../done/M6-welle-0.md) (C0 `282a8cb` + Review-
 Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035`
 + C2 dieser Commit). Welle 1+ Slice-Docs entstehen pro
 Welle-X-C0. Carveout-Triage-Eingangsbestand:

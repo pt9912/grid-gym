@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
-| [`M6-welle-0.md`](M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 (dieser Commit); ausstehend Self-Close-Move + Cross-Doc-Refs-Sync. |
+| [`M6-welle-0.md`](../done/M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 (dieser Commit); ausstehend Self-Close-Move + Cross-Doc-Refs-Sync. |
 | [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 (dieser Commit) als Welle-0-C1-Lieferung. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
