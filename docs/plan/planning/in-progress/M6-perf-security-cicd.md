@@ -1,8 +1,13 @@
 # Slice-Plan — M6 Performance + Security + CI/CD-Haertung — In Progress
 
 **Status:** In Progress — eroeffnet 2026-06-04 mit M6-Welle-0-
-C1 (dieser Commit). Welle 0 (Slice-Plan-Eroeffnung + Trigger-
-Triage) ist aktiv; Welle 1+-Substanz-Wellen folgen.
+C1 `e050035`. **M6-Welle-0** (Slice-Plan-Eroeffnung +
+Trigger-Triage) **abgeschlossen 2026-06-04** mit Stack
+`282a8cb..960f6ed` (siehe
+[`../done/M6-welle-0.md`](../done/M6-welle-0.md)). **Aktive
+Welle: M6-Welle-1** (Base-Image-Bump / krb5-CVE-Aufloesung,
+Trigger 010 M4-Erbschaft); Welle-1-Slice-Doc entsteht in
+Welle-1-C0.
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
@@ -25,11 +30,12 @@ Hintergrund liegt in [`M6-welle-0.md`](../done/M6-welle-0.md) §1).
   ausgereiften Adapter- + Driving-Surface auf, ohne neuen
   Driving-Port einzuziehen.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
-  §22 (`GG-RT-001..005`) + §23 (`GG-SAFE-001..008`) +
-  CI/CD-Kapitel (`GG-CICD-001..007` inkl. `GG-CICD-007`
-  Release-Workflow mit SBOM-Hook ueber Trigger 008;
-  `GG-DEPLOY-*`). **Keine eigene `GG-SBOM-*`-Lastenheft-
-  Familie** — SBOM ist ueber `GG-CICD-007` verankert.
+  Kap. 7 (`GG-RT-001..006`) + Kap. 20
+  (`GG-SAFE-001..008`) + Kap. 22 (`GG-CICD-001..007` inkl.
+  `GG-CICD-007` Release-Workflow mit SBOM-Hook ueber
+  Trigger 008) + Kap. 23 (`GG-DEPLOY-001..011`). **Keine
+  eigene `GG-SBOM-*`-Lastenheft-Familie** — SBOM ist ueber
+  `GG-CICD-007` verankert.
 
 ---
 
@@ -77,17 +83,24 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
 
 ## 2. Erfolgskriterien
 
-- **MUSS-IDs erfuellt:**
-  - `GG-RT-001..005` (5 Items): Echtzeit- und
-    Performance-Schranken inkl. 10 000-Points/s-Benchmark
-    (`GG-RT-005`).
-  - `GG-SAFE-001..008` (8 Items): Sicherheits-Audit-
-    Familie inkl. externe Eingabevalidierung.
-  - `GG-CICD-001..007` (7 Items): CI-Pflicht-Gate-Familie
-    inkl. Tests/Coverage/Dep-Audit-CI-Jobs + Release-
-    Workflow.
-  - `GG-DEPLOY-001..00X` (≥X Items): Container-Hardening +
-    Image-Audit + Healthcheck-Pollung.
+- **Lastenheft-Coverage** (MUSS/SOLLTE/KANN gem.
+  Lastenheft-Normativ-Sprache; M6-Lieferziel umfasst alle
+  drei Klassen, nicht nur MUSS):
+  - **MUSS-IDs** (17): `GG-RT-001/002/003/006` (4),
+    `GG-SAFE-001/002/003/004/007/008` (6),
+    `GG-CICD-001/002/003/005/006` (5),
+    `GG-DEPLOY-001/002/003/005/006/011` (6).
+  - **SOLLTE-IDs** (10): `GG-RT-004/005` (2) inkl.
+    10 000-Points/s-Benchmark (`GG-RT-005` ist `SOLLTE`,
+    nicht `MUSS`), `GG-SAFE-005/006` (2), `GG-CICD-004/007`
+    (2; CI-Coverage-Gate + SBOM-Release-Workflow),
+    `GG-DEPLOY-004/007/008/010` (4).
+  - **KANN-IDs** (1): `GG-DEPLOY-009`.
+  - **Klassen-Quelle:** Lastenheft-Kap. 7/20/22/23. Welle-
+    X-C0 prueft die exakte Klassen-Zuordnung pro Welle und
+    setzt DoD analog (MUSS = harte DoD, SOLLTE = DoD mit
+    Begruendung wenn nicht erfuellt, KANN = optionale
+    Erweiterung).
 - **Trigger-Aufloesung:**
   - **Trigger 008** (SBOM-Aktivierung) in `GG-CICD-007`-
     Release-Workflow-Welle.
@@ -109,8 +122,12 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
     + `GG-RT-005`-Bench reproduzierbar; Regress-Schwelle
     pinned.
 - **ADR-Lifecycle:**
-  - 1-3 M6-ADRs erwartet (Soll-Wert per ADR 0011);
-    Vorbelegung in [`M6-welle-0.md §3 M6-D-4`](../done/M6-welle-0.md):
+  - **1-3 M6-ADRs erwartet** als empirische Spannweite aus
+    den letzten drei Meilensteinen (M3: 3 ADRs, M4: 2 ADRs,
+    M5: 5 ADRs), **kein normativer Soll-Wert** — ADR 0011
+    definiert das Schaerfung-ohne-Supersedes-Pattern, nicht
+    eine ADR-Mengenschwelle.
+  - Vorbelegung in [`M6-welle-0.md §3 M6-D-4`](../done/M6-welle-0.md):
     NEU ADR 0041 (Performance-Bench-Pattern), NEU ADR 0042
     (SBOM-Tool + CI-Hook), ggf. NEU ADR 0043 (Image-Audit-
     Pflicht-Strategie).
@@ -147,9 +164,9 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Pending | TBD (entsteht in Welle-1-C0) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | TBD (ggf. ADR 0043 Image-Audit-Strategie) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
-| 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..005` (10 000-Points/s-Bench + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
+| 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..006` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
-| 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-*` + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
+| 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Naechster aktiver Slice:** Welle 0 (Slice-Plan-Eroeffnung
@@ -207,7 +224,9 @@ final):
 **Welle 4 — Performance-Benchmark:**
 
 - Lieferziel: `make perf`-Target + `GG-RT-005`-Benchmark
-  (10 000 Points/s) + Tick-Drift-Schranken (`GG-RT-001..004`).
+  (10 000 Points/s; SOLLTE) + Tick-Drift-Schranken
+  (`GG-RT-001..004/006`; davon 001/002/003/006 MUSS, 004
+  SOLLTE).
 - Bench-Framework: Vorbelegung pytest-benchmark per
   [`M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md); Welle-4-C1-
   ADR entscheidet final.
@@ -221,9 +240,10 @@ final):
 **Welle 5 — Security-Audit + Eingabevalidierung:**
 
 - Lieferziel:
-  - `GG-SAFE-001..007`: Audit-Familie (Logging-Hygiene,
-    Secret-Handling, Audit-Trail-Integritaet).
-  - **`GG-SAFE-008`** externe Eingabevalidierung an
+  - `GG-SAFE-001/002/003/004/007` (MUSS) + `GG-SAFE-005/006`
+    (SOLLTE): Audit-Familie (Logging-Hygiene, Secret-
+    Handling, Audit-Trail-Integritaet).
+  - **`GG-SAFE-008` (MUSS)** externe Eingabevalidierung an
     REST/WebSocket/Adapter-Schnittstellen produktiv
     verankert (Pydantic-Strict-Mode oder explizite
     Validation-Layer; ADR-pflichtig).
@@ -239,10 +259,10 @@ final):
 **Welle 6 — Deploy-Hardening + IEC-Smoke-Pfad-B:**
 
 - Lieferziel:
-  - `GG-DEPLOY-*`-Vollausbau: Image-Audit (`make image-
-    audit`) als CI-Pflicht-Gate; Container-Smoke-Test
-    (`make runtime` pollt `/health`); Healthcheck-Pollung-
-    Pattern.
+  - `GG-DEPLOY-001..011`-Vollausbau (6 MUSS + 4 SOLLTE +
+    1 KANN): Image-Audit (`make image-audit`) als CI-
+    Pflicht-Gate; Container-Smoke-Test (`make runtime`
+    pollt `/health`); Healthcheck-Pollung-Pattern.
   - **Trigger 009 IEC-Smoke-Reaktivierung Pfad-B** (M4-
     Erbschaft): Multi-Python-Test-Stage in Dockerfile;
     IEC-In-Process-Smoke unter Python 3.12 reaktiviert;
@@ -276,11 +296,12 @@ final):
   - **S-3** Default-`make gates` ohne `CRITICAL_COV_TARGETS`-
     Override cache-frei gruen am Welle-7-Closure-Hash.
   - **S-4** `make image-audit` cache-frei gruen
-    (`GG-DEPLOY-*`-Pflicht; Trigger 010 in Welle 1 +
-    Welle-6-Image-Audit-CI-Gate aufgeloest).
-  - **S-5** ADR-Erweiterungs-Pattern fortgefuehrt
-    (geplante ADR-Anzahl in M6: 1-3 ohne Supersedes per
-    ADR 0011).
+    (`GG-DEPLOY-001..011`-Coverage; Trigger 010 in Welle 1
+    + Welle-6-Image-Audit-CI-Gate aufgeloest).
+  - **S-5** ADR-Erweiterungs-Pattern fortgefuehrt (M6-ADR-
+    Anzahl 1-3 als empirische M3/M4/M5-Spannweite, kein
+    ADR-Sollwert per ADR 0011; ADR 0011 = Schaerfung-ohne-
+    Supersedes-Pattern).
   - **S-6** Lastenheft-Coverage-Sweep nach M6-Closure
     (Projekt-Closure-Trigger erstellen, falls kein M7).
 
@@ -359,11 +380,14 @@ Aktivierung.
   alle 9 HTTP-/WS-Endpunkte + Welle-5-C1-ADR fuer
   Validation-Strategie.
 
-- **ADR-Anzahl-Drift** — Soll-Wert 1-3 ADRs (per ADR 0011);
-  bei 3 ADRs (Bench + SBOM + Image-Audit) ist die Schwelle
-  erreicht. Risiko: zusaetzliche ADR-Pflicht in Welle 5+/6.
-  **Mitigation:** ADR-Buendelung wo moeglich; ADR-0028-
-  Schaerfung-ohne-Supersede pflegen.
+- **ADR-Anzahl-Drift** — Empirische M3/M4/M5-Spannweite ist
+  1-3 ADRs (kein ADR-Sollwert). Bei 3 ADRs (Bench + SBOM +
+  Image-Audit) ist diese Spannweite ausgeschoepft. Risiko:
+  zusaetzliche ADR-Pflicht in Welle 5+/6 (z.B. Validation-
+  Strategie, Multi-Python-Stage). **Mitigation:** ADR-
+  Buendelung wo moeglich; ADR 0011 Schaerfung-ohne-
+  Supersedes-Pattern fuer Inkremente ueber bestehende ADRs;
+  ADR 0028 Link-Maintenance fuer Bezug-Refs.
 
 ---
 
@@ -399,12 +423,14 @@ Aktivierung.
 
 **Abnahme-Verifikation (Lastenheft):**
 
-- `GG-RT-001..005` (5 IDs) ✓ in M6-Welle-4.
-- `GG-SAFE-001..008` (8 IDs) ✓ in M6-Welle-5.
-- `GG-CICD-001..007` (7 IDs) ✓ in M6-Welle-3 + Welle-2
-  (Release-Workflow + SBOM).
-- `GG-DEPLOY-001..00X` (≥X IDs) ✓ in M6-Welle-6 +
-  Welle-1 (Image-Audit + krb5-Bump).
+- `GG-RT-001..006` (6 IDs; 4 MUSS + 2 SOLLTE) ✓ in
+  M6-Welle-4.
+- `GG-SAFE-001..008` (8 IDs; 6 MUSS + 2 SOLLTE) ✓ in
+  M6-Welle-5.
+- `GG-CICD-001..007` (7 IDs; 5 MUSS + 2 SOLLTE) ✓ in
+  M6-Welle-3 + Welle-2 (Release-Workflow + SBOM).
+- `GG-DEPLOY-001..011` (11 IDs; 6 MUSS + 4 SOLLTE + 1 KANN)
+  ✓ in M6-Welle-6 + Welle-1 (Image-Audit + krb5-Bump).
 
 **Test-Bilanz-Erwartung** (Welle-7-Closure-Snapshot):
 
