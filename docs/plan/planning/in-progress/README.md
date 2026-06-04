@@ -7,6 +7,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
+| [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
