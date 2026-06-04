@@ -1,26 +1,32 @@
 # ADR 0039 — Run-Control + RunStatus-Tracking (M5 Welle 4a)
 
-**Status:** Provisional — angelegt 2026-06-02 mit M5-Welle-4a-
-C1 `f1284c4` (Status `Proposed`); auf `Provisional` gezogen
-2026-06-02 mit M5-Welle-4a-C3 (dieser Commit) nach C2-Code-
-Merge `9c188e0` (RunStatus-Literal-Alias + RunRepository-
-Extension + TickLoop-Control-Surface mit konsolidierter
+**Status:** Accepted — gezogen 2026-06-04 mit M5-Welle-7-C1
+(dieser Commit; M5-Closure-Welle). Provisional-Schritt
+2026-06-02 mit M5-Welle-4a-C3 `2b4e5b3` nach C2-Code-Merge
+`9c188e0` (RunStatus-Literal-Alias + RunRepository-Extension
++ TickLoop-Control-Surface mit konsolidierter
 `request(action)`-Methode + 2 Endpoint-Wirings auf
 existierenden Welle-1-Stubs + NEU `TickLoopRegistry`-Adapter
 + NEU `DemoTickLoopDriver` + NEU UI-Page `GET /control` +
 NEU `_demo_setup.py`-Komposition-Root; +24 Unit + 1
 Integration = 1650 unit + 50 integration Tests gruen; 10/10
-A-1-Gates ohne Override). Die ADR verankert die Replay-
-Controls-Architektur fuer die `POST /runs/{id}/control`-
-Wiring-Welle und schliesst drei NEUE Decisions (12/13/14)
-aus dem Welle-4a-Slice-Doc. Sie definiert eine **Driven-
-Port-Extension** (`RunRepositoryPort.update_status` +
-`get_status`) plus eine **TickLoop-interne Cooperative-
-State-Machine** (`_control_state` + `request(action)` +
-Pre-Tick-Guard) plus ein **HTMX-Polling-Pattern** fuer den
-UI-Status-Block (`GET /runs/{id}/status` mit 1s-Trigger).
+A-1-Gates ohne Override). Initial-Entwurf (`Proposed`)
+2026-06-02 mit M5-Welle-4a-C1 `f1284c4`. Die ADR verankert
+die Replay-Controls-Architektur fuer die
+`POST /runs/{id}/control`-Wiring-Welle und schliesst drei
+NEUE Decisions (12/13/14) aus dem Welle-4a-Slice-Doc. Sie
+definiert eine **Driven-Port-Extension**
+(`RunRepositoryPort.update_status` + `get_status`) plus
+eine **TickLoop-interne Cooperative-State-Machine**
+(`_control_state` + `request(action)` + Pre-Tick-Guard)
+plus ein **HTMX-Polling-Pattern** fuer den UI-Status-Block
+(`GET /runs/{id}/status` mit 1s-Trigger). Welle 4a..6c
+haben das Pattern produktiv-belegt (Welle-4b-Review-Folge
+F1 baute auf der `_control_state`-Resume-Semantik auf;
+Welle-6b-System-Page nutzt das Status-Polling unveraendert).
 
-**Datum:** 2026-06-02 (M5-Welle-4a-C1 `f1284c4` → C3 dieser
+**Datum:** 2026-06-02 (M5-Welle-4a-C1 `f1284c4` → C3
+`2b4e5b3`) / 2026-06-04 (M5-Welle-7-C1 Accepted, dieser
 Commit)
 
 **Bezug:**
@@ -613,8 +619,10 @@ def get_run_status(
   unter „Bezug") dokumentieren vier Nomenklatur-/
   Architektur-Layering-Anpassungen — Decisions
   semantisch unveraendert.
-- **Accepted** — geplant mit M5-Welle-7-Closure (analog
-  ADR 0030..0038).
+- **Accepted** — 2026-06-04 mit M5-Welle-7-C1 (dieser
+  Commit; M5-Closure-Welle). Welle 4a..6c haben das
+  Run-Control + Status-Tracking-Pattern produktiv-belegt;
+  keine offenen Decisions. Pattern analog ADR 0030..0038.
 
 ## 6. Folge-Pflichten
 

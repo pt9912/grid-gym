@@ -1,19 +1,25 @@
 # ADR 0040 — Alarm-Aggregation + AlarmStreamPort (M5 Welle 4b)
 
-**Status:** Provisional — angelegt 2026-06-02 mit M5-Welle-4b-
-C1 `850cf85` (Status `Proposed`); auf `Provisional` gezogen
-2026-06-02 mit M5-Welle-4b-C3 (dieser Commit) nach C2-Code-
-Merge `b7ac7b3` (NEU `Alarm`-Domain-Type + NEU Mapper-
-Familie unter `core/simulation/alarm_mappers.py` mit
-Union-typed `alarm_from_power_device_alarm` + dispatch-
-Entry-Point + `TickResult.emitted_alarms`-Feld + TickLoop-
-Drain-Hook + NEU `AlarmStreamPort` + NEU
-`InMemoryAlarmStream` + NEU `AlarmHistoryBuffer` + NEU
-REST-`/alarms-history`-Endpoint + NEU WS-`/alarms-stream`-
-Endpoint + NEU UI-Page mit 6-Spalten-Tabelle + NEU
-`_alarm_setup.py`-Komposition-Root + DemoTickLoopDriver-
-Erweiterung; +31 Unit + 1 Integration-Test = 1681 unit +
-51 integration Tests gruen; 10/10 A-1-Gates ohne Override).
+**Status:** Accepted — gezogen 2026-06-04 mit M5-Welle-7-C1
+(dieser Commit; M5-Closure-Welle). Provisional-Schritt
+2026-06-02 mit M5-Welle-4b-C3 `4dca6aa` nach C2-Code-Merge
+`b7ac7b3` (NEU `Alarm`-Domain-Type + NEU Mapper-Familie
+unter `core/simulation/alarm_mappers.py` mit Union-typed
+`alarm_from_power_device_alarm` + dispatch-Entry-Point +
+`TickResult.emitted_alarms`-Feld + TickLoop-Drain-Hook +
+NEU `AlarmStreamPort` + NEU `InMemoryAlarmStream` + NEU
+`AlarmHistoryBuffer` + NEU REST-`/alarms-history`-Endpoint
++ NEU WS-`/alarms-stream`-Endpoint + NEU UI-Page mit
+6-Spalten-Tabelle + NEU `_alarm_setup.py`-Komposition-Root
++ DemoTickLoopDriver-Erweiterung; +31 Unit + 1 Integration-
+Test = 1681 unit + 51 integration Tests gruen; 10/10 A-1-
+Gates ohne Override). Initial-Entwurf (`Proposed`)
+2026-06-02 mit M5-Welle-4b-C1 `850cf85`. Welle-4b-Review-
+Folge `52afd1a`/`fe1db21`/`ced9661`/`1fba165` adressierte
+15 Findings (XSS-Haertung, Lifecycle, Tick-Atomicity,
+Resume-Semantik). Die ADR loest ausserdem den ADR-0014-§6-
+Driving-Side-Forward-Pointer „AlarmSinkPort kommt mit M3"
+produktiv auf (Postgres-Persistenz bleibt M3-Welle-6c).
 Die ADR verankert die Alarm-Architektur fuer die Welle-4b-
 Lieferung und schliesst drei NEUE Decisions (15/16/17) aus
 dem Welle-4b-Slice-Doc. Sie definiert eine **NEU Domain-
@@ -754,8 +760,11 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   unter „Bezug") dokumentieren vier Layering- und
   API-Surface-Anpassungen — Decisions semantisch
   unveraendert.
-- **Accepted** — geplant mit M5-Welle-7-Closure (analog
-  ADR 0030..0039).
+- **Accepted** — 2026-06-04 mit M5-Welle-7-C1 (dieser
+  Commit; M5-Closure-Welle). Welle 4b..6c haben die
+  Alarm-Aggregation + AlarmStreamPort produktiv-belegt;
+  Welle-4b-Review-Folge 15/15 Findings adressiert; keine
+  offenen Decisions. Pattern analog ADR 0030..0039.
 
 ## 6. Folge-Pflichten
 

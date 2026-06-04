@@ -1,24 +1,28 @@
 # ADR 0038 — TelemetryStreamPort (M5 Welle 3)
 
-**Status:** Provisional — angelegt 2026-06-01 mit M5-Welle-3-
-C1 `9f3c00d` (Status `Proposed`); auf `Provisional` gezogen
-2026-06-01 mit M5-Welle-3-C3 (dieser Commit) nach C2-Code-
-Merge `82bdf39` (NEU `TelemetryStreamPort` + NEU
+**Status:** Accepted — gezogen 2026-06-04 mit M5-Welle-7-C1
+(dieser Commit; M5-Closure-Welle). Provisional-Schritt
+2026-06-01 mit M5-Welle-3-C3 `0e0473d` nach C2-Code-Merge
+`82bdf39` (NEU `TelemetryStreamPort` + NEU
 `InMemoryTelemetryStream` + `DemoTelemetryGenerator` +
 WS-Subscribe-Wiring + Dashboard-UI-Page + 6-Zustands-
-Quality-Marker; 16 neue Unit + 2 Integration-Tests
-+ Welle-1-Smoke-Anpassung; 10/10 A-1-Gates gruen
-ohne Override). Die ADR schaerft die Telemetry-Source-
-Architektur fuer die Live-Telemetry-Dashboard-Welle und
-schliesst Welle-0-Decision 11 (siehe
+Quality-Marker; 16 neue Unit + 2 Integration-Tests +
+Welle-1-Smoke-Anpassung; 10/10 A-1-Gates gruen ohne
+Override). Initial-Entwurf (`Proposed`) 2026-06-01 mit
+M5-Welle-3-C1 `9f3c00d`. Die ADR schaerft die Telemetry-
+Source-Architektur fuer die Live-Telemetry-Dashboard-
+Welle und schliesst Welle-0-Decision 11 (siehe
 [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)).
 Sie verankert eine NEUE Driving-Port-Surface
 `TelemetryStreamPort` (mit `publish()`/`subscribe()`/
 `TelemetryPoint`) plus den Stand-Adapter
 `InMemoryTelemetryStream` als asyncio-Pub/Sub-Implementation
-mit bounded Queues + Drop-Oldest-Backpressure.
+mit bounded Queues + Drop-Oldest-Backpressure. Welle 3..6c
+haben die Surface produktiv-belegt (WS-Dashboard
+GG-UI-002/003/009 + Welle-6b-Devices-Quality-Aggregation).
 
-**Datum:** 2026-06-01 (M5-Welle-3-C1 `9f3c00d` → C3 dieser
+**Datum:** 2026-06-01 (M5-Welle-3-C1 `9f3c00d` → C3
+`0e0473d`) / 2026-06-04 (M5-Welle-7-C1 Accepted, dieser
 Commit)
 
 **Bezug:**
@@ -331,8 +335,10 @@ deterministisch (kein Wait-on-GC).
   stream.py:publish` mit `contextlib.suppress(asyncio.
   QueueEmpty)`-Drain; Decision 11c produktiv im
   `subscribe`-AsyncGenerator-`try/finally`-Block.
-- **Accepted** — geplant mit M5-Welle-7-Closure (analog
-  ADR 0030..0037).
+- **Accepted** — 2026-06-04 mit M5-Welle-7-C1 (dieser
+  Commit; M5-Closure-Welle). Welle 3..6c haben den
+  TelemetryStreamPort produktiv-belegt; keine offenen
+  Decisions. Pattern analog ADR 0030..0037.
 
 ## 6. Folge-Pflichten
 

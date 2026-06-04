@@ -1,20 +1,24 @@
 # ADR 0037 — HTTP-API-Surface-Pattern (M5 Welle 1)
 
-**Status:** Provisional — angelegt 2026-06-01 mit M5-Welle-1-C1
-`d468e68` (Status `Proposed`); auf `Provisional` gezogen
-2026-06-01 mit M5-Welle-1-C3 (dieser Commit) nach C2-Code-
-Merge `ae630ce` (5 REST + 1 WebSocket + Pydantic-Schemas +
-1600 unit + 41 integration Tests; 10/10 A-1-Gates gruen).
-Die ADR schaerft die HTTP-API-Surface (`GG-API-001..004`)
-aus
+**Status:** Accepted — gezogen 2026-06-04 mit M5-Welle-7-C1
+(dieser Commit; M5-Closure-Welle). Provisional-Schritt
+2026-06-01 mit M5-Welle-1-C3 `f9f514d` nach C2-Code-Merge
+`ae630ce` (5 REST + 1 WebSocket + Pydantic-Schemas + 1600
+unit + 41 integration Tests; 10/10 A-1-Gates gruen).
+Initial-Entwurf (`Proposed`) 2026-06-01 mit M5-Welle-1-C1
+`d468e68`. Die ADR schaerft die HTTP-API-Surface
+(`GG-API-001..004`) aus
 [`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md)
 konkret fuer M5-Welle-1-Implementation und schliesst zwei
 Decisions aus der M5-Welle-0-Decision-Liste (siehe
 [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
 Decisions 4 + 9). Plus ein Roadmap-Typo-Fix als Welle-1-
-Folge.
+Folge. Welle 1..6c haben die Surface produktiv-belegt
+(Welle-4a Replay-Controls, Welle-6a Cross-Field-Validation,
+Welle-6b Devices-State-URL-Realization).
 
-**Datum:** 2026-06-01 (M5-Welle-1-C1 `d468e68` → C3 dieser
+**Datum:** 2026-06-01 (M5-Welle-1-C1 `d468e68` → C3
+`f9f514d`) / 2026-06-04 (M5-Welle-7-C1 Accepted, dieser
 Commit)
 
 **Bezug:**
@@ -253,8 +257,10 @@ zugewiesen).
   Abwesenheit eines `UICommandPort`-Slots im Repo;
   Decision API-3 in C3 (dieser Commit) durch
   `roadmap.md §3 M5`-Edit (`GG-AR-PORT-DRG-002` → Verwerfung).
-- **Accepted** — geplant mit M5-Welle-7-Closure (analog
-  ADR 0030..0036).
+- **Accepted** — 2026-06-04 mit M5-Welle-7-C1 (dieser
+  Commit; M5-Closure-Welle). Welle 1..6c haben die HTTP-
+  API-Surface produktiv-belegt; keine offenen Decisions
+  oder Sub-Entscheidungen. Pattern analog ADR 0030..0036.
 
 ## 6. Folge-Pflichten
 

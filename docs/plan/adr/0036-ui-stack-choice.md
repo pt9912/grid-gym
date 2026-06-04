@@ -1,10 +1,11 @@
 # ADR 0036 — UI-Stack-Wahl (M5)
 
-**Status:** Provisional — gezogen 2026-06-01 mit M5-Welle-1-
-C1 (dieser Commit) nach Pre-C0c-HTMX-FastAPI-Smoke-Probe-Run
-`9c20dad` (4 Probe-Tests in `tests/integration/
-test_m5_welle_1_htmx_probe.py` validieren die drei
-kritischen Composition-Punkte server-side:
+**Status:** Accepted — gezogen 2026-06-04 mit M5-Welle-7-
+C1 (dieser Commit; M5-Closure-Welle). Provisional-Schritt
+2026-06-01 mit M5-Welle-1-C1 nach Pre-C0c-HTMX-FastAPI-
+Smoke-Probe-Run `9c20dad` (4 Probe-Tests in `tests/
+integration/test_m5_welle_1_htmx_probe.py` validieren die
+drei kritischen Composition-Punkte server-side:
 FastAPI-HTML-Response, HTMX-`HX-Request`-Pattern,
 WebSocket-Server-Push). Initial-Entwurf (`Proposed`)
 2026-06-01 mit Pre-M5-Welle-0-Sondierung (`f4a9ced`) +
@@ -12,15 +13,16 @@ Charting-Library-Sub-Decision (`e0c3f66`). Die ADR fixiert
 **Option 1** (FastAPI + HTMX + Jinja2 + Chart.js) als
 M5-UI-Stack; die drei anderen Optionen (1b SvelteKit-SPA,
 2 React-SPA, 3 Streamlit ausgeschlossen) bleiben als
-dokumentierte Alternativen fuer Welle-6+/M6-Migration falls
-Stakeholder-Druck spaeter aufkommt. M5-Welle-7-Closure
-zieht die ADR auf `Accepted` (Pattern analog ADR
-0030..0035 in M4-Welle-7-C1 `d2071f0`).
+dokumentierte Alternativen fuer M6-Migration falls
+Stakeholder-Druck spaeter aufkommt. Welle 1..6c haben den
+Stack produktiv-belegt: 9 HTTP-/WS-Endpunkte + 7 UI-Pages
++ 80 Integration-Smokes (Pattern analog ADR 0030..0035 in
+M4-Welle-7-C1 `d2071f0`).
 
 Status-Pfad: Proposed (2026-06-01 `f4a9ced` + Charting-Sub-
-Decision `e0c3f66`) → **Provisional** (dieser Commit;
-M5-Welle-1-C1 nach Probe-Run-Validation) → Accepted
-(geplant mit M5-Welle-7-Closure).
+Decision `e0c3f66`) → Provisional (2026-06-01 M5-Welle-1-C1
+nach Probe-Run-Validation) → **Accepted** (dieser Commit;
+M5-Welle-7-Closure).
 **Datum:** 2026-06-01 (Erstfassung) / 2026-06-01 (Provisional-Schaerfung, M5-Welle-1-C1)
 **Bezug:**
 [`ADR 0001`](0001-documentation-and-planning-structure.md)
