@@ -114,8 +114,9 @@ As of **2026-06-04**:
 
 - M1..M4 · `Done` (16 ADRs `Accepted`).
 - **M5 — UI + Demo** · `In Progress` since 2026-06-01. Waves
-  0..6b `Done`; active wave **6c (Acceptance docs
-  `GG-DEMO-008`)**. Wave status table:
+  0..6c `Done` (Wave-6-subdivision 6a/6b/6c complete
+  2026-06-04); active wave **7 (M5-Closure)**. Wave status
+  table:
   [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - M6 · `Pending`.
 

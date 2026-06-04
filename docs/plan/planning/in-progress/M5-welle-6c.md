@@ -1,13 +1,21 @@
 # Welle 6c — M5 Abnahmedoku (`GG-DEMO-008`)
 
-**Status:** In Progress — eroeffnet 2026-06-04 mit C0
-(dieser Commit). Dritte und letzte Sub-Welle der Welle-6-
-Subdivision (siehe [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+**Status:** Done 2026-06-04 — eroeffnet 2026-06-04 mit C0
+`3db9fcd` (Slice-Doc) + C2 `0e604e4` (Abnahmedoku
+[`docs/user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md)
++ Top-Level-Doku-Sync + Status-Kompression) + C3 (dieser
+Commit; Status/DoD-Sync + Welle-6-Subdivision-Abschluss-
+Note). Ausstehend: C4a Self-Close-Move
+`M5-welle-6c.md → done/` + C4b Cross-Doc-Refs-Sync.
+Dritte und letzte Sub-Welle der Welle-6-Subdivision (siehe
+[`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
 §0 Sub-Slicing-Beschluss). Welle 6c loest die letzte
 Welle-5-Anti-Scope-Erbschaft auf (Welle-5-C2-Folge-
 Entscheid 2026-06-03 in `done/M5-welle-5.md §10.1`:
 `GG-DEMO-008` auf Welle 6 verschoben fuer Range-
-Konsistenz mit `GG-DEMO-006`).
+Konsistenz mit `GG-DEMO-006`). **Welle-6-Subdivision
+komplett:** 6a (`Done 2026-06-03`) + 6b (`Done 2026-06-04`)
++ 6c (`Done 2026-06-04`).
 
 Welle 6c ist die **neunte (und letzte) Welle der Welle-6-
 Subdivision** ohne neuen Backend-Code. Reiner Doku-Slice:
@@ -301,7 +309,7 @@ verankert.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **NEU `docs/user/gg-demo-008-abnahme.md`** mit
+- [x] **NEU `docs/user/gg-demo-008-abnahme.md`** mit
   6 Abnahme-Schritten:
   - Voraussetzungen + Start (`make demo`).
   - Healthcheck (`GET /health`).
@@ -310,28 +318,32 @@ verankert.
   - Fault-Injection (UI-Form + YAML).
   - Replay-Controls (pause/resume/stop).
   - Export (Snapshot-Stub-Pointer + WS-Streams).
-- [ ] **`README.md` + `README.de.md`** Pointer-Bullet
-  auf die Abnahmedoku.
-- [ ] **`make docs-check`** cache-frei gruen.
-- [ ] **`make gates`** cache-frei gruen ohne Override.
-- [ ] **`GG-DEMO-008`** erfuellt.
-- [ ] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
-  Welle-6c-Zeile auf `Done <C3-Datum>` geflipt.
-- [ ] **`in-progress/README.md`** Welle-6c-Closure-
-  Block + Welle-7-Aktive-Welle-Marker.
-- [ ] **`roadmap.md`** Welle-6c-Closure-Entry +
+- [x] **`README.md` + `README.de.md`** Pointer-Bullet
+  auf die Abnahmedoku (zusammen mit Status-Block-
+  Kompression auf User-Feedback).
+- [x] **`make docs-check`** cache-frei gruen.
+- [x] **`make gates`** cache-frei gruen ohne Override.
+- [x] **`GG-DEMO-008`** erfuellt.
+- [x] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
+  Welle-6c-Zeile auf `Done 2026-06-04` geflipt (dieser
+  Commit).
+- [x] **`in-progress/README.md`** Welle-6c-Closure-
+  Block + Welle-7-Aktive-Welle-Marker (dieser Commit).
+- [x] **`roadmap.md`** Welle-6c-Closure-Entry +
   Welle-6-Subdivision-Abschluss-Note (6a/6b/6c alle
-  Done).
+  Done; dieser Commit).
 - [ ] **NEU C4 Self-Close-Move + Cross-Doc-Refs-Sync**
-  als zwei separate Folge-Commits nach C3.
+  als zwei separate Folge-Commits nach C3 (Pattern
+  Welle-6b `b30280e`/`3a6f150`).
 
 **Anti-Scope-Verifikation (Welle 6c NICHT):**
 
-- [ ] Keine neuen Tests (Demo-Pipeline ist gedeckt).
-- [ ] Keine neuen Endpunkte / kein neuer Code.
-- [ ] Kein C1-ADR.
-- [ ] Kein CSV/JSONL-Export (Welle 7+/M6).
-- [ ] Kein Tutorial (`GG-ACCEPT-001`-Welle-7-Closure).
+- [x] Keine neuen Tests (Demo-Pipeline durch Welle-
+  5/6a/6b-Smokes gedeckt; Test-Counts bleiben 1722/80).
+- [x] Keine neuen Endpunkte / kein neuer Code.
+- [x] Kein C1-ADR.
+- [x] Kein CSV/JSONL-Export (Welle 7+/M6).
+- [x] Kein Tutorial (`GG-ACCEPT-001`-Welle-7-Closure).
 
 ---
 

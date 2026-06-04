@@ -238,10 +238,27 @@
   internes `_DeviceView`-Protocol haelt AC-ADAPTER-
   PURE ein. Decision 23: Chart.js bleibt (kein
   Plotly/ECharts-Spike).
-  **Aktive Welle:** **Welle 6c (Abnahmedoku
-  `GG-DEMO-008`)** als letzte Sub-Welle der Welle-6-
-  Subdivision ohne Code-Substanz; Slice-Doc entsteht
-  in Welle-6c-C0.
+  **Welle 6c (Abnahmedoku `GG-DEMO-008`) abgeschlossen
+  2026-06-04** mit C0 `3db9fcd` (Slice-Doc
+  [`M5-welle-6c.md`](M5-welle-6c.md)) + C2 `0e604e4`
+  (NEU `docs/user/gg-demo-008-abnahme.md` mit
+  6-Schritt-Abnahmereihenfolge per `GG-DEMO-008`
+  Lastenheft §24; Top-Level-Doku-Sync + Status-Block-
+  Kompression auf User-Feedback) + C3 (dieser Commit;
+  Status/DoD-Sync + Welle-6-Subdivision-Abschluss-Note).
+  Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-Refs-
+  Sync. Test-Counts unveraendert (1722/80; reiner Doku-
+  Slice). Welle-5-Anti-Scope-Erbschaft `GG-DEMO-008`
+  aufgeloest; letzte Welle-6-Sub-Slice.
+  **Welle-6-Subdivision komplett 2026-06-04** (6a
+  Fault-Flow + 6b UI-Visualization + 6c Abnahmedoku;
+  drei Sub-Slices analog M4-Welle-6 → 6a/6b-Pattern).
+  **Aktive Welle:** **Welle 7 (M5-Closure)**: M5-ADRs
+  0036..0040 auf `Accepted`, NEU `done/M5-results.md`
+  mit Welle-Tabelle/Abnahme-Belegen, `roadmap.md §3 M5`
+  DoD-Checkboxen + M5 auf `Done`, Self-Close-Move
+  `M5-ui-demo.md → done/`, S-1..S-6-Sweep. Slice-Doc
+  entsteht in Welle-7-C0.
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
