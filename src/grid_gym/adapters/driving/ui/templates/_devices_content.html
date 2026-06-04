@@ -1,0 +1,92 @@
+<section class="devices" data-run-id="{{ run_id }}">
+    <h1>Devices — {{ run_id }}</h1>
+
+    <p class="page-intro">
+        Welle-6b (Decision 21/22): Geraete-Grafik per HTMX-Polling-
+        Tabelle. Pflicht-Subset pro Device-Typ; Quality-Marker ist
+        die worst-case-Quality der letzten Tick-Telemetrie.
+    </p>
+
+    <div id="devices-table"
+         class="devices-table"
+         hx-get="/runs/{{ run_id }}/devices/state"
+         hx-trigger="every 1s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="status-line">Loading devices...</p>
+    </div>
+
+    <script>
+    (function () {
+        // Welle-6b-Decision-22: Page-spezifischer Inline-JS-Handler
+        // rendert die JSON-Antwort des `GET /devices`-Endpunkts als
+        // 4-Spalten-Tabelle. Idempotenz-Guard analog Welle-6a-Faults
+        // (HTMX re-evaluiert <script>-Tags in geswappten Partials).
+        if (document.body.dataset.devicesTableListenersAttached === "true") {
+            return;
+        }
+        document.body.dataset.devicesTableListenersAttached = "true";
+
+        function isDevicesTableRequest(event) {
+            return event.detail && event.detail.target
+                && event.detail.target.id === "devices-table";
+        }
+
+        function renderStateCell(state) {
+            // state ist {key: string|bool}; rendert als kurze
+            // Schluessel:Wert-Liste in einer einzelnen Zelle.
+            const keys = Object.keys(state);
+            if (keys.length === 0) {
+                return "<span class=\"state-empty\">—</span>";
+            }
+            return keys.map(function (key) {
+                const value = state[key];
+                const valueStr = typeof value === "boolean"
+                    ? (value ? "true" : "false")
+                    : String(value);
+                return "<span class=\"state-pair\">"
+                    + "<span class=\"state-key\">" + key + "</span>"
+                    + "<span class=\"state-value\">" + valueStr + "</span>"
+                    + "</span>";
+            }).join("");
+        }
+
+        function renderTable(payload) {
+            const devices = (payload && payload.devices) || [];
+            if (devices.length === 0) {
+                return "<p class=\"status-line\">No devices registered for this run.</p>";
+            }
+            const rows = devices.map(function (device) {
+                return "<tr data-device-id=\"" + device.device_id + "\""
+                    + " data-quality=\"" + device.quality + "\">"
+                    + "<td class=\"col-id\">" + device.device_id + "</td>"
+                    + "<td class=\"col-type\">" + device.device_type + "</td>"
+                    + "<td class=\"col-state\">" + renderStateCell(device.state || {}) + "</td>"
+                    + "<td class=\"col-quality quality-" + device.quality + "\">"
+                    + device.quality + "</td>"
+                    + "</tr>";
+            }).join("");
+            return ""
+                + "<table class=\"devices\">"
+                + "<thead><tr>"
+                + "<th>ID</th><th>Type</th><th>State</th><th>Quality</th>"
+                + "</tr></thead>"
+                + "<tbody>" + rows + "</tbody>"
+                + "</table>";
+        }
+
+        document.body.addEventListener("htmx:beforeSwap", function (event) {
+            if (!isDevicesTableRequest(event)) {
+                return;
+            }
+            let payload;
+            try {
+                payload = JSON.parse(event.detail.serverResponse);
+            } catch (err) {
+                return;
+            }
+            event.detail.serverResponse = renderTable(payload);
+        });
+    })();
+    </script>
+</section>

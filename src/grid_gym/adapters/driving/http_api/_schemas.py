@@ -32,6 +32,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from grid_gym.hexagon.core.domain.alarm import AlarmSeverity, AlarmStatus
+from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.run import RunStatus
 
 
@@ -222,6 +223,62 @@ class AlarmsResponse(BaseModel):
     run_id: str = Field(description="UUIDv4-Identitaet des Laufs.")
     alarms: list[AlarmDto] = Field(
         description="Liste der letzten Alarms; neueste zuerst.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /runs/{run_id}/devices (M5 Welle 6b, Decision 21)
+# ---------------------------------------------------------------------------
+
+
+class DeviceStateEntry(BaseModel):
+    """Per-Device-Entry der `DevicesResponse` (M5 Welle 6b, Decision 21).
+
+    `state` ist ein flaches Mapping mit dem Welle-6b-Pflicht-Subset
+    pro Device-Typ (Decision 21 §3.1):
+
+    - `battery`: `soc_kwh`, `current_power_kw`, `cell_failure_active`.
+    - `pv` / `load`: `current_power_kw`.
+    - `grid_connection`: `current_power_kw`, `current_voltage_v`,
+      `voltage_drop_active`.
+    - `smart_meter`: `{}` (kein eigener State).
+
+    `Decimal`-Werte werden vom Endpoint VOR der Pydantic-Konstruktion
+    via `str(...)` serialisiert (canonical_json-Konsistenz; ADR 0021
+    §2.9 + Welle-3-`TelemetryPoint.value`-Pattern). Bool-Flags bleiben
+    `bool`. `quality` ist die worst-case `Quality` aller Telemetrie-
+    Punkte des letzten Tick (Decision 21; Pre-First-Tick → `VALID`).
+    """
+
+    device_id: str = Field(description="Device-ID aus dem Run-Scenario.")
+    device_type: str = Field(
+        description=("Device-Typ-Segment (`battery`/`pv`/`load`/`grid_connection`/`smart_meter`)."),
+    )
+    state: dict[str, str | bool] = Field(
+        description="Welle-6b-Pflicht-Subset pro Device-Typ (Decision 21 §3.1).",
+    )
+    quality: Quality = Field(
+        description=(
+            "Worst-case `Quality` der letzten `device.telemetry()`-Sequenz; "
+            "`VALID` bei leerer Telemetrie (Pre-First-Tick)."
+        ),
+    )
+
+
+class DevicesResponse(BaseModel):
+    """Antwort auf `GET /runs/{run_id}/devices` (M5 Welle 6b,
+    Decision 21; `GG-UI-006`).
+
+    Liste aller im aktiven TickLoop registrierten Devices mit
+    State-Subset + Quality-Marker. Reihenfolge spiegelt die
+    Konstruktor-/Tick-Iteration-Reihenfolge (deterministisch).
+    Ohne aktiven TickLoop (Welle-1-Stub-Pfad fuer rein
+    persistierte Runs) bleibt `devices` leer.
+    """
+
+    run_id: str = Field(description="UUIDv4-Identitaet des Laufs.")
+    devices: list[DeviceStateEntry] = Field(
+        description="Geraete-Eintraege in TickLoop-Iteration-Reihenfolge.",
     )
 
 

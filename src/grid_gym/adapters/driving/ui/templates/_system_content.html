@@ -1,0 +1,87 @@
+<section class="system" data-run-id="{{ run_id }}">
+    <h1>System Status — {{ run_id }}</h1>
+
+    <p class="page-intro">
+        Welle-6b (Decision 22): Simulationszustands-Dashboard.
+        Run-Status pollt `GET /runs/{{ run_id }}/status` jede
+        Sekunde; Service-Health pollt `GET /health` alle 5s.
+    </p>
+
+    <h2>Run Status</h2>
+    <div id="system-run-status"
+         class="run-status"
+         hx-get="/runs/{{ run_id }}/status"
+         hx-trigger="every 1s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="status-line">Loading run status...</p>
+    </div>
+
+    <h2>Service Health</h2>
+    <div id="system-service-health"
+         class="service-health"
+         hx-get="/health"
+         hx-trigger="every 5s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="status-line">Loading service health...</p>
+    </div>
+
+    <script>
+    (function () {
+        // Welle-6b-Decision-22: Inline-JS rendert die JSON-Antworten
+        // beider Polling-Bloecke. Idempotenz-Guard analog Welle-4a-
+        // Control + Welle-6a-Faults.
+        if (document.body.dataset.systemPageListenersAttached === "true") {
+            return;
+        }
+        document.body.dataset.systemPageListenersAttached = "true";
+
+        function renderRunStatus(payload) {
+            return ""
+                + "<p class=\"status-line\">"
+                + "<span class=\"run-state state-" + payload.state + "\">"
+                + payload.state + "</span>"
+                + " &middot; "
+                + "<span class=\"sim-time\">sim time: "
+                + payload.simulation_time + " ms</span>"
+                + " &middot; "
+                + "<span class=\"tick-count\">ticks: "
+                + payload.tick_count + "</span>"
+                + "</p>";
+        }
+
+        function renderServiceHealth(payload) {
+            const status = payload && payload.status ? payload.status : "unknown";
+            const label = status === "ok" ? "OK" : status.toUpperCase();
+            return ""
+                + "<p class=\"status-line\">"
+                + "<span class=\"service-status status-" + status + "\">"
+                + "Service: " + label
+                + "</span>"
+                + "</p>";
+        }
+
+        document.body.addEventListener("htmx:beforeSwap", function (event) {
+            const target = event.detail.target;
+            if (!target) {
+                return;
+            }
+            let payload;
+            try {
+                payload = JSON.parse(event.detail.serverResponse);
+            } catch (err) {
+                return;
+            }
+            if (target.id === "system-run-status") {
+                event.detail.serverResponse = renderRunStatus(payload);
+                return;
+            }
+            if (target.id === "system-service-health") {
+                event.detail.serverResponse = renderServiceHealth(payload);
+                return;
+            }
+        });
+    })();
+    </script>
+</section>
