@@ -175,7 +175,8 @@ M4-Welle-6 → 6a/6b.
 Doc [`M5-welle-6b.md`](../done/M5-welle-6b.md), Decisions
 21/22/23 final 2026-06-03; C0 `efc2c10` + C2 `9fcb887`
 + C3 `580b2f0` + C4a `b30280e` Self-Close-Move + C4b
-Cross-Doc-Refs-Sync dieser Commit). Volle Substanz lebt im Slice-Doc;
+`3a6f150` Cross-Doc-Refs-Sync + Review-Folge `cd7cfc6`
+mit 15/15 Findings F1..F15 adressiert). Volle Substanz lebt im Slice-Doc;
 Quick-Glance:
 
 - **GG-UI-006 (Geraete-Grafik)** — HTMX-Polling-

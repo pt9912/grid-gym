@@ -37,10 +37,10 @@ make help
 make gates              # 10 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # Unit-Test-Suite (~1718 Tests, Stand 2026-06-04,
+make test-unit          # Unit-Test-Suite (~1722 Tests, Stand 2026-06-04,
                         # M5-Welle-4b-Closure + Review-Folge)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (77 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
+                        # (80 passed + 4 skipped Tests inkl. OTLP-, MQTT-,
                         # Modbus-, OPC-UA-, DNP3-, IEC-61850-, M5-HTTP-API-,
                         # M5-UI-Foundation-, M5-Live-Telemetry-,
                         # M5-Replay-Controls- und M5-Alarms-Smokes +
@@ -121,8 +121,8 @@ Stand **2026-06-03** (nach M5-Welle-6a-Closure):
 - **M5 — UI + Demo** · `In Progress` seit 2026-06-01 — aktive Welle: **6c (Abnahmedoku `GG-DEMO-008`)**. Welle 0..6b `Done` (Welle 6b UI-Visualization `Done` 2026-06-04 — `GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-Zustand-Dashboard; Welle 6a Fault-Flow `Done` 2026-06-03). Welle 6 ist in 6a/6b/6c sub-gesliced. Welle-Status-Tabelle: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Testbilanz** (2026-06-04, nach M5-Welle-6b-Closure): 1718 Unit-
-Tests + 77 Integration-Tests passed + 4 skipped. Die 4 skipped
+**Testbilanz** (2026-06-04, nach M5-Welle-6b-Closure): 1722 Unit-
+Tests + 80 Integration-Tests passed + 4 skipped. Die 4 skipped
 Tests sind der **2c-Mock-only-Fallback** fuer den IEC-61850-In-
 Process-`IedServer`-Smoke (ADR 0035 §2.5; Trigger 009). Pro-
 Welle-Test-Inkremente leben in den Slice-Docs unter
@@ -248,8 +248,8 @@ Der MVP umfasst laut Lastenheft mindestens:
 │           ├── driven/         ← Clock, DeviceProtocol, Fault, Observability, Random, RunRepository
 │           └── driving/        ← AlarmStream, TelemetryStream
 ├── tests/
-│   ├── integration/             ← Compose-basierte Integration-Tests (77 passed + 4 skipped)
-│   ├── unit/                    ← pytest-Unit-Tests (1718 Stand 2026-06-04)
+│   ├── integration/             ← Compose-basierte Integration-Tests (80 passed + 4 skipped)
+│   ├── unit/                    ← pytest-Unit-Tests (1722 Stand 2026-06-04)
 │   └── unit/_arch_check_*       ← Architektur-Tests (6 lint + 14 custom = 20 Contracts)
 └── tools/
     ├── arch_check.py                ← AST- / Graph-Architektur-Checks (ADR 0002 §A-1)

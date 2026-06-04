@@ -37,10 +37,10 @@ make help
 make gates              # 10 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # unit test suite (~1718 tests as of 2026-06-04,
+make test-unit          # unit test suite (~1722 tests as of 2026-06-04,
                         # M5-Welle-4b closure + review-folge)
 make test-integration   # Compose/testcontainers integration suite
-                        # (77 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
+                        # (80 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
                         # OPC-UA, DNP3, IEC-61850, M5-HTTP-API, M5-UI-Foundation,
                         # M5-Live-Telemetry, M5-Replay-Controls and M5-Alarms
                         # smokes + async pub/sub probe)
@@ -119,8 +119,8 @@ As of **2026-06-03** (post M5 Wave 6a closure):
 - **M5 — UI + Demo** · `In Progress` since 2026-06-01 — active wave: **6c (Acceptance docs `GG-DEMO-008`)**. Waves 0..6b `Done` (Wave 6b UI-Visualization `Done` 2026-06-04 — `GG-UI-006` device grid + `GG-UI-008` system dashboard; Wave 6a Fault-Flow `Done` 2026-06-03). Wave 6 is sub-sliced into 6a/6b/6c. Wave status table: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
 - **M6 — Performance + Security + CI/CD** · `Pending`
 
-**Test balance** (2026-06-04, post M5 Wave 6b closure): 1718 unit
-+ 77 integration passed + 4 skipped. The 4 skipped tests are the
+**Test balance** (2026-06-04, post M5 Wave 6b closure): 1722 unit
++ 80 integration passed + 4 skipped. The 4 skipped tests are the
 **2c mock-only fallback** for the IEC-61850 in-process `IedServer`
 smoke (ADR 0035 §2.5; trigger 009). Per-wave test increments live
 in the slice docs under
@@ -246,8 +246,8 @@ According to the requirements specification, the MVP comprises at least:
 │           ├── driven/         ← Clock, DeviceProtocol, Fault, Observability, Random, RunRepository
 │           └── driving/        ← AlarmStream, TelemetryStream
 ├── tests/
-│   ├── integration/             ← Compose-based integration tests (77 passed + 4 skipped)
-│   ├── unit/                    ← pytest unit tests (1718 as of 2026-06-04)
+│   ├── integration/             ← Compose-based integration tests (80 passed + 4 skipped)
+│   ├── unit/                    ← pytest unit tests (1722 as of 2026-06-04)
 │   └── unit/_arch_check_*       ← architecture tests (6 lint + 14 custom = 20 contracts)
 └── tools/
     ├── arch_check.py                ← AST / graph architecture checks (ADR 0002 §A-1)

@@ -10,7 +10,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
 | [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
-| [`M5-welle-6b.md`](../done/M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** (C0 `efc2c10` + C2 `9fcb887` + C3 `580b2f0` + C4a `b30280e` Self-Close-Move + C4b Cross-Doc-Refs-Sync dieser Commit). |
+| [`M5-welle-6b.md`](../done/M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** + Self-Close-Move `b30280e` + Cross-Doc-Refs-Sync `3a6f150` (6 Refs) + Review-Folge `cd7cfc6` (15/15 Findings F1..F15). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -351,14 +351,26 @@ zwei Page-Routes + NEU 4 Templates `devices.html` +
 `_devices_content.html` + `system.html` +
 `_system_content.html` + Navigation um „Devices"/
 „System" erweitert + NEU Integration-Smoke 13 Tests +
-NEU Unit-Tests 15 Tests) + C3 (dieser Commit;
-Status/DoD-Sync + §10 C2-Realization-Notes). Ausstehend:
-C4a Self-Close-Move `M5-welle-6b.md → done/` + C4b
-Cross-Doc-Refs-Sync nach Move. 1696 → 1718 Unit-Tests
-(+22; davon 15 NEU `test_devices_endpoint_helpers.py`);
-64 → 77 Integration (+13 Welle-6b-Smoke). Lastenheft-
-Akzeptanz `GG-UI-006 + GG-UI-008` produktiv. 10/10
-A-1-Gates gruen cache-frei ohne Override.
+NEU Unit-Tests 15 Tests) + C3 `580b2f0` (Status/DoD-Sync
++ §10 C2-Realization-Notes) + C4a `b30280e` (Self-Close-
+Move `M5-welle-6b.md → done/`, rename-only) + C4b
+`3a6f150` (Cross-Doc-Refs-Sync nach Move, 6 Refs) +
+**Review-Folge `cd7cfc6`** (high-effort `/code-review`
+→ 15/15 Findings F1..F15 adressiert in 7 Clustern:
+F1/F4/F7 XSS-Haertung via DOM-API + textContent;
+F2/F5/F6 Pre-init-silent-drop + .get()-Quality-Fallback
++ Error-State-Branch; F3 truthy-coerce fuer Fault-Flags;
+F8 Smoke-Test-Race-Fix via tick_loop.request(„pause")
++ 3 NEU Tests; F9 NEU public `tick_loop.devices`-
+Property; F10/F13/F14 UI-Adapter-Cleanup (Docstring +
+NEU `_require_run_or_404`-Helper + `is_htmx_request` in
+`_templates.py`); F11/F12/F15 Helper-Cleanup +
+`QUALITY_SEVERITY` nach `core/domain/quality.py`).
+1696 → 1722 Unit-Tests (+26; 15 Helpers + 4 Review-
+Folge-Tests + 7 Drift); 64 → 80 Integration (+16; 13
+Welle-6b-Smoke + 3 Review-Folge-Smoke F1/F2/F5).
+Lastenheft-Akzeptanz `GG-UI-006 + GG-UI-008` produktiv.
+10/10 A-1-Gates gruen cache-frei ohne Override.
 **Welle-6b-Realization-Notes** (Slice-Doc §10):
 URL-Split Decision-21-JSON wandert auf `/runs/{id}/
 devices/state`-Sub-Pfad (UI-Page behaelt natuerliche

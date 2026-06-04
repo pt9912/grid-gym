@@ -218,19 +218,26 @@
   Tabelle) + `/runs/{id}/system` (HTMX-Polling auf
   /status 1s + /health 5s) + 4 Templates + Navigation
   + 13 Integration-Tests + 15 Unit-Tests) + C3
-  (dieser Commit; Status/DoD-Sync + §10 C2-
-  Realization-Notes). Ausstehend: C4a Self-Close-Move
-  `M5-welle-6b.md → done/` + C4b Cross-Doc-Refs-Sync
-  nach Move. 1696 → 1718 Unit-Tests (+22; 15 NEU
-  helpers + 7 Drift); 64 → 77 Integration (+13).
-  Lastenheft-Akzeptanz `GG-UI-006 + GG-UI-008`
-  produktiv. **Welle-6b-Realization-Notes** (Slice-
-  Doc §10): JSON-URL wandert auf `/runs/{id}/devices/
-  state`-Sub-Pfad (UI-Page behaelt natuerliche URL;
-  Pattern analog Welle-4b-Alarms `/alarms-history`);
-  Adapter-internes `_DeviceView`-Protocol haelt
-  AC-ADAPTER-PURE ein. Decision 23: Chart.js bleibt
-  (kein Plotly/ECharts-Spike).
+  `580b2f0` (Status/DoD-Sync + §10 C2-Realization-
+  Notes) + C4a `b30280e` (Self-Close-Move) + C4b
+  `3a6f150` (Cross-Doc-Refs-Sync, 6 Refs) + **Review-
+  Folge `cd7cfc6`** (high-effort `/code-review` →
+  15/15 Findings F1..F15 adressiert; XSS-Haertung
+  DOM-API + textContent, Pre-init-silent-drop, .get()-
+  Quality-Fallback, truthy-coerce Fault-Flags, NEU
+  public `tick_loop.devices` Property, NEU
+  `_require_run_or_404`-Helper + `is_htmx_request` in
+  `_templates.py`, `QUALITY_SEVERITY` nach
+  `core/domain/quality.py`). 1696 → 1722 Unit-Tests
+  (+26); 64 → 80 Integration (+16). Lastenheft-
+  Akzeptanz `GG-UI-006 + GG-UI-008` produktiv.
+  **Welle-6b-Realization-Notes** (Slice-Doc §10):
+  JSON-URL wandert auf `/runs/{id}/devices/state`-
+  Sub-Pfad (UI-Page behaelt natuerliche URL; Pattern
+  analog Welle-4b-Alarms `/alarms-history`); Adapter-
+  internes `_DeviceView`-Protocol haelt AC-ADAPTER-
+  PURE ein. Decision 23: Chart.js bleibt (kein
+  Plotly/ECharts-Spike).
   **Aktive Welle:** **Welle 6c (Abnahmedoku
   `GG-DEMO-008`)** als letzte Sub-Welle der Welle-6-
   Subdivision ohne Code-Substanz; Slice-Doc entsteht
