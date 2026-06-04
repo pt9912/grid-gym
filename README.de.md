@@ -114,13 +114,11 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 Stand **2026-06-04**:
 
-- M1..M4 · `Done` (16 ADRs `Accepted`).
-- **M5 — UI + Demo** · `In Progress` seit 2026-06-01. Welle
-  0..6c `Done` (Welle-6-Subdivision 6a/6b/6c komplett
-  2026-06-04); aktive Welle **7 (M5-Closure)**. Welle-
-  Status-Tabelle:
-  [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
-- M6 · `Pending`.
+- **M1..M5 · `Done`** (21 ADRs `Accepted`). M5-Closure-
+  Artefakt:
+  [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
+- **M6 — Performance + Security + CI/CD** · `Pending` (aktiver
+  Slice; M6-Welle-0 startet als Naechstes).
 
 **Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped
 (IEC-61850-2c-Mock-only-Fallback, ADR 0035 §2.5, Trigger 009).

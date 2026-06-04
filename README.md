@@ -112,13 +112,11 @@ logic.
 
 As of **2026-06-04**:
 
-- M1..M4 · `Done` (16 ADRs `Accepted`).
-- **M5 — UI + Demo** · `In Progress` since 2026-06-01. Waves
-  0..6c `Done` (Wave-6-subdivision 6a/6b/6c complete
-  2026-06-04); active wave **7 (M5-Closure)**. Wave status
-  table:
-  [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
-- M6 · `Pending`.
+- **M1..M5 · `Done`** (21 ADRs `Accepted`). M5 closure
+  artefact:
+  [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
+- **M6 — Performance + Security + CI/CD** · `Pending` (active
+  slice; M6-Welle-0 opens next).
 
 **Test balance:** 1722 unit + 80 integration passed + 4 skipped
 (IEC-61850 2c-mock-only fallback, ADR 0035 §2.5, trigger 009).

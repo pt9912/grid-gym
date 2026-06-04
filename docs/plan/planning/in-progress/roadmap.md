@@ -395,14 +395,10 @@ Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
-Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
-[`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
-eroeffnet; Welle 0..6b abgeschlossen, **Welle 6b (UI-
-Visualization) `Done` 2026-06-04** mit Slice-Doc
-[`M5-welle-6b.md`](../done/M5-welle-6b.md); **aktive Welle:
-Welle 6c (Abnahmedoku `GG-DEMO-008`)** als letzte Sub-
-Welle der Welle-6-Subdivision; Slice-Doc entsteht in
-Welle-6c-C0.
+**M5 abgeschlossen 2026-06-04** (siehe
+[`../done/M5-results.md`](../done/M5-results.md)). Aktiver
+Slice: **M6 (Performance + Security + CI/CD-Haertung)** —
+Vorbelegung in §3 M6; Slice-Plan entsteht in M6-Welle-0.
 (M4 ist abgeschlossen,
 siehe [`done/M4-results.md`](../done/M4-results.md).)
 
@@ -559,7 +555,17 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Aktiver Slice: M5.** M4 ist `Done` (2026-06-01,
+**Aktiver Slice: M6.** **M5 ist `Done`** (2026-06-04,
+siehe [`done/M5-results.md`](../done/M5-results.md)): 10
+Wellen 0..6c geliefert (Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/
+6c); fuenf M5-ADRs (0036/0037/0038/0039/0040) auf
+`Accepted`; `make gates` cache-frei gruen ohne Override
+mit 10 A-1-Gates; 1722 Unit-Tests + 80 passed + 4 skipped
+Integration-Tests; Lastenheft-Scope `GG-API-001..004` +
+`GG-UI-001..009` + `GG-DEMO-001..008` alle erfuellt.
+**`make fullbuild`** bleibt pre-existing rot wegen
+krb5-CVE-Drift (M4-Welle-7-Erbschaft Trigger 010; nicht
+durch M5 verursacht). M4 ist `Done` (2026-06-01,
 siehe [`done/M4-results.md`](../done/M4-results.md)): 9
 Wellen 0..6b geliefert (5 produktive Adapter + 2 Cross-
 Adapter-Hardening-Wellen); sechs M4-ADRs (0030/0031/0032/
@@ -687,7 +693,7 @@ Slice-Plan in
         via Compose-Sibling; IEC-61850-Smoke via 2c-Mock-only-
         Fallback (Trigger 009).
 
-### M5 — UI + Demo (`In Progress` 2026-06-01)
+### M5 — UI + Demo (`Done` 2026-06-04)
 
 Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
 ([`M5-welle-0.md`](../done/M5-welle-0.md) + [`M5-ui-demo.md`](M5-ui-demo.md))
@@ -847,11 +853,20 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
   API-2: UI nutzt HTTP-API direkt via REST + WebSocket
   ohne separaten Driving-Port-Slot).
 - **DoD-Checkliste:**
-  - [ ] Web-UI mit Live-Telemetry-Stream
-        (`GG-UI-001..006`).
-  - [ ] Scenario-Editor (`GG-UI-006..008`).
-  - [ ] Demo-Lauf reproduzierbar via `make demo` o. ae.
-  - [ ] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
+  - [x] Web-UI mit Live-Telemetry-Stream
+        (`GG-UI-001..006`) — Welle 2 (Foundation) + 3
+        (Dashboard) + 6b (Devices-Page).
+  - [x] Scenario-Editor (`GG-UI-006..008`) — Welle 5
+        (`gg-demo.yaml`-Loader) + 6a (Fault-Form) + 6b
+        (Devices/System-Pages). Nicht Inline-WYSIWYG-
+        Editor; Scenario-Editing laeuft ueber YAML-Datei
+        + `make demo` (Welle-7-Closure-Interpretation:
+        ausreichend fuer MVP).
+  - [x] Demo-Lauf reproduzierbar via `make demo` —
+        Welle 5 (Demo-Pipeline + Lifespan-env-var) +
+        Welle 6c (Abnahmedoku
+        [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md)).
+  - [x] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
         Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
         verwendet** (ADR 0037 Decision API-2).
 

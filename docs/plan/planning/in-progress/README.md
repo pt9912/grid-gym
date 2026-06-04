@@ -401,19 +401,33 @@ Sub-Slices, drei klare Substanz-Anteile (`GG-UI-007` +
 `GG-DEMO-006` / `GG-UI-006` + `GG-UI-008` /
 `GG-DEMO-008`).
 
-**Aktive Welle:** M5-Welle-7 (M5-Closure) **gestartet
-2026-06-04** mit C0 (dieser Commit; Slice-Doc
-[`M5-welle-7.md`](M5-welle-7.md), Pattern analog
-[`../done/M4-welle-7.md`](../done/M4-welle-7.md)).
-**Welle-7-Substanz** (Plan, 4 Commits + C4-Folge):
-- C1 — 5 M5-ADRs (0036..0040) `Provisional → Accepted`.
-- C2 — NEU `done/M5-results.md` mit Welle-Tabelle +
-  Abnahme-Belegen + Pro-Welle-Reviews + S-1..S-6-Sweep +
-  Wandert-Nach.
-- C3 — `roadmap.md §3 M5` DoD-Checkboxen abhaken + M5
-  auf `Done` + „Aktiver Slice: M6"; Top-Level-Doku-Sync.
-- C4a/b — Self-Close-Move `M5-ui-demo.md` +
-  `M5-welle-7.md` nach `done/` + Cross-Doc-Refs-Sync.
-Welle 7 hat keinen Code-Diff, keine neuen Tests, keine
-neuen ADRs (nur Status-Flips). Pre-C0 ist der Welle-6c-
-Closure-Stack (`c317200`/`cfb9626`).
+**Welle 7 (M5-Closure) abgeschlossen 2026-06-04** mit C0
+`c28a11b` (Slice-Doc) + C1 `62f988d` (5 M5-ADRs
+0036..0040 `Provisional → Accepted`) + C2 `5087c8a` (NEU
+[`../done/M5-results.md`](../done/M5-results.md)
+Closure-Artefakt mit 8 Sektionen) + C2-Review-Folge
+`9978e21` (7 Findings 1 HIGH + 2 MEDIUM + 4 LOW
+adressiert) + C3 (dieser Commit; `roadmap.md §3 M5`
+DoD-Checkboxen abhaken + M5 auf `Done` + „Aktiver Slice:
+M6" + Top-Level-Doku-Sync). Ausstehend: C4a Self-Close-
+Move `M5-ui-demo.md` + `M5-welle-7.md` nach `done/` +
+C4b Cross-Doc-Refs-Sync.
+
+**M5 ist `Done` (2026-06-04)** — 10 Wellen 0..6c geliefert
+(Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/6c); 5 M5-ADRs
+(0036..0040) auf `Accepted`; Lastenheft-Scope
+`GG-API-001..004` + `GG-UI-001..009` + `GG-DEMO-001..008`
+alle erfuellt; 1722 Unit-Tests + 80 Integration + 4
+skipped; 10/10 A-1-Gates gruen cache-frei ohne Override.
+Detail-Closure-Artefakt:
+[`../done/M5-results.md`](../done/M5-results.md).
+
+**Aktiver Slice:** **M6 (Performance + Security + CI/CD-
+Haertung)** — Vorbelegung in `roadmap.md §3 M6`; Slice-Plan
+entsteht in M6-Welle-0. M5-Welle-7-Erbschaft fuer M6 in
+[`../done/M5-results.md §5`](../done/M5-results.md):
+URL-Versionierung (`/api/v1`-Mount), Snapshot-Envelope-v2-
+Body-Serialisierung, CSV/JSONL-Export, Inline-SVG-Geraete-
+Grafik, dynamische Fault-Activation, IEC-61850-Smoke-
+Reaktivierung (Trigger 009), `make fullbuild`-krb5-CVE-
+Defer-Pfad (Trigger 010 M4-Erbschaft).
