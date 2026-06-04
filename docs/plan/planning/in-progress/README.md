@@ -11,6 +11,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
 | [`M5-welle-6b.md`](../done/M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** + Self-Close-Move `b30280e` + Cross-Doc-Refs-Sync `3a6f150` (6 Refs) + Review-Folge `cd7cfc6` (15/15 Findings F1..F15). |
+| [`M5-welle-6c.md`](M5-welle-6c.md) | Welle-6c-Slice-Doc (M5 Abnahmedoku `GG-DEMO-008`; letzte Welle-6-Sub-Slice, reiner Doku-Slice ohne Code-Substanz). — **In Progress 2026-06-04** mit C0 (dieser Commit). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -379,7 +380,14 @@ Alarms `/alarms-history`); Adapter-internes
 `_DeviceView`-Protocol haelt AC-ADAPTER-PURE ein
 (keine `hexagon.core.devices`-Direct-Imports).
 
-**Aktive Welle:** Welle 6c (Abnahmedoku `GG-DEMO-008`,
-letzte Sub-Welle der Welle-6-Subdivision; ohne Code-
-Substanz, nur Doku-Slice). Slice-Doc entsteht in
-Welle-6c-C0.
+**Aktive Welle:** M5-Welle-6c (Abnahmedoku
+`GG-DEMO-008`) **gestartet 2026-06-04** mit C0 (dieser
+Commit; Slice-Doc [`M5-welle-6c.md`](M5-welle-6c.md)).
+Letzte Sub-Welle der Welle-6-Subdivision; reiner Doku-
+Slice ohne Code-Substanz (Lieferziel:
+`docs/user/gg-demo-008-abnahme.md` mit 6-Schritt-
+Abnahmereihenfolge per Lastenheft `GG-DEMO-008`).
+Welle 6c verzichtet bewusst auf C1-ADR und neue Tests
+(Pattern Welle-1/5/6a/6b: kein neuer Vertrag); Demo-
+Pipeline ist durch die Welle-5/6a/6b-Smokes bereits
+getestet.
