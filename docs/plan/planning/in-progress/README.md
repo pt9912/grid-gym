@@ -10,7 +10,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
 | [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
-| [`M5-welle-6b.md`](M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** (C0 `efc2c10` + C2 `9fcb887` + C3 dieser Commit); ausstehend C4a/b Self-Close-Move + Cross-Doc-Refs-Sync. |
+| [`M5-welle-6b.md`](../done/M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** (C0 `efc2c10` + C2 `9fcb887` + C3 `580b2f0` + C4a `b30280e` Self-Close-Move + C4b Cross-Doc-Refs-Sync dieser Commit). |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe

@@ -206,7 +206,7 @@
   **Welle 6b (UI-Visualization: `GG-UI-006` Geraete-
   Grafik + `GG-UI-008` Sim-Zustand-Dashboard)
   abgeschlossen 2026-06-04** mit C0 `efc2c10` (Slice-
-  Doc [`M5-welle-6b.md`](M5-welle-6b.md) + Decisions
+  Doc [`M5-welle-6b.md`](../done/M5-welle-6b.md) + Decisions
   21/22/23 final) + C2 `9fcb887` (Code-Merge: NEU
   `GET /runs/{id}/devices/state` JSON-Surface in
   `_runs_router.py` + NEU `DevicesResponse`/
@@ -369,11 +369,12 @@ M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
 wandern bei Aktivierung nach `next/` bzw. `in-progress/`).
 Aktiver Slice: **M5 (UI + Demo)** — Slice-Plan
 [`M5-ui-demo.md`](M5-ui-demo.md) seit 2026-06-01
-eroeffnet; Welle 0..6a abgeschlossen, **Welle 6a (Fault-
-Flow) `Done` 2026-06-03** mit Slice-Doc
-[`M5-welle-6a.md`](../done/M5-welle-6a.md); **aktive Welle:
-Welle 6b (UI-Visualization)** mit Slice-Doc
-[`M5-welle-6b.md`](M5-welle-6b.md) seit 2026-06-03.
+eroeffnet; Welle 0..6b abgeschlossen, **Welle 6b (UI-
+Visualization) `Done` 2026-06-04** mit Slice-Doc
+[`M5-welle-6b.md`](../done/M5-welle-6b.md); **aktive Welle:
+Welle 6c (Abnahmedoku `GG-DEMO-008`)** als letzte Sub-
+Welle der Welle-6-Subdivision; Slice-Doc entsteht in
+Welle-6c-C0.
 (M4 ist abgeschlossen,
 siehe [`done/M4-results.md`](../done/M4-results.md).)
 

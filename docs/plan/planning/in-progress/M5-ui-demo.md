@@ -139,7 +139,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b | Alarme | Done 2026-06-02 | [`M5-welle-4b.md`](../done/M5-welle-4b.md) | `GG-UI-005`; loest ADR-0014-§6 Driving-Side | ADR 0040 `Provisional` |
 | 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](../done/M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
 | 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | Done 2026-06-03 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) (Self-Close-Move in C4a) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
-| 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Done 2026-06-04 | [`M5-welle-6b.md`](M5-welle-6b.md) (Self-Close-Move in C4a) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
+| 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Done 2026-06-04 | [`M5-welle-6b.md`](../done/M5-welle-6b.md) (Self-Close-Move in C4a) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
 | 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Pending | TBD (entsteht in Welle-6c-C0) | `GG-DEMO-008` | TBD |
 | 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
 
@@ -172,10 +172,10 @@ UI-Visualization + 6c Abnahmedoku. Pattern analog
 M4-Welle-6 → 6a/6b.
 
 **Welle 6b — UI-Visualization Done 2026-06-04** (Slice-
-Doc [`M5-welle-6b.md`](M5-welle-6b.md), Decisions
+Doc [`M5-welle-6b.md`](../done/M5-welle-6b.md), Decisions
 21/22/23 final 2026-06-03; C0 `efc2c10` + C2 `9fcb887`
-+ C3 dieser Commit; ausstehend C4a/b Self-Close-Move +
-Cross-Doc-Refs-Sync). Volle Substanz lebt im Slice-Doc;
++ C3 `580b2f0` + C4a `b30280e` Self-Close-Move + C4b
+Cross-Doc-Refs-Sync dieser Commit). Volle Substanz lebt im Slice-Doc;
 Quick-Glance:
 
 - **GG-UI-006 (Geraete-Grafik)** — HTMX-Polling-

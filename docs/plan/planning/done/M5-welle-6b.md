@@ -7,7 +7,7 @@
 §10 C2-Realization-Notes). Ausstehend: C4a Self-Close-
 Move `M5-welle-6b.md → done/` + C4b Cross-Doc-Refs-
 Sync nach Move. Zweite Sub-Welle der Welle-6-Subdivision
-(siehe [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+(siehe [`M5-welle-6a.md`](M5-welle-6a.md)
 §0 Sub-Slicing-Beschluss). Welle 6b deckt den UI-
 Visualization-Sub-Bereich ab (`GG-UI-006` Geraete-
 Grafik + `GG-UI-008` Simulationszustaende-Dashboard).
@@ -713,16 +713,16 @@ heben.
 
 ## References
 
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3.2 Welle 6b
-  Plan-Items (kanonische Sub-Slicing-Aufnahme; Welle-
-  6b UI-Visualization-Sub-Bereich).
-- [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+- [`../in-progress/M5-ui-demo.md`](../in-progress/M5-ui-demo.md)
+  §3.2 Welle 6b Plan-Items (kanonische Sub-Slicing-Aufnahme;
+  Welle-6b UI-Visualization-Sub-Bereich).
+- [`M5-welle-6a.md`](M5-welle-6a.md)
   §0 Sub-Slicing-Beschluss — Welle 6 → 6a/6b/6c
   drei-Sub-Slices-Pattern.
-- [`../done/M5-welle-4a.md`](../done/M5-welle-4a.md)
+- [`M5-welle-4a.md`](M5-welle-4a.md)
   — Welle-4a-`/status`-Endpunkt (Welle-6b-System-
   Page nutzt ihn unveraendert via HTMX-Polling).
-- [`../done/M5-welle-3.md`](../done/M5-welle-3.md)
+- [`M5-welle-3.md`](M5-welle-3.md)
   — Welle-3-Dashboard-Pattern + TelemetryPoint
   Quality-Marker.
 - [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)
@@ -734,10 +734,10 @@ heben.
 - [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
   `GG-UI-006` + `GG-UI-008` Akzeptanztexte.
 - Pattern-Vorbild **AC-NO-GOD-UTILS-Modul-Split**:
-  [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+  [`M5-welle-6a.md`](M5-welle-6a.md)
   §10.2 (Welle-6a-`routes_faults.py`-Split aus
   `routes.py`).
 - Pattern-Vorbild **Welle-ohne-C1**:
-  [`../done/M5-welle-5.md`](../done/M5-welle-5.md)
-  + [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+  [`M5-welle-5.md`](M5-welle-5.md)
+  + [`M5-welle-6a.md`](M5-welle-6a.md)
   (kein neuer Port, kein neuer Vertrag).
