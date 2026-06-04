@@ -8,16 +8,18 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
+| [`M6-welle-0.md`](M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **In Progress 2026-06-04** mit C0 (dieser Commit); C1 + C2 folgen. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
 `M5-results.md`) leben unter
-[`../done/`](../done/). Bestand-Tabelle hier zeigt nur noch
-aktiv-in-Arbeit-Slice-Docs; M5-Welle-Docs sind in
+[`../done/`](../done/); M5-Welle-Docs sind in
 [`../done/README.md`](../done/README.md) Bestand-Tabelle
-gelistet. **Aktiver Slice:** M6 (Vorbelegung in
-[`roadmap.md §3 M6`](roadmap.md); M6-Welle-0 startet als
-Naechstes).
+gelistet. **Aktiver Slice:** M6 (Performance + Security +
+CI/CD-Haertung); **aktive Welle:** M6-Welle-0 (Slice-
+Plan-Eroeffnung + Trigger-Triage, Doc-only, kein Code) —
+siehe [`M6-welle-0.md`](M6-welle-0.md) und Detail-Block
+unten.
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -427,12 +429,12 @@ skipped; 10/10 A-1-Gates gruen cache-frei ohne Override.
 Detail-Closure-Artefakt:
 [`../done/M5-results.md`](../done/M5-results.md).
 
-**Aktiver Slice:** **M6 (Performance + Security + CI/CD-
-Haertung)** — Vorbelegung in `roadmap.md §3 M6`; Slice-Plan
-entsteht in M6-Welle-0. M5-Welle-7-Erbschaft fuer M6 in
-[`../done/M5-results.md §5`](../done/M5-results.md):
-URL-Versionierung (`/api/v1`-Mount), Snapshot-Envelope-v2-
-Body-Serialisierung, CSV/JSONL-Export, Inline-SVG-Geraete-
-Grafik, dynamische Fault-Activation, IEC-61850-Smoke-
-Reaktivierung (Trigger 009), `make fullbuild`-krb5-CVE-
-Defer-Pfad (Trigger 010 M4-Erbschaft).
+**Aktive Welle:** M6-Welle-0 (Slice-Plan-Eroeffnung +
+Trigger-Triage) **gestartet 2026-06-04** mit C0 (dieser
+Commit; Slice-Doc [`M6-welle-0.md`](M6-welle-0.md)).
+Welle-0 ist Doc-Welle (kein Code, keine Tests, keine
+neuen ADRs); 7 offene Welle-0-Decisions sammeln Fragen
+fuer M6-Welle-1+ (Sub-Slicing-Strategie, Carveout-Triage,
+Bench-Framework). M5-Welle-7-Erbschaft + 18
+`Trigger-Gated`-Carveouts werden in C2 trianguliert (siehe
+[`carveouts.md`](carveouts.md) + `M6-welle-0.md §3 M6-D-2`).
