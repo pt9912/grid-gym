@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1+M2+M3+M4 abgeschlossen (M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Naechster aktiver Slice: M5** (UI + Demo).
-**Stand:** 2026-06-03
+**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1..M5 abgeschlossen (M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md); M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Aktiver Slice: M6** (Performance + Security + CI/CD-Haertung).
+**Stand:** 2026-06-04
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
@@ -146,11 +146,16 @@
   Positiv). 10/10 A-1-Gates gruen (NEU 10.
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
   `AC-IEC61850-GPL-BOUNDARY`).
-- **Aktiver Slice:** M5 (UI + Demo). Slice-Plan
-  [`M5-ui-demo.md`](../done/M5-ui-demo.md). Welle 0..4b
-  abgeschlossen (Welle 4b 2026-06-02 mit `b7ac7b3` +
-  C3 `4dca6aa` + Review-Folge `52afd1a`/`fe1db21`/
-  `ced9661`/`1fba165` — 15 Findings adressiert).
+- **Aktiver Slice:** M6 (Performance + Security + CI/CD-
+  Haertung). M5-Closure 2026-06-04 mit Welle-7-Hash-Stack
+  `c28a11b`/`62f988d`/`5087c8a`/`9978e21`/`e21795f`/
+  `667be09`/`015eada`; M5-Slice-Plan und alle 10 Welle-
+  Docs in [`../done/`](../done/). Historischer Aktive-
+  Slice-Stand (M5-Welle-4b-Closure 2026-06-02) per
+  Welle-Closure-Erbschafts-Narrativ unten erhalten.
+  Welle 4b 2026-06-02 mit `b7ac7b3` + C3 `4dca6aa` +
+  Review-Folge `52afd1a`/`fe1db21`/`ced9661`/`1fba165`
+  — 15 Findings adressiert.
   **Welle 5 (Demo-Pipeline + Scenario-Loader-Wiring)
   abgeschlossen 2026-06-03** mit Pre-C0a `a030c0e` +
   Pre-C0b `45335eb` + C0 `155c421` (Slice-Doc +

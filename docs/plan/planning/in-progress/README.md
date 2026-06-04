@@ -7,12 +7,16 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | Datei                     | Gegenstand                                                                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
-| [`M5-ui-demo.md`](../done/M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
-| [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
-| [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
-| [`M5-welle-6b.md`](../done/M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** + Self-Close-Move `b30280e` + Cross-Doc-Refs-Sync `3a6f150` (6 Refs) + Review-Folge `cd7cfc6` (15/15 Findings F1..F15). |
-| [`M5-welle-6c.md`](../done/M5-welle-6c.md) | Welle-6c-Slice-Doc (M5 Abnahmedoku `GG-DEMO-008`; letzte Welle-6-Sub-Slice, reiner Doku-Slice). — **Done 2026-06-04** + Self-Close-Move `c317200` + Cross-Doc-Refs-Sync `cfb9626`. |
-| [`M5-welle-7.md`](../done/M5-welle-7.md) | Welle-7-Slice-Doc (M5-Closure-Welle: ADR-Accepts + `done/M5-results.md` + DoD-Sweep + Self-Close-Move `M5-ui-demo.md`). — **In Progress 2026-06-04** mit C0 (dieser Commit). |
+
+**M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
+Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
+`M5-results.md`) leben unter
+[`../done/`](../done/). Bestand-Tabelle hier zeigt nur noch
+aktiv-in-Arbeit-Slice-Docs; M5-Welle-Docs sind in
+[`../done/README.md`](../done/README.md) Bestand-Tabelle
+gelistet. **Aktiver Slice:** M6 (Vorbelegung in
+[`roadmap.md §3 M6`](roadmap.md); M6-Welle-0 startet als
+Naechstes).
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
