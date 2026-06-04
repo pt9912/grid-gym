@@ -30,7 +30,8 @@ Hintergrund liegt in [`M6-welle-0.md`](../done/M6-welle-0.md) §1).
   ausgereiften Adapter- + Driving-Surface auf, ohne neuen
   Driving-Port einzuziehen.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
-  Kap. 7 (`GG-RT-001..006`) + Kap. 20
+  Kap. 7 (`GG-RT-001..005`; `GG-RT-006` Replay-Zeit-
+  multiplikator gehoert zu M3, nicht M6) + Kap. 20
   (`GG-SAFE-001..008`) + Kap. 22 (`GG-CICD-001..007` inkl.
   `GG-CICD-007` Release-Workflow mit SBOM-Hook ueber
   Trigger 008) + Kap. 23 (`GG-DEPLOY-001..011`). **Keine
@@ -86,7 +87,8 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
 - **Lastenheft-Coverage** (MUSS/SOLLTE/KANN gem.
   Lastenheft-Normativ-Sprache; M6-Lieferziel umfasst alle
   drei Klassen, nicht nur MUSS):
-  - **MUSS-IDs** (21): `GG-RT-001/002/003/006` (4),
+  - **MUSS-IDs** (20): `GG-RT-001/002/003` (3; `GG-RT-006`
+    ist M3-Scope `GG-AR-COMP-REPLAY`),
     `GG-SAFE-001/002/003/004/007/008` (6),
     `GG-CICD-001/002/003/005/006` (5),
     `GG-DEPLOY-001/002/003/005/006/011` (6).
@@ -169,7 +171,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Pending | TBD (entsteht in Welle-1-C0) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | TBD (ggf. ADR 0043 Image-Audit-Strategie) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
-| 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..006` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
+| 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
@@ -231,8 +233,9 @@ final):
 
 - Lieferziel: `make perf`-Target + `GG-RT-005`-Benchmark
   (10 000 Points/s; SOLLTE) + Tick-Drift-Schranken
-  (`GG-RT-001..004/006`; davon 001/002/003/006 MUSS, 004
-  SOLLTE).
+  (`GG-RT-001..004`; davon 001/002/003 MUSS, 004 SOLLTE).
+  `GG-RT-006` Replay-Zeitmultiplikator ist M3-Scope und
+  bleibt ausserhalb von M6.
 - Bench-Framework: Vorbelegung pytest-benchmark per
   [`M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md); Welle-4-C1-
   ADR entscheidet final.
@@ -432,8 +435,8 @@ Aktivierung.
 
 **Abnahme-Verifikation (Lastenheft):**
 
-- `GG-RT-001..006` (6 IDs; 4 MUSS + 2 SOLLTE) ✓ in
-  M6-Welle-4.
+- `GG-RT-001..005` (5 IDs; 3 MUSS + 2 SOLLTE) ✓ in
+  M6-Welle-4 (`GG-RT-006` ist M3-Scope).
 - `GG-SAFE-001..008` (8 IDs; 6 MUSS + 2 SOLLTE) ✓ in
   M6-Welle-5.
 - `GG-CICD-001..007` (7 IDs; 5 MUSS + 2 SOLLTE) ✓ in
