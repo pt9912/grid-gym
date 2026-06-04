@@ -85,7 +85,7 @@ Move-Pattern (Pflicht per `planning/README.md`) ist in allen
 | `GG-API-001` Run-Erzeugung      | `POST /runs` mit Pydantic-Schema + `RunRepository.save`.                                                 | 1                   | `tests/integration/test_m5_welle_1_htmx_probe.py` + `tests/unit/adapters/driving/http_api/test_runs_router.py`.                                                |
 | `GG-API-002` WS-Telemetrie      | `WS /runs/{id}/telemetry` mit `TelemetryStreamPort.subscribe`.                                            | 3                   | `tests/integration/test_m5_welle_3_async_pubsub_probe.py`.                                                                                                     |
 | `GG-API-003` OpenAPI-Vertrag    | `GET /openapi.json` mit OpenAPI 3.1.                                                                      | 1                   | `make openapi-validate`.                                                                                                                                       |
-| `GG-API-004` GG-API-004-Envelope | Strukturierte Fehler `{code, message, details, run_id}` ueber alle Endpoints.                            | 1+4a+4b+6a+6b       | 404/422-Asserts in allen Welle-Smokes.                                                                                                                         |
+| `GG-API-004` Fehler-Envelope    | Strukturierte Fehler `{code, message, details, run_id}` ueber alle Endpoints.                            | 1+4a+4b+5+6a+6b     | 404/422-Asserts in allen Welle-Smokes.                                                                                                                         |
 | `GG-UI-001` UI-Layout           | Web-UI mit Navigation.                                                                                   | 2                   | `templates/base.html` + `navigation.html`.                                                                                                                     |
 | `GG-UI-002` Live-Telemetry      | Chart.js-Time-Series via HTMX-WS.                                                                        | 3                   | `tests/integration/test_m5_welle_2_ui_smoke.py` (UI-Foundation) + Dashboard-Page.                                                                              |
 | `GG-UI-003` Zeitreihen          | Time-Series-Rendering pro Device.                                                                        | 3                   | `_dashboard_content.html` + Chart.js-Config.                                                                                                                   |
@@ -104,23 +104,35 @@ Move-Pattern (Pflicht per `planning/README.md`) ist in allen
 
 ## 3. Pro-Welle-Reviews
 
-Vier produktiv-Wellen haben einen `/code-review`-Pass mit je
-15 Findings durchlaufen (Welle-Self-Pflicht-Pattern; Welle 0
-und Welle-1..3+4a+5..6a..6c hatten keinen hoch-Effort-Review,
-da die Substanz kleiner war ODER spaeter doch durch eine
-Welle-Folge geschaerft wurde).
+Vier produktiv-Wellen (4b/5/6a/6b) haben einen `/code-review`-
+Pass mit je 15 Findings durchlaufen (Welle-Self-Pflicht-
+Pattern). Welle 0/1/2/3/4a/6c hatten keinen eigenen hoch-
+Effort-Review — Begruendung pro Welle: 0 ist Plan-Welle (kein
+Code); 1/2/3/4a hatten kleinere Substanz und kein Code-Review-
+Folge-Commit wurde noetig (alle Slice-Doc-DoD-Checkboxen
+gruen, keine vom Maintainer angeforderte hoch-Effort-Sichtung);
+6c ist reine Doku-Welle (siehe Note unter der Tabelle).
 
 | Welle | Review-Folge-Hash | Findings | Cluster-Highlights                                                                                                          |
 | ----- | ----------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | 4b    | `52afd1a` + `fe1db21` + `ced9661` + `1fba165` | 15/15 | F1 Template-XSS-Haertung (3 Findings); F2 HTTP-Stabilitaet (404-vs-500 + Deque-Race); F3 Driver-Lifecycle (Late-Wiring + Task-Exception); F4 Domain/Resume (Tick-Atomicity + `_control_state`). |
-| 5     | `0e2bc41`         | 15/15    | W5-F1..F15 (Demo-Pipeline + Scenario-Loader Haertung); Stichworte siehe Welle-5-EoD-Sync `0f982b4`.                          |
-| 6a    | `1e3a793`         | 15/15    | F1..F15 (Fault-Flow + Cross-Field-Validation); siehe Welle-6a-EoD-Sync `0f982b4`.                                            |
+| 5     | `0e2bc41`         | 15/15    | W5-F1..F15 (Demo-Pipeline + Scenario-Loader Haertung); Stichworte siehe Welle-5/6a-Closure-Chronik-EoD-Sync `0f982b4`.       |
+| 6a    | `1e3a793`         | 15/15    | F1..F15 (Fault-Flow + Cross-Field-Validation); siehe Welle-5/6a-Closure-Chronik-EoD-Sync `0f982b4`.                          |
 | 6b    | `cd7cfc6`         | 15/15    | F1 Devices-Inline-JS-XSS via DOM-API + textContent; F2 Pre-init-silent-drop; F3 Truthy-Coerce Fault-Flags; F4 RunStatus-Null-Guards; F5 `_QUALITY_SEVERITY.get()`-Fallback; F6 Error-State-Branch; F7 String-Coerce; F8 Smoke-Test-Race-Fix; F9 NEU public `tick_loop.devices`-Property; F10/F13/F14 UI-Adapter-Cleanup; F11/F12/F15 Helper-Cleanup + `QUALITY_SEVERITY` nach `core/domain/quality.py`. |
 
 **Welle 6c kein Review:** reine Doku-Welle (1 Markdown-Datei
 + README-Pointer), `/code-review` ist code-zentriert; manuelle
 Doku-Pruefung gegen `GG-DEMO-008`-Akzeptanztext war
 ausreichend.
+
+**Welle-7-C2-Review-Folge (dieser Folge-Commit):** 7 Findings
+auf `M5-results.md` selbst adressiert — 1 HIGH (Selbstwider-
+spruch §3-Intro vs Review-Tabelle), 2 MEDIUM (Stutter-Typo
+`GG-API-004`-Spalte + §6/§7-Reihenfolge gegen M4-Pattern), 4
+LOW (`Welle-7-Welle-7`-Duplikat, doppeltes EoD-Sync-Hash-
+Label, fehlende Welle-5-Spur in `GG-API-004`-Coverage, intern
+widerspruechliches `Tutorial`-Item). Pattern analog
+M4-Welle-7-C0-Review `05a1417` (8 Findings).
 
 ---
 
@@ -244,7 +256,30 @@ cache-frei gruen am Welle-7-Closure-Hash.**
 
 ---
 
-## 6. M5-ADR-Decision-Sweep
+## 6. M5-Wandert-Nach
+
+**Beim Welle-7-C4a Self-Close-Move** (nach C3):
+
+- `M5-ui-demo.md` (in-progress) → `done/`.
+- `M5-welle-7.md` (in-progress) → `done/`.
+
+**Lebend bleibt** (kein Move):
+
+- `docs/user/gg-demo-008-abnahme.md` (End-User-Doku;
+  Welle-6c-Lieferung).
+- Welle-6c-Anti-Scope-Items (CSV/JSONL-Export, Inline-SVG,
+  Tutorial) — explizit M6/Welle-7+/Welle-?-Material.
+
+**Roadmap-Sweep (C3)** flippt:
+
+- `roadmap.md §3 M5` Status `In Progress → Done`.
+- `roadmap.md` Header + §3-Block: „Aktiver Slice: M6
+  (Performance + Security + CI/CD)".
+- M5-DoD-Checkboxen alle abhaken (4 Items).
+
+---
+
+## 7. M5-ADR-Decision-Sweep
 
 5 ADRs auf `Accepted` mit Welle-7-C1 `62f988d` (M5-Closure-
 Welle). Pro-ADR Status-Header + §5 Status-Pfad-Body-Block
@@ -275,34 +310,12 @@ per ADR 0011).
 
 ---
 
-## 7. M5-Wandert-Nach
-
-**Beim Welle-7-C4a Self-Close-Move** (nach C3):
-
-- `M5-ui-demo.md` (in-progress) → `done/`.
-- `M5-welle-7.md` (in-progress) → `done/`.
-
-**Lebend bleibt** (kein Move):
-
-- `docs/user/gg-demo-008-abnahme.md` (End-User-Doku;
-  Welle-6c-Lieferung).
-- Welle-6c-Anti-Scope-Items (CSV/JSONL-Export, Inline-SVG,
-  Tutorial) — explizit M6/Welle-7+/Welle-?-Material.
-
-**Roadmap-Sweep (C3)** flippt:
-
-- `roadmap.md §3 M5` Status `In Progress → Done`.
-- `roadmap.md` Header + §3-Block: „Aktiver Slice: M6
-  (Performance + Security + CI/CD)".
-- M5-DoD-Checkboxen alle abhaken (4 Items).
-
----
-
 ## 8. Nicht-vollzogene Items (bewusst)
 
 - **Snapshot-Envelope-v2-Serialisierung** (`GET /snapshot`-
   Body) — bleibt M6.
-- **CSV/JSONL-Export** — `GG-ACCEPT-003`-Welle-7 oder M6.
+- **CSV/JSONL-Export** — `GG-ACCEPT-003`-Material (M6 oder
+  eigener Slice).
 - **Inline-SVG-Geraete-Grafik** — M6.
 - **Dynamische Fault-Activation** ueber HTTP-Form — M6
   (Welle-6a Decision 19 Anti-Scope).
@@ -311,9 +324,9 @@ per ADR 0011).
 - **WebSocket-Live-Stream `/devices`** — M6 (Welle-6b Anti-
   Scope; HTMX-1s-Polling reicht fuer Demo).
 - **Tutorial / Onboarding-Doku** (`GG-ACCEPT-001`) —
-  M5-Welle-7-Closure (`done/M5-results.md` ist die formale
-  Doku; eine separate Tutorial-Doku gehoert zu
-  M5-Welle-7-Closure-Erbschaft oder M6).
+  Closure-Erbschaft. `done/M5-results.md` ist Maintainer-
+  Closure-Artefakt; eine End-User-Tutorial-Doku ist M6 oder
+  ein eigener Slice-Trigger (separater Use-Case).
 - **Multi-User + Auth** — M6 (`GG-SAFE-008` IP-/Netz-
   Beschraenkung im Demo-Compose; nicht im UI-Layer).
 - **SvelteKit-SPA / React-SPA Migration** — M6+ falls
