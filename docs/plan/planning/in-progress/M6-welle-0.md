@@ -64,7 +64,7 @@ Carveouts** im Cross-M-Index — davon **strict M6-Bezug
 | ------------ | --------------- | ----------- |
 | `Deferred` (M5-Erbschaft, §2.1) | 6 | **alle 6** sind M6-Pflicht-Substanz — Welle-Zuordnung in §3 Decision M6-D-3 |
 | `Pattern-Forward` (M5-Erbschaft, §2.1) | 1 | **opportunistisch** in M6-Welle-X-Hardening-Sweep (Welle-3-Pre-init-Defense); kein eigener Lieferpunkt — Lifecycle-Konvention unterscheidet sich von `Deferred` |
-| `Trigger-Gated` (§2.2..§2.6) | 18 | **3 sind selbst-aktivierbar** in M6 (Trigger 008 SBOM, Trigger 009 IEC-Smoke-Pfad-B, Trigger 010 krb5); **15 warten weiter** auf externen Trigger (5 Tooling + 9 SOLLTE-Geraete + 1 RL-Adapter — siehe `carveouts.md §2.3..§2.6` Aktivierungs-Bedingungen) |
+| `Trigger-Gated` (§2.2..§2.6) | 18 | **3 sind selbst-aktivierbar** in M6 (Trigger 008 SBOM, Trigger 009 IEC-Smoke-Pfad-B, Trigger 010 krb5); **15 warten weiter** auf externen Trigger (4 Tooling-Trigger nach SBOM-Aktivierung + 9 SOLLTE-Geraete + 1 RL-Adapter + 1 BESS-Reserve-Market-Spike — siehe `carveouts.md §2.3..§2.6` Aktivierungs-Bedingungen) |
 | `Out-of-Scope` (permanent, §2.7) | 6 | **0** — bleiben permanent im Index; kein M6-Lieferpunkt |
 
 Welle-0-C2-Trigger-Triage entscheidet pro Item: aktiv in
@@ -179,8 +179,10 @@ Optionen:
 
 - **Option A — Pro Lastenheft-Familie:** Welle 1
   Performance (`GG-RT-*`), Welle 2 Security (`GG-SAFE-*`),
-  Welle 3 CI/CD-Vollausbau (`GG-CICD-*`), Welle 4 Deploy +
-  SBOM (`GG-DEPLOY-*` + `GG-SBOM-*`), Welle 5+ Closure.
+  Welle 3 CI/CD-Vollausbau (`GG-CICD-*` inkl. `GG-CICD-007`
+  Release-Workflow mit SBOM-Hook), Welle 4 Deploy-
+  Hardening (`GG-DEPLOY-*` + Trigger 010 krb5-Bump),
+  Welle 5+ Closure.
 - **Option B — Pro Triggerebene:** Welle 1 krb5-Bump
   (Trigger 010, klein), Welle 2 SBOM (Trigger 008,
   klein), Welle 3 CI-Vollausbau (gross), Welle 4
@@ -205,7 +207,7 @@ Gated`-Items. Triage-Vorbelegung (C2-Substanz):
 
 | Trigger | Empfehlung | Begruendung |
 | ------- | ---------- | ----------- |
-| **Trigger 008 SBOM** | **Aktivieren in M6-Welle-X** | `GG-SBOM-*` ist M6-Pflicht; Release-Workflow blockiert sonst. |
+| **Trigger 008 SBOM** | **Aktivieren in M6-Welle-X** | `GG-CICD-007` Release-Workflow ist M6-Pflicht und enthaelt den SBOM-Hook; ohne `make sbom`-Aktivierung kein Release-Pipeline-Abschluss. |
 | **Trigger 009 IEC-Smoke Pfad-B** | **Aktivieren in M6-Welle-X** (separater Slice) | Multi-Python-Test-Stage ist Repo-Novum; loest M4-Erbschaft auf. |
 | **Trigger 010 krb5-Bump** | **Aktivieren in M6-Welle-1** | `make fullbuild` ist seit M3-Welle-7 rot; CI-Pflicht-Gate-Vorbedingung. |
 | Trigger 004 canonical-encoder | Bleibt `Trigger-Gated` | Kein gemessener Perf-Druck (`GG-RT-005`-Benchmark muss zuerst laufen). |
@@ -220,10 +222,12 @@ Welle-1-C0 + C2 entscheiden final pro Trigger.
 
 ### M6-D-3 — `Deferred`-Welle-Zuordnung (M5-Erbschaft)
 
-**Frage:** Wie werden die 7 M5-Erbschafts-`Deferred`-Items
-auf M6-Wellen verteilt?
+**Frage:** Wie werden die **6** M5-Erbschafts-`Deferred`-
+Items auf M6-Wellen verteilt? Das siebte §2.1-Item
+(Pre-init-Defense-Pattern) ist `Pattern-Forward` — andere
+Lifecycle-Regel; separate Behandlung in M6-D-3b unten.
 
-Vorbelegung:
+Vorbelegung fuer die 6 `Deferred`-Items:
 
 - **Snapshot-Envelope-v2-Body** → M6-Welle-X (Replay-
   Surface-Welle ggf. eigene Welle).
@@ -238,10 +242,21 @@ Vorbelegung:
   vor naechster Kollision) ODER M6-Welle-X.
 - **WS `/devices`** → M6-Welle-X (UI-Live-Updates) ODER
   M7+.
-- **Pre-init-Defense-Pattern verallgemeinern** →
-  opportunistisch in M6-Welle-X-Hardening-Sweep.
 
 Welle-1-C0 entscheidet pro Item.
+
+**M6-D-3b — `Pattern-Forward` (Pre-init-Defense-Pattern):**
+
+`Pattern-Forward`-Lifecycle (`carveouts.md §1`) ist anders
+als `Deferred`: keine eigene Lieferpunkt-Pflicht, kein
+diskretes Item zum Abhaken. Vorbelegung: opportunistisch
+im M6-Welle-X-Hardening-Sweep mitlaufen lassen, wenn ein
+naechster device-iterierender Adapter (z. B. neue
+SOLLTE-Geraete oder erweiterte Telemetry-Surfaces)
+hinzukommt — **kein Welle-X-Lieferpunkt** explizit fuer
+dieses Item. Falls in M6 kein passender Adopter entsteht,
+bleibt das Item `Pattern-Forward` in `carveouts.md §2.1`
+und wandert nach M7+.
 
 ### M6-D-4 — ADR-Anzahl-Vorbelegung
 
@@ -518,9 +533,11 @@ Jobs in einem Commit (analog Slice 025).
 - [`roadmap.md §3 M6`](roadmap.md) — M6-Vorbelegung mit
   Lieferziel + Lastenheft-IDs + DoD-Checkboxen.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
-  §22 (`GG-RT-*`) + §23 (`GG-SAFE-*`) +
-  CI/CD-Kapitel (`GG-CICD-*` + `GG-DEPLOY-*` +
-  `GG-SBOM-*`).
+  §22 (`GG-RT-*`) + §23 (`GG-SAFE-*` inkl. `GG-SAFE-008`
+  externe Eingabevalidierung) + CI/CD-Kapitel
+  (`GG-CICD-001..007` inkl. `GG-CICD-007` Release-Workflow
+  mit SBOM-Hook ueber Trigger 008; `GG-DEPLOY-*`). Keine
+  eigene `GG-SBOM-*`-Lastenheft-Familie.
 - Pattern-Vorbild **Welle-ohne-C1-ADR**:
   M5-Welle-0 (Welle-0 ist Doc-only; M6-ADR-Sondierungen
   kommen erst pro Sub-Welle).
