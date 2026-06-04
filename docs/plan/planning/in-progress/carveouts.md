@@ -25,21 +25,17 @@ wurde.
 
 ## 1. Konvention
 
-**Carveout** = bewusster Verzicht im aktuellen Lieferumfang
-mit dokumentiertem Forward-Pointer auf eine spaetere Welle /
-einen spaeteren Meilenstein. Drei Sub-Typen:
+**Carveout** = bewusster Verzicht im aktuellen Lieferumfang.
+Vier Typen (siehe `Typ`-Spalte in jeder §2.x-Tabelle):
 
-- **Explicit Anti-Scope** — pro Welle/M `§1.3 Anti-Scope`
-  oder `§7/§8 Nicht-vollzogen` aufgezaehlt.
-- **Stub-Aufloesung** — Surface ist heute Stub (z. B.
-  `GET /snapshot`-`schema_ref`-Pointer); volle Lieferung
-  wandert.
-- **Pattern-Generalisierung** — Welle-internes Pattern, das
-  als Forward-Pointer fuer wiederverwendbare Hardening-
-  Idiome dokumentiert ist (kein klassisches Carvout, aber
-  unter dem Index-Dach gefuehrt fuer Sichtbarkeit).
+| Typ | Definition | Lebenszeit |
+| --- | ---------- | ---------- |
+| **`Deferred`** | Klares Ziel-M / Welle vorgesehen; wird geliefert | Bis Resolution; wandert dann in §3 Resolved und spaeter nach `done/M-results.md §5`. |
+| **`Trigger-Gated`** | Wartet auf externe Bedingung; aktiviert sobald Bedingung eintritt | Gleich wie `Deferred` falls Bedingung eintritt; bleibt sonst unbegrenzt offen. Formaler Trigger-Doc in [`../open/`](../open/) ist Pflicht. |
+| **`Out-of-Scope`** | Strukturell ausgeschlossen; **kein** Aufloesungs-Plan | Permanent im Index als Audit-Trail; Forward-Pointer auf Lastenheft- oder ADR-Begruendung. Wandert nicht. |
+| **`Pattern-Forward`** | Welle-internes Hardening-Idiom als Generalisierungs-Empfehlung fuer spaetere Adopter | Bleibt bis zur ersten Adoptions-Welle; dann wandert die Generalisierungs-Lieferung in eine Welle und der Index-Eintrag wandert nach §3. |
 
-**Status-Werte:**
+**Status-Werte** (orthogonal zum Typ):
 
 - `Open` — Forward-Pointer aktiv, keine Aufloesungs-Welle
   vorgesehen.
@@ -50,6 +46,12 @@ einen spaeteren Meilenstein. Drei Sub-Typen:
 - `Resolved {date} ({M-Welle-Hash})` — geschlossen; Eintrag
   wandert in §3 Resolved-Block oder raus.
 
+**Typ vs. Status:** `Out-of-Scope`-Eintraege bleiben
+permanent auf `Open` (kein Resolve-Pfad); `Deferred` und
+`Trigger-Gated` durchlaufen typischerweise `Open` → `In
+Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
+`Pattern-Forward` bleibt `Open` bis zur ersten Adoption.
+
 ---
 
 ## 2. Aktive Carveouts
@@ -59,14 +61,15 @@ einen spaeteren Meilenstein. Drei Sub-Typen:
 Quelle: [`../done/M5-results.md §5`](../done/M5-results.md)
 „Welle-7-Erbschaft fuer M6+" + §8 „Nicht-vollzogene Items".
 
-| Item | Sub-Typ | Quell-Welle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------- | ----------- | ------ | ---------------------- | ----------- |
-| Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | Stub-Aufloesung | Welle 1 (Stub) + ADR 0015 v2 | Open | M6-Replay-Surface oder eigener Slice | — (kein Open-Trigger) |
-| CSV/JSONL-Export-Endpunkte | Explicit Anti-Scope | Welle 6c §1.3 + `GG-ACCEPT-003` | Open | M6 oder eigener Slice | — |
-| Inline-SVG-Geraete-Grafik | Explicit Anti-Scope | Welle 6b §1.3 + Decision 23 | Open | M6 (UI-Polish-Welle) | — |
-| Dynamische Fault-Activation ueber `POST /faults` | Explicit Anti-Scope | Welle 6a Decision 19 | Open | M6 (Fault-Pipeline-Erweiterung) | — |
-| URL-Versionierung `/api/v1`-Mount-Prefix | Realization-Erbschaft | Welle 6b §10.1 URL-Realization-Note | Open | vor naechster URL-Kollision oder M6-Welle-X | — |
-| Welle-3-Pre-init-Defense-Pattern verallgemeinern | Pattern-Generalisierung | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | M6-Welle-X-Adapter-Hardening-Sweep | — |
+| Item | Typ | Quell-Welle | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | --- | ----------- | ------ | ---------------------- | ----------- |
+| Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | `Deferred` | Welle 1 (Stub) + ADR 0015 v2 | Open | M6-Replay-Surface oder eigener Slice | — (kein Open-Trigger) |
+| CSV/JSONL-Export-Endpunkte | `Deferred` | Welle 6c §1.3 + `GG-ACCEPT-003` | Open | M6 oder eigener Slice | — |
+| Inline-SVG-Geraete-Grafik | `Deferred` | Welle 6b §1.3 + Decision 23 | Open | M6 (UI-Polish-Welle) | — |
+| Dynamische Fault-Activation ueber `POST /faults` | `Deferred` | Welle 6a Decision 19 | Open | M6 (Fault-Pipeline-Erweiterung) | — |
+| URL-Versionierung `/api/v1`-Mount-Prefix | `Deferred` | Welle 6b §10.1 URL-Realization-Note | Open | vor naechster URL-Kollision oder M6-Welle-X | — |
+| WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | M6 (UI-Live-Updates statt 1s-Polling) | — |
+| Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | M6-Welle-X-Adapter-Hardening-Sweep | — |
 
 ### 2.2 M4-Erbschaft (2 Items; ueber M5 weitergereicht)
 
@@ -74,24 +77,27 @@ Quelle: [`../done/M4-results.md §5`](../done/M4-results.md) +
 [`../done/M5-results.md §5`](../done/M5-results.md) +
 [`../open/`](../open/).
 
-| Item | Sub-Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------- | ------ | ------ | ---------------------- | ----------- |
-| IEC-61850-In-Process-Smoke Reaktivierung | Explicit Anti-Scope (2c-Mock-Fallback) | M4-Welle-5b + M4-Welle-6b-C3 | In Trigger Watch | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
-| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | Externer Defer | M3-Welle-7-`c61ab0d` pre-existing | In Trigger Watch | `make fullbuild` als CI-Pflicht ODER Compliance-Druck ODER Library-Bump-Folge | [`010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md) |
+| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | --- | ------ | ------ | ---------------------- | ----------- |
+| IEC-61850-In-Process-Smoke Reaktivierung | `Trigger-Gated` | M4-Welle-5b + M4-Welle-6b-C3 | In Trigger Watch | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
+| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Trigger-Gated` | M3-Welle-7-`c61ab0d` pre-existing | In Trigger Watch | `make fullbuild` als CI-Pflicht ODER Compliance-Druck ODER Library-Bump-Folge | [`010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md) |
 
 ### 2.3 M3-Erbschaft (RL-Adapter)
 
 Quelle: [`../done/M3-results.md §5`](../done/M3-results.md).
 
-| Item | Sub-Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------- | ------ | ------ | ---------------------- | ----------- |
-| Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forward-Linked Trigger | M3-Welle-7 Decision (C3) | In Trigger Watch | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030-rl-adapter.md`](../open/030-rl-adapter.md) |
+| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | --- | ------ | ------ | ---------------------- | ----------- |
+| Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | `Trigger-Gated` | M3-Welle-7 Decision (C3) | In Trigger Watch | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030-rl-adapter.md`](../open/030-rl-adapter.md) |
 
 ### 2.4 M2-Erbschaft (SOLLTE-Geraete + Netzbilanz, 9 Items)
 
 Quelle: [`../done/M2-devices-results.md §5`](../done/M2-devices-results.md) +
 [`../done/M3-results.md §5`](../done/M3-results.md) +
 [`../done/M4-results.md §5`](../done/M4-results.md) (Re-Triage).
+
+Alle 9 Items haben `Typ = Trigger-Gated`; Aktivierungs-
+Bedingung pro Item: „wenn konkreter Bedarf — eigener Slice".
 
 | Item | Lastenheft-ID | Status | Trigger-Doc |
 | ---- | ------------- | ------ | ----------- |
@@ -105,28 +111,52 @@ Quelle: [`../done/M2-devices-results.md §5`](../done/M2-devices-results.md) +
 | Battery-Temperatur-Telemetry | `GG-BESS-006` | In Trigger Watch | [`023-sollte-battery-temperature.md`](../open/023-sollte-battery-temperature.md) |
 | Battery-Zellspannung-Telemetry | `GG-BESS-007` | In Trigger Watch | [`024-sollte-battery-cell-voltage.md`](../open/024-sollte-battery-cell-voltage.md) |
 
-Aktivierungs-Bedingung pro Item: „wenn konkreter Bedarf —
-eigener Slice".
-
 ### 2.5 Tooling- / Build- / Type-System-Trigger (5 Items)
 
-Quelle: [`../open/`](../open/).
+Quelle: [`../open/`](../open/). Alle Items haben `Typ =
+Trigger-Gated`.
 
-| Item | Sub-Typ | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------- | ------ | ---------------------- | ----------- |
-| Canonical-Encoder-Alternative-ADR (orjson, msgspec) | Forward-Linked | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
-| Pyright-vs-mypy-Re-Eval | Forward-Linked | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
-| Pyright-als-Pre-Commit-Hook-ADR | Forward-Linked | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
-| `make sbom` scharfschalten (`GG-CICD-007`) | Forward-Linked | In Trigger Watch | mit erster Artefakt-Veroeffentlichung | [`008-sbom-activation.md`](../open/008-sbom-activation.md) |
-| `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | Forward-Linked | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
+| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | ------ | ---------------------- | ----------- |
+| Canonical-Encoder-Alternative-ADR (orjson, msgspec) | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
+| Pyright-vs-mypy-Re-Eval | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
+| Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
+| `make sbom` scharfschalten (`GG-CICD-007`) | In Trigger Watch | mit erster Artefakt-Veroeffentlichung | [`008-sbom-activation.md`](../open/008-sbom-activation.md) |
+| `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
 
 ### 2.6 Spike-Optional (1 Item)
 
-| Item | Sub-Typ | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------- | ------ | ---------------------- | ----------- |
-| BESS-Simulation Reserve-Market-Spike | Forward-Linked (optionaler Spike) | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
+| Item | Typ | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | --- | ------ | ---------------------- | ----------- |
+| BESS-Simulation Reserve-Market-Spike | `Trigger-Gated` (optionaler Spike) | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
 
-### 2.7 M6-Vorbelegung (Lastenheft-Pflicht-IDs)
+### 2.7 Permanent (`Out-of-Scope`)
+
+Quelle: [`../done/M5-results.md §8`](../done/M5-results.md) +
+[`../done/M4-results.md §7`](../done/M4-results.md) +
+[`../done/M3-results.md §7`](../done/M3-results.md). Diese
+Items haben **keinen Aufloesungs-Plan** im Repo — entweder
+strukturell ausgeschlossen (Lastenheft) oder bedingungs-
+optional (z. B. „nur bei Stakeholder-Druck").
+
+| Item | Typ | Quelle | Begruendung |
+| ---- | --- | ------ | ----------- |
+| Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
+| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft `GG-SAFE-008` | `GG-SAFE-008` verlangt **IP-/Netz-Beschraenkung im Demo-Compose**, nicht UI-Layer-Auth — bewusst dort verankert. |
+| SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
+| Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
+| Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik §2.1) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 | Voller Anlagen-Schaltplan ist M6+-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |
+| End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 | `done/M5-results.md` ist Maintainer-Closure-Artefakt; `docs/user/gg-demo-008-abnahme.md` erfuellt `GG-DEMO-008`. End-User-Tutorial waere ein eigener Slice-Trigger (kein eingeplantes Ziel-M). |
+
+**Konvention fuer `Out-of-Scope`-Eintraege:** bleiben
+permanent im Index, wandern **nicht** in §3 Resolved.
+Falls Stakeholder-Druck oder Lastenheft-Aenderung das
+Item ploetzlich aktiv werden laesst, wandert es per
+Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
+(z. B. `Trigger-Gated` mit neu erstelltem `open/`-
+Trigger-Doc).
+
+### 2.8 M6-Vorbelegung (Lastenheft-Pflicht-IDs)
 
 Quelle: [`roadmap.md §3 M6`](roadmap.md). Diese sind keine
 Carveouts im engeren Sinne (M6 ist der Hauptbestimmungs-Ort),
@@ -176,10 +206,17 @@ in `done/M{N}-results.md §5` + §8.)
 
 **Wann reduziert der Index?**
 
-- Item wird durch eine Welle-Lieferung aufgeloest → Zeile in
-  §3 Resolved-Block fuer Audit-Trail; nach M-Closure (z. B.
+- `Deferred` / `Trigger-Gated` / `Pattern-Forward`-Items
+  werden durch eine Welle-Lieferung aufgeloest → Zeile in §3
+  Resolved-Block fuer Audit-Trail; nach M-Closure (z. B.
   M+1-Welle-7) gehoert die §3-Zeile in das jeweilige
   `done/M{N}-results.md §5 Resolution` und kann hier raus.
+- **`Out-of-Scope`-Items wandern nicht** — sie bleiben
+  permanent im §2.7-Block als Audit-Trail. Falls Stakeholder-
+  Druck oder Lastenheft-Aenderung sie ploetzlich aktiv werden
+  laesst, **wandert der Typ** (z. B. `Out-of-Scope` →
+  `Trigger-Gated`) und ein formaler `open/`-Trigger-Doc
+  wird angelegt.
 
 **Was lebt nicht hier?**
 
