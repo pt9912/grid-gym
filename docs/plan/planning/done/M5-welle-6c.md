@@ -8,7 +8,7 @@ Commit; Status/DoD-Sync + Welle-6-Subdivision-Abschluss-
 Note). Ausstehend: C4a Self-Close-Move
 `M5-welle-6c.md → done/` + C4b Cross-Doc-Refs-Sync.
 Dritte und letzte Sub-Welle der Welle-6-Subdivision (siehe
-[`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+[`M5-welle-6a.md`](M5-welle-6a.md)
 §0 Sub-Slicing-Beschluss). Welle 6c loest die letzte
 Welle-5-Anti-Scope-Erbschaft auf (Welle-5-C2-Folge-
 Entscheid 2026-06-03 in `done/M5-welle-5.md §10.1`:
@@ -349,15 +349,15 @@ verankert.
 
 ## References
 
-- [`M5-ui-demo.md`](M5-ui-demo.md) §3.2 Welle 6c
-  Plan-Items (kanonische Sub-Slicing-Aufnahme; Welle-
-  6c-Abnahmedoku-Sub-Bereich).
-- [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+- [`../in-progress/M5-ui-demo.md`](../in-progress/M5-ui-demo.md)
+  §3.2 Welle 6c Plan-Items (kanonische Sub-Slicing-
+  Aufnahme; Welle-6c-Abnahmedoku-Sub-Bereich).
+- [`M5-welle-6a.md`](M5-welle-6a.md)
   §0 Sub-Slicing-Beschluss — Welle 6 → 6a/6b/6c.
-- [`../done/M5-welle-5.md`](../done/M5-welle-5.md)
+- [`M5-welle-5.md`](M5-welle-5.md)
   §10.1 — `GG-DEMO-008`-Defer-Begruendung
   (Range-Konsistenz mit `GG-DEMO-006`).
-- [`../done/M5-welle-6b.md`](../done/M5-welle-6b.md)
+- [`M5-welle-6b.md`](M5-welle-6b.md)
   — Welle-6b-Devices/System-Pages (von Abnahmedoku
   zitiert).
 - [`../../../../spec/lastenheft.md §24`](../../../../spec/lastenheft.md)

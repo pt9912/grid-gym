@@ -240,7 +240,7 @@
   Plotly/ECharts-Spike).
   **Welle 6c (Abnahmedoku `GG-DEMO-008`) abgeschlossen
   2026-06-04** mit C0 `3db9fcd` (Slice-Doc
-  [`M5-welle-6c.md`](M5-welle-6c.md)) + C2 `0e604e4`
+  [`M5-welle-6c.md`](../done/M5-welle-6c.md)) + C2 `0e604e4`
   (NEU `docs/user/gg-demo-008-abnahme.md` mit
   6-Schritt-Abnahmereihenfolge per `GG-DEMO-008`
   Lastenheft §24; Top-Level-Doku-Sync + Status-Block-

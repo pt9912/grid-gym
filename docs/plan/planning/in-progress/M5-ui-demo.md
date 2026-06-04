@@ -140,7 +140,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](../done/M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
 | 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | Done 2026-06-03 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) (Self-Close-Move in C4a) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
 | 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Done 2026-06-04 | [`M5-welle-6b.md`](../done/M5-welle-6b.md) (Self-Close-Move in C4a) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
-| 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Done 2026-06-04 | [`M5-welle-6c.md`](M5-welle-6c.md) (Self-Close-Move in C4a) | `GG-DEMO-008` | — (C1 entfaellt) |
+| 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Done 2026-06-04 | [`M5-welle-6c.md`](../done/M5-welle-6c.md) (Self-Close-Move in C4a) | `GG-DEMO-008` | — (C1 entfaellt) |
 | 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
 
 **Welle-4-Subdivision-Hinweis:** Die urspruenglich
@@ -159,7 +159,7 @@ Detail im jeweiligen Welle-Slice-Doc unter `done/`.
 Subdivision komplett abgeschlossen 2026-06-04**: 6a
 (`Done 2026-06-03`) + 6b (`Done 2026-06-04`) + 6c
 (`Done 2026-06-04`). Welle 6c hat per
-[`M5-welle-6c.md`](M5-welle-6c.md) (C0 `3db9fcd` + C2
+[`M5-welle-6c.md`](../done/M5-welle-6c.md) (C0 `3db9fcd` + C2
 `0e604e4` + C3 dieser Commit) die Welle-5-Anti-Scope-
 Erbschaft `GG-DEMO-008` aufgeloest — Abnahmedoku
 [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md)
