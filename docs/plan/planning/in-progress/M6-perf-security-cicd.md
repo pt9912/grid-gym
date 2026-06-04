@@ -86,7 +86,7 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
 - **Lastenheft-Coverage** (MUSS/SOLLTE/KANN gem.
   Lastenheft-Normativ-Sprache; M6-Lieferziel umfasst alle
   drei Klassen, nicht nur MUSS):
-  - **MUSS-IDs** (17): `GG-RT-001/002/003/006` (4),
+  - **MUSS-IDs** (21): `GG-RT-001/002/003/006` (4),
     `GG-SAFE-001/002/003/004/007/008` (6),
     `GG-CICD-001/002/003/005/006` (5),
     `GG-DEPLOY-001/002/003/005/006/011` (6).
@@ -122,11 +122,16 @@ erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
     + `GG-RT-005`-Bench reproduzierbar; Regress-Schwelle
     pinned.
 - **ADR-Lifecycle:**
-  - **1-3 M6-ADRs erwartet** als empirische Spannweite aus
-    den letzten drei Meilensteinen (M3: 3 ADRs, M4: 2 ADRs,
-    M5: 5 ADRs), **kein normativer Soll-Wert** — ADR 0011
-    definiert das Schaerfung-ohne-Supersedes-Pattern, nicht
-    eine ADR-Mengenschwelle.
+  - **3 M6-ADRs vorbelegt** (M6-Welle-0-D-4: ADR 0041 Bench
+    + ADR 0042 SBOM + ggf. ADR 0043 Image-Audit). Die
+    empirische M3/M4/M5-Spannweite liegt mit 5-6 ADRs pro
+    Meilenstein deutlich hoeher (M3 = 6 ADRs 0022..0027;
+    M4 = 6 ADRs 0030..0035; M5 = 5 ADRs 0036..0040; Quelle:
+    `done/M{3,4,5}-results.md`). Die M6-Vorbelegung von 3
+    ist also bewusst konservativ; tatsaechliche Anzahl
+    haengt vom Welle-X-C0-Schaerfen ab. **Kein normativer
+    Soll-Wert** — ADR 0011 definiert das Schaerfung-ohne-
+    Supersedes-Pattern, nicht eine ADR-Mengenschwelle.
   - Vorbelegung in [`M6-welle-0.md §3 M6-D-4`](../done/M6-welle-0.md):
     NEU ADR 0041 (Performance-Bench-Pattern), NEU ADR 0042
     (SBOM-Tool + CI-Hook), ggf. NEU ADR 0043 (Image-Audit-
@@ -160,7 +165,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 
 | # | Titel | Status | Slice-Doc | Lastenheft-Coverage / Trigger | ADRs |
 | - | ----- | ------ | --------- | ----------------------------- | ---- |
-| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | In Progress 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
+| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | Done 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Pending | TBD (entsteht in Welle-1-C0) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | TBD (ggf. ADR 0043 Image-Audit-Strategie) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
@@ -169,10 +174,11 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
-**Naechster aktiver Slice:** Welle 0 (Slice-Plan-Eroeffnung
-+ Trigger-Triage) — siehe [`M6-welle-0.md`](../done/M6-welle-0.md).
-Welle-1+-Aktivierung erfolgt mit Welle-0-Closure (C2-
-Sync).
+**Naechster aktiver Slice:** Welle 1 (Base-Image-Bump /
+krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft) — Welle-1-
+Slice-Doc entsteht in Welle-1-C0. M6-Welle-0 abgeschlossen
+2026-06-04 mit Stack `282a8cb..960f6ed` (siehe
+[`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
 
 ### 3.2 Pending-Wellen-Plan-Items
 
@@ -299,9 +305,9 @@ final):
     (`GG-DEPLOY-001..011`-Coverage; Trigger 010 in Welle 1
     + Welle-6-Image-Audit-CI-Gate aufgeloest).
   - **S-5** ADR-Erweiterungs-Pattern fortgefuehrt (M6-ADR-
-    Anzahl 1-3 als empirische M3/M4/M5-Spannweite, kein
-    ADR-Sollwert per ADR 0011; ADR 0011 = Schaerfung-ohne-
-    Supersedes-Pattern).
+    Anzahl gegen empirische M3/M4/M5-Spannweite 5-6 ADRs
+    pro Meilenstein abgleichen; kein ADR-Sollwert per ADR
+    0011; ADR 0011 = Schaerfung-ohne-Supersedes-Pattern).
   - **S-6** Lastenheft-Coverage-Sweep nach M6-Closure
     (Projekt-Closure-Trigger erstellen, falls kein M7).
 
@@ -380,14 +386,17 @@ Aktivierung.
   alle 9 HTTP-/WS-Endpunkte + Welle-5-C1-ADR fuer
   Validation-Strategie.
 
-- **ADR-Anzahl-Drift** — Empirische M3/M4/M5-Spannweite ist
-  1-3 ADRs (kein ADR-Sollwert). Bei 3 ADRs (Bench + SBOM +
-  Image-Audit) ist diese Spannweite ausgeschoepft. Risiko:
-  zusaetzliche ADR-Pflicht in Welle 5+/6 (z.B. Validation-
-  Strategie, Multi-Python-Stage). **Mitigation:** ADR-
+- **ADR-Anzahl-Unter-Vorbelegung** — M6-Vorbelegung sind 3
+  ADRs (Bench + SBOM + Image-Audit); empirische M3/M4/M5-
+  Spannweite liegt bei 5-6 ADRs pro Meilenstein (M3 = 6,
+  M4 = 6, M5 = 5). Risiko: zusaetzliche ADR-Pflicht in
+  Welle 5+/6 (z.B. Validation-Strategie, Multi-Python-Stage)
+  ueber die 3 vorbelegten hinaus, ohne dass die M6-D-4-
+  Vorbelegung dies abgedeckt haette. **Mitigation:** ADR-
   Buendelung wo moeglich; ADR 0011 Schaerfung-ohne-
   Supersedes-Pattern fuer Inkremente ueber bestehende ADRs;
-  ADR 0028 Link-Maintenance fuer Bezug-Refs.
+  ADR 0028 Link-Maintenance fuer Bezug-Refs; Welle-X-C0
+  schaerft die ADR-Liste pro Welle.
 
 ---
 
