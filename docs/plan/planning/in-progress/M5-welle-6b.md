@@ -1,8 +1,13 @@
 # Welle 6b — M5 UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard)
 
-**Status:** In Progress — eroeffnet 2026-06-03 mit C0
-(dieser Commit). Zweite Sub-Welle der Welle-6-
-Subdivision (siehe [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
+**Status:** Done 2026-06-04 — eroeffnet 2026-06-03 mit C0
+`efc2c10` (Slice-Doc + Decisions 21/22/23 final) + C2
+`9fcb887` (Code-Merge: Devices-API + UI-Pages + Smoke
++ Unit-Tests) + C3 (dieser Commit; Status/DoD-Sync +
+§10 C2-Realization-Notes). Ausstehend: C4a Self-Close-
+Move `M5-welle-6b.md → done/` + C4b Cross-Doc-Refs-
+Sync nach Move. Zweite Sub-Welle der Welle-6-Subdivision
+(siehe [`../done/M5-welle-6a.md`](../done/M5-welle-6a.md)
 §0 Sub-Slicing-Beschluss). Welle 6b deckt den UI-
 Visualization-Sub-Bereich ab (`GG-UI-006` Geraete-
 Grafik + `GG-UI-008` Simulationszustaende-Dashboard).
@@ -546,63 +551,163 @@ ist Welle 7+/M6.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **NEU `GET /runs/{run_id}/devices`** in
-  `_runs_router.py` mit Decision-21-Schema.
-- [ ] **NEU `DevicesResponse` + `DeviceStateEntry`**
+- [x] **NEU `GET /runs/{run_id}/devices/state`** in
+  `_runs_router.py` mit Decision-21-Schema. URL-Slot
+  per C2-Realization-Note §10.1 auf `/state`-Sub-Pfad
+  gehoben (Decision 21 als JSON-Surface; UI-Page
+  `/runs/{id}/devices` behaelt die natuerliche URL).
+- [x] **NEU `DevicesResponse` + `DeviceStateEntry`**
   Pydantic-Modelle in `_schemas.py`.
-- [ ] **NEU `templates/devices.html` +
+- [x] **NEU `templates/devices.html` +
   `_devices_content.html`** (HTMX-Polling-Tabelle,
   Decision 22).
-- [ ] **NEU `templates/system.html` +
+- [x] **NEU `templates/system.html` +
   `_system_content.html`** (HTMX-Polling-Status +
   Health-Anzeige).
-- [ ] **NEU `routes_visualization.py`** mit zwei
+- [x] **NEU `routes_visualization.py`** mit zwei
   Routes (devices + system).
-- [ ] **`app.py`** mountet
+- [x] **`app.py`** mountet
   `visualization_router`.
-- [ ] **Navigation um „Devices" + „System"-Links
+- [x] **Navigation um „Devices" + „System"-Links
   erweitert**.
-- [ ] **NEU `tests/integration/
+- [x] **NEU `tests/integration/
   test_m5_welle_6b_visualization_smoke.py`** mit:
-  - GET /devices Schema-Pin (alle 5 Devices, alle
-    Decision-21-Felder).
-  - GET /devices-UI rendert die Tabelle.
-  - GET /system-UI rendert Status + Health.
+  - GET /devices/state Schema-Pin (alle 5 Devices, alle
+    Decision-21-Felder; per-Typ State-Subset-Asserts).
+  - GET /devices-UI rendert die Tabelle + HTMX-Polling
+    auf `/devices/state`.
+  - GET /system-UI rendert Run-Status + Service-Health.
   - Quality-Aggregation: Telemetry mit
-    `FAULT_INJECTED` → Device-quality = `fault_
-    injected`.
-- [ ] **NEU Unit-Tests** fuer Quality-Aggregation +
-  State-Subset-Extraction.
-- [ ] **`make test-unit`** gruen.
-- [ ] **`make test-integration`** gruen mit dem
-  neuen Welle-6b-Smoke.
-- [ ] **`make arch-check`** alle Contracts kept.
-- [ ] **`make typecheck`** gruen.
-- [ ] **`make gates`** cache-frei gruen ohne
+    `FAULT_INJECTED` im `_last_telemetry` → Device-
+    quality = `fault_injected`.
+- [x] **NEU Unit-Tests** (`tests/unit/adapters/driving/
+  http_api/test_devices_endpoint_helpers.py`, 15 Tests)
+  fuer `_aggregate_quality` (worst-case-Ordnung + Pre-
+  Tick-VALID-Fall) + `_extract_state_subset` (per Typ
+  + Bool-Flag-Defaults + Forward-Compat fuer unbekannte
+  Typen).
+- [x] **`make test-unit`** gruen (1696 → 1718 Unit-
+  Tests, +22; davon 15 NEU `test_devices_endpoint_
+  helpers.py` + 7 weitere baselineneutrale Drift seit
+  Welle-6a-Closure).
+- [x] **`make test-integration`** gruen mit dem
+  neuen Welle-6b-Smoke (64 → 77 Integration-Tests,
+  +13).
+- [x] **`make arch-check`** alle Contracts kept
+  (`AC-ADAPTER-PURE` inklusive — Devices-Endpunkt
+  nutzt schicht-lokales `_DeviceView`-Protocol statt
+  Direct-Import von `hexagon.core.devices`).
+- [x] **`make typecheck`** gruen.
+- [x] **`make gates`** cache-frei gruen ohne
   Override.
-- [ ] **`make docs-check`** cache-frei gruen.
+- [x] **`make docs-check`** cache-frei gruen.
 - [ ] **`make demo`** zeigt Devices-Page mit allen 5
   Geraeten + Quality-Markern; System-Page mit
-  Service: OK (manuelle Verifikation).
-- [ ] **`GG-UI-006 + GG-UI-008`** erfuellt.
-- [ ] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
-  Welle-6b-Zeile auf `Done <C3-Datum>` geflipt.
-- [ ] **`in-progress/README.md`** Welle-6b-Closure-
-  Block + Welle-6c-Aktive-Welle-Marker.
-- [ ] **`roadmap.md`** Welle-6b-Closure-Entry.
-- [ ] **Top-Level-Doku-Sync** (`README.md` +
-  `README.de.md` Test-Counts + GG-UI-006/008-Bullet).
+  Service: OK (manuelle Verifikation — Demo-Run-
+  Smoke deckt API-Pfad ab, Browser-Visual ist
+  weiterhin Operator-Pflicht).
+- [x] **`GG-UI-006 + GG-UI-008`** erfuellt.
+- [x] **`M5-ui-demo.md §3.1 Welle-Status-Tabelle`**
+  Welle-6b-Zeile auf `Done 2026-06-04` geflipt
+  (dieser Commit).
+- [x] **`in-progress/README.md`** Welle-6b-Closure-
+  Block + Welle-6c-Aktive-Welle-Marker (dieser
+  Commit).
+- [x] **`roadmap.md`** Welle-6b-Closure-Entry
+  (dieser Commit).
+- [x] **Top-Level-Doku-Sync** (`README.md` +
+  `README.de.md` Test-Counts + GG-UI-006/008-Bullet,
+  dieser Commit).
 - [ ] **NEU C4 Self-Close-Move + Cross-Doc-Refs-
-  Sync** als zwei separate Folge-Commits nach C3.
+  Sync** als zwei separate Folge-Commits nach C3
+  (Pattern analog Welle-6a `70fb82c`/`b19aeae`).
 
 **Anti-Scope-Verifikation (Welle 6b NICHT):**
 
-- [ ] Keine Inline-SVG-Geraete-Grafik (Welle 7+/M6).
-- [ ] Kein WS-Live-Stream fuer `/devices` (Welle 7+/M6).
-- [ ] Kein `GG-DEMO-008` Abnahmedoku (Welle 6c).
-- [ ] Kein Charting-Library-Wechsel (Decision 23).
-- [ ] Kein Geraete-Detail-Page (Welle 7+).
-- [ ] Kein C1-ADR-Commit.
+- [x] Keine Inline-SVG-Geraete-Grafik (Welle 7+/M6) —
+  HTMX-Partial-Tabelle reicht fuer `GG-UI-006`-
+  Akzeptanztext.
+- [x] Kein WS-Live-Stream fuer `/devices` (Welle 7+/
+  M6) — 1s-HTMX-Polling deckt die Demo-Frequenz.
+- [x] Kein `GG-DEMO-008` Abnahmedoku (Welle 6c).
+- [x] Kein Charting-Library-Wechsel (Decision 23) —
+  Chart.js bleibt Welle-3-Dashboard-Library.
+- [x] Kein Geraete-Detail-Page (Welle 7+) — Listen-
+  Page mit State-Subset reicht.
+- [x] Kein C1-ADR-Commit — Welle-6b nutzt nur
+  bestehende ADRs 0014/0016/0017/0018/0021/0025/
+  0036/0037.
+
+---
+
+## 10. C2-Realization-Notes
+
+C2 `9fcb887` brachte zwei substantielle Abweichungen
+gegenueber dem C0-Slice-Doc-Plan, die hier festgehalten
+sind. Beide sind reine **Realisierungs-Aufloesungen** —
+keine Decision-Aenderung, kein ADR-Update.
+
+### 10.1 URL-Realization (Decision 21 vs Decision 22)
+
+**Befund:** Decision 21 (§3.1) fixierte den JSON-Endpunkt
+auf `GET /runs/{run_id}/devices`. Decision 22 (§3.2)
+nutzte denselben Pfad fuer die UI-Page. FastAPI routet
+path+method first-match — der zuerst registrierte
+Router gewinnt; der zweite Handler ist tot.
+
+**Aufloesung:** JSON-Surface wandert auf den
+`/state`-Sub-Pfad. Pattern analog Welle-4b-Alarms
+(UI-Page `/runs/{id}/alarms` + JSON
+`/runs/{id}/alarms-history`):
+
+- **UI-Page** `GET /runs/{run_id}/devices` →
+  `routes_visualization.get_run_devices_page` (HTML).
+- **JSON-Surface** `GET /runs/{run_id}/devices/state` →
+  `_runs_router.get_run_devices_state` (Decision-21-
+  Schema, unveraendert).
+- HTMX-Polling im UI-Partial geht auf
+  `/runs/{run_id}/devices/state`.
+
+**Begruendung des Splits (Welle-4b-Pattern statt
+Content-Negotiation):**
+
+- Klare Modul-Grenze: HTTP-API-Layer bleibt JSON-only;
+  Templates bleiben im UI-Adapter. Keine Cross-Layer-
+  Importe.
+- Test-Pin pro Surface separat: API-Schema-Asserts gegen
+  `/devices/state` ohne HTML-Noise; UI-Smoke gegen
+  `/devices` ohne Pydantic-Validation-Drift.
+- Content-Negotiation in einem Handler haette den
+  Schicht-Schnitt verwischt (template-rendering im
+  `_runs_router.py`).
+
+**Decision-21-Felder unveraendert** — nur der URL-Slot
+hat sich verschoben. Welle-7+/M6-Konsumenten (Operator-
+Workflow / externe Tools) lesen `/runs/{id}/devices/
+state` per OpenAPI-Surface.
+
+### 10.2 AC-ADAPTER-PURE-Schicht-Schutz
+
+**Befund:** Erster C2-Draft importierte `DeviceModel`
+direkt aus `grid_gym.hexagon.core.devices` — der
+arch_check `AC-ADAPTER-PURE`-Contract verbietet das
+(`grid_gym.adapters` darf nicht aus
+`grid_gym.hexagon.core.devices` importieren).
+
+**Aufloesung:** Schicht-lokales `_DeviceView`-Protocol
+in `_runs_router.py` mit nur den drei Membern, die der
+Endpoint liest (`device_id` + `snapshot()` +
+`telemetry()`). Concretisierungen (BatteryDevice,
+PvDevice, ...) erfuellen das Protocol strukturell durch
+ihre existierende `DeviceModel`-Surface; `cast(...)` an
+der Iteration-Boundary haelt den Type-Checker zufrieden
+ohne Runtime-Overhead.
+
+**Pattern-Vorlage:** Welle-3-Telemetry-WS-Pattern (WS-
+Handler liest `TelemetryStreamPort` per duck-typing-
+Subscribe; kein DeviceModel-Import). Welle-7+/M6 kann
+das Pattern bei Bedarf in ein driving-Port-Surface
+heben.
 
 ---
 

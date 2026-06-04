@@ -10,6 +10,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M5-ui-demo.md`](M5-ui-demo.md) | M5-Slice-Plan (UI + Demo; Vorbelegung Welle 0..7 + Out-of-Scope + Risiken + Verifikationspfad; Pattern analog `done/M4-protocol-adapters.md`). |
 | [`M5-welle-5.md`](../done/M5-welle-5.md) | Welle-5-Slice-Doc (M5 Demo-Pipeline + Scenario-Loader-Wiring). — **Done 2026-06-03** + Self-Close-Move `da8d728` + Cross-Doc-Refs-Sync `2c9d8da`. |
 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) | Welle-6a-Slice-Doc (M5 Fault-Flow: UI-Form-Validation + YAML-Fault-Demo). — **Done 2026-06-03** + Self-Close-Move `70fb82c` + Cross-Doc-Refs-Sync `b19aeae` + Review-Folge `1e3a793` (15/15 Findings). |
+| [`M5-welle-6b.md`](M5-welle-6b.md) | Welle-6b-Slice-Doc (M5 UI-Visualization: Geraete-Grafik + Sim-Zustand-Dashboard). — **Done 2026-06-04** (C0 `efc2c10` + C2 `9fcb887` + C3 dieser Commit); ausstehend C4a/b Self-Close-Move + Cross-Doc-Refs-Sync. |
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -338,29 +339,35 @@ Welle-2-Hardening-Material; `GG-DEMO-006`-Akzeptanz
 wird ueber Telemetry-Side-Effect von Faults + den
 vorhandenen Welle-5-LoadEvent-LIMITED-Alarm erfuellt.
 
-**Aktive Welle:** M5-Welle-6b (UI-Visualization)
-**gestartet 2026-06-03** mit C0 (dieser Commit; Slice-
-Doc + Decisions 21/22/23 final). **3 Decisions:**
+**Welle 6b (M5-Welle-6b UI-Visualization: Geraete-
+Grafik + Sim-Zustand-Dashboard) abgeschlossen 2026-06-04**
+mit C0 `efc2c10` (Slice-Doc + Decisions 21/22/23 final)
++ C2 `9fcb887` (Code-Merge: NEU `GET /runs/{id}/devices/
+state` JSON-Surface in `_runs_router.py` + NEU
+`DevicesResponse`/`DeviceStateEntry`-Pydantic-Modelle +
+NEU `_aggregate_quality`/`_extract_state_subset`-Helper
++ NEU `routes_visualization.py`-Schwester-Modul mit
+zwei Page-Routes + NEU 4 Templates `devices.html` +
+`_devices_content.html` + `system.html` +
+`_system_content.html` + Navigation um „Devices"/
+„System" erweitert + NEU Integration-Smoke 13 Tests +
+NEU Unit-Tests 15 Tests) + C3 (dieser Commit;
+Status/DoD-Sync + §10 C2-Realization-Notes). Ausstehend:
+C4a Self-Close-Move `M5-welle-6b.md → done/` + C4b
+Cross-Doc-Refs-Sync nach Move. 1696 → 1718 Unit-Tests
+(+22; davon 15 NEU `test_devices_endpoint_helpers.py`);
+64 → 77 Integration (+13 Welle-6b-Smoke). Lastenheft-
+Akzeptanz `GG-UI-006 + GG-UI-008` produktiv. 10/10
+A-1-Gates gruen cache-frei ohne Override.
+**Welle-6b-Realization-Notes** (Slice-Doc §10):
+URL-Split Decision-21-JSON wandert auf `/runs/{id}/
+devices/state`-Sub-Pfad (UI-Page behaelt natuerliche
+URL `/runs/{id}/devices`; Pattern analog Welle-4b-
+Alarms `/alarms-history`); Adapter-internes
+`_DeviceView`-Protocol haelt AC-ADAPTER-PURE ein
+(keine `hexagon.core.devices`-Direct-Imports).
 
-- **Decision 21 (Devices-API-Surface)** — NEU
-  `GET /runs/{run_id}/devices` mit `{device_id,
-  device_type, state-subset per Device-Typ,
-  worst-case-quality}`. State-Subset pro Typ:
-  battery=(soc_kwh, current_power_kw,
-  cell_failure_active); pv/load=current_power_kw;
-  grid_connection=(current_power_kw,
-  current_voltage_v, voltage_drop_active);
-  smart_meter={}.
-- **Decision 22 (UI-Pages + Modul-Split)** — Zwei
-  UI-Pages (`/devices`-Tabelle mit HTMX-1s-Polling;
-  `/system`-Page mit HTMX-Polling auf /status +
-  /health). Beide in NEU `routes_visualization.py`
-  (AC-NO-GOD-UTILS-Split analog Welle-6a-
-  `routes_faults.py`).
-- **Decision 23 (Charting-Re-Eval)** — Chart.js
-  bleibt; kein Plotly/ECharts-Spike in Welle 6b.
-
-Anti-Scope: keine Inline-SVG-Anlagengrafik (Welle 7+/
-M6); kein WS-Live-Stream fuer /devices (HTMX-Polling
-reicht); keine Geraete-Detail-Page; kein C1-ADR.
-Erfuellt `GG-UI-006 + GG-UI-008` (2 SOLLTE).
+**Aktive Welle:** Welle 6c (Abnahmedoku `GG-DEMO-008`,
+letzte Sub-Welle der Welle-6-Subdivision; ohne Code-
+Substanz, nur Doku-Slice). Slice-Doc entsteht in
+Welle-6c-C0.

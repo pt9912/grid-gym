@@ -203,21 +203,38 @@
   Welle-5-Anti-Scope-Aufnahme erfolgreich (Battery-
   cell_failure-Auto-Alarm bleibt Welle-6+/M3-Welle-2-
   Hardening-Material — Slice-Doc §10.1).
-  **Aktive Welle:** **Welle 6b (UI-Visualization:
-  `GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-
-  Zustand-Dashboard)** eroeffnet 2026-06-03 mit C0
-  (Slice-Doc [`M5-welle-6b.md`](M5-welle-6b.md) +
-  Decisions 21/22/23 final). Welle-6b-Substanz: NEU
-  `GET /runs/{id}/devices` Endpunkt (Decision 21:
-  device_id/device_type/state-subset/quality-
-  aggregiert) + NEU UI-Pages `/devices` (HTMX-1s-
-  Polling-Tabelle) + `/system` (HTMX-Polling auf
-  /status + /health). Modul-Split `routes_
-  visualization.py` analog Welle-6a-`routes_faults.
-  py` (AC-NO-GOD-UTILS). Decision 23: Chart.js
-  bleibt (kein Plotly/ECharts-Spike). **Naechster
-  Schritt:** C2 (Code-Lieferung) → C3 (Status/DoD-
-  Sync) → C4a/b.
+  **Welle 6b (UI-Visualization: `GG-UI-006` Geraete-
+  Grafik + `GG-UI-008` Sim-Zustand-Dashboard)
+  abgeschlossen 2026-06-04** mit C0 `efc2c10` (Slice-
+  Doc [`M5-welle-6b.md`](M5-welle-6b.md) + Decisions
+  21/22/23 final) + C2 `9fcb887` (Code-Merge: NEU
+  `GET /runs/{id}/devices/state` JSON-Surface in
+  `_runs_router.py` + NEU `DevicesResponse`/
+  `DeviceStateEntry`-Pydantic-Modelle + NEU
+  `_aggregate_quality`/`_extract_state_subset`-Helper
+  + NEU `routes_visualization.py`-Modul-Split AC-NO-
+  GOD-UTILS analog Welle-6a `routes_faults.py` + NEU
+  UI-Pages `/runs/{id}/devices` (HTMX-1s-Polling-
+  Tabelle) + `/runs/{id}/system` (HTMX-Polling auf
+  /status 1s + /health 5s) + 4 Templates + Navigation
+  + 13 Integration-Tests + 15 Unit-Tests) + C3
+  (dieser Commit; Status/DoD-Sync + §10 C2-
+  Realization-Notes). Ausstehend: C4a Self-Close-Move
+  `M5-welle-6b.md → done/` + C4b Cross-Doc-Refs-Sync
+  nach Move. 1696 → 1718 Unit-Tests (+22; 15 NEU
+  helpers + 7 Drift); 64 → 77 Integration (+13).
+  Lastenheft-Akzeptanz `GG-UI-006 + GG-UI-008`
+  produktiv. **Welle-6b-Realization-Notes** (Slice-
+  Doc §10): JSON-URL wandert auf `/runs/{id}/devices/
+  state`-Sub-Pfad (UI-Page behaelt natuerliche URL;
+  Pattern analog Welle-4b-Alarms `/alarms-history`);
+  Adapter-internes `_DeviceView`-Protocol haelt
+  AC-ADAPTER-PURE ein. Decision 23: Chart.js bleibt
+  (kein Plotly/ECharts-Spike).
+  **Aktive Welle:** **Welle 6c (Abnahmedoku
+  `GG-DEMO-008`)** als letzte Sub-Welle der Welle-6-
+  Subdivision ohne Code-Substanz; Slice-Doc entsteht
+  in Welle-6c-C0.
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**

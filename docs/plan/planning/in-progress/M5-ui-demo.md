@@ -139,7 +139,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b | Alarme | Done 2026-06-02 | [`M5-welle-4b.md`](../done/M5-welle-4b.md) | `GG-UI-005`; loest ADR-0014-§6 Driving-Side | ADR 0040 `Provisional` |
 | 5 | Demo-Pipeline + Scenario-Loader-Wiring | Done 2026-06-03 | [`M5-welle-5.md`](../done/M5-welle-5.md) (Self-Close-Move in C4a) | `GG-DEMO-001..005 + 007` (Anti: 006 + 008 → Welle 6) | — (C1 entfaellt) |
 | 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | Done 2026-06-03 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) (Self-Close-Move in C4a) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
-| 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | In Progress 2026-06-03 | [`M5-welle-6b.md`](M5-welle-6b.md) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
+| 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Done 2026-06-04 | [`M5-welle-6b.md`](M5-welle-6b.md) (Self-Close-Move in C4a) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
 | 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Pending | TBD (entsteht in Welle-6c-C0) | `GG-DEMO-008` | TBD |
 | 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
 
@@ -155,14 +155,13 @@ Welle 4b (Alarm-Aggregation + AlarmStreamPort + Alarm-
 Tabelle-UI) liefern zusammen `GG-UI-004` + `GG-UI-005`.
 Detail im jeweiligen Welle-Slice-Doc unter `done/`.
 
-**Naechster aktiver Slice:** Welle 6b (UI-Visualization:
-`GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-Zustand-
-Dashboard) — [`M5-welle-6b.md`](M5-welle-6b.md).
+**Naechster aktiver Slice:** Welle 6c (Abnahmedoku
+`GG-DEMO-008`) — Slice-Doc entsteht in Welle-6c-C0.
 Welle 6 ist per Welle-6a-C0-Sub-Slicing-Beschluss
 2026-06-03 in drei Sub-Slices unterteilt (6a Fault-Flow
-**Done** + 6b UI-Visualization **In Progress** + 6c
-Abnahmedoku Pending); pro Sub-Slice eigener Slice-Doc.
-Pattern analog M4-Welle-6 → 6a/6b.
+**Done 2026-06-03** + 6b UI-Visualization **Done
+2026-06-04** + 6c Abnahmedoku Pending); pro Sub-Slice
+eigener Slice-Doc. Pattern analog M4-Welle-6 → 6a/6b.
 
 ### 3.2 Pending-Wellen-Plan-Items
 
@@ -172,18 +171,25 @@ Beschluss + §3.1-Tabelle): 6a Fault-Flow (aktiv) + 6b
 UI-Visualization + 6c Abnahmedoku. Pattern analog
 M4-Welle-6 → 6a/6b.
 
-**Welle 6b — UI-Visualization aktiv** (Slice-Doc
-[`M5-welle-6b.md`](M5-welle-6b.md), Decisions
-21/22/23 final 2026-06-03). Volle Plan-Substanz lebt
-im Slice-Doc; Quick-Glance:
+**Welle 6b — UI-Visualization Done 2026-06-04** (Slice-
+Doc [`M5-welle-6b.md`](M5-welle-6b.md), Decisions
+21/22/23 final 2026-06-03; C0 `efc2c10` + C2 `9fcb887`
++ C3 dieser Commit; ausstehend C4a/b Self-Close-Move +
+Cross-Doc-Refs-Sync). Volle Substanz lebt im Slice-Doc;
+Quick-Glance:
 
 - **GG-UI-006 (Geraete-Grafik)** — HTMX-Polling-
   Tabelle (4 Spalten ID/Typ/Zustand/Quality) ueber
-  NEU `GET /runs/{id}/devices`. Inline-SVG-
-  Anlagengrafik ist Welle 7+/M6-Anti-Scope.
+  UI-Page `/runs/{id}/devices` mit HTMX-Polling auf
+  NEU `GET /runs/{id}/devices/state` (JSON-Surface;
+  URL-Realization-Note Slice-Doc §10.1: `/state`-Sub-
+  Pfad wegen FastAPI-Routenkonflikt mit der UI-Page).
+  Inline-SVG-Anlagengrafik bleibt Welle 7+/M6-Anti-
+  Scope.
 - **GG-UI-008 (Simulationszustaende)** — UI-Page
-  `/system` mit HTMX-Polling auf `/status` + `/health`
-  (Welle-4a-Endpunkte unveraendert).
+  `/runs/{id}/system` mit HTMX-Polling auf `/status`
+  (1s) + `/health` (5s); Welle-4a-Endpunkte
+  unveraendert.
 - **Charting-Library-Re-Eval** — Decision 23 fixiert
   Chart.js (kein Plotly/ECharts-Spike).
 
