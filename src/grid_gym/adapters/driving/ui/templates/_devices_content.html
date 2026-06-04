@@ -19,9 +19,10 @@
     <script>
     (function () {
         // Welle-6b-Decision-22: Page-spezifischer Inline-JS-Handler
-        // rendert die JSON-Antwort des `GET /devices`-Endpunkts als
-        // 4-Spalten-Tabelle. Idempotenz-Guard analog Welle-6a-Faults
-        // (HTMX re-evaluiert <script>-Tags in geswappten Partials).
+        // rendert die JSON-Antwort des `GET /devices/state`-Endpunkts
+        // als 4-Spalten-Tabelle. Idempotenz-Guard analog Welle-6a-
+        // Faults (HTMX re-evaluiert <script>-Tags in geswappten
+        // Partials).
         if (document.body.dataset.devicesTableListenersAttached === "true") {
             return;
         }
@@ -32,47 +33,96 @@
                 && event.detail.target.id === "devices-table";
         }
 
-        function renderStateCell(state) {
-            // state ist {key: string|bool}; rendert als kurze
-            // Schluessel:Wert-Liste in einer einzelnen Zelle.
+        // Welle-6b-Review F1: textContent + DOM-API statt
+        // innerHTML-String-Concat — escape-by-construction gegen
+        // XSS in Device-IDs / Quality / State-Keys. Pattern analog
+        // _alarms_content.html (Welle-4b textContent-Invariante).
+        function renderStateCell(state, td) {
             const keys = Object.keys(state);
             if (keys.length === 0) {
-                return "<span class=\"state-empty\">—</span>";
+                const empty = document.createElement("span");
+                empty.className = "state-empty";
+                empty.textContent = "—";
+                td.appendChild(empty);
+                return;
             }
-            return keys.map(function (key) {
-                const value = state[key];
-                const valueStr = typeof value === "boolean"
-                    ? (value ? "true" : "false")
-                    : String(value);
-                return "<span class=\"state-pair\">"
-                    + "<span class=\"state-key\">" + key + "</span>"
-                    + "<span class=\"state-value\">" + valueStr + "</span>"
-                    + "</span>";
-            }).join("");
+            for (const key of keys) {
+                const pair = document.createElement("span");
+                pair.className = "state-pair";
+                const kSpan = document.createElement("span");
+                kSpan.className = "state-key";
+                kSpan.textContent = key;
+                const vSpan = document.createElement("span");
+                vSpan.className = "state-value";
+                const raw = state[key];
+                vSpan.textContent = typeof raw === "boolean"
+                    ? (raw ? "true" : "false")
+                    : String(raw);
+                pair.appendChild(kSpan);
+                pair.appendChild(vSpan);
+                td.appendChild(pair);
+            }
+        }
+
+        function renderError(message) {
+            const p = document.createElement("p");
+            p.className = "status-line error";
+            p.dataset.errorState = "true";
+            p.textContent = message;
+            return p.outerHTML;
         }
 
         function renderTable(payload) {
-            const devices = (payload && payload.devices) || [];
-            if (devices.length === 0) {
-                return "<p class=\"status-line\">No devices registered for this run.</p>";
+            // Welle-6b-Review F6: distinguish „run hat 0 Devices"
+            // (devices === []) vom Fehlerpfad (devices fehlt oder
+            // ist kein Array). Frueher hat die Fallthrough-Branch
+            // beide Faelle als 'No devices registered' gerendert
+            // und damit Backend-Fehler vor Operatoren versteckt.
+            if (!payload || !Array.isArray(payload.devices)) {
+                return renderError("Devices payload unavailable.");
             }
-            const rows = devices.map(function (device) {
-                return "<tr data-device-id=\"" + device.device_id + "\""
-                    + " data-quality=\"" + device.quality + "\">"
-                    + "<td class=\"col-id\">" + device.device_id + "</td>"
-                    + "<td class=\"col-type\">" + device.device_type + "</td>"
-                    + "<td class=\"col-state\">" + renderStateCell(device.state || {}) + "</td>"
-                    + "<td class=\"col-quality quality-" + device.quality + "\">"
-                    + device.quality + "</td>"
-                    + "</tr>";
-            }).join("");
-            return ""
-                + "<table class=\"devices\">"
-                + "<thead><tr>"
-                + "<th>ID</th><th>Type</th><th>State</th><th>Quality</th>"
-                + "</tr></thead>"
-                + "<tbody>" + rows + "</tbody>"
-                + "</table>";
+            if (payload.devices.length === 0) {
+                const p = document.createElement("p");
+                p.className = "status-line";
+                p.textContent = "No devices registered for this run.";
+                return p.outerHTML;
+            }
+            const table = document.createElement("table");
+            table.className = "devices";
+            const thead = document.createElement("thead");
+            const headRow = document.createElement("tr");
+            for (const label of ["ID", "Type", "State", "Quality"]) {
+                const th = document.createElement("th");
+                th.textContent = label;
+                headRow.appendChild(th);
+            }
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            for (const device of payload.devices) {
+                const row = document.createElement("tr");
+                row.dataset.deviceId = String(device.device_id);
+                row.dataset.quality = String(device.quality);
+                const idCell = document.createElement("td");
+                idCell.className = "col-id";
+                idCell.textContent = String(device.device_id);
+                row.appendChild(idCell);
+                const typeCell = document.createElement("td");
+                typeCell.className = "col-type";
+                typeCell.textContent = String(device.device_type);
+                row.appendChild(typeCell);
+                const stateCell = document.createElement("td");
+                stateCell.className = "col-state";
+                renderStateCell(device.state || {}, stateCell);
+                row.appendChild(stateCell);
+                const qualityCell = document.createElement("td");
+                qualityCell.className = "col-quality quality-" + String(device.quality);
+                qualityCell.textContent = String(device.quality);
+                row.appendChild(qualityCell);
+                tbody.appendChild(row);
+            }
+            table.appendChild(tbody);
+            return table.outerHTML;
         }
 
         document.body.addEventListener("htmx:beforeSwap", function (event) {
@@ -83,6 +133,9 @@
             try {
                 payload = JSON.parse(event.detail.serverResponse);
             } catch (err) {
+                event.detail.serverResponse = renderError(
+                    "Devices payload could not be parsed."
+                );
                 return;
             }
             event.detail.serverResponse = renderTable(payload);

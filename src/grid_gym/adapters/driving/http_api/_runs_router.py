@@ -31,9 +31,8 @@ einzelner logischer Block.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Mapping
-from decimal import Decimal
-from typing import Annotated, Final, Protocol, cast, runtime_checkable
+from collections.abc import Callable, Mapping
+from typing import Annotated, Protocol, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -55,7 +54,7 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     get_tick_loop_registry,
 )
-from grid_gym.hexagon.core.domain.quality import Quality
+from grid_gym.hexagon.core.domain.quality import QUALITY_SEVERITY, Quality
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -64,14 +63,15 @@ from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 runs_router = APIRouter(tags=["runs"])
 
 
-# M5 Welle 6b (Decision 21): worst-case-Severity-Ranking fuer die
-# Per-Device-Quality-Aggregation. Hoeherer Wert = schlechter. Slice-
-# Doc Decision 21 fixiert die fuenf produktiv-emittierten Werte
-# (`MISSING > NAN > INVALID > FAULT_INJECTED > VALID`); STALE/
-# ESTIMATED/LIMITED haben aktuell keinen Welle-6b-MVP-Geraete-Emitter,
-# stehen aber als Forward-Compat-Defense zwischen VALID und FAULT_
-# INJECTED — softere Degradierungen, kein semantischer Fault.
-@runtime_checkable
+# M5-Welle-6b-Review F5/F15: worst-case-Severity-Ranking lebt jetzt in
+# `core/domain/quality.py` neben der Quality-Enum (Knowledge-Locality
+# beim Hinzufuegen neuer Enum-Varianten). `_aggregate_quality` nutzt
+# `.get(...)` mit `INVALID`-Default fuer Forward-Compat-Defense:
+# unbekannte Quality-Werte zaehlen als „schlecht genug um aufzufallen"
+# statt mit KeyError zu eskalieren (vgl. Welle-6a R3 silent-drop).
+_UNKNOWN_QUALITY_RANK = QUALITY_SEVERITY[Quality.INVALID]
+
+
 class _DeviceView(Protocol):
     """Minimal-Protocol des Adapter-internen Views auf ein Geraet.
 
@@ -82,6 +82,10 @@ class _DeviceView(Protocol):
     `telemetry()`). Concretisierungen (BatteryDevice, PvDevice, ...)
     erfuellen das Protocol strukturell durch die existierende
     `DeviceModel`-Surface im Core.
+
+    Welle-6b-Review F12: `@runtime_checkable` entfaellt — kein
+    `isinstance(..., _DeviceView)`-Call existiert, der Decorator war
+    purer Overhead + Mis-Signal an Reviewer.
     """
 
     @property
@@ -90,18 +94,6 @@ class _DeviceView(Protocol):
     def snapshot(self) -> Mapping[str, object]: ...
 
     def telemetry(self) -> tuple[TelemetryPoint, ...]: ...
-
-
-_QUALITY_SEVERITY: Final[Mapping[Quality, int]] = {
-    Quality.VALID: 0,
-    Quality.ESTIMATED: 1,
-    Quality.LIMITED: 2,
-    Quality.STALE: 3,
-    Quality.FAULT_INJECTED: 4,
-    Quality.INVALID: 5,
-    Quality.NAN: 6,
-    Quality.MISSING: 7,
-}
 
 
 def _require_run(run_id: str, repository: RunRepositoryPort) -> RunMetadata:
@@ -283,23 +275,33 @@ def get_run_devices_state(
         return DevicesResponse(run_id=run_id, devices=[])
     device_types = tick_loop.device_types
     entries: list[DeviceStateEntry] = []
-    # Welle-6b R3 (Slice-Doc §7): `_devices` ist die Iteration-
-    # Source (deterministische Konstruktor-Reihenfolge); `device_
-    # types` joinst pro Device das Typ-Segment und filtert Welle-7+/
-    # M3-Klassen, die im Mapping fehlen (silent-drop-Symmetrie zur
-    # Welle-6a-Fault-Validation). Schicht-lokales `_DeviceView`-
-    # Protocol haelt den AC-ADAPTER-PURE-Contract ein; der Core-
-    # `DeviceModel` erfuellt es strukturell.
-    devices = cast(tuple[_DeviceView, ...], tick_loop._devices)
+    # Welle-6b-Review F9: TickLoop.devices ist jetzt eine oeffentliche
+    # Property (analog `device_types`); der Welle-6b-C2-Pfad ueber
+    # `cast(..., tick_loop._devices)` ist abgeloest. Iteration-Source
+    # bleibt die deterministische Konstruktor-Reihenfolge; `device_
+    # types` joinst pro Device das Typ-Segment und filtert Welle-7+/M3-
+    # Klassen, die im Mapping fehlen (silent-drop-Symmetrie zur Welle-
+    # 6a-Fault-Validation). Schicht-lokales `_DeviceView`-Protocol
+    # haelt den AC-ADAPTER-PURE-Contract ein; der Core-`DeviceModel`
+    # erfuellt es strukturell, das `cast(...)` greift nur, um die
+    # Tuple-Invarianz auf das Protocol zu uebertragen.
+    devices = cast(tuple[_DeviceView, ...], tick_loop.devices)
     for device in devices:
         device_type = device_types.get(device.device_id)
         if device_type is None:
+            continue
+        state = _extract_state_subset(device, device_type)
+        if state is None:
+            # Welle-6b-Review F2: pre-init devices liefern aus
+            # `snapshot()` nur `{"version": N}` (Pflicht-Felder
+            # fehlen). Statt 500 zu werfen, silent-droppen wir das
+            # Device — konsistent zur Welle-6a-R3-Drift-Defense.
             continue
         entries.append(
             DeviceStateEntry(
                 device_id=device.device_id,
                 device_type=device_type,
-                state=_extract_state_subset(device, device_type),
+                state=state,
                 quality=_aggregate_quality(device),
             )
         )
@@ -312,12 +314,17 @@ def _aggregate_quality(device: _DeviceView) -> Quality:
 
     Pre-First-Tick (`telemetry()` ist `()` per `DeviceModel`-Protocol
     §2.6) faellt auf `Quality.VALID` zurueck. Severity-Ranking siehe
-    `_QUALITY_SEVERITY` (hoeher = schlechter).
+    `QUALITY_SEVERITY` (hoeher = schlechter).
+
+    Welle-6b-Review F5: unbekannte Quality-Werte (z. B. Welle-N-
+    Erweiterung ohne Mapping-Update) bekommen `_UNKNOWN_QUALITY_RANK`
+    (= INVALID-Severity) statt KeyError — Forward-Compat-Defense
+    analog zur Welle-6a-R3-Symmetrie.
     """
     worst = Quality.VALID
-    worst_rank = _QUALITY_SEVERITY[worst]
+    worst_rank = QUALITY_SEVERITY[worst]
     for point in device.telemetry():
-        rank = _QUALITY_SEVERITY[point.quality]
+        rank = QUALITY_SEVERITY.get(point.quality, _UNKNOWN_QUALITY_RANK)
         if rank > worst_rank:
             worst = point.quality
             worst_rank = rank
@@ -327,7 +334,7 @@ def _aggregate_quality(device: _DeviceView) -> Quality:
 def _extract_state_subset(
     device: _DeviceView,
     device_type: str,
-) -> dict[str, str | bool]:
+) -> dict[str, str | bool] | None:
     """Welle-6b-Pflicht-State-Subset pro Device-Typ (Decision 21 §3.1).
 
     Liest aus `device.snapshot()` nur die UI-Pflicht-Felder und
@@ -337,53 +344,103 @@ def _extract_state_subset(
     leben im `fault_state`-Sub-Block des Snapshots (ADR 0025 §2.2)
     und werden hier nach oben gehoben.
 
-    Unbekannte `device_type`-Werte landen als leeres Mapping —
-    konsistent zu `SmartMeter` (kein eigener Power-State).
+    Welle-6b-Review F2: gibt `None` zurueck, wenn der Snapshot pre-
+    init ist (Pflicht-Feld fehlt) — Aufrufer silent-droppt das Device
+    statt 500 zu werfen. SmartMeter und unbekannte Typen liefern
+    `{}` (kein Power-State).
     """
     snap = device.snapshot()
-    if device_type == "battery":
-        return {
-            "soc_kwh": _snap_decimal_str(snap, "soc_kwh"),
-            "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
-            "cell_failure_active": _snap_fault_flag(snap, "cell_failure_active"),
-        }
-    if device_type == "pv" or device_type == "load":
-        return {"current_power_kw": _snap_decimal_str(snap, "current_power_kw")}
-    if device_type == "grid_connection":
-        return {
-            "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
-            "current_voltage_v": _snap_decimal_str(snap, "current_voltage_v"),
-            "voltage_drop_active": _snap_fault_flag(snap, "voltage_drop_active"),
-        }
-    if device_type == "smart_meter":
+    extractor = _STATE_EXTRACTORS.get(device_type)
+    if extractor is None:
+        # SmartMeter (kein eigener Power-State) + unbekannte Typen.
         return {}
-    return {}
+    return extractor(snap)
+
+
+def _extract_battery_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """Decision-21-Battery-Subset; gibt None bei pre-init (Pflicht-
+    Feld fehlt)."""
+    if "soc_kwh" not in snap or "current_power_kw" not in snap:
+        return None
+    return {
+        "soc_kwh": _snap_decimal_str(snap, "soc_kwh"),
+        "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
+        "cell_failure_active": _snap_fault_flag(snap, "cell_failure_active"),
+    }
+
+
+def _extract_pv_or_load_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """Decision-21-PV/Load-Subset; gibt None bei pre-init."""
+    if "current_power_kw" not in snap:
+        return None
+    return {"current_power_kw": _snap_decimal_str(snap, "current_power_kw")}
+
+
+def _extract_grid_connection_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """Decision-21-GridConnection-Subset; gibt None bei pre-init."""
+    if "current_power_kw" not in snap or "current_voltage_v" not in snap:
+        return None
+    return {
+        "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
+        "current_voltage_v": _snap_decimal_str(snap, "current_voltage_v"),
+        "voltage_drop_active": _snap_fault_flag(snap, "voltage_drop_active"),
+    }
+
+
+# Welle-6b-Review F2 + Slice-Doc-Vorschlag „dispatch dict": per-typ
+# Extractor analog `alarm_mappers.dispatch_alarm_mapper`. Welle-7+/M3-
+# Geraete tragen sich hier ein, ohne `_extract_state_subset` weiter
+# wachsen zu lassen.
+_StateExtractor = Callable[[Mapping[str, object]], "dict[str, str | bool] | None"]
+_STATE_EXTRACTORS: Mapping[str, _StateExtractor] = {
+    "battery": _extract_battery_state,
+    "pv": _extract_pv_or_load_state,
+    "load": _extract_pv_or_load_state,
+    "grid_connection": _extract_grid_connection_state,
+}
 
 
 def _snap_decimal_str(snap: Mapping[str, object], key: str) -> str:
-    """Welle-6b (Decision 21 §3.1): liest ein `Decimal`-Feld aus
-    `device.snapshot()` und gibt es als String zurueck (canonical_
-    json-Konsistenz). Wirft `KeyError`, wenn das Feld fehlt — die
-    5 MVP-Devices haben alle Pflicht-Felder post-`initialize`."""
-    value = snap[key]
-    if not isinstance(value, Decimal):
-        # Forward-Compat-Defense: Welle-7+/M3-Geraete koennten ein
-        # gleichnamiges Feld mit float/int befuellen. `str(...)`
-        # bleibt monoton anwendbar; der Welle-6b-Smoke-Test pinned
-        # die Decimal-Form fuer die MVP-Geraete.
-        return str(value)
-    return str(value)
+    """Welle-6b (Decision 21 §3.1): liest ein numerisches Feld aus
+    `device.snapshot()` und serialisiert es als String (canonical_
+    json-Konsistenz; ADR 0021 §2.9). Aufrufer haben Pflicht-Feld-
+    Existenz schon ueberprueft (`_extract_state_subset`).
+
+    Welle-6b-Review F11: vorher hatte die Funktion zwei identische
+    `str(value)`-Branches (eine 'Forward-Compat-Defense'-Branch fuer
+    Nicht-Decimal-Werte). Beide Pfade waren gleich; die Branch ist
+    raus. Wenn ein Welle-7+/M3-Geraet das Feld als float emittiert,
+    bleibt `str(...)` monoton anwendbar — und das ist genau das, was
+    der Test pinned (`str(Decimal('50.000')) == '50.000'`).
+    """
+    return str(snap[key])
 
 
 def _snap_fault_flag(snap: Mapping[str, object], flag: str) -> bool:
     """Welle-6b (Decision 21 §3.1): liest ein Fault-Flag aus dem
-    `fault_state`-Sub-Block (ADR 0025 §2.2 additiver Block) und
-    defaultet zu `False` fuer Welle-1-Snapshots ohne Block."""
+    `fault_state`-Sub-Block (ADR 0025 §2.2 additiver Block).
+
+    Defaultet zu `False` fuer Welle-1-Snapshots ohne Block.
+
+    Welle-6b-Review F3: truthy-coerce statt strict-isinstance.
+    Vorher hat `isinstance(raw, bool)` int(1) ausgeschlossen — ein
+    JSON-roundtripped Snapshot mit `cell_failure_active=1` ist
+    silent-False gewesen und hat einen aktiven Fault in der UI
+    versteckt. Jetzt: `bool(raw)` macht aus jeder truthy nicht-
+    leeren Repraesentation `True` (1, True, "true"-Strings) und aus
+    jeder falsy `False`. Sicherheits-kritisches Signal geht nicht
+    mehr durch eine Typ-Spitzfindigkeit verloren.
+    """
     fault_state = snap.get("fault_state")
     if not isinstance(fault_state, Mapping):
         return False
-    raw = fault_state.get(flag, False)
-    return bool(raw) if isinstance(raw, bool) else False
+    return bool(fault_state.get(flag, False))
 
 
 @runs_router.get(

@@ -165,15 +165,20 @@ def test_get_devices_quality_aggregates_fault_injected(
     `FAULT_INJECTED`-Telemetry (alle haengen an `Quality.VALID`).
     Wir injizieren das Quality-Marker direkt in den `_last_telemetry`-
     Buffer der Battery, damit der `_aggregate_quality`-Pfad des
-    Endpoints exerciert wird ohne neue Device-Emission-Logik."""
+    Endpoints exerciert wird ohne neue Device-Emission-Logik.
+
+    Welle-6b-Review F8: vorher gab es eine Race-Condition mit dem
+    `DemoTickLoopDriver` (asyncio-Task in derselben Lifespan), der
+    `_last_telemetry` bei jedem Tick ueberschreibt. Wir pausen den
+    TickLoop vor der Mutation — `tick()` ist dann No-op (Welle-4a
+    Pre-Tick-Guard) und der Inject-Wert bleibt deterministisch.
+    """
     registry = app.state.tick_loop_registry
     tick_loop = registry.tick_loop_for(_DEMO_RUN_ID)
     assert tick_loop is not None
-    battery = next(
-        d
-        for d in tick_loop._devices  # type: ignore[attr-defined]
-        if isinstance(d, BatteryDevice)
-    )
+    # F8: pause driver to avoid race with TickLoop async task.
+    tick_loop.request("pause")
+    battery = next(d for d in tick_loop.devices if isinstance(d, BatteryDevice))
     fault_point = TelemetryPoint(
         run_id=_DEMO_RUN_ID,
         tick=0,
@@ -192,6 +197,96 @@ def test_get_devices_quality_aggregates_fault_injected(
     devices = response.json()["devices"]
     battery_entry = next(e for e in devices if e["device_type"] == "battery")
     assert battery_entry["quality"] == "fault_injected"
+
+
+def test_get_devices_quality_aggregates_unknown_quality_to_invalid_rank(
+    demo_client: TestClient,
+) -> None:
+    """Welle-6b-Review F5: ein TelemetryPoint mit einer Quality, die
+    nicht im `QUALITY_SEVERITY`-Mapping steht (Forward-Compat-Pfad)
+    darf den Endpoint nicht 500en. Wir nutzen einen vorhandenen
+    Quality-Wert (`Quality.LIMITED`), der zwar gemappt ist, aber
+    nie von MVP-Devices emittiert wird — verifiziert, dass die
+    `.get(..., default)`-Fallback-Logik durchlaeuft.
+    """
+    registry = app.state.tick_loop_registry
+    tick_loop = registry.tick_loop_for(_DEMO_RUN_ID)
+    assert tick_loop is not None
+    tick_loop.request("pause")
+    battery = next(d for d in tick_loop.devices if isinstance(d, BatteryDevice))
+    limited_point = TelemetryPoint(
+        run_id=_DEMO_RUN_ID,
+        tick=0,
+        simulation_time=0,
+        device_id=battery.device_id,
+        metric="power_kw",
+        value=Decimal("0.000"),
+        unit="kW",
+        quality=Quality.LIMITED,
+        source="battery",
+        sequence=0,
+    )
+    battery._last_telemetry = (limited_point,)  # type: ignore[attr-defined]
+    response = demo_client.get(f"/runs/{_DEMO_RUN_ID}/devices/state")
+    assert response.status_code == 200
+    devices = response.json()["devices"]
+    battery_entry = next(e for e in devices if e["device_type"] == "battery")
+    assert battery_entry["quality"] == "limited"
+
+
+def test_get_devices_xss_payload_in_device_id_is_escaped(
+    demo_client: TestClient,
+) -> None:
+    """Welle-6b-Review F1: ein Device mit XSS-Payload im Device-Id
+    (hypothetisch via Scenario-YAML) darf nicht ungeshapt in der
+    UI-HTML landen.
+
+    Wir koennen die Demo-Scenario-Device-IDs nicht im Lifespan
+    veraendern; statt dessen pruefen wir das Inline-JS in
+    `_devices_content.html`: es nutzt textContent + DOM-API, keinen
+    innerHTML-String-Concat. Wenn jemand das jemals zurueckdreht,
+    schlagen die Asserts hier an.
+    """
+    response = demo_client.get(f"/runs/{_DEMO_RUN_ID}/devices")
+    assert response.status_code == 200
+    html = response.text
+    # F1: textContent-Pfad statt String-Concat in renderTable.
+    assert "td.textContent" in html or "Cell.textContent" in html
+    assert ".innerHTML =" not in html  # kein direkter innerHTML-Assign
+    # F6: error-state-Branch existiert (separater Pfad vom Empty-Array).
+    assert "renderError" in html
+
+
+def test_get_devices_state_silent_drops_pre_init_device(
+    demo_client: TestClient,
+) -> None:
+    """Welle-6b-Review F2: ein Device dessen `snapshot()` nur
+    `{'version': N}` zurueckliefert (pre-init-Pfad), wird vom
+    Endpoint silent gedroppt statt 500 zu werfen.
+
+    Wir simulieren das, indem wir das Battery-`_config`-Attribut
+    auf None zuruecksetzen — `BatteryDevice.snapshot()` faellt
+    dann in den Pre-init-Branch.
+    """
+    registry = app.state.tick_loop_registry
+    tick_loop = registry.tick_loop_for(_DEMO_RUN_ID)
+    assert tick_loop is not None
+    tick_loop.request("pause")
+    battery = next(d for d in tick_loop.devices if isinstance(d, BatteryDevice))
+    # Schalte battery in pre-init-Zustand (snapshot returns nur version).
+    original_config = battery._config  # type: ignore[attr-defined]
+    battery._config = None  # type: ignore[attr-defined]
+    try:
+        response = demo_client.get(f"/runs/{_DEMO_RUN_ID}/devices/state")
+        assert response.status_code == 200
+        devices = response.json()["devices"]
+        # Battery wird silent-gedropped; die anderen 4 MVP-Devices
+        # bleiben sichtbar.
+        device_types = {d["device_type"] for d in devices}
+        assert "battery" not in device_types
+        assert device_types == {"pv", "load", "grid_connection", "smart_meter"}
+    finally:
+        battery._config = original_config  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------

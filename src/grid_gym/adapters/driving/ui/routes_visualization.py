@@ -22,6 +22,12 @@ Welle-6b-Routes:
 Beide Routes erkennen den `HX-Request`-Header und rendern bei
 HTMX-Sub-Requests nur den Content-Block (Partial-Switch, Pattern
 analog Welle-6a-Faults).
+
+Welle-6b-Review F13: Run-Existenz + 404-Envelope-Konstruktion sind
+in `_require_run_or_404` zentralisiert (frueher 2x verbatim
+dupliziert in `get_run_devices_page` + `get_run_system_page`).
+Welle-6b-Review F14: HX-Request-Detection liegt in `_templates.
+is_htmx_request` (Drei-Modul-Duplikat aufgeloest).
 """
 
 from __future__ import annotations
@@ -33,19 +39,30 @@ from fastapi.responses import HTMLResponse
 
 from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
 from grid_gym.adapters.driving.http_api._schemas import ErrorResponse
-from grid_gym.adapters.driving.ui._templates import get_templates
+from grid_gym.adapters.driving.ui._templates import get_templates, is_htmx_request
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
 visualization_router: APIRouter = APIRouter(tags=["ui"])
 
 
-def _is_htmx_request(request: Request) -> bool:
-    """Welle-6b-Duplikat zu `routes._is_htmx_request` /
-    `routes_faults._is_htmx_request`. Schwester-Module sind reine
-    Route-Definitions und teilen den kleinen Helper bewusst nicht
-    ueber einen dritten Modul-Schnitt (AC-NO-GOD-UTILS bevorzugt
-    kleine, autarke Route-Module)."""
-    return request.headers.get("hx-request", "").lower() == "true"
+def _require_run_or_404(repository: RunRepositoryPort, run_id: str) -> None:
+    """Welle-6b-Review F13: gemeinsamer 404-Pfad fuer die zwei
+    Visualization-UI-Pages.
+
+    Liefert silent `None`, wenn der Run existiert; wirft sonst
+    `HTTPException(404, ErrorResponse(...))` mit GG-API-004-
+    Envelope (analog `_runs_router._require_run` /
+    `_runs_action_router._ensure_run_exists`, Welle-6a-Review F4-
+    Pattern).
+    """
+    if repository.exists(run_id):
+        return
+    error = ErrorResponse(
+        code="run_not_found",
+        message=f"Run '{run_id}' not found.",
+        run_id=run_id,
+    )
+    raise HTTPException(status_code=404, detail=error.model_dump())
 
 
 @visualization_router.get(
@@ -61,26 +78,21 @@ def get_run_devices_page(
     """Geraete-Grafik-Page (M5 Welle 6b, Decision 22; `GG-UI-006`).
 
     Rendert eine Page mit HTMX-Polling-Tabelle auf
-    `GET /runs/{run_id}/devices` (1s-Trigger). 4-Spalten-Layout
-    (`ID` / `Type` / `State` / `Quality`) deckt die `GG-UI-006`-
-    Akzeptanz (5 MVP-Geraete mit ID, Typ, Zustand, Qualitaetsstatus).
+    `GET /runs/{run_id}/devices/state` (1s-Trigger). 4-Spalten-
+    Layout (`ID` / `Type` / `State` / `Quality`) deckt die
+    `GG-UI-006`-Akzeptanz (5 MVP-Geraete mit ID, Typ, Zustand,
+    Qualitaetsstatus). Welle-6b-Review F10: poll-target ist die
+    JSON-State-Surface, nicht die UI-Page selbst.
 
     Welle-6b-Anti-Scope (Decision 23): keine Inline-SVG-Grafik,
     kein Chart.js — HTMX-Partial-Tabelle reicht fuer den
     Lastenheft-Pflichttext.
 
     Bei nicht-existentem Run liefert die Route 404 mit
-    `GG-API-004`-Envelope (analog Welle-6a-Faults-Pattern,
-    Welle-6a-Review F4-Schaerfung)."""
-    if not repository.exists(run_id):
-        error = ErrorResponse(
-            code="run_not_found",
-            message=f"Run '{run_id}' not found.",
-            run_id=run_id,
-        )
-        raise HTTPException(status_code=404, detail=error.model_dump())
+    `GG-API-004`-Envelope (analog Welle-6a-Faults-Pattern)."""
+    _require_run_or_404(repository, run_id)
     templates = get_templates()
-    template_name = "devices.html" if not _is_htmx_request(request) else "_devices_content.html"
+    template_name = "devices.html" if not is_htmx_request(request) else "_devices_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),
@@ -113,15 +125,9 @@ def get_run_system_page(
 
     Bei nicht-existentem Run liefert die Route 404 mit
     `GG-API-004`-Envelope."""
-    if not repository.exists(run_id):
-        error = ErrorResponse(
-            code="run_not_found",
-            message=f"Run '{run_id}' not found.",
-            run_id=run_id,
-        )
-        raise HTTPException(status_code=404, detail=error.model_dump())
+    _require_run_or_404(repository, run_id)
     templates = get_templates()
-    template_name = "system.html" if not _is_htmx_request(request) else "_system_content.html"
+    template_name = "system.html" if not is_htmx_request(request) else "_system_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),

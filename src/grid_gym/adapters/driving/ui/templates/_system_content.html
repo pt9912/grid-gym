@@ -37,40 +37,79 @@
         }
         document.body.dataset.systemPageListenersAttached = "true";
 
+        // Welle-6b-Review F1/F4/F7: DOM-API statt String-Concat —
+        // escape-by-construction + Null-Guards + String-Coerce.
         function renderRunStatus(payload) {
-            return ""
-                + "<p class=\"status-line\">"
-                + "<span class=\"run-state state-" + payload.state + "\">"
-                + payload.state + "</span>"
-                + " &middot; "
-                + "<span class=\"sim-time\">sim time: "
-                + payload.simulation_time + " ms</span>"
-                + " &middot; "
-                + "<span class=\"tick-count\">ticks: "
-                + payload.tick_count + "</span>"
-                + "</p>";
+            const p = document.createElement("p");
+            p.className = "status-line";
+            if (!payload || payload.state === undefined) {
+                p.textContent = "Run status unavailable.";
+                p.dataset.errorState = "true";
+                return p.outerHTML;
+            }
+            const stateStr = String(payload.state);
+            const stateSpan = document.createElement("span");
+            stateSpan.className = "run-state state-" + stateStr;
+            stateSpan.textContent = stateStr;
+            p.appendChild(stateSpan);
+            p.appendChild(document.createTextNode(" · "));
+            const simSpan = document.createElement("span");
+            simSpan.className = "sim-time";
+            const simRaw = payload.simulation_time;
+            const simStr = simRaw === undefined || simRaw === null
+                ? "—"
+                : String(simRaw);
+            simSpan.textContent = "sim time: " + simStr + " ms";
+            p.appendChild(simSpan);
+            p.appendChild(document.createTextNode(" · "));
+            const tickSpan = document.createElement("span");
+            tickSpan.className = "tick-count";
+            const tickRaw = payload.tick_count;
+            const tickStr = tickRaw === undefined || tickRaw === null
+                ? "—"
+                : String(tickRaw);
+            tickSpan.textContent = "ticks: " + tickStr;
+            p.appendChild(tickSpan);
+            return p.outerHTML;
         }
 
         function renderServiceHealth(payload) {
-            const status = payload && payload.status ? payload.status : "unknown";
+            const p = document.createElement("p");
+            p.className = "status-line";
+            const status = payload && payload.status !== undefined
+                ? String(payload.status)  // F7: coerce to string before .toUpperCase()
+                : "unknown";
             const label = status === "ok" ? "OK" : status.toUpperCase();
-            return ""
-                + "<p class=\"status-line\">"
-                + "<span class=\"service-status status-" + status + "\">"
-                + "Service: " + label
-                + "</span>"
-                + "</p>";
+            const span = document.createElement("span");
+            span.className = "service-status status-" + status;
+            span.textContent = "Service: " + label;
+            p.appendChild(span);
+            return p.outerHTML;
+        }
+
+        function renderError(targetId, message) {
+            const p = document.createElement("p");
+            p.className = "status-line error";
+            p.dataset.errorState = "true";
+            p.textContent = message;
+            return p.outerHTML;
         }
 
         document.body.addEventListener("htmx:beforeSwap", function (event) {
+            if (!event.detail || !event.detail.target) {
+                return;
+            }
             const target = event.detail.target;
-            if (!target) {
+            if (target.id !== "system-run-status" && target.id !== "system-service-health") {
                 return;
             }
             let payload;
             try {
                 payload = JSON.parse(event.detail.serverResponse);
             } catch (err) {
+                event.detail.serverResponse = renderError(
+                    target.id, target.id + " payload could not be parsed."
+                );
                 return;
             }
             if (target.id === "system-run-status") {

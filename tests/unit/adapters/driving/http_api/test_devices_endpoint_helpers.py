@@ -176,7 +176,57 @@ def test_extract_state_subset_battery_defaults_fault_flag_when_missing() -> None
     }
     device = _FakeDevice(snapshot_data=snap)
     state = _extract_state_subset(device, "battery")
+    assert state is not None
     assert state["cell_failure_active"] is False
+
+
+def test_extract_state_subset_battery_pre_init_returns_none() -> None:
+    """Welle-6b-Review F2: pre-init device snapshots (nur
+    `{"version": N}`) liefern None — Endpoint silent-droppt sie."""
+    snap = {"version": 1}
+    device = _FakeDevice(snapshot_data=snap)
+    assert _extract_state_subset(device, "battery") is None
+    assert _extract_state_subset(device, "pv") is None
+    assert _extract_state_subset(device, "load") is None
+    assert _extract_state_subset(device, "grid_connection") is None
+
+
+def test_extract_state_subset_battery_fault_flag_coerces_int_to_true() -> None:
+    """Welle-6b-Review F3: truthy-coerce statt strict-isinstance.
+    Ein als int(1) round-tripped Fault-Flag muss als True erscheinen,
+    nicht silent als False (safety-critical signal)."""
+    snap = {
+        "version": 1,
+        "soc_kwh": Decimal("0.000"),
+        "current_power_kw": Decimal("0.000"),
+        "fault_state": {"cell_failure_active": 1},
+    }
+    device = _FakeDevice(snapshot_data=snap)
+    state = _extract_state_subset(device, "battery")
+    assert state is not None
+    assert state["cell_failure_active"] is True
+
+
+def test_extract_state_subset_battery_fault_flag_zero_is_false() -> None:
+    """Welle-6b-Review F3-Symmetrie: int(0) → False (truthy-coerce)."""
+    snap = {
+        "version": 1,
+        "soc_kwh": Decimal("0.000"),
+        "current_power_kw": Decimal("0.000"),
+        "fault_state": {"cell_failure_active": 0},
+    }
+    device = _FakeDevice(snapshot_data=snap)
+    state = _extract_state_subset(device, "battery")
+    assert state is not None
+    assert state["cell_failure_active"] is False
+
+
+def test_extract_state_subset_grid_pre_init_returns_none() -> None:
+    """Welle-6b-Review F2: grid_connection pre-init returns None."""
+    snap = {"version": 1, "current_power_kw": Decimal("0.000")}
+    device = _FakeDevice(snapshot_data=snap)
+    # current_voltage_v fehlt → None
+    assert _extract_state_subset(device, "grid_connection") is None
 
 
 def test_extract_state_subset_pv_picks_only_current_power_kw() -> None:

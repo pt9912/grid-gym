@@ -36,22 +36,17 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
-from grid_gym.adapters.driving.ui._templates import get_templates
+from grid_gym.adapters.driving.ui._templates import get_templates, is_htmx_request
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
 ui_router: APIRouter = APIRouter(tags=["ui"])
-
-
-def _is_htmx_request(request: Request) -> bool:
-    """``True`` wenn HTMX den Request als Sub-Request markiert hat."""
-    return request.headers.get("hx-request", "").lower() == "true"
 
 
 @ui_router.get("/", response_class=HTMLResponse)
 def get_demo_index(request: Request) -> HTMLResponse:
     """Demo-Hello-Page mit HTMX-Sanity-Probe (Welle-2-Foundation)."""
     templates = get_templates()
-    template_name = "demo.html" if not _is_htmx_request(request) else "_demo_content.html"
+    template_name = "demo.html" if not is_htmx_request(request) else "_demo_content.html"
     return templates.TemplateResponse(request, template_name)
 
 
@@ -64,7 +59,7 @@ def get_ui_health(request: Request) -> HTMLResponse:
     Backend-Roundtrip falls noetig.
     """
     templates = get_templates()
-    template_name = "health.html" if not _is_htmx_request(request) else "_health_content.html"
+    template_name = "health.html" if not is_htmx_request(request) else "_health_content.html"
     return templates.TemplateResponse(request, template_name, {"status": "ok"})
 
 
@@ -85,7 +80,7 @@ def get_run_dashboard(
     if not repository.exists(run_id):
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     templates = get_templates()
-    template_name = "dashboard.html" if not _is_htmx_request(request) else "_dashboard_content.html"
+    template_name = "dashboard.html" if not is_htmx_request(request) else "_dashboard_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),
@@ -112,7 +107,7 @@ def get_run_alarms(
     if not repository.exists(run_id):
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     templates = get_templates()
-    template_name = "alarms.html" if not _is_htmx_request(request) else "_alarms_content.html"
+    template_name = "alarms.html" if not is_htmx_request(request) else "_alarms_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),
@@ -137,7 +132,7 @@ def get_run_control(
     if not repository.exists(run_id):
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     templates = get_templates()
-    template_name = "control.html" if not _is_htmx_request(request) else "_control_content.html"
+    template_name = "control.html" if not is_htmx_request(request) else "_control_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),

@@ -606,6 +606,23 @@ class TickLoop:
         return mapping
 
     @property
+    def devices(self) -> tuple[DeviceModel, ...]:
+        """M5-Welle-6b-Review F9: Read-only public Surface auf die
+        registrierte Device-Sequenz (Konstruktor-Reihenfolge, also
+        deterministisch).
+
+        Geschwister-Property zu `device_types`. Driving-Adapter
+        (M5-Welle-6b `GET /runs/{id}/devices/state`) iterieren ueber
+        die Devices, um per-Geraet-State + Quality zu extrahieren.
+        Welle-6b-C2 griff zunaechst auf `_devices` direkt zu (cast
+        + private-Attr); die Review-Folge hebt den Zugriff auf eine
+        oeffentliche Property, damit ein Future-Refactor (Rename,
+        Container-Wechsel) den Adapter typed bricht statt silent
+        am Laufzeit-cast vorbei.
+        """
+        return self._devices
+
+    @property
     def control_state(self) -> RunStatus:
         """Aktueller `RunStatus`-Lifecycle-State (M5 Welle 4a, ADR
         0039 Decision 13).

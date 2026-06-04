@@ -23,19 +23,10 @@ from fastapi.responses import HTMLResponse
 
 from grid_gym.adapters.driving.http_api._dependencies import get_run_repository
 from grid_gym.adapters.driving.http_api._schemas import ErrorResponse
-from grid_gym.adapters.driving.ui._templates import get_templates
+from grid_gym.adapters.driving.ui._templates import get_templates, is_htmx_request
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 
 faults_router: APIRouter = APIRouter(tags=["ui"])
-
-
-def _is_htmx_request(request: Request) -> bool:
-    """Welle-6a-Duplikat zu `routes._is_htmx_request`. Beide
-    Module sind reine Route-Definitions und teilen die kleine
-    Helper-Funktion bewusst nicht ueber einen dritten Modul-
-    Schnitt (AC-NO-GOD-UTILS bevorzugt kleine, autarke
-    Route-Module)."""
-    return request.headers.get("hx-request", "").lower() == "true"
 
 
 @faults_router.get(
@@ -71,7 +62,7 @@ def get_run_faults(
         )
         raise HTTPException(status_code=404, detail=error.model_dump())
     templates = get_templates()
-    template_name = "faults.html" if not _is_htmx_request(request) else "_faults_content.html"
+    template_name = "faults.html" if not is_htmx_request(request) else "_faults_content.html"
     return cast(
         HTMLResponse,
         templates.TemplateResponse(request, template_name, {"run_id": run_id}),
