@@ -142,7 +142,7 @@ optional (z. B. „nur bei Stakeholder-Druck").
 | Item | Typ | Quelle | Begruendung |
 | ---- | --- | ------ | ----------- |
 | Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
-| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft `GG-SAFE-008` | `GG-SAFE-008` verlangt **IP-/Netz-Beschraenkung im Demo-Compose**, nicht UI-Layer-Auth — bewusst dort verankert. |
+| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration | UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-ID verlangt; IP-/Netz-Beschraenkung ist im Demo-Compose verankert (separate Auflagen-Schicht, kein einzelner Lastenheft-ID). `GG-SAFE-008` ist davon abzugrenzen — `GG-SAFE-008` verlangt **externe Eingabevalidierung an REST/WS/Adapter-Schnittstellen** und gehoert zur M6-Security-Welle (siehe `M6-welle-0.md §1.3`). |
 | SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
 | Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
 | Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik §2.1) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 | Voller Anlagen-Schaltplan ist M6+-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |

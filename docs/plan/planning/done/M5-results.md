@@ -327,8 +327,15 @@ per ADR 0011).
   Closure-Erbschaft. `done/M5-results.md` ist Maintainer-
   Closure-Artefakt; eine End-User-Tutorial-Doku ist M6 oder
   ein eigener Slice-Trigger (separater Use-Case).
-- **Multi-User + Auth** — M6 (`GG-SAFE-008` IP-/Netz-
-  Beschraenkung im Demo-Compose; nicht im UI-Layer).
+- **Multi-User + Auth im UI-Layer** — `Out-of-Scope`-
+  permanent (siehe `../in-progress/carveouts.md §2.7`).
+  UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-Lastenheft-
+  ID verlangt; IP-/Netz-Beschraenkung ist als **separate
+  Auflagen-Schicht** im Demo-Compose verankert (kein
+  einzelner Lastenheft-ID). `GG-SAFE-008` selbst verlangt
+  externe **Eingabevalidierung** an REST/WS/Adapter-
+  Schnittstellen — gehoert zur M6-Security-Welle, nicht zum
+  UI-Auth-Komplex.
 - **SvelteKit-SPA / React-SPA Migration** — M6+ falls
   Stakeholder-Druck (ADR 0036 §2.5 Migrations-Pfad).
 - **Plotly.js / ECharts** — M6+ falls Chart.js-Limitationen

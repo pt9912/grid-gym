@@ -3,8 +3,10 @@
 **Status:** In Progress — eroeffnet 2026-06-04 mit C0
 (dieser Commit). Vorabraeumung + Slice-Plan-Eroeffnung fuer
 M6 (Performance + Security + CI/CD-Haertung — `GG-RT-001..005`
-+ `GG-SAFE-001..006` + `GG-CICD-001..00X` + `GG-DEPLOY-001..00X`
-+ `GG-SBOM-001..00X`). Pattern analog M5-Welle-0
++ `GG-SAFE-001..008` + `GG-CICD-001..007` +
+`GG-DEPLOY-001..00X`; SBOM ueber `GG-CICD-007` +
+[`Trigger 008`](../open/008-sbom-activation.md), keine eigene
+`GG-SBOM-*`-Familie). Pattern analog M5-Welle-0
 ([`../done/M5-welle-0.md`](../done/M5-welle-0.md)) und
 M4-Welle-0 ([`../done/M4-welle-0.md`](../done/M4-welle-0.md)).
 
@@ -47,22 +49,23 @@ Slice mit **fuenf Sub-Bereichen** entlang
 | Sub-Bereich | Lastenheft-IDs | Beleg-Familie |
 | ----------- | -------------- | ------------- |
 | **Performance** | `GG-RT-001..005` | 10 000-Points/s-Benchmark + Tick-Drift-Schranken |
-| **Security** | `GG-SAFE-001..006` | Sicherheits-Audit + IP-/Netz-Beschraenkung + SBOM |
-| **CI/CD-Vollausbau** | `GG-CICD-001..00X` | GitHub-Actions-Matrix Python 3.13+3.14, Tests/Coverage/Dep-Audit als CI-Jobs, Release-Workflow |
+| **Security** | `GG-SAFE-001..008` | Sicherheits-Audit + externe Eingabevalidierung (`GG-SAFE-008` REST/WS/Adapter-Inputs) + IP-/Netz-Beschraenkung im Demo-Compose |
+| **CI/CD-Vollausbau** | `GG-CICD-001..007` | GitHub-Actions-Matrix Python 3.13+3.14, Tests/Coverage/Dep-Audit als CI-Jobs, Release-Workflow inkl. SBOM (`GG-CICD-007`) |
 | **Deploy-Hardening** | `GG-DEPLOY-001..00X` | Image-Audit + Container-Smoke + krb5-CVE-Bump (M4-Erbschaft) |
-| **SBOM** | `GG-SBOM-001..00X` | `make sbom` scharfschalten (Trigger 008) + Release-Workflow-Hook |
+| **SBOM-Pfad** | via `GG-CICD-007` + Trigger 008 | `make sbom` scharfschalten + Release-Workflow-Hook. **Keine eigene `GG-SBOM-*`-Lastenheft-Familie** — SBOM ist via CI-Pflicht-Gate-Familie verankert. |
 
 ### 1.1 Carveout-Eingangsbestand
 
 Per [`carveouts.md`](carveouts.md) Stand 2026-06-04: **31
-Carveouts** im Cross-M-Index — davon **24 mit M6-Bezug**:
+Carveouts** im Cross-M-Index — davon **strict M6-Bezug
+(M5-Erbschaft + selbst-aktivierbare Trigger): 10**:
 
 | Carveout-Typ | Anzahl im Index | M6-Relevanz |
 | ------------ | --------------- | ----------- |
-| `Deferred` (M5-Erbschaft) | 7 | **alle 7** sind M6-Pflicht-Substanz (`§2.1 carveouts.md`) — Welle-Zuordnung in §3 Decision M6-D-1 |
-| `Trigger-Gated` (M2-/M3-/M4-Erbschaft + Tooling) | 18 | **6 sind selbst-aktivierbar** in M6 (Trigger 008 SBOM, Trigger 009 IEC, Trigger 010 krb5, plus 3 Tooling); **12 warten weiter auf externen Trigger** |
-| `Out-of-Scope` (permanent) | 6 | **0** — bleiben permanent im Index |
-| `Pattern-Forward` | 1 | **0-1** — Welle-3-Pre-init-Defense kann opportunistisch im M6-Hardening-Sweep mitlaufen |
+| `Deferred` (M5-Erbschaft, §2.1) | 6 | **alle 6** sind M6-Pflicht-Substanz — Welle-Zuordnung in §3 Decision M6-D-3 |
+| `Pattern-Forward` (M5-Erbschaft, §2.1) | 1 | **opportunistisch** in M6-Welle-X-Hardening-Sweep (Welle-3-Pre-init-Defense); kein eigener Lieferpunkt — Lifecycle-Konvention unterscheidet sich von `Deferred` |
+| `Trigger-Gated` (§2.2..§2.6) | 18 | **3 sind selbst-aktivierbar** in M6 (Trigger 008 SBOM, Trigger 009 IEC-Smoke-Pfad-B, Trigger 010 krb5); **15 warten weiter** auf externen Trigger (5 Tooling + 9 SOLLTE-Geraete + 1 RL-Adapter — siehe `carveouts.md §2.3..§2.6` Aktivierungs-Bedingungen) |
+| `Out-of-Scope` (permanent, §2.7) | 6 | **0** — bleiben permanent im Index; kein M6-Lieferpunkt |
 
 Welle-0-C2-Trigger-Triage entscheidet pro Item: aktiv in
 M6-Welle-X / bleibt Trigger-Gated / Out-of-Scope-Move.
@@ -97,16 +100,23 @@ M5-Welle-7-Closure-Stand (siehe
 
 - `GG-RT-001..005` (5 IDs): Echtzeit-/Performance-Schranken;
   `GG-RT-005` ist die 10 000-Points/s-Benchmark-Pflicht.
-- `GG-SAFE-001..006` (6 IDs): Sicherheits-Audit-Familie;
-  `GG-SAFE-008` (IP-/Netz-Beschraenkung) ist im Demo-
-  Compose bereits angelegt.
-- `GG-CICD-001..00X` (≥7 IDs): CI-Pflicht-Gate-Familie
-  inkl. `GG-CICD-002` (Tests in CI), `GG-CICD-003`
-  (Coverage in CI), `GG-CICD-006` (Dep-Audit in CI),
-  `GG-CICD-007` (Release-Workflow).
+- `GG-SAFE-001..008` (8 IDs): Sicherheits-Audit-Familie.
+  `GG-SAFE-008` ist **externe Eingabevalidierung an REST/
+  WebSocket/Adapter-Schnittstellen** (Lastenheft-Original-
+  Text: „Die Plattform MUSS Eingaben an externen
+  Schnittstellen validieren"). IP-/Netz-Beschraenkung im
+  Demo-Compose ist eine **separate Auflagen-Schicht** (kein
+  einzelner `GG-SAFE-*`-ID); ADR/Welle-X-Decision verlinkt
+  die Compose-Konfiguration mit der entsprechenden
+  Lastenheft-ID.
+- `GG-CICD-001..007` (7 IDs): CI-Pflicht-Gate-Familie inkl.
+  `GG-CICD-002` (Tests in CI), `GG-CICD-003` (Coverage in
+  CI), `GG-CICD-006` (Dep-Audit in CI), **`GG-CICD-007`
+  (Release-Workflow mit SBOM-Hook)** — SBOM-Generierung ist
+  im Release-Workflow verankert, **keine eigene
+  `GG-SBOM-*`-ID-Familie** im Lastenheft.
 - `GG-DEPLOY-001..00X` (≥X IDs): Container-Hardening +
   Image-Audit + Healthcheck-Pollung.
-- `GG-SBOM-001..00X` (≥1 ID): SBOM-Generierung im CI.
 
 **Architektur-Erbschaft aus M5:** ADR 0037 (HTTP-API-
 Surface) + ADR 0038 (TelemetryStreamPort) + ADR 0039
@@ -446,11 +456,17 @@ Jobs in einem Commit (analog Slice 025).
 
 ## 8. Wandert nach
 
-- Bei C2-Closure (Welle 0 Done): keine Self-Close-Move
-  (Pattern Welle-0 — der Slice-Doc bleibt bis zum
-  Pre-C0a-Commit der Welle 1, wo dann `git mv` nach
-  `done/M6-welle-0.md` erfolgt; analog M5-Welle-0-Self-
-  Close-Move `fd642df`).
+- **Self-Close-Move im eigenen Welle-Stack** (per
+  [`../README.md`](../README.md) Wave-Self-Close-Commit-
+  Konvention): sobald `M6-welle-0.md` Status `Done` erreicht
+  (am Ende von C2), schliesst die Welle ihre eigene Commit-
+  Sequenz mit einem reinen `git mv M6-welle-0.md
+  → ../done/M6-welle-0.md` (Inhalts-Edits in einem
+  unmittelbar nachfolgenden Cross-Doc-Refs-Sync-Commit).
+  Pattern analog Welle-6c-C4a `c317200`/Welle-6b-C4a
+  `b30280e` — **NICHT** das alte M5-Welle-0-Muster
+  (`fd642df` als Pre-C0a der Welle 1), das vor der
+  Konventions-Schaerfung galt.
 - `M6-perf-security-cicd.md` (C1-Lieferung) bleibt in
   `in-progress/` bis M6-Welle-7-Closure (analog
   `M5-ui-demo.md` in M5-Welle-7-C4a).
@@ -508,5 +524,5 @@ Jobs in einem Commit (analog Slice 025).
 - Pattern-Vorbild **Welle-ohne-C1-ADR**:
   M5-Welle-0 (Welle-0 ist Doc-only; M6-ADR-Sondierungen
   kommen erst pro Sub-Welle).
-- [`../open/`](../open/) Bestand-Tabelle — 17 aktive
+- [`../open/`](../open/) Bestand-Tabelle — 18 aktive
   Trigger-Watch-Eintraege; C2-Trigger-Triage pflegt sie.
