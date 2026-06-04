@@ -8,7 +8,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
-| [`M6-welle-0.md`](M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **In Progress 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 (dieser Commit); C2 folgt. |
+| [`M6-welle-0.md`](M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 (dieser Commit); ausstehend Self-Close-Move + Cross-Doc-Refs-Sync. |
 | [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 (dieser Commit) als Welle-0-C1-Lieferung. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
@@ -17,10 +17,11 @@ Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
 [`../done/`](../done/); M5-Welle-Docs sind in
 [`../done/README.md`](../done/README.md) Bestand-Tabelle
 gelistet. **Aktiver Slice:** M6 (Performance + Security +
-CI/CD-Haertung); **aktive Welle:** M6-Welle-0 (Slice-
-Plan-Eroeffnung + Trigger-Triage, Doc-only, kein Code) —
-siehe [`M6-welle-0.md`](M6-welle-0.md) und Detail-Block
-unten.
+CI/CD-Haertung); **aktive Welle:** M6-Welle-1 (Base-Image-
+Bump / krb5-CVE-Aufloesung, Trigger 010 M4-Erbschaft) —
+Welle-1-Slice-Doc entsteht in Welle-1-C0. M6-Welle-0
+abgeschlossen 2026-06-04 (siehe Detail-Block unten);
+Self-Close-Move + Cross-Doc-Refs-Sync folgen.
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe
@@ -430,12 +431,26 @@ skipped; 10/10 A-1-Gates gruen cache-frei ohne Override.
 Detail-Closure-Artefakt:
 [`../done/M5-results.md`](../done/M5-results.md).
 
-**Aktive Welle:** M6-Welle-0 (Slice-Plan-Eroeffnung +
-Trigger-Triage) **gestartet 2026-06-04** mit C0 (dieser
-Commit; Slice-Doc [`M6-welle-0.md`](M6-welle-0.md)).
-Welle-0 ist Doc-Welle (kein Code, keine Tests, keine
-neuen ADRs); 7 offene Welle-0-Decisions sammeln Fragen
-fuer M6-Welle-1+ (Sub-Slicing-Strategie, Carveout-Triage,
-Bench-Framework). M5-Welle-7-Erbschaft + 18
-`Trigger-Gated`-Carveouts werden in C2 trianguliert (siehe
-[`carveouts.md`](carveouts.md) + `M6-welle-0.md §3 M6-D-2`).
+**M6-Welle-0 abgeschlossen 2026-06-04** mit C0 `282a8cb`
+(Slice-Doc) + C0-Review-Folge `55f4b28` (5 Findings: 4
+MEDIUM + 1 LOW) + C0-Review-Folge-2 `50b7ac9` (3
+Restdrifts) + C1 `e050035` (NEU
+[`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
+Slice-Plan mit 8-Wellen-Status-Tabelle) + C2 (dieser
+Commit; Trigger-Triage + Status-Flip). Ausstehend: Self-
+Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
+(Pattern Welle-6c-C4a `c317200`/Welle-6c-C4b `cfb9626`).
+
+**Welle-0-C2-Substanz:**
+- `carveouts.md` Trigger-Triage: 3 Trigger auf `Active in
+  M6-Welle-X` umklassifiziert (008 SBOM → Welle 2; 009
+  IEC → Welle 6; 010 krb5 → Welle 1).
+- `roadmap.md §3 M6` Status `Vorbelegung → In Progress`
+  mit Hash-Anchor + Slice-Plan-Pointer.
+- M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
+
+**Aktive Welle:** M6-Welle-1 (Base-Image-Bump / krb5-CVE-
+Aufloesung; Trigger 010 M4-Erbschaft) — Welle-1-Slice-Doc
+entsteht in Welle-1-C0. M6-Slice-Plan-Welle-Strategie:
+Option B aus M6-D-1 (pro Triggerebene: krb5-Bump + SBOM
+klein → CI/CD + Performance + Security gross).

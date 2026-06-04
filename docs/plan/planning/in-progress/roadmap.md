@@ -875,7 +875,19 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
         Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
         verwendet** (ADR 0037 Decision API-2).
 
-### M6 — Performance + Security + CI/CD-Haertung (Vorbelegung)
+### M6 — Performance + Security + CI/CD-Haertung (`In Progress` 2026-06-04)
+
+**Slice-Plan:**
+[`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 0
+(Slice-Plan-Eroeffnung + Trigger-Triage)** mit Slice-Doc
+[`M6-welle-0.md`](M6-welle-0.md) (C0 `282a8cb` + Review-
+Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035`
++ C2 dieser Commit). Welle 1+ Slice-Docs entstehen pro
+Welle-X-C0. Carveout-Triage-Eingangsbestand:
+[`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
+`Active in M6-Welle-X` per Welle-0-C2).
+
 
 - **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,
   Sicherheits-Audit (`GG-SAFE-001..006`,

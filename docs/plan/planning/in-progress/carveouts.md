@@ -79,8 +79,8 @@ Quelle: [`../done/M4-results.md §5`](../done/M4-results.md) +
 
 | Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | --- | ------ | ------ | ---------------------- | ----------- |
-| IEC-61850-In-Process-Smoke Reaktivierung | `Trigger-Gated` | M4-Welle-5b + M4-Welle-6b-C3 | In Trigger Watch | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
-| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Trigger-Gated` | M3-Welle-7-`c61ab0d` pre-existing | In Trigger Watch | `make fullbuild` als CI-Pflicht ODER Compliance-Druck ODER Library-Bump-Folge | [`010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md) |
+| IEC-61850-In-Process-Smoke Reaktivierung | `Trigger-Gated` | M4-Welle-5b + M4-Welle-6b-C3 | **Active in M6-Welle-6** (Pfad B; per M6-Welle-0-C2-Triage) | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
+| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Trigger-Gated` | M3-Welle-7-`c61ab0d` pre-existing | **Active in M6-Welle-1** (per M6-Welle-0-C2-Triage) | `make fullbuild` als CI-Pflicht ODER Compliance-Druck ODER Library-Bump-Folge | [`010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md) |
 
 ### 2.3 M3-Erbschaft (RL-Adapter)
 
@@ -121,7 +121,7 @@ Trigger-Gated`.
 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
 | Pyright-vs-mypy-Re-Eval | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
 | Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
-| `make sbom` scharfschalten (`GG-CICD-007`) | In Trigger Watch | mit erster Artefakt-Veroeffentlichung | [`008-sbom-activation.md`](../open/008-sbom-activation.md) |
+| `make sbom` scharfschalten (`GG-CICD-007`) | **Active in M6-Welle-2** (per M6-Welle-0-C2-Triage) | Release-Workflow-Welle in M6 (verkettet mit `GG-CICD-007`) | [`008-sbom-activation.md`](../open/008-sbom-activation.md) |
 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
 
 ### 2.6 Spike-Optional (1 Item)

@@ -1,7 +1,14 @@
 # Welle 0 — M6 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — eroeffnet 2026-06-04 mit C0
-(dieser Commit). Vorabraeumung + Slice-Plan-Eroeffnung fuer
+**Status:** Done 2026-06-04 — eroeffnet 2026-06-04 mit C0
+`282a8cb` (Slice-Doc) + C0-Review-Folge `55f4b28` (5
+Findings) + C0-Review-Folge-2 `50b7ac9` (3 Restdrifts) +
+C1 `e050035` (NEU `M6-perf-security-cicd.md` Slice-Plan-
+Eroeffnung) + C2 (dieser Commit; Trigger-Triage +
+Status-Flip). Ausstehend: Self-Close-Move
+`M6-welle-0.md → done/` + Cross-Doc-Refs-Sync als zwei
+Folge-Commits (Pattern Welle-6c-C4a/C4b). Vorabraeumung +
+Slice-Plan-Eroeffnung fuer
 M6 (Performance + Security + CI/CD-Haertung — `GG-RT-001..005`
 + `GG-SAFE-001..008` + `GG-CICD-001..007` +
 `GG-DEPLOY-001..00X`; SBOM ueber `GG-CICD-007` +
@@ -491,32 +498,37 @@ Jobs in einem Commit (analog Slice 025).
 ## 9. DoD-Checkliste (mit C2 abzuhaken)
 
 - [x] **C0 — NEU `M6-welle-0.md`** mit §1..§9-Struktur
-  (dieser Commit).
-- [ ] **C1 — NEU `M6-perf-security-cicd.md`** als M6-
-  Slice-Plan.
-- [ ] **C2 — Carveout-Triage**: Trigger 008/009/010 (und
-  ggf. weitere) als `Active in M6-Welle-X` markiert in
-  `carveouts.md`.
-- [ ] **C2 — `roadmap.md §3 M6`** Status `Vorbelegung →
-  In Progress`.
-- [ ] **C2 — `in-progress/README.md`** Aktive-Welle-Block
-  auf M6-Welle-1 ausgerichtet.
-- [ ] **C2 — `in-progress/README.md`** Bestand-Tabelle
+  (`282a8cb`) + zwei Review-Folgen (`55f4b28` + `50b7ac9`).
+- [x] **C1 — NEU `M6-perf-security-cicd.md`** als M6-
+  Slice-Plan (`e050035`; 8-Wellen-Status-Tabelle + Welle-
+  Vorbelegung Option B).
+- [x] **C2 — Carveout-Triage**: Trigger 008/009/010 als
+  `Active in M6-Welle-X` markiert in `carveouts.md`
+  (Trigger 008 → Welle 2; Trigger 009 → Welle 6; Trigger
+  010 → Welle 1). 15 weitere `Trigger-Gated`-Items bleiben
+  per M6-D-2-Vorbelegung offen.
+- [x] **C2 — `roadmap.md §3 M6`** Status `Vorbelegung →
+  In Progress` mit Hash-Anchor-Block + Slice-Plan-Pointer
+  + Carveout-Triage-Pointer.
+- [x] **C2 — `in-progress/README.md`** Aktive-Welle-Block
+  auf M6-Welle-1 ausgerichtet (Welle-1-C0 entsteht als
+  Folge-Commit).
+- [x] **C2 — `in-progress/README.md`** Bestand-Tabelle
   hat `M6-welle-0.md` + `M6-perf-security-cicd.md`
-  Eintraege.
-- [ ] **`make docs-check`** cache-frei gruen ueber alle 3
+  Eintraege mit aktuellem Hash-Stack.
+- [x] **`make docs-check`** cache-frei gruen ueber alle
   Welle-0-Commits.
-- [ ] **`make gates`** unveraendert gruen (Test-Counts
+- [x] **`make gates`** unveraendert gruen (Test-Counts
   bleiben 1722/80; reine Doku-Welle).
 
 **Anti-Scope-Verifikation (Welle 0 NICHT):**
 
-- [ ] Kein Code-Diff.
-- [ ] Keine neuen Tests.
-- [ ] Keine neuen ADRs (Sondierungs-ADRs wie ADR 0036
-  bei M5 sind in M6 nicht erwartet).
-- [ ] Keine Welle-1+-Decisions final entschieden (Welle-
-  0-Decision-Liste sammelt nur).
+- [x] Kein Code-Diff.
+- [x] Keine neuen Tests.
+- [x] Keine neuen ADRs (Sondierungs-ADRs wie ADR 0036 bei
+  M5 sind in M6 nicht erwartet — bleibt Sub-Welle-Material).
+- [x] Keine Welle-1+-Decisions final entschieden (Welle-
+  0-Decision-Liste in §3 sammelt nur; Welle-X-C0 schaerft).
 
 ---
 
