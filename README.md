@@ -110,31 +110,23 @@ logic.
 
 ## Status
 
-As of **2026-06-03** (post M5 Wave 6a closure):
+As of **2026-06-04**:
 
-- **M1 — Tick-Loop Spine** · `Done`
-- **M2 — Device Models** · `Done`
-- **M3 — Faults + Multi-Agent + Observability** · `Done` (six ADRs `Accepted`)
-- **M4 — Protocol Adapters** · `Done` (six ADRs 0030..0035 `Accepted` 2026-06-01)
-- **M5 — UI + Demo** · `In Progress` since 2026-06-01 — active wave: **6c (Acceptance docs `GG-DEMO-008`)**. Waves 0..6b `Done` (Wave 6b UI-Visualization `Done` 2026-06-04 — `GG-UI-006` device grid + `GG-UI-008` system dashboard; Wave 6a Fault-Flow `Done` 2026-06-03). Wave 6 is sub-sliced into 6a/6b/6c. Wave status table: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
-- **M6 — Performance + Security + CI/CD** · `Pending`
+- M1..M4 · `Done` (16 ADRs `Accepted`).
+- **M5 — UI + Demo** · `In Progress` since 2026-06-01. Waves
+  0..6b `Done`; active wave **6c (Acceptance docs
+  `GG-DEMO-008`)**. Wave status table:
+  [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
+- M6 · `Pending`.
 
-**Test balance** (2026-06-04, post M5 Wave 6b closure): 1722 unit
-+ 80 integration passed + 4 skipped. The 4 skipped tests are the
-**2c mock-only fallback** for the IEC-61850 in-process `IedServer`
-smoke (ADR 0035 §2.5; trigger 009). Per-wave test increments live
-in the slice docs under
-[`docs/plan/planning/`](docs/plan/planning/).
+**Test balance:** 1722 unit + 80 integration passed + 4 skipped
+(IEC-61850 2c-mock-only fallback, ADR 0035 §2.5, trigger 009).
+`make gates` 10-stage cache-free green without override.
 
-**`make gates`** is 10-stage cache-free green without override:
-lint, format-check, `mypy --strict`, arch-check (20 contracts:
-6 `lint-imports` + 14 `tools/arch_check.py`), test-unit, coverage
-(90 % line per module / 85 % critical), critical-coverage,
-dep-audit, `# noqa` ban, `spdx-check`.
-
-For ADR pointers see
-[`docs/plan/adr/README.md`](docs/plan/adr/README.md). For
-AI-coding-agent briefing see [`AGENTS.md`](AGENTS.md).
+**Pointers:** demo acceptance steps `GG-DEMO-008` →
+[`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
+ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
+AI-agent briefing → [`AGENTS.md`](AGENTS.md).
 
 ## Build, Test, Lint
 

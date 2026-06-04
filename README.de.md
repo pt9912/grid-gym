@@ -112,31 +112,23 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-03** (nach M5-Welle-6a-Closure):
+Stand **2026-06-04**:
 
-- **M1 — Tick-Loop-Spine** · `Done`
-- **M2 — Geraetemodelle** · `Done`
-- **M3 — Faults + Multi-Agent + Observability** · `Done` (sechs ADRs `Accepted`)
-- **M4 — Protokolladapter** · `Done` (sechs ADRs 0030..0035 `Accepted` 2026-06-01)
-- **M5 — UI + Demo** · `In Progress` seit 2026-06-01 — aktive Welle: **6c (Abnahmedoku `GG-DEMO-008`)**. Welle 0..6b `Done` (Welle 6b UI-Visualization `Done` 2026-06-04 — `GG-UI-006` Geraete-Grafik + `GG-UI-008` Sim-Zustand-Dashboard; Welle 6a Fault-Flow `Done` 2026-06-03). Welle 6 ist in 6a/6b/6c sub-gesliced. Welle-Status-Tabelle: [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
-- **M6 — Performance + Security + CI/CD** · `Pending`
+- M1..M4 · `Done` (16 ADRs `Accepted`).
+- **M5 — UI + Demo** · `In Progress` seit 2026-06-01. Welle
+  0..6b `Done`; aktive Welle **6c (Abnahmedoku
+  `GG-DEMO-008`)**. Welle-Status-Tabelle:
+  [`docs/plan/planning/in-progress/M5-ui-demo.md §3.1`](docs/plan/planning/in-progress/M5-ui-demo.md).
+- M6 · `Pending`.
 
-**Testbilanz** (2026-06-04, nach M5-Welle-6b-Closure): 1722 Unit-
-Tests + 80 Integration-Tests passed + 4 skipped. Die 4 skipped
-Tests sind der **2c-Mock-only-Fallback** fuer den IEC-61850-In-
-Process-`IedServer`-Smoke (ADR 0035 §2.5; Trigger 009). Pro-
-Welle-Test-Inkremente leben in den Slice-Docs unter
-[`docs/plan/planning/`](docs/plan/planning/).
+**Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped
+(IEC-61850-2c-Mock-only-Fallback, ADR 0035 §2.5, Trigger 009).
+`make gates` 10-stufig cache-frei gruen ohne Override.
 
-**`make gates`** ist 10-stufig cache-frei gruen ohne Override:
-Lint, Format-Check, `mypy --strict`, Arch-Check (20 Contracts:
-6 `lint-imports` + 14 `tools/arch_check.py`), Test-Unit, Coverage
-(90 % Line pro Modul / 85 % kritisch), Critical-Coverage,
-Dep-Audit, `# noqa`-Verbot, `spdx-check`.
-
-ADR-Pointer im
-[`docs/plan/adr/README.md`](docs/plan/adr/README.md). Briefing
-fuer AI-Coding-Agenten: [`AGENTS.md`](AGENTS.md).
+**Pointer:** Abnahmereihenfolge `GG-DEMO-008` →
+[`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
+ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
+AI-Agent-Briefing → [`AGENTS.md`](AGENTS.md).
 
 ## Build, Test, Lint
 
