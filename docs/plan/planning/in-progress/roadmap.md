@@ -253,12 +253,16 @@
   **Welle-6-Subdivision komplett 2026-06-04** (6a
   Fault-Flow + 6b UI-Visualization + 6c Abnahmedoku;
   drei Sub-Slices analog M4-Welle-6 → 6a/6b-Pattern).
-  **Aktive Welle:** **Welle 7 (M5-Closure)**: M5-ADRs
-  0036..0040 auf `Accepted`, NEU `done/M5-results.md`
-  mit Welle-Tabelle/Abnahme-Belegen, `roadmap.md §3 M5`
-  DoD-Checkboxen + M5 auf `Done`, Self-Close-Move
-  `M5-ui-demo.md → done/`, S-1..S-6-Sweep. Slice-Doc
-  entsteht in Welle-7-C0.
+  **Welle 7 (M5-Closure) eroeffnet 2026-06-04** mit C0
+  (Slice-Doc [`M5-welle-7.md`](M5-welle-7.md); Pattern
+  analog M4-Welle-7). Welle-7-Substanz: 5 M5-ADRs
+  (0036..0040) `Provisional → Accepted` (C1), NEU
+  `done/M5-results.md` mit Welle-Tabelle/Abnahme-Belegen/
+  S-1..S-6-Sweep (C2), `roadmap.md §3 M5` DoD-Checkboxen
+  + M5 auf `Done` + „Aktiver Slice: M6" (C3),
+  Self-Close-Move `M5-ui-demo.md` + `M5-welle-7.md` →
+  `done/` (C4a/b). Welle 7 hat keinen Code-Diff, keine
+  neuen Tests, keine neuen ADRs (nur Status-Flips).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
   Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**

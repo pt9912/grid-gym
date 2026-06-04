@@ -141,7 +141,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 6a | Fault-Flow (UI-Form-Validation + YAML-Fault-Demo) | Done 2026-06-03 | [`M5-welle-6a.md`](../done/M5-welle-6a.md) (Self-Close-Move in C4a) | `GG-UI-007` + `GG-DEMO-006` | — (C1 entfaellt) |
 | 6b | UI-Visualization (Geraete-Grafik + Sim-Zustand-Dashboard) | Done 2026-06-04 | [`M5-welle-6b.md`](../done/M5-welle-6b.md) (Self-Close-Move in C4a) | `GG-UI-006` + `GG-UI-008` | — (C1 entfaellt) |
 | 6c | Abnahmedoku (Welle-5-Defer-Aufloesung) | Done 2026-06-04 | [`M5-welle-6c.md`](../done/M5-welle-6c.md) (Self-Close-Move in C4a) | `GG-DEMO-008` | — (C1 entfaellt) |
-| 7 | M5-Closure | Pending | TBD (entsteht in Welle-7-C0) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
+| 7 | M5-Closure | In Progress 2026-06-04 | [`M5-welle-7.md`](M5-welle-7.md) | M5-Closure (`done/M5-results.md` + S-1..S-6) | alle M5-ADRs → `Accepted` |
 
 **Welle-4-Subdivision-Hinweis:** Die urspruenglich
 monolithische Welle 4 wurde am M5-Welle-4a-C0-Pre-
