@@ -10,9 +10,17 @@ Trigger 010 M4-Erbschaft) **abgeschlossen 2026-06-05** mit
 Stack `4b1b3e9..4517614` (Trigger-010-Aufloesung ohne Code-
 Edit durch Debian-13.5-Upstream-Drift + Trigger-015-Pattern;
 NEU ADR 0043 `Provisional`; Welle-1-D-1 vertagt auf Welle 3
-ueber NEU Trigger 031). **Aktive Welle: M6-Welle-2** (SBOM-
-Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007`);
-Welle-2-Slice-Doc entsteht in Welle-2-C0.
+ueber NEU Trigger 031).
+**M6-Welle-2** (SBOM-Aktivierung + Release-Workflow; Trigger
+008 + `GG-CICD-007`) **abgeschlossen 2026-06-05** mit Stack
+`0cc28f3..b41b7fc` (NEU `.github/workflows/release.yml` mit
+3 Jobs + 6 publizierten Artefakten; NEU ADR 0042
+`Provisional`; Trigger 008 nach `done/` gewandert; siehe
+[`../done/M6-welle-2.md`](../done/M6-welle-2.md)).
+**Aktive Welle: M6-Welle-3** (CI/CD-Vollausbau; `GG-CICD-
+001..006` + Python-3.13/3.14-Matrix; plus Trigger 031
+`make fullbuild`-CI-Gate-Vertagung aus Welle 1); Welle-3-
+Slice-Doc entsteht in Welle-3-C0.
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
@@ -184,9 +192,11 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 **Naechster aktiver Slice:** Welle 3 (CI/CD-Vollausbau;
 `GG-CICD-001..006` + Python-3.13/3.14-Matrix) — Welle-3-
 Slice-Doc entsteht in Welle-3-C0. **M6-Welle-2 abgeschlossen
-2026-06-05** mit Stack `0cc28f3..<C3-Hash>` (siehe
+2026-06-05** mit Stack `0cc28f3..b41b7fc` (siehe
 [`M6-welle-2.md`](../done/M6-welle-2.md); Self-Close-Move-Folge
-C4a/C4b ausstehend als Welle-3-Pre-C0a/Pre-C0b):
+Stack umfasst C0/2 Review-Folgen/C1/C2/C3/C3-Sensor-
+Erweiterung + C4a `c51d905` Self-Close-Move + C4b `b41b7fc`
+Cross-Doc-Refs-Sync):
 **Trigger-008-Aufloesung** durch C2 `235395e` (NEU
 `.github/workflows/release.yml` mit Tag-Push + workflow_
 dispatch + 3 Jobs + 1 GHCR-Push + 5 Release-Asset-Files;

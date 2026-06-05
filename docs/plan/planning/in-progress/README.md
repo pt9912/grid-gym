@@ -9,9 +9,9 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
 | [`M6-welle-0.md`](../done/M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 `74d9452` + Self-Close-Move `76f892d` + Cross-Doc-Refs-Sync `960f6ed`. |
-| [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 `e050035` (Welle-0-C1) + Review-Folgen `ff781ff` / `e7a5ac8` / `f1a6639`; aktive Welle: M6-Welle-2. |
+| [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 `e050035` (Welle-0-C1) + Review-Folgen `ff781ff` / `e7a5ac8` / `f1a6639`; aktive Welle: M6-Welle-3. |
 | [`M6-welle-1.md`](../done/M6-welle-1.md) | M6-Welle-1-Slice-Doc (Base-Image-Bump / krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft). — **Done 2026-06-05** mit Stack `4b1b3e9..d51d6e7` (C0/Review-Folgen/C1/C2/C3/C3-Review-Folge/C4a/C4b; siehe done-Slice-Doc Status-Block). |
-| [`M6-welle-2.md`](../done/M6-welle-2.md) | M6-Welle-2-Slice-Doc (SBOM-Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007` Vollscope mit 5 Asset-Klassen + 1 GHCR-Push). — **Done 2026-06-05** mit Stack `0cc28f3..<C3-Hash>` (C0 + 2 Review-Folgen + C1 ADR 0042 `Provisional` + C2 `235395e` Code-Merge + C3 dieser Commit; Self-Close-Move-Folge C4a/C4b ausstehend als Welle-3-Pre-C0a/Pre-C0b). |
+| [`M6-welle-2.md`](../done/M6-welle-2.md) | M6-Welle-2-Slice-Doc (SBOM-Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007` Vollscope mit 5 Asset-Klassen + 1 GHCR-Push). — **Done 2026-06-05** mit Stack `0cc28f3..b41b7fc` (C0/2 Review-Folgen/C1 ADR 0042 `Provisional`/C2 `235395e`/C3 `98a1fa1`/C3-Sensor `9815d23`/C4a `c51d905`/C4b `b41b7fc`). |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
@@ -455,16 +455,19 @@ Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
   mit Hash-Anchor + Slice-Plan-Pointer.
 - M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
 
-**Aktive Welle:** M6-Welle-2 (SBOM-Aktivierung + Release-
-Workflow; Trigger 008 `GG-CICD-007`) — Welle-2-Slice-Doc
-entsteht in Welle-2-C0. **M6-Welle-1 abgeschlossen 2026-06-
-05** mit Stack `4b1b3e9..4517614` (siehe Bestand-Tabelle
-oben; Self-Close-Move + Cross-Doc-Refs-Sync folgen als
-Welle-2-Pre-C0a/Pre-C0b). Aufloesung von Trigger 010
-(`make fullbuild`-Defer seit M3-Welle-7-`c61ab0d`) ohne
-Code-Edit durch Debian-13.5-Upstream-Drift + Trigger-015-
-Pattern. Welle-1-D-1 (CI-Pflicht-Gate fuer `make
-fullbuild`) auf M6-Welle-3 vertagt ueber NEU Trigger 031.
+**Aktive Welle:** M6-Welle-3 (CI/CD-Vollausbau; `GG-CICD-
+001..006` + Python-3.13/3.14-Matrix; plus Trigger 031
+`make fullbuild`-CI-Gate-Vertagung aus Welle 1) — Welle-3-
+Slice-Doc entsteht in Welle-3-C0. **M6-Welle-1 abgeschlossen
+2026-06-05** mit Stack `4b1b3e9..d51d6e7`. **M6-Welle-2
+abgeschlossen 2026-06-05** mit Stack `0cc28f3..b41b7fc`
+(NEU `.github/workflows/release.yml` + 3 Jobs + 6 Artefakte;
+NEU ADR 0042 `Provisional`; Trigger 008 nach `done/`).
+Aufloesung von Trigger 010 (`make fullbuild`-Defer seit
+M3-Welle-7-`c61ab0d`) ohne Code-Edit durch Debian-13.5-
+Upstream-Drift + Trigger-015-Pattern. Welle-1-D-1 (CI-
+Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3
+vertagt ueber NEU Trigger 031.
 M6-Slice-Plan-Welle-Strategie: Option B aus M6-D-1 (pro
 Triggerebene: krb5-Bump + SBOM klein → CI/CD + Performance
 + Security gross).

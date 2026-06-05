@@ -30,6 +30,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`009-iec61850-smoke-reactivation.md`](009-iec61850-smoke-reactivation.md) | IEC-61850 In-Process-Smoke reaktivieren (`tests/integration/test_iec61850_in_process_smoke.py`-Skip aufheben) | pyiec61850-ng publishet cp314-Manylinux-Wheel (Pfad A) ODER Pfad-B-Slice (Multi-Python-Test-Stage) wird angepackt |
 | [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) | Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild` pre-existing rot seit M3-Welle-7-`c61ab0d`; `CVE-2026-40356` + 3 weitere HIGH-CVEs) | **Closed 2026-06-05** (M6-Welle-1-C2 `b514170`) — Null-Code-Edit; Debian-13.5-Upstream-Drift + Trigger-015-Pattern; Trigger gewandert nach `done/` |
 | [`031-ci-make-fullbuild-gate.md`](031-ci-make-fullbuild-gate.md) | CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-Welle-1-D-1-Vertagung; `make fullbuild` lokal cache-frei gruen seit Welle-1-C2, aber nicht GitHub-seitig enforced) | M6-Welle-3 (CI-Vollausbau) — automatische Aktivierung als 5./6. CI-Job neben `test-unit`/`coverage-gate`/`dep-audit`/`image-audit` |
+| [`032-release-workflow-sensor-run.md`](032-release-workflow-sensor-run.md) | Reale GitHub-Actions-Release-Workflow-Run-Verifikation (M6-Welle-2-Post-Closure-Review-Folge F1; alle lokal-verifizierbaren Substanzen gruen, aber GHCR-Push + Release-Create + Multi-Job-Artifact-Sharing nur via realen Lauf bestaetigbar) | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung (Pre-Substanz vs. spaeter) ODER Compliance-Druck |
 
 **M3-/Multi-Agent-Folge:**
 

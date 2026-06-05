@@ -77,20 +77,56 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push runtime image
+        id: build-push
         uses: docker/build-push-action@v6
         with:
           context: .
           target: runtime
           platforms: linux/amd64
           push: true
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}
           cache-from: type=gha,scope=runtime
           cache-to: type=gha,scope=runtime,mode=max
 
+      # ADR 0042 §2.3 / §2.4: `:latest`-Tag nur bei Tag-Push
+      # (Default-Branch-Release-Linie), NICHT bei
+      # workflow_dispatch (Manual koennte gegen alten Tag
+      # laufen und `:latest` faelschlich ueberschreiben).
+      # Pattern: `docker buildx imagetools create` setzt das
+      # Tag-Alias am Registry-Manifest, ohne neu zu pushen.
+      - name: Tag and push :latest (only on tag push)
+        if: github.event_name == 'push'
+        run: |
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}:latest \
+            ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}
+
+      # ADR 0042 §2.1: SBOM MUSS gegen das gepushte Runtime-
+      # Image laufen (per Image-Digest, nicht gegen einen
+      # zweiten lokalen Build). Pull holt den exakten
+      # Manifest-Digest aus GHCR; `docker tag` aliasiert auf
+      # `grid-gym-runtime:latest`, damit `make sbom` das Image
+      # findet.
+      - name: Pull pushed image by digest (for SBOM)
+        run: |
+          docker pull ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}
+          docker tag ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }} grid-gym-runtime:latest
+
+      - name: Generate SBOM against pushed image digest
+        run: |
+          mkdir -p artifacts
+          make sbom VERSION=${{ steps.resolve-version.outputs.version }}
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-sbom
+          path: artifacts/sbom-*.cdx.json
+          if-no-files-found: error
+          retention-days: 1
+
   produce-assets:
-    name: Produce release assets
+    name: Produce release assets (test/coverage/openapi/demo)
     runs-on: ubuntu-latest
     needs: build-and-publish-image
     steps:
@@ -100,14 +136,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Lokaler Build (kein push) — nur fuer Asset-Extraktion. Cache
-      # wird vom build-and-publish-image-Job geteilt.
-      - name: Build runtime image (local)
-        run: make build
+      # SBOM wurde im build-and-publish-image-Job gegen den
+      # gepushten Digest erzeugt (ADR 0042 §2.1). Download
+      # statt zweitem lokalen Build.
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-sbom
+          path: artifacts/
 
-      - name: Generate SBOM
-        run: make sbom VERSION=${{ needs.build-and-publish-image.outputs.version }}
-
+      # Lokaler Build der test-/coverage-/openapi-Stages —
+      # diese Stages produzieren die anderen 4 Asset-Files.
+      # Cache wird vom build-and-publish-image-Job geteilt.
       - name: Build test-unit stage & extract JUnit-XML
         run: |
           make test-unit
