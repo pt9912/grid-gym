@@ -905,7 +905,7 @@ Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3 vertagt
 ueber NEU [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md).
 **M6-Welle-2 abgeschlossen 2026-06-05** mit Stack
 `0cc28f3..<C3-Hash>` (siehe
-[`M6-welle-2.md`](M6-welle-2.md); Self-Close-Move-Folge
+[`M6-welle-2.md`](../done/M6-welle-2.md); Self-Close-Move-Folge
 C4a/C4b ausstehend als Welle-3-Pre-C0a/Pre-C0b): Trigger-
 008-Aufloesung durch C2 `235395e` (NEU `.github/workflows/
 release.yml` mit Tag-Push + workflow_dispatch + 3 Jobs +

@@ -61,7 +61,7 @@ Repo:
   markiert.
 
 **Welle-2-C0-Pre-C0c-Probe** (siehe
-[`../planning/in-progress/M6-welle-2.md §1.2`](../planning/in-progress/M6-welle-2.md)):
+[`../planning/done/M6-welle-2.md §1.2`](../planning/done/M6-welle-2.md)):
 
 - **Trivy 0.58.0** vs. **Syft v1.17.0** gegen denselben
   `grid-gym-runtime:latest`-Image cache-frei verglichen.
@@ -86,7 +86,7 @@ analog ADR 0043 fuer den Image-Audit-Gate.
 
 ADR 0042 fixiert vier orthogonale Punkte (Welle-2-D-1..
 D-4, konsolidiert aus
-[`../planning/in-progress/M6-welle-2.md §3`](../planning/in-progress/M6-welle-2.md)):
+[`../planning/done/M6-welle-2.md §3`](../planning/done/M6-welle-2.md)):
 
 **§2.1 SBOM-Tool + Scan-Ziel.** `make sbom` nutzt
 **`anchore/syft:v1.17.0`** mit **`cyclonedx-json`**-Output-
@@ -122,7 +122,7 @@ parallele Laeufe gegen denselben Tag.
 **§2.3 Asset-Bundling.** Der Release-Workflow produziert
 **6 publizierte Artefakte pro Release** (kanonische
 Begrifflichkeit; siehe
-[`../planning/in-progress/M6-welle-2.md §1.3`](../planning/in-progress/M6-welle-2.md)):
+[`../planning/done/M6-welle-2.md §1.3`](../planning/done/M6-welle-2.md)):
 
 1. **1× GHCR-Push** (Container-Image): `ghcr.io/<owner>/
    grid-gym:<tag>` + `latest` falls Default-Branch; via
