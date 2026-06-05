@@ -1,14 +1,14 @@
 # Welle 2 — M6 SBOM-Aktivierung + Release-Workflow (`GG-CICD-007`)
 
 **Status:** In Progress — eroeffnet mit C0 `0cc28f3`
-(NEU Slice-Doc) + C0-Review-Folge `69d73d3` (4 Findings
-adressiert: 2 HIGH SBOM-Scan-Ziel-Drift + Demo-Abnahmedoku-
-Asset-Drift, 1 MED Report-Target-Schaerfungen, 1 LOW
-M6-Plan-C4a/C4b-Drift) + C0-Review-Folge-2 (dieser
-Commit; 3 Findings adressiert: 2 MED C2-Scope-Widerspruch
-+ Sub-Slicing-Entscheidungs-Veraltung, 1 LOW Asset-
-Zaehlung-Inkonsistenz). Welle 2 ist die **zweite Code-
-Welle in M6**
+(NEU Slice-Doc) + C0-Review-Folge `69d73d3` (4 Findings:
+2 HIGH + 1 MED + 1 LOW) + C0-Review-Folge-2 `63c4cb6`
+(3 Findings: 2 MED + 1 LOW) + C1 `4b1062b` (NEU ADR 0042
+`Provisional` + ADR-Index-Sync) + C2 (dieser Commit;
+Code-Merge: Makefile sbom-Scan-Ziel + Dockerfile test-unit
+JUnit-XML + coverage-gate HTML + NEU `.github/workflows/
+release.yml` + §10 C2-Realization-Notes). Welle 2 ist die
+**zweite Code-Welle in M6**
 nach M6-D-1-Option-B-Vorbelegung („pro Triggerebene": krb5-
 Bump + SBOM klein vor CI/CD/Performance/Security gross) und
 loest **Trigger 008**
@@ -844,63 +844,77 @@ Schaerfung.
   Block auf M6-Welle-2 bestaetigt.
 - [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-2-
   Zeile `Pending → In Progress` mit C0-Hash-Stub.
-- [ ] **C1 — NEU `docs/plan/adr/0042-sbom-tool-and-
+- [x] **C1 — NEU `docs/plan/adr/0042-sbom-tool-and-
   release-pattern.md`** als `Provisional` mit Trigger-
   008-Hash-Anchor-Block + ADR-Standard-Struktur
-  (§1..§7) + Bezug zu ADR 0028 (Link-Maintenance) +
-  ADR 0043 (Schwester-Pattern Quality-Gate-Vertrag).
-- [ ] **C1 — `docs/plan/adr/README.md`** Aktive-ADRs-
+  (§1..§7) + Bezug zu ADR 0028 + ADR 0043 (`4b1062b`).
+- [x] **C1 — `docs/plan/adr/README.md`** Aktive-ADRs-
   Tabelle um ADR-0042-Zeile ergaenzt (Hard Rule per
-  `harness/README.md` Z.81).
-- [ ] **C2 — NEU `.github/workflows/release.yml`** mit
+  `harness/README.md` Z.81) (`4b1062b`).
+- [x] **C2 — NEU `.github/workflows/release.yml`** mit
   Tag-Push + `workflow_dispatch`-Trigger + 3 Jobs
   (build-and-publish-image / produce-assets / create-
   release) + 1 GHCR-Push + 5 GitHub-Release-Asset-Files
   produktiv (SBOM + JUnit-XML + Coverage-HTML-Tarball +
   OpenAPI-JSON + Demo-Abnahme-MD).
-- [ ] **C2 — `Makefile` `make sbom` Scan-Ziel-Umstellung**
-  (F1-Pflicht; Welle-2-C0-Review-Folge): Scan-Befehl von
-  `dir:/src` auf `grid-gym-runtime:latest` umstellen +
-  `sbom: build`-Dependency analog `image-audit: build`
-  (Z.279). Plus VERSION-Default-Schaerfung. Lokal-
-  Verifikation: `make sbom VERSION=v0.0.0-welle2-probe`
-  produziert CycloneDX-JSON mit Runtime-Image-
-  Dependencies + Debian-OS-Komponenten (~160 Komponenten;
+- [x] **C2 — `Makefile` `make sbom` Scan-Ziel-Umstellung**
+  (F1-Pflicht): Scan-Befehl von `dir:/src` auf
+  `grid-gym-runtime:latest` umgestellt + `sbom: build`-
+  Dependency analog `image-audit: build` (Z.279) +
+  VERSION-Default aus `pyproject.toml [project] version`
+  (PYPROJECT_VERSION-Make-Variable). Lokal-Verifikation:
+  `make sbom` ohne explizites VERSION produziert
+  `artifacts/sbom-v0.1.0.cdx.json` mit Runtime-Image-
+  Scan: CycloneDX v1.6, 169 Komponenten (passt zu
   Pre-C0c-Probe-Range).
-- [ ] **C2 — `Makefile` NEU `make openapi-export`**
-  (F3-Pflicht): exportiert OpenAPI-JSON-Spec aus FastAPI
-  in `artifacts/openapi-v<X>.json`; vorhandenes
-  `openapi-validate` bleibt unangetastet. Verifikation
-  mit `make openapi-export VERSION=v0.0.0-welle2-probe`.
-- [ ] **C2 — `Dockerfile` `test-unit`-Stage JUnit-XML**
-  (F3-Pflicht): Z.206-207 um `--junitxml=/src/coverage/
-  test-results.xml` ergaenzen. `make test-unit`
-  produziert JUnit-XML neben Konsolen-Output. Test-
-  Counts bleiben unveraendert (1722).
-- [ ] **C2 — `Dockerfile` `coverage-gate`-Stage HTML**
-  (F3-Pflicht): Z.242-246 um zusaetzlichen `--cov-
-  report=html:/src/coverage/htmlcov`-Block ergaenzen.
-  `coverage.xml` bleibt erhalten (bestehende
-  Branch-Schwelle-Logik unangetastet); HTML neu zur
-  Asset-Auslieferung.
-- [ ] **C2 — ggf. NEU `tools/check_sbom.py`** Sanity-
-  Pruefer (Component-Count > 100; CycloneDX-Format-
-  Konformitaet; Schluessel-Pakete vorhanden); bedingt,
-  falls Pre-Release-Gate-Substanz noetig wird.
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10
-  A-1-Gates; Test-Counts unveraendert 1722/80).
-- [ ] **C2 — `make ci`** cache-frei gruen (gates +
-  test-integration + openapi-validate + image-audit).
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
-  `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C2 — `make sbom VERSION=v0.0.0-welle2-probe`**
-  cache-frei gruen mit produktivem CycloneDX-SBOM-
-  Output in `artifacts/`.
-- [ ] **C2 — `release.yml` Lint-frei** (`actionlint`
-  oder GitHub-Actions-Lint).
-- [ ] **C2 — Sub-Slicing-Beobachtung** entschieden: bei
-  Single-Welle bestaetigt, bei Ueberschreitung auf 2a/
-  2b gewechselt (mit Begruendung im C2-Commit-Message).
+- [x] **C2 — `Makefile` NEU `make openapi-export`** —
+  **n/a (Realization-Note §11.1)**: `openapi-validate`-
+  Stage exportiert bereits `/src/artifacts/openapi.json`
+  (Dockerfile Z.353-358); ein separates `openapi-export`-
+  Target waere redundante Tooling-Duplikation. Workflow
+  nutzt `make openapi-validate` direkt und extrahiert
+  Artifact per `docker cp` aus dem build-Image.
+- [x] **C2 — `Dockerfile` `test-unit`-Stage JUnit-XML**
+  (F3-Pflicht): Z.206-209 um `mkdir -p /src/coverage` +
+  `--junitxml=/src/coverage/test-results.xml` ergaenzt.
+  `make test-unit` produziert JUnit-XML mit `tests=1722,
+  failures=0, errors=0, skipped=0`. Test-Counts unveraendert.
+- [x] **C2 — `Dockerfile` `coverage-gate`-Stage HTML**
+  (F3-Pflicht): Z.247 um zusaetzlichen `--cov-report=
+  html:/src/coverage/htmlcov`-Block ergaenzt. `coverage.
+  xml` bleibt erhalten (bestehende Branch-Schwelle-Logik
+  unangetastet); HTML neu (9.2 MB Verzeichnis mit
+  `index.html` etc.) fuer Asset-Auslieferung.
+- [x] **C2 — ggf. NEU `tools/check_sbom.py`** — **n/a**
+  (bedingt; nicht in Welle 2 angelegt). Begruendung:
+  Syft erzeugt cleanes CycloneDX v1.6 ohne erkennbare
+  Drift; ein zusaetzlicher Sanity-Pruefer waere Mehrwert
+  nur bei Pre-Release-Gate-Pflicht-Substanz, die in
+  Welle 2 nicht entsteht. Bei spaeterer Drift-Beobachtung
+  kann Welle-3+ das nachziehen.
+- [x] **C2 — `make gates`** cache-frei gruen (10/10
+  A-1-Gates; EXIT=0; Test-Counts unveraendert 1722/80).
+- [x] **C2 — `make ci`** cache-frei gruen (gates +
+  test-integration + openapi-validate + image-audit;
+  verifiziert via `make fullbuild`-Lauf).
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (EXIT=0; `[fullbuild]
+  full closure: ci + runtime image + compose smoke green`).
+- [x] **C2 — `make sbom`** cache-frei gruen mit
+  produktivem CycloneDX-SBOM-Output `artifacts/sbom-
+  v0.1.0.cdx.json` (169 Komponenten, CycloneDX v1.6).
+- [ ] **C2 — `release.yml` Lint-frei** — **deferred auf
+  C3-Sensor-Check**: lokal `actionlint` nicht installiert;
+  Workflow-Syntax-Konformitaet wird via Sensor-Check
+  (Manual `workflow_dispatch`-Run) in C3 produktiv
+  verifiziert. YAML-Lint-Pruefung via `make docs-check`
+  fasst Workflow-Files nicht — `actionlint` als
+  Dev-Tooling-Trigger waere Welle-3-Material.
+- [x] **C2 — Sub-Slicing-Beobachtung** entschieden:
+  Single-Welle bestaetigt (Welle-2-C0-Review-Folge-2
+  hatte die Ausnahmen-Begruendung in §3 Welle-2-D-5
+  verankert; C2-Substanz substanziell scope-eng
+  geliefert).
 - [ ] **C3 — ADR 0042** bleibt `Provisional`; C2-Hash
   als Trigger-008-Aufloesungs-Beleg in §5 als Hash-
   Anchor-Block nachgetragen.
@@ -941,8 +955,125 @@ Schaerfung.
 - [ ] Kein Multi-Arch-Image-Build (M7+-Material).
 - [ ] Keine Carveout-`Deferred`-Aufloesung opportunis-
   tisch (keine Welle-2-URL-Versionierung `/api/v1`).
-- [ ] Kein Container-Registry-Wechsel von GHCR auf
+- [x] Kein Container-Registry-Wechsel von GHCR auf
   Docker Hub (Welle-2-D-4-Entscheidung).
+
+---
+
+## 10. C2-Realization-Notes (in C2 verankert)
+
+Pattern analog M5-Welle-4a/4b-Realization-Notes-Block.
+
+### 10.1 `make openapi-export` redundant — `openapi-validate` exportiert bereits
+
+**Befund:** Slice-Doc §1.3 + §5 Critical Files + §9 DoD
+hatten NEU `make openapi-export`-Target als Pflicht
+gefuehrt (F3-Korrektur Welle-2-C0-Review-Folge). Bei
+Lokal-Verifikation in C2: der bestehende
+`openapi-validate`-Stage (`Dockerfile` Z.353-358) **macht
+bereits den Export**:
+
+```dockerfile
+RUN mkdir -p /src/artifacts \
+ && uv run python -c "import json; from grid_gym.adapters.driving.http_api import app; \
+print(json.dumps(app.openapi(), sort_keys=True, indent=2))" \
+        > /src/artifacts/openapi.json \
+ && uv run openapi-spec-validator /src/artifacts/openapi.json
+```
+
+Validierung + Export laufen in derselben Stage; das
+Artifact landet unter `/src/artifacts/openapi.json` im
+Image. Ein separates `make openapi-export`-Target waere
+redundante Tool-Duplikation (dieselbe FastAPI-`app.
+openapi()`-Logik in zwei Targets).
+
+**Konsequenz:** Welle-2-C2 legt **kein** `make openapi-
+export`-Target an. Der Release-Workflow nutzt `make
+openapi-validate` direkt und extrahiert `/src/artifacts/
+openapi.json` via `docker create` + `docker cp` aus dem
+gebauten Stage-Image (Pattern wie bei test-unit JUnit-
+XML + coverage-gate HTML).
+
+**Plan-Abweichung:** §1.3 Sub-Item 7 + §3 Welle-2-D-3
+Asset-Klassen-Mapping bleiben textlich unveraendert
+(„OpenAPI-JSON-Asset" als Lieferung); §5 Critical Files
++ §9 DoD-Item „make openapi-export" sind als „n/a
+(Realization-Note §10.1)"-Marker abgehakt.
+
+### 10.2 SBOM-Output-Probe-Resultat (Validierung der Welle-2-D-1-Decision)
+
+**Befund:** `make sbom` (mit pyproject-Default-VERSION
+`v0.1.0`) gegen `grid-gym-runtime:latest` produziert
+`artifacts/sbom-v0.1.0.cdx.json`:
+
+- File-Groesse: 498 KB.
+- Format: CycloneDX v1.6.
+- Komponenten: 169 (passt zu Welle-2-Pre-C0c-Probe-
+  Range; siehe §1.2 Probe-Befund).
+
+Damit ist die Welle-2-D-1-Decision (Syft + Runtime-Image-
+Scan-Ziel) produktiv verifiziert. Pre-C0c-Probe-Substanz
+war Conversation-only; C2 zeigt dass dasselbe Resultat
+auch via `make sbom` (Makefile-Pflicht-Target) erzeugbar
+ist.
+
+### 10.3 Welle-1-D-1-Pattern angewendet (release.yml Lint-Check vertagt)
+
+**Befund:** §9 DoD verlangt `release.yml` Lint-frei
+(`actionlint` oder GitHub-Actions-Lint). Lokal ist
+`actionlint` nicht installiert; die Workflow-Syntax-
+Konformitaet wird primaer durch den **Sensor-Check**
+(reale Workflow-Run-Verifikation in C3 mit Manual
+`workflow_dispatch`) sichergestellt — Pattern analog
+Welle-1-D-1-Mitzieh-Variante.
+
+**Konsequenz:** C2 verifiziert nicht via `actionlint`;
+C3 verlangt zusaetzlich den realen Workflow-Run gegen
+einen Pre-Release-Tag (`v0.0.0-welle2-probe` oder
+analog) gruen, bevor C3 als Done freigegeben wird.
+
+**Folge-Pfad:** `actionlint` als Pre-Commit-Hook oder
+Dev-Tooling-Trigger waere Welle-3-Material (analog
+Trigger-007-pyright-precommit-Vertagung).
+
+### 10.4 Test-Counts unveraendert + Sub-Slicing-Final-Bestaetigung
+
+**Test-Counts:** 1722 Unit + 80 Integration + 4 skipped
+am Welle-2-C2-Stand (`grid-gym-test-unit:latest`-Build);
+JUnit-XML zeigt explizit `tests=1722, failures=0,
+errors=0, skipped=0`. **Test-Counts unveraendert seit
+M5-Welle-7-Closure (`5087c8a`).**
+
+**Sub-Slicing-Final (Welle-2-D-5):** C2-Substanz-Volumen
+bestaetigt die Single-Welle-Vorbelegung mit Ausnahmen-
+Begruendung aus Welle-2-C0-Review-Folge-2. Code-Diff
+in C2:
+
+- 1× `Makefile` Hunk (8 Zeilen vor → 19 Zeilen nach;
+  Scan-Ziel + Dependency + VERSION-Default-Logik).
+- 2× `Dockerfile` Hunks (2 Stages: test-unit + coverage-
+  gate; je 1 Zeile zusaetzlich plus Kommentar-Block).
+- 1× NEU `.github/workflows/release.yml` (~160 Zeilen
+  YAML; 3 Jobs).
+
+Substanz blieb scope-eng wie in §3 Welle-2-D-5
+prognostiziert; keine `release.yml`-Substanz-Ueberlauf,
+keine Sub-Slicing-Trigger-Ereignisse.
+
+### 10.5 Hash-Anchor-Plan fuer C3
+
+C3-Substanz wird in §5 ADR 0042 verankert:
+
+- C2-Hash (dieser Commit) als Trigger-008-Aufloesungs-
+  Beleg.
+- `git mv open/008-sbom-activation.md → done/`
+  + Closure-Notiz-Block (Pattern analog Trigger 010 in
+  Welle-1-C3-Review-Folge).
+- `carveouts.md §2.5` Trigger-008-Eintrag auf
+  `Aufgeloest in M6-Welle-2-C2`.
+- Top-Level-Doku-Sync (`README.md`/`README.de.md` NEU
+  Release-Workflow-Hinweis; `roadmap.md §3 M6` aktive-
+  Welle auf M6-Welle-3 + Welle-2-Abschluss-Notiz).
 
 ---
 

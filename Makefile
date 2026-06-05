@@ -449,19 +449,28 @@ rebase-base:
 	$(DOCKER) pull ghcr.io/astral-sh/uv:$(UV_VERSION)
 	@echo "[rebase-base] base images refreshed — naechster docker build nutzt die aktuellen Layer."
 
-# SBOM-Erzeugung als Release-Asset. Wird in spaeterer Welle scharf
-# geschaltet, sobald GG-CICD-007 (Artefakt-Veroeffentlichung) aktiv
-# wird. Aufruf: `make sbom VERSION=v0.1.0`.
+# SBOM-Erzeugung als Release-Asset, scharfgeschaltet mit M6-Welle-2
+# (`GG-CICD-007` + Trigger 008 + ADR 0042). Scan-Ziel ist das
+# Runtime-Image `grid-gym-runtime:latest` (NICHT Source-Tree;
+# ADR-0042-§2.1-Pflicht). VERSION-Default leitet sich aus
+# `pyproject.toml [project] version` ab (mit `v`-Prefix per
+# Semantic-Versioning-Konvention); Override via CLI moeglich
+# (`make sbom VERSION=v1.2.3-rc1`).
 SYFT_IMAGE ?= anchore/syft:v1.17.0
-sbom:
+PYPROJECT_VERSION := $(shell grep -E '^version = ' pyproject.toml | head -1 | sed -E 's/version = "(.*)"/v\1/')
+VERSION ?= $(PYPROJECT_VERSION)
+sbom: build
 	@if [ -z "$(VERSION)" ]; then \
-		echo "[sbom] VERSION ist erforderlich, z. B. make sbom VERSION=v0.1.0" >&2; \
+		echo "[sbom] VERSION ist erforderlich (pyproject.toml version-Read fehlgeschlagen)" >&2; \
 		exit 1; \
 	fi
+	@mkdir -p artifacts
 	$(DOCKER) run --rm \
-		-v "$$(pwd)":/src \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$$(pwd)/artifacts":/artifacts \
 		$(SYFT_IMAGE) \
-		dir:/src -o cyclonedx-json=/src/artifacts/sbom-$(VERSION).cdx.json
+		$(IMAGE_PREFIX)-runtime:latest -o cyclonedx-json=/artifacts/sbom-$(VERSION).cdx.json
+	@echo "[sbom] artifacts/sbom-$(VERSION).cdx.json (Runtime-Image-SBOM; ADR 0042 §2.1)"
 
 clean:
 	@rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov coverage \

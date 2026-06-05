@@ -201,10 +201,13 @@ RUN uv run python tools/check_noqa.py --fail-on-noqa $NOQA_FILES
 # ---------------------------------------------------------------------------
 # test-unit: pytest auf tests/unit/. Schliesst hypothesis-Property-Tests
 # fuer Determinismus (`GG-SIM-001..004`) und kanonische Serialisierung
-# (A-2 / `GG-DATA-005`) ein.
+# (A-2 / `GG-DATA-005`) ein. JUnit-XML-Export unter
+# `/src/coverage/test-results.xml` (Asset-Klasse 3 fuer Release-
+# Workflow; M6-Welle-2 + ADR 0042 §2.3).
 # ---------------------------------------------------------------------------
 FROM source AS test-unit
-RUN uv run pytest tests/unit/ -v
+RUN mkdir -p /src/coverage \
+ && uv run pytest tests/unit/ -v --junitxml=/src/coverage/test-results.xml
 
 # ---------------------------------------------------------------------------
 # test-determinism: pytest-Marker-Filter fuer Determinismus-Property-
@@ -239,11 +242,16 @@ RUN uv run pytest -m fault tests/ -v
 FROM source AS coverage-gate
 ARG COVERAGE_THRESHOLD
 ARG COVERAGE_BRANCH_THRESHOLD
+# `--cov-report=html:` ergaenzt das XML mit einem browsefaehigen
+# HTML-Report unter `/src/coverage/htmlcov/` (Asset-Klasse 4 fuer
+# Release-Workflow; M6-Welle-2 + ADR 0042 §2.3). XML bleibt fuer
+# die bestehende Branch-Schwellen-Pruefung unten erhalten.
 RUN uv run pytest tests/unit/ \
         --cov=src/grid_gym \
         --cov-branch \
         --cov-report=term-missing \
         --cov-report=xml:/src/coverage/coverage.xml \
+        --cov-report=html:/src/coverage/htmlcov \
         --cov-fail-under="${COVERAGE_THRESHOLD}" \
  && uv run python - <<EOF
 import sys

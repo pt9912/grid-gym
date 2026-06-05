@@ -28,6 +28,12 @@ coverage.xml
 htmlcov/
 .hypothesis/
 
+# Release-Workflow-Artifacts (M6-Welle-2; ADR 0042):
+# `make sbom` produziert hier `sbom-v<X>.cdx.json`; der Release-
+# Workflow ergaenzt JUnit-XML, Coverage-HTML-Tarball, OpenAPI-JSON
+# und Demo-Abnahme-MD. Alle Files sind Build-Output, kein Source.
+artifacts/
+
 # IDE / Editor lokal
 .idea/
 .vscode/
