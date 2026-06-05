@@ -42,7 +42,7 @@ spezifische Decisions D-1..D-5.
 
 ## 1. Context
 
-[`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md)
+[`M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md)
 hat Welle 3 als „CI/CD-Vollausbau" vorbelegt mit
 4 NEU CI-Jobs (`test-unit` + `coverage-gate` + `dep-audit`
 + `image-audit`) + NEU Python-3.13/3.14-Matrix +
@@ -726,7 +726,7 @@ Trigger 032 zu Multi-Workflow-Sensor erweitert wird.
 - [`../done/M6-welle-2.md`](../done/M6-welle-2.md) —
   M6-Welle-2-Slice-Doc (Pattern-Vorbild fuer Welle-3-
   Workflow-Substanz).
-- [`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-3-Vorbelegung.
 - [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md)
   — Trigger 031 mit Aktivierungs-Substanz.

@@ -920,7 +920,7 @@ Pattern; Accept in M6-Welle-7-Closure-C1 gebuendelt mit
 ADR 0041 + ADR 0043).
 **M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
 `08a8034..<C3-Hash>` (siehe
-[`M6-welle-3.md`](M6-welle-3.md); Self-Close-Move-
+[`M6-welle-3.md`](../done/M6-welle-3.md); Self-Close-Move-
 Folge C4a/C4b ausstehend als Welle-4-Pre-C0a/Pre-C0b):
 NEU 4 GitHub-Actions-Workflows (`tests.yml`/`coverage.yml`/
 `dep-audit.yml`/`fullbuild.yml`); Python-3.13/3.14-Matrix
