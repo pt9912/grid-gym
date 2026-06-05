@@ -61,25 +61,41 @@ oder spaeterer):
   - GitHub-Release angelegt mit 5 Asset-Files (UI-
     Pruefung).
   - **SBOM-Asset bindet an gepushten Image-Digest**
-    (ADR 0042 §2.1 + Welle-2-Post-Closure-Review-Folge-2-
-    F1-Korrektur). Pruefung: SBOM-Datei enthaelt unter
-    `metadata.component.bom-ref` oder
-    `metadata.component.purl` einen Verweis auf den
-    Digest aus `docker/build-push-action`-Output.
-    Direkt-Syft-Aufruf (kein `make sbom`) ist Pflicht-
-    Pattern; jede Re-Einfuehrung von `make sbom` im
-    Workflow ist ADR-Bruch (`sbom: build`-Dependency
-    wuerde lokales Re-Build triggern und Digest-Bindung
-    brechen).
-  - **`:latest`-Tag nur wenn Tag-Commit auf Default-
-    Branch** (ADR 0042 §2.3 + Welle-2-Post-Closure-
-    Review-Folge-2-F3-Korrektur). Pruefung: ein Tag-
-    Push auf einem Feature-Branch-Commit darf `:latest`
-    NICHT veraendern; Check via `git merge-base
-    --is-ancestor <tag-sha> origin/<default-branch>`
-    in `Check tag commit is on default branch`-Step.
-    Voraussetzung: `actions/checkout@v4` mit
-    `fetch-depth: 0`.
+    (ADR 0042 §2.1 + Review-Folge-2-F1 + Review-Folge-3-
+    F1-Korrekturen). Pruefung: SBOM-Datei enthaelt
+    `metadata.component.bom-ref`/`purl`-Verweis auf den
+    Digest aus `docker/build-push-action`-Output. Pflicht-
+    Pattern: `docker pull` mit `docker/login-action`-
+    Credentials zieht das Image in den Host-Daemon, dann
+    Syft mit `docker:<image>`-Reference (Daemon-Source).
+    Verboten als ADR-Bruch:
+    - Re-Einfuehrung von `make sbom` (`sbom: build`-
+      Dependency triggert lokales Re-Build und bricht
+      Digest-Bindung).
+    - Syft ohne `docker:`-Prefix (Registry-Pull ohne
+      Auth — bei privatem GHCR-Package nicht
+      pullbar).
+  - **`:latest`-Tag nur wenn Tag-Commit == aktueller
+    Default-Branch-Tip** (ADR 0042 §2.3 + Review-Folge-
+    2-F3 + Review-Folge-3-F3-Korrekturen). Pruefung:
+    `git rev-parse refs/remotes/origin/<default-branch>`
+    muss `git rev-parse HEAD` gleichen. Ancestor-Match
+    (alter, nachtraeglich gesetzter Tag auf historischem
+    Main-Commit) ist NICHT ausreichend — alte Tags
+    duerfen `:latest` nicht zurueckdrehen. Voraussetzung:
+    `actions/checkout@v4` mit `fetch-depth: 0` UND
+    `ref: <resolved-tag-ref>`. Race-Condition (Push auf
+    Default-Branch zwischen Tag-Push und Workflow-Start)
+    toleriert: `:latest` wird nicht aktualisiert, lieber
+    konservativ als faelschlich.
+  - **workflow_dispatch checkt Tag-Commit aus, nicht
+    Dispatch-Branch-Tip** (Review-Folge-3-F4-Korrektur).
+    `inputs.version` muss ein **existierendes Tag-Name**
+    sein; alle 3 Jobs (build-and-publish-image / produce-
+    assets / create-release) checken `refs/tags/${version}`
+    aus. Damit zeigen Image-Build, Asset-Erzeugung und
+    Release-Notes-Generierung auf denselben Commit —
+    egal ob via Tag-Push oder Manual-Dispatch.
 - **Slice-Doc**:
   - `done/M6-welle-2.md §9 DoD` Box „Reale Workflow-Run-
     Verifikation" auf `[x]` mit Sensor-Run-Hash + Run-ID-

@@ -1,13 +1,19 @@
 # grid-gym Release Workflow (Trigger 008 + GG-CICD-007 + ADR 0042; M6 Welle 2).
 #
-# Produziert pro Tag-Push (`v*.*.*`) oder Manual-Dispatch sechs publizierte
+# Produziert pro Tag-Push (`v*.*.*`) oder Manual-Dispatch (verlangt
+# existierendes Tag-Name als `version`-Input) sechs publizierte
 # Artefakte:
 #
-#   1× GHCR-Push   — Container-Image runtime-Stage als `ghcr.io/<owner>/
-#                    grid-gym:<tag>` + `:latest`.
+#   1× GHCR-Push   — Container-Image runtime-Stage als
+#                    `ghcr.io/<owner>/grid-gym:<tag>`. `:latest`-Alias
+#                    NUR wenn der Tag-Commit der aktuelle Default-
+#                    Branch-Tip ist (ADR 0042 §2.3 + Welle-2-Post-
+#                    Closure-Review-Folge-3 F3-Korrektur).
 #   5× Release-Assets als GitHub-Release-Asset-Files:
-#      - SBOM (CycloneDX-JSON; Syft v1.17.0 gegen Runtime-Image; ADR 0042 §2.1).
-#      - JUnit-XML (Test-Reports aus test-unit-Stage; ADR 0042 §2.3).
+#      - SBOM (CycloneDX-JSON; Syft v1.17.0 gegen Runtime-Image-Digest
+#        per `docker:`-Reference im Host-Daemon nach `docker pull` mit
+#        GHCR-Auth; ADR 0042 §2.1 + Review-Folge-3 F1-Korrektur).
+#      - JUnit-XML (Test-Reports aus test-unit-Stage).
 #      - Coverage-HTML-Tarball (aus coverage-gate-Stage).
 #      - OpenAPI-JSON (aus openapi-validate-Stage).
 #      - Demo-Abnahme-Markdown (aus docs/user/gg-demo-008-abnahme.md).
@@ -32,7 +38,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. v0.1.0)'
+        description: 'Release version (must match an existing Git tag, e.g. v0.1.0). The workflow checks out the tag commit and operates on that ref.'
         required: true
         type: string
 
@@ -56,24 +62,39 @@ jobs:
     name: Build & publish Container-Image (GHCR)
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.resolve-version.outputs.version }}
+      version: ${{ steps.resolve-refs.outputs.version }}
+      ref: ${{ steps.resolve-refs.outputs.ref }}
     steps:
-      # `fetch-depth: 0` ist Pflicht: der spaetere `Check tag
-      # commit is on default branch`-Step braucht volle Git-
-      # Historie fuer `git merge-base --is-ancestor`.
-      - name: Checkout (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Resolve version
-        id: resolve-version
+      # F4-Korrektur (Welle-2-Post-Closure-Review-Folge-3):
+      # Resolve-Refs vor Checkout, damit ALLE nachfolgenden
+      # Steps gegen denselben Tag-Commit arbeiten — egal ob
+      # via Tag-Push oder workflow_dispatch.
+      # - Tag-Push: ref = github.ref (=refs/tags/v...), version
+      #   = github.ref_name.
+      # - workflow_dispatch: ref = refs/tags/${inputs.version}
+      #   (verlangt existierendes Tag), version = inputs.version.
+      - name: Resolve refs (version + tag ref)
+        id: resolve-refs
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            VERSION="${{ inputs.version }}"
+            REF="refs/tags/$VERSION"
           else
-            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            VERSION="${{ github.ref_name }}"
+            REF="${{ github.ref }}"
           fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      # `fetch-depth: 0` ist Pflicht: der spaetere Default-
+      # Branch-Tip-Check braucht volle Git-Historie. `ref` aus
+      # resolve-refs garantiert, dass HEAD == Tag-Commit (auch
+      # bei workflow_dispatch).
+      - name: Checkout (resolved ref, full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve-refs.outputs.ref }}
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -93,59 +114,71 @@ jobs:
           target: runtime
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}
+          tags: ghcr.io/${{ github.repository }}:${{ steps.resolve-refs.outputs.version }}
           cache-from: type=gha,scope=runtime
           cache-to: type=gha,scope=runtime,mode=max
 
-      # ADR 0042 §2.3: `:latest`-Tag nur wenn Tag-Commit auf
-      # Default-Branch zeigt (nicht jeder Tag-Push, da ein
-      # Tag auf einem alten/feature-Branch-Commit `latest`
-      # faelschlich zurueckdrehen koennte). Pruefung via
-      # `git merge-base --is-ancestor`: ist der getaggte SHA
-      # ein Vorfahre des Default-Branch-Tip, dann ist der Tag
-      # auf der Release-Linie.
-      - name: Check tag commit is on default branch
-        id: tag-on-default
-        if: github.event_name == 'push'
+      # ADR 0042 §2.3 (Review-Folge-3 F3-Korrektur): `:latest`-
+      # Tag nur wenn Tag-Commit == aktueller Default-Branch-
+      # Tip-SHA (strikt; nicht nur „Vorfahre"). Ancestor-Match
+      # akzeptierte sonst nachtraegliche Tags auf alten Main-
+      # Commits, die `:latest` faelschlich zurueckdrehen
+      # koennten. Race-Condition (Push auf Default-Branch
+      # zwischen Tag-Push und Workflow-Start) toleriert: lieber
+      # `:latest` nicht aktualisieren als faelschlich altes
+      # Image als `:latest` zu markieren.
+      - name: Check tag commit is current default branch tip
+        id: tag-on-default-tip
         run: |
           git fetch origin "${DEFAULT_BRANCH}":refs/remotes/origin/default-branch
-          if git merge-base --is-ancestor "${TAG_SHA}" refs/remotes/origin/default-branch; then
-            echo "on-default=true" >> "$GITHUB_OUTPUT"
+          DEFAULT_TIP_SHA=$(git rev-parse refs/remotes/origin/default-branch)
+          HEAD_SHA=$(git rev-parse HEAD)
+          if [ "$HEAD_SHA" = "$DEFAULT_TIP_SHA" ]; then
+            echo "on-default-tip=true" >> "$GITHUB_OUTPUT"
+            echo "Tag commit ($HEAD_SHA) is current default branch tip; :latest will be updated."
           else
-            echo "on-default=false" >> "$GITHUB_OUTPUT"
+            echo "on-default-tip=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Tag commit ($HEAD_SHA) is not the current default branch tip ($DEFAULT_TIP_SHA); :latest will NOT be updated (ADR 0042 §2.3)."
           fi
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          TAG_SHA: ${{ github.sha }}
 
-      # `:latest`-Push nur bei Tag-Push UND Tag auf Default-
-      # Branch. Pattern: `docker buildx imagetools create`
-      # setzt das Tag-Alias am Registry-Manifest direkt
-      # (kein Re-Push noetig).
-      - name: Tag and push :latest (tag on default branch only)
-        if: steps.tag-on-default.outputs.on-default == 'true'
+      # `:latest`-Push nur wenn Tag auf aktuellem Default-
+      # Branch-Tip. Pattern: `docker buildx imagetools create`
+      # setzt das Tag-Alias am Registry-Manifest direkt (kein
+      # Re-Push noetig).
+      - name: Tag and push :latest (default branch tip only)
+        if: steps.tag-on-default-tip.outputs.on-default-tip == 'true'
         run: |
           docker buildx imagetools create \
             --tag "ghcr.io/${{ github.repository }}:latest" \
-            "ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}"
+            "ghcr.io/${{ github.repository }}:${{ steps.resolve-refs.outputs.version }}"
 
-      # ADR 0042 §2.1: SBOM MUSS gegen das gepushte Runtime-
-      # Image-Digest laufen — Syft direkt gegen den GHCR-
-      # Reference. KEIN `make sbom`-Aufruf, weil `sbom: build`
-      # (Makefile Z.462) das Image lokal neu bauen und das
-      # gepullte Digest-Alias damit ueberschreiben wuerde.
-      # Direkt-Syft umgeht die Make-Build-Dependency und
-      # garantiert den 1:1-Bezug zu dem in GHCR publizierten
-      # Manifest-Digest.
-      - name: Generate SBOM against pushed image digest (direct syft)
+      # ADR 0042 §2.1 (Review-Folge-3 F1-Korrektur): SBOM MUSS
+      # gegen den gepushten Runtime-Image-Digest laufen. Syft-
+      # Container ohne Docker-Credentials kann private GHCR-
+      # Manifeste NICHT direkt scannen (Registry-Pull-Auth
+      # fehlt). Saubere Loesung:
+      # 1) `docker pull` auf dem Runner nutzt die `docker/login-
+      #    action`-Credentials aus `~/.docker/config.json` und
+      #    zieht das Image in den Host-Daemon.
+      # 2) Syft mit `docker:`-Image-Reference (statt nacktem
+      #    `ghcr.io/...`) liest das Image aus dem Host-Daemon
+      #    via Socket-Mount — kein zweiter Registry-Pull,
+      #    keine Auth-Frage.
+      - name: Pull pushed image into local Docker daemon
+        run: |
+          docker pull "ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}"
+
+      - name: Generate SBOM via Syft against local daemon image
         run: |
           mkdir -p artifacts
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$(pwd)/artifacts":/artifacts \
             anchore/syft:v1.17.0 \
-            "ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}" \
-            -o "cyclonedx-json=/artifacts/sbom-${{ steps.resolve-version.outputs.version }}.cdx.json"
+            "docker:ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}" \
+            -o "cyclonedx-json=/artifacts/sbom-${{ steps.resolve-refs.outputs.version }}.cdx.json"
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
@@ -160,8 +193,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-publish-image
     steps:
-      - name: Checkout
+      # F4-Korrektur: Checkout am gleichen Tag-Ref wie build-
+      # and-publish-image — Image, Assets und Release zeigen
+      # damit auf denselben Commit (auch bei workflow_dispatch).
+      - name: Checkout (resolved tag ref)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-and-publish-image.outputs.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -223,8 +261,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-publish-image, produce-assets]
     steps:
-      - name: Checkout
+      # F4-Korrektur: Checkout am gleichen Tag-Ref —
+      # `generate_release_notes: true` nutzt git log am
+      # ausgecheckten Commit; ohne Tag-Ref wuerde bei
+      # workflow_dispatch die Release-Notes-Generierung am
+      # Default-Branch-Tip statt am Tag-Commit greifen.
+      - name: Checkout (resolved tag ref)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-and-publish-image.outputs.ref }}
 
       - name: Download assets
         uses: actions/download-artifact@v4
