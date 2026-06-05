@@ -174,7 +174,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | - | ----- | ------ | --------- | ----------------------------- | ---- |
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | Done 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Done 2026-06-05 | [`M6-welle-1.md`](../done/M6-welle-1.md) | Trigger 010 + `make fullbuild`-Defer-Aufloesung (Null-Code-Edit; Upstream-Drift) | NEU ADR 0043 `Provisional` (Image-Audit-Strategie; Welle-1-C1 `c44e6d5`) |
-| 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
+| 2 | SBOM-Aktivierung + Release-Workflow | In Progress 2026-06-05 | [`M6-welle-2.md`](M6-welle-2.md) | `GG-CICD-007` (5 Asset-Klassen) + Trigger 008 | NEU ADR 0042 (SBOM-Tool + Release-Pattern; Welle-2-C1) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
 | 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
@@ -182,8 +182,12 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Naechster aktiver Slice:** Welle 2 (SBOM-Aktivierung +
-Release-Workflow; Trigger 008 `GG-CICD-007`) — Welle-2-
-Slice-Doc entsteht in Welle-2-C0. M6-Welle-1 abgeschlossen
+Release-Workflow; Trigger 008 + `GG-CICD-007` Vollscope mit
+5 Asset-Klassen) — **In Progress 2026-06-05** mit Welle-2-
+C0 (Slice-Doc-Anlage [`M6-welle-2.md`](M6-welle-2.md));
+ausstehend C1 (NEU ADR 0042 SBOM-Tool + Release-Pattern) +
+C2 (NEU `.github/workflows/release.yml` + ggf. `Makefile`-
+Schaerfung) + C3 (Status-Sync). M6-Welle-1 abgeschlossen
 2026-06-05 mit Stack `4b1b3e9..4517614` (siehe
 [`M6-welle-1.md`](../done/M6-welle-1.md); Self-Close-Move-Folge
 C4a/C4b ausstehend): **Trigger-010-Aufloesung ohne Code-
