@@ -51,7 +51,16 @@ WORKDIR /src
 # (Supply-Chain-Defense, analog `--locked-mode` bei NuGet in bess-ems).
 # ---------------------------------------------------------------------------
 FROM base AS deps
-COPY pyproject.toml uv.lock .python-version ./
+# `.python-version` wird nicht kopiert — sie enthaelt den lokalen
+# Dev-Default (3.14), wuerde aber bei Matrix-Builds gegen
+# `PYTHON_VERSION=3.13` zu „No interpreter found for Python 3.14"-
+# Fehlern fuehren (uv respektiert `.python-version` strikt). Die
+# Python-Version kommt stattdessen aus dem `ARG PYTHON_VERSION` ueber
+# den `FROM python:${PYTHON_VERSION}-slim`-Base; `requires-python =
+# ">=3.13"` im `pyproject.toml` plus `uv.lock`-Auflage decken beide
+# Matrix-Branches (M6-Welle-3-Post-Push-CI-Fix; Welle-3-CI-Drift-
+# Aufloesung).
+COPY pyproject.toml uv.lock ./
 # M4-Welle-5b — `--extra iec61850` zieht `pyiec61850-ng` (GPLv3,
 # optional Extra; ADR 0035 Decision I-f). CI/Tests muessen die
 # Library explizit installieren, weil der Default-Install MIT-
