@@ -19,7 +19,7 @@ ueber NEU Trigger 031).
 [`../done/M6-welle-2.md`](../done/M6-welle-2.md)).
 **M6-Welle-3** (CI/CD-Vollausbau; `GG-CICD-002/003/005/
 006` + Python-3.13/3.14-Matrix + Trigger 031-Aufloesung)
-**abgeschlossen 2026-06-05** mit Stack `08a8034..<C3-Hash>`
+**abgeschlossen 2026-06-05** mit Stack `08a8034..c36f734`
 (C0 + C2 `ce13253` + C3 dieser Commit; C1 entfaellt;
 Self-Close-Move-Folge C4a/C4b ausstehend als Welle-4-Pre-
 C0a/Pre-C0b): NEU 4 Workflows (`tests.yml`/`coverage.yml`/
@@ -202,7 +202,9 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 Benchmark; `GG-RT-001..005` inkl. 10000-Points/s-Benchmark
 `GG-RT-005`) — Welle-4-Slice-Doc entsteht in Welle-4-C0.
 **M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
-`08a8034..c8ecbe4` (C0 + C2 `ce13253` + C3 `c8ecbe4`; C1
+`08a8034..c36f734` (C0 + C2 `ce13253` + C3 `c8ecbe4` +
+C3-Review-Folge `affdff7` + C4a `3b6d9bf` + C4b `c36f734`;
+C1
 entfaellt analog M5-Welle-2; siehe
 [`M6-welle-3.md`](../done/M6-welle-3.md); Self-Close-Move-Folge
 C4a/C4b ausstehend als Welle-4-Pre-C0a/Pre-C0b): NEU 4

@@ -668,7 +668,8 @@ Trigger 032 zu Multi-Workflow-Sensor erweitert wird.
   Pflege).
 - [x] **C3 — `M6-welle-3.md`** Status `In Progress →
   Done 2026-06-05` mit Liefer-Hash-Stack `08a8034..
-  <C3-Hash>` (dieser Commit).
+  c36f734` (C3 `c8ecbe4` + C3-Review-Folge `affdff7` +
+  C4a `3b6d9bf` + C4b `c36f734`).
 - [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-3-
   Zeile `In Progress → Done` mit Closure-Hash + §3
   Naechster-Slice-Block auf Welle 4 ausgerichtet + §0
@@ -713,6 +714,47 @@ Trigger 032 zu Multi-Workflow-Sensor erweitert wird.
 - [x] Keine URL-Versionierung `/api/v1` (`Deferred`-Item;
   M6-Welle-X-Material).
 - [x] Keine ADR-Substanz-Erweiterung (Welle 3 ohne C1).
+
+---
+
+## 10. Post-Closure-Korrekturen-Index (Pflege nach Welle-3-C4b)
+
+**Pflege-Pattern:** analog ADR 0028 Link-Maintenance und Welle-
+2-Done-Slice-Doc §10.6. Die hier dokumentierte Substanz ist
+Welle-3-Stand zum C4b-Closure-Zeitpunkt (`c36f734`); nach Closure
+entdeckte Drifts in der CI-Workflow-Substanz werden in Folge-
+Commits korrigiert, OHNE die Closure-Substanz oben zu revidieren.
+Dieser Index listet die kanonischen Post-Closure-Korrektur-Hashes.
+
+**Korrektur-Stack:**
+
+| Commit | Stufe | Substanz |
+| ------ | ----- | -------- |
+| `0891f65` | Post-Push-CI-Fix | **F1 HIGH** `.python-version=3.14` blockierte test-unit Python-3.13-Matrix-Branch (uv-sync „No interpreter found"). Korrektur: `.python-version` aus `Dockerfile`-COPY-Block entfernt; Python-Version-Truth allein aus `ARG PYTHON_VERSION`. **F2 HIGH** `otel/opentelemetry-collector-contrib:0.152.1` hatte CVE-2026-42504 (Go-stdlib-MIME-Header-DoS; Fix in `0.153.0`). Korrektur: Image-Pin `0.152.1 → 0.153.0` in `Makefile` + `deploy/compose.yml` + `docs/user/observability.md`. Lokal-Verifikation: `make fullbuild` + `make image-audit` EXIT=0; `docker build --target test-unit --build-arg PYTHON_VERSION=3.13` EXIT=0. ADR-0043-konformes Vorgehen (Image-Bump als Defer-Pfad-Aufloesung; kein `.trivyignore`). |
+
+**Aktueller Workflow-Stand** (Post-Closure-Korrektur-Stand):
+
+- `Makefile` `OTEL_COLLECTOR_IMAGE ?= otel/opentelemetry-
+  collector-contrib:0.153.0` (Z.35).
+- `Dockerfile` deps-Stage `COPY pyproject.toml uv.lock ./`
+  (ohne `.python-version`); Python-Version-Truth aus
+  `ARG PYTHON_VERSION` (Z.23) ueber `FROM
+  python:${PYTHON_VERSION}-slim`.
+- `pyproject.toml` `requires-python = ">=3.13"` +
+  `uv.lock` `requires-python = ">=3.13"` decken beide
+  Matrix-Branches (3.13 + 3.14) korrekt ab.
+- Alle 4 NEU Welle-3-Workflows (tests/coverage/dep-audit/
+  fullbuild) plus ci.yml + release.yml unveraendert
+  gegenueber Welle-3-C2 `ce13253`.
+- `actionlint` (v1.7.12) EXIT=0 auf alle 6 Workflows
+  nach Post-Push-Fix.
+
+**Sensor-Run-Status nach Post-Push-Fix:** Welle-3-
+Workflows werden bei jedem Push automatisch getriggert
+(im Gegensatz zu Welle-2-Release-Workflow mit Trigger
+032). Der Post-Push-Fix-Commit `0891f65` triggert beim
+naechsten `git push` alle 5 Welle-3-Workflows neu;
+Erwartung: alle 5 gruen nach den 2 Fix-Substanzen.
 
 ---
 
