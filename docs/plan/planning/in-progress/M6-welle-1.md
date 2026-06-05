@@ -1,12 +1,24 @@
 # Welle 1 — M6 Base-Image-Bump (krb5-CVE-Aufloesung)
 
-**Status:** In Progress — eroeffnet mit C0 (dieser Commit;
-NEU Slice-Doc). Welle 1 ist die **erste Code-Welle in M6**
-und loest die seit M3-Welle-7-Closure (`c61ab0d`,
-2026-05-25) pre-existing rote `make fullbuild`-Pipeline auf
-([`../open/010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md)
+**Status:** Done 2026-06-05 — Liefer-Stack: C0 `4b1b3e9`
+(Slice-Doc-Anlage) + C0-Review-Folge `a28dba6` (4 Findings:
+3 MEDIUM + 1 LOW) + C0-Review-Folge-2 `cff5944` (1 MEDIUM
+ADR-Index-Drift) + C1 `c44e6d5` (NEU ADR 0043
+`Provisional` + ADR-Index-Sync) + C2 `b514170`
+(Verifikations-Commit: Trigger-010-Aufloesung ohne Code-
+Edit durch Upstream-Drift + Welle-1-D-1-Vertagung auf
+Welle 3 ueber NEU Trigger 031) + C3 (dieser Commit;
+Status/DoD-Sync + ADR-0043-§5-Hash-Anchor + Trigger-010-
+`open/ → done/`-Move + Top-Level-Doku-Sync). Welle 1 ist
+die **erste Code-Welle in M6** und loest die seit M3-Welle-
+7-Closure (`c61ab0d`, 2026-05-25) pre-existing rote `make
+fullbuild`-Pipeline auf
+([`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)
 Trigger 010 = M4-Welle-7-Erbschaft;
 [`../done/M4-results.md §2 + §4 S-4`](../done/M4-results.md)).
+Ausstehend: C4a Self-Close-Move `M6-welle-1.md → done/`
+(rename-only) + C4b Cross-Doc-Refs-Sync nach Move (Pattern
+analog M6-Welle-0-C4a `76f892d`/C4b `960f6ed`).
 
 **Pre-C0 abgeschlossen (2 Commits aus M6-Welle-0-Closure-
 Folge):**
@@ -47,7 +59,7 @@ Trigger-Item: krb5-Bump.
 
 ### 1.1 Pre-existing Drift-Stand
 
-Per [`../open/010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md):
+Per [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md):
 
 - `make gates` (10 A-1-Gates): **cache-frei gruen ohne
   Override** — harte DoD-Gates sind unbeeintraechtigt.
@@ -592,24 +604,46 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   M6-Welle-3 (CI-Vollausbau). NEU `open/`-Trigger
   `../open/031-ci-make-fullbuild-gate.md` in diesem Commit
   angelegt. Begruendung siehe §10.2.
-- [ ] **C3 — ADR 0043** bleibt `Provisional`; C2-Hash als
-  Trigger-010-Aufloesungs-Beleg in den ADR-Body als Hash-
-  Anchor-Block nachgetragen. (`Accepted` passiert in M6-
-  Welle-7-Closure-C1 gebuendelt mit ADR 0041/0042.)
-- [ ] **C3 — `M6-welle-1.md`** Status `In Progress → Done`
-  mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-1-Zeile
-  `In Progress → Done` mit Closure-Hash.
-- [ ] **C3 — Trigger 010** `git mv open/010-* → done/010-*`
-  + `carveouts.md §2.2` + `open/README.md` Sync.
-- [ ] **C3 — `README.md` + `README.de.md`** `make
-  fullbuild`-`CVE-2026-40356`-Hinweis aufgeloest.
-- [ ] **C3 — `roadmap.md §1`** Status-Header-`make
-  fullbuild`-Defer-Pfad-Notiz aufgeloest.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
-  M6-Welle-2 ausgerichtet.
-- [ ] **C3 — `make docs-check`** cache-frei gruen ueber
-  alle 4 Welle-1-Commits.
+- [x] **C3 — ADR 0043** bleibt `Provisional`; C2-Hash
+  `b514170` als Trigger-010-Aufloesungs-Beleg in den
+  ADR-Body §5 als Hash-Anchor-Block nachgetragen +
+  Bezug-Refs in §0/§1 auf `../planning/done/`-Pfad
+  umgestellt (Provisional-Edit-Pattern; ADR-0006-§3-
+  Accepted-Immutability greift erst ab Welle-7-Closure-C1).
+  (`Accepted` passiert in M6-Welle-7-Closure-C1 gebuendelt
+  mit ADR 0041/0042.)
+- [x] **C3 — `M6-welle-1.md`** Status `In Progress → Done`
+  mit Liefer-Hash-Stack `4b1b3e9..<C3-Hash>` (dieser
+  Commit).
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-1-Zeile
+  `In Progress → Done` mit Closure-Hash + Naechster-Slice-
+  Block auf Welle 2 ausgerichtet.
+- [x] **C3 — Trigger 010** `git mv open/010-* → done/010-*`
+  + `carveouts.md §2.2` (`Trigger-Gated → Aufgeloest`) +
+  `open/README.md` (Trigger-010-Zeile auf `done/`-Pfad
+  umgehakt mit `Closed 2026-06-05`-Pattern analog Trigger
+  006 in M4-Welle-6a-Pre-C3 `81140e2`) + `done/M6-welle-
+  0.md` Z.95 Link-Pflege (Pattern analog ADR 0028 Link-
+  Maintenance).
+- [x] **C3 — `README.md` + `README.de.md`** `make
+  fullbuild`-`CVE-2026-40356`-Hinweis aufgeloest (Blockzitat
+  + Compose-Block-Kommentar in beiden Sprachen ersetzt durch
+  neutrale Beschreibung der `make fullbuild`-Closure-
+  Pipeline).
+- [x] **C3 — `roadmap.md §0` Build-Status-Block + `§1`
+  Status-Header** `make fullbuild`-Defer-Pfad-Notizen
+  aufgeloest (3 Stellen: §0 Build-Block; M5-Closure-Block;
+  M4-Closure-Block — alle mit konkretem Welle-1-C2-Hash
+  `b514170` als Aufloesungs-Beleg).
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+  M6-Welle-2 ausgerichtet + Welle-1-Abschluss-Notiz mit
+  Hash-Stack + Trigger-010-Aufloesungs-Substanz.
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
+  Welle-1-Zeile auf `Done` + Aktive-Welle-Block auf
+  M6-Welle-2.
+- [x] **C3 — `make docs-check`** cache-frei gruen ueber
+  alle 4 Welle-1-Commits (C0/C1/C2/C3) + zwei Review-Folge-
+  Commits (verifiziert vor C3-Commit-Erstellung).
 - [x] **C2 — Welle-1-D-1-Vertagungs-Pfad** angelegt: NEU
   [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
   fuer M6-Welle-3 (CI-Pflicht-Gate fuer `make fullbuild`)
@@ -622,15 +656,18 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
 
 **Anti-Scope-Verifikation (Welle 1 NICHT):**
 
-- [ ] Kein CI/CD-Vollausbau (`GG-CICD-001..006` bleibt
-  Welle-3-Scope).
-- [ ] Kein SBOM-Hook (Welle-2-Scope; Trigger 008).
-- [ ] Kein Performance-Bench (Welle-4-Scope; `GG-RT-005`).
-- [ ] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-*`).
-- [ ] Kein IEC-Smoke-Pfad-B (Welle-6-Scope; Trigger 009).
-- [ ] Keine Carveout-`Deferred`-Aufloesung opportunistisch
+- [x] Kein CI/CD-Vollausbau (`GG-CICD-001..006` bleibt
+  Welle-3-Scope; Welle-1-D-1-CI-Gate ueber NEU Trigger 031
+  explizit vertagt — siehe §10.2).
+- [x] Kein SBOM-Hook (Welle-2-Scope; Trigger 008).
+- [x] Kein Performance-Bench (Welle-4-Scope; `GG-RT-005`).
+- [x] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-*`).
+- [x] Kein IEC-Smoke-Pfad-B (Welle-6-Scope; Trigger 009).
+- [x] Keine Carveout-`Deferred`-Aufloesung opportunistisch
   (keine Welle-1-URL-Versionierung `/api/v1`; M6-D-3 bleibt
   Welle-3-Vorbelegung).
+- [x] Kein Code-Edit (Null-Code-Edit-Welle; siehe §10.1
+  Upstream-Drift-Begruendung).
 
 ---
 
@@ -645,7 +682,7 @@ angepasst an Welle-1-spezifische Substanz-Realitaet.
 Stand 2026-06-05 (`grid-gym-runtime:latest (debian 13.5)
 Total: 0 (HIGH: 0, CRITICAL: 0)`) **ohne irgendeine
 Aenderung am `Dockerfile`**. Die in
-[`../open/010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md)
+[`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)
 dokumentierte krb5-CVE-Famille (fuehrende ID
 `CVE-2026-40356` mit Fix `1.21.3-5+deb13u1`) wird durch
 zwei sich verstaerkende Mechanismen aufgeloest, die beide
@@ -752,7 +789,7 @@ diesem Commit, C3 traegt ihn nach).
 - [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) —
   M6-Slice-Plan §3.2 Welle-1-Vorbelegung + §5 Risiken
   (`krb5-Bump-Side-Effects` = R4).
-- [`../open/010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md)
+- [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)
   — Trigger 010 mit konkreten CVE-IDs + Fix-Version
   (`CVE-2026-40356` + `krb5 1.21.3-5+deb13u1`).
 - [`../done/M4-results.md §2 + §4 S-4 + §5`](../done/M4-results.md)

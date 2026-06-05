@@ -21,7 +21,7 @@ Vertraegen, ohne ADR 0002 textlich zu beruehren),
 Gate-Vertrag-Pattern-Vorbild — ADR 0029 fixiert die Coverage-
 Gate-Disziplin als wiederverwendbaren A-1-Vertrag, ADR 0043
 folgt derselben Form fuer den Image-Audit-Gate),
-[Trigger 010](../planning/open/010-base-image-krb5-cve-bump.md)
+[Trigger 010](../planning/done/010-base-image-krb5-cve-bump.md)
 (M3/M4/M5-Defer-Pfad — krb5-CVE-Famille seit M3-Welle-7 ohne
 Code-Verursacher; in M6-Welle-1-C3 nach `done/` gewandert).
 
@@ -43,7 +43,7 @@ M4-Welle-7-Closure hat das als dokumentierten Defer-Pfad
 verankert (siehe
 [`done/M4-results.md §2 + §4 S-4`](../planning/done/M4-results.md)).
 M5-Welle-0-C2 hat den Defer-Pfad als expliziten Open-Trigger
-in [`open/010-base-image-krb5-cve-bump.md`](../planning/open/010-base-image-krb5-cve-bump.md)
+in [`done/010-base-image-krb5-cve-bump.md`](../planning/done/010-base-image-krb5-cve-bump.md)
 formalisiert. M6-Welle-1 loest den Defer-Pfad auf.
 
 Vor dieser ADR war im Repo keine kanonische Image-Audit-
@@ -185,32 +185,55 @@ frei gruen), erfolgt im selben Slice-Closure-Commit:
 Mit dieser ADR sind die folgenden Welle-1-Substanz-Items
 verbunden:
 
-1. **M6-Welle-1-C1 (dieser Commit):**
+1. **M6-Welle-1-C1** (`c44e6d5`):
    - NEU `docs/plan/adr/0043-image-audit-strategy.md`
      (`Provisional`, dieser Text).
    - `docs/plan/adr/README.md` Aktive-ADRs-Tabelle um
      ADR-0043-Zeile ergaenzt (Hard Rule per `harness/
      README.md` Z.81).
 
-2. **M6-Welle-1-C2** (Folge-Commit; Code-Merge):
-   - `Dockerfile` krb5-Bump (`FROM`-Update oder apt-
-     `libkrb5-*`-Hardening-Erweiterung des bestehenden
-     `apt-get upgrade --yes`-Blocks im `runtime`-Stage,
-     Z.422-426).
-   - ggf. `uv.lock`-Refresh.
-   - `make gates` + `make image-audit` + `make fullbuild`
-     cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override.
+2. **M6-Welle-1-C2** (`b514170`; Verifikations-Commit ohne
+   Code-Edit):
+   - **Befund:** Trigger-010-Aufloesung ohne Code-Edit
+     durch Upstream-Patch-Drift + Trigger-015-Pattern
+     (`Dockerfile` Z.422-426 `apt-get update && apt-get
+     upgrade --yes` im `runtime`-Stage). Debian-13.5-
+     Security-Mirrors haben den krb5-`1.21.3-5+deb13u1`-
+     Fix zwischen 2026-06-01 und 2026-06-05 ausgespielt;
+     der bestehende `apt-get upgrade`-Block zieht den
+     Fix automatisch beim cache-freien Layer-Rebuild.
+   - **Beleg:** `make image-audit` EXIT=0 (`grid-gym-
+     runtime:latest (debian 13.5) Total: 0 (HIGH: 0,
+     CRITICAL: 0)` + `otel/opentelemetry-collector-
+     contrib:0.152.1` clean); `make fullbuild` EXIT=0
+     ohne `CRITICAL_COV_TARGETS`-Override.
+   - **Welle-1-D-1** vertagt auf M6-Welle-3 (CI-Vollausbau)
+     ueber NEU [`../planning/open/031-ci-make-fullbuild-gate.md`](../planning/open/031-ci-make-fullbuild-gate.md).
+   - Slice-Doc `M6-welle-1.md` §10 (C2-Realization-Notes)
+     verankert die Plan-Abweichung (Null-Code-Edit).
 
-3. **M6-Welle-1-C3** (Closure-Sync):
-   - **Hash-Anchor-Block in §5 dieser ADR** (in C3
-     nachgetragen): C2-Hash als Trigger-010-Aufloesungs-
-     Beleg.
+3. **M6-Welle-1-C3** (dieser Commit; Closure-Sync):
+   - **Hash-Anchor-Block** (dieser Block in §5): Welle-1-
+     C2 = `b514170` als Trigger-010-Aufloesungs-Beleg.
    - `git mv open/010-base-image-krb5-cve-bump.md →
-     done/010-base-image-krb5-cve-bump.md` (rename-only).
+     done/010-base-image-krb5-cve-bump.md` (rename-only;
+     Bezug-Refs in dieser ADR `§0 Bezug` + `§1 Kontext`
+     auf `../planning/done/` umgestellt — Pattern analog
+     ADR 0028 Link-Maintenance fuer `Provisional`-ADR-
+     Edits ist erlaubt; `Accepted`-Immutability per
+     ADR 0006 §3 greift erst ab M6-Welle-7-Closure-C1).
    - `carveouts.md §2.2` Trigger-010-Eintrag auf
-     `Aufgeloest in M6-Welle-1` mit Hash-Stack.
-   - Top-Level-Doku-Sync (`README.md`/`README.de.md`/
-     `roadmap.md §1`).
+     `Aufgeloest in M6-Welle-1` mit Welle-1-C2-Hash.
+   - Top-Level-Doku-Sync (`README.md`/`README.de.md`
+     `make fullbuild`-`CVE-2026-40356`-Hinweis aufgeloest;
+     `roadmap.md §0` Build-Status-Block + `§1`
+     Status-Header-`make fullbuild`-Defer-Pfad-Notiz
+     aufgeloest; `roadmap.md §3 M6` aktive-Welle-Block
+     auf M6-Welle-2 ausgerichtet).
+   - `M6-welle-1.md` Status `In Progress → Done` mit
+     Liefer-Hash-Stack.
+   - `M6-perf-security-cicd.md §3.1` Welle-1-Zeile
+     `In Progress → Done` mit Closure-Hash.
 
 4. **M6-Welle-7-Closure-C1** (Folge-Welle):
    - ADR 0043 `Provisional → Accepted` gebuendelt mit

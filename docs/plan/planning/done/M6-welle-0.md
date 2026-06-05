@@ -92,7 +92,9 @@ M5-Welle-7-Closure-Stand (siehe
 - **`make fullbuild`** pre-existing rot seit M3-Welle-7-
   `c61ab0d` wegen krb5-CVE-Drift (4 HIGH-CVEs in
   Debian-13-Base; nicht durch Code verursacht). Trigger 010
-  in [`../open/`](../open/010-base-image-krb5-cve-bump.md).
+  in [`../open/`](../done/010-base-image-krb5-cve-bump.md)
+  (gewandert nach `done/` mit M6-Welle-1-C3 — Pattern
+  analog M4-Welle-6a-Pre-C3 `81140e2` fuer Trigger 006).
 - **Vier CI-Pflicht-Gates** in GitHub Actions (Slice 025):
   lint, format-check, typecheck, arch-check. Test-unit +
   coverage + dep-audit sind **lokal in `make gates`**, aber

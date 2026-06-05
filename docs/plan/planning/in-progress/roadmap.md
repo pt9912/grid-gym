@@ -355,11 +355,15 @@
   Probe steht aus]).
 - **Build:** `make gates` cache-frei gruen ohne Override
   (10 A-1-Gates inkl. `spdx-check` aus M4-Welle-6b).
-  `make fullbuild` aktuell rot wegen 4 neuer HIGH-CVEs in
-  Debian-13-Base (`CVE-2026-40356` in krb5-Paketen, Fix
-  `1.21.3-5+deb13u1` verfuegbar) — Pre-existing-Drift seit
-  M3-Welle-7-`c61ab0d`, **nicht durch M4- oder M5-Code
-  verursacht**; Base-Image-Bump in separatem Stack.
+  **`make fullbuild` cache-frei gruen ohne Override seit
+  M6-Welle-1-C2 `b514170` (2026-06-05)** — Trigger-010
+  ([`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md))
+  aufgeloest ohne Code-Edit durch Debian-13.5-Upstream-
+  Patch-Drift + Trigger-015-`apt-get upgrade --yes`-
+  Pattern im `Dockerfile`-`runtime`-Stage. Pre-existing-
+  Drift seit M3-Welle-7-`c61ab0d` (M4-Welle-7-Erbschaft)
+  damit geschlossen; ADR 0043 `Provisional` verankert die
+  Image-Audit-Strategie als Quality-Gate-Vertrag.
 - **Trigger-006-Re-Eval (M4-Welle-3-C3, 2026-05-30):**
   positiv. `mypy --strict-bytes` laeuft cache-frei gruen gegen
   `src/grid_gym/adapters/driven/protocol_modbus/` ohne
@@ -568,9 +572,11 @@ Wellen 0..6c geliefert (Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/
 mit 10 A-1-Gates; 1722 Unit-Tests + 80 passed + 4 skipped
 Integration-Tests; Lastenheft-Scope `GG-API-001..004` +
 `GG-UI-001..009` + `GG-DEMO-001..008` alle erfuellt.
-**`make fullbuild`** bleibt pre-existing rot wegen
-krb5-CVE-Drift (M4-Welle-7-Erbschaft Trigger 010; nicht
-durch M5 verursacht). M4 ist `Done` (2026-06-01,
+**`make fullbuild`** war zur M5-Closure noch pre-existing
+rot wegen krb5-CVE-Drift (M4-Welle-7-Erbschaft Trigger
+010; nicht durch M5 verursacht); **aufgeloest in M6-Welle-
+1-C2 `b514170` (2026-06-05) ohne Code-Edit** durch
+Debian-13.5-Upstream-Drift + Trigger-015-Pattern. M4 ist `Done` (2026-06-01,
 siehe [`done/M4-results.md`](../done/M4-results.md)): 9
 Wellen 0..6b geliefert (5 produktive Adapter + 2 Cross-
 Adapter-Hardening-Wellen); sechs M4-ADRs (0030/0031/0032/
@@ -579,9 +585,12 @@ gruen ohne Override mit 10 A-1-Gates inkl. NEU
 `spdx-check`; 1584 Unit-Tests + 35 passed + 4 skipped
 Integration-Tests; 20 A-1-Contracts (14 arch_check inkl.
 NEU `AC-IEC61850-GPL-BOUNDARY`). `make fullbuild`
-pre-existing rot wegen krb5-CVE-Drift seit M3-Welle-7-
-`c61ab0d` (nicht durch M4 verursacht; Base-Image-Bump
-als M5-Welle-0-Trigger). M3 ist `Done` (2026-05-25,
+war zur M4-Closure noch pre-existing rot wegen krb5-CVE-
+Drift seit M3-Welle-7-`c61ab0d` (nicht durch M4 verursacht;
+Base-Image-Bump als M5-Welle-0-Trigger); aufgeloest in
+M6-Welle-1-C2 `b514170` (2026-06-05) ohne Code-Edit
+(Debian-13.5-Upstream-Drift; siehe
+[`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)). M3 ist `Done` (2026-05-25,
 siehe [`done/M3-results.md`](../done/M3-results.md)): drei Sub-
 Bereiche (Faults, Multi-Agent, Observability) ueber Welle 0..7
 geliefert; sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
@@ -879,14 +888,27 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 0
-(Slice-Plan-Eroeffnung + Trigger-Triage)** mit Slice-Doc
-[`M6-welle-0.md`](../done/M6-welle-0.md) (C0 `282a8cb` + Review-
-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035`
-+ C2 dieser Commit). Welle 1+ Slice-Docs entstehen pro
-Welle-X-C0. Carveout-Triage-Eingangsbestand:
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 2
+(SBOM-Aktivierung + Release-Workflow; Trigger 008 +
+`GG-CICD-007`)** — Welle-2-Slice-Doc entsteht in Welle-2-C0.
+**M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
+`282a8cb..960f6ed` (siehe
+[`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
+**M6-Welle-1 abgeschlossen 2026-06-05** mit Stack
+`4b1b3e9..<C3-Hash>` (siehe
+[`M6-welle-1.md`](M6-welle-1.md); Self-Close-Move-Folge
+C4a/C4b ausstehend): Trigger-010-Aufloesung ohne Code-Edit
+durch Debian-13.5-Upstream-Patch-Drift + Trigger-015-
+Pattern (`Dockerfile` Z.422-426 `apt-get upgrade --yes`
+im `runtime`-Stage); NEU ADR 0043 `Provisional` (Image-
+Audit-Strategie); Welle-1-D-1 (CI-Pflicht-Gate fuer
+`make fullbuild`) auf M6-Welle-3 vertagt ueber NEU
+[`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md).
+Welle 2+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
-`Active in M6-Welle-X` per Welle-0-C2).
+`Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 jetzt
+`Aufgeloest`).
 
 
 - **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,

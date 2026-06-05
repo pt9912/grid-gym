@@ -10,7 +10,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
 | [`M6-welle-0.md`](../done/M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 `74d9452` + Self-Close-Move `76f892d` + Cross-Doc-Refs-Sync `960f6ed`. |
 | [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 `e050035` (Welle-0-C1) + Review-Folgen `ff781ff` / `e7a5ac8` / `f1a6639`; aktive Welle: M6-Welle-1. |
-| [`M6-welle-1.md`](M6-welle-1.md) | M6-Welle-1-Slice-Doc (Base-Image-Bump / krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft). — **In Progress 2026-06-05** mit C0 (dieser Commit) als Slice-Doc-Anlage; C1 plant NEU ADR 0043 (Image-Audit-Strategie); C2 plant `Dockerfile`-`FROM`-Update + `make fullbuild` cache-frei gruen; C3 plant Status-Sync + Trigger-010-`done/`-Move. |
+| [`M6-welle-1.md`](M6-welle-1.md) | M6-Welle-1-Slice-Doc (Base-Image-Bump / krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft). — **Done 2026-06-05** mit C0 `4b1b3e9` + Review-Folgen `a28dba6` (4 Findings) + `cff5944` (1 MEDIUM) + C1 `c44e6d5` (NEU ADR 0043 `Provisional` + ADR-Index-Sync) + C2 `b514170` (Verifikations-Commit: Trigger-010-Aufloesung ohne Code-Edit + Welle-1-D-1-Vertagung auf Welle 3 ueber NEU Trigger 031) + C3 (dieser Commit; Status-Sync + ADR-0043-§5-Hash-Anchor + Trigger-010-Move + Top-Level-Doku-Sync). Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-Refs-Sync. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
@@ -450,13 +450,16 @@ Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
   mit Hash-Anchor + Slice-Plan-Pointer.
 - M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
 
-**Aktive Welle:** M6-Welle-1 (Base-Image-Bump / krb5-CVE-
-Aufloesung; Trigger 010 M4-Erbschaft) — **In Progress
-2026-06-05** mit C0 (dieser Commit; NEU
-[`M6-welle-1.md`](M6-welle-1.md) Slice-Doc); ausstehend
-C1 (NEU ADR 0043 Image-Audit-Strategie) + C2 (Dockerfile-
-Bump + `make fullbuild` cache-frei gruen) + C3 (Status-
-Sync + Trigger-010-`done/`-Move + Top-Level-Doku-Sync).
+**Aktive Welle:** M6-Welle-2 (SBOM-Aktivierung + Release-
+Workflow; Trigger 008 `GG-CICD-007`) — Welle-2-Slice-Doc
+entsteht in Welle-2-C0. **M6-Welle-1 abgeschlossen 2026-06-
+05** mit Stack `4b1b3e9..<C3-Hash>` (siehe Bestand-Tabelle
+oben; Self-Close-Move + Cross-Doc-Refs-Sync folgen als
+Welle-2-Pre-C0a/Pre-C0b). Aufloesung von Trigger 010
+(`make fullbuild`-Defer seit M3-Welle-7-`c61ab0d`) ohne
+Code-Edit durch Debian-13.5-Upstream-Drift + Trigger-015-
+Pattern. Welle-1-D-1 (CI-Pflicht-Gate fuer `make
+fullbuild`) auf M6-Welle-3 vertagt ueber NEU Trigger 031.
 M6-Slice-Plan-Welle-Strategie: Option B aus M6-D-1 (pro
 Triggerebene: krb5-Bump + SBOM klein → CI/CD + Performance
 + Security gross).

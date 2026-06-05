@@ -53,11 +53,9 @@ Beispiel-YAML-Szenarien liegen unter
 Das Repository ist **Docker-only**: Host braucht nur `docker` und `make`.
 Keine lokale Python-/uv-Installation.
 
-> `make fullbuild` enthaelt einen `image-audit`-Schritt, der aktuell
-> fehlschlaegt, solange ein ausstehender Debian-13-Base-Image-CVE-Bump
-> (`CVE-2026-40356` in der `krb5`-Familie) in einem separaten
-> Base-Image-Bump-Stack adressiert wird. Das Pflicht-Entwicklungsgate
-> ist `make gates`.
+`make fullbuild` faehrt die volle Closure-Pipeline inkl.
+`image-audit` (Trivy) und Compose-Smoke. Das Pflicht-
+Entwicklungsgate ist `make gates`.
 
 ## Was macht es vertrauenswuerdig?
 
@@ -140,8 +138,7 @@ make typecheck           # mypy --strict (ADR 0005)
 make arch-check          # import-linter + tools/arch_check.py (ADR 0002 §A-1)
 make arch-check-imports  # nur import-linter (7 Tabu-Contracts)
 make arch-check-custom   # nur tools/arch_check.py (12 Custom-Checks)
-make fullbuild           # gates + integration + runtime-Image-Bau
-                         # (siehe Hinweis oben zu image-audit / krb5-CVE)
+make fullbuild           # gates + integration + runtime-Image + image-audit + Compose-Smoke
 ```
 
 ## MVP-Scope

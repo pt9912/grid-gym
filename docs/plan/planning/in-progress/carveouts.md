@@ -80,7 +80,7 @@ Quelle: [`../done/M4-results.md §5`](../done/M4-results.md) +
 | Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | --- | ------ | ------ | ---------------------- | ----------- |
 | IEC-61850-In-Process-Smoke Reaktivierung | `Trigger-Gated` | M4-Welle-5b + M4-Welle-6b-C3 | **Active in M6-Welle-6** (Pfad B; per M6-Welle-0-C2-Triage) | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
-| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Trigger-Gated` | M3-Welle-7-`c61ab0d` pre-existing | **Active in M6-Welle-1** (per M6-Welle-0-C2-Triage) | `make fullbuild` als CI-Pflicht ODER Compliance-Druck ODER Library-Bump-Folge | [`010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md) |
+| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Aufgeloest` | M3-Welle-7-`c61ab0d` pre-existing | **Aufgeloest in M6-Welle-1-C2 `b514170`** (Null-Code-Edit; Debian-13.5-Upstream-Drift + Trigger-015-`apt-get upgrade`-Pattern) | n/a (aufgeloest) | [`010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
 
 ### 2.3 M3-Erbschaft (RL-Adapter)
 
