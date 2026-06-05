@@ -4,10 +4,15 @@
 C1 `e050035`. **M6-Welle-0** (Slice-Plan-Eroeffnung +
 Trigger-Triage) **abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
-[`../done/M6-welle-0.md`](../done/M6-welle-0.md)). **Aktive
-Welle: M6-Welle-1** (Base-Image-Bump / krb5-CVE-Aufloesung,
-Trigger 010 M4-Erbschaft); Welle-1-Slice-Doc entsteht in
-Welle-1-C0.
+[`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
+**M6-Welle-1** (Base-Image-Bump / krb5-CVE-Aufloesung,
+Trigger 010 M4-Erbschaft) **abgeschlossen 2026-06-05** mit
+Stack `4b1b3e9..4517614` (Trigger-010-Aufloesung ohne Code-
+Edit durch Debian-13.5-Upstream-Drift + Trigger-015-Pattern;
+NEU ADR 0043 `Provisional`; Welle-1-D-1 vertagt auf Welle 3
+ueber NEU Trigger 031). **Aktive Welle: M6-Welle-2** (SBOM-
+Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007`);
+Welle-2-Slice-Doc entsteht in Welle-2-C0.
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
@@ -179,7 +184,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 **Naechster aktiver Slice:** Welle 2 (SBOM-Aktivierung +
 Release-Workflow; Trigger 008 `GG-CICD-007`) — Welle-2-
 Slice-Doc entsteht in Welle-2-C0. M6-Welle-1 abgeschlossen
-2026-06-05 mit Stack `4b1b3e9..<C3-Hash>` (siehe
+2026-06-05 mit Stack `4b1b3e9..4517614` (siehe
 [`M6-welle-1.md`](M6-welle-1.md); Self-Close-Move-Folge
 C4a/C4b ausstehend): **Trigger-010-Aufloesung ohne Code-
 Edit** durch Upstream-Patch-Drift (Debian-13.5 +

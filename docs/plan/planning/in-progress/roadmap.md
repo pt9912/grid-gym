@@ -895,7 +895,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
 **M6-Welle-1 abgeschlossen 2026-06-05** mit Stack
-`4b1b3e9..<C3-Hash>` (siehe
+`4b1b3e9..4517614` (siehe
 [`M6-welle-1.md`](M6-welle-1.md); Self-Close-Move-Folge
 C4a/C4b ausstehend): Trigger-010-Aufloesung ohne Code-Edit
 durch Debian-13.5-Upstream-Patch-Drift + Trigger-015-

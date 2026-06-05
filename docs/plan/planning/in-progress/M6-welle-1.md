@@ -7,9 +7,12 @@ ADR-Index-Drift) + C1 `c44e6d5` (NEU ADR 0043
 `Provisional` + ADR-Index-Sync) + C2 `b514170`
 (Verifikations-Commit: Trigger-010-Aufloesung ohne Code-
 Edit durch Upstream-Drift + Welle-1-D-1-Vertagung auf
-Welle 3 ueber NEU Trigger 031) + C3 (dieser Commit;
-Status/DoD-Sync + ADR-0043-§5-Hash-Anchor + Trigger-010-
-`open/ → done/`-Move + Top-Level-Doku-Sync). Welle 1 ist
+Welle 3 ueber NEU Trigger 031) + C3 `4517614` (Status/DoD-
+Sync + ADR-0043-§5-Hash-Anchor + Trigger-010-`open/ → done/`-
+Move + Top-Level-Doku-Sync). C3-Review-Folge (dieser Commit;
+4 Findings 3 MED + 1 LOW adressiert) schaerft Trigger-010-
+Closure-Substanz + Aktive-Welle-Header + Hash-Konkretisierung
+vor C4a/C4b Self-Close-Folge. Welle 1 ist
 die **erste Code-Welle in M6** und loest die seit M3-Welle-
 7-Closure (`c61ab0d`, 2026-05-25) pre-existing rote `make
 fullbuild`-Pipeline auf
@@ -613,8 +616,7 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   (`Accepted` passiert in M6-Welle-7-Closure-C1 gebuendelt
   mit ADR 0041/0042.)
 - [x] **C3 — `M6-welle-1.md`** Status `In Progress → Done`
-  mit Liefer-Hash-Stack `4b1b3e9..<C3-Hash>` (dieser
-  Commit).
+  mit Liefer-Hash-Stack `4b1b3e9..4517614` (C3 `4517614`).
 - [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-1-Zeile
   `In Progress → Done` mit Closure-Hash + Naechster-Slice-
   Block auf Welle 2 ausgerichtet.
@@ -647,8 +649,8 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
 - [x] **C2 — Welle-1-D-1-Vertagungs-Pfad** angelegt: NEU
   [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
   fuer M6-Welle-3 (CI-Pflicht-Gate fuer `make fullbuild`)
-  in C2 (dieser Commit) — `carveouts.md §2.X` Sync ist C3-
-  Substanz (carveouts wandert mit dem Trigger-Lifecycle
+  in C2 `b514170` — `carveouts.md §2.2` Sync in C3 `4517614`
+  produktiv (Trigger-Gated → Aufgeloest) (carveouts wandert mit dem Trigger-Lifecycle
   mit; Trigger-031 ist Trigger-Gated nach Welle 3). (DoD-
   Item wandert hier von „C3" auf „C2" weil die
   Vertagungs-Entscheidung in C2 final wurde und der
