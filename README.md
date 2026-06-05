@@ -56,6 +56,14 @@ The repository is **Docker-only**: the host only needs `docker` and
 `image-audit` (Trivy) and a Compose smoke test. The mandatory
 development gate is `make gates`.
 
+> `make fullbuild` currently fails on the `image-audit` step
+> because of CVE-2026-42504 (Go stdlib MIME header DoS) in the
+> pinned `otel/opentelemetry-collector-contrib:0.153.0` sibling
+> image — the upstream fix lands with OTel collector >0.153.0
+> built against go1.26.4+. Tracked in `docs/plan/planning/open/
+> 033-otel-collector-go-stdlib-cve-bump.md`. `make gates` is the
+> hard development gate and stays green.
+
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
 publishes a container image to GHCR (`ghcr.io/<owner>/grid-gym:<tag>`)

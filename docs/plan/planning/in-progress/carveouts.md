@@ -125,6 +125,7 @@ Trigger-Gated`.
 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
 | CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-D-1-Vertagung) | **Aufgeloest in M6-Welle-3-C2 `ce13253`** (NEU `.github/workflows/fullbuild.yml` mit Hybrid Push/PR-Paths-Filter + workflow_dispatch; `make fullbuild` cache-frei gruen) | n/a (aufgeloest) | [`031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
 | Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
+| OTel-Collector Go-stdlib CVE-2026-42504-Bump (`make fullbuild`-Defer; M6-Welle-3-Post-Push-`ede21ad`-Aufdeckung) | In Trigger Watch | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build (erwartet 2026-06-09..06-12 per ~14-Tage-Kadenz) ODER Compliance-Druck | [`033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
 
 ### 2.6 Spike-Optional (1 Item)
 

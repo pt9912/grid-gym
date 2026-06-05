@@ -355,15 +355,21 @@
   Probe steht aus]).
 - **Build:** `make gates` cache-frei gruen ohne Override
   (10 A-1-Gates inkl. `spdx-check` aus M4-Welle-6b).
-  **`make fullbuild` cache-frei gruen ohne Override seit
-  M6-Welle-1-C2 `b514170` (2026-06-05)** — Trigger-010
-  ([`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md))
-  aufgeloest ohne Code-Edit durch Debian-13.5-Upstream-
-  Patch-Drift + Trigger-015-`apt-get upgrade --yes`-
-  Pattern im `Dockerfile`-`runtime`-Stage. Pre-existing-
-  Drift seit M3-Welle-7-`c61ab0d` (M4-Welle-7-Erbschaft)
-  damit geschlossen; ADR 0043 `Provisional` verankert die
-  Image-Audit-Strategie als Quality-Gate-Vertrag.
+  `make fullbuild` war von M6-Welle-1-C2 `b514170`
+  (2026-06-05) bis M6-Welle-3-Post-Push `0891f65`
+  (2026-06-05) cache-frei gruen; **aktuell wieder in
+  Defer-Pfad** wegen CVE-2026-42504 (Go-stdlib MIME-
+  Header-DoS) im `otel/opentelemetry-collector-
+  contrib:0.153.0`-Sibling. Aufgedeckt durch Trivy-
+  Host-Cache-Mount-Entfernung `ede21ad` (Stale-DB-Drift-
+  Aufloesung). Trigger 033
+  ([`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md))
+  als ADR-0043-konformer Defer-Pfad; Aufloesung sobald
+  OTel-Release > 0.153.0 gegen `go1.26.4+` gebaut ist
+  (erwartet 2026-06-09..06-12). Trigger 010 (krb5-CVE)
+  bleibt aufgeloest seit Welle-1-C2; ADR 0043
+  `Provisional` verankert die Image-Audit-Strategie als
+  Quality-Gate-Vertrag.
 - **Trigger-006-Re-Eval (M4-Welle-3-C3, 2026-05-30):**
   positiv. `mypy --strict-bytes` laeuft cache-frei gruen gegen
   `src/grid_gym/adapters/driven/protocol_modbus/` ohne

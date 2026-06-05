@@ -730,12 +730,19 @@ Dieser Index listet die kanonischen Post-Closure-Korrektur-Hashes.
 
 | Commit | Stufe | Substanz |
 | ------ | ----- | -------- |
-| `0891f65` | Post-Push-CI-Fix | **F1 HIGH** `.python-version=3.14` blockierte test-unit Python-3.13-Matrix-Branch (uv-sync „No interpreter found"). Korrektur: `.python-version` aus `Dockerfile`-COPY-Block entfernt; Python-Version-Truth allein aus `ARG PYTHON_VERSION`. **F2 HIGH** `otel/opentelemetry-collector-contrib:0.152.1` hatte CVE-2026-42504 (Go-stdlib-MIME-Header-DoS; Fix in `0.153.0`). Korrektur: Image-Pin `0.152.1 → 0.153.0` in `Makefile` + `deploy/compose.yml` + `docs/user/observability.md`. Lokal-Verifikation: `make fullbuild` + `make image-audit` EXIT=0; `docker build --target test-unit --build-arg PYTHON_VERSION=3.13` EXIT=0. ADR-0043-konformes Vorgehen (Image-Bump als Defer-Pfad-Aufloesung; kein `.trivyignore`). |
+| `0891f65` | Post-Push-CI-Fix | **F1 HIGH** `.python-version=3.14` blockierte test-unit Python-3.13-Matrix-Branch (uv-sync „No interpreter found"). Korrektur: `.python-version` aus `Dockerfile`-COPY-Block entfernt; Python-Version-Truth allein aus `ARG PYTHON_VERSION`. **F2 HIGH (Versuch; spaeter als wirkungslos entlarvt)** `otel/opentelemetry-collector-contrib:0.152.1` hatte CVE-2026-42504. Korrektur-Versuch: Image-Pin `0.152.1 → 0.153.0`. Lokal-Verifikation **war falsch positiv** wegen Stale-Trivy-Cache-DB. |
+| `ede21ad` | Stale-DB-Drift-Aufloesung | Trivy-Host-Cache-Mount (`-v "$HOME/.cache/trivy:/root/.cache/"`) aus `Makefile` Z.282 + Z.291 entfernt. Lokale `make image-audit`-Laeufe mit alter Cache-DB hatten NEU veroeffentlichte CVEs nicht gemeldet — falsch-positive „lokal-gruen, CI-rot"-Diskrepanz. Performance-Wert war marginal (~25s Ersparnis pro Re-Run); CI hatte den Cache de facto nie. Konsequenz: `make image-audit` aufgedeckt als rot wegen CVE-2026-42504 in `0.153.0` (Image-Bump in `0891f65` war wirkungslos — `0.153.0` baut ebenfalls gegen `go1.26.3`). NEU `open/033-otel-collector-go-stdlib-cve-bump.md`-Trigger als ADR-0043-konformer Defer-Pfad (Pattern analog Trigger 010 fuer krb5). |
 
-**Aktueller Workflow-Stand** (Post-Closure-Korrektur-Stand):
+**Aktueller Workflow-Stand** (Post-Closure-Korrektur-Stand
+nach `ede21ad`):
 
 - `Makefile` `OTEL_COLLECTOR_IMAGE ?= otel/opentelemetry-
-  collector-contrib:0.153.0` (Z.35).
+  collector-contrib:0.153.0` (Z.35) — Trigger 033
+  ([`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md))
+  verankert den Defer-Pfad bis OTel-Release mit
+  `go1.26.4+`-Build.
+- `Makefile` `image-audit` (Z.279-296) ohne Trivy-Host-
+  Cache-Mount; Begruendungs-Kommentar verankert.
 - `Dockerfile` deps-Stage `COPY pyproject.toml uv.lock ./`
   (ohne `.python-version`); Python-Version-Truth aus
   `ARG PYTHON_VERSION` (Z.23) ueber `FROM
@@ -747,14 +754,16 @@ Dieser Index listet die kanonischen Post-Closure-Korrektur-Hashes.
   fullbuild) plus ci.yml + release.yml unveraendert
   gegenueber Welle-3-C2 `ce13253`.
 - `actionlint` (v1.7.12) EXIT=0 auf alle 6 Workflows
-  nach Post-Push-Fix.
+  unveraendert.
 
-**Sensor-Run-Status nach Post-Push-Fix:** Welle-3-
-Workflows werden bei jedem Push automatisch getriggert
-(im Gegensatz zu Welle-2-Release-Workflow mit Trigger
-032). Der Post-Push-Fix-Commit `0891f65` triggert beim
-naechsten `git push` alle 5 Welle-3-Workflows neu;
-Erwartung: alle 5 gruen nach den 2 Fix-Substanzen.
+**Sensor-Run-Status nach `ede21ad`** (lokal ≡ CI):
+
+- Tests / Coverage / Dep-Audit / CI: **gruen**.
+- Fullbuild: **rot** wegen CVE-2026-42504 in OTel-
+  Collector (Trigger 033 verankert den Defer-Pfad).
+- Aufloesungs-Pfad: OTel-Bump auf `0.154.0+` sobald
+  upstream verfuegbar (erwartete OTel-Release-Linie
+  2026-06-09 bis 2026-06-12 per ~14-Tage-Kadenz).
 
 ---
 

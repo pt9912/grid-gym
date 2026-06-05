@@ -57,6 +57,14 @@ Keine lokale Python-/uv-Installation.
 `image-audit` (Trivy) und Compose-Smoke. Das Pflicht-
 Entwicklungsgate ist `make gates`.
 
+> `make fullbuild` faellt aktuell ueber den `image-audit`-Schritt
+> wegen CVE-2026-42504 (Go-stdlib-MIME-Header-DoS) im gepinnten
+> `otel/opentelemetry-collector-contrib:0.153.0`-Sibling — der
+> Upstream-Fix kommt mit OTel-Collector >0.153.0 gebaut gegen
+> go1.26.4+. Tracked in `docs/plan/planning/open/033-otel-
+> collector-go-stdlib-cve-bump.md`. `make gates` ist das harte
+> Entwicklungsgate und bleibt gruen.
+
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
 Release-Workflow publiziert ein Container-Image nach GHCR
