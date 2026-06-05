@@ -26,8 +26,9 @@ abgeschlossen 2026-06-04 + M6-Welle-1 abgeschlossen
 2026-06-05 + **M6-Welle-2 abgeschlossen 2026-06-05** (NEU
 `.github/workflows/release.yml` + Makefile/Dockerfile-
 Pflichtscope + ADR 0042 `Provisional`; Trigger 008 nach
-`done/` gewandert); siehe Detail-Bloecke unten. Welle-2-
-C4a/C4b Self-Close-Move + Cross-Doc-Refs-Sync folgen.
+`done/` gewandert; C4a `c51d905` Self-Close-Move + C4b
+`b41b7fc` Cross-Doc-Refs-Sync erledigt); siehe Detail-
+Bloecke unten.
 
 M3 ist mit Welle 7 vollstaendig abgeschlossen
 (2026-05-25, siehe

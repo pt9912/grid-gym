@@ -13,10 +13,14 @@
 #      - Demo-Abnahme-Markdown (aus docs/user/gg-demo-008-abnahme.md).
 #
 # Bezug:
-# - Trigger 008 (`docs/plan/planning/open/008-sbom-activation.md`; wandert
-#   mit Welle-2-C3 nach `done/`).
+# - Trigger 008 (`docs/plan/planning/done/008-sbom-activation.md`;
+#   in M6-Welle-2-C3 `98a1fa1` nach `done/` gewandert).
 # - ADR 0042 (`docs/plan/adr/0042-sbom-tool-and-release-pattern.md`).
-# - M6-Slice-Plan Welle 2 (`docs/plan/planning/in-progress/M6-welle-2.md`).
+# - M6-Slice-Plan Welle 2 (`docs/plan/planning/done/M6-welle-2.md`;
+#   in M6-Welle-2-C4a `c51d905` self-closed).
+# - Trigger 032 (`docs/plan/planning/open/032-release-workflow-
+#   sensor-run.md`; reale GitHub-Actions-Run-Verifikation als
+#   bedingte Folge-Operation).
 # - Lastenheft `GG-CICD-007` (`spec/lastenheft.md` Z.1821-1827).
 
 name: Release
@@ -54,8 +58,13 @@ jobs:
     outputs:
       version: ${{ steps.resolve-version.outputs.version }}
     steps:
-      - name: Checkout
+      # `fetch-depth: 0` ist Pflicht: der spaetere `Check tag
+      # commit is on default branch`-Step braucht volle Git-
+      # Historie fuer `git merge-base --is-ancestor`.
+      - name: Checkout (full history)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve version
         id: resolve-version
@@ -88,34 +97,55 @@ jobs:
           cache-from: type=gha,scope=runtime
           cache-to: type=gha,scope=runtime,mode=max
 
-      # ADR 0042 §2.3 / §2.4: `:latest`-Tag nur bei Tag-Push
-      # (Default-Branch-Release-Linie), NICHT bei
-      # workflow_dispatch (Manual koennte gegen alten Tag
-      # laufen und `:latest` faelschlich ueberschreiben).
-      # Pattern: `docker buildx imagetools create` setzt das
-      # Tag-Alias am Registry-Manifest, ohne neu zu pushen.
-      - name: Tag and push :latest (only on tag push)
+      # ADR 0042 §2.3: `:latest`-Tag nur wenn Tag-Commit auf
+      # Default-Branch zeigt (nicht jeder Tag-Push, da ein
+      # Tag auf einem alten/feature-Branch-Commit `latest`
+      # faelschlich zurueckdrehen koennte). Pruefung via
+      # `git merge-base --is-ancestor`: ist der getaggte SHA
+      # ein Vorfahre des Default-Branch-Tip, dann ist der Tag
+      # auf der Release-Linie.
+      - name: Check tag commit is on default branch
+        id: tag-on-default
         if: github.event_name == 'push'
         run: |
+          git fetch origin "${DEFAULT_BRANCH}":refs/remotes/origin/default-branch
+          if git merge-base --is-ancestor "${TAG_SHA}" refs/remotes/origin/default-branch; then
+            echo "on-default=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on-default=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          TAG_SHA: ${{ github.sha }}
+
+      # `:latest`-Push nur bei Tag-Push UND Tag auf Default-
+      # Branch. Pattern: `docker buildx imagetools create`
+      # setzt das Tag-Alias am Registry-Manifest direkt
+      # (kein Re-Push noetig).
+      - name: Tag and push :latest (tag on default branch only)
+        if: steps.tag-on-default.outputs.on-default == 'true'
+        run: |
           docker buildx imagetools create \
-            --tag ghcr.io/${{ github.repository }}:latest \
-            ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}
+            --tag "ghcr.io/${{ github.repository }}:latest" \
+            "ghcr.io/${{ github.repository }}:${{ steps.resolve-version.outputs.version }}"
 
       # ADR 0042 §2.1: SBOM MUSS gegen das gepushte Runtime-
-      # Image laufen (per Image-Digest, nicht gegen einen
-      # zweiten lokalen Build). Pull holt den exakten
-      # Manifest-Digest aus GHCR; `docker tag` aliasiert auf
-      # `grid-gym-runtime:latest`, damit `make sbom` das Image
-      # findet.
-      - name: Pull pushed image by digest (for SBOM)
-        run: |
-          docker pull ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}
-          docker tag ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }} grid-gym-runtime:latest
-
-      - name: Generate SBOM against pushed image digest
+      # Image-Digest laufen — Syft direkt gegen den GHCR-
+      # Reference. KEIN `make sbom`-Aufruf, weil `sbom: build`
+      # (Makefile Z.462) das Image lokal neu bauen und das
+      # gepullte Digest-Alias damit ueberschreiben wuerde.
+      # Direkt-Syft umgeht die Make-Build-Dependency und
+      # garantiert den 1:1-Bezug zu dem in GHCR publizierten
+      # Manifest-Digest.
+      - name: Generate SBOM against pushed image digest (direct syft)
         run: |
           mkdir -p artifacts
-          make sbom VERSION=${{ steps.resolve-version.outputs.version }}
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$(pwd)/artifacts":/artifacts \
+            anchore/syft:v1.17.0 \
+            "ghcr.io/${{ github.repository }}@${{ steps.build-push.outputs.digest }}" \
+            -o "cyclonedx-json=/artifacts/sbom-${{ steps.resolve-version.outputs.version }}.cdx.json"
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4

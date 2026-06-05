@@ -60,10 +60,26 @@ oder spaeterer):
     grid-gym:<tag>` lokal nachpruefbar).
   - GitHub-Release angelegt mit 5 Asset-Files (UI-
     Pruefung).
-  - SBOM-Asset enthaelt korrekten Image-Digest-Bezug.
-  - `:latest`-Tag nur bei Tag-Push, NICHT bei
-    workflow_dispatch (ADR 0042 §2.3 + F3-Korrektur aus
-    Welle-2-Post-Closure-Review-Folge).
+  - **SBOM-Asset bindet an gepushten Image-Digest**
+    (ADR 0042 §2.1 + Welle-2-Post-Closure-Review-Folge-2-
+    F1-Korrektur). Pruefung: SBOM-Datei enthaelt unter
+    `metadata.component.bom-ref` oder
+    `metadata.component.purl` einen Verweis auf den
+    Digest aus `docker/build-push-action`-Output.
+    Direkt-Syft-Aufruf (kein `make sbom`) ist Pflicht-
+    Pattern; jede Re-Einfuehrung von `make sbom` im
+    Workflow ist ADR-Bruch (`sbom: build`-Dependency
+    wuerde lokales Re-Build triggern und Digest-Bindung
+    brechen).
+  - **`:latest`-Tag nur wenn Tag-Commit auf Default-
+    Branch** (ADR 0042 §2.3 + Welle-2-Post-Closure-
+    Review-Folge-2-F3-Korrektur). Pruefung: ein Tag-
+    Push auf einem Feature-Branch-Commit darf `:latest`
+    NICHT veraendern; Check via `git merge-base
+    --is-ancestor <tag-sha> origin/<default-branch>`
+    in `Check tag commit is on default branch`-Step.
+    Voraussetzung: `actions/checkout@v4` mit
+    `fetch-depth: 0`.
 - **Slice-Doc**:
   - `done/M6-welle-2.md §9 DoD` Box „Reale Workflow-Run-
     Verifikation" auf `[x]` mit Sensor-Run-Hash + Run-ID-
