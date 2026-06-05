@@ -198,9 +198,19 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
-**Naechster aktiver Slice:** Welle 3 (CI/CD-Vollausbau;
-`GG-CICD-001..006` + Python-3.13/3.14-Matrix) — Welle-3-
-Slice-Doc entsteht in Welle-3-C0. **M6-Welle-2 abgeschlossen
+**Naechster aktiver Slice:** Welle 4 (Performance-
+Benchmark; `GG-RT-001..005` inkl. 10000-Points/s-Benchmark
+`GG-RT-005`) — Welle-4-Slice-Doc entsteht in Welle-4-C0.
+**M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
+`08a8034..c8ecbe4` (C0 + C2 `ce13253` + C3 `c8ecbe4`; C1
+entfaellt analog M5-Welle-2; siehe
+[`M6-welle-3.md`](M6-welle-3.md); Self-Close-Move-Folge
+C4a/C4b ausstehend als Welle-4-Pre-C0a/Pre-C0b): NEU 4
+GitHub-Actions-Workflows (`tests.yml`/`coverage.yml`/`dep-
+audit.yml`/`fullbuild.yml`); Python-3.13/3.14-Matrix in
+`tests.yml` (test-unit-Job; test-integration Default per
+Welle-3-D-2); Trigger 031 (`make fullbuild`-CI-Gate aus
+Welle-1-D-1-Vertagung) aufgeloest. **M6-Welle-2 abgeschlossen
 2026-06-05** mit Stack `0cc28f3..b41b7fc` (siehe
 [`M6-welle-2.md`](../done/M6-welle-2.md); Self-Close-Move-Folge
 Stack umfasst C0/2 Review-Folgen/C1/C2/C3/C3-Sensor-

@@ -3,11 +3,15 @@
 **Status:** Done 2026-06-05 — Liefer-Stack: C0 `08a8034`
 (Slice-Doc-Anlage) + C2 `ce13253` (Code-Merge: 4 NEU
 Workflows + Trigger-031-Aufloesung + pip-PYSEC-2026-196-
-Drift-Fix; C1 entfaellt analog M5-Welle-2) + C3 (dieser
-Commit; Status/DoD-Sync + Trigger-031-`open/ → done/`-Move
-+ Top-Level-Doku-Sync). Ausstehend: C4a Self-Close-Move +
-C4b Cross-Doc-Refs-Sync nach Move (Pattern analog M6-
-Welle-2-C4a `c51d905`/C4b `b41b7fc`). Welle 3 ist die
+Drift-Fix; C1 entfaellt analog M5-Welle-2) + C3 `c8ecbe4`
+(Status/DoD-Sync + Trigger-031-`open/ → done/`-Move +
+Top-Level-Doku-Sync) + C3-Review-Folge (dieser Commit; 3
+MED Findings adressiert: F1 Self-Close strukturell ueber
+C4a/C4b; F2 Aktive-Welle-Drift in M6-perf-security-cicd.md
++ in-progress/README.md; F3 Matrix-Scope-Konsistenz in
+§1.2 + §4 — test-integration ist NICHT Matrix). Ausstehend:
+C4a Self-Close-Move + C4b Cross-Doc-Refs-Sync nach Move
+(Pattern analog M6-Welle-2-C4a `c51d905`/C4b `b41b7fc`). Welle 3 ist die
 **dritte Code-Welle in M6** und liefert die GitHub-Actions-
 CI-Pflicht-Gates fuer alle lokal-Pflicht-Targets, plus
 Python-3.13/3.14-Matrix gegen die existierenden 4 Slice-
@@ -77,10 +81,17 @@ Vier NEU GitHub-Actions-Workflow-Dateien plus Trigger-
 031-Aufloesung:
 
 1. **NEU `.github/workflows/tests.yml`** — `make test-unit`
-   + `make test-integration` als CI-Pflicht-Jobs mit
-   **Python-3.13/3.14-Matrix** (`strategy.matrix.python-
-   version`); deckt `GG-CICD-002`-MUSS (Tests automatisch
-   ausgefuehrt; Unit + Integration als getrennte Jobs).
+   + `make test-integration` als CI-Pflicht-Jobs; Matrix-
+   Scope nicht symmetrisch: **`test-unit` mit Python-
+   3.13/3.14-Matrix** (`strategy.matrix.python-version`),
+   **`test-integration` mit Default-Python (3.14)**.
+   Begruendung fuer Asymmetrie: `test-integration` ist
+   Compose-basiert (testcontainers + `tests/integration/
+   compose.yml`); Compose-File-Edit fuer Matrix-Build-Args
+   waere weiterer Welle-X-Refactoring-Bedarf (siehe Welle-
+   3-D-2 in §3 fuer File-Ebenen-Decision). Deckt
+   `GG-CICD-002`-MUSS (Tests automatisch ausgefuehrt;
+   Unit + Integration als getrennte Jobs).
 2. **NEU `.github/workflows/coverage.yml`** — `make
    coverage-gate` + `make coverage-gate-critical` als CI-
    Pflicht-Jobs (Default-Python; Matrix nicht noetig —
@@ -356,11 +367,13 @@ Code-Merge mit:
 - **NEU `.github/workflows/tests.yml`** (Pflicht):
   - Trigger: `push.branches: [main]` + `pull_request.
     branches: [main]` ohne Path-Filter.
-  - `strategy.matrix.python-version: ['3.13', '3.14']`.
-  - 2 Jobs: `test-unit` + `test-integration` (jeder mit
-    Matrix-Wrapping).
+  - 2 Jobs: `test-unit` (mit `strategy.matrix.python-
+    version: ['3.13', '3.14']`) + `test-integration` (mit
+    Default-Python; Compose-basiert, siehe §1.2 +
+    Welle-3-D-2).
   - Cache: `type=gha,scope=test-unit-<python>` (Per-
-    Python-Cache-Scope).
+    Python-Cache-Scope) fuer `test-unit`; Default-Cache
+    fuer `test-integration`.
 - **NEU `.github/workflows/coverage.yml`** (Pflicht):
   - Trigger: `push.branches: [main]` + `pull_request.
     branches: [main]` ohne Path-Filter.

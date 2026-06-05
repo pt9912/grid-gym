@@ -459,11 +459,11 @@ Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
   mit Hash-Anchor + Slice-Plan-Pointer.
 - M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
 
-**Aktive Welle:** M6-Welle-3 (CI/CD-Vollausbau; `GG-CICD-
-001..006` + Python-3.13/3.14-Matrix; plus Trigger 031
-`make fullbuild`-CI-Gate-Vertagung aus Welle 1) — Welle-3-
-Slice-Doc entsteht in Welle-3-C0. **M6-Welle-1 abgeschlossen
-2026-06-05** mit Stack `4b1b3e9..d51d6e7`. **M6-Welle-2
+**Aktive Welle:** M6-Welle-4 (Performance-Benchmark;
+`GG-RT-001..005` inkl. 10000-Points/s-Benchmark `GG-RT-
+005`) — Welle-4-Slice-Doc entsteht in Welle-4-C0. **M6-
+Welle-1 abgeschlossen 2026-06-05** mit Stack `4b1b3e9..
+d51d6e7`. **M6-Welle-2
 abgeschlossen 2026-06-05** mit Stack `0cc28f3..b41b7fc`
 (NEU `.github/workflows/release.yml` + 3 Jobs + 6 Artefakte;
 NEU ADR 0042 `Provisional`; Trigger 008 nach `done/`).
@@ -471,7 +471,9 @@ Aufloesung von Trigger 010 (`make fullbuild`-Defer seit
 M3-Welle-7-`c61ab0d`) ohne Code-Edit durch Debian-13.5-
 Upstream-Drift + Trigger-015-Pattern. Welle-1-D-1 (CI-
 Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3
-vertagt ueber NEU Trigger 031.
+vertagt ueber NEU Trigger 031; **Trigger 031 aufgeloest
+in M6-Welle-3-C2 `ce13253`** via NEU `.github/workflows/
+fullbuild.yml`.
 M6-Slice-Plan-Welle-Strategie: Option B aus M6-D-1 (pro
 Triggerebene: krb5-Bump + SBOM klein → CI/CD + Performance
 + Security gross).
