@@ -1,18 +1,21 @@
 # Welle 2 — M6 SBOM-Aktivierung + Release-Workflow (`GG-CICD-007`)
 
-**Status:** In Progress — eroeffnet mit C0 `0cc28f3`
-(NEU Slice-Doc) + C0-Review-Folge `69d73d3` (4 Findings:
-2 HIGH + 1 MED + 1 LOW) + C0-Review-Folge-2 `63c4cb6`
-(3 Findings: 2 MED + 1 LOW) + C1 `4b1062b` (NEU ADR 0042
-`Provisional` + ADR-Index-Sync) + C2 (dieser Commit;
-Code-Merge: Makefile sbom-Scan-Ziel + Dockerfile test-unit
-JUnit-XML + coverage-gate HTML + NEU `.github/workflows/
-release.yml` + §10 C2-Realization-Notes). Welle 2 ist die
-**zweite Code-Welle in M6**
+**Status:** Done 2026-06-05 — Liefer-Stack: C0 `0cc28f3`
+(Slice-Doc-Anlage) + C0-Review-Folge `69d73d3` (4 Findings:
+2 HIGH + 1 MED + 1 LOW) + C0-Review-Folge-2 `63c4cb6` (3
+Findings: 2 MED + 1 LOW) + C1 `4b1062b` (NEU ADR 0042
+`Provisional` + ADR-Index-Sync) + C2 `235395e` (Code-Merge:
+NEU `.github/workflows/release.yml` 3 Jobs + Makefile sbom-
+Scan-Ziel-Umstellung + Dockerfile test-unit JUnit-XML +
+coverage-gate HTML + `.gitignore` artifacts/-Block + §10
+C2-Realization-Notes) + C3 (dieser Commit; Status/DoD-Sync
++ ADR-0042-§5-Hash-Anchor + Trigger-008-`open/ → done/`-
+Move + Top-Level-Doku-Sync). Welle 2 ist die **zweite Code-
+Welle in M6**
 nach M6-D-1-Option-B-Vorbelegung („pro Triggerebene": krb5-
 Bump + SBOM klein vor CI/CD/Performance/Security gross) und
 loest **Trigger 008**
-([`../open/008-sbom-activation.md`](../open/008-sbom-activation.md))
+([`../done/008-sbom-activation.md`](../done/008-sbom-activation.md))
 durch produktive Aktivierung von `make sbom` plus einen
 neuen GitHub-Actions-Release-Workflow auf.
 
@@ -124,7 +127,7 @@ Sub-Items):
    F1-Korrektur Welle-2-C0-Review-Folge): Heute scannt
    `Makefile` Z.461 `dir:/src` (Source-Tree-SBOM); das
    widerspricht Trigger-008-Akzeptanz
-   ([`../open/008-sbom-activation.md`](../open/008-sbom-activation.md))
+   ([`../done/008-sbom-activation.md`](../done/008-sbom-activation.md))
    und §2.1-Decision-Substanz (Container-Image-SBOM).
    C2 stellt den Scan-Befehl auf `grid-gym-runtime:latest`
    um (Pattern `syft <image-tag> -o cyclonedx-json=...`)
@@ -312,7 +315,7 @@ Scan-Ziel. Versionierung ueber `VERSION`-Variable
 **Wichtig (F1-Korrektur Welle-2-C0-Review-Folge):** Der
 aktuelle `Makefile` Z.461 scannt `dir:/src` — das ist ein
 **Source-Tree-SBOM**, kein Runtime-Image-SBOM. Trigger
-008 ([`../open/008-sbom-activation.md`](../open/008-sbom-activation.md))
+008 ([`../done/008-sbom-activation.md`](../done/008-sbom-activation.md))
 verlangt explizit „SBOM enthaelt alle Runtime-Dependencies
 aus `uv.lock` und das Container-Image". C2-Pflicht-Substanz:
 
@@ -915,45 +918,68 @@ Schaerfung.
   hatte die Ausnahmen-Begruendung in §3 Welle-2-D-5
   verankert; C2-Substanz substanziell scope-eng
   geliefert).
-- [ ] **C3 — ADR 0042** bleibt `Provisional`; C2-Hash
-  als Trigger-008-Aufloesungs-Beleg in §5 als Hash-
-  Anchor-Block nachgetragen.
-- [ ] **C3 — `M6-welle-2.md`** Status `In Progress →
-  Done` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-2-
-  Zeile `In Progress → Done` mit Closure-Hash.
-- [ ] **C3 — Trigger 008** `git mv open/008-* → done/
-  008-*` + `carveouts.md §2.5` + `open/README.md`-Sync
-  + Closure-Notiz im done-Trigger (Pattern analog
-  Trigger 010 in Welle-1-C3-Review-Folge).
-- [ ] **C3 — `README.md` + `README.de.md`** NEU
-  Release-Workflow-Hinweis + `make sbom`-Erwaehnung
-  produktiv geschaerft.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block
-  auf M6-Welle-3 ausgerichtet + Welle-2-Abschluss-
-  Notiz.
+- [x] **C3 — ADR 0042** bleibt `Provisional`; C2-Hash
+  `235395e` als Trigger-008-Aufloesungs-Beleg in §5 als
+  Hash-Anchor-Block nachgetragen + Bezug-Refs in §0/§1
+  auf `../planning/in-progress/`-Pfad belassen (Slice-
+  Doc noch in `in-progress/` bis Welle-2-C4a/C4b in
+  Welle-3-Pre-C0a/Pre-C0b). (`Accepted` passiert in
+  M6-Welle-7-Closure-C1 gebuendelt mit ADR 0041/0043.)
+- [x] **C3 — `M6-welle-2.md`** Status `In Progress →
+  Done 2026-06-05` mit Liefer-Hash-Stack
+  `0cc28f3..<C3-Hash>` (dieser Commit).
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-2-
+  Zeile `In Progress → Done` mit Closure-Hash + §3
+  Naechster-Slice-Block auf Welle 3 ausgerichtet.
+- [x] **C3 — Trigger 008** `git mv open/008-* → done/
+  008-*` + `carveouts.md §2.5` (Trigger-Gated →
+  Aufgeloest mit C2-Hash) + `open/README.md` (Trigger-
+  008-Zeile auf `done/`-Pfad mit `Closed`-Marker) +
+  Closure-Notiz-Block im `done/008-...`-Trigger
+  (Pattern analog Trigger 010 in Welle-1-C3-Review-
+  Folge) + `done/M6-welle-0.md` + `done/M4-protocol-
+  adapters.md` Link-Pflege (Pattern analog ADR 0028
+  Link-Maintenance).
+- [x] **C3 — `README.md` + `README.de.md`** NEU
+  Release-Workflow-Hinweis (Tag-Push + GHCR + 5 Asset-
+  Files) + `make sbom`-Erwaehnung produktiv geschaerft
+  (Runtime-Image-Scan + VERSION-Default aus pyproject).
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block
+  auf M6-Welle-3 (CI/CD-Vollausbau) ausgerichtet +
+  Welle-2-Abschluss-Notiz mit Hash-Stack + DoD-
+  Checkboxen „SBOM-Generierung im CI" + „Release-
+  Workflow `GG-CICD-007`" beide auf `[x]` mit C2-
+  Hash-Beleg geflippt.
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
+  Welle-2-Zeile auf `Done` + Aktive-Welle-Block auf
+  M6-Welle-3.
 - [ ] **C3 — Reale Workflow-Run-Verifikation**: Manual-
   `workflow_dispatch`-Run gegen C2-Hash + Pre-Release-
-  Tag `v0.0.0-welle2-probe` gruen mit allen 5 Asset-
-  Klassen veroeffentlicht (Sensor-Check).
-- [ ] **C3 — `make docs-check`** cache-frei gruen ueber
-  alle Welle-2-Commits.
+  Tag `v0.0.0-welle2-probe` gruen mit allen 6
+  Artefakten veroeffentlicht (Sensor-Check) — **deferred
+  auf Folge-Operation** (nach Push der C3/C4a/C4b-
+  Hashes; Sensor-Check ist Run-Operation, nicht Commit-
+  Substanz; Pattern analog Welle-1-D-1-Vertagungs-
+  Substanz).
+- [x] **C3 — `make docs-check`** cache-frei gruen ueber
+  alle Welle-2-Commits (C0/Review-Folgen/C1/C2/C3
+  inkl. Trigger-008-Move + Link-Pflege in done-Docs).
 
 **Anti-Scope-Verifikation (Welle 2 NICHT):**
 
-- [ ] Kein CI/CD-Vollausbau (`GG-CICD-001..006` bleibt
+- [x] Kein CI/CD-Vollausbau (`GG-CICD-001..006` bleibt
   Welle-3-Scope; CI-Pflicht-Gate `test-unit`/
   `coverage-gate`/`dep-audit` als CI-Jobs wandert
   in Welle 3).
-- [ ] Kein Performance-Bench (Welle-4-Scope; `GG-RT-
+- [x] Kein Performance-Bench (Welle-4-Scope; `GG-RT-
   005`).
-- [ ] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-
+- [x] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-
   001..008`).
-- [ ] Kein Deploy-Hardening-Vollausbau (Welle-6-Scope;
+- [x] Kein Deploy-Hardening-Vollausbau (Welle-6-Scope;
   `GG-DEPLOY-*`; Welle 2 publiziert Image ueber GHCR,
   aber kein Compose-Smoke).
-- [ ] Kein Multi-Arch-Image-Build (M7+-Material).
-- [ ] Keine Carveout-`Deferred`-Aufloesung opportunis-
+- [x] Kein Multi-Arch-Image-Build (M7+-Material).
+- [x] Keine Carveout-`Deferred`-Aufloesung opportunis-
   tisch (keine Welle-2-URL-Versionierung `/api/v1`).
 - [x] Kein Container-Registry-Wechsel von GHCR auf
   Docker Hub (Welle-2-D-4-Entscheidung).
@@ -1087,7 +1113,7 @@ C3-Substanz wird in §5 ADR 0042 verankert:
   Struktur; Welle-1-Pre-C0c-Probe-Pattern).
 - [`M6-perf-security-cicd.md §3.2 Welle 2`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-2-Vorbelegung.
-- [`../open/008-sbom-activation.md`](../open/008-sbom-activation.md)
+- [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md)
   — Trigger 008 mit erwarteter Lieferung + Aktivierungs-
   Kriterium („mit der ersten Release-Veroeffentlichung").
 - [`../../adr/0043-image-audit-strategy.md`](../../adr/0043-image-audit-strategy.md)

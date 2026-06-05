@@ -232,7 +232,7 @@ Doc-Welle ohne ADR-Lieferung.
     Dev-Experience-Trigger. **Aktivierung**: unveraendert
     (bei Editor-Parity-Druck); bleibt in `open/`.
   - Open-Trigger
-    [`008`](../open/008-sbom-activation.md)
+    [`008`](../done/008-sbom-activation.md)
     (`make sbom`) — **M4-fremd**: gehoert zum Release-
     Workflow in M6. **Aktivierung**: unveraendert (mit
     erster Artefakt-Veroeffentlichung); bleibt in `open/`.

@@ -888,27 +888,37 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 2
-(SBOM-Aktivierung + Release-Workflow; Trigger 008 +
-`GG-CICD-007`)** — Welle-2-Slice-Doc entsteht in Welle-2-C0.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 3
+(CI/CD-Vollausbau; `GG-CICD-001..006` + Python-3.13/3.14-
+Matrix)** — Welle-3-Slice-Doc entsteht in Welle-3-C0.
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
 **M6-Welle-1 abgeschlossen 2026-06-05** mit Stack
-`4b1b3e9..4517614` (siehe
-[`M6-welle-1.md`](../done/M6-welle-1.md); Self-Close-Move-Folge
-C4a/C4b ausstehend): Trigger-010-Aufloesung ohne Code-Edit
-durch Debian-13.5-Upstream-Patch-Drift + Trigger-015-
-Pattern (`Dockerfile` Z.422-426 `apt-get upgrade --yes`
-im `runtime`-Stage); NEU ADR 0043 `Provisional` (Image-
-Audit-Strategie); Welle-1-D-1 (CI-Pflicht-Gate fuer
-`make fullbuild`) auf M6-Welle-3 vertagt ueber NEU
-[`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md).
-Welle 2+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
-Triage-Eingangsbestand:
+`4b1b3e9..d51d6e7` (siehe
+[`M6-welle-1.md`](../done/M6-welle-1.md); inkl. C4a `1fbd0ac`
+Self-Close-Move + C4b `d51d6e7` Cross-Doc-Refs-Sync):
+Trigger-010-Aufloesung ohne Code-Edit durch Debian-13.5-
+Upstream-Patch-Drift + Trigger-015-Pattern; NEU ADR 0043
+`Provisional` (Image-Audit-Strategie); Welle-1-D-1 (CI-
+Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3 vertagt
+ueber NEU [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md).
+**M6-Welle-2 abgeschlossen 2026-06-05** mit Stack
+`0cc28f3..<C3-Hash>` (siehe
+[`M6-welle-2.md`](M6-welle-2.md); Self-Close-Move-Folge
+C4a/C4b ausstehend als Welle-3-Pre-C0a/Pre-C0b): Trigger-
+008-Aufloesung durch C2 `235395e` (NEU `.github/workflows/
+release.yml` mit Tag-Push + workflow_dispatch + 3 Jobs +
+1 GHCR-Push + 5 Release-Asset-Files; Makefile `make sbom`-
+Scan-Ziel von Source-Tree auf Runtime-Image; Dockerfile
+test-unit JUnit-XML + coverage-gate HTML-Report); NEU
+ADR 0042 `Provisional` (SBOM-Tool + Release-Workflow-
+Pattern; Accept in M6-Welle-7-Closure-C1 gebuendelt mit
+ADR 0041 + ADR 0043). Welle 3+ Slice-Docs entstehen pro
+Welle-X-C0. Carveout-Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
-`Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 jetzt
-`Aufgeloest`).
+`Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 und
+Trigger 008 jetzt beide `Aufgeloest`).
 
 
 - **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,
@@ -919,7 +929,11 @@ Triage-Eingangsbestand:
   `GG-CICD-001..00X`, `GG-DEPLOY-001..00X`.
 - **DoD-Checkliste:**
   - [ ] 10.000-Points/s-Benchmark (`GG-RT-005`) reproduzierbar.
-  - [ ] SBOM-Generierung im CI (Trigger 008 nach `done/`).
+  - [x] SBOM-Generierung im CI (Trigger 008 nach `done/`) —
+        produktiv mit M6-Welle-2-C2 `235395e` via NEU
+        `.github/workflows/release.yml` `produce-assets`-Job
+        (Syft v1.17.0 gegen Runtime-Image, CycloneDX-JSON;
+        ADR 0042 `Provisional`).
   - [ ] GitHub-Actions-Workflow gegen Python 3.13 + 3.14
         (Spike-0-Closure-D-8 + ADR 0002 §6.1).
   - [ ] Image-Audit (`make image-audit`) inkl. Vuln-Scan in CI.
@@ -941,12 +955,17 @@ Triage-Eingangsbestand:
         bekannte Schwachstellen direkter und transitiver
         Abhaengigkeiten. Slice 025 §2 ausgelagert; lokal
         Pflicht via `make gates`.
-  - [ ] **Release-Workflow** (`GG-CICD-007`): GitHub-Actions-
-        Release-Pipeline, die bei Tag-Push `make sbom`
-        (Trigger 008), Container-Images, Test-/Coverage-
-        Reports und OpenAPI-Spec als Release-Assets
-        publiziert. Aktivierungs-Bedingung fuer Trigger 008
-        und damit Grundvoraussetzung fuer die SBOM-DoD oben.
+  - [x] **Release-Workflow** (`GG-CICD-007`) — produktiv mit
+        M6-Welle-2-C2 `235395e`: NEU `.github/workflows/
+        release.yml` mit Tag-Push (`v*.*.*`) + workflow_
+        dispatch + 3 Jobs (build-and-publish-image / produce-
+        assets / create-release) + 6 publizierte Artefakte
+        (1 GHCR-Push `ghcr.io/<repo>:<tag>` + 5 GitHub-
+        Release-Asset-Files: SBOM + JUnit-XML + Coverage-
+        HTML-Tarball + OpenAPI-JSON + Demo-Abnahme-MD). ADR
+        0042 `Provisional` verankert SBOM-Tool/Scan-Ziel +
+        Release-Workflow-Pattern als Quality-Gate-Vertrag
+        (Schwester zu ADR 0029/0043).
 
 ---
 

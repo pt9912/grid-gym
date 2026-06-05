@@ -12,7 +12,9 @@ Slice-Plan-Eroeffnung fuer
 M6 (Performance + Security + CI/CD-Haertung — `GG-RT-001..005`
 + `GG-SAFE-001..008` + `GG-CICD-001..007` +
 `GG-DEPLOY-001..00X`; SBOM ueber `GG-CICD-007` +
-[`Trigger 008`](../open/008-sbom-activation.md), keine eigene
+[`Trigger 008`](../done/008-sbom-activation.md) (gewandert
+nach `done/` mit M6-Welle-2-C3 — Pattern analog Trigger 010),
+keine eigene
 `GG-SBOM-*`-Familie). Pattern analog M5-Welle-0
 ([`../done/M5-welle-0.md`](../done/M5-welle-0.md)) und
 M4-Welle-0 ([`../done/M4-welle-0.md`](../done/M4-welle-0.md)).

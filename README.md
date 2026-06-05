@@ -56,6 +56,15 @@ The repository is **Docker-only**: the host only needs `docker` and
 `image-audit` (Trivy) and a Compose smoke test. The mandatory
 development gate is `make gates`.
 
+A release is triggered by pushing a `v*.*.*` git tag (or via
+manual `workflow_dispatch` in the GitHub UI). The release workflow
+publishes a container image to GHCR (`ghcr.io/<owner>/grid-gym:<tag>`)
+plus five release-asset files: SBOM (CycloneDX-JSON via Syft against
+the runtime image), test reports (JUnit-XML), coverage HTML tarball,
+OpenAPI specification (JSON), and the demo acceptance document.
+Local SBOM generation: `make sbom` (writes `artifacts/sbom-<version>.cdx.json`;
+version defaults to `pyproject.toml`).
+
 ## What makes it trustworthy?
 
 - **Deterministic execution.** A central tick loop drives a discrete

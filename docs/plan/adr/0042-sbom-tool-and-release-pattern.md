@@ -28,7 +28,7 @@ Workflow-Gate),
 Pattern Quality-Gate-Vertrag fuer Trivy-Image-Audit;
 ADR 0042 und ADR 0043 leben parallel ohne Tool-Konflikt —
 Syft fuer SBOM-Generierung, Trivy fuer Vuln-Scanning),
-[Trigger 008](../planning/open/008-sbom-activation.md)
+[Trigger 008](../planning/done/008-sbom-activation.md)
 (SBOM-Aktivierungs-Anker; M5-Welle-0-Eroeffnung +
 M6-Welle-0-C2-`Active`-Markierung; in M6-Welle-2-C3 nach
 `done/` gewandert).
@@ -55,7 +55,7 @@ Repo:
   Actions-Workflow im Repo; deckt vier A-1-Pflicht-Gates
   (lint, format-check, typecheck, arch-check). **Kein
   Release-Workflow vorhanden**.
-- **Trigger 008** ([`done/008-sbom-activation.md`](../planning/open/008-sbom-activation.md))
+- **Trigger 008** ([`done/008-sbom-activation.md`](../planning/done/008-sbom-activation.md))
   in M5-Welle-0-C2 eroeffnet (`112efd3`) + M6-Welle-0-
   C2-Triage `74d9452` als `Active in M6-Welle-2`
   markiert.
@@ -224,22 +224,32 @@ Welle 2 publiziert `linux/amd64`-only.
 - ADR 0002 bleibt textlich unveraendert (Accepted-
   Immutability per ADR 0006 §3). ADR 0042 ist ein
   separater Quality-Gate-Vertrag, kein §A-1-Eintrag.
-- `Makefile` Z.455-464 wird in Welle-2-C2 geschaerft:
+- `Makefile` Z.452-471 wird in Welle-2-C2 `235395e`
+  geschaerft:
   - Scan-Ziel-Umstellung `dir:/src` → `grid-gym-
     runtime:latest`.
-  - `sbom: build`-Dependency-Hinzufuegung.
+  - `sbom: build`-Dependency-Hinzufuegung (analog
+    `image-audit: build`).
   - VERSION-Default aus `pyproject.toml [project]
-    version`.
-  - NEU `make openapi-export`-Target (Asset-Klasse 5;
-    F3-Korrektur aus Welle-2-C0-Review-Folge).
-- `Dockerfile` Z.206-207 (`test-unit`-Stage) + Z.242-
-  246 (`coverage-gate`-Stage) werden in Welle-2-C2
-  geschaerft (Asset-Klassen 3 + 4 Export):
-  - `test-unit` um `--junitxml=`-Output.
-  - `coverage-gate` um zusaetzlichen `--cov-report=html:`-
-    Block.
+    version` via `PYPROJECT_VERSION`-Make-Variable
+    mit `v`-Prefix-Konvention.
+  - **`make openapi-export`-Target nicht angelegt**
+    (Slice-Doc §10.1 Realization-Note); `openapi-
+    validate`-Stage exportiert bereits, separater
+    `openapi-export`-Target waere redundante Tooling-
+    Duplikation.
+- `Dockerfile` Z.206-211 (`test-unit`-Stage) + Z.244-
+  247 (`coverage-gate`-Stage) werden in Welle-2-C2
+  `235395e` geschaerft (Asset-Klassen 3 + 4 Export):
+  - `test-unit` mit NEU `mkdir -p /src/coverage` +
+    `--junitxml=/src/coverage/test-results.xml`.
+  - `coverage-gate` mit zusaetzlichem `--cov-report=
+    html:/src/coverage/htmlcov`-Block.
 - `.github/workflows/release.yml` ist NEU in Welle-2-C2
-  (3-Job-Pipeline; siehe §2.2-§2.3).
+  `235395e` (~165 Zeilen YAML; 3-Job-Pipeline; siehe
+  §2.2-§2.3).
+- `.gitignore` Erweiterung um `artifacts/`-Block in
+  Welle-2-C2 `235395e` (Build-Output-Schutz).
 - ADR 0042 wird im ADR-Index unter ADR 0043 in der
   Aktive-ADRs-Tabelle eingefuegt (Welle-2-C1, dieser
   Commit) — ohne Schaerfungs-Spalten-Eintrag in ADR
@@ -258,7 +268,7 @@ Welle 2 publiziert `linux/amd64`-only.
 Mit dieser ADR sind die folgenden Welle-2-Substanz-Items
 verbunden:
 
-1. **M6-Welle-2-C1 (dieser Commit):**
+1. **M6-Welle-2-C1** (`4b1062b`):
    - NEU `docs/plan/adr/0042-sbom-tool-and-release-
      pattern.md` (`Provisional`, dieser Text).
    - `docs/plan/adr/README.md` Aktive-ADRs-Tabelle um
@@ -266,36 +276,67 @@ verbunden:
      README.md` Z.81; Pattern analog Welle-1-C0-Review-
      Folge-2 `cff5944`).
 
-2. **M6-Welle-2-C2** (Folge-Commit; Code-Merge):
-   - `Makefile` Z.455-464 Schaerfung (Scan-Ziel +
-     Dependency + VERSION-Default; NEU `openapi-export`-
-     Target).
-   - `Dockerfile` Z.206-207 + Z.242-246 Stage-Edits
-     (JUnit-XML + Coverage-HTML).
-   - NEU `.github/workflows/release.yml` (3-Job-Pipeline
-     + 6 publizierte Artefakte).
-   - `make gates` + `make ci` + `make fullbuild` + `make
-     sbom VERSION=v0.0.0-welle2-probe` + `make openapi-
-     export VERSION=v0.0.0-welle2-probe` cache-frei
-     gruen.
+2. **M6-Welle-2-C2** (`235395e`; Code-Merge):
+   - `Makefile` Z.452-471 Schaerfung: `make sbom` Scan-
+     Ziel von `dir:/src` auf `grid-gym-runtime:latest`
+     umgestellt + `sbom: build`-Dependency analog
+     `image-audit: build` (Z.279) + NEU `PYPROJECT_
+     VERSION`-Make-Variable mit `v`-Prefix-Default.
+   - `Dockerfile` Z.206-211 + Z.244-247 Stage-Edits:
+     `test-unit` mit `--junitxml=/src/coverage/test-
+     results.xml`; `coverage-gate` mit zusaetzlichem
+     `--cov-report=html:/src/coverage/htmlcov`.
+   - NEU `.github/workflows/release.yml` (~165 Zeilen
+     YAML; 3 Jobs: build-and-publish-image / produce-
+     assets / create-release) mit 1 GHCR-Push + 5
+     Release-Asset-Files.
+   - NEU `.gitignore` `artifacts/`-Block (Release-
+     Workflow-Artifacts; Build-Output, kein Source).
+   - **Plan-Abweichung (Slice-Doc §10.1 Realization-
+     Note):** `make openapi-export`-Target **nicht**
+     angelegt — bestehender `openapi-validate`-Stage
+     (`Dockerfile` Z.353-358) exportiert bereits
+     `/src/artifacts/openapi.json`; Workflow nutzt
+     `make openapi-validate` direkt und extrahiert via
+     `docker cp`.
+   - **Verifikation (lokal vor C2-Push):** `make gates`
+     EXIT=0; `make fullbuild` EXIT=0; `make sbom` ohne
+     explizites VERSION produziert `artifacts/sbom-
+     v0.1.0.cdx.json` (498 KB, CycloneDX v1.6, 169
+     Komponenten; Runtime-Image-Scan). Asset-
+     Extraktionen lokal validiert (JUnit-XML 1722
+     tests, Coverage-HTML 9.2 MB, OpenAPI-JSON 15
+     paths, Demo-Abnahme-MD).
 
-3. **M6-Welle-2-C3** (Closure-Sync):
-   - **Hash-Anchor-Block in §5 dieser ADR** (in C3
-     nachgetragen): C2-Hash als Trigger-008-Aufloesungs-
-     Beleg.
-   - `git mv open/008-sbom-activation.md →
-     done/008-sbom-activation.md` (rename-only +
-     Closure-Notiz-Block analog Trigger 010 in M6-
-     Welle-1-C3-Review-Folge).
+3. **M6-Welle-2-C3** (dieser Commit; Closure-Sync):
+   - **Hash-Anchor-Block** (dieser Block in §5): Welle-2-
+     C2 = `235395e` als Trigger-008-Aufloesungs-Beleg.
+   - `git mv open/008-sbom-activation.md → done/008-
+     sbom-activation.md` (rename-only; Bezug-Refs in
+     dieser ADR `§0 Bezug` + `§1 Kontext` auf
+     `../planning/done/` umgestellt — Pattern analog ADR
+     0043-C3 in M6-Welle-1-C3 `4517614`; Provisional-
+     Edit-Pattern erlaubt; ADR-0006-§3-Accepted-
+     Immutability greift erst ab M6-Welle-7-Closure-C1).
+   - Done-Trigger-008-Datei mit Closure-Notiz-Block
+     (Pattern analog Trigger 010 in M6-Welle-1-C3-
+     Review-Folge `1029249`).
    - `carveouts.md §2.5` Trigger-008-Eintrag auf
-     `Aufgeloest in M6-Welle-2` mit Hash-Stack.
+     `Aufgeloest in M6-Welle-2-C2 235395e`.
    - Top-Level-Doku-Sync (`README.md`/`README.de.md`
      NEU Release-Workflow-Hinweis + `make sbom`-Scan-
      Ziel-Praezisierung; `roadmap.md §3 M6` aktive-
-     Welle-Block auf M6-Welle-3).
-   - **Reale Workflow-Run-Sensor-Check**: Manual-
-     `workflow_dispatch`-Run gegen C2-Hash + Pre-Release-
-     Tag gruen mit allen 6 Artefakten publiziert.
+     Welle-Block auf M6-Welle-3 + Welle-2-Abschluss-
+     Notiz).
+   - `M6-welle-2.md` Status `In Progress → Done` mit
+     Liefer-Hash-Stack.
+   - `M6-perf-security-cicd.md §3.1` Welle-2-Zeile
+     `In Progress → Done` mit Closure-Hash.
+   - **Reale Workflow-Run-Sensor-Check** (Pattern analog
+     Welle-1-D-1-Mitzieh-Variante): Manual-`workflow_
+     dispatch`-Run gegen C2-Hash + Pre-Release-Tag wird
+     nach Push der C2/C3-Hashes als Folge-Schritt
+     verifiziert.
 
 4. **M6-Welle-7-Closure-C1** (Folge-Welle):
    - ADR 0042 `Provisional → Accepted` gebuendelt mit

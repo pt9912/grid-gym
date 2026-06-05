@@ -121,7 +121,7 @@ Trigger-Gated`.
 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
 | Pyright-vs-mypy-Re-Eval | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
 | Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
-| `make sbom` scharfschalten (`GG-CICD-007`) | **Active in M6-Welle-2** (per M6-Welle-0-C2-Triage) | Release-Workflow-Welle in M6 (verkettet mit `GG-CICD-007`) | [`008-sbom-activation.md`](../open/008-sbom-activation.md) |
+| `make sbom` scharfschalten (`GG-CICD-007`) | **Aufgeloest in M6-Welle-2-C2 `235395e`** (NEU `.github/workflows/release.yml` mit 3 Jobs + 6 publizierte Artefakte; Makefile sbom-Scan-Ziel auf Runtime-Image; ADR 0042 `Provisional`) | n/a (aufgeloest) | [`008-sbom-activation.md`](../done/008-sbom-activation.md) |
 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
 
 ### 2.6 Spike-Optional (1 Item)

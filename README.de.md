@@ -57,6 +57,16 @@ Keine lokale Python-/uv-Installation.
 `image-audit` (Trivy) und Compose-Smoke. Das Pflicht-
 Entwicklungsgate ist `make gates`.
 
+Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
+(alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
+Release-Workflow publiziert ein Container-Image nach GHCR
+(`ghcr.io/<owner>/grid-gym:<tag>`) plus fuenf Release-Asset-Files:
+SBOM (CycloneDX-JSON via Syft gegen das Runtime-Image), Test-Reports
+(JUnit-XML), Coverage-HTML-Tarball, OpenAPI-Spezifikation (JSON)
+und das Demo-Abnahmedokument. Lokale SBOM-Erzeugung: `make sbom`
+(schreibt `artifacts/sbom-<version>.cdx.json`; Version-Default aus
+`pyproject.toml`).
+
 ## Was macht es vertrauenswuerdig?
 
 - **Deterministische Ausfuehrung.** Ein zentraler Tick-Loop treibt ein
