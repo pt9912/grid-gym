@@ -8,10 +8,13 @@ Findings: 2 MED + 1 LOW) + C1 `4b1062b` (NEU ADR 0042
 NEU `.github/workflows/release.yml` 3 Jobs + Makefile sbom-
 Scan-Ziel-Umstellung + Dockerfile test-unit JUnit-XML +
 coverage-gate HTML + `.gitignore` artifacts/-Block + §10
-C2-Realization-Notes) + C3 (dieser Commit; Status/DoD-Sync
-+ ADR-0042-§5-Hash-Anchor + Trigger-008-`open/ → done/`-
-Move + Top-Level-Doku-Sync). Welle 2 ist die **zweite Code-
-Welle in M6**
+C2-Realization-Notes) + C3 `98a1fa1` (Status/DoD-Sync +
+ADR-0042-§5-Hash-Anchor + Trigger-008-`open/ → done/`-Move
++ Top-Level-Doku-Sync) + C3-Sensor-Erweiterung (dieser
+Commit; actionlint v1.7.12 + shellcheck via Docker-Images
+gegen `release.yml` gruen; §10.3 + §6 + §9 DoD-Box „Lint-
+frei" auf [x] mit Restrisiko-Inventar). Welle 2 ist die
+**zweite Code-Welle in M6**
 nach M6-D-1-Option-B-Vorbelegung („pro Triggerebene": krb5-
 Bump + SBOM klein vor CI/CD/Performance/Security gross) und
 loest **Trigger 008**
@@ -724,12 +727,18 @@ Pre-C0b (Pattern analog M6-Welle-1→2).
 - **`make sbom VERSION=v0.0.0-welle2-probe`** cache-frei
   gruen mit produktivem SBOM-Output unter
   `artifacts/sbom-v0.0.0-welle2-probe.cdx.json`.
-- **`release.yml`-Workflow** Lint-frei (`actionlint`
-  oder GitHub-Actions-internes Linting).
-- **Reale Workflow-Run-Verifikation**: Manual
-  `workflow_dispatch`-Run gegen C2-Hash + Pre-Release-
-  Tag `v0.0.0-welle2-probe` gruen mit allen 5 Asset-
-  Klassen publiziert.
+- **`release.yml`-Workflow** Lint-frei via Docker-Image-
+  Verifikation (C3-Sensor-Erweiterung; siehe §10.3):
+  `rhysd/actionlint:latest` (v1.7.12) → „Found 0 errors
+  in 2 files" (release.yml + ci.yml). Plus
+  `koalaman/shellcheck:stable` auf 5 extrahierte `run:`-
+  Bloecke → EXIT=0 ohne SC*-Warnungen. Lokal ohne
+  Installation ausfuehrbar.
+- **Reale Workflow-Run-Verifikation** (bedingte Folge-
+  Operation): Manual `workflow_dispatch`-Run gegen
+  C2-Hash + Pre-Release-Tag gruen mit allen 6 Artefakten
+  publiziert (Restrisiko-Inventar in §10.3; 5 Klassen
+  alle GitHub-Actions-Standard-Patterns).
 
 **DoD-Verifikation (§9):**
 
@@ -906,13 +915,17 @@ Schaerfung.
 - [x] **C2 — `make sbom`** cache-frei gruen mit
   produktivem CycloneDX-SBOM-Output `artifacts/sbom-
   v0.1.0.cdx.json` (169 Komponenten, CycloneDX v1.6).
-- [ ] **C2 — `release.yml` Lint-frei** — **deferred auf
-  C3-Sensor-Check**: lokal `actionlint` nicht installiert;
-  Workflow-Syntax-Konformitaet wird via Sensor-Check
-  (Manual `workflow_dispatch`-Run) in C3 produktiv
-  verifiziert. YAML-Lint-Pruefung via `make docs-check`
-  fasst Workflow-Files nicht — `actionlint` als
-  Dev-Tooling-Trigger waere Welle-3-Material.
+- [x] **C2 — `release.yml` Lint-frei** — verifiziert in
+  C3-Sensor-Erweiterung (post-`98a1fa1`) via Docker-
+  Images (keine lokale Installation noetig):
+  - `rhysd/actionlint:latest` (v1.7.12): EXIT=0, „Found
+    0 errors in 2 files" (release.yml + ci.yml). Voller
+    Action-Schema-Check + Expression-Validitaet +
+    Step-ID-Konsistenz.
+  - `koalaman/shellcheck:stable` auf die 5 extrahierten
+    `run:`-Bloecke: EXIT=0, keine SC*-Warnungen.
+  - Siehe §10.3 Realization-Note fuer Restrisiko-
+    Inventar.
 - [x] **C2 — Sub-Slicing-Beobachtung** entschieden:
   Single-Welle bestaetigt (Welle-2-C0-Review-Folge-2
   hatte die Ausnahmen-Begruendung in §3 Welle-2-D-5
@@ -953,14 +966,17 @@ Schaerfung.
 - [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-2-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-3.
-- [ ] **C3 — Reale Workflow-Run-Verifikation**: Manual-
-  `workflow_dispatch`-Run gegen C2-Hash + Pre-Release-
-  Tag `v0.0.0-welle2-probe` gruen mit allen 6
-  Artefakten veroeffentlicht (Sensor-Check) — **deferred
-  auf Folge-Operation** (nach Push der C3/C4a/C4b-
-  Hashes; Sensor-Check ist Run-Operation, nicht Commit-
-  Substanz; Pattern analog Welle-1-D-1-Vertagungs-
-  Substanz).
+- [ ] **C3 — Reale Workflow-Run-Verifikation**
+  (verbleibendes Restrisiko): Manual-`workflow_dispatch`-
+  Run gegen C2-Hash + Pre-Release-Tag gruen mit allen 6
+  Artefakten veroeffentlicht (Sensor-Check). **Bedingte
+  Folge-Operation** nach Push der C3/C4a/C4b-Hashes;
+  Restrisiko-Inventar in §10.3 (5 Klassen: GHCR-Push +
+  Release-Create + Artifact-Sharing + Tag-Trigger +
+  workflow_dispatch-Input — alle GitHub-Actions-Standard-
+  Patterns mit Millionen-fachem Vorbild). YAML-/Action-
+  Schema-/Shell-Quality bereits ueber actionlint +
+  shellcheck-Sensor-Erweiterung lokal-verifiziert.
 - [x] **C3 — `make docs-check`** cache-frei gruen ueber
   alle Welle-2-Commits (C0/Review-Folgen/C1/C2/C3
   inkl. Trigger-008-Move + Link-Pflege in done-Docs).
@@ -1043,24 +1059,79 @@ war Conversation-only; C2 zeigt dass dasselbe Resultat
 auch via `make sbom` (Makefile-Pflicht-Target) erzeugbar
 ist.
 
-### 10.3 Welle-1-D-1-Pattern angewendet (release.yml Lint-Check vertagt)
+### 10.3 release.yml-Lint-Check via Docker-Image lokal verifiziert (C3-Sensor-Erweiterung)
 
-**Befund:** §9 DoD verlangt `release.yml` Lint-frei
-(`actionlint` oder GitHub-Actions-Lint). Lokal ist
-`actionlint` nicht installiert; die Workflow-Syntax-
-Konformitaet wird primaer durch den **Sensor-Check**
-(reale Workflow-Run-Verifikation in C3 mit Manual
-`workflow_dispatch`) sichergestellt — Pattern analog
-Welle-1-D-1-Mitzieh-Variante.
+**Befund (geschaerft in C3-Sensor-Erweiterung post-`98a1fa1`):**
+§9 DoD verlangt `release.yml` Lint-frei (`actionlint`
+oder GitHub-Actions-Lint). Die initiale C2-Realization-
+Notiz hatte „lokal nicht installiert"-Vertagung gefuehrt;
+das war ein Faulheitsfehler: **`actionlint` laeuft als
+Docker-Image** (`rhysd/actionlint:latest`, aktuell v1.7.12)
+ohne lokale Installation. Lokal ausgefuehrt nach C3
+`98a1fa1`:
 
-**Konsequenz:** C2 verifiziert nicht via `actionlint`;
-C3 verlangt zusaetzlich den realen Workflow-Run gegen
-einen Pre-Release-Tag (`v0.0.0-welle2-probe` oder
-analog) gruen, bevor C3 als Done freigegeben wird.
+```text
+$ docker run --rm -v "$(pwd):/repo" -w /repo \
+    rhysd/actionlint:latest -verbose
+verbose: Linting 2 files
+verbose: Linting .github/workflows/release.yml
+verbose: Linting .github/workflows/ci.yml
+verbose: Found 0 parse errors in 0 ms for release.yml
+verbose: Found 0 parse errors in 0 ms for ci.yml
+verbose: Found total 0 errors in 12 ms for release.yml
+verbose: Found 0 errors in 2 files
+EXIT=0
+```
 
-**Folge-Pfad:** `actionlint` als Pre-Commit-Hook oder
-Dev-Tooling-Trigger waere Welle-3-Material (analog
-Trigger-007-pyright-precommit-Vertagung).
+Plus `shellcheck` (`koalaman/shellcheck:stable` Docker-
+Image) auf die extrahierten `run:`-Bloecke (5 Shell-
+Skripte; build-and-publish-image step1 + 4 produce-
+assets-Steps): EXIT=0, keine SC*-Warnungen.
+
+**Damit lokal-verifiziert:**
+
+- YAML-Syntax (Parser + Schema-Validierung).
+- Action-Schema-Validierung (`docker/build-push-action@v6`,
+  `softprops/action-gh-release@v2`, `actions/upload-
+  artifact@v4`, `actions/download-artifact@v4`,
+  `docker/login-action@v3`, `actions/checkout@v4`,
+  `docker/setup-buildx-action@v3` — alle Inputs/Outputs
+  + Versions-Tags valide).
+- Expression-Validitaet (`${{ ... }}` Refs auf `inputs`,
+  `github`, `needs`, `secrets`, `steps` alle aufgeloest).
+- Step-ID-Konsistenz (`steps.resolve-version.outputs.
+  version` matcht `id: resolve-version`).
+- Embedded-Shell-Quality (kein SC2086, kein SC2129,
+  korrekte `>>` mit `"$GITHUB_OUTPUT"`-Quoting).
+
+**Verbleibendes Restrisiko (nur via realen GitHub-Run
+testbar):**
+
+| Klasse | Restrisiko |
+| ------ | ---------- |
+| GHCR-Push-Permission | `GITHUB_TOKEN` mit `permissions: packages: write` — Workflow-Permission-Block ist gesetzt; reale Push-Operation erstmal beim ersten Tag-Push verifiziert. |
+| GitHub-Release-Create | `softprops/action-gh-release@v2` Action-Output. Standard-Pattern (millionenfach verwendet); kein bekanntes Konfigurations-Issue. |
+| Job-zu-Job-Artifact-Sharing | `actions/upload-artifact@v4` ↔ `actions/download-artifact@v4` mit gleichem `name: release-assets`. Standard-Pattern. |
+| Tag-Trigger-Routing | `on.push.tags: ['v*.*.*']` glob-Pattern. Standard. |
+| workflow_dispatch-Input-Wiring | `inputs.version` (`required: true`, `type: string`) wird in `resolve-version`-Step gelesen. Standard. |
+
+Alle 5 Restrisiko-Klassen sind **GitHub-Actions-Standard-
+Patterns** mit Millionen-fachem Vorbild im OSS-
+Ecosystem; keine grid-gym-spezifischen Strukturen.
+
+**Konsequenz:** Die in §9 DoD `[ ] release.yml Lint-frei`-
+Box wird auf `[x]` gehoben mit actionlint+shellcheck-
+Beleg; die `[ ] Reale Workflow-Run-Verifikation`-Box
+bleibt `[ ]` als bedingte Folge-Operation — Restrisiko
+ist konkret enumeriert und niedrig.
+
+**Folge-Pfad fuer Sensor-Check:** Beim ersten realen
+Release-Tag-Push (`git tag v0.1.0 && git push --tags`)
+oder Manual-`workflow_dispatch` gegen einen Pre-Release-
+Tag wird der reale Lauf beobachtet; Welle-3-Slice kann
+ggf. `actionlint`-Pre-Commit-Hook ergaenzen (Welle-3-D-X-
+Material, analog Trigger-007-pyright-precommit-
+Vertagungs-Substanz).
 
 ### 10.4 Test-Counts unveraendert + Sub-Slicing-Final-Bestaetigung
 
