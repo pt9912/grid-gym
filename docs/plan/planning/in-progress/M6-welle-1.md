@@ -557,36 +557,41 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   bestaetigt.
 - [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-1-Zeile
   `Pending → In Progress` mit C0-Hash-Stub.
-- [ ] **C1 — NEU `docs/plan/adr/0043-image-audit-strategy.md`**
+- [x] **C1 — NEU `docs/plan/adr/0043-image-audit-strategy.md`**
   als `Provisional` mit Trigger-010-Hash-Anchor-Block +
-  ADR-Standard-Struktur (§1..§4) + Bezug zu ADR 0028/0029.
-- [ ] **C1 — `docs/plan/adr/README.md`** Aktive-ADRs-Tabelle
+  ADR-Standard-Struktur (§1..§7) + Bezug zu ADR 0028/0029
+  (`c44e6d5`).
+- [x] **C1 — `docs/plan/adr/README.md`** Aktive-ADRs-Tabelle
   um ADR-0043-Zeile ergaenzt (Titel/Status `Provisional`/
-  Datum/Schaerfungs-Spalte). Hard Rule per `harness/
-  README.md` Z.81; `make docs-check` deckt das **nicht** ab
-  (Markdown-Link-Validator, nicht Index-Pruefer) — Sicht-
-  Pruefung in C1.
-- [ ] **C2 — `Dockerfile`** krb5-Bump (`FROM`-Update oder
-  apt-Hardening-Block; entscheidet sich nach Trivy-Probe).
-- [ ] **C2 — ggf. `uv.lock`** Refresh nach Library-Drift-
-  Pruefung.
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
-  Gates; Test-Counts unveraendert 1722/80).
-- [ ] **C2 — `make image-audit`** cache-frei gruen (Trivy-
-  Report ohne HIGH-CVE-krb5-Famille).
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
-  `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C2 — Welle-1-D-1 final entschieden** (Mitziehen vs.
-  Vertagen). Wenn **Mitziehen**: NEU `.github/workflows/
-  ci.yml`-Edit in C2 mitkommittet (Job-Step oder Block fuer
-  `make fullbuild`; image-audit-Cache-Konfiguration falls
-  noetig) **und** der CI-Workflow muss in einem realen
-  GitHub-Actions-Lauf (auf einem Pre-Merge-Branch oder via
-  `workflow_dispatch`) gegen den C2-Hash gruen sein, bevor
-  C3 freigegeben wird (Sensor-Check, nicht nur Workflow-
-  Datei-Anwesenheit). Wenn **Vertagen**: kein Edit an
-  `.github/workflows/`, stattdessen NEU `open/`-Trigger in
-  C3 angelegt.
+  Datum/Schaerfungs-Spalte) (`c44e6d5`). Hard Rule per
+  `harness/README.md` Z.81; `make docs-check` deckt das
+  **nicht** ab (Markdown-Link-Validator, nicht Index-
+  Pruefer) — Sicht-Pruefung in C1 erfolgt.
+- [x] **C2 — `Dockerfile`** krb5-Bump — **n/a (kein Code-
+  Edit; Upstream-Drift)**: siehe §10.1. Trigger-015-Pattern
+  (`apt-get upgrade --yes` im runtime-Stage, Z.422-426)
+  + Debian-13.5-Upstream-Patch-Drift loesen die krb5-CVE-
+  Famille auf, ohne dass `FROM`-Update oder apt-Hardening-
+  Erweiterung noetig sind.
+- [x] **C2 — ggf. `uv.lock`** Refresh — **n/a (keine
+  Library-Drift)**: kein `cryptography`-Wheel- oder OpenSSL-
+  Pin-Shift durch ausbleibenden Base-Image-Wechsel.
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+  Gates; Test-Counts unveraendert 1722/80). Verifiziert
+  ueber `make fullbuild` (Z.343 `ci: gates ...`).
+- [x] **C2 — `make image-audit`** cache-frei gruen (Trivy-
+  Report ohne HIGH-CVE-krb5-Famille): `grid-gym-runtime:
+  latest (debian 13.5) Total: 0 (HIGH: 0, CRITICAL: 0)` +
+  `otel/opentelemetry-collector-contrib:0.152.1` ebenfalls
+  clean; siehe §10.1.
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override: `EXIT=0`; siehe §10.1.
+  `Makefile`-Z.309-340-M1-Override-Hint ist historisch
+  outdated (§10.1 Nebenbefund).
+- [x] **C2 — Welle-1-D-1 final entschieden — Vertagen** auf
+  M6-Welle-3 (CI-Vollausbau). NEU `open/`-Trigger
+  `../open/031-ci-make-fullbuild-gate.md` in diesem Commit
+  angelegt. Begruendung siehe §10.2.
 - [ ] **C3 — ADR 0043** bleibt `Provisional`; C2-Hash als
   Trigger-010-Aufloesungs-Beleg in den ADR-Body als Hash-
   Anchor-Block nachgetragen. (`Accepted` passiert in M6-
@@ -605,12 +610,15 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   M6-Welle-2 ausgerichtet.
 - [ ] **C3 — `make docs-check`** cache-frei gruen ueber
   alle 4 Welle-1-Commits.
-- [ ] **C3 — Welle-1-D-1-Vertagungs-Pfad** (nur wenn C2-
-  Entscheidung „Vertagen"): NEU `open/`-Trigger fuer M6-
-  Welle-3 angelegt (CI-Pflicht-Gate fuer `make fullbuild`)
-  mit `carveouts.md §2.X` Sync. (Wenn C2 „Mitziehen"
-  entschieden hat, ist das C2-DoD-Item oben der Sensor-
-  Check; hier dann „n/a" eintragen.)
+- [x] **C2 — Welle-1-D-1-Vertagungs-Pfad** angelegt: NEU
+  [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
+  fuer M6-Welle-3 (CI-Pflicht-Gate fuer `make fullbuild`)
+  in C2 (dieser Commit) — `carveouts.md §2.X` Sync ist C3-
+  Substanz (carveouts wandert mit dem Trigger-Lifecycle
+  mit; Trigger-031 ist Trigger-Gated nach Welle 3). (DoD-
+  Item wandert hier von „C3" auf „C2" weil die
+  Vertagungs-Entscheidung in C2 final wurde und der
+  Trigger im selben Commit angelegt ist.)
 
 **Anti-Scope-Verifikation (Welle 1 NICHT):**
 
@@ -623,6 +631,117 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
 - [ ] Keine Carveout-`Deferred`-Aufloesung opportunistisch
   (keine Welle-1-URL-Versionierung `/api/v1`; M6-D-3 bleibt
   Welle-3-Vorbelegung).
+
+---
+
+## 10. C2-Realization-Notes (in C2 verankert)
+
+Pattern analog M5-Welle-4a/4b-Realization-Notes-Block,
+angepasst an Welle-1-spezifische Substanz-Realitaet.
+
+### 10.1 Trigger-010-Aufloesung ohne Code-Edit
+
+**Befund:** `make image-audit` ist cache-frei gruen am
+Stand 2026-06-05 (`grid-gym-runtime:latest (debian 13.5)
+Total: 0 (HIGH: 0, CRITICAL: 0)`) **ohne irgendeine
+Aenderung am `Dockerfile`**. Die in
+[`../open/010-base-image-krb5-cve-bump.md`](../open/010-base-image-krb5-cve-bump.md)
+dokumentierte krb5-CVE-Famille (fuehrende ID
+`CVE-2026-40356` mit Fix `1.21.3-5+deb13u1`) wird durch
+zwei sich verstaerkende Mechanismen aufgeloest, die beide
+**vor Welle-1-C2** im Repo waren:
+
+1. **Trigger-015-Pattern**: `Dockerfile` Z.422-426 traegt
+   bereits ein `apt-get update && apt-get upgrade --yes`
+   im `runtime`-Stage (in-image-Patching analog M4-Welle-6d/
+   `M2-Welle-0b`-Sub-Slice; siehe Z.395-403 Dockerfile-
+   Kommentar). Dieser Block zieht alle verfuegbaren Debian-
+   Security-Patches in das Runtime-Image, ohne dass das
+   `python:3.14-slim`-Base-Image-Tag selbst gewechselt
+   werden muss.
+2. **Debian-13.5-Upstream-Patch-Drift**: zwischen Trigger-
+   010-Anlage (2026-06-01) und Welle-1-C2 (2026-06-05) hat
+   Debian den krb5-`1.21.3-5+deb13u1`-Fix in die
+   Debian-13.5-Security-Mirrors ausgespielt. Der bestehende
+   `apt-get upgrade`-Block zieht den Fix automatisch
+   beim naechsten cache-freien Layer-Rebuild.
+
+**Konsequenz:** Welle-1-C2 macht **keinen** Dockerfile-Edit
+und **keinen** `uv.lock`-Refresh. Die im Slice-Doc §2/§5
+geplante Substanz „`FROM`-Update oder apt-`libkrb5-*`-
+Hardening-Erweiterung" entfaellt; die in §3 M6-D-5
+gestellte Frage „konkrete Variante (Punktversion-Pin vs.
+apt-Hardening)" wird durch die Realitaet beantwortet:
+**keine der beiden Varianten ist noetig**.
+
+**Beleg (vor C2-Commit):**
+
+- `make image-audit` cache-frei (alle Layers neu gebaut):
+  `EXIT=0`; `grid-gym-runtime:latest (debian 13.5) Total:
+  0 (HIGH: 0, CRITICAL: 0)`; `otel/opentelemetry-collector-
+  contrib:0.152.1` ebenfalls clean.
+- `make fullbuild` cache-frei (ohne `CRITICAL_COV_TARGETS`-
+  Override): `EXIT=0`; `[fullbuild] full closure: ci +
+  runtime image + compose smoke green`. Inkludiert
+  Compose-Smoke (`/health` ok + otel-collector `:13133`
+  ready + sauberer Teardown).
+
+**Nebenbefund:** Der `M1-Closure CRITICAL_COV_TARGETS`-
+Override-Hinweis in `Makefile` Z.309-340 ist historisch
+outdated — der `Dockerfile`-Default in Z.291 listet
+mittlerweile alle M2/M3/M4/M5-Domain-Pfade
+(Devices/Protocols inkl. iec61850); `make fullbuild` ohne
+Override ist seit (mindestens) M5-Closure cache-frei gruen.
+Aufraeumung des Makefile-Hint-Blocks ist nicht Welle-1-
+Substanz, koennte als Folge-Hygiene-Item in einer spaeteren
+Welle adressiert werden (kein eigener `open/`-Trigger
+noetig — der Hint druckt nur bei Fail).
+
+### 10.2 Welle-1-D-1 Vertagung auf Welle 3
+
+Welle-1-D-1 (CI-Pflicht-Gate fuer `make fullbuild`) wird
+**vertagt** auf M6-Welle-3 (CI/CD-Vollausbau). Begruendung:
+
+- Welle 3 ist explizit fuer CI/CD-Vollausbau gescoped
+  ([`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md))
+  und bringt 4 weitere neue CI-Jobs (`test-unit` +
+  `coverage-gate` + `dep-audit` + `image-audit`) plus
+  Python-3.13/3.14-Matrix. Das CI-Pflicht-Gate fuer `make
+  fullbuild` integriert sich dort natuerlich.
+- Welle 1 hatte keinen Code-Edit-Anlass (siehe §10.1) und
+  damit auch keinen lokalen Trigger fuer einen
+  GitHub-Actions-Workflow-Edit. Ein eigenstaendiger CI-
+  Edit ohne lokales Bump-Trigger waere ausserhalb der
+  Welle-1-Substanz-Linie.
+
+**NEU `open/`-Trigger** fuer Welle 3:
+[`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
+(in diesem Commit angelegt) — verankert den lokalen
+`make fullbuild`-gruen-Stand (`c44e6d5..<C2-Hash>`) und
+beschreibt die Welle-3-Aktivierung mit Job-Step-Pattern.
+
+### 10.3 C2-Commit-Form
+
+C2 ist damit ein **Verifikations-Commit** ohne Code-Edit:
+
+- NEU §10 (dieser Block) im Slice-Doc.
+- §9 DoD-Checkliste C2-Items abgehakt mit „n/a (kein Code-
+  Edit; Upstream-Drift)"-Marker und Verweis auf §10.1.
+- NEU `docs/plan/planning/open/031-ci-make-fullbuild-gate.md`
+  als Welle-1-D-1-Vertagungs-Trigger.
+- `docs/plan/planning/open/README.md` Bestand-Tabelle um
+  Trigger-031-Eintrag ergaenzt.
+
+Pattern hat keine direkte M5-Vorbild (M5 hatte alle Code-
+Wellen mit echter Code-Substanz); naechstgelegenes Vorbild
+ist M5-Welle-2-C2 `5234617` (keine `Pre-C0c`-Probe noetig
+weil Welle-1-Probe `9c20dad` bereits die Composition
+abdeckte). Welle-1-Slice-Doc-Plan-Abweichung ist in §10.1
++ §10.2 explizit begruendet — kein Plan-Drift.
+
+ADR 0043 §5 Hash-Anchor-Block fuer den C2-Hash bleibt in
+C3 Substanz (Pattern unveraendert; C2-Hash entsteht in
+diesem Commit, C3 traegt ihn nach).
 
 ---
 
