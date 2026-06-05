@@ -208,7 +208,7 @@ verbunden:
      contrib:0.152.1` clean); `make fullbuild` EXIT=0
      ohne `CRITICAL_COV_TARGETS`-Override.
    - **Welle-1-D-1** vertagt auf M6-Welle-3 (CI-Vollausbau)
-     ueber NEU [`../planning/open/031-ci-make-fullbuild-gate.md`](../planning/open/031-ci-make-fullbuild-gate.md).
+     ueber NEU [`../planning/done/031-ci-make-fullbuild-gate.md`](../planning/done/031-ci-make-fullbuild-gate.md).
    - Slice-Doc `M6-welle-1.md` §10 (C2-Realization-Notes)
      verankert die Plan-Abweichung (Null-Code-Edit).
 

@@ -65,6 +65,14 @@ OpenAPI specification (JSON), and the demo acceptance document.
 Local SBOM generation: `make sbom` (writes `artifacts/sbom-<version>.cdx.json`;
 version defaults to `pyproject.toml`).
 
+CI runs six GitHub-Actions workflows: `ci.yml` (lint / format-check /
+typecheck / arch-check; the four mandatory Slice-025 gates), `tests.yml`
+(test-unit on a Python 3.13/3.14 matrix + test-integration), `coverage.yml`
+(coverage-gate 90/85 line/branch + coverage-gate-critical 90% critical
+domain), `dep-audit.yml` (pip-audit), `fullbuild.yml` (`make fullbuild`
+on relevant paths + workflow_dispatch fallback; covers image-audit and
+the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
+
 ## What makes it trustworthy?
 
 - **Deterministic execution.** A central tick loop drives a discrete

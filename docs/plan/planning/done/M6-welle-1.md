@@ -605,7 +605,7 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   outdated (§10.1 Nebenbefund).
 - [x] **C2 — Welle-1-D-1 final entschieden — Vertagen** auf
   M6-Welle-3 (CI-Vollausbau). NEU `open/`-Trigger
-  `../open/031-ci-make-fullbuild-gate.md` in diesem Commit
+  `../done/031-ci-make-fullbuild-gate.md` in diesem Commit
   angelegt. Begruendung siehe §10.2.
 - [x] **C3 — ADR 0043** bleibt `Provisional`; C2-Hash
   `b514170` als Trigger-010-Aufloesungs-Beleg in den
@@ -647,7 +647,7 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   alle 4 Welle-1-Commits (C0/C1/C2/C3) + zwei Review-Folge-
   Commits (verifiziert vor C3-Commit-Erstellung).
 - [x] **C2 — Welle-1-D-1-Vertagungs-Pfad** angelegt: NEU
-  [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
+  [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md)
   fuer M6-Welle-3 (CI-Pflicht-Gate fuer `make fullbuild`)
   in C2 `b514170` — `carveouts.md §2.2` Sync in C3 `4517614`
   produktiv (Trigger-Gated → Aufgeloest) (carveouts wandert mit dem Trigger-Lifecycle
@@ -754,7 +754,7 @@ Welle-1-D-1 (CI-Pflicht-Gate fuer `make fullbuild`) wird
   Welle-1-Substanz-Linie.
 
 **NEU `open/`-Trigger** fuer Welle 3:
-[`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
+[`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md)
 (in diesem Commit angelegt) — verankert den lokalen
 `make fullbuild`-gruen-Stand (`c44e6d5..<C2-Hash>`) und
 beschreibt die Welle-3-Aktivierung mit Job-Step-Pattern.

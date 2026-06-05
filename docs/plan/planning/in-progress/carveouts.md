@@ -123,7 +123,7 @@ Trigger-Gated`.
 | Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
 | `make sbom` scharfschalten (`GG-CICD-007`) | **Aufgeloest in M6-Welle-2-C2 `235395e`** (NEU `.github/workflows/release.yml` mit 3 Jobs + 6 publizierte Artefakte; Makefile sbom-Scan-Ziel auf Runtime-Image; ADR 0042 `Provisional`) | n/a (aufgeloest) | [`008-sbom-activation.md`](../done/008-sbom-activation.md) |
 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
-| CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-D-1-Vertagung) | **Active in M6-Welle-3** (Welle-1-Vertagung; bisher nicht eingepflegt) | M6-Welle-3-C2 macht NEU `.github/workflows/fullbuild.yml` als Trigger-Aufloesung | [`031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md) |
+| CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-D-1-Vertagung) | **Aufgeloest in M6-Welle-3-C2 `ce13253`** (NEU `.github/workflows/fullbuild.yml` mit Hybrid Push/PR-Paths-Filter + workflow_dispatch; `make fullbuild` cache-frei gruen) | n/a (aufgeloest) | [`031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
 | Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
 
 ### 2.6 Spike-Optional (1 Item)

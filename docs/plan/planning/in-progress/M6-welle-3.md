@@ -1,12 +1,18 @@
 # Welle 3 — M6 CI/CD-Vollausbau (`GG-CICD-002/003/005/006` + Python-Matrix)
 
-**Status:** In Progress — eroeffnet mit C0 (dieser Commit;
-NEU Slice-Doc). Welle 3 ist die **dritte Code-Welle in M6**
-und liefert die GitHub-Actions-CI-Pflicht-Gates fuer alle
-lokal-Pflicht-Targets, plus Python-3.13/3.14-Matrix gegen
-die existierenden 4 Slice-025-Gates, plus die Aufloesung
-von Trigger 031 (`make fullbuild`-CI-Gate aus M6-Welle-1-
-D-1-Vertagung).
+**Status:** Done 2026-06-05 — Liefer-Stack: C0 `08a8034`
+(Slice-Doc-Anlage) + C2 `ce13253` (Code-Merge: 4 NEU
+Workflows + Trigger-031-Aufloesung + pip-PYSEC-2026-196-
+Drift-Fix; C1 entfaellt analog M5-Welle-2) + C3 (dieser
+Commit; Status/DoD-Sync + Trigger-031-`open/ → done/`-Move
++ Top-Level-Doku-Sync). Ausstehend: C4a Self-Close-Move +
+C4b Cross-Doc-Refs-Sync nach Move (Pattern analog M6-
+Welle-2-C4a `c51d905`/C4b `b41b7fc`). Welle 3 ist die
+**dritte Code-Welle in M6** und liefert die GitHub-Actions-
+CI-Pflicht-Gates fuer alle lokal-Pflicht-Targets, plus
+Python-3.13/3.14-Matrix gegen die existierenden 4 Slice-
+025-Gates, plus die Aufloesung von Trigger 031 (`make
+fullbuild`-CI-Gate aus M6-Welle-1-D-1-Vertagung).
 
 **Pre-C0 abgeschlossen (M6-Welle-2-Closure-Folge):**
 
@@ -37,7 +43,7 @@ hat Welle 3 als „CI/CD-Vollausbau" vorbelegt mit
 4 NEU CI-Jobs (`test-unit` + `coverage-gate` + `dep-audit`
 + `image-audit`) + NEU Python-3.13/3.14-Matrix +
 `GG-CICD-007`-Release-Workflow-Pre-Link (in Welle 2
-bereits erledigt). Trigger 031 ([`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md))
+bereits erledigt). Trigger 031 ([`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md))
 integriert sich als 5. Job (`make fullbuild`-CI-Pflicht-
 Gate).
 
@@ -608,65 +614,92 @@ Trigger 032 zu Multi-Workflow-Sensor erweitert wird.
   Block auf M6-Welle-3 bestaetigt.
 - [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-3-
   Zeile `Pending → In Progress` mit C0-Hash-Stub.
-- [ ] **C1 entfaellt** — keine ADR-Substanz erwartet
+- [x] **C1 entfaellt** — keine ADR-Substanz; Welle-3-
+  Decisions D-1..D-5 im C0-Slice-Doc-§3-Body fixiert
   (Pattern analog M5-Welle-2 `5234617`).
-- [ ] **C2 — NEU `.github/workflows/tests.yml`** mit
-  Python-3.13/3.14-Matrix; 2 Jobs (test-unit + test-
-  integration).
-- [ ] **C2 — NEU `.github/workflows/coverage.yml`** mit
-  2 Jobs (coverage-gate + coverage-gate-critical).
-- [ ] **C2 — NEU `.github/workflows/dep-audit.yml`** mit
-  1 Job (dep-audit).
-- [ ] **C2 — NEU `.github/workflows/fullbuild.yml`** mit
+- [x] **C2 — NEU `.github/workflows/tests.yml`** mit
+  Python-3.13/3.14-Matrix; 2 Jobs (`test-unit` Matrix +
+  `test-integration` Default-Python) (`ce13253`).
+- [x] **C2 — NEU `.github/workflows/coverage.yml`** mit
+  2 Jobs (`coverage-gate` + `coverage-gate-critical`)
+  (`ce13253`).
+- [x] **C2 — NEU `.github/workflows/dep-audit.yml`** mit
+  1 Job (`dep-audit`) (`ce13253`).
+- [x] **C2 — NEU `.github/workflows/fullbuild.yml`** mit
   Paths-Filter + workflow_dispatch; 1 Job (`make
-  fullbuild`); Trigger-031-Aufloesungs-Substanz.
-- [ ] **C2 — `carveouts.md`** NEU Trigger-031-Eintrag
-  (vergessen in Welle 1; hier nachgepflegt) + nicht-
-  aufgeloest-Marker (in C2 angelegt, in C3 auf
-  Aufgeloest geflippt).
-- [ ] **C2 — `actionlint`** EXIT=0 auf alle 6 Workflows.
-- [ ] **C2 — `shellcheck`** EXIT=0 auf alle
-  eingebetteten `run:`-Bloecke.
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10
-  A-1-Gates; Test-Counts unveraendert 1722/80).
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
-  `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C2 — Sub-Slicing-Beobachtung** entschieden:
-  Single-Welle bestaetigt ODER auf 3a/3b gewechselt.
-- [ ] **C3 — `M6-welle-3.md`** Status `In Progress →
-  Done` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-3-
-  Zeile `In Progress → Done` mit Closure-Hash.
-- [ ] **C3 — Trigger 031** `git mv open/031-* → done/
-  031-*` + Closure-Notiz-Block + `carveouts.md`-Eintrag
-  auf `Aufgeloest` + `open/README.md`-Sync.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU CI-
-  Workflow-Hinweis + Python-3.13/3.14-Matrix-Erwaehnung.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block
-  auf M6-Welle-4 ausgerichtet + Welle-3-Abschluss-
-  Notiz + `GG-CICD-002/003/005/006` DoD-Checkboxen auf
-  `[x]`.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+  fullbuild`); Trigger-031-Aufloesungs-Substanz
+  (`ce13253`).
+- [x] **C2 — `carveouts.md`** NEU Trigger-031-Eintrag
+  (Welle-1-Vergesslichkeit nachgepflegt) plus NEU
+  Trigger-032-Eintrag (Welle-2-Vergesslichkeit
+  nachgepflegt) (`ce13253`); in C3 auf `Aufgeloest`
+  geflippt.
+- [x] **C2 — `actionlint`** EXIT=0 auf alle 6 Workflows
+  (`Found 0 errors in 6 files`; v1.7.12).
+- [x] **C2 — `shellcheck`** entfaellt — beide `run:`-
+  Bloecke (`tests.yml` test-integration + `fullbuild.yml`)
+  sind einzeilige Make-Aufrufe (`make test-integration`
+  / `make fullbuild`); kein eingebetteter Shell-Code.
+- [x] **C2 — `make gates`** cache-frei gruen ohne Override
+  (10/10 A-1-Gates inkl. dep-audit nach `pip 26.1.1 →
+  26.1.2`-Drift-Fix im selben C2-Commit; Test-Counts
+  unveraendert 1722/80/4 skipped).
+- [x] **C2 — `make ci`** cache-frei gruen (verifiziert via
+  `make fullbuild`-Lauf).
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
+  `CRITICAL_COV_TARGETS`-Override (`[fullbuild] full
+  closure: ci + runtime image + compose smoke green`).
+- [x] **C2 — Sub-Slicing-Beobachtung** entschieden:
+  Single-Welle bestaetigt; Code-Diff scope-eng (4 NEU
+  Workflow-YAMLs + 1 uv.lock-Drift-Fix + 1 carveouts-
+  Pflege).
+- [x] **C3 — `M6-welle-3.md`** Status `In Progress →
+  Done 2026-06-05` mit Liefer-Hash-Stack `08a8034..
+  <C3-Hash>` (dieser Commit).
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-3-
+  Zeile `In Progress → Done` mit Closure-Hash + §3
+  Naechster-Slice-Block auf Welle 4 ausgerichtet + §0
+  Status-Block aktive Welle auf Welle 4.
+- [x] **C3 — Trigger 031** `git mv open/031-* → done/
+  031-*` + Closure-Notiz-Block im done-Trigger (Pattern
+  analog Trigger 010 + 008) + `carveouts.md`-Eintrag
+  auf `Aufgeloest in M6-Welle-3-C2 `ce13253`` geflippt
+  + `open/README.md`-Sync (Trigger-031-Zeile auf
+  `done/`-Pfad mit `Closed`-Marker).
+- [x] **C3 — `README.md` + `README.de.md`** NEU CI-
+  Workflow-Hinweis (6 GitHub-Actions-Workflows; Python-
+  3.13/3.14-Matrix-Erwaehnung) in beiden Sprachen.
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block
+  auf M6-Welle-4 ausgerichtet + Welle-3-Abschluss-Notiz
+  mit Stack-Range + 6 DoD-Checkboxen geflippt
+  (`GG-CICD-002/003/006` + Python-Matrix + image-audit +
+  Compose-Smoke).
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-3-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-4.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 - [ ] **C3 — Reale Workflow-Run-Sensor-Check**
-  (Folge-Operation analog Welle 2): NEU `open/`-Trigger
-  ODER Erweiterung von Trigger 032 (Multi-Workflow-
-  Sensor); entschieden in C3-Substanz.
+  (Folge-Operation analog Welle 2): **kein NEU `open/`-
+  Trigger** angelegt — Welle-3-Workflows triggern bei
+  jedem Push automatisch (im Gegensatz zum Release-
+  Workflow, der Tag-Push oder Manual-Dispatch braucht).
+  Sensor-Check passiert beim naechsten Push der C2/C3-
+  Hashes ohne explizites User-Triggern; Restrisiko-
+  Inventar bleibt analog Welle 2 (5 GitHub-Actions-
+  Standard-Pattern-Klassen). Pointer auf done-Trigger-
+  031 § „Verbleibendes Restrisiko".
 
 **Anti-Scope-Verifikation (Welle 3 NICHT):**
 
-- [ ] Kein SBOM-Workflow-Edit (`release.yml` unangetastet).
-- [ ] Keine Performance-Bench (Welle-4-Scope; `GG-RT-005`).
-- [ ] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-*`).
-- [ ] Kein Deploy-Hardening-Vollausbau (Welle-6-Scope;
+- [x] Kein SBOM-Workflow-Edit (`release.yml` unangetastet).
+- [x] Keine Performance-Bench (Welle-4-Scope; `GG-RT-005`).
+- [x] Kein Security-Audit (Welle-5-Scope; `GG-SAFE-*`).
+- [x] Kein Deploy-Hardening-Vollausbau (Welle-6-Scope;
   `GG-DEPLOY-*`).
-- [ ] Kein IEC-Smoke-Pfad-B (Welle-6-Scope; Trigger 009).
-- [ ] Keine URL-Versionierung `/api/v1` (`Deferred`-Item;
+- [x] Kein IEC-Smoke-Pfad-B (Welle-6-Scope; Trigger 009).
+- [x] Keine URL-Versionierung `/api/v1` (`Deferred`-Item;
   M6-Welle-X-Material).
-- [ ] Keine ADR-Substanz-Erweiterung (Welle 3 ohne C1).
+- [x] Keine ADR-Substanz-Erweiterung (Welle 3 ohne C1).
 
 ---
 
@@ -682,7 +715,7 @@ Trigger 032 zu Multi-Workflow-Sensor erweitert wird.
   Workflow-Substanz).
 - [`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-3-Vorbelegung.
-- [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md)
+- [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md)
   — Trigger 031 mit Aktivierungs-Substanz.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
   §22 `GG-CICD-002/003/005/006`-Akzeptanz.

@@ -67,6 +67,15 @@ und das Demo-Abnahmedokument. Lokale SBOM-Erzeugung: `make sbom`
 (schreibt `artifacts/sbom-<version>.cdx.json`; Version-Default aus
 `pyproject.toml`).
 
+CI laeuft ueber sechs GitHub-Actions-Workflows: `ci.yml` (lint /
+format-check / typecheck / arch-check; die vier Slice-025-Pflicht-
+Gates), `tests.yml` (test-unit auf einer Python-3.13/3.14-Matrix +
+test-integration), `coverage.yml` (coverage-gate 90/85 Line/Branch +
+coverage-gate-critical 90 % Critical-Domain), `dep-audit.yml`
+(pip-audit), `fullbuild.yml` (`make fullbuild` bei relevanten Paths +
+workflow_dispatch-Fallback; deckt image-audit und Compose-Smoke ab)
+und `release.yml` (Tag-Push oder workflow_dispatch).
+
 ## Was macht es vertrauenswuerdig?
 
 - **Deterministische Ausfuehrung.** Ein zentraler Tick-Loop treibt ein

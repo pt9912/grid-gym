@@ -888,9 +888,10 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 3
-(CI/CD-Vollausbau; `GG-CICD-001..006` + Python-3.13/3.14-
-Matrix)** — Welle-3-Slice-Doc entsteht in Welle-3-C0.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4
+(Performance-Benchmark; `GG-RT-001..005` inkl. 10000-
+Points/s-Benchmark `GG-RT-005`)** — Welle-4-Slice-Doc
+entsteht in Welle-4-C0.
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
@@ -902,7 +903,7 @@ Trigger-010-Aufloesung ohne Code-Edit durch Debian-13.5-
 Upstream-Patch-Drift + Trigger-015-Pattern; NEU ADR 0043
 `Provisional` (Image-Audit-Strategie); Welle-1-D-1 (CI-
 Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3 vertagt
-ueber NEU [`../open/031-ci-make-fullbuild-gate.md`](../open/031-ci-make-fullbuild-gate.md).
+ueber NEU [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md).
 **M6-Welle-2 abgeschlossen 2026-06-05** mit Stack
 `0cc28f3..b41b7fc` (siehe
 [`M6-welle-2.md`](../done/M6-welle-2.md); Self-Close-Move-Folge
@@ -916,11 +917,22 @@ Scan-Ziel von Source-Tree auf Runtime-Image; Dockerfile
 test-unit JUnit-XML + coverage-gate HTML-Report); NEU
 ADR 0042 `Provisional` (SBOM-Tool + Release-Workflow-
 Pattern; Accept in M6-Welle-7-Closure-C1 gebuendelt mit
-ADR 0041 + ADR 0043). Welle 3+ Slice-Docs entstehen pro
-Welle-X-C0. Carveout-Triage-Eingangsbestand:
+ADR 0041 + ADR 0043).
+**M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
+`08a8034..<C3-Hash>` (siehe
+[`M6-welle-3.md`](M6-welle-3.md); Self-Close-Move-
+Folge C4a/C4b ausstehend als Welle-4-Pre-C0a/Pre-C0b):
+NEU 4 GitHub-Actions-Workflows (`tests.yml`/`coverage.yml`/
+`dep-audit.yml`/`fullbuild.yml`); Python-3.13/3.14-Matrix
+in `tests.yml`; Trigger 031 (`make fullbuild`-CI-Gate aus
+Welle-1-D-1-Vertagung) aufgeloest und nach `done/` gewandert;
+pip-PYSEC-2026-196-Drift im `uv.lock` behoben (`pip
+26.1.1 → 26.1.2`). C1 entfaellt (keine ADR-Substanz;
+Pattern analog M5-Welle-2). Welle 4+ Slice-Docs entstehen
+pro Welle-X-C0. Carveout-Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
-`Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 und
-Trigger 008 jetzt beide `Aufgeloest`).
+`Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +
+Trigger 008 + Trigger 031 alle `Aufgeloest`).
 
 
 - **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,
@@ -936,24 +948,35 @@ Trigger 008 jetzt beide `Aufgeloest`).
         `.github/workflows/release.yml` `produce-assets`-Job
         (Syft v1.17.0 gegen Runtime-Image, CycloneDX-JSON;
         ADR 0042 `Provisional`).
-  - [ ] GitHub-Actions-Workflow gegen Python 3.13 + 3.14
-        (Spike-0-Closure-D-8 + ADR 0002 §6.1).
-  - [ ] Image-Audit (`make image-audit`) inkl. Vuln-Scan in CI.
-  - [ ] Container-Smoke-Test mit `deploy/compose.yml`
-        (`make runtime` pollt `/health`).
-  - [ ] **CI-Erweiterung um Tests** (`GG-CICD-002`): `make
-        test-unit` + `make test-integration` als CI-Jobs neben
-        den vier Slice-025-Pflicht-Gates. Heute Repo-seitig in
-        `make gates` enthalten, aber nicht GitHub-seitig
-        enforced; Slice 025 §2 hatte das bewusst auf M6
-        verschoben.
-  - [ ] **CI-Erweiterung um Coverage-Gates** (`GG-CICD-003`):
-        `make coverage-gate` (90 % Line / 85 % Branch) +
-        `make coverage-gate-critical` (90 % auf
-        `CRITICAL_COV_TARGETS`) als CI-Jobs. Slice 025 §2
-        ausgelagert; lokal Pflicht via `make gates`.
-  - [ ] **CI-Erweiterung um Dependency-Audit** (`GG-CICD-006`):
-        `make dep-audit` (`pip-audit`) als CI-Job — meldet
+  - [x] GitHub-Actions-Workflow gegen Python 3.13 + 3.14
+        (Spike-0-Closure-D-8 + ADR 0002 §6.1) — produktiv mit
+        M6-Welle-3-C2 `ce13253` via NEU `.github/workflows/
+        tests.yml` `strategy.matrix.python-version: ['3.13',
+        '3.14']` (test-unit-Job; test-integration laeuft mit
+        Default-Python wegen Compose-Substanz; Welle-3-D-2).
+  - [x] Image-Audit (`make image-audit`) inkl. Vuln-Scan in CI —
+        produktiv mit M6-Welle-3-C2 `ce13253` als Teil von
+        `make fullbuild` in `fullbuild.yml`.
+  - [x] Container-Smoke-Test mit `deploy/compose.yml`
+        (`make runtime` pollt `/health`) — produktiv mit
+        M6-Welle-3-C2 `ce13253` als Teil von `make fullbuild`
+        in `fullbuild.yml`.
+  - [x] **CI-Erweiterung um Tests** (`GG-CICD-002`) — produktiv
+        mit M6-Welle-3-C2 `ce13253` via NEU `tests.yml`:
+        `test-unit` (Python-3.13/3.14-Matrix) + `test-
+        integration` (Default-Python). Slice 025 §2-M6-
+        Vertagung damit aufgeloest.
+  - [x] **CI-Erweiterung um Coverage-Gates** (`GG-CICD-003`) —
+        produktiv mit M6-Welle-3-C2 `ce13253` via NEU
+        `coverage.yml`: `coverage-gate` (90% Line / 85% Branch)
+        + `coverage-gate-critical` (90% Critical-Domain) als
+        separate Jobs.
+  - [x] **CI-Erweiterung um Dependency-Audit** (`GG-CICD-006`) —
+        produktiv mit M6-Welle-3-C2 `ce13253` via NEU
+        `dep-audit.yml`. Plus pre-existing pip-PYSEC-2026-196-
+        Drift im `uv.lock` mitbehoben (`pip 26.1.1 → 26.1.2`),
+        damit der Gate von Anfang an gruen ist. `make
+        dep-audit` (`pip-audit`) — meldet
         bekannte Schwachstellen direkter und transitiver
         Abhaengigkeiten. Slice 025 §2 ausgelagert; lokal
         Pflicht via `make gates`.
