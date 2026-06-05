@@ -276,10 +276,17 @@ dep-audit:
 # Docker-Hub: zieht den Tag nur dann, wenn er lokal noch nicht da
 # ist; bei wiederholten Lauefen oder im offline-CI faellt der Pull
 # weg.
+# Kein Host-Cache-Mount fuer die Trivy-DB: der Host-Cache wurde nie
+# automatisch invalidiert (kein TTL, keine Cache-Aging-Heuristik) und
+# fuehrte zu Stale-DB-Drift — lokale Laeufe gegen eine 1+-Tag-alte
+# DB melden NEU veroeffentlichte CVEs nicht und entstehen so eine
+# falsch-positive „lokal-gruen, CI-rot"-Diskrepanz (siehe M6-Welle-3-
+# Post-Push-CI-Fix `0891f65`). Lokal vs. CI sollen identische Sensor-
+# Substanz haben; lieber pro Lauf ~15s DB-Download als unverlaessliche
+# Verifikations-Substanz.
 image-audit: build
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v "$$HOME/.cache/trivy:/root/.cache/" \
 		$(TRIVY_IMAGE) image \
 			--exit-code 1 \
 			--severity $(TRIVY_SEVERITY) \
@@ -288,7 +295,6 @@ image-audit: build
 	$(DOCKER) image inspect $(OTEL_COLLECTOR_IMAGE) >/dev/null 2>&1 || $(DOCKER) pull $(OTEL_COLLECTOR_IMAGE)
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v "$$HOME/.cache/trivy:/root/.cache/" \
 		$(TRIVY_IMAGE) image \
 			--exit-code 1 \
 			--severity $(TRIVY_SEVERITY) \
