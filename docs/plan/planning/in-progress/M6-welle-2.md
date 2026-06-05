@@ -1,11 +1,14 @@
 # Welle 2 — M6 SBOM-Aktivierung + Release-Workflow (`GG-CICD-007`)
 
 **Status:** In Progress — eroeffnet mit C0 `0cc28f3`
-(NEU Slice-Doc) + C0-Review-Folge (dieser Commit; 4
-Findings adressiert: 2 HIGH SBOM-Scan-Ziel-Drift + Demo-
-Abnahmedoku-Asset-Drift, 1 MED Report-Target-Schaerfungen,
-1 LOW M6-Plan-C4a/C4b-Drift). Welle 2 ist die **zweite
-Code-Welle in M6**
+(NEU Slice-Doc) + C0-Review-Folge `69d73d3` (4 Findings
+adressiert: 2 HIGH SBOM-Scan-Ziel-Drift + Demo-Abnahmedoku-
+Asset-Drift, 1 MED Report-Target-Schaerfungen, 1 LOW
+M6-Plan-C4a/C4b-Drift) + C0-Review-Folge-2 (dieser
+Commit; 3 Findings adressiert: 2 MED C2-Scope-Widerspruch
++ Sub-Slicing-Entscheidungs-Veraltung, 1 LOW Asset-
+Zaehlung-Inkonsistenz). Welle 2 ist die **zweite Code-
+Welle in M6**
 nach M6-D-1-Option-B-Vorbelegung („pro Triggerebene": krb5-
 Bump + SBOM klein vor CI/CD/Performance/Security gross) und
 loest **Trigger 008**
@@ -113,7 +116,9 @@ Tools.
 
 ### 1.3 Welle-2-Lieferziel — `GG-CICD-007` Vollscope
 
-Sechs Sub-Items:
+Acht Sub-Items (geschaerft in C0-Review-Folge; 1 SBOM-
+Target-Schaerfung + 1 Release-Workflow + 6 Asset-Klassen-
+Sub-Items):
 
 1. **`make sbom` Scan-Ziel-Umstellung** (C2-Pflicht;
    F1-Korrektur Welle-2-C0-Review-Folge): Heute scannt
@@ -169,11 +174,23 @@ Sechs Sub-Items:
 
 Plus **NEU ADR 0042** als Welle-2-C1-Substanz.
 
-**Asset-Klassen-Bilanz** (Welle-2-C0-Review-Folge-
-Korrektur): 6 GitHub-Release-Assets (SBOM + JUnit-XML +
-Coverage-HTML-Tarball + OpenAPI-JSON + Demo-Abnahme-MD)
-+ 1 GHCR-Push (Container-Image). 5 Lastenheft-`GG-CICD-
-007`-Klassen alle als publiziertes Asset abgedeckt.
+**Asset-Klassen-Bilanz** (geschaerft in C0-Review-Folge-2;
+F3-Korrektur — kanonische Begrifflichkeit):
+
+- **6 publizierte Artefakte total** pro Release:
+  - 1× GHCR-Push (Container-Image; nicht als GitHub-
+    Release-Asset, sondern als Registry-Push).
+  - 5× GitHub-Release-Asset-Files (SBOM-CycloneDX-JSON
+    + Test-Reports-JUnit-XML + Coverage-HTML-Tarball
+    + OpenAPI-JSON + Demo-Abnahme-MD).
+- **5 Lastenheft-`GG-CICD-007`-Klassen** alle als
+  publiziertes Asset abgedeckt (Container-Images +
+  Testberichte + Coverage-Berichte + OpenAPI-Spezifikation
+  + Demo-Abnahmeartefakte).
+
+Diese Begrifflichkeit (1 GHCR + 5 Release-Asset-Files =
+6 Artefakte) wird kanonisch in §3 Welle-2-D-3, §4 C2 +
+§9 DoD-Checkliste verwendet.
 
 ### 1.4 Welle-2-Anti-Scope
 
@@ -409,28 +426,67 @@ Optionen:
 **Frage:** Wird Welle 2 als Single-Welle oder als
 Sub-Slicing 2a/2b geliefert?
 
-**Welle-2-C0-Vorbelegung: Single-Welle.** Begruendung:
+**Welle-2-Final (geschaerft in C0-Review-Folge-2): Single-
+Welle mit expliziter Ausnahmen-Begruendung.**
 
-- 5 Asset-Klassen sind zwar nominell „mehrere Sub-
-  Bereiche", aber die Erzeugung ist durch existierende
-  `make`-Targets (test-unit, coverage-gate, openapi-
-  export, sbom) bereits abgedeckt; Welle-2-Code-Diff
-  ist primaer **die Wiring in `release.yml`**, nicht
-  fundamentale Tool-Substanz.
-- Sub-Slicing-Schwelle (>300 Zeilen Slice-Doc ODER
-  >5 Code-Commits ODER >2 unabhaengige Sub-Bereiche):
-  Slice-Doc-Volumen wird zur Pruefung in C0-Review-
-  Folge final; Code-Commit-Anzahl bleibt erwartungs-
-  gemaess unter 5; Sub-Bereiche sind 5 Asset-Klassen
-  aber alle in *einer* `release.yml`-Wiring vereint.
+**Schwellen-Stand am C0-Review-Folge-2-Stand:**
 
-**Sub-Slicing-Beobachtung in C2:** Falls die `release.
-yml`-Substanz waehrend C2 ueberschwillt (z. B. wenn
-GHCR-Push komplexer wird als erwartet ODER wenn ein
-Asset-Klassen-Subtarget grundlegend neue
-Tool-Substanz braucht), wird in C2 nachtraeglich auf
-Sub-Slicing 2a (SBOM + ADR 0042) / 2b (Release-
-Workflow mit allen 5 Asset-Klassen) gewechselt.
+- **Slice-Doc-Volumen:** 947 Zeilen vor Folge-2-
+  Konsolidierung — formal **ueber** der 300-Zeilen-
+  Schwelle. **Wachstumsquelle:** Plan-Pflege durch C0-
+  Review-Folgen (F1+F2 SBOM-Scan-Ziel + Demo-Asset-Drift,
+  F3 Report-Targets), nicht Code-Substanz-Wachstum.
+- **Code-Commit-Anzahl:** erwartet 4 (C0/C1/C2/C3) + Self-
+  Close-Folge C4a/C4b — unter 5-Commit-Schwelle.
+- **Sub-Bereiche:** Welle-2-C0-Review-Folge fuegt
+  Pflicht-Substanz in 2 zusaetzlichen Targets-Familien
+  hinzu (`make sbom`/`make openapi-export` lokal +
+  `Dockerfile` test-unit/coverage-gate-Stages). Plus 1
+  `.github/workflows/release.yml` CI-Substanz. Formal
+  drei Sub-Bereiche.
+
+**Ausnahmen-Begruendung fuer Single-Welle (statt 2a/2b):**
+
+- **Substanz-Kopplung:** SBOM und Release-Workflow sind
+  **kausal verbunden** — der SBOM ist ein *Asset* des
+  Release-Workflows, kein eigenstaendiges Lieferziel.
+  Trennung 2a (SBOM lokal) / 2b (Release-Workflow + andere
+  Assets) wuerde die zentrale `GG-CICD-007`-Akzeptanz
+  („Pipeline veroeffentlicht ...") aufspalten, ohne
+  Substanz-Mehrwert.
+- **Target-Edits als Support-Substanz:** Die 3 Makefile-/
+  2 Dockerfile-Edits sind **Asset-Export-Wrapper**, nicht
+  eigenstaendige Quality-Gates. Sie haben weder neue
+  Quality-Schwellen noch ADR-Substanz; die Edits sind
+  in Summe ~30 Zeilen Makefile + ~3 Zeilen Dockerfile.
+- **Doc-Volumen ist Plan-Pflege-bedingt, nicht Code-
+  bedingt:** Die 947 Zeilen entstehen durch zwei Review-
+  Folge-Schaerfungen (F1/F2/F3-Korrekturen + 4 Welle-2-
+  Decisions D-1..D-5 mit Optionen + Alternativen-
+  Diskussionen). Die Code-Substanz selbst ist weiter
+  scope-eng (1 NEU Workflow-YAML + 5 Edit-Hunks in
+  Makefile/Dockerfile).
+- **Empirische Vorbilder:** M5-Welle-Slice-Docs 368..1319
+  Zeilen ohne Sub-Slicing-Pflicht; Doc-Volumen-Schwelle
+  ist eine Heuristik mit „voraussichtlich"-Qualifier in
+  der Originaldefinition (`M6-perf-security-cicd.md §3`),
+  nicht harte Closure-Regel.
+- **Schwelle als Plan-Zeit-Heuristik, nicht Closure-Gate:**
+  Die >300-Zeilen-Schwelle markiert „wahrscheinlich Sub-
+  Slicing noetig" zur Plan-Zeit; tatsaechliche Sub-Slicing-
+  Pflicht folgt aus *eigenstaendiger Substanz pro Sub-
+  Bereich*, nicht aus Doc-Volumen allein.
+
+**Sub-Slicing-Beobachtung in C2 (Fallback):** Falls die
+`release.yml`-Substanz waehrend C2 ueberschwillt (z. B.
+wenn GHCR-Push komplexer wird als erwartet ODER wenn ein
+Asset-Klassen-Subtarget grundlegend neue Tool-Substanz
+braucht — z. B. ein dedizierter SBOM-Verifikations-Schritt
+mit eigenem Quality-Gate), wird in C2 nachtraeglich auf
+Sub-Slicing 2a (SBOM-Target-Schaerfung + Report-Target-
+Edits + ADR 0042) / 2b (Release-Workflow mit allen
+Asset-Klassen) gewechselt. C2-Commit-Message dokumentiert
+ggf. den Wechsel mit konkreter Begruendung.
 
 Welle 2 trifft **keine** dieser Decisions:
 
@@ -488,26 +544,43 @@ als `Provisional` mit:
   um ADR-0042-Zeile (Hard Rule per `harness/README.md`
   Z.81; Welle-1-C0-Review-Folge-2-Pattern).
 
-### C2 — `feat(ci)`: Release-Workflow + make sbom Schaerfung
+### C2 — `feat(ci)`: Release-Workflow + Makefile/Dockerfile-Pflichtscope
 
-Code-Merge mit:
+Code-Merge mit (alle drei Bloecke **Pflicht**; Konsistenz
+mit §5 Critical Files + §9 DoD-Checkliste; F1-Korrektur
+Welle-2-C0-Review-Folge-2):
 
-- **NEU `.github/workflows/release.yml`**: Tag-Push
-  (`v*.*.*`) + `workflow_dispatch`-Trigger; Jobs:
+- **NEU `.github/workflows/release.yml`** (Pflicht):
+  Tag-Push (`v*.*.*`) + `workflow_dispatch`-Trigger;
+  Jobs:
   1. `build-and-publish-image`: `docker/build-push-
      action` → GHCR (`linux/amd64`).
   2. `produce-assets`: `make sbom` + `make test-unit`
      (JUnit-XML-Export) + `make coverage-gate` (HTML-
      Tarball) + `make openapi-export`.
   3. `create-release`: GitHub-Release-Anlage mit allen
-     Asset-Files + Demo-Abnahmedoku-Verlinkung.
-- **`Makefile`-Schaerfung** (optional, nur wenn `make
-  sbom` ohne VERSION-Default unbequem ist): VERSION-
-  Default aus `pyproject.toml [project] version`.
-- **ggf. NEU `tools/check_sbom.py`** (Sanity-Pruefer fuer
-  SBOM-Output): pruefend Component-Count > 100,
-  CycloneDX-Format-Konformitaet, Schluessel-Pakete
-  vorhanden.
+     5 Asset-Files (SBOM + JUnit-XML + Coverage-HTML-
+     Tarball + OpenAPI-JSON + Demo-Abnahme-MD).
+- **`Makefile`-Schaerfung** (Pflicht; F1+F3-Korrektur):
+  - `make sbom` Scan-Ziel-Umstellung von `dir:/src`
+    (Source-Tree) auf `grid-gym-runtime:latest`
+    (Runtime-Image) + `sbom: build`-Dependency analog
+    `image-audit: build` (Z.279).
+  - `make sbom` VERSION-Default-Schaerfung (aus
+    `pyproject.toml [project] version`).
+  - NEU `make openapi-export`-Target (analog
+    `openapi-validate` aber mit Datei-Output unter
+    `artifacts/openapi-v<X>.json`).
+- **`Dockerfile`-Schaerfung** (Pflicht; F3-Korrektur):
+  - `test-unit`-Stage (Z.206-207) um `--junitxml=/src/
+    coverage/test-results.xml` ergaenzen.
+  - `coverage-gate`-Stage (Z.242-246) um zusaetzlichen
+    `--cov-report=html:/src/coverage/htmlcov`-Block
+    ergaenzen.
+- **ggf. NEU `tools/check_sbom.py`** (bedingt, nur falls
+  Sanity-Pruefer als Pre-Release-Gate substanziell wird):
+  Component-Count > 100, CycloneDX-Format-Konformitaet,
+  Schluessel-Pakete vorhanden.
 - **Verifikation:**
   - `make gates` cache-frei gruen (10/10 A-1-Gates).
   - `make ci` + `make fullbuild` cache-frei gruen.
