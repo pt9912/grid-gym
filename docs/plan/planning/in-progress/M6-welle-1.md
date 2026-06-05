@@ -82,7 +82,17 @@ Vier Sub-Items:
    krb5-Fix verfuegbar ist). Falls Debian-13-Stand noch
    nicht patched, alternativ Bookworm-Variante oder
    explizites `apt-get install -y libkrb5-3 libk5crypto3
-   libgssapi-krb5-2`-Hardening im base-Stage.
+   libgssapi-krb5-2`-Hardening **im `runtime`-Stage**
+   (`Dockerfile` Z.405ff `FROM python:${PYTHON_VERSION}-slim
+   AS runtime`; das Runtime-Image laeuft eigenstaendig und
+   ist das `make image-audit`-Scan-Ziel, nicht der `base`-
+   Stage). Der bestehende `apt-get upgrade --yes` im
+   runtime-Stage (Z.422-426; Trigger-015-Pattern) ist die
+   verbindliche Lokation; krb5-spezifische `apt-get install`-
+   Erweiterung wird in derselben `RUN`-Layer angehaengt. Ein
+   reines `base`-Stage-Hardening wuerde Trivy nicht im
+   Runtime-Image sehen (multi-stage-Build laesst base-only-
+   Layers nicht ins finale Image durch).
 2. **`uv.lock`-Refresh** falls Library-Pins durch Image-
    Bump beruehrt werden (z. B. `cryptography`-Wheel mit
    OpenSSL-3.x-Dependency).
@@ -127,14 +137,22 @@ Welle-1-D-1):
    Dokument.
 2. **NEU ADR 0043** (C1) — `Image-Audit-Strategie + Trivy-
    Defer-Aufloesungs-Pattern`. Start als `Provisional` mit
-   Trigger-010-Hash-Anchor-Block; Zug auf `Accepted` in
-   C3 nach gruenem `make fullbuild`.
+   Trigger-010-Hash-Anchor-Block. **Bleibt `Provisional`
+   nach C3** — M6-Welle-7-Closure-Convention
+   ([`M6-perf-security-cicd.md §2 ADR-Lifecycle`](M6-perf-security-cicd.md))
+   zieht alle M6-ADRs (0041..0043) gebuendelt auf `Accepted`
+   (Pattern analog M5-Welle-7-C1 `62f988d`: „5 M5-ADRs
+   0036..0040 `Provisional → Accepted`"). C3 vermerkt
+   stattdessen nur den C2-Hash als Provisional-Beleg im
+   ADR-Body (Trigger-010-Aufloesungs-Hash).
 3. **Dockerfile-Bump + Verifikation** (C2) — Dockerfile-
    `FROM`-Update + ggf. `uv.lock`-Refresh + `make image-
    audit` + `make fullbuild` cache-frei gruen.
 4. **Status/DoD-Sync** (C3) — `M6-welle-1.md` auf `Done`,
    `M6-perf-security-cicd.md §3.1` Welle-1-Zeile auf
-   `Done`, ADR 0043 auf `Accepted`, Top-Level-Doku-Sync
+   `Done`, ADR 0043 bleibt `Provisional` mit C2-Hash-
+   Beleg im ADR-Body (Accept in Welle 7), Top-Level-Doku-
+   Sync
    (`README.md`/`README.de.md` `make fullbuild`-Hinweis
    aufgeloest), `roadmap.md §1` Status-Header-`make
    fullbuild`-Defer-Pfad-Notiz aufloesen, Trigger 010
@@ -180,7 +198,8 @@ fullbuild` nicht nur als einmalige Sensoren relevant,
 sondern definiert faktisch:
 
 - Welche Image-Audit-Pflicht-Schwelle gilt repo-weit
-  (`trivy --ignore-unfixed` HIGH-CVE-Schwelle? CRITICAL?).
+  (Makefile-Status `TRIVY_SEVERITY=HIGH,CRITICAL` plus
+  `--ignore-unfixed`; siehe `Makefile` Z.25-26 + Z.279-294).
 - Wie ein Trivy-Defer-Pfad (`open/`-Trigger der
   Variante 010) wieder aufgeloest wird.
 - Wie das in `make fullbuild` als Pflicht-Gate-Vorbedingung
@@ -196,12 +215,18 @@ ADR 0028 (Link-Maintenance).
 - §1 Context: M3-Welle-7-pre-existing-`make fullbuild`-rot
   durch krb5-CVE-Famille; M4/M5 hatten das als dokumentierten
   Defer-Pfad gefuehrt; M6-Welle-1 loest auf.
-- §2 Decision: `trivy --ignore-unfixed` HIGH-CVE-Schwelle
-  als `make image-audit`-Pflicht-Gate; CRITICAL-CVE bricht
-  immer; HIGH bricht ausser `--ignore-unfixed`-Marker;
-  Trivy-Defer-Pfad-Pattern (`open/`-Trigger mit konkreter
-  CVE-ID + Fix-Version) ist die einzige zulaessige
-  Defer-Form.
+- §2 Decision: `make image-audit` ist Pflicht-Gate mit
+  zwei orthogonalen Trivy-Filter-Auspraegungen, beide
+  Makefile-Default (`Makefile` Z.25-26 + Z.279-294):
+  (a) `TRIVY_SEVERITY=HIGH,CRITICAL` pinned die Schwellen-
+  Klassen (LOW/MEDIUM ausgeblendet); (b) `--ignore-unfixed`
+  filtert CVEs ohne verfuegbaren Fix aus dem Report
+  heraus (nicht als „Marker", sondern als Filter im
+  Trivy-Run). Die einzig zulaessige Defer-Form fuer
+  HIGH/CRITICAL-CVEs mit Fix ist ein `open/`-Trigger mit
+  konkreter CVE-ID + Fix-Version; ein blosses
+  `.trivyignore`-Eintragen ohne `open/`-Begleiteintrag ist
+  ADR-Bruch.
 - §3 Konsequenzen: `make image-audit` ist Pflicht in `make
   ci` und `make fullbuild`; `open/`-Trigger ist die einzige
   Defer-Lifecycle-Form; `done/`-Move erfolgt sobald Bump
@@ -285,8 +310,11 @@ NEU `docs/plan/adr/0043-image-audit-strategy.md` als
   Drift-Origin; M4-Welle-7-Defer-Pfad als Erbschafts-Stand;
   Welle-1-C2-Hash als Aufloesungs-Hash, in C3 nachgetragen).
 - Status `Provisional` zunaechst (ADR-0011-Schaerfung-ohne-
-  Supersedes-Pattern); Welle-1-C3 zieht auf `Accepted` mit
-  C2-Hash-Beleg.
+  Supersedes-Pattern); **bleibt `Provisional` nach Welle-1-
+  C3**. Accept passiert in M6-Welle-7-Closure gebuendelt mit
+  ADR 0041 + ADR 0042 (M6-Plan-§2-Convention; Pattern analog
+  M5-Welle-7-C1 `62f988d`). C3 traegt nur den C2-Hash als
+  Provisional-Aufloesungs-Beleg in den ADR-Body nach.
 
 ### C2 — `chore(deploy)`: Dockerfile krb5-Bump
 
@@ -306,11 +334,15 @@ Code-Merge mit:
   - Test-Counts unveraendert (1722 Unit + 80 Integration);
     Welle 1 fuegt keine neuen Tests hinzu.
 
-### C3 — `docs(plan)`: Status/DoD-Sync + ADR 0043 Accepted
+### C3 — `docs(plan)`: Status/DoD-Sync + ADR-0043-Hash-Anchor
 
 **Welle-1-Closure-Sync.**
 
-- ADR 0043 `Provisional → Accepted` mit C2-Hash als Beleg.
+- ADR 0043 bleibt `Provisional`; C2-Hash als Trigger-010-
+  Aufloesungs-Beleg in den ADR-Body nachgetragen (Hash-
+  Anchor-Block; Accept-Pflicht-Pfad geht ueber M6-Welle-7-
+  Closure-C1 gebuendelt mit ADR 0041/0042 — Pattern analog
+  M5-Welle-7-C1 `62f988d`).
 - `M6-welle-1.md` Status `In Progress → Done` mit Liefer-
   Hash-Stack (C0..C3).
 - `M6-perf-security-cicd.md §3.1` Welle-1-Zeile `In
@@ -327,9 +359,12 @@ Code-Merge mit:
 - **Trigger 010 `open/ → done/`-Move**: `git mv
   open/010-base-image-krb5-cve-bump.md done/`; Cross-Doc-
   Refs-Sync in `carveouts.md §2.2` + `open/README.md`.
-- **Welle-1-D-1 final entscheiden**: CI-Pflicht-Gate in
-  Welle 1 mit oder Folge-Slice. Falls Folge-Slice: NEU
-  `open/`-Trigger einlegen.
+- **Welle-1-D-1 final** (in C2 entschieden, in C3 nur
+  abgebildet): falls **Vertagen**, NEU `open/`-Trigger fuer
+  M6-Welle-3 in C3 angelegt + `carveouts.md §2.X` Sync;
+  falls **Mitziehen**, C3 verlangt zusaetzlich, dass der
+  C2-CI-Workflow-Lauf gegen den C2-Hash gruen war (siehe §9
+  DoD).
 
 ### Welle-1-Closure-Folge (nach C3, Pattern Welle-6c)
 
@@ -353,9 +388,18 @@ Pre-C0a/Pre-C0b (Pattern analog Welle-6c→7).
 
 **Welle-1-MODIFY (in C0/C2/C3):**
 
-- `Dockerfile` (C2) — `FROM`-Update oder apt-Hardening-
-  Block.
+- `Dockerfile` (C2) — `FROM`-Update oder apt-`libkrb5-*`-
+  Hardening-Erweiterung des bestehenden `apt-get upgrade
+  --yes`-Blocks im `runtime`-Stage (Z.422-426).
 - `uv.lock` (C2, ggf.) — Library-Pin-Refresh.
+- `.github/workflows/ci.yml` (C2, **conditional** — nur
+  wenn Welle-1-D-1 zu „Mitziehen in Welle 1" entscheidet;
+  siehe §3 Welle-1-D-1). Edits: NEU `make fullbuild`-Job-
+  Step in bestehender Job-Definition ODER NEU Job-Block
+  mit Image-Audit-Cache-Konfiguration. **Wenn Welle-1-D-1
+  zu „Vertagen" entscheidet, bleibt diese Datei unangefasst
+  und ein NEU `open/`-Trigger fuer Welle 3 wird in C3
+  angelegt — siehe §4 C3 + §9 DoD.**
 - `docs/plan/planning/in-progress/README.md` (C0 + C3) —
   Bestand-Tabelle + Aktive-Welle-Block.
 - `docs/plan/planning/in-progress/M6-perf-security-cicd.md`
@@ -409,8 +453,10 @@ Pre-C0a/Pre-C0b (Pattern analog Welle-6c→7).
   Zeile.
 - C1 prueft ADR-0043-Substanz + Bezug-Refs.
 - C2 prueft Dockerfile-Bump + 3 Gates cache-frei gruen.
-- C3 prueft Status-Flip + ADR-0043-`Accepted` + Trigger-
-  010-Move + Top-Level-Doku-Sync.
+- C3 prueft Status-Flip + ADR-0043-`Provisional`-Hash-
+  Anchor-Eintrag (C2-Hash) + Trigger-010-Move + Top-Level-
+  Doku-Sync. ADR-0043-`Accepted`-Pflicht-Pruefung
+  passiert erst in M6-Welle-7-Closure-DoD.
 
 **Abnahme-Verifikation:**
 
@@ -517,8 +563,21 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   Report ohne HIGH-CVE-krb5-Famille).
 - [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C3 — ADR 0043** `Provisional → Accepted` mit C2-
-  Hash als Beleg.
+- [ ] **C2 — Welle-1-D-1 final entschieden** (Mitziehen vs.
+  Vertagen). Wenn **Mitziehen**: NEU `.github/workflows/
+  ci.yml`-Edit in C2 mitkommittet (Job-Step oder Block fuer
+  `make fullbuild`; image-audit-Cache-Konfiguration falls
+  noetig) **und** der CI-Workflow muss in einem realen
+  GitHub-Actions-Lauf (auf einem Pre-Merge-Branch oder via
+  `workflow_dispatch`) gegen den C2-Hash gruen sein, bevor
+  C3 freigegeben wird (Sensor-Check, nicht nur Workflow-
+  Datei-Anwesenheit). Wenn **Vertagen**: kein Edit an
+  `.github/workflows/`, stattdessen NEU `open/`-Trigger in
+  C3 angelegt.
+- [ ] **C3 — ADR 0043** bleibt `Provisional`; C2-Hash als
+  Trigger-010-Aufloesungs-Beleg in den ADR-Body als Hash-
+  Anchor-Block nachgetragen. (`Accepted` passiert in M6-
+  Welle-7-Closure-C1 gebuendelt mit ADR 0041/0042.)
 - [ ] **C3 — `M6-welle-1.md`** Status `In Progress → Done`
   mit Liefer-Hash-Stack.
 - [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-1-Zeile
@@ -533,9 +592,12 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
   M6-Welle-2 ausgerichtet.
 - [ ] **C3 — `make docs-check`** cache-frei gruen ueber
   alle 4 Welle-1-Commits.
-- [ ] **Welle-1-D-1** final entschieden: CI-Pflicht-Gate
-  fuer `make fullbuild` in Welle 1 mitgezogen ODER NEU
-  `open/`-Trigger fuer Welle 3 angelegt.
+- [ ] **C3 — Welle-1-D-1-Vertagungs-Pfad** (nur wenn C2-
+  Entscheidung „Vertagen"): NEU `open/`-Trigger fuer M6-
+  Welle-3 angelegt (CI-Pflicht-Gate fuer `make fullbuild`)
+  mit `carveouts.md §2.X` Sync. (Wenn C2 „Mitziehen"
+  entschieden hat, ist das C2-DoD-Item oben der Sensor-
+  Check; hier dann „n/a" eintragen.)
 
 **Anti-Scope-Verifikation (Welle 1 NICHT):**
 
