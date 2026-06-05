@@ -18,9 +18,13 @@ ueber NEU Trigger 031).
 `Provisional`; Trigger 008 nach `done/` gewandert; siehe
 [`../done/M6-welle-2.md`](../done/M6-welle-2.md)).
 **Aktive Welle: M6-Welle-3** (CI/CD-Vollausbau; `GG-CICD-
-001..006` + Python-3.13/3.14-Matrix; plus Trigger 031
-`make fullbuild`-CI-Gate-Vertagung aus Welle 1); Welle-3-
-Slice-Doc entsteht in Welle-3-C0.
+002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031-
+Aufloesung) — **In Progress 2026-06-05** mit Welle-3-C0
+(Slice-Doc-Anlage [`M6-welle-3.md`](M6-welle-3.md);
+4 NEU Workflow-Dateien geplant: `tests.yml`/`coverage.yml`/
+`dep-audit.yml`/`fullbuild.yml`); C1 entfaellt (Pattern
+analog M5-Welle-2); C2 plant Code-Merge + Trigger-031-
+Closure; C3 plant Status-Sync + Top-Level-Doku-Sync.
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
 ohne `next/`-Zwischenschritt; Welle-0-Doc-Hoheit fuer den
@@ -183,7 +187,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | Done 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Done 2026-06-05 | [`M6-welle-1.md`](../done/M6-welle-1.md) | Trigger 010 + `make fullbuild`-Defer-Aufloesung (Null-Code-Edit; Upstream-Drift) | NEU ADR 0043 `Provisional` (Image-Audit-Strategie; Welle-1-C1 `c44e6d5`) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Done 2026-06-05 | [`M6-welle-2.md`](../done/M6-welle-2.md) | `GG-CICD-007` (5 Asset-Klassen + 1 GHCR-Push) + Trigger 008 | NEU ADR 0042 `Provisional` (SBOM-Tool + Release-Pattern; Welle-2-C1 `4b1062b`) |
-| 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
+| 3 | CI/CD-Vollausbau | In Progress 2026-06-05 | [`M6-welle-3.md`](M6-welle-3.md) | `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031 (`make fullbuild`-CI-Gate; Welle-1-D-1-Vertagung) | — (C1 entfaellt; Pattern analog M5-Welle-2) |
 | 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
