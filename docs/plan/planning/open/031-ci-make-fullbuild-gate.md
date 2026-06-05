@@ -24,10 +24,10 @@ TARGETS`-Override. Beleg:
 
 Das CI-Pflicht-Gate fuer `make fullbuild` in GitHub-
 Actions ist heute **nicht** aktiv. Welle-1-D-1
-([`../in-progress/M6-welle-1.md §3 Welle-1-D-1`](../in-progress/M6-welle-1.md))
+([`../done/M6-welle-1.md §3 Welle-1-D-1`](../done/M6-welle-1.md))
 hatte zwei Optionen geprueft (Mitziehen in Welle 1 vs.
 Vertagen auf Welle 3); Welle-1-C2 hat sich fuer Vertagen
-entschieden ([`../in-progress/M6-welle-1.md §10.2`](../in-progress/M6-welle-1.md)).
+entschieden ([`../done/M6-welle-1.md §10.2`](../done/M6-welle-1.md)).
 
 Aktueller CI-Stand (Slice 025;
 [`../done/spike-0-results.md`](../done/spike-0-results.md)):
@@ -67,7 +67,7 @@ Eigenstaendiger CI-Edit-Slice (M6-Welle-3-Sub-Item) mit:
 - **Real GitHub-Actions-Lauf** gegen den Slice-Hash
   gruen vor Welle-3-Closure (Sensor-Check, nicht nur
   Workflow-Datei-Anwesenheit; siehe
-  [`../in-progress/M6-welle-1.md §9 DoD-Checkliste`](../in-progress/M6-welle-1.md)
+  [`../done/M6-welle-1.md §9 DoD-Checkliste`](../done/M6-welle-1.md)
   C2-Welle-1-D-1-Mitzieh-Variante-Pattern).
 
 ## Aktivierung
@@ -104,9 +104,9 @@ realen Gruen-Lauf.
 
 ## Bezuege
 
-- [`../in-progress/M6-welle-1.md §3 Welle-1-D-1`](../in-progress/M6-welle-1.md)
+- [`../done/M6-welle-1.md §3 Welle-1-D-1`](../done/M6-welle-1.md)
   — Welle-1-Decision-Substanz (Mitziehen vs. Vertagen).
-- [`../in-progress/M6-welle-1.md §10.2`](../in-progress/M6-welle-1.md)
+- [`../done/M6-welle-1.md §10.2`](../done/M6-welle-1.md)
   — C2-Realization-Note mit Vertagungs-Begruendung.
 - [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md)
   — M6-Welle-3-Lieferziel mit CI-Job-Liste (4 weitere

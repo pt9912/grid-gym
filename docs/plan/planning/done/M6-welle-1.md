@@ -54,7 +54,7 @@ Editing-Aufwand.
 
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md) hat den
 M6-Slice-Plan
-[`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
+[`M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md)
 produktiv eroeffnet mit 8 Wellen 0..7. Welle 1 ist nach
 M6-D-1-Option-B-Vorbelegung („pro Triggerebene") die erste
 Code-Welle und traegt das kleinste, am besten isolierte
@@ -154,7 +154,7 @@ Welle-1-D-1):
    Defer-Aufloesungs-Pattern`. Start als `Provisional` mit
    Trigger-010-Hash-Anchor-Block. **Bleibt `Provisional`
    nach C3** — M6-Welle-7-Closure-Convention
-   ([`M6-perf-security-cicd.md §2 ADR-Lifecycle`](M6-perf-security-cicd.md))
+   ([`M6-perf-security-cicd.md §2 ADR-Lifecycle`](../in-progress/M6-perf-security-cicd.md))
    zieht alle M6-ADRs (0041..0043) gebuendelt auf `Accepted`
    (Pattern analog M5-Welle-7-C1 `62f988d`: „5 M5-ADRs
    0036..0040 `Provisional → Accepted`"). C3 vermerkt
@@ -312,7 +312,7 @@ fullbuild` fuer M6-Welle-3") in C3.
   ergaenzt (analog M5-Welle-1-C0-Pattern; Aktive-Welle-
   Block bleibt M6-Welle-1).
 - M6-Slice-Plan
-  [`M6-perf-security-cicd.md §3.1`](M6-perf-security-cicd.md)
+  [`M6-perf-security-cicd.md §3.1`](../in-progress/M6-perf-security-cicd.md)
   Welle-1-Zeile `Pending → In Progress` mit C0-Hash-Stub.
 
 ### C1 — `docs(adr)`: NEU ADR 0043 Image-Audit-Strategie
@@ -742,7 +742,7 @@ Welle-1-D-1 (CI-Pflicht-Gate fuer `make fullbuild`) wird
 **vertagt** auf M6-Welle-3 (CI/CD-Vollausbau). Begruendung:
 
 - Welle 3 ist explizit fuer CI/CD-Vollausbau gescoped
-  ([`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md))
+  ([`M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md))
   und bringt 4 weitere neue CI-Jobs (`test-unit` +
   `coverage-gate` + `dep-audit` + `image-audit`) plus
   Python-3.13/3.14-Matrix. Das CI-Pflicht-Gate fuer `make
@@ -788,7 +788,7 @@ diesem Commit, C3 traegt ihn nach).
 
 - [`../done/M6-welle-0.md`](../done/M6-welle-0.md) — M6-
   Welle-0-Slice-Doc mit Welle-0-Decision-Liste (M6-D-1..7).
-- [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) —
+- [`M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md) —
   M6-Slice-Plan §3.2 Welle-1-Vorbelegung + §5 Risiken
   (`krb5-Bump-Side-Effects` = R4).
 - [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)
@@ -799,7 +799,7 @@ diesem Commit, C3 traegt ihn nach).
   M5/M6.
 - [`../done/M3-results.md`](../done/M3-results.md) — M3-
   Welle-7-Closure-Stand `c61ab0d` als Drift-Origin-Hash.
-- [`carveouts.md §2.2`](carveouts.md) — Trigger-Gated-
+- [`carveouts.md §2.2`](../in-progress/carveouts.md) — Trigger-Gated-
   Index mit Trigger-010-Aktivierungs-Status.
 - [`../../adr/0028-link-maintenance-accepted-adr-bezug.md`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
   — Link-Maintenance-Pattern als ADR-0043-Vorbild.
