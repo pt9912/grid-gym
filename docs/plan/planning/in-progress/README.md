@@ -8,8 +8,9 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`roadmap.md`](roadmap.md)              | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status.                                                  |
 | [`carveouts.md`](carveouts.md)          | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft); aggregiert M3/M4/M5-results §5/§8 + `open/`-Trigger.       |
-| [`M6-welle-0.md`](../done/M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 (dieser Commit); ausstehend Self-Close-Move + Cross-Doc-Refs-Sync. |
-| [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 (dieser Commit) als Welle-0-C1-Lieferung. |
+| [`M6-welle-0.md`](../done/M6-welle-0.md) | M6-Welle-0-Slice-Doc (Slice-Plan-Eroeffnung + Trigger-Triage fuer M6 Performance + Security + CI/CD-Haertung). — **Done 2026-06-04** mit C0 `282a8cb` + Review-Folge `55f4b28` + Review-Folge-2 `50b7ac9` + C1 `e050035` + C2 `74d9452` + Self-Close-Move `76f892d` + Cross-Doc-Refs-Sync `960f6ed`. |
+| [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; 7+ Wellen 0..7 mit Sub-Slicing-Schwelle; Pattern analog `done/M5-ui-demo.md`). — **In Progress 2026-06-04** mit C1 `e050035` (Welle-0-C1) + Review-Folgen `ff781ff` / `e7a5ac8` / `f1a6639`; aktive Welle: M6-Welle-1. |
+| [`M6-welle-1.md`](M6-welle-1.md) | M6-Welle-1-Slice-Doc (Base-Image-Bump / krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft). — **In Progress 2026-06-05** mit C0 (dieser Commit) als Slice-Doc-Anlage; C1 plant NEU ADR 0043 (Image-Audit-Strategie); C2 plant `Dockerfile`-`FROM`-Update + `make fullbuild` cache-frei gruen; C3 plant Status-Sync + Trigger-010-`done/`-Move. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
@@ -450,7 +451,12 @@ Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
 - M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
 
 **Aktive Welle:** M6-Welle-1 (Base-Image-Bump / krb5-CVE-
-Aufloesung; Trigger 010 M4-Erbschaft) — Welle-1-Slice-Doc
-entsteht in Welle-1-C0. M6-Slice-Plan-Welle-Strategie:
-Option B aus M6-D-1 (pro Triggerebene: krb5-Bump + SBOM
-klein → CI/CD + Performance + Security gross).
+Aufloesung; Trigger 010 M4-Erbschaft) — **In Progress
+2026-06-05** mit C0 (dieser Commit; NEU
+[`M6-welle-1.md`](M6-welle-1.md) Slice-Doc); ausstehend
+C1 (NEU ADR 0043 Image-Audit-Strategie) + C2 (Dockerfile-
+Bump + `make fullbuild` cache-frei gruen) + C3 (Status-
+Sync + Trigger-010-`done/`-Move + Top-Level-Doku-Sync).
+M6-Slice-Plan-Welle-Strategie: Option B aus M6-D-1 (pro
+Triggerebene: krb5-Bump + SBOM klein → CI/CD + Performance
++ Security gross).

@@ -168,7 +168,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | # | Titel | Status | Slice-Doc | Lastenheft-Coverage / Trigger | ADRs |
 | - | ----- | ------ | --------- | ----------------------------- | ---- |
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | Done 2026-06-04 | [`M6-welle-0.md`](../done/M6-welle-0.md) | Plan-Welle (7 Decisions vorbelegt) | — (kein C1) |
-| 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Pending | TBD (entsteht in Welle-1-C0) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | TBD (ggf. ADR 0043 Image-Audit-Strategie) |
+| 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | In Progress 2026-06-05 | [`M6-welle-1.md`](M6-welle-1.md) | Trigger 010 + `make fullbuild`-Defer-Aufloesung | NEU ADR 0043 (Image-Audit-Strategie; Welle-1-C1) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Pending | TBD (entsteht in Welle-2-C0) | `GG-CICD-007` + Trigger 008 | TBD (ggf. ADR 0042 SBOM-Tool) |
 | 3 | CI/CD-Vollausbau | Pending | TBD (entsteht in Welle-3-C0) | `GG-CICD-001..006` (Test/Coverage/Dep-Audit-CI-Jobs + Python-3.13/3.14-Matrix) | — (C1 entfaellt erwartet) |
 | 4 | Performance-Benchmark | Pending | TBD (entsteht in Welle-4-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
@@ -177,10 +177,13 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Naechster aktiver Slice:** Welle 1 (Base-Image-Bump /
-krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft) — Welle-1-
-Slice-Doc entsteht in Welle-1-C0. M6-Welle-0 abgeschlossen
-2026-06-04 mit Stack `282a8cb..960f6ed` (siehe
-[`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
+krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft) — **In
+Progress 2026-06-05** mit Welle-1-C0 (Slice-Doc-Anlage
+[`M6-welle-1.md`](M6-welle-1.md)); ausstehend C1 (NEU ADR
+0043 Image-Audit-Strategie) + C2 (`Dockerfile`-Bump + `make
+fullbuild` cache-frei gruen) + C3 (Status-Sync). M6-Welle-0
+abgeschlossen 2026-06-04 mit Stack `282a8cb..960f6ed`
+(siehe [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
 
 ### 3.2 Pending-Wellen-Plan-Items
 
