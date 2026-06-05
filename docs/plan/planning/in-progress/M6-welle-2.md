@@ -1,7 +1,11 @@
 # Welle 2 — M6 SBOM-Aktivierung + Release-Workflow (`GG-CICD-007`)
 
-**Status:** In Progress — eroeffnet mit C0 (dieser Commit;
-NEU Slice-Doc). Welle 2 ist die **zweite Code-Welle in M6**
+**Status:** In Progress — eroeffnet mit C0 `0cc28f3`
+(NEU Slice-Doc) + C0-Review-Folge (dieser Commit; 4
+Findings adressiert: 2 HIGH SBOM-Scan-Ziel-Drift + Demo-
+Abnahmedoku-Asset-Drift, 1 MED Report-Target-Schaerfungen,
+1 LOW M6-Plan-C4a/C4b-Drift). Welle 2 ist die **zweite
+Code-Welle in M6**
 nach M6-D-1-Option-B-Vorbelegung („pro Triggerebene": krb5-
 Bump + SBOM klein vor CI/CD/Performance/Security gross) und
 loest **Trigger 008**
@@ -52,10 +56,26 @@ Akzeptanz ab (5 Asset-Klassen, siehe §1.3).
   Workflow im Repo; deckt vier A-1-Pflicht-Gates (lint,
   format-check, typecheck, arch-check). **Kein Release-
   Workflow vorhanden**.
-- **`make ci`-Pipeline-Outputs** (lokal): test-unit
-  Reports + coverage-HTML + openapi.json sind alle
-  bereits durch bestehende `make`-Targets erzeugbar; nur
-  die GitHub-Actions-Asset-Upload-Wiring fehlt.
+- **`make ci`-Pipeline-Outputs** (lokal; F3-Korrektur
+  Welle-2-C0-Review-Folge): die existierenden Targets
+  sind **partiell unzureichend** fuer Release-Asset-
+  Export. Konkret:
+  - `Dockerfile` Z.206-207 `test-unit`-Stage hat **kein
+    `--junitxml=`-Output** — JUnit-XML-Asset noetigt einen
+    Stage-Edit (`--junitxml=/src/coverage/test-results.
+    xml`) oder NEU `make test-report`-Target.
+  - `Dockerfile` Z.242-246 `coverage-gate`-Stage erzeugt
+    nur `coverage.xml` (kein HTML). Coverage-HTML-Asset
+    noetigt zusaetzlichen `--cov-report=html:/src/
+    coverage/htmlcov`-Block.
+  - `Makefile` Z.106 hat `make openapi-validate`
+    (validiert nur, exportiert nicht). OpenAPI-JSON-Asset
+    noetigt NEU `make openapi-export`-Target oder
+    Workflow-Direct-Call (`uv run python -m grid_gym
+    ...openapi-export`).
+
+  C2 nimmt diese drei Target-Edits als **Pflichtscope**
+  auf (nicht als „nur Wiring").
 - **`GG-CICD-007` Akzeptanz** (Lastenheft Z.1825-1827):
   „Wenn Artefakterzeugung aktiviert ist, veroeffentlicht
   die Pipeline Container-Images, Testberichte, Coverage-
@@ -95,10 +115,18 @@ Tools.
 
 Sechs Sub-Items:
 
-1. **`make sbom` Schaerfung** (lokal): VERSION-Default
-   aus `pyproject.toml [project] version` oder Git-Tag
-   ableiten falls nicht explizit gesetzt; `make sbom`-
-   Hilfe-Text verfeinern; ggf. SBOM-Output-Verifikation
+1. **`make sbom` Scan-Ziel-Umstellung** (C2-Pflicht;
+   F1-Korrektur Welle-2-C0-Review-Folge): Heute scannt
+   `Makefile` Z.461 `dir:/src` (Source-Tree-SBOM); das
+   widerspricht Trigger-008-Akzeptanz
+   ([`../open/008-sbom-activation.md`](../open/008-sbom-activation.md))
+   und §2.1-Decision-Substanz (Container-Image-SBOM).
+   C2 stellt den Scan-Befehl auf `grid-gym-runtime:latest`
+   um (Pattern `syft <image-tag> -o cyclonedx-json=...`)
+   mit voriger `make build`-Dependency. Plus VERSION-
+   Default-Schaerfung (aus `pyproject.toml [project]
+   version` oder Git-Tag); `make sbom`-Hilfe-Text
+   verfeinern; ggf. SBOM-Output-Verifikation
    (`tools/check_sbom.py`-Style) als Pre-Release-Gate.
 2. **NEU `.github/workflows/release.yml`**: Tag-Push-
    getriggert (Pattern `v*.*.*`); produziert und
@@ -107,18 +135,45 @@ Sechs Sub-Items:
    `docker/build-push-action` an GHCR (`ghcr.io/<owner>/
    grid-gym`); Tag = Git-Tag + `latest` falls Default-
    Branch.
-4. **Asset-Klasse 2 — SBOM**: via `make sbom VERSION=...`
-   im Workflow; Upload als GitHub-Release-Asset.
-5. **Asset-Klassen 3-5 — Test-/Coverage-/OpenAPI-Reports**:
-   `make test-unit` JUnit-XML + `make coverage-gate` HTML +
-   `make openapi-export` JSON; alle drei als Release-
-   Assets hochgeladen.
-6. **Demo-Abnahmeartefakt-Pointer**: `docs/user/gg-demo-
-   008-abnahme.md` (M5-Welle-6c-Closure-Substanz) wird
-   per Workflow-Schritt als Release-Notes-Anhang
-   verlinkt — kein neuer Artefakt-Build noetig.
+4. **Asset-Klasse 2 — SBOM (Runtime-Image)**: via `make
+   sbom VERSION=...` im Workflow (nach `make build`); Scan-
+   Ziel = `grid-gym-runtime:latest`; Upload als GitHub-
+   Release-Asset (CycloneDX-JSON).
+5. **Asset-Klasse 3 — Test-Reports (JUnit-XML)**: Heute
+   hat `Makefile` Z.193-194 `make test-unit` ohne
+   JUnit-Export (`Dockerfile` Z.206-207). C2 ergaenzt
+   `--junitxml=/src/coverage/test-results.xml` im
+   `test-unit`-Stage oder erstellt NEU `make test-report`-
+   Target; Workflow lade die XML-Datei hoch.
+6. **Asset-Klasse 4 — Coverage-Reports (HTML)**: Heute
+   erzeugt `Makefile`/`Dockerfile` Z.242-246
+   `coverage.xml` (kein HTML). C2 ergaenzt
+   `--cov-report=html:/src/coverage/htmlcov` neben dem
+   bestehenden XML-Output; Workflow packe das `htmlcov/`-
+   Verzeichnis als `coverage-html-v<X>.tar.gz`.
+7. **Asset-Klasse 5 — OpenAPI-Spec (JSON)**: Heute hat
+   `Makefile` Z.106 `make openapi-validate` (validiert
+   nur, exportiert nicht). C2 fuegt NEU `make openapi-
+   export`-Target hinzu (`uv run python -m grid_gym
+   ...openapi-export > artifacts/openapi-v<X>.json` oder
+   via FastAPI-CLI); Workflow lade JSON-Datei hoch.
+8. **Asset-Klasse 6 — Demo-Abnahmedoku** (F2-Korrektur
+   Welle-2-C0-Review-Folge): `docs/user/gg-demo-008-
+   abnahme.md` wird **direkt als Release-Asset
+   hochgeladen** (Markdown-File). `GG-CICD-007`-Akzeptanz
+   verlangt „Pipeline veroeffentlicht ... Demo-
+   Abnahmeartefakte"; ein blosser Release-Notes-Link
+   erfuellt die Veroeffentlichungs-Pflicht nicht. Plus
+   ergaenzender Release-Notes-Link auf die Doku in der
+   Repo-Anzeige (kein Ersatz fuer Asset-Upload).
 
 Plus **NEU ADR 0042** als Welle-2-C1-Substanz.
+
+**Asset-Klassen-Bilanz** (Welle-2-C0-Review-Folge-
+Korrektur): 6 GitHub-Release-Assets (SBOM + JUnit-XML +
+Coverage-HTML-Tarball + OpenAPI-JSON + Demo-Abnahme-MD)
++ 1 GHCR-Push (Container-Image). 5 Lastenheft-`GG-CICD-
+007`-Klassen alle als publiziertes Asset abgedeckt.
 
 ### 1.4 Welle-2-Anti-Scope
 
@@ -233,9 +288,27 @@ Optionen (mit Probe-Resultaten aus §1.2):
   unberuehrt.
 
 ADR 0042 §2 fixiert Syft + cyclonedx-json + Container-
-Image (`runtime`-Stage) als Scan-Ziel. Versionierung
-ueber `VERSION`-Variable (Git-Tag bei Tag-Push;
-optional Manual-Override).
+Image (`runtime`-Stage = `grid-gym-runtime:latest`) als
+Scan-Ziel. Versionierung ueber `VERSION`-Variable
+(Git-Tag bei Tag-Push; optional Manual-Override).
+
+**Wichtig (F1-Korrektur Welle-2-C0-Review-Folge):** Der
+aktuelle `Makefile` Z.461 scannt `dir:/src` — das ist ein
+**Source-Tree-SBOM**, kein Runtime-Image-SBOM. Trigger
+008 ([`../open/008-sbom-activation.md`](../open/008-sbom-activation.md))
+verlangt explizit „SBOM enthaelt alle Runtime-Dependencies
+aus `uv.lock` und das Container-Image". C2-Pflicht-Substanz:
+
+- `make sbom` Scan-Befehl von `dir:/src` auf `grid-gym-
+  runtime:latest` umstellen (Syft-Aufruf-Form: `syft
+  grid-gym-runtime:latest -o cyclonedx-json=...`).
+- Build-Dependency hinzufuegen: `sbom: build` (analog
+  `image-audit: build` in Z.279).
+- Falls ein zusaetzlicher Source-Tree-SBOM gewuenscht
+  ist (z. B. fuer Dependency-Audit-Cross-Check), als
+  separates Target `make sbom-source` mit eigenem
+  Output-File (Welle-2-Pre-Beobachtung; nicht in
+  Welle-2-Pflichtscope).
 
 ### Welle-2-D-2 — Release-Workflow-Trigger
 
@@ -287,9 +360,20 @@ Optionen:
 - Bundle-Archive verstecken Asset-Details vor Reviewers
   (User muss erst entpacken).
 - Container-Image ist per GHCR-Push bereits separat
-  (kein GitHub-Release-Asset noetig); 4 verbleibende
-  Asset-Files (SBOM + JUnit + Coverage-HTML-Tarball +
-  OpenAPI) als GitHub-Release-Assets.
+  (kein GitHub-Release-Asset noetig); **5 verbleibende
+  Asset-Files** (SBOM + JUnit-XML + Coverage-HTML-Tarball
+  + OpenAPI + Demo-Abnahme-MD) als GitHub-Release-Assets.
+
+**F2-Korrektur Welle-2-C0-Review-Folge:** Die initial
+in §1.3 Sub-Item 6 vorgesehene „Release-Notes-Link-only"-
+Auslieferung der Demo-Abnahmedoku war ein
+Lastenheft-`GG-CICD-007`-Drift (Akzeptanz „veroeffentlicht
+... Demo-Abnahmeartefakte" wird nicht durch Repository-
+internen Markdown-Link erfuellt). C2-Pflicht: `docs/user/
+gg-demo-008-abnahme.md` als 5. Release-Asset hochladen
+(Markdown-File direkt; kein PDF-Build noetig — User-
+Doku-Format ist Markdown-native). Release-Notes traegt
+zusaetzlich einen Anker-Link zur Repo-Version der Datei.
 
 Coverage-HTML bleibt im Tarball (Verzeichnis-Struktur
 mit ~50 Files; einzelne Files unhandlich).
@@ -514,19 +598,35 @@ Pre-C0b (Pattern analog M6-Welle-1→2).
   analog Trigger 010 in M6-Welle-1-C3-Review-Folge).
 - `docs/plan/adr/README.md` (C1) — Aktive-ADRs-Tabelle
   um ADR-0042-Zeile (Hard Rule).
-- `Makefile` (C2, **bedingt** — nur falls VERSION-
-  Default-Schaerfung sinnvoll wird).
+- `Makefile` (C2, **Pflicht**; F1+F3-Korrektur Welle-2-
+  C0-Review-Folge):
+  - `make sbom` Scan-Ziel von `dir:/src` auf `grid-gym-
+    runtime:latest` + `sbom: build`-Dependency (F1).
+  - `make sbom` VERSION-Default-Schaerfung (aus
+    `pyproject.toml [project] version`).
+  - NEU `make openapi-export`-Target (F3; analog
+    bestehendem `make openapi-validate` aber mit
+    Datei-Output unter `artifacts/openapi-v<X>.json`).
+- `Dockerfile` (C2, **Pflicht**; F3-Korrektur):
+  - `test-unit`-Stage (Z.206-207) um `--junitxml=/src/
+    coverage/test-results.xml` ergaenzen.
+  - `coverage-gate`-Stage (Z.242-246) um zusaetzlichen
+    `--cov-report=html:/src/coverage/htmlcov`-Block
+    ergaenzen.
+  - Welle-1-Stand bleibt unangetastet (`runtime`-Stage
+    + base-Layer); nur die Test-/Coverage-Stages werden
+    geschaerft.
 - `README.md` + `README.de.md` (C3) — NEU Release-
-  Workflow-Hinweis + `make sbom`-Erwaehnung schaerfen.
+  Workflow-Hinweis + `make sbom`-Scan-Ziel-Hinweis
+  (Runtime-Image) + ggf. NEU `make openapi-export`-
+  Eintrag im Top-Level-Make-Listing.
 
 **Welle-2-UNBERUEHRT (kein Edit):**
 
 - Aller Code unter `src/` (Welle 2 ist CI/Doku/Build-
   Tooling-Substanz, kein Python-Code-Pfad-Wechsel).
 - Alle Tests unter `tests/` (Test-Counts bleiben
-  1722/80).
-- `Dockerfile` (Welle-1-Substanz bereits stabil; Welle 2
-  baut auf dem existierenden `runtime`-Image auf).
+  1722/80; nur Test-Runner-Output-Format geschaerft).
 - ADRs 0001..0041 + 0043 (Welle 2 fuegt nur ADR 0042
   hinzu).
 - Welle-Slice-Docs unter `done/` (eingefroren modulo
@@ -682,10 +782,38 @@ Schaerfung.
 - [ ] **C2 — NEU `.github/workflows/release.yml`** mit
   Tag-Push + `workflow_dispatch`-Trigger + 3 Jobs
   (build-and-publish-image / produce-assets / create-
-  release) + 5 Asset-Klassen produktiv.
-- [ ] **C2 — `Makefile`** ggf. `make sbom` VERSION-
-  Default-Schaerfung; ggf. NEU `tools/check_sbom.py`
-  Sanity-Pruefer.
+  release) + 1 GHCR-Push + 5 GitHub-Release-Asset-Files
+  produktiv (SBOM + JUnit-XML + Coverage-HTML-Tarball +
+  OpenAPI-JSON + Demo-Abnahme-MD).
+- [ ] **C2 — `Makefile` `make sbom` Scan-Ziel-Umstellung**
+  (F1-Pflicht; Welle-2-C0-Review-Folge): Scan-Befehl von
+  `dir:/src` auf `grid-gym-runtime:latest` umstellen +
+  `sbom: build`-Dependency analog `image-audit: build`
+  (Z.279). Plus VERSION-Default-Schaerfung. Lokal-
+  Verifikation: `make sbom VERSION=v0.0.0-welle2-probe`
+  produziert CycloneDX-JSON mit Runtime-Image-
+  Dependencies + Debian-OS-Komponenten (~160 Komponenten;
+  Pre-C0c-Probe-Range).
+- [ ] **C2 — `Makefile` NEU `make openapi-export`**
+  (F3-Pflicht): exportiert OpenAPI-JSON-Spec aus FastAPI
+  in `artifacts/openapi-v<X>.json`; vorhandenes
+  `openapi-validate` bleibt unangetastet. Verifikation
+  mit `make openapi-export VERSION=v0.0.0-welle2-probe`.
+- [ ] **C2 — `Dockerfile` `test-unit`-Stage JUnit-XML**
+  (F3-Pflicht): Z.206-207 um `--junitxml=/src/coverage/
+  test-results.xml` ergaenzen. `make test-unit`
+  produziert JUnit-XML neben Konsolen-Output. Test-
+  Counts bleiben unveraendert (1722).
+- [ ] **C2 — `Dockerfile` `coverage-gate`-Stage HTML**
+  (F3-Pflicht): Z.242-246 um zusaetzlichen `--cov-
+  report=html:/src/coverage/htmlcov`-Block ergaenzen.
+  `coverage.xml` bleibt erhalten (bestehende
+  Branch-Schwelle-Logik unangetastet); HTML neu zur
+  Asset-Auslieferung.
+- [ ] **C2 — ggf. NEU `tools/check_sbom.py`** Sanity-
+  Pruefer (Component-Count > 100; CycloneDX-Format-
+  Konformitaet; Schluessel-Pakete vorhanden); bedingt,
+  falls Pre-Release-Gate-Substanz noetig wird.
 - [ ] **C2 — `make gates`** cache-frei gruen (10/10
   A-1-Gates; Test-Counts unveraendert 1722/80).
 - [ ] **C2 — `make ci`** cache-frei gruen (gates +

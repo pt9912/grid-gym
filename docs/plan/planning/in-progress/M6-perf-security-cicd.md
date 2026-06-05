@@ -188,9 +188,10 @@ C0 (Slice-Doc-Anlage [`M6-welle-2.md`](M6-welle-2.md));
 ausstehend C1 (NEU ADR 0042 SBOM-Tool + Release-Pattern) +
 C2 (NEU `.github/workflows/release.yml` + ggf. `Makefile`-
 Schaerfung) + C3 (Status-Sync). M6-Welle-1 abgeschlossen
-2026-06-05 mit Stack `4b1b3e9..4517614` (siehe
-[`M6-welle-1.md`](../done/M6-welle-1.md); Self-Close-Move-Folge
-C4a/C4b ausstehend): **Trigger-010-Aufloesung ohne Code-
+2026-06-05 mit Stack `4b1b3e9..d51d6e7` (siehe
+[`M6-welle-1.md`](../done/M6-welle-1.md); Stack umfasst
+C0/C0-Review-Folgen/C1/C2/C3/C3-Review-Folge + C4a `1fbd0ac`
+Self-Close-Move + C4b `d51d6e7` Cross-Doc-Refs-Sync): **Trigger-010-Aufloesung ohne Code-
 Edit** durch Upstream-Patch-Drift (Debian-13.5 +
 Trigger-015-Pattern). Welle-1-D-1 (CI-Pflicht-Gate fuer
 `make fullbuild`) auf M6-Welle-3 vertagt ueber NEU
