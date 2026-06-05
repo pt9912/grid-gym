@@ -1,0 +1,50 @@
+# grid-gym Dep-Audit Workflow (GG-CICD-005/006; M6 Welle 3).
+#
+# Spiegelt `make dep-audit` (pip-audit --strict gegen uv.lock)
+# als CI-Pflicht-Gate wider. Default-Python (3.14, Referenz-
+# Runtime); Matrix nicht noetig — pip-audit prueft uv.lock-
+# Eintraege gegen CVE-DB; Python-Version-agnostisch (M6-Welle-3-
+# D-2-Decision).
+#
+# Bezug:
+# - GG-CICD-005 (Lastenheft §22): Security-Scanning verfuegbar.
+# - GG-CICD-006 (Lastenheft §22): Dependency-Scanning verfuegbar.
+# - M6-Welle-3-Slice-Doc §3 Welle-3-D-2.
+
+name: Dep-Audit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  dep-audit:
+    name: dep-audit (pip-audit --strict)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & run dep-audit stage
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: dep-audit
+          push: false
+          load: false
+          cache-from: type=gha,scope=dep-audit
+          cache-to: type=gha,scope=dep-audit,mode=max

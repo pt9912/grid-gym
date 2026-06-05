@@ -1,0 +1,84 @@
+# grid-gym Fullbuild Workflow (Trigger 031; M6 Welle 3).
+#
+# Loest Trigger 031 (M6-Welle-1-Welle-1-D-1-Vertagung) auf:
+# spiegelt `make fullbuild` (= `make ci` + `make build` + `make
+# runtime` Compose-Smoke) als CI-Pflicht-Gate wider. Default-
+# Python (3.14, Referenz-Runtime); Matrix nicht noetig — Compose-
+# Smoke + image-audit sind Service-Container/Image-bezogen, nicht
+# Python-Version-spezifisch (M6-Welle-3-D-2-Decision).
+#
+# Trigger-Strategie (M6-Welle-3-D-3): Hybrid Push/PR mit Paths-
+# Filter + workflow_dispatch. `make fullbuild` ist teuer (~10min);
+# Doc-only-Aenderungen umgehen den Run. Force-Runs via Manual-
+# Dispatch fuer Base-Image-Drift / Trivy-DB-Update.
+#
+# Bezug:
+# - Trigger 031 (`docs/plan/planning/done/031-ci-make-fullbuild-
+#   gate.md`; in M6-Welle-3-C3 nach `done/` gewandert).
+# - GG-CICD-003 (Quality Gates) inkl. openapi-validate + image-
+#   audit-Anteile.
+# - M6-Welle-3-Slice-Doc §3 Welle-3-D-3.
+
+name: Fullbuild
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - 'Makefile'
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'deploy/**'
+      - '.github/workflows/fullbuild.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - 'Makefile'
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'deploy/**'
+      - '.github/workflows/fullbuild.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  fullbuild:
+    name: make fullbuild (ci + build + compose smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # `make fullbuild` umfasst:
+      # - gates (10 A-1-Gates: lint/format-check/typecheck/
+      #   arch-check/test-unit/coverage-gate/coverage-gate-
+      #   critical/dep-audit/noqa-gate/spdx-check).
+      # - test-integration (Compose-basiert; nutzt host docker-
+      #   socket).
+      # - openapi-validate (FastAPI-Spec-Export + Validierung).
+      # - image-audit (trivy gegen Runtime-Image + OTel-Collector;
+      #   ADR 0043 §2.1 Schwelle TRIVY_SEVERITY=HIGH,CRITICAL +
+      #   --ignore-unfixed).
+      # - build (Runtime-Image).
+      # - runtime (Compose-Smoke: /health + otel-collector
+      #   :13133 + sauberer Teardown).
+      - name: Run make fullbuild
+        run: make fullbuild

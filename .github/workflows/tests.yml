@@ -1,0 +1,76 @@
+# grid-gym Tests Workflow (GG-CICD-002; M6 Welle 3).
+#
+# Spiegelt `make test-unit` + `make test-integration` als CI-
+# Pflicht-Gates wider. test-unit laeuft als Python-3.13/3.14-
+# Matrix (ADR 0002 §6.1); test-integration laeuft mit Default-
+# Python (3.14, Referenz-Runtime) weil testcontainers/Compose-
+# Substanz nicht Python-Version-spezifisch ist (Compose-File-
+# Edit waere Welle-X-Material).
+#
+# Bezug:
+# - GG-CICD-002 (Lastenheft §22): Tests automatisch ausfuehren.
+# - ADR 0002 §6.1: Python-3.13/3.14-Matrix.
+# - M6-Welle-3-Slice-Doc §3 Welle-3-D-1/D-2.
+
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test-unit:
+    name: test-unit (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.13', '3.14']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & run test-unit stage (Python ${{ matrix.python-version }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: test-unit
+          push: false
+          load: false
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python-version }}
+          cache-from: type=gha,scope=test-unit-${{ matrix.python-version }}
+          cache-to: type=gha,scope=test-unit-${{ matrix.python-version }},mode=max
+
+  test-integration:
+    name: test-integration (default Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # `make test-integration` ruft `docker compose -f tests/
+      # integration/compose.yml up`-Pattern auf. Der GitHub-
+      # Actions-Runner hat Docker + Compose vorinstalliert;
+      # testcontainers spawnt Sibling-Container ueber den
+      # Host-Daemon-Socket-Mount (siehe tests/integration/
+      # compose.yml).
+      - name: Run make test-integration
+        run: make test-integration

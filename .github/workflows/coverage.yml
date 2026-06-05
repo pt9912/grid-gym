@@ -1,0 +1,70 @@
+# grid-gym Coverage Workflow (GG-CICD-003; M6 Welle 3).
+#
+# Spiegelt `make coverage-gate` (90 % Line / 85 % Branch) und
+# `make coverage-gate-critical` (90 % Critical-Domain) als CI-
+# Pflicht-Gates wider. Default-Python (3.14, Referenz-Runtime);
+# Matrix nicht noetig — Coverage misst Code-Stand-Pfade, nicht
+# Python-Version-Verhalten (M6-Welle-3-D-2-Decision).
+#
+# Bezug:
+# - GG-CICD-003 (Lastenheft §22): Quality Gates maschinenlesbar.
+# - GG-COV-001/002/003 (Coverage-Schwellen aus pyproject.toml).
+# - M6-Welle-3-Slice-Doc §3 Welle-3-D-2.
+
+name: Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-gate:
+    name: coverage-gate (90% line / 85% branch)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & run coverage-gate stage
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: coverage-gate
+          push: false
+          load: false
+          cache-from: type=gha,scope=coverage-gate
+          cache-to: type=gha,scope=coverage-gate,mode=max
+
+  coverage-gate-critical:
+    name: coverage-gate-critical (90% critical domain)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & run coverage-gate-critical stage
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: coverage-gate-critical
+          push: false
+          load: false
+          cache-from: type=gha,scope=coverage-gate-critical
+          cache-to: type=gha,scope=coverage-gate-critical,mode=max
