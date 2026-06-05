@@ -407,6 +407,13 @@ Pre-C0a/Pre-C0b (Pattern analog Welle-6c→7).
 - `docs/plan/planning/in-progress/roadmap.md` (C3) — §1
   Status-Header (`make fullbuild`-Defer-Notiz aufloesen)
   + §3 M6 aktive-Welle-Block.
+- `docs/plan/adr/README.md` (C1) — ADR-Index Aktive-ADRs-
+  Tabelle um ADR-0043-Zeile (`Provisional`) ergaenzt; Hard
+  Rule per [`harness/README.md`](../../../../harness/README.md)
+  Z.81 („Neue ADRs aktualisieren `docs/plan/adr/README.md`").
+  `make docs-check` faengt eine fehlende Index-Zeile **nicht**
+  ab (es ist ein Markdown-Link-Validator, kein Index-Pflicht-
+  Pruefer) — daher als expliziter Critical-File-Eintrag.
 - `docs/plan/planning/in-progress/carveouts.md` (C3) — §2.2
   Trigger-010-Eintrag auf `Aufgeloest in M6-Welle-1`.
 - `docs/plan/planning/open/README.md` (C3) — Trigger-010-
@@ -553,6 +560,12 @@ gefuehrt; `make docs-check` faengt fehlende Doku-Refs.
 - [ ] **C1 — NEU `docs/plan/adr/0043-image-audit-strategy.md`**
   als `Provisional` mit Trigger-010-Hash-Anchor-Block +
   ADR-Standard-Struktur (§1..§4) + Bezug zu ADR 0028/0029.
+- [ ] **C1 — `docs/plan/adr/README.md`** Aktive-ADRs-Tabelle
+  um ADR-0043-Zeile ergaenzt (Titel/Status `Provisional`/
+  Datum/Schaerfungs-Spalte). Hard Rule per `harness/
+  README.md` Z.81; `make docs-check` deckt das **nicht** ab
+  (Markdown-Link-Validator, nicht Index-Pruefer) — Sicht-
+  Pruefung in C1.
 - [ ] **C2 — `Dockerfile`** krb5-Bump (`FROM`-Update oder
   apt-Hardening-Block; entscheidet sich nach Trivy-Probe).
 - [ ] **C2 — ggf. `uv.lock`** Refresh nach Library-Drift-
