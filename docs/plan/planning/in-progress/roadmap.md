@@ -894,12 +894,13 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b-c
-(`GG-RT-001` Backpressure-Healthcheck; Tick-Dauer/p95-Jitter/
-missed-Ticks-Telemetrie als NEU TickLoop-Healthcheck-Surface
-fuer 10ms-Modus)** — Welle-4b-c-Slice-Doc entsteht in Welle-4b-
-c-C0. Welle 4b ist in 4b-a/4b-b/4b-c sub-geslict per Welle-4b-
-a-D-1; Pattern analog M5-Welle-6 Sub-Slicing 6a/6b/6c.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5
+(Security-Audit + Eingabevalidierung; `GG-SAFE-001..008`
+MUSS/SOLLTE)** — Welle-5-Slice-Doc entsteht in Welle-5-C0.
+**Welle-4-Subdivision komplett abgeschlossen 2026-06-06**:
+4a Vulnignore-Pattern + 4b-a Bench-Foundation + 4b-b
+`GG-RT-005`-Telemetry-Bench + 4b-c `GG-RT-001`-Backpressure-
+Healthcheck (alle vier Sub-Slices Done).
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
@@ -979,7 +980,22 @@ Commit Closure-Sync): `GG-RT-005`-Doppel-Akzeptanz produktiv
 Publish-OPS lokal weit ueber der 10 000-SOLLTE-Schwelle;
 Single-Queue-Subscriber-Slot-Setup vermeidet das No-Op-False-
 Positive aus dem C0-Erstwurf).
-Welle 4b-c+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+**M6-Welle-4b-c abgeschlossen 2026-06-06** mit Stack
+`c5543fd..<C3>` (C0 + C0-Review-Folge `aacc370` (7 Self-Review-
+Findings: F1 MEDIUM clock_source-Pflicht + F2-F7 LOW) + C2
+`a98f967` (NEU `TickLoopHealthcheckAdapter` + Driver-Hook +
+`_healthcheck_router.py`-Endpoint + 14 Unit-Tests + 3
+Integration-Smokes) + C2-Review-Folge `8785a6b` (7 Self-
+Review-Findings: F1 MEDIUM Datei-Naming-Drift + F2-F7 LOW +
+try/finally-Wrap + 4 NEU Driver-Hook-Unit-Tests) + C3 dieser
+Commit Closure-Sync): `GG-RT-001` MUSS-Akzeptanz produktiv
+(Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status fuer
+10ms-Modus via NEU Adapter-Side `_tick_loop_healthcheck.py` +
+`GET /runs/{id}/healthcheck`-Endpoint; Core unangetastet,
+AC-NO-TIME-konform). **Welle-4-Subdivision komplett**: 4a +
+4b-a/b/c alle Done; aktive Welle wandert auf Welle 5
+(Security-Audit + Eingabevalidierung).
+Welle 5+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
 Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
 `Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +

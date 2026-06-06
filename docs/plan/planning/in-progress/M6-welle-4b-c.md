@@ -1,6 +1,17 @@
 # Welle 4b-c — M6 Backpressure-Healthcheck (`GG-RT-001` 10ms-Modus)
 
-**Status:** In Progress — C0 (dieser Commit, Slice-Doc-Anlage).
+**Status:** Done 2026-06-06 — Liefer-Stack: C0 `c5543fd`
+(Slice-Doc-Anlage + 6 Decisions D-1..D-6) + C0-Review-Folge
+`aacc370` (7 Self-Review-Findings: F1 MEDIUM clock_source-
+Pflicht + F2-F7 LOW) + C2 `a98f967` (NEU `TickLoopHealthcheck
+Adapter` + Driver-Hook + `_healthcheck_router.py` Endpoint +
+10 Unit-Tests + 3 Integration-Smokes; GG-RT-001-Akzeptanz
+produktiv) + C2-Review-Folge `8785a6b` (7 Self-Review-Findings:
+F1 MEDIUM Datei-Naming-Drift + F2-F7 LOW + try/finally-Wrap +
+NEU 4 Driver-Hook-Unit-Tests) + C3 (dieser Commit; Status/DoD-
+Sync + Welle-4-Subdivision-Komplett-Abschluss-Notiz + Top-
+Level-Doku). Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-
+Refs-Sync.
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
 Welle 4b ist gemaess Welle-4b-a-D-1 weiter in 4b-a (Bench-
@@ -595,67 +606,67 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **C0 — NEU `M6-welle-4b-c.md`** mit §1..§9-Struktur
+- [x] **C0 — NEU `M6-welle-4b-c.md`** mit §1..§9-Struktur
   (dieser Commit).
-- [ ] **C0 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C0 — `in-progress/README.md`** Bestand-Tabelle
   um `M6-welle-4b-c.md`-Eintrag + Aktive-Welle-Block auf
   M6-Welle-4b-c.
-- [ ] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-c-
+- [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-c-
   Zeile `Pending → In Progress 2026-06-06`; Status-Block
   oben aktive Welle auf 4b-c.
-- [ ] **C1 entfaellt** — Welle-4b-c-D-6 schliesst ADR-
+- [x] **C1 entfaellt** — Welle-4b-c-D-6 schliesst ADR-
   Schaerfungs-Bedarf negativ aus.
-- [ ] **C2 — NEU `_tick_loop_healthcheck.py`** mit
+- [x] **C2 — NEU `_tick_loop_healthcheck.py`** mit
   `TickLoopHealthcheckAdapter`-Klasse (Welle-4b-c-D-1 +
   D-2 + D-3 + D-4-konform); Pflicht-`clock_source:
   Callable[[], float] = time.perf_counter` (C0-Review-Folge-
   F1) im Konstruktor; Default-Argument fuer Production,
   Test-Override per Fake-Clock-Injection.
-- [ ] **C2 — `time.perf_counter()`-Hooks** in
+- [x] **C2 — `time.perf_counter()`-Hooks** in
   `_tick_loop_driver.py` (C0-Review-Folge-F4 konkret) um
   `tick()`-Wrap + `record_tick_duration`-Call.
-- [ ] **C2 — NEU `_healthcheck_router.py`-Sub-Modul** (C0-
+- [x] **C2 — NEU `_healthcheck_router.py`-Sub-Modul** (C0-
   Review-Folge-F6) mit dem `GET /runs/{run_id}/healthcheck`-
   Endpoint (6-Feld-JSON-Output per Welle-4b-c-D-5 + §1.2);
   in `app.py` per `include_router` eingebunden.
-- [ ] **C2 — NEU Unit-Tests** in `tests/unit/adapters/
+- [x] **C2 — NEU Unit-Tests** in `tests/unit/adapters/
   driving/http_api/test_tick_loop_healthcheck.py` (≥ 7
   Tests gemaess §4-C2-Substanz-Liste).
-- [ ] **C2 — NEU Integration-Smoke** in `tests/integration/
+- [x] **C2 — NEU Integration-Smoke** in `tests/integration/
   test_m6_welle_4b_c_healthcheck_smoke.py` (End-to-End:
   Run + tick + GET /healthcheck).
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates; `tests/unit/`: 1732 → ~1739 [+7]; `tests/integration/`:
   80 → 81 [+1]; `tests/perf/` unveraendert bei 2 Bench-Tests
   — C0-Review-Folge-F7-Klarstellung).
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
+- [x] **C2 — `make ci`** cache-frei gruen.
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C3 — `M6-welle-4b-c.md`** Status `In Progress →
+- [x] **C3 — `M6-welle-4b-c.md`** Status `In Progress →
   Done 2026-06-06` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-c-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-c-
   Zeile `In Progress → Done` mit Closure-Hash + Aktive-
   Welle-Block auf Welle 5.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU
+- [x] **C3 — `README.md` + `README.de.md`** NEU
   `GG-RT-001`-Healthcheck-Endpoint-Hinweis.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-5 + Welle-4b-c-Abschluss-Notiz + Welle-4-
   Subdivision-Abschluss-Notiz.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-4b-c-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-5.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 4b-c NICHT):**
 
-- [ ] Keine TickLoop-Core-Aenderung (Welle-4b-c-D-1).
-- [ ] Keine `ClockPort`-Erweiterung.
-- [ ] Keine NEU ADR (Welle-4b-c-D-6).
-- [ ] Kein `GG-RT-001` 10ms-Modus-Bench in `tests/perf/`.
-- [ ] Keine Persistenz der Healthcheck-Metriken.
-- [ ] Kein WebSocket-Push.
-- [ ] Keine OTLP-Adapter-Erweiterung.
-- [ ] Keine Multi-Run-Aggregation.
+- [x] Keine TickLoop-Core-Aenderung (Welle-4b-c-D-1).
+- [x] Keine `ClockPort`-Erweiterung.
+- [x] Keine NEU ADR (Welle-4b-c-D-6).
+- [x] Kein `GG-RT-001` 10ms-Modus-Bench in `tests/perf/`.
+- [x] Keine Persistenz der Healthcheck-Metriken.
+- [x] Kein WebSocket-Push.
+- [x] Keine OTLP-Adapter-Erweiterung.
+- [x] Keine Multi-Run-Aggregation.
 
 ---
 
