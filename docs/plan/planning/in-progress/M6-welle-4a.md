@@ -96,7 +96,7 @@ Drei orthogonale Liefer-Items:
    nach, mit der ein zeitlich begrenzter Defer maschinen-
    lesbar wird.
 2. **NEU `deploy/security/vulnignore.yaml`** + **NEU
-   `tools/render-trivyignore.sh`** (Welle-4a-C2) — Pattern-
+   `tools/render_trivyignore.py`** (Welle-4a-C2) — Pattern-
    Import aus m-trace mit Layout-Anpassung an grid-gym
    (`tools/`-Konvention statt `scripts/`; `deploy/security/`
    statt `.security/`). Initial-Eintrag fuer CVE-2026-42504
@@ -156,7 +156,7 @@ plus Self-Close-Folge C4a/C4b.
    0044"-Marker (rein Index-Pflege, keine ADR-0043-Text-
    Aenderung).
 3. **Code-Substanz** (C2) — NEU `deploy/security/
-   vulnignore.yaml` + NEU `tools/render-trivyignore.sh` +
+   vulnignore.yaml` + NEU `tools/render_trivyignore.py` +
    `.gitignore` um `deploy/security/.trivyignore` ergaenzt
    + `Makefile`-Integration (NEU `render-trivyignore`-
    Target + `image-audit`-Erweiterung um `--ignorefile`).
@@ -321,38 +321,52 @@ Code-Merge mit:
     2026-06-20` + `scope: otel-collector`).
   - Datei-Header-Schema-Block analog m-trace (Trivy-Format
     + govulncheck-Stub + Wartungsregel-Block).
-- NEU `tools/render-trivyignore.sh` (chmod +x):
-  - Adaptiert aus `/Development/m-trace/scripts/render-
-    trivyignore.sh`.
-  - Layout-Anpassung: `ROOT_DIR` per `tools/`-Pfad;
-    `SOURCE=${ROOT_DIR}/deploy/security/vulnignore.yaml`;
-    `TARGET=${ROOT_DIR}/deploy/security/.trivyignore`.
-  - SPDX-Header per `tools/check_spdx.py`-Konvention.
-  - `expires`-Pflicht + Ablauf-Bruch unangetastet.
+- NEU `tools/render_trivyignore.py`:
+  - Logik adaptiert aus `/Development/m-trace/scripts/
+    render-trivyignore.sh` (m-trace nutzt bash+awk; grid-
+    gym-Form nutzt Python+PyYAML, weil PyYAML bereits
+    grid-gym-Dep ist und das `tools/`-Konvention auf
+    Python-Skripte normiert ist — `check_noqa.py`/
+    `check_spdx.py`/`check_refs.py`-Pattern).
+  - Layout-Anpassung: `--source deploy/security/
+    vulnignore.yaml`; `--target deploy/security/
+    .trivyignore`; `--scope <name>` als Filter-Argument.
+  - SPDX-Header optional (tools/check_spdx.py scannt nur
+    GPL-Boundary; ADR 0035).
+  - `expires`-Pflicht + Ablauf-Bruch unveraendert
+    (EXIT=1 bei fehlendem oder abgelaufenem Feld).
 - `.gitignore` um `deploy/security/.trivyignore`-Eintrag
   ergaenzt (generated; nicht versioniert).
 - `Makefile`-Integration:
   - NEU `render-trivyignore`-Target (PHONY): laeuft
-    `bash tools/render-trivyignore.sh otel-collector`.
+    `uv run python tools/render_trivyignore.py --scope
+    $(TRIVYIGNORE_SCOPE)` via source-Stage + Bind-Mount
+    des Repo-Trees (Pattern analog `make format`); Default-
+    Scope `otel-collector`.
   - `image-audit`-Target um `render-trivyignore`-
     Vorlauf-Dependency erweitert.
   - Trivy-Run gegen `OTEL_COLLECTOR_IMAGE` um `--ignorefile
-    deploy/security/.trivyignore` erweitert (NUR fuer den
-    OTel-Run; runtime-Image-Run unangetastet, kein
-    Ignore-Wirkungsbereich).
+    /security/.trivyignore` erweitert (Bind-Mount von
+    `deploy/security/.trivyignore` als RO-Volume; NUR
+    fuer den OTel-Run; runtime-Image-Run unangetastet,
+    kein Ignore-Wirkungsbereich).
 - **Verifikation (lokal vor C2-Commit):**
-  - `bash tools/render-trivyignore.sh otel-collector`
-    EXIT=0; `.trivyignore` enthaelt CVE-2026-42504-Eintrag.
+  - `make render-trivyignore` EXIT=0; Output
+    `deploy/security/.trivyignore` enthaelt CVE-2026-42504-
+    Eintrag mit Begruendungs-Kommentar.
   - `make image-audit` cache-frei gruen (beide Trivy-Runs;
     runtime-Image weiterhin 0 HIGH/0 CRITICAL, OTel-
-    Collector mit `--ignorefile`-Filter gruen).
+    Collector mit `--ignorefile`-Filter gruen via Trivy-
+    Output „Some vulnerabilities have been ignored/
+    suppressed").
   - `make ci` cache-frei gruen.
   - `make fullbuild` cache-frei gruen ohne `CRITICAL_COV_
-    TARGETS`-Override.
+    TARGETS`-Override; Compose-Smoke `/health` + OTel-
+    Collector-`:13133` gruen.
   - `make docs-check` cache-frei gruen.
-  - `make gates` cache-frei gruen (10/10 A-1-Gates; Test-
-    Counts unveraendert 1722/80/4 skipped).
-  - `shellcheck tools/render-trivyignore.sh` EXIT=0.
+  - `make gates` cache-frei gruen (10/10 A-1-Gates inkl.
+    `make lint` ueber NEU `tools/render_trivyignore.py`;
+    Test-Counts unveraendert 1722/80/4 skipped).
 
 ### C3 — `docs(plan)`: Status/DoD-Sync
 
@@ -399,7 +413,7 @@ C0b.
   dieser Commit).
 - `docs/plan/adr/0044-generated-trivyignore-permit.md` (C1)
   — NEU `Provisional`-ADR.
-- `tools/render-trivyignore.sh` (C2) — NEU Render-Script;
+- `tools/render_trivyignore.py` (C2) — NEU Render-Script;
   Source-of-Truth-Renderer.
 - `deploy/security/vulnignore.yaml` (C2) — NEU Audit-
   Source-of-Truth mit CVE-2026-42504-Initial-Eintrag.
@@ -460,11 +474,9 @@ C0b.
   `--ignorefile`-Erweiterung).
 - `make fullbuild` cache-frei gruen ohne `CRITICAL_COV_
   TARGETS`-Override.
-- `bash tools/render-trivyignore.sh otel-collector`
-  EXIT=0; Output-Datei `.trivyignore` enthaelt
-  CVE-2026-42504-Zeile + Begruendungs-Kommentar +
-  `expires`-Marker.
-- `shellcheck tools/render-trivyignore.sh` EXIT=0.
+- `make render-trivyignore` EXIT=0; Output-Datei
+  `deploy/security/.trivyignore` enthaelt CVE-2026-42504-
+  Zeile + Begruendungs-Kommentar + `expires`-Marker.
 - GitHub-Actions-Workflow `fullbuild.yml` cache-frei gruen
   beim Push der C2/C3-Hashes (reale CI-Sensor-Verifikation
   analog Welle-3-C2 `ce13253` + Post-Closure-Korrekturen-
@@ -523,12 +535,15 @@ Release < `expires`: vulnignore-Eintrag wird im Stable-Bump-
 Commit entfernt (Trigger 033 wird dann geschlossen).
 
 **R3 — Trivy-`--ignorefile`-Pfad-Aufloesung im Container.**
-`tools/render-trivyignore.sh` schreibt `deploy/security/
+`tools/render_trivyignore.py` schreibt `deploy/security/
 .trivyignore` ins Host-Repo-Verzeichnis; Trivy laeuft im
 Docker-Container. Pfad-Mount erforderlich.
-**Mitigation:** Makefile-Trivy-Aufruf mountet `$(PWD)`
-mit; `--ignorefile /workspace/deploy/security/.trivyignore`
-(oder analoger Bind-Mount-Pfad). Verifikation in C2.
+**Mitigation:** Makefile-Trivy-Aufruf bindet die Datei per
+`-v "$(pwd)/deploy/security/.trivyignore":/security/
+.trivyignore:ro` ein und verwendet `--ignorefile /security/
+.trivyignore`. Verifikation in C2 (Trivy meldet „Some
+vulnerabilities have been ignored/suppressed" als
+Bestaetigung des Filter-Greifens).
 
 **R4 — vulnignore.yaml-YAML-Schema-Drift.** Render-Script
 liest YAML-Subgraph per awk; Schema-Aenderungen im m-trace-
@@ -597,18 +612,18 @@ Semantik re-verifiziert werden (M7+ oder spaeter).
   CVE-2026-42504-Eintrag (`reason` + `expires:
   2026-06-20` + `scope: otel-collector`); Datei-Header-
   Schema-Block analog m-trace.
-- [ ] **C2 — NEU `tools/render-trivyignore.sh`** (chmod
-  +x) adaptiert aus m-trace mit grid-gym-Layout-Anpassung;
-  SPDX-Header per `tools/check_spdx.py`-Konvention.
+- [ ] **C2 — NEU `tools/render_trivyignore.py`**
+  Python-Port aus m-trace-`render-trivyignore.sh` (bash+
+  awk → Python+PyYAML; CLI-Pattern analog `tools/
+  check_noqa.py`/`check_spdx.py`).
 - [ ] **C2 — `.gitignore`** um `deploy/security/
   .trivyignore`-Eintrag ergaenzt.
 - [ ] **C2 — `Makefile`** NEU `render-trivyignore`-Target
   (PHONY) + `image-audit`-Erweiterung um `--ignorefile`-
   Argument fuer den OTel-Collector-Run.
-- [ ] **C2 — `bash tools/render-trivyignore.sh otel-
-  collector`** EXIT=0 lokal.
-- [ ] **C2 — `shellcheck tools/render-trivyignore.sh`**
-  EXIT=0 lokal.
+- [ ] **C2 — `make render-trivyignore`** EXIT=0 lokal;
+  `deploy/security/.trivyignore` enthaelt CVE-2026-42504-
+  Eintrag.
 - [ ] **C2 — `make image-audit`** cache-frei gruen lokal.
 - [ ] **C2 — `make ci`** cache-frei gruen lokal.
 - [ ] **C2 — `make fullbuild`** cache-frei gruen ohne

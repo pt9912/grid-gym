@@ -53,6 +53,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	test-integration \
 	coverage-gate coverage-gate-critical \
 	dep-audit image-audit openapi-validate \
+	render-trivyignore \
 	gates ci fullbuild \
 	build runtime test-container demo demo-stop \
 	lock-refresh rebase-base \
@@ -102,7 +103,8 @@ help:
 	@echo ""
 	@echo "Security & Spec-Gates:"
 	@echo "  make dep-audit         GG-QG-002/GG-QA-005 — pip-audit gegen Lockfile (High/Critical bricht Build)"
-	@echo "  make image-audit       GG-QG-002 SOLLTE — trivy image scan (haengt von make build ab)"
+	@echo "  make image-audit       GG-QG-002 SOLLTE — trivy image scan (haengt von make build + render-trivyignore ab)"
+	@echo "  make render-trivyignore  ADR 0044 (M6 Welle 4a) — rendert deploy/security/vulnignore.yaml zu .trivyignore"
 	@echo "  make openapi-validate  GG-QG-006 — OpenAPI-Spec aus FastAPI exportieren und validieren"
 	@echo ""
 	@echo "Aggregator:"
@@ -262,6 +264,29 @@ coverage-gate-critical:
 dep-audit:
 	$(DOCKER_BUILD) --target dep-audit -t $(IMAGE_PREFIX)-dep-audit:latest
 
+# `tools/render_trivyignore.py` rendert deploy/security/vulnignore.yaml
+# (Audit-Source-of-Truth) zu deploy/security/.trivyignore (Trivy-natives
+# Plain-Text-Format). Pattern-Verankerung: ADR 0044 (Generated-Trivyignore-
+# Permit aus Audit-Source-of-Truth; M6 Welle 4a) — ADR-0011-Schaerfung an
+# ADR-0043 §2.2. Pflicht-Felder `id`/`reason`/`expires`/`scope`;
+# abgelaufene Eintraege brechen den Lauf (erzwingt Maintenance ohne
+# externe Erinnerung). Laeuft via source-Stage (PyYAML ist dort
+# verfuegbar) mit Bind-Mount des Repo-Trees; Pattern analog `make
+# format`-Target. Default-Scope `otel-collector` (Welle-4a-Erst-
+# Anwendungsfall Trigger 033 / CVE-2026-42504); override via
+# `make render-trivyignore TRIVYIGNORE_SCOPE=<scope>`.
+TRIVYIGNORE_SCOPE ?= otel-collector
+
+render-trivyignore:
+	$(DOCKER_BUILD) --target source -t $(IMAGE_PREFIX)-source:latest
+	$(DOCKER) run --rm \
+		--user "$$(id -u):$$(id -g)" \
+		-e UV_CACHE_DIR=/tmp/uv-cache \
+		-e UV_PROJECT_ENVIRONMENT=/tmp/uv-venv \
+		-v "$$(pwd)":/src -w /src \
+		$(IMAGE_PREFIX)-source:latest \
+		uv run python tools/render_trivyignore.py --scope $(TRIVYIGNORE_SCOPE)
+
 # GG-QG-002 SOLLTE: Container-Image-Scan ueber trivy. Laeuft AUSSERHALB
 # des Dockerfile, weil trivy das gebaute Image braucht. `--exit-code 1`
 # bricht den Build bei jeder HIGH/CRITICAL-Vulnerability, `--ignore-unfixed`
@@ -284,7 +309,13 @@ dep-audit:
 # Post-Push-CI-Fix `0891f65`). Lokal vs. CI sollen identische Sensor-
 # Substanz haben; lieber pro Lauf ~15s DB-Download als unverlaessliche
 # Verifikations-Substanz.
-image-audit: build
+#
+# Welle-4a-Erweiterung (M6 Welle 4a; ADR 0044): zweiter Trivy-Run
+# (OTel-Collector) bekommt `--ignorefile` mit der generierten
+# `.trivyignore`-Datei aus `deploy/security/`. Render-Vorlauf-
+# Dependency `render-trivyignore`. Runtime-Image-Run bleibt OHNE
+# `--ignorefile` (kein vulnignore-Scope-Match in der Erstanwendung).
+image-audit: build render-trivyignore
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		$(TRIVY_IMAGE) image \
@@ -295,10 +326,12 @@ image-audit: build
 	$(DOCKER) image inspect $(OTEL_COLLECTOR_IMAGE) >/dev/null 2>&1 || $(DOCKER) pull $(OTEL_COLLECTOR_IMAGE)
 	$(DOCKER) run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$$(pwd)/deploy/security/.trivyignore":/security/.trivyignore:ro \
 		$(TRIVY_IMAGE) image \
 			--exit-code 1 \
 			--severity $(TRIVY_SEVERITY) \
 			--ignore-unfixed \
+			--ignorefile /security/.trivyignore \
 			$(OTEL_COLLECTOR_IMAGE)
 
 # GG-QG-006: OpenAPI-Spec aus FastAPI exportieren und mit

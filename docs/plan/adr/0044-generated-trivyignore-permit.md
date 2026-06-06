@@ -156,21 +156,26 @@ Script-Bruch (kein Default-Fill; Pflicht).
 
 ### §2.3 Render-Script-Vertrag
 
-Das Render-Script `tools/render-trivyignore.sh`:
+Das Render-Script `tools/render_trivyignore.py`:
 
-1. Liest `deploy/security/vulnignore.yaml` als YAML-
-   Subgraph (`trivy.ignore[]`-Pfad).
-2. Filtert Eintraege per optionalem Scope-Argument (`bash
-   tools/render-trivyignore.sh otel-collector` → nur
-   Eintraege mit `scope: otel-collector` oder `*`).
-3. Bricht bei abgelaufenen `expires`-Werten mit EXIT≠0
+1. Liest `deploy/security/vulnignore.yaml` per
+   `yaml.safe_load` (PyYAML ist bereits grid-gym-Dep,
+   produktiv im `_yaml_scenario_loader`).
+2. Filtert Eintraege per `--scope`-Argument (z. B.
+   `make render-trivyignore TRIVYIGNORE_SCOPE=otel-
+   collector`); Eintraege mit `scope: otel-collector` oder
+   `scope: *` matchen.
+3. Bricht bei abgelaufenen `expires`-Werten mit EXIT=1
    und Fehlermeldung pro Eintrag.
-4. Bricht bei fehlendem `expires`-Feld mit EXIT≠0.
+4. Bricht bei fehlendem `expires`- oder `id`-Feld mit
+   EXIT=1.
 5. Schreibt `deploy/security/.trivyignore` (Plain-Text;
    eine CVE-ID pro Zeile mit Begruendungs-Kommentar).
-6. **Idempotenz**: bei keinem Treffer (z. B. Scope ohne
-   passende Eintraege) wird die Output-Datei entfernt
-   (kein leerer File-Drift).
+6. **File-Praesenz-Invariante**: bei keinem Treffer wird
+   die Output-Datei trotzdem mit Header-only geschrieben
+   — `image-audit` mountet die Datei per `--ignorefile`,
+   deshalb darf sie nicht fehlen (Trivy akzeptiert
+   Header-only-Form).
 
 Der Script ist die einzige Stelle, an der `.trivyignore`-
 Inhalte produziert werden. Direkte `.trivyignore`-Edits
@@ -182,16 +187,23 @@ Output).
 
 Die `make image-audit`-Substanz wird wie folgt erweitert:
 
-- NEU `render-trivyignore`-Makefile-Target (PHONY) ruft
-  `bash tools/render-trivyignore.sh <scope>` auf.
+- NEU `render-trivyignore`-Makefile-Target (PHONY) baut
+  die `source`-Stage des Multi-Stage-Dockerfile und ruft
+  darin `uv run python tools/render_trivyignore.py --scope
+  $(TRIVYIGNORE_SCOPE)` per `docker run` mit Repo-Bind-
+  Mount auf (Pattern analog `make format`-Target Z.139-
+  148; PyYAML ist im `source`-Stage durch das
+  `uv sync --frozen --all-groups --extra iec61850`
+  bereits installiert).
 - `image-audit`-Target bekommt `render-trivyignore` als
-  Vorlauf-Dependency.
+  Vorlauf-Dependency neben `build`.
 - Der Trivy-Run gegen den Scope-relevanten Image (z. B.
-  OTel-Collector) bekommt `--ignorefile deploy/security/
-  .trivyignore` als zusaetzliches CLI-Argument. Der
-  Runtime-Image-Run bleibt **ohne** `--ignorefile` (kein
-  Scope-Match in der Erstanwendung; das Runtime-Image hat
-  0 HIGH/0 CRITICAL).
+  OTel-Collector) bekommt `-v "$(pwd)/deploy/security/
+  .trivyignore":/security/.trivyignore:ro` als RO-Volume
+  + `--ignorefile /security/.trivyignore` als CLI-Argument.
+  Der Runtime-Image-Run bleibt **ohne** `--ignorefile`
+  (kein Scope-Match in der Erstanwendung; das Runtime-
+  Image hat 0 HIGH/0 CRITICAL).
 - `TRIVY_SEVERITY=HIGH,CRITICAL` + `--ignore-unfixed`
   (ADR 0043 §2.1-Pflicht-Schwelle) bleiben unveraendert.
 
@@ -241,7 +253,7 @@ basiert mit Audit-Trail durch `vulnignore.yaml`).
   erweitert um `--ignorefile`-Argument + `render-
   trivyignore`-Vorlauf.
 - NEU `deploy/security/vulnignore.yaml` (Audit-Source-of-
-  Truth) + NEU `tools/render-trivyignore.sh` (Renderer)
+  Truth) + NEU `tools/render_trivyignore.py` (Renderer)
   + NEU `.gitignore`-Eintrag `deploy/security/.trivyignore`
   in Welle-4a-C2.
 - ADR-Index Aktive-ADRs-Tabelle ADR-0043-Zeile bekommt
@@ -276,23 +288,28 @@ verbunden:
      Spalte um ADR-0044-Bezug ergaenzt (ADR-0011 §4-Pattern).
 
 3. **M6-Welle-4a-C2** (`<TBD>`):
-   - NEU `tools/render-trivyignore.sh` (Renderer; adaptiert
-     aus `/Development/m-trace/scripts/render-trivyignore.sh`
-     mit grid-gym-Layout-Anpassung).
+   - NEU `tools/render_trivyignore.py` (Renderer; Python-
+     Port aus `/Development/m-trace/scripts/render-
+     trivyignore.sh` mit grid-gym-Layout-Anpassung —
+     bash+awk → Python+PyYAML, weil PyYAML bereits
+     grid-gym-Dep und das `tools/`-Konvention auf Python-
+     Skripte normiert ist).
    - NEU `deploy/security/vulnignore.yaml` mit Initial-
      Eintrag CVE-2026-42504 (`scope: otel-collector`,
      `expires: 2026-06-20`, `reason`: Trigger-033-Stable-
      Watch).
    - `.gitignore` um `deploy/security/.trivyignore`-Eintrag
      ergaenzt.
-   - `Makefile` NEU `render-trivyignore`-Target + `image-
-     audit`-Target-Erweiterung um `--ignorefile`-Argument
-     fuer den OTel-Collector-Trivy-Run.
-   - Verifikation: `make image-audit` + `make ci` + `make
-     fullbuild` cache-frei gruen ohne `CRITICAL_COV_
-     TARGETS`-Override. `bash tools/render-trivyignore.sh
-     otel-collector` EXIT=0. `shellcheck tools/render-
-     trivyignore.sh` EXIT=0.
+   - `Makefile` NEU `render-trivyignore`-Target (Pattern
+     analog `make format`; source-Stage + Bind-Mount-
+     `docker run`) + `image-audit`-Target-Erweiterung um
+     `--ignorefile`-Argument fuer den OTel-Collector-
+     Trivy-Run.
+   - Verifikation: `make render-trivyignore` EXIT=0;
+     `make image-audit` + `make ci` + `make fullbuild`
+     cache-frei gruen ohne `CRITICAL_COV_TARGETS`-Override;
+     Trivy meldet „Some vulnerabilities have been ignored/
+     suppressed" beim OTel-Run als Filter-Greif-Beweis.
 
 4. **M6-Welle-4a-C3** (`<TBD>`; Closure-Sync):
    - **Hash-Anchor-Block** (dieser Block in §5): Welle-4a-
@@ -337,10 +354,12 @@ C2 + C3 (10/10 A-1-Gates; Test-Counts unveraendert
 - **Positiv:** Pattern-Konsistenz mit m-trace-Schwester-Repo
   erleichtert Cross-Project-Audit.
 - **Neutral:** Erweitert die `image-audit`-Surface um zwei
-  NEU Files (`vulnignore.yaml` + `render-trivyignore.sh`)
-  und ein NEU Makefile-Target. Maintenance-Schwelle: gering
-  (Audit-Eintraege sind selten; Renderer ist ~140 Zeilen
-  awk).
+  NEU Files (`deploy/security/vulnignore.yaml` + `tools/
+  render_trivyignore.py`) und ein NEU Makefile-Target.
+  Maintenance-Schwelle: gering (Audit-Eintraege sind
+  selten; Renderer ist ~220 Zeilen Python und faellt unter
+  `make lint`/`make format-check` wie die anderen `tools/
+  check_*.py`-Skripte).
 - **Neutral:** Begleit-Trigger-Pflicht aus ADR 0043 §2.2
   bleibt — vulnignore.yaml-Eintrag erspart den Trigger
   NICHT.

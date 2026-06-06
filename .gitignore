@@ -34,6 +34,13 @@ htmlcov/
 # und Demo-Abnahme-MD. Alle Files sind Build-Output, kein Source.
 artifacts/
 
+# Generated-Trivyignore (M6-Welle-4a; ADR 0044):
+# `make render-trivyignore` produziert hier `.trivyignore` aus
+# `deploy/security/vulnignore.yaml` (Audit-Source-of-Truth). Die
+# Output-Datei ist Maschinen-Output; vulnignore.yaml ist die
+# kanonische Quelle und versioniert.
+deploy/security/.trivyignore
+
 # IDE / Editor lokal
 .idea/
 .vscode/
