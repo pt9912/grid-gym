@@ -1,9 +1,15 @@
-"""Bench-Fixtures fuer M6 Welle 4b-a (ADR 0041).
+"""Bench-Fixtures + ADR-0041-§2.2-Konfig-Marker fuer M6 Welle 4b-a/b.
 
 `BenchStubDevice` ist eine minimale `DeviceModel`-Implementation, die
 das Protocol erfuellt, aber pro Tick nichts berechnet. Das misst den
 TickLoop-Overhead pro Geraet (`GG-RT-004`-Akzeptanz: 100 Geraete x
 10 000 Ticks) ohne Geraete-spezifische Last.
+
+`pytest_configure`-Hook erzwingt die ADR-0041 §2.2-Pflicht-Bench-
+Parameter (`--benchmark-min-rounds=10`, `--benchmark-disable-gc`,
+`--benchmark-warmup=on`) ohne CLI-Argumente — die Welle-4b-b-C2-
+Review-Folge-F1-HIGH-Finding (ADR-0041-§2.2-Vertragsbruch) ist
+dadurch geschlossen.
 
 Cross-Test-Reuse: bleibt in `tests/perf/conftest.py`, nicht in
 `tests/unit/`-Fixtures (Bench-Layer ist eigenstaendig per ADR-0041
@@ -25,6 +31,33 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _SNAPSHOT_VERSION = 1
+
+# ADR-0041 §2.2 Pflicht-Parameter; werden in `pytest_configure`
+# applied. pytest-benchmark-Defaults sind anders (min_rounds=5,
+# disable_gc=False, warmup=False), was die Welle-4b-a/b-Baselines
+# zu nicht-ADR-konformen Mess-Substanzen gemacht hatte (siehe
+# Welle-4b-b-C2-Review-Folge F1 HIGH).
+_ADR_0041_MIN_ROUNDS = 10
+_PYTEST_BENCHMARK_DEFAULT_MIN_ROUNDS = 5
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """ADR-0041 §2.2-Pflicht-Bench-Parameter erzwingen.
+
+    Wirkt nur, wenn pytest-benchmark geladen ist (`--extra perf`);
+    sonst No-Op. CLI-Override (z. B.
+    `--benchmark-min-rounds=20`) bleibt moeglich — der Hook
+    schreibt nur ueber den pytest-benchmark-Default, nicht ueber
+    explizite User-Werte.
+    """
+
+    if not hasattr(config.option, "benchmark_min_rounds"):
+        return
+
+    if config.option.benchmark_min_rounds == _PYTEST_BENCHMARK_DEFAULT_MIN_ROUNDS:
+        config.option.benchmark_min_rounds = _ADR_0041_MIN_ROUNDS
+    config.option.benchmark_disable_gc = True
+    config.option.benchmark_warmup = "on"
 
 
 class BenchStubDevice:
