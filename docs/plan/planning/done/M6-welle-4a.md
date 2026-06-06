@@ -12,7 +12,7 @@ Anchor-Update + Top-Level-Doku-Sync) + Post-Push-CI-Fix
 `f46e789` (simulation-Healthcheck Always-Healthy gegen
 Compose-v2-`--wait`-Strictness; pre-existing latente Drift;
 siehe §10) + C4a `3bc58b8` (Self-Close-Move; `git mv` rename-
-only) + C4b (dieser Commit; Cross-Doc-Refs-Sync nach Move +
+only) + C4b `789ac50` (Cross-Doc-Refs-Sync nach Move +
 ADR-0044-§5-Hash-Anchor-Konkretisierung + §10-Hash-Slot-
 Fill). `make fullbuild` cache-frei gruen **lokal UND CI-
 Sensor** (Lauf 27055273876 gruen 6m56s) — erstmaliger CI-
@@ -706,6 +706,7 @@ Closure-Korrektur-Hashes.
 | Commit | Stufe | Substanz |
 | ------ | ----- | -------- |
 | `f46e789` | Post-Push-CI-Fix | **F1 HIGH (CI-only)** `docker compose up --wait` in Compose-v2-CI-Version exit-1 bei `simulation`-Service mit `healthcheck: test: ["NONE"]` (dokumentierte Disable-Form). Pre-existing latente Drift seit M6-Welle-3-C2 `ce13253` (`fullbuild.yml`-CI-Pflicht-Gate angelegt), hinter Trigger-010-/-033-Image-Audit-Failures versteckt. Erstmals sichtbar nach Welle-4a-C2 `8fbd17c` (vulnignore-Pattern laesst `image-audit` gruen, runtime-Stage erreicht). Korrektur: `deploy/compose.yml` Z.152 `test: ["NONE"]` → `test: ["CMD", "true"]` + `interval/timeout/retries`-Defaults (Always-Healthy fuer `sleep infinity`-Stub-Container; M2-Geraete-Runner bringen produktiven Healthcheck zurueck). Lokal `make runtime` cache-frei gruen (Compose-Smoke + `/health` + `:13133`-Poll + Teardown). CI-Sensor-Beleg: `fullbuild.yml`-Lauf 27055273876 gruen (6m56s) — erstmalig seit `fullbuild.yml`-Anlage in M6-Welle-3-C2 `ce13253`. |
+| `<TBD-F2>` | Post-Closure-Review-Folge | **F2 HIGH** (ADR-0044-§2.2-Vertragsbruch) `tools/render_trivyignore.py` erzwang `reason` + `scope` **nicht** als Pflicht-Felder — fehlende `reason` lieferte einen leeren Kommentar, fehlende `scope` wurde je nach Scope-Filter still ignoriert oder als `*` behandelt. Eine HIGH/CRITICAL-CVE konnte dadurch ohne auditfaehige Begruendung oder sauberen Scope in die generierte `.trivyignore` gelangen — direkter ADR-0044-§2.2-Vertragsbruch. Korrektur: `_emit_entry` prueft `reason` und `scope` vor dem Scope-Matching und bricht mit EXIT=1 bei leerem/fehlendem Feld; `scope_display`-Fallback `or "*"` entfernt (Always-Echo des konkreten Scope). NEU `tests/unit/test_render_trivyignore.py` (10 Tests; deckt id/expires/expired/reason-missing/reason-whitespace/scope-missing/scope-empty-even-without-filter/scope-filter-skip/wildcard-match/valid-entry ab; +10 Unit-Tests = 1722→1732). Plus **F3 LOW** `deploy/security/vulnignore.yaml` Wartungsregel-Kommentar nannte `bash tools/render-trivyignore.sh <scope>` (Pre-Python-Port-Stand); auf `make render-trivyignore` (`tools/render_trivyignore.py` via docker-source-Stage) korrigiert und Pflicht-Felder-Regel ergaenzt. Plus **F4 LOW** `done/M6-welle-4a.md §0` Status-Block + Stack-Range in `in-progress/README.md` + `M6-perf-security-cicd.md` + `roadmap.md` von `9bb6a92..3bc58b8` (C4a-Hash) auf `9bb6a92..789ac50` (C4b-Hash; tatsaechliche Welle-Closure-End-Form) konkretisiert; „C4b dieser Commit"-Verbiage auf konkreten `789ac50`-Hash umgehakt. |
 
 **Aktueller Compose-Stand** (Post-Closure-Korrektur-Stand
 nach `f46e789`):

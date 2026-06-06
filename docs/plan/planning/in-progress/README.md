@@ -13,7 +13,7 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M6-welle-1.md`](../done/M6-welle-1.md) | M6-Welle-1-Slice-Doc (Base-Image-Bump / krb5-CVE-Aufloesung; Trigger 010 M4-Erbschaft). — **Done 2026-06-05** mit Stack `4b1b3e9..d51d6e7` (C0/Review-Folgen/C1/C2/C3/C3-Review-Folge/C4a/C4b; siehe done-Slice-Doc Status-Block). |
 | [`M6-welle-2.md`](../done/M6-welle-2.md) | M6-Welle-2-Slice-Doc (SBOM-Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007` Vollscope mit 5 Asset-Klassen + 1 GHCR-Push). — **Done 2026-06-05** mit Stack `0cc28f3..b41b7fc` (C0/2 Review-Folgen/C1 ADR 0042 `Provisional`/C2 `235395e`/C3 `98a1fa1`/C3-Sensor `9815d23`/C4a `c51d905`/C4b `b41b7fc`) + 4 Post-Closure-Korrekturen `febbd22..3ccf01d` (siehe done-Slice-Doc §10.6). |
 | [`M6-welle-3.md`](../done/M6-welle-3.md) | M6-Welle-3-Slice-Doc (CI/CD-Vollausbau; `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031-Aufloesung). — **Done 2026-06-05** mit Stack `08a8034..c36f734` (C0/C2 `ce13253`/C3 `c8ecbe4`/C3-Review-Folge `affdff7`/C4a `3b6d9bf`/C4b `c36f734`; C1 entfaellt analog M5-Welle-2). Plus Post-Closure-CI-Fix `0891f65` (Python-Matrix-3.13 + OTel-Collector-CVE-2026-42504; siehe done-Slice-Doc Status-Block). |
-| [`M6-welle-4a.md`](../done/M6-welle-4a.md) | M6-Welle-4a-Slice-Doc (Generated-Trivyignore-Permit; ADR-0011-Schaerfung an ADR-0043 §2.2; vulnignore-Pattern-Import aus m-trace; Trigger-033-Temp-Deferral fuer CVE-2026-42504). — **Done 2026-06-06** mit Stack `9bb6a92..3bc58b8` (C0/C1 `94dff9e`/C2 `8fbd17c`/C3 `f19837f`/Post-Push-CI-Fix `f46e789` simulation-Healthcheck Always-Healthy/C4a `3bc58b8` Self-Close-Move/C4b dieser Commit Cross-Doc-Refs-Sync). Welle-4-Sub-Slicing-Beschluss (4a Vulnignore + 4b Performance-Bench) per Welle-4a-D-1. C4a/C4b dienen zugleich als Welle-4b-Pre-C0a/Pre-C0b. |
+| [`M6-welle-4a.md`](../done/M6-welle-4a.md) | M6-Welle-4a-Slice-Doc (Generated-Trivyignore-Permit; ADR-0011-Schaerfung an ADR-0043 §2.2; vulnignore-Pattern-Import aus m-trace; Trigger-033-Temp-Deferral fuer CVE-2026-42504). — **Done 2026-06-06** mit Stack `9bb6a92..789ac50` (C0/C1 `94dff9e`/C2 `8fbd17c`/C3 `f19837f`/Post-Push-CI-Fix `f46e789` simulation-Healthcheck Always-Healthy/C4a `3bc58b8` Self-Close-Move/C4b `789ac50` Cross-Doc-Refs-Sync). Welle-4-Sub-Slicing-Beschluss (4a Vulnignore + 4b Performance-Bench) per Welle-4a-D-1. C4a/C4b dienen zugleich als Welle-4b-Pre-C0a/Pre-C0b. |
 
 **M5 ist `Done` (2026-06-04)** — alle M5-Slice-Plan- und
 Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
@@ -25,7 +25,7 @@ CI/CD-Haertung); **aktive Welle:** M6-Welle-4b (Performance-
 Benchmark; `GG-RT-001..005` inkl. 10000-Points/s-Benchmark
 `GG-RT-005`) — Welle-4b-Slice-Doc entsteht in Welle-4b-C0.
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
-`9bb6a92..3bc58b8` (NEU ADR-0044 + `tools/render_trivyignore.py`
+`9bb6a92..789ac50` (NEU ADR-0044 + `tools/render_trivyignore.py`
 + `deploy/security/vulnignore.yaml`; `make fullbuild` cache-
 frei gruen lokal UND CI-Sensor (Lauf 27055273876) — erstmalig
 seit `fullbuild.yml`-Anlage in M6-Welle-3-C2; Trigger 033

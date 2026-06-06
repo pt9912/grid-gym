@@ -27,12 +27,17 @@
 #     ignore: []
 #
 # Wartungsregel:
-#   - `expires` ist Pflicht. Default 90 Tage; danach muss der
-#     Eintrag erneuert oder entfernt werden.
-#   - Bei `expires`-Ueberschreitung bricht `bash tools/render-
-#     trivyignore.sh <scope>` mit Fehlermeldung; das Upgrade- oder
-#     Begruendungs-Update gehoert in einen Folge-Commit (Pattern
-#     analog Welle-3-Post-Closure-Korrektur-Stack-Erweiterung).
+#   - `id` + `reason` + `expires` + `scope` sind Pflicht-Felder
+#     (ADR-0044 §2.2). Eintraege mit fehlendem Feld brechen den
+#     Render-Lauf mit EXIT=1 unabhaengig vom Scope-Filter.
+#   - `expires` Default 90 Tage; danach muss der Eintrag erneuert
+#     oder entfernt werden.
+#   - Bei `expires`-Ueberschreitung bricht `make render-trivyignore`
+#     (laeuft `uv run python tools/render_trivyignore.py --scope
+#     $(TRIVYIGNORE_SCOPE)` im docker-source-Stage) mit Fehlermeldung;
+#     das Upgrade- oder Begruendungs-Update gehoert in einen Folge-
+#     Commit (Pattern analog Welle-3-Post-Closure-Korrektur-Stack-
+#     Erweiterung).
 #   - Begleit-`open/`-Trigger ist Pflicht per ADR-0043 §2.2 +
 #     ADR-0044 §2.1: jeder Eintrag braucht einen Trigger-Doc, der
 #     den echten Aufloesungs-Pfad verankert (vulnignore-Form ist

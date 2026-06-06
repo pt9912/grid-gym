@@ -95,13 +95,31 @@ def _emit_entry(
         )
         return ([], True)
 
+    # ADR-0044 §2.2-Pflicht-Felder: `reason` und `scope` muessen
+    # vor der Scope-Filter-Pruefung verifiziert werden. Ein Eintrag
+    # ohne diese Felder ist auditfaehig nicht zulaessig (Audit-
+    # Trail-Bruch); der Lauf bricht mit EXIT=1 unabhaengig vom
+    # Scope-Filter-Argument.
+    reason = str(entry.get("reason") or "").strip()
+    if not reason:
+        print(
+            f"render-trivyignore: {cve_id} has no `reason` field - abort.",
+            file=sys.stderr,
+        )
+        return ([], True)
+
     entry_scope = str(entry.get("scope") or "").strip()
+    if not entry_scope:
+        print(
+            f"render-trivyignore: {cve_id} has no `scope` field - abort.",
+            file=sys.stderr,
+        )
+        return ([], True)
+
     if not _scope_matches(entry_scope, scope_filter):
         return ([], False)
 
-    reason = str(entry.get("reason") or "").strip()
-    scope_display = entry_scope or "*"
-    comment = f"# {cve_id} - {reason} (expires {expires_str}, scope {scope_display})"
+    comment = f"# {cve_id} - {reason} (expires {expires_str}, scope {entry_scope})"
     return ([comment, cve_id], False)
 
 

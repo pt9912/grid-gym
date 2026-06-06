@@ -31,11 +31,11 @@ pip-PYSEC-2026-196-Drift im uv.lock behoben (`pip 26.1.1
 Schaerfung an ADR-0043 §2.2 + vulnignore-Pattern-Import aus
 m-trace; Welle-3-Post-Closure-Folge fuer Trigger 033 / OTel-
 Collector-CVE-2026-42504-Temp-Deferral) **abgeschlossen
-2026-06-06** mit Stack `9bb6a92..3bc58b8` (C0 + C1 `94dff9e`
+2026-06-06** mit Stack `9bb6a92..789ac50` (C0 + C1 `94dff9e`
 ADR-0044 `Provisional` + C2 `8fbd17c` Pattern-Import + C3
 `f19837f` Closure-Sync + Post-Push-CI-Fix `f46e789`
 simulation-Healthcheck Always-Healthy + C4a `3bc58b8` Self-
-Close-Move + C4b dieser Commit Cross-Doc-Refs-Sync).
+Close-Move + C4b `789ac50` Cross-Doc-Refs-Sync).
 `make fullbuild` cache-frei gruen lokal UND CI-Sensor (Lauf
 27055273876) — erstmalig seit `fullbuild.yml`-Anlage in
 M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
@@ -216,9 +216,9 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 `GG-RT-001..005` inkl. 10000-Points/s-Benchmark `GG-RT-
 005`) — Welle-4b-Slice-Doc entsteht in Welle-4b-C0.
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
-`9bb6a92..3bc58b8` (C0 + C1 `94dff9e` + C2 `8fbd17c` + C3
+`9bb6a92..789ac50` (C0 + C1 `94dff9e` + C2 `8fbd17c` + C3
 `f19837f` + Post-Push-CI-Fix `f46e789` + C4a `3bc58b8` +
-C4b dieser Commit): NEU ADR-0044 `Provisional` (Generated-
+C4b `789ac50`): NEU ADR-0044 `Provisional` (Generated-
 Trivyignore-Permit; ADR-0011-Schaerfung an ADR-0043 §2.2);
 NEU `tools/render_trivyignore.py` + `deploy/security/
 vulnignore.yaml` mit CVE-2026-42504-Eintrag; Makefile-
