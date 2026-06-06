@@ -10,9 +10,15 @@ C0-Review-Folge-2 `935151e` (2 MEDIUM stale-Refs in §1.2 +
 bench.py` + Baseline-Update; `GG-RT-005`-Doppel-Akzeptanz
 produktiv: Payload ≤ 256 Byte UND Median ~1.27us pro publish
 = ~788 000 Publish-OPS lokal, weit ueber der 10 000-SOLLTE-
-Schwelle) + C3 (dieser Commit; Status/DoD-Sync + Top-Level-
-Doku). Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-Refs-
-Sync.
+Schwelle) + C3 `c8625f7` (Status/DoD-Sync + Top-Level-Doku) +
+Post-C3-Review-Folge `1b77665` (7 Self-Review-Findings adressiert:
+F1 HIGH ADR-0041-§2.2-Vertragsbruch — Bench-Konfig nicht
+applied [betrifft auch Welle-4b-a; conftest.py pytest_configure
+Hook + Baseline-Neumessung] + F2/F3 MEDIUM + F4-F7 LOW) + C4a
+`6145ea3` (Self-Close-Move; `git mv` rename-only) + C4b (dieser
+Commit; Cross-Doc-Refs-Sync nach Move + Hash-Slot-Fills `<C3>`
+→ `c8625f7` in 4 Docs + M6-perf-security-cicd-Ref umgehakt von
+`in-progress` auf `../in-progress`).
 
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
@@ -606,7 +612,7 @@ als Lehre verankert.
 - [`../done/M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md)
   — pytest-benchmark-Vorbelegung (in Welle-4b-a-C1 final
   aufgeloest).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
 - [`../../../../spec/lastenheft.md §7 GG-RT-005`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz (10 000 Points/s + ≤ 256 Byte).

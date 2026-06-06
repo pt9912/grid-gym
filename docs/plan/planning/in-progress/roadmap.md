@@ -969,7 +969,7 @@ nichtdeterministischen Replay-Diff per ADR-0041 §2.2; Bench-
 Median 519ms / 1.92 OPS; Regression-Schwelle 20% Median-
 Drift gegen tests/perf/baseline.json per ADR-0041 §2.3).
 **M6-Welle-4b-b abgeschlossen 2026-06-06** mit Stack
-`beb5dee..<C3>` (C0 `beb5dee` Slice-Doc + C0-Review-Folge
+`beb5dee..c8625f7` (C0 `beb5dee` Slice-Doc + C0-Review-Folge
 `f9620a3` (2 HIGH Findings: D-3 No-Subscriber-False-Positive
 + D-2 canonical_json-API-Drift) + C0-Review-Folge-2 `935151e`
 (2 MEDIUM stale-Refs) + C2 `a2feff7` NEU `tests/perf/
