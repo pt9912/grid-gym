@@ -157,6 +157,8 @@ Stand **2026-06-04**:
 
 **Pointer:** Abnahmereihenfolge `GG-DEMO-008` →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
+Quality-Pipeline-Audit `GG-SAFE-001..004` →
+[`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md);
 ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
 AI-Agent-Briefing → [`AGENTS.md`](AGENTS.md).
 

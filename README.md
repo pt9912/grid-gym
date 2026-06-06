@@ -154,6 +154,8 @@ As of **2026-06-04**:
 
 **Pointers:** demo acceptance steps `GG-DEMO-008` →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
+quality-pipeline audit `GG-SAFE-001..004` →
+[`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md);
 ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
 AI-agent briefing → [`AGENTS.md`](AGENTS.md).
 

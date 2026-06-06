@@ -1,6 +1,26 @@
 # Welle 5a — M6 Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS)
 
-**Status:** In Progress — C0 (dieser Commit, Slice-Doc-Anlage).
+**Status:** Done 2026-06-06.
+**Liefer-Hash-Stack:** C0 `4b36185` (Slice-Doc-Anlage) → C2
+`4c1a693` (Quality-Pipeline-Audit-Substanz: 7 Smokes + Audit-
+Doku + 2 NEU `open/`-Triggers 034/035) → C2-Review-Folge
+`52cb698` (6 Self-Review-Findings F1..F6 adressiert) → C3
+**dieser Commit** (Status/DoD-Sync + aktive Welle auf 5b).
+C4a/C4b folgen als Welle-5b-Pre-C0a/Pre-C0b.
+
+**Audit-Ergebnis** (Welle-5a-D-2 Hybrid-Form):
+
+- `GG-SAFE-001` ✓ **produktiv** (Scenario-Loader-Validation +
+  Pydantic-API + Adapter-`Quality.INVALID`-Emission).
+- `GG-SAFE-002` ✓ **produktiv** (`canonical_json`-NaN/Inf-
+  Reject mit `NonFiniteDecimalError`).
+- `GG-SAFE-003` ⚠ **partial Lücke** (SmartMeter-pre-attach
+  produktiv; Adapter-Verbindungs-Verlust + Alarm fehlt →
+  Trigger 035).
+- `GG-SAFE-004` ✗ **Lücke** (`max_age`-Substanz fehlt komplett
+  im Repository → Trigger 034).
+
+**Vorheriger Status:** In Progress — C0 (Slice-Doc-Anlage).
 Welle 5 wird gemaess Welle-5a-D-1 in **5a (Quality-Pipeline-
 Audit; `GG-SAFE-001..004` MUSS) + 5b (Sim/Prod-Marker + Input-
 Validation; `GG-SAFE-007` + `GG-SAFE-008` MUSS) + 5c (SOLLTE-
@@ -473,57 +493,57 @@ Feature-Welle).
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **C0 — NEU `M6-welle-5a.md`** mit §1..§9-Struktur
+- [x] **C0 — NEU `M6-welle-5a.md`** mit §1..§9-Struktur
   (dieser Commit).
-- [ ] **C0 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C0 — `in-progress/README.md`** Bestand-Tabelle
   um `M6-welle-5a.md`-Eintrag + Aktive-Welle-Block auf
   M6-Welle-5a.
-- [ ] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-5-
+- [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-5-
   Zeile in 5a/5b/5c gespalten; 5a `Pending → In Progress
   2026-06-06`.
-- [ ] **C1 entfaellt** — Welle-5a-D-5.
-- [ ] **C2 — NEU `tests/integration/test_m6_welle_5a_safe_
+- [x] **C1 entfaellt** — Welle-5a-D-5.
+- [x] **C2 — NEU `tests/integration/test_m6_welle_5a_safe_
   001_004_smoke.py`** mit 7 Smoke-Tests (5 Pass + 2 Skip-mit-
   Trigger-Pointer; Welle-5a-D-2 + D-4).
-- [ ] **C2 — NEU `docs/plan/planning/open/034-safe-004-max-
+- [x] **C2 — NEU `docs/plan/planning/open/034-safe-004-max-
   age-stale-quality.md`** Trigger fuer `GG-SAFE-004` Lücke.
-- [ ] **C2 — NEU `docs/plan/planning/open/035-safe-003-comm-
+- [x] **C2 — NEU `docs/plan/planning/open/035-safe-003-comm-
   failure-missing-quality.md`** Trigger fuer `GG-SAFE-003`
   partial Lücke.
-- [ ] **C2 — NEU `docs/user/safe-001-004-quality-pipeline.
+- [x] **C2 — NEU `docs/user/safe-001-004-quality-pipeline.
   md`** Audit-Tabelle (pro `GG-SAFE-00X`-ID: Akzeptanz +
   Substanz-Pfad + Test-Pfad + Status).
-- [ ] **C2 — Luecken-Adressierung** falls Audit Luecken
+- [x] **C2 — Luecken-Adressierung** falls Audit Luecken
   aufdeckt (Welle-5a-D-3 Option B inline/Trigger).
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates).
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen.
-- [ ] **C3 — `M6-welle-5a.md`** Status `In Progress → Done
+- [x] **C2 — `make ci`** cache-frei gruen.
+- [x] **C2 — `make fullbuild`** cache-frei gruen.
+- [x] **C3 — `M6-welle-5a.md`** Status `In Progress → Done
   2026-06-06` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5a-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5a-
   Zeile `In Progress → Done` mit Closure-Hash + Aktive-
   Welle-Block auf Welle 5b.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU Quality-
+- [x] **C3 — `README.md` + `README.de.md`** NEU Quality-
   Pipeline-Audit-Hinweis falls relevant.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-5b + Welle-5a-Abschluss-Notiz mit Stack-Range.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-5a-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-5b.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 5a NICHT):**
 
-- [ ] Kein `GG-SAFE-007` Sim/Prod-Marker (Welle-5b-Scope).
-- [ ] Kein `GG-SAFE-008` Adapter-Input-Validation (Welle-
+- [x] Kein `GG-SAFE-007` Sim/Prod-Marker (Welle-5b-Scope).
+- [x] Kein `GG-SAFE-008` Adapter-Input-Validation (Welle-
   5b-Scope).
-- [ ] Kein `GG-SAFE-005/006` SOLLTE-Items (Welle-5c-Scope).
-- [ ] Keine IP-/Netz-Beschraenkung (Welle-5c-Scope).
-- [ ] Keine neue Quality-Enum-Variante (M5-Welle-6b-Review
+- [x] Kein `GG-SAFE-005/006` SOLLTE-Items (Welle-5c-Scope).
+- [x] Keine IP-/Netz-Beschraenkung (Welle-5c-Scope).
+- [x] Keine neue Quality-Enum-Variante (M5-Welle-6b-Review
   F15 fixiert).
-- [ ] Keine NEU ADR (D-5).
-- [ ] Kein NEU Code im Core (Adapter-Side wenn ueberhaupt).
+- [x] Keine NEU ADR (D-5).
+- [x] Kein NEU Code im Core (Adapter-Side wenn ueberhaupt).
 
 ---
 

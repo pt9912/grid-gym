@@ -894,9 +894,11 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5
-(Security-Audit + Eingabevalidierung; `GG-SAFE-001..008`
-MUSS/SOLLTE)** — Welle-5-Slice-Doc entsteht in Welle-5-C0.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5b
+(Sim/Prod-Marker + Input-Validation; `GG-SAFE-007/008` MUSS)**
+— Welle-5b-Slice-Doc entsteht in Welle-5b-C0. Welle-5-Sub-
+Slicing in 5a + 5b + 5c per Welle-5a-D-1; Welle 5a ist
+abgeschlossen, 5b/5c sind Pending.
 **Welle-4-Subdivision komplett abgeschlossen 2026-06-06**:
 4a Vulnignore-Pattern + 4b-a Bench-Foundation + 4b-b
 `GG-RT-005`-Telemetry-Bench + 4b-c `GG-RT-001`-Backpressure-
@@ -995,7 +997,22 @@ Commit Closure-Sync): `GG-RT-001` MUSS-Akzeptanz produktiv
 AC-NO-TIME-konform). **Welle-4-Subdivision komplett**: 4a +
 4b-a/b/c alle Done; aktive Welle wandert auf Welle 5
 (Security-Audit + Eingabevalidierung).
-Welle 5+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+**M6-Welle-5a abgeschlossen 2026-06-06** mit Stack
+`4b36185..52cb698` (C0 `4b36185` Slice-Doc-Anlage +
+Welle-5-Sub-Slicing-Beschluss + C2 `4c1a693` NEU
+`tests/integration/test_m6_welle_5a_safe_001_004_smoke.py`
+mit 7 Smokes + NEU `docs/user/safe-001-004-quality-pipeline.
+md` Audit-Tabelle + NEU 2 `open/`-Triggers 034
+(`GG-SAFE-004` `max_age`-stale-Quality-Lücke) + 035
+(`GG-SAFE-003` Adapter-Comm-Failure partial Lücke) +
+C2-Review-Folge `52cb698` (6 Self-Review-Findings F1..F6
+adressiert: MEDIUM F1 Slice-Doc-§1.1-Factual-Fix +
+5 LOW F2..F6) + C3 Closure-Sync dieser Commit):
+`GG-SAFE-001..004`-MUSS audited (001/002 ✓ produktiv;
+003 ⚠ partial Lücke → Trigger 035; 004 ✗ Lücke → Trigger
+034); C1 entfaellt (Welle-5a-D-5). Self-Close-Folge C4a/C4b
+folgt als Welle-5b-Pre-C0a/Pre-C0b.
+Welle 5b/5c Slice-Docs entstehen pro Welle-X-C0. Carveout-
 Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
 `Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +
