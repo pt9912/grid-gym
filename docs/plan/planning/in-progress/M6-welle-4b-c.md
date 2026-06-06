@@ -76,13 +76,19 @@ Schwellen, Healthcheck-Output-Surface, ADR-Bedarf.
 Drei orthogonale Liefer-Items (final fixiert via Welle-4b-c-D-1):
 
 1. **NEU `TickLoopHealthcheckAdapter`** (Welle-4b-c-C2) im
-   driving-Adapter-Layer (vermutlich
-   `adapters/driving/http_api/_tick_loop_healthcheck.py` oder
-   eigenes Sub-Paket). Adapter-Side-Mess vermeidet AC-NO-TIME-
-   Bruch im Core; nutzt direkt `time.perf_counter()` mit
-   per-file-DTZ-Ausnahme. Wrapt `TickLoop.tick()`-Aufrufe und
-   misst Wall-Clock-Dauer; haelt einen Ring-Buffer der letzten
-   N Tick-Dauern.
+   driving-Adapter-Layer
+   (`adapters/driving/http_api/_tick_loop_healthcheck.py`).
+   Adapter-Side-Mess vermeidet AC-NO-TIME-Bruch im Core; nutzt
+   `time.perf_counter()` per default mit per-file-DTZ-Ausnahme.
+   Wrapt `TickLoop.tick()`-Aufrufe und misst Wall-Clock-Dauer;
+   haelt einen Ring-Buffer der letzten N Tick-Dauern.
+
+   **Pflicht-Clock-Injection (C0-Review-Folge-F1):** Konstruktor
+   bekommt `clock_source: Callable[[], float] = time.perf_
+   counter` als Default-Argument mit Test-Override-Pflicht.
+   Unit-Tests injizieren Fake-Clock fuer deterministische
+   Duration-Sequences; ohne Injection waeren Tests real-time-
+   abhaengig (flaky).
 
 2. **NEU HTTP-Endpoint `GET /runs/{run_id}/healthcheck`**
    (Welle-4b-c-C2) im FastAPI-API-Adapter:
@@ -93,8 +99,10 @@ Drei orthogonale Liefer-Items (final fixiert via Welle-4b-c-D-1):
        Wall-Clock-Dauer > `tick_ms`.
      - `backpressure_status`: `"ok"` wenn `missed_ticks_count
        == 0` im Window; `"delayed"` sonst.
-     - `tick_ms`: Konfigurierte Tick-Groesse (`GG-RT-001` Lese-
-       Hilfe; identisch zu RunMetadata-tick_ms).
+     - `tick_ms`: Konfigurierte Tick-Groesse (Convenience-Read,
+       identisch zu RunMetadata-tick_ms; vermeidet Round-Trip
+       gegen `/status` fuer Consumer, nicht-kritisches Feld —
+       Welle-4b-c-C0-Review-Folge-F3).
      - `window_size`: Anzahl Ticks im jüngsten Mess-Fenster.
    - Auch HTML-Variante (Optional; HTMX-konsumierbar in der UI;
      siehe Welle-4b-c-D-5).
@@ -197,10 +205,14 @@ Begruendung:
   §A-1 bleibt unangetastet.
 - AC-NO-TIME-Verbot bleibt im Core verankert (kein neuer Port-
   Slot mit Wall-Clock-Surface; keine ADR-Schaerfung).
-- Pattern-Praezedenz: M5-Welle-4a `TickLoopRegistry`-Adapter +
-  `DemoTickLoopDriver` (siehe ADR 0039) wrappen TickLoop-
-  Lifecycle bereits Driving-Side; Welle-4b-c folgt derselben
-  Form.
+- Pattern-Praezedenz **erweitert** (C0-Review-Folge-F2):
+  M5-Welle-4a `TickLoopRegistry`-Adapter + `DemoTickLoopDriver`
+  (siehe ADR 0039) wrappen TickLoop-**Lifecycle** Driving-
+  Side. Welle-4b-c fuegt eine **Mess-Verantwortung** dazu via
+  eigene Sub-Adapter-Klasse (`TickLoopHealthcheckAdapter`),
+  damit der `DemoTickLoopDriver` SRP-konform bleibt — die
+  Mess-Sub-Adapter-Klasse erhaelt eine `record_tick_duration`-
+  API, die der Driver pro `tick()`-Wrap aufruft.
 - Mess-Latency ist akzeptabel: ein `time.perf_counter()`-Call
   pro Tick im Adapter (vor + nach `tick()`-Aufruf) ist im
   10ms-Modus 100 Hz, ergo Mess-Overhead < 1% des Tick-Budgets.
@@ -358,11 +370,15 @@ Code-Merge mit:
       append).
     - `healthcheck() -> dict[str, object]`-Methode (liefert
       JSON-Mapping mit allen 6 Feldern; Welle-4b-c-§1.2).
-- Hooks im bestehenden `DemoTickLoopDriver`/`TickLoopRegistry`
-  (M5-Welle-4a ADR 0039) um `time.perf_counter()`-Mess pro
-  tick()-Aufruf und `record_tick_duration`-Call.
-- NEU `GET /runs/{run_id}/healthcheck`-Endpoint in
-  `_runs_router.py`:
+- Hooks im bestehenden `_tick_loop_driver.py` (C0-Review-Folge-
+  F4: konkrete Datei-Wahl statt vorheriger Disjunktion mit
+  `_demo_setup.py`) um `time.perf_counter()`-Mess pro tick()-
+  Aufruf und `record_tick_duration`-Call.
+- NEU `routes_healthcheck.py`-Sub-Modul mit dem `GET /runs/
+  {run_id}/healthcheck`-Endpoint (C0-Review-Folge-F6: separater
+  Router statt `_runs_router.py`-Erweiterung; Pattern analog
+  `routes_visualization.py` aus M5-Welle-6b und `routes_
+  faults.py` aus M5-Welle-6a; haelt AC-NO-GOD-UTILS ein):
   - 200 + JSON-Body wenn Run existiert UND Healthcheck-Adapter
     aktiv.
   - 404 wenn Run nicht existiert (Pattern analog `/status`).
@@ -435,11 +451,18 @@ ab.
 - `docs/plan/planning/in-progress/M6-perf-security-cicd.md`
   (C0 + C3) — §3.1 Welle-4b-c-Zeile Status-Flip + Aktive-
   Welle-Block.
-- `src/grid_gym/adapters/driving/http_api/_runs_router.py`
-  (C2) — NEU `GET /runs/{id}/healthcheck`-Route.
-- `src/grid_gym/adapters/driving/http_api/_demo_setup.py`
-  oder `_tick_loop_driver.py` (C2) — `time.perf_counter()`-
-  Hooks um `tick()`-Wrap; `record_tick_duration`-Call.
+- `src/grid_gym/adapters/driving/http_api/routes_healthcheck.
+  py` (C2, NEU per C0-Review-Folge-F6) — NEU `GET /runs/{id}/
+  healthcheck`-Route mit eigenem APIRouter; in `app.py` via
+  `include_router` eingebunden (Pattern analog `routes_
+  visualization.py`/`routes_faults.py`).
+- `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
+  (C2, konkret per C0-Review-Folge-F4) — `time.perf_counter()`-
+  Hooks um `tick()`-Wrap; `record_tick_duration`-Call an den
+  Healthcheck-Adapter.
+- `src/grid_gym/adapters/driving/http_api/app.py` (C2) —
+  `include_router(healthcheck_router)`-Anschluss (analog M5-
+  Welle-6a `routes_faults`-Anschluss).
 - `docs/plan/planning/in-progress/roadmap.md` (C3) — §3 M6
   aktive-Welle-Block + Welle-4b-c-Abschluss-Notiz + Welle-4-
   Subdivision-Abschluss-Notiz.
@@ -466,8 +489,11 @@ ab.
 **Welle-4b-c-Gate:**
 
 - `make docs-check` cache-frei gruen.
-- `make gates` cache-frei gruen (Test-Counts: +7 Unit + +1
-  Integration; Schaetzung).
+- `make gates` cache-frei gruen (`tests/unit/`-Count: 1732
+  → ~1739 [+7 Healthcheck-Unit-Tests]; `tests/integration/`-
+  Count: 80 → 81 [+1 Welle-4b-c-Smoke]; `tests/perf/`
+  unveraendert bei 2 Bench-Tests — Welle-4b-c aendert die
+  Bench-Surface nicht; C0-Review-Folge-F7-Klarstellung).
 - `make ci` cache-frei gruen.
 - `make fullbuild` cache-frei gruen.
 
@@ -511,10 +537,19 @@ Welle-4b-c-Scope (Maintainer-Dev-Host-Konsistenz reicht).
 
 **R3 — Healthcheck-Endpoint-Race-Conditions.** Der Driver
 schreibt in den Ring-Buffer waehrend der Endpoint liest.
-**Mitigation:** Pythons GIL macht single-process-Race-
-Conditions auf primitive ops atomic; der Ring-Buffer
-(collections.deque) ist thread-safe fuer append/iter.
-Multi-Process-Race ist ausgeschlossen (single-process-Demo).
+**Mitigation (C0-Review-Folge-F5-praezisiert):** Welle-4b-c-
+Annahme ist **single-thread asyncio-Driver** (analog ADR-0039
+`DemoTickLoopDriver` der den FastAPI-Lifespan-Event-Loop
+nutzt); im asyncio-Cooperative-Modell sind `deque.append()`
+und das Lesen mehrerer Elemente in `healthcheck()` atomic
+zueinander, weil zwischen `await`-Punkten keine andere
+Coroutine laufen kann. **Multi-Thread-Driver waere Anti-Scope-
+Bruch** und braucht explizite Lock-Schutz (Welle-X-Material).
+collections.deque ist `append`-atomic per CPython-Implementation
+(GIL); das deckt die Backup-Sicherheit bei zukuenftigen
+Multi-Thread-Drivern partiell ab, aber nicht voll fuer das
+p95-Lesen — Welle-4b-c verlaesst sich auf die single-thread-
+Annahme.
 
 **R4 — Healthcheck-Endpoint kennt keine aktiven TickLoops.**
 `TickLoopRegistry` muss Healthcheck-Adapter-Verbindung
@@ -566,13 +601,17 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
   Schaerfungs-Bedarf negativ aus.
 - [ ] **C2 — NEU `_tick_loop_healthcheck.py`** mit
   `TickLoopHealthcheckAdapter`-Klasse (Welle-4b-c-D-1 +
-  D-2 + D-3 + D-4-konform).
+  D-2 + D-3 + D-4-konform); Pflicht-`clock_source:
+  Callable[[], float] = time.perf_counter` (C0-Review-Folge-
+  F1) im Konstruktor; Default-Argument fuer Production,
+  Test-Override per Fake-Clock-Injection.
 - [ ] **C2 — `time.perf_counter()`-Hooks** in
-  `DemoTickLoopDriver`/`TickLoopRegistry` um `tick()`-Wrap
-  + `record_tick_duration`-Call.
-- [ ] **C2 — NEU `GET /runs/{run_id}/healthcheck`-Endpoint**
-  in `_runs_router.py` mit 6-Feld-JSON-Output (Welle-4b-c-
-  D-5 + §1.2).
+  `_tick_loop_driver.py` (C0-Review-Folge-F4 konkret) um
+  `tick()`-Wrap + `record_tick_duration`-Call.
+- [ ] **C2 — NEU `routes_healthcheck.py`-Sub-Modul** (C0-
+  Review-Folge-F6) mit dem `GET /runs/{run_id}/healthcheck`-
+  Endpoint (6-Feld-JSON-Output per Welle-4b-c-D-5 + §1.2);
+  in `app.py` per `include_router` eingebunden.
 - [ ] **C2 — NEU Unit-Tests** in `tests/unit/adapters/
   driving/http_api/test_tick_loop_healthcheck.py` (≥ 7
   Tests gemaess §4-C2-Substanz-Liste).
@@ -580,8 +619,9 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
   test_m6_welle_4b_c_healthcheck_smoke.py` (End-to-End:
   Run + tick + GET /healthcheck).
 - [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
-  Gates; Test-Counts: 1732 + 7 = 1739 Unit; 80 + 1 = 81
-  Integration).
+  Gates; `tests/unit/`: 1732 → ~1739 [+7]; `tests/integration/`:
+  80 → 81 [+1]; `tests/perf/` unveraendert bei 2 Bench-Tests
+  — C0-Review-Folge-F7-Klarstellung).
 - [ ] **C2 — `make ci`** cache-frei gruen.
 - [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
