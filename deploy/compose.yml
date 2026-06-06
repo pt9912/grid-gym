@@ -146,8 +146,16 @@ services:
     command: ["sleep", "infinity"]
     # Dockerfile-HEALTHCHECK pollt `/health` ueber curl. Der
     # `sleep infinity`-Stub-Container hat keinen Webserver —
-    # Healthcheck per `test: ["NONE"]` deaktivieren, damit
-    # docker compose ihn nicht als unhealthy verwirft. M2-
-    # Geraete-Runner bringen den produktiven Healthcheck zurueck.
+    # statt der Probe einen trivialen Always-Healthy-Check
+    # eintragen (`test: ["CMD", "true"]`). `test: ["NONE"]`
+    # ist die dokumentierte Disable-Form, aber `docker compose
+    # up --wait` in v2.x exit-1-t bei Services ohne configured
+    # Healthcheck (CI-Compose ist strenger als manche lokale
+    # Versionen). Always-Healthy fuellt den Vertrag, ohne den
+    # Stub-Container zu beeintraechtigen. M2-Geraete-Runner
+    # bringen den produktiven Healthcheck zurueck.
     healthcheck:
-      test: ["NONE"]
+      test: ["CMD", "true"]
+      interval: 5s
+      timeout: 1s
+      retries: 1

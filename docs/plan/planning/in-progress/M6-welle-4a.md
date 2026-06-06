@@ -683,6 +683,39 @@ Semantik re-verifiziert werden (M7+ oder spaeter).
 
 ---
 
+## 10. Post-Closure-Korrekturen-Index (Pflege nach Welle-4a-C3)
+
+**Pflege-Pattern:** analog Welle-3-Done-Slice-Doc §10. Die hier
+dokumentierte Substanz ist Welle-4a-Stand zum C3-Closure-
+Zeitpunkt (`f19837f`); nach Closure entdeckte CI-Sensor-Drifts
+werden in Folge-Commits korrigiert, OHNE die Closure-Substanz
+oben zu revidieren. Dieser Index listet die kanonischen Post-
+Closure-Korrektur-Hashes.
+
+**Korrektur-Stack:**
+
+| Commit | Stufe | Substanz |
+| ------ | ----- | -------- |
+| `<TBD>` | Post-Push-CI-Fix | **F1 HIGH (CI-only)** `docker compose up --wait` in Compose-v2-CI-Version exit-1 bei `simulation`-Service mit `healthcheck: test: ["NONE"]` (dokumentierte Disable-Form). Pre-existing latente Drift seit M6-Welle-3-C2 `ce13253` (`fullbuild.yml`-CI-Pflicht-Gate angelegt), hinter Trigger-010-/-033-Image-Audit-Failures versteckt. Erstmals sichtbar nach Welle-4a-C2 `8fbd17c` (vulnignore-Pattern laesst `image-audit` gruen, runtime-Stage erreicht). Korrektur: `deploy/compose.yml` Z.152 `test: ["NONE"]` → `test: ["CMD", "true"]` + `interval/timeout/retries`-Defaults (Always-Healthy fuer `sleep infinity`-Stub-Container; M2-Geraete-Runner bringen produktiven Healthcheck zurueck). Lokal `make runtime` cache-frei gruen (Compose-Smoke + `/health` + `:13133`-Poll + Teardown). |
+
+**Aktueller Compose-Stand** (Post-Closure-Korrektur-Stand
+nach `<TBD>`):
+
+- `deploy/compose.yml` `simulation`-Service Healthcheck:
+  `test: ["CMD", "true"]` mit `interval: 5s` / `timeout: 1s`
+  / `retries: 1`. Stub-Container ist immer-healthy ohne
+  echte Probe.
+- `api` / `postgres` / `otel-collector`-Healthcheck-Substanz
+  unveraendert gegenueber Welle-4a-C3-Stand.
+- `make runtime` cache-frei gruen lokal; `make fullbuild`
+  cache-frei gruen lokal.
+- CI-Sensor-Erwartung: `fullbuild.yml` cache-frei gruen
+  beim naechsten Push (Beleg fuer `make fullbuild`-CI-Pflicht-
+  Gate-Aufloesung — erstmals seit `fullbuild.yml`-Anlage in
+  Welle-3-C2 `ce13253`).
+
+---
+
 ## References
 
 - [`../done/M6-welle-3.md §10`](../done/M6-welle-3.md) —
