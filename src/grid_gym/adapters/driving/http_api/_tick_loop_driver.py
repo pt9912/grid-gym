@@ -210,17 +210,25 @@ class DemoTickLoopDriver:
         Welle-4b-c-§7-R1: `time.perf_counter()`-Overhead ist
         Sub-Microsekunden; vernachlaessigbar gegen den 10ms-Tick-
         Budget.
+
+        Welle-4b-c-C2-Review-Folge F4: try/finally-Wrap garantiert
+        dass auch bei `tick_loop.tick()`-Exception die partielle
+        Wall-Clock-Dauer (bis zum Crash) im Healthcheck-Buffer
+        landet. Das hilft Diagnose: ein dauerhafter Tick-Crash
+        wuerde sonst keinen Mess-Eintrag erzeugen, und der
+        Healthcheck-Status koennte trotz Crash auf `ok` zeigen.
         """
         adapter = self._healthcheck_adapter
         if adapter is None:
             return self._tick_loop.tick()
         clock = adapter.clock_source
         start = clock()
-        result = self._tick_loop.tick()
-        end = clock()
-        duration_ms = (end - start) * 1000.0
-        adapter.record_tick_duration(duration_ms)
-        return result
+        try:
+            return self._tick_loop.tick()
+        finally:
+            end = clock()
+            duration_ms = (end - start) * 1000.0
+            adapter.record_tick_duration(duration_ms)
 
     def _force_stop_after_failure(self) -> None:
         """Welle-4b-Review-Fix #2: nach Tick-Exception den Repository-

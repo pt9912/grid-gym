@@ -130,6 +130,15 @@ class TickLoopHealthcheckAdapter:
 
         Bei leerem Window (kein record_tick_duration-Call seit Adapter-
         Init): alle numerischen Felder `0.0`/`0`; status `"ok"`.
+
+        **Praezisions-Hinweis (Welle-4b-c-C2-Review-Folge F3):** die
+        p50/p95-Berechnung nutzt nearest-rank-Approximation
+        (`int(n * 0.5)`/`int(n * 0.95)`). Bei kleinen Windows
+        (`n < 20`) ist die p95-Aussage entsprechend ungenau (z. B.
+        `n=5` → `int(0.95*5)=4` → letzter sortierter Wert). Fuer
+        MVP-Diagnose ausreichend; spaetere Schaerfung auf
+        linear-interpolation (analog `numpy.percentile`) waere
+        Welle-X-Material.
         """
         durations = list(self._durations_ms)
         tick_ms = self._tick_loop.tick_ms

@@ -374,11 +374,14 @@ Code-Merge mit:
   F4: konkrete Datei-Wahl statt vorheriger Disjunktion mit
   `_demo_setup.py`) um `time.perf_counter()`-Mess pro tick()-
   Aufruf und `record_tick_duration`-Call.
-- NEU `routes_healthcheck.py`-Sub-Modul mit dem `GET /runs/
-  {run_id}/healthcheck`-Endpoint (C0-Review-Folge-F6: separater
-  Router statt `_runs_router.py`-Erweiterung; Pattern analog
-  `routes_visualization.py` aus M5-Welle-6b und `routes_
-  faults.py` aus M5-Welle-6a; haelt AC-NO-GOD-UTILS ein):
+- NEU `_healthcheck_router.py`-Sub-Modul mit dem `GET /runs/
+  {run_id}/healthcheck`-Endpoint (C0-Review-Folge-F6 +
+  C2-Review-Folge-F1-Naming-Praezisierung: separater Router
+  statt `_runs_router.py`-Erweiterung; **http_api-Layer-
+  Konvention** `_..._router.py` (Pattern analog
+  `_runs_action_router.py` aus M5-Welle-1), NICHT
+  UI-Layer-Konvention `routes_*.py`; haelt AC-NO-GOD-UTILS
+  ein):
   - 200 + JSON-Body wenn Run existiert UND Healthcheck-Adapter
     aktiv.
   - 404 wenn Run nicht existiert (Pattern analog `/status`).
@@ -451,18 +454,21 @@ ab.
 - `docs/plan/planning/in-progress/M6-perf-security-cicd.md`
   (C0 + C3) — §3.1 Welle-4b-c-Zeile Status-Flip + Aktive-
   Welle-Block.
-- `src/grid_gym/adapters/driving/http_api/routes_healthcheck.
-  py` (C2, NEU per C0-Review-Folge-F6) — NEU `GET /runs/{id}/
+- `src/grid_gym/adapters/driving/http_api/_healthcheck_
+  router.py` (C2, NEU per C0-Review-Folge-F6 + C2-Review-
+  Folge-F1-Naming-Praezisierung) — NEU `GET /runs/{id}/
   healthcheck`-Route mit eigenem APIRouter; in `app.py` via
-  `include_router` eingebunden (Pattern analog `routes_
-  visualization.py`/`routes_faults.py`).
+  `include_router` eingebunden (Pattern analog
+  `_runs_action_router.py` aus M5-Welle-1; http_api-Layer-
+  Konvention `_..._router.py`).
 - `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
   (C2, konkret per C0-Review-Folge-F4) — `time.perf_counter()`-
   Hooks um `tick()`-Wrap; `record_tick_duration`-Call an den
   Healthcheck-Adapter.
 - `src/grid_gym/adapters/driving/http_api/app.py` (C2) —
-  `include_router(healthcheck_router)`-Anschluss (analog M5-
-  Welle-6a `routes_faults`-Anschluss).
+  `include_router(healthcheck_router)`-Anschluss (analog
+  bestehender Router-Anschluss-Pattern via Modul-Top-Level-
+  Import + include_router-Call).
 - `docs/plan/planning/in-progress/roadmap.md` (C3) — §3 M6
   aktive-Welle-Block + Welle-4b-c-Abschluss-Notiz + Welle-4-
   Subdivision-Abschluss-Notiz.
@@ -608,7 +614,7 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
 - [ ] **C2 — `time.perf_counter()`-Hooks** in
   `_tick_loop_driver.py` (C0-Review-Folge-F4 konkret) um
   `tick()`-Wrap + `record_tick_duration`-Call.
-- [ ] **C2 — NEU `routes_healthcheck.py`-Sub-Modul** (C0-
+- [ ] **C2 — NEU `_healthcheck_router.py`-Sub-Modul** (C0-
   Review-Folge-F6) mit dem `GET /runs/{run_id}/healthcheck`-
   Endpoint (6-Feld-JSON-Output per Welle-4b-c-D-5 + §1.2);
   in `app.py` per `include_router` eingebunden.

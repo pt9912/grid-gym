@@ -14,18 +14,26 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import cast
 
 import pytest
 
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
     TickLoopHealthcheckAdapter,
 )
+from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 
 
 @dataclass
 class _FakeTickLoop:
     """Minimaler TickLoop-Stub: nur `tick_ms`-Property wird vom
-    Healthcheck-Adapter gelesen."""
+    Healthcheck-Adapter gelesen.
+
+    Welle-4b-c-C2-Review-Folge F2: `cast(TickLoop, _FakeTickLoop())`
+    am Aufruf-Site ist sauberer als `# type: ignore[arg-type]`-
+    Marker, weil cast die Intention explizit dokumentiert
+    (Duck-Typing-Bekenntnis).
+    """
 
     tick_ms: int
 
@@ -42,14 +50,14 @@ def _build_adapter(
     Default Clock-Source bleibt `time.perf_counter`; Tests
     injizieren typischerweise eine controlled-sequence-Clock.
     """
-    fake_tick_loop = _FakeTickLoop(tick_ms=tick_ms)
+    fake_tick_loop = cast(TickLoop, _FakeTickLoop(tick_ms=tick_ms))
     if clock_source is None:
         return TickLoopHealthcheckAdapter(
-            fake_tick_loop,  # type: ignore[arg-type]
+            fake_tick_loop,
             window_size=window_size,
         )
     return TickLoopHealthcheckAdapter(
-        fake_tick_loop,  # type: ignore[arg-type]
+        fake_tick_loop,
         window_size=window_size,
         clock_source=clock_source,
     )
@@ -193,6 +201,6 @@ def test_tick_loop_property_exposed() -> None:
     """`tick_loop`-Property liefert die in __init__ uebergebene
     TickLoop-Instanz."""
 
-    fake = _FakeTickLoop(tick_ms=10)
-    adapter = TickLoopHealthcheckAdapter(fake)  # type: ignore[arg-type]
+    fake = cast(TickLoop, _FakeTickLoop(tick_ms=10))
+    adapter = TickLoopHealthcheckAdapter(fake)
     assert adapter.tick_loop is fake
