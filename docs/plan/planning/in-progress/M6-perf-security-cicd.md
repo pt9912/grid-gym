@@ -40,13 +40,16 @@ Close-Move + C4b `789ac50` Cross-Doc-Refs-Sync).
 27055273876) — erstmalig seit `fullbuild.yml`-Anlage in
 M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
 4b Performance-Bench) per Welle-4a-D-1.
-**Aktive Welle: M6-Welle-5** (Security-Audit + Eingabevalidierung;
-`GG-SAFE-001..008` MUSS/SOLLTE) — Welle-5-Slice-Doc entsteht in
-Welle-5-C0. **Welle-4-Subdivision komplett abgeschlossen
-2026-06-06**: 4a Vulnignore-Pattern (Stack `9bb6a92..789ac50`)
-+ 4b-a Bench-Foundation (`f2fbcc0..76a2f40`) + 4b-b
-GG-RT-005-Telemetry-Bench (`beb5dee..c8625f7`) + 4b-c
-GG-RT-001-Backpressure-Healthcheck (`c5543fd..7001989`).
+**Aktive Welle: M6-Welle-5a** (Quality-Pipeline-Audit;
+`GG-SAFE-001..004` MUSS End-to-End-Verifikation + Smoke-Tests
++ Doku-Tabelle) **In Progress 2026-06-06** mit C0 (Slice-Doc-
+Anlage [`M6-welle-5a.md`](M6-welle-5a.md); 5 Decisions D-1..
+D-5 fixiert; D-1 splits Welle 5 in 5a/5b/5c). **Welle-4-
+Subdivision komplett abgeschlossen 2026-06-06**: 4a Vulnignore-
+Pattern (Stack `9bb6a92..789ac50`) + 4b-a Bench-Foundation
+(`f2fbcc0..76a2f40`) + 4b-b GG-RT-005-Telemetry-Bench (`beb5dee
+..c8625f7`) + 4b-c GG-RT-001-Backpressure-Healthcheck
+(`c5543fd..7001989`).
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack `f2fbcc0..
 76a2f40` + **M6-Welle-4b-b abgeschlossen 2026-06-06** mit
 Stack `beb5dee..c8625f7` (plus Post-C3-Review-Folge `1b77665`:
@@ -223,7 +226,9 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | Done 2026-06-06 | [`M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events UND ohne Replay-Diff) **produktiv**; plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1 `43569d2`) |
 | 4b-b | `GG-RT-005` Telemetry-Port-Bench | Done 2026-06-06 | [`M6-welle-4b-b.md`](../done/M6-welle-4b-b.md) | `GG-RT-005` SOLLTE **produktiv** (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte; lokal ~788k Publish-OPS) | — (C1 entfaellt; Welle-4b-b-D-4 schliesst ADR-0041-Schaerfung negativ aus) |
 | 4b-c | `GG-RT-001` Backpressure-Healthcheck | Done 2026-06-06 | [`M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) | `GG-RT-001` MUSS **produktiv** (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status-Healthcheck via NEU Adapter-Side `_tick_loop_healthcheck.py` + `GET /runs/{id}/healthcheck`-Endpoint) | — (C1 entfaellt; Welle-4b-c-D-6 schliesst ADR-Schaerfungs-Bedarf negativ aus) |
-| 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
+| 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | In Progress 2026-06-06 | [`M6-welle-5a.md`](M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung) + `002` (NaN-Reject) + `003` (Kommunikationsausfall-missing/stale + Alarm) + `004` (max_age-stale-Markierung) — End-to-End-Audit + Smoke-Tests + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
+| 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | Pending | TBD (entsteht in Welle-5b-C0) | `GG-SAFE-007` (Sim/Prod-Trennung in UI/API) + `008` (REST/WS/Adapter-Input-Validation-Audit) | TBD |
+| 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | Pending | TBD (entsteht in Welle-5c-C0) | `GG-SAFE-005` (Fallback-Zustaende) + `006` (Non-Determinism-Detection) + IP-/Netz-Beschraenkung Demo-Compose | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
@@ -417,24 +422,44 @@ Bench-Surface die Stub-Surface ohnehin anfasst. Welle-4b-a-
 Anti-Scope schliesst das aus; 4b-b/4b-c koennten das
 aufgreifen.
 
-**Welle 5 — Security-Audit + Eingabevalidierung:**
+**Welle 5 — Sub-Slicing 5a/5b/5c** (Welle-5a-D-1 in
+[`M6-welle-5a.md §3`](M6-welle-5a.md); Pattern analog M5-
+Welle-6 Sub-Slicing 6a/6b/6c):
 
-- Lieferziel:
-  - `GG-SAFE-001/002/003/004/007` (MUSS) + `GG-SAFE-005/006`
-    (SOLLTE): Audit-Familie (Logging-Hygiene, Secret-
-    Handling, Audit-Trail-Integritaet).
-  - **`GG-SAFE-008` (MUSS)** externe Eingabevalidierung an
-    REST/WebSocket/Adapter-Schnittstellen produktiv
-    verankert (Pydantic-Strict-Mode oder explizite
-    Validation-Layer; ADR-pflichtig).
-  - IP-/Netz-Beschraenkung im Demo-Compose dokumentiert
-    + ggf. Hardening (separate Auflagen-Schicht; kein
-    einzelner `GG-SAFE-*`-ID).
+**Welle 5a — Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS):**
+
+- Lieferziel: End-to-End-Verifikation der existierenden Quality-
+  Pipeline-Substanz (invalid-/nan-/missing-/stale-Statuswerte;
+  Alarm-Emission). NEU 4 Integration-Smoke-Tests + NEU Audit-
+  Doku-Tabelle in `docs/user/`. Inline-Luecken-Fixes wenn
+  minimal; substantielle Luecken als NEU `open/`-Trigger
+  (Welle-5a-D-3 Hybrid).
+- Anti-Scope: Keine `GG-SAFE-005..008`; keine neue Quality-
+  Enum-Variante; keine NEU ADR (D-5).
+- ADR-Lifecycle: C1 entfaellt; Pattern analog M5-Welle-2.
+
+**Welle 5b — Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008`
+MUSS):**
+
+- Lieferziel: `GG-SAFE-007` Sim/Prod-Trennung in UI/API-Doku
+  + OpenAPI-Tags; `GG-SAFE-008` Adapter-Input-Validation-Audit
+  + Pydantic-Strict-Mode-Schaerfung wo noetig.
+- ADR-Lifecycle: ggf. ADR fuer Input-Validation-Pattern wenn
+  substantielle Schaerfung am Adapter-Vertrag noetig.
+
+**Welle 5c — SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` +
+Demo-Compose):**
+
+- Lieferziel: `GG-SAFE-005` Fallback-Zustaende dokumentieren
+  + ggf. erweitern; `GG-SAFE-006` Non-Determinism-Detection
+  (Replay-Diff existiert in M3; dokumentieren + ggf. erweitern);
+  IP-/Netz-Beschraenkung im Demo-Compose verankern.
 - Carveout-Aufloesung opportunistisch: **Welle-3-Pre-init-
   Defense-Pattern verallgemeinern** (`carveouts.md §2.1
   Pattern-Forward`) — falls neue Adapter-Surfaces in M6
   hinzukommen.
-- ADR-Lifecycle: ggf. ADR fuer Eingabe-Validation-Pattern.
+- ADR-Lifecycle: ggf. ADR fuer Fallback-Pattern oder Demo-
+  Compose-Hardening.
 
 **Welle 6 — Deploy-Hardening + IEC-Smoke-Pfad-B:**
 
