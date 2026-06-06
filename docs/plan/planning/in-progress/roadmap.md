@@ -981,7 +981,7 @@ Publish-OPS lokal weit ueber der 10 000-SOLLTE-Schwelle;
 Single-Queue-Subscriber-Slot-Setup vermeidet das No-Op-False-
 Positive aus dem C0-Erstwurf).
 **M6-Welle-4b-c abgeschlossen 2026-06-06** mit Stack
-`c5543fd..<C3>` (C0 + C0-Review-Folge `aacc370` (7 Self-Review-
+`c5543fd..7001989` (C0 + C0-Review-Folge `aacc370` (7 Self-Review-
 Findings: F1 MEDIUM clock_source-Pflicht + F2-F7 LOW) + C2
 `a98f967` (NEU `TickLoopHealthcheckAdapter` + Driver-Hook +
 `_healthcheck_router.py`-Endpoint + 14 Unit-Tests + 3

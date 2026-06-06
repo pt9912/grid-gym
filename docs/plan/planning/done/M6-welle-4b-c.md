@@ -8,10 +8,12 @@ Adapter` + Driver-Hook + `_healthcheck_router.py` Endpoint +
 10 Unit-Tests + 3 Integration-Smokes; GG-RT-001-Akzeptanz
 produktiv) + C2-Review-Folge `8785a6b` (7 Self-Review-Findings:
 F1 MEDIUM Datei-Naming-Drift + F2-F7 LOW + try/finally-Wrap +
-NEU 4 Driver-Hook-Unit-Tests) + C3 (dieser Commit; Status/DoD-
-Sync + Welle-4-Subdivision-Komplett-Abschluss-Notiz + Top-
-Level-Doku). Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-
-Refs-Sync.
+NEU 4 Driver-Hook-Unit-Tests) + C3 `7001989` (Status/DoD-Sync +
+Welle-4-Subdivision-Komplett-Abschluss-Notiz + Top-Level-Doku)
++ C4a `7d8ac5a` (Self-Close-Move; `git mv` rename-only) + C4b
+(dieser Commit; Cross-Doc-Refs-Sync nach Move + Hash-Slot-Fills
+`<C3>` → `7001989` in 4 Docs + M6-perf-security-cicd-Ref
+umgehakt von `in-progress` auf `../in-progress`).
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
 Welle 4b ist gemaess Welle-4b-a-D-1 weiter in 4b-a (Bench-
@@ -677,7 +679,7 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
   ist die letzte Sub-Sub-Welle in 4b.
 - [`../done/M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) —
   Welle-4b-a Bench-Foundation (ADR-0041).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
 - [`../../../../spec/lastenheft.md §7 GG-RT-001`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz (10ms/100ms/1000ms-Tick-Modi +
