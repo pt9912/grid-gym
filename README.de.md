@@ -172,7 +172,7 @@ make arch-check          # import-linter + tools/arch_check.py (ADR 0002 §A-1)
 make arch-check-imports  # nur import-linter (7 Tabu-Contracts)
 make arch-check-custom   # nur tools/arch_check.py (12 Custom-Checks)
 make fullbuild           # gates + integration + runtime-Image + image-audit + Compose-Smoke
-make perf                # GG-RT-004 SOLLTE: pytest-benchmark gegen tests/perf/baseline.json (20% Median-Drift; ADR 0041; opt-in `--extra perf`)
+make perf                # GG-RT-004 + GG-RT-005 SOLLTE: pytest-benchmark gegen tests/perf/baseline.json (20% Median-Drift; ADR 0041; opt-in `--extra perf`; tick-loop 100 Devices x 10k Ticks + telemetry-port 10k Publish/s mit Payloads ≤256 Byte)
 make perf-baseline-update # nur Maintainer: regeneriert tests/perf/baseline.json
 ```
 

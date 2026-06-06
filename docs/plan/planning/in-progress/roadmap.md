@@ -894,11 +894,12 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b-b
-(`GG-RT-005` Telemetry-Port-Bench; 10 000 Points/s mit Payloads
-≤ 256 Byte)** — Welle-4b-b-Slice-Doc entsteht in Welle-4b-b-C0.
-Welle 4b ist in 4b-a/4b-b/4b-c sub-geslict per Welle-4b-a-D-1;
-Pattern analog M5-Welle-6 Sub-Slicing 6a/6b/6c.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b-c
+(`GG-RT-001` Backpressure-Healthcheck; Tick-Dauer/p95-Jitter/
+missed-Ticks-Telemetrie als NEU TickLoop-Healthcheck-Surface
+fuer 10ms-Modus)** — Welle-4b-c-Slice-Doc entsteht in Welle-4b-
+c-C0. Welle 4b ist in 4b-a/4b-b/4b-c sub-geslict per Welle-4b-
+a-D-1; Pattern analog M5-Welle-6 Sub-Slicing 6a/6b/6c.
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
@@ -967,7 +968,18 @@ Commit Closure-Sync): `GG-RT-004`-Doppel-Akzeptanz produktiv
 nichtdeterministischen Replay-Diff per ADR-0041 §2.2; Bench-
 Median 519ms / 1.92 OPS; Regression-Schwelle 20% Median-
 Drift gegen tests/perf/baseline.json per ADR-0041 §2.3).
-Welle 4b-b+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+**M6-Welle-4b-b abgeschlossen 2026-06-06** mit Stack
+`beb5dee..<C3>` (C0 `beb5dee` Slice-Doc + C0-Review-Folge
+`f9620a3` (2 HIGH Findings: D-3 No-Subscriber-False-Positive
++ D-2 canonical_json-API-Drift) + C0-Review-Folge-2 `935151e`
+(2 MEDIUM stale-Refs) + C2 `a2feff7` NEU `tests/perf/
+test_telemetry_port_bench.py` + Baseline-Update + C3 dieser
+Commit Closure-Sync): `GG-RT-005`-Doppel-Akzeptanz produktiv
+(Payload ≤ 256 Byte canonical-serialisiert UND ~788 000
+Publish-OPS lokal weit ueber der 10 000-SOLLTE-Schwelle;
+Single-Queue-Subscriber-Slot-Setup vermeidet das No-Op-False-
+Positive aus dem C0-Erstwurf).
+Welle 4b-c+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
 Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
 `Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +

@@ -1,6 +1,19 @@
 # Welle 4b-b — M6 Telemetry-Port-Throughput-Bench (`GG-RT-005`)
 
-**Status:** In Progress — C0 (dieser Commit, Slice-Doc-Anlage).
+**Status:** Done 2026-06-06 — Liefer-Stack: C0 `beb5dee`
+(Slice-Doc-Anlage) + C0-Review-Folge `f9620a3` (2 HIGH
+Findings adressiert: D-3 No-Subscriber-False-Positive →
+Single-Queue-Subscriber-Slot; D-2 canonical_json-API-Drift →
+`canonical_json(mapping)` + Mapping/Decimal-Konversion) +
+C0-Review-Folge-2 `935151e` (2 MEDIUM stale-Refs in §1.2 +
+§4-C2) + C2 `a2feff7` (NEU `tests/perf/test_telemetry_port_
+bench.py` + Baseline-Update; `GG-RT-005`-Doppel-Akzeptanz
+produktiv: Payload ≤ 256 Byte UND Median ~1.27us pro publish
+= ~788 000 Publish-OPS lokal, weit ueber der 10 000-SOLLTE-
+Schwelle) + C3 (dieser Commit; Status/DoD-Sync + Top-Level-
+Doku). Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-Refs-
+Sync.
+
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
 Welle 4b ist gemaess Welle-4b-a-D-1 weiter in 4b-a (Bench-
@@ -528,58 +541,58 @@ als Lehre verankert.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **C0 — NEU `M6-welle-4b-b.md`** mit §1..§9-Struktur
+- [x] **C0 — NEU `M6-welle-4b-b.md`** mit §1..§9-Struktur
   (dieser Commit).
-- [ ] **C0 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C0 — `in-progress/README.md`** Bestand-Tabelle
   um `M6-welle-4b-b.md`-Eintrag + Aktive-Welle-Block auf
   M6-Welle-4b-b.
-- [ ] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-b-
+- [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-b-
   Zeile `Pending → In Progress 2026-06-06`; Status-Block
   oben aktive Welle auf 4b-b.
-- [ ] **C1 entfaellt** — Welle-4b-b-D-4 schliesst ADR-0041-
+- [x] **C1 entfaellt** — Welle-4b-b-D-4 schliesst ADR-0041-
   Schaerfungs-Bedarf negativ aus; Pattern analog M5-Welle-2
   `5234617`.
-- [ ] **C2 — NEU `tests/perf/test_telemetry_port_bench.py`**
+- [x] **C2 — NEU `tests/perf/test_telemetry_port_bench.py`**
   mit `test_gg_rt_005_telemetry_port_publish_throughput`
   (Doppel-Akzeptanz: Payload ≤ 256 Byte UND Median-OPS ≥
   10 000).
-- [ ] **C2 — Baseline-Update** `tests/perf/baseline.json`
+- [x] **C2 — Baseline-Update** `tests/perf/baseline.json`
   via `make perf-baseline-update` (NEU Eintrag fuer den
   Telemetry-Test).
-- [ ] **C2 — `make perf`** cache-frei gruen (beide Tests;
+- [x] **C2 — `make perf`** cache-frei gruen (beide Tests;
   `GG-RT-005`-Akzeptanz: Median-OPS ≥ 10 000; Baseline-
   Compare innerhalb 20 % Median-Drift).
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates; Test-Counts unveraendert).
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
+- [x] **C2 — `make ci`** cache-frei gruen.
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override.
-- [ ] **C3 — `M6-welle-4b-b.md`** Status `In Progress →
+- [x] **C3 — `M6-welle-4b-b.md`** Status `In Progress →
   Done 2026-06-06` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-b-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-b-
   Zeile `In Progress → Done` mit Closure-Hash + Aktive-
   Welle-Block auf Welle 4b-c.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU
+- [x] **C3 — `README.md` + `README.de.md`** NEU
   `GG-RT-005`-Akzeptanz-Notiz im `make perf`-Block.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-4b-c + Welle-4b-b-Abschluss-Notiz mit Stack-Range.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-4b-b-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-4b-c.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 4b-b NICHT):**
 
-- [ ] Kein WebSocket-Endpoint-Bench (Adapter-Schicht; Welle-
+- [x] Kein WebSocket-Endpoint-Bench (Adapter-Schicht; Welle-
   Closure-Material).
-- [ ] Keine ADR-0041-Schaerfung (Welle-4b-b-D-4).
-- [ ] Keine TickLoop-Integration (Mess-Surface isoliert).
-- [ ] Kein Multi-Subscriber-Bench (Welle-4b-Closure-Scope).
-- [ ] Keine Persistenz-Mess (Lastenheft: gepuffert
+- [x] Keine ADR-0041-Schaerfung (Welle-4b-b-D-4).
+- [x] Keine TickLoop-Integration (Mess-Surface isoliert).
+- [x] Kein Multi-Subscriber-Bench (Welle-4b-Closure-Scope).
+- [x] Keine Persistenz-Mess (Lastenheft: gepuffert
   zulaessig).
-- [ ] Kein `GG-RT-001` Backpressure-Healthcheck (Welle-4b-c-
+- [x] Kein `GG-RT-001` Backpressure-Healthcheck (Welle-4b-c-
   Scope).
-- [ ] Keine produktive 256-Byte-Payload-Schwellen-Schaerfung
+- [x] Keine produktive 256-Byte-Payload-Schwellen-Schaerfung
   (Bench-Test-Assert only).
 
 ---
