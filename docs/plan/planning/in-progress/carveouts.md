@@ -111,7 +111,7 @@ Bedingung pro Item: „wenn konkreter Bedarf — eigener Slice".
 | Battery-Temperatur-Telemetry | `GG-BESS-006` | In Trigger Watch | [`023-sollte-battery-temperature.md`](../open/023-sollte-battery-temperature.md) |
 | Battery-Zellspannung-Telemetry | `GG-BESS-007` | In Trigger Watch | [`024-sollte-battery-cell-voltage.md`](../open/024-sollte-battery-cell-voltage.md) |
 
-### 2.5 Tooling- / Build- / Type-System-Trigger (5 Items)
+### 2.5 Tooling- / Build- / Type-System-Trigger (8 Items)
 
 Quelle: [`../open/`](../open/). Alle Items haben `Typ =
 Trigger-Gated`.
@@ -126,8 +126,6 @@ Trigger-Gated`.
 | CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-D-1-Vertagung) | **Aufgeloest in M6-Welle-3-C2 `ce13253`** (NEU `.github/workflows/fullbuild.yml` mit Hybrid Push/PR-Paths-Filter + workflow_dispatch; `make fullbuild` cache-frei gruen) | n/a (aufgeloest) | [`031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
 | Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (`make fullbuild`-Defer; M6-Welle-3-Post-Push-`ede21ad`-Aufdeckung) | **Temp-Deferral aktiv** seit M6-Welle-4a-C2 `8fbd17c` (NEU vulnignore-Pattern + ADR-0044; CI gruen via generierter `.trivyignore` mit `expires: 2026-06-20`); In Trigger Watch fuer echte Aufloesung | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build (erwartet 2026-06-09..06-12 per ~14-Tage-Kadenz) ODER Compliance-Druck ODER vulnignore-`expires`-Schwelle 2026-06-20 | [`033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
-| `GG-SAFE-004` `max_age`-stale-Quality-Markierung (M6-Welle-5a-Audit-Lücke) | In Trigger Watch | Compliance-/Stakeholder-Druck auf konkrete `max_age`-Schwelle ODER M6-Welle-7-Closure-Sweep ODER Welle-X-Maintainer-Entscheidung | [`034-safe-004-max-age-stale-quality.md`](../open/034-safe-004-max-age-stale-quality.md) |
-| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (M6-Welle-5a-Audit partial Lücke) | In Trigger Watch | Reale-Compose-Demo-Pfad mit Protocol-Adapter ODER M6-Welle-6-Deploy-Hardening (Trigger 009-Erbschaft) ODER Compliance-Druck ODER M6-Welle-7-Closure-Sweep | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
 ### 2.6 Spike-Optional (1 Item)
 
@@ -175,6 +173,21 @@ formalen M6-Slice-Plan wandern.
 | `GG-CICD-001..00X` | ≥7 | CI/CD-Vollausbau (4 Slice-025-ausgelagerte Items + Release-Workflow + SBOM + Test-Matrix) |
 | `GG-DEPLOY-001..00X` | ≥X | Deploy-Hardening (Container-Smoke + Image-Audit + krb5-Bump-Erbschaft) |
 | `GG-SBOM-001..00X` | ≥1 | SBOM-Generierung (Trigger 008) |
+
+### 2.9 Quality-Pipeline-Audit-Luecken (M6-Welle-5a, 2 Items)
+
+Quelle: [`../open/`](../open/) + [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md).
+Alle Items haben `Typ = Trigger-Gated`; aus M6-Welle-5a-Audit
+hervorgegangen (Welle-5a-D-3 Hybrid-Strategie: substantielle
+Substanz-Lücken werden als NEU `open/`-Trigger vertagt, nicht
+inline gefixt). Eigene Cluster-Sektion statt §2.5-Verklumpung,
+weil SAFE-IDs Lastenheft-Domain-Items sind, nicht Tooling-/
+Build-Trigger.
+
+| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | ------ | ---------------------- | ----------- |
+| `GG-SAFE-004` `max_age`-stale-Quality-Markierung (Lücke — `max_age`-Substanz fehlt komplett im Repo) | In Trigger Watch | Compliance-/Stakeholder-Druck auf konkrete `max_age`-Schwelle ODER M6-Welle-7-Closure-Sweep ODER Welle-X-Maintainer-Entscheidung | [`034-safe-004-max-age-stale-quality.md`](../open/034-safe-004-max-age-stale-quality.md) |
+| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | In Trigger Watch | Reale-Compose-Demo-Pfad mit Protocol-Adapter ODER M6-Welle-6-Deploy-Hardening (Trigger 009-Erbschaft) ODER Compliance-Druck ODER M6-Welle-7-Closure-Sweep | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
 ---
 

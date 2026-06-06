@@ -1,17 +1,18 @@
 """Integration-Smoke fuer `GG-SAFE-001..004` (M6 Welle 5a;
 Quality-Pipeline-Audit).
 
-Vier Smoke-Tests, einer pro Lastenheft-ID:
+Sieben Smoke-Tests:
 
-- SAFE-001: Schema-Validierung wird im Scenario-Loader
-  produktiv durchgesetzt (Welle-5a-Audit ✓ produktiv).
-- SAFE-002: NaN-Werte werden von `canonical_json` rejected
-  (Welle-5a-Audit ✓ produktiv).
-- SAFE-003: SmartMeter emittiert `Quality.MISSING` bei pre-
+- SAFE-001 (x2): Schema-Validierung wird im Scenario-Loader
+  produktiv durchgesetzt (Welle-5a-Audit ✓ produktiv); Schwester-
+  Akzeptanz fuer wrong-type-Pflichtwert.
+- SAFE-002 (x2): NaN/Infinity-Werte werden von `canonical_json`
+  rejected (Welle-5a-Audit ✓ produktiv).
+- SAFE-003 (x2): SmartMeter emittiert `Quality.MISSING` bei pre-
   attach (Welle-5a-Audit ⚠ partial Lücke; voller
   Kommunikationsausfall-Smoke ist `pytest.skip` mit Pointer
   auf Trigger 035).
-- SAFE-004: max_age-Substanz fehlt komplett im Repository
+- SAFE-004 (x1): max_age-Substanz fehlt komplett im Repository
   (Welle-5a-Audit ✗ Lücke); Smoke ist `pytest.skip` mit
   Pointer auf Trigger 034.
 
@@ -25,12 +26,17 @@ from decimal import Decimal
 
 import pytest
 
+from grid_gym.hexagon.core.devices.smart_meter.model import SmartMeterDevice
+from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.quality import Quality
+from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.errors import ScenarioError
 from grid_gym.hexagon.core.scenario.loader import load_scenario
 from grid_gym.hexagon.core.serialization.canonical import (
     NonFiniteDecimalError,
     canonical_json,
 )
+from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
 
 
 def test_safe_001_invalid_scenario_schema_rejected() -> None:
@@ -43,13 +49,29 @@ def test_safe_001_invalid_scenario_schema_rejected() -> None:
     """
 
     invalid_scenario: Mapping[str, object] = {
-        # Pflicht-Top-Level-Keys fehlen: `schema_version`,
-        # `tick_ms`, `devices`, etc.
         "garbage_key": 42,
     }
 
     with pytest.raises(ScenarioError):
         load_scenario(invalid_scenario)
+
+
+def test_safe_001_invalid_scenario_wrong_type_rejected() -> None:
+    """`GG-SAFE-001`-Schwester-Akzeptanz: Scenario mit korrekten
+    Pflicht-Keys aber wrong-type-Wert (`tick_ms` als String statt
+    Int) wird vom Loader ebenfalls rejected — Schema-Fehler-Pfad
+    deckt nicht nur fehlende Keys, sondern auch Typ-Verletzungen.
+    """
+
+    wrong_type_scenario: Mapping[str, object] = {
+        "schema_version": "grid-gym.scenario.v1",
+        "metadata": {"name": "smoke", "description": "safe-001-schwester"},
+        "simulation": {"tick_ms": "100", "duration_s": 60, "seed": 42},
+        "devices": [],
+    }
+
+    with pytest.raises(ScenarioError):
+        load_scenario(wrong_type_scenario)
 
 
 def test_safe_002_nan_value_rejected_at_serialization() -> None:
@@ -92,12 +114,6 @@ def test_safe_003_smart_meter_pre_attach_emits_missing() -> None:
     `Quality.MISSING`-Emission im SmartMeter-Pre-Attach-Zustand).
     """
 
-    from grid_gym.hexagon.core.domain.device import DeviceTickContext
-    from grid_gym.hexagon.core.domain.quality import Quality
-    from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
-    from grid_gym.hexagon.core.devices.smart_meter.model import SmartMeterDevice
-    from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
-
     device = SmartMeterDevice()
     device.initialize(
         ScenarioDevice(
@@ -132,9 +148,8 @@ def test_safe_003_comm_failure_emits_missing_or_stale() -> None:
     Quality.MISSING/STALE + Alarm. **Lücke per Welle-5a-Audit.**
 
     Aktivierung: Trigger 035 verankert die erwartete Lieferung.
+    Test-Body absichtlich leer (Skip-Marker greift vorher).
     """
-
-    pytest.fail("Erwartete Substanz fehlt; siehe Trigger 035 fuer den Folge-Pfad.")
 
 
 @pytest.mark.skip(
@@ -151,6 +166,5 @@ def test_safe_004_stale_data_quality_after_max_age() -> None:
 
     Aktivierung: Trigger 034 verankert die erwartete Lieferung
     (`max_age`-Konfigurationsfeld + Quality-Pipeline-Stage).
+    Test-Body absichtlich leer (Skip-Marker greift vorher).
     """
-
-    pytest.fail("Erwartete Substanz fehlt; siehe Trigger 034 fuer den Folge-Pfad.")

@@ -65,13 +65,23 @@ Alarm-Emission-Verifikation, ADR-Bedarf.
   alle REST-Endpunkte; Schema-Fehler → 422 mit
   `ErrorResponse` — `GG-SAFE-001`/`GG-SAFE-008`-Substanz
   produktiv.
-- **TickLoop-Quality-Stage** (M3 Pipeline; `tick_loop.py`):
-  emittiert `STALE` fuer `max_age`-Ueberschreitung —
-  `GG-SAFE-004`-Substanz produktiv.
-- **Adapter-Quality-Emission**: Protocol-Adapter
-  (OPC-UA/IEC-61850) emittieren `INVALID`/`MISSING` bei
-  Lese-Fehlern — `GG-SAFE-001`/`GG-SAFE-003`-Substanz teil-
-  produktiv.
+- **`Quality.STALE`-Enum-Wert verankert** (`hexagon/core/
+  domain/quality.py:24`); **aber `max_age`-Substanz fehlt
+  komplett im Repository** — Pre-C0-Vorbelegung dieses Doks
+  hatte „TickLoop-Quality-Stage emittiert `STALE` fuer
+  `max_age`-Ueberschreitung" angenommen; Welle-5a-C2-Audit
+  hat das ueberstimmt (Grep ueber `src/grid_gym/` nach
+  `max_age` liefert null Treffer). Status: Lücke. Folge-
+  Pfad: [Trigger 034](../open/034-safe-004-max-age-stale-quality.md).
+- **Adapter-Quality-Emission**: Protocol-Adapter (OPC-UA/IEC-
+  61850) emittieren `INVALID` bei String-Lese-Faellen
+  (`protocol_opcua/_port.py:312`, `protocol_iec61850/_port.
+  py:368`) — `GG-SAFE-001`-Substanz produktiv. `MISSING`
+  bei `SmartMeterDevice`-pre-attach (`devices/smart_meter/
+  model.py:202`) ist Konfigurations-Pre-Attach, NICHT echter
+  Adapter-Verbindungs-Verlust — `GG-SAFE-003`-Substanz nur
+  **partial**, vollstaendige Adapter-Lifecycle-Hook + Alarm-
+  Emission fehlt. Folge-Pfad: [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md).
 - **Fault-Injection** (M3 Welle 1/2; ADR 0022 + 0025):
   `FAULT_INJECTED`-Quality + Alarm-Emission per Fault-Adapter.
 
@@ -82,20 +92,31 @@ Quality-Pipeline-Substanz wird **End-to-End verifiziert + Lücken
 identifiziert**. Drei orthogonale Liefer-Items:
 
 1. **NEU `tests/integration/test_m6_welle_5a_safe_001_004_
-   smoke.py`** (Welle-5a-C2) — Vier End-to-End-Smoke-Tests
-   (einer pro `GG-SAFE-001..004`):
+   smoke.py`** (Welle-5a-C2) — Sieben Smoke-Tests (4 Pflicht
+   + 2 Schwester-Akzeptanz + 2 skip-Marker auf NEU Triggers):
    - `test_safe_001_invalid_scenario_schema_rejected`:
      Scenario mit Schema-Fehler wird vom Loader rejected
      (kein Lauf-Start).
+   - `test_safe_001_invalid_scenario_wrong_type_rejected`
+     (Schwester): Scenario mit korrekten Pflicht-Keys aber
+     wrong-type-Wert wird ebenfalls rejected.
    - `test_safe_002_nan_value_rejected_at_serialization`:
      TelemetryPoint mit `value=NaN` wird canonical_json-
      reject mit `NonFiniteDecimalError`.
-   - `test_safe_003_adapter_communication_failure_emits_
-     missing_quality`: Mock-Adapter-Lesefehler emittiert
-     `Quality.MISSING` + Alarm.
+   - `test_safe_002_infinity_value_rejected_at_serialization`
+     (Schwester): Infinity einheitlich rejected.
+   - `test_safe_003_smart_meter_pre_attach_emits_missing`:
+     deckt **Teil-Substanz** (SmartMeter-pre-attach →
+     `Quality.MISSING`; ADR 0018 §2.3); voller Adapter-
+     Comm-Failure-Akzeptanz-Umfang ist `pytest.skip` mit
+     Pointer auf [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md).
+   - `test_safe_003_comm_failure_emits_missing_or_stale`:
+     `pytest.skip` mit Pointer auf Trigger 035 (voller
+     Umfang ist Welle-5a-Audit-Lücke).
    - `test_safe_004_stale_data_quality_after_max_age`:
-     TelemetryPoint juenger als `max_age` bleibt `VALID`;
-     ueber `max_age` wird `STALE`.
+     `pytest.skip` mit Pointer auf [Trigger 034](../open/034-safe-004-max-age-stale-quality.md)
+     (`max_age`-Substanz fehlt komplett im Repository;
+     Welle-5a-Audit-Lücke).
 
 2. **NEU Audit-Tabelle in `docs/user/safe-001-004-quality-
    pipeline.md`** (Welle-5a-C2) — Mapping pro `GG-SAFE-00X`-
@@ -280,12 +301,17 @@ Welle-5a-D-5 schliesst ADR-Schaerfungs-Bedarf negativ aus.
 Code-Merge mit:
 
 - NEU `tests/integration/test_m6_welle_5a_safe_001_004_smoke.
-  py` mit 4 Smoke-Tests (Welle-5a-D-2 + D-4):
-  - SAFE-001: Schema-Validation-Fehler im Loader.
-  - SAFE-002: NaN-Reject im canonical_json.
-  - SAFE-003: Adapter-Lese-Fehler → `Quality.MISSING` +
-    Alarm.
-  - SAFE-004: max_age-Ueberschreitung → `Quality.STALE`.
+  py` mit 7 Smoke-Tests (Welle-5a-D-2 + D-4):
+  - SAFE-001 (×2): Schema-Validation-Fehler im Loader +
+    wrong-type-Schwester.
+  - SAFE-002 (×2): NaN-Reject + Infinity-Schwester im
+    canonical_json.
+  - SAFE-003 (×2): SmartMeter-pre-attach → `Quality.MISSING`
+    (Teil-Substanz produktiv) + Adapter-Comm-Failure-Smoke
+    `pytest.skip` mit Pointer auf NEU Trigger 035.
+  - SAFE-004 (×1): max_age-Ueberschreitung → `Quality.STALE`
+    `pytest.skip` mit Pointer auf NEU Trigger 034 (Audit
+    hat Vorbelegungs-Annahme „produktiv seit M3" ueberstimmt).
 - NEU `docs/user/safe-001-004-quality-pipeline.md` Audit-
   Tabelle mit:
   - Pro GG-SAFE-00X-ID: Lastenheft-Akzeptanz, Substanz-Pfad
@@ -295,7 +321,8 @@ Code-Merge mit:
   aufdeckt.
 - **Verifikation (lokal vor C2-Commit):**
   - `make gates` cache-frei gruen (10/10 A-1-Gates; Test-
-    Counts: +4 Integration-Smokes).
+    Counts: +7 Integration-Smokes, davon 2 `pytest.skip`
+    mit Trigger-Pointern → 5 aktive Pass + 2 Skip).
   - `make ci` cache-frei gruen.
   - `make fullbuild` cache-frei gruen.
   - `make docs-check` cache-frei gruen.
@@ -370,19 +397,24 @@ C4a/C4b dienen gleichzeitig als M6-Welle-5b-Pre-C0a/Pre-C0b.
 **DoD-Verifikation (§9):**
 
 - C0 (dieser Commit) liefert nur Doc-Substanz.
-- C2 prueft 4 NEU Smoke-Tests + NEU Audit-Doku + alle
+- C2 prueft 7 NEU Smoke-Tests (5 Pass + 2 Skip) + NEU
+  Audit-Doku + NEU 2 Trigger-Docs (034 + 035) + alle
   bestehenden Gates gruen.
 - C3 prueft Status-Flip + Top-Level-Doku-Sync.
 
 **Abnahme-Verifikation:**
 
-- `GG-SAFE-001..004` MUSS-Akzeptanz End-to-End belegt:
-  - SAFE-001: Schema-Validation per Scenario-Loader +
-    Pydantic-API + Adapter-Quality-Emission.
-  - SAFE-002: NaN-Reject per canonical_json-Pipeline.
-  - SAFE-003: Adapter-Lese-Fehler emittiert `Quality.MISSING`
-    + Alarm.
-  - SAFE-004: max_age-basierte `Quality.STALE`-Markierung.
+- `GG-SAFE-001..004` MUSS-Akzeptanz audited:
+  - SAFE-001 ✓ **produktiv**: Schema-Validation per Scenario-
+    Loader + Pydantic-API + Adapter-`Quality.INVALID`-Emission.
+  - SAFE-002 ✓ **produktiv**: NaN/Infinity-Reject per
+    canonical_json-Pipeline mit `NonFiniteDecimalError`.
+  - SAFE-003 ⚠ **partial Lücke**: SmartMeter-pre-attach-
+    `Quality.MISSING` produktiv (ADR 0018 §2.3); echter
+    Adapter-Verbindungs-Verlust + Alarm fehlt → Trigger 035.
+  - SAFE-004 ✗ **Lücke**: `max_age`-Substanz fehlt komplett
+    im Repository (Welle-5a-Audit hat Vorbelegungs-Annahme
+    ueberstimmt) → Trigger 034.
 
 ---
 
@@ -451,7 +483,13 @@ Feature-Welle).
   2026-06-06`.
 - [ ] **C1 entfaellt** — Welle-5a-D-5.
 - [ ] **C2 — NEU `tests/integration/test_m6_welle_5a_safe_
-  001_004_smoke.py`** mit 4 Smoke-Tests (Welle-5a-D-2 + D-4).
+  001_004_smoke.py`** mit 7 Smoke-Tests (5 Pass + 2 Skip-mit-
+  Trigger-Pointer; Welle-5a-D-2 + D-4).
+- [ ] **C2 — NEU `docs/plan/planning/open/034-safe-004-max-
+  age-stale-quality.md`** Trigger fuer `GG-SAFE-004` Lücke.
+- [ ] **C2 — NEU `docs/plan/planning/open/035-safe-003-comm-
+  failure-missing-quality.md`** Trigger fuer `GG-SAFE-003`
+  partial Lücke.
 - [ ] **C2 — NEU `docs/user/safe-001-004-quality-pipeline.
   md`** Audit-Tabelle (pro `GG-SAFE-00X`-ID: Akzeptanz +
   Substanz-Pfad + Test-Pfad + Status).
