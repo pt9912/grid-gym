@@ -207,14 +207,19 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 2 | SBOM-Aktivierung + Release-Workflow | Done 2026-06-05 | [`M6-welle-2.md`](../done/M6-welle-2.md) | `GG-CICD-007` (5 Asset-Klassen + 1 GHCR-Push) + Trigger 008 | NEU ADR 0042 `Provisional` (SBOM-Tool + Release-Pattern; Welle-2-C1 `4b1062b`) |
 | 3 | CI/CD-Vollausbau | Done 2026-06-05 | [`M6-welle-3.md`](../done/M6-welle-3.md) | `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031 (`make fullbuild`-CI-Gate; Welle-1-D-1-Vertagung) **aufgeloest** | — (C1 entfaellt; Pattern analog M5-Welle-2) |
 | 4a | Generated-Trivyignore-Permit (vulnignore-Pattern + ADR-0044) | Done 2026-06-06 | [`M6-welle-4a.md`](../done/M6-welle-4a.md) | Trigger 033 Temp-Deferral (OTel-Collector CVE-2026-42504) **aktiv** seit C2 `8fbd17c`; ADR-0044 als ADR-0011-Schaerfung an ADR-0043 §2.2 | NEU ADR 0044 `Provisional` (Generated-Trivyignore-Permit; Welle-4a-C1 `94dff9e`) |
-| 4b | Performance-Benchmark | Pending | TBD (entsteht in Welle-4b-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
+| 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | In Progress 2026-06-06 | [`M6-welle-4b-a.md`](M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events); plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1) |
+| 4b-b | `GG-RT-005` Telemetry-Port-Bench | Pending | TBD (entsteht in Welle-4b-b-C0) | `GG-RT-005` SOLLTE (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte) | TBD (ggf. ADR-0041-Schaerfung) |
+| 4b-c | `GG-RT-001` Backpressure-Healthcheck | Pending | TBD (entsteht in Welle-4b-c-C0) | `GG-RT-001` MUSS (Tick-Dauer/p95-Jitter/missed-Ticks-Healthcheck-Telemetrie fuer 10ms-Modus) | TBD (ggf. ADR fuer Healthcheck-Surface) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
-**Aktiver Slice:** M6-Welle-4b (Performance-Benchmark;
-`GG-RT-001..005` inkl. 10000-Points/s-Benchmark `GG-RT-
-005`) — Welle-4b-Slice-Doc entsteht in Welle-4b-C0.
+**Aktiver Slice:** M6-Welle-4b-a (Performance-Bench-Foundation;
+`GG-RT-004` 100-Geraete-Bench + ADR-0041-Vorlauf). Welle 4b
+ist gemaess Welle-4b-a-D-1 in **4b-a + 4b-b + 4b-c** sub-
+geslict (Bench-Foundation / Telemetry-Port-Bench / Backpressure-
+Healthcheck) — Pattern analog M5-Welle-6 Sub-Slicing. Welle-4b-a-
+Slice-Doc: [`M6-welle-4b-a.md`](M6-welle-4b-a.md).
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
 `9bb6a92..789ac50` (C0 + C1 `94dff9e` + C2 `8fbd17c` + C3
 `f19837f` + Post-Push-CI-Fix `f46e789` + C4a `3bc58b8` +
@@ -338,23 +343,52 @@ Closure-Folge):**
   `Accepted` in M6-Welle-7-Closure-C1 gebuendelt mit ADR
   0041 + ADR 0042 + ADR 0043.
 
-**Welle 4b — Performance-Benchmark (Welle-4-Original-
-Substanz):**
+**Welle 4b — Sub-Slicing 4b-a/4b-b/4b-c** (Welle-4b-a-D-1
+in [`M6-welle-4b-a.md §3`](M6-welle-4b-a.md); Pattern analog
+M5-Welle-6 Sub-Slicing 6a/6b/6c):
 
-- Lieferziel: `make perf`-Target + `GG-RT-005`-Benchmark
-  (10 000 Points/s; SOLLTE) + Tick-Drift-Schranken
-  (`GG-RT-001..004`; davon 001/002/003 MUSS, 004 SOLLTE).
-  `GG-RT-006` Replay-Zeitmultiplikator ist M3-Scope und
-  bleibt ausserhalb von M6.
-- Bench-Framework: Vorbelegung pytest-benchmark per
-  [`M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md); Welle-4b-
-  C1-ADR entscheidet final.
-- Regression-Gate: Bench-Resultate gegen Baseline pinned;
-  CI-Hook (oder lokaler Pflicht-Pfad) gegen Drift.
-- Carveout-Aufloesung opportunistisch: **Snapshot-
-  Envelope-v2-Body-Serialisierung** falls Performance-Bench
-  die Stub-Surface ohnehin anfasst.
-- ADR-Lifecycle: NEU ADR 0041 (Performance-Bench-Pattern).
+**Welle 4b-a — Performance-Bench-Foundation + `GG-RT-004`:**
+
+- Lieferziel: NEU ADR-0041 (Bench-Pattern + Mess-Protokoll +
+  Regression-Schwelle) + NEU `pyproject.toml`-`[dependency-
+  groups.perf]` mit pytest-benchmark + NEU Dockerfile-`perf`-
+  Stage + NEU `tests/perf/` + NEU `Makefile`-`perf`-Target +
+  NEU `tests/perf/baseline.json` (committed). `GG-RT-004`
+  SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events).
+  Plus DoD-Bestaetigung `GG-RT-002` (M1-Determinismus) und
+  `GG-RT-003` (M3-Stale-Markierung).
+- Anti-Scope: Kein `GG-RT-005` (Welle-4b-b); kein `GG-RT-001`
+  Backpressure-Healthcheck (Welle-4b-c); keine `make perf`-
+  Integration in `make gates`/`make ci`; kein CI-`perf.yml`-
+  Workflow.
+- ADR-Lifecycle: NEU ADR-0041 `Provisional` in Welle-4b-a-C1;
+  `Accepted` in M6-Welle-7-Closure-C1 gebuendelt mit ADR 0042
+  + ADR 0043 + ADR 0044.
+
+**Welle 4b-b — `GG-RT-005` Telemetry-Port-Bench:**
+
+- Lieferziel: 10 000 Points/s am Telemetry-Port mit Payloads
+  ≤ 256 Byte (`GG-RT-005` SOLLTE-Akzeptanz). Mess-Methodik
+  + Probe + ggf. Erweiterung des Welle-4b-a-Bench-Patterns.
+- ADR-Lifecycle: ggf. ADR-0041-Schaerfung per ADR-0011-
+  Pattern (falls Mess-Surface die Bench-Foundation
+  substanziell erweitert).
+
+**Welle 4b-c — `GG-RT-001` Backpressure-Healthcheck:**
+
+- Lieferziel: Tick-Dauer/p95-Jitter/missed-Ticks-Telemetrie
+  als NEU TickLoop-Healthcheck-Surface (`GG-RT-001` MUSS-
+  Akzeptanz fuer 10ms-Modus); Probe-Run unter Last; ggf.
+  NEU Telemetry-Port-Hook.
+- ADR-Lifecycle: ggf. NEU ADR fuer Healthcheck-Surface (M3-
+  Welle-5-Observability-Port-Trio-Erweiterung; Pattern
+  analog ADR-0024-Schaerfung).
+
+**Carveout-Aufloesung opportunistisch** (gemeinsam Welle 4b-
+a/b/c): **Snapshot-Envelope-v2-Body-Serialisierung** falls
+Bench-Surface die Stub-Surface ohnehin anfasst. Welle-4b-a-
+Anti-Scope schliesst das aus; 4b-b/4b-c koennten das
+aufgreifen.
 
 **Welle 5 — Security-Audit + Eingabevalidierung:**
 
