@@ -361,10 +361,15 @@ Code-Merge mit:
   100-Geraete-TickLoop-Konstruktion (synthetisch, programmatisch;
   keine YAML-Loader-Abhaengigkeit).
 - NEU `tests/perf/test_tick_loop_bench.py` mit
-  `test_tick_loop_100_devices_10000_ticks_throughput` (pytest-
+  `test_gg_rt_004_100_devices_10000_ticks` (pytest-
   benchmark-Decorator; **`GG-RT-004`-Doppel-Akzeptanz** per
-  ADR-0041 §2.2: `assert lost_events == 0` UND Replay-Diff-
-  Determinismus `assert run_a.snapshot() == run_b.snapshot()`
+  ADR-0041 §2.2: `assert tick_count == 10000` UND Replay-Diff-
+  Determinismus per **Device-Snapshot-Vergleich** ueber zwei
+  Runs mit identischem Seed (`assert _device_snapshots(run_a)
+  == _device_snapshots(run_b)`; `TickLoop.snapshot()` selbst
+  wird NICHT verwendet, weil `BenchStubDevice` nicht im
+  produktiven `_DEVICE_TYPE_BY_CLASS_NAME`-Mapping registriert
+  ist — bewusste Anti-Scope-Wahl per Modul-Docstring)
   ueber zwei Runs mit identischem Seed).
 - NEU `tests/perf/baseline.json` mit initialer Baseline
   (Local-Run vor C2-Commit; committed mit Hash-Anchor).
@@ -429,8 +434,12 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-b-Pre-C0a/Pre-C0b.
   4b-c gespalten); §3.2 Welle-4-Block um Sub-Sub-Slicing-Notiz.
 - `docs/plan/adr/README.md` (C1) — ADR-Index Aktive-ADRs-
   Tabelle um ADR-0041-Zeile.
-- `pyproject.toml` (C2) — NEU `[dependency-groups.perf]`-
-  Block.
+- `pyproject.toml` (C2) — NEU `[project.optional-
+  dependencies.perf]`-Block (opt-in-Extra; in C1-Review-Folge
+  `f4f4983` von `[dependency-groups.perf]` korrigiert, weil
+  Dependency-Groups via `uv sync --all-groups` in alle
+  Dockerfile-Stages laufen wuerden — Pattern analog `iec61850`-
+  Extra aus ADR 0035).
 - `uv.lock` (C2) — Lock-Sync nach Dep-Add.
 - `Dockerfile` (C2) — NEU `perf`-Stage.
 - `Makefile` (C2) — NEU `perf`-Target.
@@ -488,8 +497,10 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-b-Pre-C0a/Pre-C0b.
 - `GG-RT-003` (Stale-Markierung) produktiv seit M3-Welle-6c
   (`hexagon/core/domain/quality.py`-`stale`-Enum-Wert +
   TickLoop-Quality-Stage); Welle-4b-a-DoD bestaetigt durch
-  bestehende Unit-Tests `tests/unit/hexagon/core/domain/
-  test_quality.py`.
+  bestehende Unit-Tests in `tests/unit/hexagon/core/domain/
+  test_enums.py` (`stale`-Quality-Enum-Wert) plus weitere
+  Quality-Pipeline-Tests unter `tests/unit/hexagon/core/
+  simulation/`.
 - `GG-RT-004` (100 Geraete × 10 000 Ticks SOLLTE) produktiv
   in Welle-4b-a-C2 via `tests/perf/test_tick_loop_bench.py`
   mit Doppel-Akzeptanz (lost_events + Replay-Diff per ADR-
@@ -511,10 +522,13 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-b-Pre-C0a/Pre-C0b.
 **R1 — pytest-benchmark-Dep-Schwergewicht.** pytest-benchmark
 zieht `py-cpuinfo` + `pytest-benchmark` als Transitive-Deps;
 `uv.lock` waechst.
-**Mitigation:** Dep-Group `[dependency-groups.perf]` als
-opt-in (nicht in `[project.dependencies]`); Default-`uv sync`
-ohne `--group perf` zieht es nicht. `make perf` als
-einziger Konsumer.
+**Mitigation:** Extras-Slot `[project.optional-dependencies.
+perf]` als opt-in (nicht in `[project.dependencies]` und nicht
+in `[dependency-groups]`); Default-`uv sync --all-groups` ohne
+`--extra perf` zieht es nicht. `make perf` als einziger
+Konsumer (Pattern analog `iec61850`-Extra aus ADR 0035; in
+C1-Review-Folge `f4f4983` korrigiert vom ursprunglichen
+Welle-4b-a-C0-Vorschlag mit `[dependency-groups.perf]`).
 
 **R2 — Bench-Resultat-Instabilitaet auf Dev-Host.** Bench-
 Resultate variieren je nach Host-Last (Background-Prozesse,
