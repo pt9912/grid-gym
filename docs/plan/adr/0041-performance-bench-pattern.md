@@ -73,6 +73,22 @@ ADR 0041 fixiert sechs orthogonale Punkte:
 **pytest-benchmark `>=4.0,<6.0`** als einziges zulaessiges Bench-
 Framework fuer `make perf`. Aufloesung der M6-D-7-Vorbelegung.
 
+Mechanik der Pflicht-Substanz:
+
+- `pyproject.toml` `[project.optional-dependencies.perf]`-
+  Eintrag (Pattern analog `iec61850`-Extra aus ADR 0035):
+  `perf = ["pytest-benchmark>=4.0,<6.0"]`. Default-`uv sync
+  --all-groups` (Dockerfile Z.68 + Z.104) zieht das **NICHT**;
+  nur ein expliziter `--extra perf`-Aufruf installiert
+  pytest-benchmark.
+- `[dependency-groups.perf]` waere NICHT opt-in-konform —
+  `uv sync --all-groups` zieht alle dependency-groups
+  produktiv, was die `make perf`-Substanz in alle Pflicht-
+  Gate-Stages laden wuerde (Lint/Test/Coverage/etc.). Das
+  ist explizit verboten — Bench-Dep darf weder `make gates`
+  brechen koennen noch `make dep-audit` durch unerwartete
+  Audits belasten.
+
 Begruendung:
 
 - Konsistenz mit pytest-Infrastruktur (Marker, Conftest,
@@ -98,8 +114,18 @@ Pflicht-Parameter fuer alle `tests/perf/`-Bench-Tests:
 
 Tests werden mit `pytest.mark.benchmark`-Decorator markiert oder
 nutzen die `benchmark`-Fixture direkt. Jeder Bench-Test definiert
-sein **Akzeptanz-Pruefen** (z. B. „100 Geraete × 10 000 Ticks
-ohne verlorene Events" via `assert tick_loop.lost_events == 0`).
+sein **Akzeptanz-Pruefen** (z. B. fuer `GG-RT-004`: „100 Geraete
+× 10 000 Ticks ohne verlorene Events **UND** ohne
+nichtdeterministischen Replay-Diff" via zwei Assert-Pflichten:
+`assert tick_loop.lost_events == 0` plus Replay-Determinismus-
+Vergleich (`assert run_a.snapshot() == run_b.snapshot()` ueber
+zwei Runs mit identischem Seed).
+
+**Pflicht-Akzeptanz `GG-RT-004` produktiv** (Lastenheft Z. 486):
+zwei Klassen-Asserts pro Bench-Test, der `GG-RT-004` adressiert.
+Ein Bench-Test, der nur Throughput misst ohne den Replay-Diff zu
+verifizieren, erfuellt die Lastenheft-Akzeptanz **NICHT** —
+ADR-0041-konform ist nur die Doppel-Klasse.
 
 ### §2.3 Regression-Schwelle
 
@@ -108,9 +134,12 @@ Lauf.** Die Schwelle ist:
 
 - Datei-basiert: `tests/perf/baseline.json` als versionierter
   JSON-Snapshot (pytest-benchmark-natives Format).
-- Pflicht-Gate: `make perf` ruft pytest-benchmark `--benchmark-
-  compare=baseline.json --benchmark-compare-fail=median:20%`;
-  drift > 20 % brikt den Lauf mit EXIT≠0.
+- Pflicht-Gate: `make perf` ruft pytest-benchmark mit
+  `--benchmark-compare=tests/perf/baseline.json --benchmark-
+  compare-fail=median:20%` (vollstaendiger Pfad ab Repo-Root,
+  weil Bench im Container aus `/src` laeuft und die
+  Datei-Suche pytest-benchmark intern relativ aufloest);
+  drift > 20 % bricht den Lauf mit EXIT≠0.
 - Audit-Trail: Baseline-Updates erfordern explizite Commit-
   Messages (Pattern analog `uv.lock`-Pin-Updates; commit-
   subject-Konvention `perf: baseline update — <reason>`).
@@ -152,10 +181,19 @@ Gates) oder `make ci`/`make fullbuild`. Begruendung:
   Welle (M6-Welle-7-Closure oder explizite Pflicht-Slice)
   entscheidet, ob CI-Hook noetig.
 
-Dockerfile-`perf`-Stage analog `test-unit`-Stage: `uv sync
---frozen --all-groups --extra iec61850` + `uv run pytest
-tests/perf/ --benchmark-only --benchmark-compare=tests/perf/
-baseline.json --benchmark-compare-fail=median:20%`.
+Dockerfile-`perf`-Stage analog `test-unit`-Stage, aber mit
+**zusaetzlichem `--extra perf`-Flag** im `uv sync`-Aufruf
+(Pflicht-Substanz fuer §2.1-Opt-In; ohne Flag ist pytest-
+benchmark nicht installiert):
+
+```dockerfile
+FROM deps AS perf
+RUN uv sync --frozen --all-groups --extra iec61850 --extra perf
+COPY tests/perf/ tests/perf/
+RUN uv run pytest tests/perf/ --benchmark-only \
+    --benchmark-compare=tests/perf/baseline.json \
+    --benchmark-compare-fail=median:20%
+```
 
 `make perf` baut die `perf`-Stage; cache-frei-Lauf erzwingt
 saubere Bench-Substanz.
@@ -166,15 +204,23 @@ saubere Bench-Substanz.
 Bench-Resultate. Format ist pytest-benchmark-nativ (`--benchmark-
 save`/`--benchmark-compare`).
 
-Update-Pattern:
+Update-Pattern (Pflicht-Substanz; `make perf-baseline-
+update`-Target ist Welle-4b-a-C2-Pflicht):
 
-1. Maintainer fuhrt `make perf --benchmark-save=new-baseline`
-   im Dev-Host cache-frei aus.
-2. Kopiert/Renamed `.benchmarks/.../new-baseline.json` zu
-   `tests/perf/baseline.json`.
-3. Commit-Subject `perf: baseline update — <reason>` (z. B.
-   „migration auf RTL-Helper, +6 % Throughput erwartet").
-4. PR-Review prueft die Begruendung; Code-Review ueber
+1. Maintainer fuhrt `make perf-baseline-update` im Dev-Host
+   cache-frei aus. Das Target wrappt den Docker-Run mit dem
+   `--benchmark-save=baseline`-Flag und kopiert das
+   resultierende Snapshot per Bind-Mount nach
+   `tests/perf/baseline.json` (Pattern analog `make
+   render-trivyignore` Z.310 Bind-Mount-Run). **Nicht**
+   direkt `make perf --benchmark-save=...` aufrufen — GNU
+   Make interpretiert `--benchmark-save=...` als Make-
+   Option und bricht mit `unrecognized option`.
+2. Maintainer prueft das `tests/perf/baseline.json`-Diff
+   und commited mit Commit-Subject `perf: baseline update —
+   <reason>` (z. B. „migration auf RTL-Helper, +6 %
+   Throughput erwartet").
+3. PR-Review prueft die Begruendung; Code-Review ueber
    `tests/perf/baseline.json`-Diff-Block.
 
 Cross-Maschinen-Vergleich ist explizit NICHT garantiert
@@ -218,10 +264,14 @@ lockern.
   Pflicht-Gate-Sammlung.
 - `make gates`/`make ci`/`make fullbuild`-Aggregator-Substanz
   bleibt unveraendert in Welle-4b-a-C2.
-- NEU `pyproject.toml`-`[dependency-groups.perf]`-Block mit
-  pytest-benchmark; `uv.lock`-Sync. Default-`uv sync` ohne
-  `--group perf` zieht es nicht (opt-in).
-- NEU `Dockerfile`-`perf`-Stage analog `test-unit`-Stage.
+- NEU `pyproject.toml`-`[project.optional-dependencies.perf]`-
+  Block mit pytest-benchmark (Pattern analog `iec61850`-Extra
+  aus ADR 0035); `uv.lock`-Sync. Default-`uv sync --all-
+  groups` zieht es **NICHT** (opt-in via `--extra perf`).
+  `[dependency-groups.perf]` waere NICHT opt-in-konform und
+  ist explizit verboten.
+- NEU `Dockerfile`-`perf`-Stage analog `test-unit`-Stage
+  mit zusaetzlichem `--extra perf`-Flag im `uv sync`-Aufruf.
 - NEU `tests/perf/`-Layer mit `__init__.py` + `conftest.py` +
   `test_tick_loop_bench.py` + `baseline.json`.
 - NEU `Makefile`-`perf`-Target (PHONY).
@@ -252,20 +302,30 @@ verbunden:
      0043 + 0044).
 
 3. **M6-Welle-4b-a-C2** (`<TBD>`):
-   - NEU `pyproject.toml`-`[dependency-groups.perf]`-Block
-     mit `pytest-benchmark>=4.0,<6.0`.
+   - NEU `pyproject.toml`-`[project.optional-dependencies.
+     perf]`-Block mit `pytest-benchmark>=4.0,<6.0` (Pattern
+     analog `iec61850`-Extra aus ADR 0035; opt-in via
+     `--extra perf`).
    - NEU `uv.lock`-Sync (NEU pytest-benchmark + py-cpuinfo +
      ggf. weitere Transitiv-Deps).
-   - NEU `Dockerfile`-`perf`-Stage.
+   - NEU `Dockerfile`-`perf`-Stage mit `--extra perf`-Flag.
    - NEU `tests/perf/__init__.py` + `tests/perf/conftest.py` +
-     `tests/perf/test_tick_loop_bench.py` (`GG-RT-004`-Bench)
+     `tests/perf/test_tick_loop_bench.py` (`GG-RT-004`-Bench
+     mit Doppel-Assert: lost_events == 0 UND Replay-Diff-
+     Determinismus ueber zwei Runs mit identischem Seed)
      + `tests/perf/baseline.json` (Maintainer-Dev-Host-Lauf).
-   - NEU `Makefile`-`perf`-Target.
+   - NEU `Makefile`-`perf`-Target plus `perf-baseline-
+     update`-Helper-Target (Pflicht-Pfad fuer Baseline-
+     Updates; loest Make-Option-Konflikt mit
+     `--benchmark-save`).
    - Verifikation: `make perf` cache-frei gruen
      (Baseline-Compare-Schwelle 20 % Median-Drift; Bench-
      Akzeptanz `100 Geraete × 10 000 Ticks ohne verlorene
-     Events`). `make gates`/`make ci`/`make fullbuild` cache-
-     frei gruen ohne `CRITICAL_COV_TARGETS`-Override.
+     Events UND ohne nichtdeterministischen Replay-Diff`).
+     `make gates`/`make ci`/`make fullbuild` cache-frei gruen
+     ohne `CRITICAL_COV_TARGETS`-Override; insbesondere
+     `make dep-audit` darf NICHT pytest-benchmark in
+     der Default-Audit-Surface haben (Opt-In-Verifikation).
 
 4. **M6-Welle-4b-a-C3** (`<TBD>`; Closure-Sync):
    - `M6-welle-4b-a.md` Status `In Progress → Done`.
@@ -301,9 +361,11 @@ skipped — Bench-Tests sind nicht im Unit-Test-Count).
 - **Positiv:** `GG-RT-004` SOLLTE-Akzeptanz produktiv messbar
   in Welle-4b-a-C2; 4b-b/4b-c erweitern auf `GG-RT-005`/`GG-
   RT-001` mit demselben Pattern.
-- **Positiv:** opt-in-Dep-Group `[dependency-groups.perf]`
-  belastet Default-Builds nicht (regular `uv sync` ohne
-  `--group perf` zieht es nicht).
+- **Positiv:** opt-in-Extra `[project.optional-dependencies.
+  perf]` belastet Default-Builds nicht (Default-`uv sync
+  --all-groups` ohne `--extra perf` zieht es nicht; Pattern
+  analog `iec61850`-Extra aus ADR 0035; `make dep-audit`
+  bleibt Bench-Dep-frei).
 - **Neutral:** `make perf` ist NICHT in `make gates`/`make ci`
   — Performance-Regression bricht NICHT den A-1-Gate-Lauf.
   Bewusste Entscheidung (Bench-Lauf zu teuer fuer A-1); bei

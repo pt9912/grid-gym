@@ -76,17 +76,29 @@ Drei orthogonale Liefer-Items:
    (`tests/perf/`) + Bench-Run-Form (separater Dockerfile-Stage
    + `make perf`-Target, NICHT in `make gates`).
 2. **NEU `tests/perf/` + Dockerfile-Stage** (Welle-4b-a-C2) —
-   pytest-benchmark-Dep neu im `pyproject.toml`-`[dependency-
-   groups.perf]`-Block + `uv.lock`-Sync; NEU Dockerfile-`perf`-
-   Stage analog `test-unit`-Stage; NEU `tests/perf/test_tick_
-   loop_bench.py` mit `GG-RT-004`-Bench (100 Geraete × 10.000
-   Ticks; pytest-benchmark-Decorator + Baseline-Comparison).
+   pytest-benchmark-Dep NEU im `pyproject.toml`-`[project.
+   optional-dependencies.perf]`-Block (opt-in via `--extra
+   perf`; Pattern analog `iec61850`-Extra aus ADR 0035;
+   `[dependency-groups.perf]` waere NICHT opt-in-konform und
+   ist explizit verboten per ADR-0041 §2.1) + `uv.lock`-Sync;
+   NEU Dockerfile-`perf`-Stage analog `test-unit`-Stage mit
+   zusaetzlichem `--extra perf`-Flag im `uv sync`-Aufruf;
+   NEU `tests/perf/test_tick_loop_bench.py` mit `GG-RT-004`-
+   Bench (100 Geraete × 10.000 Ticks; **Doppel-Akzeptanz** per
+   ADR-0041 §2.2 — `lost_events == 0` UND Replay-Diff-
+   Determinismus ueber zwei Runs mit identischem Seed).
 3. **NEU `make perf`-Target + Baseline-Pinning** (Welle-4b-a-
    C2) — `Makefile`-`perf`-Target ruft Dockerfile-`perf`-Stage
-   auf; Baseline `tests/perf/baseline.json` als versioniertes
-   Snapshot der Bench-Resultate; pytest-benchmark-Compare-Mode
-   gegen Baseline. Regression-Schwelle: 20 % Median-Drift bricht
-   den Lauf (ADR-0041-§2 verankert die Schwelle).
+   auf mit `--benchmark-compare=tests/perf/baseline.json`
+   (vollstaendiger Repo-Root-Pfad); Baseline
+   `tests/perf/baseline.json` als versioniertes Snapshot der
+   Bench-Resultate; pytest-benchmark-Compare-Mode gegen
+   Baseline. Regression-Schwelle: 20 % Median-Drift bricht
+   den Lauf (ADR-0041-§2.3 verankert die Schwelle). Plus NEU
+   `Makefile`-`perf-baseline-update`-Helper-Target fuer
+   Baseline-Updates (ADR-0041-§2.6); loest den Make-Option-
+   Konflikt mit `--benchmark-save=...` (GNU Make
+   interpretiert das als Make-Option und bricht).
 
 ### 1.3 Welle-4b-a-Anti-Scope
 
@@ -318,25 +330,38 @@ Code-Merge mit:
 
 Code-Merge mit:
 
-- NEU `pyproject.toml`-`[dependency-groups.perf]`-Block
-  mit `pytest-benchmark>=4.0,<6.0` + `uv lock`-Sync
-  (NEU `uv.lock`-Eintrag).
-- NEU `Dockerfile`-`perf`-Stage analog `test-unit`-Stage:
-  `uv sync --frozen --all-groups --extra iec61850` +
-  `uv run pytest tests/perf/ --benchmark-compare=...
-  --benchmark-only`.
+- NEU `pyproject.toml`-`[project.optional-dependencies.perf]`-
+  Block mit `pytest-benchmark>=4.0,<6.0` (Pattern analog
+  `iec61850`-Extra aus ADR 0035; opt-in via `--extra perf`)
+  + `uv lock`-Sync (NEU `uv.lock`-Eintrag).
+- NEU `Dockerfile`-`perf`-Stage analog `test-unit`-Stage
+  mit `--extra perf`-Flag:
+  `uv sync --frozen --all-groups --extra iec61850 --extra perf`
+  + `uv run pytest tests/perf/ --benchmark-only
+  --benchmark-compare=tests/perf/baseline.json
+  --benchmark-compare-fail=median:20%`.
 - NEU `tests/perf/__init__.py` (Marker).
 - NEU `tests/perf/conftest.py` mit Fixtures fuer
-  100-Geraete-TickLoop-Konstruktion.
+  100-Geraete-TickLoop-Konstruktion (synthetisch, programmatisch;
+  keine YAML-Loader-Abhaengigkeit).
 - NEU `tests/perf/test_tick_loop_bench.py` mit
   `test_tick_loop_100_devices_10000_ticks_throughput` (pytest-
-  benchmark-Decorator; `GG-RT-004`-Akzeptanz: 100 Geraete x
-  10000 Ticks ohne verlorene Events).
+  benchmark-Decorator; **`GG-RT-004`-Doppel-Akzeptanz** per
+  ADR-0041 §2.2: `assert lost_events == 0` UND Replay-Diff-
+  Determinismus `assert run_a.snapshot() == run_b.snapshot()`
+  ueber zwei Runs mit identischem Seed).
 - NEU `tests/perf/baseline.json` mit initialer Baseline
   (Local-Run vor C2-Commit; committed mit Hash-Anchor).
 - NEU `Makefile`-`perf`-Target (PHONY) ruft Dockerfile-`perf`-
-  Stage.
-- NEU Makefile-`PHONY`-Block + `help`-Block fuer `make perf`.
+  Stage mit `--benchmark-compare=tests/perf/baseline.json
+  --benchmark-compare-fail=median:20%`.
+- NEU `Makefile`-`perf-baseline-update`-Helper-Target (PHONY)
+  loest Make-Option-Konflikt mit `--benchmark-save=...`
+  (Pattern analog `make render-trivyignore`: docker-run mit
+  Bind-Mount, schreibt Snapshot direkt nach
+  `tests/perf/baseline.json`).
+- NEU Makefile-`PHONY`-Block + `help`-Block fuer `make perf`
+  und `make perf-baseline-update`.
 - **Verifikation (lokal vor C2-Commit):**
   - `make perf` cache-frei gruen (Bench-Lauf + Baseline-
     Compare).
@@ -426,8 +451,9 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-b-Pre-C0a/Pre-C0b.
 - `make fullbuild` cache-frei gruen ohne `CRITICAL_COV_
   TARGETS`-Override.
 - `make perf` cache-frei gruen (Bench-Lauf + Baseline-Compare;
-  `GG-RT-004`-Akzeptanz: 100 Geraete × 10 000 Ticks ohne
-  verlorene Events).
+  `GG-RT-004`-Doppel-Akzeptanz per ADR-0041 §2.2: 100 Geraete ×
+  10 000 Ticks ohne verlorene Events UND ohne nichtdeterministischen
+  Replay-Diff ueber zwei Runs mit identischem Seed).
 
 **DoD-Verifikation (§9):**
 
@@ -449,7 +475,9 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-b-Pre-C0a/Pre-C0b.
   bestehende Unit-Tests `tests/unit/hexagon/core/domain/
   test_quality.py`.
 - `GG-RT-004` (100 Geraete × 10 000 Ticks SOLLTE) produktiv
-  in Welle-4b-a-C2 via `tests/perf/test_tick_loop_bench.py`.
+  in Welle-4b-a-C2 via `tests/perf/test_tick_loop_bench.py`
+  mit Doppel-Akzeptanz (lost_events + Replay-Diff per ADR-
+  0041 §2.2 — Lastenheft Z.486 verlangt beide Klassen).
 
 **Verbleibendes Item (bedingt):**
 
@@ -546,19 +574,24 @@ Bindestrich-Trennung als visuelle Marker.
   aufgeloest).
 - [ ] **C1 — `docs/plan/adr/README.md`** ADR-Index um
   ADR-0041-Zeile ergaenzt.
-- [ ] **C2 — NEU `pyproject.toml`-`[dependency-groups.perf]`**
-  + `uv.lock`-Sync mit `pytest-benchmark>=4.0,<6.0`.
+- [ ] **C2 — NEU `pyproject.toml`-`[project.optional-
+  dependencies.perf]`** + `uv.lock`-Sync mit
+  `pytest-benchmark>=4.0,<6.0` (opt-in via `--extra perf`;
+  Pattern analog `iec61850`-Extra aus ADR 0035).
 - [ ] **C2 — NEU `Dockerfile`-`perf`-Stage** analog
-  `test-unit`.
+  `test-unit` mit `--extra perf`-Flag im `uv sync`-Aufruf.
 - [ ] **C2 — NEU `tests/perf/`** mit `__init__.py` +
   `conftest.py` + `test_tick_loop_bench.py` + `baseline.
   json`.
 - [ ] **C2 — NEU `Makefile`-`perf`-Target** (PHONY) +
+  NEU `perf-baseline-update`-Helper-Target (PHONY; loest
+  Make-Option-Konflikt mit `--benchmark-save`) +
   Help-Block-Erweiterung.
 - [ ] **C2 — `make perf`** cache-frei gruen lokal
-  (`GG-RT-004`-Akzeptanz: 100 Geraete × 10 000 Ticks ohne
-  verlorene Events; Baseline-Compare gegen `baseline.json`
-  innerhalb 20 % Median-Drift).
+  (`GG-RT-004`-Doppel-Akzeptanz per ADR-0041 §2.2:
+  100 Geraete × 10 000 Ticks ohne verlorene Events UND
+  ohne nichtdeterministischen Replay-Diff; Baseline-Compare
+  gegen `tests/perf/baseline.json` innerhalb 20 % Median-Drift).
 - [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates; Test-Counts unveraendert 1732/80/4 skipped).
 - [ ] **C2 — `make ci`** cache-frei gruen lokal.
