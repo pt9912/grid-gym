@@ -54,6 +54,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	coverage-gate coverage-gate-critical \
 	dep-audit image-audit openapi-validate \
 	render-trivyignore \
+	perf perf-baseline-update \
 	gates ci fullbuild \
 	build runtime test-container demo demo-stop \
 	lock-refresh rebase-base \
@@ -106,6 +107,10 @@ help:
 	@echo "  make image-audit       GG-QG-002 SOLLTE — trivy image scan (haengt von make build + render-trivyignore ab)"
 	@echo "  make render-trivyignore  ADR 0044 (M6 Welle 4a) — rendert deploy/security/vulnignore.yaml zu .trivyignore"
 	@echo "  make openapi-validate  GG-QG-006 — OpenAPI-Spec aus FastAPI exportieren und validieren"
+	@echo ""
+	@echo "Performance (ADR 0041; M6 Welle 4b-a):"
+	@echo "  make perf                       GG-RT-004 SOLLTE — pytest-benchmark gegen tests/perf/ + Baseline-Compare 20% Median-Drift"
+	@echo "  make perf-baseline-update       Maintainer-only: Bench-Lauf + Bind-Mount-Write nach tests/perf/baseline.json"
 	@echo ""
 	@echo "Aggregator:"
 	@echo "  make gates             lint + format-check + typecheck + arch-check + test-unit + coverage-gate + coverage-gate-critical + dep-audit + noqa-gate + spdx-check"
@@ -339,6 +344,39 @@ image-audit: build render-trivyignore
 # API-Slice den Endpunkt nicht liefert — das ist beabsichtigt.
 openapi-validate:
 	$(DOCKER_BUILD) --target openapi-validate -t $(IMAGE_PREFIX)-openapi-validate:latest
+
+# --- Performance (M6 Welle 4b-a; ADR 0041) ----------------------------------
+#
+# `make perf` ist NICHT Teil von `make gates`/`make ci`/`make
+# fullbuild` (ADR-0041 §2.5; Bench-Lauf ist zu teuer fuer A-1-
+# Aggregat). Eigener Pflicht-Pattern-Pfad mit Baseline-Compare-
+# Schwelle 20 % Median-Drift (ADR-0041 §2.3) gegen committed
+# `tests/perf/baseline.json` (ADR-0041 §2.6).
+perf:
+	$(DOCKER_BUILD) --target perf -t $(IMAGE_PREFIX)-perf:latest
+
+# `make perf-baseline-update` ist der Maintainer-Pfad fuer
+# Baseline-Updates (ADR-0041 §2.6). Pattern analog `make render-
+# trivyignore`: source-Stage-Build + docker-run mit Bind-Mount
+# des Repo-Trees; pytest-benchmark schreibt das JSON-Snapshot
+# direkt nach `tests/perf/baseline.json`. Loest den GNU-Make-
+# Option-Konflikt mit `--benchmark-save=...` auf — `make perf
+# --benchmark-save=NAME` ist KEINE gueltige Make-Syntax.
+#
+# Commit-Subject-Pflicht (ADR-0041 §2.6):
+#   perf: baseline update — <Begruendung>
+perf-baseline-update:
+	$(DOCKER_BUILD) --target source -t $(IMAGE_PREFIX)-source:latest
+	$(DOCKER) run --rm \
+		--user "$$(id -u):$$(id -g)" \
+		-e UV_CACHE_DIR=/tmp/uv-cache \
+		-e UV_PROJECT_ENVIRONMENT=/tmp/uv-venv \
+		-v "$$(pwd)":/src -w /src \
+		$(IMAGE_PREFIX)-source:latest \
+		sh -c "uv sync --frozen --all-groups --extra iec61850 --extra perf \
+		&& uv run pytest tests/perf/ --benchmark-only \
+		--benchmark-json=tests/perf/baseline.json"
+	@echo "[perf-baseline-update] tests/perf/baseline.json updated; commit with subject \"perf: baseline update — <reason>\""
 
 # --- Aggregierte Gates -----------------------------------------------------
 

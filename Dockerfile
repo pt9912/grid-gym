@@ -375,6 +375,34 @@ print(json.dumps(app.openapi(), sort_keys=True, indent=2))" \
  && uv run openapi-spec-validator /src/artifacts/openapi.json
 
 # ---------------------------------------------------------------------------
+# perf: pytest-benchmark gegen `tests/perf/`. M6-Welle-4b-a (ADR 0041).
+# Wird ueber `make perf` als eigenes Pflicht-Pattern aufgerufen — NICHT
+# Teil von `make gates` / `make ci` / `make fullbuild` (ADR-0041 §2.5).
+#
+# `--extra perf` Pflicht, weil pytest-benchmark als opt-in Extra in
+# `pyproject.toml` `[project.optional-dependencies.perf]` haengt (ADR
+# 0041 §2.1; Pattern analog `iec61850`-Extra aus ADR 0035). Default-
+# `uv sync --all-groups` zieht es NICHT.
+#
+# `GG-RT-004`-Doppel-Akzeptanz per ADR-0041 §2.2:
+# - lost_events == 0 ueber 10 000 Ticks mit 100 Geraeten.
+# - Replay-Diff-Determinismus: zwei Runs mit identischem Seed liefern
+#   byte-identische `TickLoop.snapshot()`-Sequenzen.
+# Beide Asserts sind in den Bench-Tests selbst implementiert.
+#
+# Regression-Schwelle: 20 % Median-Drift gegen `tests/perf/
+# baseline.json` (ADR 0041 §2.3); Baseline ist committed; Updates per
+# `make perf-baseline-update` (Pattern analog `make render-trivyignore`
+# fuer Bind-Mount-Write).
+# ---------------------------------------------------------------------------
+FROM source AS perf
+RUN uv sync --frozen --all-groups --extra iec61850 --extra perf
+RUN uv run pytest tests/perf/ -v \
+    --benchmark-only \
+    --benchmark-compare=tests/perf/baseline.json \
+    --benchmark-compare-fail=median:20
+
+# ---------------------------------------------------------------------------
 # build-app: produktive Artefakte. `uv sync --frozen --no-dev
 # --no-editable` baut ein .venv ohne Test-/Lint-Dependencies und
 # installiert das Projekt als Wheel direkt in site-packages (kein

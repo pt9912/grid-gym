@@ -161,6 +161,19 @@ iec61850 = [
     # ist Welle-6-Schaerfung).
     "pyiec61850-ng>=1.6,<2.0",
 ]
+perf = [
+    # M6-Welle-4b-a (ADR 0041 §2.1) — pytest-benchmark fuer
+    # `make perf`-Pflicht-Pfad. Opt-in via `--extra perf`
+    # (Pattern analog `iec61850`-Extra; ADR 0035 Decision I-f).
+    # `[dependency-groups.perf]` waere NICHT opt-in-konform
+    # weil Dockerfile-`deps`/`source`-Stages `uv sync
+    # --all-groups` machen — Bench-Dep wuerde in alle Gates
+    # wandern und `make gates` / `make dep-audit` belasten.
+    # Welle-4b-a-Erst-Anwendung: `GG-RT-004` SOLLTE-Akzeptanz
+    # (100 Geraete × 10 000 Ticks) per Doppel-Assert per ADR-
+    # 0041 §2.2 (lost_events + Replay-Diff-Determinismus).
+    "pytest-benchmark>=4.0,<6.0",
+]
 
 [build-system]
 requires = ["hatchling>=1.27"]
