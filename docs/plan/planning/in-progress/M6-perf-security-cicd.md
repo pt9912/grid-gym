@@ -232,7 +232,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | Done 2026-06-06 | [`M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events UND ohne Replay-Diff) **produktiv**; plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1 `43569d2`) |
 | 4b-b | `GG-RT-005` Telemetry-Port-Bench | Done 2026-06-06 | [`M6-welle-4b-b.md`](../done/M6-welle-4b-b.md) | `GG-RT-005` SOLLTE **produktiv** (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte; lokal ~788k Publish-OPS) | — (C1 entfaellt; Welle-4b-b-D-4 schliesst ADR-0041-Schaerfung negativ aus) |
 | 4b-c | `GG-RT-001` Backpressure-Healthcheck | Done 2026-06-06 | [`M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) | `GG-RT-001` MUSS **produktiv** (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status-Healthcheck via NEU Adapter-Side `_tick_loop_healthcheck.py` + `GET /runs/{id}/healthcheck`-Endpoint) | — (C1 entfaellt; Welle-4b-c-D-6 schliesst ADR-Schaerfungs-Bedarf negativ aus) |
-| 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | **Done 2026-06-06** (`4b36185..52cb698`) | [`M6-welle-5a.md`](M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung ✓ produktiv) + `002` (NaN-Reject ✓ produktiv) + `003` (Kommunikationsausfall ⚠ partial Lücke → Trigger 035) + `004` (max_age ✗ Lücke → Trigger 034) — Audit + 7 Smokes + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
+| 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | **Done 2026-06-06** (`4b36185..52cb698`) | [`M6-welle-5a.md`](../done/M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung ✓ produktiv) + `002` (NaN-Reject ✓ produktiv) + `003` (Kommunikationsausfall ⚠ partial Lücke → Trigger 035) + `004` (max_age ✗ Lücke → Trigger 034) — Audit + 7 Smokes + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
 | 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | Pending | TBD (entsteht in Welle-5b-C0) | `GG-SAFE-007` (Sim/Prod-Trennung in UI/API) + `008` (REST/WS/Adapter-Input-Validation-Audit) | TBD |
 | 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | Pending | TBD (entsteht in Welle-5c-C0) | `GG-SAFE-005` (Fallback-Zustaende) + `006` (Non-Determinism-Detection) + IP-/Netz-Beschraenkung Demo-Compose | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
@@ -429,7 +429,7 @@ Anti-Scope schliesst das aus; 4b-b/4b-c koennten das
 aufgreifen.
 
 **Welle 5 — Sub-Slicing 5a/5b/5c** (Welle-5a-D-1 in
-[`M6-welle-5a.md §3`](M6-welle-5a.md); Pattern analog M5-
+[`M6-welle-5a.md §3`](../done/M6-welle-5a.md); Pattern analog M5-
 Welle-6 Sub-Slicing 6a/6b/6c):
 
 **Welle 5a — Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS):**

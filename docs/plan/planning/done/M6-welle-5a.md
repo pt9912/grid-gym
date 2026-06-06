@@ -549,11 +549,11 @@ Feature-Welle).
 
 ## References
 
-- [`../done/M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) —
+- [`M6-welle-4b-c.md`](M6-welle-4b-c.md) —
   Welle-4b-c Backpressure-Healthcheck (abgeschlossen); Welle
   5a ist die naechste aktive Welle nach Welle-4-Subdivision-
   Komplett-Abschluss.
-- [`M6-perf-security-cicd.md §3.2 Welle 5`](M6-perf-security-cicd.md)
+- [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 5`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-5-Vorbelegung.
 - [`../../../../spec/lastenheft.md §20 GG-SAFE-001..008`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer die Quality-Pipeline + Input-

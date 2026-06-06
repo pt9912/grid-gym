@@ -106,7 +106,7 @@ Aktivierung erfolgt bei einer der folgenden Bedingungen:
 
 ## Bezuege
 
-- [`../in-progress/M6-welle-5a.md`](../in-progress/M6-welle-5a.md)
+- [`../done/M6-welle-5a.md`](../done/M6-welle-5a.md)
   §3 Welle-5a-D-3 (Hybrid-Strategie: substantielle Lücken →
   `open/`-Trigger).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)

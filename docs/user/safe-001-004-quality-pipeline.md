@@ -1,7 +1,7 @@
 # Quality-Pipeline-Audit (`GG-SAFE-001..004`)
 
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit;
-[`../plan/planning/in-progress/M6-welle-5a.md`](../plan/planning/in-progress/M6-welle-5a.md)).
+[`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done/M6-welle-5a.md)).
 **Stand:** 2026-06-06.
 
 Dieses Dokument auditiert die existierende Quality-Pipeline-
