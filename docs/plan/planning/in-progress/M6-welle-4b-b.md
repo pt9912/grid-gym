@@ -181,8 +181,8 @@ Optionen:
 
 Optionen:
 
-- **A — `canonical_json.dumps(point)`-Byte-Mess** (kanonische
-  Serialization-Form; M2-Welle-0a-Vertrag).
+- **A — `canonical_json(asdict_mit_decimal)`-Byte-Mess**
+  (kanonische Serialization-Form; M2-Welle-0a-Vertrag).
 - **B — `pickle`-Byte-Mess** (Python-spezifisch).
 - **C — Field-by-Field-Byte-Sum** (manuelle Berechnung).
 
@@ -198,6 +198,26 @@ Optionen:
 - Option C (manuelle Berechnung) bricht die Adapter-
   Boundary; Payload-Format-Drift wuerde Mess-Drift verursachen.
 
+**API-Realitaet** (Welle-4b-b-C0-Review-Folge-Schaerfung;
+gegen `src/grid_gym/hexagon/core/serialization/canonical.py
+:125` verifiziert):
+
+- Die canonical-Form ist **`canonical_json(value) -> bytes`**,
+  NICHT `canonical_json.dumps(...)`.
+- Der Encoder lehnt **`float`** explizit ab (`FloatNotAllowed
+  Error`) und akzeptiert keine **Dataclasses**.
+- `TelemetryPoint` hat `value: float` und ist eine
+  `@dataclass(frozen=True, slots=True)`.
+
+**Pflicht-Konversion** vor der Mess: `dataclasses.asdict
+(point)` + `value: float → Decimal(repr(value))`-Replacement
+(Pattern analog `_to_canonical_mapping` in
+`hexagon/core/devices/_telemetry.py`-aequivalent — Welle-4b-b-
+C2 prueft die Existenz vor und schreibt sonst lokalen
+Konversion-Helper im Bench-Test-File). Der serialisierte
+Bytes-Length-Mess passiert dann ueber das Mapping, nicht
+ueber das frozen Dataclass.
+
 ### Welle-4b-b-D-3 — Subscriber-Konsumtion
 
 **Frage:** Mit oder ohne aktiven Subscriber bei der Mess?
@@ -206,22 +226,42 @@ Optionen:
 
 - **A — Ohne Subscriber** (Drop-Oldest greift nicht; Queue
   bleibt leer; pure `publish`-Throughput).
-- **B — Mit Single-Subscriber-Drainer** (Subscriber-Loop
-  konsumiert die Queue parallel).
-- **C — Mit synchronem Single-Subscriber-Drain pro
-  `publish`** (`publish` + `drain_one`-Aequivalent).
+- **B — Mit Single-Queue-Subscriber-Slot ohne asyncio-Loop**
+  (Queue programmatisch im `_subscribers`-List angemeldet,
+  niemand drained; publish-Pfad faehrt ueber Drop-Oldest-Logik
+  voll).
+- **C — Mit aktivem asyncio-Subscriber-Drainer** (Subscriber-
+  Loop konsumiert die Queue parallel; voller End-to-End-
+  Throughput).
 
-**Welle-4b-b-Final: Option A (Ohne Subscriber).** Begruendung:
+**Welle-4b-b-Final: Option B (Single-Queue-Subscriber-Slot).**
+
+**Korrektur gegenueber C0-Erstwurf:** der C0-Erstwurf hatte
+Option A („Ohne Subscriber") gewaehlt — Code-Review hat
+aufgedeckt, dass `InMemoryTelemetryStream.publish()` bei
+`subscriber_count == 0` eine **leere Schleife** macht (siehe
+`src/grid_gym/adapters/driven/telemetry_stream_inmemory/
+stream.py:39-44`); kein Queue-Write, kein Drop-Oldest. Das
+waere ein false-positive-Bench (10 000 OPS via No-Op). Die
+korrigierte Form misst den realen publish-Pfad.
+
+Begruendung Option B:
 
 - Mess-Surface bleibt scharf am `publish`-Inlet (Welle-4b-b-
-  D-1).
-- `InMemoryTelemetryStream` mit `subscriber_count == 0`
-  verwirft Points unmittelbar im `publish` (ADR 0038 §2.2-
-  Drop-Oldest greift ohne Queue); das ist der reinste
-  Inlet-Pfad.
-- Option B mischt asyncio-Scheduling in den Mess-Pfad; nicht
-  reproduzierbar genug.
-- Option C ist konstruktivistisch — nicht real.
+  D-1) UND der publish-Pfad fuehrt jetzt **echte Arbeit aus**:
+  `subscriber.full()`-Check, `get_nowait()`-Drop-Oldest,
+  `put_nowait()`-Queue-Schreibe.
+- Option A ist nach Code-Review verworfen (false-positive-
+  Risiko HIGH).
+- Option C mischt asyncio-Scheduling in den Mess-Pfad und
+  bricht ADR-0038 §2.2 implizit (Drainer als Race-
+  Bedingung); nicht reproduzierbar genug.
+- Implementierungs-Pflicht (C2): die Bench-Test-Implementation
+  haengt eine `asyncio.Queue(maxsize=128)` programmatisch
+  direkt in `stream._subscribers` ein (umgeht den `async def
+  subscribe()`-Pfad bewusst, weil der asyncio-Kontext braucht).
+  Die Queue wird nie gedrained — Drop-Oldest greift ab dem
+  129. Publish (realistic worst-case-Path).
 
 ### Welle-4b-b-D-4 — ADR-0041-Schaerfungs-Bedarf
 
@@ -303,7 +343,16 @@ Code-Merge mit:
     publish(point)`-Rate ohne Subscriber).
   - Doppel-Akzeptanz per `GG-RT-005`-Spec:
     - Vor dem Bench-Lauf: jeder TelemetryPoint kanonisch
-      ≤ 256 Byte (`assert len(canonical_json(point)) <= 256`).
+      ≤ 256 Byte via Helper-Konversion
+      `_canonical_point_payload(point) -> bytes`:
+      konvertiert `point` per `dataclasses.asdict()`, ersetzt
+      `value: float → Decimal(repr(value))` (Pflicht weil
+      `canonical_json` `float` ablehnt; Welle-4b-b-D-2-
+      Substanz), ruft `canonical_json(mapping)` und assertet
+      `len(result) <= 256`.
+    - Setup: `asyncio.Queue(maxsize=128)` programmatisch in
+      `stream._subscribers` einhaengen (Welle-4b-b-D-3-
+      Substanz; bypasst den `async def subscribe()`-Pfad).
     - Nach dem Bench-Lauf: Median-OPS ≥ 10 000
       (`assert benchmark.stats["median"] <= 1e-4` —
       1e-4 Sekunden pro Publish ≈ 10 000 OPS).
@@ -407,15 +456,20 @@ C4a/C4b dienen gleichzeitig als M6-Welle-4b-c-Pre-C0a/Pre-C0b.
 
 ## 7. Risiken
 
-**R1 — `InMemoryTelemetryStream`-Drop-Oldest-Mess-Drift.**
-Ohne aktiven Subscriber verwirft der Stream alle Points;
-`publish` wird sehr schnell sein (kein Queue-Schreibe-Overhead).
-Bench-Resultate sind nicht reprasentativ fuer einen produktiven
-Subscriber-Lauf.
-**Mitigation:** Welle-4b-b-D-3 Final ist explizit „Ohne
-Subscriber"; Welle-4b-b-Anti-Scope schliesst Multi-Subscriber-
-Mess aus. Limitation in Slice-Doc dokumentiert. Welle-4b-Closure
-kann Multi-Subscriber-Mess schaerfen.
+**R1 — `InMemoryTelemetryStream`-publish-leere-Schleife.**
+Bei `subscriber_count == 0` ist `publish()` eine leere
+Schleife (kein Queue-Write, kein Drop-Oldest); ein „Ohne
+Subscriber"-Bench wuerde 10 000 OPS via No-Op erfuellen,
+ohne den Port-Vertrag echt zu verarbeiten. Das ist der
+C0-Erstwurf-False-Positive-Risiko (aufgedeckt in Welle-4b-
+b-C0-Review-Folge).
+**Mitigation:** Welle-4b-b-D-3 Final ist nach Code-Review
+auf Option B (Single-Queue-Subscriber-Slot) gewechselt; die
+Bench-Test-Setup haengt eine Queue programmatisch in
+`stream._subscribers` ein, damit `publish` realen Queue-
+Manipulation-Pfad faehrt. Limitation: Single-Subscriber-
+Profil; Multi-Subscriber-Skalierung ist Welle-X/Welle-4b-
+Closure-Material.
 
 **R2 — 10 000 OPS-Schwelle haerter als Maintainer-Dev-Host-
 Realitaet.** Welle-4b-a-Bench (519ms pro Lauf = 1.92 OPS) zeigt,
