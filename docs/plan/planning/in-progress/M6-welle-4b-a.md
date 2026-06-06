@@ -1,6 +1,19 @@
 # Welle 4b-a — M6 Performance-Bench-Foundation (`GG-RT-004` + ADR 0041)
 
-**Status:** In Progress — C0 (dieser Commit, Slice-Doc-Anlage).
+**Status:** Done 2026-06-06 — Liefer-Stack: C0 `f2fbcc0`
+(Slice-Doc-Anlage; Welle-4b-Sub-Slicing-Beschluss in 4b-a/4b-b/
+4b-c) + C1 `43569d2` (NEU ADR-0041 `Provisional`; M6-D-7-
+Vorbelegung aufgeloest) + C1-Review-Folge `f4f4983` (4 Findings
+adressiert: F1 HIGH GG-RT-004-Replay-Diff + F2 HIGH project.
+optional-dependencies.perf statt dependency-groups.perf + F3
+MEDIUM Baseline-Pfad-Konsistenz + F4 MEDIUM make perf-baseline-
+update als Helper-Target) + C2 `5d8c497` (NEU pytest-benchmark
++ Dockerfile-perf-Stage + tests/perf/ Layer + Makefile-Targets;
+GG-RT-004-Doppel-Akzeptanz produktiv; Maintainer-Dev-Host-
+Baseline 519ms / 1.92 OPS) + C3 (dieser Commit; Status/DoD-Sync
++ Top-Level-Doku). Ausstehend: C4a Self-Close-Move + C4b
+Cross-Doc-Refs-Sync.
+
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
 Welle 4b ist gemaess **Welle-4b-a-D-1** (§3) weiter in **4b-a
@@ -561,72 +574,72 @@ Bindestrich-Trennung als visuelle Marker.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **C0 — NEU `M6-welle-4b-a.md`** mit §1..§9-Struktur
+- [x] **C0 — NEU `M6-welle-4b-a.md`** mit §1..§9-Struktur
   (dieser Commit).
-- [ ] **C0 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C0 — `in-progress/README.md`** Bestand-Tabelle
   um `M6-welle-4b-a.md`-Eintrag + Aktive-Welle-Block auf
   M6-Welle-4b-a.
-- [ ] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-
+- [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4b-
   Zeile in 4b-a/4b-b/4b-c gespalten; 4b-a `Pending → In
   Progress 2026-06-06`.
-- [ ] **C1 — NEU `docs/plan/adr/0041-performance-bench-
+- [x] **C1 — NEU `docs/plan/adr/0041-performance-bench-
   pattern.md`** `Provisional` (M6-D-7-Vorbelegung
   aufgeloest).
-- [ ] **C1 — `docs/plan/adr/README.md`** ADR-Index um
+- [x] **C1 — `docs/plan/adr/README.md`** ADR-Index um
   ADR-0041-Zeile ergaenzt.
-- [ ] **C2 — NEU `pyproject.toml`-`[project.optional-
+- [x] **C2 — NEU `pyproject.toml`-`[project.optional-
   dependencies.perf]`** + `uv.lock`-Sync mit
   `pytest-benchmark>=4.0,<6.0` (opt-in via `--extra perf`;
   Pattern analog `iec61850`-Extra aus ADR 0035).
-- [ ] **C2 — NEU `Dockerfile`-`perf`-Stage** analog
+- [x] **C2 — NEU `Dockerfile`-`perf`-Stage** analog
   `test-unit` mit `--extra perf`-Flag im `uv sync`-Aufruf.
-- [ ] **C2 — NEU `tests/perf/`** mit `__init__.py` +
+- [x] **C2 — NEU `tests/perf/`** mit `__init__.py` +
   `conftest.py` + `test_tick_loop_bench.py` + `baseline.
   json`.
-- [ ] **C2 — NEU `Makefile`-`perf`-Target** (PHONY) +
+- [x] **C2 — NEU `Makefile`-`perf`-Target** (PHONY) +
   NEU `perf-baseline-update`-Helper-Target (PHONY; loest
   Make-Option-Konflikt mit `--benchmark-save`) +
   Help-Block-Erweiterung.
-- [ ] **C2 — `make perf`** cache-frei gruen lokal
+- [x] **C2 — `make perf`** cache-frei gruen lokal
   (`GG-RT-004`-Doppel-Akzeptanz per ADR-0041 §2.2:
   100 Geraete × 10 000 Ticks ohne verlorene Events UND
   ohne nichtdeterministischen Replay-Diff; Baseline-Compare
   gegen `tests/perf/baseline.json` innerhalb 20 % Median-Drift).
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates; Test-Counts unveraendert 1732/80/4 skipped).
-- [ ] **C2 — `make ci`** cache-frei gruen lokal.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
+- [x] **C2 — `make ci`** cache-frei gruen lokal.
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override lokal.
-- [ ] **C3 — `M6-welle-4b-a.md`** Status `In Progress →
+- [x] **C3 — `M6-welle-4b-a.md`** Status `In Progress →
   Done 2026-06-06` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-a-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4b-a-
   Zeile `In Progress → Done` mit Closure-Hash + Aktive-
   Welle-Block auf Welle 4b-b.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU
+- [x] **C3 — `README.md` + `README.de.md`** NEU
   `make perf`-Hinweis + `GG-RT-004`-Akzeptanz-Notiz.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-4b-b + Welle-4b-a-Abschluss-Notiz mit Stack-Range.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-4b-a-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-4b-b.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 4b-a NICHT):**
 
-- [ ] Kein `GG-RT-005` Telemetry-Port-Bench (Welle-4b-b-Scope).
-- [ ] Kein `GG-RT-001` Backpressure-Healthcheck (Welle-4b-c-
+- [x] Kein `GG-RT-005` Telemetry-Port-Bench (Welle-4b-b-Scope).
+- [x] Kein `GG-RT-001` Backpressure-Healthcheck (Welle-4b-c-
   Scope).
-- [ ] Keine `GG-RT-002` Determinismus-Substanz-Aenderung
+- [x] Keine `GG-RT-002` Determinismus-Substanz-Aenderung
   (M1-Produktiv-Stand).
-- [ ] Keine `GG-RT-003` Stale-Markierung-Substanz-Aenderung
+- [x] Keine `GG-RT-003` Stale-Markierung-Substanz-Aenderung
   (M3-Welle-6c-Produktiv-Stand).
-- [ ] Kein Snapshot-Envelope-v2-Body-Serialisierung
+- [x] Kein Snapshot-Envelope-v2-Body-Serialisierung
   (carveouts §2.1 als M5-Erbschaft).
-- [ ] Keine `make perf`-Integration in `make gates`/`make ci`
+- [x] Keine `make perf`-Integration in `make gates`/`make ci`
   (Welle-4b-a-D-6).
-- [ ] Kein CI-Workflow `perf.yml` (M6-Welle-7-Closure-Material
+- [x] Kein CI-Workflow `perf.yml` (M6-Welle-7-Closure-Material
   oder spaeter).
-- [ ] Keine Coverage-Pflicht fuer `tests/perf/`.
+- [x] Keine Coverage-Pflicht fuer `tests/perf/`.
 
 ---
 

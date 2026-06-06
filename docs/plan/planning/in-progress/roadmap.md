@@ -894,10 +894,11 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b
-(Performance-Benchmark; `GG-RT-001..005` inkl. 10000-
-Points/s-Benchmark `GG-RT-005`)** — Welle-4b-Slice-Doc
-entsteht in Welle-4b-C0.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b-b
+(`GG-RT-005` Telemetry-Port-Bench; 10 000 Points/s mit Payloads
+≤ 256 Byte)** — Welle-4b-b-Slice-Doc entsteht in Welle-4b-b-C0.
+Welle 4b ist in 4b-a/4b-b/4b-c sub-geslict per Welle-4b-a-D-1;
+Pattern analog M5-Welle-6 Sub-Slicing 6a/6b/6c.
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
@@ -953,7 +954,20 @@ in M6-Welle-3-C2 `ce13253`. Trigger 033 bleibt OFFEN als
 Stable-Watch (vulnignore-Pattern ist Temp-Deferral; echte
 Aufloesung weiter bei OTel-Stable-Release 0.154.0+ mit
 `go1.26.4+`).
-Welle 4b+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+**M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
+`f2fbcc0..<C3>` (C0 + C1 `43569d2` NEU ADR-0041 `Provisional`
+(Performance-Bench-Pattern + Regression-Schwelle; M6-D-7-
+Vorbelegung aufgeloest) + C1-Review-Folge `f4f4983` (4
+Findings: F1 HIGH GG-RT-004-Replay-Diff + F2 HIGH opt-in-
+Extra-Pattern + F3/F4 MEDIUM) + C2 `5d8c497` NEU pytest-
+benchmark Dep + Dockerfile-perf-Stage + tests/perf/ Layer +
+Makefile-Targets + Maintainer-Dev-Host-Baseline + C3 dieser
+Commit Closure-Sync): `GG-RT-004`-Doppel-Akzeptanz produktiv
+(100 Geraete x 10 000 Ticks ohne verlorene Events UND ohne
+nichtdeterministischen Replay-Diff per ADR-0041 §2.2; Bench-
+Median 519ms / 1.92 OPS; Regression-Schwelle 20% Median-
+Drift gegen tests/perf/baseline.json per ADR-0041 §2.3).
+Welle 4b-b+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
 Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
 `Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +
