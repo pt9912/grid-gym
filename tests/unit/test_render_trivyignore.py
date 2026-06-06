@@ -30,9 +30,7 @@ def _render_module() -> Iterator[object]:
     """Laedt `tools/render_trivyignore.py` als Modul fuer direkten
     Zugriff auf die internen Funktionen. Cleanup via yield-Pattern."""
 
-    spec = importlib.util.spec_from_file_location(
-        "_render_trivyignore_under_test", _TOOLS_PATH
-    )
+    spec = importlib.util.spec_from_file_location("_render_trivyignore_under_test", _TOOLS_PATH)
     if spec is None or spec.loader is None:
         pytest.fail(f"konnte render_trivyignore.py nicht laden: {_TOOLS_PATH}")
     module = importlib.util.module_from_spec(spec)
@@ -187,8 +185,7 @@ def test_scope_filter_skips_non_matching_entry(_render_module: object) -> None:
 
 
 def test_wildcard_scope_matches_any_filter(_render_module: object) -> None:
-    """`scope: *` darf jedes Scope-Filter matchen (Cross-Image-Eintrag).
-    """
+    """`scope: *` darf jedes Scope-Filter matchen (Cross-Image-Eintrag)."""
 
     entry = _valid_entry()
     entry["scope"] = "*"

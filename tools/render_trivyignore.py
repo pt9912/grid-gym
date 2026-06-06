@@ -54,72 +54,89 @@ def _scope_matches(entry_scope: str, scope_filter: str) -> bool:
     return any(item == "*" or item == scope_filter for item in items)
 
 
+class _EntryValidationError(Exception):
+    """Pflicht-Feld-Verstoss; trifft auf einen `vulnignore.yaml`-
+    Eintrag, der die ADR-0044-§2.2-Schwelle bricht (fehlende `id`/
+    `reason`/`expires`/`scope` oder abgelaufenes `expires`).
+
+    Classmethod-Factories bauen die konkreten Nachrichten innerhalb
+    der Klasse — Ruff-TRY003-konform (keine langen Messages an den
+    raise-Sites)."""
+
+    @classmethod
+    def missing_field(cls, field: str, cve_id: str = "") -> "_EntryValidationError":
+        prefix = f"{cve_id} " if cve_id else "entry "
+        return cls(f"{prefix}has no `{field}` field")
+
+    @classmethod
+    def not_iso_expires(cls, cve_id: str, expires_str: str) -> "_EntryValidationError":
+        return cls(f"{cve_id} expires ({expires_str}) not ISO-8601 (YYYY-MM-DD)")
+
+    @classmethod
+    def expired(cls, cve_id: str, expires_str: str) -> "_EntryValidationError":
+        return cls(f"{cve_id} expired ({expires_str}) - renew or remove the entry")
+
+
+def _validate_entry(
+    entry: dict[str, Any],
+    *,
+    today: dt.date,
+) -> tuple[str, str, str, str]:
+    """ADR-0044-§2.2-Pflicht-Felder-Pruefung. Returns
+    (cve_id, reason, scope, expires_str) bei Erfolg; raised
+    `_EntryValidationError` mit konkreter Nachricht sonst.
+
+    Reihenfolge der Pruefungen: `id` zuerst (sonst kein Kontext fuer
+    spaetere Fehlermeldungen); danach `expires`-Praesenz + ISO-
+    Format + Ablauf; danach `reason` und `scope` (jeweils
+    nicht-leer-nach-strip). Scope-Filter-Matching ist NICHT Teil der
+    Validation — das macht `_emit_entry` mit dem validierten Scope."""
+
+    cve_id = str(entry.get("id") or "").strip()
+    if not cve_id:
+        raise _EntryValidationError.missing_field("id")
+
+    expires_str = str(entry.get("expires") or "").strip()
+    if not expires_str:
+        raise _EntryValidationError.missing_field("expires", cve_id)
+    try:
+        expires_date = dt.date.fromisoformat(expires_str)
+    except ValueError as exc:
+        raise _EntryValidationError.not_iso_expires(cve_id, expires_str) from exc
+    if expires_date < today:
+        raise _EntryValidationError.expired(cve_id, expires_str)
+
+    reason = str(entry.get("reason") or "").strip()
+    if not reason:
+        raise _EntryValidationError.missing_field("reason", cve_id)
+
+    scope = str(entry.get("scope") or "").strip()
+    if not scope:
+        raise _EntryValidationError.missing_field("scope", cve_id)
+
+    return cve_id, reason, scope, expires_str
+
+
 def _emit_entry(
     entry: dict[str, Any],
     *,
     today: dt.date,
     scope_filter: str,
 ) -> tuple[list[str], bool]:
-    """Returns (rendered_lines, had_error)."""
+    """Returns (rendered_lines, had_error). Pflicht-Felder-Bruch →
+    `had_error=True`; Scope-Mismatch (Eintrag passt nicht zum
+    Filter) → `had_error=False` mit leerer Zeilenliste."""
 
-    cve_id = str(entry.get("id") or "").strip()
-    if not cve_id:
-        print(
-            "render-trivyignore: entry missing `id` field - abort.",
-            file=sys.stderr,
-        )
-        return ([], True)
-
-    expires_raw = entry.get("expires")
-    if not expires_raw:
-        print(
-            f"render-trivyignore: {cve_id} has no `expires` field - abort.",
-            file=sys.stderr,
-        )
-        return ([], True)
-
-    expires_str = str(expires_raw)
     try:
-        expires_date = dt.date.fromisoformat(expires_str)
-    except ValueError:
-        print(
-            f"render-trivyignore: {cve_id} expires ({expires_str}) not ISO-8601 (YYYY-MM-DD) - abort.",
-            file=sys.stderr,
-        )
+        cve_id, reason, scope, expires_str = _validate_entry(entry, today=today)
+    except _EntryValidationError as exc:
+        print(f"render-trivyignore: {exc} - abort.", file=sys.stderr)
         return ([], True)
 
-    if expires_date < today:
-        print(
-            f"render-trivyignore: {cve_id} expired ({expires_str}) - renew or remove the entry.",
-            file=sys.stderr,
-        )
-        return ([], True)
-
-    # ADR-0044 §2.2-Pflicht-Felder: `reason` und `scope` muessen
-    # vor der Scope-Filter-Pruefung verifiziert werden. Ein Eintrag
-    # ohne diese Felder ist auditfaehig nicht zulaessig (Audit-
-    # Trail-Bruch); der Lauf bricht mit EXIT=1 unabhaengig vom
-    # Scope-Filter-Argument.
-    reason = str(entry.get("reason") or "").strip()
-    if not reason:
-        print(
-            f"render-trivyignore: {cve_id} has no `reason` field - abort.",
-            file=sys.stderr,
-        )
-        return ([], True)
-
-    entry_scope = str(entry.get("scope") or "").strip()
-    if not entry_scope:
-        print(
-            f"render-trivyignore: {cve_id} has no `scope` field - abort.",
-            file=sys.stderr,
-        )
-        return ([], True)
-
-    if not _scope_matches(entry_scope, scope_filter):
+    if not _scope_matches(scope, scope_filter):
         return ([], False)
 
-    comment = f"# {cve_id} - {reason} (expires {expires_str}, scope {entry_scope})"
+    comment = f"# {cve_id} - {reason} (expires {expires_str}, scope {scope})"
     return ([comment, cve_id], False)
 
 
