@@ -27,6 +27,9 @@ from collections.abc import Callable
 from typing import cast
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
+    TickLoopHealthcheckAdapter,
+)
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
@@ -86,10 +89,18 @@ class DemoTickLoopDriver:
         alarm_stream_provider: AlarmStreamProvider | None = None,
         alarm_history_buffer_provider: AlarmHistoryBufferProvider | None = None,
         telemetry_stream_provider: TelemetryStreamProvider | None = None,
+        healthcheck_adapter: TickLoopHealthcheckAdapter | None = None,
     ) -> None:
         self._tick_loop = tick_loop
         self._tick_interval_s = tick_interval_s
         self._task: asyncio.Task[None] | None = None
+        # M6-Welle-4b-c-D-1: optionaler Healthcheck-Adapter; wenn
+        # gesetzt, misst der Driver per `adapter.clock_source()` die
+        # Wall-Clock-Dauer von `tick_loop.tick()` und ruft
+        # `adapter.record_tick_duration(duration_ms)`. Ohne Adapter
+        # (Default None) faellt der Mess-Pfad still aus — kein
+        # Behavior-Bruch fuer pre-Welle-4b-c-Aufrufer.
+        self._healthcheck_adapter = healthcheck_adapter
         self._alarm_stream_provider: AlarmStreamProvider = (
             alarm_stream_provider if alarm_stream_provider is not None else _none_provider
         )
@@ -184,10 +195,32 @@ class DemoTickLoopDriver:
             if state == "paused":
                 await asyncio.sleep(_PAUSE_POLL_INTERVAL_S)
                 continue
-            result = self._tick_loop.tick()
+            result = self._tick_with_healthcheck_measure()
             self._publish_emitted_alarms(result)
             self._publish_emitted_telemetry(result)
             await asyncio.sleep(self._tick_interval_s)
+
+    def _tick_with_healthcheck_measure(self) -> TickResult:
+        """M6-Welle-4b-c-D-1 + D-2: misst die Wall-Clock-Dauer von
+        `tick_loop.tick()` per `time.perf_counter()` (via
+        `healthcheck_adapter.clock_source`) und meldet sie an den
+        Healthcheck-Adapter. Ohne Adapter (Default-Pfad) fallback
+        auf direkten `tick()`-Aufruf ohne Mess.
+
+        Welle-4b-c-§7-R1: `time.perf_counter()`-Overhead ist
+        Sub-Microsekunden; vernachlaessigbar gegen den 10ms-Tick-
+        Budget.
+        """
+        adapter = self._healthcheck_adapter
+        if adapter is None:
+            return self._tick_loop.tick()
+        clock = adapter.clock_source
+        start = clock()
+        result = self._tick_loop.tick()
+        end = clock()
+        duration_ms = (end - start) * 1000.0
+        adapter.record_tick_duration(duration_ms)
+        return result
 
     def _force_stop_after_failure(self) -> None:
         """Welle-4b-Review-Fix #2: nach Tick-Exception den Repository-

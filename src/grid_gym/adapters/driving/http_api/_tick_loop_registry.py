@@ -20,6 +20,9 @@ from typing import cast
 
 from fastapi import Request
 
+from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
+    TickLoopHealthcheckAdapter,
+)
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 
 
@@ -30,10 +33,18 @@ class TickLoopRegistry:
     Variante in Welle 5 wird vom Scenario-Loader gefuellt, sobald
     ein neuer Run via ``POST /runs`` mit Scenario-Body angelegt
     wird; bis dahin bleibt die Surface minimal.
+
+    Welle-4b-c-Extension (`GG-RT-001` Backpressure-Healthcheck):
+    Zusaetzlich zum TickLoop-Mapping haelt die Registry pro
+    `run_id` einen optionalen `TickLoopHealthcheckAdapter`. Welle-
+    4b-c-D-1 verankert die Adapter-Side-Mess-Substanz; die Registry
+    ist der einzige Lookup-Punkt fuer den `GET /runs/{id}/
+    healthcheck`-Endpoint.
     """
 
     def __init__(self) -> None:
         self._tick_loops: dict[str, TickLoop] = {}
+        self._healthcheck_adapters: dict[str, TickLoopHealthcheckAdapter] = {}
 
     def register(self, tick_loop: TickLoop) -> None:
         """Registriert einen `TickLoop` unter seiner `run_id`.
@@ -55,6 +66,35 @@ class TickLoopRegistry:
         ``demo-run-0001`` ab).
         """
         return self._tick_loops.get(run_id)
+
+    def register_healthcheck_adapter(
+        self,
+        run_id: str,
+        adapter: TickLoopHealthcheckAdapter,
+    ) -> None:
+        """Registriert einen `TickLoopHealthcheckAdapter` unter
+        `run_id` (Welle-4b-c).
+
+        Pattern analog `register(tick_loop)`. Aufrufer ist
+        typischerweise das Demo-Lifespan-Setup nach
+        `TickLoopRegistry.register(tick_loop)` und Adapter-
+        Konstruktion.
+        """
+        self._healthcheck_adapters[run_id] = adapter
+
+    def healthcheck_adapter_for(
+        self,
+        run_id: str,
+    ) -> TickLoopHealthcheckAdapter | None:
+        """Liefert den `TickLoopHealthcheckAdapter` zu `run_id`
+        oder ``None`` (Welle-4b-c).
+
+        Aufrufer (`GET /runs/{run_id}/healthcheck`-Endpoint)
+        antwortet mit 503 Service Unavailable, wenn der Run
+        zwar existiert (Repository), aber kein Healthcheck-
+        Adapter registriert ist — kein aktiver Tick-Driver.
+        """
+        return self._healthcheck_adapters.get(run_id)
 
 
 class _TickLoopRegistryNotConfiguredError(RuntimeError):

@@ -398,6 +398,9 @@ def post_runs(
 # der `AC-NO-GOD-UTILS`-Contract (max 5 public top-level
 # functions pro Modul) eingehalten wird.
 
+from grid_gym.adapters.driving.http_api._healthcheck_router import (
+    healthcheck_router,
+)
 from grid_gym.adapters.driving.http_api._runs_action_router import (
     runs_action_router,
 )
@@ -405,6 +408,10 @@ from grid_gym.adapters.driving.http_api._runs_router import runs_router
 
 app.include_router(runs_router)
 app.include_router(runs_action_router)
+# M6-Welle-4b-c: NEU Backpressure-Healthcheck-Endpoint (GG-RT-001
+# 10ms-Modus). Separates Sub-Modul gegen `_runs_router.py`-Wuchs
+# (AC-NO-GOD-UTILS; C0-Review-Folge F6).
+app.include_router(healthcheck_router)
 
 # ---------------------------------------------------------------------------
 # M5 Welle 2 — UI-Adapter-Mount (ADR 0036)
