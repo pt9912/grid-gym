@@ -31,11 +31,15 @@ pip-PYSEC-2026-196-Drift im uv.lock behoben (`pip 26.1.1
 Schaerfung an ADR-0043 §2.2 + vulnignore-Pattern-Import aus
 m-trace; Welle-3-Post-Closure-Folge fuer Trigger 033 / OTel-
 Collector-CVE-2026-42504-Temp-Deferral) **abgeschlossen
-2026-06-06** mit Stack `9bb6a92..<C3>` (C0 + C1 `94dff9e`
+2026-06-06** mit Stack `9bb6a92..3bc58b8` (C0 + C1 `94dff9e`
 ADR-0044 `Provisional` + C2 `8fbd17c` Pattern-Import + C3
-Closure-Sync; Self-Close-Move-Folge C4a/C4b ausstehend als
-Welle-4b-Pre-C0a/Pre-C0b). Welle-4-Sub-Slicing-Beschluss
-(4a Vulnignore + 4b Performance-Bench) per Welle-4a-D-1.
+`f19837f` Closure-Sync + Post-Push-CI-Fix `f46e789`
+simulation-Healthcheck Always-Healthy + C4a `3bc58b8` Self-
+Close-Move + C4b dieser Commit Cross-Doc-Refs-Sync).
+`make fullbuild` cache-frei gruen lokal UND CI-Sensor (Lauf
+27055273876) — erstmalig seit `fullbuild.yml`-Anlage in
+M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
+4b Performance-Bench) per Welle-4a-D-1.
 **Aktive Welle: M6-Welle-4b** (Performance-Benchmark;
 `GG-RT-001..005` inkl. 10000-Points/s-Benchmark `GG-RT-
 005`) — Welle-4b-Slice-Doc entsteht in Welle-4b-C0.
@@ -202,7 +206,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 1 | Base-Image-Bump (krb5-CVE-Aufloesung) | Done 2026-06-05 | [`M6-welle-1.md`](../done/M6-welle-1.md) | Trigger 010 + `make fullbuild`-Defer-Aufloesung (Null-Code-Edit; Upstream-Drift) | NEU ADR 0043 `Provisional` (Image-Audit-Strategie; Welle-1-C1 `c44e6d5`) |
 | 2 | SBOM-Aktivierung + Release-Workflow | Done 2026-06-05 | [`M6-welle-2.md`](../done/M6-welle-2.md) | `GG-CICD-007` (5 Asset-Klassen + 1 GHCR-Push) + Trigger 008 | NEU ADR 0042 `Provisional` (SBOM-Tool + Release-Pattern; Welle-2-C1 `4b1062b`) |
 | 3 | CI/CD-Vollausbau | Done 2026-06-05 | [`M6-welle-3.md`](../done/M6-welle-3.md) | `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031 (`make fullbuild`-CI-Gate; Welle-1-D-1-Vertagung) **aufgeloest** | — (C1 entfaellt; Pattern analog M5-Welle-2) |
-| 4a | Generated-Trivyignore-Permit (vulnignore-Pattern + ADR-0044) | Done 2026-06-06 | [`M6-welle-4a.md`](M6-welle-4a.md) | Trigger 033 Temp-Deferral (OTel-Collector CVE-2026-42504) **aktiv** seit C2 `8fbd17c`; ADR-0044 als ADR-0011-Schaerfung an ADR-0043 §2.2 | NEU ADR 0044 `Provisional` (Generated-Trivyignore-Permit; Welle-4a-C1 `94dff9e`) |
+| 4a | Generated-Trivyignore-Permit (vulnignore-Pattern + ADR-0044) | Done 2026-06-06 | [`M6-welle-4a.md`](../done/M6-welle-4a.md) | Trigger 033 Temp-Deferral (OTel-Collector CVE-2026-42504) **aktiv** seit C2 `8fbd17c`; ADR-0044 als ADR-0011-Schaerfung an ADR-0043 §2.2 | NEU ADR 0044 `Provisional` (Generated-Trivyignore-Permit; Welle-4a-C1 `94dff9e`) |
 | 4b | Performance-Benchmark | Pending | TBD (entsteht in Welle-4b-C0) | `GG-RT-001..005` (10 000-Points/s-Bench `GG-RT-005` SOLLTE + Tick-Drift-Schranken) | TBD (ggf. ADR 0041 Bench-Pattern) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
@@ -212,16 +216,19 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 `GG-RT-001..005` inkl. 10000-Points/s-Benchmark `GG-RT-
 005`) — Welle-4b-Slice-Doc entsteht in Welle-4b-C0.
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
-`9bb6a92..<C3>` (C0 + C1 `94dff9e` + C2 `8fbd17c` + C3
-dieser Commit): NEU ADR-0044 `Provisional` (Generated-
+`9bb6a92..3bc58b8` (C0 + C1 `94dff9e` + C2 `8fbd17c` + C3
+`f19837f` + Post-Push-CI-Fix `f46e789` + C4a `3bc58b8` +
+C4b dieser Commit): NEU ADR-0044 `Provisional` (Generated-
 Trivyignore-Permit; ADR-0011-Schaerfung an ADR-0043 §2.2);
 NEU `tools/render_trivyignore.py` + `deploy/security/
 vulnignore.yaml` mit CVE-2026-42504-Eintrag; Makefile-
 Integration mit `render-trivyignore`-Target und `image-
-audit`-`--ignorefile`-Erweiterung; `make fullbuild` cache-
-frei gruen. Trigger 033 bleibt OFFEN als Stable-Watch
-(Temp-Deferral via vulnignore-Pattern; echte Aufloesung
-weiter bei OTel-Stable-Release 0.154.0+).
+audit`-`--ignorefile`-Erweiterung. `make fullbuild` cache-
+frei gruen lokal UND CI-Sensor (Lauf 27055273876) —
+erstmalig seit `fullbuild.yml`-Anlage in M6-Welle-3-C2.
+Trigger 033 bleibt OFFEN als Stable-Watch (Temp-Deferral
+via vulnignore-Pattern; echte Aufloesung weiter bei OTel-
+Stable-Release 0.154.0+).
 **M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
 `08a8034..c36f734` (C0 + C2 `ce13253` + C3 `c8ecbe4` +
 C3-Review-Folge `affdff7` + C4a `3b6d9bf` + C4b `c36f734`;
@@ -310,7 +317,7 @@ final):
   geschaerft).
 
 **Welle 4 — Sub-Slicing 4a/4b** (Welle-4a-D-1 in
-[`M6-welle-4a.md §3`](M6-welle-4a.md)):
+[`M6-welle-4a.md §3`](../done/M6-welle-4a.md)):
 
 **Welle 4a — Generated-Trivyignore-Permit (Welle-3-Post-
 Closure-Folge):**

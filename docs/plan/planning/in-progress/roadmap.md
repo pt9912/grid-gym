@@ -936,19 +936,23 @@ pip-PYSEC-2026-196-Drift im `uv.lock` behoben (`pip
 26.1.1 → 26.1.2`). C1 entfaellt (keine ADR-Substanz;
 Pattern analog M5-Welle-2).
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
-`9bb6a92..<C3>` (C0 + C1 `94dff9e` NEU ADR-0044
+`9bb6a92..3bc58b8` (C0 + C1 `94dff9e` NEU ADR-0044
 `Provisional` (Generated-Trivyignore-Permit; ADR-0011-
 Schaerfung an ADR-0043 §2.2) + C2 `8fbd17c` NEU `tools/
 render_trivyignore.py` (Python+PyYAML; m-trace-Pattern-
 Import) + `deploy/security/vulnignore.yaml` mit CVE-2026-
 42504-Eintrag + Makefile-`render-trivyignore`-Target +
-`image-audit`-`--ignorefile`-Erweiterung + C3 dieser
-Commit; Self-Close-Move-Folge C4a/C4b ausstehend als
-Welle-4b-Pre-C0a/Pre-C0b): `make fullbuild` cache-frei
-gruen ueber generierte `.trivyignore`. Trigger 033 bleibt
-OFFEN als Stable-Watch (vulnignore-Pattern ist Temp-
-Deferral; echte Aufloesung weiter bei OTel-Stable-Release
-0.154.0+ mit `go1.26.4+`).
+`image-audit`-`--ignorefile`-Erweiterung + C3 `f19837f`
+Closure-Sync + Post-Push-CI-Fix `f46e789` simulation-
+Healthcheck Always-Healthy gegen Compose-v2-`--wait`-
+Strictness + C4a `3bc58b8` Self-Close-Move + C4b dieser
+Commit Cross-Doc-Refs-Sync): `make fullbuild` cache-frei
+gruen ueber generierte `.trivyignore` lokal UND CI-Sensor
+(Lauf 27055273876) — erstmalig seit `fullbuild.yml`-Anlage
+in M6-Welle-3-C2 `ce13253`. Trigger 033 bleibt OFFEN als
+Stable-Watch (vulnignore-Pattern ist Temp-Deferral; echte
+Aufloesung weiter bei OTel-Stable-Release 0.154.0+ mit
+`go1.26.4+`).
 Welle 4b+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
 Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger

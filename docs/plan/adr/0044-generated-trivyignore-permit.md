@@ -275,7 +275,10 @@ Mit dieser ADR sind die folgenden Welle-4a-Substanz-Items
 verbunden:
 
 1. **M6-Welle-4a-C0** (`9bb6a92`):
-   - NEU `docs/plan/planning/in-progress/M6-welle-4a.md`
+   - NEU `docs/plan/planning/done/M6-welle-4a.md` (in
+     Welle-4a-C0 als `in-progress/M6-welle-4a.md` angelegt;
+     in Welle-4a-C4a `3bc58b8` self-close per `git mv` nach
+     `done/`)
      (Slice-Doc-Anlage; Welle-4-Sub-Slicing-Beschluss).
    - `in-progress/README.md` + `M6-perf-security-cicd.md`
      §3.1 Welle-Status-Tabelle (4 → 4a + 4b gespalten).
@@ -311,13 +314,39 @@ verbunden:
      Trivy meldet „Some vulnerabilities have been ignored/
      suppressed" beim OTel-Run als Filter-Greif-Beweis.
 
-4. **M6-Welle-4a-C3** (dieser Commit; Closure-Sync):
+4. **M6-Welle-4a-C3** (`f19837f`; Closure-Sync):
    - **Hash-Anchor-Block** (dieser Block in §5): Welle-4a-
      C2 = `8fbd17c` als Trigger-033-Temp-Deferral-Beleg
      (NEU `tools/render_trivyignore.py` + `deploy/security/
      vulnignore.yaml` + Makefile-Integration; lokal `make
      image-audit` + `make ci` + `make fullbuild` cache-
      frei gruen).
+
+5. **M6-Welle-4a-Post-Push-CI-Fix** (`f46e789`):
+   - `deploy/compose.yml` `simulation`-Service Healthcheck
+     `test: ["NONE"]` → `test: ["CMD", "true"]` mit
+     `interval/timeout/retries`-Defaults (Always-Healthy
+     fuer Stub-Container; Compose-v2-`--wait`-Strictness-
+     Aufloesung). Pre-existing latente Drift seit M6-Welle-
+     3-C2 `ce13253` (`fullbuild.yml`-CI-Pflicht-Gate
+     angelegt), versteckt hinter Trigger-010-/-033-Image-
+     Audit-Failures; erstmals sichtbar nach Welle-4a-C2
+     `8fbd17c` (vulnignore-Pattern laesst image-audit
+     gruen → runtime-Stage erreicht). CI-Sensor-Beleg:
+     fullbuild.yml-Lauf 27055273876 gruen (6m56s) —
+     erstmalig seit fullbuild.yml-Anlage in M6-Welle-3-C2.
+
+6. **M6-Welle-4a-C4a** (`3bc58b8`) + **C4b** (Cross-Doc-
+   Refs-Sync, dieser Commit):
+   - C4a: `git mv docs/plan/planning/in-progress/M6-welle-
+     4a.md → docs/plan/planning/done/M6-welle-4a.md`
+     (rename-only).
+   - C4b: ADR-0044 §5 Hash-Anchor-Block + Cross-Doc-Refs
+     in `in-progress/README.md` + `M6-perf-security-cicd.md`
+     + `roadmap.md` von `<C3>` auf `f19837f`/`<TBD>` auf
+     `f46e789` konkretisiert; `M6-welle-4a.md`-Pfad-Refs
+     von `in-progress/` auf `done/` umgehakt. `make docs-
+     check` cache-frei gruen.
    - `M6-welle-4a.md` Status `In Progress → Done` mit
      Liefer-Hash-Stack.
    - `M6-perf-security-cicd.md §3.1` Welle-4a-Zeile `In
@@ -332,7 +361,7 @@ verbunden:
      vulnignore.yaml-Hinweis; `roadmap.md §3 M6` aktive-
      Welle-Block auf M6-Welle-4b).
 
-5. **M6-Welle-7-Closure-C1** (Folge-Welle):
+7. **M6-Welle-7-Closure-C1** (Folge-Welle):
    - ADR 0044 `Provisional → Accepted` gebuendelt mit
      ADR 0041 + ADR 0042 + ADR 0043 (Pattern analog
      M5-Welle-7-C1 `62f988d`).

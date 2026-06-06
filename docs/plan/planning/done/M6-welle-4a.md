@@ -6,10 +6,18 @@
 render_trivyignore.py` + NEU `deploy/security/vulnignore.yaml`
 mit CVE-2026-42504-Eintrag + Makefile-Integration; `make
 image-audit` + `make fullbuild` cache-frei gruen) + C3
-(dieser Commit; Status/DoD-Sync + Trigger-033-Status-Block-
+`f19837f` (Status/DoD-Sync + Trigger-033-Status-Block-
 Erweiterung + carveouts.md-Pflege + ADR-0044-§5-Hash-
-Anchor-Update + Top-Level-Doku-Sync). Ausstehend: C4a Self-
-Close-Move + C4b Cross-Doc-Refs-Sync. Welle 4 ist gemaess
+Anchor-Update + Top-Level-Doku-Sync) + Post-Push-CI-Fix
+`f46e789` (simulation-Healthcheck Always-Healthy gegen
+Compose-v2-`--wait`-Strictness; pre-existing latente Drift;
+siehe §10) + C4a `3bc58b8` (Self-Close-Move; `git mv` rename-
+only) + C4b (dieser Commit; Cross-Doc-Refs-Sync nach Move +
+ADR-0044-§5-Hash-Anchor-Konkretisierung + §10-Hash-Slot-
+Fill). `make fullbuild` cache-frei gruen **lokal UND CI-
+Sensor** (Lauf 27055273876 gruen 6m56s) — erstmaliger CI-
+Beleg seit `fullbuild.yml`-Anlage in M6-Welle-3-C2 `ce13253`.
+Welle 4 ist gemaess
 §3 Welle-4a-D-1 in **4a (Generated-Trivyignore-Permit) + 4b
 (Performance-Benchmark)** sub-geslict; Pattern folgt M5-Welle-
 4 (`M5-welle-4a.md` + `M5-welle-4b.md`). Welle 4a ist die
@@ -37,7 +45,7 @@ Beschluss, ADR-Form, Layout-Konvention, Trigger-033-Lifecycle.
 
 ## 1. Context
 
-**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
 ist **Performance-Benchmark** (`GG-RT-001..005` inkl. 10000-
 Points/s-Benchmark `GG-RT-005` SOLLTE). Die Welle wird in
 Welle-4-C0 in 4a/4b gespalten, weil **NEU Trigger 033 (OTel-
@@ -662,11 +670,12 @@ Semantik re-verifiziert werden (M7+ oder spaeter).
   Welle-4a-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-4b.
 - [x] **C3 — `make docs-check`** cache-frei gruen.
-- [ ] **C3 — Reale GitHub-Actions-Run-Sensor-Check** beim
-  Push der C2/C3-Hashes (`fullbuild.yml` cache-frei gruen
-  auf `main`) — User-Operation, kein NEU `open/`-Trigger
-  angelegt (Pattern analog Welle-3-DoD §9 Reale-Sensor-
-  Check-Item).
+- [x] **C3 — Reale GitHub-Actions-Run-Sensor-Check** beim
+  Push der C2/C3/Post-Push-Fix-Hashes (`fullbuild.yml`
+  cache-frei gruen auf `main`) — Lauf 27055273876 gruen
+  (6m56s, 2026-06-06T06:41:55Z); Post-Push-CI-Fix `f46e789`
+  loest pre-existing latente Compose-v2-`--wait`-Drift
+  (siehe §10).
 
 **Anti-Scope-Verifikation (Welle 4a NICHT):**
 
@@ -696,10 +705,10 @@ Closure-Korrektur-Hashes.
 
 | Commit | Stufe | Substanz |
 | ------ | ----- | -------- |
-| `<TBD>` | Post-Push-CI-Fix | **F1 HIGH (CI-only)** `docker compose up --wait` in Compose-v2-CI-Version exit-1 bei `simulation`-Service mit `healthcheck: test: ["NONE"]` (dokumentierte Disable-Form). Pre-existing latente Drift seit M6-Welle-3-C2 `ce13253` (`fullbuild.yml`-CI-Pflicht-Gate angelegt), hinter Trigger-010-/-033-Image-Audit-Failures versteckt. Erstmals sichtbar nach Welle-4a-C2 `8fbd17c` (vulnignore-Pattern laesst `image-audit` gruen, runtime-Stage erreicht). Korrektur: `deploy/compose.yml` Z.152 `test: ["NONE"]` → `test: ["CMD", "true"]` + `interval/timeout/retries`-Defaults (Always-Healthy fuer `sleep infinity`-Stub-Container; M2-Geraete-Runner bringen produktiven Healthcheck zurueck). Lokal `make runtime` cache-frei gruen (Compose-Smoke + `/health` + `:13133`-Poll + Teardown). |
+| `f46e789` | Post-Push-CI-Fix | **F1 HIGH (CI-only)** `docker compose up --wait` in Compose-v2-CI-Version exit-1 bei `simulation`-Service mit `healthcheck: test: ["NONE"]` (dokumentierte Disable-Form). Pre-existing latente Drift seit M6-Welle-3-C2 `ce13253` (`fullbuild.yml`-CI-Pflicht-Gate angelegt), hinter Trigger-010-/-033-Image-Audit-Failures versteckt. Erstmals sichtbar nach Welle-4a-C2 `8fbd17c` (vulnignore-Pattern laesst `image-audit` gruen, runtime-Stage erreicht). Korrektur: `deploy/compose.yml` Z.152 `test: ["NONE"]` → `test: ["CMD", "true"]` + `interval/timeout/retries`-Defaults (Always-Healthy fuer `sleep infinity`-Stub-Container; M2-Geraete-Runner bringen produktiven Healthcheck zurueck). Lokal `make runtime` cache-frei gruen (Compose-Smoke + `/health` + `:13133`-Poll + Teardown). CI-Sensor-Beleg: `fullbuild.yml`-Lauf 27055273876 gruen (6m56s) — erstmalig seit `fullbuild.yml`-Anlage in M6-Welle-3-C2 `ce13253`. |
 
 **Aktueller Compose-Stand** (Post-Closure-Korrektur-Stand
-nach `<TBD>`):
+nach `f46e789`):
 
 - `deploy/compose.yml` `simulation`-Service Healthcheck:
   `test: ["CMD", "true"]` mit `interval: 5s` / `timeout: 1s`
@@ -708,11 +717,12 @@ nach `<TBD>`):
 - `api` / `postgres` / `otel-collector`-Healthcheck-Substanz
   unveraendert gegenueber Welle-4a-C3-Stand.
 - `make runtime` cache-frei gruen lokal; `make fullbuild`
-  cache-frei gruen lokal.
-- CI-Sensor-Erwartung: `fullbuild.yml` cache-frei gruen
-  beim naechsten Push (Beleg fuer `make fullbuild`-CI-Pflicht-
-  Gate-Aufloesung — erstmals seit `fullbuild.yml`-Anlage in
-  Welle-3-C2 `ce13253`).
+  cache-frei gruen lokal UND CI-Sensor (Lauf 27055273876
+  gruen 6m56s).
+- CI-Sensor-Beleg: `fullbuild.yml`-Lauf 27055273876 cache-
+  frei gruen (push von `f46e789` 2026-06-06T06:41:55Z) —
+  erstmaliger CI-`make fullbuild`-Gruen-Beleg seit
+  `fullbuild.yml`-Anlage in M6-Welle-3-C2 `ce13253`.
 
 ---
 
@@ -721,7 +731,7 @@ nach `<TBD>`):
 - [`../done/M6-welle-3.md §10`](../done/M6-welle-3.md) —
   M6-Welle-3-Post-Closure-Korrekturen-Index; Quelle der
   Trigger-033-Substanz und der `make fullbuild`-Rot-Diagnose.
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench;
   wird durch Welle-4a-Subdivision in 4a/4b gespalten).
 - [`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md)
