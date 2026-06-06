@@ -74,7 +74,11 @@ Drei orthogonale Liefer-Items:
    `GG-RT-005`-Spec (Z.491-495):
    - **Payload-Schwelle**: jeder TelemetryPoint kanonisch
      serialisiert ≤ 256 Byte (Assert vor dem Bench-Lauf via
-     `canonical_json.dumps`-Byte-Mess).
+     lokalen Helper `_canonical_point_payload(point) ->
+     bytes`, der `dataclasses.asdict(point)` plus `value:
+     float → Decimal(repr(value))`-Konversion macht und
+     dann `canonical_json(mapping)` ruft — siehe §3 Welle-
+     4b-b-D-2 fuer den API-Realitaet-Block).
    - **Throughput-Schwelle**: Bench misst Publish-OPS; PASS
      wenn die Median-OPS ≥ 10 000 (Akzeptanz-Assertion im
      Test selbst, NICHT in der Baseline-Compare-Schwelle —
@@ -340,7 +344,11 @@ Code-Merge mit:
 - NEU `tests/perf/test_telemetry_port_bench.py`:
   - `test_gg_rt_005_telemetry_port_publish_throughput`
     (pytest-benchmark; misst `InMemoryTelemetryStream.
-    publish(point)`-Rate ohne Subscriber).
+    publish(point)`-Rate mit Single-Queue-Subscriber-Slot
+    per Welle-4b-b-D-3 — Setup haengt `asyncio.Queue(maxsize
+    =128)` programmatisch in `stream._subscribers` ein, damit
+    `publish` realen Queue-Manipulation-Pfad faehrt; Drop-
+    Oldest greift ab dem 129. Publish).
   - Doppel-Akzeptanz per `GG-RT-005`-Spec:
     - Vor dem Bench-Lauf: jeder TelemetryPoint kanonisch
       ≤ 256 Byte via Helper-Konversion
