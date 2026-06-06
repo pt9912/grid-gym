@@ -894,10 +894,10 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 4b
 (Performance-Benchmark; `GG-RT-001..005` inkl. 10000-
-Points/s-Benchmark `GG-RT-005`)** — Welle-4-Slice-Doc
-entsteht in Welle-4-C0.
+Points/s-Benchmark `GG-RT-005`)** — Welle-4b-Slice-Doc
+entsteht in Welle-4b-C0.
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
 [`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
@@ -934,8 +934,23 @@ in `tests.yml`; Trigger 031 (`make fullbuild`-CI-Gate aus
 Welle-1-D-1-Vertagung) aufgeloest und nach `done/` gewandert;
 pip-PYSEC-2026-196-Drift im `uv.lock` behoben (`pip
 26.1.1 → 26.1.2`). C1 entfaellt (keine ADR-Substanz;
-Pattern analog M5-Welle-2). Welle 4+ Slice-Docs entstehen
-pro Welle-X-C0. Carveout-Triage-Eingangsbestand:
+Pattern analog M5-Welle-2).
+**M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
+`9bb6a92..<C3>` (C0 + C1 `94dff9e` NEU ADR-0044
+`Provisional` (Generated-Trivyignore-Permit; ADR-0011-
+Schaerfung an ADR-0043 §2.2) + C2 `8fbd17c` NEU `tools/
+render_trivyignore.py` (Python+PyYAML; m-trace-Pattern-
+Import) + `deploy/security/vulnignore.yaml` mit CVE-2026-
+42504-Eintrag + Makefile-`render-trivyignore`-Target +
+`image-audit`-`--ignorefile`-Erweiterung + C3 dieser
+Commit; Self-Close-Move-Folge C4a/C4b ausstehend als
+Welle-4b-Pre-C0a/Pre-C0b): `make fullbuild` cache-frei
+gruen ueber generierte `.trivyignore`. Trigger 033 bleibt
+OFFEN als Stable-Watch (vulnignore-Pattern ist Temp-
+Deferral; echte Aufloesung weiter bei OTel-Stable-Release
+0.154.0+ mit `go1.26.4+`).
+Welle 4b+ Slice-Docs entstehen pro Welle-X-C0. Carveout-
+Triage-Eingangsbestand:
 [`carveouts.md`](carveouts.md) (31 Items; 3 Trigger
 `Active in M6-Welle-X` per Welle-0-C2 — Trigger 010 +
 Trigger 008 + Trigger 031 alle `Aufgeloest`).

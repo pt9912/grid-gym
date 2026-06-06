@@ -280,14 +280,14 @@ verbunden:
    - `in-progress/README.md` + `M6-perf-security-cicd.md`
      §3.1 Welle-Status-Tabelle (4 → 4a + 4b gespalten).
 
-2. **M6-Welle-4a-C1** (dieser Commit):
+2. **M6-Welle-4a-C1** (`94dff9e`):
    - NEU `docs/plan/adr/0044-generated-trivyignore-permit.md`
      (`Provisional`, dieser Text).
    - `docs/plan/adr/README.md` Aktive-ADRs-Tabelle um
      ADR-0044-Zeile ergaenzt; ADR-0043-Zeile-Schaerfungen-
      Spalte um ADR-0044-Bezug ergaenzt (ADR-0011 §4-Pattern).
 
-3. **M6-Welle-4a-C2** (`<TBD>`):
+3. **M6-Welle-4a-C2** (`8fbd17c`):
    - NEU `tools/render_trivyignore.py` (Renderer; Python-
      Port aus `/Development/m-trace/scripts/render-
      trivyignore.sh` mit grid-gym-Layout-Anpassung —
@@ -311,9 +311,13 @@ verbunden:
      Trivy meldet „Some vulnerabilities have been ignored/
      suppressed" beim OTel-Run als Filter-Greif-Beweis.
 
-4. **M6-Welle-4a-C3** (`<TBD>`; Closure-Sync):
+4. **M6-Welle-4a-C3** (dieser Commit; Closure-Sync):
    - **Hash-Anchor-Block** (dieser Block in §5): Welle-4a-
-     C2 = `<TBD>` als Trigger-033-Temp-Deferral-Beleg.
+     C2 = `8fbd17c` als Trigger-033-Temp-Deferral-Beleg
+     (NEU `tools/render_trivyignore.py` + `deploy/security/
+     vulnignore.yaml` + Makefile-Integration; lokal `make
+     image-audit` + `make ci` + `make fullbuild` cache-
+     frei gruen).
    - `M6-welle-4a.md` Status `In Progress → Done` mit
      Liefer-Hash-Stack.
    - `M6-perf-security-cicd.md §3.1` Welle-4a-Zeile `In

@@ -56,13 +56,19 @@ The repository is **Docker-only**: the host only needs `docker` and
 `image-audit` (Trivy) and a Compose smoke test. The mandatory
 development gate is `make gates`.
 
-> `make fullbuild` currently fails on the `image-audit` step
-> because of CVE-2026-42504 (Go stdlib MIME header DoS) in the
-> pinned `otel/opentelemetry-collector-contrib:0.153.0` sibling
-> image — the upstream fix lands with OTel collector >0.153.0
-> built against go1.26.4+. Tracked in `docs/plan/planning/open/
-> 033-otel-collector-go-stdlib-cve-bump.md`. `make gates` is the
-> hard development gate and stays green.
+> Vulnerability audit ignores are sourced from
+> `deploy/security/vulnignore.yaml` (audit source-of-truth with
+> mandatory `id`/`reason`/`expires`/`scope` fields) and rendered
+> to `deploy/security/.trivyignore` via `make render-trivyignore`
+> (see ADR 0044). Expired entries break the build, forcing
+> maintenance without external reminders. Current single entry:
+> CVE-2026-42504 (Go stdlib MIME header DoS) in the pinned
+> `otel/opentelemetry-collector-contrib:0.153.0` sibling image
+> with `expires: 2026-06-20` as a temporary deferral. The
+> upstream resolution lands with OTel collector >0.153.0 built
+> against go1.26.4+ (tracked in `docs/plan/planning/open/
+> 033-otel-collector-go-stdlib-cve-bump.md`; trigger stays open
+> as the canonical stable-watch).
 
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow

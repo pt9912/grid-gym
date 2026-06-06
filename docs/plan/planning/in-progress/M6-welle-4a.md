@@ -1,14 +1,25 @@
 # Welle 4a — M6 Generated-Trivyignore-Permit (Pattern-Import + ADR-0044)
 
-**Status:** In Progress — C0 (dieser Commit, Slice-Doc-Anlage).
-Welle 4 ist gemaess §3 Welle-4a-D-1 in **4a (Generated-
-Trivyignore-Permit) + 4b (Performance-Benchmark)** sub-
-geslict; das Pattern folgt M5-Welle-4 (`M5-welle-4a.md` +
-`M5-welle-4b.md`). Welle 4a ist die **erste Sub-Welle** und
-liefert die strukturierte Defer-Form fuer den OTel-Collector-
-Go-stdlib-CVE-2026-42504-Befund (Trigger 033, Welle-3-Post-
-Closure-Folge), inklusive ADR-0011-Schaerfung an ADR-0043
-§2.2.
+**Status:** Done 2026-06-06 — Liefer-Stack: C0 `9bb6a92`
+(Slice-Doc-Anlage) + C1 `94dff9e` (NEU ADR-0044 `Provisional`
++ ADR-Index-Update) + C2 `8fbd17c` (NEU `tools/
+render_trivyignore.py` + NEU `deploy/security/vulnignore.yaml`
+mit CVE-2026-42504-Eintrag + Makefile-Integration; `make
+image-audit` + `make fullbuild` cache-frei gruen) + C3
+(dieser Commit; Status/DoD-Sync + Trigger-033-Status-Block-
+Erweiterung + carveouts.md-Pflege + ADR-0044-§5-Hash-
+Anchor-Update + Top-Level-Doku-Sync). Ausstehend: C4a Self-
+Close-Move + C4b Cross-Doc-Refs-Sync. Welle 4 ist gemaess
+§3 Welle-4a-D-1 in **4a (Generated-Trivyignore-Permit) + 4b
+(Performance-Benchmark)** sub-geslict; Pattern folgt M5-Welle-
+4 (`M5-welle-4a.md` + `M5-welle-4b.md`). Welle 4a ist die
+**erste Sub-Welle** und liefert die strukturierte Defer-Form
+fuer den OTel-Collector-Go-stdlib-CVE-2026-42504-Befund
+(Trigger 033, Welle-3-Post-Closure-Folge), inklusive ADR-
+0011-Schaerfung an ADR-0043 §2.2. Trigger 033 bleibt OFFEN
+als kanonische Stable-Watch — vulnignore-Pattern ist Temp-
+Deferral, echte Aufloesung weiter bei OTel-Stable-Release
+0.154.0+.
 
 **Pre-C0 abgeschlossen (M6-Welle-3-Closure-Folge):**
 
@@ -594,79 +605,81 @@ Semantik re-verifiziert werden (M7+ oder spaeter).
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] **C0 — NEU `M6-welle-4a.md`** mit §1..§9-Struktur
+- [x] **C0 — NEU `M6-welle-4a.md`** mit §1..§9-Struktur
   (dieser Commit).
-- [ ] **C0 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C0 — `in-progress/README.md`** Bestand-Tabelle
   um `M6-welle-4a.md`-Eintrag ergaenzt + Aktive-Welle-
   Block auf M6-Welle-4a.
-- [ ] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4-
+- [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-4-
   Zeile in 4a/4b gespalten; 4a `Pending → In Progress
   2026-06-06`.
-- [ ] **C1 — NEU `docs/plan/adr/0044-generated-
+- [x] **C1 — NEU `docs/plan/adr/0044-generated-
   trivyignore-permit.md`** `Provisional` (ADR-0011-
   Schaerfung an ADR-0043 §2.2).
-- [ ] **C1 — `docs/plan/adr/README.md`** ADR-Index um
+- [x] **C1 — `docs/plan/adr/README.md`** ADR-Index um
   ADR-0044-Zeile + ADR-0043-Schaerfungen-Spalte um
   „ADR 0044" ergaenzt (ADR-0011 §4-Pattern).
-- [ ] **C2 — NEU `deploy/security/vulnignore.yaml`** mit
+- [x] **C2 — NEU `deploy/security/vulnignore.yaml`** mit
   CVE-2026-42504-Eintrag (`reason` + `expires:
   2026-06-20` + `scope: otel-collector`); Datei-Header-
   Schema-Block analog m-trace.
-- [ ] **C2 — NEU `tools/render_trivyignore.py`**
+- [x] **C2 — NEU `tools/render_trivyignore.py`**
   Python-Port aus m-trace-`render-trivyignore.sh` (bash+
   awk → Python+PyYAML; CLI-Pattern analog `tools/
   check_noqa.py`/`check_spdx.py`).
-- [ ] **C2 — `.gitignore`** um `deploy/security/
+- [x] **C2 — `.gitignore`** um `deploy/security/
   .trivyignore`-Eintrag ergaenzt.
-- [ ] **C2 — `Makefile`** NEU `render-trivyignore`-Target
+- [x] **C2 — `Makefile`** NEU `render-trivyignore`-Target
   (PHONY) + `image-audit`-Erweiterung um `--ignorefile`-
   Argument fuer den OTel-Collector-Run.
-- [ ] **C2 — `make render-trivyignore`** EXIT=0 lokal;
+- [x] **C2 — `make render-trivyignore`** EXIT=0 lokal;
   `deploy/security/.trivyignore` enthaelt CVE-2026-42504-
   Eintrag.
-- [ ] **C2 — `make image-audit`** cache-frei gruen lokal.
-- [ ] **C2 — `make ci`** cache-frei gruen lokal.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen ohne
+- [x] **C2 — `make image-audit`** cache-frei gruen lokal.
+- [x] **C2 — `make ci`** cache-frei gruen lokal.
+- [x] **C2 — `make fullbuild`** cache-frei gruen ohne
   `CRITICAL_COV_TARGETS`-Override lokal.
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates; Test-Counts unveraendert 1722/80/4 skipped).
-- [ ] **C3 — `M6-welle-4a.md`** Status `In Progress →
+- [x] **C3 — `M6-welle-4a.md`** Status `In Progress →
   Done 2026-06-06` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4a-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-4a-
   Zeile `In Progress → Done` mit Closure-Hash + §3
   Aktive-Welle-Block auf Welle 4b.
-- [ ] **C3 — `open/033-otel-collector-go-stdlib-cve-
+- [x] **C3 — `open/033-otel-collector-go-stdlib-cve-
   bump.md`** Status-Block um „Temp-Deferral via
   Welle-4a-vulnignore-Pattern; echte Aufloesung weiter
   bei OTel-Stable-Release 0.154.0+" ergaenzt; Trigger 033
   bleibt offen.
-- [ ] **C3 — `carveouts.md §2.X`** NEU Trigger-033-Eintrag
+- [x] **C3 — `carveouts.md §2.X`** NEU Trigger-033-Eintrag
   als `Active in M6-Welle-4a-Temp-Deferral` (Welle-3-
   Post-Closure-Vergesslichkeit nachgepflegt).
-- [ ] **C3 — `README.md` + `README.de.md`** NEU
+- [x] **C3 — `README.md` + `README.de.md`** NEU
   vulnignore.yaml-Source-of-Truth-Hinweis.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-4b + Welle-4a-Abschluss-Notiz mit Stack-Range.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-4a-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-4b.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 - [ ] **C3 — Reale GitHub-Actions-Run-Sensor-Check** beim
   Push der C2/C3-Hashes (`fullbuild.yml` cache-frei gruen
-  auf `main`).
+  auf `main`) — User-Operation, kein NEU `open/`-Trigger
+  angelegt (Pattern analog Welle-3-DoD §9 Reale-Sensor-
+  Check-Item).
 
 **Anti-Scope-Verifikation (Welle 4a NICHT):**
 
-- [ ] Kein OTel-Collector-Image-Bump (Trigger 033 bleibt
+- [x] Kein OTel-Collector-Image-Bump (Trigger 033 bleibt
   offen).
-- [ ] Keine Performance-Bench (Welle-4b-Scope; `GG-RT-
+- [x] Keine Performance-Bench (Welle-4b-Scope; `GG-RT-
   001..005`).
-- [ ] Keine ADR-0029-Beruehrung (Coverage-Gate-Vertrag
+- [x] Keine ADR-0029-Beruehrung (Coverage-Gate-Vertrag
   unangetastet).
-- [ ] Keine `--skip-vuln`-Argument-Anpassung (`--ignorefile`
+- [x] Keine `--skip-vuln`-Argument-Anpassung (`--ignorefile`
   ist Datei-basierte Form, nicht CLI-Allowlist).
-- [ ] Keine permanente Defer-Form (`expires`-Pflicht).
-- [ ] Keine `pre-commit`-Hook-Substanz.
+- [x] Keine permanente Defer-Form (`expires`-Pflicht).
+- [x] Keine `pre-commit`-Hook-Substanz.
 
 ---
 

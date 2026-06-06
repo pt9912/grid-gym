@@ -57,13 +57,19 @@ Keine lokale Python-/uv-Installation.
 `image-audit` (Trivy) und Compose-Smoke. Das Pflicht-
 Entwicklungsgate ist `make gates`.
 
-> `make fullbuild` faellt aktuell ueber den `image-audit`-Schritt
-> wegen CVE-2026-42504 (Go-stdlib-MIME-Header-DoS) im gepinnten
-> `otel/opentelemetry-collector-contrib:0.153.0`-Sibling — der
-> Upstream-Fix kommt mit OTel-Collector >0.153.0 gebaut gegen
-> go1.26.4+. Tracked in `docs/plan/planning/open/033-otel-
-> collector-go-stdlib-cve-bump.md`. `make gates` ist das harte
-> Entwicklungsgate und bleibt gruen.
+> Vulnerability-Audit-Ignores werden aus
+> `deploy/security/vulnignore.yaml` (Audit-Source-of-Truth mit
+> Pflicht-Feldern `id`/`reason`/`expires`/`scope`) gerendert
+> per `make render-trivyignore` zu
+> `deploy/security/.trivyignore` (siehe ADR 0044). Abgelaufene
+> Eintraege brechen den Build und erzwingen Maintenance ohne
+> externe Erinnerung. Aktueller Einzel-Eintrag: CVE-2026-42504
+> (Go-stdlib-MIME-Header-DoS) im gepinnten `otel/opentelemetry-
+> collector-contrib:0.153.0`-Sibling mit `expires: 2026-06-20`
+> als Temp-Deferral. Die echte Aufloesung kommt mit OTel-
+> Collector >0.153.0 gebaut gegen go1.26.4+ (tracked in
+> `docs/plan/planning/open/033-otel-collector-go-stdlib-cve-
+> bump.md`; Trigger bleibt offen als kanonische Stable-Watch).
 
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
