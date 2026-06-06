@@ -10,9 +10,12 @@ MEDIUM Baseline-Pfad-Konsistenz + F4 MEDIUM make perf-baseline-
 update als Helper-Target) + C2 `5d8c497` (NEU pytest-benchmark
 + Dockerfile-perf-Stage + tests/perf/ Layer + Makefile-Targets;
 GG-RT-004-Doppel-Akzeptanz produktiv; Maintainer-Dev-Host-
-Baseline 519ms / 1.92 OPS) + C3 (dieser Commit; Status/DoD-Sync
-+ Top-Level-Doku). Ausstehend: C4a Self-Close-Move + C4b
-Cross-Doc-Refs-Sync.
+Baseline 519ms / 1.92 OPS) + C3 `76a2f40` (Status/DoD-Sync +
+Top-Level-Doku) + C4a `beb3401` (Self-Close-Move; `git mv`
+rename-only) + C4b (dieser Commit; Cross-Doc-Refs-Sync nach
+Move + Hash-Slot-Fills `<C3>` → `76a2f40` in 4 Docs +
+M6-perf-security-cicd-Ref umgehakt von `in-progress` auf
+`../in-progress`).
 
 Welle 4 ist gemaess Welle-4a-D-1 in 4a (Generated-Trivyignore-
 Permit; abgeschlossen) + 4b (Performance-Benchmark) sub-geslict.
@@ -46,7 +49,7 @@ CI-Hook-Form.
 
 ## 1. Context
 
-**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
 ist Performance-Benchmark mit `GG-RT-001..005`. Welle-4a-Sub-
 Slicing hat 4a (Vulnignore-Pattern) als urgent-Praeludium
 geliefert; Welle 4b traegt die eigentliche Performance-Substanz.
@@ -650,7 +653,7 @@ Bindestrich-Trennung als visuelle Marker.
   Sub-Slicing-Pattern + Post-Closure-Korrektur-Stack).
 - [`../done/M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md)
   — M6-D-7-Bench-Framework-Vorbelegung (pytest-benchmark).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench).
 - [`../../../../spec/lastenheft.md §7 GG-RT-001..006`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer `GG-RT-002` + `GG-RT-003` +

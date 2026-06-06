@@ -955,7 +955,7 @@ Stable-Watch (vulnignore-Pattern ist Temp-Deferral; echte
 Aufloesung weiter bei OTel-Stable-Release 0.154.0+ mit
 `go1.26.4+`).
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
-`f2fbcc0..<C3>` (C0 + C1 `43569d2` NEU ADR-0041 `Provisional`
+`f2fbcc0..76a2f40` (C0 + C1 `43569d2` NEU ADR-0041 `Provisional`
 (Performance-Bench-Pattern + Regression-Schwelle; M6-D-7-
 Vorbelegung aufgeloest) + C1-Review-Folge `f4f4983` (4
 Findings: F1 HIGH GG-RT-004-Replay-Diff + F2 HIGH opt-in-

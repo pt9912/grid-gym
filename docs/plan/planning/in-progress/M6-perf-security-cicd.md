@@ -44,7 +44,7 @@ M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
 Bench; 10 000 Points/s am Telemetry-Port mit Payloads ≤ 256
 Byte). Welle 4b ist gemaess Welle-4b-a-D-1 in **4b-a + 4b-b +
 4b-c** sub-geslict; **M6-Welle-4b-a abgeschlossen 2026-06-06**
-mit Stack `f2fbcc0..<C3>` (NEU ADR-0041 + pytest-benchmark als
+mit Stack `f2fbcc0..76a2f40` (NEU ADR-0041 + pytest-benchmark als
 opt-in-Extra + tests/perf/ + make perf/perf-baseline-update;
 `GG-RT-004`-Doppel-Akzeptanz produktiv).
 
@@ -211,7 +211,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 2 | SBOM-Aktivierung + Release-Workflow | Done 2026-06-05 | [`M6-welle-2.md`](../done/M6-welle-2.md) | `GG-CICD-007` (5 Asset-Klassen + 1 GHCR-Push) + Trigger 008 | NEU ADR 0042 `Provisional` (SBOM-Tool + Release-Pattern; Welle-2-C1 `4b1062b`) |
 | 3 | CI/CD-Vollausbau | Done 2026-06-05 | [`M6-welle-3.md`](../done/M6-welle-3.md) | `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031 (`make fullbuild`-CI-Gate; Welle-1-D-1-Vertagung) **aufgeloest** | — (C1 entfaellt; Pattern analog M5-Welle-2) |
 | 4a | Generated-Trivyignore-Permit (vulnignore-Pattern + ADR-0044) | Done 2026-06-06 | [`M6-welle-4a.md`](../done/M6-welle-4a.md) | Trigger 033 Temp-Deferral (OTel-Collector CVE-2026-42504) **aktiv** seit C2 `8fbd17c`; ADR-0044 als ADR-0011-Schaerfung an ADR-0043 §2.2 | NEU ADR 0044 `Provisional` (Generated-Trivyignore-Permit; Welle-4a-C1 `94dff9e`) |
-| 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | Done 2026-06-06 | [`M6-welle-4b-a.md`](M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events UND ohne Replay-Diff) **produktiv**; plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1 `43569d2`) |
+| 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | Done 2026-06-06 | [`M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events UND ohne Replay-Diff) **produktiv**; plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1 `43569d2`) |
 | 4b-b | `GG-RT-005` Telemetry-Port-Bench | Pending | TBD (entsteht in Welle-4b-b-C0) | `GG-RT-005` SOLLTE (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte) | TBD (ggf. ADR-0041-Schaerfung) |
 | 4b-c | `GG-RT-001` Backpressure-Healthcheck | Pending | TBD (entsteht in Welle-4b-c-C0) | `GG-RT-001` MUSS (Tick-Dauer/p95-Jitter/missed-Ticks-Healthcheck-Telemetrie fuer 10ms-Modus) | TBD (ggf. ADR fuer Healthcheck-Surface) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
@@ -222,7 +222,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 Bench; 10 000 Points/s am Telemetry-Port mit Payloads ≤ 256
 Byte) — Welle-4b-b-Slice-Doc entsteht in Welle-4b-b-C0.
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
-`f2fbcc0..<C3>` (C0 + C1 `43569d2` + Review-Folge `f4f4983`
+`f2fbcc0..76a2f40` (C0 + C1 `43569d2` + Review-Folge `f4f4983`
 + C2 `5d8c497` + C3 dieser Commit): NEU ADR-0041 `Provisional`
 (Performance-Bench-Pattern + Regression-Schwelle); NEU
 pytest-benchmark als opt-in-Extra; NEU tests/perf/ Layer +
@@ -353,7 +353,7 @@ Closure-Folge):**
   0041 + ADR 0042 + ADR 0043.
 
 **Welle 4b — Sub-Slicing 4b-a/4b-b/4b-c** (Welle-4b-a-D-1
-in [`M6-welle-4b-a.md §3`](M6-welle-4b-a.md); Pattern analog
+in [`M6-welle-4b-a.md §3`](../done/M6-welle-4b-a.md); Pattern analog
 M5-Welle-6 Sub-Slicing 6a/6b/6c):
 
 **Welle 4b-a — Performance-Bench-Foundation + `GG-RT-004`:**
