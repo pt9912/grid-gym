@@ -42,15 +42,18 @@ M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
 4b Performance-Bench) per Welle-4a-D-1.
 **Aktive Welle: M6-Welle-4b-c** (`GG-RT-001` Backpressure-
 Healthcheck; Tick-Dauer/p95-Jitter/missed-Ticks-Telemetrie als
-NEU TickLoop-Healthcheck-Surface fuer 10ms-Modus). Welle 4b ist
-gemaess Welle-4b-a-D-1 in **4b-a + 4b-b + 4b-c** sub-geslict.
+NEU Driving-Adapter-Side-Healthcheck-Surface fuer 10ms-Modus)
+**In Progress 2026-06-06** mit C0 (Slice-Doc-Anlage
+[`M6-welle-4b-c.md`](M6-welle-4b-c.md)). Welle 4b ist gemaess
+Welle-4b-a-D-1 in **4b-a + 4b-b + 4b-c** sub-geslict.
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack `f2fbcc0..
 76a2f40` + **M6-Welle-4b-b abgeschlossen 2026-06-06** mit
-Stack `beb5dee..c8625f7` (C0 + C0-Review-Folge `f9620a3` + C0-
-Review-Folge-2 `935151e` + C2 `a2feff7` + C3 dieser Commit):
-NEU `tests/perf/test_telemetry_port_bench.py` + Baseline-
-Update; `GG-RT-005`-Doppel-Akzeptanz produktiv
-(Payload ≤ 256 Byte UND ~788 000 Publish-OPS lokal weit ueber
+Stack `beb5dee..c8625f7` (plus Post-C3-Review-Folge `1b77665`:
+7 Self-Review-Findings adressiert, F1 HIGH ADR-0041-§2.2-
+Vertragsbruch betrifft auch Welle-4b-a-Baseline rueckwirkend);
+NEU `tests/perf/test_telemetry_port_bench.py` + Baseline mit
+ADR-konformer Konfig; `GG-RT-005`-Doppel-Akzeptanz produktiv
+(Payload ≤ 256 Byte UND ~1.17M Publish-OPS lokal weit ueber
 10 000-SOLLTE-Schwelle).
 
 **Datum:** 2026-06-04 (in `in-progress/` direkt eroeffnet
@@ -218,19 +221,22 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4a | Generated-Trivyignore-Permit (vulnignore-Pattern + ADR-0044) | Done 2026-06-06 | [`M6-welle-4a.md`](../done/M6-welle-4a.md) | Trigger 033 Temp-Deferral (OTel-Collector CVE-2026-42504) **aktiv** seit C2 `8fbd17c`; ADR-0044 als ADR-0011-Schaerfung an ADR-0043 §2.2 | NEU ADR 0044 `Provisional` (Generated-Trivyignore-Permit; Welle-4a-C1 `94dff9e`) |
 | 4b-a | Performance-Bench-Foundation (`GG-RT-004` + ADR-0041) | Done 2026-06-06 | [`M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) | `GG-RT-004` SOLLTE (100 Geraete × 10 000 Ticks ohne verlorene Events UND ohne Replay-Diff) **produktiv**; plus `GG-RT-002` + `GG-RT-003` DoD-Bestaetigung; Bench-Pattern-Foundation (pytest-benchmark + `make perf` + Baseline-Pinning) | NEU ADR 0041 `Provisional` (Performance-Bench-Pattern; Welle-4b-a-C1 `43569d2`) |
 | 4b-b | `GG-RT-005` Telemetry-Port-Bench | Done 2026-06-06 | [`M6-welle-4b-b.md`](../done/M6-welle-4b-b.md) | `GG-RT-005` SOLLTE **produktiv** (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte; lokal ~788k Publish-OPS) | — (C1 entfaellt; Welle-4b-b-D-4 schliesst ADR-0041-Schaerfung negativ aus) |
-| 4b-c | `GG-RT-001` Backpressure-Healthcheck | Pending | TBD (entsteht in Welle-4b-c-C0) | `GG-RT-001` MUSS (Tick-Dauer/p95-Jitter/missed-Ticks-Healthcheck-Telemetrie fuer 10ms-Modus) | TBD (ggf. ADR fuer Healthcheck-Surface) |
+| 4b-c | `GG-RT-001` Backpressure-Healthcheck | In Progress 2026-06-06 | [`M6-welle-4b-c.md`](M6-welle-4b-c.md) | `GG-RT-001` MUSS (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status-Healthcheck-Telemetrie fuer 10ms-Modus) | — (C1 entfaellt; Welle-4b-c-D-6 schliesst ADR-Schaerfungs-Bedarf negativ aus) |
 | 5 | Security-Audit + Eingabevalidierung | Pending | TBD (entsteht in Welle-5-C0) | `GG-SAFE-001..008` | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Aktiver Slice:** M6-Welle-4b-c (`GG-RT-001` Backpressure-
 Healthcheck; Tick-Dauer/p95-Jitter/missed-Ticks-Telemetrie als
-NEU TickLoop-Healthcheck-Surface) — Welle-4b-c-Slice-Doc
-entsteht in Welle-4b-c-C0. **M6-Welle-4b-b abgeschlossen
-2026-06-06** mit Stack `beb5dee..c8625f7` (NEU
-tests/perf/test_telemetry_port_bench.py + Baseline-Update;
-`GG-RT-005`-Doppel-Akzeptanz produktiv: Payload ≤ 256 Byte UND
-~788 000 Publish-OPS lokal).
+NEU Driving-Adapter-Side-Healthcheck-Surface fuer 10ms-Modus)
+**In Progress 2026-06-06** mit C0 (Slice-Doc-Anlage
+[`M6-welle-4b-c.md`](M6-welle-4b-c.md); 6 Decisions D-1..D-6
+fixiert). **M6-Welle-4b-b abgeschlossen 2026-06-06** mit Stack
+`beb5dee..c8625f7` + Post-C3-Review-Folge `1b77665` (7 Self-
+Review-Findings; F1 HIGH ADR-0041-§2.2-Vertragsbruch betrifft
+auch Welle-4b-a rueckwirkend): NEU
+tests/perf/test_telemetry_port_bench.py + Baseline mit ADR-
+konformer Konfig; `GG-RT-005`-Doppel-Akzeptanz produktiv.
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
 `f2fbcc0..76a2f40` (C0 + C1 `43569d2` + Review-Folge `f4f4983`
 + C2 `5d8c497` + C3 dieser Commit): NEU ADR-0041 `Provisional`
