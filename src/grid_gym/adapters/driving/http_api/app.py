@@ -144,9 +144,9 @@ class HealthResponse(BaseModel):
     status: str = Field(description="Immer 'ok' bei laufender App.")
 
 
-# M6-Welle-5b (ADR 0045 §2.4): RunCreateRequest + RunCreateResponse
-# leben jetzt in _schemas.py, damit der Strict-Mode-Mixin uniform
-# auf alle drei Request-Bodies (control/faults/runs) wirkt.
+# RunCreateRequest + RunCreateResponse leben in _schemas.py
+# (ADR 0045 §2.4), damit der Strict-Mode-Mixin uniform auf alle
+# Request-Bodies (control/faults/runs) wirkt.
 
 
 @asynccontextmanager

@@ -118,17 +118,28 @@ def test_safe_007_ui_base_renders_simulation_banner(
     smoke_client: TestClient,
 ) -> None:
     """`GG-SAFE-007` UI-Surface: jede UI-Page rendert den Sim/Prod-
-    Banner aus `base.html`. Smoke prueft auf Demo-Page + Dashboard-
-    Page."""
+    Banner aus `base.html`. Smoke prueft auf semantische Anker
+    (`role="note"` + `aria-label`) statt auf die CSS-Klasse,
+    damit ein Refactor der Banner-Darstellung den Vertrag nicht
+    bricht, solange der ARIA-Marker bleibt."""
+    semantic_marker = 'role="note"'
+    aria_label = 'aria-label="Simulation-only disclaimer"'
+    visible_en = "Simulation only"
+    visible_de = "nicht fuer produktive Anlagensteuerung"
+
     demo_response = smoke_client.get("/")
     assert demo_response.status_code == 200
-    assert "sim-banner" in demo_response.text
-    assert "Simulation only" in demo_response.text
+    assert semantic_marker in demo_response.text
+    assert aria_label in demo_response.text
+    assert visible_en in demo_response.text
+    assert visible_de in demo_response.text
 
     dashboard_response = smoke_client.get(f"/runs/{_DEMO_RUN_ID}/dashboard")
     assert dashboard_response.status_code == 200
-    assert "sim-banner" in dashboard_response.text
-    assert "nicht fuer produktive Anlagensteuerung" in dashboard_response.text
+    assert semantic_marker in dashboard_response.text
+    assert aria_label in dashboard_response.text
+    assert visible_en in dashboard_response.text
+    assert visible_de in dashboard_response.text
 
 
 def test_safe_007_adapter_config_marks_simulation() -> None:
@@ -223,22 +234,35 @@ def test_safe_008_websocket_unknown_run_id_rejected(
 
 def test_safe_008_websocket_no_client_payload_consumed() -> None:
     """`GG-SAFE-008` WebSocket-Subscribe-only-Belegung (ADR 0045
-    §2.3): die beiden WS-Handler iterieren nur ueber
-    `TelemetryStreamPort.subscribe` bzw. `AlarmStreamPort.subscribe`
-    und rufen kein `websocket.receive_*`. Beleg: Quell-Datei-
-    Inspektion."""
-    handler_src = (
-        _REPO_ROOT
-        / "src"
-        / "grid_gym"
-        / "adapters"
-        / "driving"
-        / "http_api"
-        / "_runs_action_router.py"
-    ).read_text(encoding="utf-8")
+    §2.3): kein WebSocket-Handler in `http_api/` ruft
+    `websocket.receive_*` auf. Beleg: Scan ueber alle `*.py`-
+    Dateien im http_api-Modul. Sensor faengt damit auch
+    zukuenftige WS-Handler in neuen Routern (z. B. `_demo_setup`,
+    `_runs_router`) auf, nicht nur den aktuellen
+    `_runs_action_router`."""
+    http_api_dir = _REPO_ROOT / "src" / "grid_gym" / "adapters" / "driving" / "http_api"
+    ws_decorator = re.compile(r"\.websocket\(")
+    receive_call = re.compile(r"websocket\.receive_\w+\(")
 
-    assert "@runs_action_router.websocket" in handler_src
-    assert not re.search(r"websocket\.receive_\w+\(", handler_src)
+    files_with_ws_handler: list[str] = []
+    for py_file in sorted(http_api_dir.glob("*.py")):
+        src = py_file.read_text(encoding="utf-8")
+        if not ws_decorator.search(src):
+            continue
+        files_with_ws_handler.append(py_file.name)
+        assert not receive_call.search(src), (
+            f"WS-Handler in `http_api/{py_file.name}` ruft "
+            "`websocket.receive_*` — verletzt ADR 0045 §2.3 "
+            "(WebSocket-Subscribe-only-Vertrag)."
+        )
+
+    # Sanity: ohne mindestens einen WS-Handler waere die Assertion
+    # leerlaufend; das Modul muss die zwei bekannten Handler in
+    # `_runs_action_router.py` (telemetry + alarms-stream) tragen.
+    assert files_with_ws_handler, (
+        "Erwartet mindestens ein `http_api/*.py` mit "
+        "@*.websocket(...)-Dekorator; Sensor sonst leerlaufend."
+    )
 
 
 def test_safe_008_fault_injection_unknown_target_rejected(

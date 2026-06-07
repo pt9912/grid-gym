@@ -37,7 +37,7 @@ from grid_gym.hexagon.core.domain.run import RunStatus
 
 
 # ---------------------------------------------------------------------------
-# M6-Welle-5b: Strict-Mode-Mixin fuer alle REST-Request-Bodies
+# Strict-Mode-Mixin fuer alle REST-Request-Bodies
 # (ADR 0045 §2.1 / GG-SAFE-008).
 # ---------------------------------------------------------------------------
 
@@ -65,8 +65,7 @@ class _BaseRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# POST /runs (M1-Welle-7-Era; M6-Welle-5b-Konsolidierung nach _schemas.py
-# per ADR 0045 §2.4)
+# POST /runs (konsolidiert nach _schemas.py per ADR 0045 §2.4)
 # ---------------------------------------------------------------------------
 
 
@@ -90,7 +89,16 @@ class RunCreateRequest(_BaseRequest):
 
 
 class RunCreateResponse(BaseModel):
-    """Antwort von `POST /runs`."""
+    """Antwort von `POST /runs`.
+
+    Erbt bewusst `BaseModel` (nicht `_BaseRequest`): per ADR 0045 §2.2
+    sind `strict=True` und `extra="forbid"` nur Pflicht-Substanz fuer
+    **Request-Bodies**. Response-Modelle bleiben in Default-Pydantic-
+    Mode, damit spaetere Feld-Erweiterungen (z. B. neue Echo-Felder
+    aus dem RunRepository) bestehende Snapshot-/Roundtrip-Tests nicht
+    silent brechen. Dieselbe Begruendung gilt fuer alle uebrigen
+    `*Response`-Klassen in dieser Datei.
+    """
 
     run_id: str = Field(description="UUIDv4-Identitaet des angelegten Laufs.")
     scenario_hash: str = Field(description="Echo des `scenario_hash`-Eingangs.")

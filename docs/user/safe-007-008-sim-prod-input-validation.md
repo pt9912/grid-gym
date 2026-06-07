@@ -40,7 +40,7 @@ gelangen."
 | Surface | Substanz-Pfad | Test-Pfad | Status |
 | ------- | ------------- | --------- | ------ |
 | **REST Schema (Strict-Mode)** | `_BaseRequest`-Mixin in `adapters/driving/http_api/_schemas.py` setzt `ConfigDict(strict=True, extra="forbid")`. `ControlRequest`, `FaultInjectionRequest` und `RunCreateRequest` erben den Mixin (ADR 0045 §2.1 + §2.4). | `::test_safe_008_rest_invalid_payload_rejected_422` (Length-Constraint) + `::test_safe_008_rest_extra_field_rejected` (extra-forbid) + `::test_safe_008_rest_type_coercion_rejected` (Strict-Mode) | ✓ **Produktiv** |
-| **REST Wertebereiche** | Pydantic-`Field`-Constraints pro Modell (`scenario_hash` 64-Char-Length; `seed` `ge=0, le=2**32-1`; `tick_ms` `gt=0`; `action` `Literal["pause","resume","stop"]`). | gleicher Smoke wie oben (422 fuer ausserhalb des Wertebereichs) + Unit-Tests in `tests/unit/adapters/driving/http_api/` | ✓ **Produktiv** |
+| **REST Wertebereiche** | Pydantic-`Field`-Constraints pro Modell (`scenario_hash` 64-Char-Length; `seed` `ge=0, le=2**32-1`; `tick_ms` `gt=0`; `action` `Literal["pause","resume","stop"]`). | gleicher Smoke wie oben (422 fuer ausserhalb des Wertebereichs) + bestehende Endpoint-Tests unter `tests/unit/adapters/driving/http_api/` decken die Field-Constraints indirekt mit. | ✓ **Produktiv** |
 | **REST Zielressourcen** | `adapters/driving/http_api/_runs_action_router.py::post_run_faults` Cross-Field-Validation (M5-Welle-6a Decision 20): drei Schichten (target-existiert / fault_type-bekannt / type↔target-passt), alle → 422 mit `ErrorResponse.code`. `_healthcheck_router._require_run_or_404`-Helper deckt `run_id`-Existenz an REST-/UI-Pfaden ab. | `::test_safe_008_fault_injection_unknown_target_rejected` + bestehende `tests/integration/test_m5_welle_6a_fault_smoke.py` | ✓ **Produktiv** |
 | **WebSocket Subscribe-only** | `adapters/driving/http_api/_runs_action_router.py`: beide WS-Handler (`ws_run_telemetry`, `ws_run_alarms_stream`) rufen `await websocket.accept()` und iterieren ueber `TelemetryStreamPort.subscribe` bzw. `AlarmStreamPort.subscribe`. Es gibt **keinen** `websocket.receive_*`-Call — keine Client-Payload-Konsumption am Kern (ADR 0045 §2.3). | `::test_safe_008_websocket_no_client_payload_consumed` (Quell-Datei-Inspektion) | ✓ **Produktiv** |
 | **WebSocket `run_id`-Validation** | Repository-Lookup im WS-Handler vor `subscribe`; bei unbekanntem `run_id` → Policy-Close 1008 mit Reason. UUID-Format-Validation an Path-Parameters ist explizit out-of-scope (ADR 0045 §7) — der Repository-Lookup faengt invalid-Strings ab. | `::test_safe_008_websocket_unknown_run_id_rejected` (Close-Code 1008-Belegung) | ✓ **Produktiv** |
@@ -148,7 +148,7 @@ Dep-Audit, NoQA, SPDX, plus Image-Audit ueber `make ci`/
 - [ADR 0037 — HTTP-API-Surface-Pattern](../plan/adr/0037-http-api-surface-pattern.md):
   REST + WebSocket-Surface-Foundation; bleibt unveraendert
   `Accepted`, ADR 0045 schaerft additiv ohne Supersedes.
-- [ADR 0011 — Schaerfung ohne Ablöesung](../plan/adr/0011-schaerfung-ohne-abloesung.md):
+- [ADR 0011 — Schaerfung ohne Abloesung](../plan/adr/0011-schaerfung-ohne-abloesung.md):
   Pattern fuer die ADR-0045/0037-Schaerfungs-Form.
 - [`safe-001-004-quality-pipeline.md`](safe-001-004-quality-pipeline.md):
   Schwester-Audit fuer die Driven-Side-Quality-Substanz.
