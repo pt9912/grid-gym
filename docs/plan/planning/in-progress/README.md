@@ -14,7 +14,8 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`M6-welle-2.md`](../done/M6-welle-2.md) | M6-Welle-2-Slice-Doc (SBOM-Aktivierung + Release-Workflow; Trigger 008 + `GG-CICD-007` Vollscope mit 5 Asset-Klassen + 1 GHCR-Push). — **Done 2026-06-05** mit Stack `0cc28f3..b41b7fc` (C0/2 Review-Folgen/C1 ADR 0042 `Provisional`/C2 `235395e`/C3 `98a1fa1`/C3-Sensor `9815d23`/C4a `c51d905`/C4b `b41b7fc`) + 4 Post-Closure-Korrekturen `febbd22..3ccf01d` (siehe done-Slice-Doc §10.6). |
 | [`M6-welle-3.md`](../done/M6-welle-3.md) | M6-Welle-3-Slice-Doc (CI/CD-Vollausbau; `GG-CICD-002/003/005/006` + Python-3.13/3.14-Matrix + Trigger 031-Aufloesung). — **Done 2026-06-05** mit Stack `08a8034..c36f734` (C0/C2 `ce13253`/C3 `c8ecbe4`/C3-Review-Folge `affdff7`/C4a `3b6d9bf`/C4b `c36f734`; C1 entfaellt analog M5-Welle-2). Plus Post-Closure-CI-Fix `0891f65` (Python-Matrix-3.13 + OTel-Collector-CVE-2026-42504; siehe done-Slice-Doc Status-Block). |
 | [`M6-welle-4a.md`](../done/M6-welle-4a.md) | M6-Welle-4a-Slice-Doc (Generated-Trivyignore-Permit; ADR-0011-Schaerfung an ADR-0043 §2.2; vulnignore-Pattern-Import aus m-trace; Trigger-033-Temp-Deferral fuer CVE-2026-42504). — **Done 2026-06-06** mit Stack `9bb6a92..789ac50` (C0/C1 `94dff9e`/C2 `8fbd17c`/C3 `f19837f`/Post-Push-CI-Fix `f46e789` simulation-Healthcheck Always-Healthy/C4a `3bc58b8` Self-Close-Move/C4b `789ac50` Cross-Doc-Refs-Sync). Plus Post-Closure-Review-Folge `6601e9b` + `04042ec` (F2 HIGH ADR-0044-§2.2-Pflicht-Felder + F3/F4 LOW + Lint-Refactor; siehe done-Slice-Doc §10). Welle-4-Sub-Slicing-Beschluss (4a Vulnignore + 4b Performance-Bench) per Welle-4a-D-1. C4a/C4b dienen zugleich als Welle-4b-a-Pre-C0a/Pre-C0b. |
-| [`M6-welle-5a.md`](../done/M6-welle-5a.md) | M6-Welle-5a-Slice-Doc (Quality-Pipeline-Audit; `GG-SAFE-001..004` MUSS Audit + 7 Integration-Smoke-Tests + `docs/user/safe-001-004-quality-pipeline.md` Audit-Tabelle). — **Done 2026-06-06** mit Stack `4b36185..52cb698` (C0 `4b36185` Slice-Doc + C2 `4c1a693` 7 Smokes + Audit-Doku + 2 NEU `open/`-Triggers 034/035 + C2-Review-Folge `52cb698` (6 Findings F1..F6) + C3 dieser Commit). `GG-SAFE-001..004` audited: 001/002 ✓ produktiv; 003 ⚠ partial Lücke → Trigger 035; 004 ✗ Lücke → Trigger 034. Welle-5-Sub-Slicing-Beschluss (5a + 5b + 5c) per Welle-5a-D-1; C1 entfaellt (Welle-5a-D-5). C4a/C4b ausstehend als Welle-5b-Pre-C0a/Pre-C0b. |
+| [`M6-welle-5a.md`](../done/M6-welle-5a.md) | M6-Welle-5a-Slice-Doc (Quality-Pipeline-Audit; `GG-SAFE-001..004` MUSS Audit + 7 Integration-Smoke-Tests + `docs/user/safe-001-004-quality-pipeline.md` Audit-Tabelle). — **Done 2026-06-06** mit Stack `4b36185..52cb698` (C0 `4b36185` Slice-Doc + C2 `4c1a693` 7 Smokes + Audit-Doku + 2 NEU `open/`-Triggers 034/035 + C2-Review-Folge `52cb698` (6 Findings F1..F6) + C3 `d1e17e3`). `GG-SAFE-001..004` audited: 001/002 ✓ produktiv; 003 ⚠ partial Lücke → Trigger 035; 004 ✗ Lücke → Trigger 034. Welle-5-Sub-Slicing-Beschluss (5a + 5b + 5c) per Welle-5a-D-1; C1 entfaellt (Welle-5a-D-5). C4a `f35ab67` + C4b `2e3bf72` als Welle-5b-Pre-C0a/Pre-C0b. |
+| [`M6-welle-5b.md`](M6-welle-5b.md) | M6-Welle-5b-Slice-Doc (Sim/Prod-Marker + Input-Validation; `GG-SAFE-007/008` MUSS Audit + 11 Integration-Smoke-Tests + `docs/user/safe-007-008-sim-prod-input-validation.md` Audit-Tabelle + ggf. Pydantic-Strict-Mode-Schaerfung mit `RunCreateRequest`-Konsolidierung). — **In Progress 2026-06-07** mit C0 (dieser Commit) Slice-Doc-Anlage; C1 vorbedingt entfaellt (Welle-5b-D-6 Option C Default: keine NEU ADR); C2/C3 ausstehend. Decisions D-1..D-6 final: Audit-Form (Doku + Smokes) / **drei Pflicht-Marker-Surfaces UI + API-Doku + Adapterkonfiguration** plus arch_check / Hybrid-Luecken-Adressierung / DrivenSide+DriveSide-Audit-Umfang / Per-Endpoint-Strict-Mode mit Request-Body-Default / **NEU Schaerfungs-ADR 0045 mit Bezug auf ADR 0037 (ADR 0037 bleibt `Accepted`)** vorbedingt. |
 | [`M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) | M6-Welle-4b-c-Slice-Doc (`GG-RT-001` Backpressure-Healthcheck; NEU Driving-Adapter-Side-Healthcheck-Surface mit `GET /runs/{id}/healthcheck`-Endpoint fuer Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status im 10ms-Modus). — **Done 2026-06-06** mit Stack `c5543fd..7001989` (C0/C0-Review-Folge `aacc370` (7 Findings: F1 MEDIUM + F2-F7 LOW)/C2 `a98f967` (NEU TickLoopHealthcheckAdapter + Driver-Hook + Endpoint + Tests)/C2-Review-Folge `8785a6b` (7 Findings: F1 MEDIUM Datei-Naming-Drift + F2-F7 LOW + try/finally + 4 Driver-Hook-Tests)/C3 dieser Commit). C4a/C4b ausstehend als Welle-5-Pre-C0a/Pre-C0b. **Welle-4-Subdivision komplett**. |
 | [`M6-welle-4b-b.md`](../done/M6-welle-4b-b.md) | M6-Welle-4b-b-Slice-Doc (`GG-RT-005` Telemetry-Port-Throughput-Bench; 10 000 Points/s am `TelemetryStreamPort.publish`-Inlet mit Payloads ≤ 256 Byte). — **Done 2026-06-06** mit Stack `beb5dee..c8625f7` (C0/C0-Review-Folge `f9620a3` (2 HIGH: D-3 No-Subscriber-False-Positive + D-2 canonical_json-API-Drift)/C0-Review-Folge-2 `935151e` (2 MEDIUM stale-Refs)/C2 `a2feff7` (NEU tests/perf/test_telemetry_port_bench.py + Baseline)/C3 `c8625f7` plus Post-C3-Review-Folge `1b77665` (7 Self-Review-Findings; F1 HIGH ADR-0041-§2.2-Vertragsbruch betrifft auch Welle-4b-a-Baseline rueckwirkend)/C4a `6145ea3` Self-Close-Move/C4b `00f34ea` Cross-Doc-Refs-Sync + Hash-Slot-Fills). `GG-RT-005`-Doppel-Akzeptanz produktiv (Payload ≤ 256 Byte UND ~1.17M Publish-OPS lokal mit ADR-konformer Konfig). C4a/C4b dienen zugleich als Welle-4b-c-Pre-C0a/Pre-C0b. |
 | [`M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) | M6-Welle-4b-a-Slice-Doc (Performance-Bench-Foundation; `GG-RT-004` SOLLTE 100-Geraete-Bench + ADR-0041 + pytest-benchmark + `make perf`-Target + Baseline-Pinning). — **Done 2026-06-06** mit Stack `f2fbcc0..76a2f40` (C0/C1 `43569d2` NEU ADR-0041 `Provisional`/C1-Review-Folge `f4f4983` (4 Findings: 2 HIGH GG-RT-004-Replay-Diff + opt-in-Extra-Pattern, 2 MEDIUM Baseline-Pfad + Helper-Target)/C2 `5d8c497` Substanz/C3 `76a2f40`/C4a `3bc58b8` Self-Close-Move/C4b `789ac50` Cross-Doc-Refs-Sync). Welle-4b-Sub-Slicing-Beschluss (4b-a Bench-Foundation + 4b-b `GG-RT-005` + 4b-c `GG-RT-001`) per Welle-4b-a-D-1; Pattern analog M5-Welle-6. C4a/C4b dienten zugleich als Welle-4b-b-Pre-C0a/Pre-C0b. |
@@ -25,14 +26,17 @@ Welle-Docs (Welle 0..7 inkl. `M5-ui-demo.md` und
 [`../done/`](../done/); M5-Welle-Docs sind in
 [`../done/README.md`](../done/README.md) Bestand-Tabelle
 gelistet. **Aktiver Slice:** M6 (Performance + Security +
-CI/CD-Haertung); **aktive Welle:** M6-Welle-5a (Quality-
-Pipeline-Audit; `GG-SAFE-001..004` MUSS End-to-End-Verifikation
-+ 4 Integration-Smoke-Tests + Audit-Doku-Tabelle). Welle 5 ist
+CI/CD-Haertung); **aktive Welle:** M6-Welle-5b (Sim/Prod-
+Marker + Input-Validation; `GG-SAFE-007/008` MUSS End-to-End-
+Verifikation + 11 Integration-Smoke-Tests + Audit-Doku-Tabelle
++ ggf. Pydantic-Strict-Mode-Schaerfung). Welle 5 ist
 gemaess Welle-5a-D-1 in **5a + 5b + 5c** sub-geslict (Quality-
 Pipeline-Audit / Sim/Prod-Marker + Input-Validation / SOLLTE-
-Items + IP/Netz); Pattern analog M5-Welle-6. **Welle-4-
-Subdivision komplett abgeschlossen 2026-06-06** mit allen vier
-Sub-Slices: 4a + 4b-a/b/c.
+Items + IP/Netz); Pattern analog M5-Welle-6. **Welle-5a
+abgeschlossen 2026-06-06** mit Stack `4b36185..52cb698`
+(`GG-SAFE-001..004` audited; 7 Smokes; 2 NEU `open/`-Trigger
+034/035). **Welle-4-Subdivision komplett abgeschlossen
+2026-06-06** mit allen vier Sub-Slices: 4a + 4b-a/b/c.
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
 `f2fbcc0..76a2f40` (NEU ADR-0041 + pytest-benchmark als opt-in-
 Extra + tests/perf/ + make perf/perf-baseline-update;
@@ -488,11 +492,14 @@ Close-Move + Cross-Doc-Refs-Sync als zwei Folge-Commits
 - M6-welle-0.md DoD-Checkliste §9 vollstaendig abgehakt.
 
 **Aktive Welle:** M6-Welle-5b (Sim/Prod-Marker + Input-
-Validation; `GG-SAFE-007/008` MUSS) — Welle-5b-Slice-Doc
-entsteht in Welle-5b-C0. **M6-Welle-5a abgeschlossen
+Validation; `GG-SAFE-007/008` MUSS) — **In Progress 2026-06-07**
+mit C0 (dieser Commit) Slice-Doc-Anlage
+[`M6-welle-5b.md`](M6-welle-5b.md); Decisions D-1..D-6 final;
+C2/C3 ausstehend. **M6-Welle-5a abgeschlossen
 2026-06-06** mit Stack `4b36185..52cb698` (C0 + C2 + C2-
-Review-Folge `52cb698` (6 Findings adressiert) + C3-Closure-
-Sync dieser Commit): `GG-SAFE-001..004` audited (001/002 ✓
+Review-Folge `52cb698` (6 Findings adressiert) + C3 `d1e17e3`
++ C4a `f35ab67` Self-Close-Move + C4b `2e3bf72` Cross-Doc-
+Refs-Sync): `GG-SAFE-001..004` audited (001/002 ✓
 produktiv; 003 ⚠ partial Lücke → Trigger 035; 004 ✗ Lücke
 → Trigger 034); 7 NEU Integration-Smokes + `docs/user/
 safe-001-004-quality-pipeline.md` Audit-Tabelle. **M6-
