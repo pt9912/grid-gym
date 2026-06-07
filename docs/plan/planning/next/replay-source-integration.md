@@ -74,6 +74,11 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    - Live-Telemetrie kann weiter ueber die bestehende Stream-
      Surface laufen, aber der Slice muss belegen, dass derselbe
      Demo-/API-Lauf Zeitreihen persistiert.
+   - Der Persistenz-Smoke muss nicht nur Existenz pruefen:
+     deterministische Sortierung bei gleicher Simulationszeit,
+     append-only-Verhalten ohne doppelte Records beim erneuten
+     Lesen, strukturierte Quality/Wert/Tick-Felder und stabile
+     kanonische Ausgabe sind Boundary-Pins.
 
 2. **Driven-Adapter `SnapshotReplaySource` fuer
    `ReplaySourcePort`-Surface** (Architektur §4.2 Z. 248 +
@@ -96,6 +101,11 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
      (Welle-X-D-2; siehe §3). Der bestehende `MetricsPort`
      akzeptiert numerische Werte; String-Statuswerte duerfen
      hoechstens als Attribute/Labels auftauchen.
+   - Der Statuswert ersetzt NICHT den `GG-SAFE-006`-Detailvertrag:
+     die integrierte Replay-Erkennung muss Replay-Diff, volatile
+     Felder, betroffene Ticks und Abweichungsklassifikation
+     maschinenlesbar bereitstellen oder `GG-SAFE-006` bleibt
+     in der Audit-Doku `partial`.
 
 4. **Core-Spine-Lifecycle-Hook**: ein NEU zu schaerfender
    Core-seitiger Lauf-Lifecycle-Hook ruft
@@ -105,22 +115,37 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
      CLI) duerfen den Hook NICHT tragen (`GG-AR-P-007`-
      Verletzung; siehe Trigger 036 D-3).
 
-5. **`GG-TERM-002`-Equality-Vorbedingung im Live-Mode**:
-   Replay-Vergleich nur unter Wahrung von Version +
-   Plattformarchitektur + Eingabedaten + scenario_hash +
-   Konfiguration + Seed + tick_ms. Boundary-Test verifiziert
-   den Reject-Pfad fuer Metadata-Mismatch.
+5. **`GG-TERM-002`-/`GG-TERM-003`-Equality-Vorbedingung im
+   Live-Mode**: Replay-Vergleich nur unter vollstaendig
+   operationalisierter Reproduzierbarkeits-Gleichheit:
+   Tool-/Schema-Version, Plattformarchitektur, Eingabedaten bzw.
+   Szenario-Datei/-Hash, kanonischer Konfigurations-Hash,
+   aktivierte Adapter/Adapterprofile, Seed und `tick_ms`.
+   C0/C1 legt fest, ob diese Daten in `RunMetadata` oder einem
+   eigenen `ReplayComparisonMetadata`-Envelope liegen. Fehlende
+   oder abweichende Pflichtfelder rejecten vor Diff-
+   Klassifikation; Boundary-Tests pinnen die kritischen Felder
+   einzeln, nicht nur einen generischen Mismatch.
 
 6. **NEU Integration-/Replay-Smoke-Familie**:
    - Zeitreihen-Persistenz-Smoke: API-/Demo-Lauf erzeugt
-     persistierte Telemetrie-Zeitreihen fuer die MVP-Geraete.
+     persistierte Telemetrie-Zeitreihen fuer die MVP-Geraete;
+     Boundary-Pin prueft stabile Sortierung bei Ties,
+     append-only-Wiederholungslesen und strukturierte
+     Quality/Wert/Tick-Felder.
    - Clean-Replay-Smoke: persistierter Lauf + gleicher Re-Run
      liefern leeren Diff und emittieren den `clean`-Statuswert.
    - Divergence-Smoke: bewusst eingefuehrte Tick-Differenz
      zwischen zwei Sample-Quellen wird als Divergenz-
-     Statuswert emittiert.
-   - Boundary-Test: Metadata-Mismatch nach `GG-TERM-002`
-     rejected vor Diff-Klassifikation.
+     Statuswert emittiert und stellt die `GG-SAFE-006`-
+     Detailfelder maschinenlesbar bereit: Replay-Diff,
+     volatile Felder, betroffene Ticks und
+     Abweichungsklassifikation.
+   - Boundary-Test-Familie: Metadata-Mismatches nach
+     `GG-TERM-002`/`GG-TERM-003` rejecten vor Diff-
+     Klassifikation; mindestens Version, Konfiguration,
+     aktivierte Adapter, Seed und `tick_ms` werden einzeln
+     gepinnt.
    - Wiederholungs-/Idempotenz-Pin: derselbe persistierte Lauf
      kann erneut gelesen und verglichen werden, ohne Status- oder
      Sample-Duplikation zu erzeugen.
@@ -128,11 +153,14 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
 7. **`docs/user/replay-determinism-e2e.md`** Audit-Doku
    (Pattern analog Welle-5*-Audit-Docs): markiert
    `GG-MVP-002` erst dann als ✓ produktiv, wenn Zeitreihen-
-   Persistenz und Replay-E2E beide belegt sind; markiert die
+   Persistenz und Replay-E2E beide belegt sind. Die
    `GG-SAFE-006`-Audit-Doku
-   (`docs/user/safe-005-006-fallback-determinism.md`) von
-   ⚠ partial auf ✓ produktiv mit Cross-Pointer; Trigger
-   036 wandert nach `done/`.
+   (`docs/user/safe-005-006-fallback-determinism.md`) flippt
+   nur dann von ⚠ partial auf ✓ produktiv, wenn der integrierte
+   Pfad neben `replay_diff_status` auch die vier
+   Safety-Detailfelder aus `GG-SAFE-006` maschinenlesbar pinnt;
+   sonst bleibt `GG-SAFE-006` partial und Trigger 036 wandert
+   noch nicht nach `done/`.
 
 ## 3. Architektur-Entscheidungs-Skizze (Welle-X-Decisions; nicht final)
 
@@ -185,7 +213,10 @@ verifiziert.
 
 Vorschlag: A (binaer; einfachstes maschinenlesbares Modell,
 keine Severity-Drift-Diskussion, kompatibel mit ADR-0024-
-`MetricsPort`). Welle-X-C0-ADR verifiziert.
+`MetricsPort`). Welle-X-C0-ADR verifiziert. Der binaere Status
+ist nur der Per-Lauf-Marker; die `GG-SAFE-006`-Details
+(`ReplayDelta`-Diff, volatile Felder, Ticks, Klassifikation)
+bleiben ein separater maschinenlesbarer Evidence-Vertrag.
 
 ### D-3 — Lifecycle-Hook-Position
 
@@ -222,7 +253,9 @@ wenn C0 beide Schemata klein und reviewbar schneiden kann.
 - **NEU ADR `GG-MVP-002-Replay-Source-Integration`**
   (`Provisional`): verankert die `TelemetrySinkPort`-
   Zeitreihen-Persistenz, die `ReplaySourcePort`-Adapter-
-  Form, den numerischen `replay_diff_status`-Vertrag und die
+  Form, den numerischen `replay_diff_status`-Vertrag, den
+  separaten `GG-SAFE-006`-Detailvertrag, die vollstaendige
+  `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix und die
   Lifecycle-Hook-Pflicht im Core-Spine (`GG-AR-P-007`-
   konform).
 - Vermutlich ADR-Nummer 0047 oder 0048 (Welle-X-C0-Stand).
@@ -245,11 +278,14 @@ Falls D-4 Option A (monolithisch):
     mit numerischer Kodierung.
   - NEU `docs/user/replay-determinism-e2e.md`.
   - NEU `tests/integration/test_mvp_002_timeseries_replay_smoke.py`
-    mit Zeitreihen-, Clean-Replay-, Divergence-, Equality- und
-    Idempotenz-Pins.
+    mit Zeitreihen-Sortier-/Append-only-, Clean-Replay-,
+    Divergence-Detail-, Equality-Feld- und Idempotenz-Pins.
   - `docs/user/safe-005-006-fallback-determinism.md` Status-
-    Sync auf ✓ produktiv.
-  - Trigger 036 wandert nach `done/`.
+    Sync auf ✓ produktiv nur bei belegtem `GG-SAFE-006`-
+    Detailvertrag; andernfalls bleibt die partial-Markierung.
+  - Trigger 036 wandert erst nach `done/`, wenn Status-Metrik,
+    ReplaySource-Integration und `GG-SAFE-006`-Details belegt
+    sind.
 - **Welle-X-C3** Status/DoD-Sync.
 - **Self-Close-Folge C4a/C4b**.
 
@@ -331,13 +367,19 @@ Welle-Y-Schritt. Die C1-ADR muss aber von Anfang an eine
 numerische `MetricsPort`-Kodierung festlegen, damit der
 Accepted-ADR-0024-Vertrag nicht aufgeweicht wird.
 
-**R4 — `GG-TERM-002`-Equality-Check ist subtil**: Version +
-Plattformarchitektur + Konfiguration sind nicht alle in
-`RunMetadata` heute strukturiert verankert.
-**Mitigation:** Welle-X-C0 audited welche Equality-Felder
-schon strukturiert sind (`scenario_hash` + `seed` + `tick_ms`
-sind via `GG-SCN-001..008` + `GG-SIM-001..004` da; Version +
-Plattform sind ggf. NEU als `RunMetadata`-Felder).
+**R4 — `GG-TERM-002`-/`GG-TERM-003`-Equality-Check ist
+subtil**: Version, Plattformarchitektur, Konfiguration,
+aktivierte Adapter und Eingabedaten sind heute nicht alle
+strukturiert in `RunMetadata` verankert.
+**Mitigation:** Welle-X-C0 erstellt eine vollstaendige
+Equality-Matrix gegen `GG-TERM-002` und `GG-TERM-003` und
+entscheidet den Speicherort (`RunMetadata`-Erweiterung oder
+NEU `ReplayComparisonMetadata`). C1/ADR fixiert Pflichtfelder,
+Hash-/Canonicalization-Regeln und Reject-Semantik fuer fehlende
+oder abweichende Werte. C2 liefert parametrisierte Boundary-
+Tests fuer mindestens Version, Konfiguration, aktivierte
+Adapter, Seed und `tick_ms`; ein generischer Mismatch-Test
+reicht nicht.
 
 ## 7. Cost-Estimate
 
@@ -363,12 +405,13 @@ kein `GG-MVP-002`-Statusflip vor der zweiten Closure.
 ## 8. References
 
 - [`../open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
-  — Trigger 036 Substanz-Skizze; wandert mit Welle-X-Closure
-  nach `done/`.
+  — Trigger 036 Substanz-Skizze; wandert erst nach `done/`,
+  wenn Status-Metrik, ReplaySource-Integration und
+  `GG-SAFE-006`-Details belegt sind.
 - [`../../../user/safe-005-006-fallback-determinism.md`](../../../user/safe-005-006-fallback-determinism.md)
   — Welle-5c-Audit; markiert die ⚠ partial Lücke fuer
-  `GG-SAFE-006`; wird mit Welle-X-Closure auf ✓ produktiv
-  geflippt.
+  `GG-SAFE-006`; flippt erst bei belegtem integrierten
+  `GG-SAFE-006`-Detailvertrag auf ✓ produktiv.
 - [`../in-progress/roadmap.md §3 GG-MVP-002`](../in-progress/roadmap.md)
   — MVP-Abnahmescope-Tabelle; wird erst nach Zeitreihen-
   Persistenz- und Replay-E2E-Evidence auf ✓ produktiv geflippt.
