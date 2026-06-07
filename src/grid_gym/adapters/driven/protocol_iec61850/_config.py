@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """IEC-61850-Adapter-Profile-Konfiguration (M4 Welle 5b, ADR 0035 §2.1).
 
+Simulation only — diese Adapter-Konfiguration ist dafuer gedacht,
+simulierte IEC-61850-IEDs oder Test-Server anzusprechen, nicht
+produktive Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 `Iec61850ProtocolPortConfig` ist eine frozen-dataclass mit dem
 inline-im-`protocol_ports`-Block deklarierten LN/CDC-Schema
 (Decision I-a). Pro `device_id` traegt `Iec61850LnConfig`

@@ -1,5 +1,9 @@
 """Modbus-TCP-Adapter-Profile-Konfiguration (M4 Welle 3, ADR 0032 §2.1).
 
+Simulation only — diese Adapter-Konfiguration ist dafuer gedacht,
+simulierte Modbus-TCP-Server oder Testaufbauten anzusprechen, nicht
+produktive Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 `ModbusProtocolPortConfig` ist eine frozen-dataclass mit dem inline-im-
 `protocol_ports`-Block deklarierten Register-Schema (Decision M-a).
 Pro `device_id` traegt `ModbusRegisterConfig` Address + Datatype +

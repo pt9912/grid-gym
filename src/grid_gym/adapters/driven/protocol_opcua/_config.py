@@ -1,5 +1,9 @@
 """OPC-UA-Adapter-Profile-Konfiguration (M4 Welle 4, ADR 0033 §2.1).
 
+Simulation only — diese Adapter-Konfiguration ist dafuer gedacht,
+simulierte OPC-UA-Server oder Testaufbauten anzusprechen, nicht
+produktive Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 `OpcuaProtocolPortConfig` ist eine frozen-dataclass mit dem inline-im-
 `protocol_ports`-Block deklarierten Node-ID-Schema (Decision O-a).
 Pro `device_id` traegt `OpcuaNodeConfig` Node-ID + Datatype + Access

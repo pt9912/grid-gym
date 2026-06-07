@@ -1,3 +1,14 @@
+# ============================================================
+# SIMULATION ONLY — NOT APPROVED FOR PRODUCTION GRID CONTROL.
+# Nur Simulation — nicht fuer produktive Anlagensteuerung
+# freigegeben (`GG-SAFE-007`, `GG-NONGOAL-001`).
+#
+# Dieses Scenario beschreibt simulierte Geraete und treibt den
+# `grid-gym`-Simulationskern; die hier konfigurierten Protokoll-
+# Adapter sind dafuer gedacht, Test-Server oder simulierte
+# Anlagen anzusprechen, nicht reale Anlagen.
+# ============================================================
+#
 # M5-Welle-5 kanonisches Demo-Szenario (Slice-Doc M5-welle-5
 # Decision 5).
 #

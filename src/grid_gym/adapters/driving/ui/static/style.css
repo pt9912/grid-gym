@@ -20,6 +20,16 @@ header {
     background: #ffffff;
 }
 
+.sim-banner {
+    background: #fff3cd;
+    border-bottom: 1px solid #f0c674;
+    color: #5a4500;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
 .primary-nav {
     max-width: 960px;
     margin: 0 auto;

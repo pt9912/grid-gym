@@ -8,6 +8,12 @@ connection points, PV arrays, battery storage, smart meters, and load
 profiles with reproducible tick-loop execution, snapshot/replay, fault
 injection, and protocol adapters for field-bus telemetry.
 
+> **Simulation only — not approved for production grid control.**
+> `grid-gym` is a simulation, replay, and validation environment.
+> Protocol adapters (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) are
+> intended to drive simulated devices or test rigs, not real plants
+> (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 ## Who is it for?
 
 `grid-gym` targets developers, research institutions, and system

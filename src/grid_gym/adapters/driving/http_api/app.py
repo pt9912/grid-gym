@@ -83,6 +83,10 @@ from grid_gym.adapters.driving.http_api._dependencies import (
     get_run_repository,
     get_telemetry_stream,
 )
+from grid_gym.adapters.driving.http_api._schemas import (
+    RunCreateRequest,
+    RunCreateResponse,
+)
 from grid_gym.adapters.driving.http_api._tick_loop_driver import (
     DemoTickLoopDriver,
 )
@@ -97,9 +101,13 @@ from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 _APP_TITLE: Final[str] = "grid-gym HTTP API"
 _APP_VERSION: Final[str] = "0.1.0"
 _APP_DESCRIPTION: Final[str] = (
-    "Driving-Adapter fuer den `grid-gym`-Simulationskern (M1 Welle 6a). "
-    "Liefert `/health` als Liveness-Probe und `/runs` als Stub-Endpoint "
-    "fuer Lauf-Erzeugung. Persistenz folgt in Welle 6b."
+    "HTTP-Driving-Adapter fuer den `grid-gym`-Simulationskern. "
+    "**Simulation only — not approved for production grid control "
+    "(`GG-SAFE-007`, `GG-NONGOAL-001`).** "
+    "Liefert REST-Endpunkte (`/runs`, `/health`, ...) sowie "
+    "WebSocket-Streams fuer Telemetry und Alarme. Eingabe-Validation "
+    'an REST-Request-Bodies ist Pydantic-Strict-Mode + `extra="forbid"` '
+    "(`GG-SAFE-008`, ADR 0045)."
 )
 
 _DEMO_SCENARIO_ENV_VAR: Final[str] = "GRID_GYM_DEMO_SCENARIO_PATH"
@@ -136,32 +144,9 @@ class HealthResponse(BaseModel):
     status: str = Field(description="Immer 'ok' bei laufender App.")
 
 
-class RunCreateRequest(BaseModel):
-    """Eingehender Request fuer `POST /runs` (`GG-API-001`)."""
-
-    scenario_hash: str = Field(
-        description="SHA-256-Hash des kanonisierten Szenarios (siehe `GG-SCN-003/004`).",
-        min_length=64,
-        max_length=64,
-    )
-    seed: int = Field(
-        description="`RandomPort`-Wurzelseed (`GG-SEED-001`).",
-        ge=0,
-        le=2**32 - 1,
-    )
-    tick_ms: int = Field(
-        description="Schrittweite je Tick in ms (`GG-SIM-002`).",
-        gt=0,
-    )
-
-
-class RunCreateResponse(BaseModel):
-    """Antwort von `POST /runs`."""
-
-    run_id: str = Field(description="UUIDv4-Identitaet des angelegten Laufs.")
-    scenario_hash: str = Field(description="Echo des `scenario_hash`-Eingangs.")
-    seed: int = Field(description="Echo des `seed`-Eingangs.")
-    tick_ms: int = Field(description="Echo des `tick_ms`-Eingangs.")
+# M6-Welle-5b (ADR 0045 §2.4): RunCreateRequest + RunCreateResponse
+# leben jetzt in _schemas.py, damit der Strict-Mode-Mixin uniform
+# auf alle drei Request-Bodies (control/faults/runs) wirkt.
 
 
 @asynccontextmanager

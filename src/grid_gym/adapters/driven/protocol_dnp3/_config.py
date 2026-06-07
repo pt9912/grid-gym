@@ -1,5 +1,9 @@
 """DNP3-Adapter-Profile-Konfiguration (M4 Welle 5a, ADR 0034 §2.1).
 
+Simulation only — diese Adapter-Konfiguration ist dafuer gedacht,
+simulierte DNP3-Outstations oder Test-Server anzusprechen, nicht
+produktive Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 `Dnp3ProtocolPortConfig` ist eine frozen-dataclass mit dem inline-im-
 `protocol_ports`-Block deklarierten Point-Schema (Decision D-a).
 Pro `device_id` traegt `Dnp3PointConfig` Group + Variation + Index +

@@ -8,6 +8,12 @@ modelliert Netzanschlusspunkte, PV-Anlagen, Batteriespeicher, Smart Meter
 und Lastprofile mit reproduzierbarer Tick-Loop-Ausfuehrung, Snapshot/
 Replay, Fault Injection und Protokolladaptern fuer Feldbus-Telemetrie.
 
+> **Nur Simulation — nicht fuer produktive Anlagensteuerung freigegeben.**
+> `grid-gym` ist eine Simulations-, Replay- und Validierungs-Umgebung.
+> Die Protokolladapter (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) sind dazu
+> gedacht, simulierte Geraete oder Testaufbauten anzusteuern — nicht
+> reale Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 ## Fuer wen?
 
 `grid-gym` richtet sich an Entwickler, Forschungseinrichtungen und

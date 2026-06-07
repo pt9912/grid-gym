@@ -29,11 +29,73 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from grid_gym.hexagon.core.domain.alarm import AlarmSeverity, AlarmStatus
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.run import RunStatus
+
+
+# ---------------------------------------------------------------------------
+# M6-Welle-5b: Strict-Mode-Mixin fuer alle REST-Request-Bodies
+# (ADR 0045 §2.1 / GG-SAFE-008).
+# ---------------------------------------------------------------------------
+
+
+class _BaseRequest(BaseModel):
+    """Gemeinsame Strict-Mode-Basis fuer alle REST-Request-Bodies
+    (ADR 0045 §2.1).
+
+    - `strict=True` schaltet Pydantic-Type-Coercion ab: ein Body
+      `{"seed": "42"}` wird mit `int_type`-Fehler abgelehnt statt
+      silent zu `42` umgewandelt zu werden.
+    - `extra="forbid"` macht unbekannte Felder zu 422-Fehlern statt
+      sie silent zu verwerfen — Tippfehler im Client (`"actoin"`
+      statt `"action"`) werden direkt diagnostiziert.
+
+    Pflicht-Substanz fuer jeden FastAPI-Request-Body unter
+    `src/grid_gym/adapters/driving/http_api/`. Per-Endpunkt-Bypass
+    via `strict=False`/`extra="allow"` ist ADR-Bruch.
+    """
+
+    model_config = ConfigDict(
+        strict=True,
+        extra="forbid",
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /runs (M1-Welle-7-Era; M6-Welle-5b-Konsolidierung nach _schemas.py
+# per ADR 0045 §2.4)
+# ---------------------------------------------------------------------------
+
+
+class RunCreateRequest(_BaseRequest):
+    """Eingehender Request fuer `POST /runs` (`GG-API-001`)."""
+
+    scenario_hash: str = Field(
+        description="SHA-256-Hash des kanonisierten Szenarios (siehe `GG-SCN-003/004`).",
+        min_length=64,
+        max_length=64,
+    )
+    seed: int = Field(
+        description="`RandomPort`-Wurzelseed (`GG-SEED-001`).",
+        ge=0,
+        le=2**32 - 1,
+    )
+    tick_ms: int = Field(
+        description="Schrittweite je Tick in ms (`GG-SIM-002`).",
+        gt=0,
+    )
+
+
+class RunCreateResponse(BaseModel):
+    """Antwort von `POST /runs`."""
+
+    run_id: str = Field(description="UUIDv4-Identitaet des angelegten Laufs.")
+    scenario_hash: str = Field(description="Echo des `scenario_hash`-Eingangs.")
+    seed: int = Field(description="Echo des `seed`-Eingangs.")
+    tick_ms: int = Field(description="Echo des `tick_ms`-Eingangs.")
 
 
 # ---------------------------------------------------------------------------
@@ -103,12 +165,14 @@ class RunStatusResponse(BaseModel):
 ControlAction = Literal["pause", "resume", "stop"]
 
 
-class ControlRequest(BaseModel):
+class ControlRequest(_BaseRequest):
     """Steuerungs-Action fuer einen Lauf (ADR 0037 Decision API-1).
 
     Action-Set: `pause` / `resume` / `stop`. Erweiterungen
     (z. B. `restart`, `replay-step`) erfolgen per Literal-
     Erweiterung; keine neuen Endpunkte noetig.
+
+    Strict-Mode + extra-forbid (ADR 0045 §2.1) per `_BaseRequest`.
     """
 
     action: ControlAction = Field(description="Steuerungs-Action.")
@@ -149,9 +213,12 @@ class SnapshotResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class FaultInjectionRequest(BaseModel):
+class FaultInjectionRequest(_BaseRequest):
     """Fault-Injection-Anfrage (Welle-1-Stub-Schema; echte
-    `FaultPort`-Wiring in Welle 6)."""
+    `FaultPort`-Wiring in Welle 6).
+
+    Strict-Mode + extra-forbid (ADR 0045 §2.1) per `_BaseRequest`.
+    """
 
     fault_type: str = Field(
         description="Fault-Typ-Identifier (z. B. `cell_failure`, `voltage_drop`).",

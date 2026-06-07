@@ -1,5 +1,9 @@
 """MQTT-Adapter-Profile-Konfiguration (M4 Welle 2, ADR 0031 §2.1).
 
+Simulation only — diese Adapter-Konfiguration ist dafuer gedacht,
+simulierte MQTT-Broker oder Testaufbauten anzusprechen, nicht
+produktive Anlagen (`GG-SAFE-007`, `GG-NONGOAL-001`).
+
 `MqttProtocolPortConfig` ist eine frozen-dataclass mit dem inline-im-
 `protocol_ports`-Block deklarierten Topic-Schema (Decision 4a). Pro
 `device_id` traegt `MqttTopicConfig` die Pflicht-Felder Telemetry-/
