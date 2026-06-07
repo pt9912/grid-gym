@@ -40,27 +40,23 @@ Close-Move + C4b `789ac50` Cross-Doc-Refs-Sync).
 27055273876) — erstmalig seit `fullbuild.yml`-Anlage in
 M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
 4b Performance-Bench) per Welle-4a-D-1.
-**Aktive Welle: M6-Welle-5c** (SOLLTE-Items + IP/Netz-
-Beschraenkung; `GG-SAFE-005/006` + Demo-Compose-Hardening)
-**In Progress 2026-06-07** mit C0 (Slice-Doc-Anlage; siehe
-[`M6-welle-5c.md`](M6-welle-5c.md)); Welle-5c-Decisions D-1..
-D-6 final nach C0-Review-Runde 1 + Runde 2 (8 Findings
-integriert in C0; kein separater Review-Folge-Commit, weil
-C0 noch nicht gepusht war): Audit-Form Doku + Smokes /
-SAFE-005 ✓ produktiv per Lastenheft-Traceability Z. 2291
-auf vier Geraeten (Battery/Load/GridConnection/PV) mit
-`validate_set_power_command` + Power-Clamp +
-`limit_unit="pct"` fuer SOC-Reject / SAFE-006 ⚠ partial
-(Core-Diff-Algorithm `diff_replay` ✓ produktiv mit allen
-vier Akzeptanz-Komponenten; Per-Lauf-Status-Marker
-`replay_diff_status` aus Architektur §8.2 + ReplaySource-
-Integration aus Lastenheft Z. 2292 fehlen → **NEU Trigger
-036**) / Demo-Compose `ports`-Klausel mit
-`GRID_GYM_DEMO_HOST_BIND`-ENV-Override-Default `127.0.0.1`
-per `carveouts.md §2.7`-Auflage (kein Lastenheft-ID;
-`GG-DEPLOY-011` ist orthogonal — Offline-Lauf, nicht
-Port-Bind) / Hardening-Scope eng auf Port-Bind / kein NEU
-ADR. C2/C3 + Self-Close-Folge C4a/C4b ausstehend. **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack
+**Aktive Welle: M6-Welle-6** (Deploy-Hardening + IEC-Smoke-
+Pfad-B). **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
+`4b76ff7..C3 dieser Commit` (C0 `4b76ff7` Slice-Doc-Anlage
+inkl. 2 Review-Runden mit 8 Findings vor Push +
+C0-Review-Folge-2 `4a80f46` 4 weitere Findings +
+open/README-Trigger-036-Eintrag `807ef9b` parallel +
+in-progress/README-Cleanup `db4729e` parallel + C2 `f03c4c7`
+3 Doks + 1 Trigger + 1 Compose-Edit + 6 Smokes + C3 dieser
+Commit Status/DoD-Sync). **Welle-5-Subdivision (5a + 5b + 5c)
+komplett abgeschlossen**: 5a (`GG-SAFE-001..004` MUSS-Audit)
++ 5b (`GG-SAFE-007/008` MUSS produktiv mit NEU ADR 0045
+`Provisional`) + 5c (`GG-SAFE-005/006` SOLLTE-Audit + Demo-
+Compose-Hardening) — alle drei Sub-Wellen `Done`; alle acht
+`GG-SAFE-*`-Lastenheft-IDs auditiert (vier ✓ produktiv,
+zwei ✓ produktiv mit Vollausbau, zwei ⚠ partial mit
+`open/`-Trigger 034/035/036). Self-Close-Folge C4a/C4b
+laufen nach C3 als M6-Welle-6-Pre-C0a/Pre-C0b. **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack
 `0d3bb61..C3 dieser Commit` (C0 `0d3bb61` Slice-Doc + C0-
 Review-Folge `369f130` F1/F2-Findings + C1 `cee5aab` NEU
 ADR 0045 `Proposed` + Hygiene-Cleanup ADR 0041-0045 `9d78b29`
@@ -260,13 +256,19 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b-c | `GG-RT-001` Backpressure-Healthcheck | Done 2026-06-06 | [`M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) | `GG-RT-001` MUSS **produktiv** (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status-Healthcheck via NEU Adapter-Side `_tick_loop_healthcheck.py` + `GET /runs/{id}/healthcheck`-Endpoint) | — (C1 entfaellt; Welle-4b-c-D-6 schliesst ADR-Schaerfungs-Bedarf negativ aus) |
 | 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | **Done 2026-06-06** (`4b36185..52cb698`) | [`M6-welle-5a.md`](../done/M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung ✓ produktiv) + `002` (NaN-Reject ✓ produktiv) + `003` (Kommunikationsausfall ⚠ partial Lücke → Trigger 035) + `004` (max_age ✗ Lücke → Trigger 034) — Audit + 7 Smokes + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
 | 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | **Done 2026-06-07** (`0d3bb61..C4b`) | [`M6-welle-5b.md`](../done/M6-welle-5b.md) | `GG-SAFE-007` ✓ produktiv an drei Pflicht-Surfaces (UI-Banner in `base.html` + OpenAPI/READMEs + Scenario-YAML/5×`_config.py`) + arch_check `AC-HEXAGON-PURE`; `GG-SAFE-008` ✓ produktiv (NEU `_BaseRequest`-Mixin `strict=True`/`extra="forbid"` + `RunCreateRequest`-Konsolidierung; WS-Subscribe-only-Belegung; Driven-Side via Welle-5a-Schwester-Audit); 11 NEU Integration-Smokes + `docs/user/safe-007-008-sim-prod-input-validation.md` Audit-Tabelle. | NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md) `Provisional` (Welle-5b-C1 `cee5aab` → C3 dieser Commit; Schaerfungs-ADR per ADR-0011 mit Bezug auf ADR 0037; ADR 0037 unveraendert `Accepted`) |
-| 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | **In Progress 2026-06-07** (C0 dieser Commit) | [`M6-welle-5c.md`](M6-welle-5c.md) | `GG-SAFE-005` ✓ produktiv per Lastenheft-Traceability Z. 2291 (`validate_set_power_command` + Sicherheitsgrenzen + Power-Clamp + Alarm-Emission an Battery/Load/GridConnection/PV) + `GG-SAFE-006` ⚠ partial (`diff_replay` Core-Algorithm ✓ produktiv mit allen vier Akzeptanz-Komponenten; Per-Lauf-Status-Marker `replay_diff_status` + ReplaySource-Integration fehlen → NEU Trigger 036) + `deploy/compose.yml` `api`-Service `ports`-Klausel auf `GRID_GYM_DEMO_HOST_BIND`-ENV-Override mit Default `127.0.0.1` per `carveouts.md §2.7`-Auflage (kein Lastenheft-ID); Welle-5c-D-1..D-6 final | — (C1 entfaellt; Welle-5c-D-6 schliesst ADR-Bedarf negativ aus) |
+| 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | **Done 2026-06-07** (`4b76ff7..C3 dieser Commit`) | [`M6-welle-5c.md`](M6-welle-5c.md) (in C4a → `done/`) | `GG-SAFE-005` ✓ produktiv per Lastenheft-Traceability Z. 2291 an 4 Geraeten (Battery/Load/GridConnection/PV; `validate_set_power_command` + Power-Clamp + Alarm-Emission); `GG-SAFE-006` ⚠ partial (`diff_replay` Core-Algorithm ✓ produktiv mit allen vier Akzeptanz-Komponenten; Per-Lauf-Status-Marker `replay_diff_status` + `ReplaySourcePort`-Verkabelung fehlen → NEU Trigger 036); `deploy/compose.yml` `api`-`ports`-Klausel auf `GRID_GYM_DEMO_HOST_BIND`-ENV-Override mit Default `127.0.0.1` per `carveouts.md §2.7`-Auflage (kein Lastenheft-ID); 6 NEU Integration-Smokes + `docs/user/safe-005-006-fallback-determinism.md` Audit-Tabelle + `docs/user/demo-compose-hardening.md` Maintainer-Doku. | — (C1 entfaellt; Welle-5c-D-6 schliesst ADR-Bedarf negativ aus) |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
-**Aktiver Slice:** M6-Welle-5 (Security-Audit +
-Eingabevalidierung; `GG-SAFE-001..008` MUSS/SOLLTE) — Welle-
-5-Slice-Doc entsteht in Welle-5-C0. **M6-Welle-4b-c
+**Aktiver Slice:** M6-Welle-6 (Deploy-Hardening + IEC-Smoke-
+Pfad-B; `GG-DEPLOY-001..011` + Trigger 009) — Welle-6-Slice-
+Doc entsteht in Welle-6-C0 (Welle-5c-Self-Close-Folge C4a/
+C4b dient gleichzeitig als Welle-6-Pre-C0a/Pre-C0b).
+**M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
+`4b76ff7..C3 dieser Commit`; **Welle-5-Subdivision (5a + 5b +
+5c) komplett**: alle acht `GG-SAFE-*`-Lastenheft-IDs
+auditiert (sechs ✓ produktiv, zwei ⚠ partial mit
+`open/`-Triggern 034/035/036). **M6-Welle-4b-c
 abgeschlossen 2026-06-06** mit Stack `c5543fd..7001989` (C0 + C0-
 Review-Folge `aacc370` + C2 `a98f967` + C2-Review-Folge
 `8785a6b`): NEU Driving-Adapter-Side

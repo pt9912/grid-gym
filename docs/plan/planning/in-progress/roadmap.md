@@ -894,23 +894,28 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5c
-(SOLLTE-Items + IP/Netz-Beschraenkung; `GG-SAFE-005/006` +
-Demo-Compose-Hardening)** — Welle-5c-Slice-Doc angelegt in
-Welle-5c-C0 (dieser Commit; siehe
-[`M6-welle-5c.md`](M6-welle-5c.md); Slice-Doc-Iteration ueber
-2 Review-Runden mit 8 Findings vor Push): `GG-SAFE-005` ✓
-produktiv an 4 Geraeten (Battery/Load/GridConnection/PV) per
-Lastenheft-Traceability Z. 2291 (`validate_set_power_command`
-+ Power-Clamp + Alarm-Emission); `GG-SAFE-006` ⚠ partial
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 6
+(Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
++ Trigger 009)** — Welle-6-Slice-Doc entsteht in Welle-6-C0
+(Welle-5c-Self-Close-Folge C4a/C4b dient gleichzeitig als
+Welle-6-Pre-C0a/Pre-C0b).
+**M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
+`4b76ff7..C3 dieser Commit` (siehe
+[`M6-welle-5c.md`](M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
+an 4 Geraeten (Battery/Load/GridConnection/PV) per
+Lastenheft-Traceability Z. 2291; `GG-SAFE-006` ⚠ partial
 (Core-Diff-Algorithm `diff_replay` ✓ produktiv; Per-Lauf-
-Status-Marker `replay_diff_status` + ReplaySource-
-Integration fehlen → NEU Trigger 036); Welle 5c liefert
-Audit-Doku + Demo-Compose-`ports`-Hardening per `carveouts.md
-§2.7`-Auflage (kein Lastenheft-ID; `GG-DEPLOY-011` ist
-orthogonal). Welle-5-Sub-Slicing in 5a + 5b + 5c per
-Welle-5a-D-1; Welle 5a + 5b sind abgeschlossen, 5c ist
-`In Progress`.
+Status-Marker `replay_diff_status` + `ReplaySourcePort`-
+Verkabelung fehlen → NEU Trigger 036); Demo-Compose-`ports`-
+Hardening per `carveouts.md §2.7`-Auflage; 6 NEU Integration-
+Smokes + Audit-Doku
+[`../../../user/safe-005-006-fallback-determinism.md`](../../../user/safe-005-006-fallback-determinism.md)
++ Maintainer-Doku
+[`../../../user/demo-compose-hardening.md`](../../../user/demo-compose-hardening.md)).
+**Welle-5-Subdivision (5a + 5b + 5c) komplett abgeschlossen
+2026-06-07** per Welle-5a-D-1-Sub-Slicing-Beschluss; alle
+acht `GG-SAFE-*`-Lastenheft-IDs auditiert (sechs ✓ produktiv,
+zwei ⚠ partial mit `open/`-Triggern 034/035/036).
 **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
 C3 dieser Commit` (siehe [`M6-welle-5b.md`](M6-welle-5b.md);
 NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)

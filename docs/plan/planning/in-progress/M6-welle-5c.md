@@ -1,13 +1,24 @@
 # Welle 5c — M6 SOLLTE-Items + IP/Netz-Beschraenkung (`GG-SAFE-005/006` + Demo-Compose)
 
-**Status:** In Progress — C0 (Slice-Doc-Anlage; dieser Commit).
+**Status:** Done 2026-06-07 — Liefer-Hash-Stack
+`4b76ff7..C3 dieser Commit` (C0 `4b76ff7` Slice-Doc-Anlage
+inkl. zweier Review-Runden mit 8 Findings vor Push +
+C0-Review-Folge-2 `4a80f46` 4 weitere Findings F1..F4
+adressiert + open/README-Trigger-036-Eintrag `807ef9b`
+parallel + in-progress/README-Aktive-Welle-/Aktiver-
+Meilenstein-Cleanup `db4729e` parallel + C2 `f03c4c7`
+Code-/Doku-Substanz (3 Doks + 1 Trigger + 1 Compose-Edit +
+6 Smokes) + C3 dieser Commit Status/DoD-Sync). C1 entfaellt
+per Welle-5c-D-6.
+
 Welle 5 wird gemaess Welle-5a-D-1 in **5a (Quality-Pipeline-
 Audit; `GG-SAFE-001..004` MUSS) + 5b (Sim/Prod-Marker + Input-
 Validation; `GG-SAFE-007/008` MUSS) + 5c (SOLLTE-Items + IP/
 Netz-Beschraenkung; `GG-SAFE-005` + `GG-SAFE-006` + Demo-
 Compose-Hardening)** sub-geslict. Welle 5c ist die **dritte
-und letzte Sub-Welle** und schliesst Welle 5 (alle `GG-SAFE-*`
-+ Demo-Compose-IP/Netz-Auflage).
+und letzte Sub-Welle** und schliesst die **Welle-5-Subdivision
+komplett** (alle `GG-SAFE-*` MUSS+SOLLTE + Demo-Compose-IP/
+Netz-Auflage).
 
 **Pre-C0 abgeschlossen (M6-Welle-5b-Closure-Folge):**
 
@@ -34,7 +45,7 @@ Review-Folgen in einen einzigen C0-Commit:
 - **Runde 2 (4 weitere Findings: 3 MEDIUM + 1 LOW)**: die
   Korrektur von Runde 1 hat zu weit gedreht. SAFE-006 ist
   doch ⚠ partial (Core-Algorithm ✓, aber Per-Lauf-Status-
-  Marker `replay_diff_status` aus Architektur §8.2-Metrik-
+  Marker `replay_diff_status` aus Architektur §15-Metrik-
   Liste + Lastenheft-Z. 2292-ReplaySource-Integration
   fehlen). SAFE-005-Geraete-Liste war unvollstaendig (PV
   fehlte). IP/Netz-Anker auf `GG-DEPLOY-011` war falsch —
@@ -81,7 +92,7 @@ per `carveouts.md §2.7`, **kein einzelner Lastenheft-ID**):
   und Abweichungsklassifikation maschinenlesbar. **Lastenheft-
   Traceability** (Z. 2292): Realisiert ueber **Replay-Diff-
   Status-Markierung — M3 mit Replay-Source-Integration**.
-  Architektur §8.2 (Z. 820 + 823) verlangt zusaetzlich eine
+  Architektur §15 (Z. 820 + 823) verlangt zusaetzlich eine
   per-Lauf-Metrik `replay_diff_status` und einen
   maschinenlesbaren Replay-Diff-Statuswert.
 - **IP-/Netz-Beschraenkung im Demo-Compose**: per
@@ -154,7 +165,7 @@ ReplaySource-Integration fehlen):
     test_diff.py` verriegelt Klassifikation-Equality,
     Tick-Berechnung, Volatile-Field-Aufweichung.
 - ✗ **Per-Lauf-Status-Marker `replay_diff_status` fehlt**:
-  Architektur §8.2 (Z. 820 + 823) listet
+  Architektur §15 (Z. 820 + 823) listet
   `replay_diff_status` als Pflicht-Metrik („maschinenlesbarer
   Statuswert pro Lauf"). Grep ueber `src/grid_gym/` nach
   `replay_diff_status` liefert null Treffer; die Metrik wird
@@ -219,7 +230,7 @@ Schicht ohne Lastenheft-ID):
    diff-status-replay-source-integration.md`** (Welle-5c-
    C2) — Trigger fuer:
    - `replay_diff_status`-Metrik auf `MetricsPort` (per-Lauf,
-     maschinenlesbar) gemaess Architektur §8.2-Z. 820+823.
+     maschinenlesbar) gemaess Architektur §15-Z. 820+823.
    - `ReplaySource`-Integration: Lifecycle-Hook im Lauf-
      Setup, der `diff_replay()` mit `expected`/`actual`-
      Sequenzen aus dem Lauf-Snapshot-Pfad versorgt.
@@ -371,7 +382,7 @@ Trigger 036 fuer die fehlende Substanz.** Begruendung:
 - Trigger 036 macht den Folge-Pfad explizit; Aktivierung bei
   Compliance-Druck oder Stakeholder-Bedarf.
 - **Anti-Pattern (verworfen)**: Audit-Doku „✓ voll
-  produktiv" — wuerde die Architektur-§8.2-`replay_diff_
+  produktiv" — wuerde die Architektur-§15-`replay_diff_
   status`-Pflicht-Metrik und die Lastenheft-Z. 2292-
   ReplaySource-Integration unterberichten.
 
@@ -590,7 +601,7 @@ Inflation" lesen.
 **Mitigation:** Pattern ist „Trigger nur bei echter
 substantieller Lücke" — Welle-5c-Audit hat Per-Lauf-Status-
 Marker + ReplaySource-Integration als substantielle Lücken
-identifiziert (Architektur §8.2 + Lastenheft Z. 2292
+identifiziert (Architektur §15 + Lastenheft Z. 2292
 explizit). Pattern-konsistent mit Welle 5a.
 
 **R2 — Demo-Compose-Port-Bind-Aenderung bricht Maintainer-
@@ -657,31 +668,50 @@ explizit abgegrenzt.
   Zeile `Pending → In Progress 2026-06-07`.
 - [x] **C0 — `roadmap.md §3 M6`** aktive Welle auf 5c.
 - [x] **C1 entfaellt** — Welle-5c-D-6.
-- [ ] **C2 — NEU `docs/user/safe-005-006-fallback-
+- [x] **C2 — NEU `docs/user/safe-005-006-fallback-
   determinism.md`** Audit-Tabelle (SAFE-005 ✓ pro 4
-  Geraete + SAFE-006 ⚠ partial + Trigger-Pointer).
-- [ ] **C2 — NEU `docs/user/demo-compose-hardening.md`**
-  Maintainer-Doku.
-- [ ] **C2 — NEU `open/036-safe-006-replay-diff-status-
-  replay-source-integration.md`** Trigger.
-- [ ] **C2 — `open/README.md`** Trigger-036-Eintrag.
-- [ ] **C2 — `deploy/compose.yml`** `api`-Service `ports`-
-  Klausel Port-Bind-Hardening.
-- [ ] **C2 — NEU `tests/integration/test_m6_welle_5c_safe_
-  005_006_compose_smoke.py`** mit 6 Smokes.
-- [ ] **C2 — `make gates`** cache-frei gruen.
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen.
-- [ ] **C3 — `M6-welle-5c.md`** Status `In Progress → Done
-  2026-06-07` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5c-
+  Geraete + SAFE-006 ⚠ partial + Trigger-Pointer) —
+  geliefert in C2 `f03c4c7`.
+- [x] **C2 — NEU `docs/user/demo-compose-hardening.md`**
+  Maintainer-Doku — geliefert in C2 `f03c4c7`.
+- [x] **C2 — NEU `open/036-safe-006-replay-diff-status-
+  replay-source-integration.md`** Trigger — geliefert in
+  C2 `f03c4c7` (nach 2 Review-Runden vor Push: Runde 1
+  4 Findings = 1 HIGH + 3 MEDIUM + Runde 2 2 LOW; alle
+  adressiert, inkl. §15-Anker statt §8.2, §4.2+§8 fuer
+  `ReplaySourcePort`, Statuswert-Wertedomaene als
+  Folge-Slice-C0-Schaerfungs-ADR-Frage, Lifecycle-Hook
+  im Core-Spine statt im HTTP-Action-Router,
+  GG-TERM-002-Equality-Vorbedingung im Live-Mode).
+- [x] **C2 — `open/README.md`** Trigger-036-Eintrag —
+  parallel `807ef9b` (in „Quality-/Determinismus-Lücken
+  (M6-Welle-5a/5c-Audit-Folge)"-Section umbenannt).
+- [x] **C2 — `deploy/compose.yml`** `api`-Service `ports`-
+  Klausel Port-Bind-Hardening — geliefert in C2 `f03c4c7`
+  (Default `127.0.0.1` + ENV-Override `GRID_GYM_DEMO_
+  HOST_BIND`).
+- [x] **C2 — NEU `tests/integration/test_m6_welle_5c_safe_
+  005_006_compose_smoke.py`** mit 6 Smokes — geliefert
+  in C2 `f03c4c7` (4 SAFE-005 + 1 SAFE-006 Core-Diff +
+  1 SAFE-006 Trigger-036-Skip + 1 Compose-Host-Bind).
+- [x] **C2 — `make gates`** cache-frei gruen.
+- [x] **C2 — `make ci`** cache-frei gruen (104 passed +
+  7 skipped).
+- [x] **C2 — `make fullbuild`** cache-frei gruen.
+- [x] **C3 — `M6-welle-5c.md`** Status `In Progress → Done
+  2026-06-07` mit Liefer-Hash-Stack — dieser Commit.
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5c-
   Zeile `In Progress → Done` + Aktive-Welle-Block auf
-  Welle 6 + Welle-5-Subdivision-komplett-Notiz.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive Welle auf 6 +
-  Welle-5-Abschluss-Notiz.
-- [ ] **C3 — `in-progress/README.md`** Aktive-Welle-Block
-  auf Welle 6.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+  Welle 6 + Welle-5-Subdivision-komplett-Notiz — dieser
+  Commit.
+- [x] **C3 — `roadmap.md §3 M6`** aktive Welle auf 6 +
+  Welle-5-Abschluss-Notiz — dieser Commit.
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
+  Welle-5c-Zeile `In Progress → Done 2026-06-07` (Aktive-
+  Welle-/Aktiver-Meilenstein-Bloecke sind bereits in
+  `db4729e` ersatzlos gestrichen — redundant zu
+  `roadmap.md §3 M6` + Z. 3) — dieser Commit.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 5c NICHT):**
 
@@ -717,7 +747,7 @@ explizit abgegrenzt.
   Non-Determinism-Detection (Z. 1380-1393); plus
   Realisierungs-Traceability §23 (Z. 2291 fuer GG-SAFE-005,
   Z. 2292 fuer GG-SAFE-006).
-- [`../../../../spec/architecture.md §8.2`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §15`](../../../../spec/architecture.md)
   — Observability-Metrik-Liste (Z. 820) mit
   `replay_diff_status` + Replay-Diff-Status-Tabelle (Z. 823)
   „maschinenlesbarer Statuswert pro Lauf" mit Verweis auf
