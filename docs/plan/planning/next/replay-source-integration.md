@@ -65,10 +65,12 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    (`GG-PERSIST-001`, Architektur `TelemetrySinkPort`): NEU
    `TelemetrySinkPort`-Protocol, Postgres-Adapter und Alembic-
    Schema, falls diese Surface bei Aktivierung weiterhin fehlt.
-   - Persistierte Records muessen `run_id`, Device/Metric,
-     Simulationszeit, Tick-Bezug, Quality und Wert strukturiert
-     tragen; C0 gleicht die exakten Felder gegen `TelemetryPoint`
-     und `GG-DATA-*` ab.
+   - Persistierte Records muessen alle `TelemetryPoint`-/
+     `GG-PERSIST-001`-Pflichtfelder strukturiert tragen:
+     `run_id`, `tick`, `simulation_time`, `device_id`, `metric`,
+     `value`, `unit`, `quality`, `source` und `sequence`. C0
+     gleicht die exakten Felder gegen `TelemetryPoint`,
+     `GG-DATA-*` und `GG-PERSIST-001` ab.
    - Der Pfad ist **nicht** `RunRepositoryPort`; dieser bleibt
      Laufmetadaten/Status.
    - Live-Telemetrie kann weiter ueber die bestehende Stream-
@@ -77,7 +79,8 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    - Der Persistenz-Smoke muss nicht nur Existenz pruefen:
      deterministische Sortierung bei gleicher Simulationszeit,
      append-only-Verhalten ohne doppelte Records beim erneuten
-     Lesen, strukturierte Quality/Wert/Tick-Felder und stabile
+     Lesen, alle `GG-PERSIST-001`-/`TelemetryPoint`-Felder
+     inklusive `unit`, `source` und `sequence` sowie stabile
      kanonische Ausgabe sind Boundary-Pins.
 
 2. **Driven-Adapter `SnapshotReplaySource` fuer
@@ -120,7 +123,8 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    operationalisierter Reproduzierbarkeits-Gleichheit:
    Tool-/Schema-Version, Plattformarchitektur, Eingabedaten bzw.
    Szenario-Datei/-Hash, kanonischer Konfigurations-Hash,
-   aktivierte Adapter/Adapterprofile, Seed und `tick_ms`.
+   Startzeit im Simulationszeitmodell, aktivierte Adapter/
+   Adapterprofile, Seed und `tick_ms`.
    C0/C1 legt fest, ob diese Daten in `RunMetadata` oder einem
    eigenen `ReplayComparisonMetadata`-Envelope liegen. Fehlende
    oder abweichende Pflichtfelder rejecten vor Diff-
@@ -131,8 +135,8 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    - Zeitreihen-Persistenz-Smoke: API-/Demo-Lauf erzeugt
      persistierte Telemetrie-Zeitreihen fuer die MVP-Geraete;
      Boundary-Pin prueft stabile Sortierung bei Ties,
-     append-only-Wiederholungslesen und strukturierte
-     Quality/Wert/Tick-Felder.
+     append-only-Wiederholungslesen und alle strukturierten
+     `GG-PERSIST-001`-/`TelemetryPoint`-Felder.
    - Clean-Replay-Smoke: persistierter Lauf + gleicher Re-Run
      liefern leeren Diff und emittieren den `clean`-Statuswert.
    - Divergence-Smoke: bewusst eingefuehrte Tick-Differenz
@@ -144,8 +148,8 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    - Boundary-Test-Familie: Metadata-Mismatches nach
      `GG-TERM-002`/`GG-TERM-003` rejecten vor Diff-
      Klassifikation; mindestens Version, Konfiguration,
-     aktivierte Adapter, Seed und `tick_ms` werden einzeln
-     gepinnt.
+     Startzeit im Simulationszeitmodell, aktivierte Adapter,
+     Seed und `tick_ms` werden einzeln gepinnt.
    - Wiederholungs-/Idempotenz-Pin: derselbe persistierte Lauf
      kann erneut gelesen und verglichen werden, ohne Status- oder
      Sample-Duplikation zu erzeugen.
@@ -278,8 +282,9 @@ Falls D-4 Option A (monolithisch):
     mit numerischer Kodierung.
   - NEU `docs/user/replay-determinism-e2e.md`.
   - NEU `tests/integration/test_mvp_002_timeseries_replay_smoke.py`
-    mit Zeitreihen-Sortier-/Append-only-, Clean-Replay-,
-    Divergence-Detail-, Equality-Feld- und Idempotenz-Pins.
+    mit Zeitreihen-Sortier-/Append-only-, vollstaendiger
+    `GG-PERSIST-001`-Feld-, Clean-Replay-, Divergence-Detail-,
+    Equality-Feld- und Idempotenz-Pins.
   - `docs/user/safe-005-006-fallback-determinism.md` Status-
     Sync auf ✓ produktiv nur bei belegtem `GG-SAFE-006`-
     Detailvertrag; andernfalls bleibt die partial-Markierung.
@@ -369,17 +374,18 @@ Accepted-ADR-0024-Vertrag nicht aufgeweicht wird.
 
 **R4 — `GG-TERM-002`-/`GG-TERM-003`-Equality-Check ist
 subtil**: Version, Plattformarchitektur, Konfiguration,
-aktivierte Adapter und Eingabedaten sind heute nicht alle
-strukturiert in `RunMetadata` verankert.
+Startzeit im Simulationszeitmodell, aktivierte Adapter und
+Eingabedaten sind heute nicht alle strukturiert in `RunMetadata`
+verankert.
 **Mitigation:** Welle-X-C0 erstellt eine vollstaendige
 Equality-Matrix gegen `GG-TERM-002` und `GG-TERM-003` und
 entscheidet den Speicherort (`RunMetadata`-Erweiterung oder
 NEU `ReplayComparisonMetadata`). C1/ADR fixiert Pflichtfelder,
 Hash-/Canonicalization-Regeln und Reject-Semantik fuer fehlende
 oder abweichende Werte. C2 liefert parametrisierte Boundary-
-Tests fuer mindestens Version, Konfiguration, aktivierte
-Adapter, Seed und `tick_ms`; ein generischer Mismatch-Test
-reicht nicht.
+Tests fuer mindestens Version, Konfiguration, Startzeit im
+Simulationszeitmodell, aktivierte Adapter, Seed und `tick_ms`;
+ein generischer Mismatch-Test reicht nicht.
 
 ## 7. Cost-Estimate
 
