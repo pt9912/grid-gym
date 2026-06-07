@@ -101,7 +101,13 @@ services:
       # Dockerfile-ENTRYPOINT). `make runtime` probet weiterhin
       # intern `api:8080/health`, nicht ueber Host-Port — der
       # Host-Mapping-Wechsel beeinflusst die Compose-Smoke nicht.
-      - "8000:8080"
+      #
+      # M6-Welle-5c (Demo-Compose-Hardening, `carveouts.md §2.7`-
+      # Auflage): Default-Bind auf 127.0.0.1 begrenzt die
+      # Erreichbarkeit auf den Maintainer-Host. ENV-Override
+      # `GRID_GYM_DEMO_HOST_BIND` erlaubt Lab-/Remote-Demo ohne
+      # Compose-Edit. Siehe `docs/user/demo-compose-hardening.md`.
+      - "${GRID_GYM_DEMO_HOST_BIND:-127.0.0.1}:8000:8080"
     volumes:
       # M5-Welle-5 (Slice-Doc Decision 6): kanonisches Demo-
       # Szenario per readonly Volume-Mount neben Container-FS
