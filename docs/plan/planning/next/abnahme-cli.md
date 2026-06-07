@@ -65,6 +65,16 @@ oder M7-Welle-X; siehe §5) liefert:
    maschinenlesbaren JSON-Status auf stdout schreibt.
    Exit-Code reflektiert Aggregat-Pass/Fail (0/1/2
    Tri-State per D-9).
+   **stdout-Vertrag (Pflicht):** stdout ist JSON-only — der
+   `AbnahmeReport` als ein einziges JSON-Objekt, kein
+   Bootstrap-Banner, kein Log, kein Trace-Output. Alle
+   Logs/Bootstrap-Meldungen/`diff_replay`-Debug-Output/
+   uv-Sync-Banner (durch den `make`-Hook) muessen nach
+   stderr umgeleitet werden, damit CI-Consumer
+   `make accept | jq '.overall_status'` ohne Vorfilter
+   parsen koennen. Der Smoke pinnt das via
+   `json.loads(captured.stdout)` ohne Pre-Strip (siehe §2
+   Punkt 5).
 
 2. **NEU `tools/accept.py`-Script** (Python; primaer als
    `uv run`-Aufruf aus `make accept` — analog
@@ -77,33 +87,60 @@ oder M7-Welle-X; siehe §5) liefert:
    hexagon-puren Core-`TickLoop` aus
    `hexagon/core/simulation/tick_loop.py` direkt — kein
    Adapter-Lift noetig, siehe §6 R1): die eigentliche
-   Orchestrierungs-Logik. Drei Sub-Steps:
+   Orchestrierungs-Logik. **Drei Sub-Steps laufen
+   unabhaengig und sequenziell A → B → C; ein Sub-Step-Fail
+   bricht den Lauf NICHT ab (kein fail-fast)** — der CLI
+   aggregiert alle drei `pass`/`fail`-Werte und entscheidet
+   `overall_status` erst nach Step C. Das ist die
+   Voraussetzung dafuer, dass der JSON-Status fuer CI-Consumer
+   immer alle drei Sub-Step-Status traegt (siehe auch §6 R4,
+   Smoke pinnt das in §2 Punkt 5).
+   **Datenabhaengigkeits-Vertrag (kein Widerspruch zu
+   no-fail-fast):** Step B konsumiert das `Scenario`-Objekt
+   aus Step A (siehe Step B unten). Wenn Step A fehlschlaegt
+   (kein `LoadedScenario` verfuegbar), fuehrt Step B seine
+   Kernlogik nicht aus, sondern wird im JSON mit
+   `status="fail"` + `reason="dependency: scenario load
+   failed (see scenario_validation)"` aufgenommen. Step C ist
+   stack-, nicht scenario-abhaengig und laeuft unabhaengig
+   von Step A/B. So bleiben **alle drei Sub-Step-Entries im
+   JSON immer praesent** (Vertrag fuer CI-Consumer), waehrend
+   die Daten-Reihenfolge respektiert wird:
    - **Step A — Szenario-Validierung**: laed
      `deploy/scenarios/gg-demo.yaml`, ruft
      `load_scenario(raw)` (`loader.py:113-125`; ein Aufruf
      erledigt **beides** — `validate_scenario_mapping`
      intern + Hash-Berechnung inline; eine separate
      `compute_scenario_hash`-Funktion existiert **nicht**).
-     Erwartet keine `ScenarioError`-Subklasse (Hierarchie:
+     Faengt die gemeinsame Basisklasse `ScenarioError` aus
+     `grid_gym.hexagon.core.errors` (Subklassen-Beispiele:
      `ScenarioMissingKeysError`, `ScenarioWrongTypeError`,
-     `ScenarioUnsupportedSchemaVersionError` u.a.; gemeinsame
-     Basisklasse `ScenarioError` in
-     `grid_gym.hexagon.core.errors`, siehe Validator-Imports
-     `validator.py:32-44` + Docstring „Wirft typisierte
-     `ScenarioError`-Subklassen"). Plus Vergleich
+     `ScenarioUnsupportedSchemaVersionError`, siehe
+     Validator-Imports `validator.py:32-44`); im Fail-Pfad
+     wird der Subklassen-Name + `str(exc)` in
+     `scenario_validation.reason` durchgereicht. Plus Vergleich
      `LoadedScenario.scenario_hash` gegen einen gepinten
      Erwartungs-Hash (Deterministische Hash-Reproduktion;
-     Pin-Lifecycle siehe §3 D-8).
+     Pin-Lifecycle siehe §3 D-8). Bei Step-A-Fail laufen
+     **B und C trotzdem** (siehe Vertrag oben).
    - **Step B — Deterministischer Replay**: zwei Optionen,
      Welle-X-D-2 entscheidet:
      - **Sub-Form A** (standalone, KEINE Abhaengigkeit zu
        GG-MVP-002-Plan): laeuft das Demo-Szenario zweimal
-       mit identischem Seed gegen einen Headless-Runner
-       (kein FastAPI noetig — Core-`TickLoop` direkt aus
+       mit identischem Seed gegen einen Headless-Runner —
+       kein FastAPI noetig, Core-`TickLoop` direkt aus
        `hexagon/core/simulation/tick_loop.py`, Devices +
-       GridModel per Scenario-Loader-Aufrufer injiziert
-       wie im Modul-Docstring Z. 34-38 beschrieben; siehe
-       §6 R1). Vergleicht die zwei Snapshot-Streams via
+       GridModel + `active_load_events` +
+       `active_load_profiles` per Scenario-Loader-
+       Aufrufer injiziert (Modul-Docstring Z. 34-38;
+       vollstaendiges Wiring-Inventar siehe §6 R1).
+       **Re-Use Step A:** Step B konsumiert das bereits
+       in Step A geladene `LoadedScenario.scenario`-Objekt
+       (kein zweiter YAML-Parse, kein zweiter
+       `load_scenario`-Aufruf) — die Step-A-vor-Step-B-
+       Reihenfolge ist damit eine explizite
+       Datenabhaengigkeit, nicht nur eine Lauf-Reihenfolge.
+       Vergleicht die zwei Snapshot-Streams via
        `diff_replay()` (erwartet leeren Diff oder nur
        `VOLATIL`-Klassifikation) **plus** vergleicht den
        gemeinsamen Snapshot-Stream-Hash beider Laeufe
@@ -172,8 +209,19 @@ oder M7-Welle-X; siehe §5) liefert:
      }
    }
    ```
-   Das `ready_payload`-Feld ist **pass-through** aus dem
-   `/ready`-Response-Body (Welle-6-C2; vier
+   **`schema_version`-Typ-Pin:** String-monoton — `"1"`,
+   `"2"`, `"3"` etc. (nicht semver `"1.0"`, nicht Integer
+   `1`); Schema-Bumps inkrementieren um genau 1. Pydantic-
+   Feld `schema_version: Literal["1"]` (strict, kein Drift).
+   **`replay_determinism.volatile_only`-Semantik:**
+   `true` iff **jeder** Eintrag in der `diff_replay()`-Diff-
+   Liste die `ReplayDeltaClassification.VOLATIL`-
+   Klassifikation traegt. Bei `diff_count == 0` per
+   Konvention `true` (vacuously). Der Sub-Step-Status
+   `pass` setzt voraus: `diff_count == 0 OR volatile_only
+   == true` **UND** Stream-Hash entspricht Pin.
+   **`demo_healthcheck.ready_payload` — pass-through** aus
+   dem `/ready`-Response-Body (Welle-6-C2; vier
    Lastenheft-Pflicht-Komponenten `api` + `ui` + `db` +
    `simulation` per Lastenheft Z. 1876-1879, fixiert in
    `M6-welle-6.md §3 D-2 Z. 386-454`; `otel-collector` ist
@@ -184,8 +232,16 @@ oder M7-Welle-X; siehe §5) liefert:
    (`Mapping[str, Any]`), damit additive `/ready`-Komponenten-
    Erweiterungen den Schema-Vertrag und den Smoke
    `test_accept_machine_readable_json_schema_pinned` nicht
-   brechen. Stricter Vertrag gilt fuer Top-Level + `checks`-
-   Keys + `status`-Werte.
+   brechen.
+   **Strict-Pin-Scope (was der Smoke pinnt):** Top-Level-
+   Keys + `checks`-Sub-Keys (`scenario_validation`,
+   `replay_determinism`, `demo_healthcheck`) + `status`-
+   Werte (Literal `"pass"`/`"fail"`) + `schema_version`-
+   Wert. **Nicht gepinnt:** Inhalt/Felder von `ready_payload`
+   (additive `/ready`-Erweiterungen sollen den Smoke nicht
+   brechen). So bleiben D-3 strict-mode (auf den fixen
+   Schema-Teilen) und additive `/ready`-Evolution
+   kompatibel.
 
 4. **NEU `docs/user/abnahme-cli.md`** Maintainer-Doku: wie
    `make accept` lokal + im CI verwendet wird; JSON-Schema-
@@ -202,8 +258,19 @@ oder M7-Welle-X; siehe §5) liefert:
      keine Migration — beide Doks koexistieren mit
      getrennten Anwendungsfaellen (automat vs manuell).
 
-5. **NEU `tests/integration/test_m_welle_x_abnahme_cli_smoke.py`**
-   mit drei Smokes:
+5. **NEU Integration-Smokes** (drei in einem File;
+   D-5-abhaengiger Dateiname per Konvention
+   `test_m{N}_welle_{X}_*.py` — bestehende Beispiele:
+   `test_m6_welle_5c_safe_005_006_compose_smoke.py`):
+   - D-5 Option A (Welle-6-Erweiterung) →
+     `tests/integration/test_m6_welle_6_abnahme_cli_smoke.py`.
+   - D-5 Option B (eigener 6b-Slice) →
+     `tests/integration/test_m6_welle_6b_abnahme_cli_smoke.py`.
+   - D-5 Option C (M7-Welle-X) → Filename in der
+     M7-Slice-Doc zu fixieren; `welle_x`-Platzhalter
+     ist **nicht** zulaessig.
+
+   Drei Smokes:
    - `test_accept_happy_path_returns_pass_status`: alle
      drei Sub-Pruefungen gruen → `overall_status == "pass"`,
      Exit-Code 0, JSON-Schema-conform.
@@ -212,9 +279,25 @@ oder M7-Welle-X; siehe §5) liefert:
      Sub-Step `fail` + `overall_status == "fail"`, Exit-
      Code == 1 (Aggregate-Fail-Pin per D-9; **nicht**
      „!= 0" — Tool-Error 2 ist explizit anderes Signal).
+     **Zusatz-Assertions (no-fail-fast-Vertrag aus §2):**
+     `report.checks` enthaelt **alle drei** Keys
+     (`scenario_validation`, `replay_determinism`,
+     `demo_healthcheck`), nicht nur den fehlgeschlagenen
+     ersten — `replay_determinism.status == "fail"` mit
+     `reason` der das Dependency-Propagation-Pattern
+     spiegelt (`"dependency: scenario load failed (see
+     scenario_validation)"`), `demo_healthcheck.status`
+     ist `pass` oder `fail` (stack-, nicht
+     scenario-abhaengig — Step C laeuft trotz
+     Step-A-Fail). Damit pinnt der Smoke
+     bauartbedingt, dass `tools/accept.py` keinen
+     fail-fast-Bypass einbaut.
    - `test_accept_machine_readable_json_schema_pinned`:
      JSON-Output-Schema (Pydantic-`AbnahmeReport`-Modell)
      bleibt rueckwaerts-kompatibel ueber Schema-Version.
+     Pin-Scope siehe §2 Punkt 3 (Top-Level + `checks`-
+     Keys + `status`-Literal + `schema_version`-Wert;
+     **nicht** `ready_payload`-Inhalt).
 
 6. **`roadmap.md §3 MVP-Abnahmescope` Status-Sync**:
    GG-MVP-003-Zeile von ✗ Lücke auf ✓ produktiv flippen
@@ -273,8 +356,11 @@ klein genug fuer eine Welle).
 - **A**: M6-Welle-6-Scope-Erweiterung (additive 4. Substanz-
   Item neben `/ready` + DevContainer + IEC-Pfad-B). Passt
   thematisch zum NEU `/ready`-Endpoint.
-- **B**: Eigenstaendiger M6-Welle-7-Vorlauf-Slice (`make
-  accept` als M6-Closure-Beleg).
+- **B**: Eigenstaendiger M6-Welle-6b-Slice (`make accept`
+  als zusaetzlicher M6-Welle-6-Folge-Slice, vor Welle-7-
+  Closure — Naming-Praezedenz `M5-welle-6b` /
+  `M5-welle-6c`). Bei dieser Option ist `/ready` aus
+  M6-Welle-6-C2 harte Vorbedingung (siehe §5 + §2 Step C).
 - **C**: M7-Welle-X (Post-MVP).
 
 Vorschlag: A wenn Welle-6-Scope nicht ueberlaeuft (die
@@ -418,7 +504,15 @@ HTTP-Connection-Refused / Timeout / Non-200 beim
 `/ready`-Poll gehoert **nicht** zu Exit 2. „Demo-Stack
 nicht hochgefahren" ist genau das Failure-Signal, das
 Step C deterministisch fangen soll → Aggregate-Fail
-(Exit 1), nicht Tool-Error. Analog: `gg-demo.yaml`
+(Exit 1), nicht Tool-Error. **Analog: HTTP 200 mit
+`status != "healthy"`** (z. B. `"starting"` waehrend
+Stack-Up oder `"degraded"`, weil eine der vier
+Pflicht-Komponenten `api`/`ui`/`db`/`simulation` nicht
+ready ist; Three-State-Endpoint per Welle-6-C2)
+→ Step C `fail` mit `reason="ready status not healthy:
+<status>"` → Exit 1, **nicht** Exit 2. Das ist genau das
+Signal, das Step C melden soll, und nicht ein CLI-Bug.
+Analog: `gg-demo.yaml`
 nicht-existent oder Permission-Denied → Step A `fail` →
 Exit 1 (deterministisches Sub-Step-Fail mit
 `reason="scenario file not readable"`), nicht Exit 2.
@@ -471,8 +565,9 @@ Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
   aktualisiert (zusaetzliches Lieferziel + die Abnahme-CLI-
   Decision D-7).
 
-Falls D-5 Option B (eigenstaendiger M6-Welle-7-Vorlauf-
-Slice):
+Falls D-5 Option B (eigenstaendiger M6-Welle-6b-Slice
+nach Welle-6-C2; Welle-6-C2 ist Vorbedingung wegen
+`/ready`, siehe §5):
 
 - Eigener Slice `M6-welle-6b-abnahme-cli.md` mit C0/C2/C3-
   Stack analog Welle-5c.
@@ -511,7 +606,9 @@ Slice):
   sofort als zusaetzliches Lieferziel in Welle-6-C2; passt
   zum NEU `/ready`-Endpoint.
 - **GG-MVP-003-Closure vor M6-Welle-7-Closure**: aktiviert
-  als eigener Welle-6b-Slice (D-5 Option B).
+  als eigener `M6-welle-6b-abnahme-cli`-Slice (D-5
+  Option B; M6-Welle-6-C2 ist Vorbedingung wegen
+  `/ready`).
 - **Stakeholder-Bedarf fuer maschinenlesbares Abnahme-
   Statement**: Releases / Demo-Praesentation / Compliance-
   Belege.
@@ -557,11 +654,41 @@ der Stub muss instanziieren:
 - eine `RandomPort`-Impl (seeded);
 - `devices: tuple[DeviceModel, ...]` + `grid_model`
   vom Scenario-Loader-Aufrufer-Pattern (Modul-Docstring
-  Z. 34-38).
-Optionale Ports (`fault_port`, `agent_bus`,
-`log_port`, `metrics_port`, `trace_port`,
-`protocol_ports`, `run_repository`) bleiben fuer den
-Replay-Stub `None` — Replay braucht keine Side-Effects.
+  Z. 34-38);
+- **`active_load_events: tuple[LoadEvent, ...]` +
+  `active_load_profiles: tuple[LoadProfile, ...]` aus
+  dem Scenario** — `Scenario.load_events` /
+  `Scenario.load_profiles`, die der Loader via
+  `parse_load_events` / `parse_load_profiles` aus dem
+  YAML liest (`loader.py:158-159`). **Pflicht-
+  Injektion, nicht Konstruktor-Default:** der produktive
+  Driver setzt sie genau so (`loader.py:474-475` und
+  `:493-494`); `gg-demo.yaml` enthaelt `load_events:`
+  (Z. 96) und `load_profiles:` (Z. 106). Ein Stub, der
+  bei den Defaults `()` bleibt, tickt **anders als der
+  echte Demo-Lauf** — der Stream-Hash entspricht dann
+  nicht dem Demo-Referenz-Verhalten, und die
+  Referenz-Treue-Eigenschaft (Step B Sub-Form A
+  Punkt 2) bricht still, ohne dass der Lint die Ursache
+  zeigt. Der Stub muss diese beiden Felder explizit aus
+  `LoadedScenario.scenario` durchreichen.
+
+Weitere keyword-only-Parameter mit Defaults bleiben auf
+Konstruktor-Default (Replay braucht keine Side-Effects):
+- Optionale Ports `fault_port`, `agent_bus`,
+  `log_port`, `metrics_port`, `trace_port`,
+  `protocol_ports`, `run_repository` → `None`;
+- `agents: tuple[Agent, ...]` → `()` (Demo-Szenario
+  hat keine Agent-Substanz, ansonsten gilt dieselbe
+  Pflicht-Injektion wie fuer LoadEvents/-Profiles —
+  Audit-Sub-Step muss das bestaetigen);
+- `alarm_id_source: Callable | None` → `None`
+  (Alarm-Generierung off-pfad fuer Replay).
+**Audit-Pflicht in der C2-Vorbereitung (bzw. Welle-6b-C0
+bei D-5 Option B):** verifizieren, dass `gg-demo.yaml`
+**keine** Agent-Felder enthaelt — sonst gehoert `agents`
+analog zu den LoadEvents/-Profiles in die Pflicht-
+Injektions-Liste.
 **Mitigation:** Vor der `tools/_demo_replay.py`-Helper-
 Implementation muss der Core-`TickLoop`-Konstruktor-Pfad
 auditiert sein (Devices + GridModel-Injection ueber den
