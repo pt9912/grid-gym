@@ -1,6 +1,20 @@
 # Welle 5b — M6 Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS)
 
-**Status:** In Progress — C0 (Slice-Doc-Anlage; dieser Commit).
+**Status:** Done 2026-06-07.
+**Liefer-Hash-Stack:** C0 `0d3bb61` (Slice-Doc-Anlage) → C0-
+Review-Folge `369f130` (F1 Adapterkonfig-Scope + F2 C1-Pflicht-
+Findings) → C1 `cee5aab` (NEU ADR 0045 `Proposed` + ADR-Index
++ Hygiene-Cleanup ADR 0041-0045 in `9d78b29` als parallele
+Hygiene-Welle) → C2 `b580840` (6 Inline-Fixes fuer GG-SAFE-
+007-Surfaces + `_BaseRequest`-Mixin + `RunCreateRequest`-
+Umzug + 11 Smoke-Tests + Audit-Doku) → C3 **dieser Commit**
+(ADR 0045 `Proposed → Provisional` + Status/DoD-Sync +
+aktive Welle auf 5c). C4a/C4b folgen als Welle-5c-Pre-C0a/
+Pre-C0b.
+
+**Vorheriger Status:** In Progress — C2 abgeschlossen,
+ADR 0045 noch `Proposed`.
+
 Welle 5 wird gemaess Welle-5a-D-1 in **5a (Quality-Pipeline-
 Audit; `GG-SAFE-001..004` MUSS) + 5b (Sim/Prod-Marker + Input-
 Validation; `GG-SAFE-007` + `GG-SAFE-008` MUSS) + 5c (SOLLTE-
@@ -9,6 +23,27 @@ Demo-Compose-Hardening)** sub-geslict. Welle 5b ist die **zweite
 Sub-Welle** und liefert die End-to-End-Verifikation + Luecken-
 Auditierung der existierenden Sim/Prod-Trennung + Input-
 Validation-Substanz fuer die zwei MUSS-IDs.
+
+**Audit-Ergebnis (alle ✓ produktiv nach Welle-5b-C2):**
+
+- `GG-SAFE-007` UI ✓ produktiv (NEU `.sim-banner` in
+  `base.html` mit DE/EN-Disclaimer; per Vererbung auf allen
+  UI-Pages).
+- `GG-SAFE-007` API-Doku ✓ produktiv (OpenAPI `info.
+  description` + README + README.de mit Sim/Prod-Disclaimer).
+- `GG-SAFE-007` Adapterkonfiguration ✓ produktiv (`gg-demo.
+  yaml` Top-Level-Kommentar + 5 `protocol_*/_config.py`-
+  Docstring-Disclaimer).
+- `GG-SAFE-008` REST-Schema-Vertrag ✓ produktiv (NEU
+  `_BaseRequest`-Mixin mit `strict=True` + `extra="forbid"`;
+  alle 3 Request-Bodies erben).
+- `GG-SAFE-008` REST-Wertebereiche + Zielressourcen ✓
+  produktiv (Pydantic-Field-Constraints + Cross-Field-
+  Validation aus M5-Welle-6a).
+- `GG-SAFE-008` WebSocket Subscribe-only ✓ produktiv
+  (Quell-Datei-Inspektion belegt: kein `websocket.receive_*`).
+- `GG-SAFE-008` Driven-Side ✓ produktiv (Welle-5a-Audit-
+  Substanz; siehe `safe-001-004-quality-pipeline.md`).
 
 **Pre-C0 abgeschlossen (M6-Welle-5a-Closure-Folge):**
 
@@ -743,40 +778,44 @@ Drift auftritt.
   M6-Welle-5b.
 - [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-5b-Zeile
   `Pending → In Progress 2026-06-07`.
-- [ ] **C1 Pflicht (Welle-5b-D-6 Option C)** — NEU
+- [x] **C1 Pflicht (Welle-5b-D-6 Option C)** — NEU
   eigenstaendige Schaerfungs-ADR `docs/plan/adr/0045-http-
   api-request-strict-validation.md` mit Status `Proposed`
-  per ADR-0011-Pattern (Pydantic-Strict-Mode; Bezug auf
-  ADR 0037; **ADR 0037 unveraendert**) + ADR-Index-Update
-  in `docs/plan/adr/README.md`. Muss vor C2 landen.
-- [ ] **C2 — NEU `tests/integration/test_m6_welle_5b_safe_007_
-  008_smoke.py`** mit 11 Smoke-Tests (Welle-5b-D-1 + D-4).
-- [ ] **C2 — NEU `docs/user/safe-007-008-sim-prod-input-
-  validation.md`** Audit-Tabelle (pro `GG-SAFE-00X`-ID:
-  Akzeptanz + Substanz-Pfad + Test-Pfad + Status).
-- [ ] **C2 — Pydantic-Strict-Mode-Schaerfung** (Welle-5b-D-5
-  Option C) falls Audit Lücke aufdeckt.
-- [ ] **C2 — UI-Sim-Marker-Inline-Fix** (Welle-5b-D-3) falls
-  Dashboard-Audit Lücke aufdeckt.
-- [ ] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
+  per ADR-0011-Pattern + ADR-Index-Update in `docs/plan/adr/
+  README.md` (C1 `cee5aab`).
+- [x] **C2 — NEU `tests/integration/test_m6_welle_5b_safe_007_
+  008_smoke.py`** mit 11 Smoke-Tests (5 SAFE-007 + 6 SAFE-008;
+  alle gruen).
+- [x] **C2 — NEU `docs/user/safe-007-008-sim-prod-input-
+  validation.md`** Audit-Tabelle (pro Surface Substanz-Pfad +
+  Test-Pfad + Status; alle ✓ produktiv).
+- [x] **C2 — Pydantic-Strict-Mode-Schaerfung** (Welle-5b-D-5)
+  produktiv: NEU `_BaseRequest`-Mixin in `_schemas.py` +
+  `RunCreateRequest`-Umzug aus `app.py` + 3 Request-Modelle
+  erben.
+- [x] **C2 — UI-Sim-Marker-Inline-Fix** (Welle-5b-D-3)
+  produktiv: NEU `.sim-banner` in `base.html` + CSS-Klasse +
+  Disclaimer in OpenAPI + READMEs + Scenario-YAML + 5
+  Protocol-Adapter-`_config.py`-Docstrings.
+- [x] **C2 — `make gates`** cache-frei gruen (10/10 A-1-
   Gates).
-- [ ] **C2 — `make ci`** cache-frei gruen.
-- [ ] **C2 — `make fullbuild`** cache-frei gruen.
-- [ ] **C3 — ADR 0045** `Proposed → Provisional` mit C2-Code-
+- [x] **C2 — `make ci`** cache-frei gruen.
+- [x] **C2 — `make fullbuild`** cache-frei gruen.
+- [x] **C3 — ADR 0045** `Proposed → Provisional` mit C2-Code-
   Beleg (Pattern analog ADR 0038/0039/0040).
-- [ ] **C3 — `M6-welle-5b.md`** Status `In Progress → Done
+- [x] **C3 — `M6-welle-5b.md`** Status `In Progress → Done
   2026-06-07` mit Liefer-Hash-Stack.
-- [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5b-
+- [x] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5b-
   Zeile `In Progress → Done` mit Closure-Hash + Aktive-
   Welle-Block auf Welle 5c.
-- [ ] **C3 — `README.md` + `README.de.md`** NEU Input-
-  Validation-Audit-Hinweis falls relevant.
-- [ ] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
+- [x] **C3 — `README.md` + `README.de.md`** Sim/Prod-
+  Disclaimer-Substanz bereits in C2 verankert.
+- [x] **C3 — `roadmap.md §3 M6`** aktive-Welle-Block auf
   M6-Welle-5c + Welle-5b-Abschluss-Notiz mit Stack-Range.
-- [ ] **C3 — `in-progress/README.md`** Bestand-Tabelle
+- [x] **C3 — `in-progress/README.md`** Bestand-Tabelle
   Welle-5b-Zeile auf `Done` + Aktive-Welle-Block auf
   M6-Welle-5c.
-- [ ] **C3 — `make docs-check`** cache-frei gruen.
+- [x] **C3 — `make docs-check`** cache-frei gruen.
 
 **Anti-Scope-Verifikation (Welle 5b NICHT):**
 

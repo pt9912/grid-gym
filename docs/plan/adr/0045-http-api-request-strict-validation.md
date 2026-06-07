@@ -1,8 +1,12 @@
 # ADR 0045 — HTTP-API-Request-Body-Strict-Validation (M6 Welle 5b)
 
-**Status:** Proposed — Erstwurf (dieser Commit).
+**Status:** Provisional — produktiv-belegt durch
+`_BaseRequest`-Mixin + `RunCreateRequest`-Konsolidierung +
+11 Integration-Smokes; `make ci`/`make fullbuild` cache-frei
+gruen.
 **Datum:** 2026-06-07
-**Status geaendert am:** 2026-06-07 — Erstwurf `Proposed`.
+**Status geaendert am:** 2026-06-07 — Erstwurf `Proposed` →
+`Provisional` nach Code-Beleg.
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)

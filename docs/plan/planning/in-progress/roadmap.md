@@ -894,11 +894,17 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5b
-(Sim/Prod-Marker + Input-Validation; `GG-SAFE-007/008` MUSS)**
-— Welle-5b-Slice-Doc entsteht in Welle-5b-C0. Welle-5-Sub-
-Slicing in 5a + 5b + 5c per Welle-5a-D-1; Welle 5a ist
-abgeschlossen, 5b/5c sind Pending.
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5c
+(SOLLTE-Items + IP/Netz-Beschraenkung; `GG-SAFE-005/006` +
+Demo-Compose-Hardening)** — Welle-5c-Slice-Doc entsteht in
+Welle-5c-C0. Welle-5-Sub-Slicing in 5a + 5b + 5c per Welle-
+5a-D-1; Welle 5a + 5b sind abgeschlossen, 5c ist Pending.
+**M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
+C3 dieser Commit` (siehe [`M6-welle-5b.md`](M6-welle-5b.md);
+NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)
+`Provisional`; alle 6 GG-SAFE-007-Surfaces + 6 GG-SAFE-008-
+Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku
+[`../../../user/safe-007-008-sim-prod-input-validation.md`](../../../user/safe-007-008-sim-prod-input-validation.md)).
 **Welle-4-Subdivision komplett abgeschlossen 2026-06-06**:
 4a Vulnignore-Pattern + 4b-a Bench-Foundation + 4b-b
 `GG-RT-005`-Telemetry-Bench + 4b-c `GG-RT-001`-Backpressure-
