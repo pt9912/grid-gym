@@ -12,7 +12,7 @@ per Lastenheft-Traceability Z. 2308").
 
 ## Lastenheft-Akzeptanz
 
-Die Vier IDs decken die **Multi-Node-Deployment-Familie** ab
+Die vier IDs decken die **Multi-Node-Deployment-Familie** ab
 (thematisch gekoppelt: K8s-Manifeste sind Vorbedingung fuer
 Rolling-Update/Zero-Downtime/Rollback):
 
@@ -81,10 +81,24 @@ korrespondierenden Trigger gelebt (Welle-6-Audit-Befund).
   pro Migration.
 
 - **Bestehende Substanz, die wiederverwendet werden kann**:
-  - `deploy/compose.yml` mit 4 Services + Healthchecks (M1-
-    Welle-6c) — Vorbild fuer K8s-Service/Deployment-Mapping.
+  - `deploy/compose.yml` mit 4 Services (`postgres`,
+    `otel-collector`, `api`, `simulation`) + Healthchecks
+    (M1-Welle-6c) — Vorbild fuer K8s-Service/Deployment-
+    Mapping. **Hinweis Ist-Stand:** Die UI laeuft heute
+    **co-located** im `api`-Prozess (HTML-Template-Render in
+    `app.py`); `compose.yml` hat keinen eigenen `ui`-Service.
+    Die K8s-Topologie-Entscheidung „UI co-located vs. eigenes
+    Deployment" gehoert in den Folge-Slice-C0 (siehe
+    Lieferung Punkt 1, UI-Artefakt-Vertrag).
   - `/ready`-Endpoint mit Three-State-Status (Welle-6-C2) —
-    fuer K8s-Readiness-Probe direkt verwendbar.
+    fuer K8s-Readiness-Probe direkt verwendbar. **Hinweis
+    Welle-6-Abhaengigkeit:** Heute (Stand 2026-06-07) ist
+    `/ready` nur **geplant** in `M6-welle-6.md` Welle-6-C2
+    (Z. 137-152); der `@app.get("/ready")`-Handler ist noch
+    nicht im Repo (`app.py` Z. 335 verweist nur darauf). Der
+    Folge-Slice muss vor Aktivierung pruefen, dass Welle-6-
+    C2 gelandet ist — sonst fehlt die Probe-Surface, auf der
+    die K8s-Manifeste aufsetzen (siehe Aktivierungs-Bedingung).
   - Dockerfile multi-stage (runtime-Stage; non-root + Port
     8080) — Container-Image-Substanz steht.
   - Alembic-Migrationen (M1-Welle-6c) — Vorbild fuer K8s-Job-
@@ -104,6 +118,10 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      ist nur Backend-/Surface-Readiness; es ist kein Nachweis
      „keine aktiven Simulationen" und darf nicht als
      Active-Run-Gate fuer Rollouts interpretiert werden.
+     **Replikat-Voraussetzung fuer `maxUnavailable: 0`:**
+     `replicas ≥ 1` ist Pflicht; im Single-Replica-Demo-Fall
+     liefert `maxSurge: 1` bewusst `N+1` Pods waehrend des
+     Rollouts (kein Drop unter `N`).
    - **UI-Artefakt-Vertrag** fuer `GG-DEPLOY-007`:
      Entweder dokumentierte Co-Location im `api`-Deployment
      mit eigener Route/Ingress-Regel fuer die UI-Surface
@@ -120,7 +138,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      Zugriff; bei Co-Location routet die Ingress-Form API-
      Pfade und UI-Root sichtbar getrennt. **IP-/Netz-
      Beschraenkung ist Pflicht**: K8s-Externalisierung muss
-     `carveouts.md §2.7` analog zum Demo-Compose umsetzen
+     `carveouts.md §2.7 Row 2 (Multi-User + Auth im UI-Layer)` analog zum Demo-Compose umsetzen
      (z. B. Ingress-Source-Range-Whitelist,
      `NetworkPolicy`, dokumentierte externe
      Firewall-/Reverse-Proxy-Boundary oder bewusst
@@ -174,6 +192,14 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 4. **Rollback-Strategie-Doku**:
    - Image-Tag-Pin-Konvention (kein floating `latest`;
      Welle-5c-D-4-`ports`-Hardening-Pattern uebertragbar).
+   - **Operativer Rollback-Pfad pro Service** (Lastenheft-
+     Akzeptanz Z. 1909-1911 verlangt API, UI,
+     Simulationsdienst, Datenbankschema): `kubectl rollout
+     undo deployment/<api|ui|simulation>` (bzw. Helm-Rollback
+     bei Helm-Chart-Variante) pro Service-Manifest
+     dokumentieren. Reihenfolge und Abhaengigkeit zum
+     DB-Rollback (Step 3) sind Teil der Doku — Image-
+     Rollback vor DB-Downgrade, sonst Schema-/Code-Drift.
    - Alembic-`downgrade()`-Pfad pro Migration + NEU separater
      Rollback-Sensor (z. B. `make migration-rollback-check`
      oder `make test-db-rollback`) gegen eine ephemere Test-DB.
@@ -232,11 +258,14 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      getestet; letzteres ist **kein** Zero-Downtime-Pfad.
      Jeder Zero-Downtime-Claim mit aktivem
      "active runs killing" schlaegt fehl. Rollback-Grenzen
-     fuer nicht downgrade-faehige Migrationen schlagen
-     kontrolliert an statt still zu "succeeden". Ein
-     offen exponierter Ingress/LoadBalancer ohne die oben
+     fuer nicht downgrade-faehige Migrationen werden mit
+     einer **fingierten downgrade-untauglichen Migration**
+     (z. B. `DROP COLUMN` ohne `downgrade()`-Restore-Pfad)
+     getestet: der Sensor MUSS explizit Fehler/Warning
+     signalisieren — ein stilles „succeeded" ist Test-Fail.
+     Ein offen exponierter Ingress/LoadBalancer ohne die oben
      dokumentierte IP-/Netz-Boundary schlaegt ebenfalls fehl,
-     weil `carveouts.md §2.7` die Auth-Luecke nur ueber die
+     weil `carveouts.md §2.7 Row 2 (Multi-User + Auth im UI-Layer)` die Auth-Luecke nur ueber die
      Auflagen-Schicht akzeptiert.
 
 7. **Audit-Doku-Sync**: nach Implementation wird die
@@ -246,10 +275,29 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    anlegt, zieht der Folge-Slice zuerst diesen Trigger und die
    kanonische Audit-Surface nach). `GG-DEPLOY-007..010`
    flippt dort von ⏸ M7+ auf ✓ produktiv. Trigger 037 wandert
-   nach `done/` mit dem aufloesenden Slice.
+   nach `done/` mit dem aufloesenden Slice. **carveouts §2.10-
+   Aufloesung:** die Row „`GG-DEPLOY-007..010` Kubernetes-
+   Manifeste, Rolling Updates, Zero-Downtime-Grenzen und
+   Rollback-Strategie" in `carveouts.md §2.10` wandert in
+   `§3 Resolved` (per Lifecycle-Klausel §4), falls die
+   gesamte Familie geliefert ist. Bei Teil-Lieferung
+   (z. B. nur `GG-DEPLOY-007` + `008` + `010` ohne das
+   `KANN`-Item `GG-DEPLOY-009`) bleibt die Row stehen und
+   wird mit Hinweis auf die teil-erfuellten IDs geschaerft;
+   die unaufgeloesten IDs erhalten einen Folge-Trigger oder
+   bleiben explizit `Out-of-Scope`-bedingt.
 
 ## Aktivierungs-Bedingung
 
+- **Vorbedingung Welle-6-C2 gelandet**: bevor dieser Trigger
+  aktiviert wird, muss `M6-welle-6.md` Welle-6-C2 (`/ready`-
+  Endpoint mit Three-State-Surface, Deploy-Hardening-Doku)
+  produktiv sein. Die K8s-Readiness-Probe baut auf der
+  `/ready`-Surface auf — ohne sie fehlt die Probe-Surface,
+  auf der die Manifeste aufsetzen, und der Rolling-Update-/
+  Zero-Downtime-Vertrag waere ohne Probe-Fundament. Falls
+  Welle-6-C2 noch nicht gelandet ist, wandert der Folge-
+  Slice zuerst die fehlende Probe-Substanz nach.
 - **Stakeholder-Bedarf fuer Multi-Node-Deployment**: konkrete
   Stakeholder-Anfrage „grid-gym in unserem K8s-Cluster
   deploybar". Heute kein konkreter Anker.
@@ -309,10 +357,14 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
   Vermerk.
 - `spec/architecture.md` §16 Z. 915-917 — Architektur-
   Vorgabe „Trigger-getriebene Folgearbeit".
-- [`carveouts.md §2.7`](../in-progress/carveouts.md) — IP-/
-  Netz-Beschraenkung im Demo-Compose; K8s-Deployment muss
-  die Auflagen-Schicht analog umsetzen (Ingress-Form mit
+- [`carveouts.md §2.7 Row 2 (Multi-User + Auth im UI-Layer)`](../in-progress/carveouts.md)
+  — IP-/Netz-Beschraenkung im Demo-Compose; K8s-Deployment
+  muss die Auflagen-Schicht analog umsetzen (Ingress-Form mit
   expliziter Whitelist).
+- [`carveouts.md §2.10 Multi-Node-Deployment-Familie`](../in-progress/carveouts.md)
+  — Index-Row dieses Triggers; wird bei vollstaendiger
+  Aufloesung nach `§3 Resolved` migriert (siehe Lieferung
+  Punkt 7).
 - [`../../adr/0043-image-audit-strategy.md`](../../adr/0043-image-audit-strategy.md)
   — Image-Audit-Pattern (M6-Welle-1); Vorbild fuer K8s-
   Image-Tag-Pin-Strategie.
