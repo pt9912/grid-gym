@@ -246,14 +246,16 @@ plus Self-Close-Folge C4a/C4b.
    `in-progress/README.md` Bestand-Tabelle + Aktive-Welle-Block
    auf Welle 5b; `M6-perf-security-cicd.md §3.1` Welle-5b-Zeile
    `Pending → In Progress`.
-2. **C1 vorbedingt entfallen** — Welle-5b-D-6 prueft ADR-Bedarf
-   am Audit-Ergebnis; **Default-Vorbelegung: kein C1** (Pattern
-   analog Welle-5a / M5-Welle-2); falls Strict-Mode-Schaerfung
-   ADR-Bedarf verlangt, dann C1 als **NEU eigenstaendige
+2. **C1 Pflicht** — Welle-5b-D-5 hat den Default-Pydantic-Mode
+   bereits in §1.1 als Lücke identifiziert und D-6 finalisiert
+   Option C (NEU Schaerfungs-ADR). C1 als **NEU eigenstaendige
    Schaerfungs-ADR 0045** (`docs/plan/adr/0045-http-api-
    request-strict-validation.md`) per ADR-0011-Pattern mit
-   Bezug auf ADR 0037 + ADR-Index-Update. **ADR 0037 wird
-   NICHT editiert** (bleibt `Accepted`).
+   Bezug auf ADR 0037 + ADR-Index-Update **muss vor C2 landen**,
+   damit der in C2 implementierte Strict-Mode-Vertrag einen
+   ADR-Anker hat. **ADR 0037 wird NICHT editiert** (bleibt
+   `Accepted`). Pattern analog M5-Welle-1-C1 `d468e68` (ADR 0037
+   `Proposed` vor C2-Code-Merge).
 3. **Code-Substanz** (C2) — NEU `tests/integration/test_m6_
    welle_5b_safe_007_008_smoke.py` (11 Smoke-Tests) + NEU
    `docs/user/safe-007-008-sim-prod-input-validation.md`
@@ -447,11 +449,14 @@ ADR-0011-Pattern; ADR 0037 unveraendert).** Begruendung:
 - ADR-Index-Pflege (ADR 0028 Link-Maintenance): NEU Eintrag
   in `docs/plan/adr/README.md` ADR-0037-Zeile-Schaerfungs-
   Spalte; NEU Eintrag fuer ADR 0045 selbst.
-- Wenn Strict-Mode-Schaerfung **nicht** noetig (Audit zeigt
-  Mode ist bereits per-Endpoint produktiv), kommt **Option
-  A** zum Tragen — kein C1, keine NEU ADR.
-- Welle-5b-C0 vorbelegt Option C als Default; Welle-5b-C2
-  prueft den Audit-Befund und konkretisiert.
+- §1.1-Audit-Befund zeigt: Default-Pydantic-Mode an allen
+  Request-Bodies ist die aktuelle Realitaet — Strict-Mode-
+  Schaerfung ist mithin **noetig**, nicht „ggf."; D-5 hat
+  diese Lücke verbindlich gemacht. Option A (keine ADR)
+  bleibt nur als **Eskalations-Pfad** offen (siehe §4 C1
+  Eskalations-Pfad), nicht als Default.
+- **Welle-5b-Final: Option C als verbindlicher Default**;
+  C1 ist Pflicht-Commit vor C2.
 
 **Anti-Pattern (explizit verboten):** ADR 0037 direkt mit
 einem NEU API-4-Decision-Punkt anreichern oder §2.x-Body
@@ -477,13 +482,17 @@ editieren — verletzt ADR-0011 §2.
   `Pending → In Progress 2026-06-07`; Status-Block oben
   aktive Welle auf 5b.
 
-### C1 (vorbedingt; Welle-5b-D-6 Option C)
+### C1 — `docs(adr)`: NEU ADR 0045 (Schaerfung zu ADR 0037)
+
+**Pflicht-Commit (Welle-5b-D-6 Option C).** Muss vor C2
+landen, damit der Strict-Mode-Vertrag einen ADR-Anker hat.
 
 NEU eigenstaendige Schaerfungs-ADR **`docs/plan/adr/0045-
 http-api-request-strict-validation.md`** per ADR-0011-Pattern:
 
-- Eigener ADR-Header (`Status: Proposed → Provisional in
-  Welle-5b-C1`; `Bezug:` referenziert ADR 0037).
+- Eigener ADR-Header (`Status: Proposed` in C1; spaeter
+  `→ Provisional` in C3 mit Welle-5b-C2-Beleg, Pattern analog
+  ADR 0038/0039/0040; `Bezug:` referenziert ADR 0037).
 - Decision: Pydantic-Strict-Mode + `extra="forbid"` Pflicht
   fuer Request-Bodies an REST-Endpunkten; Per-Endpoint-
   Schema-Vertrag.
@@ -493,8 +502,14 @@ http-api-request-strict-validation.md`** per ADR-0011-Pattern:
   Zeile fuer ADR 0045; (b) NEU Eintrag in ADR-0037-Zeile-
   Schaerfungs-Spalte mit Verweis auf ADR 0045.
 
-**Default-Vorbelegung: C1 entfaellt** (Option A); Welle-5b-C2-
-Audit konkretisiert.
+**Eskalations-Pfad:** Falls Welle-5b-C2-Audit gegen die
+Strict-Mode-Vorbelegung wider Erwarten ergibt, dass kein
+Schaerfungs-Bedarf besteht (z. B. weil Pydantic-Strict-Mode
+bereits per-Endpoint produktiv waere — aktuell nicht der
+Fall, vgl. §1.1), wird C1 nachtraeglich zu einer C0-Folge-
+Sub-Decision umgewandelt und ADR 0045 nicht gezogen. Dieser
+Pfad ist explizit als Eskalation gekennzeichnet, nicht als
+Default.
 
 ### C2 — `feat(security)` + `docs(user)`: GG-SAFE-007/008 Audit + Smokes
 
@@ -526,10 +541,13 @@ Code-Merge mit:
   - `make fullbuild` cache-frei gruen.
   - `make docs-check` cache-frei gruen.
 
-### C3 — `docs(plan)`: Status/DoD-Sync
+### C3 — `docs(plan)`: Status/DoD-Sync + ADR-0045-Flip
 
 **Welle-5b-Closure-Sync.**
 
+- ADR 0045 `Proposed → Provisional` mit C2-Code-Beleg
+  (Pattern analog ADR 0038/0039/0040 M5-Welle-3/4a/4b-C3-
+  Flips).
 - `M6-welle-5b.md` Status `In Progress → Done 2026-06-07`
   mit Liefer-Hash-Stack.
 - `M6-perf-security-cicd.md §3.1` Welle-5b-Zeile `In
@@ -588,13 +606,27 @@ C4a/C4b dienen gleichzeitig als M6-Welle-5c-Pre-C0a/Pre-C0b.
 - `README.md` + `README.de.md` (C3) — NEU Input-Validation-
   Audit-Hinweis falls relevant.
 
+**Welle-5b-MODIFY (Adapterkonfigurations-Surface, Welle-5b-D-2
+Option B + D-3 Inline-Fix):**
+
+- `deploy/scenarios/gg-demo.yaml` (C2; NEU Top-Level-Kommentar-
+  Block mit Sim/Prod-Marker) — Lastenheft-Pflicht-Surface
+  „Adapterkonfiguration".
+- `src/grid_gym/adapters/driven/protocol_*/_config.py` (C2;
+  **nur Modul-Docstring-Disclaimer**, falls Audit Lücke
+  zeigt) — Adapter-Config-Module-Marker. **Scope ist eng
+  auf Docstring-Add begrenzt**, kein Verhaltens-Edit.
+
 **Welle-5b-UNBERUEHRT (kein Edit):**
 
 - `Quality`-Enum (Welle-5a-Erbschaft; M5-Welle-6b-Review F15
   fixiert).
-- Protocol-Adapter (`adapters/driven/protocol_*`) — Welle-5a
-  hat Adapter-Side audited; Welle-5b prueft nur die Driving-
-  Side-REST/WS-Eingaben + DrivenSide-Audit-Tabelle-Verweis.
+- Protocol-Adapter-Substanz unter `adapters/driven/protocol_*/`
+  **ausserhalb `_config.py`** (`_port.py`/`_codec.py`/
+  `_errors.py` etc.) — Welle-5a hat Adapter-Side audited;
+  Welle-5b prueft nur die Driving-Side-REST/WS-Eingaben +
+  DrivenSide-Audit-Tabelle-Verweis plus den engen Adapter-
+  Config-Docstring-Marker oben.
 - `pyproject.toml`/`uv.lock`/`Dockerfile`/`Makefile` (kein
   neuer Dep-Bedarf).
 - Alle GitHub-Actions-Workflows.
@@ -621,12 +653,19 @@ C4a/C4b dienen gleichzeitig als M6-Welle-5c-Pre-C0a/Pre-C0b.
 **Abnahme-Verifikation:**
 
 - `GG-SAFE-007/008` MUSS-Akzeptanz audited:
-  - SAFE-007 — OpenAPI + README + UI-Dashboard + arch_check
-    `AC-HEXAGON-PURE` (Welle-5b-D-2 Option B Marker-Surfaces).
+  - SAFE-007 — **drei Pflicht-Surfaces aus Lastenheft Z. 1399**:
+    (a) **UI** (Dashboard-Sim-Marker), (b) **API-Doku**
+    (OpenAPI `info.description` + README + README.de),
+    (c) **Adapterkonfiguration** (Scenario-YAML-Top-Level-
+    Kommentar-Block + Protocol-Adapter-`_config.py`-Docstring-
+    Disclaimer). Plus arch_check `AC-HEXAGON-PURE` als
+    Architektur-Belegung (Welle-5b-D-2 Option B).
   - SAFE-008 — REST-Pydantic-Validation + WS-`run_id`-Check
     + Driven-Adapter-Audit-Tabelle (Welle-5b-D-4 Option B).
   - Erwartung: 007 ✓ **produktiv** mit ggf. UI-Banner-Inline-
-    Fix; 008 ✓ **produktiv** mit Pydantic-Strict-Mode-Schaerfung.
+    Fix + ggf. Scenario-YAML-Kommentar-Block + ggf.
+    `_config.py`-Docstring-Adds; 008 ✓ **produktiv** mit
+    Pydantic-Strict-Mode-Schaerfung.
 
 ---
 
@@ -704,13 +743,12 @@ Drift auftritt.
   M6-Welle-5b.
 - [x] **C0 — `M6-perf-security-cicd.md §3.1`** Welle-5b-Zeile
   `Pending → In Progress 2026-06-07`.
-- [ ] **C1 vorbedingt** — Welle-5b-D-6 Option C: NEU
+- [ ] **C1 Pflicht (Welle-5b-D-6 Option C)** — NEU
   eigenstaendige Schaerfungs-ADR `docs/plan/adr/0045-http-
-  api-request-strict-validation.md` per ADR-0011-Pattern
-  (Pydantic-Strict-Mode; Bezug auf ADR 0037; **ADR 0037
-  unveraendert**) + ADR-Index-Update in
-  `docs/plan/adr/README.md`. **Default-Vorbelegung: C1
-  entfaellt.**
+  api-request-strict-validation.md` mit Status `Proposed`
+  per ADR-0011-Pattern (Pydantic-Strict-Mode; Bezug auf
+  ADR 0037; **ADR 0037 unveraendert**) + ADR-Index-Update
+  in `docs/plan/adr/README.md`. Muss vor C2 landen.
 - [ ] **C2 — NEU `tests/integration/test_m6_welle_5b_safe_007_
   008_smoke.py`** mit 11 Smoke-Tests (Welle-5b-D-1 + D-4).
 - [ ] **C2 — NEU `docs/user/safe-007-008-sim-prod-input-
@@ -724,6 +762,8 @@ Drift auftritt.
   Gates).
 - [ ] **C2 — `make ci`** cache-frei gruen.
 - [ ] **C2 — `make fullbuild`** cache-frei gruen.
+- [ ] **C3 — ADR 0045** `Proposed → Provisional` mit C2-Code-
+  Beleg (Pattern analog ADR 0038/0039/0040).
 - [ ] **C3 — `M6-welle-5b.md`** Status `In Progress → Done
   2026-06-07` mit Liefer-Hash-Stack.
 - [ ] **C3 — `M6-perf-security-cicd.md §3.1`** Welle-5b-

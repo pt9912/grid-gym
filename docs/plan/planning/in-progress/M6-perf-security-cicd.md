@@ -42,15 +42,16 @@ M6-Welle-3-C2. Welle-4-Sub-Slicing-Beschluss (4a Vulnignore +
 4b Performance-Bench) per Welle-4a-D-1.
 **Aktive Welle: M6-Welle-5b** (Sim/Prod-Marker + Input-
 Validation; `GG-SAFE-007/008` MUSS) **In Progress 2026-06-07**
-mit C0 (Slice-Doc-Anlage; siehe
+mit C0 `0d3bb61` (Slice-Doc-Anlage; siehe
 [`M6-welle-5b.md`](M6-welle-5b.md)); Welle-5b-Decisions D-1..D-6
 final (Audit-Form Doku+Smokes / **drei Pflicht-Marker-Surfaces
 UI + API-Doku + Adapterkonfiguration** plus arch_check / Hybrid-
 Luecken-Adressierung / DriveSide+DrivenSide-Audit / Per-Endpoint-
 Strict-Mode mit Request-Default / **NEU Schaerfungs-ADR 0045 mit
-Bezug auf ADR 0037, ADR 0037 unveraendert `Accepted`**
-vorbedingt). C1 vorbedingt entfaellt (Default Welle-5b-D-6
-Option C); C2/C3 + Self-Close-Folge C4a/C4b ausstehend. **M6-Welle-5a
+Bezug auf ADR 0037, ADR 0037 unveraendert `Accepted`**). **C1
+ist Pflicht-Commit vor C2** (D-5 hat Default-Pydantic-Mode als
+Lücke verbindlich gemacht); C2/C3 + Self-Close-Folge C4a/C4b
+ausstehend. **M6-Welle-5a
 abgeschlossen 2026-06-06** mit Stack `4b36185..52cb698`
 (C0 `4b36185` Slice-Doc + C2 `4c1a693` Quality-Pipeline-
 Audit-Substanz + C2-Review-Folge `52cb698` 6 Self-Review-
@@ -241,7 +242,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 4b-b | `GG-RT-005` Telemetry-Port-Bench | Done 2026-06-06 | [`M6-welle-4b-b.md`](../done/M6-welle-4b-b.md) | `GG-RT-005` SOLLTE **produktiv** (10 000 Points/s am Telemetry-Port mit Payloads ≤ 256 Byte; lokal ~788k Publish-OPS) | — (C1 entfaellt; Welle-4b-b-D-4 schliesst ADR-0041-Schaerfung negativ aus) |
 | 4b-c | `GG-RT-001` Backpressure-Healthcheck | Done 2026-06-06 | [`M6-welle-4b-c.md`](../done/M6-welle-4b-c.md) | `GG-RT-001` MUSS **produktiv** (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status-Healthcheck via NEU Adapter-Side `_tick_loop_healthcheck.py` + `GET /runs/{id}/healthcheck`-Endpoint) | — (C1 entfaellt; Welle-4b-c-D-6 schliesst ADR-Schaerfungs-Bedarf negativ aus) |
 | 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | **Done 2026-06-06** (`4b36185..52cb698`) | [`M6-welle-5a.md`](../done/M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung ✓ produktiv) + `002` (NaN-Reject ✓ produktiv) + `003` (Kommunikationsausfall ⚠ partial Lücke → Trigger 035) + `004` (max_age ✗ Lücke → Trigger 034) — Audit + 7 Smokes + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
-| 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | **In Progress 2026-06-07** (C0 dieser Commit) | [`M6-welle-5b.md`](M6-welle-5b.md) | `GG-SAFE-007` (Sim/Prod-Trennung an drei Pflicht-Surfaces UI + API-Doku + **Adapterkonfiguration**; Welle-5b-D-2 Option B: OpenAPI + README + UI-Dashboard + Scenario-YAML + Protocol-Adapter-Config-Module + arch_check) + `008` (REST/WS/Adapter-Input-Validation-Audit; Welle-5b-D-4 Option B DriveSide+DrivenSide; Welle-5b-D-5 Per-Endpoint-Strict-Mode mit Request-Body-Default) | vorbedingt NEU eigenstaendige Schaerfungs-ADR 0045 mit Bezug auf ADR 0037 (Welle-5b-D-6 Option C; ADR 0037 unveraendert `Accepted`; Default C1 entfaellt) |
+| 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | **In Progress 2026-06-07** (C0 `0d3bb61`) | [`M6-welle-5b.md`](M6-welle-5b.md) | `GG-SAFE-007` (Sim/Prod-Trennung an drei Pflicht-Surfaces UI + API-Doku + **Adapterkonfiguration**; Welle-5b-D-2 Option B: OpenAPI + README + UI-Dashboard + Scenario-YAML + Protocol-Adapter-Config-Module + arch_check) + `008` (REST/WS/Adapter-Input-Validation-Audit; Welle-5b-D-4 Option B DriveSide+DrivenSide; Welle-5b-D-5 Per-Endpoint-Strict-Mode mit Request-Body-Default) | **NEU ADR 0045** `Proposed` in C1 → `Provisional` in C3 (Schaerfungs-ADR mit Bezug auf ADR 0037 per ADR-0011-Pattern; ADR 0037 unveraendert `Accepted`; Welle-5b-D-6 Option C verbindlich) |
 | 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | Pending | TBD (entsteht in Welle-5c-C0) | `GG-SAFE-005` (Fallback-Zustaende) + `006` (Non-Determinism-Detection) + IP-/Netz-Beschraenkung Demo-Compose | TBD |
 | 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | Pending | TBD (entsteht in Welle-6-C0) | `GG-DEPLOY-001..011` (6 MUSS + 4 SOLLTE + 1 KANN) + Trigger 009 (IEC-Reaktivierung; M4-Erbschaft); ggf. eigener Sub-Slice 6a/6b | TBD |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
