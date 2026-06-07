@@ -263,7 +263,7 @@
   analog M4-Welle-7). Welle-7-Substanz: 5 M5-ADRs
   (0036..0040) `Provisional → Accepted` (C1), NEU
   `done/M5-results.md` mit Welle-Tabelle/Abnahme-Belegen/
-  S-1..S-6-Sweep (C2), `roadmap.md §3 M5` DoD-Checkboxen
+  S-1..S-6-Sweep (C2), `roadmap.md §4 M5` DoD-Checkboxen
   + M5 auf `Done` + „Aktiver Slice: M6" (C3),
   Self-Close-Move `M5-ui-demo.md` + `M5-welle-7.md` →
   `done/` (C4a/b). Welle 7 hat keinen Code-Diff, keine
@@ -400,7 +400,10 @@ Diese Roadmap fuehrt die Meilensteine, die sich aus dem Lastenheft und
 der Architektur ergeben. Sie ist die Quelle fuer die Status-Spalte
 der `GG-TRACE-001`-Implementierungsmatrix
 ([Lastenheft §27.2](../../../../spec/lastenheft.md#272-anforderung-zu-implementierung))
-mit `M[N]`-Markern.
+mit `M[N]`-Markern. §3 (MVP-Abnahmescope) liefert die
+Stakeholder-Sicht auf `GG-MVP-001..004`; §4 die
+Meilenstein-Detail-Sicht; §5 die `GG-AR-OPEN-*`-
+Vorbedingungen.
 
 `GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
 (`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
@@ -446,7 +449,40 @@ inkl. Welle-7-Closure
 
 ---
 
-## 3. Meilensteine
+## 3. MVP-Abnahmescope
+
+Cross-cutting Abnahmekriterien aus Lastenheft §3 — Status-
+Snapshot pro `GG-MVP-*`-ID. Diese Tabelle ist die
+Stakeholder-Sicht; die einzelnen `GG-SIM/DEV/REPLAY/DEPLOY/
+...`-IDs sind in §4 pro Meilenstein detailliert. Lastenheft-
+Traceability §27.2 Z. 2205: `GG-MVP-001..004` ist
+„Scope-Festlegung; Auspraegung lebt in einzelnen
+`GG-SIM/DEV/...`-IDs" — diese Tabelle macht die Auspraegung
+maschinenlesbar.
+
+| ID | Akzeptanz (Lastenheft §3, Z. 123-150) | Stand 2026-06-07 | Substanz / Verankerung |
+| --- | --- | --- | --- |
+| **GG-MVP-001** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
+| **GG-MVP-002** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ⚠ **partial** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓; **Zeitreihen-Persistenz** ⚠ (`TelemetrySinkPort`-/Telemetrie-Schema fehlt); **deterministisches Replay-E2E** ⚠ — Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit; `docs/user/safe-005-006-fallback-determinism.md`), aber Per-Lauf-Status-Marker + `ReplaySourcePort`-E2E-Verkabelung fehlen → [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md) + [Next-Plan](../next/replay-source-integration.md). |
+| **GG-MVP-003** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✗ **Lücke** | Was es heute gibt: `make demo` (Start ohne Status-Output), `make runtime` (Compose-Smoke + `/health`-Poll), `make test-integration` (Pytest + JUnit-XML). **Kein** Abnahme-CLI (`tools/accept.py` / `make accept`) mit Aggregat-Status. Kein `open/`-Trigger angelegt (Welle 6 ist Kandidat fuer Scope-Erweiterung; alternativ eigener Trigger fuer Folge-Slice). |
+| **GG-MVP-004** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
+
+**Aktivierungs-Pfade fuer offene Punkte:**
+
+- **GG-MVP-002 Zeitreihen-Persistenz + Replay-E2E** →
+  [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+  + [Next-Plan](../next/replay-source-integration.md);
+  Aktivierung an `GG-REPLAY-004..006`-Aktivierung in M3-Folge
+  oder bei Stakeholder-Druck.
+- **GG-MVP-003 Abnahme-CLI** → noch nicht verankert. Optionen:
+  Welle-6-Scope-Erweiterung (additive `make accept` + `tools/
+  accept.py` als 4. Substanz-Item; passt zum NEU `/ready`-
+  Endpoint), NEU `open/`-Trigger als eigener Folge-Slice, oder
+  Welle-7-Closure als Aggregat-Belege.
+
+---
+
+## 4. Meilensteine
 
 ### M1 — Tick-Loop-Spine (`Done`)
 
@@ -896,9 +932,16 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 6
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
-+ Trigger 009)** — Welle-6-Slice-Doc entsteht in Welle-6-C0
-(Welle-5c-Self-Close-Folge C4a/C4b dient gleichzeitig als
-Welle-6-Pre-C0a/Pre-C0b).
++ Trigger 009)** — Welle-6-Slice-Doc angelegt in Welle-6-C0
+(dieser Commit; siehe [`M6-welle-6.md`](M6-welle-6.md));
+Welle-6-Decisions D-1..D-6 final: monolithische Welle 6
+(User-Ask „Alles fixen") / `GG-DEPLOY-006` NEU `/ready`-
+Endpoint mit Three-State-Status / `GG-DEPLOY-004` NEU
+`.devcontainer/`-Konfig / Trigger 009 NEU Dockerfile-
+`iec61850-test`-Stage auf Python 3.12 + Makefile-Target /
+NEU ADR 0046 `Multi-Python-Test-Stage-Pattern` als ADR-
+0011-Schaerfung. C1/C2/C3 + Self-Close-Folge C4a/C4b
+ausstehend.
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
 `4b76ff7..C4b dieser Commit` (siehe
 [`M6-welle-5c.md`](../done/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
@@ -1101,7 +1144,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
 
 ---
 
-## 4. Vorbedingungen
+## 5. Vorbedingungen
 
 Vor M1 muessen folgende Punkte geklaert sein:
 

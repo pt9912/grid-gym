@@ -11,7 +11,7 @@ die vier bestehenden Carveout-Surfaces des Repos:
 | Per-Welle `§1.3 Anti-Scope`-Block | feinste Aufloesung pro Welle | jede Welle-Slice-Doc unter `done/M{N}-welle-*.md §1.3` |
 | Pro-M-Closure `§5 Erbschaft` + `§7/§8 Nicht-vollzogen` | aggregiert pro Meilenstein | [`../done/M3-results.md`](../done/M3-results.md), [`../done/M4-results.md`](../done/M4-results.md), [`../done/M5-results.md`](../done/M5-results.md) |
 | `open/`-Trigger-Docs | formal-akzeptierter Trigger-Watch | [`../open/`](../open/) Bestand-Tabelle |
-| `roadmap.md §3 M{N+1}`-Vorbelegung | DoD-Checkbox-Skizze | [`roadmap.md`](roadmap.md) §3 M6 |
+| `roadmap.md §4 M{N+1}`-Vorbelegung | DoD-Checkbox-Skizze | [`roadmap.md`](roadmap.md) §3 M6 |
 
 **Warum dieses Dokument trotzdem?** Bisher mussten Reviewer
 fuer eine vollstaendige Carveout-Sicht **drei M-results-Docs**
@@ -161,7 +161,7 @@ Trigger-Doc).
 
 ### 2.8 M6-Vorbelegung (Lastenheft-Pflicht-IDs)
 
-Quelle: [`roadmap.md §3 M6`](roadmap.md). Diese sind keine
+Quelle: [`roadmap.md §4 M6`](roadmap.md). Diese sind keine
 Carveouts im engeren Sinne (M6 ist der Hauptbestimmungs-Ort),
 sondern Vorbelegungs-DoD-Items, die mit M6-Welle-0 in einen
 formalen M6-Slice-Plan wandern.
@@ -265,7 +265,7 @@ in `done/M{N}-results.md §5` + §8.)
   — M2-SOLLTE-Geraete-Quelle.
 - [`../open/README.md`](../open/README.md) — Bestand-Tabelle
   der formal-akzeptierten Trigger-Watch-Eintraege.
-- [`roadmap.md §3 M6`](roadmap.md) — M6-Vorbelegung mit DoD-
+- [`roadmap.md §4 M6`](roadmap.md) — M6-Vorbelegung mit DoD-
   Checkbox-Skizze.
 - [`../README.md`](../README.md) — Planning-Verzeichnis-
   Lifecycle-Konvention.
