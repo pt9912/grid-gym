@@ -143,17 +143,22 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-04**:
+Stand **2026-06-07**:
 
-- **M1..M5 · `Done`** (21 ADRs `Accepted`). M5-Closure-
+- **M1..M5 · `Done`** (38 ADRs `Accepted` ueber M1..M5). M5-Closure-
   Artefakt:
   [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
-- **M6 — Performance + Security + CI/CD** · `Pending` (aktiver
-  Slice; M6-Welle-0 startet als Naechstes).
+- **M6 — Performance + Security + CI/CD** · `In Progress` (eroeffnet
+  2026-06-04 mit M6-Welle-0; M6-Welle-0..5a `Done`, **aktive Welle:
+  M6-Welle-5b** `GG-SAFE-007/008` Sim/Prod-Marker + Input-Validation-
+  Audit). M6-ADRs in Flight: 4 `Provisional` (0041..0044), 1 `Proposed`
+  (0045).
 
-**Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped
-(IEC-61850-2c-Mock-only-Fallback, ADR 0035 §2.5, Trigger 009).
-`make gates` 10-stufig cache-frei gruen ohne Override.
+**Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped zum
+M5-Closure (2026-06-04); M6-Welle-5a ergaenzt 7 Integration-Smoke-
+Tests fuer `GG-SAFE-001..004`. IEC-61850-2c-Mock-only-Fallback gemaess
+ADR 0035 §2.5, Trigger 009. `make gates` 10-stufig cache-frei gruen
+ohne Override.
 
 **Pointer:** Abnahmereihenfolge `GG-DEMO-008` →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
@@ -196,22 +201,18 @@ Der MVP umfasst laut Lastenheft mindestens:
 - maschinenlesbare Abnahmeergebnisse fuer Replay-Pruefung,
   Szenario-Validierung und Demo-Healthcheck
 
-## Geplante Funktionsbereiche
+## Optionale Erweiterungen / Roadmap
 
-- Simulationskern mit diskreten Zeitschritten, zentralem Zeitmodell und
-  deterministischem Event Scheduler
-- Szenario-, Snapshot-, Export- und Replay-System
-- Kanonische Serialisierung fuer Replay-Diff und Golden-File-Vergleiche
-- Geraetemodelle fuer Batteriespeicher, PV-Anlagen, Lastprofile,
-  Netzanschlusspunkte und Smart Meter
-- Vereinfachte Netzmodelle fuer Frequenz-, Spannungs- und Lastverhalten
-- Fault Injection fuer Kommunikationsausfaelle, stale Daten, NaN-Werte,
-  Frequenzabfaelle, Spannungseinbrueche und Geraeteausfaelle
-- REST-API, WebSocket-Telemetrie und lokales Web-UI fuer Demo- und Testbetrieb
-- PostgreSQL-basierte Persistenz im MVP; weitere Speicheradapter optional
-- Architektur-, Integrations-, Replay- und Demo-Abnahmetests
-- Optionale Adapter und Erweiterungen wie MQTT, Modbus TCP, OPC-UA, DNP3,
-  IEC61850, TimescaleDB, InfluxDB, Agenten, HIL, MPC und RL
+Der oben beschriebene MVP-Scope ist umgesetzt; die folgenden
+Erweiterungen sind bewusst ausserhalb des MVP gehalten und in
+den normativen Anforderungen ([`spec/lastenheft.md`](spec/lastenheft.md)) als optionale
+Ergaenzungen gefuehrt:
+
+- weitere Zeitreihen-Speicheradapter
+  (TimescaleDB `GG-PERSIST-006`, InfluxDB `GG-PERSIST-007`)
+- Hardware-in-the-Loop-Integration (HIL) `GG-TEST-004`
+- modellpraediktive Regelung (MPC-Agenten) `GG-FUTURE-001`
+- Reinforcement-Learning-Agenten (RL) `GG-FUTURE-002`
 
 ## Projektstruktur
 
@@ -229,7 +230,7 @@ Der MVP umfasst laut Lastenheft mindestens:
 ├── docs/
 │   ├── archive/                 ← verworfene / historische Skizzen
 │   ├── plan/
-│   │   ├── adr/                 ← Architecture Decision Records (0001..0040)
+│   │   ├── adr/                 ← Architecture Decision Records (0001..0045)
 │   │   └── planning/
 │   │       ├── done/            ← abgeschlossene Slices + Closure-Notizen
 │   │       ├── in-progress/     ← aktive Roadmap + Slice-Plaene
@@ -286,15 +287,6 @@ Der MVP umfasst laut Lastenheft mindestens:
     ├── diagnose_otlp_span_export.py ← OTLP-Debug-Matrix-Skript
     └── wait_otel_collector.py       ← Bounded-Liveness-Poll fuer distroless OTLP-Collector
 ```
-
-Quelltext, Tests und Tooling-Skripte (`src/grid_gym/`, `tests/`,
-`tools/`) wurden mit Spike-0 (Closure: [`docs/plan/planning/done/spike-0.md`](docs/plan/planning/done/spike-0.md),
-2026-05-15) angelegt; `Dockerfile`, `Makefile` und `pyproject.toml`
-sind die verbindliche Build-/Gate-Schicht gemaess
-[`ADR 0002`](docs/plan/adr/0002-language-and-build-stack.md)
-(`Accepted` 2026-05-15) und
-[`ADR 0005`](docs/plan/adr/0005-type-check-gate.md)
-(`Accepted` 2026-05-15).
 
 Die Dokumentations- und Planungsstruktur ist in
 [`docs/plan/adr/0001-documentation-and-planning-structure.md`](docs/plan/adr/0001-documentation-and-planning-structure.md)
