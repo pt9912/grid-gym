@@ -47,7 +47,13 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | ----- | ------- | ----------- |
 | [`034-safe-004-max-age-stale-quality.md`](034-safe-004-max-age-stale-quality.md) | `GG-SAFE-004` max_age-basierte `STALE`-Quality-Markierung; Substanz fehlt komplett im Repository | eigener Slice ueber TickLoop-Quality-Stage + `max_age`-Konfigurationsfeld + Smoke-Reaktivierung |
 | [`035-safe-003-comm-failure-missing-quality.md`](035-safe-003-comm-failure-missing-quality.md) | `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm-Emission (partial Lücke) | eigener Slice ueber Adapter-Lifecycle-Hook + Quality-Emission im Connection-Lost-Pfad |
-| [`036-safe-006-replay-diff-status-replay-source-integration.md`](036-safe-006-replay-diff-status-replay-source-integration.md) | `GG-SAFE-006` Per-Lauf-Status-Marker `replay_diff_status` (Architektur §8.2 Z. 820 + 823) + `ReplaySourcePort`-Verkabelung mit `diff_replay()` (Lastenheft Z. 2292) — partial Lücke (Core-Diff ✓ produktiv) | `GG-REPLAY-004..006`-Aktivierung in M3+ ODER CI-Bench-Determinismus-Drift |
+| [`036-safe-006-replay-diff-status-replay-source-integration.md`](036-safe-006-replay-diff-status-replay-source-integration.md) | `GG-SAFE-006` Per-Lauf-Status-Marker `replay_diff_status` (Architektur §15 Z. 820 + 823) + `ReplaySourcePort`-Verkabelung mit `diff_replay()` (Lastenheft Z. 2292) — partial Lücke (Core-Diff ✓ produktiv) | `GG-REPLAY-004..006`-Aktivierung in M3+ ODER CI-Bench-Determinismus-Drift |
+
+**Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge):**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`037-deploy-007-010-multi-node-deployment.md`](037-deploy-007-010-multi-node-deployment.md) | `GG-DEPLOY-007..010` Kubernetes-Manifeste + Rolling-Updates + Zero-Downtime + Rollback — komplett Lücke; Architektur §16 Z. 916 fordert „Trigger-getriebene Folgearbeit" (diese Notiz erfuellt die Verankerungs-Pflicht) | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck |
 
 **SOLLTE — M2-Welle-7-Erbschaft** (Quelle: [`../done/M2-devices.md`](../done/M2-devices.md) §4 Out-of-Scope):
 

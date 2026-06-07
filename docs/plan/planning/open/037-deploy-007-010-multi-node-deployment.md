@@ -4,9 +4,9 @@
 **Datum:** 2026-06-07
 **Quelle:** M6-Welle-6-C0 (Deploy-Hardening + IEC-Smoke-
 Pfad-B; siehe
-[`../in-progress/M6-welle-6.md`](../in-progress/M6-welle-6.md) §1.1
-„`GG-DEPLOY-007..010` ⏸ M7+ per Lastenheft-Traceability
-Z. 2308").
+[`../in-progress/M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md)
+§3.1 Welle-Status-Tabelle: „`GG-DEPLOY-007..010` ⏸ M7+
+per Lastenheft-Traceability Z. 2308").
 
 ---
 
@@ -76,8 +76,9 @@ korrespondierenden Trigger gelebt (Welle-6-Audit-Befund).
 
 - ✗ **Keine Rollback-Strategie**: kein dokumentierter
   Rollback-Pfad fuer API/UI/Simulationsdienst/Datenbank.
-  M3-Alembic-Migrationen sind heute one-way (kein expliziter
-  Rollback-Test pro Migration).
+  Die M1-Welle-6c-Alembic-Basismigration hat einen
+  `downgrade()`-Pfad, aber keinen expliziten Rollback-Test
+  pro Migration.
 
 - **Bestehende Substanz, die wiederverwendet werden kann**:
   - `deploy/compose.yml` mit 4 Services + Healthchecks (M1-
@@ -116,7 +117,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      Zugriff; bei Co-Location routet die Ingress-Form API-
      Pfade und UI-Root sichtbar getrennt.
    - `StatefulSet` fuer Postgres (oder Verweis auf externes
-     RDS/Operator-Pattern).
+     Postgres-/Managed-Postgres-/Operator-Pattern).
    - `Job` fuer Alembic-Migrationen + `initContainer`-
      Pattern.
    - `ConfigMap` + `Secret` fuer ENV-Variablen aus
@@ -144,8 +145,8 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 4. **Rollback-Strategie-Doku**:
    - Image-Tag-Pin-Konvention (kein floating `latest`;
      Welle-5c-D-4-`ports`-Hardening-Pattern uebertragbar).
-   - Alembic-Downgrade-Skript pro Migration (ggf. NEU
-     `alembic downgrade -1`-Verifikation pro Welle-CI-Gate).
+   - Alembic-`downgrade()`-Pfad pro Migration + NEU
+     `alembic downgrade -1`-Verifikation pro Welle-CI-Gate.
    - Grenzen: **Lastenheft-Pflicht** zu dokumentieren
      („migrationsbedingte Datenmodell-Aenderungen" sind
      ggf. nicht rollback-faehig — Z. 1909-1911).
@@ -236,10 +237,11 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 
 ## Bezug
 
-- [`../in-progress/M6-welle-6.md`](../in-progress/M6-welle-6.md)
-  §1.1 + §1.3 + Anti-Scope — Welle-6-Substanz fuer
+- [`../in-progress/M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md)
+  §3.1 Welle-Status-Tabelle — Welle-6-Substanz fuer
   `GG-DEPLOY-006` (`/ready`-Endpoint) ist die Vorbedingung
-  fuer K8s-Readiness-Probe.
+  fuer K8s-Readiness-Probe; `GG-DEPLOY-007..010` bleiben dort
+  als M7+-Folgearbeit verankert.
 - `spec/lastenheft.md` Z. 1881-1911 + §27.2 Z. 2308
   (Traceability) — Akzeptanz-Quelle und „Post-MVP"-Defer-
   Vermerk.
