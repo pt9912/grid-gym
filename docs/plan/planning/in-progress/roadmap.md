@@ -896,9 +896,15 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 5c
 (SOLLTE-Items + IP/Netz-Beschraenkung; `GG-SAFE-005/006` +
-Demo-Compose-Hardening)** — Welle-5c-Slice-Doc entsteht in
-Welle-5c-C0. Welle-5-Sub-Slicing in 5a + 5b + 5c per Welle-
-5a-D-1; Welle 5a + 5b sind abgeschlossen, 5c ist Pending.
+Demo-Compose-Hardening)** — Welle-5c-Slice-Doc angelegt in
+Welle-5c-C0 (dieser Commit; siehe
+[`M6-welle-5c.md`](M6-welle-5c.md); Slice-Doc-Rewrite nach
+4 C0-Review-Findings: SAFE-005/006 sind beide ✓ produktiv per
+Lastenheft-Traceability Z. 2291/2292 (`BatteryDevice.
+apply_command` + `diff_replay`); Welle 5c liefert Audit-Doku
++ Demo-Compose-`ports`-Hardening fuer `GG-DEPLOY-011`).
+Welle-5-Sub-Slicing in 5a + 5b + 5c per Welle-5a-D-1;
+Welle 5a + 5b sind abgeschlossen, 5c ist `In Progress`.
 **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
 C3 dieser Commit` (siehe [`M6-welle-5b.md`](M6-welle-5b.md);
 NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)
