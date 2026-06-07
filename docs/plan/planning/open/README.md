@@ -41,12 +41,13 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`026-bess-simulation-reserve-market-spike.md`](026-bess-simulation-reserve-market-spike.md) | Lokale BESS-Simulation als Vorlage fuer Reserve-Market-/LER-Strategien | bei Reserve-Market-Agent, BESS-SOC-Management-Agent oder LER-Demo |
 | [`030-rl-adapter.md`](030-rl-adapter.md) | RL-Adapter ueber den Multi-Agent-Bus (`GG-FUTURE-001/002`) | bei konkreter RL-Stakeholder-Anforderung (M7+-Material) |
 
-**Quality-Pipeline-Lücken (M6-Welle-5a-Audit-Folge):**
+**Quality-/Determinismus-Lücken (M6-Welle-5a/5c-Audit-Folge):**
 
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
 | [`034-safe-004-max-age-stale-quality.md`](034-safe-004-max-age-stale-quality.md) | `GG-SAFE-004` max_age-basierte `STALE`-Quality-Markierung; Substanz fehlt komplett im Repository | eigener Slice ueber TickLoop-Quality-Stage + `max_age`-Konfigurationsfeld + Smoke-Reaktivierung |
 | [`035-safe-003-comm-failure-missing-quality.md`](035-safe-003-comm-failure-missing-quality.md) | `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm-Emission (partial Lücke) | eigener Slice ueber Adapter-Lifecycle-Hook + Quality-Emission im Connection-Lost-Pfad |
+| [`036-safe-006-replay-diff-status-replay-source-integration.md`](036-safe-006-replay-diff-status-replay-source-integration.md) | `GG-SAFE-006` Per-Lauf-Status-Marker `replay_diff_status` (Architektur §8.2 Z. 820 + 823) + `ReplaySourcePort`-Verkabelung mit `diff_replay()` (Lastenheft Z. 2292) — partial Lücke (Core-Diff ✓ produktiv) | `GG-REPLAY-004..006`-Aktivierung in M3+ ODER CI-Bench-Determinismus-Drift |
 
 **SOLLTE — M2-Welle-7-Erbschaft** (Quelle: [`../done/M2-devices.md`](../done/M2-devices.md) §4 Out-of-Scope):
 
