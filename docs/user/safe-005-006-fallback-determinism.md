@@ -1,7 +1,7 @@
 # Geraete-Fallback + Replay-Determinismus (`GG-SAFE-005/006`)
 
 **Quelle:** M6-Welle-5c (SOLLTE-Items + IP/Netz-Beschraenkung;
-[`../plan/planning/in-progress/M6-welle-5c.md`](../plan/planning/in-progress/M6-welle-5c.md)).
+[`../plan/planning/done/M6-welle-5c.md`](../plan/planning/done/M6-welle-5c.md)).
 **Stand:** 2026-06-07.
 
 Dieses Dokument auditiert die produktive Substanz fuer die

@@ -96,7 +96,7 @@ per `carveouts.md §2.7`, **kein einzelner Lastenheft-ID**):
   per-Lauf-Metrik `replay_diff_status` und einen
   maschinenlesbaren Replay-Diff-Statuswert.
 - **IP-/Netz-Beschraenkung im Demo-Compose**: per
-  [`carveouts.md §2.7`](carveouts.md) (Permanent-Out-of-
+  [`carveouts.md §2.7`](../in-progress/carveouts.md) (Permanent-Out-of-
   Scope-Block „Multi-User + Auth im UI-Layer"): **separate
   Auflagen-Schicht, kein einzelner Lastenheft-ID**. Die
   Auflage steht orthogonal zu `GG-DEPLOY-011` (Lastenheft Z.
@@ -740,7 +740,7 @@ explizit abgegrenzt.
   Welle-5a Quality-Pipeline-Audit; Pattern-Vorbild fuer
   Audit-Welle mit `open/`-Trigger-Anlage bei partiellen
   Lücken (Triggers 034/035).
-- [`M6-perf-security-cicd.md §3.2 Welle 5`](M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 5`](../in-progress/M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-5c-Vorbelegung.
 - [`../../../../spec/lastenheft.md §20 GG-SAFE-005/006`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer Fallback-Zustaende +
@@ -752,7 +752,7 @@ explizit abgegrenzt.
   `replay_diff_status` + Replay-Diff-Status-Tabelle (Z. 823)
   „maschinenlesbarer Statuswert pro Lauf" mit Verweis auf
   `GG-REPLAY-007` und `GG-SAFE-006`.
-- [`carveouts.md §2.7`](carveouts.md) — Permanent-Out-of-
+- [`carveouts.md §2.7`](../in-progress/carveouts.md) — Permanent-Out-of-
   Scope-Block mit der „separate Auflagen-Schicht" fuer
   Demo-Compose-IP/Netz-Beschraenkung (kein Lastenheft-ID).
 - [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)

@@ -900,8 +900,8 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 (Welle-5c-Self-Close-Folge C4a/C4b dient gleichzeitig als
 Welle-6-Pre-C0a/Pre-C0b).
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
-`4b76ff7..C3 dieser Commit` (siehe
-[`M6-welle-5c.md`](M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
+`4b76ff7..C4b dieser Commit` (siehe
+[`M6-welle-5c.md`](../done/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
 an 4 Geraeten (Battery/Load/GridConnection/PV) per
 Lastenheft-Traceability Z. 2291; `GG-SAFE-006` ⚠ partial
 (Core-Diff-Algorithm `diff_replay` ✓ produktiv; Per-Lauf-
