@@ -189,6 +189,19 @@ Build-Trigger.
 | `GG-SAFE-004` `max_age`-stale-Quality-Markierung (Lücke — `max_age`-Substanz fehlt komplett im Repo) | In Trigger Watch | Compliance-/Stakeholder-Druck auf konkrete `max_age`-Schwelle ODER M6-Welle-7-Closure-Sweep ODER Welle-X-Maintainer-Entscheidung | [`034-safe-004-max-age-stale-quality.md`](../open/034-safe-004-max-age-stale-quality.md) |
 | `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | In Trigger Watch | Reale-Compose-Demo-Pfad mit Protocol-Adapter ODER M6-Welle-6-Deploy-Hardening (Trigger 009-Erbschaft) ODER Compliance-Druck ODER M6-Welle-7-Closure-Sweep | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
+### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
+
+Quelle: [`../open/`](../open/) + Trigger
+[`037`](../open/037-deploy-007-010-multi-node-deployment.md).
+Alle Items haben `Typ = Trigger-Gated`; aus dem M6-Welle-6-
+Deploy-Hardening-Audit hervorgegangen. `GG-DEPLOY-007..010`
+bleiben Post-MVP/M7+-Material, bis ein konkreter Multi-Node-,
+Skalierungs- oder Compliance-Anker vorliegt.
+
+| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | ------ | ---------------------- | ----------- |
+| `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen und Rollback-Strategie | In Trigger Watch | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037-deploy-007-010-multi-node-deployment.md`](../open/037-deploy-007-010-multi-node-deployment.md) |
+
 ---
 
 ## 3. Resolved Carveouts (Audit-Trail-Auswahl)

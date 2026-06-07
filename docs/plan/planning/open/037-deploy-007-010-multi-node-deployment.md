@@ -118,7 +118,15 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    - `Service` (ClusterIP) fuer api + simulation.
    - `Ingress` oder LoadBalancer-Service fuer externen
      Zugriff; bei Co-Location routet die Ingress-Form API-
-     Pfade und UI-Root sichtbar getrennt.
+     Pfade und UI-Root sichtbar getrennt. **IP-/Netz-
+     Beschraenkung ist Pflicht**: K8s-Externalisierung muss
+     `carveouts.md §2.7` analog zum Demo-Compose umsetzen
+     (z. B. Ingress-Source-Range-Whitelist,
+     `NetworkPolicy`, dokumentierte externe
+     Firewall-/Reverse-Proxy-Boundary oder bewusst
+     isolierter Lab-LoadBalancer). Ein unauthentifizierter
+     UI/API-Pfad darf nicht still als offen erreichbarer
+     Cluster-/Internet-Einstieg ausgeliefert werden.
    - `StatefulSet` fuer Postgres (oder Verweis auf externes
      Postgres-/Managed-Postgres-/Operator-Pattern).
    - `Job` als **alleiniger Migration-Owner** fuer Alembic-
@@ -207,6 +215,11 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      HTML, `simulation`-Stub/Runner ist gemaess dokumentiertem
      Status sichtbar, Postgres/Migration-Job laeuft einmalig;
      `initContainer` fuehren keine Alembic-Migration aus.
+     Der externe Zugriff ist ueber eine explizite
+     IP-/Netz-Boundary abgesichert (Ingress-Whitelist,
+     NetworkPolicy, dokumentierte externe Boundary oder
+     isolierter Lab-LoadBalancer) und die Doku nennt, dass
+     UI/API weiterhin unauthentifiziert sind.
    - Boundary: Rolling-Update fuer `api` mit
      `maxUnavailable: 0`/`maxSurge: 1` bleibt ready und
      dokumentiert das Verhalten laufender Simulationen ueber
@@ -220,7 +233,11 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      Jeder Zero-Downtime-Claim mit aktivem
      "active runs killing" schlaegt fehl. Rollback-Grenzen
      fuer nicht downgrade-faehige Migrationen schlagen
-     kontrolliert an statt still zu "succeeden".
+     kontrolliert an statt still zu "succeeden". Ein
+     offen exponierter Ingress/LoadBalancer ohne die oben
+     dokumentierte IP-/Netz-Boundary schlaegt ebenfalls fehl,
+     weil `carveouts.md §2.7` die Auth-Luecke nur ueber die
+     Auflagen-Schicht akzeptiert.
 
 7. **Audit-Doku-Sync**: nach Implementation wird die
    kanonische Deploy-Hardening-Audit-Tabelle synchronisiert
