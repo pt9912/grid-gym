@@ -27,7 +27,7 @@ Tracking-Pfade.
 
 | Komponente | Substanz | Status |
 | --- | --- | --- |
-| Szenario startet ueber API | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Geraete + GridConnection per Lastenheft-Pflicht) | ✓ produktiv |
+| Szenario startet ueber API | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Entitaeten per Lastenheft-Pflicht: GridConnection + PV + Last + Smart Meter + Batteriespeicher) | ✓ produktiv |
 | Live-Telemetrie | WebSocket-Streams `/runs/{id}/telemetry` + `/runs/{id}/alarms-stream` | ✓ produktiv |
 | Persistiert Zeitreihen | `PostgresRunRepository` persistiert Laufmetadaten ✓; produktive `TelemetrySinkPort`-/Zeitreihen-Persistenz fuer Telemetriepunkte fehlt noch (`GG-PERSIST-001` listet Telemetrie-/Alarm-Schema weiter als M3-offen) | ⚠ **partial** |
 | **Laesst sich deterministisch replayen** | Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit); **End-to-End-Verkabelung fehlt** | ⚠ **partial** |
@@ -92,8 +92,9 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
      (haelt nur Lauf-Metadaten/Status).
    - Welle-X-C0 entscheidet, ob der Sample-Strom aus dem
      bestehenden `SnapshotPort` (= `GG-AR-PORT-DRV-005`,
-     vermutlich Driving-Port-Mismatch — siehe §3 D-1) oder
-     einem NEU `ReplaySnapshotPort` (Driven, Persistenz-
+     Driving — eine Persistenz-Quelle aus einer Driving-
+     Surface zu ziehen ist ein Schichten-Twist; siehe §3 D-1)
+     oder einem NEU `ReplaySnapshotPort` (Driven, Persistenz-
      Schicht) kommt.
 
 3. **`replay_diff_status`-Metrik-Emission** (Architektur §15
@@ -203,6 +204,18 @@ Vorschlag: A. Welle-X-C0 verifiziert gegen `TelemetryPoint`,
 Vorschlag: A (NEU `ReplaySnapshotPort` Driven). Welle-X-C0
 verifiziert.
 
+**Sub-Decision D-1.1 — `ReplaySample`-Form**: Die
+`ReplaySample`-Pflichtfelder (`tick`, `simulation_time`,
+`sequence`, `source` und ggf. weitere Replay-spezifische
+Felder) sind heute nicht im Domain-Modell verankert;
+`TelemetryPoint` (`src/grid_gym/hexagon/core/domain/telemetry.py`)
+deckt sie nicht vollstaendig ab. Welle-X-C0 legt die
+`ReplaySample`-Form (gegen `diff_replay()`-Signatur und
+`spec/architecture.md §8` Z. 544) explizit fest, bevor D-1
+Option A/B/C entschieden werden kann; sonst laesst sich
+Option C (Telemetrie als Sample-Quelle) nicht sauber
+gegen A/B abgrenzen.
+
 ### D-2 — Semantik + `MetricsPort`-Kodierung des `replay_diff_status`
 
 - **A**: Binaer semantisch (`clean`/`diverged`), numerisch als
@@ -254,15 +267,30 @@ wenn C0 beide Schemata klein und reviewbar schneiden kann.
 
 ### D-5 — ADR-Bedarf
 
-- **NEU ADR `GG-MVP-002-Replay-Source-Integration`**
-  (`Provisional`): verankert die `TelemetrySinkPort`-
-  Zeitreihen-Persistenz, die `ReplaySourcePort`-Adapter-
-  Form, den numerischen `replay_diff_status`-Vertrag, den
-  separaten `GG-SAFE-006`-Detailvertrag, die vollstaendige
-  `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix und die
-  Lifecycle-Hook-Pflicht im Core-Spine (`GG-AR-P-007`-
-  konform).
-- Vermutlich ADR-Nummer 0047 oder 0048 (Welle-X-C0-Stand).
+- **NEU ADR(s) (`Provisional`)** — ein oder zwei ADRs,
+  abhaengig vom D-4-Beschluss:
+  - **Monolithisch (D-4 Option A)**: ein ADR
+    `GG-MVP-002-Replay-Source-Integration` verankert alle
+    fuenf Substanz-Entscheidungen (Zeitreihen-Persistenz,
+    Replay-Source-Adapter-Form, numerischer
+    `replay_diff_status`-Vertrag, separater
+    `GG-SAFE-006`-Detailvertrag, vollstaendige
+    `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix +
+    Lifecycle-Hook-Pflicht im Core-Spine nach
+    `GG-AR-P-007`).
+  - **Sub-sliced (D-4 Option B)**: zwei ADRs — ein
+    Persistenz-ADR (`TelemetrySinkPort`-Zeitreihen-
+    Persistenz + ggf. `ReplaySnapshotPort`-Adapter-Form)
+    und ein Replay-Lifecycle-ADR (numerischer
+    `replay_diff_status`-Vertrag, separater
+    `GG-SAFE-006`-Detailvertrag, vollstaendige
+    `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix +
+    Lifecycle-Hook-Pflicht im Core-Spine nach
+    `GG-AR-P-007`).
+  Welle-X-C0 trifft die Aufteilungs-Entscheidung gegen D-4.
+- Naechste freie ADR-Nummer ist **0046** (letzte vergebene:
+  `0045-http-api-request-strict-validation.md`); bei
+  Sub-Slicing 0046 + 0047.
 
 ## 4. Sub-Scope (Welle-Vorbelegung)
 
@@ -324,8 +352,10 @@ Falls D-4 Option B (sub-sliced):
 **Aktivierungs-Bedingungen** (eine genuegt):
 
 - **Stakeholder-Bedarf fuer `GG-MVP-002`-Closure** vor
-  M6-Welle-7-Closure (M6-Closure-Welle): aktiviert sofort
-  als M6-Welle-7-Vorlauf-Slice.
+  M6-Welle-7-Closure (M6-Closure-Welle; noch nicht
+  eingeplant — kein Slice-Doc unter
+  `docs/plan/planning/in-progress/` oder `next/`):
+  aktiviert sofort als M6-Welle-7-Vorlauf-Slice.
 - **`GG-REPLAY-004..006`-Aktivierung** (Status `🔲 M3` per
   Lastenheft Z. 2269): bundelbar mit diesem Slice, weil
   beide den gleichen Lauf-Lifecycle-Hook benoetigen.
@@ -357,20 +387,21 @@ Migration.
 synchron `diff_replay()` aufruft, koennte er die Lauf-Closure
 verzoegern (bei grossen Sample-Sequenzen).
 **Mitigation:** Welle-X-C0 entscheidet das Ausfuehrungsmodell
-gegen den bestehenden `MetricsPort`-Vertrag (`increment` /
-`gauge` / `observe`) und ohne neue Port-Methode. Welle-X-C2
-pinnt, dass die Lauf-Status-Transition nicht auf unbounded
-Diff-Arbeit blockiert; falls asynchrone Entkopplung noetig ist,
-braucht sie einen expliziten Lifecycle-/Drain-Vertrag statt
-eines impliziten Fire-and-forget-Tasks.
+(synchron vs. asynchron). Welle-X-C2 pinnt, dass die Lauf-
+Status-Transition nicht auf unbounded Diff-Arbeit blockiert;
+falls asynchrone Entkopplung noetig ist, braucht sie einen
+expliziten Lifecycle-/Drain-Vertrag statt eines impliziten
+Fire-and-forget-Tasks.
 
 **R3 — `replay_diff_status`-Wertedomaene fixiert sich
 zu frueh oder passt nicht zum `MetricsPort`.** ADR-0011-
 Pattern erlaubt nachtraegliche Schaerfung; wenn D-2 binaer
 ist und spaeter Severity gewollt ist, ist das ein additiver
 Welle-Y-Schritt. Die C1-ADR muss aber von Anfang an eine
-numerische `MetricsPort`-Kodierung festlegen, damit der
-Accepted-ADR-0024-Vertrag nicht aufgeweicht wird.
+numerische `MetricsPort`-Kodierung gegen die bestehenden
+Surface-Methoden (`increment` / `gauge` / `observe`)
+festlegen, ohne eine neue Port-Methode einzufuehren, damit
+der Accepted-ADR-0024-Vertrag nicht aufgeweicht wird.
 
 **R4 — `GG-TERM-002`-/`GG-TERM-003`-Equality-Check ist
 subtil**: Version, Plattformarchitektur, Konfiguration,
