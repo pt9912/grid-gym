@@ -100,7 +100,10 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    Folge-Slice-C0):
    - `Deployment` fuer `api` mit Readiness-Probe gegen
      `/ready` + Liveness-Probe gegen `/health` (Welle-6-
-     Substanz wiederverwendbar).
+     Substanz wiederverwendbar). **Abgrenzung:** `/ready`
+     ist nur Backend-/Surface-Readiness; es ist kein Nachweis
+     „keine aktiven Simulationen" und darf nicht als
+     Active-Run-Gate fuer Rollouts interpretiert werden.
    - **UI-Artefakt-Vertrag** fuer `GG-DEPLOY-007`:
      Entweder dokumentierte Co-Location im `api`-Deployment
      mit eigener Route/Ingress-Regel fuer die UI-Surface
@@ -118,8 +121,10 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      Pfade und UI-Root sichtbar getrennt.
    - `StatefulSet` fuer Postgres (oder Verweis auf externes
      Postgres-/Managed-Postgres-/Operator-Pattern).
-   - `Job` fuer Alembic-Migrationen + `initContainer`-
-     Pattern.
+   - `Job` als **alleiniger Migration-Owner** fuer Alembic-
+     `upgrade`; `initContainer` duerfen nur DB-Erreichbarkeit
+     und Schema-Head pruefen/abwarten, aber keine Migration
+     ausfuehren.
    - `ConfigMap` + `Secret` fuer ENV-Variablen aus
      `compose.yml`-Substanz.
 
@@ -130,23 +135,44 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      unterbrechungsfrei).
    - Verhalten laufender Simulationen: **Lastenheft-
      Pflicht** zu dokumentieren (Akzeptanz Z. 1893-1895).
-     Welle-6-`/ready`-Sub-Form B („no TickLoop → degraded")
-     ist die Substanz-Basis: Rolling-Update darf nur
-     starten, wenn keine aktiven Laeufe laufen ODER explizit
-     ein „active runs killing" akzeptiert wird.
+     Welle-6-`/ready` ist nur Probe-Surface; `degraded` kann
+     HTTP 200 liefern und „no TickLoop → degraded" ist kein
+     Active-Run-Nachweis. Der Folge-Slice MUSS ein eigenes
+     Active-Run-Gate dokumentieren und testen (z. B.
+     `RunRepository`-/`TickLoopRegistry`-Abfrage,
+     Maintenance-Lock oder Pre-Rollout-Job). Rolling-Update
+     darf nur starten, wenn dieses Gate „keine aktiven
+     Laeufe" meldet ODER explizit ein **Rolling-Update-only**
+     Modus „active runs killing" akzeptiert, dokumentiert und
+     getestet wird.
 
 3. **Zero-Downtime-Doku** (konditional via `GG-DEPLOY-009`
    `KANN`):
-   - Welche Dienste sind Zero-Downtime-faehig (api ja;
-     simulation und postgres haben Einschraenkungen).
-   - Ausschluss „laufender Simulationen" wie bei Rolling-
-     Update (siehe oben).
+   - Welche Dienste sind Zero-Downtime-faehig (api nur fuer
+     zustandslose HTTP-Pfade; simulation, live connections und
+     postgres haben Einschraenkungen).
+   - Ausschluss laufender Simulationen **strenger als Rolling-
+     Update**: Zero-Downtime darf nur behauptet werden, wenn
+     das Active-Run-Gate „keine aktiven Laeufe" meldet. Ein
+     akzeptierter „active runs killing"-Modus schliesst den
+     Zero-Downtime-Claim fuer diesen Rollout explizit aus.
+   - **WebSocket-/Live-Connection-Grenze** fuer API/UI:
+     bestehende WebSocket-Verbindungen gelten nur dann als
+     Zero-Downtime-faehig, wenn der Folge-Slice Load-Balancer-
+     Draining, Reconnect-Semantik und UI-Recovery dokumentiert
+     und testet. Sonst werden WebSocket-/Live-Telemetry-Pfade
+     explizit aus der Zero-Downtime-Behauptung ausgeschlossen.
 
 4. **Rollback-Strategie-Doku**:
    - Image-Tag-Pin-Konvention (kein floating `latest`;
      Welle-5c-D-4-`ports`-Hardening-Pattern uebertragbar).
-   - Alembic-`downgrade()`-Pfad pro Migration + NEU
-     `alembic downgrade -1`-Verifikation pro Welle-CI-Gate.
+   - Alembic-`downgrade()`-Pfad pro Migration + NEU separater
+     Rollback-Sensor (z. B. `make migration-rollback-check`
+     oder `make test-db-rollback`) gegen eine ephemere Test-DB.
+     Aufnahme dieses Sensors in `make ci`, `make fullbuild`
+     oder einen verbindlichen Workflow ist ein ADR-/Plan-
+     Pruefpunkt (siehe Anti-Scope); der Sensor darf nie gegen
+     persistente Demo-/Stakeholder-Daten laufen.
    - Grenzen: **Lastenheft-Pflicht** zu dokumentieren
      („migrationsbedingte Datenmodell-Aenderungen" sind
      ggf. nicht rollback-faehig — Z. 1909-1911).
@@ -159,27 +185,42 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    verbindlichen Workflow ist ein separater ADR-/Plan-
    Pruefpunkt (siehe Anti-Scope).
 
-6. **NEU Integration-Smoke** (lokal via kind):
-   `tests/integration/test_k8s_deployment_smoke.py` (oder
-   ein separates `make test-k8s`-Target analog
-   Welle-6-`make test-iec61850`) — startet kind-Cluster,
-   deployed die Manifeste, pollt `/ready` und prueft die
-   UI-Route separat (HTML-Surface + Sim/Prod-Marker), damit
-   `GG-DEPLOY-007` nicht nur API/Simulation/Persistenz
-   abdeckt.
+6. **NEU K8s-Smoke** (lokal via kind), bewusst **nicht** im
+   Default-`make test-integration`-Pfad:
+   `tests/k8s/test_k8s_deployment_smoke.py` plus separates
+   `make test-k8s`-Target analog Welle-6-`make test-iec61850`.
+   Hintergrund: `make test-integration` ruft heute pauschal
+   `pytest tests/integration/` auf; ein Kind/K8s-Smoke unter
+   `tests/integration/` wuerde dadurch implizit Teil von
+   `make ci`/`make fullbuild`. Falls der Folge-Slice aus
+   historischen Gruenden doch `tests/integration/` nutzt, MUSS
+   der Test per eigener Marker-/Makefile-Auswahl aus dem
+   Default-Runner ausgeschlossen sein, bis ein ADR-/Plan-Anker
+   die Gate-Aufnahme beschliesst. Der Smoke startet einen
+   kind-Cluster, deployed die Manifeste, pollt `/ready` und
+   prueft die UI-Route separat (HTML-Surface + Sim/Prod-
+   Marker), damit `GG-DEPLOY-007` nicht nur API/Simulation/
+   Persistenz abdeckt.
 
    Mindest-Pins:
    - Happy: `api`-Deployment wird ready, UI-Route liefert
      HTML, `simulation`-Stub/Runner ist gemaess dokumentiertem
-     Status sichtbar, Postgres/Migration-Job laeuft einmalig.
+     Status sichtbar, Postgres/Migration-Job laeuft einmalig;
+     `initContainer` fuehren keine Alembic-Migration aus.
    - Boundary: Rolling-Update fuer `api` mit
      `maxUnavailable: 0`/`maxSurge: 1` bleibt ready und
-     dokumentiert das Verhalten laufender Simulationen.
+     dokumentiert das Verhalten laufender Simulationen ueber
+     das separate Active-Run-Gate, nicht ueber `/ready`;
+     falls Zero-Downtime fuer Live-UI behauptet wird, bleibt
+     eine WebSocket-/Live-Telemetry-Verbindung ueber Rollout
+     hinweg nutzbar oder reconnectet kontrolliert.
    - Negative: Rollout bei aktiver Simulation wird blockiert
      oder explizit als "active runs killing" dokumentiert und
-     getestet; Rollback-Grenzen fuer nicht downgrade-faehige
-     Migrationen schlagen kontrolliert an statt still zu
-     "succeeden".
+     getestet; letzteres ist **kein** Zero-Downtime-Pfad.
+     Jeder Zero-Downtime-Claim mit aktivem
+     "active runs killing" schlaegt fehl. Rollback-Grenzen
+     fuer nicht downgrade-faehige Migrationen schlagen
+     kontrolliert an statt still zu "succeeden".
 
 7. **Audit-Doku-Sync**: nach Implementation wird die
    kanonische Deploy-Hardening-Audit-Tabelle synchronisiert
@@ -233,7 +274,11 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
   repo-weiter Gate-Vertrag und braucht ADR-/Plan-Anker
   analog den bestehenden Quality-Gates. Dasselbe gilt, wenn
   ein Probe-, Rollout- oder Rollback-Pattern repo-weit fuer
-  mehrere Services wiederverwendet werden soll.
+  mehrere Services wiederverwendet werden soll. Ein DB-
+  Rollback-Sensor (`make migration-rollback-check` /
+  `make test-db-rollback`) bleibt ebenfalls separat, bis seine
+  Aufnahme in `make ci`, `make fullbuild` oder GitHub Actions
+  explizit per ADR-/Plan-Anker beschlossen ist.
 
 ## Bezug
 
