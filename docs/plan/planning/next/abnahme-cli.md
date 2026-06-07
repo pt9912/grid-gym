@@ -63,7 +63,8 @@ oder M7-Welle-X; siehe §5) liefert:
 1. **NEU `make accept`-Makefile-Target**: ein-Schritt-
    Aufruf, der die drei Sub-Pruefungen orchestriert + den
    maschinenlesbaren JSON-Status auf stdout schreibt.
-   Exit-Code reflektiert Aggregat-Pass/Fail.
+   Exit-Code reflektiert Aggregat-Pass/Fail (0/1/2
+   Tri-State per D-9).
 
 2. **NEU `tools/accept.py`-Script** (Python; primaer als
    `uv run`-Aufruf aus `make accept` — analog
@@ -71,12 +72,12 @@ oder M7-Welle-X; siehe §5) liefert:
    `grid_gym.hexagon.core.*` und braucht daher die uv-
    environment oder ein Docker-Build-Target. Docker-Variante
    ist additiv via Compose-Stage abbildbar, nicht
-   Default-Pfad) **plus NEU Headless-TickLoop-Runner-Helper**
-   (`tools/headless_run.py` oder integriert in
-   `tools/accept.py`; Baseline-Substanz, kein
-   wiederverwendbares Pattern vorhanden — siehe §6 R1
-   Mitigation): die eigentliche Orchestrierungs-Logik. Drei
-   Sub-Steps:
+   Default-Pfad) **inkl. duennem Headless-TickLoop-Runner-
+   Stub** (integriert in `tools/accept.py`; nutzt den
+   hexagon-puren Core-`TickLoop` aus
+   `hexagon/core/simulation/tick_loop.py` direkt — kein
+   Adapter-Lift noetig, siehe §6 R1): die eigentliche
+   Orchestrierungs-Logik. Drei Sub-Steps:
    - **Step A — Szenario-Validierung**: laed
      `deploy/scenarios/gg-demo.yaml`, ruft
      `load_scenario(raw)` (`loader.py:113-125`; ein Aufruf
@@ -98,10 +99,36 @@ oder M7-Welle-X; siehe §5) liefert:
      - **Sub-Form A** (standalone, KEINE Abhaengigkeit zu
        GG-MVP-002-Plan): laeuft das Demo-Szenario zweimal
        mit identischem Seed gegen einen Headless-Runner
-       (kein FastAPI noetig — Core-`TickLoop` + Snapshot-
-       Sequenz). Vergleicht die zwei Snapshot-Streams via
-       `diff_replay()`. Erwartet leeren Diff oder nur
-       `VOLATIL`-Klassifikation.
+       (kein FastAPI noetig — Core-`TickLoop` direkt aus
+       `hexagon/core/simulation/tick_loop.py`, Devices +
+       GridModel per Scenario-Loader-Aufrufer injiziert
+       wie im Modul-Docstring Z. 34-38 beschrieben; siehe
+       §6 R1). Vergleicht die zwei Snapshot-Streams via
+       `diff_replay()` (erwartet leeren Diff oder nur
+       `VOLATIL`-Klassifikation) **plus** vergleicht den
+       gemeinsamen Snapshot-Stream-Hash beider Laeufe
+       (bei Determinismus identisch) gegen einen gepinten
+       Erwartungs-Hash `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`
+       (Pin-Lifecycle siehe D-8). **Stream-Hash-Konstruktion
+       (Pflicht-Vertrag, damit Lint und CLI bauartbedingt
+       identisch rechnen)**:
+       `sha256(canonical_json(list(snapshots))).hexdigest()`
+       aus
+       `hexagon/core/serialization/canonical.py::canonical_json`
+       — dieselbe Primitive, die `LoadedScenario.scenario_hash`
+       in `loader.py:113-125` nutzt; Konsistenz mit Step A
+       ohne extra Bytes-Vertrag. Damit prueft Step B **zwei**
+       Eigenschaften:
+       1. Determinismus (same-seed → identische Streams,
+          via `diff_replay`).
+       2. Referenz-Treue (Stream-Hash entspricht
+          aufgezeichnetem Demo-Referenz-Verhalten).
+       Ohne (2) wuerde ein Code-Change, der die Snapshot-
+       Semantik gleichfoermig verschiebt (beide Laeufe
+       aendern sich gleich), unentdeckt durchgehen. Mit
+       (2) bricht der Stream-Hash → Step B `fail` →
+       Code-Change muss intendierten Pin-Update
+       mitliefern.
      - **Sub-Form B** (E2E-Pfad ueber laufenden API):
        nutzt `POST /runs` zweimal, vergleicht persistierte
        Replay-Samples ueber `ReplaySourcePort`. Benoetigt
@@ -183,7 +210,8 @@ oder M7-Welle-X; siehe §5) liefert:
    - `test_accept_invalid_scenario_returns_fail_status`:
      manipuliertes `gg-demo.yaml` → `scenario_validation`
      Sub-Step `fail` + `overall_status == "fail"`, Exit-
-     Code != 0.
+     Code == 1 (Aggregate-Fail-Pin per D-9; **nicht**
+     „!= 0" — Tool-Error 2 ist explizit anderes Signal).
    - `test_accept_machine_readable_json_schema_pinned`:
      JSON-Output-Schema (Pydantic-`AbnahmeReport`-Modell)
      bleibt rueckwaerts-kompatibel ueber Schema-Version.
@@ -289,33 +317,127 @@ Pflicht-Demo-Pattern"); Composability mit CI-Pipelines
 `docs/user/abnahme-cli.md` wird der Reihenfolge-Aufruf
 `make demo && make accept` dokumentiert.
 
-### D-8 — Hash-Pin-Lifecycle fuer Step A Erwartungs-Hash
+### D-8 — Hash-Pin-Lifecycle fuer Step A + Step B Erwartungs-Hashes
 
-**Frage:** Wo lebt der gepinte Erwartungs-Hash fuer
-`deploy/scenarios/gg-demo.yaml`, und wer aktualisiert ihn
-bei intendierten Aenderungen am Demo-Szenario?
+**Frage:** Wo leben die **zwei** gepinten Erwartungs-Hashes
+— (i) `EXPECTED_DEMO_SCENARIO_HASH` fuer Step A (Szenario-
+Hash aus `LoadedScenario.scenario_hash`) und (ii)
+`EXPECTED_DEMO_SNAPSHOT_STREAM_HASH` fuer Step B Referenz-
+Treue (siehe §2 Step B Sub-Form A) — und wer aktualisiert
+sie bei intendierten Aenderungen am Demo-Szenario?
 
-- **A — Modul-Konstante in `tools/accept.py`**:
+- **A — Modul-Konstanten in `tools/accept.py`**:
   `EXPECTED_DEMO_SCENARIO_HASH: Final[str] = "<sha256>"`
-  mit `# Update bei Aenderung von deploy/scenarios/gg-
-  demo.yaml`-Kommentar. Pattern analog vorhandener
-  Pin-Konstanten in `tools/check_*.py`.
+  + `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH: Final[str] =
+  "<sha256>"` mit `# Update bei Aenderung von
+  deploy/scenarios/gg-demo.yaml`-Kommentar. Pattern
+  analog vorhandener Pin-Konstanten in `tools/check_*.py`.
 - **B — Separate Pin-Datei**:
-  `deploy/scenarios/gg-demo.expected-hash` mit Rohem-Hash;
-  `tools/accept.py` liest die Datei.
-- **C — Pytest-Fixture-Pin im Smoke**: Hash lebt nur im
+  `deploy/scenarios/gg-demo.expected-hashes` (zwei Zeilen
+  `scenario:<sha>` / `stream:<sha>`); `tools/accept.py`
+  liest die Datei.
+- **C — Pytest-Fixture-Pin im Smoke**: Hashes leben nur im
   Smoke-Test (`test_accept_happy_path_returns_pass_status`),
-  nicht im CLI selbst — CLI loggt den Hash, der Smoke
+  nicht im CLI selbst — CLI loggt die Hashes, der Smoke
   verifiziert.
 
-Vorschlag: **A** (Pin im CLI). Begruendung: macht den
-CLI-Output selbst-validierend (Aggregat-Pass/Fail beruht
-auf dem Pin); Aenderungs-Lifecycle ist nachvollziehbar via
-`git blame` auf der Konstante; keine zusaetzliche Datei.
-Demo-Szenario-Aenderungen erzwingen Konstanten-Update im
-selben Commit (Reviewer sieht beide Aenderungen
-nebeneinander). Pattern-Vorbild ist u.a. der Hash-Pin in
-ADR-0021-Folge-Substanz.
+Vorschlag: **A + CI-Drift-Lint** (kombiniert). Begruendung:
+Option A macht den CLI-Output selbst-validierend
+(Aggregat-Pass/Fail beruht auf den Pins); Aenderungs-
+Lifecycle ist via `git blame` auf den Konstanten
+nachvollziehbar; keine zusaetzliche Datei. Pattern-Vorbild
+ist u.a. der Hash-Pin in ADR-0021-Folge-Substanz.
+
+**Wichtig — Drift-Erkennung haerten:** Option A allein
+hat einen Lifecycle-Smell. Eine YAML-Whitespace-/Key-
+Order-Aenderung in `deploy/scenarios/gg-demo.yaml` flippt
+die Hashes und bricht den Smoke, **ohne** dass die `.py`-
+Konstanten im selben Diff stehen; Reviewer sieht den
+Bruch erst in CI nach dem Merge des YAML-Commits — das
+„Reviewer sieht beide Aenderungen nebeneinander"-Argument
+ist optimistisch und reicht nicht. Mitigation: **NEU
+`tools/check_demo_scenario_pin.py`** als CI-Pre-Commit-
+Lint (`make ci`-Gate):
+- ladet `deploy/scenarios/gg-demo.yaml`, recomputed
+  beide Hashes (Scenario via `load_scenario(...)
+  .scenario_hash`; Stream via Headless-`TickLoop`-Lauf
+  identisch zur Step-B-Sub-Form-A-Pipeline);
+- vergleicht gegen `EXPECTED_DEMO_SCENARIO_HASH` +
+  `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`;
+- bricht mit klarer Fehlermeldung, **welcher** Pin drift
+  hat und **welches** `.py`-File anzupassen ist.
+
+**Code-Standort des gemeinsamen Headless-Pfads
+(Lint + CLI):** der Replay-Stub-Code muss zwischen
+`tools/check_demo_scenario_pin.py` und `tools/accept.py`
+geteilt sein — Duplikation ist genau die Drift-Quelle,
+die der Lint verhindern soll. Vorschlag: **NEU
+`tools/_demo_replay.py`-Helper** (Leading-Underscore =
+tools-internal, kein API-Vertrag) mit den Funktionen
+`run_demo_replay(seed: int) -> list[Mapping[str, object]]`
++ `hash_snapshot_stream(stream) -> str` (per F-new-1-
+Vertrag aus §2 Step B Sub-Form A). Beide Tools
+importieren daraus; Drift ist damit bauartbedingt
+ausgeschlossen.
+
+Damit landet der Bruch im selben PR wie die YAML-
+Aenderung, nicht im nachgelagerten Smoke-Run. Cost-Adjust
+§7: die Headless-Stub-Substanz wandert aus
+`tools/accept.py` in den NEU `_demo_replay.py`-Helper
+(Sum-Net ~konstant; Lint wird trivial, Helper traegt die
+Stub-Substanz — siehe §7-Posten-Reorganisation).
+
+### D-9 — Exit-Code-Vertrag fuer `tools/accept.py`
+
+**Frage:** Welche numerischen Exit-Codes liefert
+`tools/accept.py` an CI-Consumer, und wie unterscheiden
+sie „Abnahme failed" von „Tool selbst kaputt"?
+
+Vorschlag: **drei Werte fixiert** (Pattern analog Unix-
+Konvention + `tools/check_core_determinism.py`-Stil):
+
+- **`0` — Aggregate-Pass**: alle drei Sub-Pruefungen
+  `pass`; `AbnahmeReport.overall_status == "pass"`;
+  JSON-Status auf stdout vollstaendig.
+- **`1` — Aggregate-Fail**: mindestens eine Sub-Pruefung
+  `fail`; JSON-Status valide auf stdout,
+  `overall_status == "fail"`. CI-Consumer kann den JSON-
+  Report parsen + reagieren (z. B. welche Sub-Pruefung
+  brach).
+- **`2` — Tool-Error**: unerwartete Exception im CLI
+  selbst — Pydantic-Validation-Crash beim Bau des
+  `AbnahmeReport`, YAML-Parser-Exception (File **lesbar**,
+  aber Parser-Bruch ist CLI-Internals), Headless-Runner-
+  Crash fuer Step B mit unerwartetem Traceback,
+  Konfigurations-Fehler im CLI selbst. JSON-Status
+  moeglicherweise unvollstaendig oder fehlend; stderr
+  traegt Traceback.
+
+**Wichtig — Abgrenzung zu Exit 1 (siehe D-7 Option A):**
+HTTP-Connection-Refused / Timeout / Non-200 beim
+`/ready`-Poll gehoert **nicht** zu Exit 2. „Demo-Stack
+nicht hochgefahren" ist genau das Failure-Signal, das
+Step C deterministisch fangen soll → Aggregate-Fail
+(Exit 1), nicht Tool-Error. Analog: `gg-demo.yaml`
+nicht-existent oder Permission-Denied → Step A `fail` →
+Exit 1 (deterministisches Sub-Step-Fail mit
+`reason="scenario file not readable"`), nicht Exit 2.
+Exit 2 ist reserviert fuer **CLI-interne** Bugs, die
+das JSON-Status-Building selbst brechen.
+
+Damit unterscheidet CI klar zwischen „Abnahme failed
+(erwartetes Fail-Signal, JSON liefert Details — Team
+fixt das Demo-Szenario / Stack)" und „CLI selbst kaputt
+(Tool-Bug, Maintainer-Investigation noetig)" —
+unterschiedliche Eskalations-Pfade.
+
+Smoke-Vertrag (siehe §2 Punkt 5):
+- `test_accept_happy_path_returns_pass_status` → Exit 0.
+- `test_accept_invalid_scenario_returns_fail_status` →
+  Exit 1 (auf konkreten Wert gepinnt, **nicht** „!= 0").
+- Tool-Error-Pfad (Exit 2) wird im Slice nicht eigens
+  gesmoked — Coverage ergibt sich aus Pyright-Type-
+  Lint + Pytest-Standard-Substanz.
 
 ## 4. Sub-Scope (Welle-Vorbelegung)
 
@@ -325,11 +447,24 @@ Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
 - **M6-Welle-6-C2** erweitert um zusaetzliche Substanz-
   Items:
   - NEU `make accept`-Makefile-Target.
-  - NEU `tools/accept.py` mit drei Sub-Steps.
-  - NEU Headless-TickLoop-Runner-Helper
-    (`tools/headless_run.py` oder integriert in
-    `tools/accept.py` — siehe §6 R1, baseline-Substanz).
-  - NEU `AbnahmeReport` Pydantic-Modell.
+  - NEU `tools/_demo_replay.py`-Helper (Headless-
+    `TickLoop`-Stub um den hexagon-puren Core +
+    `hash_snapshot_stream`-Primitive per
+    `canonical_json`-Vertrag; siehe §6 R1 Wiring-Inventar
+    + D-8 Code-Standort-Klaerung). Gemeinsam importiert
+    von `tools/accept.py` und
+    `tools/check_demo_scenario_pin.py` — Drift
+    bauartbedingt ausgeschlossen.
+  - NEU `tools/accept.py` als Orchestrator der drei
+    Sub-Steps (importiert Replay-Stub aus
+    `_demo_replay.py`).
+  - NEU `AbnahmeReport` Pydantic-Modell mit
+    `EXPECTED_DEMO_SCENARIO_HASH` +
+    `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`-Pin-Konstanten
+    (siehe D-8) + Exit-Code-Vertrag (siehe D-9).
+  - NEU `tools/check_demo_scenario_pin.py` CI-Drift-Lint
+    (siehe D-8 Mitigation; importiert Replay-Stub +
+    Hash-Primitive aus `_demo_replay.py`; `make ci`-Gate).
   - NEU `docs/user/abnahme-cli.md`.
   - NEU drei Integration-Smokes (siehe §2 Punkt 5).
 - Welle-6-C0-Slice-Doc wird im selben Review-Zyklus
@@ -394,24 +529,58 @@ M6-Welle-7-Closure notiert den Defer-Vermerk.
 ohne `ReplaySourcePort`.** Sub-Form A (standalone) braucht
 einen Headless-Runner, der das Demo-Szenario zweimal mit
 identischem Seed durchlaeuft + die Snapshot-Sequenzen
-sammelt. Der bestehende `TickLoop` ist als asyncio-Loop in
-`adapters/driving/http_api/_tick_loop_driver.py` verkabelt
-— kann er headless aufgerufen werden?
-**Mitigation:** Welle-X-C0 auditiert den `TickLoop`-
-Standalone-Pfad. **Wichtig:** Das vorhandene
+sammelt.
+**Strukturelle Lage (Code-verifiziert):** Der **Core**-
+`TickLoop` lebt in
+`src/grid_gym/hexagon/core/simulation/tick_loop.py` (M1-
+Welle-4 / M2-Welle-6a) und ist **hexagon-pure** — keine
+asyncio-Kopplung, keine FastAPI-Imports, nimmt `ClockPort`
++ `RandomPort` + Devices + `grid_model` ueber den
+Konstruktor und liefert `tick()` + `snapshot()` direkt.
+`adapters/driving/http_api/_tick_loop_driver.py` ist nur
+der **Driving-Adapter**, der den Core in die FastAPI-
+Async-Welt einhaengt — der Core selbst braucht ihn nicht.
+Headless-Aufruf ist daher strukturell duenn (nicht
+„trivial", aber ueberschaubar): Core-`TickLoop(...)`
+direkt instantiieren, `tick()` in einer synchronen
+Schleife rufen, `snapshot()` pro Tick sammeln.
+**Wiring-Inventar (Code-verifiziert
+`tick_loop.py:218-239`, keyword-only-Konstruktor)** —
+der Stub muss instanziieren:
+- `run_id: str` (synthetisch, z. B.
+  `"abnahme-replay-1"` / `"abnahme-replay-2"`);
+- `tick_ms: int` (aus dem geladenen Szenario);
+- `scheduler: Scheduler`;
+- eine `ClockPort`-Impl (deterministisch, Step-getrieben
+  — konkrete Adapter-Klasse waehlt der Implementations-
+  Schritt; Audit-Sub-Step der C2-Vorbereitung);
+- eine `RandomPort`-Impl (seeded);
+- `devices: tuple[DeviceModel, ...]` + `grid_model`
+  vom Scenario-Loader-Aufrufer-Pattern (Modul-Docstring
+  Z. 34-38).
+Optionale Ports (`fault_port`, `agent_bus`,
+`log_port`, `metrics_port`, `trace_port`,
+`protocol_ports`, `run_repository`) bleiben fuer den
+Replay-Stub `None` — Replay braucht keine Side-Effects.
+**Mitigation:** Vor der `tools/_demo_replay.py`-Helper-
+Implementation muss der Core-`TickLoop`-Konstruktor-Pfad
+auditiert sein (Devices + GridModel-Injection ueber den
+Scenario-Loader, plus die Auswahl konkreter Clock-/Random-
+Adapter-Klassen aus dem Wiring-Inventar). Bei D-5 Option A
+(Welle-6-Erweiterung; Vorschlag) landet der Audit in der
+C2-Vorbereitung; bei Option B in einem separaten Welle-
+6b-C0. In beiden Faellen Auditor-Arbeit, kein Neu-
+Implement. **Nicht verwechseln:** Das vorhandene
 `make test-determinism` ist `pytest -m determinism`
 (Makefile:96, 203) und das vorhandene
-`tools/check_core_determinism.py` ist ein **statisches Lint-
-Tool** fuer verbotene Imports in Core-Source
+`tools/check_core_determinism.py` ist ein **statisches
+Lint-Tool** fuer verbotene Imports in Core-Source
 (`FORBIDDEN_ROOT_MODULES`, siehe
-`check_core_determinism.py:17`) — **kein** Headless-Runner.
-Ein NEU `tools/headless_run.py`-Helper (oder direkt in
-`tools/accept.py` integriert) ist daher **baseline-Substanz
-des Slices**, nicht „falls noetig"-Optional. Das `pytest -m
-determinism`-Pattern kann als Test-Vorbild dienen, liefert
-aber keine wiederverwendbare Runner-API. Cost-Adjust: der
-Baseline-Cost-Estimate §7 verschiebt den `+0.5 Tag`-
-Headless-Runner-Posten von „falls noetig" auf „baseline".
+`check_core_determinism.py:17`) — **kein** Headless-
+Runner. Der NEU Headless-Stub in `tools/_demo_replay.py`
+(siehe D-8 Code-Standort) ist ein duenner in-process-
+Driver um den hexagon-puren Core, nicht eine Neu-
+Implementation. Cost-Posten und Begruendung siehe §7.
 
 **R2 — `/ready`-Endpoint ist von Welle-6-Aktivierung
 abhaengig.** Sub-Form fuer Step C macht den `make accept`-
@@ -449,20 +618,40 @@ Grobe Schaetzung (Welle-X-Substanz, falls Welle-6-
 Erweiterung):
 
 - C2-Erweiterung (zusaetzlich zur Welle-6-Substanz):
-  - NEU `tools/accept.py` mit drei Sub-Steps: 0.5-1 Tag.
+  - NEU `tools/_demo_replay.py`-Helper (Headless-
+    `TickLoop`-Stub um den hexagon-puren Core +
+    `hash_snapshot_stream`-Primitive; traegt die R1-
+    Wiring-Substanz — Scheduler/Clock/Random-Port-
+    Instanzen + Devices-/GridModel-Injection per
+    Scenario-Loader): 0.5-0.7 Tag.
+  - NEU `tools/accept.py` als Orchestrator der drei
+    Sub-Steps (Step A: `load_scenario` + Hash-Vergleich;
+    Step B: zwei Replay-Laeufe via `_demo_replay`
+    + `diff_replay` + Stream-Hash-Vergleich; Step C:
+    `/ready`-Poll; JSON-Status-Build + Exit-Code-Vertrag
+    per D-9): 0.2-0.3 Tag.
   - NEU `make accept`-Makefile-Target: 0.1 Tag.
-  - NEU `AbnahmeReport` Pydantic-Modell + Smokes: 0.3 Tag.
+  - NEU `AbnahmeReport` Pydantic-Modell + zwei Pin-
+    Konstanten (siehe D-8) + drei Smokes (siehe §2 Punkt
+    5, Exit-Code-Vertrag per D-9): 0.3 Tag.
   - NEU `docs/user/abnahme-cli.md` (inkl. Abgrenzungs-
     Verweis auf `gg-demo-008-abnahme.md`): 0.2 Tag.
-  - NEU Headless-TickLoop-Runner (baseline, siehe R1
-    Mitigation — kein wiederverwendbares Pattern
-    vorhanden): +0.5 Tag.
+  - NEU `tools/check_demo_scenario_pin.py` CI-Drift-Lint
+    (siehe D-8 Mitigation; importiert
+    `_demo_replay.run_demo_replay` +
+    `_demo_replay.hash_snapshot_stream` + nutzt
+    `load_scenario` direkt, recomputed beide Hashes,
+    bricht im `make ci`-Gate; durch Helper-Extraktion
+    trivial — kein eigener Stub-Code): 0.1 Tag.
 
-Summe: 1.5-2.5 Tage zusaetzlich zur Welle 6. Falls eigener
-Welle-6b-Slice (D-5 Option B), zusaetzlich C0/C3/C4a/C4b-
-Boilerplate-Overhead: +0.5-1 Tag. Falls D-7 Option B
-(Skript startet Stack selbst), nochmals +1 Tag (Compose-
-Lifecycle + Cleanup-on-Failure).
+Summe: 1.4-1.7 Tage zusaetzlich zur Welle 6 (vorher
+1.5-1.8 ohne `_demo_replay`-Helper-Extraktion;
+Helper-Pfad ist netto leicht guenstiger, weil der Pin-
+Lint von 0.2 auf 0.1 Tag faellt). Falls eigener
+Welle-6b-Slice (D-5 Option B), zusaetzlich
+C0/C3/C4a/C4b-Boilerplate-Overhead: +0.5-1 Tag. Falls
+D-7 Option B (Skript startet Stack selbst), nochmals
++1 Tag (Compose-Lifecycle + Cleanup-on-Failure).
 
 ## 8. References
 
