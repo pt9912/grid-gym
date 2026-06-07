@@ -9,7 +9,6 @@ Lebende Roadmap und aktive Slice-Plaene, an denen gearbeitet wird.
 | [`roadmap.md`](roadmap.md) | Meilenstein-Uebersicht (M1..Mx) mit Lastenheft-/Architektur-Bezuegen, Abnahmekriterien und Status. |
 | [`carveouts.md`](carveouts.md) | Cross-Meilenstein-Index aller aktiven Carveouts (Anti-Scope + Trigger-Watch + Erbschaft). |
 | [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) | M6-Slice-Plan (Performance + Security + CI/CD-Haertung; aktiver Meilenstein). |
-| [`M6-welle-5b.md`](M6-welle-5b.md) | M6-Welle-5b-Slice-Doc (Sim/Prod-Marker + Input-Validation; `GG-SAFE-007/008` MUSS). **Done 2026-06-07** — wandert mit C4a nach `done/`. |
 
 **Aktive Welle:** M6-Welle-5c (SOLLTE-Items + IP/Netz-
 Beschraenkung; `GG-SAFE-005/006` + Demo-Compose-Hardening) —

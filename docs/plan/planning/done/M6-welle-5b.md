@@ -7,10 +7,13 @@ Findings) → C1 `cee5aab` (NEU ADR 0045 `Proposed` + ADR-Index
 + Hygiene-Cleanup ADR 0041-0045 in `9d78b29` als parallele
 Hygiene-Welle) → C2 `b580840` (6 Inline-Fixes fuer GG-SAFE-
 007-Surfaces + `_BaseRequest`-Mixin + `RunCreateRequest`-
-Umzug + 11 Smoke-Tests + Audit-Doku) → C3 **dieser Commit**
+Umzug + 11 Smoke-Tests + Audit-Doku) → C3 `9b3dc20`
 (ADR 0045 `Proposed → Provisional` + Status/DoD-Sync +
-aktive Welle auf 5c). C4a/C4b folgen als Welle-5c-Pre-C0a/
-Pre-C0b.
+aktive Welle auf 5c + `in-progress/` und `open/`-README-
+Hygiene) → C4a `33c238c` (Self-Close-Move `M6-welle-5b.md →
+done/`, rename-only) → C4b **dieser Commit** (Cross-Doc-
+Refs-Sync nach Move). C4a/C4b dienen gleichzeitig als
+Welle-5c-Pre-C0a/Pre-C0b.
 
 **Vorheriger Status:** In Progress — C2 abgeschlossen,
 ADR 0045 noch `Proposed`.
