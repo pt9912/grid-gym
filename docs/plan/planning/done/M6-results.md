@@ -7,7 +7,7 @@ krb5-CVE in Welle 1 aufgeloest; erstmals seit M3-Welle-7-Drift).
 Alle sechs M6-ADRs (0041/0042/0043/0044/0045/0046) sind mit
 Welle-7-C1 auf `Accepted` promoted.
 **Bezug:** Slice-Plan
-[`M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md);
+[`M6-perf-security-cicd.md`](M6-perf-security-cicd.md);
 Welle-Slice-Begleit-Docs
 [`M6-welle-0.md`](M6-welle-0.md),
 [`M6-welle-1.md`](M6-welle-1.md),
@@ -21,7 +21,7 @@ Welle-Slice-Begleit-Docs
 [`M6-welle-5b.md`](M6-welle-5b.md),
 [`M6-welle-5c.md`](M6-welle-5c.md),
 [`M6-welle-6.md`](M6-welle-6.md),
-[`M6-welle-7.md`](../in-progress/M6-welle-7.md);
+[`M6-welle-7.md`](M6-welle-7.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §M6.
 
@@ -178,7 +178,7 @@ Supersedes; die geschaerften ADRs bleiben textlich unveraendert.
 
 ## References
 
-- [`M6-perf-security-cicd.md`](../in-progress/M6-perf-security-cicd.md) —
+- [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md) —
   M6-Meilenstein-Slice-Plan.
 - [`M5-results.md`](M5-results.md) + [`M4-results.md`](M4-results.md)
   — Results-Doc-Vorbilder.

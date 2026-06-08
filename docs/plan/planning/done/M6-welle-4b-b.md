@@ -612,7 +612,7 @@ als Lehre verankert.
 - [`../done/M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md)
   — pytest-benchmark-Vorbelegung (in Welle-4b-a-C1 final
   aufgeloest).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
 - [`../../../../spec/lastenheft.md §7 GG-RT-005`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz (10 000 Points/s + ≤ 256 Byte).

@@ -137,7 +137,7 @@ Eigenstaendiger CI-Edit-Slice (M6-Welle-3-Sub-Item) mit:
 ## Aktivierung
 
 Aktivierung erfolgt **automatisch** mit M6-Welle-3
-([`M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md)).
+([`M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md)).
 Welle 3 ist explizit fuer CI/CD-Vollausbau gescoped
 (`GG-CICD-001..006` + Python-3.13/3.14-Matrix +
 `GG-CICD-007`-Release-Workflow-Pre-Link auf Welle-2-SBOM-
@@ -172,7 +172,7 @@ realen Gruen-Lauf.
   — Welle-1-Decision-Substanz (Mitziehen vs. Vertagen).
 - [`../done/M6-welle-1.md §10.2`](../done/M6-welle-1.md)
   — C2-Realization-Note mit Vertagungs-Begruendung.
-- [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 3`](../in-progress/M6-perf-security-cicd.md)
+- [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 3`](M6-perf-security-cicd.md)
   — M6-Welle-3-Lieferziel mit CI-Job-Liste (4 weitere
   neue Jobs neben Trigger 031).
 - [`../../adr/0043-image-audit-strategy.md §7`](../../adr/0043-image-audit-strategy.md)

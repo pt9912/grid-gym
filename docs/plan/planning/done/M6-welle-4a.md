@@ -45,7 +45,7 @@ Beschluss, ADR-Form, Layout-Konvention, Trigger-033-Lifecycle.
 
 ## 1. Context
 
-**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
 ist **Performance-Benchmark** (`GG-RT-001..005` inkl. 10000-
 Points/s-Benchmark `GG-RT-005` SOLLTE). Die Welle wird in
 Welle-4-C0 in 4a/4b gespalten, weil **NEU Trigger 033 (OTel-
@@ -732,7 +732,7 @@ nach `f46e789`):
 - [`../done/M6-welle-3.md §10`](../done/M6-welle-3.md) —
   M6-Welle-3-Post-Closure-Korrekturen-Index; Quelle der
   Trigger-033-Substanz und der `make fullbuild`-Rot-Diagnose.
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench;
   wird durch Welle-4a-Subdivision in 4a/4b gespalten).
 - [`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md)

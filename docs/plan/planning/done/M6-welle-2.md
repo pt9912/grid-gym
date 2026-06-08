@@ -46,7 +46,7 @@ Slicing).
 
 ## 1. Context
 
-[`M6-perf-security-cicd.md §3.2 Welle 2`](../in-progress/M6-perf-security-cicd.md)
+[`M6-perf-security-cicd.md §3.2 Welle 2`](M6-perf-security-cicd.md)
 hat Welle 2 als „SBOM-Aktivierung + Release-Workflow"
 vorbelegt mit ADR-Lifecycle-Vorbelegung „NEU ADR 0042
 (SBOM-Tool-Wahl) + CI-Hook-Pattern". Welle 2 deckt die
@@ -1245,7 +1245,7 @@ in Trigger 032 verankert (drei Klassen).
 - [`../done/M6-welle-1.md`](../done/M6-welle-1.md) —
   M6-Welle-1-Slice-Doc (Pattern-Vorbild fuer Welle-2-C0-
   Struktur; Welle-1-Pre-C0c-Probe-Pattern).
-- [`M6-perf-security-cicd.md §3.2 Welle 2`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 2`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-2-Vorbelegung.
 - [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md)
   — Trigger 008 mit erwarteter Lieferung + Aktivierungs-

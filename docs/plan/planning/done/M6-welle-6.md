@@ -1120,7 +1120,7 @@ Pattern aus Welle-3 (`feat(observability)`-Doppel-Commit).
 - [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md)
   — Trigger 009 IEC-Pfad-B-Spec; wandert in C2 nach
   `done/`.
-- [`M6-perf-security-cicd.md §3.2 Welle 6`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 6`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-6-Vorbelegung.
 - [`../../../../spec/lastenheft.md §23 GG-DEPLOY-001..011`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer Deploy-IDs (Z. 1833-1920);

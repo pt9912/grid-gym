@@ -117,9 +117,9 @@ Hintergrund liegt in [`M6-welle-0.md`](../done/M6-welle-0.md) §1).
 
 **Bezug:**
 
-- [`roadmap.md`](roadmap.md) §3 M6 (Lieferziel, DoD-
+- [`roadmap.md`](../in-progress/roadmap.md) §3 M6 (Lieferziel, DoD-
   Checkliste, Architekturartefakte).
-- [`carveouts.md`](carveouts.md) (Cross-Meilenstein-
+- [`carveouts.md`](../in-progress/carveouts.md) (Cross-Meilenstein-
   Carveout-Index; M6-Welle-0-C2-Triage ist die primaere
   Pflege-Welle).
 - M5-Closure-Notiz
@@ -179,7 +179,7 @@ Export, Inline-SVG-Geraete-Grafik, Dynamische Fault-
 Activation, URL-Versionierung `/api/v1`, WebSocket-Live-
 Stream `/devices`) + 1 `Pattern-Forward` (Welle-3-Pre-
 init-Defense-Pattern) sind im Carveout-Index
-[`carveouts.md §2.1`](carveouts.md). Welle-Zuordnung
+[`carveouts.md §2.1`](../in-progress/carveouts.md). Welle-Zuordnung
 erfolgt in Welle-1-C0 + ggf. Welle-Polish-C0.
 
 ---
@@ -374,7 +374,7 @@ final):
 
 **Welle 1 — Base-Image-Bump (krb5-CVE-Aufloesung):**
 
-- `Trigger-Gated → Active` per [`carveouts.md §2.2`](carveouts.md):
+- `Trigger-Gated → Active` per [`carveouts.md §2.2`](../in-progress/carveouts.md):
   Trigger 010 (M4-Erbschaft).
 - Lieferziel: Dockerfile `FROM`-Update auf neueste
   Debian-13-Variante mit krb5-Fix; `make fullbuild`
@@ -387,7 +387,7 @@ final):
 
 **Welle 2 — SBOM-Aktivierung + Release-Workflow:**
 
-- `Trigger-Gated → Active` per [`carveouts.md §2.5`](carveouts.md):
+- `Trigger-Gated → Active` per [`carveouts.md §2.5`](../in-progress/carveouts.md):
   Trigger 008.
 - Lieferziel: `make sbom` scharfgeschaltet (`syft`/
   `cyclonedx` — siehe ADR 0042); CI-Hook im Release-Workflow
@@ -569,7 +569,7 @@ Pattern` (Welle-6-C1) als ADR-0011-Schaerfung.
 
 ## 4. Out-of-Scope (bleibt fuer M7+ oder permanent)
 
-Aus [`carveouts.md §2.7`](carveouts.md) (Permanent
+Aus [`carveouts.md §2.7`](../in-progress/carveouts.md) (Permanent
 `Out-of-Scope`):
 
 - **Produktive Anlagensteuerung** (Lastenheft Z. 1161–1163)
@@ -600,7 +600,7 @@ Aus M5-Welle-7-Erbschaft, **bedingt** in M7+ oder offen:
 
 **Trigger-Gated weiter offen** (4 Tooling + 9 SOLLTE-
 Geraete + 1 RL + 1 BESS-Spike = 15 Items; siehe
-[`carveouts.md §2.3..§2.6`](carveouts.md)): warten auf
+[`carveouts.md §2.3..§2.6`](../in-progress/carveouts.md)): warten auf
 externen Anlass; **nicht M6-Scope** ohne explizite
 Aktivierung.
 

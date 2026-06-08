@@ -3,8 +3,10 @@
 **Status:** Done 2026-06-08 (M6-Closure-Welle) — Stack C0
 `5415903` (Slice-Doc) + Sharpen `cff646c` (Review-Fixes B1-3) +
 C1 `7a2aba8` (6 ADRs 0041..0046 `Provisional → Accepted`) +
-C2 `0402b87` (NEU `done/M6-results.md`) + C3 (Top-Level-Sync;
-dieser Commit) + C4a/C4b (Self-Close-Move; folgen). Pattern
+C2 `0402b87` (NEU `done/M6-results.md`) + C3 `35c5fd0`
+(Top-Level-Sync + M7-Eroeffnung) + C4a `1633ce1` (Self-Close-
+Move rename-only) + C4b (Cross-Doc-Refs-Sync; dieser Commit).
+Pattern
 analog [`../done/M5-welle-7.md`](../done/M5-welle-7.md) +
 [`../done/M4-welle-7.md`](../done/M4-welle-7.md).
 
@@ -223,10 +225,11 @@ C3 angelegt.
 - [x] C3: `README.md`/`README.de.md` gesamter M6-Block neu
       (Stale-Details raus; M1..M6; ADR 38→44; M7 eroeffnet).
 - [x] C3: `M6-results.md` §5/§6 Handoff auf M7 praezisiert.
-- [ ] C4a: `M6-perf-security-cicd.md` + `M6-welle-7.md` →
-      `done/` (folgt; in C4b abgehakt).
-- [ ] C4b: Cross-Doc-Refs-Sync; `make docs-check` gruen.
-- [ ] `make gates` cache-frei gruen am Closure-Hash (Verifikation).
+- [x] C4a: `M6-perf-security-cicd.md` + `M6-welle-7.md` →
+      `done/` (rename-only `1633ce1`).
+- [x] C4b: Cross-Doc-Refs-Sync (dieser Commit); `make docs-check`
+      cache-frei gruen.
+- [x] `make gates` cache-frei gruen am Closure-Hash (Verifikation).
 
 ---
 

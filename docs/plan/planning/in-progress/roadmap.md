@@ -931,7 +931,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 ### M6 — Performance + Security + CI/CD-Haertung (`Done` 2026-06-08)
 
 **Slice-Plan:**
-[`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
+[`M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`). **M6 abgeschlossen
 2026-06-08 mit Welle 7 (M6-Closure)**: ADR 0041..0046
 `Provisional → Accepted` (W7-C1), NEU

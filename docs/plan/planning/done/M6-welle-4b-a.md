@@ -49,7 +49,7 @@ CI-Hook-Form.
 
 ## 1. Context
 
-**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+**Welle-4-Vorbelegung** in [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
 ist Performance-Benchmark mit `GG-RT-001..005`. Welle-4a-Sub-
 Slicing hat 4a (Vulnignore-Pattern) als urgent-Praeludium
 geliefert; Welle 4b traegt die eigentliche Performance-Substanz.
@@ -667,7 +667,7 @@ Bindestrich-Trennung als visuelle Marker.
   Sub-Slicing-Pattern + Post-Closure-Korrektur-Stack).
 - [`../done/M6-welle-0.md §3 M6-D-7`](../done/M6-welle-0.md)
   — M6-D-7-Bench-Framework-Vorbelegung (pytest-benchmark).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench).
 - [`../../../../spec/lastenheft.md §7 GG-RT-001..006`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer `GG-RT-002` + `GG-RT-003` +

@@ -679,7 +679,7 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
   ist die letzte Sub-Sub-Welle in 4b.
 - [`../done/M6-welle-4b-a.md`](../done/M6-welle-4b-a.md) —
   Welle-4b-a Bench-Foundation (ADR-0041).
-- [`M6-perf-security-cicd.md §3.2 Welle 4`](../in-progress/M6-perf-security-cicd.md)
+- [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
 - [`../../../../spec/lastenheft.md §7 GG-RT-001`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz (10ms/100ms/1000ms-Tick-Modi +

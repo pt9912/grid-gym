@@ -840,7 +840,7 @@ Drift auftritt.
 - [`../done/M6-welle-5a.md`](../done/M6-welle-5a.md) —
   Welle-5a Quality-Pipeline-Audit (abgeschlossen); Welle
   5b ist die naechste aktive Welle nach Welle-5a-Closure.
-- [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 5`](../in-progress/M6-perf-security-cicd.md)
+- [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 5`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-5b-Vorbelegung.
 - [`../../../../spec/lastenheft.md §20 GG-SAFE-007/008`](../../../../spec/lastenheft.md)
   — Lastenheft-Akzeptanz fuer Sim/Prod-Trennung + Input-
