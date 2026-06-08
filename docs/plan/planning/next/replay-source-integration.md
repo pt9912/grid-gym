@@ -69,8 +69,11 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
      `GG-PERSIST-001`-Pflichtfelder strukturiert tragen:
      `run_id`, `tick`, `simulation_time`, `device_id`, `metric`,
      `value`, `unit`, `quality`, `source` und `sequence`. C0
-     gleicht die exakten Felder gegen `TelemetryPoint`,
-     `GG-DATA-*` und `GG-PERSIST-001` ab.
+     gleicht die exakten Felder gegen das Core-Domain-
+     `TelemetryPoint` (`src/grid_gym/hexagon/core/domain/telemetry.py`,
+     `GG-DATA-001` — **nicht** das gleichnamige Driving-Stream-
+     DTO in `ports/driving/telemetry_stream.py`), `GG-DATA-*`
+     und `GG-PERSIST-001` ab.
    - Der Pfad ist **nicht** `RunRepositoryPort`; dieser bleibt
      Laufmetadaten/Status.
    - Live-Telemetrie kann weiter ueber die bestehende Stream-
@@ -197,24 +200,33 @@ Vorschlag: A. Welle-X-C0 verifiziert gegen `TelemetryPoint`,
   Surface; aber Driving-Port als Persistenz-Quelle ist
   Schichten-Twist (Driving + Driven gemischt).
 - **C**: Telemetrie-Schicht (`TelemetrySinkPort`) als Sample-
-  Quelle, falls D-0 sie liefert; aber Telemetrie ≠
-  `ReplaySample`-Form (Original-Timestamp + Sim-Time + Mapper-
-  Counter koennen fehlen oder anders strukturiert sein).
+  Quelle, falls D-0 sie liefert; aber `TelemetryPoint` fuehrt
+  keinen Original-`timestamp`-String (nur `tick` +
+  `simulation_time`), den `ReplaySample` per `GG-REPLAY-002`
+  zwingend traegt — Option C braucht also ein Zusatzfeld oder
+  eine Mapping-Konvention (siehe D-1.1).
 
 Vorschlag: A (NEU `ReplaySnapshotPort` Driven). Welle-X-C0
 verifiziert.
 
-**Sub-Decision D-1.1 — `ReplaySample`-Form**: Die
-`ReplaySample`-Pflichtfelder (`tick`, `simulation_time`,
-`sequence`, `source` und ggf. weitere Replay-spezifische
-Felder) sind heute nicht im Domain-Modell verankert;
-`TelemetryPoint` (`src/grid_gym/hexagon/core/domain/telemetry.py`)
-deckt sie nicht vollstaendig ab. Welle-X-C0 legt die
-`ReplaySample`-Form (gegen `diff_replay()`-Signatur und
-`spec/architecture.md §8` Z. 544) explizit fest, bevor D-1
-Option A/B/C entschieden werden kann; sonst laesst sich
-Option C (Telemetrie als Sample-Quelle) nicht sauber
-gegen A/B abgrenzen.
+**Sub-Decision D-1.1 — Snapshot→`ReplaySample`-Rekonstruktion**:
+`ReplaySample` ist **bereits** als Frozen-Dataclass im Domain-
+Modell verankert (`src/grid_gym/hexagon/core/domain/replay.py`,
+`GG-REPLAY-001/002/003`) und wird von `diff_replay()`
+(`hexagon/core/replay/diff.py`) konsumiert. Die Felder sind
+`timestamp` (Original-Zeitstempel als String, `GG-REPLAY-002`
+„unveraendert gespeichert"), `simulation_time`, `device_id`,
+`metric`, `value`, `unit` und `import_sequence` (Tie-Breaking-
+Counter, `GG-REPLAY-003`). Die `ReplaySample`-Form ist also
+**nicht** offen; offen ist die Persistenz→`ReplaySample`-
+Rekonstruktion aus dem Snapshot. Kritisch dabei: der Original-
+`timestamp` ist ein `ReplaySample`-Pflichtfeld, das
+`TelemetryPoint` (`core/domain/telemetry.py`, nur `tick` +
+`simulation_time`) **nicht** fuehrt. Welle-X-C0 legt das
+Snapshot-Mapping gegen die bestehende `ReplaySample`-Signatur
+fest; genau diese Timestamp-Luecke ist der Grund, warum D-1
+Option C (Telemetrie als Sample-Quelle) nicht ohne Zusatzfeld
+oder Mapping-Konvention gegen A/B abgrenzbar ist.
 
 ### D-2 — Semantik + `MetricsPort`-Kodierung des `replay_diff_status`
 
@@ -233,7 +245,10 @@ keine Severity-Drift-Diskussion, kompatibel mit ADR-0024-
 `MetricsPort`). Welle-X-C0-ADR verifiziert. Der binaere Status
 ist nur der Per-Lauf-Marker; die `GG-SAFE-006`-Details
 (`ReplayDelta`-Diff, volatile Felder, Ticks, Klassifikation)
-bleiben ein separater maschinenlesbarer Evidence-Vertrag.
+bleiben ein separater maschinenlesbarer Evidence-Vertrag —
+konsistent damit, dass `spec/architecture.md §15` Z. 823 die
+Status-Zeile bereits an `GG-REPLAY-007` **und** `GG-SAFE-006`
+koppelt.
 
 ### D-3 — Lifecycle-Hook-Position
 
