@@ -57,11 +57,13 @@ drei Pflicht-Befehlen (Build/Test/Abnahme) ueber Dockerfile-
 auf Python 3.12 + Makefile-Target `test-iec61850` + versions-
 bedingter Skip-Marker (4 IEC-Smokes real-library gruen); inkl.
 Code-Review-BLOCKER-Fix simulation-Healthcheck-Wiring im
-Scenario-Demo-Lifespan) / C3 dieser Commit (Status/DoD-Sync).
-`GG-DEPLOY-001..006/011` ✓ produktiv, `GG-DEPLOY-007..010` ⏸
-M7+; Trigger 009 aufgeloest (`open → done`); NEU ADR 0046
-bleibt `Provisional` bis M6-Welle-7-Closure. Self-Close-Folge
-C4a/C4b laeuft als M6-Welle-7-Pre-C0a/Pre-C0b. **M6-Welle-5c abgeschlossen 2026-06-07**
+Scenario-Demo-Lifespan) / C3 `79563c0` (Status/DoD-Sync) /
+C4a `79ac725` (Self-Close-Move rename-only) + C4b `d8dd8d2`
+(Cross-Doc-Refs-Sync). `GG-DEPLOY-001..006/011` ✓ produktiv,
+`GG-DEPLOY-007..010` ⏸ M7+; Trigger 009 aufgeloest
+(`open → done`); NEU ADR 0046 bleibt `Provisional` bis
+M6-Welle-7-Closure. Self-Close-Folge C4a/C4b dient als
+M6-Welle-7-Pre-C0a/Pre-C0b. **M6-Welle-5c abgeschlossen 2026-06-07**
 mit Stack
 `4b76ff7..C3 dieser Commit` (C0 `4b76ff7` Slice-Doc-Anlage
 inkl. 2 Review-Runden mit 8 Findings vor Push +
@@ -278,7 +280,7 @@ jeweiligen Welle-Slice-Doc unter `done/` bzw.
 | 5a | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS) | **Done 2026-06-06** (`4b36185..52cb698`) | [`M6-welle-5a.md`](../done/M6-welle-5a.md) | `GG-SAFE-001` (invalid-Erkennung ✓ produktiv) + `002` (NaN-Reject ✓ produktiv) + `003` (Kommunikationsausfall ⚠ partial Lücke → Trigger 035) + `004` (max_age ✗ Lücke → Trigger 034) — Audit + 7 Smokes + Doku-Tabelle | — (C1 entfaellt; Welle-5a-D-5 schliesst ADR-Bedarf negativ aus) |
 | 5b | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS) | **Done 2026-06-07** (`0d3bb61..C4b`) | [`M6-welle-5b.md`](../done/M6-welle-5b.md) | `GG-SAFE-007` ✓ produktiv an drei Pflicht-Surfaces (UI-Banner in `base.html` + OpenAPI/READMEs + Scenario-YAML/5×`_config.py`) + arch_check `AC-HEXAGON-PURE`; `GG-SAFE-008` ✓ produktiv (NEU `_BaseRequest`-Mixin `strict=True`/`extra="forbid"` + `RunCreateRequest`-Konsolidierung; WS-Subscribe-only-Belegung; Driven-Side via Welle-5a-Schwester-Audit); 11 NEU Integration-Smokes + `docs/user/safe-007-008-sim-prod-input-validation.md` Audit-Tabelle. | NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md) `Provisional` (Welle-5b-C1 `cee5aab` → C3 dieser Commit; Schaerfungs-ADR per ADR-0011 mit Bezug auf ADR 0037; ADR 0037 unveraendert `Accepted`) |
 | 5c | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` + Demo-Compose) | **Done 2026-06-07** (`4b76ff7..C4b dieser Commit`) | [`M6-welle-5c.md`](../done/M6-welle-5c.md) | `GG-SAFE-005` ✓ produktiv per Lastenheft-Traceability Z. 2291 an 4 Geraeten (Battery/Load/GridConnection/PV; `validate_set_power_command` + Power-Clamp + Alarm-Emission); `GG-SAFE-006` ⚠ partial (`diff_replay` Core-Algorithm ✓ produktiv mit allen vier Akzeptanz-Komponenten; Per-Lauf-Status-Marker `replay_diff_status` + `ReplaySourcePort`-Verkabelung fehlen → NEU Trigger 036); `deploy/compose.yml` `api`-`ports`-Klausel auf `GRID_GYM_DEMO_HOST_BIND`-ENV-Override mit Default `127.0.0.1` per `carveouts.md §2.7`-Auflage (kein Lastenheft-ID); 6 NEU Integration-Smokes + `docs/user/safe-005-006-fallback-determinism.md` Audit-Tabelle + `docs/user/demo-compose-hardening.md` Maintainer-Doku. | — (C1 entfaellt; Welle-5c-D-6 schliesst ADR-Bedarf negativ aus) |
-| 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | **Done 2026-06-08** (`fab6a8c` C0 / `1d478e3` C1 / `f07e996` C2 / C3 dieser Commit) | [`M6-welle-6.md`](../done/M6-welle-6.md) | `GG-DEPLOY-001/002/003/005/011` ✓ produktiv per Welle-1-Stand + Welle-5c-Hardening; `GG-DEPLOY-006` ✓ via NEU `/ready`-Endpoint mit Three-State-Status (`healthy`/`degraded`/`unhealthy`) + Komponenten-Breakdown ueber die vier Pflicht-Komponenten (api/ui/db/simulation); `GG-DEPLOY-004` ✓ via NEU `.devcontainer/devcontainer.json` mit drei Pflicht-Befehlen; `GG-DEPLOY-007..010` ⏸ M7+ per Lastenheft-Traceability Z. 2308; Trigger 009 (IEC-Reaktivierung) aufgeloest via NEU Dockerfile-Stage `iec61850-test` auf Python-3.12-Basis + Makefile-Target `test-iec61850` (4 IEC-Smokes real-library gruen); Welle-6-D-1..D-6 final; Code-Review-BLOCKER-Fix (simulation-Healthcheck-Wiring im Scenario-Demo-Lifespan); `make fullbuild` cache-frei gruen | NEU ADR 0046 `Provisional` (Multi-Python-Test-Stage-Pattern; Welle-6-C1; ADR-0011-Schaerfung zum Dockerfile-Build-Pattern) |
+| 6 | Deploy-Hardening + IEC-Smoke-Pfad-B | **Done 2026-06-08** (`fab6a8c` C0 / `1d478e3` C1 / `f07e996` C2 / `79563c0` C3 / `79ac725` C4a / `d8dd8d2` C4b) | [`M6-welle-6.md`](../done/M6-welle-6.md) | `GG-DEPLOY-001/002/003/005/011` ✓ produktiv per Welle-1-Stand + Welle-5c-Hardening; `GG-DEPLOY-006` ✓ via NEU `/ready`-Endpoint mit Three-State-Status (`healthy`/`degraded`/`unhealthy`) + Komponenten-Breakdown ueber die vier Pflicht-Komponenten (api/ui/db/simulation); `GG-DEPLOY-004` ✓ via NEU `.devcontainer/devcontainer.json` mit drei Pflicht-Befehlen; `GG-DEPLOY-007..010` ⏸ M7+ per Lastenheft-Traceability Z. 2308; Trigger 009 (IEC-Reaktivierung) aufgeloest via NEU Dockerfile-Stage `iec61850-test` auf Python-3.12-Basis + Makefile-Target `test-iec61850` (4 IEC-Smokes real-library gruen); Welle-6-D-1..D-6 final; Code-Review-BLOCKER-Fix (simulation-Healthcheck-Wiring im Scenario-Demo-Lifespan); `make fullbuild` cache-frei gruen | NEU ADR 0046 `Provisional` (Multi-Python-Test-Stage-Pattern; Welle-6-C1; ADR-0011-Schaerfung zum Dockerfile-Build-Pattern) |
 | 7 | M6-Closure | Pending | TBD (entsteht in Welle-7-C0) | M6-Closure (`done/M6-results.md` + S-1..S-6) | alle M6-ADRs → `Accepted` |
 
 **Aktiver Slice:** M6-Welle-7 (M6-Closure; Pattern analog
@@ -286,8 +288,8 @@ M4-/M5-Welle-7) — Welle-7-Slice-Doc entsteht in Welle-7-C0
 (Welle-6-Self-Close-Folge C4a/C4b dient gleichzeitig als
 Welle-7-Pre-C0a/Pre-C0b). **M6-Welle-6 (Deploy-Hardening +
 IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011` + Trigger 009)
-abgeschlossen 2026-06-08** mit Stack `fab6a8c..C3 dieser
-Commit`; `GG-DEPLOY-001..006/011` ✓ produktiv, `007..010`
+abgeschlossen 2026-06-08** mit Stack `fab6a8c..d8dd8d2`
+(C0..C4b); `GG-DEPLOY-001..006/011` ✓ produktiv, `007..010`
 ⏸ M7+; Trigger 009 aufgeloest; NEU ADR 0046 `Provisional`.
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
 `4b76ff7..C3 dieser Commit`; **Welle-5-Subdivision (5a + 5b +

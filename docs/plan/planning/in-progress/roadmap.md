@@ -942,7 +942,9 @@ mit Three-State-Status + Komponenten-Breakdown
 `.devcontainer/`-Konfig / Trigger 009 NEU Dockerfile-
 `iec61850-test`-Stage auf Python 3.12 + Makefile-Target
 `test-iec61850`; inkl. Code-Review-BLOCKER-Fix simulation-
-Healthcheck-Wiring) / C3 dieser Commit (Status/DoD-Sync).
+Healthcheck-Wiring) / C3 `79563c0` (Status/DoD-Sync) / C4a
+`79ac725` (Self-Close-Move rename-only) + C4b `d8dd8d2`
+(Cross-Doc-Refs-Sync).
 `GG-DEPLOY-001..006/011` ✓ produktiv, `GG-DEPLOY-007..010`
 ⏸ M7+; Trigger 009 aufgeloest (`open → done`); NEU ADR 0046
 `Multi-Python-Test-Stage-Pattern` bleibt `Provisional` bis

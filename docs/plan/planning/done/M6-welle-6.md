@@ -4,10 +4,12 @@
 C1 `1d478e3` (NEU ADR 0046 Multi-Python-Test-Stage-Pattern,
 `Provisional`) + C2 `f07e996` (feat/deploy: `/ready` + DevContainer +
 IEC-Pfad-B + Audit-Doku + Smokes; inkl. Code-Review-Folge inline) +
-C3 (Status/DoD-Sync; dieser Commit). `make fullbuild`/`gates`/
-`test-iec61850`/`docs-check` cache-frei gruen. ADR 0046 bleibt
-`Provisional` bis M6-Welle-7-Closure. Self-Close-Folge C4a/C4b
-(Move nach `done/`) dient als M6-Welle-7-Pre-C0a/Pre-C0b.
+C3 `79563c0` (Status/DoD-Sync) + C4a `79ac725` (Self-Close-Move
+rename-only) + C4b `d8dd8d2` (Cross-Doc-Refs-Sync).
+`make fullbuild`/`gates`/`test-iec61850`/`docs-check` cache-frei
+gruen. ADR 0046 bleibt `Provisional` bis M6-Welle-7-Closure.
+Self-Close-Folge C4a/C4b (Move nach `done/`) dient als
+M6-Welle-7-Pre-C0a/Pre-C0b.
 
 **C2-Realization-Notes (Abweichungen vom Slice-Plan, alle
 verifiziert via `make fullbuild` cache-frei gruen):**
