@@ -1,8 +1,14 @@
 # Welle 1a — M7 Zeitreihen-Persistenz (`TelemetrySinkPort`)
 
-**Status:** In Progress — C0 `933c9d5` (Slice-Doc) + C1 (NEU
-[ADR 0047](../../adr/0047-telemetry-sink-timeseries-persistence.md)
-`Provisional`; dieser Commit). C2 (Code) folgt.
+**Status:** In Progress — C0 `933c9d5` (Slice-Doc) + C1 `3ebb197`
+(NEU [ADR 0047](../../adr/0047-telemetry-sink-timeseries-persistence.md)
+`Provisional`) + C2 `4d00327` (Code: `TelemetrySinkPort` +
+Postgres-/InMemory-Adapter + `0002`-Migration + TickLoop-Wiring +
+Smoke) + C2-Review-Folge `5983853` (F1/F2/F3). **Offen (naechste
+Session): C3** (DoD §9 abhaken + 1a → `Done`, `M7-welle-1.md` 1a →
+Done, aktiver Slice → 1b) **+ C4a/C4b** (Self-Close-Move). Code +
+alle Gates (`gates`/`test-integration`/`fullbuild`/`docs-check`)
+gruen; Pause-Stand 2026-06-08.
 Erstes Sub-Slice von **M7-Welle-1** (`GG-MVP-002`) per Sub-
 Slicing-Beschluss D-4-Final = B (siehe
 [`M7-welle-1.md`](M7-welle-1.md)). Welle 1a liefert die
