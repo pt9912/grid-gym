@@ -6,7 +6,7 @@ nach M6 verbliebene MVP-Arbeit plus die offenen Safety-Trigger.
 Eroeffnet als M6-Welle-7-Closure-Handoff (Entscheidung 2026-06-08,
 M6-welle-7-Review-Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
 Welle 0 (Slice-Plan-Eroeffnung + Trigger-Triage) siehe
-[`M7-welle-0.md`](M7-welle-0.md).
+[`M7-welle-0.md`](../done/M7-welle-0.md).
 
 ---
 
@@ -64,7 +64,7 @@ mit M7-Closure.
 
 | # | Titel | Status | Slice-Doc | Scope / Trigger |
 | - | ----- | ------ | --------- | --------------- |
-| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
+| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
 | 1 | ReplaySource-Integration (`GG-MVP-002`) | Pending | TBD (entsteht in Welle-1-C0) | `ReplaySourcePort` + `replay_diff_status` + Lifecycle-Hook; aktiviert Trigger 036; ggf. 1 ADR |
 | 2 | Abnahme-CLI (`GG-MVP-003`) | Pending | TBD | `make accept` + `tools/accept.py` + `AbnahmeReport`-Schema |
 | 3 | Safety-Closure (`GG-SAFE-003/004`) | Pending | TBD | Trigger 034 (`max_age`) + 035 (Comm-Failure) |
@@ -143,7 +143,7 @@ M6-Welle-7-C4a); dann `git mv → done/` + `done/M7-results.md`.
 
 ## References
 
-- [`M7-welle-0.md`](M7-welle-0.md) — Welle-0-Begleitdoc +
+- [`M7-welle-0.md`](../done/M7-welle-0.md) — Welle-0-Begleitdoc +
   Decision-Liste + Trigger-Triage.
 - [`../done/M6-results.md`](../done/M6-results.md) — M6-Closure +
   §5 Welle-7-Erbschaft fuer M7.

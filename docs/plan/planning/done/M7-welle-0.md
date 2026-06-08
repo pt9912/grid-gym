@@ -1,9 +1,10 @@
 # Welle 0 — M7 Slice-Plan-Eroeffnung + Trigger-Triage
 
 **Status:** Done 2026-06-08 — Stack C0 `e27de7e` (Slice-Doc) +
-C1 `a25a6d9` (NEU `M7-mvp-completion.md` Slice-Plan) + C2 (dieser
-Commit; Trigger-Triage + roadmap-Flip + Status-Flip) + C4a/C4b
-(Self-Close-Move; folgen). Vorabraeumung + Slice-Plan-Eroeffnung
+C1 `a25a6d9` (NEU `M7-mvp-completion.md` Slice-Plan) + C2
+(Trigger-Triage + roadmap-Flip + Status-Flip) + C4a `3f7efe2`
+(Self-Close-Move rename-only) + C4b (Cross-Doc-Refs-Sync; dieser
+Commit). Vorabraeumung + Slice-Plan-Eroeffnung
 fuer **M7
 (MVP-Abschluss)** — die nach M6 verbliebene MVP-Arbeit
 (`GG-MVP-002` ReplaySource-Integration + `GG-MVP-003`
@@ -31,7 +32,7 @@ noetig) konkretisiert.
 
 M6 ist seit 2026-06-08 mit Welle-7-Closure abgeschlossen
 ([`../done/M6-results.md`](../done/M6-results.md)). Per
-[`roadmap.md §M7`](roadmap.md) ist M7 (MVP-Abschluss) der NEU
+[`roadmap.md §M7`](../in-progress/roadmap.md) ist M7 (MVP-Abschluss) der NEU
 eroeffnete aktive Slice — der Container fuer die letzte MVP-
 Arbeit plus die offenen Trigger.
 
@@ -243,6 +244,6 @@ final.
 - [`next/replay-source-integration.md`](../next/replay-source-integration.md)
   (`GG-MVP-002`) +
   [`next/abnahme-cli.md`](../next/abnahme-cli.md) (`GG-MVP-003`).
-- [`roadmap.md §M7`](roadmap.md) — M7-Vorbelegung.
-- [`carveouts.md`](carveouts.md) — Cross-M-Carveout-Index
+- [`roadmap.md §M7`](../in-progress/roadmap.md) — M7-Vorbelegung.
+- [`carveouts.md`](../in-progress/carveouts.md) — Cross-M-Carveout-Index
   (M7-Welle-0-C2-Triage pflegt 034/035/036/037).
