@@ -134,7 +134,12 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      ausweisen.
    - `Deployment` fuer `simulation` (sobald produktiver
      Sim-Runner existiert — sonst Stub-Service).
-   - `Service` (ClusterIP) fuer api + simulation.
+   - `Service` (ClusterIP) fuer api + simulation (plus
+     eigener `Service` fuer die UI, falls der UI-Artefakt-
+     Vertrag auf ein separates UI-`Deployment` wechselt).
+   - **Headless `Service`** fuer das Postgres-`StatefulSet`
+     (stabile Netz-Identitaet; entfaellt bei Verweis auf
+     externes/Managed-Postgres).
    - `Ingress` oder LoadBalancer-Service fuer externen
      Zugriff; bei Co-Location routet die Ingress-Form API-
      Pfade und UI-Root sichtbar getrennt. **IP-/Netz-
@@ -199,8 +204,9 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      undo deployment/<api|ui|simulation>` (bzw. Helm-Rollback
      bei Helm-Chart-Variante) pro Service-Manifest
      dokumentieren. Reihenfolge und Abhaengigkeit zum
-     DB-Rollback (Step 3) sind Teil der Doku — Image-
-     Rollback vor DB-Downgrade, sonst Schema-/Code-Drift.
+     DB-Rollback (Alembic-`downgrade()`-Bullet unten) sind
+     Teil der Doku — Image-Rollback vor DB-Downgrade, sonst
+     Schema-/Code-Drift.
    - Alembic-`downgrade()`-Pfad pro Migration + NEU separater
      Rollback-Sensor (z. B. `make migration-rollback-check`
      oder `make test-db-rollback`) gegen eine ephemere Test-DB.
