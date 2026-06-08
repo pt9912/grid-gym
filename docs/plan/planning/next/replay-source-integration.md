@@ -119,8 +119,12 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    `diff_replay()` mit den `ReplaySourcePort`-Sequenzen
    auf + emittiert die Metrik.
    - Driving-Adapter (HTTP-Action-Router, WebSocket, UI,
-     CLI) duerfen den Hook NICHT tragen (`GG-AR-P-007`-
-     Verletzung; siehe Trigger 036 D-3).
+     CLI) duerfen den Hook NICHT tragen (`GG-AR-P-003`-
+     Verletzung — Simulationslogik kennt keine
+     Kommunikationsadapter, Abhaengigkeiten zeigen nach innen;
+     `GG-AR-P-007` stuetzt: Live + Replay teilen denselben
+     Tick-Prozessor, der Hook gehoert in diesen Spine, nicht in
+     einen Adapter; siehe Trigger 036 D-3).
 
 5. **`GG-TERM-002`-/`GG-TERM-003`-Equality-Vorbedingung im
    Live-Mode**: Replay-Vergleich nur unter vollstaendig
@@ -129,6 +133,14 @@ M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
    Szenario-Datei/-Hash, kanonischer Konfigurations-Hash,
    Startzeit im Simulationszeitmodell, aktivierte Adapter/
    Adapterprofile, Seed und `tick_ms`.
+   `GG-TERM-002`/`GG-TERM-003` sind dabei normative
+   Begriffsdefinitionen (Lastenheft §27.1.1 / Z. 2203:
+   „n/a — normative Begriffsdefinition", **nicht** in der
+   Implementations-Matrix); sie liefern die Feldliste, der
+   *testbare* Determinismus-Vertrag traced auf `GG-AR-P-008`
+   (`GG-SIM-001/002/003`, `GG-RT-002`) plus die GG-TERM-002-
+   Akzeptanz (byte-identische kanonische Ergebnisdateien oder
+   leerer Replay-Diff).
    C0/C1 legt fest, ob diese Daten in `RunMetadata` oder einem
    eigenen `ReplayComparisonMetadata`-Envelope liegen. Fehlende
    oder abweichende Pflichtfelder rejecten vor Diff-
@@ -292,7 +304,7 @@ wenn C0 beide Schemata klein und reviewbar schneiden kann.
     `GG-SAFE-006`-Detailvertrag, vollstaendige
     `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix +
     Lifecycle-Hook-Pflicht im Core-Spine nach
-    `GG-AR-P-007`).
+    `GG-AR-P-003`/`GG-AR-P-007`).
   - **Sub-sliced (D-4 Option B)**: zwei ADRs — ein
     Persistenz-ADR (`TelemetrySinkPort`-Zeitreihen-
     Persistenz + ggf. `ReplaySnapshotPort`-Adapter-Form)
@@ -301,7 +313,7 @@ wenn C0 beide Schemata klein und reviewbar schneiden kann.
     `GG-SAFE-006`-Detailvertrag, vollstaendige
     `GG-TERM-002`-/`GG-TERM-003`-Equality-Matrix +
     Lifecycle-Hook-Pflicht im Core-Spine nach
-    `GG-AR-P-007`).
+    `GG-AR-P-003`/`GG-AR-P-007`).
   Welle-X-C0 trifft die Aufteilungs-Entscheidung gegen D-4.
 - Naechste freie ADR-Nummer ist **0046** (letzte vergebene:
   `0045-http-api-request-strict-validation.md`); bei
@@ -431,7 +443,11 @@ Hash-/Canonicalization-Regeln und Reject-Semantik fuer fehlende
 oder abweichende Werte. C2 liefert parametrisierte Boundary-
 Tests fuer mindestens Version, Konfiguration, Startzeit im
 Simulationszeitmodell, aktivierte Adapter, Seed und `tick_ms`;
-ein generischer Mismatch-Test reicht nicht.
+ein generischer Mismatch-Test reicht nicht. Die Tests tracen
+auf den Determinismus-Invariant `GG-AR-P-008`
+(`GG-SIM-001/002/003`, `GG-RT-002`); `GG-TERM-002`/`GG-TERM-003`
+liefern nur die normative Feld-/Akzeptanz-Definition (n/a in der
+Impl-Matrix, Lastenheft Z. 2203).
 
 ## 7. Cost-Estimate
 

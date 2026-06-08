@@ -113,7 +113,11 @@ Deploy-Hardening-Beifang, oder M7+):
    tragen — andernfalls umgehen Nicht-HTTP-Pfade (Replay-
    Mode-CLI, Multi-Agent-Bus) den Per-Lauf-Status, und
    fachliche Replay-Status-Logik wandert in den Adapter
-   (`GG-AR-P-007`-Verletzung). Aktivierungs-Pfad:
+   (`GG-AR-P-003`-Verletzung — Simulationslogik kennt keine
+   Kommunikationsadapter, Abhaengigkeiten zeigen nach innen;
+   `GG-AR-P-007` stuetzt: Live + Replay teilen denselben Tick-
+   Prozessor, der Hook gehoert in diesen Spine). Aktivierungs-
+   Pfad:
    - Replay-Mode: `expected = persisted snapshot`, `actual =
      re-run`.
    - Live-Mode: `expected = previous run`, `actual = current
