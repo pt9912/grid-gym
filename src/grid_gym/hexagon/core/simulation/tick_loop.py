@@ -261,13 +261,14 @@ class TickLoop:
         # Event-Overlay).
         self._active_load_events: tuple[LoadEvent, ...] = active_load_events
         self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
-        # Zwei optionale Driven-Ports; `None` skippt den jeweiligen Hook
-        # in `tick()`. `fault_port` (M3-Welle-1, ADR 0022 §2.5):
-        # Fault-Injection im Vor-Tick-Block. `telemetry_sink`
-        # (M7-Welle-1a, ADR 0047 §2.3): append-only Telemetrie-Zeitreihen-
-        # Persistenz (analog `run_repository`). Gemeinsame Zuweisung haelt
-        # `__init__` unter dem PLR0915-Statement-Limit.
-        self._fault_port, self._telemetry_sink = fault_port, telemetry_sink
+        # M3-Welle-1 (ADR 0022 §2.5): optionaler FaultPort fuer
+        # Fault-Injection-Orchestrierung im Vor-Tick-Block. `None`
+        # skippt den Hook in `tick()`; Welle-1-Code liefert noch
+        # keinen produktiven Adapter (Welle 2).
+        self._fault_port: FaultPort | None = fault_port
+        # M7-Welle-1a telemetry_sink wird in `_attach_control_state`
+        # neben `run_repository` gehalten (Driven-Persistenz-Sibling) —
+        # haelt `__init__` unter dem PLR0915-Statement-Limit.
         # M3-Welle-3 (ADR 0023 §2.5) + M3-Welle-4a (ADR 0026 §2.2):
         # produktive Agent-Registry am TickLoop. `agent_bus=None`-
         # Default bleibt der saubere Skip-Pfad fuer agentenlose
@@ -333,7 +334,7 @@ class TickLoop:
         # aufgerufen, damit `_device_by_id` schon gebaut ist
         # (Welle-4b-Agents koennten Device-Referenzen brauchen).
         self._attach_agents()
-        self._attach_welle_4_state(run_repository, alarm_id_source)
+        self._attach_welle_4_state(run_repository, telemetry_sink, alarm_id_source)
 
     def _init_drift_counters(self) -> None:
         """Welle-6a-Review M-3 + Welle-4b-Review-Fix #4: Forward-
@@ -438,15 +439,17 @@ class TickLoop:
     def _attach_welle_4_state(
         self,
         run_repository: RunRepositoryPort | None,
+        telemetry_sink: TelemetrySinkPort | None,
         alarm_id_source: Callable[[], str] | None,
     ) -> None:
-        """Welle-4-State-Setup-Bundle (Welle-4a Control-State +
-        Welle-4b Alarm-ID-Source). Bewusst zwei Concerns in einem
-        Helper, um `PLR0915 max-statements=30` in `__init__` nicht
-        zu reissen — beide Welle-4-State-Slots sind klein und
-        verwandt (Run-Lifecycle vs. Alarm-Aggregation), beide
-        lesen optional `app.state`-Parameter aus dem Konstruktor."""
-        self._attach_control_state(run_repository)
+        """Run-Lifecycle-State-Setup-Bundle (Welle-4a Control-State +
+        M7-Welle-1a Telemetrie-Sink + Welle-4b Alarm-ID-Source).
+        Bewusst gebuendelt, um `PLR0915 max-statements=30` in
+        `__init__` nicht zu reissen — die Slots sind klein und
+        verwandt (Run-Lifecycle/Driven-Persistenz vs. Alarm-
+        Aggregation), alle lesen optional `app.state`-Parameter aus
+        dem Konstruktor."""
+        self._attach_control_state(run_repository, telemetry_sink)
         self._attach_alarm_id_source(alarm_id_source)
 
     def _attach_alarm_id_source(
@@ -464,6 +467,7 @@ class TickLoop:
     def _attach_control_state(
         self,
         run_repository: RunRepositoryPort | None,
+        telemetry_sink: TelemetrySinkPort | None,
     ) -> None:
         """M5-Welle-4a (ADR 0039 Decisions 12+13): Run-Control-State-
         Mirror + optionale Repository-Persistenz. `_control_state`
@@ -479,6 +483,10 @@ class TickLoop:
         per First-Tick-Auto-Flip auf `running` springt."""
         self._control_state: RunStatus = "pending"
         self._run_repository: RunRepositoryPort | None = run_repository
+        # M7-Welle-1a (ADR 0047 §2.3): Driven-Persistenz-Sibling zu
+        # `run_repository` — append-only Telemetrie-Zeitreihen-Sink,
+        # pro Tick aus dem Spine bedient (`None` → No-op-Skip).
+        self._telemetry_sink: TelemetrySinkPort | None = telemetry_sink
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.

@@ -170,8 +170,10 @@ Normalisierung. Damit ist die persistierte Zeitreihe byte-stabil
 gegen den Re-Run (Welle-1b-`diff_replay()`-Vorbedingung;
 `GG-AR-P-008`-Determinismus + ADR 0021 §2.9). Der 1a-Persistenz-
 Smoke pinnt: Round-Trip `Decimal → TEXT → Decimal` ist
-verlustfrei + die `read_ordered`-Reihenfolge ist bei
-Ties (gleiche `simulation_time`) ueber `sequence` stabil.
+verlustfrei + die `read_ordered`-Reihenfolge ist ueber den
+Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
+(zwei Geraete mit gleicher `simulation_time` + gleicher per-device
+`sequence`), siehe §2.1/§2.2-C2-Realization.
 
 ---
 
@@ -241,6 +243,15 @@ Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure
 - **Neutral:** `run_id` ohne harten FK auf `runs` (Lauf-Scope-
   Konvention; vermeidet Migrations-Kopplung). Ein FK waere eine
   spaetere additive Schaerfung.
+- **Achtung (In-Memory-Variante):** `InMemoryTelemetrySink` (Demo-
+  Pfad) ist **unbounded by design** — anders als die bounded
+  Geschwister `AlarmHistoryBuffer` (`deque(maxlen)`) und
+  `InMemoryTelemetryStream` (`Queue(maxsize)`). Ein Ring-Buffer
+  ginge nicht, weil `read_ordered` fuer den 1b-Replay den
+  **vollstaendigen** Lauf liefern muss. Konsequenz: die In-Memory-
+  Variante ist Showcase-/Test-Scope (kurzlebig); ein Dauer-Demo
+  akkumuliert RAM unbeschraenkt. Die disk-bounded Persistenz ist
+  `PostgresTelemetrySinkAdapter`.
 
 ---
 

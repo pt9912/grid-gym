@@ -40,6 +40,7 @@ from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
     _DEMO_RUN_ID,
     _load_scenario_from_yaml,
 )
+from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
 from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR, app
 
 
@@ -133,6 +134,26 @@ def test_demo_ready_endpoint_reports_healthy(
     body = response.json()
     assert body["components"]["simulation"]["state"] == "healthy", body["components"]["simulation"]
     assert body["status"] == "healthy", body
+
+
+def test_demo_lifespan_wires_telemetry_sink(
+    demo_client: TestClient,
+) -> None:
+    """M7-Welle-1a (ADR 0047 §2.3): der Demo-Lifespan verdrahtet
+    einen `InMemoryTelemetrySink` auf `app.state`, und `read_ordered`
+    ist erreichbar + liefert ausschliesslich Punkte des Demo-Laufs.
+
+    Timing-robust (keine Tick-Anzahl-Annahme — der Hintergrund-Driver
+    tickt asynchron): pinnt die `configure_scenario_demo_run`-Sink-
+    Verdrahtung. Die On-Tick-Persistenz selbst ist im TickLoop-Unit-
+    Test (`test_tick_loop_telemetry_sink.py`) + Postgres-Integration-
+    Smoke (`test_mvp_002_timeseries_persistence_smoke.py`) gepinnt."""
+    sink = app.state.telemetry_sink
+    assert isinstance(sink, InMemoryTelemetrySink)
+    points = sink.read_ordered(_DEMO_RUN_ID)
+    # Falls der Driver bereits getickt hat: alle Punkte gehoeren zum
+    # Demo-Lauf (Per-`run_id`-Filterung; timing-unabhaengig korrekt).
+    assert all(point.run_id == _DEMO_RUN_ID for point in points)
 
 
 def test_demo_scenario_hash_is_deterministic() -> None:

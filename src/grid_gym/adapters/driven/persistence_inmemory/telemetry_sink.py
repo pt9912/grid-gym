@@ -29,6 +29,19 @@ class InMemoryTelemetrySink:
     an; `read_ordered` liefert die Punkte eines Laufs in genau
     dieser Reihenfolge (reproduziert die deterministische
     `emitted_telemetry`-Reihenfolge). Kein `UPDATE`/`DELETE`.
+
+    **Unbounded by design:** der Store waechst monoton mit jedem
+    Tick und wird NICHT gekappt — anders als die bounded Geschwister
+    `AlarmHistoryBuffer` (`deque(maxlen=200)`) und
+    `InMemoryTelemetryStream` (`asyncio.Queue(maxsize=…)`). Das ist
+    Absicht: der Welle-1b-Replay liest ueber `read_ordered` den
+    **vollstaendigen** Lauf; ein Ring-Buffer wuerde alte Ticks
+    droppen und die Replay-Vollstaendigkeit brechen. Konsequenz:
+    diese Variante ist fuer den **kurzlebigen Showcase-Demo**
+    gedacht (in-process, env-var-Pfad), nicht fuer langlaufende
+    Prozesse — ein Dauer-Demo akkumuliert RAM unbeschraenkt. Die
+    produktive, disk-bounded Persistenz ist
+    `PostgresTelemetrySinkAdapter`.
     """
 
     def __init__(self) -> None:
