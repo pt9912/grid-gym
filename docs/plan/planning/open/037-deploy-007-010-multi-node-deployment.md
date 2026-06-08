@@ -165,6 +165,18 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    - `Deployment.spec.strategy.type: RollingUpdate` mit
      `maxUnavailable: 0` + `maxSurge: 1` fuer api (kann
      unterbrechungsfrei).
+   - **Healthcheck-Gating** (Lastenheft-Pflicht-Item der
+     `GG-DEPLOY-008`-Akzeptanz Z. 1893-1895) ist explizit die
+     **Kombination zweier Ebenen** und nicht durch die
+     readinessProbe allein erfuellt: (a) **Pod-Ready-Gating
+     durch K8s** — die `/ready`-readinessProbe haelt einen
+     neuen Pod aus der Service-Rotation, bis er ready meldet,
+     und gated so den Pod-fuer-Pod-Austausch; (b) **Rollout-
+     Start-Gating durch das Active-Run-Gate** (naechster
+     Bullet) — entscheidet, ob der Rollout ueberhaupt starten
+     darf. Die Doku MUSS beide Ebenen benennen; `/ready` als
+     Probe-Surface deckt nur (a) ab und gilt fuer sich allein
+     **nicht** als „Healthcheck-Gating" im Lastenheft-Sinn.
    - Verhalten laufender Simulationen: **Lastenheft-
      Pflicht** zu dokumentieren (Akzeptanz Z. 1893-1895).
      Welle-6-`/ready` ist nur Probe-Surface; `degraded` kann
@@ -264,12 +276,20 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      oder explizit als "active runs killing" dokumentiert und
      getestet; letzteres ist **kein** Zero-Downtime-Pfad.
      Jeder Zero-Downtime-Claim mit aktivem
-     "active runs killing" schlaegt fehl. Rollback-Grenzen
-     fuer nicht downgrade-faehige Migrationen werden mit
-     einer **fingierten downgrade-untauglichen Migration**
-     (z. B. `DROP COLUMN` ohne `downgrade()`-Restore-Pfad)
-     getestet: der Sensor MUSS explizit Fehler/Warning
-     signalisieren — ein stilles „succeeded" ist Test-Fail.
+     "active runs killing" schlaegt fehl. **Sensor-Ownership-
+     Abgrenzung:** Der kind/K8s-Smoke prueft hier nur den
+     **operativen Rollback-Pfad** (`kubectl rollout undo`
+     bringt das api-/simulation-Deployment auf den vorigen
+     Image-Tag zurueck). Der Test der Rollback-**Grenzen** fuer
+     nicht downgrade-faehige Migrationen gehoert NICHT in den
+     kind-Smoke (er braucht keinen Cluster), sondern in den
+     **DB-Rollback-Sensor aus Lieferung Punkt 4**
+     (`make migration-rollback-check` / `make test-db-rollback`
+     gegen eine ephemere Test-DB): dort wird eine **fingierte
+     downgrade-untaugliche Migration** (z. B. `DROP COLUMN`
+     ohne `downgrade()`-Restore-Pfad) angelegt, und der Sensor
+     MUSS explizit Fehler/Warning signalisieren — ein stilles
+     „succeeded" ist Test-Fail.
      Ein offen exponierter Ingress/LoadBalancer ohne die oben
      dokumentierte IP-/Netz-Boundary schlaegt ebenfalls fehl,
      weil `carveouts.md §2.7 Row 2 (Multi-User + Auth im UI-Layer)` die Auth-Luecke nur ueber die
