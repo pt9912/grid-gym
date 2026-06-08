@@ -24,6 +24,9 @@ from __future__ import annotations
 from grid_gym.adapters.driven.persistence_inmemory.run_repository import (
     InMemoryRunRepository,
 )
+from grid_gym.adapters.driven.persistence_inmemory.telemetry_sink import (
+    InMemoryTelemetrySink,
+)
 
 
-__all__ = ["InMemoryRunRepository"]
+__all__ = ["InMemoryRunRepository", "InMemoryTelemetrySink"]

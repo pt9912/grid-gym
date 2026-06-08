@@ -74,6 +74,7 @@ from grid_gym.hexagon.ports.driven.fault import FaultPort
 from grid_gym.hexagon.ports.driven.observability import LogPort, MetricsPort, TracePort
 from grid_gym.hexagon.ports.driven.random import RandomPort
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driven.telemetry_sink import TelemetrySinkPort
 
 
 AlarmIdSource = Callable[[], str]
@@ -396,6 +397,7 @@ class TickLoopWiring:
     trace_port: TracePort | None = None
     protocol_ports: tuple[DeviceProtocolPort, ...] | None = None
     run_repository: RunRepositoryPort | None = None
+    telemetry_sink: TelemetrySinkPort | None = None
     alarm_id_source: AlarmIdSource | None = None
 
 
@@ -500,6 +502,7 @@ def build_tick_loop(
         trace_port=w.trace_port,
         protocol_ports=w.protocol_ports,
         run_repository=w.run_repository,
+        telemetry_sink=w.telemetry_sink,
         alarm_id_source=w.alarm_id_source,
     )
 

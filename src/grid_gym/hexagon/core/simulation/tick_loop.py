@@ -85,6 +85,7 @@ from grid_gym.hexagon.core.errors import (
     TickLoopUnknownDeviceTypeError,
 )
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driven.telemetry_sink import TelemetrySinkPort
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
@@ -235,6 +236,7 @@ class TickLoop:
         trace_port: TracePort | None = None,
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
         run_repository: RunRepositoryPort | None = None,
+        telemetry_sink: TelemetrySinkPort | None = None,
         alarm_id_source: Callable[[], str] | None = None,
     ) -> None:
         if tick_ms <= 0:
@@ -259,11 +261,13 @@ class TickLoop:
         # Event-Overlay).
         self._active_load_events: tuple[LoadEvent, ...] = active_load_events
         self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
-        # M3-Welle-1 (ADR 0022 §2.5): optionaler FaultPort fuer
-        # Fault-Injection-Orchestrierung im Vor-Tick-Block. `None`
-        # skippt den Hook in `tick()`; Welle-1-Code liefert noch
-        # keinen produktiven Adapter (Welle 2).
-        self._fault_port: FaultPort | None = fault_port
+        # Zwei optionale Driven-Ports; `None` skippt den jeweiligen Hook
+        # in `tick()`. `fault_port` (M3-Welle-1, ADR 0022 §2.5):
+        # Fault-Injection im Vor-Tick-Block. `telemetry_sink`
+        # (M7-Welle-1a, ADR 0047 §2.3): append-only Telemetrie-Zeitreihen-
+        # Persistenz (analog `run_repository`). Gemeinsame Zuweisung haelt
+        # `__init__` unter dem PLR0915-Statement-Limit.
+        self._fault_port, self._telemetry_sink = fault_port, telemetry_sink
         # M3-Welle-3 (ADR 0023 §2.5) + M3-Welle-4a (ADR 0026 §2.2):
         # produktive Agent-Registry am TickLoop. `agent_bus=None`-
         # Default bleibt der saubere Skip-Pfad fuer agentenlose
@@ -986,6 +990,7 @@ class TickLoop:
             emitted_alarms=self._drain_and_map_device_alarms(now),
         )
         self._tick_count += 1
+        self._persist_emitted_telemetry(result)
         # M3-Welle-5 (ADR 0024 §2.6) + Review-Folge L-1: Observability-
         # Hook tick_end. Counter + Log laufen NACH `_tick_count += 1`
         # (damit der naechste `tick()` das frische Inkrement sieht) und
@@ -1005,6 +1010,15 @@ class TickLoop:
             attributes={"tick": result.tick, "emitted_count": len(emitted)},
         )
         return result
+
+    def _persist_emitted_telemetry(self, result: TickResult) -> None:
+        """M7-Welle-1a (ADR 0047 §2.3): append-only Zeitreihen-
+        Persistenz der pro Tick emittierten Telemetrie ueber den
+        Driven-Sink-Port. Insertion-Reihenfolge = deterministische
+        `emitted_telemetry`-Reihenfolge; `None`-Sink skippt (no-op,
+        analog `run_repository`)."""
+        if self._telemetry_sink is not None:
+            self._telemetry_sink.persist(result.emitted_telemetry)
 
     def _apply_pending_agent_commands(
         self,

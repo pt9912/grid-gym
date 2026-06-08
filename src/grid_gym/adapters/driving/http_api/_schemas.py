@@ -19,8 +19,8 @@ Plus `ErrorResponse` als standardisiertes Fehler-Format
 Welle-1-Anti-Scope: Stub-Schemas reflektieren die volle
 Surface, aber Endpoint-Bodies (siehe `app.py`) sind Stubs.
 Echte Wiring an `TickLoop`-Pause/Resume (Welle 4),
-`TelemetrySinkPort` (Welle 3) und `FaultPort` (Welle 6)
-ist Folge-Welle-Material — die Schemas hier vermeiden
+`TelemetrySinkPort` (M7-Welle-1a, ADR 0047) und `FaultPort`
+(Welle 6) ist Folge-Welle-Material — die Schemas hier vermeiden
 implementierungs-spezifische Felder, die spaeter brechen
 koennten.
 """

@@ -81,10 +81,16 @@ class TelemetrySinkPort(Protocol):
 - **`persist`** ist **append-only** (kein `UPDATE`/`DELETE` im
   Vertrag) und **batch** (eine `Sequence` pro Tick = die
   `TickResult.emitted_telemetry`), um Per-Tick-I/O zu amortisieren.
-- **`read_ordered`** liefert alle Punkte eines Laufs
-  **deterministisch sortiert** nach `(simulation_time, sequence)`
-  — Lese-Surface fuer den 1a-Persistenz-Smoke und (Welle 1b) den
-  `ReplaySnapshotPort`-Sample-Strom.
+- **`read_ordered`** liefert alle Punkte eines Laufs in
+  **Insertion-Reihenfolge** (Surrogat-`id`, §2.2), die die
+  deterministische `emitted_telemetry`-Reihenfolge (Device-Major ×
+  Per-Device-`sequence`) exakt reproduziert. **C2-Realization-Note:**
+  `(simulation_time, sequence)` ist als Sortier-Key **NICHT
+  eindeutig** — `sequence` wird per-device-per-tick vergeben (zwei
+  Geraete teilen `sequence` bei gleicher `simulation_time`); nur die
+  Insertion-Reihenfolge (`id`) reproduziert die Emission
+  unzweideutig. Lese-Surface fuer den 1a-Persistenz-Smoke und
+  (Welle 1b) den `ReplaySnapshotPort`-Sample-Strom.
 - Der Port nutzt den **Core-Domain**-`TelemetryPoint`
   (`core.domain.telemetry`), **nicht** das gleichnamige
   Driving-Stream-DTO. Import von `core.domain` in einem Driven-
@@ -99,6 +105,7 @@ Pflichtfelder:
 
 | Spalte | Typ | Hinweis |
 | ------ | --- | ------- |
+| `id` | BIGINT IDENTITY | Surrogat-Primary-Key; aufsteigend = Insertion-Reihenfolge (C2-Realization, §2.4). |
 | `run_id` | TEXT | FK-Semantik zu `runs.run_id` (kein harter FK noetig; Lauf-Scope). |
 | `tick` | INTEGER | |
 | `simulation_time` | BIGINT | ms ab Lauf-Start. |
@@ -110,9 +117,14 @@ Pflichtfelder:
 | `source` | TEXT | |
 | `sequence` | INTEGER | Per-Device-Tie-Break-Counter. |
 
-- **Deterministische Sortier-/Tie-Break-Invariante:**
-  `ORDER BY run_id, simulation_time, sequence`. Index auf
-  `(run_id, simulation_time, sequence)`.
+- **Deterministische Sortier-Invariante (C2-Realization):**
+  `read_ordered` macht `WHERE run_id = %s ORDER BY id` —
+  Insertion-Reihenfolge reproduziert die Emission. Index auf
+  `(run_id, id)`. `(simulation_time, sequence)` ist als Sort-Key
+  verworfen, weil `sequence` per-device-per-tick und damit nicht
+  global eindeutig ist (zwei Geraete teilen `sequence` bei
+  gleicher `simulation_time`); ein Surrogat-`id` ist die einzige
+  unzweideutige Insertion-Order-Quelle.
 - **`value` ist `TEXT`, NICHT `NUMERIC`**: `NUMERIC` wuerde die
   Scale normalisieren (`1.50` → `1.5`) und die byte-stabile
   Round-Trip-Vorbedingung fuer den Welle-1b-Replay-Diff brechen.

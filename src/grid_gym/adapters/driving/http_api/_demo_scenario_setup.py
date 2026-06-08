@@ -46,6 +46,7 @@ import yaml
 from fastapi import FastAPI
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.adapters.driving.http_api._dependencies import (
     _RunRepositoryNotConfiguredError,
@@ -199,10 +200,17 @@ def configure_scenario_demo_run(
     clock = _DemoSimulationClock()
     random_root = MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed)
     fault_port = _compose_fault_port(loaded.scenario.faults)
+    # M7-Welle-1a (ADR 0047): in-memory Telemetrie-Sink fuer den
+    # in-process-Demo-Lauf (parallel zu InMemoryRunRepository; kein
+    # Postgres im Lifespan). Der TickLoop persistiert pro Tick
+    # `emitted_telemetry` append-only; lesbar via
+    # `app_.state.telemetry_sink.read_ordered(run_id)`.
+    telemetry_sink = InMemoryTelemetrySink()
     wiring = TickLoopWiring(
         run_repository=repository,
         alarm_id_source=_alarm_id_source(),
         fault_port=fault_port,
+        telemetry_sink=telemetry_sink,
     )
     tick_loop = build_tick_loop(
         loaded.scenario,
@@ -265,6 +273,9 @@ def configure_scenario_demo_run(
         telemetry_stream_provider=_telemetry_stream_provider,
     )
     app_.state.demo_tick_loop_driver = driver
+    # M7-Welle-1a (ADR 0047): persistierte Zeitreihen lesbar machen
+    # (Welle-1b-ReplaySource-Quelle + Demo-Persistenz-Beleg).
+    app_.state.telemetry_sink = telemetry_sink
 
 
 class _ScenarioDemoTickLoopDriverAlreadyConfiguredError(RuntimeError):

@@ -4,8 +4,9 @@ Liefert die produktive `RunRepositoryPort`-Implementation auf
 `psycopg`-Basis. Welle 6b hatte den Port + InMemory-Fake; Welle 6c
 bringt die Postgres-Persistenz und das alembic-Schema.
 
-Modul-Re-Export: `PostgresRunRepository` ist die einzige
-oeffentliche API dieses Pakets.
+Modul-Re-Export: `PostgresRunRepository` (Laufmetadaten/Status,
+Welle 6c) + `PostgresTelemetrySinkAdapter` (Telemetrie-Zeitreihen,
+M7 Welle 1a / ADR 0047).
 """
 
 from __future__ import annotations
@@ -13,5 +14,8 @@ from __future__ import annotations
 from grid_gym.adapters.driven.persistence_postgres.run_repository import (
     PostgresRunRepository,
 )
+from grid_gym.adapters.driven.persistence_postgres.telemetry_sink_repository import (
+    PostgresTelemetrySinkAdapter,
+)
 
-__all__ = ["PostgresRunRepository"]
+__all__ = ["PostgresRunRepository", "PostgresTelemetrySinkAdapter"]
