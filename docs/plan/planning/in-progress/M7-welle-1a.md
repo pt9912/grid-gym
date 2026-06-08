@@ -1,6 +1,8 @@
 # Welle 1a — M7 Zeitreihen-Persistenz (`TelemetrySinkPort`)
 
-**Status:** In Progress — C0 (Slice-Doc-Anlage; dieser Commit).
+**Status:** In Progress — C0 `933c9d5` (Slice-Doc) + C1 (NEU
+[ADR 0047](../../adr/0047-telemetry-sink-timeseries-persistence.md)
+`Provisional`; dieser Commit). C2 (Code) folgt.
 Erstes Sub-Slice von **M7-Welle-1** (`GG-MVP-002`) per Sub-
 Slicing-Beschluss D-4-Final = B (siehe
 [`M7-welle-1.md`](M7-welle-1.md)). Welle 1a liefert die
@@ -118,10 +120,17 @@ Optionen:
   `TelemetryPoint`s parallel zum Stream — haelt den Core frei,
   doppelt aber die Drain-Logik.
 
-Vorbelegung: **A** (Core-Kwarg, keyword-only, `None`-default →
-no-op; konsistent mit `run_repository`/`fault_port`-Pattern und
-deterministisch). C1-ADR 0047 verifiziert gegen AC-PORTS-NO-OUT +
-AC-ADAPTER-PURE und entscheidet final.
+**Final (ADR 0047 §2.3): A** (Core-Kwarg `telemetry_sink`,
+keyword-only, `None`-default → no-op; konsistent mit
+`run_repository`/`fault_port`-Pattern und deterministisch).
+**Begruendung verschaerft in C1:** der Sink ist ein **Driven**-
+Port → core-invoked (wie `RunRepositoryPort`); der adapter-
+seitige Live-Stream-Drain ist `TelemetryStreamPort`/**Driving**
+(andere Kategorie) und damit **kein** Argument fuer Adapter-Tee.
+Ein Adapter-Tee wuerde die Persistenz an `DemoTickLoopDriver`
+koppeln (headless-Runner persistierten sonst nicht). AC-PORTS-
+NO-OUT/AC-NO-FW: Core kennt nur das Protocol; `make arch-check`
+verifiziert in C2.
 
 ### 1a-D-3 — ADR-Bedarf
 
