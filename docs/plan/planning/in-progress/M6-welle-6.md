@@ -1,6 +1,8 @@
 # Welle 6 — M6 Deploy-Hardening + IEC-Smoke-Pfad-B (`GG-DEPLOY-001..011` + Trigger 009)
 
-**Status:** In Progress — C0 (Slice-Doc-Anlage; dieser Commit).
+**Status:** In Progress — C0 `fab6a8c` (Slice-Doc-Anlage) +
+C1 (NEU ADR 0046 Multi-Python-Test-Stage-Pattern, `Provisional`;
+dieser Commit).
 
 **Pre-C0 abgeschlossen (M6-Welle-5c-Closure-Folge):**
 
