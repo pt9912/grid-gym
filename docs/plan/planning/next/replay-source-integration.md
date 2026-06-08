@@ -1,8 +1,14 @@
 # GG-MVP-002 Closure — Zeitreihen-Persistenz + Replay-Source-Integration + `replay_diff_status`-Metrik
 
-**Status:** Next — Scope-Skizze (noch nicht aktiv).
-**Datum:** 2026-06-07.
-**Quelle:** [`roadmap.md §3 GG-MVP-002`](../in-progress/roadmap.md)
+**Status:** Next — getriaged auf **M7-Welle-1** (per
+M7-Welle-0-C2-Triage 2026-06-08; siehe
+[`M7-mvp-completion.md §3`](../in-progress/M7-mvp-completion.md)).
+Aktivierung (`git mv next/ → in-progress/`) +
+Decision-Finalisierung in M7-Welle-1-C0.
+**Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
+2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
+M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
+**Quelle:** [`roadmap.md §M7 + GG-MVP-002-Zeile`](../in-progress/roadmap.md)
 + [`open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
 (Welle-5c-Audit, Trigger-Watch).
 
@@ -11,9 +17,11 @@
 ## 1. Context
 
 `GG-MVP-002` ist der einzige `GG-MVP-*`-Punkt im **partial**-
-Stand. Die drei anderen MVP-Punkte (001, 003 falls Welle 6
-auf Erweiterung geht, 004) sind ✓ produktiv bzw. eigene
-Tracking-Pfade.
+Stand. Die anderen MVP-Punkte: 001 ✓ produktiv; **003
+Abnahme-CLI ist M7-Welle-2** (M6-Welle-6 hat es NICHT als
+Scope-Erweiterung aufgenommen — eigener Plan
+[`abnahme-cli.md`](abnahme-cli.md), getriaged auf M7-Welle-2);
+004 eigener Tracking-Pfad.
 
 **Lastenheft-Akzeptanz (Z. 130-135, GG-MVP-002):**
 
@@ -57,9 +65,8 @@ partial.
 
 ## 2. Lieferziel
 
-Ein eigenstaendiger Slice (vermutlich M7-Welle-X oder
-M6-Welle-7-Vorlauf, je nach Aktivierungs-Beschluss; siehe
-§5) liefert:
+Ein eigenstaendiger Slice — **M7-Welle-1** (per
+M7-Welle-0-C2-Triage; siehe §5) — liefert:
 
 1. **Produktive Zeitreihen-Persistenz fuer Telemetriepunkte**
    (`GG-PERSIST-001`, Architektur `TelemetrySinkPort`): NEU
@@ -315,9 +322,9 @@ wenn C0 beide Schemata klein und reviewbar schneiden kann.
     Lifecycle-Hook-Pflicht im Core-Spine nach
     `GG-AR-P-003`/`GG-AR-P-007`).
   Welle-X-C0 trifft die Aufteilungs-Entscheidung gegen D-4.
-- Naechste freie ADR-Nummer ist **0046** (letzte vergebene:
-  `0045-http-api-request-strict-validation.md`); bei
-  Sub-Slicing 0046 + 0047.
+- Naechste freie ADR-Nummer ist **0047** (letzte vergebene:
+  `0046-multi-python-test-stage-pattern.md`, M6-Welle-6); bei
+  Sub-Slicing 0047 + 0048.
 
 ## 4. Sub-Scope (Welle-Vorbelegung)
 
@@ -376,28 +383,27 @@ Falls D-4 Option B (sub-sliced):
   Luecke blockiert `GG-MVP-002` genauso wie Replay-E2E.
 - ⚠ `ReplaySourcePort`-Adapter + Lifecycle-Verkabelung fehlen.
 
-**Aktivierungs-Bedingungen** (eine genuegt):
+**Aktivierungs-Beschluss (erfolgt 2026-06-08):** Per
+M7-Welle-0-C2-Triage ist dieser Plan **`Active in
+M7-Welle-1`** ([`M7-mvp-completion.md §3`](../in-progress/M7-mvp-completion.md))
+— M7 (MVP-Abschluss) ist der eroeffnete aktive Meilenstein,
+`GG-MVP-002` ist seine erste (groesste) Substanz-Welle.
+M7-Welle-1-C0 aktiviert diesen Plan (`git mv next/ →
+in-progress/`), finalisiert D-0..D-5 und entscheidet das
+Sub-Slicing (D-4) gegen die dann gemessene Migrations-Groesse.
 
-- **Stakeholder-Bedarf fuer `GG-MVP-002`-Closure** vor
-  M6-Welle-7-Closure (M6-Closure-Welle; noch nicht
-  eingeplant — kein Slice-Doc unter
-  `docs/plan/planning/in-progress/` oder `next/`):
-  aktiviert sofort als M6-Welle-7-Vorlauf-Slice.
-- **`GG-REPLAY-004..006`-Aktivierung** (Status `🔲 M3` per
-  Lastenheft Z. 2269): bundelbar mit diesem Slice, weil
-  beide den gleichen Lauf-Lifecycle-Hook benoetigen.
-- **CI-Bench-Determinismus-Drift** (falls die Welle-4b-a-
-  Bench-Suite oder ein anderer CI-Sensor `FACHLICH`-Deltas
-  produziert): Aktivierung unmittelbar als Drift-Diagnose-
-  Werkzeug.
-- **Compliance-Druck**: explizite Anforderung an
-  maschinenlesbaren Replay-Status pro Lauf.
+**Bundling-Pruefung in Welle-1-C0:**
 
-**Wenn nichts davon eintritt:** `GG-MVP-002` bleibt
-⚠ partial bis M6-Welle-7-Closure; Welle-7-Doku notiert den
-Trigger-036-Defer-Vermerk und schiebt die Aktivierung in
-M7+. Roadmap §3 GG-MVP-002-Zeile wird entsprechend
-gepflegt.
+- **`GG-REPLAY-004..006`** (Status `🔲 M3` per Lastenheft
+  Z. 2269) teilt den gleichen Lauf-Lifecycle-Hook —
+  Welle-1-C0 prueft Mit-Buendelung.
+- **CI-Bench-Determinismus-Drift** (Welle-4b-a-Bench-Suite
+  ODER anderer CI-Sensor mit `FACHLICH`-Deltas): waere ein
+  vorgezogener Aktivierungs-Grund gewesen; jetzt ohnehin
+  aktiv — der Replay-Status-Marker dient zugleich als
+  Drift-Diagnose.
+- **Compliance-Druck** auf maschinenlesbaren Replay-Status
+  pro Lauf: durch die M7-Welle-1-Lieferung abgedeckt.
 
 ## 6. Risiken
 
