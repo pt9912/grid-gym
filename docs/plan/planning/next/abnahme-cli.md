@@ -61,10 +61,17 @@ GG-MVP-003 verlangt):
   `agents` aus `scenario.agents` (`loader.py:460-462`). Ersetzt
   jedes manuelle TickLoop-Wiring (siehe §6 R1).
 - **`_drive_demo`-Muster** (`tests/integration/test_mvp_demo_scenario.py:39-50`)
-  — fertige Headless-Replay-Blaupause (`build_tick_loop` +
-  `FakeClock` + seeded `MersenneTwisterRandomPort` + `loop.tick()`-
-  Schleife); der bestehende Determinismus-Test dort beweist Step-B-
-  Eigenschaft (1) bereits.
+  — Blaupause fuer die **Tick-Mechanik** des Headless-Replays
+  (`build_tick_loop` + `FakeClock` + seeded
+  `MersenneTwisterRandomPort` + `loop.tick()`-Schleife, sammelt
+  `result.emitted_telemetry`). **Wichtig:** `_drive_demo`
+  verdrahtet **keine** Faults (kein `TickLoopWiring`) — der
+  bestehende Determinismus-Test dort beweist Eigenschaft (1) nur
+  fuer den **fault-losen** Stream. Step B verdrahtet zusaetzlich
+  `fault_port` (siehe §6 R1, zwingend fuer Eigenschaft 2), erzeugt
+  damit einen **anderen** Stream; dessen Determinismus deckt erst
+  der NEU Happy-Path-Smoke ab (zwei Laeufe, `diff_replay`-leer),
+  nicht der bestehende Test.
 - **`BatteryFaultAdapter` / `GridFaultAdapter`**
   (`src/grid_gym/hexagon/core/faults/` — Core, hexagon-pure, aus
   `tools/` importierbar) — fuer das Step-B-Fault-Wiring, weil
@@ -168,27 +175,53 @@ oder M7-Welle-X; siehe §5) liefert:
        `load_scenario`-Aufruf) — die Step-A-vor-Step-B-
        Reihenfolge ist damit eine explizite
        Datenabhaengigkeit, nicht nur eine Lauf-Reihenfolge.
-       Vergleicht die zwei Snapshot-Streams via
-       `diff_replay()` (erwartet leeren Diff oder nur
-       `VOLATIL`-Klassifikation) **plus** vergleicht den
-       gemeinsamen Snapshot-Stream-Hash beider Laeufe
-       (bei Determinismus identisch) gegen einen gepinten
-       Erwartungs-Hash `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`
-       (Pin-Lifecycle siehe D-8). **Stream-Hash-Konstruktion
-       (Pflicht-Vertrag, damit Lint und CLI bauartbedingt
-       identisch rechnen)**:
-       `sha256(canonical_json(list(snapshots))).hexdigest()`
-       aus
+       **Gehashtes Stream-Objekt (Pflicht-Vertrag):** der
+       Replay sammelt pro Tick `TickResult.emitted_telemetry`
+       und konkateniert sie zu einem
+       `tuple[TelemetryPoint, ...]` — **dasselbe Stream-Objekt,
+       das `_drive_demo` (`test_mvp_demo_scenario.py:39-50`)
+       und der bestehende Determinismus-Test sammeln**. Es gibt
+       in diesem Pfad **kein** separates „Snapshot"-Objekt; der
+       gepinte Stream ist der Telemetry-Stream. **Tick-Anzahl
+       ist fixiert auf `MIN_DETERMINISM_TICKS` (= 100, dieselbe
+       Konstante wie der bestehende Determinismus-Test)** —
+       ohne fixe Tick-Zahl waere der Pin unterbestimmt.
+       Vergleicht die zwei Telemetry-Streams via
+       `diff_replay(expected, actual, *, tick_ms=1000,
+       volatile_fields=...)` (erwartet leeren Diff oder nur
+       `VOLATIL`-Klassifikation). **`volatile_fields`-Vertrag:**
+       Im Vorschlags-Pfad sind Alarm-UUID/Repo aus (siehe §6 —
+       `alarm_id_source=None`/`run_repository=None`), die
+       deterministische Projektion traegt damit **keine**
+       volatilen Felder; `volatile_fields=frozenset()` und der
+       erwartete Diff ist leer (`diff_count == 0`). Bleibt es
+       dabei, ist `volatile_only` per Konvention `true`
+       (vacuously). Ein nicht-leeres `volatile_fields`-Set ist
+       nur noetig, falls eine kuenftige Demo-Variante bewusst
+       volatile Felder fuehrt — dann muss das Set hier explizit
+       gepinnt werden. **Plus** vergleicht den gemeinsamen
+       Telemetry-Stream-Hash beider Laeufe (bei Determinismus
+       identisch) gegen einen gepinten Erwartungs-Hash
+       `EXPECTED_DEMO_TELEMETRY_STREAM_HASH` (Pin-Lifecycle
+       siehe D-8). **Stream-Hash-Konstruktion (Pflicht-Vertrag,
+       damit Lint und CLI bauartbedingt identisch rechnen)**:
+       `sha256(canonical_json(list_of_telemetry_dicts))
+       .hexdigest()` aus
        `hexagon/core/serialization/canonical.py::canonical_json`
        — dieselbe Primitive, die `LoadedScenario.scenario_hash`
-       in `loader.py:113-125` nutzt; Konsistenz mit Step A
-       ohne extra Bytes-Vertrag. Damit prueft Step B **zwei**
-       Eigenschaften:
+       in `loader.py:113-125` nutzt (dort auf einem `dict`;
+       hier auf einer `list` — der `_demo_replay`-Helper
+       serialisiert jeden `TelemetryPoint` per `asdict` zu
+       einem JSON-faehigen Mapping und reicht die Liste an
+       `canonical_json`; **Audit-Pflicht §6: verifizieren, dass
+       `canonical_json` ein Top-Level-`list`-Argument akzeptiert**),
+       Konsistenz mit Step A ohne extra Bytes-Vertrag. Damit
+       prueft Step B **zwei** Eigenschaften:
        1. Determinismus (same-seed → identische Streams,
           via `diff_replay`).
        2. Referenz-Treue (Stream-Hash entspricht
           aufgezeichnetem Demo-Referenz-Verhalten).
-       Ohne (2) wuerde ein Code-Change, der die Snapshot-
+       Ohne (2) wuerde ein Code-Change, der die Telemetry-
        Semantik gleichfoermig verschiebt (beide Laeufe
        aendern sich gleich), unentdeckt durchgehen. Mit
        (2) bricht der Stream-Hash → Step B `fail` →
@@ -224,8 +257,9 @@ oder M7-Welle-X; siehe §5) liefert:
      `AbnahmeReportV2`-Schema-Bump (`schema_version: "2"`).
 
 3. **NEU `AbnahmeReport`-JSON-Schema** (siehe §3 D-3): per-
-   Sub-Pruefung-Status (`pass`/`fail` + `reason`) + Top-
-   Level-Aggregat-Status. Beispiel:
+   Sub-Pruefung-Status (`pass`/`fail` + optional `reason`) +
+   Top-Level-Aggregat-Status. Beispiel (Happy-Path, ohne
+   `reason`):
    ```json
    {
      "schema_version": "1",
@@ -233,10 +267,33 @@ oder M7-Welle-X; siehe §5) liefert:
      "checks": {
        "scenario_validation": {"status": "pass", "scenario_hash": "<sha256>"},
        "replay_determinism": {"status": "pass", "diff_count": 0, "volatile_only": true},
-       "demo_healthcheck": {"status": "pass", "endpoint": "/ready", "ready_payload": {...}}
+       "demo_healthcheck": {"status": "pass", "endpoint": "/ready", "ready_payload": {"status": "healthy", "...": "..."}}
      }
    }
    ```
+   **`overall_status`-Typ-Pin:** `Literal["pass", "fail"]`
+   (binaer — der Tri-State steckt nur im Exit-Code per D-9,
+   nicht im JSON-Feld; bei Exit 2 fehlt das JSON ganz).
+   **`reason`-Feld-Vertrag:** jeder Sub-Check traegt ein
+   `reason: str | None = None` — **present-on-fail**, auf Pass
+   weggelassen (`None`, im JSON nicht serialisiert via
+   `exclude_none`). Bei `extra="forbid"` muss das Feld
+   deklariert sein; es ist also kein dynamischer Key, sondern
+   ein optionales Modell-Feld.
+   **`checks`-Sub-Modelle (D-3-Detail):** unter `extra="forbid"`
+   sind die drei Checks **drei verschiedene strict Sub-Modelle**,
+   kein gemeinsames `CheckResult` — jeder traegt unterschiedliche
+   Zusatzfelder (`scenario_validation`: `scenario_hash`;
+   `replay_determinism`: `diff_count` + `volatile_only`;
+   `demo_healthcheck`: `endpoint` + `ready_payload`). Ein
+   gemeinsames Basis-Mixin (`status` + `reason`) + drei
+   Subklassen ist der saubere Schnitt.
+   **Namens-Disambiguierung (`status`):** das `status`-Feld
+   eines Sub-Checks (`pass`/`fail`, CLI-Urteil) ist **nicht**
+   identisch mit `ready_payload.status` (`healthy`/`degraded`/
+   `starting`, `/ready`-internes Komponenten-Urteil aus
+   Welle-6-C2). Beide stehen im Beispiel bewusst nebeneinander
+   unter `demo_healthcheck`.
    **`schema_version`-Typ-Pin:** String-monoton — `"1"`,
    `"2"`, `"3"` etc. (nicht semver `"1.0"`, nicht Integer
    `1`); Schema-Bumps inkrementieren um genau 1. Pydantic-
@@ -286,7 +343,7 @@ oder M7-Welle-X; siehe §5) liefert:
      keine Migration — beide Doks koexistieren mit
      getrennten Anwendungsfaellen (automat vs manuell).
 
-5. **NEU Integration-Smokes** (drei in einem File;
+5. **NEU Integration-Smokes** (vier in einem File;
    D-5-abhaengiger Dateiname per Konvention
    `test_m{N}_welle_{X}_*.py` — bestehende Beispiele:
    `test_m6_welle_5c_safe_005_006_compose_smoke.py`):
@@ -298,10 +355,13 @@ oder M7-Welle-X; siehe §5) liefert:
      M7-Slice-Doc zu fixieren; `welle_x`-Platzhalter
      ist **nicht** zulaessig.
 
-   Drei Smokes:
+   Vier Smokes:
    - `test_accept_happy_path_returns_pass_status`: alle
      drei Sub-Pruefungen gruen → `overall_status == "pass"`,
-     Exit-Code 0, JSON-Schema-conform.
+     Exit-Code 0, JSON-Schema-conform. **Pinnt zugleich
+     Eigenschaft (1) fuer den fault-verdrahteten Stream**
+     (zwei Laeufe, `diff_replay`-leer) — die der bestehende
+     fault-lose Determinismus-Test nicht abdeckt (siehe §6 R1).
    - `test_accept_invalid_scenario_returns_fail_status`:
      manipuliertes `gg-demo.yaml` → `scenario_validation`
      Sub-Step `fail` + `overall_status == "fail"`, Exit-
@@ -312,9 +372,11 @@ oder M7-Welle-X; siehe §5) liefert:
      (`scenario_validation`, `replay_determinism`,
      `demo_healthcheck`), nicht nur den fehlgeschlagenen
      ersten — `replay_determinism.status == "fail"` mit
-     `reason` der das Dependency-Propagation-Pattern
-     spiegelt (`"dependency: scenario load failed (see
-     scenario_validation)"`), `demo_healthcheck.status`
+     `reason`, der das Dependency-Propagation-Pattern
+     spiegelt (Assertion auf stabilem **Prefix**
+     `"dependency: scenario load failed"`, nicht auf dem
+     vollen Literal — die genaue Wortwahl ist indikativ bis
+     zur Slice-Aktivierung, siehe §3-Kopf), `demo_healthcheck.status`
      ist `pass` oder `fail` (stack-, nicht
      scenario-abhaengig — Step C laeuft trotz
      Step-A-Fail). Damit pinnt der Smoke
@@ -326,12 +388,35 @@ oder M7-Welle-X; siehe §5) liefert:
      Pin-Scope siehe §2 Punkt 3 (Top-Level + `checks`-
      Keys + `status`-Literal + `schema_version`-Wert;
      **nicht** `ready_payload`-Inhalt).
+   - `test_accept_tool_error_returns_exit_2`: syntaktisch
+     kaputtes `gg-demo.yaml` (z. B. ungueltige YAML-Einrueckung,
+     die `yaml.safe_load` mit `YAMLError` brechen laesst —
+     File **lesbar**, aber Parser-Bruch ist CLI-Internals per
+     D-9) → Exit-Code **== 2** (auf konkreten Wert gepinnt,
+     **nicht** „>= 1"), Traceback auf stderr, stdout-JSON darf
+     fehlen oder unvollstaendig sein. Pinnt die Exit-1-vs-Exit-2-
+     Abgrenzung aus D-9 — das Kern-Liefermerkmal „maschinen-
+     lesbar" haengt am Tri-State-Exit-Code, der sonst ungetestet
+     bliebe. **Abgrenzung im selben Smoke mitgepinnt:** ein
+     *nicht-existentes* / permission-denied `gg-demo.yaml`
+     liefert Exit **1** (Step-A-`fail`, deterministisches
+     Sub-Step-Signal), **nicht** Exit 2 — die beiden Faelle
+     stehen als Assertion-Paar nebeneinander.
 
 6. **`roadmap.md §3 MVP-Abnahmescope` Status-Sync**:
    GG-MVP-003-Zeile von ✗ Lücke auf ✓ produktiv flippen
    nach Closure.
 
 ## 3. Architektur-Entscheidungs-Skizze (Welle-X-Decisions; nicht final)
+
+> **Vertrags-Stabilitaet:** Strukturelle Vertraege (JSON-Keys,
+> `status`-Literale, `schema_version`, Exit-Codes 0/1/2) sind
+> als Pin gemeint und werden von den Smokes bauartbedingt
+> fixiert. Konkrete **Freitext-`reason`-Strings** und Smoke-
+> Funktionsnamen in diesem Dokument sind dagegen **indikativ
+> bis zur Slice-Aktivierung** — Smokes matchen `reason` auf
+> stabilen Prefixen, nicht auf vollen Literalen, damit spaeteres
+> Wording-Tuning keinen Pin-Bruch erzeugt.
 
 ### D-1 — Aufruf-Form (Make vs Python vs Bash)
 
@@ -362,7 +447,16 @@ spaeter auf Sub-Form B migrieren.
 
 - **A**: Pydantic-Modell mit `model_config = ConfigDict(
   strict=True, extra="forbid")` (analog ADR 0045
-  `_BaseRequest`-Mixin).
+  `_BaseRequest`-Mixin). **Modell-Struktur:** ein
+  `_CheckBase`-Mixin (`status: Literal["pass","fail"]` +
+  `reason: str | None = None`) + drei Subklassen
+  (`ScenarioValidationCheck`, `ReplayDeterminismCheck`,
+  `DemoHealthcheckCheck`) mit je eigenen Zusatzfeldern (siehe
+  §2 Punkt 3); `ready_payload: Mapping[str, Any]` ist die
+  **einzige** bewusst nicht-strikte Stelle (additive
+  `/ready`-Evolution, siehe §2 Punkt 3). Serialisierung mit
+  `model_dump_json(exclude_none=True)`, damit `reason` auf
+  Pass nicht im stdout-JSON erscheint.
 - **B**: Plain `dict`-Output ohne Schema.
 
 Vorschlag: A (maschinenlesbar = strenger Vertrag; Schema-
@@ -394,7 +488,9 @@ klein genug fuer eine Welle).
 Vorschlag: A wenn Welle-6-Scope nicht ueberlaeuft (die
 Welle 6 hat bereits 3 Lücken zu schliessen; Erweiterung um
 GG-MVP-003 macht sie zu „Alles fixen plus Abnahme-CLI" —
-Aufwand ~+0.5 Tag).
+Aufwand **+1.3-1.7 Tage**, maszgeblich ist die §7-Summe; der
+fruehere „~+0.5 Tag"-Wert war Pre-Scope-Wachstum, vor dem
+`_demo_replay`-Helper + Drift-Lint + den zwei Pin-Konstanten).
 
 ### D-6 — ADR-Bedarf
 
@@ -436,13 +532,13 @@ Pflicht-Demo-Pattern"); Composability mit CI-Pipelines
 **Frage:** Wo leben die **zwei** gepinten Erwartungs-Hashes
 — (i) `EXPECTED_DEMO_SCENARIO_HASH` fuer Step A (Szenario-
 Hash aus `LoadedScenario.scenario_hash`) und (ii)
-`EXPECTED_DEMO_SNAPSHOT_STREAM_HASH` fuer Step B Referenz-
+`EXPECTED_DEMO_TELEMETRY_STREAM_HASH` fuer Step B Referenz-
 Treue (siehe §2 Step B Sub-Form A) — und wer aktualisiert
 sie bei intendierten Aenderungen am Demo-Szenario?
 
 - **A — Modul-Konstanten in `tools/accept.py`**:
   `EXPECTED_DEMO_SCENARIO_HASH: Final[str] = "<sha256>"`
-  + `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH: Final[str] =
+  + `EXPECTED_DEMO_TELEMETRY_STREAM_HASH: Final[str] =
   "<sha256>"` mit `# Update bei Aenderung von
   deploy/scenarios/gg-demo.yaml`-Kommentar. Pattern
   analog vorhandener Pin-Konstanten in `tools/check_*.py`.
@@ -477,7 +573,7 @@ Lint (`make ci`-Gate):
   .scenario_hash`; Stream via Headless-`TickLoop`-Lauf
   identisch zur Step-B-Sub-Form-A-Pipeline);
 - vergleicht gegen `EXPECTED_DEMO_SCENARIO_HASH` +
-  `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`;
+  `EXPECTED_DEMO_TELEMETRY_STREAM_HASH`;
 - bricht mit klarer Fehlermeldung, **welcher** Pin drift
   hat und **welches** `.py`-File anzupassen ist.
 
@@ -488,9 +584,11 @@ geteilt sein — Duplikation ist genau die Drift-Quelle,
 die der Lint verhindern soll. Vorschlag: **NEU
 `tools/_demo_replay.py`-Helper** (Leading-Underscore =
 tools-internal, kein API-Vertrag) mit den Funktionen
-`run_demo_replay(scenario, seed: int) -> list[Mapping[str,
-object]]` + `hash_snapshot_stream(stream) -> str` (per
-F-new-1-Vertrag aus §2 Step B Sub-Form A).
+`run_demo_replay(scenario, *, seed: int, ticks: int =
+MIN_DETERMINISM_TICKS) -> tuple[TelemetryPoint, ...]`
+(sammelt `result.emitted_telemetry` ueber `ticks` Ticks) +
+`hash_telemetry_stream(stream: tuple[TelemetryPoint, ...])
+-> str` (per F-new-1-Vertrag aus §2 Step B Sub-Form A).
 `run_demo_replay` ist **kein Neu-Driver**, sondern ein
 duenner Wrapper um den produktiven `build_tick_loop`
 (`loader.py:402`) plus die Fault-Composition aus
@@ -563,9 +661,12 @@ Smoke-Vertrag (siehe §2 Punkt 5):
 - `test_accept_happy_path_returns_pass_status` → Exit 0.
 - `test_accept_invalid_scenario_returns_fail_status` →
   Exit 1 (auf konkreten Wert gepinnt, **nicht** „!= 0").
-- Tool-Error-Pfad (Exit 2) wird im Slice nicht eigens
-  gesmoked — Coverage ergibt sich aus Pyright-Type-
-  Lint + Pytest-Standard-Substanz.
+- `test_accept_tool_error_returns_exit_2` → Exit 2 (kaputtes
+  YAML, `yaml.safe_load`-`YAMLError`), plus Gegenprobe
+  „File-nicht-lesbar → Exit 1" im selben Smoke. Pinnt die
+  Exit-1-vs-Exit-2-Abgrenzung bauartbedingt (siehe §2 Punkt 5),
+  damit der Tri-State-Vertrag — das Kern-Liefermerkmal
+  „maschinenlesbar" — nicht ungetestet bleibt.
 
 ### D-10 — YAML-Load + Fault-Compose-Standort fuer `tools/`
 
@@ -617,7 +718,7 @@ Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
   - NEU `tools/_demo_replay.py`-Helper (duenner Wrapper um
     den produktiven `build_tick_loop` + Fault-Composition aus
     `scenario.faults` + minimaler Step-Clock +
-    `hash_snapshot_stream`-Primitive per `canonical_json`-
+    `hash_telemetry_stream`-Primitive per `canonical_json`-
     Vertrag; **kein** Neu-Driver — siehe §6 R1 + D-10). Gemeinsam
     importiert von `tools/accept.py` und
     `tools/check_demo_scenario_pin.py` — Drift bauartbedingt
@@ -627,13 +728,13 @@ Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
     `_demo_replay.py`).
   - NEU `AbnahmeReport` Pydantic-Modell mit
     `EXPECTED_DEMO_SCENARIO_HASH` +
-    `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`-Pin-Konstanten
+    `EXPECTED_DEMO_TELEMETRY_STREAM_HASH`-Pin-Konstanten
     (siehe D-8) + Exit-Code-Vertrag (siehe D-9).
   - NEU `tools/check_demo_scenario_pin.py` CI-Drift-Lint
     (siehe D-8 Mitigation; importiert `run_demo_replay` +
-    `hash_snapshot_stream` aus `_demo_replay.py`; `make ci`-Gate).
+    `hash_telemetry_stream` aus `_demo_replay.py`; `make ci`-Gate).
   - NEU `docs/user/abnahme-cli.md`.
-  - NEU drei Integration-Smokes (siehe §2 Punkt 5).
+  - NEU vier Integration-Smokes (siehe §2 Punkt 5).
 - Welle-6-C0-Slice-Doc wird im selben Review-Zyklus
   aktualisiert (zusaetzliches Lieferziel + die Abnahme-CLI-
   Decision D-7).
@@ -672,6 +773,13 @@ nach Welle-6-C2; Welle-6-C2 ist Vorbedingung wegen
   `/health`-Fallback im aktuellen Schema (siehe §2 Step C +
   D-3); Aktivierung erst nach Welle-6-C2-Closure oder mit
   einem `AbnahmeReportV2`-Schema-Bump in einer Folge-Welle.
+  **Naming-Hinweis:** Der Quellcode-Kommentar in
+  `app.py:335` (+ `:273`/`:353`) sagt fuer `/ready` noch
+  „Welle 6c"; maszgeblich ist „Welle-6-C2" aus
+  `M6-welle-6.md` (die „Welle 6c"-Erwaehnungen sind aelterer
+  M2/M3-Wellen-Bezug). Bei der Umsetzung den `app.py`-
+  Kommentar mit angleichen — separater Code-Cleanup, keine
+  Plan-Aenderung.
 
 **Aktivierungs-Bedingungen** (eine genuegt):
 
@@ -697,7 +805,8 @@ M6-Welle-7-Closure notiert den Defer-Vermerk.
 
 **R1 — Headless-Replay: Builder + Blaupause schon vorhanden,
 NICHT neu zu bauen.** Sub-Form A braucht einen headless-Lauf des
-Demo-Szenarios zweimal mit identischem Seed + Snapshot-Sammlung.
+Demo-Szenarios zweimal mit identischem Seed + Telemetry-Sammlung
+(`result.emitted_telemetry` ueber `MIN_DETERMINISM_TICKS` Ticks).
 Diese Substanz ist **produktiv vorhanden und wird nur
 wiederverwendet** — der urspruengliche „Headless-Stub als
 Neubau"-Framing dieses Plans war ein Irrtum.
@@ -714,15 +823,22 @@ Neubau"-Framing dieses Plans war ein Irrtum.
   auflistete. Der Headless-Pfad ruft schlicht `build_tick_loop`;
   das manuelle Inventar entfaellt.
 - **`tests/integration/test_mvp_demo_scenario.py:39-50`**
-  (`_drive_demo`) ist die fertige Blaupause:
+  (`_drive_demo`) ist die Blaupause fuer die Tick-Mechanik
+  (fault-los — siehe Caveat unten):
   `build_tick_loop(loaded.scenario, run_id=..., clock=FakeClock(),
   random_root=MersenneTwisterRandomPort(seed=
   loaded.scenario.simulation.seed))`, dann `loop.tick()` in einer
-  synchronen Schleife, Snapshots/Telemetry sammeln. Der bestehende
-  Test `test_demo_scenario_telemetry_is_byte_identical_across_runs`
-  beweist Eigenschaft (1) (Determinismus) **bereits** — die
-  Abnahme-CLI re-runnt sie als Gate und ergaenzt nur Eigenschaft
-  (2) (Stream-Hash-Pin) + die JSON-Aggregation.
+  synchronen Schleife, `result.emitted_telemetry` sammeln. Der
+  bestehende Test `test_demo_scenario_telemetry_is_byte_identical_across_runs`
+  beweist Eigenschaft (1) (Determinismus) **fuer den fault-losen
+  Lauf** — `_drive_demo` verdrahtet keine Faults. Step B verdrahtet
+  `fault_port` zusaetzlich (siehe KRITISCH unten) und erzeugt einen
+  **anderen** Stream; die Abnahme-CLI beweist dessen Determinismus
+  selbst (Happy-Path-Smoke: zwei fault-verdrahtete Laeufe, `diff_replay`-
+  leer) und ergaenzt Eigenschaft (2) (Telemetry-Stream-Hash-Pin) +
+  die JSON-Aggregation. Das Framing „bestehender Test beweist (1)
+  bereits" gilt also nur fuer die Tick-Mechanik, nicht fuer den
+  fault-verdrahteten Referenz-Stream.
 
 **KRITISCH — `gg-demo.yaml` hat drei tick-relevante Bloecke; zwei
 fruehere Plan-Defaults waren faktisch falsch.** Code-verifiziert
@@ -777,10 +893,16 @@ Beschluss siehe **D-10** (Lift zu geteiltem Helper vs Replikat in
 
 **Audit-Pflicht in der C2-Vorbereitung (bzw. Welle-6b-C0 bei D-5
 Option B):** verifizieren, dass `build_tick_loop` + die Fault-
-Composition den Snapshot-Stream erzeugen, der gepinnt werden soll;
+Composition den Telemetry-Stream erzeugen, der gepinnt werden soll;
 insbesondere dass **kein** weiterer tick-relevanter
 `gg-demo.yaml`-Block (heute: load_events/load_profiles/agents/
-faults) ohne Injektion bleibt. Kein Neu-Implement — Auditor- +
+faults) ohne Injektion bleibt. **Zusaetzliche Audit-Punkte:**
+(a) verifizieren, dass `canonical_json` ein Top-Level-`list`-
+Argument akzeptiert (in `loader.py:113-125` wird es auf einem
+`dict` aufgerufen — Step B braucht es auf einer
+`list[Mapping]`, siehe §2 Step B); (b) verifizieren, dass
+`TelemetryPoint` per `asdict` JSON-serialisierbar ist (keine
+nicht-canonisierbaren Feldtypen). Kein Neu-Implement — Auditor- +
 Glue-Arbeit. **Nicht verwechseln:** Das vorhandene
 `make test-determinism` ist `pytest -m determinism`
 (Makefile:96, 203) und das vorhandene
@@ -830,7 +952,7 @@ Erweiterung):
     traegt nur den Glue: YAML-Parse + `load_scenario`,
     Fault-Composition aus `scenario.faults`, minimaler
     Step-Clock, seeded `MersenneTwisterRandomPort`,
-    `tick()`-Schleife, `hash_snapshot_stream`-Primitive;
+    `tick()`-Schleife, `hash_telemetry_stream`-Primitive;
     Blaupause `_drive_demo` in
     `test_mvp_demo_scenario.py:39-50`): 0.4-0.6 Tag.
   - NEU `tools/accept.py` als Orchestrator der drei
@@ -840,20 +962,21 @@ Erweiterung):
     `/ready`-Poll; JSON-Status-Build + Exit-Code-Vertrag
     per D-9): 0.2-0.3 Tag.
   - NEU `make accept`-Makefile-Target: 0.1 Tag.
-  - NEU `AbnahmeReport` Pydantic-Modell + zwei Pin-
-    Konstanten (siehe D-8) + drei Smokes (siehe §2 Punkt
-    5, Exit-Code-Vertrag per D-9): 0.3 Tag.
+  - NEU `AbnahmeReport` Pydantic-Modell (Base-Mixin + drei
+    Check-Subklassen, siehe D-3) + zwei Pin-Konstanten (siehe
+    D-8) + vier Smokes inkl. Exit-2-Smoke (siehe §2 Punkt 5,
+    Exit-Code-Vertrag per D-9): 0.3-0.4 Tag.
   - NEU `docs/user/abnahme-cli.md` (inkl. Abgrenzungs-
     Verweis auf `gg-demo-008-abnahme.md`): 0.2 Tag.
   - NEU `tools/check_demo_scenario_pin.py` CI-Drift-Lint
     (siehe D-8 Mitigation; importiert
     `_demo_replay.run_demo_replay` +
-    `_demo_replay.hash_snapshot_stream` + nutzt
+    `_demo_replay.hash_telemetry_stream` + nutzt
     `load_scenario` direkt, recomputed beide Hashes,
     bricht im `make ci`-Gate; durch Helper-Extraktion
     trivial — kein eigener Replay-Code): 0.1 Tag.
 
-Summe: 1.3-1.6 Tage zusaetzlich zur Welle 6 (der
+Summe: 1.3-1.7 Tage zusaetzlich zur Welle 6 (der
 `_demo_replay`-Helper faellt durch die `build_tick_loop`-
 Wiederverwendung von 0.5-0.7 auf 0.4-0.6 Tag — kein
 Neu-Driver, nur Glue + Fault-Composition + Step-Clock;
