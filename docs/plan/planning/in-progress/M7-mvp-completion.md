@@ -17,7 +17,7 @@ gelassen haben, und auditiert die verbliebenen Safety-Lücken:
 
 | Sub-Bereich | ID / Trigger | Beleg-Familie |
 | ----------- | ------------ | ------------- |
-| **Replay-Spine-Closure** | `GG-MVP-002` / Trigger 036 (`GG-SAFE-006`) | NEU `ReplaySourcePort` + Per-Lauf-`replay_diff_status`-Metrik + Core-Spine-Lifecycle-Hook ueber den bestehenden `diff_replay()`-Algorithm. Plan [`../next/replay-source-integration.md`](../next/replay-source-integration.md). |
+| **Replay-Spine-Closure** | `GG-MVP-002` / Trigger 036 (`GG-SAFE-006`) | NEU `ReplaySourcePort` + Per-Lauf-`replay_diff_status`-Metrik + Core-Spine-Lifecycle-Hook ueber den bestehenden `diff_replay()`-Algorithm. Plan [`M7-welle-1.md`](M7-welle-1.md). |
 | **Abnahme-Tooling** | `GG-MVP-003` | NEU `make accept` + `tools/accept.py` (Szenario-Validierung + deterministischer Replay + `/ready`-Healthcheck-Aggregat) + `AbnahmeReport`-JSON-Schema (Pydantic-strict). Plan [`../next/abnahme-cli.md`](../next/abnahme-cli.md). |
 | **Safety-Closure** | Trigger 034 (`GG-SAFE-004`) + 035 (`GG-SAFE-003`) | `max_age`-`STALE`-Markierung + Adapter-Comm-Failure → `MISSING`/`STALE` + Alarm. |
 
@@ -77,7 +77,7 @@ Welle-0-C2; `next/replay-source-integration.md` wird dort nach
 ### 3.2 Pending-Wellen-Vorbelegung
 
 - **Welle 1** — `GG-MVP-002`: Plan
-  [`../next/replay-source-integration.md`](../next/replay-source-integration.md)
+  [`M7-welle-1.md`](M7-welle-1.md)
   (~6-7 Tage; ggf. Sub-Slicing). NEU `ReplaySourcePort`-Driven-
   Slot + `replay_diff_status`-Metrik + TickLoop-/Run-Lifecycle-
   Hook. Loest Trigger 036.
@@ -147,7 +147,7 @@ M6-Welle-7-C4a); dann `git mv → done/` + `done/M7-results.md`.
   Decision-Liste + Trigger-Triage.
 - [`../done/M6-results.md`](../done/M6-results.md) — M6-Closure +
   §5 Welle-7-Erbschaft fuer M7.
-- [`../next/replay-source-integration.md`](../next/replay-source-integration.md)
+- [`M7-welle-1.md`](M7-welle-1.md)
   (`GG-MVP-002`) +
   [`../next/abnahme-cli.md`](../next/abnahme-cli.md)
   (`GG-MVP-003`).

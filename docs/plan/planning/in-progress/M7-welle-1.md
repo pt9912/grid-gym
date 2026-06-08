@@ -1,14 +1,18 @@
 # GG-MVP-002 Closure — Zeitreihen-Persistenz + Replay-Source-Integration + `replay_diff_status`-Metrik
 
-**Status:** Next — getriaged auf **M7-Welle-1** (per
-M7-Welle-0-C2-Triage 2026-06-08; siehe
-[`M7-mvp-completion.md §3`](../in-progress/M7-mvp-completion.md)).
-Aktivierung (`git mv next/ → in-progress/`) +
-Decision-Finalisierung in M7-Welle-1-C0.
+**Status:** In Progress — **M7-Welle-1 (GG-MVP-002) Gruppenplan**;
+aktiviert mit M7-Welle-1-C0 (dieser Commit; `git mv next/ →
+in-progress/M7-welle-1.md`). **Sub-Slicing-Beschluss (D-4-Final =
+B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) + Welle **1b**
+(Replay-Lifecycle + `replay_diff_status`-Metrik, ADR 0048) —
+`GG-MVP-002` flippt erst nach 1b. Decisions D-0..D-5 final (§3).
+Erstes aktives Sub-Slice: [`M7-welle-1a.md`](M7-welle-1a.md).
+Pattern analog M6-Welle-4 → 4a/4b. (Dieser Gruppenplan bleibt in
+`in-progress/` bis 1a+1b geschlossen sind.)
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
-**Quelle:** [`roadmap.md §M7 + GG-MVP-002-Zeile`](../in-progress/roadmap.md)
+**Quelle:** [`roadmap.md §M7 + GG-MVP-002-Zeile`](roadmap.md)
 + [`open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
 (Welle-5c-Audit, Trigger-Watch).
 
@@ -20,7 +24,7 @@ M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
 Stand. Die anderen MVP-Punkte: 001 ✓ produktiv; **003
 Abnahme-CLI ist M7-Welle-2** (M6-Welle-6 hat es NICHT als
 Scope-Erweiterung aufgenommen — eigener Plan
-[`abnahme-cli.md`](abnahme-cli.md), getriaged auf M7-Welle-2);
+[`abnahme-cli.md`](../next/abnahme-cli.md), getriaged auf M7-Welle-2);
 004 eigener Tracking-Pfad.
 
 **Lastenheft-Akzeptanz (Z. 130-135, GG-MVP-002):**
@@ -206,7 +210,9 @@ final festgelegt. Hier nur die Optionen-Skizze.
 - **C**: `RunRepositoryPort` als ausreichend behandeln. Verworfen:
   der Port haelt nur Laufmetadaten/Status und keine Zeitreihen.
 
-Vorschlag: A. Welle-X-C0 verifiziert gegen `TelemetryPoint`,
+**Welle-1-Final: A** (NEU `TelemetrySinkPort` Driven + Postgres-
+Adapter + `telemetry_points`-Schema) — **Welle-1a-Substanz**
+(ADR 0047). Welle-1a-C0 verifiziert gegen `TelemetryPoint`,
 `GG-PERSIST-001` und die vorhandene Live-Telemetry-Surface.
 
 ### D-1 — Persistenz-Quelle fuer `expected`-Samples
@@ -225,8 +231,8 @@ Vorschlag: A. Welle-X-C0 verifiziert gegen `TelemetryPoint`,
   zwingend traegt — Option C braucht also ein Zusatzfeld oder
   eine Mapping-Konvention (siehe D-1.1).
 
-Vorschlag: A (NEU `ReplaySnapshotPort` Driven). Welle-X-C0
-verifiziert.
+**Welle-1-Final: A** (NEU `ReplaySnapshotPort` Driven) —
+**Welle-1b-Substanz** (ADR 0048). Welle-1b-C0 verifiziert.
 
 **Sub-Decision D-1.1 — Snapshot→`ReplaySample`-Rekonstruktion**:
 `ReplaySample` ist **bereits** als Frozen-Dataclass im Domain-
@@ -259,7 +265,7 @@ oder Mapping-Konvention gegen A/B abgrenzbar ist.
   von `fachlich`-Count > 0), numerisch per Gauge/Counter-
   Familie ohne neue `MetricsPort`-Methode.
 
-Vorschlag: A (binaer; einfachstes maschinenlesbares Modell,
+**Welle-1-Final: A** (**Welle 1b**, ADR 0048; binaer; einfachstes maschinenlesbares Modell,
 keine Severity-Drift-Diskussion, kompatibel mit ADR-0024-
 `MetricsPort`). Welle-X-C0-ADR verifiziert. Der binaere Status
 ist nur der Per-Lauf-Marker; die `GG-SAFE-006`-Details
@@ -276,7 +282,7 @@ koppelt.
 - **B**: NEU Core-Service `RunReplayValidator` mit
   Application-Service-Form (Driving-Port-Aufruf vom Adapter).
 
-Vorschlag: A (Terminal-Transition im TickLoop ist der
+**Welle-1-Final: A** (**Welle 1b**, ADR 0048; Terminal-Transition im TickLoop ist der
 natuerliche Spine-Punkt; eigener `RunReplayValidator`-Core-
 Service ist YAGNI fuer eine einzige Metrik-Emission). Welle-X-C0
 auditiert dafuer explizit den Ist-Zustand: es gibt heute keinen
@@ -295,9 +301,13 @@ liefert keinen separaten Service.
   Persistenz und ggf. `SnapshotPort`-/`ReplaySnapshotPort`-
   Re-Modellierung, plus Folge-Slice fuer Lifecycle + Metrik.
 
-Vorschlag: B falls D-0 eine neue Postgres-Zeitreihen-Migration
-plus D-1 eine eigene Replay-Snapshot-Migration braucht; A nur,
-wenn C0 beide Schemata klein und reviewbar schneiden kann.
+**Welle-1-Final: B** — Sub-Slicing in **Welle 1a**
+(Zeitreihen-Persistenz, ADR 0047) + **Welle 1b** (Replay-
+Lifecycle + Metrik, ADR 0048). Begruendung: zwei unabhaengige
+Postgres-Migrationen (`telemetry_points` [1a] + Replay-Snapshot
+[1b]) + zwei Driven-Ports + ~6-7 Tage reissen die Sub-Slicing-
+Schwelle; repo-konsistent (M4/M5/M6-Welle-4 alle sub-sliced).
+`GG-MVP-002` flippt erst nach 1b-Closure.
 
 ### D-5 — ADR-Bedarf
 
@@ -385,7 +395,7 @@ Falls D-4 Option B (sub-sliced):
 
 **Aktivierungs-Beschluss (erfolgt 2026-06-08):** Per
 M7-Welle-0-C2-Triage ist dieser Plan **`Active in
-M7-Welle-1`** ([`M7-mvp-completion.md §3`](../in-progress/M7-mvp-completion.md))
+M7-Welle-1`** ([`M7-mvp-completion.md §3`](M7-mvp-completion.md))
 — M7 (MVP-Abschluss) ist der eroeffnete aktive Meilenstein,
 `GG-MVP-002` ist seine erste (groesste) Substanz-Welle.
 M7-Welle-1-C0 aktiviert diesen Plan (`git mv next/ →
@@ -486,7 +496,7 @@ kein `GG-MVP-002`-Statusflip vor der zweiten Closure.
   — Welle-5c-Audit; markiert die ⚠ partial Lücke fuer
   `GG-SAFE-006`; flippt erst bei belegtem integrierten
   `GG-SAFE-006`-Detailvertrag auf ✓ produktiv.
-- [`../in-progress/roadmap.md §3 GG-MVP-002`](../in-progress/roadmap.md)
+- [`../in-progress/roadmap.md §3 GG-MVP-002`](roadmap.md)
   — MVP-Abnahmescope-Tabelle; wird erst nach Zeitreihen-
   Persistenz- und Replay-E2E-Evidence auf ✓ produktiv geflippt.
 - [`../../../../spec/lastenheft.md §3 GG-MVP-002`](../../../../spec/lastenheft.md)

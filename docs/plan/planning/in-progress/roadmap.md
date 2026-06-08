@@ -464,7 +464,7 @@ maschinenlesbar.
 | ID | Akzeptanz (Lastenheft §3, Z. 123-150) | Stand 2026-06-07 | Substanz / Verankerung |
 | --- | --- | --- | --- |
 | **GG-MVP-001** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
-| **GG-MVP-002** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ⚠ **partial** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓; **Zeitreihen-Persistenz** ⚠ (`TelemetrySinkPort`-/Telemetrie-Schema fehlt); **deterministisches Replay-E2E** ⚠ — Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit; `docs/user/safe-005-006-fallback-determinism.md`), aber Per-Lauf-Status-Marker + `ReplaySourcePort`-E2E-Verkabelung fehlen → [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md) + [Next-Plan](../next/replay-source-integration.md). |
+| **GG-MVP-002** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ⚠ **partial** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓; **Zeitreihen-Persistenz** ⚠ (`TelemetrySinkPort`-/Telemetrie-Schema fehlt); **deterministisches Replay-E2E** ⚠ — Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit; `docs/user/safe-005-006-fallback-determinism.md`), aber Per-Lauf-Status-Marker + `ReplaySourcePort`-E2E-Verkabelung fehlen → [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md) + [Next-Plan](M7-welle-1.md). |
 | **GG-MVP-003** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✗ **Lücke** | Was es heute gibt: `make demo` (Start ohne Status-Output), `make runtime` (Compose-Smoke + `/health`-Poll), `make test-integration` (Pytest + JUnit-XML). **Kein** Abnahme-CLI (`tools/accept.py` / `make accept`) mit Aggregat-Status. Kein `open/`-Trigger angelegt (Welle 6 ist Kandidat fuer Scope-Erweiterung; alternativ eigener Trigger fuer Folge-Slice). |
 | **GG-MVP-004** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
 
@@ -472,7 +472,7 @@ maschinenlesbar.
 
 - **GG-MVP-002 Zeitreihen-Persistenz + Replay-E2E** →
   [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
-  + [Next-Plan](../next/replay-source-integration.md);
+  + [Next-Plan](M7-welle-1.md);
   Aktivierung an `GG-REPLAY-004..006`-Aktivierung in M3-Folge
   oder bei Stakeholder-Druck.
 - **GG-MVP-003 Abnahme-CLI** → noch nicht verankert. Optionen:
@@ -1168,10 +1168,11 @@ Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
 **Vorbelegter Scope** (Scope-Skizze; konkrete Slice-Plaene
 wandern bei Aktivierung nach `in-progress/`):
 
-- `GG-MVP-002` ReplaySource-Integration (`replay_diff_status`-
-  Per-Lauf-Marker + `ReplaySourcePort`) — Plan
-  [`../next/replay-source-integration.md`](../next/replay-source-integration.md);
-  aktiviert Trigger 036.
+- `GG-MVP-002` ReplaySource-Integration — **aktiv als M7-Welle-1**
+  (Gruppenplan [`M7-welle-1.md`](M7-welle-1.md); sub-sliced **1a**
+  Zeitreihen-Persistenz / **1b** Replay-Lifecycle +
+  `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
+  (in 1b).
 - `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
   — Plan [`../next/abnahme-cli.md`](../next/abnahme-cli.md).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
@@ -1179,12 +1180,14 @@ wandern bei Aktivierung nach `in-progress/`):
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
   010` Multi-Node-Deployment).
 
-**In Progress seit 2026-06-08** mit M7-Welle-0 (Slice-Plan-
-Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md`
-Slice-Plan + carveouts-Triage 034/035 → `Active in M7-Welle-3`).
-Aktiver Slice: **M7-Welle-0** (C0..C2); naechste Welle
-**M7-Welle-1** (`GG-MVP-002` ReplaySource-Integration; aktiviert
-Trigger 036).
+**In Progress seit 2026-06-08.** M7-Welle-0 (Slice-Plan-
+Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md` +
+carveouts-Triage 034/035 → `Active in M7-Welle-3`)
+**abgeschlossen** (C0..C4b). **M7-Welle-1** (`GG-MVP-002`) aktiv,
+sub-sliced 1a/1b (D-4-Final B; Gruppenplan
+[`M7-welle-1.md`](M7-welle-1.md)). Aktiver Slice: **M7-Welle-1a**
+([`M7-welle-1a.md`](M7-welle-1a.md); Zeitreihen-Persistenz, NEU
+`TelemetrySinkPort` + ADR 0047).
 
 ---
 

@@ -24,7 +24,7 @@ Vier-Punkte-Liste (siehe `roadmap.md §3 MVP-Abnahmescope`).
 
 | Sub-Pruefung | Substanz heute | CLI-Aggregation |
 | --- | --- | --- |
-| Deterministische Replay-Pruefung | Core-Diff `diff_replay()` ✓ produktiv (M6-Welle-5c-Audit); plus optional `ReplaySourcePort`-E2E aus [`replay-source-integration.md`](replay-source-integration.md) (`GG-MVP-002`). | ✗ kein Aggregat-Aufruf |
+| Deterministische Replay-Pruefung | Core-Diff `diff_replay()` ✓ produktiv (M6-Welle-5c-Audit); plus optional `ReplaySourcePort`-E2E aus [`M7-welle-1.md`](../in-progress/M7-welle-1.md) (`GG-MVP-002`). | ✗ kein Aggregat-Aufruf |
 | Szenario-Validierung | `hexagon/core/scenario/validator.py::validate_scenario_mapping` ✓ produktiv (Welle 5, vor M2; `GG-SCN-008`-Vorab-Validierung) | ✗ kein Aggregat-Aufruf |
 | Demo-Healthcheck | `GET /health` ✓ produktiv (Liveness); `GET /ready` Three-State produktiv nach M6-Welle-6-C2 (siehe [`../done/M6-welle-6.md`](../done/M6-welle-6.md) — aktiv) | ✗ kein Aggregat-Aufruf |
 | **Maschinenlesbarer Aggregat-Status** | ✗ **Lücke** | — |
@@ -230,7 +230,7 @@ oder M7-Welle-X; siehe §5) liefert:
      - **Sub-Form B** (E2E-Pfad ueber laufenden API):
        nutzt `POST /runs` zweimal, vergleicht persistierte
        Replay-Samples ueber `ReplaySourcePort`. Benoetigt
-       [`replay-source-integration.md`](replay-source-integration.md)
+       [`M7-welle-1.md`](../in-progress/M7-welle-1.md)
        als Vorbedingung.
      - Default-Vorschlag: A (standalone, weil unabhaengig
        von GG-MVP-002-Aktivierung).
@@ -439,7 +439,7 @@ Vorschlag: A (geringster Boilerplate; passt zur bestehenden
 
 Siehe §2 Step B. Vorschlag: A (standalone Sub-Form), weil
 unabhaengig von der Aktivierung von
-[`replay-source-integration.md`](replay-source-integration.md).
+[`M7-welle-1.md`](../in-progress/M7-welle-1.md).
 Falls die GG-MVP-002-Substanz zuerst kommt, kann der CLI
 spaeter auf Sub-Form B migrieren.
 
@@ -468,7 +468,7 @@ Versionierung via `schema_version`-Feld).
   + Doku in einer Welle).
 - **B**: Sub-Slicing — eigener Slice fuer Replay-Step
   (falls Sub-Form B per D-2 gewaehlt wird und
-  `replay-source-integration.md` noch nicht aktiv ist).
+  `M7-welle-1.md` noch nicht aktiv ist).
 
 Vorschlag: A (wenn D-2 Option A; standalone Replay-Step ist
 klein genug fuer eine Welle).
@@ -994,7 +994,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
   Closure auf ✓ produktiv geflippt.
 - [`../../../../spec/lastenheft.md §3 GG-MVP-003`](../../../../spec/lastenheft.md)
   — Akzeptanz-Quelle (Z. 138-144).
-- [`./replay-source-integration.md`](replay-source-integration.md)
+- [`M7-welle-1.md`](../in-progress/M7-welle-1.md)
   — Schwester-Plan fuer `GG-MVP-002`; potenzielle
   Sub-Form-B-Abhaengigkeit fuer Step B (Replay-Pruefung
   ueber `ReplaySourcePort`-E2E).
