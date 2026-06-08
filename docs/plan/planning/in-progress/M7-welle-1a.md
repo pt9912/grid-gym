@@ -70,10 +70,12 @@ Sample-Strom aufsetzt (D-1.1-Timestamp-Lücke siehe
    Wiederholungslesen ohne Duplikate, alle `GG-PERSIST-001`-/
    `TelemetryPoint`-Felder inkl. `unit`/`source`/`sequence`,
    kanonisch-stabile Ausgabe.
-6. Audit-Doku-Vorbereitung: `docs/user/replay-determinism-e2e.md`
-   entsteht in **1b** (markiert `GG-MVP-002` erst nach 1b als ✓);
-   1a liefert die Persistenz-Sektion als Vorlauf, falls C0 sie
-   schon schneidet.
+6. **Keine Audit-Doku in 1a** (Anti-Scope, siehe §9).
+   `docs/user/replay-determinism-e2e.md` entsteht vollstaendig in
+   **1b** (markiert `GG-MVP-002` erst nach 1b als ✓ produktiv) —
+   ohne den 1b-Replay-E2E-Beleg waere eine 1a-Teil-Doku
+   unvollstaendig. 1a liefert ausschliesslich die Persistenz-
+   Substanz + den Persistenz-Smoke.
 
 ---
 
@@ -220,7 +222,8 @@ bis 1a+1b geschlossen sind.
 - [ ] C3 — 1a `Done`; `M7-welle-1.md` 1a → Done; aktiver Slice 1b.
 
 **Anti-Scope (1a NICHT):** kein `ReplaySnapshotPort`, kein
-Lifecycle-Hook, keine `replay_diff_status`-Metrik (alles 1b);
+Lifecycle-Hook, keine `replay_diff_status`-Metrik, keine
+`docs/user/replay-determinism-e2e.md`-Audit-Doku (alles 1b);
 kein Query-/Export-API ueber den Smoke-Bedarf hinaus.
 
 ---
