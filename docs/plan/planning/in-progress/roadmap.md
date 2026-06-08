@@ -934,7 +934,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 (M6-Closure; Pattern analog M4-/M5-Welle-7)**. **M6-Welle-6
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
 + Trigger 009) abgeschlossen 2026-06-08** (siehe
-[`M6-welle-6.md`](M6-welle-6.md)) mit Stack C0 `fab6a8c`
+[`M6-welle-6.md`](../done/M6-welle-6.md)) mit Stack C0 `fab6a8c`
 (Slice-Doc) / C1 `1d478e3` (NEU ADR 0046 `Provisional`) /
 C2 `f07e996` (feat: `GG-DEPLOY-006` NEU `/ready`-Endpoint
 mit Three-State-Status + Komponenten-Breakdown

@@ -1,7 +1,7 @@
 # Deploy-Hardening (`GG-DEPLOY-001..011`)
 
 **Quelle:** M6-Welle-6 (Deploy-Hardening + IEC-Smoke-Pfad-B;
-[`../plan/planning/in-progress/M6-welle-6.md`](../plan/planning/in-progress/M6-welle-6.md)).
+[`../plan/planning/in-progress/M6-welle-6.md`](../plan/planning/done/M6-welle-6.md)).
 **Stand:** 2026-06-08.
 
 Dieses Dokument auditiert die produktive Substanz fuer die elf
@@ -121,7 +121,7 @@ Trigger-Aufloesung siehe
 
 ## Bezüge
 
-- [M6-Welle-6 Slice-Doc](../plan/planning/in-progress/M6-welle-6.md)
+- [M6-Welle-6 Slice-Doc](../plan/planning/done/M6-welle-6.md)
   — Decision-Liste (D-1..D-6) + Liefer-Reihenfolge.
 - [ADR 0046 — Multi-Python-Test-Stage-Pattern](../plan/adr/0046-multi-python-test-stage-pattern.md)
   — `iec61850-test`-Stage.

@@ -26,7 +26,7 @@ Vier-Punkte-Liste (siehe `roadmap.md §3 MVP-Abnahmescope`).
 | --- | --- | --- |
 | Deterministische Replay-Pruefung | Core-Diff `diff_replay()` ✓ produktiv (M6-Welle-5c-Audit); plus optional `ReplaySourcePort`-E2E aus [`replay-source-integration.md`](replay-source-integration.md) (`GG-MVP-002`). | ✗ kein Aggregat-Aufruf |
 | Szenario-Validierung | `hexagon/core/scenario/validator.py::validate_scenario_mapping` ✓ produktiv (Welle 5, vor M2; `GG-SCN-008`-Vorab-Validierung) | ✗ kein Aggregat-Aufruf |
-| Demo-Healthcheck | `GET /health` ✓ produktiv (Liveness); `GET /ready` Three-State produktiv nach M6-Welle-6-C2 (siehe [`../in-progress/M6-welle-6.md`](../in-progress/M6-welle-6.md) — aktiv) | ✗ kein Aggregat-Aufruf |
+| Demo-Healthcheck | `GET /health` ✓ produktiv (Liveness); `GET /ready` Three-State produktiv nach M6-Welle-6-C2 (siehe [`../done/M6-welle-6.md`](../done/M6-welle-6.md) — aktiv) | ✗ kein Aggregat-Aufruf |
 | **Maschinenlesbarer Aggregat-Status** | ✗ **Lücke** | — |
 
 **Was es heute gibt** (in der Naehe, aber nicht das, was
@@ -765,7 +765,7 @@ nach Welle-6-C2; Welle-6-C2 ist Vorbedingung wegen
   (aelter, M3-Vorgaenger).
 - ⚠ `GET /ready` Three-State-Endpoint: produktiv erst nach
   M6-Welle-6-C2 (aktiv; siehe
-  [`../in-progress/M6-welle-6.md`](../in-progress/M6-welle-6.md)).
+  [`../done/M6-welle-6.md`](../done/M6-welle-6.md)).
   Falls dieser CLI-Slice in M6-Welle-6-Scope-Erweiterung
   geht (D-5 Option A), ist die Vorbedingung im selben Slice
   erfuellt. Fuer **D-5 Option B/C** (Slice unabhaengig von
@@ -998,7 +998,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
   — Schwester-Plan fuer `GG-MVP-002`; potenzielle
   Sub-Form-B-Abhaengigkeit fuer Step B (Replay-Pruefung
   ueber `ReplaySourcePort`-E2E).
-- [`../in-progress/M6-welle-6.md`](../in-progress/M6-welle-6.md)
+- [`../done/M6-welle-6.md`](../done/M6-welle-6.md)
   — aktive Welle 6 mit NEU `/ready`-Endpoint; potenzielles
   Scope-Erweiterungs-Ziel (D-5 Option A).
 - [`../../adr/0045-http-api-request-strict-validation.md`](../../adr/0045-http-api-request-strict-validation.md)
