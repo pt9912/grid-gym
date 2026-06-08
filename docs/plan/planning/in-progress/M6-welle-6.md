@@ -1,10 +1,13 @@
 # Welle 6 — M6 Deploy-Hardening + IEC-Smoke-Pfad-B (`GG-DEPLOY-001..011` + Trigger 009)
 
-**Status:** In Progress — C0 `fab6a8c` (Slice-Doc-Anlage) +
+**Status:** Done 2026-06-08 — C0 `fab6a8c` (Slice-Doc-Anlage) +
 C1 `1d478e3` (NEU ADR 0046 Multi-Python-Test-Stage-Pattern,
-`Provisional`) + C2 (feat/deploy: `/ready` + DevContainer +
-IEC-Pfad-B + Audit-Doku + Smokes; dieser Commit, inkl.
-Code-Review-Folge inline). C3 (Status/DoD-Sync) folgt.
+`Provisional`) + C2 `f07e996` (feat/deploy: `/ready` + DevContainer +
+IEC-Pfad-B + Audit-Doku + Smokes; inkl. Code-Review-Folge inline) +
+C3 (Status/DoD-Sync; dieser Commit). `make fullbuild`/`gates`/
+`test-iec61850`/`docs-check` cache-frei gruen. ADR 0046 bleibt
+`Provisional` bis M6-Welle-7-Closure. Self-Close-Folge C4a/C4b
+(Move nach `done/`) dient als M6-Welle-7-Pre-C0a/Pre-C0b.
 
 **C2-Realization-Notes (Abweichungen vom Slice-Plan, alle
 verifiziert via `make fullbuild` cache-frei gruen):**

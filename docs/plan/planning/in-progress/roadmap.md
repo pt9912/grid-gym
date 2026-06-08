@@ -930,18 +930,24 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 6
+(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 7
+(M6-Closure; Pattern analog M4-/M5-Welle-7)**. **M6-Welle-6
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
-+ Trigger 009)** — Welle-6-Slice-Doc angelegt in Welle-6-C0
-(dieser Commit; siehe [`M6-welle-6.md`](M6-welle-6.md));
-Welle-6-Decisions D-1..D-6 final: monolithische Welle 6
-(User-Ask „Alles fixen") / `GG-DEPLOY-006` NEU `/ready`-
-Endpoint mit Three-State-Status / `GG-DEPLOY-004` NEU
++ Trigger 009) abgeschlossen 2026-06-08** (siehe
+[`M6-welle-6.md`](M6-welle-6.md)) mit Stack C0 `fab6a8c`
+(Slice-Doc) / C1 `1d478e3` (NEU ADR 0046 `Provisional`) /
+C2 `f07e996` (feat: `GG-DEPLOY-006` NEU `/ready`-Endpoint
+mit Three-State-Status + Komponenten-Breakdown
+(api/ui/db/simulation) / `GG-DEPLOY-004` NEU
 `.devcontainer/`-Konfig / Trigger 009 NEU Dockerfile-
-`iec61850-test`-Stage auf Python 3.12 + Makefile-Target /
-NEU ADR 0046 `Multi-Python-Test-Stage-Pattern` als ADR-
-0011-Schaerfung. C1/C2/C3 + Self-Close-Folge C4a/C4b
-ausstehend.
+`iec61850-test`-Stage auf Python 3.12 + Makefile-Target
+`test-iec61850`; inkl. Code-Review-BLOCKER-Fix simulation-
+Healthcheck-Wiring) / C3 dieser Commit (Status/DoD-Sync).
+`GG-DEPLOY-001..006/011` ✓ produktiv, `GG-DEPLOY-007..010`
+⏸ M7+; Trigger 009 aufgeloest (`open → done`); NEU ADR 0046
+`Multi-Python-Test-Stage-Pattern` bleibt `Provisional` bis
+M6-Welle-7-Closure. Self-Close-Folge C4a/C4b dient als
+M6-Welle-7-Pre-C0a/Pre-C0b.
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
 `4b76ff7..C4b dieser Commit` (siehe
 [`M6-welle-5c.md`](../done/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
