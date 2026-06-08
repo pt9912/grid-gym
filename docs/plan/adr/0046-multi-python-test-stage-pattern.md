@@ -1,9 +1,12 @@
 # ADR 0046 — Multi-Python-Test-Stage-Pattern fuer Library-Compat-Smokes (M6 Welle 6)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-
-Sprung (dieser Commit).
+**Status:** Accepted — gezogen 2026-06-08 mit M6-Welle-7-C1
+(dieser Commit; M6-Closure-Welle). Provisional-Schritt
+2026-06-08 (direkter `Proposed → Provisional`-Sprung mit
+M6-Welle-6-C1).
 **Datum:** 2026-06-08
-**Status geaendert am:** 2026-06-08 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-06-08 — `Proposed → Provisional`;
+2026-06-08 — `Provisional → Accepted` (M6-Welle-7-Closure).
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)

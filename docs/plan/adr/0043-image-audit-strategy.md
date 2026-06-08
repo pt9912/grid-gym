@@ -1,9 +1,12 @@
 # ADR 0043 — Image-Audit-Strategie + Trivy-Defer-Aufloesungs-Pattern (M6 Welle 1)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-
-Sprung (dieser Commit).
+**Status:** Accepted — gezogen 2026-06-08 mit M6-Welle-7-C1
+(dieser Commit; M6-Closure-Welle). Provisional-Schritt
+2026-06-05 (direkter `Proposed → Provisional`-Sprung mit
+M6-Welle-1-C1).
 **Datum:** 2026-06-05
-**Status geaendert am:** 2026-06-05 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-06-05 — `Proposed → Provisional`;
+2026-06-08 — `Provisional → Accepted` (M6-Welle-7-Closure).
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
