@@ -1,0 +1,39 @@
+{
+  "name": "grid-gym",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "target": "base"
+  },
+  "postCreateCommand": "uv sync --all-groups",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff"
+      ],
+      "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+          {
+            "label": "Build",
+            "type": "shell",
+            "command": "make build",
+            "detail": "Baut das Runtime-Image (GG-DEPLOY-001)."
+          },
+          {
+            "label": "Test",
+            "type": "shell",
+            "command": "make ci",
+            "detail": "Pflicht-Gates + Integration + OpenAPI + Image-Audit."
+          },
+          {
+            "label": "Abnahme",
+            "type": "shell",
+            "command": "make fullbuild",
+            "detail": "Voller Abnahme-Lauf (ci + build; M-Closure-Gate)."
+          }
+        ]
+      }
+    }
+  }
+}

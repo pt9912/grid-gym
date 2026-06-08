@@ -96,6 +96,22 @@ class TickLoopRegistry:
         """
         return self._healthcheck_adapters.get(run_id)
 
+    def any_healthcheck_adapter(self) -> TickLoopHealthcheckAdapter | None:
+        """Liefert einen beliebigen registrierten Healthcheck-Adapter
+        oder ``None`` (M6 Welle 6, `/ready` simulation-Probe).
+
+        Der Demo-Setup ist Single-Run; der erste Eintrag
+        repraesentiert den `simulation`-Service fuer den nicht-run-
+        bezogenen `/ready`-Endpoint (Welle-6-D-2 Sub-Form A). Gibt
+        ``None`` zurueck, wenn kein Tick-Driver laeuft (Compose-
+        `sleep infinity`-Stub oder Demo-Stack ohne Scenario) — der
+        `/ready`-Adapter meldet `simulation` dann `degraded`
+        (Sub-Form B).
+        """
+        for adapter in self._healthcheck_adapters.values():
+            return adapter
+        return None
+
 
 class _TickLoopRegistryNotConfiguredError(RuntimeError):
     """Konfigurations-Fehler: HTTP-API ohne `TickLoopRegistry` gestartet.

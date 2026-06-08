@@ -1,8 +1,45 @@
 # Welle 6 — M6 Deploy-Hardening + IEC-Smoke-Pfad-B (`GG-DEPLOY-001..011` + Trigger 009)
 
 **Status:** In Progress — C0 `fab6a8c` (Slice-Doc-Anlage) +
-C1 (NEU ADR 0046 Multi-Python-Test-Stage-Pattern, `Provisional`;
-dieser Commit).
+C1 `1d478e3` (NEU ADR 0046 Multi-Python-Test-Stage-Pattern,
+`Provisional`) + C2 (feat/deploy: `/ready` + DevContainer +
+IEC-Pfad-B + Audit-Doku + Smokes; dieser Commit, inkl.
+Code-Review-Folge inline). C3 (Status/DoD-Sync) folgt.
+
+**C2-Realization-Notes (Abweichungen vom Slice-Plan, alle
+verifiziert via `make fullbuild` cache-frei gruen):**
+
+- `/ready`-Endpoint liegt in NEU `_ready_router.py` (nicht in
+  `app.py`) — `app.py` haette sonst 6 public top-level functions
+  (`AC-NO-GOD-UTILS` max 5). Pattern analog `_healthcheck_router.py`.
+- ADR 0046 §2.2 korrigiert: Compat-Install via `python -m pip
+  install --ignore-requires-python` statt `uv pip install` —
+  `uv pip install` kennt das Flag nicht. Gilt auch fuer die
+  Editable-Install von grid_gym selbst (eigener `requires-python`-
+  Floor).
+- Compat-Dep-Set erweitert um `psycopg`/`alembic`/
+  `testcontainers[postgres]`, weil `tests/integration/conftest.py`
+  diese zur Collection-Zeit importiert; `pyiec61850-ng==1.6.1.2`
+  exakt gepinnt (1.6.1.3 bricht den Model-Loader).
+- IEC-Smoke: zwei latente Slice-033-Bugs gefixt (durch den Skip
+  seit Welle 5b verdeckt) — (a) `#`-SPDX-Header in `simpleIO.cfg`
+  bricht den libiec61850-Parser → Test laedt aus kommentar-
+  bereinigter Temp-Kopie (Fixture behaelt SPDX-Header); (b) String-
+  Datatype-Assertions auf den dokumentierten `source`-Encoding-
+  Vertrag (ADR 0035 §2.6) korrigiert.
+- NEU 3 Unit-Tests (`test_health_adapter`/`test_ready_router`/
+  `test_tick_loop_registry`), weil `coverage-gate` nur `tests/unit/`
+  misst (die 7 Slice-Smokes sind Integration).
+- **Code-Review-BLOCKER-Fix**: `configure_scenario_demo_run`
+  registriert jetzt einen `TickLoopHealthcheckAdapter` am
+  produktiven TickLoop — sonst meldet `/ready` die `simulation`-
+  Komponente im Compose-Stack dauerhaft `degraded`-Stub und
+  GG-DEPLOY-005 „Systemstatus healthy" waere nie erreichbar.
+  Pin: NEU `test_m5_welle_5_demo_smoke.py::test_demo_ready_endpoint_
+  reports_healthy`.
+- `.devcontainer/` in den Dockerfile-`source`-COPY aufgenommen
+  (docs-check + Deploy-Smoke brauchen die Datei im Build-Kontext);
+  7 Doc-Link-Fixes nach dem Trigger-009-`open/ → done/`-Move.
 
 **Pre-C0 abgeschlossen (M6-Welle-5c-Closure-Folge):**
 
@@ -61,7 +98,7 @@ substanziellen Luecken vor M6-Welle-7-Closure:
   `pyiec61850-ng==1.6.1.2` liefert auf Linux nur
   `py3-none-manylinux1_x86_64`-Wheel ohne cp-Tag — segfault
   auf Python 3.14, siehe
-  [Trigger 009](../open/009-iec61850-smoke-reactivation.md)
+  [Trigger 009](../done/009-iec61850-smoke-reactivation.md)
   „Pfad A ist tot"). Welle 6 aktiviert **Pfad B** (Multi-
   Python-Test-Stage in Dockerfile mit Python 3.12 fuer den
   IEC-In-Process-Smoke; ADR-Pattern fuer Library-Compat-
@@ -1075,7 +1112,7 @@ Pattern aus Welle-3 (`feat(observability)`-Doppel-Commit).
   Welle-5c (SOLLTE-Items + IP/Netz-Beschraenkung;
   `GG-SAFE-005/006`) — vorhergehende Welle; schliesst
   die Welle-5-Subdivision (5a + 5b + 5c).
-- [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md)
+- [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md)
   — Trigger 009 IEC-Pfad-B-Spec; wandert in C2 nach
   `done/`.
 - [`M6-perf-security-cicd.md §3.2 Welle 6`](M6-perf-security-cicd.md)

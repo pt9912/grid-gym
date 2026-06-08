@@ -331,8 +331,10 @@ def get_health() -> HealthResponse:
     """Liveness-Probe.
 
     Antwortet immer mit `{"status": "ok"}`, solange der Prozess
-    laeuft. Persistente Backend-Checks (Postgres-Erreichbarkeit
-    etc.) kommen mit Welle 6c als `/ready`-Endpoint dazu.
+    laeuft. Readiness mit persistenten Backend-Checks (Postgres-
+    Erreichbarkeit, UI-Surface, Simulation) liefert der separate
+    `GET /ready`-Endpoint (M6 Welle 6, `GG-DEPLOY-006`); `/health`
+    bleibt Liveness-only (Dockerfile-`HEALTHCHECK`).
     """
     return HealthResponse(status="ok")
 
@@ -386,6 +388,7 @@ def post_runs(
 from grid_gym.adapters.driving.http_api._healthcheck_router import (
     healthcheck_router,
 )
+from grid_gym.adapters.driving.http_api._ready_router import ready_router
 from grid_gym.adapters.driving.http_api._runs_action_router import (
     runs_action_router,
 )
@@ -397,6 +400,10 @@ app.include_router(runs_action_router)
 # 10ms-Modus). Separates Sub-Modul gegen `_runs_router.py`-Wuchs
 # (AC-NO-GOD-UTILS; C0-Review-Folge F6).
 app.include_router(healthcheck_router)
+# M6-Welle-6: NEU `GET /ready`-Readiness-Endpoint (GG-DEPLOY-006
+# Three-State). Separates Sub-Modul gegen `app.py`-Wuchs
+# (AC-NO-GOD-UTILS max 5 public top-level functions).
+app.include_router(ready_router)
 
 # ---------------------------------------------------------------------------
 # M5 Welle 2 — UI-Adapter-Mount (ADR 0036)

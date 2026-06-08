@@ -53,6 +53,9 @@ from grid_gym.adapters.driving.http_api._dependencies import (
 from grid_gym.adapters.driving.http_api._tick_loop_driver import (
     DemoTickLoopDriver,
 )
+from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
+    TickLoopHealthcheckAdapter,
+)
 from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     _TickLoopRegistryNotConfiguredError,
@@ -220,6 +223,18 @@ def configure_scenario_demo_run(
     )
     repository.save(metadata)
     registry.register(tick_loop)
+    # M6-Welle-6: Healthcheck-Adapter am produktiven TickLoop
+    # registrieren. Ohne diese Registrierung meldet `/ready`
+    # (GG-DEPLOY-006) die `simulation`-Komponente dauerhaft
+    # `degraded` mit der falschen „sleep-infinity-Stub"-Ursache
+    # (`any_healthcheck_adapter()` → None), obwohl ein echter
+    # TickLoop laeuft — GG-DEPLOY-005 „Systemstatus healthy" waere
+    # im Compose-Stack nie erreichbar. Der Driver meldet pro Tick
+    # `record_tick_duration` an diesen Adapter; er speist zugleich
+    # den `GET /runs/{id}/healthcheck`-Endpoint (Welle 4b-c) im
+    # Demo-Stack.
+    healthcheck_adapter = TickLoopHealthcheckAdapter(tick_loop)
+    registry.register_healthcheck_adapter(run_id, healthcheck_adapter)
 
     def _alarm_stream_provider() -> AlarmStreamPort | None:
         return cast(AlarmStreamPort | None, getattr(app_.state, "alarm_stream", None))
@@ -244,6 +259,7 @@ def configure_scenario_demo_run(
     driver = DemoTickLoopDriver(
         tick_loop,
         tick_interval_s=resolved_tick_interval_s,
+        healthcheck_adapter=healthcheck_adapter,
         alarm_stream_provider=_alarm_stream_provider,
         alarm_history_buffer_provider=_alarm_history_buffer_provider,
         telemetry_stream_provider=_telemetry_stream_provider,

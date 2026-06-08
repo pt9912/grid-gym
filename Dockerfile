@@ -90,6 +90,11 @@ COPY docs/ docs/
 COPY harness/ harness/
 COPY deploy/ deploy/
 COPY .github/workflows/ .github/workflows/
+# M6-Welle-6 (GG-DEPLOY-004): `.devcontainer/devcontainer.json` wird
+# vom `docs-check`-Markdown-Validator (deploy-hardening.md-Ref) und
+# vom Welle-6-Deploy-Smoke (Quell-Datei-Inspektion) im Build-Kontext
+# gebraucht.
+COPY .devcontainer/ .devcontainer/
 COPY Makefile Dockerfile CHANGELOG.md ./
 COPY AGENTS.md ./
 # `alembic.ini` zeigt auf das Postgres-Adapter-Migrations-
@@ -512,6 +517,68 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=5 \
 # in ENV gesetzt, aber per exec-form-ENTRYPOINT ignoriert; das war
 # ein dokumentations-naher Lie und ist hier behoben).
 ENTRYPOINT exec uvicorn grid_gym.adapters.driving.http_api:app --host "$GRID_GYM_HOST" --port "$GRID_GYM_PORT"
+
+# ---------------------------------------------------------------------------
+# iec61850-test: Library-Compat-Test-Stage auf Python 3.12 (ADR 0046,
+# M6 Welle 6; Trigger 009 Pfad B). Reaktiviert den IEC-61850-In-
+# Process-Smoke real-library: `pyiec61850-ng` 1.6.x segfaultet auf
+# Python >=3.13 (manylinux1-Wheel-ABI-Inkompat; ADR 0035 §2.5), laeuft
+# aber auf 3.12. Die Default-`base`-Stage (Python 3.14) bleibt
+# unberuehrt; diese Stage ist opt-in via `make test-iec61850`.
+#
+# ADR 0046 §2.1: separate `FROM python:3.12-slim`-Basis (NICHT von
+#   `base`/`source` abgeleitet — die tragen Python 3.14).
+# ADR 0046 §2.2: Install via `uv pip install --ignore-requires-python`
+#   statt `uv sync --frozen` — der `requires-python = ">=3.13"`-Floor
+#   (ADR 0002 §2) und der fuer 3.13/3.14 aufgeloeste `uv.lock` wuerden
+#   auf Python 3.12 brechen. `pyproject.toml` + `uv.lock` bleiben
+#   unangetastet (kein Floor-Edit, kein Lockfile-Edit).
+# ---------------------------------------------------------------------------
+FROM python:3.12-slim AS iec61850-base
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+WORKDIR /src
+# grid_gym selbst editable + die von `pyproject.toml` referenzierten
+# Metadaten-Files (LICENSE/README) fuer den hatchling-Build.
+COPY pyproject.toml LICENSE README.md README.de.md CONTRIBUTING.md ./
+COPY src/ src/
+# `python -m pip` (NICHT `uv pip`): nur pip kennt
+# `--ignore-requires-python` (ADR 0046 §2.2) — `uv pip install`
+# bietet das Flag nicht. Noetig, weil grid_gym selbst
+# `requires-python = ">=3.13"` (ADR 0002 §2) traegt, das die
+# Editable-Install auf 3.12 sonst ablehnt. `--no-deps` skippt die
+# Dependencies; das Compat-Set folgt separat.
+RUN python -m pip install --ignore-requires-python --no-deps -e .
+# Compat-Dep-Set (ADR 0046 §2.2 `<set>`; konkrete Pins = C2-
+# Implementation-Detail per ADR 0046 §7): pyiec61850-ng (Smoke-
+# Library) plus die von `tests/integration/conftest.py` zur
+# Collection-Zeit importierten Pakete (psycopg / alembic→sqlalchemy /
+# testcontainers[postgres]) plus der pytest-Runner. Diese
+# unterstuetzen Python 3.12 nativ (kein Floor-Konflikt). Pins
+# spiegeln die `[project]`-/`[dependency-groups.test]`-Floors.
+# `pyiec61850-ng` exakt auf `1.6.1.2` gepinnt — die Version, gegen
+# die der ADR-0035-§2.5-Probe-Run den IedServer↔MMSClient-Roundtrip
+# auf Python 3.12 verifiziert hat. `1.6.1.3` aenderte den
+# `IedServer`-Model-Loader-Wrapper und bricht den
+# `simpleIO.cfg`-Model-Load ("Failed to load model"). Der Default-
+# Stack-Range `>=1.6,<2.0` in `pyproject.toml` bleibt unangetastet
+# (3.14-Pfad skippt den Smoke); die Compat-Stage pinnt enger.
+RUN python -m pip install \
+    "pyiec61850-ng==1.6.1.2" \
+    "psycopg[binary]>=3.3" \
+    "alembic>=1.18" \
+    "testcontainers[postgres]>=4.0" \
+    "pytest>=8.0"
+
+FROM iec61850-base AS iec61850-test
+COPY tests/ tests/
+# Default-CMD faehrt den real-library IEC-In-Process-Smoke (Trigger
+# 009 Pfad B). `make test-iec61850` baut diese Stage + `docker run`.
+# Der versions-bedingte Skip-Marker im Test greift auf 3.12 NICHT
+# (`sys.version_info < (3, 13)`), sodass der Smoke real laeuft.
+CMD ["python", "-m", "pytest", "tests/integration/test_iec61850_in_process_smoke.py", "-v"]
 
 # ---------------------------------------------------------------------------
 # Image-Audit (`GG-QG-002` SOLLTE) laeuft AUSSERHALB des Dockerfile —

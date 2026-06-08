@@ -52,6 +52,8 @@ from __future__ import annotations
 
 import contextlib
 import socket
+import sys
+import tempfile
 import time
 from collections.abc import Iterator
 from decimal import Decimal
@@ -69,36 +71,32 @@ pytest.importorskip(
     reason="pyiec61850-ng not installed — run `uv sync --extra iec61850`",
 )
 
-# 2c-Mock-only-Fallback aktiviert (Welle-5b-C2, 2026-06-01):
-# Probe-Run auf Python 3.12 lief sauber durch (`MMSClient.read_value`
-# ↔ `IedServer(model_path=fixture)` roundtrip OK fuer float/int32/
-# string). Auf dem grid-gym-Docker-Stack (Python 3.14) crasht die
-# Library-`.so` aber im ersten `IedServer.start()`-Call mit Segfault
-# (exit 139, Stack-Trace in `_pyiec61850.so`). Vermutete Ursache:
-# pyiec61850-ng 1.6.1.2 manylinux1_x86_64-Wheel ist gegen Python
-# 3.14-ABI nicht stabil — der Wheel-Build deklariert zwar Python
-# 3.14-Support, aber die SWIG-Bindings sind unter 3.14-Conditions
-# nicht erprobt.
+# Versions-bedingter Skip (M6-Welle-6-C2; Trigger 009 Pfad B aufgeloest,
+# ADR 0046). Probe-Run auf Python 3.12 lief sauber durch
+# (`MMSClient.read_value` ↔ `IedServer(model_path=fixture)` roundtrip OK
+# fuer float/int32/string). Auf dem grid-gym-Default-Docker-Stack
+# (Python 3.14) crasht die Library-`.so` aber im ersten
+# `IedServer.start()`-Call mit Segfault (exit 139, Stack-Trace in
+# `_pyiec61850.so`): pyiec61850-ng 1.6.x manylinux1_x86_64-Wheel ist
+# gegen die Python-3.13+-ABI nicht stabil (ADR 0035 §2.5).
 #
-# Decision I-e §2.5 Mock-only-Fallback explizit greift hier. Welle-5b-
-# DoD bleibt erfuellbar via Mock-Unit-Tests (siehe
-# `tests/unit/adapters/driven/protocol_iec61850/test_iec61850_protocol_port.py`
-# — 18 Tests gegen Mock-Client decken Lifecycle + Read-Pfad + Error-
-# Translation ab). Welle-6-Schaerfungs-Pfad: (a) auf Python 3.12-
-# Runtime fixieren ODER (b) Library-Upgrade abwarten ODER (c) Wheel
-# selbst gegen Python 3.14 rebuild.
-pytestmark = pytest.mark.skip(
+# Welle-6-Aufloesung (ADR 0046 Multi-Python-Test-Stage-Pattern): statt
+# eines unconditional `pytest.mark.skip` (der den Test auch auf 3.12
+# skippen wuerde) ist der Marker jetzt versions-bedingt. Default-Pfad
+# (`make test-integration`, Python 3.14) skippt weiterhin → kein
+# Segfault. Die NEU Dockerfile-Stage `iec61850-test` (Python 3.12,
+# `make test-iec61850`) faehrt den Smoke real-library. Unit-Mocks
+# (`tests/unit/adapters/driven/protocol_iec61850/`) decken den Vertrag
+# zusaetzlich ab.
+pytestmark = pytest.mark.skipif(
+    sys.version_info >= (3, 13),
     reason=(
-        "2c-Mock-only-Fallback aktiv (ADR 0035 §2.5; Welle-6b-C3-Defer): "
-        "pyiec61850-ng 1.6.1.2 (Stand 2026-06-01 PyPI-Latest) Segfault "
-        "auf Python 3.14. Welle-6b-C3-Pfad-A (Library-Upgrade) tot: keine "
-        "neuere Version verfuegbar, einziger Linux-Wheel ist "
-        "`py3-none-manylinux1_x86_64.whl` ohne cp-Tag. Defer-Trigger 009 "
-        "verfolgt Reaktivierung (siehe docs/plan/planning/open/"
-        "009-iec61850-smoke-reactivation.md): entweder pyiec61850-ng 2.0.x "
-        "mit cp314-Manylinux-Wheel ODER Dockerfile-Python-3.12-Test-Stage "
-        "als eigener Slice (Pfad-B Repo-Novum)."
-    )
+        "IEC-61850-In-Process-Smoke laeuft real-library nur auf Python "
+        "3.12 (Trigger 009 Pfad B; ADR 0046). pyiec61850-ng 1.6.x "
+        "segfaultet auf Python >=3.13 (manylinux1_x86_64-Wheel-ABI-"
+        "Inkompat, ADR 0035 §2.5). Use `make test-iec61850` "
+        "(Dockerfile-Stage iec61850-test, Python 3.12)."
+    ),
 )
 
 from pyiec61850.server import IedServer
@@ -108,6 +106,7 @@ from grid_gym.adapters.driven.protocol_iec61850 import (
     Iec61850LnConfig,
     Iec61850ProtocolPortConfig,
 )
+from grid_gym.hexagon.core.domain.quality import Quality
 
 
 _LOCALHOST: Final[str] = "127.0.0.1"
@@ -167,6 +166,35 @@ _SMOKE_TARGETS: Final[list[tuple[str, str, str, str, Any]]] = [
 ]
 
 
+def _parser_compatible_model_path() -> Path:
+    """Schreibt eine kommentar-bereinigte Kopie der CFG-Fixture in
+    eine Temp-Datei und gibt deren Pfad zurueck (M6-Welle-6-C2).
+
+    Der libiec61850-`ConfigFileParser` vertraegt KEINE `#`-Kommentar-
+    Zeilen — eine fuehrende Kommentar-/Leerzeile laesst
+    `ConfigFileParser_createModelFromConfigFileEx` `None` (Model-Load-
+    Fehler) zurueckgeben. Die Fixture `simpleIO.cfg` traegt aber einen
+    Pflicht-`# SPDX-License-Identifier: GPL-3.0-only`-Header plus
+    Derivative-Work-Attribution (ADR 0035 Decision I-f /
+    `check_spdx`-Gate, Slice 033). Beide Vertraege gelten gleichzeitig:
+    die versionierte Fixture behaelt ihren SPDX-Header, der Smoke laedt
+    aus einer Kopie ohne Kommentar-/Leer-Zeilen. Die Modell-Substanz
+    (LD/LN/DO/DA-Zeilen) bleibt identisch.
+
+    Hinweis: der SPDX-Header wurde in Slice 033 nach dem Welle-5b-
+    Probe-Run ergaenzt; der Skip-Marker hat den dadurch latenten
+    Parser-Bruch bis zur Welle-6-Reaktivierung (Pfad B) verdeckt.
+    """
+    lines = _FIXTURE_PATH.read_text(encoding="utf-8").splitlines()
+    model_lines = [line for line in lines if line.strip() and not line.lstrip().startswith("#")]
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".cfg", delete=False, encoding="utf-8"
+    ) as handle:
+        handle.write("\n".join(model_lines) + "\n")
+        model_path = handle.name
+    return Path(model_path)
+
+
 @pytest.fixture
 def _iec61850_server() -> Iterator[tuple[IedServer, int]]:
     """In-process IedServer fuer Welle-5b-Smoke.
@@ -183,8 +211,9 @@ def _iec61850_server() -> Iterator[tuple[IedServer, int]]:
     """
     port = _find_free_port()
     server: IedServer | None = None
+    model_path = _parser_compatible_model_path()
     try:
-        server = IedServer(model_path=str(_FIXTURE_PATH))
+        server = IedServer(model_path=str(model_path))
         server.start(port=port)
         _wait_for_port_open(_LOCALHOST, port, _CONNECT_TIMEOUT_S)
         # Seed all smoke targets.
@@ -208,6 +237,7 @@ def _iec61850_server() -> Iterator[tuple[IedServer, int]]:
         if server is not None:
             with contextlib.suppress(Exception):
                 server.stop()
+        model_path.unlink(missing_ok=True)
 
 
 def _build_config(port: int) -> Iec61850ProtocolPortConfig:
@@ -255,12 +285,22 @@ def test_iec61850_adapter_read_roundtrip(
         telemetry = adapter.read(target_id)
         assert telemetry is not None
         assert telemetry.device_id == target_id
-        assert telemetry.source == f"protocol_iec61850.{target_id}"
-        if datatype == "float":
-            assert isinstance(telemetry.value, Decimal)
-            assert float(telemetry.value) == pytest.approx(float(expected_value))
-        elif datatype in ("int32", "string"):
-            assert telemetry.value == expected_value
+        if datatype == "string":
+            # ADR 0035 §2.6 / Welle-4-Slice-032-Pattern: `TelemetryPoint.
+            # value` ist `Decimal`; String-Werte werden NICHT als Wert
+            # gespeichert, sondern im `source`-Feld kodiert
+            # (`...#string=<value>`) mit `value=Decimal(0)` +
+            # `Quality.INVALID` als Sentinel.
+            assert telemetry.source == f"protocol_iec61850.{target_id}#string={expected_value}"
+            assert telemetry.value == Decimal(0)
+            assert telemetry.quality is Quality.INVALID
+        else:
+            assert telemetry.source == f"protocol_iec61850.{target_id}"
+            if datatype == "float":
+                assert isinstance(telemetry.value, Decimal)
+                assert float(telemetry.value) == pytest.approx(float(expected_value))
+            elif datatype == "int32":
+                assert telemetry.value == expected_value
     finally:
         adapter.stop()
 

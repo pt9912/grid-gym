@@ -37,6 +37,25 @@ def get_templates() -> Jinja2Templates:
     return Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
+def ui_surface_loads() -> bool:
+    """Readiness-Probe fuer die `ui`-Komponente des `/ready`-Endpoints
+    (M6 Welle 6, `GG-DEPLOY-006`, Welle-6-D-2).
+
+    Laedt + kompiliert das ``base.html``-Layout-Template ueber die
+    Jinja2-Environment und belegt damit, dass das UI-Surface
+    (Templates-Verzeichnis + Jinja2-Backend) auflaedt. Gibt ``True``
+    bei Erfolg zurueck; Jinja2-Fehler (`TemplateNotFound`, Syntax-
+    Fehler) propagieren an den `/ready`-Adapter, der die `ui`-
+    Komponente auf ``unhealthy`` mappt.
+
+    Bewusst hier (statt im `http_api`-Adapter), damit die Jinja2-
+    Nutzung auf ``adapters/driving/ui/**`` beschraenkt bleibt
+    (ADR 0036 §2.1; AC-NO-FW / AC-PORTS-NO-FW Forbidden-List).
+    """
+    get_templates().env.get_template("base.html")
+    return True
+
+
 def is_htmx_request(request: Request) -> bool:
     """``True`` wenn HTMX den Request als Sub-Request markiert hat.
 

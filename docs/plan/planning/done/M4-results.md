@@ -255,7 +255,7 @@ Diese Items sind explizit als M4-Closure-Restposten in
 `open/` aktiviert oder bleiben aktiv:
 
 **IEC-61850-In-Process-Smoke Reaktivierung**
-([`Trigger 009`](../open/009-iec61850-smoke-reactivation.md)):
+([`Trigger 009`](../done/009-iec61850-smoke-reactivation.md)):
 
 - Aktuell aktiv via Pfad C (Mock-only-Fallback). Konkrete
   Reaktivierungs-Pfade:

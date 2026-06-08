@@ -104,3 +104,10 @@ class InMemoryRunRepository:
         if run_id not in self._store:
             raise RunNotFoundError(run_id)
         return self._status_store[run_id]
+
+    def ping(self) -> bool:
+        """Readiness-Probe (M6 Welle 6, `GG-DEPLOY-006`). Test-Double
+        ohne externes Backend → immer ``True``. Smokes, die einen
+        DB-Ausfall simulieren, ueberschreiben `ping` per Subklasse
+        oder monkeypatch."""
+        return True

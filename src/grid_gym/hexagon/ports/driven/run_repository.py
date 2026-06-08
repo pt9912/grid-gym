@@ -28,6 +28,17 @@ Vertrag (Welle-4a-Extension):
   (konsistent mit `get_by_id`).
 - `get_status(run_id) -> RunStatus` liest den Lifecycle-Status.
   Wirft `RunNotFoundError`, wenn der Lauf nicht persistiert ist.
+
+Vertrag (Welle-6-Extension, M6 Welle 6):
+
+- `ping() -> bool` ist die Readiness-Probe fuer den `/ready`-
+  Endpoint (`GG-DEPLOY-006`). In-Memory-Implementationen geben
+  immer `True` zurueck (kein externes Backend); die Postgres-
+  Implementation macht ein `SELECT 1` ueber eine frische
+  Connection. Backend-Fehler propagieren als Exception an den
+  `/ready`-Adapter, der sie auf `unhealthy` mappt — die
+  Implementation MUSS Connection-Fehler nicht selbst zu `False`
+  uebersetzen.
 """
 
 from __future__ import annotations
@@ -92,5 +103,17 @@ class RunRepositoryPort(Protocol):
         ist. Default nach `save` ist ``"pending"`` — die
         ``update_status``-Aufrufe aus TickLoop-`request_*`-Methoden
         propagieren die State-Transitions.
+        """
+        ...
+
+    def ping(self) -> bool:
+        """Readiness-Probe fuer den `/ready`-Endpoint (M6 Welle 6,
+        `GG-DEPLOY-006`).
+
+        Gibt `True` zurueck, wenn das Persistenz-Backend erreichbar
+        ist. In-Memory-Implementationen geben immer `True` zurueck
+        (kein externes Backend); die Postgres-Implementation macht
+        ein `SELECT 1`. Backend-Fehler propagieren als Exception an
+        den `/ready`-Adapter (Three-State-Mapping auf `unhealthy`).
         """
         ...

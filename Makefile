@@ -50,7 +50,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	lint format-check typecheck \
 	arch-check arch-check-imports arch-check-custom docs-check spdx-check \
 	test test-unit test-determinism test-replay test-fault \
-	test-integration \
+	test-integration test-iec61850 \
 	coverage-gate coverage-gate-critical \
 	dep-audit image-audit openapi-validate \
 	render-trivyignore \
@@ -98,6 +98,7 @@ help:
 	@echo "  make test-fault        pytest -m fault (GG-FAULT-001..010)"
 	@echo "  make test              Alle Test-Marker im selben Stage"
 	@echo "  make test-integration  Compose-basierte Integration-Tests (Postgres etc.)"
+	@echo "  make test-iec61850     IEC-61850-In-Process-Smoke auf Python-3.12-Stage (ADR 0046; Trigger 009 Pfad B)"
 	@echo "  make coverage-gate            GG-COV-001/002 — \$$COVERAGE_THRESHOLD% Line + \$$COVERAGE_BRANCH_THRESHOLD% Branch (gesamt)"
 	@echo "  make coverage-report          Zeigt Total-Coverage frisch (--no-cache-filter coverage-gate; vorgelagerte Stages bleiben kalt)"
 	@echo "  make coverage-gate-critical   GG-COV-003 MUSS — \$$CRITICAL_COVERAGE_THRESHOLD% auf kritischer Domain (simulation/devices/battery/scenario/replay)"
@@ -114,7 +115,7 @@ help:
 	@echo ""
 	@echo "Aggregator:"
 	@echo "  make gates             lint + format-check + typecheck + arch-check + test-unit + coverage-gate + coverage-gate-critical + dep-audit + noqa-gate + spdx-check"
-	@echo "  make ci                gates + test-integration + openapi-validate + image-audit"
+	@echo "  make ci                gates + test-integration + test-iec61850 + openapi-validate + image-audit"
 	@echo "  make fullbuild         ci + build + runtime"
 	@echo ""
 	@echo "Runtime:"
@@ -227,6 +228,20 @@ test-integration:
 	exit_code=$$?; \
 	$(DOCKER) compose -f tests/integration/compose.yml down -v --remove-orphans >/dev/null 2>&1; \
 	exit $$exit_code
+
+# M6-Welle-6 (ADR 0046; Trigger 009 Pfad B): Library-Compat-Test-Stage
+# auf Python 3.12 fuer den real-library IEC-61850-In-Process-Smoke.
+# Default-`make test-integration` faehrt Python 3.14 (Smoke dort
+# versions-bedingt geskippt, sonst Segfault — ADR 0035 §2.5); dieses
+# Target faehrt die 3.12-Stage, in der der Smoke real laeuft. `make ci`
+# koordiniert beide Stages (Trigger-009-Coordination-Pflicht). Eigener
+# `$(DOCKER) build` statt `$(DOCKER_BUILD)`, weil die Stage Python
+# 3.12-gepinnt ist (`PYTHON_VERSION`-Build-Arg ist hier irrelevant).
+test-iec61850:
+	$(DOCKER) build $(BUILD_CONTEXT) -f $(DOCKERFILE) \
+		--target iec61850-test \
+		-t $(IMAGE_PREFIX)-iec61850-test:latest
+	$(DOCKER) run --rm $(IMAGE_PREFIX)-iec61850-test:latest
 
 coverage-gate:
 	$(DOCKER_BUILD) --target coverage-gate \
@@ -417,8 +432,8 @@ echo "[ci]       src/grid_gym/adapters/driving/http_api\""; \
 echo "[ci] Volle Default-Gruen-Linie kommt mit M2-Geraetemodellen."
 endef
 
-ci: gates test-integration openapi-validate image-audit
-	@echo "[ci] mandatory gates green + test-integration + openapi-validate + image-audit"
+ci: gates test-integration test-iec61850 openapi-validate image-audit
+	@echo "[ci] mandatory gates green + test-integration + test-iec61850 + openapi-validate + image-audit"
 
 # `make fullbuild` ohne Override faellt heute ueber `coverage-gate-critical`.
 # Der `|| (...; exit 1)`-Wrapper druckt den M1-Override-Hinweis nach dem

@@ -76,7 +76,7 @@ dieser Commit):**
 - **IedServer-Smoke-Reaktivierungs-Decision dokumentiert**
   — Pfad C aktiv (Mock-only-Fallback bleibt) mit
   konkretem Trigger in
-  [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md):
+  [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md):
   Pfad A passiv (Library publishet cp314-Manylinux-
   Wheel) ODER Pfad B aktiv (eigener Slice
   `036-iec61850-multi-python-test-stage.md` mit
@@ -453,7 +453,7 @@ explizit als M5/M6-Defer dokumentiert.
 - [x] **IedServer-Smoke-Reaktivierungs-Decision** —
   Pfad C aktiv (Mock-only-Fallback) mit konkretem
   Defer-Trigger
-  [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md);
+  [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md);
   Pfad A tot (Library-Stand identisch zu Welle 5b;
   PyPI-Wheel-Manifest 1.6.1.2 ohne cp314-Manylinux);
   Pfad B als eigenstaendiger Slice-Trigger (Repo-

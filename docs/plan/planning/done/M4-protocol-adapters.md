@@ -1142,14 +1142,14 @@ Smoke-Probe Pfad C + Slice-034-F13-Coverage-Schaerfung).
     0036). Nicht in Welle-6b-Scope.
   - **Pfad C (aktiv):** Mock-only-Fallback bleibt mit
     konkretem Defer-Trigger
-    [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md);
+    [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md);
     `pytest.mark.skip`-Reason in `test_iec61850_in_
     process_smoke.py` mit Welle-6b-C3-Befund + Trigger-
     009-Verweis aktualisiert.
   — C3 `2539574`.
 - [x] **Welle-6b-Smoke-Reaktivierung dokumentiert** —
   Pfad-C-Defer in
-  [`../open/009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md)
+  [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md)
   mit konkreten Reaktivierungs-Pfaden A (passive Library-
   Watch) und B (eigener Slice-Trigger) plus "Erwartete
   Lieferung bei Trigger"-Section pro Pfad — C3 `2539574`.

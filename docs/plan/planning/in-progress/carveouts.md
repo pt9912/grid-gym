@@ -79,7 +79,7 @@ Quelle: [`../done/M4-results.md §5`](../done/M4-results.md) +
 
 | Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | --- | ------ | ------ | ---------------------- | ----------- |
-| IEC-61850-In-Process-Smoke Reaktivierung | `Trigger-Gated` | M4-Welle-5b + M4-Welle-6b-C3 | **Active in M6-Welle-6** (Pfad B; per M6-Welle-0-C2-Triage) | `pyiec61850-ng` cp314-Wheel (Pfad A) ODER Multi-Python-Test-Stage (Pfad B) | [`009-iec61850-smoke-reactivation.md`](../open/009-iec61850-smoke-reactivation.md) |
+| IEC-61850-In-Process-Smoke Reaktivierung | `Aufgeloest` | M4-Welle-5b + M4-Welle-6b-C3 | **Aufgeloest in M6-Welle-6-C2** (Pfad B; NEU Dockerfile-Stage `iec61850-test` auf Python 3.12 + `make test-iec61850` + versions-bedingter Skip-Marker; ADR 0046) | n/a (aufgeloest; Pfad A `pyiec61850-ng` cp314-Wheel bleibt bevorzugte Endform) | [`009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
 | Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Aufgeloest` | M3-Welle-7-`c61ab0d` pre-existing | **Aufgeloest in M6-Welle-1-C2 `b514170`** (Null-Code-Edit; Debian-13.5-Upstream-Drift + Trigger-015-`apt-get upgrade`-Pattern) | n/a (aufgeloest) | [`010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
 
 ### 2.3 M3-Erbschaft (RL-Adapter)

@@ -358,6 +358,62 @@ class DevicesResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# GET /ready (M6 Welle 6, GG-DEPLOY-006 — Three-State-Readiness)
+# ---------------------------------------------------------------------------
+
+
+ComponentState = Literal["healthy", "degraded", "unhealthy"]
+"""Three-State-Health-Domaene fuer den `/ready`-Endpoint (M6 Welle 6,
+`GG-DEPLOY-006`, Lastenheft Z. 1876-1879).
+
+- ``healthy``: Komponente voll erreichbar.
+- ``degraded``: Komponente eingeschraenkt, aber nicht ausgefallen
+  (z. B. `simulation`-Service als `sleep infinity`-Compose-Stub oder
+  TickLoop mit `backpressure_status == "delayed"`).
+- ``unhealthy``: Komponente ausgefallen (z. B. Postgres nicht
+  erreichbar). Aggregiert auf HTTP-503 (Kubernetes-Readiness-
+  Konvention).
+"""
+
+
+class ComponentStatus(BaseModel):
+    """Per-Komponente-Status-Eintrag der `ReadyResponse` (M6 Welle 6,
+    Welle-6-D-2). Three-State plus optionaler Ursachen-String pro
+    Dienst — der Lastenheft-Z.-1876-Wortlaut „mit kurzer Ursache".
+
+    Erbt `BaseModel` (kein `_BaseRequest`): Response-Model, ADR 0045
+    §2.2 (Strict-Mode ist Request-Body-Pflicht).
+    """
+
+    state: ComponentState = Field(
+        description="Three-State-Health der Komponente (`healthy`/`degraded`/`unhealthy`).",
+    )
+    reason: str | None = Field(
+        default=None,
+        description="Kurze Ursache bei `degraded`/`unhealthy`; `None` bei `healthy`.",
+    )
+
+
+class ReadyResponse(BaseModel):
+    """Antwort des `/ready`-Endpoints (M6 Welle 6, `GG-DEPLOY-006`).
+
+    `status` ist die aggregierte Top-Level-Health ueber die vier
+    Lastenheft-Pflicht-Komponenten (`api`/`ui`/`db`/`simulation`):
+    jede `unhealthy` → `unhealthy`; sonst eine `degraded` →
+    `degraded`; sonst `healthy` (Welle-6-D-2 Aggregations-Regel).
+    HTTP-Status-Mapping (im Endpoint-Handler): `200` bei
+    `healthy`/`degraded`, `503` bei `unhealthy`.
+    """
+
+    status: ComponentState = Field(
+        description="Aggregierter Top-Level-Readiness-Status.",
+    )
+    components: dict[str, ComponentStatus] = Field(
+        description="Per-Komponente-Breakdown (`api`/`ui`/`db`/`simulation`).",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Standardisiertes Fehler-Format (GG-API-004)
 # ---------------------------------------------------------------------------
 

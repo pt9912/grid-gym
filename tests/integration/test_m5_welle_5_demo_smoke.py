@@ -119,6 +119,22 @@ def test_demo_alarms_history_endpoint_reachable(
     assert isinstance(body["alarms"], list)
 
 
+def test_demo_ready_endpoint_reports_healthy(
+    demo_client: TestClient,
+) -> None:
+    """M6-Welle-6 (GG-DEPLOY-005/006): nach dem produktiven Scenario-
+    Demo-Lifespan meldet `GET /ready` Top-Level `healthy` mit
+    `simulation` healthy. Pinnt, dass `configure_scenario_demo_run`
+    den `TickLoopHealthcheckAdapter` am realen TickLoop registriert —
+    sonst faellt die `simulation`-Komponente auf den `degraded`-Stub
+    zurueck und `healthy` waere im Compose-Stack nie erreichbar."""
+    response = demo_client.get("/ready")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["components"]["simulation"]["state"] == "healthy", body["components"]["simulation"]
+    assert body["status"] == "healthy", body
+
+
 def test_demo_scenario_hash_is_deterministic() -> None:
     """Slice-Doc §6 Determinismus + R5: zwei Aufrufe des
     Demo-YAML-Loaders liefern denselben `scenario_hash`. Der

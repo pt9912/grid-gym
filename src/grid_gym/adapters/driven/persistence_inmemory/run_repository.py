@@ -68,3 +68,12 @@ class InMemoryRunRepository:
         if run_id not in self._store:
             raise RunNotFoundError(run_id)
         return self._status_store[run_id]
+
+    def ping(self) -> bool:
+        """Readiness-Probe (M6 Welle 6, `GG-DEPLOY-006`).
+
+        In-Memory-Store ist kein externes Backend — der Store ist
+        immer erreichbar, solange der Prozess laeuft. Gibt deshalb
+        immer ``True`` zurueck.
+        """
+        return True

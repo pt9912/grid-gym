@@ -1,6 +1,14 @@
 # 009 — IEC-61850 In-Process-Smoke Reaktivierung
 
-**Status:** Open — Trigger-Watch
+**Status:** Aufgeloest (M6-Welle-6-C2, 2026-06-08) — Pfad B
+geliefert: NEU Dockerfile-Stage `iec61850-test` auf Python 3.12 +
+`make test-iec61850` + versions-bedingter Skip-Marker
+(`pytest.mark.skipif(sys.version_info >= (3, 13))`) statt
+unconditional `skip`. Pattern verankert in ADR 0046
+(Multi-Python-Test-Stage-Pattern). Pfad A (`pyiec61850-ng`
+cp314-/ABI3-Wheel) bleibt die bevorzugte passive Endform — sobald
+verfuegbar, faellt die Compat-Stage weg (Skip-Marker-Entfernung +
+Stage-Removal als eigener `chore(deps)`-Slice).
 **Datum:** 2026-06-01
 **Quelle:** M4-Welle-5b-Closure (`ca96bca`) + Slice 033
 ([`../done/033-iec61850-adapter-review-folge.md`](../done/033-iec61850-adapter-review-folge.md))

@@ -32,7 +32,7 @@ Sprung (dieser Commit).
 - [`ADR 0028`](0028-link-maintenance-accepted-adr-bezug.md)
   — Link-Maintenance-Pattern fuer den ADR-Index-Update an
   der ADR-0002-Zeile.
-- [Trigger 009](../planning/open/009-iec61850-smoke-reactivation.md)
+- [Trigger 009](../planning/done/009-iec61850-smoke-reactivation.md)
   — Aktivierungs-Trigger (IEC-61850-In-Process-Smoke-
   Reaktivierung). Trigger 009 nennt explizit „Eventueller
   ADR 0036 wenn das Pattern repo-weit als 'Library-Compat-
@@ -53,7 +53,7 @@ Docker-Stack auf Python 3.14 segfaultet im
 `_pyiec61850.so`-SWIG-Layer mit exit 139 beim ersten
 `IedServer.start()`.
 
-[Trigger 009](../planning/open/009-iec61850-smoke-reactivation.md)
+[Trigger 009](../planning/done/009-iec61850-smoke-reactivation.md)
 hat dem Library-Upgrade-Pfad (Pfad A) am 2026-06-01 einen
 Probe-Run gemacht:
 
@@ -144,20 +144,26 @@ kann). Stattdessen:
 
 ```dockerfile
 # Compat-Stage-Install (Beispiel iec61850-test, Python 3.12):
-RUN uv pip install --system --no-deps -e . \
- && uv pip install --system --ignore-requires-python \
-      <test-runtime-set inkl. pyiec61850-ng + pytest + …>
+RUN python -m pip install --ignore-requires-python --no-deps -e .
+RUN python -m pip install <test-runtime-set inkl. pyiec61850-ng + pytest + …>
 ```
 
-- **`uv pip install --system --no-deps -e .`** installiert
-  den Projektcode editable, ohne die `requires-python`-
-  Auflage des eigenen Pakets auf 3.12 zu erzwingen und ohne
-  Lockfile-Resolution.
-- **`uv pip install --system --ignore-requires-python
-  <set>`** installiert das fuer den Smoke noetige Runtime-/
-  Test-Set (inkl. der inkompatiblen Library), wobei
-  `--ignore-requires-python` die Floor-Auflage der
-  transitiven Deps fuer diese isolierte Stage unterdrueckt.
+- **`python -m pip install --ignore-requires-python --no-deps
+  -e .`** installiert den Projektcode editable ohne Dependency-
+  Resolution (`--no-deps`) und ohne Lockfile. `--ignore-requires-
+  python` ist noetig, weil grid_gym selbst `requires-python =
+  ">=3.13"` (ADR 0002 §2) traegt — `--no-deps` skippt nur die
+  Dependencies, nicht die Floor-Auflage des eigenen Pakets.
+  **`pip` statt `uv pip`**: nur pip bietet `--ignore-requires-
+  python`; `uv pip install` (Stand uv 0.5.x) kennt das Flag nicht.
+  Die Compat-Stage ist die einzige Stelle, an der grid-gym pip
+  statt uv nutzt — bewusst auf den Compat-Scope begrenzt.
+- **`python -m pip install <set>`** installiert das fuer den
+  Smoke noetige Runtime-/Test-Set (inkl. der inkompatiblen
+  Library). Das `<set>` deckt zusaetzlich die Pakete ab, die der
+  Test-Collection-Pfad importiert (z. B. die Integration-Test-
+  conftest-Deps). Diese unterstuetzen die Compat-Python-Version
+  nativ, daher kein `--ignore-requires-python` noetig.
 - **Scope-Begrenzung (verbindlich):** Diese Install-Form ist
   **ausschliesslich** Library-Compat-Stage-Scope. Der
   Default-Runtime-/Build-Pfad (`deps`/`source`/`build-app`/

@@ -121,6 +121,20 @@ class PostgresRunRepository:
             )
             return cursor.fetchone() is not None
 
+    def ping(self) -> bool:
+        """Readiness-Probe via ``SELECT 1`` (M6 Welle 6, `GG-DEPLOY-006`).
+
+        Oeffnet eine frische Connection ueber den `connection_factory`
+        und fuehrt ``SELECT 1`` aus (tabellen-unabhaengig — prueft die
+        reine Postgres-Erreichbarkeit, nicht das `runs`-Schema). Gibt
+        ``True`` zurueck, wenn der Roundtrip erfolgreich ist.
+        Connection-/Query-Fehler propagieren als `psycopg`-Exception
+        an den `/ready`-Adapter, der sie auf ``unhealthy`` mappt.
+        """
+        with self._connection_factory() as conn, conn.cursor() as cursor:
+            cursor.execute(sql.SQL("SELECT 1"))
+            return cursor.fetchone() is not None
+
     def update_status(self, run_id: str, status: RunStatus) -> None:
         """M5 Welle 4a (ADR 0039 Decision 12) — Status-Persistenz-Stub.
 
