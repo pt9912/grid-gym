@@ -110,9 +110,6 @@ oder M7-Welle-X; siehe §5) liefert:
    Orchestrierungs-Logik. **Drei Sub-Steps laufen
    unabhaengig und sequenziell A → B → C; ein Sub-Step-Fail
    bricht den Lauf NICHT ab (kein fail-fast)** — der CLI
-   aggregiert alle drei `pass`/`fail`-Werte und entscheidet **Drei Sub-Steps laufen
-   unabhaengig und sequenziell A → B → C; ein Sub-Step-Fail
-   bricht den Lauf NICHT ab (kein fail-fast)** — der CLI
    aggregiert alle drei `pass`/`fail`-Werte und entscheidet
    `overall_status` erst nach Step C. Das ist die
    Voraussetzung dafuer, dass der JSON-Status fuer CI-Consumer
@@ -728,7 +725,7 @@ Neubau"-Framing dieses Plans war ein Irrtum.
   (2) (Stream-Hash-Pin) + die JSON-Aggregation.
 
 **KRITISCH — `gg-demo.yaml` hat drei tick-relevante Bloecke; zwei
-frühere Plan-Defaults waren faktisch falsch.** Code-verifiziert
+fruehere Plan-Defaults waren faktisch falsch.** Code-verifiziert
 enthaelt `deploy/scenarios/gg-demo.yaml`:
 - `load_events:` (Z. 96) + `load_profiles:` (Z. 106) — vom Builder
   injiziert ✓;
