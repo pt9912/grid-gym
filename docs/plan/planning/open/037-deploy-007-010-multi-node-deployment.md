@@ -66,7 +66,8 @@ korrespondierenden Trigger gelebt (Welle-6-Audit-Befund).
 - ✗ **Keine Rolling-Update-Doku**: weder ein
   Strategie-Dokument noch Healthcheck-Gating-Hooks fuer
   verteiltes Deployment. Welle-6-`/ready`-Endpoint wird
-  als Readiness-Probe-Surface produktiv (Welle-6-D-2);
+  als Readiness-Probe-Surface produktiv (Implementierung
+  Welle-6-C2; Probe-Details/Begruendung Welle-6-D-2);
   Verwendung in K8s-Manifesten ist explizit aufgehoben (M7+).
 
 - ✗ **Keine Zero-Downtime-Doku**: kein dokumentierter
