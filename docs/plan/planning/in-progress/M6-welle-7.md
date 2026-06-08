@@ -110,11 +110,27 @@ Closure-Artefakt mit den sechs Sektionen aus §2 + ADR-Sweep
 
 ### C3 — `docs(plan)`: M6-Closure-Top-Level-Sync
 
-- `roadmap.md §M6` DoD-Checkboxen `[x]`; M6 → `Done`;
-  aktiver Slice auf M7 (oder Projekt-Closure).
-- `README.md` + `README.de.md` Status-Bullet `M6: Done`.
-- `in-progress/README.md` Aktive-Welle-Block + Bestand.
-- `AGENTS.md` Welle-Pointer (falls vorhanden).
+- `roadmap.md`: M6-Section-Header `In Progress → Done`;
+  **alle Live-`Aktiver Slice: M6`-Anker sweepen** — Top-Status
+  (Z. ~3), Aktiver-Slice-Bullets (Z. ~149 + ~609),
+  M6-Section-Active-Welle (Z. ~933). **Historischen
+  M5-Closure-Beleg (Z. ~267 „… + 'Aktiver Slice: M6' (C3)")
+  NICHT anfassen** — dokumentiert M5-welle-7-C3-Substanz.
+  Entscheidung 2026-06-08: **M7 eroeffnen** — NEU `roadmap §M7`-
+  Vorbelegungs-Block (GG-MVP-002 + GG-MVP-003 + offene Trigger
+  033..037); aktiver Slice → **M7** (M7-Slice-Plan entsteht in
+  M7-Welle-0, Pattern analog M6-Welle-0).
+- `README.md` + `README.de.md`: **gesamten M6-Block neu
+  schreiben**, nicht nur das Status-Token — die Bullets tragen
+  Stale-Multi-Zeilen-Details (`active wave M6-Welle-5b`, `ADRs
+  in flight 4 Provisional/1 Proposed`), die in einem `Done`-
+  Meilenstein nicht stehenbleiben duerfen. M1..M5 → M1..M6;
+  ADR-Count 38 → 44; M7-Eroeffnung notieren.
+- `M6-welle-7.md` Status-Header `In Progress → Done`; §9-DoD-
+  Checkboxen `[x]`.
+- `M6-results.md` §5/§6 Handoff auf M7 praezisieren.
+- `AGENTS.md` traegt bewusst keine Wellen/Slices/Commit-Hashes
+  (§2.x) — **kein Edit**.
 
 ### C4a/C4b — `chore/docs(welle-7)`: Self-Close-Move
 
@@ -168,6 +184,15 @@ Closure-Artefakt mit den sechs Sektionen aus §2 + ADR-Sweep
   umbiegen. Mitigation: `make docs-check` nach C4b.
 - **R2 ADR-Index-Drift** — 6 Status-Spalten-Updates; Mitigation:
   ADR 0028 Link-Pflege + docs-check.
+- **R3 roadmap-Multi-Anker-Sweep** — `roadmap.md` traegt den
+  `Aktiver Slice: M6`-Marker an mehreren Live-Stellen (Top-Status
+  + 2 Aktiver-Slice-Bullets + M6-Section-Active-Welle); ein naives
+  Find/Replace riskiert (a) Teil-Sweep (Anker uebersehen) und
+  (b) Korruption der historischen M5-Closure-Beleg-Zeile (Z. ~267
+  „… 'Aktiver Slice: M6' (C3)"), die M5-welle-7-C3-Substanz
+  dokumentiert und NICHT geaendert werden darf. Mitigation:
+  explizite Zeilen-Sichtung statt Blind-Replace; `docs-check`
+  nach C3. (Befund aus M6-welle-7-Review 2026-06-08.)
 
 ---
 
@@ -175,7 +200,13 @@ Closure-Artefakt mit den sechs Sektionen aus §2 + ADR-Sweep
 
 Nach C4a/C4b liegen `M6-perf-security-cicd.md` + `M6-welle-7.md`
 + `M6-results.md` in `done/`. M6 ist abgeschlossen; aktiver
-Slice wechselt auf M7 (falls vorgesehen) bzw. Projekt-Closure.
+Slice wechselt auf **M7** (Entscheidung 2026-06-08, M6-welle-7-
+Review-Befund 3): M7 ist der Container fuer die restliche
+MVP-Arbeit (`GG-MVP-002` replay-source-integration +
+`GG-MVP-003` abnahme-cli) plus die offenen Trigger
+033/034/035/036/037. Der M7-Slice-Plan entsteht in M7-Welle-0
+(Pattern analog M6-Welle-0); die roadmap-§M7-Vorbelegung wird in
+C3 angelegt.
 
 ---
 
@@ -183,9 +214,13 @@ Slice wechselt auf M7 (falls vorgesehen) bzw. Projekt-Closure.
 
 - [ ] C1: ADR 0041..0046 `Accepted` + README-Index-Status.
 - [ ] C2: `done/M6-results.md` mit 6 Sektionen + ADR-Sweep.
-- [ ] C3: `roadmap.md §M6` DoD `[x]` + M6 `Done` + aktiver
-      Slice M7.
-- [ ] C3: `README.md`/`README.de.md` `M6: Done`.
+- [ ] C3: `roadmap.md` M6 `Done` + alle Live-`Aktiver Slice:
+      M6`-Anker gesweept (Top + 2 Bullets + M6-Active-Welle;
+      Z. ~267 historisch unberuehrt) + NEU §M7-Vorbelegung +
+      aktiver Slice → M7.
+- [ ] C3: `README.md`/`README.de.md` gesamter M6-Block neu
+      (Stale-Details raus; M1..M6; ADR 38→44; M7 eroeffnet).
+- [ ] C3: `M6-results.md` §5/§6 Handoff auf M7 praezisiert.
 - [ ] C4a: `M6-perf-security-cicd.md` + `M6-welle-7.md` →
       `done/`.
 - [ ] C4b: Cross-Doc-Refs-Sync; `make docs-check` gruen.
