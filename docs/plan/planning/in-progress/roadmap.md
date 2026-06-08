@@ -1157,7 +1157,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         Release-Workflow-Pattern als Quality-Gate-Vertrag
         (Schwester zu ADR 0029/0043).
 
-### M7 — MVP-Abschluss (`Vorbelegung` 2026-06-08)
+### M7 — MVP-Abschluss (`In Progress` 2026-06-08)
 
 **Slice-Plan:** entsteht in M7-Welle-0 (Pattern analog
 M6-Welle-0). M7 ist der Container fuer die nach M6 verbliebene
@@ -1179,8 +1179,12 @@ wandern bei Aktivierung nach `in-progress/`):
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
   010` Multi-Node-Deployment).
 
-Aktiver Slice nach M6-Closure: **M7-Welle-0** (Slice-Plan-
-Eroeffnung + Trigger-Triage).
+**In Progress seit 2026-06-08** mit M7-Welle-0 (Slice-Plan-
+Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md`
+Slice-Plan + carveouts-Triage 034/035 → `Active in M7-Welle-3`).
+Aktiver Slice: **M7-Welle-0** (C0..C2); naechste Welle
+**M7-Welle-1** (`GG-MVP-002` ReplaySource-Integration; aktiviert
+Trigger 036).
 
 ---
 

@@ -186,8 +186,8 @@ Build-Trigger.
 
 | Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | ------ | ---------------------- | ----------- |
-| `GG-SAFE-004` `max_age`-stale-Quality-Markierung (Lücke — `max_age`-Substanz fehlt komplett im Repo) | In Trigger Watch | Compliance-/Stakeholder-Druck auf konkrete `max_age`-Schwelle ODER M6-Welle-7-Closure-Sweep ODER Welle-X-Maintainer-Entscheidung | [`034-safe-004-max-age-stale-quality.md`](../open/034-safe-004-max-age-stale-quality.md) |
-| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | In Trigger Watch | Reale-Compose-Demo-Pfad mit Protocol-Adapter ODER M6-Welle-6-Deploy-Hardening (Trigger 009-Erbschaft) ODER Compliance-Druck ODER M6-Welle-7-Closure-Sweep | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
+| `GG-SAFE-004` `max_age`-stale-Quality-Markierung (Lücke — `max_age`-Substanz fehlt komplett im Repo) | **Active in M7-Welle-3** (per M7-Welle-0-C2-Triage; Safety-Closure) | M7-Welle-3-Aktivierung (Safety-Closure `GG-SAFE-003/004`) ODER Compliance-/Stakeholder-Druck auf konkrete `max_age`-Schwelle | [`034-safe-004-max-age-stale-quality.md`](../open/034-safe-004-max-age-stale-quality.md) |
+| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | **Active in M7-Welle-3** (per M7-Welle-0-C2-Triage; Safety-Closure) | M7-Welle-3-Aktivierung (Safety-Closure `GG-SAFE-003/004`) ODER Reale-Compose-Demo-Pfad mit Protocol-Adapter ODER Compliance-Druck | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
 ### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
 

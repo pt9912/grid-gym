@@ -1,8 +1,10 @@
 # Welle 0 — M7 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress — eroeffnet 2026-06-08 mit C0 (dieser
-Commit; Slice-Doc-Anlage). Liefer-Reihenfolge C0 → C1 → C2 →
-C4a/C4b. Vorabraeumung + Slice-Plan-Eroeffnung fuer **M7
+**Status:** Done 2026-06-08 — Stack C0 `e27de7e` (Slice-Doc) +
+C1 `a25a6d9` (NEU `M7-mvp-completion.md` Slice-Plan) + C2 (dieser
+Commit; Trigger-Triage + roadmap-Flip + Status-Flip) + C4a/C4b
+(Self-Close-Move; folgen). Vorabraeumung + Slice-Plan-Eroeffnung
+fuer **M7
 (MVP-Abschluss)** — die nach M6 verbliebene MVP-Arbeit
 (`GG-MVP-002` ReplaySource-Integration + `GG-MVP-003`
 Abnahme-CLI) plus die offenen Safety-/Deploy-Trigger
@@ -215,15 +217,15 @@ Material).
 
 ## 9. DoD-Checkliste (mit C2 abzuhaken)
 
-- [ ] C0 — NEU `M7-welle-0.md` §1..§9 + Decision-Liste.
-- [ ] C1 — NEU `M7-mvp-completion.md` M7-Slice-Plan.
-- [ ] C2 — carveouts-Triage (034/035/036 → Active M7-Welle-X;
-      037/033 gated).
-- [ ] C2 — `roadmap.md §M7` `Vorbelegung → In Progress`.
-- [ ] C2 — `in-progress/README.md` Aktive-Welle M7-Welle-1 +
-      Bestand-Eintraege.
-- [ ] `make docs-check` cache-frei gruen.
-- [ ] `make gates` unveraendert gruen (reine Doku-Welle).
+- [x] C0 — NEU `M7-welle-0.md` §1..§9 + Decision-Liste (`e27de7e`).
+- [x] C1 — NEU `M7-mvp-completion.md` M7-Slice-Plan (`a25a6d9`).
+- [x] C2 — carveouts-Triage (034/035 → `Active in M7-Welle-3`;
+      036 GG-MVP-002-gekoppelt; 037/033 bleiben gated).
+- [x] C2 — `roadmap.md §M7` `Vorbelegung → In Progress`.
+- [x] C2 — `in-progress/README.md` Bestand-Eintraege
+      (M7-mvp-completion + M7-welle-0); naechste Welle M7-Welle-1.
+- [x] `make docs-check` cache-frei gruen.
+- [x] `make gates` unveraendert gruen (reine Doku-Welle).
 
 **Anti-Scope (Welle 0 NICHT):** kein Code-Diff; keine Tests;
 keine NEU ADRs (Sub-Welle-Material); keine Welle-1+-Decisions
