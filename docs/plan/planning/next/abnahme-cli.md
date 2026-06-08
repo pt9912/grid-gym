@@ -50,7 +50,28 @@ GG-MVP-003 verlangt):
   `sha256(canonical_json(asdict(scenario))).hexdigest()`; es
   gibt **keine** separat aufrufbare
   `compute_scenario_hash`-Funktion — Hash-Berechnung lebt
-  ausschliesslich in `load_scenario`).
+  ausschliesslich in `load_scenario`). Nimmt ein **bereits
+  geparstes Mapping** — der YAML→Mapping-Parse ist bewusst
+  **nicht** unter Core-`src/` (ADR 0021 §2.1); Standort fuer
+  `tools/` siehe **D-10**.
+- **`build_tick_loop(scenario, *, run_id, clock, random_root,
+  wiring=None)`** (`loader.py:402`, Welle-6b/ADR 0021 §2.4) —
+  **produktiver** TickLoop-Builder; verdrahtet Devices +
+  `GridModelBilanz` + Scheduler + LoadOverlays UND defaultet
+  `agents` aus `scenario.agents` (`loader.py:460-462`). Ersetzt
+  jedes manuelle TickLoop-Wiring (siehe §6 R1).
+- **`_drive_demo`-Muster** (`tests/integration/test_mvp_demo_scenario.py:39-50`)
+  — fertige Headless-Replay-Blaupause (`build_tick_loop` +
+  `FakeClock` + seeded `MersenneTwisterRandomPort` + `loop.tick()`-
+  Schleife); der bestehende Determinismus-Test dort beweist Step-B-
+  Eigenschaft (1) bereits.
+- **`BatteryFaultAdapter` / `GridFaultAdapter`**
+  (`src/grid_gym/hexagon/core/faults/` — Core, hexagon-pure, aus
+  `tools/` importierbar) — fuer das Step-B-Fault-Wiring, weil
+  `gg-demo.yaml` einen `faults:`-Block traegt (siehe §6 R1).
+- `MersenneTwisterRandomPort(seed=...)`
+  (`adapters/driven/random_mt.py`) — seeded `RandomPort` fuer den
+  Replay.
 - `diff_replay(expected, actual, ...)` (Core-Diff).
 - `GET /ready`-Endpoint (Three-State; nach Welle-6-C2).
 - `make demo` / `make runtime` (Compose-Smoke-Substanz).
@@ -82,12 +103,14 @@ oder M7-Welle-X; siehe §5) liefert:
    `grid_gym.hexagon.core.*` und braucht daher die uv-
    environment oder ein Docker-Build-Target. Docker-Variante
    ist additiv via Compose-Stage abbildbar, nicht
-   Default-Pfad) **inkl. duennem Headless-TickLoop-Runner-
-   Stub** (integriert in `tools/accept.py`; nutzt den
-   hexagon-puren Core-`TickLoop` aus
-   `hexagon/core/simulation/tick_loop.py` direkt — kein
-   Adapter-Lift noetig, siehe §6 R1): die eigentliche
+   Default-Pfad). Der Headless-Replay selbst lebt **nicht**
+   hier, sondern im geteilten `tools/_demo_replay.py`-Helper
+   (Wrapper um den produktiven `build_tick_loop`, siehe §6 R1
+   + D-8); `tools/accept.py` traegt nur die
    Orchestrierungs-Logik. **Drei Sub-Steps laufen
+   unabhaengig und sequenziell A → B → C; ein Sub-Step-Fail
+   bricht den Lauf NICHT ab (kein fail-fast)** — der CLI
+   aggregiert alle drei `pass`/`fail`-Werte und entscheidet **Drei Sub-Steps laufen
    unabhaengig und sequenziell A → B → C; ein Sub-Step-Fail
    bricht den Lauf NICHT ab (kein fail-fast)** — der CLI
    aggregiert alle drei `pass`/`fail`-Werte und entscheidet
@@ -106,12 +129,15 @@ oder M7-Welle-X; siehe §5) liefert:
    von Step A/B. So bleiben **alle drei Sub-Step-Entries im
    JSON immer praesent** (Vertrag fuer CI-Consumer), waehrend
    die Daten-Reihenfolge respektiert wird:
-   - **Step A — Szenario-Validierung**: laed
-     `deploy/scenarios/gg-demo.yaml`, ruft
-     `load_scenario(raw)` (`loader.py:113-125`; ein Aufruf
-     erledigt **beides** — `validate_scenario_mapping`
-     intern + Hash-Berechnung inline; eine separate
-     `compute_scenario_hash`-Funktion existiert **nicht**).
+   - **Step A — Szenario-Validierung**: parst
+     `deploy/scenarios/gg-demo.yaml` (`yaml.safe_load` im
+     `tools/`-Standort per **D-10** — Core-`src/` haelt
+     bewusst keinen YAML-Adapter, ADR 0021 §2.1) zu einem
+     Mapping und ruft damit `load_scenario(raw)`
+     (`loader.py:113-125`; ein Aufruf erledigt **beides** —
+     `validate_scenario_mapping` intern + Hash-Berechnung
+     inline; eine separate `compute_scenario_hash`-Funktion
+     existiert **nicht**).
      Faengt die gemeinsame Basisklasse `ScenarioError` aus
      `grid_gym.hexagon.core.errors` (Subklassen-Beispiele:
      `ScenarioMissingKeysError`, `ScenarioWrongTypeError`,
@@ -127,13 +153,18 @@ oder M7-Welle-X; siehe §5) liefert:
      Welle-X-D-2 entscheidet:
      - **Sub-Form A** (standalone, KEINE Abhaengigkeit zu
        GG-MVP-002-Plan): laeuft das Demo-Szenario zweimal
-       mit identischem Seed gegen einen Headless-Runner —
-       kein FastAPI noetig, Core-`TickLoop` direkt aus
-       `hexagon/core/simulation/tick_loop.py`, Devices +
-       GridModel + `active_load_events` +
-       `active_load_profiles` per Scenario-Loader-
-       Aufrufer injiziert (Modul-Docstring Z. 34-38;
-       vollstaendiges Wiring-Inventar siehe §6 R1).
+       mit identischem Seed headless — kein FastAPI noetig,
+       ueber den **produktiven** Builder
+       `build_tick_loop(scenario, run_id=..., clock=...,
+       random_root=...)` (`loader.py:402`), exakt nach dem
+       `_drive_demo`-Muster (`test_mvp_demo_scenario.py:39-50`).
+       Der Builder verdrahtet Devices + GridModel +
+       `active_load_events`/`active_load_profiles` **und**
+       `agents` (aus `scenario.agents`) selbst — das genaue
+       Determinismus-/Fault-/Clock-Wiring siehe §6 R1
+       (insbesondere: `gg-demo.yaml` traegt `agents:` **und**
+       `faults:`, beide muessen verdrahtet sein, sonst bricht
+       die Referenz-Treue still).
        **Re-Use Step A:** Step B konsumiert das bereits
        in Step A geladene `LoadedScenario.scenario`-Objekt
        (kein zweiter YAML-Parse, kein zweiter
@@ -454,24 +485,30 @@ Lint (`make ci`-Gate):
   hat und **welches** `.py`-File anzupassen ist.
 
 **Code-Standort des gemeinsamen Headless-Pfads
-(Lint + CLI):** der Replay-Stub-Code muss zwischen
+(Lint + CLI):** der Replay-Glue-Code muss zwischen
 `tools/check_demo_scenario_pin.py` und `tools/accept.py`
 geteilt sein — Duplikation ist genau die Drift-Quelle,
 die der Lint verhindern soll. Vorschlag: **NEU
 `tools/_demo_replay.py`-Helper** (Leading-Underscore =
 tools-internal, kein API-Vertrag) mit den Funktionen
-`run_demo_replay(seed: int) -> list[Mapping[str, object]]`
-+ `hash_snapshot_stream(stream) -> str` (per F-new-1-
-Vertrag aus §2 Step B Sub-Form A). Beide Tools
+`run_demo_replay(scenario, seed: int) -> list[Mapping[str,
+object]]` + `hash_snapshot_stream(stream) -> str` (per
+F-new-1-Vertrag aus §2 Step B Sub-Form A).
+`run_demo_replay` ist **kein Neu-Driver**, sondern ein
+duenner Wrapper um den produktiven `build_tick_loop`
+(`loader.py:402`) plus die Fault-Composition aus
+`scenario.faults` (siehe §6 R1 + D-10) und einen
+minimalen deterministischen Step-Clock. Beide Tools
 importieren daraus; Drift ist damit bauartbedingt
 ausgeschlossen.
 
 Damit landet der Bruch im selben PR wie die YAML-
 Aenderung, nicht im nachgelagerten Smoke-Run. Cost-Adjust
-§7: die Headless-Stub-Substanz wandert aus
-`tools/accept.py` in den NEU `_demo_replay.py`-Helper
-(Sum-Net ~konstant; Lint wird trivial, Helper traegt die
-Stub-Substanz — siehe §7-Posten-Reorganisation).
+§7: die Replay-Glue-Substanz (YAML-Parse + Fault-Composition
++ Step-Clock um `build_tick_loop`) lebt im NEU
+`_demo_replay.py`-Helper statt in `tools/accept.py`
+(Lint wird trivial, Helper traegt die Glue-Substanz —
+siehe §7-Posten-Reorganisation).
 
 ### D-9 — Exit-Code-Vertrag fuer `tools/accept.py`
 
@@ -533,6 +570,45 @@ Smoke-Vertrag (siehe §2 Punkt 5):
   gesmoked — Coverage ergibt sich aus Pyright-Type-
   Lint + Pytest-Standard-Substanz.
 
+### D-10 — YAML-Load + Fault-Compose-Standort fuer `tools/`
+
+**Frage:** `load_scenario(raw)` nimmt ein **bereits geparstes
+Mapping**; der YAML→Mapping-Parse ist per **ADR 0021 §2.1
+bewusst nicht unter Core-`src/`** (es gibt keinen produktiven
+YAML-Adapter im Hexagon-Core). Heute existiert der Parse an
+drei Stellen: dem Test-Helper
+`tests/integration/_yaml_scenario_loader.py::load_yaml_scenario`
+und http_api-intern `_demo_scenario_setup.py:444
+_load_scenario_from_yaml` (`yaml.safe_load`, Z. 455) bzw.
+`_demo_setup`. **Keine** davon ist aus `tools/` sauber
+importierbar (Test-Pfad bzw. http_api-Driving-Adapter mit
+FastAPI-Deps). Analog liegt die Fault-Composition
+`_compose_fault_port` http_api-intern (siehe §6 R1).
+
+- **A — `tools/` parst selbst**: `_demo_replay` macht
+  `yaml.safe_load(path.read_text()) → load_scenario(raw)`
+  (2 Zeilen, spiegelt `_load_scenario_from_yaml`) und
+  repliziert die schlanke Fault-Composition (`BatteryFaultAdapter`
+  + `GridFaultAdapter` aus `hexagon/core/faults/`, beide
+  Core/importierbar; die Composition-Huelle ist ~15 Zeilen).
+  ADR-0021-§2.1-konform, weil `tools/` **nicht** Core-`src/`
+  ist — der Anti-Scope zielt auf den Hexagon-Core, nicht auf
+  Ops-Tooling.
+- **B — Shared-Helper-Lift**: den http_api-internen YAML-Loader
+  + `_compose_fault_port` in ein gemeinsames Modul heben (z. B.
+  `hexagon/core/...`-naher oder `tools/`-naher Helper), das
+  http_api **und** `tools/` importieren. Zieht den im Code
+  bereits vermerkten „Welle-6+ Cleanup" (Clock-/Loader-
+  Deduplizierung) vor — groesserer Blast-Radius, beruehrt
+  produktiven Demo-Pfad.
+
+Vorschlag: **A** (kleiner Slice, kein Eingriff in den
+produktiven http_api-Demo-Pfad; die duplizierte ~20-Zeilen-
+Glue ist durch den `_demo_replay`-Helper + D-8-Drift-Lint
+gegen Divergenz abgesichert). B bleibt als Folge-Cleanup
+notiert, wenn die Welle-6+-Clock-/Loader-Verschmelzung
+ohnehin ansteht.
+
 ## 4. Sub-Scope (Welle-Vorbelegung)
 
 Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
@@ -541,24 +617,24 @@ Falls D-5 Option A (Welle-6-Erweiterung) + D-4 Option A
 - **M6-Welle-6-C2** erweitert um zusaetzliche Substanz-
   Items:
   - NEU `make accept`-Makefile-Target.
-  - NEU `tools/_demo_replay.py`-Helper (Headless-
-    `TickLoop`-Stub um den hexagon-puren Core +
-    `hash_snapshot_stream`-Primitive per
-    `canonical_json`-Vertrag; siehe §6 R1 Wiring-Inventar
-    + D-8 Code-Standort-Klaerung). Gemeinsam importiert
-    von `tools/accept.py` und
-    `tools/check_demo_scenario_pin.py` — Drift
-    bauartbedingt ausgeschlossen.
+  - NEU `tools/_demo_replay.py`-Helper (duenner Wrapper um
+    den produktiven `build_tick_loop` + Fault-Composition aus
+    `scenario.faults` + minimaler Step-Clock +
+    `hash_snapshot_stream`-Primitive per `canonical_json`-
+    Vertrag; **kein** Neu-Driver — siehe §6 R1 + D-10). Gemeinsam
+    importiert von `tools/accept.py` und
+    `tools/check_demo_scenario_pin.py` — Drift bauartbedingt
+    ausgeschlossen.
   - NEU `tools/accept.py` als Orchestrator der drei
-    Sub-Steps (importiert Replay-Stub aus
+    Sub-Steps (importiert `run_demo_replay` aus
     `_demo_replay.py`).
   - NEU `AbnahmeReport` Pydantic-Modell mit
     `EXPECTED_DEMO_SCENARIO_HASH` +
     `EXPECTED_DEMO_SNAPSHOT_STREAM_HASH`-Pin-Konstanten
     (siehe D-8) + Exit-Code-Vertrag (siehe D-9).
   - NEU `tools/check_demo_scenario_pin.py` CI-Drift-Lint
-    (siehe D-8 Mitigation; importiert Replay-Stub +
-    Hash-Primitive aus `_demo_replay.py`; `make ci`-Gate).
+    (siehe D-8 Mitigation; importiert `run_demo_replay` +
+    `hash_snapshot_stream` aus `_demo_replay.py`; `make ci`-Gate).
   - NEU `docs/user/abnahme-cli.md`.
   - NEU drei Integration-Smokes (siehe §2 Punkt 5).
 - Welle-6-C0-Slice-Doc wird im selben Review-Zyklus
@@ -622,92 +698,99 @@ M6-Welle-7-Closure notiert den Defer-Vermerk.
 
 ## 6. Risiken
 
-**R1 — Replay-Determinismus-Pruefung ist nicht trivial
-ohne `ReplaySourcePort`.** Sub-Form A (standalone) braucht
-einen Headless-Runner, der das Demo-Szenario zweimal mit
-identischem Seed durchlaeuft + die Snapshot-Sequenzen
-sammelt.
-**Strukturelle Lage (Code-verifiziert):** Der **Core**-
-`TickLoop` lebt in
-`src/grid_gym/hexagon/core/simulation/tick_loop.py` (M1-
-Welle-4 / M2-Welle-6a) und ist **hexagon-pure** — keine
-asyncio-Kopplung, keine FastAPI-Imports, nimmt `ClockPort`
-+ `RandomPort` + Devices + `grid_model` ueber den
-Konstruktor und liefert `tick()` + `snapshot()` direkt.
-`adapters/driving/http_api/_tick_loop_driver.py` ist nur
-der **Driving-Adapter**, der den Core in die FastAPI-
-Async-Welt einhaengt — der Core selbst braucht ihn nicht.
-Headless-Aufruf ist daher strukturell duenn (nicht
-„trivial", aber ueberschaubar): Core-`TickLoop(...)`
-direkt instantiieren, `tick()` in einer synchronen
-Schleife rufen, `snapshot()` pro Tick sammeln.
-**Wiring-Inventar (Code-verifiziert
-`tick_loop.py:218-239`, keyword-only-Konstruktor)** —
-der Stub muss instanziieren:
-- `run_id: str` (synthetisch, z. B.
-  `"abnahme-replay-1"` / `"abnahme-replay-2"`);
-- `tick_ms: int` (aus dem geladenen Szenario);
-- `scheduler: Scheduler`;
-- eine `ClockPort`-Impl (deterministisch, Step-getrieben
-  — konkrete Adapter-Klasse waehlt der Implementations-
-  Schritt; Audit-Sub-Step der C2-Vorbereitung);
-- eine `RandomPort`-Impl (seeded);
-- `devices: tuple[DeviceModel, ...]` + `grid_model`
-  vom Scenario-Loader-Aufrufer-Pattern (Modul-Docstring
-  Z. 34-38);
-- **`active_load_events: tuple[LoadEvent, ...]` +
-  `active_load_profiles: tuple[LoadProfile, ...]` aus
-  dem Scenario** — `Scenario.load_events` /
-  `Scenario.load_profiles`, die der Loader via
-  `parse_load_events` / `parse_load_profiles` aus dem
-  YAML liest (`loader.py:158-159`). **Pflicht-
-  Injektion, nicht Konstruktor-Default:** der produktive
-  Driver setzt sie genau so (`loader.py:474-475` und
-  `:493-494`); `gg-demo.yaml` enthaelt `load_events:`
-  (Z. 96) und `load_profiles:` (Z. 106). Ein Stub, der
-  bei den Defaults `()` bleibt, tickt **anders als der
-  echte Demo-Lauf** — der Stream-Hash entspricht dann
-  nicht dem Demo-Referenz-Verhalten, und die
-  Referenz-Treue-Eigenschaft (Step B Sub-Form A
-  Punkt 2) bricht still, ohne dass der Lint die Ursache
-  zeigt. Der Stub muss diese beiden Felder explizit aus
-  `LoadedScenario.scenario` durchreichen.
+**R1 — Headless-Replay: Builder + Blaupause schon vorhanden,
+NICHT neu zu bauen.** Sub-Form A braucht einen headless-Lauf des
+Demo-Szenarios zweimal mit identischem Seed + Snapshot-Sammlung.
+Diese Substanz ist **produktiv vorhanden und wird nur
+wiederverwendet** — der urspruengliche „Headless-Stub als
+Neubau"-Framing dieses Plans war ein Irrtum.
 
-Weitere keyword-only-Parameter mit Defaults bleiben auf
-Konstruktor-Default (Replay braucht keine Side-Effects):
-- Optionale Ports `fault_port`, `agent_bus`,
-  `log_port`, `metrics_port`, `trace_port`,
-  `protocol_ports`, `run_repository` → `None`;
-- `agents: tuple[Agent, ...]` → `()` (Demo-Szenario
-  hat keine Agent-Substanz, ansonsten gilt dieselbe
-  Pflicht-Injektion wie fuer LoadEvents/-Profiles —
-  Audit-Sub-Step muss das bestaetigen);
-- `alarm_id_source: Callable | None` → `None`
-  (Alarm-Generierung off-pfad fuer Replay).
-**Audit-Pflicht in der C2-Vorbereitung (bzw. Welle-6b-C0
-bei D-5 Option B):** verifizieren, dass `gg-demo.yaml`
-**keine** Agent-Felder enthaelt — sonst gehoert `agents`
-analog zu den LoadEvents/-Profiles in die Pflicht-
-Injektions-Liste.
-**Mitigation:** Vor der `tools/_demo_replay.py`-Helper-
-Implementation muss der Core-`TickLoop`-Konstruktor-Pfad
-auditiert sein (Devices + GridModel-Injection ueber den
-Scenario-Loader, plus die Auswahl konkreter Clock-/Random-
-Adapter-Klassen aus dem Wiring-Inventar). Bei D-5 Option A
-(Welle-6-Erweiterung; Vorschlag) landet der Audit in der
-C2-Vorbereitung; bei Option B in einem separaten Welle-
-6b-C0. In beiden Faellen Auditor-Arbeit, kein Neu-
-Implement. **Nicht verwechseln:** Das vorhandene
+**Code-verifizierte Lage:**
+- **`build_tick_loop(scenario, *, run_id, clock, random_root,
+  wiring=None)`** (`loader.py:402`, Welle-6b/ADR 0021 §2.4) ist
+  der **produktive** TickLoop-Builder. Er verdrahtet Devices,
+  `GridModelBilanz`, Scheduler, `active_load_events`/
+  `active_load_profiles` UND defaultet `agents` aus
+  `scenario.agents` (`loader.py:460-462`) — exakt das vollstaendige
+  Wiring, das eine fruehere Fassung dieses Plans faelschlich als
+  manuell zu erstellendes 18-Parameter-„Wiring-Inventar"
+  auflistete. Der Headless-Pfad ruft schlicht `build_tick_loop`;
+  das manuelle Inventar entfaellt.
+- **`tests/integration/test_mvp_demo_scenario.py:39-50`**
+  (`_drive_demo`) ist die fertige Blaupause:
+  `build_tick_loop(loaded.scenario, run_id=..., clock=FakeClock(),
+  random_root=MersenneTwisterRandomPort(seed=
+  loaded.scenario.simulation.seed))`, dann `loop.tick()` in einer
+  synchronen Schleife, Snapshots/Telemetry sammeln. Der bestehende
+  Test `test_demo_scenario_telemetry_is_byte_identical_across_runs`
+  beweist Eigenschaft (1) (Determinismus) **bereits** — die
+  Abnahme-CLI re-runnt sie als Gate und ergaenzt nur Eigenschaft
+  (2) (Stream-Hash-Pin) + die JSON-Aggregation.
+
+**KRITISCH — `gg-demo.yaml` hat drei tick-relevante Bloecke; zwei
+frühere Plan-Defaults waren faktisch falsch.** Code-verifiziert
+enthaelt `deploy/scenarios/gg-demo.yaml`:
+- `load_events:` (Z. 96) + `load_profiles:` (Z. 106) — vom Builder
+  injiziert ✓;
+- `agents:` (Z. 172, `bess-controller`, `rule_based`) —
+  `build_tick_loop` defaultet sie korrekt aus dem Scenario. Ein
+  hart `agents=()` setzender Runner tickt **anders als der echte
+  Demo-Lauf** → Referenz-Treue (Eigenschaft 2) bricht still;
+- `faults:` (Z. 145) — der produktive Demo-Lauf komponiert daraus
+  einen FaultPort (`_demo_scenario_setup.py:198`
+  `_compose_fault_port(scenario.faults)`). Ein Runner mit
+  `fault_port=None` (frueherer Default dieses Plans) tickt
+  **ebenfalls anders** → dieselbe stille Referenz-Treue-Verletzung.
+
+Konsequenz: **Der Headless-Replay muss `fault_port` aus
+`scenario.faults` komponieren und via
+`TickLoopWiring(fault_port=...)` an `build_tick_loop` reichen**,
+sonst zertifiziert `make accept` einen Replay, der nicht dem
+ausgelieferten Demo entspricht. Die Fault-Adapter
+`BatteryFaultAdapter` + `GridFaultAdapter` liegen in
+`src/grid_gym/hexagon/core/faults/` (Core, hexagon-pure → aus
+`tools/` importierbar). Die Composition `_compose_fault_port` +
+`_FaultPortComposition` liegt jedoch http_api-intern
+(`_demo_scenario_setup.py:314`, Leading-Underscore) — Standort-
+Beschluss siehe **D-10** (Lift zu geteiltem Helper vs Replikat in
+`_demo_replay`).
+
+**Determinismus-Wiring (deterministisch, keine Side-Effects):**
+- `clock`: deterministischer In-Process-Step-`ClockPort`. Vorbild
+  `_DemoSimulationClock` (`_demo_scenario_setup.py:409` — schlichtes
+  `now()`/`advance()`, **kein** async) bzw. der Test-`FakeClock`
+  (`tests/unit/hexagon/ports/driven/_fakes.py:33`). Beide sind
+  **nicht** aus `tools/` importierbar (http_api-intern bzw. unter
+  `tests/`); `_demo_replay` definiert einen eigenen minimalen
+  Step-Clock (3 Methoden) — oder absorbiert sie in das im Code
+  bereits als „Welle-6+ Cleanup" vermerkte gemeinsame
+  `_simulation_clock`-Modul (`_demo_scenario_setup.py:409`-Docstring).
+- `random_root`: `MersenneTwisterRandomPort(seed=
+  scenario.simulation.seed)` (`adapters/driven/random_mt.py` —
+  sauberer produktiver Adapter, aus `tools/` importierbar) ✓.
+- `alarm_id_source=None` + `run_repository=None`: der produktive
+  Demo nutzt `uuid4().hex` als Alarm-ID — **nicht reproduzierbar**.
+  Der Replay laesst beide auf `None` (`build_tick_loop`-Default;
+  `_drive_demo` macht es genauso). **Semantik von Eigenschaft (2):**
+  der gepinte Referenz-Stream ist die **deterministische
+  Projektion** des Demo-Verhaltens (Agents + Faults + LoadOverlays
+  an; Alarm-UUID/Repo aus), **nicht** ein Byte-Abzug des produktiven
+  uuid4-Laufs. Das ist die einzig pinbare Referenz und muss in
+  `docs/user/abnahme-cli.md` so dokumentiert sein.
+
+**Audit-Pflicht in der C2-Vorbereitung (bzw. Welle-6b-C0 bei D-5
+Option B):** verifizieren, dass `build_tick_loop` + die Fault-
+Composition den Snapshot-Stream erzeugen, der gepinnt werden soll;
+insbesondere dass **kein** weiterer tick-relevanter
+`gg-demo.yaml`-Block (heute: load_events/load_profiles/agents/
+faults) ohne Injektion bleibt. Kein Neu-Implement — Auditor- +
+Glue-Arbeit. **Nicht verwechseln:** Das vorhandene
 `make test-determinism` ist `pytest -m determinism`
 (Makefile:96, 203) und das vorhandene
-`tools/check_core_determinism.py` ist ein **statisches
-Lint-Tool** fuer verbotene Imports in Core-Source
-(`FORBIDDEN_ROOT_MODULES`, siehe
-`check_core_determinism.py:17`) — **kein** Headless-
-Runner. Der NEU Headless-Stub in `tools/_demo_replay.py`
-(siehe D-8 Code-Standort) ist ein duenner in-process-
-Driver um den hexagon-puren Core, nicht eine Neu-
-Implementation. Cost-Posten und Begruendung siehe §7.
+`tools/check_core_determinism.py` ist ein **statisches Lint-Tool**
+fuer verbotene Imports in Core-Source (`FORBIDDEN_ROOT_MODULES`,
+`check_core_determinism.py:17`) — **kein** Headless-Runner. Cost-
+Posten und Begruendung siehe §7.
 
 **R2 — `/ready`-Endpoint ist von Welle-6-Aktivierung
 abhaengig.** Sub-Form fuer Step C macht den `make accept`-
@@ -745,12 +828,14 @@ Grobe Schaetzung (Welle-X-Substanz, falls Welle-6-
 Erweiterung):
 
 - C2-Erweiterung (zusaetzlich zur Welle-6-Substanz):
-  - NEU `tools/_demo_replay.py`-Helper (Headless-
-    `TickLoop`-Stub um den hexagon-puren Core +
-    `hash_snapshot_stream`-Primitive; traegt die R1-
-    Wiring-Substanz — Scheduler/Clock/Random-Port-
-    Instanzen + Devices-/GridModel-Injection per
-    Scenario-Loader): 0.5-0.7 Tag.
+  - NEU `tools/_demo_replay.py`-Helper (Wrapper um den
+    produktiven `build_tick_loop` — **kein** Neu-Driver;
+    traegt nur den Glue: YAML-Parse + `load_scenario`,
+    Fault-Composition aus `scenario.faults`, minimaler
+    Step-Clock, seeded `MersenneTwisterRandomPort`,
+    `tick()`-Schleife, `hash_snapshot_stream`-Primitive;
+    Blaupause `_drive_demo` in
+    `test_mvp_demo_scenario.py:39-50`): 0.4-0.6 Tag.
   - NEU `tools/accept.py` als Orchestrator der drei
     Sub-Steps (Step A: `load_scenario` + Hash-Vergleich;
     Step B: zwei Replay-Laeufe via `_demo_replay`
@@ -769,12 +854,14 @@ Erweiterung):
     `_demo_replay.hash_snapshot_stream` + nutzt
     `load_scenario` direkt, recomputed beide Hashes,
     bricht im `make ci`-Gate; durch Helper-Extraktion
-    trivial — kein eigener Stub-Code): 0.1 Tag.
+    trivial — kein eigener Replay-Code): 0.1 Tag.
 
-Summe: 1.4-1.7 Tage zusaetzlich zur Welle 6 (vorher
-1.5-1.8 ohne `_demo_replay`-Helper-Extraktion;
-Helper-Pfad ist netto leicht guenstiger, weil der Pin-
-Lint von 0.2 auf 0.1 Tag faellt). Falls eigener
+Summe: 1.3-1.6 Tage zusaetzlich zur Welle 6 (der
+`_demo_replay`-Helper faellt durch die `build_tick_loop`-
+Wiederverwendung von 0.5-0.7 auf 0.4-0.6 Tag — kein
+Neu-Driver, nur Glue + Fault-Composition + Step-Clock;
+zusaetzlich faellt der Pin-Lint durch die Helper-
+Extraktion von 0.2 auf 0.1 Tag). Falls eigener
 Welle-6b-Slice (D-5 Option B), zusaetzlich
 C0/C3/C4a/C4b-Boilerplate-Overhead: +0.5-1 Tag. Falls
 D-7 Option B (Skript startet Stack selbst), nochmals
@@ -813,5 +900,17 @@ D-7 Option B (Skript startet Stack selbst), nochmals
   Hash-Determinismus (Hash inline via
   `sha256(canonical_json(asdict(scenario))).hexdigest()`;
   Resultat als `LoadedScenario.scenario_hash`).
+- `src/grid_gym/hexagon/core/scenario/loader.py::build_tick_loop`
+  (Z. 402) — produktiver TickLoop-Builder; defaultet `agents`
+  aus `scenario.agents` (Z. 460-462). Re-Use-Basis fuer den
+  Step-B-Headless-Replay (ersetzt manuelles Wiring, siehe §6 R1).
+- `tests/integration/test_mvp_demo_scenario.py::_drive_demo`
+  (Z. 39-50) — Headless-Replay-Blaupause; der dortige
+  Determinismus-Test deckt Step-B-Eigenschaft (1) bereits ab.
+- `src/grid_gym/hexagon/core/faults/`
+  (`BatteryFaultAdapter` / `GridFaultAdapter`) +
+  `_demo_scenario_setup.py:314 _compose_fault_port` — Fault-
+  Wiring fuer Step B, weil `gg-demo.yaml` einen `faults:`-Block
+  traegt (Standort-Beschluss D-10).
 - `src/grid_gym/hexagon/core/replay/diff.py::diff_replay`
   — Sub-Step B Substanz.
