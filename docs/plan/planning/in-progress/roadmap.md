@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** Aktiv — Vorbedingungen 1+3+4 geschlossen, M1..M5 abgeschlossen (M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md); M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **Aktiver Slice: M6** (Performance + Security + CI/CD-Haertung).
+**Status:** M1..M6 abgeschlossen (M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md); M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **M6 abgeschlossen 2026-06-08** (alle sechs M6-ADRs 0041..0046 `Accepted`). **Aktiver Slice: M7** (NEU eroeffnet 2026-06-08 als M6-Welle-7-Closure-Handoff) — Container fuer die restliche MVP-Arbeit `GG-MVP-002` replay-source-integration + `GG-MVP-003` abnahme-cli plus offene Trigger 033/034/035/036/037; M7-Slice-Plan entsteht in M7-Welle-0 (Pattern analog M6-Welle-0).
 **Stand:** 2026-06-04
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -146,8 +146,9 @@
   Positiv). 10/10 A-1-Gates gruen (NEU 10.
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
   `AC-IEC61850-GPL-BOUNDARY`).
-- **Aktiver Slice:** M6 (Performance + Security + CI/CD-
-  Haertung). M5-Closure 2026-06-04 mit Welle-7-Hash-Stack
+- **Aktiver Slice: M7** (NEU 2026-06-08; M6 Performance +
+  Security + CI/CD-Haertung abgeschlossen 2026-06-08). M5-Closure
+  2026-06-04 mit Welle-7-Hash-Stack
   `c28a11b`/`62f988d`/`5087c8a`/`9978e21`/`e21795f`/
   `667be09`/`015eada`; M5-Slice-Plan und alle 10 Welle-
   Docs in [`../done/`](../done/). Historischer Aktive-
@@ -606,7 +607,8 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Aktiver Slice: M6.** **M5 ist `Done`** (2026-06-04,
+**Aktiver Slice: M7** (M6 abgeschlossen 2026-06-08).
+**M5 ist `Done`** (2026-06-04,
 siehe [`done/M5-results.md`](../done/M5-results.md)): 10
 Wellen 0..6c geliefert (Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/
 6c); fuenf M5-ADRs (0036/0037/0038/0039/0040) auf
@@ -926,12 +928,17 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
         Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
         verwendet** (ADR 0037 Decision API-2).
 
-### M6 — Performance + Security + CI/CD-Haertung (`In Progress` 2026-06-04)
+### M6 — Performance + Security + CI/CD-Haertung (`Done` 2026-06-08)
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](M6-perf-security-cicd.md)
-(angelegt M6-Welle-0-C1 `e050035`); aktive Welle: **Welle 7
-(M6-Closure; Pattern analog M4-/M5-Welle-7)**. **M6-Welle-6
+(angelegt M6-Welle-0-C1 `e050035`). **M6 abgeschlossen
+2026-06-08 mit Welle 7 (M6-Closure)**: ADR 0041..0046
+`Provisional → Accepted` (W7-C1), NEU
+[`M6-results.md`](../done/M6-results.md) (W7-C2),
+Roadmap-DoD-Sweep + Top-Level-Sync (W7-C3), Self-Close-Move
+`M6-perf-security-cicd.md` + `M6-welle-7.md` → `done/`
+(W7-C4a/C4b). Pattern analog M4-/M5-Welle-7. **M6-Welle-6
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
 + Trigger 009) abgeschlossen 2026-06-08** (siehe
 [`M6-welle-6.md`](../done/M6-welle-6.md)) mit Stack C0 `fab6a8c`
@@ -1149,6 +1156,31 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         0042 `Provisional` verankert SBOM-Tool/Scan-Ziel +
         Release-Workflow-Pattern als Quality-Gate-Vertrag
         (Schwester zu ADR 0029/0043).
+
+### M7 — MVP-Abschluss (`Vorbelegung` 2026-06-08)
+
+**Slice-Plan:** entsteht in M7-Welle-0 (Pattern analog
+M6-Welle-0). M7 ist der Container fuer die nach M6 verbliebene
+MVP-Arbeit plus die offenen Trigger; eroeffnet als Handoff der
+M6-Welle-7-Closure (Entscheidung 2026-06-08, M6-welle-7-Review-
+Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
+
+**Vorbelegter Scope** (Scope-Skizze; konkrete Slice-Plaene
+wandern bei Aktivierung nach `in-progress/`):
+
+- `GG-MVP-002` ReplaySource-Integration (`replay_diff_status`-
+  Per-Lauf-Marker + `ReplaySourcePort`) — Plan
+  [`../next/replay-source-integration.md`](../next/replay-source-integration.md);
+  aktiviert Trigger 036.
+- `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
+  — Plan [`../next/abnahme-cli.md`](../next/abnahme-cli.md).
+- Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
+  034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
+  036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
+  010` Multi-Node-Deployment).
+
+Aktiver Slice nach M6-Closure: **M7-Welle-0** (Slice-Plan-
+Eroeffnung + Trigger-Triage).
 
 ---
 

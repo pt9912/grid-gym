@@ -134,9 +134,11 @@ Audit-Dokus unter `docs/user/`: `safe-001-004-quality-pipeline.md`,
 
 - `M6-perf-security-cicd.md` + `M6-welle-7.md` → `done/` (C4a).
 - `M6-results.md` (dieses Doc) liegt in `done/`.
-- Aktiver Slice wechselt nach M6-Closure auf **M7** bzw. — falls
-  kein M7 vorgesehen — auf Projekt-Closure (S-6; Entscheidung in
-  `roadmap.md` §M6-C3).
+- Aktiver Slice wechselt nach M6-Closure auf **M7** (Entscheidung
+  2026-06-08, M6-welle-7-Review-Befund 3): M7-Vorbelegung in
+  `roadmap.md §M7` (Container fuer `GG-MVP-002` + `GG-MVP-003` +
+  offene Trigger 033/034/035/036/037); M7-Slice-Plan entsteht in
+  M7-Welle-0 (Pattern analog M6-Welle-0).
 
 ---
 

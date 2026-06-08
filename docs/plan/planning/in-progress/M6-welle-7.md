@@ -1,8 +1,10 @@
 # Welle 7 — M6 Closure (1/2 Tag)
 
-**Status:** In Progress — eroeffnet 2026-06-08 mit C0 (dieser
-Commit; M6-Closure-Welle). Liefer-Reihenfolge C0 → C1 → C2 →
-C3 → C4a/C4b. C0 `dieser Commit` (Slice-Doc-Anlage). Pattern
+**Status:** Done 2026-06-08 (M6-Closure-Welle) — Stack C0
+`5415903` (Slice-Doc) + Sharpen `cff646c` (Review-Fixes B1-3) +
+C1 `7a2aba8` (6 ADRs 0041..0046 `Provisional → Accepted`) +
+C2 `0402b87` (NEU `done/M6-results.md`) + C3 (Top-Level-Sync;
+dieser Commit) + C4a/C4b (Self-Close-Move; folgen). Pattern
 analog [`../done/M5-welle-7.md`](../done/M5-welle-7.md) +
 [`../done/M4-welle-7.md`](../done/M4-welle-7.md).
 
@@ -212,19 +214,19 @@ C3 angelegt.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C1: ADR 0041..0046 `Accepted` + README-Index-Status.
-- [ ] C2: `done/M6-results.md` mit 6 Sektionen + ADR-Sweep.
-- [ ] C3: `roadmap.md` M6 `Done` + alle Live-`Aktiver Slice:
+- [x] C1: ADR 0041..0046 `Accepted` + README-Index-Status.
+- [x] C2: `done/M6-results.md` mit 6 Sektionen + ADR-Sweep.
+- [x] C3: `roadmap.md` M6 `Done` + alle Live-`Aktiver Slice:
       M6`-Anker gesweept (Top + 2 Bullets + M6-Active-Welle;
       Z. ~267 historisch unberuehrt) + NEU §M7-Vorbelegung +
       aktiver Slice → M7.
-- [ ] C3: `README.md`/`README.de.md` gesamter M6-Block neu
+- [x] C3: `README.md`/`README.de.md` gesamter M6-Block neu
       (Stale-Details raus; M1..M6; ADR 38→44; M7 eroeffnet).
-- [ ] C3: `M6-results.md` §5/§6 Handoff auf M7 praezisiert.
+- [x] C3: `M6-results.md` §5/§6 Handoff auf M7 praezisiert.
 - [ ] C4a: `M6-perf-security-cicd.md` + `M6-welle-7.md` →
-      `done/`.
+      `done/` (folgt; in C4b abgehakt).
 - [ ] C4b: Cross-Doc-Refs-Sync; `make docs-check` gruen.
-- [ ] `make gates` cache-frei gruen am Closure-Hash.
+- [ ] `make gates` cache-frei gruen am Closure-Hash (Verifikation).
 
 ---
 

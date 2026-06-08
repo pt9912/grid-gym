@@ -149,16 +149,21 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-07**:
+Stand **2026-06-08**:
 
-- **M1..M5 · `Done`** (38 ADRs `Accepted` ueber M1..M5). M5-Closure-
-  Artefakt:
+- **M1..M6 · `Done`** (44 ADRs `Accepted` ueber M1..M6). Closure-
+  Artefakte:
+  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md)
+  +
   [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
-- **M6 — Performance + Security + CI/CD** · `In Progress` (eroeffnet
-  2026-06-04 mit M6-Welle-0; M6-Welle-0..5a `Done`, **aktive Welle:
-  M6-Welle-5b** `GG-SAFE-007/008` Sim/Prod-Marker + Input-Validation-
-  Audit). M6-ADRs in Flight: 4 `Provisional` (0041..0044), 1 `Proposed`
-  (0045).
+- **M6 — Performance + Security + CI/CD** · `Done` (2026-06-08;
+  Welle 0..7). Alle sechs M6-ADRs (0041..0046) `Accepted` mit
+  Welle-7-Closure.
+- **M7 — MVP-Abschluss** · `Vorbelegung` (eroeffnet 2026-06-08 als
+  M6-Welle-7-Closure-Handoff). Container fuer die restliche
+  MVP-Arbeit (`GG-MVP-002` replay-source-integration, `GG-MVP-003`
+  abnahme-cli) plus offene `open/`-Trigger (033/034/035/036/037).
+  Aktiver Slice: M7-Welle-0 (Slice-Plan entsteht dort).
 
 **Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped zum
 M5-Closure (2026-06-04); M6-Welle-5a ergaenzt 7 Integration-Smoke-

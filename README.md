@@ -146,16 +146,21 @@ logic.
 
 ## Status
 
-As of **2026-06-07**:
+As of **2026-06-08**:
 
-- **M1..M5 · `Done`** (38 ADRs `Accepted` across M1..M5). M5 closure
-  artefact:
+- **M1..M6 · `Done`** (44 ADRs `Accepted` across M1..M6). Closure
+  artefacts:
+  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md)
+  +
   [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
-- **M6 — Performance + Security + CI/CD** · `In Progress` (opened
-  2026-06-04 with M6-Welle-0; M6-Welle-0..5a `Done`, **active wave:
-  M6-Welle-5b** `GG-SAFE-007/008` Sim/Prod-marker + input-validation
-  audit). M6 ADRs in flight: 4 `Provisional` (0041..0044), 1 `Proposed`
-  (0045).
+- **M6 — Performance + Security + CI/CD** · `Done` (2026-06-08;
+  Welle 0..7). All six M6 ADRs (0041..0046) `Accepted` at Welle-7
+  closure.
+- **M7 — MVP completion** · `Vorbelegung` (opened 2026-06-08 as the
+  M6-Welle-7 closure handoff). Container for the remaining MVP work
+  (`GG-MVP-002` replay-source-integration, `GG-MVP-003` abnahme-cli)
+  plus open `open/` triggers (033/034/035/036/037). Active slice:
+  M7-Welle-0 (slice plan opens there).
 
 **Test balance:** 1722 unit + 80 integration passed + 4 skipped at
 M5 closure (2026-06-04); M6-Welle-5a added 7 integration smoke tests
