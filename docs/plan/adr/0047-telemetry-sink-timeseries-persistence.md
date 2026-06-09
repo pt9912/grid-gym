@@ -21,7 +21,7 @@ Sprung (dieser Commit, M7-Welle-1a-C1).
   (`str(Decimal)`-Wrap), Vorbild fuer die `value`-Persistenz.
 - [`ADR 0015`](0015-snapshot-envelope-v2.md) — Snapshot-/
   Serialisierungs-Pattern (kanonische String-Form).
-- [`M7-welle-1a.md`](../planning/in-progress/M7-welle-1a.md) —
+- [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md) —
   Slice-Doc (Decisions 1a-D-0..D-3); ADR 0047 fixiert sie.
 - [Trigger 036](../planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
   + [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md) —
@@ -218,7 +218,7 @@ Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-1a.md`](../planning/in-progress/M7-welle-1a.md)
+Slice-Doc [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Persistenz-Smoke). Status-Pfad (`Proposed → Provisional →
 Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure

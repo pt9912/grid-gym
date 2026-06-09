@@ -7,7 +7,7 @@ B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) **— Done
 2026-06-09** + Welle **1b** (Replay-Lifecycle +
 `replay_diff_status`-Metrik, ADR 0048) — `GG-MVP-002` flippt erst
 nach 1b. Decisions D-0..D-5 final (§3). Sub-Slice 1a geliefert
-([`M7-welle-1a.md`](M7-welle-1a.md), Self-Close → `done/`);
+([`M7-welle-1a.md`](../done/M7-welle-1a.md), Self-Close → `done/`);
 **aktives Sub-Slice jetzt 1b** (Slice-Doc `M7-welle-1b.md`
 entsteht mit 1b-C0). Pattern analog M6-Welle-4 → 4a/4b. (Dieser
 Gruppenplan bleibt in `in-progress/` bis 1a+1b geschlossen sind.)

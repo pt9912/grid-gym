@@ -1185,9 +1185,11 @@ Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md` +
 carveouts-Triage 034/035 → `Active in M7-Welle-3`)
 **abgeschlossen** (C0..C4b). **M7-Welle-1** (`GG-MVP-002`) aktiv,
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
-[`M7-welle-1.md`](M7-welle-1.md)). Aktiver Slice: **M7-Welle-1a**
-([`M7-welle-1a.md`](M7-welle-1a.md); Zeitreihen-Persistenz, NEU
-`TelemetrySinkPort` + ADR 0047).
+[`M7-welle-1.md`](M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
+([`M7-welle-1a.md`](../done/M7-welle-1a.md); Zeitreihen-Persistenz,
+NEU `TelemetrySinkPort` + ADR 0047). Aktiver Slice jetzt:
+**M7-Welle-1b** (Replay-Lifecycle + `replay_diff_status`, ADR 0048;
+`GG-MVP-002` flippt erst nach 1b).
 
 ---
 
