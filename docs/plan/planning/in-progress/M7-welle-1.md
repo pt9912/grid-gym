@@ -7,18 +7,20 @@ B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) **— Done
 2026-06-09** + Welle **1b** (Replay-Lifecycle). **Welle 1b ist
 per 1b-a-D-1 weiter sub-sliced** (Pattern analog Welle-4b →
 4b-a/b/c): **1b-a** (NEU `ReplaySnapshotPort` Persistenz-Lese-
-Substanz, **ADR 0048**) + **1b-b** (TickLoop-Terminal-Hook +
-`replay_diff_status`-Metrik + `GG-TERM-002/003`-MVP-E2E-Preflight
-+ E2E-Audit-Doku, **ADR 0049**). `GG-MVP-002` flippt erst nach
-1b-b. Decisions D-0..D-5 final (§3); 1b-Equality-Scope auf MVP-
-Preflight korrigiert (§2.5 + R4; Carveout
+Substanz, **ADR 0048**) **— Done 2026-06-09** + **1b-b**
+(TickLoop-Terminal-Hook + `replay_diff_status`-Metrik +
+`GG-TERM-002/003`-MVP-E2E-Preflight + E2E-Audit-Doku, **ADR
+0049**). `GG-MVP-002` flippt erst nach 1b-b. Decisions D-0..D-5
+final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
+(§2.5 + R4; Carveout
 [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)).
-Sub-Slice 1a geliefert
-([`M7-welle-1a.md`](../done/M7-welle-1a.md), Self-Close → `done/`);
-**aktives Sub-Slice jetzt 1b-a**
-([`M7-welle-1b-a.md`](M7-welle-1b-a.md)). Pattern analog
-M6-Welle-4 → 4a/4b. (Dieser Gruppenplan bleibt in `in-progress/`
-bis 1a+1b geschlossen sind.)
+Sub-Slice 1a + 1b-a geliefert
+([`M7-welle-1a.md`](../done/M7-welle-1a.md) +
+[`M7-welle-1b-a.md`](M7-welle-1b-a.md), Self-Close → `done/`);
+**aktives Sub-Slice jetzt 1b-b** (Slice-Doc `M7-welle-1b-b.md`
+entsteht mit 1b-b-C0). Pattern analog M6-Welle-4 → 4a/4b.
+(Dieser Gruppenplan bleibt in `in-progress/` bis 1a+1b
+geschlossen sind.)
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).

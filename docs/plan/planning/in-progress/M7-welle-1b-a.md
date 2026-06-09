@@ -1,13 +1,19 @@
 # Welle 1b-a — M7 Replay-Snapshot-Rekonstruktion (`ReplaySnapshotPort`)
 
-**Status:** In Progress — C0 (dieser Commit; Slice-Doc +
-Decision-Liste 1b-a-D-0..D-6 + DoD + Sub-Slicing-Beschluss 1b →
-1b-a/1b-b + `GG-TERM-002/003`-Equality-Scope-Korrektur am
-Gruppenplan + NEU [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)).
-**Offen: C1** (NEU ADR 0048 `Provisional` — `ReplaySnapshotPort`-
-Rekonstruktions-Pattern) **+ C2** (Code: `ReplaySnapshotPort` +
-Postgres-Adapter + Rekonstruktions-Smoke; **keine** neue Migration)
-**+ C3** (Status/DoD-Sync) **+ C4a/C4b** (Self-Close-Move).
+**Status:** Done — C0 `58203f1` (Slice-Doc + Decision-Liste
+1b-a-D-0..D-6 + DoD + Sub-Slicing-Beschluss 1b → 1b-a/1b-b +
+`GG-TERM-002/003`-Equality-Scope-Korrektur am Gruppenplan + NEU
+[Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md))
++ C1 `fb965c6` (NEU ADR 0048 `Provisional` — `ReplaySnapshotPort`-
+Rekonstruktions-Pattern + 0047-Drift-Sync) + C2 `2b755d6` (Code:
+`ReplaySnapshotPort` + `PostgresReplaySnapshotAdapter` + 8
+Rekonstruktions-Smokes; **keine** neue Migration, kein Core-Change)
++ C3 (DoD §9 abgehakt; 1b-a → `Done`; `M7-welle-1.md` 1b-a → Done;
+aktiver Slice → 1b-b). **Offen: C4a/C4b** (Self-Close-Move
+`M7-welle-1b-a.md → done/` + Refs-Sync). Code + alle Gates
+(`gates`/`test-integration`/`fullbuild`/`docs-check`) cache-frei
+gruen 2026-06-09 — `make test-integration` 128 passed / 7 skipped
+(8 neue Replay-Snapshot-Smokes inkl.).
 
 Zweites Sub-Slice von **M7-Welle-1** (`GG-MVP-002`); erstes
 Sub-Sub-Slice von **Welle 1b** per 1b-a-D-1 (Sub-Slicing-Beschluss,
@@ -323,23 +329,25 @@ Self-Close-Move `M7-welle-1b-a.md → done/` (C4a) + Refs-Sync
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C0 — Slice-Doc §1..§9 + Decision-Liste 1b-a-D-0..D-6 +
+- [x] C0 — Slice-Doc §1..§9 + Decision-Liste 1b-a-D-0..D-6 +
       Gruppenplan-Korrektur (1b-Sub-Slicing + Equality-Scope) +
       NEU Trigger 038.
-- [ ] C1 — NEU ADR 0048 `Provisional` (Surface + Rekonstruktion +
+- [x] C1 — NEU ADR 0048 `Provisional` (Surface + Rekonstruktion +
       Timestamp-Derivation + No-New-Table).
-- [ ] C2 — `ReplaySnapshotPort` + `PostgresReplaySnapshotAdapter`
+- [x] C2 — `ReplaySnapshotPort` + `PostgresReplaySnapshotAdapter`
       + Rekonstruktions-Smoke; **keine** neue Migration.
-- [ ] C2 — Smoke pinnt deterministische Sortierung, Timestamp-
+- [x] C2 — Smoke pinnt deterministische Sortierung, Timestamp-
       Derivation aus `simulation_time`, `import_sequence`-Tie-
       Break, `value`-Round-Trip, Zwei-Lauf-Determinismus
       (`diff_replay()` leer modulo `run_id`).
-- [ ] **`make test-integration` cache-frei gruen** (Postgres-
+      (8 Smokes inkl. Divergenz-fachlich-Gegenprobe + leerer Lauf.)
+- [x] **`make test-integration` cache-frei gruen** (Postgres-
       testcontainers) — fuehrt den Rekonstruktions-Smoke als
       Kern-Evidence aus; laeuft **NICHT** in `make gates`/
       coverage-gate (das misst nur `tests/unit/`).
-- [ ] `make gates` + `make fullbuild` + `make docs-check` gruen.
-- [ ] C3 — 1b-a `Done`; `M7-welle-1.md` 1b-a → Done; aktiver
+      (2026-06-09: 128 passed / 7 skipped.)
+- [x] `make gates` + `make fullbuild` + `make docs-check` gruen.
+- [x] C3 — 1b-a `Done`; `M7-welle-1.md` 1b-a → Done; aktiver
       Slice 1b-b.
 
 **Anti-Scope (1b-a NICHT):** kein TickLoop-Terminal-Hook, keine
