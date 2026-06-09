@@ -3,7 +3,7 @@
 **Status:** Open — dokumentierter Scope-Carveout aus M7-Welle-1b
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-a-C0 (Decision 1b-a-D-6;
-[`docs/plan/planning/in-progress/M7-welle-1b-a.md`](../in-progress/M7-welle-1b-a.md)).
+[`docs/plan/planning/done/M7-welle-1b-a.md`](../done/M7-welle-1b-a.md)).
 
 ---
 
@@ -84,7 +84,7 @@ verankert ist.
 
 ## References
 
-- [`../in-progress/M7-welle-1b-a.md`](../in-progress/M7-welle-1b-a.md)
+- [`../done/M7-welle-1b-a.md`](../done/M7-welle-1b-a.md)
   — 1b-a-D-6 (Equality-Scope-Beschluss + Carveout-Begruendung).
 - [`../in-progress/M7-welle-1.md`](../in-progress/M7-welle-1.md)
   — GG-MVP-002-Gruppenplan (§2.5 + R4 auf Preflight korrigiert).

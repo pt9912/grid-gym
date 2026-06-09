@@ -16,7 +16,7 @@ final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
 [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)).
 Sub-Slice 1a + 1b-a geliefert
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md) +
-[`M7-welle-1b-a.md`](M7-welle-1b-a.md), Self-Close → `done/`);
+[`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md), Self-Close → `done/`);
 **aktives Sub-Slice jetzt 1b-b** (Slice-Doc `M7-welle-1b-b.md`
 entsteht mit 1b-b-C0). Pattern analog M6-Welle-4 → 4a/4b.
 (Dieser Gruppenplan bleibt in `in-progress/` bis 1a+1b
@@ -251,7 +251,7 @@ Adapter + `telemetry_points`-Schema) — **Welle-1a-Substanz**
 **Welle-1-Final: A** (NEU `ReplaySnapshotPort` Driven) —
 **Welle-1b-a-Substanz** (ADR 0048; D-1.1 final in 1b-a-D-3:
 Timestamp deterministisch aus `simulation_time` abgeleitet, keine
-neue Tabelle). [`M7-welle-1b-a.md`](M7-welle-1b-a.md) verifiziert.
+neue Tabelle). [`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md) verifiziert.
 
 **Sub-Decision D-1.1 — Snapshot→`ReplaySample`-Rekonstruktion**:
 `ReplaySample` ist **bereits** als Frozen-Dataclass im Domain-

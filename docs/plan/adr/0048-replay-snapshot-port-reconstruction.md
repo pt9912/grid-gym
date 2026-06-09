@@ -20,7 +20,7 @@ Sprung (dieser Commit, M7-Welle-1b-a-C1).
   Driven-Lese-Port + `connection_factory`-Adapter-Pattern).
 - [`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wiring.md)
   §2.9 — kanonische `Decimal`-/Byte-Stabilitaets-Konvention.
-- [`M7-welle-1b-a.md`](../planning/in-progress/M7-welle-1b-a.md)
+- [`M7-welle-1b-a.md`](../planning/done/M7-welle-1b-a.md)
   — Slice-Doc (Decisions 1b-a-D-0..D-6); ADR 0048 fixiert
   D-2/D-3/D-4.
 - [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md) —
@@ -220,7 +220,7 @@ arch-check` (AC-PORTS-NO-OUT + AC-NO-FW) verifiziert in C2, dass
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-1b-a.md`](../planning/in-progress/M7-welle-1b-a.md)
+Slice-Doc [`M7-welle-1b-a.md`](../planning/done/M7-welle-1b-a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Rekonstruktions-Smoke). Status-Pfad (`Proposed → Provisional →
 Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure

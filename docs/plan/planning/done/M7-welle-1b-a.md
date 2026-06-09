@@ -34,7 +34,7 @@ Liefer-Reihenfolge C0 → C1 (NEU ADR 0048 `Provisional`) → C2
 ## 1. Context
 
 `GG-MVP-002` (E2E-Szenario + deterministisches Replay) ist im
-**partial**-Stand (siehe [`M7-welle-1.md §1`](M7-welle-1.md)).
+**partial**-Stand (siehe [`M7-welle-1.md §1`](../in-progress/M7-welle-1.md)).
 Welle **1a** hat Lücke 1 geschlossen — produktive Zeitreihen-
 Persistenz ueber `TelemetrySinkPort` (Done 2026-06-09,
 [`M7-welle-1a.md`](../done/M7-welle-1a.md), ADR 0047). Offen
@@ -57,7 +57,7 @@ persistierten Lauf liefert, und (b) ein Lauf-Lifecycle-Hook, der
 
 1b-a liefert die Lese-Surface, auf die der 1b-b-Terminal-Hook die
 `expected`/`actual`-`ReplaySample`-Stroeme aufsetzt (die in
-[`M7-welle-1.md §3 D-1.1`](M7-welle-1.md) markierte Timestamp-
+[`M7-welle-1.md §3 D-1.1`](../in-progress/M7-welle-1.md) markierte Timestamp-
 Lücke wird hier final aufgeloest — 1b-a-D-3).
 
 ### 1.1 Existierende Substanz (Code-verifiziert)
@@ -137,7 +137,7 @@ Lücke wird hier final aufgeloest — 1b-a-D-3).
 ### 1b-a-D-0 — Persistenz-Quelle (aus Gruppenplan uebernommen)
 
 **Final: NEU `ReplaySnapshotPort` (Driven)** — Gruppenplan
-[`M7-welle-1.md §3 D-1`](M7-welle-1.md) (Option A). **NICHT**
+[`M7-welle-1.md §3 D-1`](../in-progress/M7-welle-1.md) (Option A). **NICHT**
 `RunRepositoryPort` (nur Laufmetadaten/Status), **NICHT**
 `SnapshotPort` (Driving — Schichten-Twist).
 
@@ -242,7 +242,7 @@ Verankert als **dokumentierter `GG-TERM-002/003`-Carveout**; die
 volle Matrix wird per ADR-0011-Pattern auf
 [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
 (NEU, dieser C0) defert. **Scope-Korrektur am Gruppenplan
-[`M7-welle-1.md`](M7-welle-1.md) §2.5 + §3 + R4 erfolgt in diesem
+[`M7-welle-1.md`](../in-progress/M7-welle-1.md) §2.5 + §3 + R4 erfolgt in diesem
 C0.** Der Preflight-Vertrag + die Carveout-Aussage landen formal
 in **ADR 0049 (1b-b)**; Boundary-Pins einzeln fuer die 5 Felder
 (1b-b). **Begruendung:** `started_at`/`ended_at` sind heute
@@ -282,7 +282,7 @@ fehlende Vollfelder bleiben als dokumentierter
 `src/grid_gym/adapters/driven/persistence_postgres/
 replay_snapshot_repository.py` (C2);
 `tests/integration/test_mvp_002_replay_snapshot_smoke.py` (C2).
-**MODIFY:** [`M7-welle-1.md`](M7-welle-1.md) (C0 — 1b-Sub-Slicing
+**MODIFY:** [`M7-welle-1.md`](../in-progress/M7-welle-1.md) (C0 — 1b-Sub-Slicing
 + Equality-Scope-Korrektur §2.5/§3/R4); `docs/plan/adr/README.md`
 (C1).
 **UNBERUEHRT:** `telemetry_points`-Schema (1a — read-only
@@ -359,12 +359,12 @@ Flip, keine neue Alembic-Migration (alles 1b-b bzw. entfaellt).
 
 ## References
 
-- [`M7-welle-1.md`](M7-welle-1.md) — GG-MVP-002-Gruppenplan +
+- [`M7-welle-1.md`](../in-progress/M7-welle-1.md) — GG-MVP-002-Gruppenplan +
   D-0..D-5 (Sub-Slicing + Equality-Scope hier in C0 verfeinert).
 - [`M7-welle-1a.md`](../done/M7-welle-1a.md) — Welle 1a
   (Zeitreihen-Persistenz, ADR 0047); liefert die `telemetry_
   points`-Lese-Quelle fuer 1b-a.
-- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
+- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
 - [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
   — volle `GG-TERM-002/003`-Equality-Matrix (1b-D-6-Carveout).
