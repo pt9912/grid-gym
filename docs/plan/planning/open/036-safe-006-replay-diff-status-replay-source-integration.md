@@ -1,6 +1,13 @@
 # 036 — `GG-SAFE-006` Per-Lauf-Status-Marker + ReplaySource-Integration (partial Lücke)
 
-**Status:** Open — partial Substanz-Lücke aus M6-Welle-5c-Audit
+**Status:** Closed (2026-06-09) — aufgeloest durch **M7-Welle-1b**
+(`ReplaySnapshotPort` ADR 0048 [1b-a] + Core-`TickLoop.finalize()`-
+Hook + `replay_diff_status`-Metrik + `GG-TERM-002/003`-MVP-Preflight
++ `GG-SAFE-006`-Detail-Evidence ADR 0049 [1b-b]). `GG-SAFE-006`
+flippt ⚠ → ✓ in `docs/user/safe-005-006-fallback-determinism.md`;
+`GG-MVP-002` ✓ produktiv. Rest-Carveouts: volle `GG-TERM`-Matrix
+(Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039).
+Move nach `done/` in der 1b-b-C4a-Sequenz.
 **Datum:** 2026-06-07
 **Quelle:** M6-Welle-5c-C2 (SOLLTE-Items + IP/Netz-Beschraenkung;
 siehe `docs/user/safe-005-006-fallback-determinism.md`).

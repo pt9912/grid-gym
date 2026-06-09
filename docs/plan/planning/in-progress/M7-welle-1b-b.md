@@ -1,14 +1,20 @@
 # Welle 1b-b — M7 Replay-Lifecycle: Terminal-Hook + `replay_diff_status` + GG-TERM-Preflight
 
-**Status:** In Progress — C0 (dieser Commit; Slice-Doc +
-Decision-Liste 1b-b-D-0..D-9 + DoD + NEU
-[Trigger 039](../open/039-api-replay-trigger-surface.md) (oeffentliche
-API-Replay-Bedienung, deferred)).
-**Offen: C1** (NEU ADR 0049 `Provisional` — Replay-Lifecycle) **+
-C2** (Code: Core-`finalize()`-Naht + `replay_diff_status` +
-GG-TERM-Preflight + `InMemoryReplaySnapshot` + Demo-Wiring +
-Zwei-Lauf-E2E-Smoke + Audit-Doku-Flips) **+ C3** (Status/DoD-Sync +
-`GG-MVP-002`-Flip) **+ C4a/C4b** (Self-Close-Move).
+**Status:** Done — C0 `c193788` (Slice-Doc + Decision-Liste
+1b-b-D-0..D-9 + NEU
+[Trigger 039](../open/039-api-replay-trigger-surface.md)) + C1
+`021e8d7` (NEU ADR 0049 `Provisional` — Replay-Lifecycle) + C2
+`6476267` (Code: Core-`TickLoop.finalize()`-Naht +
+`replay_diff_status` + GG-TERM-Preflight + `InMemoryReplaySnapshot`
++ Demo-Wiring + Unit- + Zwei-Lauf-E2E-Smoke + Audit-Doku-Flips +
+Trigger-036-Skip-Reaktivierung) + C3 (DoD §9 abgehakt; 1b-b →
+`Done`; **`GG-MVP-002` ✓ produktiv** in roadmap; Trigger-036-Status
+→ Closed). **Offen: C4a/C4b** (Self-Close-Move `M7-welle-1b-b.md`
+**+ Gruppenplan `M7-welle-1.md`** + Trigger 036 → `done/` +
+Refs-Sync). Code + alle Gates
+(`gates`/`test-integration`/`fullbuild`/`docs-check`) cache-frei
+gruen 2026-06-09 — `make test-integration` 132 passed / 6 skipped
+(3 neue Replay-Lifecycle-Smokes + reaktivierter Pin).
 
 Drittes (letztes) Sub-Slice von **Welle 1b** und Closure-Slice von
 **M7-Welle-1** (`GG-MVP-002`): schliesst die zweite `GG-MVP-002`-
@@ -364,29 +370,31 @@ nach `done/`.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C0 — Slice-Doc §1..§9 + Decision-Liste 1b-b-D-0..D-9 + NEU
+- [x] C0 — Slice-Doc §1..§9 + Decision-Liste 1b-b-D-0..D-9 + NEU
       Trigger 039.
-- [ ] C1 — NEU ADR 0049 `Provisional` (Terminal-Naht +
+- [x] C1 — NEU ADR 0049 `Provisional` (Terminal-Naht +
       `replay_diff_status` + Preflight + SAFE-006-Detail-Vertrag).
-- [ ] C2 — Core-`finalize()` + `replay_snapshot`/`replay_reference_
+- [x] C2 — Core-`finalize()` + `replay_snapshot`/`replay_reference_
       run_id`-Kwargs + Preflight + `replay_diff_status` + SAFE-006-
       Log + `InMemoryReplaySnapshot` + Demo-Wiring.
-- [ ] C2 — Zwei-Lauf-E2E-Smoke: Original + Replay → Preflight gruen
+- [x] C2 — Zwei-Lauf-E2E-Smoke: Original + Replay → Preflight gruen
       + leerer Diff + `replay_diff_status = 1.0`; Divergenz →
       fachlicher Delta + `0.0`; per-Feld-Preflight-Mismatch-Rejects;
-      `finalize()`-Idempotenz.
-- [ ] C2 — `GG-SAFE-006`-Detailfelder (path/expected/actual/tick/
+      `finalize()`-Idempotenz. (Unit + Integration.)
+- [x] C2 — `GG-SAFE-006`-Detailfelder (path/expected/actual/tick/
       device_id/classification) maschinenlesbar gepinnt; Trigger-
       036-Skip-Smoke reaktiviert + gruen.
-- [ ] **`make test-integration` cache-frei gruen** (Postgres-
+- [x] **`make test-integration` cache-frei gruen** (Postgres-
       testcontainers) — fuehrt den Zwei-Lauf-Replay-Lifecycle-Smoke
-      als Kern-Evidence aus.
-- [ ] `make gates` + `make fullbuild` + `make docs-check` gruen.
-- [ ] C2 — NEU `docs/user/replay-determinism-e2e.md` + Flip
+      als Kern-Evidence aus. (2026-06-09: 132 passed / 6 skipped.)
+- [x] `make gates` + `make fullbuild` + `make docs-check` gruen.
+- [x] C2 — NEU `docs/user/replay-determinism-e2e.md` + Flip
       `docs/user/safe-005-006-…` `GG-SAFE-006` ⚠ → ✓.
-- [ ] C3 — 1b-b `Done`; **`GG-MVP-002` ✓ produktiv** (roadmap +
-      lastenheft-Traceability); Trigger 036 → `done/`; M7-Welle-1
-      komplett (Gruppenplan → `done/` in C4).
+- [x] C3 — 1b-b `Done`; **`GG-MVP-002` ✓ produktiv** (roadmap;
+      Lastenheft-Impl-Matrix fuehrt `GG-MVP-001..004` als
+      „n/a — Scope-Festlegung", Z. 2205 — kein Per-ID-Marker zu
+      flippen); Trigger 036 → Closed (Move `done/` in C4a);
+      M7-Welle-1 komplett (Gruppenplan → `done/` in C4).
 
 **Anti-Scope (1b-b NICHT):** oeffentliche API-Replay-Bedienung
 (Trigger 039), `started_at`/`ended_at`-Setzen, volle GG-TERM-Matrix

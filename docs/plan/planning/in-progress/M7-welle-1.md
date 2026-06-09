@@ -1,8 +1,9 @@
 # GG-MVP-002 Closure — Zeitreihen-Persistenz + Replay-Source-Integration + `replay_diff_status`-Metrik
 
-**Status:** In Progress — **M7-Welle-1 (GG-MVP-002) Gruppenplan**;
-aktiviert mit M7-Welle-1-C0 (dieser Commit; `git mv next/ →
-in-progress/M7-welle-1.md`). **Sub-Slicing-Beschluss (D-4-Final =
+**Status:** Done (2026-06-09) — **M7-Welle-1 (GG-MVP-002)
+Gruppenplan**; aktiviert mit M7-Welle-1-C0 (`git mv next/ →
+in-progress/M7-welle-1.md`), komplett mit 1b-b-C3. Self-Close-Move
+nach `done/` in der 1b-b-C4-Sequenz. **Sub-Slicing-Beschluss (D-4-Final =
 B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) **— Done
 2026-06-09** + Welle **1b** (Replay-Lifecycle). **Welle 1b ist
 per 1b-a-D-1 weiter sub-sliced** (Pattern analog Welle-4b →
@@ -14,15 +15,17 @@ Substanz, **ADR 0048**) **— Done 2026-06-09** + **1b-b**
 final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
 (§2.5 + R4; Carveout
 [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)).
-Sub-Slice 1a + 1b-a geliefert
-([`M7-welle-1a.md`](../done/M7-welle-1a.md) +
-[`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md), Self-Close → `done/`);
-**aktives Sub-Slice jetzt 1b-b**
-([`M7-welle-1b-b.md`](M7-welle-1b-b.md), Closure-Slice — `GG-MVP-002`
-flippt mit 1b-b; oeffentliche API-Replay-Bedienung deferred via
-[Trigger 039](../open/039-api-replay-trigger-surface.md)). Pattern
-analog M6-Welle-4 → 4a/4b. (Dieser Gruppenplan wandert mit der
-1b-b-C4-Sequenz nach `done/`, sobald 1a+1b komplett sind.)
+**Alle Sub-Slices geliefert (1a + 1b-a + 1b-b)** —
+[`M7-welle-1a.md`](../done/M7-welle-1a.md) +
+[`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md) +
+[`M7-welle-1b-b.md`](M7-welle-1b-b.md) (Closure, Done 2026-06-09).
+**`GG-MVP-002` ✓ produktiv** (deterministisches Replay-E2E belegt;
+Trigger 036 aufgeloest). Carveouts: volle `GG-TERM`-Matrix
+([Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md))
++ oeffentliche API-Replay-Bedienung
+([Trigger 039](../open/039-api-replay-trigger-surface.md)). Pattern
+analog M6-Welle-4 → 4a/4b. **M7-Welle-1 komplett**; dieser
+Gruppenplan wandert mit der 1b-b-C4-Sequenz nach `done/`.
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
@@ -56,7 +59,7 @@ Scope-Erweiterung aufgenommen — eigener Plan
 | Szenario startet ueber API | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Entitaeten per Lastenheft-Pflicht: GridConnection + PV + Last + Smart Meter + Batteriespeicher) | ✓ produktiv |
 | Live-Telemetrie | WebSocket-Streams `/runs/{id}/telemetry` + `/runs/{id}/alarms-stream` | ✓ produktiv |
 | Persistiert Zeitreihen | `PostgresRunRepository` persistiert Laufmetadaten ✓; produktive `TelemetrySinkPort`-/Zeitreihen-Persistenz fuer Telemetriepunkte **mit Welle 1a geliefert** (Driven-Port + Postgres-Adapter + `telemetry_points`-Migration + Sink-Wiring + Persistenz-Smoke; ADR 0047) | ✓ produktiv (1a) |
-| **Laesst sich deterministisch replayen** | Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit); **End-to-End-Verkabelung fehlt** | ⚠ **partial** |
+| **Laesst sich deterministisch replayen** | Core-Diff `diff_replay()` ✓ + `ReplaySnapshotPort` (ADR 0048, 1b-a) + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-Preflight (ADR 0049, 1b-b); Zwei-Lauf-E2E-Beleg + Audit `docs/user/replay-determinism-e2e.md` | ✓ produktiv (1b) |
 
 Die offenen Akzeptanzteile sind damit zwei gekoppelte
 Luecken:
