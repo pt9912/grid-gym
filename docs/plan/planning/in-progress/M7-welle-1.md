@@ -3,12 +3,14 @@
 **Status:** In Progress — **M7-Welle-1 (GG-MVP-002) Gruppenplan**;
 aktiviert mit M7-Welle-1-C0 (dieser Commit; `git mv next/ →
 in-progress/M7-welle-1.md`). **Sub-Slicing-Beschluss (D-4-Final =
-B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) + Welle **1b**
-(Replay-Lifecycle + `replay_diff_status`-Metrik, ADR 0048) —
-`GG-MVP-002` flippt erst nach 1b. Decisions D-0..D-5 final (§3).
-Erstes aktives Sub-Slice: [`M7-welle-1a.md`](M7-welle-1a.md).
-Pattern analog M6-Welle-4 → 4a/4b. (Dieser Gruppenplan bleibt in
-`in-progress/` bis 1a+1b geschlossen sind.)
+B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) **— Done
+2026-06-09** + Welle **1b** (Replay-Lifecycle +
+`replay_diff_status`-Metrik, ADR 0048) — `GG-MVP-002` flippt erst
+nach 1b. Decisions D-0..D-5 final (§3). Sub-Slice 1a geliefert
+([`M7-welle-1a.md`](M7-welle-1a.md), Self-Close → `done/`);
+**aktives Sub-Slice jetzt 1b** (Slice-Doc `M7-welle-1b.md`
+entsteht mit 1b-C0). Pattern analog M6-Welle-4 → 4a/4b. (Dieser
+Gruppenplan bleibt in `in-progress/` bis 1a+1b geschlossen sind.)
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
@@ -41,7 +43,7 @@ Scope-Erweiterung aufgenommen — eigener Plan
 | --- | --- | --- |
 | Szenario startet ueber API | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Entitaeten per Lastenheft-Pflicht: GridConnection + PV + Last + Smart Meter + Batteriespeicher) | ✓ produktiv |
 | Live-Telemetrie | WebSocket-Streams `/runs/{id}/telemetry` + `/runs/{id}/alarms-stream` | ✓ produktiv |
-| Persistiert Zeitreihen | `PostgresRunRepository` persistiert Laufmetadaten ✓; produktive `TelemetrySinkPort`-/Zeitreihen-Persistenz fuer Telemetriepunkte fehlt noch (`GG-PERSIST-001` listet Telemetrie-/Alarm-Schema weiter als M3-offen) | ⚠ **partial** |
+| Persistiert Zeitreihen | `PostgresRunRepository` persistiert Laufmetadaten ✓; produktive `TelemetrySinkPort`-/Zeitreihen-Persistenz fuer Telemetriepunkte **mit Welle 1a geliefert** (Driven-Port + Postgres-Adapter + `telemetry_points`-Migration + Sink-Wiring + Persistenz-Smoke; ADR 0047) | ✓ produktiv (1a) |
 | **Laesst sich deterministisch replayen** | Core-Diff `diff_replay()` ✓ produktiv (Welle-5c-Audit); **End-to-End-Verkabelung fehlt** | ⚠ **partial** |
 
 Die offenen Akzeptanzteile sind damit zwei gekoppelte

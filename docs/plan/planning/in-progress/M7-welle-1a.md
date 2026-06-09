@@ -1,14 +1,16 @@
 # Welle 1a — M7 Zeitreihen-Persistenz (`TelemetrySinkPort`)
 
-**Status:** In Progress — C0 `933c9d5` (Slice-Doc) + C1 `3ebb197`
+**Status:** Done — C0 `933c9d5` (Slice-Doc) + C1 `3ebb197`
 (NEU [ADR 0047](../../adr/0047-telemetry-sink-timeseries-persistence.md)
 `Provisional`) + C2 `4d00327` (Code: `TelemetrySinkPort` +
 Postgres-/InMemory-Adapter + `0002`-Migration + TickLoop-Wiring +
-Smoke) + C2-Review-Folge `5983853` (F1/F2/F3). **Offen (naechste
-Session): C3** (DoD §9 abhaken + 1a → `Done`, `M7-welle-1.md` 1a →
-Done, aktiver Slice → 1b) **+ C4a/C4b** (Self-Close-Move). Code +
-alle Gates (`gates`/`test-integration`/`fullbuild`/`docs-check`)
-gruen; Pause-Stand 2026-06-08.
+Smoke) + C2-Review-Folge `5983853` (F1/F2/F3) + C3 (DoD §9
+abgehakt; 1a → `Done`; `M7-welle-1.md` 1a → Done; aktiver Slice
+→ 1b). **Offen: C4a/C4b** (Self-Close-Move `M7-welle-1a.md →
+done/` + Refs-Sync). Code + alle Gates
+(`gates`/`test-integration`/`fullbuild`/`docs-check`) cache-frei
+gruen re-verifiziert 2026-06-09 — `make test-integration` 120
+passed / 7 skipped (Persistenz-Smoke inkl.).
 Erstes Sub-Slice von **M7-Welle-1** (`GG-MVP-002`) per Sub-
 Slicing-Beschluss D-4-Final = B (siehe
 [`M7-welle-1.md`](M7-welle-1.md)). Welle 1a liefert die
@@ -222,19 +224,20 @@ bis 1a+1b geschlossen sind.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C0 — Slice-Doc §1..§9 + Decision-Liste 1a-D-0..D-3.
-- [ ] C1 — NEU ADR 0047 `Provisional` (Surface + Schema + Wiring).
-- [ ] C2 — `TelemetrySinkPort` + Postgres-Adapter + `telemetry_
+- [x] C0 — Slice-Doc §1..§9 + Decision-Liste 1a-D-0..D-3.
+- [x] C1 — NEU ADR 0047 `Provisional` (Surface + Schema + Wiring).
+- [x] C2 — `TelemetrySinkPort` + Postgres-Adapter + `telemetry_
       points`-Migration + Sink-Wiring + Persistenz-Smoke.
-- [ ] C2 — Smoke pinnt Sortier-Tie, Append-only-Idempotenz, alle
+- [x] C2 — Smoke pinnt Sortier-Tie, Append-only-Idempotenz, alle
       `GG-PERSIST-001`-Felder.
-- [ ] **`make test-integration` cache-frei gruen** (Postgres-
+- [x] **`make test-integration` cache-frei gruen** (Postgres-
       testcontainers) — fuehrt den Persistenz-Smoke als Kern-
       Evidence aus; laeuft **NICHT** in `make gates`/coverage-gate
       (das misst nur `tests/unit/`). Ohne diese Zeile haekt C3
       sonst „gruen" ab, ohne dass der Smoke je lief.
-- [ ] `make gates` + `make fullbuild` + `make docs-check` gruen.
-- [ ] C3 — 1a `Done`; `M7-welle-1.md` 1a → Done; aktiver Slice 1b.
+      (Re-verifiziert 2026-06-09: 120 passed / 7 skipped.)
+- [x] `make gates` + `make fullbuild` + `make docs-check` gruen.
+- [x] C3 — 1a `Done`; `M7-welle-1.md` 1a → Done; aktiver Slice 1b.
 
 **Anti-Scope (1a NICHT):** kein `ReplaySnapshotPort`, kein
 Lifecycle-Hook, keine `replay_diff_status`-Metrik, keine
