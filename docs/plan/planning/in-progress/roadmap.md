@@ -1193,8 +1193,11 @@ NEU `TelemetrySinkPort` + ADR 0047). **Welle 1b weiter sub-sliced**
 Preflight, ADR 0049). **M7-Welle-1b-a Done 2026-06-09**
 ([`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md); `ReplaySnapshotPort`-
 Rekonstruktion aus `telemetry_points`). Aktiver Slice jetzt:
-**M7-Welle-1b-b** (Lifecycle-Hook + Metrik + Preflight + E2E-Audit-
-Doku, ADR 0049). `GG-MVP-002` flippt erst nach 1b-b.
+**M7-Welle-1b-b** ([`M7-welle-1b-b.md`](M7-welle-1b-b.md); Closure —
+Core-`finalize()`-Naht + `replay_diff_status` + GG-TERM-Preflight +
+Zwei-Lauf-E2E-Beleg, ADR 0049). **`GG-MVP-002` flippt mit 1b-b**;
+oeffentliche API-Replay-Bedienung deferred via
+[Trigger 039](../open/039-api-replay-trigger-surface.md).
 
 ---
 

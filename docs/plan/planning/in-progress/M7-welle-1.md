@@ -17,10 +17,12 @@ final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
 Sub-Slice 1a + 1b-a geliefert
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md) +
 [`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md), Self-Close → `done/`);
-**aktives Sub-Slice jetzt 1b-b** (Slice-Doc `M7-welle-1b-b.md`
-entsteht mit 1b-b-C0). Pattern analog M6-Welle-4 → 4a/4b.
-(Dieser Gruppenplan bleibt in `in-progress/` bis 1a+1b
-geschlossen sind.)
+**aktives Sub-Slice jetzt 1b-b**
+([`M7-welle-1b-b.md`](M7-welle-1b-b.md), Closure-Slice — `GG-MVP-002`
+flippt mit 1b-b; oeffentliche API-Replay-Bedienung deferred via
+[Trigger 039](../open/039-api-replay-trigger-surface.md)). Pattern
+analog M6-Welle-4 → 4a/4b. (Dieser Gruppenplan wandert mit der
+1b-b-C4-Sequenz nach `done/`, sobald 1a+1b komplett sind.)
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
