@@ -1,9 +1,72 @@
-# GG-MVP-003 Closure — Abnahme-CLI mit maschinenlesbarem Status
+# M7-Welle-2 — GG-MVP-003 Closure: Abnahme-CLI mit maschinenlesbarem Status
 
-**Status:** Next — Scope-Skizze (noch nicht aktiv).
-**Datum:** 2026-06-07.
-**Quelle:** [`roadmap.md §3 GG-MVP-003`](../in-progress/roadmap.md)
+**Status:** In Progress — **M7-Welle-2-Slice-Plan** (aktiviert mit
+Welle-2-C0, dieser Commit; `git mv next/abnahme-cli.md →
+in-progress/M7-welle-2.md`). **Letzte offene `GG-MVP-*`-Lücke**
+(`GG-MVP-002` ✓ produktiv seit M7-Welle-1; siehe
+[`M7-mvp-completion.md`](M7-mvp-completion.md)). Decisions D-1..D-10
+mit C0 final (Block unten); kein NEU ADR (D-6). **Offen: C2**
+(Code: `make accept` + `tools/accept.py` + `tools/_demo_replay.py` +
+`tools/check_demo_scenario_pin.py` + `AbnahmeReport` + Smokes +
+`docs/user/abnahme-cli.md`) **+ C3** (Status/DoD-Sync +
+`GG-MVP-003`-Flip) **+ C4a/C4b** (Self-Close-Move).
+**Datum:** 2026-06-07 (Skizze) · **Aktiviert + finalisiert
+2026-06-09** (Welle-2-C0; gegen den Post-Welle-1-Stand).
+**Quelle:** [`roadmap.md §3 GG-MVP-003`](roadmap.md)
 + Lastenheft §3 Z. 138-144.
+
+---
+
+## 0. C0-Decision-Finalisierung (Welle-2-C0)
+
+Die §3-Skizze (Optionen + „Vorschlag") wird hier final gezogen.
+Strukturelle Vertraege (JSON-Keys, `status`-Literale,
+`schema_version`, Exit-Codes 0/1/2) sind Pins; Freitext-`reason`
+bleibt indikativ (siehe §3-Vorspann).
+
+- **D-1 = A** — `make accept` + `tools/accept.py` (kein
+  `[project.scripts]`; Code-verifiziert abwesend).
+- **D-2 = A (standalone Replay)** — zwei Headless-Laeufe via
+  `build_tick_loop` + `diff_replay` + Stream-Hash-Pin. **Post-
+  Welle-1-Begruendung verschaerft:** standalone ist die richtige
+  Form fuer eine **headless** CLI (kein FastAPI/Postgres noetig)
+  und umgeht bewusst den **[Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)**-
+  Gap (der produktive `replay_diff_status`-`finalize()`-Hook feuert
+  heute nur ueber `DemoTickLoopDriver.stop()`; ein headless-Runner
+  haette keine Core-Run-End-Naht). Die Sub-Form B (E2E ueber
+  `ReplaySnapshotPort`/`finalize()`) bleibt aufgeschoben, bis
+  Trigger 040 eine driver-unabhaengige Naht liefert; der
+  produktive `replay_diff_status`-Pfad ist bereits durch die
+  M7-Welle-1b-Integration-Smokes belegt — die CLI prueft
+  **komplementaer** den Headless-Determinismus.
+- **D-3 = A** — `AbnahmeReport` Pydantic-strict
+  (`ConfigDict(strict=True, extra="forbid")`; `_CheckBase`-Mixin +
+  3 Subklassen; `model_dump_json(exclude_none=True)`).
+- **D-4 = A (monolithisch)** — ein Slice (Target + Script +
+  Helper + Lint + Smokes + Doku).
+- **D-5 = M7-Welle-2** — die M6-Welle-6-Optionen der Skizze sind
+  obsolet (M6 geschlossen); per M7-Welle-0-C2-Triage ist dies
+  M7-Welle-2 (Folge nach Welle-1-`GG-MVP-002`).
+- **D-6 = kein NEU ADR** — Operations-/Doku-Substanz; Strict-Mode
+  ist ADR-0045-Pattern. **Daher entfaellt C1** (Liefer-Reihenfolge
+  C0 → C2 → C3 → C4a/C4b).
+- **D-7 = A** — Aufrufer startet den Stack (`make demo && make
+  accept`); `tools/accept.py` pollt `/ready` nur.
+- **D-8 = A + CI-Drift-Lint** — `EXPECTED_DEMO_SCENARIO_HASH` +
+  `EXPECTED_DEMO_TELEMETRY_STREAM_HASH` als Modul-Konstanten + NEU
+  `tools/check_demo_scenario_pin.py` (`make ci`-Gate); geteilter
+  `tools/_demo_replay.py`-Helper gegen Drift.
+- **D-9 = Tri-State Exit** — `0` Aggregate-Pass / `1` Aggregate-
+  Fail (inkl. Stack-nicht-ready, unlesbare/fehlende Szenario-Datei)
+  / `2` Tool-Error (CLI-interner Bug).
+- **D-10 = A** — `tools/` parst YAML selbst (`yaml.safe_load` +
+  `load_scenario`) + repliziert die schlanke Fault-Composition
+  (ADR-0021-§2.1-konform: `tools/` ist nicht Core-`src/`).
+
+**C2-Audit-Pflicht (aus §6 uebernommen):** verifizieren, dass
+`canonical_json` ein Top-Level-`list`-Argument akzeptiert (Stream-
+Hash serialisiert eine `list[dict]`); sonst Stream-Hash-Vertrag in
+C2 anpassen.
 
 ---
 
@@ -989,7 +1052,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
 
 ## 8. References
 
-- [`../in-progress/roadmap.md §3 GG-MVP-003`](../in-progress/roadmap.md)
+- [`roadmap.md §3 GG-MVP-003`](roadmap.md)
   — MVP-Abnahmescope-Tabelle; ✗ Lücke; wird mit Welle-X-
   Closure auf ✓ produktiv geflippt.
 - [`../../../../spec/lastenheft.md §3 GG-MVP-003`](../../../../spec/lastenheft.md)
@@ -1034,3 +1097,51 @@ D-7 Option B (Skript startet Stack selbst), nochmals
   traegt (Standort-Beschluss D-10).
 - `src/grid_gym/hexagon/core/replay/diff.py::diff_replay`
   — Sub-Step B Substanz.
+- [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)
+  — Headless-`finalize()`-Naht; Grund, warum Step B die
+  standalone `diff_replay`-Form (D-2 = A) statt des produktiven
+  `replay_diff_status`-Lifecycles nutzt.
+
+---
+
+## 9. DoD-Checkliste (mit C3 abzuhaken)
+
+- [ ] C0 — Plan aktiviert (`next/ → in-progress/M7-welle-2.md`) +
+      Decision-Liste D-1..D-10 final (§0) + DoD; roadmap/M7-mvp-
+      completion/READMEs auf aktiver Slice M7-Welle-2.
+- [ ] C2 — NEU `make accept`-Target + `tools/accept.py`
+      (Orchestrierung A→B→C, no-fail-fast, stdout-JSON-only,
+      Tri-State-Exit) + `tools/_demo_replay.py`-Helper +
+      `tools/check_demo_scenario_pin.py` (`make ci`-Gate) +
+      `AbnahmeReport` Pydantic-strict.
+- [ ] C2 — Step A Szenario-Validierung (`load_scenario` +
+      Hash-Pin), Step B Headless-Zwei-Lauf-Determinismus
+      (`diff_replay` leer + Stream-Hash-Pin), Step C `/ready`-Poll
+      (`status == "healthy"`).
+- [ ] C2 — Smokes pinnen: Happy-Path → Exit 0; invalid Szenario →
+      Exit 1; kaputtes YAML → Exit 2 + Gegenprobe File-nicht-lesbar
+      → Exit 1; stdout ist JSON-only (`json.loads` ohne Pre-Strip);
+      alle drei Sub-Step-Entries immer praesent.
+- [ ] **`make ci`/`make test-integration` cache-frei gruen** inkl.
+      NEU Abnahme-Smokes + `check_demo_scenario_pin`-Gate.
+- [ ] `make gates` + `make fullbuild` + `make docs-check` gruen.
+- [ ] C2 — NEU `docs/user/abnahme-cli.md` (Aufruf `make demo &&
+      make accept`; D-7).
+- [ ] C3 — M7-Welle-2 `Done`; **`GG-MVP-003` ✓ produktiv**
+      (roadmap; Lastenheft-Impl-Matrix fuehrt `GG-MVP-001..004` als
+      „n/a — Scope-Festlegung", Z. 2205 — kein Per-ID-Marker).
+
+**Anti-Scope (Welle 2 NICHT):** Sub-Form-B-E2E-Replay (ueber
+`ReplaySourcePort`/`finalize()` — Trigger 040); Stack-Start im CLI
+(D-7 = A, User-Pflicht); `[project.scripts]`-Console-Surface
+(D-1 = A); NEU ADR (D-6).
+
+---
+
+## 10. Wandert nach
+
+Self-Close-Move `M7-welle-2.md → done/` (C4a) + Refs-Sync (C4b)
+nach Welle-2-C3. Mit Welle-2-Closure ist `GG-MVP-003` ✓ produktiv —
+**alle vier `GG-MVP-*`-Punkte produktiv** (001 ✓ / 002 ✓ M7-Welle-1
+/ 003 ✓ M7-Welle-2 / 004 ✓); offen im M7-Meilenstein bleibt nur
+noch die Safety-Closure `GG-SAFE-003/004` (M7-Welle-3).

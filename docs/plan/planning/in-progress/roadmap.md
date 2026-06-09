@@ -1175,7 +1175,7 @@ wandern bei Aktivierung nach `in-progress/`):
   `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
   (in 1b).
 - `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
-  — Plan [`../next/abnahme-cli.md`](../next/abnahme-cli.md).
+  — Plan [`M7-welle-2.md`](M7-welle-2.md).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
   034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
@@ -1201,6 +1201,10 @@ Zwei-Lauf-E2E-Beleg, ADR 0049). **`GG-MVP-002` ✓ produktiv**;
 der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
 [Trigger 039](../open/039-api-replay-trigger-surface.md).
+**Aktiver Slice jetzt: M7-Welle-2** (`GG-MVP-003` Abnahme-CLI;
+[`M7-welle-2.md`](M7-welle-2.md), In Progress 2026-06-09 mit C0 —
+`make accept` + `tools/accept.py`, D-1..D-10 final, Replay-Step
+standalone wegen [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)).
 
 ---
 
