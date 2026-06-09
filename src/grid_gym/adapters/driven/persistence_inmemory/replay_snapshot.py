@@ -19,7 +19,10 @@ Vertrag mit identischer Mapping-Konvention.
 
 from __future__ import annotations
 
-from grid_gym.hexagon.core.domain.replay import ReplaySample
+from grid_gym.hexagon.core.domain.replay import (
+    ReplaySample,
+    replay_sample_from_point,
+)
 from grid_gym.hexagon.ports.driven.telemetry_sink import TelemetrySinkPort
 
 
@@ -41,14 +44,6 @@ class InMemoryReplaySnapshot:
         Position, `timestamp` = `str(simulation_time)`."""
         points = self._source.read_ordered(run_id)
         return tuple(
-            ReplaySample(
-                timestamp=str(point.simulation_time),
-                simulation_time=point.simulation_time,
-                device_id=point.device_id,
-                metric=point.metric,
-                value=point.value,
-                unit=point.unit,
-                import_sequence=import_sequence,
-            )
+            replay_sample_from_point(point, import_sequence)
             for import_sequence, point in enumerate(points)
         )

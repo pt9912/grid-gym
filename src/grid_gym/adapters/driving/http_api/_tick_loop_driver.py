@@ -147,7 +147,21 @@ class DemoTickLoopDriver:
         # im Core. Idempotent (`_finalized`-Flag); no-op ohne
         # Replay-Bindung. Vor dem Stop-Mirror, damit der frueh-`return`
         # bei terminalem State die Finalisierung nicht ueberspringt.
-        self._tick_loop.finalize()
+        #
+        # C2-Review-Folge F1: `finalize()` ist gegen einen harten Fehler
+        # (z. B. DB-Ausfall im `read_samples`) abgeschirmt — ein Crash im
+        # Replay-Diff darf den nachfolgenden Status-Mirror (gegen
+        # „Status haengt auf running", Welle-4b-Review-Fix #9) NICHT
+        # ueberspringen. `RunNotFoundError` faengt der Core bereits als
+        # sauberen Reject; dieser Guard deckt die uebrigen I/O-Fehler.
+        try:
+            self._tick_loop.finalize()
+        except Exception:
+            _logger.exception(
+                "TickLoop.finalize() failed for run_id=%r — replay diff skipped, "
+                "continuing with stop-mirror.",
+                self._tick_loop.run_id,
+            )
         current = self._tick_loop.control_state
         if current not in ("stopped", "completed"):
             try:

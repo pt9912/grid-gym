@@ -137,6 +137,14 @@ aktuellem Lauf (via `run_repository.get_by_id(...)`):
   `replay_diff_status` (kein valider Vergleich), stattdessen ein
   strukturierter `log_port`-Record mit dem/den abweichenden
   Feld(ern).
+- **Fehlende Lauf-Metadaten (`RunNotFoundError`) → ebenfalls
+  sauberer Reject** (C2-Review-Folge F2): laeuft der Preflight-
+  `get_by_id` auf einen unbekannten Referenz-/Lauf, faengt
+  `finalize()` den `RunNotFoundError` und behandelt ihn wie einen
+  Mismatch (Log, kein Status) — **kein** Crash im Terminal-Pfad.
+  Andere I/O-Fehler (z. B. DB-Ausfall) propagieren mit
+  ungesetztem `_finalized`-Flag (Retry moeglich); der Driver
+  schirmt sie ab, sodass der Stop-Mirror immer laeuft (F1).
 - **Begruendung:** ein Replay-Diff zwischen ungleich-
   konfigurierten Laeufen ist fachlich bedeutungslos; die binaere
   Metrik bleibt nur fuer **valide** Vergleiche definiert (§2.4).
@@ -293,6 +301,12 @@ Provisional → Accepted`): `Accepted` mit M7-Welle-X-Closure
   Mutations-Pfad — eigener spaeterer Scope.
 - **Auto-`completed`-Transition** im Core (Tick-Budget/Szenario-
   Ende) — eigener spaeterer Scope.
+- **Driver-unabhaengige Core-Run-End-Naht** fuer `finalize()`
+  (Headless-Runner / natuerliche Terminierung / Tick-Failure-
+  Pfad) — heute triggert nur `DemoTickLoopDriver.stop()`;
+  [Trigger 040](../planning/open/040-replay-finalize-headless-run-end-seam.md)
+  (C2-Review-Folge #4; Vorbedingung fuer `GG-MVP-003`-Headless-
+  Abnahme-CLI).
 - **Severity-Stufen** des `replay_diff_status` (ordinal/`yellow`/
   `red`) — additive ADR-0011-Schaerfung bei Bedarf.
 - **Asynchroner/entkoppelter Diff** — additive Schaerfung bei

@@ -68,6 +68,7 @@ from grid_gym.hexagon.core.simulation.alarm_mappers import dispatch_alarm_mapper
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
     AgentInvalidCommandTargetError,
+    RunNotFoundError,
     TickLoopAgentInstanceSnapshotMismatchError,
     TickLoopAgentSnapshotDeviceMismatchError,
     TickLoopAgentSnapshotGridModelMismatchError,
@@ -735,37 +736,69 @@ class TickLoop:
         No-op, wenn keine Replay-Bindung konfiguriert ist
         (`replay_snapshot`/`replay_reference_run_id`/`run_repository`
         nicht alle gesetzt). Sonst: `GG-TERM-002/003`-MVP-Preflight
-        (ADR 0049 §2.3) → bei Mismatch Reject (kein Status, Log);
-        sonst `diff_replay()` + `replay_diff_status`-Emission +
+        (ADR 0049 §2.3) → bei Mismatch **oder fehlenden Lauf-Metadaten
+        (`RunNotFoundError`)** sauberer Reject (kein Status, Log statt
+        Crash); sonst `diff_replay()` + `replay_diff_status`-Emission +
         `GG-SAFE-006`-Detail-Log. Gibt die `ReplayDelta`-Tupel
         zurueck (Test-/Caller-Evidence; der Driver verwirft sie).
+
+        **Idempotenz-/Retry-Vertrag (C2-Review-Folge F3):** das
+        `_finalized`-Flag wird erst nach einem **entschiedenen**
+        Ausgang gesetzt (no-op / Reject / erfolgreiche Emission). Ein
+        harter I/O-Fehler (z. B. DB-Ausfall im `read_samples`) laesst
+        das Flag `False` und propagiert — ein spaeterer `finalize()`-
+        Aufruf darf erneut versuchen (statt einen Crash als erledigte
+        Emission zu verbuchen).
         """
         if self._finalized:
             return ()
-        self._finalized = True
         snapshot = self._replay_snapshot
         reference_run_id = self._replay_reference_run_id
         repository = self._run_repository
         if snapshot is None or reference_run_id is None or repository is None:
+            self._finalized = True
             return ()
-        mismatch = self._replay_preflight_mismatch(repository, reference_run_id)
-        if mismatch is not None:
-            self._obs_log(
-                "warning",
-                f"replay preflight mismatch on '{mismatch}'; diff skipped",
-                event_id="replay_preflight_mismatch",
-                attributes={
-                    "run_id": self._run_id,
-                    "reference_run_id": reference_run_id,
-                    "field": mismatch,
-                },
-            )
+        try:
+            mismatch = self._replay_preflight_mismatch(repository, reference_run_id)
+            if mismatch is not None:
+                self._log_replay_reject(reference_run_id, reason=mismatch)
+                self._finalized = True
+                return ()
+            expected = snapshot.read_samples(reference_run_id)
+            actual = snapshot.read_samples(self._run_id)
+            deltas = diff_replay(expected, actual, tick_ms=self._tick_ms)
+            self._emit_replay_diff_status(deltas, reference_run_id)
+        except RunNotFoundError:
+            # Fehlende Referenz-/Lauf-Metadaten → sauberer Reject (kein
+            # valider Vergleich moeglich), kein Crash im Terminal-Pfad
+            # (C2-Review-Folge F2). `_finalized` bleibt gesetzt: eine
+            # fehlende Metadaten-Zeile erscheint nicht durch Retry.
+            self._log_replay_reject(reference_run_id, reason="run_metadata_missing")
+            self._finalized = True
             return ()
-        expected = snapshot.read_samples(reference_run_id)
-        actual = snapshot.read_samples(self._run_id)
-        deltas = diff_replay(expected, actual, tick_ms=self._tick_ms)
-        self._emit_replay_diff_status(deltas, reference_run_id)
-        return deltas
+        else:
+            # Nur bei erfolgreicher Emission als erledigt markieren
+            # (C2-Review-Folge F3): ein harter I/O-Fehler oben laesst
+            # `_finalized` False → Retry moeglich.
+            self._finalized = True
+            return deltas
+
+    def _log_replay_reject(self, reference_run_id: str, *, reason: str) -> None:
+        """ADR 0049 §2.3: strukturierter Reject-Log, wenn der Replay-Diff
+        **nicht** ausgefuehrt wird (Preflight-Feld-Mismatch oder fehlende
+        Lauf-Metadaten). Es wird **kein** `replay_diff_status` emittiert —
+        die Metrik bleibt nur fuer valide Vergleiche definiert (§2.4);
+        der Reject ist nur ueber `log_port` sichtbar (bekannte R3)."""
+        self._obs_log(
+            "warning",
+            f"replay diff skipped: {reason}",
+            event_id="replay_preflight_mismatch",
+            attributes={
+                "run_id": self._run_id,
+                "reference_run_id": reference_run_id,
+                "field": reason,
+            },
+        )
 
     def _replay_preflight_mismatch(
         self,

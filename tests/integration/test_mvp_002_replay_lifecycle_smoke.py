@@ -192,6 +192,15 @@ def test_two_run_demo_replay_is_clean(adapters: _Adapters) -> None:
     for _ in range(_TICKS):
         loop_b.tick()
 
+    # C2-Review-Folge F1: gegen Vakuum-Pass absichern — der leere Diff
+    # ist nur dann ein Determinismus-Beleg, wenn beide Laeufe auch
+    # tatsaechlich Telemetrie persistiert haben. (diff_replay((),()) == ()
+    # waere sonst trivial gruen.)
+    expected = adapters.snapshot.read_samples(_REF)
+    actual = adapters.snapshot.read_samples(_CUR)
+    assert len(expected) > 0, "Lauf A muss Telemetrie persistiert haben (sonst Vakuum-Pass)"
+    assert len(actual) == len(expected), "beide Laeufe muessen gleich viele Samples liefern"
+
     deltas = loop_b.finalize()
 
     assert deltas == ()

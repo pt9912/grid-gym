@@ -256,3 +256,28 @@ def test_finalize_is_idempotent() -> None:
     assert second == ()
     # Zweiter Aufruf ist No-op (`_finalized`-Flag) → genau eine Emission.
     assert len(_gauge_calls(metrics, "replay_diff_status")) == 1
+
+
+def test_missing_reference_metadata_is_clean_reject_not_crash() -> None:
+    # C2-Review-Folge F2: fehlende Referenz-Lauf-Metadaten → sauberer
+    # Reject (Log, kein replay_diff_status), KEIN RunNotFoundError-Crash
+    # im Terminal-Pfad. (Referenz-Telemetrie + -Metadaten fehlen; nur der
+    # aktuelle Lauf ist gespeichert.)
+    sink = InMemoryTelemetrySink()
+    sink.persist([_point(run_id=_CUR, simulation_time=1000, device_id="bat-1", value="1.50")])
+    repo = InMemoryRunRepository()
+    repo.save(_meta(_CUR))  # _REF bewusst NICHT gespeichert
+    metrics = NullMetricsAdapter(record_calls=True)
+    log = NullLogAdapter(record_calls=True)
+    loop = _make_finalize_loop(
+        sink=sink, repo=repo, metrics=metrics, log=log, reference_run_id=_REF
+    )
+
+    assert loop.finalize() == ()  # kein Crash
+    assert _gauge_calls(metrics, "replay_diff_status") == []
+    (reject,) = _log_calls(log, "replay_preflight_mismatch")
+    assert reject["attributes"] == {
+        "run_id": _CUR,
+        "reference_run_id": _REF,
+        "field": "run_metadata_missing",
+    }
