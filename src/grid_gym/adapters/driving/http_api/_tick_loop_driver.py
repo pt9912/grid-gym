@@ -141,6 +141,13 @@ class DemoTickLoopDriver:
         with contextlib.suppress(asyncio.CancelledError):
             await self._task
         self._task = None
+        # M7-Welle-1b-b (ADR 0049 §2.1): Run-Terminal-Hook im Core-
+        # Spine ausloesen. Der Driver TRIGGERT nur — die Diff-Logik
+        # (`diff_replay`/`replay_diff_status`/SAFE-006-Evidence) sitzt
+        # im Core. Idempotent (`_finalized`-Flag); no-op ohne
+        # Replay-Bindung. Vor dem Stop-Mirror, damit der frueh-`return`
+        # bei terminalem State die Finalisierung nicht ueberspringt.
+        self._tick_loop.finalize()
         current = self._tick_loop.control_state
         if current not in ("stopped", "completed"):
             try:

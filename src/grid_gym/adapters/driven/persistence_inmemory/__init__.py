@@ -21,6 +21,9 @@ produktiven Adapter — beide Varianten erfuellen den
 
 from __future__ import annotations
 
+from grid_gym.adapters.driven.persistence_inmemory.replay_snapshot import (
+    InMemoryReplaySnapshot,
+)
 from grid_gym.adapters.driven.persistence_inmemory.run_repository import (
     InMemoryRunRepository,
 )
@@ -29,4 +32,4 @@ from grid_gym.adapters.driven.persistence_inmemory.telemetry_sink import (
 )
 
 
-__all__ = ["InMemoryRunRepository", "InMemoryTelemetrySink"]
+__all__ = ["InMemoryReplaySnapshot", "InMemoryRunRepository", "InMemoryTelemetrySink"]

@@ -46,7 +46,10 @@ import yaml
 from fastapi import FastAPI
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
-from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
+from grid_gym.adapters.driven.persistence_inmemory import (
+    InMemoryReplaySnapshot,
+    InMemoryTelemetrySink,
+)
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.adapters.driving.http_api._dependencies import (
     _RunRepositoryNotConfiguredError,
@@ -206,11 +209,17 @@ def configure_scenario_demo_run(
     # `emitted_telemetry` append-only; lesbar via
     # `app_.state.telemetry_sink.read_ordered(run_id)`.
     telemetry_sink = InMemoryTelemetrySink()
+    # M7-Welle-1b-b (ADR 0049 §2.2): Replay-Snapshot-Lese-Surface
+    # ueber denselben In-Memory-Telemetrie-Store. Der Demo-Lauf hat
+    # keinen Referenzlauf (`replay_reference_run_id=None`) → der
+    # Core-`finalize()`-Hook ist hier no-op; die Bindung dokumentiert
+    # die Verdrahtung + exerziert den Driver-`finalize()`-Trigger-Pfad.
     wiring = TickLoopWiring(
         run_repository=repository,
         alarm_id_source=_alarm_id_source(),
         fault_port=fault_port,
         telemetry_sink=telemetry_sink,
+        replay_snapshot=InMemoryReplaySnapshot(telemetry_sink),
     )
     tick_loop = build_tick_loop(
         loaded.scenario,

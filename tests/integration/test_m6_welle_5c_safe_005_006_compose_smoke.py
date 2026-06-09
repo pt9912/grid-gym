@@ -19,11 +19,11 @@ Sechs Smoke-Tests:
   Lastenheft-Akzeptanz-Komponenten in einem Aufruf
   (Replay-Diff + volatile Felder + Tick + Klassifikation).
 
-- SAFE-006-Trigger-036 (x1): `pytest.skip` mit Pointer auf
-  Trigger 036. Pinnt, dass die Partial-Lücke
-  (`replay_diff_status`-Metrik + ReplaySource-Integration)
-  audit-trail-bewusst ist und nicht stillschweigend
-  uebersehen wird.
+- SAFE-006-Integration (x1): vormals `pytest.skip` (Trigger 036).
+  Mit M7-Welle-1b-b (ADR 0049) sind `replay_diff_status`-Metrik +
+  ReplaySource-Integration produktiv; der Audit-Trail-Pin belegt
+  die Code-Verankerung (Verhalten end-to-end in
+  `test_mvp_002_replay_lifecycle_smoke.py`).
 
 - Demo-Compose-Hardening (x1): Quell-Datei-Inspektion von
   `deploy/compose.yml`. Pinnt:
@@ -38,8 +38,6 @@ from __future__ import annotations
 
 from decimal import Decimal
 from pathlib import Path
-
-import pytest
 
 from grid_gym.hexagon.core.devices.battery.commands import (
     COMMAND_TYPE_SET_POWER_KW as BATTERY_CMD,
@@ -231,28 +229,23 @@ def test_safe_006_diff_replay_core_algorithm_canonical() -> None:
     assert value_delta.classification is ReplayDeltaClassification.FACHLICH
 
 
-def test_safe_006_diff_replay_status_deferred_via_trigger_036() -> None:
-    """`GG-SAFE-006` Partial-Lücke: Per-Lauf-Status-Marker
-    `replay_diff_status` (Architektur §8.2 Z. 820 + 823) + ReplaySource-
-    Integration (Lastenheft Z. 2292) fehlen heute. Trigger 036
-    verankert den Folge-Slice; dieser Smoke pinnt den Audit-Trail
-    und skipt explizit, damit die Lücke nicht still uebersehen
-    wird.
-    """
-    trigger_path = (
-        _REPO_ROOT
-        / "docs"
-        / "plan"
-        / "planning"
-        / "open"
-        / "036-safe-006-replay-diff-status-replay-source-integration.md"
+def test_safe_006_diff_replay_status_integrated_welle_1b_b() -> None:
+    """`GG-SAFE-006` (vormals partial via Trigger 036): der Per-Lauf-
+    Status-Marker `replay_diff_status` (Architektur §8.2 Z. 820 + 823)
+    + die ReplaySource-Integration (Lastenheft Z. 2292) sind mit
+    M7-Welle-1b-b (ADR 0049) produktiv. Das Verhalten ist end-to-end
+    in `test_mvp_002_replay_lifecycle_smoke.py` gepinnt; dieser
+    Audit-Trail-Pin belegt die Code-Verankerung im Core-Spine
+    (frueher: grep ueber `src/grid_gym/` nach `replay_diff_status`
+    lieferte null Treffer)."""
+    tick_loop_src = (
+        _REPO_ROOT / "src" / "grid_gym" / "hexagon" / "core" / "simulation" / "tick_loop.py"
+    ).read_text(encoding="utf-8")
+    assert "replay_diff_status" in tick_loop_src, (
+        "GG-SAFE-006: `replay_diff_status`-Emission muss im TickLoop-Spine verankert sein."
     )
-    assert trigger_path.exists(), (
-        "Trigger 036 muss als Audit-Anker existieren, bevor der Skip akzeptiert werden darf."
-    )
-    pytest.skip(
-        "GG-SAFE-006 partial Lücke: replay_diff_status-Metrik + "
-        "ReplaySource-Integration deferred via Trigger 036."
+    assert "def finalize(" in tick_loop_src, (
+        "GG-SAFE-006: Run-Terminal-`finalize()`-Hook muss im TickLoop existieren."
     )
 
 

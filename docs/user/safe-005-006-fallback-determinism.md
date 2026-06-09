@@ -49,8 +49,8 @@ Markierung — **M3 mit Replay-Source-Integration**."
 | **Volatile Felder** | `diff_replay(*, volatile_fields=None)` Parameter mit Default `_VOLATILE_FIELDS_DEFAULT = frozenset({"import_sequence"})`. | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt Default + Override) | ✓ **Produktiv** |
 | **Betroffene Ticks** | `ReplayDelta.tick = simulation_time // tick_ms` (Aggregation pro Tick im Diff-Algorithm). | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt Tick-Aggregation) | ✓ **Produktiv** |
 | **Abweichungsklassifikation** | `ReplayDeltaClassification` StrEnum mit `FACHLICH` / `VOLATIL`; `ReplayDelta.classification` pro Delta. | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt beide Werte) | ✓ **Produktiv** |
-| **Per-Lauf-Status-Marker (`replay_diff_status`)** | ✗ **fehlt**: Architektur `spec/architecture.md §15` (Z. 820 + 823) listet `replay_diff_status` als Pflicht-Metrik („maschinenlesbarer Statuswert pro Lauf"); grep ueber `src/grid_gym/` nach `replay_diff_status` liefert null Treffer. | Smoke `::test_safe_006_diff_replay_status_deferred_via_trigger_036` `pytest.skip` mit Pointer auf Trigger 036. | ⚠ **Partial Lücke** → [Trigger 036](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md) |
-| **ReplaySource-Integration** | ✗ **fehlt**: Lastenheft Z. 2292 verlangt „M3 mit Replay-Source-Integration"; grep ueber `src/grid_gym/` nach `ReplaySource` liefert null Treffer. Der `diff_replay`-Algorithm ist eine Pure-Function ohne Lauf-Lifecycle-Anker. | siehe oben — gleicher Smoke. | ⚠ **Partial Lücke** → [Trigger 036](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md) |
+| **Per-Lauf-Status-Marker (`replay_diff_status`)** | ✓ **produktiv** (M7-Welle-1b-b, ADR 0049 §2.4): `TickLoop.finalize()` emittiert `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0 diverged, attributes={run_id, reference_run_id, status})` bei preflight-validem Vergleich. | `tests/integration/test_mvp_002_replay_lifecycle_smoke.py` (clean/diverged) + `tests/unit/hexagon/core/simulation/test_tick_loop_replay_finalize.py`. | ✓ **Produktiv** |
+| **ReplaySource-Integration** | ✓ **produktiv** (M7-Welle-1b-a/1b-b, ADR 0048/0049): `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `expected`/`actual`-`ReplaySample`-Sequenzen aus den persistierten `telemetry_points`; der Core-`finalize()`-Hook ruft `diff_replay()` mit der expliziten `replay_reference_run_id`-Bindung. | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py`. | ✓ **Produktiv** |
 
 **Legende**:
 - ✓ Produktiv: Akzeptanz vollstaendig erfuellt + Smoke-/Unit-
@@ -131,26 +131,31 @@ Lastenheft-genannten Akzeptanz-Komponenten vollstaendig ab:
   StrEnum mit zwei Werten (`FACHLICH` / `VOLATIL`)
   maschinenlesbar pro Delta.
 
-**Partial Lücke (Trigger 036):** Was im Lastenheft-
-Akzeptanz-Wortlaut nicht steht, aber in der Lastenheft-
-Traceability Z. 2292 explizit gemacht wird, ist der
-Per-Lauf-Status-Marker plus die ReplaySource-Integration:
+**Geschlossen (M7-Welle-1b-a/1b-b, ADR 0048/0049):** der
+Per-Lauf-Status-Marker plus die ReplaySource-Integration sind
+jetzt produktiv im Lauf-Lifecycle verankert:
 
 - `spec/architecture.md §15` (Z. 820 + 823) listet
-  `replay_diff_status` als Pflicht-Metrik mit
-  „maschinenlesbarem Statuswert pro Lauf" (z. B.
-  `green` / `yellow` / `red`). Diese Metrik wird heute
-  weder gesetzt noch ueber `MetricsPort` emittiert.
-- Lastenheft Z. 2292 verlangt „Replay-Diff-Status-
-  Markierung — M3 mit **Replay-Source-Integration**". Ein
-  `ReplaySource`-Symbol existiert nicht im Code; der
-  `diff_replay()`-Algorithm ist eine standalone
-  Pure-Function ohne Lauf-Lifecycle-Anker.
+  `replay_diff_status` als Pflicht-Metrik. `TickLoop.finalize()`
+  (Core-Spine, ADR 0049 §2.1/§2.4) emittiert sie als binaeren
+  `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0
+  diverged, attributes={run_id, reference_run_id, status})` bei
+  preflight-validem Vergleich (`GG-TERM-002/003`-MVP-Preflight
+  ueber 5 `RunMetadata`-Felder; volle Matrix Carveout Trigger
+  038).
+- Die ReplaySource-Integration laeuft ueber den
+  `ReplaySnapshotPort` (ADR 0048): `read_samples(run_id)`
+  rekonstruiert `expected`/`actual`-`ReplaySample`-Sequenzen aus
+  den persistierten `telemetry_points`; der `finalize()`-Hook
+  difft die explizit gebundene `replay_reference_run_id` gegen
+  den aktuellen Lauf. Die vier Detailfelder
+  (path/expected/actual/tick/device_id/classification) emittiert
+  `finalize()` maschinenlesbar via `log_port`.
 
-Die [Trigger-036-Notiz](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
-verankert den Folge-Pfad: ein eigener Slice fuehrt die
-Per-Lauf-Status-Metrik plus die ReplaySource-Integration
-ein und schliesst die Partial-Lücke.
+[Trigger 036](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
+ist damit aufgeloest (→ `done/` mit M7-Welle-1b-b-C3). Die
+**oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`)
+bleibt separater Scope ([Trigger 039](../plan/planning/open/039-api-replay-trigger-surface.md)).
 
 ---
 
@@ -158,8 +163,11 @@ ein und schliesst die Partial-Lücke.
 
 `tests/integration/test_m6_welle_5c_safe_005_006_compose_smoke.py`
 deckt mit 6 Integration-Smokes (4 SAFE-005 + 1 SAFE-006
-Core-Diff + 1 SAFE-006 Trigger-036-Skip) den Vertrag in CI
-ab. Plus die `make gates`-Aggregat-Substanz (Lint, Format,
+Core-Diff + 1 SAFE-006-Integration-Audit-Pin) den Vertrag in
+CI ab; das `replay_diff_status`-Lifecycle-Verhalten ist in
+`tests/integration/test_mvp_002_replay_lifecycle_smoke.py`
+(+ `tests/unit/…/test_tick_loop_replay_finalize.py`) end-to-end
+gepinnt. Plus die `make gates`-Aggregat-Substanz (Lint, Format,
 Typecheck, Arch-Check, Tests, Coverage, Dep-Audit, NoQA,
 SPDX, plus Image-Audit ueber `make ci` / `make fullbuild`).
 
@@ -177,9 +185,11 @@ SPDX, plus Image-Audit ueber `make ci` / `make fullbuild`).
 - [`safe-007-008-sim-prod-input-validation.md`](safe-007-008-sim-prod-input-validation.md):
   Schwester-Audit fuer die MUSS-Akzeptanzen aus der
   Welle-5b.
-- [Trigger 036 — `GG-SAFE-006` Replay-Diff-Status-Marker +
-  ReplaySource-Integration](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md):
-  partial Lücke aus dem Welle-5c-Audit; verankert den
-  Folge-Slice fuer die Lauf-Lifecycle-Verankerung.
+- [ADR 0048 — ReplaySnapshotPort](../plan/adr/0048-replay-snapshot-port-reconstruction.md)
+  + [ADR 0049 — Replay-Lifecycle](../plan/adr/0049-replay-lifecycle-finalize-hook.md):
+  loesen die `GG-SAFE-006`-Lauf-Lifecycle-Verankerung (Trigger
+  036 → `done/`).
+- [`replay-determinism-e2e.md`](replay-determinism-e2e.md):
+  `GG-MVP-002`-E2E-Replay-Determinismus-Audit (Schwester-Doku).
 - `spec/architecture.md §15` (Z. 820 + 823) —
   Architektur-Vorgabe fuer `replay_diff_status`-Metrik.

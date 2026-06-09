@@ -56,6 +56,7 @@ from grid_gym.hexagon.core.devices.load import LoadDevice
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassification
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
@@ -84,6 +85,8 @@ from grid_gym.hexagon.core.errors import (
     TickLoopStoppedError,
     TickLoopUnknownDeviceTypeError,
 )
+from grid_gym.hexagon.core.replay.diff import diff_replay
+from grid_gym.hexagon.ports.driven.replay_snapshot import ReplaySnapshotPort
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driven.telemetry_sink import TelemetrySinkPort
 from grid_gym.hexagon.core.grid_model import GridModelBilanz
@@ -195,6 +198,19 @@ _CONTROL_ACTION_TRANSITIONS: Final[
 No-op-Pfad ist im Caller (`TickLoop.request`) — der Target-State
 ist in `allowed_from` enthalten."""
 
+_REPLAY_PREFLIGHT_FIELDS: Final[tuple[str, ...]] = (
+    "scenario_hash",
+    "schema_version",
+    "seed",
+    "tick_ms",
+    "tool_version",
+)
+"""M7-Welle-1b-b (ADR 0049 §2.3): die 5 bereits strukturierten
+`RunMetadata`-Felder des `GG-TERM-002/003`-MVP-Replay-Preflights.
+Bei Ungleichheit eines Felds wird der Replay-Diff verworfen (kein
+`replay_diff_status`). Die volle Matrix (`platform_arch` etc.)
+bleibt Carveout Trigger 038."""
+
 _BILANZ_SOURCE_BUCKETS: Final[Mapping[str, str]] = {
     "pv": "generation",
     "load": "load",
@@ -237,6 +253,8 @@ class TickLoop:
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
         run_repository: RunRepositoryPort | None = None,
         telemetry_sink: TelemetrySinkPort | None = None,
+        replay_snapshot: ReplaySnapshotPort | None = None,
+        replay_reference_run_id: str | None = None,
         alarm_id_source: Callable[[], str] | None = None,
     ) -> None:
         if tick_ms <= 0:
@@ -334,7 +352,13 @@ class TickLoop:
         # aufgerufen, damit `_device_by_id` schon gebaut ist
         # (Welle-4b-Agents koennten Device-Referenzen brauchen).
         self._attach_agents()
-        self._attach_welle_4_state(run_repository, telemetry_sink, alarm_id_source)
+        self._attach_welle_4_state(
+            run_repository,
+            telemetry_sink,
+            replay_snapshot,
+            replay_reference_run_id,
+            alarm_id_source,
+        )
 
     def _init_drift_counters(self) -> None:
         """Welle-6a-Review M-3 + Welle-4b-Review-Fix #4: Forward-
@@ -440,16 +464,20 @@ class TickLoop:
         self,
         run_repository: RunRepositoryPort | None,
         telemetry_sink: TelemetrySinkPort | None,
+        replay_snapshot: ReplaySnapshotPort | None,
+        replay_reference_run_id: str | None,
         alarm_id_source: Callable[[], str] | None,
     ) -> None:
         """Run-Lifecycle-State-Setup-Bundle (Welle-4a Control-State +
-        M7-Welle-1a Telemetrie-Sink + Welle-4b Alarm-ID-Source).
-        Bewusst gebuendelt, um `PLR0915 max-statements=30` in
-        `__init__` nicht zu reissen — die Slots sind klein und
-        verwandt (Run-Lifecycle/Driven-Persistenz vs. Alarm-
-        Aggregation), alle lesen optional `app.state`-Parameter aus
-        dem Konstruktor."""
-        self._attach_control_state(run_repository, telemetry_sink)
+        M7-Welle-1a Telemetrie-Sink + M7-Welle-1b-b Replay-Snapshot +
+        Welle-4b Alarm-ID-Source). Bewusst gebuendelt, um `PLR0915
+        max-statements=30` in `__init__` nicht zu reissen — die Slots
+        sind klein und verwandt (Run-Lifecycle/Driven-Persistenz vs.
+        Alarm-Aggregation), alle lesen optional `app.state`-Parameter
+        aus dem Konstruktor."""
+        self._attach_control_state(
+            run_repository, telemetry_sink, replay_snapshot, replay_reference_run_id
+        )
         self._attach_alarm_id_source(alarm_id_source)
 
     def _attach_alarm_id_source(
@@ -468,6 +496,8 @@ class TickLoop:
         self,
         run_repository: RunRepositoryPort | None,
         telemetry_sink: TelemetrySinkPort | None,
+        replay_snapshot: ReplaySnapshotPort | None,
+        replay_reference_run_id: str | None,
     ) -> None:
         """M5-Welle-4a (ADR 0039 Decisions 12+13): Run-Control-State-
         Mirror + optionale Repository-Persistenz. `_control_state`
@@ -487,6 +517,15 @@ class TickLoop:
         # `run_repository` — append-only Telemetrie-Zeitreihen-Sink,
         # pro Tick aus dem Spine bedient (`None` → No-op-Skip).
         self._telemetry_sink: TelemetrySinkPort | None = telemetry_sink
+        # M7-Welle-1b-b (ADR 0049 §2.1/§2.2): Replay-Lifecycle-State.
+        # `replay_snapshot` rekonstruiert `expected`/`actual`-
+        # ReplaySample-Sequenzen; `replay_reference_run_id` ist die
+        # explizite Vergleichs-Bindung (beide `None` → `finalize()`
+        # no-op). `_finalized` macht `finalize()` idempotent
+        # (Driver-Loop-Exit + Lifespan-`stop()` koennen beide rufen).
+        self._replay_snapshot: ReplaySnapshotPort | None = replay_snapshot
+        self._replay_reference_run_id: str | None = replay_reference_run_id
+        self._finalized: bool = False
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
@@ -681,6 +720,109 @@ class TickLoop:
         if self._run_repository is not None:
             self._run_repository.update_status(self._run_id, target_state)
         self._control_state = target_state
+
+    def finalize(self) -> tuple[ReplayDelta, ...]:
+        """M7-Welle-1b-b (ADR 0049 §2.1): idempotenter Run-Terminal-
+        Hook fuer den deterministischen Replay-Diff.
+
+        Der externe Driver (bzw. der Lifespan-`stop()`-Pfad) ruft
+        `finalize()` am Loop-Ende; die Diff-Logik sitzt **hier im
+        Core-Spine** (GG-AR-P-003/007), nicht im Driver. `finalize()`
+        ist idempotent (`_finalized`-Flag → genau eine Emission) und
+        aendert `control_state` **nicht** (`"completed"` wird nicht
+        auto-gesetzt).
+
+        No-op, wenn keine Replay-Bindung konfiguriert ist
+        (`replay_snapshot`/`replay_reference_run_id`/`run_repository`
+        nicht alle gesetzt). Sonst: `GG-TERM-002/003`-MVP-Preflight
+        (ADR 0049 §2.3) → bei Mismatch Reject (kein Status, Log);
+        sonst `diff_replay()` + `replay_diff_status`-Emission +
+        `GG-SAFE-006`-Detail-Log. Gibt die `ReplayDelta`-Tupel
+        zurueck (Test-/Caller-Evidence; der Driver verwirft sie).
+        """
+        if self._finalized:
+            return ()
+        self._finalized = True
+        snapshot = self._replay_snapshot
+        reference_run_id = self._replay_reference_run_id
+        repository = self._run_repository
+        if snapshot is None or reference_run_id is None or repository is None:
+            return ()
+        mismatch = self._replay_preflight_mismatch(repository, reference_run_id)
+        if mismatch is not None:
+            self._obs_log(
+                "warning",
+                f"replay preflight mismatch on '{mismatch}'; diff skipped",
+                event_id="replay_preflight_mismatch",
+                attributes={
+                    "run_id": self._run_id,
+                    "reference_run_id": reference_run_id,
+                    "field": mismatch,
+                },
+            )
+            return ()
+        expected = snapshot.read_samples(reference_run_id)
+        actual = snapshot.read_samples(self._run_id)
+        deltas = diff_replay(expected, actual, tick_ms=self._tick_ms)
+        self._emit_replay_diff_status(deltas, reference_run_id)
+        return deltas
+
+    def _replay_preflight_mismatch(
+        self,
+        repository: RunRepositoryPort,
+        reference_run_id: str,
+    ) -> str | None:
+        """`GG-TERM-002/003`-MVP-Preflight (ADR 0049 §2.3): erstes
+        ungleiches der 5 strukturierten `RunMetadata`-Felder zwischen
+        Referenz- und aktuellem Lauf, sonst `None`. Ein Diff
+        ungleich-konfigurierter Laeufe ist fachlich bedeutungslos."""
+        reference = repository.get_by_id(reference_run_id)
+        current = repository.get_by_id(self._run_id)
+        for field in _REPLAY_PREFLIGHT_FIELDS:
+            if getattr(reference, field) != getattr(current, field):
+                return field
+        return None
+
+    def _emit_replay_diff_status(
+        self,
+        deltas: tuple[ReplayDelta, ...],
+        reference_run_id: str,
+    ) -> None:
+        """ADR 0049 §2.4/§2.5: binaerer `replay_diff_status`-Gauge
+        (1.0 clean / 0.0 diverged; nur **fachliche** Deltas zaehlen
+        als Divergenz) + maschinenlesbare `GG-SAFE-006`-Detail-
+        Evidence pro `ReplayDelta` via `log_port`."""
+        diverged = any(
+            delta.classification is ReplayDeltaClassification.FACHLICH for delta in deltas
+        )
+        self._obs_gauge(
+            "replay_diff_status",
+            0.0 if diverged else 1.0,
+            attributes={
+                "run_id": self._run_id,
+                "reference_run_id": reference_run_id,
+                "status": "diverged" if diverged else "clean",
+            },
+        )
+        for delta in deltas:
+            # Festes `warning`-Level: ein Replay-Delta ist immer
+            # auffaellig; die `fachlich`/`volatil`-Klassifikation bleibt
+            # maschinenlesbar im `classification`-Attribut (GG-SAFE-006).
+            self._obs_log(
+                "warning",
+                f"replay delta {delta.path}",
+                event_id="replay_diff_delta",
+                attributes={
+                    "run_id": self._run_id,
+                    "reference_run_id": reference_run_id,
+                    "path": delta.path,
+                    "expected": delta.expected,
+                    "actual": delta.actual,
+                    "tick": delta.tick,
+                    "device_id": delta.device_id,
+                    "classification": delta.classification.value,
+                },
+            )
 
     @property
     def unknown_source_count(self) -> int:
