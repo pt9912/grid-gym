@@ -26,7 +26,9 @@ Sprung (dieser Commit, M7-Welle-1a-C1).
 - [Trigger 036](../planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
   + [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md) —
   Replay-Source-Integration (Welle 1b) konsumiert die hier
-  persistierten Zeitreihen; 1b-Substanz traegt ADR 0048.
+  persistierten Zeitreihen; 1b-Substanz traegt ADR 0048
+  (`ReplaySnapshotPort`, 1b-a) + ADR 0049 (Replay-Lifecycle,
+  1b-b) per 1b-a-D-1-Sub-Slicing.
 
 ---
 
@@ -39,8 +41,9 @@ werden nicht produktiv persistiert. Die Lastenheft-Akzeptanz
 (Z. 130-135) verlangt „persistiert Zeitreihen". Die
 [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md)-Sub-Slicing-
 Entscheidung (D-4 = B) schneidet die Zeitreihen-Persistenz als
-**Welle 1a** (dieser ADR); die `ReplaySnapshotPort`-/Lifecycle-/
-`replay_diff_status`-Substanz ist **Welle 1b** (ADR 0048).
+**Welle 1a** (dieser ADR); die `ReplaySnapshotPort`-Substanz ist
+**Welle 1b-a** (ADR 0048), die Lifecycle-/`replay_diff_status`-
+Substanz **Welle 1b-b** (ADR 0049) per 1b-a-D-1-Sub-Slicing.
 
 **Code-Ist-Stand (verifiziert):**
 
@@ -209,9 +212,9 @@ Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
 - ADR-Index Aktive-ADRs-Tabelle NEU ADR-0047-Zeile.
 - **Unberuehrt:** `RunRepositoryPort` (Laufmetadaten/Status),
   `TelemetryStreamPort` (Live-Stream, Driving), ADR 0039
-  (`Accepted`-Immutability). `ReplaySnapshotPort`/Lifecycle-Hook/
-  `replay_diff_status`-Metrik sind **Welle 1b** (ADR 0048), nicht
-  Gegenstand von ADR 0047.
+  (`Accepted`-Immutability). `ReplaySnapshotPort` ist **Welle
+  1b-a** (ADR 0048); Lifecycle-Hook + `replay_diff_status`-Metrik
+  sind **Welle 1b-b** (ADR 0049) — nicht Gegenstand von ADR 0047.
 
 ---
 
@@ -222,7 +225,7 @@ Slice-Doc [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Persistenz-Smoke). Status-Pfad (`Proposed → Provisional →
 Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure
-(gebuendelt mit ADR 0048).
+(gebuendelt mit ADR 0048 + ADR 0049).
 
 ---
 
@@ -258,11 +261,12 @@ Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure
 ## 7. Nicht Gegenstand dieser ADR
 
 - **`ReplaySnapshotPort` + Snapshot→`ReplaySample`-Rekonstruktion**
-  (M7-welle-1.md D-1/D-1.1) — Welle 1b, ADR 0048.
+  (M7-welle-1.md D-1/D-1.1) — Welle 1b-a, ADR 0048.
 - **Core-Spine-Lifecycle-Hook + `diff_replay()`-Aufruf +
   `replay_diff_status`-Metrik** (D-2/D-3 des Gruppenplans) —
-  Welle 1b, ADR 0048.
-- **`GG-TERM-002`/`GG-TERM-003`-Equality-Matrix** — Welle 1b.
+  Welle 1b-b, ADR 0049.
+- **`GG-TERM-002`/`GG-TERM-003`-Equality** — MVP-Preflight Welle
+  1b-b (ADR 0049); volle Matrix Carveout Trigger 038.
 - **Query-/Export-API** ueber `read_ordered` (Smoke-Bedarf)
   hinaus — eigener spaeterer Scope.
 - **Batch-/Async-Flush-Tuning** — additive Schaerfung bei Last-
