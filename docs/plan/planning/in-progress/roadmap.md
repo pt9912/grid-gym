@@ -1187,9 +1187,12 @@ carveouts-Triage 034/035 → `Active in M7-Welle-3`)
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
 [`M7-welle-1.md`](M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md); Zeitreihen-Persistenz,
-NEU `TelemetrySinkPort` + ADR 0047). Aktiver Slice jetzt:
-**M7-Welle-1b** (Replay-Lifecycle + `replay_diff_status`, ADR 0048;
-`GG-MVP-002` flippt erst nach 1b).
+NEU `TelemetrySinkPort` + ADR 0047). **Welle 1b weiter sub-sliced**
+(1b-a-D-1): 1b-a (`ReplaySnapshotPort`, ADR 0048) + 1b-b
+(Lifecycle-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-
+Preflight, ADR 0049). Aktiver Slice jetzt: **M7-Welle-1b-a**
+([`M7-welle-1b-a.md`](M7-welle-1b-a.md); `ReplaySnapshotPort`-
+Rekonstruktion). `GG-MVP-002` flippt erst nach 1b-b.
 
 ---
 

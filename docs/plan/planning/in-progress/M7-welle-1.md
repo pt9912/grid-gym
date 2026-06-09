@@ -4,13 +4,21 @@
 aktiviert mit M7-Welle-1-C0 (dieser Commit; `git mv next/ →
 in-progress/M7-welle-1.md`). **Sub-Slicing-Beschluss (D-4-Final =
 B):** Welle **1a** (Zeitreihen-Persistenz, ADR 0047) **— Done
-2026-06-09** + Welle **1b** (Replay-Lifecycle +
-`replay_diff_status`-Metrik, ADR 0048) — `GG-MVP-002` flippt erst
-nach 1b. Decisions D-0..D-5 final (§3). Sub-Slice 1a geliefert
+2026-06-09** + Welle **1b** (Replay-Lifecycle). **Welle 1b ist
+per 1b-a-D-1 weiter sub-sliced** (Pattern analog Welle-4b →
+4b-a/b/c): **1b-a** (NEU `ReplaySnapshotPort` Persistenz-Lese-
+Substanz, **ADR 0048**) + **1b-b** (TickLoop-Terminal-Hook +
+`replay_diff_status`-Metrik + `GG-TERM-002/003`-MVP-E2E-Preflight
++ E2E-Audit-Doku, **ADR 0049**). `GG-MVP-002` flippt erst nach
+1b-b. Decisions D-0..D-5 final (§3); 1b-Equality-Scope auf MVP-
+Preflight korrigiert (§2.5 + R4; Carveout
+[Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)).
+Sub-Slice 1a geliefert
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md), Self-Close → `done/`);
-**aktives Sub-Slice jetzt 1b** (Slice-Doc `M7-welle-1b.md`
-entsteht mit 1b-C0). Pattern analog M6-Welle-4 → 4a/4b. (Dieser
-Gruppenplan bleibt in `in-progress/` bis 1a+1b geschlossen sind.)
+**aktives Sub-Slice jetzt 1b-a**
+([`M7-welle-1b-a.md`](M7-welle-1b-a.md)). Pattern analog
+M6-Welle-4 → 4a/4b. (Dieser Gruppenplan bleibt in `in-progress/`
+bis 1a+1b geschlossen sind.)
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
@@ -139,26 +147,31 @@ M7-Welle-0-C2-Triage; siehe §5) — liefert:
      Tick-Prozessor, der Hook gehoert in diesen Spine, nicht in
      einen Adapter; siehe Trigger 036 D-3).
 
-5. **`GG-TERM-002`-/`GG-TERM-003`-Equality-Vorbedingung im
-   Live-Mode**: Replay-Vergleich nur unter vollstaendig
-   operationalisierter Reproduzierbarkeits-Gleichheit:
-   Tool-/Schema-Version, Plattformarchitektur, Eingabedaten bzw.
-   Szenario-Datei/-Hash, kanonischer Konfigurations-Hash,
-   Startzeit im Simulationszeitmodell, aktivierte Adapter/
-   Adapterprofile, Seed und `tick_ms`.
-   `GG-TERM-002`/`GG-TERM-003` sind dabei normative
-   Begriffsdefinitionen (Lastenheft §27.1.1 / Z. 2203:
-   „n/a — normative Begriffsdefinition", **nicht** in der
-   Implementations-Matrix); sie liefern die Feldliste, der
-   *testbare* Determinismus-Vertrag traced auf `GG-AR-P-008`
+5. **`GG-TERM-002`-/`GG-TERM-003`-MVP-E2E-Replay-Preflight**
+   (Scope per **1b-a-D-6** korrigiert; ehemals „volle Matrix"):
+   Replay-Vergleich nur, wenn die **bereits stabil strukturierten**
+   `RunMetadata`-Felder gleich sind — `scenario_hash`,
+   `schema_version`, `seed`, `tick_ms`, `tool_version`.
+   **Bewusst NICHT in 1b** (dokumentierter Carveout
+   [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)):
+   Plattformarchitektur, aktivierte Adapter/Adapterprofile,
+   Startzeit im Simulationszeitmodell, separater Konfigurations-
+   Hash, `RunMetadata`-Migration, `ReplayComparisonMetadata`-
+   Envelope. **Das ist KEINE vollstaendige Operationalisierung
+   von `GG-TERM-002/003`** — das Lastenheft nennt mehr
+   Pflichtfelder; der Vollausbau (Migration + Canonicalization +
+   Public-Contract-Schaerfung) wuerde 1b vom Replay-Lifecycle-
+   Beleg wegziehen und ist additiv per ADR-0011-Pattern defert.
+   `GG-TERM-002`/`GG-TERM-003` sind normative Begriffsdefinitionen
+   (Lastenheft §27.1.1 / Z. 2203: „n/a — normative
+   Begriffsdefinition", **nicht** in der Implementations-Matrix);
+   der *testbare* Determinismus-Vertrag traced auf `GG-AR-P-008`
    (`GG-SIM-001/002/003`, `GG-RT-002`) plus die GG-TERM-002-
    Akzeptanz (byte-identische kanonische Ergebnisdateien oder
-   leerer Replay-Diff).
-   C0/C1 legt fest, ob diese Daten in `RunMetadata` oder einem
-   eigenen `ReplayComparisonMetadata`-Envelope liegen. Fehlende
-   oder abweichende Pflichtfelder rejecten vor Diff-
-   Klassifikation; Boundary-Tests pinnen die kritischen Felder
-   einzeln, nicht nur einen generischen Mismatch.
+   leerer Replay-Diff). Der Preflight-Vertrag + die Carveout-
+   Aussage landen formal in ADR 0049 (1b-b); Boundary-Tests
+   pinnen die 5 Preflight-Felder einzeln, nicht nur einen
+   generischen Mismatch.
 
 6. **NEU Integration-/Replay-Smoke-Familie**:
    - Zeitreihen-Persistenz-Smoke: API-/Demo-Lauf erzeugt
@@ -234,7 +247,9 @@ Adapter + `telemetry_points`-Schema) — **Welle-1a-Substanz**
   eine Mapping-Konvention (siehe D-1.1).
 
 **Welle-1-Final: A** (NEU `ReplaySnapshotPort` Driven) —
-**Welle-1b-Substanz** (ADR 0048). Welle-1b-C0 verifiziert.
+**Welle-1b-a-Substanz** (ADR 0048; D-1.1 final in 1b-a-D-3:
+Timestamp deterministisch aus `simulation_time` abgeleitet, keine
+neue Tabelle). [`M7-welle-1b-a.md`](M7-welle-1b-a.md) verifiziert.
 
 **Sub-Decision D-1.1 — Snapshot→`ReplaySample`-Rekonstruktion**:
 `ReplaySample` ist **bereits** als Frozen-Dataclass im Domain-
@@ -267,9 +282,9 @@ oder Mapping-Konvention gegen A/B abgrenzbar ist.
   von `fachlich`-Count > 0), numerisch per Gauge/Counter-
   Familie ohne neue `MetricsPort`-Methode.
 
-**Welle-1-Final: A** (**Welle 1b**, ADR 0048; binaer; einfachstes maschinenlesbares Modell,
+**Welle-1-Final: A** (**Welle 1b-b**, ADR 0049; binaer; einfachstes maschinenlesbares Modell,
 keine Severity-Drift-Diskussion, kompatibel mit ADR-0024-
-`MetricsPort`). Welle-X-C0-ADR verifiziert. Der binaere Status
+`MetricsPort`). Welle-1b-b-C0-ADR verifiziert. Der binaere Status
 ist nur der Per-Lauf-Marker; die `GG-SAFE-006`-Details
 (`ReplayDelta`-Diff, volatile Felder, Ticks, Klassifikation)
 bleiben ein separater maschinenlesbarer Evidence-Vertrag —
@@ -284,13 +299,15 @@ koppelt.
 - **B**: NEU Core-Service `RunReplayValidator` mit
   Application-Service-Form (Driving-Port-Aufruf vom Adapter).
 
-**Welle-1-Final: A** (**Welle 1b**, ADR 0048; Terminal-Transition im TickLoop ist der
+**Welle-1-Final: A** (**Welle 1b-b**, ADR 0049; Terminal-Transition im TickLoop ist der
 natuerliche Spine-Punkt; eigener `RunReplayValidator`-Core-
-Service ist YAGNI fuer eine einzige Metrik-Emission). Welle-X-C0
+Service ist YAGNI fuer eine einzige Metrik-Emission). Welle-1b-b-C0
 auditiert dafuer explizit den Ist-Zustand: es gibt heute keinen
 `TickLoop.finalize()`-Hook, sondern `control_state`,
 `request(...)`, `tick()`-Terminal-Guards und den externen
-`DemoTickLoopDriver`-Loop. Falls Welle-X-C0 Option B waehlt,
+`DemoTickLoopDriver`-Loop (Ist-Zustand 1b-a-C0-verifiziert:
+`tick_loop.py` Pre-Tick-Guards + Driver-seitige Terminal-
+Detection). Falls Welle-X-C0 Option B waehlt,
 muss der C2-Sub-Scope den Service explizit aufnehmen; Option A
 liefert keinen separaten Service.
 
@@ -310,6 +327,16 @@ Postgres-Migrationen (`telemetry_points` [1a] + Replay-Snapshot
 [1b]) + zwei Driven-Ports + ~6-7 Tage reissen die Sub-Slicing-
 Schwelle; repo-konsistent (M4/M5/M6-Welle-4 alle sub-sliced).
 `GG-MVP-002` flippt erst nach 1b-Closure.
+
+**Verfeinerung (1b-a-C0, 2026-06-09):** Welle 1b ist per
+**1b-a-D-1** weiter sub-sliced in **1b-a** (`ReplaySnapshotPort`-
+Lese-Substanz, ADR 0048) + **1b-b** (Lifecycle-Hook + Metrik +
+Preflight + Audit-Doku, ADR 0049). Die hier antizipierte „zweite
+Postgres-Migration [1b]" **entfaellt** (1b-a-D-4): der
+`ReplaySnapshotPort`-Adapter liest die bestehende 1a-Tabelle
+`telemetry_points`; der `ReplaySample.timestamp` wird
+deterministisch aus `simulation_time` abgeleitet statt
+gespeichert. Damit traegt 1b **keine** eigene Tabelle.
 
 ### D-5 — ADR-Bedarf
 
@@ -337,6 +364,17 @@ Schwelle; repo-konsistent (M4/M5/M6-Welle-4 alle sub-sliced).
 - Naechste freie ADR-Nummer ist **0047** (letzte vergebene:
   `0046-multi-python-test-stage-pattern.md`, M6-Welle-6); bei
   Sub-Slicing 0047 + 0048.
+
+**Verfeinerung (1b-a-C0):** durch das 1b-Sub-Slicing (1b-a-D-1)
+werden es **drei** ADRs: **0047** (1a, `TelemetrySinkPort`-
+Persistenz, `Provisional`) + **0048** (1b-a,
+`ReplaySnapshotPort`-Rekonstruktion) + **0049** (1b-b, Replay-
+Lifecycle: `replay_diff_status`-Vertrag + `GG-SAFE-006`-
+Detailvertrag + `GG-TERM-002/003`-MVP-Preflight + Lifecycle-Hook-
+Pflicht im Core-Spine). Die **volle** `GG-TERM-002/003`-Matrix
+ist nicht in 0049, sondern als Carveout
+[Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
+defert (1b-a-D-6).
 
 ## 4. Sub-Scope (Welle-Vorbelegung)
 
@@ -453,16 +491,23 @@ subtil**: Version, Plattformarchitektur, Konfiguration,
 Startzeit im Simulationszeitmodell, aktivierte Adapter und
 Eingabedaten sind heute nicht alle strukturiert in `RunMetadata`
 verankert.
-**Mitigation:** Welle-X-C0 erstellt eine vollstaendige
-Equality-Matrix gegen `GG-TERM-002` und `GG-TERM-003` und
-entscheidet den Speicherort (`RunMetadata`-Erweiterung oder
-NEU `ReplayComparisonMetadata`). C1/ADR fixiert Pflichtfelder,
-Hash-/Canonicalization-Regeln und Reject-Semantik fuer fehlende
-oder abweichende Werte. C2 liefert parametrisierte Boundary-
-Tests fuer mindestens Version, Konfiguration, Startzeit im
-Simulationszeitmodell, aktivierte Adapter, Seed und `tick_ms`;
-ein generischer Mismatch-Test reicht nicht. Die Tests tracen
-auf den Determinismus-Invariant `GG-AR-P-008`
+**Mitigation (Scope per 1b-a-D-6 korrigiert):** 1b liefert
+**nicht** die volle Matrix, sondern einen **MVP-E2E-Replay-
+Preflight** ueber die 5 bereits stabil strukturierten
+`RunMetadata`-Felder (`scenario_hash`, `schema_version`, `seed`,
+`tick_ms`, `tool_version`). Genau diese Felder sind heute
+strukturiert verankert — Plattformarchitektur, aktivierte
+Adapter und Simulations-Startzeit sind es **nicht**
+(`started_at`/`ended_at` sind Wall-Clock, nicht Simulationszeit),
+weshalb ihr Vollausbau Migration + Canonicalization +
+Public-Contract-Schaerfung braucht und additiv per ADR-0011-
+Pattern auf
+[Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
+defert ist. ADR 0049 (1b-b) fixiert den Preflight-Vertrag +
+die dokumentierte Carveout-Aussage; 1b-b-C2 liefert
+parametrisierte Boundary-Tests einzeln fuer die 5 Preflight-
+Felder (ein generischer Mismatch-Test reicht nicht). Die Tests
+tracen auf den Determinismus-Invariant `GG-AR-P-008`
 (`GG-SIM-001/002/003`, `GG-RT-002`); `GG-TERM-002`/`GG-TERM-003`
 liefern nur die normative Feld-/Akzeptanz-Definition (n/a in der
 Impl-Matrix, Lastenheft Z. 2203).
