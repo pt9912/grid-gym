@@ -152,7 +152,7 @@ jetzt produktiv im Lauf-Lifecycle verankert:
   (path/expected/actual/tick/device_id/classification) emittiert
   `finalize()` maschinenlesbar via `log_port`.
 
-[Trigger 036](../plan/planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
+[Trigger 036](../plan/planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
 ist damit aufgeloest (→ `done/` mit M7-Welle-1b-b-C3). Die
 **oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`)
 bleibt separater Scope ([Trigger 039](../plan/planning/open/039-api-replay-trigger-surface.md)).

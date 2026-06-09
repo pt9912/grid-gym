@@ -1170,7 +1170,7 @@ Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
 wandern bei Aktivierung nach `in-progress/`):
 
 - `GG-MVP-002` ReplaySource-Integration — **aktiv als M7-Welle-1**
-  (Gruppenplan [`M7-welle-1.md`](M7-welle-1.md); sub-sliced **1a**
+  (Gruppenplan [`M7-welle-1.md`](../done/M7-welle-1.md); sub-sliced **1a**
   Zeitreihen-Persistenz / **1b** Replay-Lifecycle +
   `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
   (in 1b).
@@ -1186,7 +1186,7 @@ Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md` +
 carveouts-Triage 034/035 → `Active in M7-Welle-3`)
 **abgeschlossen** (C0..C4b). **M7-Welle-1** (`GG-MVP-002`) aktiv,
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
-[`M7-welle-1.md`](M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
+[`M7-welle-1.md`](../done/M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md); Zeitreihen-Persistenz,
 NEU `TelemetrySinkPort` + ADR 0047). **Welle 1b weiter sub-sliced**
 (1b-a-D-1): 1b-a (`ReplaySnapshotPort`, ADR 0048) + 1b-b
@@ -1194,7 +1194,7 @@ NEU `TelemetrySinkPort` + ADR 0047). **Welle 1b weiter sub-sliced**
 Preflight, ADR 0049). **M7-Welle-1b-a Done 2026-06-09**
 ([`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md); `ReplaySnapshotPort`-
 Rekonstruktion aus `telemetry_points`). **M7-Welle-1b-b Done
-2026-06-09** ([`M7-welle-1b-b.md`](M7-welle-1b-b.md); Closure —
+2026-06-09** ([`M7-welle-1b-b.md`](../done/M7-welle-1b-b.md); Closure —
 Core-`finalize()`-Naht + `replay_diff_status` + GG-TERM-Preflight +
 Zwei-Lauf-E2E-Beleg, ADR 0049). **`GG-MVP-002` ✓ produktiv**;
 **M7-Welle-1 komplett** (1a + 1b-a + 1b-b; Gruppenplan wandert mit

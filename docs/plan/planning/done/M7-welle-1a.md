@@ -13,7 +13,7 @@ gruen re-verifiziert 2026-06-09 — `make test-integration` 120
 passed / 7 skipped (Persistenz-Smoke inkl.).
 Erstes Sub-Slice von **M7-Welle-1** (`GG-MVP-002`) per Sub-
 Slicing-Beschluss D-4-Final = B (siehe
-[`M7-welle-1.md`](../in-progress/M7-welle-1.md)). Welle 1a liefert die
+[`M7-welle-1.md`](../done/M7-welle-1.md)). Welle 1a liefert die
 produktive Telemetrie-Zeitreihen-Persistenz; Welle 1b (Replay-
 Lifecycle + `replay_diff_status`-Metrik) folgt. `GG-MVP-002`
 flippt erst nach 1b.
@@ -27,7 +27,7 @@ Liefer-Reihenfolge C0 → C1 (NEU ADR 0047 `Provisional`) → C2
 
 `GG-MVP-002` (E2E-Szenario + deterministisches Replay) ist im
 **partial**-Stand mit zwei gekoppelten Lücken (siehe
-[`M7-welle-1.md §1`](../in-progress/M7-welle-1.md)):
+[`M7-welle-1.md §1`](../done/M7-welle-1.md)):
 
 1. **Zeitreihen-Persistenz** fuer Telemetriepunkte fehlt
    (`GG-PERSIST-001`; `RunRepositoryPort` haelt nur Laufmetadaten/
@@ -40,7 +40,7 @@ deterministisch sortierbare Telemetrie-Zeitreihen ueber einen
 NEU `TelemetrySinkPort` (Driven). Damit liefert 1a zugleich die
 Persistenz-Quelle, auf die 1b den `ReplaySnapshotPort`/`expected`-
 Sample-Strom aufsetzt (D-1.1-Timestamp-Lücke siehe
-[`M7-welle-1.md §3 D-1.1`](../in-progress/M7-welle-1.md)).
+[`M7-welle-1.md §3 D-1.1`](../done/M7-welle-1.md)).
 
 ### 1.1 Existierende Substanz (Code-verifiziert)
 
@@ -94,7 +94,7 @@ Sample-Strom aufsetzt (D-1.1-Timestamp-Lücke siehe
 ### 1a-D-0 — Persistenz-Surface (aus Gruppenplan uebernommen)
 
 **Final: NEU `TelemetrySinkPort` (Driven)** — Gruppenplan
-[`M7-welle-1.md §3 D-0`](../in-progress/M7-welle-1.md) (Option A). **NICHT**
+[`M7-welle-1.md §3 D-0`](../done/M7-welle-1.md) (Option A). **NICHT**
 `RunRepositoryPort` (Laufmetadaten/Status), **NICHT** die Live-
 Stream-Surface (Stream-/Persistenz-Trennung; Adapter-Purity).
 
@@ -248,11 +248,11 @@ kein Query-/Export-API ueber den Smoke-Bedarf hinaus.
 
 ## References
 
-- [`M7-welle-1.md`](../in-progress/M7-welle-1.md) — GG-MVP-002-Gruppenplan +
+- [`M7-welle-1.md`](../done/M7-welle-1.md) — GG-MVP-002-Gruppenplan +
   Sub-Slicing-Beschluss + D-0..D-5.
 - [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
-- [`../open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 (wird in 1b aufgeloest).
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
   (`GG-MVP-002`, `GG-PERSIST-001`, `GG-DATA-001`).

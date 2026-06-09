@@ -57,7 +57,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | `GG-SAFE-001/002/005/007/008` | ✓ produktiv (Welle 5): Quality-Pipeline + Fallback + Sim/Prod-Marker + strikte Input-Validation (ADR 0045). |
 | `GG-SAFE-003` | ⚠ partial Lücke → [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md). |
 | `GG-SAFE-004` | ✗ Lücke → [Trigger 034](../open/034-safe-004-max-age-stale-quality.md). |
-| `GG-SAFE-006` | ⚠ partial (`diff_replay` ✓; `replay_diff_status` + `ReplaySourcePort` fehlen) → [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md). |
+| `GG-SAFE-006` | ⚠ partial (`diff_replay` ✓; `replay_diff_status` + `ReplaySourcePort` fehlen) → [Trigger 036](../done/036-safe-006-replay-diff-status-replay-source-integration.md). |
 | `GG-DEPLOY-001..006/011` | ✓ produktiv (Welle 1/5c/6): Compose + offline + Linux + DevContainer + `docker compose up`-Demo-`healthy` + `/ready`-Three-State-Healthcheck (ADR 0046). |
 | `GG-DEPLOY-007..010` | ⏸ M7+ (verteiltes Deployment / Kubernetes / Rolling-Update / Rollback) → [Trigger 037](../open/037-deploy-007-010-multi-node-deployment.md). |
 

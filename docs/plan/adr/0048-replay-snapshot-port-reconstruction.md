@@ -23,9 +23,9 @@ Sprung (dieser Commit, M7-Welle-1b-a-C1).
 - [`M7-welle-1b-a.md`](../planning/done/M7-welle-1b-a.md)
   — Slice-Doc (Decisions 1b-a-D-0..D-6); ADR 0048 fixiert
   D-2/D-3/D-4.
-- [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md) —
+- [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
   GG-MVP-002-Gruppenplan (D-1/D-1.1).
-- [Trigger 036](../planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Replay-Lifecycle (Welle 1b-b, ADR 0049) konsumiert den hier
   rekonstruierten `ReplaySample`-Strom.
 
@@ -43,7 +43,7 @@ Offen bleibt die **End-to-End-Replay-Verkabelung**:
 persistierten Lauf liefert, und (b) der Lauf-Lifecycle-Hook, der
 `diff_replay()` aufruft + `replay_diff_status` emittiert.
 
-Die [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md)-Sub-
+Die [`M7-welle-1.md`](../planning/done/M7-welle-1.md)-Sub-
 Slicing-Entscheidung (D-4 = B) schneidet Welle **1b** in **1b-a**
 (dieser ADR — Persistenz-Lese-Substanz) + **1b-b** (Lifecycle-
 Hook + `replay_diff_status` + `GG-TERM-002/003`-Preflight,

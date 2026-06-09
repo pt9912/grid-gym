@@ -411,9 +411,9 @@ Severity-Stufen-Metrik, asynchroner Diff.
   (`ReplaySnapshotPort`, ADR 0048); liefert die Sample-Lese-Quelle.
 - [`M7-welle-1a.md`](../done/M7-welle-1a.md) — Welle 1a
   (Persistenz, ADR 0047).
-- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
+- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
-- [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [Trigger 036](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — wird mit 1b-b-C3 nach `done/` aufgeloest.
 - [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-002/003-Matrix (Carveout).

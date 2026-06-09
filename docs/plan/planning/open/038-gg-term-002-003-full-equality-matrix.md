@@ -86,7 +86,7 @@ verankert ist.
 
 - [`../done/M7-welle-1b-a.md`](../done/M7-welle-1b-a.md)
   — 1b-a-D-6 (Equality-Scope-Beschluss + Carveout-Begruendung).
-- [`../in-progress/M7-welle-1.md`](../in-progress/M7-welle-1.md)
+- [`../done/M7-welle-1.md`](../done/M7-welle-1.md)
   — GG-MVP-002-Gruppenplan (§2.5 + R4 auf Preflight korrigiert).
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
   — `GG-TERM-002`/`GG-TERM-003` normative Definitionen.

@@ -23,8 +23,8 @@ Sprung (dieser Commit, M7-Welle-1a-C1).
   Serialisierungs-Pattern (kanonische String-Form).
 - [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md) —
   Slice-Doc (Decisions 1a-D-0..D-3); ADR 0047 fixiert sie.
-- [Trigger 036](../planning/open/036-safe-006-replay-diff-status-replay-source-integration.md)
-  + [`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md) —
+- [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
+  + [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
   Replay-Source-Integration (Welle 1b) konsumiert die hier
   persistierten Zeitreihen; 1b-Substanz traegt ADR 0048
   (`ReplaySnapshotPort`, 1b-a) + ADR 0049 (Replay-Lifecycle,
@@ -39,7 +39,7 @@ Sprung (dieser Commit, M7-Welle-1a-C1).
 (`GG-PERSIST-003`), aber **Telemetrie-Zeitreihen** (`GG-PERSIST-001`)
 werden nicht produktiv persistiert. Die Lastenheft-Akzeptanz
 (Z. 130-135) verlangt „persistiert Zeitreihen". Die
-[`M7-welle-1.md`](../planning/in-progress/M7-welle-1.md)-Sub-Slicing-
+[`M7-welle-1.md`](../planning/done/M7-welle-1.md)-Sub-Slicing-
 Entscheidung (D-4 = B) schneidet die Zeitreihen-Persistenz als
 **Welle 1a** (dieser ADR); die `ReplaySnapshotPort`-Substanz ist
 **Welle 1b-a** (ADR 0048), die Lifecycle-/`replay_diff_status`-

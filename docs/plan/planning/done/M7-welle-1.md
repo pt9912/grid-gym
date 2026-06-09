@@ -29,8 +29,8 @@ Gruppenplan wandert mit der 1b-b-C4-Sequenz nach `done/`.
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened
 2026-06-08** (gegen M7-Stand: ADR-Nummer 0047 statt 0046,
 M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
-**Quelle:** [`roadmap.md §M7 + GG-MVP-002-Zeile`](roadmap.md)
-+ [`open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+**Quelle:** [`roadmap.md §M7 + GG-MVP-002-Zeile`](../in-progress/roadmap.md)
++ [`done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
 (Welle-5c-Audit, Trigger-Watch).
 
 ---
@@ -75,7 +75,7 @@ Luecken:
    `diff_replay()` automatisch aufruft.
 
 **Trigger-036-Vorbelegung** (Welle-5c-C2): die Replay-
-Substanz-Skizze ist in [Trigger 036](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+Substanz-Skizze ist in [Trigger 036](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
 verankert (`replay_diff_status`-Metrik, Driven-Adapter,
 Lifecycle-Hook im Core-Spine, `GG-TERM-002`-Equality-
 Vorbedingung). Dieser `next/`-Plan erweitert die Trigger-
@@ -542,7 +542,7 @@ kein `GG-MVP-002`-Statusflip vor der zweiten Closure.
 
 ## 8. References
 
-- [`../open/036-safe-006-replay-diff-status-replay-source-integration.md`](../open/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 Substanz-Skizze; wandert erst nach `done/`,
   wenn Status-Metrik, ReplaySource-Integration und
   `GG-SAFE-006`-Details belegt sind.
@@ -550,7 +550,7 @@ kein `GG-MVP-002`-Statusflip vor der zweiten Closure.
   — Welle-5c-Audit; markiert die ⚠ partial Lücke fuer
   `GG-SAFE-006`; flippt erst bei belegtem integrierten
   `GG-SAFE-006`-Detailvertrag auf ✓ produktiv.
-- [`../in-progress/roadmap.md §3 GG-MVP-002`](roadmap.md)
+- [`../in-progress/roadmap.md §3 GG-MVP-002`](../in-progress/roadmap.md)
   — MVP-Abnahmescope-Tabelle; wird erst nach Zeitreihen-
   Persistenz- und Replay-E2E-Evidence auf ✓ produktiv geflippt.
 - [`../../../../spec/lastenheft.md §3 GG-MVP-002`](../../../../spec/lastenheft.md)

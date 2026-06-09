@@ -3,7 +3,7 @@
 **Status:** Open — dokumentierter Scope-Carveout aus M7-Welle-1b-b
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C0 (Decision 1b-b-D-7;
-[`docs/plan/planning/in-progress/M7-welle-1b-b.md`](../in-progress/M7-welle-1b-b.md)).
+[`docs/plan/planning/done/M7-welle-1b-b.md`](../done/M7-welle-1b-b.md)).
 
 ---
 
@@ -57,9 +57,9 @@ konsumiert.
 
 ## References
 
-- [`../in-progress/M7-welle-1b-b.md`](../in-progress/M7-welle-1b-b.md)
+- [`../done/M7-welle-1b-b.md`](../done/M7-welle-1b-b.md)
   — 1b-b-D-7 (Scope-Schalter + Begruendung).
-- [`../in-progress/M7-welle-1.md`](../in-progress/M7-welle-1.md)
+- [`../done/M7-welle-1.md`](../done/M7-welle-1.md)
   — GG-MVP-002-Gruppenplan.
 - [`../../adr/0045-http-api-request-strict-validation.md`](../../adr/0045-http-api-request-strict-validation.md)
   — Strict-Request-Body-Vertrag fuer ein `replay_of`-Feld.
