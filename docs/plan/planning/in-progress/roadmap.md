@@ -1177,7 +1177,7 @@ wandern bei Aktivierung nach `in-progress/`):
   (in 1b).
 - `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
   — **Done 2026-06-10 als M7-Welle-2** (Plan
-  [`M7-welle-2.md`](M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
+  [`M7-welle-2.md`](../done/M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
   034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
@@ -1204,7 +1204,7 @@ der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
 [Trigger 039](../open/039-api-replay-trigger-surface.md).
 **M7-Welle-2 Done 2026-06-10** (`GG-MVP-003` Abnahme-CLI;
-[`M7-welle-2.md`](M7-welle-2.md); `make accept` + `tools/accept.py` +
+[`M7-welle-2.md`](../done/M7-welle-2.md); `make accept` + `tools/accept.py` +
 Shared `src/grid_gym/scenario_yaml.py`, D-1..D-10 final mit D-10-
 Revision C, Replay-Step standalone wegen
 [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md);

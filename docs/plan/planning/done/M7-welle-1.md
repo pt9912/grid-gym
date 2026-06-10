@@ -41,7 +41,7 @@ M7-Welle-1-Positionierung, M6-Welle-6-`/ready`-Erbschaft).
 Stand. Die anderen MVP-Punkte: 001 ✓ produktiv; **003
 Abnahme-CLI ist M7-Welle-2** (M6-Welle-6 hat es NICHT als
 Scope-Erweiterung aufgenommen — eigener Plan
-[`abnahme-cli.md`](../in-progress/M7-welle-2.md), getriaged auf M7-Welle-2);
+[`abnahme-cli.md`](M7-welle-2.md), getriaged auf M7-Welle-2);
 004 eigener Tracking-Pfad.
 
 **Lastenheft-Akzeptanz (Z. 130-135, GG-MVP-002):**

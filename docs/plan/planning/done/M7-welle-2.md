@@ -17,7 +17,7 @@ dieser Commit). **Offen: C4a/C4b** (Self-Close-Move →
 M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`, Trigger 034/035).
 **Datum:** 2026-06-07 (Skizze) · **Aktiviert + finalisiert
 2026-06-09** (Welle-2-C0) · **Done 2026-06-10** (C3).
-**Quelle:** [`roadmap.md §3 GG-MVP-003`](roadmap.md)
+**Quelle:** [`roadmap.md §3 GG-MVP-003`](../in-progress/roadmap.md)
 + Lastenheft §3 Z. 138-144.
 
 ---
@@ -1092,7 +1092,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
 
 ## 8. References
 
-- [`roadmap.md §3 GG-MVP-003`](roadmap.md)
+- [`roadmap.md §3 GG-MVP-003`](../in-progress/roadmap.md)
   — MVP-Abnahmescope-Tabelle; ✗ Lücke; wird mit Welle-X-
   Closure auf ✓ produktiv geflippt.
 - [`../../../../spec/lastenheft.md §3 GG-MVP-003`](../../../../spec/lastenheft.md)
