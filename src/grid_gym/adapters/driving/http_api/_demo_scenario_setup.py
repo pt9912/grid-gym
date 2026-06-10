@@ -11,7 +11,7 @@ env-var gesetzt ist.
 
 YAML-Datei-Load + `str → Decimal`-Koercion liegen seit M7-Welle-2
 (D-10-Revision C) Single-Source im FastAPI-freien Outer-Ring-Modul
-`grid_gym.scenario_yaml` (`load_yaml_scenario`); dieser Demo-
+`grid_gym.scenario_yaml` (`read_scenario_yaml`); dieser Demo-
 Lifespan konsumiert es nur noch (frueher hielt er eine eigene
 Coercer-Kopie neben Test-Helper + Abnahme-CLI — Drift-Quelle).
 

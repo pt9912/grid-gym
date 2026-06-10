@@ -56,7 +56,7 @@ from grid_gym.hexagon.core.domain.replay import (
     replay_sample_from_point,
 )
 from grid_gym.hexagon.core.domain.scenario import Scenario
-from grid_gym.hexagon.core.errors import ScenarioError
+from grid_gym.hexagon.core.errors import GridGymError
 from grid_gym.hexagon.core.replay.diff import diff_replay
 from grid_gym.hexagon.core.scenario.loader import LoadedScenario, load_scenario
 from grid_gym.scenario_yaml import ScenarioYamlError, read_scenario_yaml
@@ -161,14 +161,20 @@ class AbnahmeReport(BaseModel):
 def _run_scenario_validation(
     scenario_path: Path,
 ) -> tuple[ScenarioValidationCheck, LoadedScenario | None]:
-    """Step A. Faengt deterministische Szenario-Fehler (`ScenarioError`),
-    Helper-Fehler (`ScenarioYamlError`, inkl. Non-Mapping-Root +
-    malformed Decimal) und Datei-I/O (`OSError`: fehlend/unlesbar) →
-    `fail` (Exit 1). `yaml.YAMLError` (Parser-Bruch) wird **nicht**
-    gefangen und eskaliert zu Exit 2 (D-9)."""
+    """Step A. Faengt **alle** Szenario-Daten-Fehler aus dem Lade-/
+    Validier-/Hash-Pfad als Exit-1-`fail`:
+    - `GridGymError` deckt `ScenarioError` (Validator) **und** die
+      Canonical-Serialisierungs-Fehler der `scenario_hash`-Berechnung
+      (`WrongTypeError`/`SnapshotFormatError` — z. B. ein YAML-`float`
+      in einem Decimal-Allowlist-Feld, das die `str`-Koercion umgeht);
+    - `ScenarioYamlError` deckt den Helper (Non-Mapping-Root + malformed
+      Decimal-String);
+    - `OSError` deckt fehlende/unlesbare Datei.
+    `yaml.YAMLError` (Parser-Bruch) ist **kein** `GridGymError`, wird
+    nicht gefangen und eskaliert zu Exit 2 (D-9 — CLI-internal)."""
     try:
         loaded = load_scenario(read_scenario_yaml(scenario_path))
-    except (OSError, ScenarioYamlError, ScenarioError) as exc:
+    except (OSError, ScenarioYamlError, GridGymError) as exc:
         return (
             ScenarioValidationCheck(status="fail", reason=f"{type(exc).__name__}: {exc}"),
             None,

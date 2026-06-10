@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import re
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -172,3 +173,32 @@ def test_accept_tool_error_returns_exit_2(
     missing_report = json.loads(missing_captured.out)
     assert missing_report["overall_status"] == "fail"
     assert missing_report["checks"]["scenario_validation"]["status"] == "fail"
+
+
+def test_accept_float_in_decimal_field_returns_fail_not_tool_error(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Review-Folge F1: ein bare YAML-`float` in einem Decimal-Allowlist-
+    Feld umgeht die `str → Decimal`-Koercion und laesst die
+    `scenario_hash`-Berechnung mit `WrongTypeError` (canonical-
+    incompatible) brechen — ein `GridGymError`, **kein** `ScenarioError`.
+    Das ist ein deterministischer Szenario-Daten-Fehler → Exit **1**
+    (`scenario_validation` fail), **nicht** Exit 2 (Tool-Error). Pinnt,
+    dass Step A `GridGymError` (nicht nur `ScenarioError`) faengt — sonst
+    schickt ein sehr haeufiger YAML-Editier-Fehler (`50.5` statt `"50.5"`)
+    CI in den falschen Eskalations-Pfad."""
+    raw = _GG_DEMO_PATH.read_text(encoding="utf-8")
+    mutated = re.sub(r'(rated_power_kw:\s*)"[\d.]+"', r"\g<1>50.5", raw, count=1)
+    assert mutated != raw, "Mutation muss greifen (quotiertes rated_power_kw erwartet)"
+    bad = tmp_path / "float-decimal.yaml"
+    bad.write_text(mutated, encoding="utf-8")
+
+    exit_code = _run([str(bad)])
+    captured = capsys.readouterr()
+
+    assert exit_code == 1  # nicht 2 — Szenario-Daten-Fehler, kein Tool-Error
+    report = json.loads(captured.out)
+    assert report["overall_status"] == "fail"
+    assert report["checks"]["scenario_validation"]["status"] == "fail"
+    # alle drei Entries bleiben praesent (no-fail-fast).
+    assert set(report["checks"]) == _CHECK_KEYS

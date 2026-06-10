@@ -220,7 +220,7 @@ def _coerce_rule(rule: Any) -> Any:
         if isinstance(payload, Mapping):
             action_dict["payload"] = {
                 key: (
-                    _safe_decimal(value, key)
+                    _safe_decimal(value, f"action.payload.{key}")
                     if key in RULE_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
                     else value
                 )
