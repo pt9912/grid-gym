@@ -465,7 +465,7 @@ maschinenlesbar.
 | --- | --- | --- | --- |
 | **GG-MVP-001** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
 | **GG-MVP-002** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ✓ **produktiv** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓ + **Zeitreihen-Persistenz** ✓ (`TelemetrySinkPort` + `telemetry_points`, ADR 0047, M7-Welle-1a) + **deterministisches Replay-E2E** ✓ (`ReplaySnapshotPort` ADR 0048 + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-Preflight ADR 0049, M7-Welle-1b; Zwei-Lauf-Beleg in `tests/integration/test_mvp_002_replay_lifecycle_smoke.py`; Audit `docs/user/replay-determinism-e2e.md`). Geliefert ueber M7-Welle-1 (1a + 1b-a + 1b-b); Trigger 036 aufgeloest. Carveouts: volle `GG-TERM`-Matrix (Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039). |
-| **GG-MVP-003** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✗ **Lücke** | Was es heute gibt: `make demo` (Start ohne Status-Output), `make runtime` (Compose-Smoke + `/health`-Poll), `make test-integration` (Pytest + JUnit-XML). **Kein** Abnahme-CLI (`tools/accept.py` / `make accept`) mit Aggregat-Status. Kein `open/`-Trigger angelegt (Welle 6 ist Kandidat fuer Scope-Erweiterung; alternativ eigener Trigger fuer Folge-Slice). |
+| **GG-MVP-003** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✓ **produktiv** | `make accept` + `tools/accept.py` (M7-Welle-2): orchestriert no-fail-fast Step A (Szenario-Validierung `load_scenario` + Hash-Pin) → B (Headless-Zwei-Lauf-Determinismus via `build_tick_loop` + `diff_replay` + Telemetry-Stream-Hash-Pin) → C (`/ready`-Healthcheck) und schreibt den `AbnahmeReport` (Pydantic-strict) als JSON-only-stdout mit Tri-State-Exit 0/1/2 (D-9). Geteilter `tools/_demo_replay.py`-Helper + CI-Drift-Lint `tools/check_demo_scenario_pin.py` (`make ci`-Gate, D-8). Doku `docs/user/abnahme-cli.md`. Geliefert M7-Welle-2 (commits `33ac255` + `92d10f5`). |
 | **GG-MVP-004** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
 
 **Aktivierungs-Pfade fuer offene Punkte:**
@@ -476,11 +476,12 @@ maschinenlesbar.
   aufgeloest. Rest-Carveouts: volle `GG-TERM`-Matrix (Trigger 038),
   oeffentliche API-Replay-Bedienung (Trigger 039),
   `GG-REPLAY-004..006` (SOLLTE, offen).
-- **GG-MVP-003 Abnahme-CLI** → noch nicht verankert. Optionen:
-  Welle-6-Scope-Erweiterung (additive `make accept` + `tools/
-  accept.py` als 4. Substanz-Item; passt zum NEU `/ready`-
-  Endpoint), NEU `open/`-Trigger als eigener Folge-Slice, oder
-  Welle-7-Closure als Aggregat-Belege.
+- **GG-MVP-003 Abnahme-CLI** → **✓ geliefert ueber M7-Welle-2**
+  (`make accept` + `tools/accept.py` + Shared
+  `src/grid_gym/scenario_yaml.py`; D-10-Revision C; commits
+  `33ac255` + `92d10f5`). **Damit alle vier `GG-MVP-*`-Punkte
+  produktiv** — offen im M7-Meilenstein bleibt nur die Safety-Closure
+  `GG-SAFE-003/004` (M7-Welle-3, Trigger 034/035).
 
 ---
 
@@ -1175,7 +1176,8 @@ wandern bei Aktivierung nach `in-progress/`):
   `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
   (in 1b).
 - `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
-  — Plan [`M7-welle-2.md`](M7-welle-2.md).
+  — **Done 2026-06-10 als M7-Welle-2** (Plan
+  [`M7-welle-2.md`](M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
   034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
@@ -1201,10 +1203,16 @@ Zwei-Lauf-E2E-Beleg, ADR 0049). **`GG-MVP-002` ✓ produktiv**;
 der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
 [Trigger 039](../open/039-api-replay-trigger-surface.md).
-**Aktiver Slice jetzt: M7-Welle-2** (`GG-MVP-003` Abnahme-CLI;
-[`M7-welle-2.md`](M7-welle-2.md), In Progress 2026-06-09 mit C0 —
-`make accept` + `tools/accept.py`, D-1..D-10 final, Replay-Step
-standalone wegen [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)).
+**M7-Welle-2 Done 2026-06-10** (`GG-MVP-003` Abnahme-CLI;
+[`M7-welle-2.md`](M7-welle-2.md); `make accept` + `tools/accept.py` +
+Shared `src/grid_gym/scenario_yaml.py`, D-1..D-10 final mit D-10-
+Revision C, Replay-Step standalone wegen
+[Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md);
+commits `33ac255` + `92d10f5`). **`GG-MVP-003` ✓ produktiv → alle vier
+`GG-MVP-*`-Punkte produktiv** (001/002/003/004). **Aktiver Slice
+jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
+[`max_age`](../open/034-safe-004-max-age-stale-quality.md) + 035
+[Comm-Failure](../open/035-safe-003-comm-failure-missing-quality.md)).
 
 ---
 

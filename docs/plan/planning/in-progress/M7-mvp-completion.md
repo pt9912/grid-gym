@@ -66,13 +66,16 @@ mit M7-Closure.
 | - | ----- | ------ | --------- | --------------- |
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
 | 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](../done/M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
-| 2 | Abnahme-CLI (`GG-MVP-003`) | **In Progress 2026-06-09** (C0) | [`M7-welle-2.md`](M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema; D-1..D-10 final; kein ADR (D-6) |
-| 3 | Safety-Closure (`GG-SAFE-003/004`) | Pending | TBD | Trigger 034 (`max_age`) + 035 (Comm-Failure) |
+| 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
+| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Pending — aktiver Slice** | TBD | Trigger 034 (`max_age`) + 035 (Comm-Failure) |
 | X | M7-Closure | Pending | TBD | `done/M7-results.md` + ADR-Accept + Roadmap-DoD-Sweep |
 
-**Aktiver Slice:** **M7-Welle-2** (`GG-MVP-003` Abnahme-CLI;
-[`M7-welle-2.md`](M7-welle-2.md), **In Progress 2026-06-09** mit C0).
-M7-Welle-1 Done 2026-06-09 (`GG-MVP-002` ✓ produktiv).
+**Aktiver Slice:** **M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`;
+Trigger 034/035; Slice-Doc TBD via Welle-3-C0). M7-Welle-2 **Done
+2026-06-10** (`GG-MVP-003` ✓ produktiv) → **beide MVP-MUSS-IDs
+(`GG-MVP-002` + `GG-MVP-003`) erfuellt; alle vier `GG-MVP-*`-Punkte
+produktiv**. Es verbleiben die SOLLTE-/Audit-IDs `GG-SAFE-003/004`
+(Welle 3) vor der M7-Closure.
 
 ### 3.2 Pending-Wellen-Vorbelegung
 

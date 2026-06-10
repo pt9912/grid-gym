@@ -1,17 +1,22 @@
 # M7-Welle-2 — GG-MVP-003 Closure: Abnahme-CLI mit maschinenlesbarem Status
 
-**Status:** In Progress — **M7-Welle-2-Slice-Plan** (aktiviert mit
-Welle-2-C0, dieser Commit; `git mv next/abnahme-cli.md →
-in-progress/M7-welle-2.md`). **Letzte offene `GG-MVP-*`-Lücke**
-(`GG-MVP-002` ✓ produktiv seit M7-Welle-1; siehe
-[`M7-mvp-completion.md`](M7-mvp-completion.md)). Decisions D-1..D-10
-mit C0 final (Block unten); kein NEU ADR (D-6). **Offen: C2**
-(Code: `make accept` + `tools/accept.py` + `tools/_demo_replay.py` +
-`tools/check_demo_scenario_pin.py` + `AbnahmeReport` + Smokes +
-`docs/user/abnahme-cli.md`) **+ C3** (Status/DoD-Sync +
-`GG-MVP-003`-Flip) **+ C4a/C4b** (Self-Close-Move).
+**Status:** **Done 2026-06-10** (C0 + C2 + C2-Review-Folge + C3,
+dieser Commit) — **`GG-MVP-003` ✓ produktiv**; damit sind **alle vier
+`GG-MVP-*`-Punkte produktiv** (001 ✓ / 002 ✓ M7-Welle-1 / 003 ✓
+M7-Welle-2 / 004 ✓). **M7-Welle-2-Slice-Plan** (aktiviert mit
+Welle-2-C0; `git mv next/abnahme-cli.md → in-progress/M7-welle-2.md`).
+Decisions D-1..D-10 mit C0 final (Block unten; D-10 in C2 zu
+„Revision C" geschaerft, siehe §0); kein NEU ADR fuer die CLI (D-6).
+**Geliefert:** C2 (`make accept` + `tools/accept.py` +
+`tools/_demo_replay.py` + `tools/check_demo_scenario_pin.py` +
+`AbnahmeReport` + Shared `src/grid_gym/scenario_yaml.py` + 5 Smokes +
+`docs/user/abnahme-cli.md`; commits `33ac255` Code + `92d10f5`
+Review-Folge F1/F2/F3) + C3 (Status/DoD-Sync + `GG-MVP-003`-Flip,
+dieser Commit). **Offen: C4a/C4b** (Self-Close-Move →
+`done/M7-welle-2.md` + Refs-Sync). **Aktiver Slice danach:
+M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`, Trigger 034/035).
 **Datum:** 2026-06-07 (Skizze) · **Aktiviert + finalisiert
-2026-06-09** (Welle-2-C0; gegen den Post-Welle-1-Stand).
+2026-06-09** (Welle-2-C0) · **Done 2026-06-10** (C3).
 **Quelle:** [`roadmap.md §3 GG-MVP-003`](roadmap.md)
 + Lastenheft §3 Z. 138-144.
 
@@ -1141,28 +1146,42 @@ D-7 Option B (Skript startet Stack selbst), nochmals
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C0 — Plan aktiviert (`next/ → in-progress/M7-welle-2.md`) +
+- [x] C0 — Plan aktiviert (`next/ → in-progress/M7-welle-2.md`) +
       Decision-Liste D-1..D-10 final (§0) + DoD; roadmap/M7-mvp-
       completion/READMEs auf aktiver Slice M7-Welle-2.
-- [ ] C2 — NEU `make accept`-Target + `tools/accept.py`
+- [x] C2 — NEU `make accept`-Target + `tools/accept.py`
       (Orchestrierung A→B→C, no-fail-fast, stdout-JSON-only,
       Tri-State-Exit) + `tools/_demo_replay.py`-Helper +
       `tools/check_demo_scenario_pin.py` (`make ci`-Gate) +
-      `AbnahmeReport` Pydantic-strict.
-- [ ] C2 — Step A Szenario-Validierung (`load_scenario` +
+      `AbnahmeReport` Pydantic-strict. (commit `33ac255`)
+- [x] C2 — Step A Szenario-Validierung (`load_scenario` +
       Hash-Pin), Step B Headless-Zwei-Lauf-Determinismus
       (`diff_replay` leer + Stream-Hash-Pin), Step C `/ready`-Poll
       (`status == "healthy"`).
-- [ ] C2 — Smokes pinnen: Happy-Path → Exit 0; invalid Szenario →
+- [x] C2 — Smokes pinnen: Happy-Path → Exit 0; invalid Szenario →
       Exit 1; kaputtes YAML → Exit 2 + Gegenprobe File-nicht-lesbar
       → Exit 1; stdout ist JSON-only (`json.loads` ohne Pre-Strip);
       alle drei Sub-Step-Entries immer praesent.
-- [ ] **`make ci`/`make test-integration` cache-frei gruen** inkl.
-      NEU Abnahme-Smokes + `check_demo_scenario_pin`-Gate.
-- [ ] `make gates` + `make fullbuild` + `make docs-check` gruen.
-- [ ] C2 — NEU `docs/user/abnahme-cli.md` (Aufruf `make demo &&
+- [x] **C2-Review-Folge** (commit `92d10f5`) — F1: Step A faengt
+      `GridGymError` (nicht nur `ScenarioError`), damit ein YAML-`float`
+      in einem Decimal-Feld → Exit 1 statt 2 (+ Regressions-Smoke);
+      F2: `action.payload.`-Feld-Prefix in `scenario_yaml`
+      wiederhergestellt; F3: Docstring-Korrektur.
+- [x] **`make ci`/`make test-integration` cache-frei gruen** inkl.
+      NEU Abnahme-Smokes (5) + `accept-pin-check` + `test-iec61850` +
+      `openapi-validate` + `build` + `runtime`.
+- [x] `make gates` + `make fullbuild` + `make docs-check` gruen.
+      `image-audit` gruen nach **Base-Image-Refresh** (`make
+      rebase-base` → runtime-Stage `apt-get upgrade` zieht openssl
+      `3.5.6-1~deb13u2`); die vorbestehende Debian-Base-CVE
+      **CVE-2026-45447** (unabhaengig von GG-MVP-003) ist damit weg,
+      runtime-Image `Total: 0 HIGH/CRITICAL`. Trivy-Pin separat auf
+      `0.71.0` aktualisiert (eigener M7-Tooling-Commit per ADR 0043
+      „Scanner-Wahl = M7+ Tooling-Slice"); auch unter 0.71.0
+      `Total: 0`.
+- [x] C2 — NEU `docs/user/abnahme-cli.md` (Aufruf `make demo &&
       make accept`; D-7).
-- [ ] C3 — M7-Welle-2 `Done`; **`GG-MVP-003` ✓ produktiv**
+- [x] C3 — M7-Welle-2 `Done`; **`GG-MVP-003` ✓ produktiv**
       (roadmap; Lastenheft-Impl-Matrix fuehrt `GG-MVP-001..004` als
       „n/a — Scope-Festlegung", Z. 2205 — kein Per-ID-Marker).
 
