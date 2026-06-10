@@ -189,6 +189,16 @@ FROM source AS spdx-check
 RUN uv run python tools/check_spdx.py
 
 # ---------------------------------------------------------------------------
+# accept-pin-check: tools/check_demo_scenario_pin.py — CI-Drift-Lint fuer
+# die zwei GG-MVP-003-Demo-Pins (M7-Welle-2, D-8). Recomputed
+# EXPECTED_DEMO_SCENARIO_HASH + EXPECTED_DEMO_TELEMETRY_STREAM_HASH gegen
+# deploy/scenarios/gg-demo.yaml (ueber denselben geteilten _demo_replay-
+# Helper wie tools/accept.py) und bricht bei Drift. In `make ci` integriert.
+# ---------------------------------------------------------------------------
+FROM source AS accept-pin-check
+RUN uv run python tools/check_demo_scenario_pin.py
+
+# ---------------------------------------------------------------------------
 # noqa-check: tools/check_noqa.py — `# noqa`-Marker-Reporter (Slice 027).
 # Standardmodus: Report mit Exit-Code 0. Vor dem Plan-§4-Scharfschalten
 # nuetzlich fuer einen aktuellen Bestands-Lauf.

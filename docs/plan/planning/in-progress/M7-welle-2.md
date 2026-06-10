@@ -61,12 +61,47 @@ bleibt indikativ (siehe §3-Vorspann).
   / `2` Tool-Error (CLI-interner Bug).
 - **D-10 = A** — `tools/` parst YAML selbst (`yaml.safe_load` +
   `load_scenario`) + repliziert die schlanke Fault-Composition
-  (ADR-0021-§2.1-konform: `tools/` ist nicht Core-`src/`).
+  (ADR-0021-§2.1-konform: `tools/` ist nicht Core-`src/`). **In C2
+  fuer den YAML-Load-Strang revidiert (Revision C; siehe
+  Welle-2-C2-Revision unten); die Fault-Composition bleibt wie
+  beschlossen in `tools/_demo_replay.py` repliziert.**
 
 **C2-Audit-Pflicht (aus §6 uebernommen):** verifizieren, dass
 `canonical_json` ein Top-Level-`list`-Argument akzeptiert (Stream-
 Hash serialisiert eine `list[dict]`); sonst Stream-Hash-Vertrag in
-C2 anpassen.
+C2 anpassen. **C2-Ergebnis:** `canonical_json(value: object)`
+akzeptiert die `list[dict]` (verifiziert; `hash_telemetry_stream`
+serialisiert `[asdict(point) for point in stream]`).
+
+### Welle-2-C2-Revision — D-10 Option A → „Revision C" (Shared `src/`-Helper)
+
+Bei der C2-Umsetzung zeigte sich, dass **drei** Stellen die
+YAML-Datei-I/O + `str → Decimal`-Koercion duplizierten
+(`_demo_scenario_setup` http_api-intern, der Test-Helper
+`_yaml_scenario_loader`, und neu die Abnahme-CLI). D-10 Option A
+(„`tools/` parst selbst") haette die **dritte** Kopie erzeugt. Statt
+drei divergierender Koercion-Kopien zog C2 den YAML-Load-Strang in
+einen **FastAPI-freien Outer-Ring-Helper** `src/grid_gym/scenario_yaml.py`
+(`read_scenario_yaml(path) -> dict` + Decimal-Allowlist-Konstanten),
+den Demo-Lifespan, Abnahme-CLI **und** Test-Helper als Single-Source
+konsumieren. Der Hexagon-Core bleibt YAML-frei (`load_scenario(raw)`
+bleibt Mapping-only, I/O-frei) — der Helper ist bewusst **kein**
+`adapters/driven/scenario_yaml/`-Hexagon-Adapter (Welle-5-Decision-18
+gewahrt) und importiert keinen `hexagon.core`, erzeugt also **keine**
+neue `AC-ADAPTER-PURE`-Ausnahme. Die **Fault-Composition** bleibt wie
+in D-10 Option A beschlossen in `tools/_demo_replay.py` repliziert
+(`_FaultPortComposition` + Battery/Grid-Engines aus
+`hexagon/core/faults`).
+
+Diese Revision deckte zugleich die breitere `AC-ADAPTER-PURE`-Bruecken-
+Lage des produktiven http_api-Demo-Wirings auf → **NEU ADR 0050**
+(Bridge-Rueckbau) + **ADR 0051** (Fault-Engine-Standort/Naming), beide
+`Proposed`, mit den Umsetzungsslices
+[`next/041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) +
+[`next/042`](../next/042-fault-engine-location-and-naming.md).
+**D-6 („kein NEU ADR") bleibt fuer die Abnahme-CLI selbst gueltig** —
+0050/0051 betreffen die separat-aufgeschobene Adapter-Cleanup-Linie,
+nicht `tools/accept.py`; C1 entfaellt unveraendert.
 
 ---
 

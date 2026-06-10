@@ -38,10 +38,14 @@ from fastapi.testclient import TestClient
 
 from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
     _DEMO_RUN_ID,
-    _load_scenario_from_yaml,
 )
 from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
 from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR, app
+
+# M7-Welle-2 (D-10-Revision C): der Demo-YAML-Load liegt jetzt im
+# Shared-Helper `grid_gym.scenario_yaml` (Test-Helper komponiert ihn
+# mit `load_scenario` zu `load_yaml_scenario`).
+from tests.integration._yaml_scenario_loader import load_yaml_scenario
 
 
 _DEMO_SCENARIO_PATH: Path = (
@@ -162,8 +166,8 @@ def test_demo_scenario_hash_is_deterministic() -> None:
     Hash ist die Single-Source-of-Truth fuer die canonical_json-
     Reproduzierbarkeit der Decision-5-Demo (seed=42 fixiert in
     der YAML)."""
-    first = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
-    second = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
+    first = load_yaml_scenario(_DEMO_SCENARIO_PATH)
+    second = load_yaml_scenario(_DEMO_SCENARIO_PATH)
     assert first.scenario_hash == second.scenario_hash
 
 
@@ -180,7 +184,7 @@ def test_demo_scenario_hash_pin_for_drift_detection() -> None:
     bewussten YAML-Edit (siehe Welle-6a-§10.x-Realization-
     Notes-Pflege).
     """
-    loaded = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
+    loaded = load_yaml_scenario(_DEMO_SCENARIO_PATH)
     expected_hash = "00ac59d8c2fb163a826e42d3da0f584400b7592915292caebb0a3ce879e591c6"
     assert loaded.scenario_hash == expected_hash, (
         f"scenario_hash drift! Expected {expected_hash} "

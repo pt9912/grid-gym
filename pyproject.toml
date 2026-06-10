@@ -384,6 +384,11 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # OTel-SDK-Failure-Modes ist Teil dessen, was wir hier
 # eingrenzen — engerer except waere willkuerlich).
 "tools/diagnose_otlp_span_export.py" = ["BLE001", "S310"]
+# M7-Welle-2 (GG-MVP-003): Abnahme-CLI. `S310` — die `/ready`-URL ist
+# constant/intern (analog wait_otel_collector). `BLE001` — der breite
+# `except` in `main()` ist die bewusste Tri-State-Exit-2-Grenze (D-9:
+# jeder ungefangene CLI-interne Fehler → Tool-Error + Traceback/stderr).
+"tools/accept.py" = ["S310", "BLE001"]
 
 # ---------------------------------------------------------------------------
 # mypy --strict (ADR 0005)

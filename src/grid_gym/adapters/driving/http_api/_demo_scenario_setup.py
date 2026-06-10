@@ -9,15 +9,11 @@ Lifespan (`app.py`) ruft `configure_scenario_demo_run(app_,
 scenario_path)` an Stelle von `configure_demo_run`, wenn die
 env-var gesetzt ist.
 
-Privater YAML-Loader: `_coerce_demo_yaml_mapping` macht
-Schema-bewusst `str → Decimal` fuer die Demo-Pflichtfelder.
-Pattern ist eine kompakte Variante von
-`tests/integration/_yaml_scenario_loader.py` (Welle-6c-Test-
-Helper) — Welle 5 hebt **keinen** generischen YAML-Adapter nach
-`adapters/driven/scenario_yaml/` (Decision 18 + Slice-Doc §4 C1-
-Verzicht); der minimale lokale Coercer reicht fuer Demo-Pflicht.
-Ein zukuenftiger produktiver YAML-Adapter (Welle 6c+/M6) ersetzt
-sowohl diesen Coercer als auch den Test-Loader.
+YAML-Datei-Load + `str → Decimal`-Koercion liegen seit M7-Welle-2
+(D-10-Revision C) Single-Source im FastAPI-freien Outer-Ring-Modul
+`grid_gym.scenario_yaml` (`load_yaml_scenario`); dieser Demo-
+Lifespan konsumiert es nur noch (frueher hielt er eine eigene
+Coercer-Kopie neben Test-Helper + Abnahme-CLI — Drift-Quelle).
 
 Cycle-Vermeidung (arch_check AC-NO-CYCLES): das Modul nimmt
 `app_: FastAPI` als ersten Parameter — kein Modul-Top-Level-
@@ -37,12 +33,10 @@ Komposition-Root-Hinweis: importiert `load_scenario` +
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Mapping, Sequence
-from decimal import Decimal, InvalidOperation
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, Final, cast
+from typing import Final, cast
 
-import yaml
 from fastapi import FastAPI
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
@@ -72,12 +66,12 @@ from grid_gym.hexagon.core.faults import (
     GridFaultAdapter,
 )
 from grid_gym.hexagon.core.scenario.loader import (
-    LoadedScenario,
     TickLoopWiring,
     build_tick_loop,
     load_scenario,
 )
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
+from grid_gym.scenario_yaml import read_scenario_yaml
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
@@ -104,51 +98,6 @@ vom Scenario-`simulation.tick_ms`, damit ein Stunden-Profil
 (`tick_ms=3600000`) nicht eine Stunde Wall-Clock pro Tick
 bedeutet. Aequivalent zum `DemoTickLoopDriver._DEFAULT_TICK_
 INTERVAL_S` aus Welle 4a."""
-
-
-_DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
-    {
-        "rated_power_kw",
-        "capacity_kwh",
-        "initial_soc_pct",
-        "min_soc_pct",
-        "max_soc_pct",
-        "max_charge_kw",
-        "max_discharge_kw",
-        "charge_efficiency",
-        "discharge_efficiency",
-        "ramp_kw_per_s",
-        "nominal_voltage_v",
-        "max_import_kw",
-        "max_export_kw",
-    }
-)
-
-_GRID_MODEL_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset(
-    {
-        "nominal_frequency_hz",
-        "frequency_sensitivity_hz_per_kw",
-        "frequency_clamp_min_hz",
-        "frequency_clamp_max_hz",
-        "nominal_voltage_v",
-        "voltage_sensitivity_v_per_kw",
-        "voltage_clamp_min_v",
-        "voltage_clamp_max_v",
-    }
-)
-
-_LOAD_EVENT_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset({"start_s", "duration_s", "power_kw"})
-
-_RULE_PAYLOAD_DECIMAL_KEYS: Final[frozenset[str]] = frozenset({"value", "power_kw"})
-
-
-class _DemoScenarioYamlInvalidRootError(TypeError):
-    """`GRID_GYM_DEMO_SCENARIO_PATH` zeigt auf eine YAML-Datei,
-    deren Root keine Mapping-Struktur ist (z. B. Liste oder
-    Skalar). Fail-fast vor `load_scenario`."""
-
-    def __init__(self, path: Path, root_type: str) -> None:
-        super().__init__(f"Demo scenario YAML root must be a mapping; got {root_type} from {path}")
 
 
 def configure_scenario_demo_run(
@@ -199,7 +148,7 @@ def configure_scenario_demo_run(
     # ScenarioWrongType, DecimalCoercion) hinterlaesst die Repository
     # sonst befuellt, und der Skip-Guard im Lifespan blockt jeden
     # Re-Try permanent.
-    loaded = _load_scenario_from_yaml(scenario_path)
+    loaded = load_scenario(read_scenario_yaml(scenario_path))
     clock = _DemoSimulationClock()
     random_root = MersenneTwisterRandomPort(seed=loaded.scenario.simulation.seed)
     fault_port = _compose_fault_port(loaded.scenario.faults)
@@ -475,165 +424,3 @@ def _alarm_id_source() -> Callable[[], str]:
     Smoke laesst den Production-Default laufen, weil Hash-Pin nur
     den ersten Tick-Block pinnt (vor erstem Alarm-Emit)."""
     return lambda: uuid.uuid4().hex
-
-
-def _load_scenario_from_yaml(path: Path) -> LoadedScenario:
-    """Welle-5-privater Demo-Loader: liest YAML, coerced Decimal-
-    Pflichtfelder, ruft den I/O-freien Core-Loader.
-
-    Pattern aus `tests/integration/_yaml_scenario_loader.py`
-    (Welle-6c) — Welle 5 dupliziert die Coercion bewusst lokal
-    (Slice-Doc §3.3 Decision 18 verbietet einen neuen
-    YAML-Adapter unter `adapters/driven/scenario_yaml/`). Ein
-    spaeterer produktiver YAML-Adapter ersetzt beide Loader-
-    Varianten ueber ein eigenes Slice + ADR.
-    """
-    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if not isinstance(raw, Mapping):
-        raise _DemoScenarioYamlInvalidRootError(path, type(raw).__name__)
-    return load_scenario(_coerce_demo_yaml_mapping(raw))
-
-
-def _coerce_demo_yaml_mapping(raw: Mapping[str, Any]) -> dict[str, Any]:
-    """Schema-bewusste `str → Decimal` Coercion. Symmetrisch zum
-    Test-Loader, aber kompakt auf die Demo-Pflichtfelder
-    beschraenkt.
-
-    Welle-6c-Review M-4 (geerbt): Nicht-Mapping/Nicht-List-
-    Strukturen werden unveraendert durchgereicht; der Validator
-    wirft `ScenarioWrongTypeError` mit korrektem Pfad."""
-    result: dict[str, Any] = dict(raw)
-
-    devices = result.get("devices")
-    if isinstance(devices, list):
-        result["devices"] = [_coerce_device(entry) for entry in devices]
-
-    grid_model = result.get("grid_model")
-    if isinstance(grid_model, Mapping):
-        result["grid_model"] = _coerce_decimal_fields(grid_model, _GRID_MODEL_DECIMAL_FIELDS)
-
-    load_events = result.get("load_events")
-    if isinstance(load_events, list):
-        result["load_events"] = [_coerce_load_event(entry) for entry in load_events]
-
-    load_profiles = result.get("load_profiles")
-    if isinstance(load_profiles, list):
-        result["load_profiles"] = [_coerce_load_profile(entry) for entry in load_profiles]
-
-    agents = result.get("agents")
-    if isinstance(agents, Mapping):
-        result["agents"] = {
-            agent_id: _coerce_agent(agent_def) for agent_id, agent_def in agents.items()
-        }
-
-    return result
-
-
-def _coerce_device(entry: Any) -> Any:
-    if not isinstance(entry, Mapping):
-        return entry
-    result = dict(entry)
-    params = result.get("params")
-    if isinstance(params, Mapping):
-        result["params"] = _coerce_decimal_fields(params, _DEVICE_DECIMAL_PARAMS)
-    return result
-
-
-def _coerce_decimal_fields(
-    entry: Mapping[str, Any], decimal_fields: frozenset[str]
-) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    for key, value in entry.items():
-        if key in decimal_fields and isinstance(value, str):
-            result[key] = _safe_decimal(value, key)
-        else:
-            result[key] = value
-    return result
-
-
-def _coerce_load_event(entry: Any) -> Any:
-    if not isinstance(entry, Mapping):
-        return entry
-    return _coerce_decimal_fields(entry, _LOAD_EVENT_DECIMAL_FIELDS)
-
-
-def _coerce_load_profile(entry: Any) -> Any:
-    if not isinstance(entry, Mapping):
-        return entry
-    result = dict(entry)
-    tick_values = result.get("tick_values")
-    if isinstance(tick_values, list):
-        result["tick_values"] = [
-            _safe_decimal(value, "tick_values") if isinstance(value, str) else value
-            for value in tick_values
-        ]
-    return result
-
-
-def _coerce_agent(entry: Any) -> Any:
-    """Welle-4b (geerbt aus Test-Loader): `params.rules[*].action.
-    payload`-Strang `str → Decimal`. Conditions sind int-typed."""
-    if not isinstance(entry, Mapping):
-        return entry
-    result = dict(entry)
-    params = result.get("params")
-    if isinstance(params, Mapping):
-        result["params"] = _coerce_agent_params(params)
-    return result
-
-
-def _coerce_agent_params(params: Mapping[str, Any]) -> dict[str, Any]:
-    result: dict[str, Any] = dict(params)
-    rules = result.get("rules")
-    if isinstance(rules, list):
-        result["rules"] = [_coerce_rule(rule) for rule in rules]
-    return result
-
-
-def _coerce_rule(rule: Any) -> Any:
-    if not isinstance(rule, Mapping):
-        return rule
-    result = dict(rule)
-    action = result.get("action")
-    if isinstance(action, Mapping):
-        action_dict = dict(action)
-        payload = action_dict.get("payload")
-        if isinstance(payload, Mapping):
-            action_dict["payload"] = {
-                key: (
-                    _safe_decimal(value, f"action.payload.{key}")
-                    if key in _RULE_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
-                    else value
-                )
-                for key, value in payload.items()
-            }
-        result["action"] = action_dict
-    return result
-
-
-class _DemoScenarioDecimalCoercionError(ValueError):
-    """Welle-5-Review F3: ein YAML-Feld erwartet einen Decimal-
-    String, der Wert ist aber nicht in `Decimal(...)` konvertierbar
-    (z. B. `"100 kWh"`, `"1,00"` mit Komma, leerer String). Pre-Fix
-    propagierte bare `decimal.InvalidOperation` ohne Feld-Kontext.
-    Jetzt: typed-error mit Feldname + Wert."""
-
-    def __init__(self, field: str, value: str, source_exc: Exception) -> None:
-        super().__init__(
-            f"Demo scenario YAML field {field!r} expects a Decimal-coercible "
-            f"string; got {value!r} ({type(source_exc).__name__}: {source_exc})."
-        )
-
-
-def _safe_decimal(value: str, field: str) -> Decimal:
-    """Welle-5-Review F3: `Decimal(value)` mit typed-Error-Wrap.
-
-    Decimal raises `decimal.InvalidOperation` (subclass of
-    ArithmeticError, NOT ValueError) bei malformed strings;
-    Aufrufer wuerden das sonst als opake Exception sehen. Wir
-    propagieren mit Feldname-Kontext, damit der YAML-Editor den
-    Fehler sofort lokalisieren kann."""
-    try:
-        return Decimal(value)
-    except (InvalidOperation, TypeError) as exc:
-        raise _DemoScenarioDecimalCoercionError(field, value, exc) from exc

@@ -179,6 +179,15 @@ docs-check:
 spdx-check:
 	$(DOCKER_BUILD) --target spdx-check -t $(IMAGE_PREFIX)-spdx-check:latest
 
+# `tools/check_demo_scenario_pin.py` — CI-Drift-Lint fuer die zwei
+# Demo-Abnahme-Pins (M7-Welle-2, GG-MVP-003, D-8). Recomputed
+# `EXPECTED_DEMO_SCENARIO_HASH` + `EXPECTED_DEMO_TELEMETRY_STREAM_HASH`
+# gegen `deploy/scenarios/gg-demo.yaml` und bricht bei Drift mit Angabe,
+# welche `tools/accept.py`-Konstante anzupassen ist. In `make ci`
+# integriert.
+accept-pin-check:
+	$(DOCKER_BUILD) --target accept-pin-check -t $(IMAGE_PREFIX)-accept-pin-check:latest
+
 # `tools/check_noqa.py` — `# noqa`-Marker-Reporter (Slice 027 Plan).
 # Default-Modus ist Report-only (Exit 0); fuer einen Bestands-Lauf vor
 # dem Slice-Start. Hard-Gate ist `make noqa-gate` (siehe darunter).
@@ -432,8 +441,8 @@ echo "[ci]       src/grid_gym/adapters/driving/http_api\""; \
 echo "[ci] Volle Default-Gruen-Linie kommt mit M2-Geraetemodellen."
 endef
 
-ci: gates test-integration test-iec61850 openapi-validate image-audit
-	@echo "[ci] mandatory gates green + test-integration + test-iec61850 + openapi-validate + image-audit"
+ci: gates accept-pin-check test-integration test-iec61850 openapi-validate image-audit
+	@echo "[ci] mandatory gates green + accept-pin-check (GG-MVP-003 demo pins) + test-integration + test-iec61850 + openapi-validate + image-audit"
 
 # `make fullbuild` ohne Override faellt heute ueber `coverage-gate-critical`.
 # Der `|| (...; exit 1)`-Wrapper druckt den M1-Override-Hinweis nach dem
@@ -507,6 +516,16 @@ demo-stop:
 	@echo "[demo-stop] WARNING: -v removes postgres data volumes (Welle-5-Demo-Default)"
 	$(DOCKER) compose -f $(COMPOSE_FILE) down -v --remove-orphans
 	@echo "[demo-stop] stack down + volumes cleaned"
+
+# GG-MVP-003 Abnahme-CLI (M7-Welle-2). Fuehrt Szenario-Validierung +
+# Headless-Replay-Determinismus + Demo-`/ready`-Healthcheck und schreibt
+# den maschinenlesbaren `AbnahmeReport` als **einziges** JSON-Objekt auf
+# stdout (uv-Sync-Banner + Logs → stderr; `make accept | jq` parst ohne
+# Vorfilter). Tri-State-Exit 0/1/2 (D-9). Step C erwartet den laufenden
+# Demo-Stack (D-7): `make demo && make accept`. `--ready-url`-Override
+# fuer Nicht-Default-Host-Bind.
+accept:
+	@uv run python tools/accept.py
 
 # --- Maintenance -----------------------------------------------------------
 

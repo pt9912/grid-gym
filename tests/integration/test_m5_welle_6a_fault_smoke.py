@@ -200,13 +200,15 @@ def test_demo_yaml_faults_compose_and_apply_during_windows() -> None:
     from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
         _compose_fault_port,
         _DemoSimulationClock,
-        _load_scenario_from_yaml,
     )
     from grid_gym.hexagon.core.devices.battery import BatteryDevice
     from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
     from grid_gym.hexagon.core.scenario.loader import TickLoopWiring, build_tick_loop
 
-    loaded = _load_scenario_from_yaml(_DEMO_SCENARIO_PATH)
+    # M7-Welle-2 (D-10-Revision C): Demo-YAML-Load via Shared-Helper.
+    from tests.integration._yaml_scenario_loader import load_yaml_scenario
+
+    loaded = load_yaml_scenario(_DEMO_SCENARIO_PATH)
     fault_port = _compose_fault_port(loaded.scenario.faults)
     assert fault_port is not None, "Decision 19: gg-demo.yaml braucht faults-Block"
     wiring = TickLoopWiring(fault_port=fault_port)
