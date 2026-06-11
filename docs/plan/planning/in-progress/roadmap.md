@@ -1218,6 +1218,13 @@ jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
 (`max_age`-`STALE`-Stage, [`M7-welle-3a.md`](M7-welle-3a.md),
 zuerst; ADR 0052) + **3b** (Adapter-Comm-Failure + Alarm; Slice-Doc
 via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
+**M7-Welle-3a Done 2026-06-11** (`max_age_ms`-Kwarg +
+Core-`STALE`-Stage + ADR 0052; commits `23c614a` + Review-Folge
+`5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
+`docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
+**Aktiver Slice jetzt: M7-Welle-3b** (`GG-SAFE-003` Comm-Failure,
+Trigger 035; 3b-C0 als naechster Schritt) — danach M7-Welle-X
+(M7-Closure).
 
 ---
 

@@ -1,6 +1,15 @@
 # 034 — `GG-SAFE-004` max_age-basierte STALE-Quality-Markierung (Lücke)
 
-**Status:** Open — Substanz-Lücke aus M6-Welle-5a-Audit
+**Status:** Closed (2026-06-11) — aufgeloest durch **M7-Welle-3a**
+(NEU `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage vor dem
+`TickResult`-Bau + `build_tick_loop`-/`from_snapshot`-Symmetrie,
+ADR 0052; Smoke `test_safe_004_stale_data_quality_after_max_age`
+reaktiviert). `GG-SAFE-004` flippt ✗ → ✓ in
+`docs/user/safe-001-004-quality-pipeline.md`. Bewusste Grenzen
+(ADR 0052 §7): kein Scenario-Schema-Feld (Hash-Pin-Schutz; additive
+Schaerfung bei konkreter Stakeholder-Schwelle), Demo-Wiring bleibt
+`None`, Bilanz bleibt quality-agnostisch (Markierung ≠ Filterung).
+Move nach `done/` in der 3a-C4a-Sequenz.
 **Datum:** 2026-06-06
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit; siehe
 `docs/user/safe-001-004-quality-pipeline.md`).

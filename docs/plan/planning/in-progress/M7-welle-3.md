@@ -1,6 +1,6 @@
 # Welle 3 — M7 Safety-Closure: `GG-SAFE-003/004` (Trigger 034 + 035)
 
-**Status:** In Progress — eroeffnet mit Welle-3-C0 (dieser Commit;
+**Status:** In Progress — eroeffnet mit Welle-3-C0 (`9e266d2`;
 NEU Gruppenplan + Sub-Slicing-Beschluss + NEU
 [`M7-welle-3a.md`](M7-welle-3a.md)). **Gruppenplan** fuer die
 letzte offene M7-Substanz vor der M7-Closure: die SOLLTE-/Audit-IDs
@@ -8,11 +8,17 @@ letzte offene M7-Substanz vor der M7-Closure: die SOLLTE-/Audit-IDs
 + `GG-SAFE-003` ([Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)),
 beide per M7-Welle-0-C2-Triage `Active in M7-Welle-3`.
 **Sub-Slicing-Beschluss (Welle-3-D-1 = A):** Welle **3a**
-(`max_age`-`STALE`-Stage, Trigger 034 — NEU
-[`M7-welle-3a.md`](M7-welle-3a.md), dieser Commit) + Welle **3b**
+(`max_age`-`STALE`-Stage, Trigger 034) + Welle **3b**
 (Adapter-Comm-Failure → `MISSING` + Alarm, Trigger 035 — Slice-Doc
-via 3b-C0 nach 3a-Closure). Pattern analog Welle-1-Sub-Slicing
-(1a/1b). **Datum:** 2026-06-11 (Welle-3-C0).
+via 3b-C0). Pattern analog Welle-1-Sub-Slicing (1a/1b).
+**Welle 3a Done 2026-06-11** ([`M7-welle-3a.md`](M7-welle-3a.md);
+C0 `9e266d2` + C1 `744e31e` ADR 0052 + C2 `23c614a` +
+Review-Folge `5a9960a` + C3 — **`GG-SAFE-004` ✓ produktiv**,
+Trigger 034 Closed, Move `done/` in der 3a-C4-Sequenz).
+**Aktiver Slice: Welle 3b** (3b-C0 als naechster Schritt;
+F4-Erbschaft aus dem 3a-Review: Severity-Override-Helper-Lift
+nach `quality.py` in 3b-C0 mitentscheiden).
+**Datum:** 2026-06-11 (Welle-3-C0 · 3a Done 2026-06-11).
 **Quelle:** [`M7-mvp-completion.md §3`](M7-mvp-completion.md) +
 Trigger 034/035 (M6-Welle-5a-Audit) +
 [`roadmap.md §M7`](roadmap.md).
@@ -169,14 +175,18 @@ explizitem Rest-Trigger.
 
 ## 4. Sub-Scope (Wellen-Vorbelegung)
 
-- **3a** — [`M7-welle-3a.md`](M7-welle-3a.md) (~1-1.5 Tage):
-  NEU `TickLoop`-Kwarg `max_age_ms` + Core-Stage + ADR 0052 +
-  Unit-Boundary-Tests + Smoke-Reaktivierung + Doku-Flip +
-  Trigger 034 → `done/`.
+- **3a** — **Done 2026-06-11** ([`M7-welle-3a.md`](M7-welle-3a.md)):
+  NEU `TickLoop`-Kwarg `max_age_ms` (+ `from_snapshot`-Resume-
+  Symmetrie per Review-Folge F1) + Core-Stage + ADR 0052 +
+  Unit-Boundary-Tests + Smoke-Reaktivierung + Doku-Flip;
+  `GG-SAFE-004` ✓ produktiv; Trigger 034 Closed (→ `done/` in
+  3a-C4a).
 - **3b** — Slice-Doc via 3b-C0 (~2-3 Tage): Comm-Failure-Wrapper
   + Alarm-Vertrag + per-Adapter-Familie-Smokes +
   Smoke-Reaktivierung + Doku-Flip + Trigger 035 → `done/`
-  (oder D-4-Carveout-Pfad).
+  (oder D-4-Carveout-Pfad). 3b-C0-Erbschaft: F4-Entscheid
+  (Severity-Override-Helper-Lift nach `quality.py`, falls 3b
+  die Regel braucht).
 
 ---
 

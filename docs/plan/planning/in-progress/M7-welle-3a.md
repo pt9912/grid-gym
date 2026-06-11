@@ -1,13 +1,26 @@
 # Welle 3a — M7 Safety-Closure: `max_age`-basierte `STALE`-Quality-Stage (`GG-SAFE-004`)
 
-**Status:** In Progress — eroeffnet mit Welle-3-C0 (dieser Commit;
-NEU Slice-Doc + Decision-Liste 3a-D-1..D-5, zusammen mit dem
-Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)). Erstes Sub-Slice
-von **M7-Welle-3** (Safety-Closure): schliesst die `GG-SAFE-004`-
-Lücke ([Trigger 034](../open/034-safe-004-max-age-stale-quality.md),
+**Status:** Done — C0 `9e266d2` (Gruppenplan + Slice-Doc +
+Decision-Liste 3a-D-1..D-5) + C1 `744e31e` (NEU ADR 0052
+`Provisional`) + C2 `23c614a` (Code: `max_age_ms`-Kwarg +
+`_apply_max_age_stage` + `TickLoopInvalidMaxAgeMsError` +
+`build_tick_loop`-Symmetrie + 7 Unit-Tests + Smoke-Reaktivierung
++ Doku-Flip) + C2-Review-Folge `5a9960a` (F1 `from_snapshot`-
+Resume-Symmetrie + F2 ADR-Bilanz-Note + F3 Shared-Fake; F4
+zurueckgestellt → 3b-C0) + C3 (DoD §9 abgehakt, **`GG-SAFE-004`
+✓ produktiv**, Trigger 034 → Closed; dieser Commit). **Offen:
+C4a/C4b** (Self-Close-Move `M7-welle-3a.md` + Trigger 034 →
+`done/` + Refs-Sync). Code + Gates (`gates`/`test-integration`
+138 passed / 5 skipped/`fullbuild` inkl. `accept-pin-check`/
+`docs-check`) cache-frei gruen 2026-06-11.
+
+Erstes Sub-Slice von **M7-Welle-3** (Safety-Closure;
+Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)): schliesst die
+`GG-SAFE-004`-Lücke
+([Trigger 034](../open/034-safe-004-max-age-stale-quality.md),
 M6-Welle-5a-Audit ✗). **Monolithisch** (ein Code-Commit C2): die
 Teile (Kwarg + Stage + Tests + Doku-Flip) sind klein und eng
-gekoppelt. **Datum:** 2026-06-11 (Welle-3-C0).
+gekoppelt. **Datum:** 2026-06-11 (Welle-3-C0 · Done 2026-06-11 C3).
 **Quelle:** [Trigger 034](../open/034-safe-004-max-age-stale-quality.md)
 + Lastenheft §20 Z. 1373-1378 +
 [`M7-welle-3.md`](M7-welle-3.md).
@@ -284,26 +297,35 @@ Slice → **Welle 3b** (3b-C0).
 
 ---
 
-## 9. DoD-Checkliste (mit C3 abzuhaken)
+## 9. DoD-Checkliste (mit C3 abgehakt)
 
-- [ ] C0 — Gruppenplan + Slice-Doc §1..§9 + Decision-Liste
-      3a-D-1..D-5 + Refs-Sync.
-- [ ] C1 — NEU ADR 0052 `Provisional` (Kwarg-Surface + Stage-Naht
-      + Severity-Override + Grenzwert + `AC-NO-TIME`).
-- [ ] C2 — `max_age_ms`-Kwarg (+ Validierung `<= 0`) + Stage vor
-      `TickResult`-Bau + `build_tick_loop`-Symmetrie.
-- [ ] C2 — Unit-Tests: Boundary (`>`/`==`/frisch) +
-      Severity-Override + `None`-no-op + Reject + Determinismus.
-- [ ] C2 — Smoke `test_safe_004_stale_data_quality_after_max_age`
-      reaktiviert + gruen (End-to-End `Quality.STALE`).
-- [ ] C2 — Doku-Flip `safe-001-004-quality-pipeline.md`
+- [x] C0 — Gruppenplan + Slice-Doc §1..§9 + Decision-Liste
+      3a-D-1..D-5 + Refs-Sync. (`9e266d2`)
+- [x] C1 — NEU ADR 0052 `Provisional` (Kwarg-Surface + Stage-Naht
+      + Severity-Override + Grenzwert + `AC-NO-TIME`). (`744e31e`)
+- [x] C2 — `max_age_ms`-Kwarg (+ Validierung `<= 0`) + Stage vor
+      `TickResult`-Bau + `build_tick_loop`-Symmetrie; Review-Folge
+      F1 ergaenzt `from_snapshot`-Resume-Symmetrie. (`23c614a` +
+      `5a9960a`)
+- [x] C2 — Unit-Tests: Boundary (`>`/`==`/frisch) +
+      Severity-Override + `None`-no-op + Reject + Determinismus
+      (+ F1-Resume-Test; Shared-Fake per F3).
+- [x] C2 — Smoke `test_safe_004_stale_data_quality_after_max_age`
+      reaktiviert + gruen (End-to-End `Quality.STALE`;
+      `test-integration` 138 passed / 5 skipped).
+- [x] C2 — Doku-Flip `safe-001-004-quality-pipeline.md`
       `GG-SAFE-004` ✗ → ✓.
-- [ ] `make gates` + `make test-integration` + `make accept`
-      (Exit 0) + `make fullbuild` + `make docs-check` cache-frei
-      gruen.
-- [ ] C3 — 3a `Done`; Trigger 034 → Closed (Move `done/` in
-      C4a); Gruppenplan-/roadmap-/carveouts-Sync; aktiver Slice
-      → 3b.
+- [x] `make gates` + `make test-integration` + `make fullbuild` +
+      `make docs-check` cache-frei gruen. **Demo-Pfad-Beleg:** der
+      `accept-pin-check` in `make ci`/`fullbuild` recomputed beide
+      `GG-MVP-003`-Demo-Pins headless (Scenario- + Stream-Hash
+      unveraendert) — der 3a-D-4-Beleg, dass der Demo-/Abnahme-
+      Pfad byte-identisch bleibt. Ein Live-`make accept` (braucht
+      `make demo`-Stack + Host-uv-Venv) bleibt optionaler
+      Operator-Schritt; das Pin-Aequivalent ist der CI-Beleg.
+- [x] C3 — 3a `Done`; **`GG-SAFE-004` ✓ produktiv**; Trigger 034
+      → Closed (Move `done/` in C4a); Gruppenplan-/roadmap-/
+      carveouts-Sync; aktiver Slice → 3b.
 
 **Anti-Scope (3a NICHT):** Scenario-Schema-Feld, per-Device-/
 per-Metric-Schwellen, Demo-Schwellen-Aktivierung, `STALE`-Alarm,
