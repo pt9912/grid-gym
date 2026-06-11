@@ -15,15 +15,15 @@ C4a/C4b** (Self-Close-Move `M7-welle-3a.md` + Trigger 034 →
 `docs-check`) cache-frei gruen 2026-06-11.
 
 Erstes Sub-Slice von **M7-Welle-3** (Safety-Closure;
-Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)): schliesst die
+Gruppenplan [`M7-welle-3.md`](../in-progress/M7-welle-3.md)): schliesst die
 `GG-SAFE-004`-Lücke
-([Trigger 034](../open/034-safe-004-max-age-stale-quality.md),
+([Trigger 034](034-safe-004-max-age-stale-quality.md),
 M6-Welle-5a-Audit ✗). **Monolithisch** (ein Code-Commit C2): die
 Teile (Kwarg + Stage + Tests + Doku-Flip) sind klein und eng
 gekoppelt. **Datum:** 2026-06-11 (Welle-3-C0 · Done 2026-06-11 C3).
-**Quelle:** [Trigger 034](../open/034-safe-004-max-age-stale-quality.md)
+**Quelle:** [Trigger 034](034-safe-004-max-age-stale-quality.md)
 + Lastenheft §20 Z. 1373-1378 +
-[`M7-welle-3.md`](M7-welle-3.md).
+[`M7-welle-3.md`](../in-progress/M7-welle-3.md).
 
 Liefer-Reihenfolge C0 → C1 (NEU ADR 0052 `Provisional`) → C2
 (Code) → C3 (Status/DoD-Sync + Flip) → C4a/C4b (Self-Close-Move).
@@ -219,7 +219,7 @@ Unit-Test pinnt die Grenze beidseitig.
 ## 4. Liefer-Reihenfolge
 
 - **C0** (dieser Commit) — Gruppenplan
-  [`M7-welle-3.md`](M7-welle-3.md) + dieses Slice-Doc +
+  [`M7-welle-3.md`](../in-progress/M7-welle-3.md) + dieses Slice-Doc +
   Decision-Liste 3a-D-1..D-5 + Refs-Sync.
 - **C1** — NEU ADR 0052 `Provisional` (max_age-`STALE`-Stage).
 - **C2** — Code: Kwarg + Stage + `build_tick_loop`-Symmetrie +
@@ -291,7 +291,7 @@ konsumiert), `TelemetryPoint`-Domain, Scenario-Schema +
 ## 8. Wandert nach
 
 Self-Close-Move `M7-welle-3a.md → done/` (C4a) + Refs-Sync (C4b)
-nach 3a-C3. Der Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)
+nach 3a-C3. Der Gruppenplan [`M7-welle-3.md`](../in-progress/M7-welle-3.md)
 bleibt bis zur 3b-Closure in `in-progress/`; danach aktiver
 Slice → **Welle 3b** (3b-C0).
 
@@ -335,15 +335,15 @@ Comm-Failure (3b), Alarm-Vertrag (3b).
 
 ## References
 
-- [`M7-welle-3.md`](M7-welle-3.md) — Welle-3-Gruppenplan
+- [`M7-welle-3.md`](../in-progress/M7-welle-3.md) — Welle-3-Gruppenplan
   (Sub-Slicing-Beschluss D-1, ADR-Numbering D-3).
-- [Trigger 034](../open/034-safe-004-max-age-stale-quality.md) —
+- [Trigger 034](034-safe-004-max-age-stale-quality.md) —
   Lücken-Verankerung + erwartete Lieferung (M6-Welle-5a-Audit).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)
   — Audit-Tabelle (Flip-Ziel) + Quality-Enum-Referenz.
-- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Slice-Plan
+- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Slice-Plan
   (§2 Erfolgskriterien).
-- [`../done/M7-welle-1b-b.md`](../done/M7-welle-1b-b.md) —
+- [`../done/M7-welle-1b-b.md`](M7-welle-1b-b.md) —
   Kwarg-Praezedenz (`replay_snapshot`/`replay_reference_run_id`)
   + Slice-Doc-Pattern.
 - [`../../adr/0011-schaerfung-ohne-abloesung.md`](../../adr/0011-schaerfung-ohne-abloesung.md)

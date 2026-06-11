@@ -2,16 +2,16 @@
 
 **Status:** In Progress — eroeffnet mit Welle-3-C0 (`9e266d2`;
 NEU Gruppenplan + Sub-Slicing-Beschluss + NEU
-[`M7-welle-3a.md`](M7-welle-3a.md)). **Gruppenplan** fuer die
+[`M7-welle-3a.md`](../done/M7-welle-3a.md)). **Gruppenplan** fuer die
 letzte offene M7-Substanz vor der M7-Closure: die SOLLTE-/Audit-IDs
-`GG-SAFE-004` ([Trigger 034](../open/034-safe-004-max-age-stale-quality.md))
+`GG-SAFE-004` ([Trigger 034](../done/034-safe-004-max-age-stale-quality.md))
 + `GG-SAFE-003` ([Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)),
 beide per M7-Welle-0-C2-Triage `Active in M7-Welle-3`.
 **Sub-Slicing-Beschluss (Welle-3-D-1 = A):** Welle **3a**
 (`max_age`-`STALE`-Stage, Trigger 034) + Welle **3b**
 (Adapter-Comm-Failure → `MISSING` + Alarm, Trigger 035 — Slice-Doc
 via 3b-C0). Pattern analog Welle-1-Sub-Slicing (1a/1b).
-**Welle 3a Done 2026-06-11** ([`M7-welle-3a.md`](M7-welle-3a.md);
+**Welle 3a Done 2026-06-11** ([`M7-welle-3a.md`](../done/M7-welle-3a.md);
 C0 `9e266d2` + C1 `744e31e` ADR 0052 + C2 `23c614a` +
 Review-Folge `5a9960a` + C3 — **`GG-SAFE-004` ✓ produktiv**,
 Trigger 034 Closed, Move `done/` in der 3a-C4-Sequenz).
@@ -34,7 +34,7 @@ zwei Safety-Audit-Lücken aus dem M6-Welle-5a-Quality-Pipeline-Audit
 
 | ID | Lücke (Welle-5a-Audit) | Trigger | Status heute |
 | --- | --- | --- | --- |
-| `GG-SAFE-004` | `max_age`-`STALE`-Markierung — **Substanz fehlt komplett** (`Quality.STALE`-Enum existiert, `quality.py:24`; grep `max_age` ueber `src/grid_gym/` = null Treffer) | [034](../open/034-safe-004-max-age-stale-quality.md) | ✗ Lücke |
+| `GG-SAFE-004` | `max_age`-`STALE`-Markierung — **Substanz fehlt komplett** (`Quality.STALE`-Enum existiert, `quality.py:24`; grep `max_age` ueber `src/grid_gym/` = null Treffer) | [034](../done/034-safe-004-max-age-stale-quality.md) | ✗ Lücke |
 | `GG-SAFE-003` | Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm — **partial** (SmartMeter-pre-attach-`MISSING` `smart_meter/model.py:202` + Adapter-String-Read-`INVALID`; mid-flight-Verbindungsverlust-Quality + Alarm fehlen) | [035](../open/035-safe-003-comm-failure-missing-quality.md) | ⚠ partial Lücke |
 
 **M7-Erfolgskriterium** (`M7-mvp-completion.md §2`): beide IDs
@@ -102,7 +102,7 @@ reaktiviert.
 1. **Welle 3a** (Trigger 034): NEU `max_age`-Konfiguration +
    Core-`STALE`-Stage im `TickLoop` + Smoke-Reaktivierung +
    Audit-Doku-Flip `GG-SAFE-004` ✗ → ✓. Slice-Doc
-   [`M7-welle-3a.md`](M7-welle-3a.md) (dieser Commit).
+   [`M7-welle-3a.md`](../done/M7-welle-3a.md) (dieser Commit).
 2. **Welle 3b** (Trigger 035): Adapter-Comm-Failure-Quality
    (`MISSING`) + Alarm-Emission (`adapter_communication_lost`) +
    Smoke-Reaktivierung + Audit-Doku-Flip `GG-SAFE-003` ⚠ → ✓
@@ -175,7 +175,7 @@ explizitem Rest-Trigger.
 
 ## 4. Sub-Scope (Wellen-Vorbelegung)
 
-- **3a** — **Done 2026-06-11** ([`M7-welle-3a.md`](M7-welle-3a.md)):
+- **3a** — **Done 2026-06-11** ([`M7-welle-3a.md`](../done/M7-welle-3a.md)):
   NEU `TickLoop`-Kwarg `max_age_ms` (+ `from_snapshot`-Resume-
   Symmetrie per Review-Folge F1) + Core-Stage + ADR 0052 +
   Unit-Boundary-Tests + Smoke-Reaktivierung + Doku-Flip;
@@ -236,8 +236,8 @@ Sub-Slice-Doc.
 
 - [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan (§2 Erfolgskriterien, §3 Welle-Tabelle).
-- [`M7-welle-3a.md`](M7-welle-3a.md) — Sub-Slice 3a (Trigger 034).
-- [Trigger 034](../open/034-safe-004-max-age-stale-quality.md) +
+- [`M7-welle-3a.md`](../done/M7-welle-3a.md) — Sub-Slice 3a (Trigger 034).
+- [Trigger 034](../done/034-safe-004-max-age-stale-quality.md) +
   [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)
   — Lücken-Verankerung (M6-Welle-5a-Audit).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)

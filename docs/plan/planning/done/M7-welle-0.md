@@ -42,7 +42,7 @@ Arbeit plus die offenen Trigger.
 | ---- | ------ | ----------- |
 | `GG-MVP-002` ReplaySource-Integration | [`M7-welle-1.md`](../done/M7-welle-1.md) | **Pflicht-Substanz** — `ReplaySourcePort`-Adapter + `replay_diff_status`-Metrik + Core-Spine-Lifecycle-Hook; aktiviert [Trigger 036](../done/036-safe-006-replay-diff-status-replay-source-integration.md). ~6-7 Tage. |
 | `GG-MVP-003` Abnahme-CLI | [`next/abnahme-cli.md`](M7-welle-2.md) | **Pflicht-Substanz** — NEU `make accept` + `tools/accept.py` (Szenario-Validierung + deterministischer Replay + `/ready`-Healthcheck) + `AbnahmeReport`-Schema. ~1.5-2.5 Tage. |
-| Trigger 034 (`GG-SAFE-004` max_age) | [`open/034-…`](../open/034-safe-004-max-age-stale-quality.md) | Safety-Lücke (max_age-`STALE`-Markierung fehlt) — M7-Closure-Substanz. |
+| Trigger 034 (`GG-SAFE-004` max_age) | [`open/034-…`](034-safe-004-max-age-stale-quality.md) | Safety-Lücke (max_age-`STALE`-Markierung fehlt) — M7-Closure-Substanz. |
 | Trigger 035 (`GG-SAFE-003` Comm-Failure) | [`open/035-…`](../open/035-safe-003-comm-failure-missing-quality.md) | Safety-Partial-Lücke (Adapter-Comm-Failure → `MISSING`/`STALE` + Alarm) — M7-Closure-Substanz. |
 | Trigger 036 (`GG-SAFE-006` replay_diff_status) | [`open/036-…`](../done/036-safe-006-replay-diff-status-replay-source-integration.md) | Wird durch `GG-MVP-002` aufgeloest (gekoppelt). |
 | Trigger 037 (`GG-DEPLOY-007..010` Multi-Node) | [`open/037-…`](../open/037-deploy-007-010-multi-node-deployment.md) | **Bleibt Trigger-Gated** — Stakeholder-/Skalierungs-getrieben; kein MVP-Pflicht-Item. |

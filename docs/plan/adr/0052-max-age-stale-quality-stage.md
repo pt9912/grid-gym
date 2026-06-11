@@ -18,11 +18,11 @@ Sprung (dieser Commit, M7-Welle-3a-C1).
 - [`ADR 0049`](0049-replay-lifecycle-finalize-hook.md) §2.7 —
   Praezedenz fuer optionale keyword-only Core-Kwargs mit
   `None`-Default = Feature aus.
-- [`M7-welle-3a.md`](../planning/in-progress/M7-welle-3a.md) —
+- [`M7-welle-3a.md`](../planning/done/M7-welle-3a.md) —
   Slice-Doc (Decisions 3a-D-1..D-5); ADR 0052 fixiert D-1..D-5.
 - [`M7-welle-3.md`](../planning/in-progress/M7-welle-3.md) —
   Welle-3-Gruppenplan (Sub-Slicing D-1, ADR-Numbering D-3).
-- [Trigger 034](../planning/open/034-safe-004-max-age-stale-quality.md)
+- [Trigger 034](../planning/done/034-safe-004-max-age-stale-quality.md)
   — `GG-SAFE-004`-Lücken-Verankerung; wird mit 3a-C3 aufgeloest
   (`done/`).
 - [`../../user/safe-001-004-quality-pipeline.md`](../../user/safe-001-004-quality-pipeline.md)
@@ -226,7 +226,7 @@ frisch nicht).
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-3a.md`](../planning/in-progress/M7-welle-3a.md)
+Slice-Doc [`M7-welle-3a.md`](../planning/done/M7-welle-3a.md)
 (C2: Code-Substanz; Verifikation inkl. `make accept` Exit 0 als
 Demo-Unveraendert-Beleg). Status-Pfad (`Proposed → Provisional →
 Accepted`): `Accepted` mit M7-Welle-X-Closure (gebuendelt mit

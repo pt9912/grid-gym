@@ -92,7 +92,7 @@ Alarm-Emission-Verifikation, ADR-Bedarf.
   `max_age`-Ueberschreitung" angenommen; Welle-5a-C2-Audit
   hat das ueberstimmt (Grep ueber `src/grid_gym/` nach
   `max_age` liefert null Treffer). Status: Lücke. Folge-
-  Pfad: [Trigger 034](../open/034-safe-004-max-age-stale-quality.md).
+  Pfad: [Trigger 034](034-safe-004-max-age-stale-quality.md).
 - **Adapter-Quality-Emission**: Protocol-Adapter (OPC-UA/IEC-
   61850) emittieren `INVALID` bei String-Lese-Faellen
   (`protocol_opcua/_port.py:312`, `protocol_iec61850/_port.
@@ -134,7 +134,7 @@ identifiziert**. Drei orthogonale Liefer-Items:
      `pytest.skip` mit Pointer auf Trigger 035 (voller
      Umfang ist Welle-5a-Audit-Lücke).
    - `test_safe_004_stale_data_quality_after_max_age`:
-     `pytest.skip` mit Pointer auf [Trigger 034](../open/034-safe-004-max-age-stale-quality.md)
+     `pytest.skip` mit Pointer auf [Trigger 034](034-safe-004-max-age-stale-quality.md)
      (`max_age`-Substanz fehlt komplett im Repository;
      Welle-5a-Audit-Lücke).
 
