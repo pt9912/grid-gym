@@ -153,7 +153,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ steps.resolve-refs.outputs.version }}
           cache-from: type=gha,scope=runtime
-          cache-to: type=gha,scope=runtime,mode=max
+          cache-to: type=gha,scope=runtime,mode=max,ignore-error=true
 
       # ADR 0042 §2.3 (Review-Folge-3 F3-Korrektur): `:latest`-
       # Tag nur wenn Tag-Commit == aktueller Default-Branch-

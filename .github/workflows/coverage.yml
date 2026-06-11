@@ -47,7 +47,7 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=coverage-gate
-          cache-to: type=gha,scope=coverage-gate,mode=max
+          cache-to: type=gha,scope=coverage-gate,mode=max,ignore-error=true
 
   coverage-gate-critical:
     name: coverage-gate-critical (90% critical domain)
@@ -67,4 +67,4 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=coverage-gate-critical
-          cache-to: type=gha,scope=coverage-gate-critical,mode=max
+          cache-to: type=gha,scope=coverage-gate-critical,mode=max,ignore-error=true

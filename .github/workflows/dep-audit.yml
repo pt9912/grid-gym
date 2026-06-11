@@ -47,4 +47,4 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=dep-audit
-          cache-to: type=gha,scope=dep-audit,mode=max
+          cache-to: type=gha,scope=dep-audit,mode=max,ignore-error=true

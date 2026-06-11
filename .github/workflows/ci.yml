@@ -14,6 +14,17 @@
 # Build-Args); Aenderungen an einem Makefile-Target muessen hier
 # nachgezogen werden.
 #
+# M7-Tooling (2026-06-11): alle `cache-to: type=gha`-Exporte tragen
+# `ignore-error=true` (hier + coverage/tests/dep-audit/release).
+# Grund: zwei transiente GHA-Cache-Backend-Stoerungen am selben Tag
+# ("error writing layer blob: not_found" bzw. GitHub-Unicorn-50x-
+# Seite mitten im Cache-Upload) haben Jobs gefailt, deren Gates
+# bereits gruen durchgelaufen waren. Der Cache ist reine
+# Beschleunigung — ein fehlgeschlagener Cache-Upload darf nie ein
+# Gate-Ergebnis ueberschreiben. `cache-from` bleibt unveraendert
+# (Lese-Fehler waren nie das Problem; buildx faellt dort ohnehin
+# auf einen Vollbuild zurueck).
+#
 # Bezug:
 # - Trigger-Doc: docs/plan/planning/in-progress/025-github-actions-four-gates.md
 # - Dockerfile-Stages: lint, arch-check-imports, arch-check-custom, typecheck
@@ -62,7 +73,7 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=arch-check-imports
-          cache-to: type=gha,scope=arch-check-imports,mode=max
+          cache-to: type=gha,scope=arch-check-imports,mode=max,ignore-error=true
 
   ruff-check:
     name: ruff check (lint)
@@ -80,7 +91,7 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=lint
-          cache-to: type=gha,scope=lint,mode=max
+          cache-to: type=gha,scope=lint,mode=max,ignore-error=true
 
   arch-check-custom:
     name: arch-check-custom (tools/arch_check.py)
@@ -98,7 +109,7 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=arch-check-custom
-          cache-to: type=gha,scope=arch-check-custom,mode=max
+          cache-to: type=gha,scope=arch-check-custom,mode=max,ignore-error=true
 
   typecheck:
     name: mypy --strict
@@ -116,4 +127,4 @@ jobs:
           push: false
           load: false
           cache-from: type=gha,scope=typecheck
-          cache-to: type=gha,scope=typecheck,mode=max
+          cache-to: type=gha,scope=typecheck,mode=max,ignore-error=true

@@ -54,7 +54,7 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ matrix.python-version }}
           cache-from: type=gha,scope=test-unit-${{ matrix.python-version }}
-          cache-to: type=gha,scope=test-unit-${{ matrix.python-version }},mode=max
+          cache-to: type=gha,scope=test-unit-${{ matrix.python-version }},mode=max,ignore-error=true
 
   test-integration:
     name: test-integration (default Python)
