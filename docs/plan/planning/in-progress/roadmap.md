@@ -1212,7 +1212,12 @@ commits `33ac255` + `92d10f5`). **`GG-MVP-003` ✓ produktiv → alle vier
 `GG-MVP-*`-Punkte produktiv** (001/002/003/004). **Aktiver Slice
 jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
 [`max_age`](../open/034-safe-004-max-age-stale-quality.md) + 035
-[Comm-Failure](../open/035-safe-003-comm-failure-missing-quality.md)).
+[Comm-Failure](../open/035-safe-003-comm-failure-missing-quality.md)),
+**aktiviert mit Welle-3-C0 2026-06-11**: Gruppenplan
+[`M7-welle-3.md`](M7-welle-3.md), sub-sliced **3a**
+(`max_age`-`STALE`-Stage, [`M7-welle-3a.md`](M7-welle-3a.md),
+zuerst; ADR 0052) + **3b** (Adapter-Comm-Failure + Alarm; Slice-Doc
+via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
 
 ---
 
