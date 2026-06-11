@@ -1,8 +1,19 @@
 # Welle 3b — M7 Safety-Closure: Adapter-Comm-Failure → `MISSING` + Alarm (`GG-SAFE-003`)
 
-**Status:** In Progress — eroeffnet mit Welle-3b-C0 (dieser
-Commit; NEU Slice-Doc + Decision-Liste 3b-D-1..D-8). Zweites
-(letztes) Sub-Slice von **M7-Welle-3** (Safety-Closure;
+**Status:** In Progress — **Pause-Stand 2026-06-11** (Pattern
+`7dbc07b`): C0 `6324042` (Slice-Doc + Decisions 3b-D-1..D-8) +
+C1 `caae16e` (NEU ADR 0053 `Provisional`) + C2 `3f28be1`
+(Code: `CommFailureGuardedDeviceProtocolPort` + 8 Unit-Tests +
+Smoke-Reaktivierung `test_safe_003_*` + Doku-Flip `GG-SAFE-003`
+⚠ → ✓ — **alle vier `GG-SAFE-001..004` produktiv**) committed +
+gepusht; alle Gates (`gates`/`test-integration` 139 passed /
+4 skipped/`fullbuild` inkl. `accept-pin-check`/`docs-check`)
+cache-frei gruen 2026-06-11. **Naechste Schritte (offen):**
+C2-Code-Review auf `3f28be1` (Projekt-Pattern: Review +
+Review-Folge VOR C3) → C3 (DoD §9 + Status-Sync + Trigger 035 →
+Closed) → C4a/C4b (Self-Close-Move + Gruppenplan → `done/`).
+
+Zweites (letztes) Sub-Slice von **M7-Welle-3** (Safety-Closure;
 Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)): schliesst die
 `GG-SAFE-003`-partial-Lücke
 ([Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md),
@@ -11,7 +22,7 @@ geteilter Wrapper + Alarm-Vertrag + Tests + Doku-Flip sind eng
 gekoppelt; die fuenf Adapter werden nicht einzeln angefasst
 (3b-D-2). Mit 3b-Closure ist **M7-Welle-3 komplett** — danach
 verbleibt nur M7-Welle-X (M7-Closure).
-**Datum:** 2026-06-11 (Welle-3b-C0).
+**Datum:** 2026-06-11 (Welle-3b-C0 · C2/Pause-Stand 2026-06-11).
 **Quelle:** [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)
 + Lastenheft §20 Z. 1365-1371 +
 [`M7-welle-3.md`](M7-welle-3.md) (D-4-Scope-Schalter +
