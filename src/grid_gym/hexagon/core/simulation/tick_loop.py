@@ -45,7 +45,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
@@ -56,6 +56,7 @@ from grid_gym.hexagon.core.devices.load import LoadDevice
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.quality import QUALITY_SEVERITY, Quality
 from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassification
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
@@ -76,6 +77,7 @@ from grid_gym.hexagon.core.errors import (
     TickLoopAgentSnapshotLoadOverlayMismatchError,
     TickLoopAgentSnapshotMissingKeysError,
     TickLoopAgentSnapshotWrongTypeError,
+    TickLoopInvalidMaxAgeMsError,
     TickLoopInvalidTickMsError,
     TickLoopInvalidTransitionError,
     TickLoopSnapshotClockMismatchError,
@@ -224,6 +226,18 @@ SmartMeter (`source="smart_meter"`) ist nicht abgebildet —
 aggregated_power_kw faellt durch den Metric-Filter."""
 
 
+def _assert_unique_agent_ids(agents: tuple[Agent, ...]) -> None:
+    """Welle-4a-Duplicate-ID-Pruefung (ADR 0026 §2.5 Registry-
+    Fail-Fast): doppelte `agent_id`-Werte werfen
+    `AgentDuplicateIdError`. M7-Welle-3a aus `__init__` extrahiert
+    (PLR0915-Drop); Verhalten unveraendert."""
+    seen_agent_ids: set[str] = set()
+    for agent in agents:
+        if agent.agent_id in seen_agent_ids:
+            raise AgentDuplicateIdError(agent.agent_id)
+        seen_agent_ids.add(agent.agent_id)
+
+
 class TickLoop:
     """Deterministischer Tick-Loop (`GG-SIM-001`/`002`).
 
@@ -256,6 +270,7 @@ class TickLoop:
         telemetry_sink: TelemetrySinkPort | None = None,
         replay_snapshot: ReplaySnapshotPort | None = None,
         replay_reference_run_id: str | None = None,
+        max_age_ms: int | None = None,
         alarm_id_source: Callable[[], str] | None = None,
     ) -> None:
         if tick_ms <= 0:
@@ -300,12 +315,10 @@ class TickLoop:
         #
         # Welle-4a-Duplicate-ID-Pruefung: doppelte `agent_id`-
         # Werte werfen `AgentDuplicateIdError` (ADR 0026 §2.5
-        # Registry-Fail-Fast).
-        seen_agent_ids: set[str] = set()
-        for agent in agents:
-            if agent.agent_id in seen_agent_ids:
-                raise AgentDuplicateIdError(agent.agent_id)
-            seen_agent_ids.add(agent.agent_id)
+        # Registry-Fail-Fast). M7-Welle-3a: in den Modul-Helper
+        # `_assert_unique_agent_ids` extrahiert (PLR0915-Drop,
+        # Pattern analog `_attach_*`-Helper).
+        _assert_unique_agent_ids(agents)
         if agents and agent_bus is None:
             agent_bus = AgentMessageBus()
         self._agent_bus: AgentMessageBus | None = agent_bus
@@ -360,6 +373,10 @@ class TickLoop:
             replay_reference_run_id,
             alarm_id_source,
         )
+        # M7-Welle-3a (ADR 0052 §2.1): optionale `max_age`-Schwelle
+        # fuer die STALE-Stage in `tick()`. `None` (Default) = Stage
+        # aus; nicht-positive Werte sind ein Konstruktor-Fehler.
+        self._attach_max_age(max_age_ms)
 
     def _init_drift_counters(self) -> None:
         """Welle-6a-Review M-3 + Welle-4b-Review-Fix #4: Forward-
@@ -527,6 +544,15 @@ class TickLoop:
         self._replay_snapshot: ReplaySnapshotPort | None = replay_snapshot
         self._replay_reference_run_id: str | None = replay_reference_run_id
         self._finalized: bool = False
+
+    def _attach_max_age(self, max_age_ms: int | None) -> None:
+        """M7-Welle-3a (ADR 0052 §2.1): `max_age`-Schwelle fuer die
+        STALE-Stage. `None` (Default) = Stage aus (byte-identischer
+        Bestands-Pfad); `<= 0` ist Format-Fehler am Konstruktor
+        (Pattern analog `TickLoopInvalidTickMsError`)."""
+        if max_age_ms is not None and max_age_ms <= 0:
+            raise TickLoopInvalidMaxAgeMsError(max_age_ms)
+        self._max_age_ms: int | None = max_age_ms
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
@@ -1165,11 +1191,14 @@ class TickLoop:
                 )
         self._unknown_source_count += unknown_count
 
+        # M7-Welle-3a (ADR 0052 §2.2): max_age-STALE-Stage VOR dem
+        # TickResult-Bau — eine Stelle, drei Konsumenten (Stream +
+        # Persistenz + Replay sehen identisch markierte Punkte).
         result = TickResult(
             tick=self._tick_count,
             simulation_time=now,
             popped_events=popped,
-            emitted_telemetry=tuple(emitted),
+            emitted_telemetry=tuple(self._apply_max_age_stage(emitted, now)),
             emitted_alarms=self._drain_and_map_device_alarms(now),
         )
         self._tick_count += 1
@@ -1193,6 +1222,30 @@ class TickLoop:
             attributes={"tick": result.tick, "emitted_count": len(emitted)},
         )
         return result
+
+    def _apply_max_age_stage(self, emitted: list[TelemetryPoint], now: int) -> list[TelemetryPoint]:
+        """M7-Welle-3a (ADR 0052 §2.2): `max_age`-`STALE`-Stage.
+
+        Markiert Punkte, deren Sim-Zeitstempel die konfigurierte
+        Schwelle ueberschreitet (strikt `>`, ADR 0052 §2.5 —
+        Gleichheit ist nicht „ueberschritten"), via
+        `dataclasses.replace` mit `Quality.STALE`. Vergleich nur
+        ueber Sim-Zeit (`now` = Tick-`simulation_time`; AC-NO-TIME).
+        Severity-Override (§2.3): STALE ersetzt nur Qualities mit
+        niedrigerer `QUALITY_SEVERITY` (VALID/ESTIMATED/LIMITED);
+        schwerere Befunde (FAULT_INJECTED/INVALID/NAN/MISSING)
+        dominieren. `max_age_ms=None` (Default) ist der no-op-Pfad.
+        """
+        if self._max_age_ms is None:
+            return emitted
+        stale_severity = QUALITY_SEVERITY[Quality.STALE]
+        return [
+            replace(point, quality=Quality.STALE)
+            if (now - point.simulation_time) > self._max_age_ms
+            and QUALITY_SEVERITY[point.quality] < stale_severity
+            else point
+            for point in emitted
+        ]
 
     def _persist_emitted_telemetry(self, result: TickResult) -> None:
         """M7-Welle-1a (ADR 0047 §2.3): append-only Zeitreihen-

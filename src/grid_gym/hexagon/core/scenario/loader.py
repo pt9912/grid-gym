@@ -401,6 +401,10 @@ class TickLoopWiring:
     telemetry_sink: TelemetrySinkPort | None = None
     replay_snapshot: ReplaySnapshotPort | None = None
     replay_reference_run_id: str | None = None
+    # M7-Welle-3a (ADR 0052 §2.1): optionale `max_age`-Schwelle der
+    # STALE-Stage; `None` = Stage aus (Builder-Symmetrie zum
+    # TickLoop-Konstruktor-Kwarg).
+    max_age_ms: int | None = None
     alarm_id_source: AlarmIdSource | None = None
 
 
@@ -508,6 +512,7 @@ def build_tick_loop(
         telemetry_sink=w.telemetry_sink,
         replay_snapshot=w.replay_snapshot,
         replay_reference_run_id=w.replay_reference_run_id,
+        max_age_ms=w.max_age_ms,
         alarm_id_source=w.alarm_id_source,
     )
 

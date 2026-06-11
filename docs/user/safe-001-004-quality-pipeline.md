@@ -2,7 +2,8 @@
 
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit;
 [`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done/M6-welle-5a.md)).
-**Stand:** 2026-06-06.
+**Stand:** 2026-06-06 (Welle-5a-Audit) · `GG-SAFE-004`-Flip
+✗ → ✓ 2026-06-11 (M7-Welle-3a-C2, ADR 0052).
 
 Dieses Dokument auditiert die existierende Quality-Pipeline-
 Substanz gegen die vier MUSS-Akzeptanzen `GG-SAFE-001..004`
@@ -18,7 +19,7 @@ Test-Pfade und Lieferstatus dokumentiert.
 | **GG-SAFE-001** | Ungueltige Daten erkannt: Schema-/Wertebereich-/Einheiten-Fehler → `invalid`-Quality oder Validierungs-Fehler + Alarm/Fehler-Datensatz. | `hexagon/core/scenario/loader.py::load_scenario` (Schema-Validierung) + `adapters/driving/http_api/_schemas.py` (Pydantic-API-Validierung) + `adapters/driven/protocol_opcua/_port.py:312` + `adapters/driven/protocol_iec61850/_port.py:368` (Adapter-`Quality.INVALID`-Emission) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_001_invalid_scenario_schema_rejected` + `::test_safe_001_invalid_scenario_wrong_type_rejected` (Schwester fuer Typ-Fehler-Pfad) + `tests/unit/hexagon/core/scenario/test_loader.py` (Loader-Validierung) | ✓ **Produktiv** |
 | **GG-SAFE-002** | NaN-Werte rejected: vor Zustandsfortschreibung erkannt, als `nan`-Quality serialisiert + Alarm/typisierter Fehler. | `hexagon/core/serialization/canonical.py::canonical_json` rejected `Decimal("NaN")`/`Decimal("Infinity")` mit `NonFiniteDecimalError` | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_002_nan_value_rejected_at_serialization` + `tests/unit/hexagon/core/serialization/test_canonical.py` | ✓ **Produktiv** |
 | **GG-SAFE-003** | Kommunikationsausfaelle erkannt: betroffene Telemetrie `missing`/`stale` + Alarm mit Ziel/Startzeit/Ursache. | **Teil-produktiv**: `hexagon/core/devices/smart_meter/model.py:202` (SmartMeter-pre-attach → `Quality.MISSING`). Echte Adapter-Verbindungs-Verlust-Erkennung + Alarm-Emission **fehlt**. | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_003_smart_meter_pre_attach_emits_missing` (Teil-Substanz; voller Akzeptanz-Smoke `pytest.skip`) | ⚠ **Partial Lücke** — siehe [Trigger 035](../plan/planning/open/035-safe-003-comm-failure-missing-quality.md) |
-| **GG-SAFE-004** | Veraltete Daten markiert: `max_age`-Ueberschreitung → deterministisch `stale`-Quality. | `Quality.STALE`-Enum-Wert existiert (`hexagon/core/domain/quality.py:24`). **`max_age`-Konfigurationsfeld + STALE-Emission-Logik fehlen komplett.** | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_004_stale_data_quality_after_max_age` (`pytest.skip`) | ✗ **Lücke** — siehe [Trigger 034](../plan/planning/open/034-safe-004-max-age-stale-quality.md) |
+| **GG-SAFE-004** | Veraltete Daten markiert: `max_age`-Ueberschreitung → deterministisch `stale`-Quality. | `hexagon/core/simulation/tick_loop.py::_apply_max_age_stage` (`STALE`-Stage vor dem `TickResult`-Bau; Stream + Persistenz + Replay identisch markiert) + keyword-only Kwarg `max_age_ms` am `TickLoop`-Konstruktor und in `TickLoopWiring`/`build_tick_loop` (ADR 0052; M7-Welle-3a) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_004_stale_data_quality_after_max_age` (reaktiviert) + `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3a_max_age.py` (Boundary/Override/Determinismus) | ✓ **Produktiv** (M7-Welle-3a) |
 
 **Legende**:
 - ✓ Produktiv: Akzeptanz vollstaendig erfuellt + Smoke-Test
@@ -131,18 +132,38 @@ Simulationszeitstempel die konfigurierte `max_age`
 ueberschreiten erhalten deterministisch den Qualitaetsstatus
 `stale`.
 
-**Status**: ✗ **Lücke**:
+**Status**: ✓ **Produktiv** (M7-Welle-3a-C2, 2026-06-11;
+[ADR 0052](../plan/adr/0052-max-age-stale-quality-stage.md)):
 
-- `Quality.STALE`-Enum-Wert existiert (`hexagon/core/domain/
-  quality.py:24`), aber **keine `max_age`-Substanz** im
-  Repository.
-- Grep ueber `src/grid_gym/` nach `max_age` liefert **null
-  Treffer**.
-- `STALE`-Emission-Logik (Sim-Zeit-Vergleich) fehlt komplett.
-
-**Folge-Pfad**: [Trigger 034](../plan/planning/open/034-safe-004-max-age-stale-quality.md)
-verankert die erwartete Lieferung (`max_age`-Konfigurationsfeld
-+ Quality-Pipeline-Stage + Smoke-Test + Doku-Update).
+- **`STALE`-Stage im TickLoop-Spine**
+  (`hexagon/core/simulation/tick_loop.py::_apply_max_age_stage`):
+  unmittelbar vor dem `TickResult`-Bau wird jeder gesammelte
+  `TelemetryPoint` geprueft — `(now - point.simulation_time) >
+  max_age_ms` (strikt `>`; Gleichheit ist nicht „ueberschritten")
+  flippt die Quality via `dataclasses.replace` auf
+  `Quality.STALE`. Eine Stelle, drei Konsumenten: Live-Stream,
+  Persistenz und Replay sehen identisch markierte Punkte.
+- **Konfiguration**: keyword-only Kwarg `max_age_ms: int | None
+  = None` am `TickLoop`-Konstruktor + `TickLoopWiring`/
+  `build_tick_loop`-Symmetrie. `None` (Default) = Stage aus;
+  `<= 0` → typisierter `TickLoopInvalidMaxAgeMsError`. Bewusst
+  **kein** Scenario-Schema-Feld (Hash-Pin-Schutz; ADR 0052 §2.1).
+- **Severity-Override**: `STALE` (Severity 3) ersetzt nur
+  `VALID`/`ESTIMATED`/`LIMITED` (0..2); schwerere Befunde
+  (`FAULT_INJECTED`/`INVALID`/`NAN`/`MISSING`) dominieren.
+- **Determinismus**: Vergleich nur ueber Sim-Zeit (`AC-NO-TIME`
+  gewahrt) — zwei gleich-konfigurierte Laeufe markieren
+  identische Punkte.
+- **Bewusste Grenze** (ADR 0052 §6): heutige produktive Devices
+  emittieren frische Punkte (Alter 0); das Demo-Wiring laesst
+  die Stage aus (`None`), weil keine konkrete Stakeholder-
+  Schwelle existiert. Der Akzeptanz-Beleg lebt im reaktivierten
+  Smoke + den Unit-Boundary-Tests mit nachlaufenden
+  Test-Emittern.
+- Beleg: `tests/integration/test_m6_welle_5a_safe_001_004_smoke.
+  py::test_safe_004_stale_data_quality_after_max_age`
+  (reaktiviert) + `tests/unit/hexagon/core/simulation/
+  test_tick_loop_welle_3a_max_age.py`.
 
 ---
 
@@ -152,7 +173,8 @@ verankert die erwartete Lieferung (`max_age`-Konfigurationsfeld
 Qualitaetsstatuswerte (`GG-DATA-003`):
 
 - `VALID` (Severity 0): regulaerer Mess-Wert.
-- `STALE` (3): veraltet (`GG-SAFE-004`; aktuell Lücke).
+- `STALE` (3): veraltet (`GG-SAFE-004`; ✓ produktiv seit
+  M7-Welle-3a via `max_age`-Stage, ADR 0052).
 - `ESTIMATED` (1): geschaetzt.
 - `LIMITED` (2): clipped/limited (Device-Saturation).
 - `INVALID` (5): semantisch ungueltig (`GG-SAFE-001`).
@@ -169,9 +191,10 @@ py:33-42`.
 ## Verwandte Triggers
 
 - [`open/034-safe-004-max-age-stale-quality.md`](../plan/planning/open/034-safe-004-max-age-stale-quality.md)
-  — `GG-SAFE-004` Lücke.
+  — `GG-SAFE-004` Lücke; **aufgeloest via M7-Welle-3a**
+  (Trigger-Close mit 3a-C3/C4a).
 - [`open/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/open/035-safe-003-comm-failure-missing-quality.md)
-  — `GG-SAFE-003` partial Lücke.
+  — `GG-SAFE-003` partial Lücke (Active in M7-Welle-3b).
 
 ## Verwandte ADRs
 
@@ -187,3 +210,5 @@ py:33-42`.
   Fault-Injection-`FAULT_INJECTED`-Quality.
 - [ADR 0040](../plan/adr/0040-alarm-aggregation-and-stream-port.md)
   — Alarm-Emission via `AlarmStreamPort`.
+- [ADR 0052](../plan/adr/0052-max-age-stale-quality-stage.md)
+  — `max_age`-`STALE`-Stage (`GG-SAFE-004`, M7-Welle-3a).

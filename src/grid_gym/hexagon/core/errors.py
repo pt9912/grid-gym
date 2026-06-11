@@ -437,6 +437,19 @@ class TickLoopInvalidTickMsError(TickLoopError):
         super().__init__(f"tick_ms must be positive, got {value}")
 
 
+class TickLoopInvalidMaxAgeMsError(TickLoopError):
+    """`TickLoop.__init__` mit nicht-positivem `max_age_ms`.
+
+    `GG-SAFE-004` (M7-Welle-3a, ADR 0052 §2.1): die `STALE`-
+    Schwelle muss positiv sein — `0`/negativ wuerde jeden bzw.
+    keinen Punkt deterministisch sinnvoll markieren. `None`
+    (Default) ist der Stage-aus-Pfad und faellt nicht hierunter.
+    """
+
+    def __init__(self, value: int) -> None:
+        super().__init__(f"max_age_ms must be positive, got {value}")
+
+
 class TickLoopStoppedError(TickLoopError):
     """`TickLoop.tick()` mit `_control_state` in `stopped`/`completed`
     (M5 Welle 4a, ADR 0039 Decision 13).
