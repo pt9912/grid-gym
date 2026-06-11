@@ -8,10 +8,11 @@ Sieben Smoke-Tests:
   Akzeptanz fuer wrong-type-Pflichtwert.
 - SAFE-002 (x2): NaN/Infinity-Werte werden von `canonical_json`
   rejected (Welle-5a-Audit ✓ produktiv).
-- SAFE-003 (x2): SmartMeter emittiert `Quality.MISSING` bei pre-
-  attach (Welle-5a-Audit ⚠ partial Lücke; voller
-  Kommunikationsausfall-Smoke ist `pytest.skip` mit Pointer
-  auf Trigger 035).
+- SAFE-003 (x2): SmartMeter-pre-attach-`MISSING` (Teil-Substanz)
+  + Adapter-Verbindungsverlust → `MISSING` + Alarm end-to-end
+  via `CommFailureGuardedDeviceProtocolPort` (M7-Welle-3b,
+  ADR 0053 — reaktiviert aus dem Trigger-035-Skip; Welle-5a-Audit
+  war ⚠ partial).
 - SAFE-004 (x1): `max_age`-`STALE`-Stage end-to-end (M7-Welle-3a,
   ADR 0052 — reaktiviert aus dem Trigger-034-Skip; Welle-5a-Audit
   war ✗ Lücke).
@@ -26,10 +27,19 @@ from decimal import Decimal
 
 import pytest
 
+from grid_gym.adapters.driven._protocol_comm_failure_wrap import (
+    CommFailureGuardedDeviceProtocolPort,
+)
+from grid_gym.adapters.driven.protocol_iec61850 import (
+    Iec61850PortReadConnectionLostError,
+)
 from grid_gym.hexagon.core.devices.smart_meter.model import SmartMeterDevice
+from grid_gym.hexagon.core.domain.alarm import Alarm
+from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
+from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import ScenarioError
 from grid_gym.hexagon.core.scenario.loader import load_scenario
 from grid_gym.hexagon.core.serialization.canonical import (
@@ -139,20 +149,89 @@ def test_safe_003_smart_meter_pre_attach_emits_missing() -> None:
     )
 
 
-@pytest.mark.skip(
-    reason=(
-        "GG-SAFE-003 voller Akzeptanz-Umfang (Adapter-Kommunikationsausfall + "
-        "Alarm-Emission) ist Lücke per Welle-5a-Audit. Siehe Trigger 035 "
-        "(docs/plan/planning/open/035-safe-003-comm-failure-missing-quality.md)."
-    )
-)
+class _ConnectionDroppingAdapter:
+    """Test-Double fuer den SAFE-003-Smoke: liefert einen
+    erfolgreichen Read, danach kollabiert die Session mid-flight
+    (`Iec61850PortReadConnectionLostError` — die praeziseste
+    Verbindungsverlust-Erkennung des Bestands,
+    `protocol_iec61850/_port.py`)."""
+
+    def __init__(self) -> None:
+        self._reads = 0
+
+    def start(self) -> None:
+        return None
+
+    def stop(self) -> None:
+        return None
+
+    def read(self, target: str) -> TelemetryPoint | None:
+        self._reads += 1
+        if self._reads == 1:
+            return TelemetryPoint(
+                run_id="",
+                tick=0,
+                simulation_time=0,
+                device_id=target,
+                metric="power_kw",
+                value=Decimal("42"),
+                unit="kW",
+                quality=Quality.VALID,
+                source=f"protocol_test.{target}",
+                sequence=0,
+            )
+        raise Iec61850PortReadConnectionLostError(target, "IED1/LD0/MMXU1.TotW", "MX")
+
+    def write(self, target: str, command: Command) -> None:
+        _ = target
+        _ = command
+
+
 def test_safe_003_comm_failure_emits_missing_or_stale() -> None:
     """`GG-SAFE-003` voller Umfang: Adapter-Verbindungs-Verlust →
-    Quality.MISSING/STALE + Alarm. **Lücke per Welle-5a-Audit.**
+    `Quality.MISSING` + Alarm mit Ziel/Startzeit/Ursache
+    (M7-Welle-3b, ADR 0053; reaktiviert aus dem Trigger-035-Skip).
 
-    Aktivierung: Trigger 035 verankert die erwartete Lieferung.
-    Test-Body absichtlich leer (Skip-Marker greift vorher).
+    End-to-End ueber den `CommFailureGuardedDeviceProtocolPort`-
+    Wrapper + einen Adapter, der nach erfolgreichem Read die
+    Verbindung verliert: der erste Read geht unveraendert durch,
+    der Verbindungsverlust liefert den `MISSING`-Point + den
+    `adapter_communication_lost`-Alarm (per-Familie-Detail-Pins
+    in `tests/unit/adapters/driven/test_protocol_comm_failure_
+    wrap.py`).
+
+    Audit-Trail: `docs/user/safe-001-004-quality-pipeline.md`
+    Sektion `GG-SAFE-003`.
     """
+
+    alarms: list[Alarm] = []
+    clock = FakeClock()
+    clock.advance(3000)
+    wrapper = CommFailureGuardedDeviceProtocolPort(
+        _ConnectionDroppingAdapter(),
+        run_id="run-safe-003-smoke",
+        clock=clock,
+        on_alarm=alarms.append,
+    )
+
+    first = wrapper.read("meter-1")
+    assert first is not None and first.quality is Quality.VALID, (
+        "intakte Verbindung: Original-Point geht unveraendert durch"
+    )
+    assert alarms == []
+
+    dropped = wrapper.read("meter-1")
+    assert dropped is not None and dropped.quality is Quality.MISSING, (
+        "Verbindungsverlust muss Quality.MISSING markieren (GG-SAFE-003, ADR 0053 §2.3)"
+    )
+    assert len(alarms) == 1, "genau ein Alarm pro Kommunikationsausfall"
+    alarm = alarms[0]
+    assert alarm.code == "adapter_communication_lost"
+    assert alarm.target == "meter-1", "Akzeptanz-Pflichtfeld Ziel"
+    assert alarm.simulation_time_ms == 3000, "Akzeptanz-Pflichtfeld Startzeit (Sim-Zeit)"
+    assert "Iec61850PortReadConnectionLostError" in alarm.message, (
+        "Akzeptanz-Pflichtfeld Ursache (dokumentierter Fehlerstatus)"
+    )
 
 
 def test_safe_004_stale_data_quality_after_max_age() -> None:
