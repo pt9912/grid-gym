@@ -1223,8 +1223,12 @@ Core-`STALE`-Stage + ADR 0052; commits `23c614a` + Review-Folge
 `5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
 `docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
 **Aktiver Slice jetzt: M7-Welle-3b** (`GG-SAFE-003` Comm-Failure,
-Trigger 035; 3b-C0 als naechster Schritt) — danach M7-Welle-X
-(M7-Closure).
+Trigger 035) — **aktiviert mit 3b-C0 2026-06-11**
+([`M7-welle-3b.md`](M7-welle-3b.md); NEU
+`CommFailureGuardedDeviceProtocolPort`-Wrapper +
+`adapter_communication_lost`-Alarm-Vertrag, ADR 0053; 3b-D-1 =
+voller Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
+danach M7-Welle-X (M7-Closure).
 
 ---
 

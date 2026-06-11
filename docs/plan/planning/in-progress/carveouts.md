@@ -187,7 +187,7 @@ Build-Trigger.
 | Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | ------ | ---------------------- | ----------- |
 | `GG-SAFE-004` `max_age`-stale-Quality-Markierung | **Geschlossen 2026-06-11 via M7-Welle-3a** ([`M7-welle-3a.md`](../done/M7-welle-3a.md); `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; `GG-SAFE-004` ✓ produktiv) | erledigt — Trigger 034 Closed (Move `done/` in 3a-C4a); Rest-Grenzen dokumentiert in ADR 0052 §7 (Scenario-Schema-Feld + Demo-Schwelle = additive Schaerfungen) | [`034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
-| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | **Active in M7-Welle-3b** (aktiviert mit Welle-3-C0 2026-06-11; Gruppenplan [`M7-welle-3.md`](M7-welle-3.md), Slice-Doc via 3b-C0 nach 3a-Closure) | aktiviert — Scope-Entscheid (voller Umfang vs. Carveout-Notiz) in 3b-C0 per Welle-3-D-4 | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
+| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | **Active in M7-Welle-3b** (3b-C0 2026-06-11; Slice-Doc [`M7-welle-3b.md`](M7-welle-3b.md)) | aktiviert — Scope-Entscheid gefallen (3b-D-1: voller Akzeptanz-Umfang via Comm-Failure-Wrapper + Test-Sibling, KEIN Carveout); Lieferung via 3b-C2 | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
 ### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
 

@@ -15,10 +15,13 @@ via 3b-C0). Pattern analog Welle-1-Sub-Slicing (1a/1b).
 C0 `9e266d2` + C1 `744e31e` ADR 0052 + C2 `23c614a` +
 Review-Folge `5a9960a` + C3 — **`GG-SAFE-004` ✓ produktiv**,
 Trigger 034 Closed, Move `done/` in der 3a-C4-Sequenz).
-**Aktiver Slice: Welle 3b** (3b-C0 als naechster Schritt;
-F4-Erbschaft aus dem 3a-Review: Severity-Override-Helper-Lift
-nach `quality.py` in 3b-C0 mitentscheiden).
-**Datum:** 2026-06-11 (Welle-3-C0 · 3a Done 2026-06-11).
+**Aktiver Slice: Welle 3b** — **aktiviert mit 3b-C0 2026-06-11**
+(NEU [`M7-welle-3b.md`](M7-welle-3b.md); Decisions 3b-D-1..D-8
+final: D-1 voller Akzeptanz-Umfang via Comm-Failure-Wrapper +
+Test-Sibling, KEIN Carveout — der D-4-Scope-Schalter ist damit
+entschieden; D-7 F4-Erbschaft bleibt zurueckgestellt, 3b
+synthetisiert Punkte statt Qualities zu upgraden).
+**Datum:** 2026-06-11 (Welle-3-C0 · 3a Done · 3b-C0 2026-06-11).
 **Quelle:** [`M7-mvp-completion.md §3`](M7-mvp-completion.md) +
 Trigger 034/035 (M6-Welle-5a-Audit) +
 [`roadmap.md §M7`](roadmap.md).
@@ -181,12 +184,15 @@ explizitem Rest-Trigger.
   Unit-Boundary-Tests + Smoke-Reaktivierung + Doku-Flip;
   `GG-SAFE-004` ✓ produktiv; Trigger 034 Closed (→ `done/` in
   3a-C4a).
-- **3b** — Slice-Doc via 3b-C0 (~2-3 Tage): Comm-Failure-Wrapper
-  + Alarm-Vertrag + per-Adapter-Familie-Smokes +
-  Smoke-Reaktivierung + Doku-Flip + Trigger 035 → `done/`
-  (oder D-4-Carveout-Pfad). 3b-C0-Erbschaft: F4-Entscheid
-  (Severity-Override-Helper-Lift nach `quality.py`, falls 3b
-  die Regel braucht).
+- **3b** — **In Progress 2026-06-11**
+  ([`M7-welle-3b.md`](M7-welle-3b.md), ~2-2.5 Tage): NEU
+  `CommFailureGuardedDeviceProtocolPort` (Composition-Wrapper,
+  Pattern `_protocol_otel_wrap.py`) + `adapter_communication_
+  lost`-Alarm-Vertrag + per-Adapter-Familie-Unit-Tests +
+  Smoke-Reaktivierung + Doku-Flip + ADR 0053; loest Trigger 035.
+  D-4-Scope-Schalter final = voller Umfang (3b-D-1, kein
+  Carveout); F4-Erbschaft zurueckgestellt (3b-D-7: Wrapper
+  synthetisiert, upgraded nicht).
 
 ---
 
