@@ -1582,6 +1582,7 @@ class TickLoop:
         trace_port: TracePort | None = None,
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
         run_repository: RunRepositoryPort | None = None,
+        max_age_ms: int | None = None,
         alarm_id_source: Callable[[], str] | None = None,
         control_state: RunStatus | None = None,
     ) -> TickLoop:
@@ -1634,6 +1635,15 @@ class TickLoop:
           behaelt das Default-`pending` und damit den
           First-Tick-Auto-Flip-Pfad — produktiver Resume sollte
           den State immer explizit setzen.
+
+        M7-Welle-3a-Review-Folge F1 ergaenzt ``max_age_ms``:
+        Resume-Symmetrie zum Konstruktor-Kwarg (ADR 0052 §2.1) —
+        der Caller re-injiziert die `STALE`-Stage-Schwelle wie
+        die uebrigen Runtime-Dependencies; ohne das Kwarg liefe
+        ein resumed Lauf still mit `max_age_ms=None` (Stage aus)
+        und divergierte im Quality-Verhalten vom Original-Lauf.
+        Der Snapshot persistiert die Schwelle (wie alle
+        injizierten Runtime-Deps) bewusst nicht.
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:
@@ -1675,6 +1685,7 @@ class TickLoop:
             trace_port=trace_port,
             protocol_ports=protocol_ports,
             run_repository=run_repository,
+            max_age_ms=max_age_ms,
             alarm_id_source=alarm_id_source,
         )
         # `_pending_agent_commands` muss nach Konstruktor-Init

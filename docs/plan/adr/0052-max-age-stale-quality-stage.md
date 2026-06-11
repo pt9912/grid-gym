@@ -124,6 +124,18 @@ if self._max_age_ms is not None:
   bleiben gewahrt; alle uebrigen Felder unveraendert —
   insbesondere `sequence`/`source`, das Scheduler-Tie-Breaking
   ist unberuehrt).
+- **Bilanz-Abgrenzung (C2-Review-Folge F2):** die
+  Netzbilanz-Aggregation (`bucket_sums` →
+  `GridModelBilanz.update`, Schritt B/D/E) laeuft **vor** der
+  Stage und ist im Bestand **quality-agnostisch** (sie filtert
+  nur nach Metrik, nie nach Quality — auch `INVALID`-/`MISSING`-
+  Punkte gingen schon immer mit Rohwert ein). Ein als `STALE`
+  markierter Punkt ist also mit seinem Rohwert in der Bilanz
+  verrechnet — **Markierung ≠ Filterung**; `GG-SAFE-004`
+  verlangt nur die Markierung, und die Stage aendert die
+  Simulations-Physik bewusst nicht. Eine quality-gewichtete
+  Bilanz waere eine eigene, additive Schaerfung mit eigenem
+  Fach-Vertrag (nicht 3a, nicht 3b).
 
 ### §2.3 Severity-Override-Regel (3a-D-3)
 

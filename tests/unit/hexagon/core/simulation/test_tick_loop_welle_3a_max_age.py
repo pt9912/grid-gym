@@ -18,88 +18,24 @@ Pinnt:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from decimal import Decimal
-from typing import Self
 
 import pytest
 
-from grid_gym.hexagon.core.domain.command import Command
-from grid_gym.hexagon.core.domain.command_result import CommandResult
-from grid_gym.hexagon.core.domain.device import DeviceTickContext, DeviceTickOutcome
 from grid_gym.hexagon.core.domain.quality import Quality
-from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import TickLoopInvalidMaxAgeMsError
 from grid_gym.hexagon.core.scenario.loader import TickLoopWiring, build_tick_loop, load_scenario
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
-from grid_gym.hexagon.ports.driven.random import RandomPort
+from tests.unit.hexagon.core.simulation._fakes import LaggingEmitterDevice
 from tests.unit.hexagon.ports.driven._fakes import FakeClock, FixedSeedRandom
 
 _RUN_ID = "welle-3a-max-age-test"
 
 
-class _LaggingEmitterDevice:
-    """Test-Double: emittiert einen Punkt mit nachlaufendem
-    Sim-Zeitstempel (`simulation_time - lag_ms`) und gegebener
-    Quality. Produktive Devices emittieren frische Punkte
-    (Alter 0) — der Lag ist die Test-Substanz fuer die Stage
-    (ADR 0052 §6 „bewusste Grenze"; Slice-Doc R2)."""
-
-    def __init__(self, device_id: str, *, lag_ms: int, quality: Quality) -> None:
-        self._device_id = device_id
-        self._lag_ms = lag_ms
-        self._quality = quality
-        self._run_id = ""
-
-    @property
-    def device_id(self) -> str:
-        return self._device_id
-
-    def initialize(self, scenario_device: ScenarioDevice, random: RandomPort) -> None:
-        _ = scenario_device
-        _ = random
-
-    def apply_command(self, command: Command) -> CommandResult:
-        _ = command
-        return CommandResult.IGNORED
-
-    def tick(self, context: DeviceTickContext) -> DeviceTickOutcome:
-        return DeviceTickOutcome(
-            telemetry=(
-                TelemetryPoint(
-                    run_id=self._run_id,
-                    tick=context.tick,
-                    simulation_time=context.simulation_time - self._lag_ms,
-                    device_id=self._device_id,
-                    metric="power_kw",
-                    value=Decimal("1"),
-                    unit="kW",
-                    quality=self._quality,
-                    source="test_lagging_emitter",
-                    sequence=1,
-                ),
-            ),
-        )
-
-    def snapshot(self) -> Mapping[str, object]:
-        return {"version": 1}
-
-    def telemetry(self) -> tuple[TelemetryPoint, ...]:
-        return ()
-
-    @classmethod
-    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
-        _ = state
-        return cls("restored", lag_ms=0, quality=Quality.VALID)
-
-    def set_run_id(self, run_id: str) -> None:
-        self._run_id = run_id
-
-
 def _make_loop(
-    devices: tuple[_LaggingEmitterDevice, ...],
+    devices: tuple[LaggingEmitterDevice, ...],
     *,
     max_age_ms: int | None,
 ) -> TickLoop:
@@ -119,9 +55,9 @@ def test_stale_boundary_strictly_greater_than_max_age() -> None:
     markiert; Gleichheit und frische Punkte bleiben unmarkiert."""
     loop = _make_loop(
         (
-            _LaggingEmitterDevice("over", lag_ms=1001, quality=Quality.VALID),
-            _LaggingEmitterDevice("exact", lag_ms=1000, quality=Quality.VALID),
-            _LaggingEmitterDevice("fresh", lag_ms=0, quality=Quality.VALID),
+            LaggingEmitterDevice("over", lag_ms=1001, quality=Quality.VALID),
+            LaggingEmitterDevice("exact", lag_ms=1000, quality=Quality.VALID),
+            LaggingEmitterDevice("fresh", lag_ms=0, quality=Quality.VALID),
         ),
         max_age_ms=1000,
     )
@@ -137,7 +73,7 @@ def test_stale_marking_preserves_all_other_point_fields() -> None:
     `sequence`/`source`/`value`/`simulation_time` bleiben identisch
     (Scheduler-Tie-Breaking unberuehrt)."""
     loop = _make_loop(
-        (_LaggingEmitterDevice("over", lag_ms=5000, quality=Quality.VALID),),
+        (LaggingEmitterDevice("over", lag_ms=5000, quality=Quality.VALID),),
         max_age_ms=1000,
     )
     point = loop.tick().emitted_telemetry[0]
@@ -156,7 +92,7 @@ def test_severity_override_upgrades_only_lower_severities() -> None:
     upgraded = (Quality.VALID, Quality.ESTIMATED, Quality.LIMITED)
     dominant = (Quality.FAULT_INJECTED, Quality.INVALID, Quality.NAN, Quality.MISSING)
     devices = tuple(
-        _LaggingEmitterDevice(f"dev-{quality.value}", lag_ms=2000, quality=quality)
+        LaggingEmitterDevice(f"dev-{quality.value}", lag_ms=2000, quality=quality)
         for quality in upgraded + dominant
     )
     loop = _make_loop(devices, max_age_ms=1000)
@@ -175,7 +111,7 @@ def test_none_default_keeps_stage_off() -> None:
     """ADR 0052 §2.1: `max_age_ms=None` (Default) laesst auch stark
     nachlaufende Punkte unmarkiert (byte-identischer Bestands-Pfad)."""
     loop = _make_loop(
-        (_LaggingEmitterDevice("over", lag_ms=100_000, quality=Quality.VALID),),
+        (LaggingEmitterDevice("over", lag_ms=100_000, quality=Quality.VALID),),
         max_age_ms=None,
     )
     assert loop.tick().emitted_telemetry[0].quality is Quality.VALID
@@ -197,8 +133,8 @@ def test_two_identical_runs_mark_identical_points() -> None:
     def _run() -> tuple[TelemetryPoint, ...]:
         loop = _make_loop(
             (
-                _LaggingEmitterDevice("over", lag_ms=1500, quality=Quality.VALID),
-                _LaggingEmitterDevice("fresh", lag_ms=0, quality=Quality.VALID),
+                LaggingEmitterDevice("over", lag_ms=1500, quality=Quality.VALID),
+                LaggingEmitterDevice("fresh", lag_ms=0, quality=Quality.VALID),
             ),
             max_age_ms=1000,
         )
@@ -248,3 +184,34 @@ def test_build_tick_loop_passes_max_age_through_wiring() -> None:
     # braeuchte ein nachlaufendes Scenario-Device, das es produktiv
     # bewusst nicht gibt (ADR 0052 §6 „bewusste Grenze").
     assert loop._max_age_ms == 1234
+
+
+def test_from_snapshot_reinjects_max_age() -> None:
+    """C2-Review-Folge F1: `from_snapshot` nimmt `max_age_ms` als
+    Resume-Kwarg (Symmetrie zum Konstruktor, ADR 0052 §2.1) — ein
+    resumed Lauf mit re-injizierter Schwelle markiert weiter STALE
+    statt die Stage still abzuschalten."""
+    original = TickLoop(
+        run_id=_RUN_ID,
+        tick_ms=1000,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=42),
+        scheduler=Scheduler(),
+        max_age_ms=1000,
+    )
+    original.tick()
+    snap = original.snapshot()
+
+    resumed_clock = FakeClock()
+    resumed_clock.advance(1000)
+    resumed = TickLoop.from_snapshot(
+        snap,
+        clock=resumed_clock,
+        random=FixedSeedRandom(seed=42),
+        devices=(LaggingEmitterDevice("over", lag_ms=5000),),
+        max_age_ms=1000,
+    )
+    point = resumed.tick().emitted_telemetry[0]
+    assert point.quality is Quality.STALE, (
+        "re-injizierte max_age_ms-Schwelle muss nach Resume weiter markieren"
+    )

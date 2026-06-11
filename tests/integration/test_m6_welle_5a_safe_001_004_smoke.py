@@ -23,17 +23,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from decimal import Decimal
-from typing import Self
 
 import pytest
 
 from grid_gym.hexagon.core.devices.smart_meter.model import SmartMeterDevice
-from grid_gym.hexagon.core.domain.command import Command
-from grid_gym.hexagon.core.domain.command_result import CommandResult
-from grid_gym.hexagon.core.domain.device import DeviceTickContext, DeviceTickOutcome
+from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
-from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.errors import ScenarioError
 from grid_gym.hexagon.core.scenario.loader import load_scenario
 from grid_gym.hexagon.core.serialization.canonical import (
@@ -42,7 +38,7 @@ from grid_gym.hexagon.core.serialization.canonical import (
 )
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
-from grid_gym.hexagon.ports.driven.random import RandomPort
+from tests.unit.hexagon.core.simulation._fakes import LaggingEmitterDevice
 from tests.unit.hexagon.ports.driven._fakes import FakeClock, FixedSeedRandom
 
 
@@ -159,62 +155,6 @@ def test_safe_003_comm_failure_emits_missing_or_stale() -> None:
     """
 
 
-class _LaggingEmitterDevice:
-    """Test-Double fuer den SAFE-004-Smoke: emittiert einen Punkt
-    mit nachlaufendem Sim-Zeitstempel. Produktive Devices emittieren
-    frische Punkte (Alter 0) — der Lag ist die Test-Substanz fuer
-    die `max_age`-Stage (ADR 0052 §6 „bewusste Grenze";
-    M7-welle-3a R2)."""
-
-    def __init__(self, *, lag_ms: int) -> None:
-        self._lag_ms = lag_ms
-        self._run_id = ""
-
-    @property
-    def device_id(self) -> str:
-        return "lagging-001"
-
-    def initialize(self, scenario_device: ScenarioDevice, random: RandomPort) -> None:
-        _ = scenario_device
-        _ = random
-
-    def apply_command(self, command: Command) -> CommandResult:
-        _ = command
-        return CommandResult.IGNORED
-
-    def tick(self, context: DeviceTickContext) -> DeviceTickOutcome:
-        return DeviceTickOutcome(
-            telemetry=(
-                TelemetryPoint(
-                    run_id=self._run_id,
-                    tick=context.tick,
-                    simulation_time=context.simulation_time - self._lag_ms,
-                    device_id="lagging-001",
-                    metric="power_kw",
-                    value=Decimal("1"),
-                    unit="kW",
-                    quality=Quality.VALID,
-                    source="test_lagging_emitter",
-                    sequence=1,
-                ),
-            ),
-        )
-
-    def snapshot(self) -> Mapping[str, object]:
-        return {"version": 1}
-
-    def telemetry(self) -> tuple[TelemetryPoint, ...]:
-        return ()
-
-    @classmethod
-    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
-        _ = state
-        return cls(lag_ms=0)
-
-    def set_run_id(self, run_id: str) -> None:
-        self._run_id = run_id
-
-
 def test_safe_004_stale_data_quality_after_max_age() -> None:
     """`GG-SAFE-004`: Werte deren Sim-Zeitstempel die konfigurierte
     `max_age` ueberschreiten erhalten deterministisch
@@ -237,7 +177,7 @@ def test_safe_004_stale_data_quality_after_max_age() -> None:
         clock=FakeClock(),
         random=FixedSeedRandom(seed=42),
         scheduler=Scheduler(),
-        devices=(_LaggingEmitterDevice(lag_ms=5000),),
+        devices=(LaggingEmitterDevice(lag_ms=5000),),
         max_age_ms=1000,
     )
     result = loop.tick()
@@ -254,7 +194,7 @@ def test_safe_004_stale_data_quality_after_max_age() -> None:
         clock=FakeClock(),
         random=FixedSeedRandom(seed=42),
         scheduler=Scheduler(),
-        devices=(_LaggingEmitterDevice(lag_ms=5000),),
+        devices=(LaggingEmitterDevice(lag_ms=5000),),
     )
     assert stage_off.tick().emitted_telemetry[0].quality is Quality.VALID, (
         "max_age_ms=None (Default) laesst die Stage aus — Bestands-Pfad unveraendert"
