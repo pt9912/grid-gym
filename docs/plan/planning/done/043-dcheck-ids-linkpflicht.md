@@ -21,6 +21,17 @@ CONTRIBUTING/harness verlinkt bzw. in Backtick-Form gebracht
 (`AC-ADAPTER-PURE` hat keine Definition in architecture.md);
 ausgeschlossen bleibt nur Historie (Planning-Docs,
 Accepted-ADRs, released Changelog-Eintraege).
+**Zweiter Scope-Nachtrag (User-Mandat, gleicher Tag):** auch
+`docs/plan/adr/**` + `planning/{in-progress,next,open}` in den
+Scope genommen (312 weitere Kennungen verlinkt; ausgeschlossen
+bleiben nur noch `planning/done/**` + `CHANGELOG.md`). Dabei
+`AC-*`-Target von `spec/architecture.md` auf das
+`docs/plan/adr/`-Verzeichnis korrigiert — Contracts deklarieren
+sich im jeweiligen ADR (0002 §A-1, 0029, 0035, …), nicht in der
+Architektur-Spec; nur 3 der 20 AC-IDs kommen in architecture.md
+ueberhaupt vor. Nicht verlinkbare Sonderfaelle in Backtick-Form
+(`AC-NO-GOD-UTILS` — nur in `tools/arch_check.py` deklariert,
+kein Doku-Target).
 **Datum:** 2026-06-12
 **Quelle:** Trigger-002-Erbschaft (Kennungs-Aufloesung
 `GG-*`/`AC-*`/`ADR NNNN` war dort vertagt; Trigger 002 wurde

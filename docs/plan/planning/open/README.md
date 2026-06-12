@@ -29,13 +29,13 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`004-canonical-encoder-alternative-adr.md`](004-canonical-encoder-alternative-adr.md) | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec) | bei messbarem Perf-Druck am Telemetrie-Pfad |
 | [`005-pyright-vs-mypy-reeval.md`](005-pyright-vs-mypy-reeval.md) | Re-Eval mypy vs. pyright bei generischen Protocols | sobald `ports/*` Generic-Protocols einfuehrt |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md) | ADR fuer pyright als Pre-Commit-Hook | bei Editor-Parity-Druck |
-| [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump (ADR-0043-konformer Defer-Pfad ueber ADR-0044-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
+| [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump ([`ADR-0043`](../../adr/0043-image-audit-strategy.md)-konformer Defer-Pfad ueber [`ADR-0044`](../../adr/0044-generated-trivyignore-permit.md)-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
 
 **M3-/Multi-Agent-Folge:**
 
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
-| [`011-mlrandomport-subseed-width.md`](011-mlrandomport-subseed-width.md) | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle |
+| [`011-mlrandomport-subseed-width.md`](011-mlrandomport-subseed-width.md) | `MLRandomPort` Sub-Seed-Wortbreite ([`ADR 0007`](../../adr/0007-random-port.md) §5.2/§6) | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle |
 | [`026-bess-simulation-reserve-market-spike.md`](026-bess-simulation-reserve-market-spike.md) | Lokale BESS-Simulation als Vorlage fuer Reserve-Market-/LER-Strategien | bei Reserve-Market-Agent, BESS-SOC-Management-Agent oder LER-Demo |
 | [`030-rl-adapter.md`](030-rl-adapter.md) | RL-Adapter ueber den Multi-Agent-Bus (`GG-FUTURE-001/002`) | bei konkreter RL-Stakeholder-Anforderung (M7+-Material) |
 

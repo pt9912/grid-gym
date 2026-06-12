@@ -980,7 +980,7 @@ XML-Konfigurationsformat. Verworfen, weil:
   - mypy-Override `module="pyiec61850.*"` mit
     `ignore_missing_imports = true` (kein py.typed-
     Marker).
-  - `pyiec61850-ng`-Sichtbarkeit in AC-PORTS-NO-FW/
+  - `pyiec61850-ng`-Sichtbarkeit in [`AC-PORTS-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/
     AC-NO-FW-Forbidden-Listen — Welle-0-Vorbelegung
     pruefen; ggf. C2-Edit.
   - Top-Level-MIT-Classifier bleibt unveraendert

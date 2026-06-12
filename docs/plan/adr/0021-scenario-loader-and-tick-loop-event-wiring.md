@@ -479,7 +479,7 @@ Klassen liefert.
 Profile ein **Baseline-Verlauf**, ein Event eine **Stoerung
 darueber**. Profile setzt den Default-Wert pro Tick, Event
 ueberschreibt fuer seine Dauer. Diese Reihenfolge ist konsistent
-mit dem Lastenheft GG-GRID-003 (Zeitreihen = Profile, Events =
+mit dem Lastenheft [`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) (Zeitreihen = Profile, Events =
 Spruenge) und macht die Welle-6c-MVP-Demo-Szenario-Aufschriebe
 intuitiv.
 

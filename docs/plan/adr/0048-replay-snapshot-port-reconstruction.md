@@ -26,7 +26,7 @@
   — Slice-Doc (Decisions 1b-a-D-0..D-6); ADR 0048 fixiert
   D-2/D-3/D-4.
 - [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
-  GG-MVP-002-Gruppenplan (D-1/D-1.1).
+  [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (D-1/D-1.1).
 - [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Replay-Lifecycle (Welle 1b-b, ADR 0049) konsumiert den hier
   rekonstruierten `ReplaySample`-Strom.
@@ -170,11 +170,11 @@ Migrations-Kette.
 
 **Hexagonal-Reinheit:** Der Core importiert nur das
 `ReplaySnapshotPort`-Protocol; der `PostgresReplaySnapshot
-Adapter` traegt die `psycopg`-Abhaengigkeit (AC-NO-FW gewahrt,
+Adapter` traegt die `psycopg`-Abhaengigkeit ([`AC-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) gewahrt,
 Praezedenz `telemetry_sink_repository`). Die Verdrahtung in einen
 Lauf-Lifecycle ist **Welle 1b-b** (ADR 0049) — 1b-a liefert nur
 Port + Adapter + Smoke, **kein** `TickLoop`-Kwarg. `make
-arch-check` (AC-PORTS-NO-OUT + AC-NO-FW) verifiziert in C2, dass
+arch-check` ([`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + [`AC-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) verifiziert in C2, dass
 `hexagon/core/**` unveraendert bleibt.
 
 ---

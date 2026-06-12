@@ -45,7 +45,7 @@ Aktuelle Ausnahmen:
 
 ### C0 — Planungs-/ADR-Artefakte
 
-- ADR 0050 anlegen.
+- [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) anlegen.
 - Diesen `next/`-Plan anlegen.
 - `docs/plan/adr/README.md` und `docs/plan/planning/next/README.md`
   synchronisieren.
@@ -95,7 +95,7 @@ Aktuelle Ausnahmen:
 - `pyproject.toml`-Kommentarblock fuer die historischen Bruecken
   kuerzen oder entfernen.
 - ADR-/Plan-Referenzen aktualisieren.
-- Falls alle acht Eintraege weg sind: ADR 0050 fuer spaetere
+- Falls alle acht Eintraege weg sind: [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) fuer spaetere
   `Accepted`-Closure vormerken.
 
 ## 4. Nicht-Ziele

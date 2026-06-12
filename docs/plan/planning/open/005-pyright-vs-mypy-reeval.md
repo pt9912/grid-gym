@@ -8,7 +8,7 @@
 
 ## Trigger
 
-ADR 0005 waehlt `mypy --strict` als CI-Gate. Begruendung u. a.:
+[`ADR 0005`](../../adr/0005-type-check-gate.md) waehlt `mypy --strict` als CI-Gate. Begruendung u. a.:
 „`K-PROTO` (P0) ist bei `pyright` etwas besser, aber `mypy` reicht
 fuer unsere Port-Strukturen (Driving/Driven-Ports sind eindeutige
 Protocols, keine Generics-Akrobatik geplant). Re-Evaluation triggert,

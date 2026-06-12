@@ -209,7 +209,7 @@ Defaults aus Decision 4c. Scenario-Loader (`hexagon/core/
 scenario/loader.py`) bekommt einen `_parse_mqtt_protocol_port_config`-
 Helfer **im Adapter-Bereich** (nicht im Core-Loader, weil
 Loader-Code MQTT-frei bleiben muss — siehe §4
-Konsequenzen + AC-HEXAGON-PURE).
+Konsequenzen + [`AC-HEXAGON-PURE`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)).
 
 ### 2.2 Decision 4b — Payload-Codec `canonical_json` (final, mit Trigger-004-Re-Eval-Pfad)
 
@@ -505,7 +505,7 @@ SDK uebernimmt).
   [`../planning/done/M4-welle-1.md`](../planning/done/M4-welle-1.md)
   §7 Folge-Mitigation; Welle-2-`M4-welle-2.md`
   §2-Anti-Scope hat den Verzicht normativ festgeschrieben).
-- **Scenario-Loader bleibt MQTT-frei** (AC-HEXAGON-PURE):
+- **Scenario-Loader bleibt MQTT-frei** ([`AC-HEXAGON-PURE`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)):
   `hexagon/core/scenario/loader.py` darf
   `MqttProtocolPortConfig` nicht direkt parsen. Stattdessen
   liefert das Adapter-Modul eine `parse_mqtt_config(yaml_block)

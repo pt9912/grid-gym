@@ -27,7 +27,7 @@ starten.
 
 - **`POST /runs` `replay_of: <run_id>`-Request-Feld** (oder ein
   dediziertes `POST /runs/{id}/replay`-Endpoint) — mit
-  `RunCreateRequest`-Strict-Validation-Schaerfung (ADR 0045:
+  `RunCreateRequest`-Strict-Validation-Schaerfung ([`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md):
   `strict=True`/`extra="forbid"`).
 - **`RunMetadata`-`replay_of`-Spalte** (oder
   `ReplayComparisonMetadata`-Envelope) + **Alembic-Migration** —
@@ -60,7 +60,7 @@ konsumiert.
 - [`../done/M7-welle-1b-b.md`](../done/M7-welle-1b-b.md)
   — 1b-b-D-7 (Scope-Schalter + Begruendung).
 - [`../done/M7-welle-1.md`](../done/M7-welle-1.md)
-  — GG-MVP-002-Gruppenplan.
+  — [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan.
 - [`../../adr/0045-http-api-request-strict-validation.md`](../../adr/0045-http-api-request-strict-validation.md)
   — Strict-Request-Body-Vertrag fuer ein `replay_of`-Feld.
 - [`../../adr/0048-replay-snapshot-port-reconstruction.md`](../../adr/0048-replay-snapshot-port-reconstruction.md)

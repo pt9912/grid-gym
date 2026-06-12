@@ -164,8 +164,8 @@ nicht persistieren. Der Core-Kwarg persistiert dagegen **jeder**
 **Hexagonal-Reinheit:** Der Core importiert nur das
 `TelemetrySinkPort`-Protocol (kein `psycopg`); der
 `PostgresTelemetrySinkAdapter` traegt die Library-Abhaengigkeit
-(AC-NO-FW bleibt gewahrt, Praezedenz `run_repository`/`psycopg`).
-`make arch-check` (AC-PORTS-NO-OUT + AC-NO-FW) verifiziert in C2.
+([`AC-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) bleibt gewahrt, Praezedenz `run_repository`/`psycopg`).
+`make arch-check` ([`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + [`AC-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) verifiziert in C2.
 
 ### §2.4 Byte-Stabilitaets-Vertrag (`value`)
 

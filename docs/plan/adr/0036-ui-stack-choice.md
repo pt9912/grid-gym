@@ -383,7 +383,7 @@ vs Plotly-SVG).
   Wahl wird hier final festgelegt im Welle-3-Slice-Doc.
   Pattern analog M4-Welle-2-MQTT-Library-Wahl (`paho-mqtt
   2.x`) im Welle-2-Slice-Doc + ADR-Body.
-- **Welle 6 (SOLLTE-Features GG-UI-006/007/008):** falls
+- **Welle 6 (SOLLTE-Features [`GG-UI-006`](../../../spec/lastenheft.md#gg-ui-006)/007/008):** falls
   Welle 3 mit Chart.js startet, kann hier ein Upgrade auf
   Plotly.js/ECharts erwogen werden, falls UX-Druck steigt.
   Migration ist nicht trivial (Config-Modelle unterschied-
@@ -413,7 +413,7 @@ vs Plotly-SVG).
 - **UX-Glanz:** "Server-driven UI fuehlt sich behaebig an" —
   weniger reactive als Svelte/React-SPAs.
 - **Replay-Forms-Validation server-side:** bei komplexen
-  Forms (z. B. Fault-Injection §GG-UI-007 mit nested
+  Forms (z. B. Fault-Injection §[`GG-UI-007`](../../../spec/lastenheft.md#gg-ui-007) mit nested
   Konfiguration) sperriger als client-side-validation.
 - **Lernkurve fuer Devs, die nur React/Vue kennen:** HTMX
   hat ein eigenes Mental-Model.

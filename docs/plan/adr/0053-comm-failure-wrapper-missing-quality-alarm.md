@@ -147,7 +147,7 @@ Pro gefangenem Read-Fehler genau ein `Alarm`:
 | `code` | `"adapter_communication_lost"` (NEU vierter stabiler Code neben `power_clamp_limited`/`command_rejected`/`smart_meter_rejected`) |
 | `severity` | `"warning"` (einheitlich; `critical` bleibt der Command-Reject-Semantik vorbehalten, ADR 0040 §2.1) |
 | `target` | `<read-target>` (Ziel) |
-| `simulation_time_ms` | `clock.now()` (Startzeit; Sim-Zeit, AC-NO-TIME) |
+| `simulation_time_ms` | `clock.now()` (Startzeit; Sim-Zeit, [`AC-NO-TIME`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) |
 | `message` | `"<ExceptionKlassenname>: <str(exc)>"` (Ursache, maschinenlesbar praefixt) |
 | `status` / `fault_id` | `"active"` / `None` |
 | `alarm_id` | `alarm_id_source()` (uuid4-Default, Test-Stub — ADR 0040 Decision 16) |

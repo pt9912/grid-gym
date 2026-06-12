@@ -77,7 +77,7 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 
 | ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
 | -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
-| D-1 | Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | M5-Erbschaft | `Deferred` | M5-Welle 1 (Stub) + ADR 0015 v2 | Replay-/Export-Konsument braucht den vollen Envelope-Body ueber HTTP | — |
+| D-1 | Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | M5-Erbschaft | `Deferred` | M5-Welle 1 (Stub) + [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) v2 | Replay-/Export-Konsument braucht den vollen Envelope-Body ueber HTTP | — |
 | D-2 | CSV/JSONL-Export-Endpunkte | M5-Erbschaft | `Deferred` | M5-Welle 6c §1.3 + `GG-ACCEPT-003` | konkreter Abnahme-/Analyse-Bedarf an Datei-Export | — |
 | D-3 | Inline-SVG-Geraete-Grafik | M5-Erbschaft | `Deferred` | M5-Welle 6b §1.3 + Decision 23 | UI-Polish-Mandat | — |
 | D-4 | Dynamische Fault-Activation ueber `POST /faults` | M5-Erbschaft | `Deferred` | M5-Welle 6a Decision 19 | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | — |
@@ -96,8 +96,8 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 | T-004 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004`](../open/004-canonical-encoder-alternative-adr.md) |
 | T-005 | Pyright-vs-mypy-Re-Eval | Tooling/Build | `Trigger-Gated` | M1-Tooling | sobald `ports/*` Generic-Protocols einfuehrt | [`005`](../open/005-pyright-vs-mypy-reeval.md) |
 | T-007 | Pyright-als-Pre-Commit-Hook-ADR | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei Editor-Parity-Druck | [`007`](../open/007-pyright-precommit-adr.md) |
-| T-011 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
-| T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (Temp-Deferral via vulnignore aktiv, ADR 0044; `expires: 2026-06-20`) | Tooling/Build | `Trigger-Gated` | M6-Welle-3-Post-Push | OTel-Collector-Release > 0.153.0 mit `go1.26.4+` ODER Compliance-Druck ODER vulnignore-`expires` 2026-06-20 | [`033`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
+| T-011 | `MLRandomPort` Sub-Seed-Wortbreite ([`ADR 0007`](../../adr/0007-random-port.md) §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
+| T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (Temp-Deferral via vulnignore aktiv, [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md); `expires: 2026-06-20`) | Tooling/Build | `Trigger-Gated` | M6-Welle-3-Post-Push | OTel-Collector-Release > 0.153.0 mit `go1.26.4+` ODER Compliance-Druck ODER vulnignore-`expires` 2026-06-20 | [`033`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
 | T-030 | Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forschung/Spike | `Trigger-Gated` | M3-Welle-7 Decision (C3) | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030`](../open/030-rl-adapter.md) |
 | T-026 | BESS-Simulation Reserve-Market-Spike | Forschung/Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026`](../open/026-bess-simulation-reserve-market-spike.md) |
 | T-037 | `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen, Rollback-Strategie | Multi-Node | `Trigger-Gated` | M6-Welle-6-Audit | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037`](../open/037-deploy-007-010-multi-node-deployment.md) |
@@ -112,7 +112,7 @@ Nur `D-n`- und `P-n`-Eintraege — fuer `T-nnn` tragen die
 
 | ID | Begruendung (warum vertagt / warum out-of-scope) |
 | -- | ------------------------------------------------ |
-| D-1 | `GET /snapshot` liefert den `schema_ref`-Pointer — das erfuellt die Akzeptanz; volle Body-Serialisierung ist ADR-0015-v2-Erbschaft ohne MUSS-ID-Anker (der Replay-Pfad liest seit M7-Welle-1b direkt aus `telemetry_points`, nicht ueber HTTP). |
+| D-1 | `GET /snapshot` liefert den `schema_ref`-Pointer — das erfuellt die Akzeptanz; volle Body-Serialisierung ist [`ADR-0015`](../../adr/0015-snapshot-envelope-v2.md)-v2-Erbschaft ohne MUSS-ID-Anker (der Replay-Pfad liest seit M7-Welle-1b direkt aus `telemetry_points`, nicht ueber HTTP). |
 | D-2 | WS-Streams sind die dokumentierte Export-Surface (Welle-6c-Abnahmedoku); Datei-Export ist `GG-ACCEPT-003`-SOLLTE-Material ohne aktuellen Abnahme-Bedarf. |
 | D-3 | `GG-UI-006`-Akzeptanz ist durch die HTMX-Polling-Tabelle erfuellt (Welle 6b, Decision 23); SVG-Grafik ist reiner UI-Polish ohne ID-Anker. |
 | D-4 | `POST /faults` ist bewusst Form-Validation-only (Decision 19); YAML-seitige Fault-Injection (`GG-DEMO-006`, M5-Welle-6a) deckt den Demo-/Abnahme-Bedarf. |
@@ -140,8 +140,8 @@ ID in §2.2.
 | -- | ---- | --- | ------ |
 | P-1 | Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 |
 | P-2 | Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration |
-| P-3 | SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 |
-| P-4 | Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 |
+| P-3 | SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + [`ADR 0036`](../../adr/0036-ui-stack-choice.md) §2.5 |
+| P-4 | Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + [`ADR 0036`](../../adr/0036-ui-stack-choice.md) §2.5 + Welle-6b Decision 23 |
 | P-5 | Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik D-3) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 |
 | P-6 | End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 |
 
@@ -185,14 +185,14 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 | `GG-DEMO-006` YAML-side Fault-Injection (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6a-C2 | `db3a0c2` |
 | `GG-UI-006..008` Geraete-Grafik + Fault-Form + Sim-Zustand | M5-Welle-6a/6b-C2 | `db3a0c2` + `9fcb887` |
 | alt-§2.8 M6-Vorbelegung (Lastenheft-Familien `GG-RT-001..005` / `GG-SAFE-001..006` / `GG-CICD-*` / `GG-DEPLOY-*` / SBOM) | M6-Welle-0 (formaler Slice-Plan) + M6-Wellen 1..6 (Lieferung); M6-Closure 2026-06-08 — Rest-Luecken via Trigger 034/035/036 in M7 aufgeloest | [`../done/M6-results.md §2`](../done/M6-results.md) (Sektion §2.8 erst beim Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt) |
-| alt-§2.2 IEC-61850-In-Process-Smoke Reaktivierung (M4-Erbschaft) | M6-Welle-6-C2 (Pfad B: Dockerfile-Stage `iec61850-test` Python 3.12 + `make test-iec61850`; ADR 0046; Pfad A cp314-Wheel bleibt bevorzugte Endform) | Trigger-Doc nach [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
+| alt-§2.2 IEC-61850-In-Process-Smoke Reaktivierung (M4-Erbschaft) | M6-Welle-6-C2 (Pfad B: Dockerfile-Stage `iec61850-test` Python 3.12 + `make test-iec61850`; [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md); Pfad A cp314-Wheel bleibt bevorzugte Endform) | Trigger-Doc nach [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
 | alt-§2.2 Base-Image-Bump fuer krb5-CVE-Drift (M4-Erbschaft, `make fullbuild`-Defer) | M6-Welle-1-C2 (Null-Code-Edit; Debian-13.5-Upstream-Drift) | `b514170` — Trigger-Doc nach [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
-| alt-§2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; ADR 0042) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
+| alt-§2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; [`ADR 0042`](../../adr/0042-sbom-tool-and-release-pattern.md)) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
 | alt-§2.5 CI-Pflicht-Gate fuer `make fullbuild` | M6-Welle-3-C2 (NEU `.github/workflows/fullbuild.yml`) | `ce13253` — Trigger-Doc nach [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
-| alt-§2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; Rest-Grenzen ADR 0052 §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
+| alt-§2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md); Rest-Grenzen [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md) §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
 | T-032 Release-Workflow-Sensor-Run-Verifikation | Release v0.1.0 2026-06-12 (Tag-Push, erster realer `release.yml`-Lauf `27415174757`: 3 Jobs gruen, GHCR-Image + `:latest` digest-gleich, 5 Assets, SBOM-Digest-Bindung) | Trigger-Doc nach [`032-release-workflow-sensor-run.md`](../done/032-release-workflow-sensor-run.md) |
 | T-043 d-check-`ids`-Linkpflicht fuer Kennungen | d-check v0.3.0 (`<modul>.scope` per grid-gym-CR) + ids-Aktivierung 2026-06-12 (Sweeps `01f2a49` + `4d37a65` + `8c0646c`; 312 Kennungen verlinkt, Abschnitts-Anker repo-weit) | Trigger-Doc nach [`043-dcheck-ids-linkpflicht.md`](../done/043-dcheck-ids-linkpflicht.md) |
-| alt-§2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, ADR 0053; Rest-Grenzen ADR 0053 §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
+| alt-§2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, [`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md); Rest-Grenzen [`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md) §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)

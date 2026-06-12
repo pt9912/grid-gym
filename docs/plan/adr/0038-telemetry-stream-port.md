@@ -19,7 +19,7 @@ Sie verankert eine NEUE Driving-Port-Surface
 `InMemoryTelemetryStream` als asyncio-Pub/Sub-Implementation
 mit bounded Queues + Drop-Oldest-Backpressure. Welle 3..6c
 haben die Surface produktiv-belegt (WS-Dashboard
-GG-UI-002/003/009 + Welle-6b-Devices-Quality-Aggregation).
+[`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)/003/009 + Welle-6b-Devices-Quality-Aggregation).
 
 **Datum:** 2026-06-01 (M5-Welle-3-C1 `9f3c00d` → C3
 `0e0473d`) / 2026-06-04 (M5-Welle-7-C1 Accepted, dieser

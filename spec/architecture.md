@@ -425,7 +425,7 @@ Die folgenden Typen sind die internen Domaenenobjekte. Sie sind
 sprachunabhaengig beschrieben — konkrete Python-Repraesentation
 (Pydantic `FrozenModel` oder `@dataclass(frozen=True, slots=True)`)
 ist via [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
-§A-1 AC-DOMAIN-FROZEN festgelegt.
+§A-1 [`AC-DOMAIN-FROZEN`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) festgelegt.
 
 ```text
 RunMetadata {

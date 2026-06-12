@@ -9,7 +9,7 @@
 
 ## Trigger
 
-ADR 0002 fixiert das **Format** der kanonischen Serialisierung
+[`ADR 0002`](../../adr/0002-language-and-build-stack.md) fixiert das **Format** der kanonischen Serialisierung
 (A-2 Punkt 2) und die **Standard-Implementierung** (Custom-Emitter,
 A-2 Punkt 3). Eine Folge-ADR darf die Umsetzungsroute aendern
 (z. B. `orjson`-Bridge, `msgspec`, Rust-Backend), muss aber:

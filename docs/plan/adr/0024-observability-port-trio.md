@@ -600,7 +600,7 @@ Modul-Import noch via Sub-Aufrufe).
 - Die `AC-NO-FW`/`AC-PORTS-NO-FW`-Erweiterung um `opentelemetry`
   und `grpc` (C1.1) schuetzt den Core doppelt: kein OTel-Import
   im Core + kein Wall-Clock-Pfad im Adapter, der den Geist von
-  AC-NO-TIME unterlaufen wuerde.
+  [`AC-NO-TIME`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) unterlaufen wuerde.
 - Re-Open dieser Entscheidung nur per ADR-Folge (Schaerfung
   oder neuer ADR), nicht im C1.3-Code-Pfad.
 

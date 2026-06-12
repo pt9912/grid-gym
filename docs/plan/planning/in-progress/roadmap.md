@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) AC-ADAPTER-PURE-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer ADR 0050/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
 **Stand:** 2026-06-12
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -20,7 +20,7 @@
   `9ba768b`; **Welle 3 `Done`** geschlossen 2026-05-30 mit
   C0 `8ef1e72` + C1 `a86ac46` + C2 `d721982` + EoD-Sync
   `2b84361` (3 Top-Level-Docs auf C2-Stand) + C3
-  (ADR 0032 → `Provisional`, `M4-welle-3.md` → `Done`,
+  ([`ADR 0032`](../../adr/0032-modbus-adapter-profile.md) → `Provisional`, `M4-welle-3.md` → `Done`,
   Top-Level-Doku-Sync in 6 Docs, Trigger-006-Re-Eval mit
   Modbus-Beleg positiv) + Doku-Review-Folge 2026-05-31
   (Move von `M4-welle-3.md` nach `done/`, Smoke-Abdeckung
@@ -32,7 +32,7 @@
   Modul-Paket + 81 Unit-Tests + 8 In-Process-Integration-
   Smokes + asyncua-Pin auf `>=1.2b2,<2.0` wegen Python-3.14-
   Inkompat in 1.1.8 + mypy-Override `implicit_reexport`)
-  + C3 `7ad5baf` (ADR 0033 → `Provisional`, `M4-welle-4.md`
+  + C3 `7ad5baf` ([`ADR 0033`](../../adr/0033-opcua-adapter-profile.md) → `Provisional`, `M4-welle-4.md`
   → `Done`, Top-Level-Doku-Sync in 5 Docs) + Slice-032-
   Review-Folge 2026-05-31
   ([`../done/032-opcua-adapter-review-folge.md`](../done/032-opcua-adapter-review-folge.md);
@@ -47,7 +47,7 @@
   **Welle 5 Sub-Slicing** in 5a/5b nach Library-Recherche
   (`8f022a3` + Pre-C0-Sync `34e64e6`); **Welle 5a `Done`**
   geschlossen 2026-05-31 mit C0 `43d0b07` + C1 `b0fea7e`
-  (ADR 0034 Proposed nach zwei C1-Probes — `nfm-dnp3`-Master-
+  ([`ADR 0034`](../../adr/0034-dnp3-adapter-profile.md) Proposed nach zwei C1-Probes — `nfm-dnp3`-Master-
   API-Inspektion + `dnp3-outstation`-Wire-Compat-Probe) +
   C2 `224b370` (feat: `protocol_dnp3/`-5-Modul-Paket + 56
   Unit-Tests inkl. hypothesis-Codec-Properties + 4 In-
@@ -55,13 +55,13 @@
   `nfm-dnp3>=1.0,<2.0` produktiv und `dnp3-outstation>=0.2,<1.0`
   als dev-only Test-Sibling + mypy-Overrides + C2-Library-
   Bug-Find: `AnalogInput.index` statt `.idx` aus `__repr__`)
-  + C3 `6903a08` (ADR 0034 → `Provisional`, `M4-welle-5a.md`
+  + C3 `6903a08` ([`ADR 0034`](../../adr/0034-dnp3-adapter-profile.md) → `Provisional`, `M4-welle-5a.md`
   → `Done` mit Liefer-Hashes + DoD-Verifikation + §9 DoD-
   Checkliste komplett abgehakt, Top-Level-Doku-Sync in 5
   Docs) + Self-Close-Move `9fea2be` (`M4-welle-5a.md` aus
   `in-progress/` nach `done/` als M4-Welle-5b-Pre-C0,
   rename-only); **Welle 5b `Done`** geschlossen 2026-06-01
-  mit C0 `19f820a` (Slice-Doc) + C1 `88c1a33` (ADR 0035
+  mit C0 `19f820a` (Slice-Doc) + C1 `88c1a33` ([`ADR 0035`](../../adr/0035-iec61850-adapter-profile.md)
   Proposed) + C1-Review-Folge `da8aed9` (API-Korrektur
   read_value/write_value + Lizenz-Refit Optional-Extra +
   M4-protocol-adapters.md-Sync nach 4 Findings) + C2
@@ -82,7 +82,7 @@
   Roundtrip sauber durch, aber grid-gym-Docker Python 3.14
   segfaultet im `_pyiec61850.so`-SWIG-Layer — Welle-6-
   Schaerfungspfade dokumentiert) + C3 `ca96bca`
-  (ADR 0035 → `Provisional`, `M4-welle-5b.md` → `Done` mit
+  ([`ADR 0035`](../../adr/0035-iec61850-adapter-profile.md) → `Provisional`, `M4-welle-5b.md` → `Done` mit
   Liefer-Hashes + DoD-Verifikation + §9 DoD-Checkliste
   komplett abgehakt, Top-Level-Doku-Sync in 5 Docs) +
   **Slice 033 `7e0c91b`** (C2-Review-Folge: 15 Findings
@@ -199,7 +199,7 @@
   `db3a0c2` (Code-Merge: YAML-faults +
   `_compose_fault_port` Battery+Grid-Composition + UI-
   Faults-Page mit HTMX-Form + `routes_faults.py`-Split
-  AC-NO-GOD-UTILS + Cross-Field-Validation im POST-
+  [`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + Cross-Field-Validation im POST-
   Handler + `tick_loop.device_types`-Property + 7
   Integration-Tests + Welle-1-Test-Refactor) + C3
   `ed8fa74` (Status/DoD-Sync + §10 C2-Realization-
@@ -220,8 +220,8 @@
   `_runs_router.py` + NEU `DevicesResponse`/
   `DeviceStateEntry`-Pydantic-Modelle + NEU
   `_aggregate_quality`/`_extract_state_subset`-Helper
-  + NEU `routes_visualization.py`-Modul-Split AC-NO-
-  GOD-UTILS analog Welle-6a `routes_faults.py` + NEU
+  + NEU `routes_visualization.py`-Modul-Split
+  `AC-NO-GOD-UTILS` analog Welle-6a `routes_faults.py` + NEU
   UI-Pages `/runs/{id}/devices` (HTMX-1s-Polling-
   Tabelle) + `/runs/{id}/system` (HTMX-Polling auf
   /status 1s + /health 5s) + 4 Templates + Navigation
@@ -243,8 +243,9 @@
   JSON-URL wandert auf `/runs/{id}/devices/state`-
   Sub-Pfad (UI-Page behaelt natuerliche URL; Pattern
   analog Welle-4b-Alarms `/alarms-history`); Adapter-
-  internes `_DeviceView`-Protocol haelt AC-ADAPTER-
-  PURE ein. Decision 23: Chart.js bleibt (kein
+  internes `_DeviceView`-Protocol haelt
+  [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)
+  ein. Decision 23: Chart.js bleibt (kein
   Plotly/ECharts-Spike).
   **Welle 6c (Abnahmedoku `GG-DEMO-008`) abgeschlossen
   2026-06-04** mit C0 `3db9fcd` (Slice-Doc
@@ -273,7 +274,7 @@
   neuen Tests, keine neuen ADRs (nur Status-Flips).
 - **ADRs:** 0022/0023/0024/0025/0026/0027 `Accepted` (M3-Welle-7
   C1.1..C1.6); 0028 + 0029 `Accepted` (Schaerfung-ohne-Supersede-
-  Pflege von ADR 0006 §3 bzw. ADR 0002 §A-1); **0030 `Accepted`**
+  Pflege von [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 bzw. [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1); **0030 `Accepted`**
   (M4-Welle-1 `DeviceProtocolPort`-Surface; `Accepted`
   2026-06-01 mit M4-Welle-7-C1); **0031 `Accepted`** (M4-Welle-2
   MQTT-Adapter-Profile mit Decisions 4a/4b/4c/4d alle final;
@@ -343,7 +344,7 @@
   +56 Welle 5a fuer DNP3 + +75 Welle 5b fuer IEC-61850
   + +29 Welle 6a fuer Cross-Adapter-Hardening inkl. Slice
   034 (19 OTel-Span-Wrap-Tests inkl. F1/F2/F3-Negativ-
-  Tests + 6 AC-ADAPTER-LIGHTWEIGHT-Planted-Violator-Tests
+  Tests + 6 [`AC-ADAPTER-LIGHTWEIGHT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Planted-Violator-Tests
   + 4 Slice-034-Adapter-Tests + 7 Slice-033-Review-Folge-
   Updates)] + 14 Integration-Tests [Mosquitto-MQTT-Smoke
   aus Welle 2 + in-process-pymodbus-Server-Smoke aus
@@ -367,10 +368,10 @@
   Host-Cache-Mount-Entfernung `ede21ad` (Stale-DB-Drift-
   Aufloesung). Trigger 033
   ([`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md))
-  als ADR-0043-konformer Defer-Pfad; Aufloesung sobald
+  als [`ADR-0043`](../../adr/0043-image-audit-strategy.md)-konformer Defer-Pfad; Aufloesung sobald
   OTel-Release > 0.153.0 gegen `go1.26.4+` gebaut ist
   (erwartet 2026-06-09..06-12). Trigger 010 (krb5-CVE)
-  bleibt aufgeloest seit Welle-1-C2; ADR 0043
+  bleibt aufgeloest seit Welle-1-C2; [`ADR 0043`](../../adr/0043-image-audit-strategy.md)
   `Provisional` verankert die Image-Audit-Strategie als
   Quality-Gate-Vertrag.
 - **Trigger-006-Re-Eval (M4-Welle-3-C3, 2026-05-30):**
@@ -465,20 +466,20 @@ maschinenlesbar.
 
 | ID | Akzeptanz (Lastenheft §3, Z. 123-150) | Stand 2026-06-07 | Substanz / Verankerung |
 | --- | --- | --- | --- |
-| **GG-MVP-001** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
-| **GG-MVP-002** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ✓ **produktiv** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓ + **Zeitreihen-Persistenz** ✓ (`TelemetrySinkPort` + `telemetry_points`, ADR 0047, M7-Welle-1a) + **deterministisches Replay-E2E** ✓ (`ReplaySnapshotPort` ADR 0048 + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-Preflight ADR 0049, M7-Welle-1b; Zwei-Lauf-Beleg in `tests/integration/test_mvp_002_replay_lifecycle_smoke.py`; Audit `docs/user/replay-determinism-e2e.md`). Geliefert ueber M7-Welle-1 (1a + 1b-a + 1b-b); Trigger 036 aufgeloest. Carveouts: volle `GG-TERM`-Matrix (Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039). |
-| **GG-MVP-003** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✓ **produktiv** | `make accept` + `tools/accept.py` (M7-Welle-2): orchestriert no-fail-fast Step A (Szenario-Validierung `load_scenario` + Hash-Pin) → B (Headless-Zwei-Lauf-Determinismus via `build_tick_loop` + `diff_replay` + Telemetry-Stream-Hash-Pin) → C (`/ready`-Healthcheck) und schreibt den `AbnahmeReport` (Pydantic-strict) als JSON-only-stdout mit Tri-State-Exit 0/1/2 (D-9). Geteilter `tools/_demo_replay.py`-Helper + CI-Drift-Lint `tools/check_demo_scenario_pin.py` (`make ci`-Gate, D-8). Doku `docs/user/abnahme-cli.md`. Geliefert M7-Welle-2 (commits `33ac255` + `92d10f5`). |
-| **GG-MVP-004** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
+| **[`GG-MVP-001`](../../../../spec/lastenheft.md#gg-mvp-001)** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
+| **[`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ✓ **produktiv** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓ + **Zeitreihen-Persistenz** ✓ (`TelemetrySinkPort` + `telemetry_points`, [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md), M7-Welle-1a) + **deterministisches Replay-E2E** ✓ (`ReplaySnapshotPort` [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md) + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-Preflight [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md), M7-Welle-1b; Zwei-Lauf-Beleg in `tests/integration/test_mvp_002_replay_lifecycle_smoke.py`; Audit `docs/user/replay-determinism-e2e.md`). Geliefert ueber M7-Welle-1 (1a + 1b-a + 1b-b); Trigger 036 aufgeloest. Carveouts: volle `GG-TERM`-Matrix (Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039). |
+| **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✓ **produktiv** | `make accept` + `tools/accept.py` (M7-Welle-2): orchestriert no-fail-fast Step A (Szenario-Validierung `load_scenario` + Hash-Pin) → B (Headless-Zwei-Lauf-Determinismus via `build_tick_loop` + `diff_replay` + Telemetry-Stream-Hash-Pin) → C (`/ready`-Healthcheck) und schreibt den `AbnahmeReport` (Pydantic-strict) als JSON-only-stdout mit Tri-State-Exit 0/1/2 (D-9). Geteilter `tools/_demo_replay.py`-Helper + CI-Drift-Lint `tools/check_demo_scenario_pin.py` (`make ci`-Gate, D-8). Doku `docs/user/abnahme-cli.md`. Geliefert M7-Welle-2 (commits `33ac255` + `92d10f5`). |
+| **[`GG-MVP-004`](../../../../spec/lastenheft.md#gg-mvp-004)** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
 
 **Aktivierungs-Pfade fuer offene Punkte:**
 
-- **GG-MVP-002 Zeitreihen-Persistenz + Replay-E2E** → **✓ geliefert
+- **[`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002) Zeitreihen-Persistenz + Replay-E2E** → **✓ geliefert
   ueber M7-Welle-1** (1a Persistenz / 1b-a `ReplaySnapshotPort` /
-  1b-b Replay-Lifecycle; ADR 0047/0048/0049). Trigger 036
+  1b-b Replay-Lifecycle; [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md)/0048/0049). Trigger 036
   aufgeloest. Rest-Carveouts: volle `GG-TERM`-Matrix (Trigger 038),
   oeffentliche API-Replay-Bedienung (Trigger 039),
   `GG-REPLAY-004..006` (SOLLTE, offen).
-- **GG-MVP-003 Abnahme-CLI** → **✓ geliefert ueber M7-Welle-2**
+- **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI** → **✓ geliefert ueber M7-Welle-2**
   (`make accept` + `tools/accept.py` + Shared
   `src/grid_gym/scenario_yaml.py`; D-10-Revision C; commits
   `33ac255` + `92d10f5`). **Damit alle vier `GG-MVP-*`-Punkte
@@ -508,19 +509,19 @@ maschinenlesbar.
   `GG-AR-PORT-DRN-010` (`RandomPort` — via
   [`ADR 0007`](../../adr/0007-random-port.md)).
 - **DoD-Checkliste:**
-  - [x] Welle 0 — Vorbereitung (ADR 0007 Provisional, Trigger 001,
+  - [x] Welle 0 — Vorbereitung ([`ADR 0007`](../../adr/0007-random-port.md) Provisional, Trigger 001,
         Lock-Refresh) (2026-05-15).
   - [x] Welle 1 — Domain-Modelle (`Quality`/`CommandResult`/
         `RunMetadata`/`TelemetryPoint`/`Command`/`Event`/
         `SnapshotEnvelope`) (2026-05-17).
   - [x] Welle 2 — Driven-Ports (`ClockPort`/`RandomPort` +
-        `MersenneTwisterRandomPort` Adapter, ADR 0007 Accepted)
+        `MersenneTwisterRandomPort` Adapter, [`ADR 0007`](../../adr/0007-random-port.md) Accepted)
         (2026-05-17).
   - [x] Welle 3 — Scheduler mit Tie-Breaking
         `(time, priority, source, sequence, event_id)` (`GG-ARCH-006`)
         (2026-05-17).
   - [x] Welle 4 — TickLoop + Snapshot-Envelope-Composition
-        (`GG-SIM-005`, ADR 0010) (2026-05-17).
+        (`GG-SIM-005`, [`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)) (2026-05-17).
   - [x] Welle 5 — Scenario + Replay (`GG-SCN-001..008`,
         `GG-REPLAY-001..003/007`) (2026-05-17).
   - [x] Welle 6a — FastAPI-Adapter + `make openapi-validate` gruen
@@ -578,15 +579,15 @@ Welle-6c-Slice-Begleit:
   Konventionen fuer Geraete-Fault-Streams.
 - **DoD-Checkliste:**
   - [x] `Battery`/BESS-Modell mit Lade-/Entlade-Vertrag
-        (`GG-BESS-001..008`) — M2 Welle 2, ADR 0014 `Accepted`.
-  - [x] `PV`-Modell — M2 Welle 3a, ADR 0016 `Accepted`.
+        (`GG-BESS-001..008`) — M2 Welle 2, [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) `Accepted`.
+  - [x] `PV`-Modell — M2 Welle 3a, [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) `Accepted`.
         Welle-3-Minimum (konstantes `rated_power_kw`-Modell);
         Generationsprofil-Eingang ist Welle-5-Material.
-  - [x] `Load`-Modell — M2 Welle 3b, ADR 0016 `Accepted`.
+  - [x] `Load`-Modell — M2 Welle 3b, [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) `Accepted`.
   - [x] `SmartMeter`-Modell — M2 Welle 4b (`94efb2a`),
-        ADR 0018 `Accepted`.
+        [`ADR 0018`](../../adr/0018-smart-meter-device-pattern.md) `Accepted`.
   - [x] `GridConnection`-Modell (`GG-GRID-001..007`) — M2 Welle 4a
-        (`b73b44a`), ADR 0017 `Accepted`.
+        (`b73b44a`), [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) `Accepted`.
   - [x] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
         Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
         sortiert — M2 Welle 6a (`27a441f`); Welle-6c (`c31052c`)
@@ -595,7 +596,7 @@ Welle-6c-Slice-Begleit:
   - [x] Geraete-Snapshot-Sub-Snapshots in `SnapshotEnvelope`-
         Composition (Trigger 014 generischer Codec in Welle 0a
         geliefert — siehe `done/014-generic-snapshot-format-codec.md`)
-        — M2 Welle 6a (`27a441f`), ADR 0015 `Accepted`.
+        — M2 Welle 6a (`27a441f`), [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) `Accepted`.
   - [x] Default-`make gates` ohne `CRITICAL_COV_TARGETS`-Override
         gruen — `devices/battery`, `devices/pv`, `devices/load`
         haben ≥ 90 % Line + Branch (Welle-3-Review-C-1 hat den
@@ -665,14 +666,14 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
 - **DoD-Checkliste:**
   - [x] Fault-Definitions im Scenario werden vor `tick()` validiert
         (`GG-SCN-006`) und im Tick-Loop ausgeloest
-        (M3-Welle-1 + Welle-2: ADR 0022 + ADR 0025).
+        (M3-Welle-1 + Welle-2: [`ADR 0022`](../../adr/0022-fault-injection-protocol.md) + [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)).
   - [x] Mindestens ein konkreter Fault-Typ pro
         `Battery`/`Grid`-Achse implementiert: Battery
         `cell_failure` + Grid `voltage_drop` (M3-Welle-2-Closure
         `91d44e2`).
   - [x] Recovery-Verhalten je Fault dokumentiert + getestet:
         `auto-recover-after-N-ticks` + `manual-via-command`
-        (ADR 0025 §2.1; Property-Tests fuer half-open
+        ([`ADR 0025`](../../adr/0025-fault-recovery-pattern.md) §2.1; Property-Tests fuer half-open
         `[start, end)`-Window + Unit-Tests fuer manuelle
         Recovery; `permanent`-Modus auf Welle 3+/M6 verschoben).
   - [x] Multi-Agent-Bus implementiert (`GG-AGENT-001..006`):
@@ -741,12 +742,13 @@ Slice-Plan in
         Welle 5b `Done` (Spike-Adapter mit `pyiec61850-ng` als
         GPL-isoliertes Optional-Extra; Decision I-f via SPDX-
         Header pro Datei) + Slice 033 Review-Folge + Welle 6b
-        Lizenz-/Smoke-Hardening (SPDX-Lint, AC-IEC61850-GPL-
-        BOUNDARY-Contract, CONTRIBUTING.md). IedServer-In-
+        Lizenz-/Smoke-Hardening (SPDX-Lint,
+        [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md)-Contract,
+        CONTRIBUTING.md). IedServer-In-
         Process-Smoke aktuell unter 2c-Mock-only-Fallback mit
         Trigger 009 (Welle-6b-C3-Pfad-A-Befund: PyPI-Stand
         identisch zu Welle 5b).
-  - [x] AC-ADAPTER-LIGHTWEIGHT bleibt fuer alle protocol_*-Module
+  - [x] [`AC-ADAPTER-LIGHTWEIGHT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) bleibt fuer alle protocol_*-Module
         gruen (kein Fachlogik-Sickern). — Welle 1..6b green;
         Welle-6b-C3 erweitert den Filter um Cross-Adapter-Helper
         `_protocol_*.py` (Slice-034-F13-Folge).
@@ -768,18 +770,18 @@ HTMX + Jinja2 + Chart.js)". **Welle 0 abgeschlossen
 Findings) + C1 `b8bef6c` (NEU `M5-ui-demo.md`) + C2
 `112efd3` (Trigger-Triage + Status-Flip).
 
-**Welle 1 (HTTP-API-Surface + ADR-0036-Schaerfung)
+**Welle 1 (HTTP-API-Surface + [`ADR-0036`](../../adr/0036-ui-stack-choice.md)-Schaerfung)
 abgeschlossen 2026-06-01** mit Pre-C0a `fd642df`
 (`git mv`) + Pre-C0b `fb417b9` (Cross-Doc-Refs-Sync) +
 Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe-Run; 4 Probe-
 Tests) + C0 `e573f67` (Slice-Doc) + C1 `d468e68` (ADR
-0036 → `Provisional` + NEU ADR 0037 `Proposed`) + C2
+0036 → `Provisional` + NEU [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) `Proposed`) + C2
 `ae630ce` (HTTP-API-Surface produktiv: 5 REST + 1 WS-
 Endpunkt unter `src/grid_gym/adapters/driving/http_api/`
 in 4 Modulen + Pydantic-Schemas + 16 Unit + 2 Integration-
-Tests) + C3 `f9f514d` (ADR 0037 → `Provisional` +
+Tests) + C3 `f9f514d` ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) → `Provisional` +
 Status/DoD-Sync + Roadmap-Typo-Fix `GG-AR-PORT-DRG-002`
-→ Verwerfung per ADR 0037 Decision API-3). 1584 → 1600
+→ Verwerfung per [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-3). 1584 → 1600
 Unit-Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-
 Gates gruen.
 
@@ -793,7 +795,7 @@ Pre-C0b `a0c8ba3` (Cross-Doc-Refs-Sync) + C0 `64d5129`
 `ui_router` mit 2 Page-Routes + 6 Templates + 18 Tests)
 + C3 `97c718f`. Welle 2 verzichtete bewusst auf
 C1-ADR-Commit (Decision 2 im Slice-Doc-Body fixiert;
-ADR 0036 nimmt Layout-Realisierung bei M5-Welle-7-Closure
+[`ADR 0036`](../../adr/0036-ui-stack-choice.md) nimmt Layout-Realisierung bei M5-Welle-7-Closure
 auf). 1600 → 1610 Unit-Tests (+10); 41 → 43 Integration
 (+2). 10/10 A-1-Gates gruen.
 
@@ -803,14 +805,14 @@ Pre-C0b `159f537` (Cross-Doc-Refs-Sync) + Pre-C0c
 `5349923` (Asyncio-Pub/Sub-Smoke-Probe-Run; 4 Probe-
 Tests) + C0 `ab55ec7` (Slice-Doc mit Decisions 3/7/11
 final) + CI-Hotfix `3ba74ef` (Ruff SIM105 + format in
-Probe-Datei) + C1 `9f3c00d` (NEU ADR 0038 `Proposed`)
+Probe-Datei) + C1 `9f3c00d` (NEU [`ADR 0038`](../../adr/0038-telemetry-stream-port.md) `Proposed`)
 + C2 `82bdf39` (Live-Telemetry produktiv: NEU
 `TelemetryStreamPort` Driving-Port + NEU
 `InMemoryTelemetryStream`-Adapter mit
 `DemoTelemetryGenerator` als Stub-Producer + WS-
 Subscribe-Pattern + Dashboard-UI mit Chart.js-Time-
 Series + 6-Zustands-Quality-Marker; 16 neue Unit + 2
-Integration-Tests) + C3 `0e0473d` (ADR 0038 `Proposed →
+Integration-Tests) + C3 `0e0473d` ([`ADR 0038`](../../adr/0038-telemetry-stream-port.md) `Proposed →
 Provisional`). 1610 → 1626 Unit-Tests (+16); 43 → 49
 Integration (+6 inkl. 4 Probe-Tests). Lastenheft-Akzeptanz
 `GG-API-002` + `GG-UI-002/003/009` produktiv. 10/10 A-1-
@@ -820,7 +822,7 @@ Gates gruen.
 2026-06-02** mit Pre-C0a `4517f51` (Self-Close-Move) +
 Pre-C0b `79c9712` (Cross-Doc-Refs-Sync) + C0 `3544dee`
 (Slice-Doc mit Decisions 12/13/14 final + Welle-4-
-Subdivision-Motivation) + C1 `f1284c4` (NEU ADR 0039
+Subdivision-Motivation) + C1 `f1284c4` (NEU [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)
 `Proposed`) + C2 `9c188e0` (RunStatus-Literal-Alias +
 RunRepository-Extension `update_status`/`get_status` +
 TickLoop-Control-Surface mit konsolidierter
@@ -831,7 +833,7 @@ auf existierenden Welle-1-Stubs `GET /status` +
 `DemoTickLoopDriver` + NEU UI-Page `GET /control` mit
 HTMX-Polling + NEU `_demo_setup.py`-Komposition-Root;
 24 neue Unit + 1 Integration-Test) + C3 (dieser Commit;
-ADR 0039 `Proposed → Provisional`). 1626 → 1650 Unit-
+[`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md) `Proposed → Provisional`). 1626 → 1650 Unit-
 Tests (+24); 49 → 50 Integration (+1). Lastenheft-
 Akzeptanz `GG-UI-004` + Replay-Restcompletion-Anteil
 `GG-API-001` produktiv. 10/10 A-1-Gates gruen. **Welle-
@@ -843,7 +845,7 @@ Tabelle-UI) abgeschlossen 2026-06-02** mit Pre-C0a
 `d1b0eb7` (Self-Close-Move) + Pre-C0b `e325307` (Cross-
 Doc-Refs-Sync) + C0 `08b5ba7` (Slice-Doc mit 3 Decisions
 15/16/17 + Retro-Sync der Welle-4a-Era-2→3-Decision-
-Forward-Pointer in 3 Docs) + C1 `850cf85` (NEU ADR 0040
+Forward-Pointer in 3 Docs) + C1 `850cf85` (NEU [`ADR 0040`](../../adr/0040-alarm-aggregation-and-stream-port.md)
 `Proposed`) + C2 `b7ac7b3` (NEU `Alarm`-Domain-Type mit
 9-Feld-Schema per `spec/architecture.md §Alarm` + Mapper-
 Familie in `core/simulation/alarm_mappers.py` mit Union-
@@ -857,10 +859,10 @@ Endpoint + NEU UI-Page mit 6-Spalten-Tabelle + HTMX-
 Hydration + WS-Live-Update + NEU `_alarm_setup.py`-
 Komposition-Root + DemoTickLoopDriver-Erweiterung; 31
 neue Unit + 1 Integration-Test) + C3 (dieser Commit;
-ADR 0040 `Proposed → Provisional` + 4 C2-Realization-
+[`ADR 0040`](../../adr/0040-alarm-aggregation-and-stream-port.md) `Proposed → Provisional` + 4 C2-Realization-
 Notes). 1650 → 1681 Unit-Tests (+31); 50 → 51 Integration
 (+1). Lastenheft-Akzeptanz `GG-UI-005` produktiv;
-ADR-0014-§6-Forward-Pointer („AlarmSinkPort kommt mit
+[`ADR-0014`](../../adr/0014-battery-snapshot-schema.md)-§6-Forward-Pointer („AlarmSinkPort kommt mit
 M3") Driving-Side-Anteil produktiv aufgeloest (Postgres-
 Persistenz bleibt M3-Welle-6c). 10/10 A-1-Gates gruen.
 **Welle-4b-Review-Folge** (2026-06-02, nach C3): xhigh-
@@ -911,7 +913,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 - **Architekturartefakte:** `GG-AR-COMP-UI`. **Hinweis:**
   Slot `GG-AR-PORT-DRG-002` (`UICommandPort`) ist mit
   M5-Welle-1-C3 [`verworfen`](../../adr/0037-http-api-surface-pattern.md)
-  (ADR 0037 Decision API-3 — Typo gegen `GG-AR-PORT-DRV-*`-
+  ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-3 — Typo gegen `GG-AR-PORT-DRV-*`-
   Konvention und semantisch ueberfluessig nach Decision
   API-2: UI nutzt HTTP-API direkt via REST + WebSocket
   ohne separaten Driving-Port-Slot).
@@ -931,14 +933,14 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
         [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md)).
   - [x] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
         Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
-        verwendet** (ADR 0037 Decision API-2).
+        verwendet** ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-2).
 
 ### M6 — Performance + Security + CI/CD-Haertung (`Done` 2026-06-08)
 
 **Slice-Plan:**
 [`M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`). **M6 abgeschlossen
-2026-06-08 mit Welle 7 (M6-Closure)**: ADR 0041..0046
+2026-06-08 mit Welle 7 (M6-Closure)**: [`ADR 0041`](../../adr/0041-performance-bench-pattern.md)..0046
 `Provisional → Accepted` (W7-C1), NEU
 [`M6-results.md`](../done/M6-results.md) (W7-C2),
 Roadmap-DoD-Sweep + Top-Level-Sync (W7-C3), Self-Close-Move
@@ -947,7 +949,7 @@ Roadmap-DoD-Sweep + Top-Level-Sync (W7-C3), Self-Close-Move
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
 + Trigger 009) abgeschlossen 2026-06-08** (siehe
 [`M6-welle-6.md`](../done/M6-welle-6.md)) mit Stack C0 `fab6a8c`
-(Slice-Doc) / C1 `1d478e3` (NEU ADR 0046 `Provisional`) /
+(Slice-Doc) / C1 `1d478e3` (NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md) `Provisional`) /
 C2 `f07e996` (feat: `GG-DEPLOY-006` NEU `/ready`-Endpoint
 mit Three-State-Status + Komponenten-Breakdown
 (api/ui/db/simulation) / `GG-DEPLOY-004` NEU
@@ -958,7 +960,7 @@ Healthcheck-Wiring) / C3 `79563c0` (Status/DoD-Sync) / C4a
 `79ac725` (Self-Close-Move rename-only) + C4b `d8dd8d2`
 (Cross-Doc-Refs-Sync).
 `GG-DEPLOY-001..006/011` ✓ produktiv, `GG-DEPLOY-007..010`
-⏸ M7+; Trigger 009 aufgeloest (`open → done`); NEU ADR 0046
+⏸ M7+; Trigger 009 aufgeloest (`open → done`); NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)
 `Multi-Python-Test-Stage-Pattern` bleibt `Provisional` bis
 M6-Welle-7-Closure. Self-Close-Folge C4a/C4b dient als
 M6-Welle-7-Pre-C0a/Pre-C0b.
@@ -982,7 +984,7 @@ zwei ⚠ partial mit `open/`-Triggern 034/035/036).
 **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
 C3 dieser Commit` (siehe [`M6-welle-5b.md`](../done/M6-welle-5b.md);
 NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)
-`Provisional`; alle 6 GG-SAFE-007-Surfaces + 6 GG-SAFE-008-
+`Provisional`; alle 6 [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)-Surfaces + 6 [`GG-SAFE-008`](../../../../spec/lastenheft.md#gg-safe-008)-
 Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku
 [`../../../user/safe-007-008-sim-prod-input-validation.md`](../../../user/safe-007-008-sim-prod-input-validation.md)).
 **Welle-4-Subdivision komplett abgeschlossen 2026-06-06**:
@@ -997,7 +999,7 @@ Healthcheck (alle vier Sub-Slices Done).
 [`M6-welle-1.md`](../done/M6-welle-1.md); inkl. C4a `1fbd0ac`
 Self-Close-Move + C4b `d51d6e7` Cross-Doc-Refs-Sync):
 Trigger-010-Aufloesung ohne Code-Edit durch Debian-13.5-
-Upstream-Patch-Drift + Trigger-015-Pattern; NEU ADR 0043
+Upstream-Patch-Drift + Trigger-015-Pattern; NEU [`ADR 0043`](../../adr/0043-image-audit-strategy.md)
 `Provisional` (Image-Audit-Strategie); Welle-1-D-1 (CI-
 Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3 vertagt
 ueber NEU [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md).
@@ -1012,9 +1014,9 @@ release.yml` mit Tag-Push + workflow_dispatch + 3 Jobs +
 1 GHCR-Push + 5 Release-Asset-Files; Makefile `make sbom`-
 Scan-Ziel von Source-Tree auf Runtime-Image; Dockerfile
 test-unit JUnit-XML + coverage-gate HTML-Report); NEU
-ADR 0042 `Provisional` (SBOM-Tool + Release-Workflow-
+[`ADR 0042`](../../adr/0042-sbom-tool-and-release-pattern.md) `Provisional` (SBOM-Tool + Release-Workflow-
 Pattern; Accept in M6-Welle-7-Closure-C1 gebuendelt mit
-ADR 0041 + ADR 0043).
+[`ADR 0041`](../../adr/0041-performance-bench-pattern.md) + [`ADR 0043`](../../adr/0043-image-audit-strategy.md)).
 **M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
 `08a8034..c36f734` (siehe
 [`M6-welle-3.md`](../done/M6-welle-3.md); Self-Close-Move-
@@ -1027,9 +1029,9 @@ pip-PYSEC-2026-196-Drift im `uv.lock` behoben (`pip
 26.1.1 → 26.1.2`). C1 entfaellt (keine ADR-Substanz;
 Pattern analog M5-Welle-2).
 **M6-Welle-4a abgeschlossen 2026-06-06** mit Stack
-`9bb6a92..789ac50` (C0 + C1 `94dff9e` NEU ADR-0044
-`Provisional` (Generated-Trivyignore-Permit; ADR-0011-
-Schaerfung an ADR-0043 §2.2) + C2 `8fbd17c` NEU `tools/
+`9bb6a92..789ac50` (C0 + C1 `94dff9e` NEU [`ADR-0044`](../../adr/0044-generated-trivyignore-permit.md)
+`Provisional` (Generated-Trivyignore-Permit; [`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-
+Schaerfung an [`ADR-0043`](../../adr/0043-image-audit-strategy.md) §2.2) + C2 `8fbd17c` NEU `tools/
 render_trivyignore.py` (Python+PyYAML; m-trace-Pattern-
 Import) + `deploy/security/vulnignore.yaml` mit CVE-2026-
 42504-Eintrag + Makefile-`render-trivyignore`-Target +
@@ -1045,18 +1047,18 @@ Stable-Watch (vulnignore-Pattern ist Temp-Deferral; echte
 Aufloesung weiter bei OTel-Stable-Release 0.154.0+ mit
 `go1.26.4+`).
 **M6-Welle-4b-a abgeschlossen 2026-06-06** mit Stack
-`f2fbcc0..76a2f40` (C0 + C1 `43569d2` NEU ADR-0041 `Provisional`
+`f2fbcc0..76a2f40` (C0 + C1 `43569d2` NEU [`ADR-0041`](../../adr/0041-performance-bench-pattern.md) `Provisional`
 (Performance-Bench-Pattern + Regression-Schwelle; M6-D-7-
 Vorbelegung aufgeloest) + C1-Review-Folge `f4f4983` (4
-Findings: F1 HIGH GG-RT-004-Replay-Diff + F2 HIGH opt-in-
+Findings: F1 HIGH [`GG-RT-004`](../../../../spec/lastenheft.md#gg-rt-004)-Replay-Diff + F2 HIGH opt-in-
 Extra-Pattern + F3/F4 MEDIUM) + C2 `5d8c497` NEU pytest-
 benchmark Dep + Dockerfile-perf-Stage + tests/perf/ Layer +
 Makefile-Targets + Maintainer-Dev-Host-Baseline + C3 dieser
 Commit Closure-Sync): `GG-RT-004`-Doppel-Akzeptanz produktiv
 (100 Geraete x 10 000 Ticks ohne verlorene Events UND ohne
-nichtdeterministischen Replay-Diff per ADR-0041 §2.2; Bench-
+nichtdeterministischen Replay-Diff per [`ADR-0041`](../../adr/0041-performance-bench-pattern.md) §2.2; Bench-
 Median 519ms / 1.92 OPS; Regression-Schwelle 20% Median-
-Drift gegen tests/perf/baseline.json per ADR-0041 §2.3).
+Drift gegen tests/perf/baseline.json per [`ADR-0041`](../../adr/0041-performance-bench-pattern.md) §2.3).
 **M6-Welle-4b-b abgeschlossen 2026-06-06** mit Stack
 `beb5dee..c8625f7` (C0 `beb5dee` Slice-Doc + C0-Review-Folge
 `f9620a3` (2 HIGH Findings: D-3 No-Subscriber-False-Positive
@@ -1080,7 +1082,7 @@ Commit Closure-Sync): `GG-RT-001` MUSS-Akzeptanz produktiv
 (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status fuer
 10ms-Modus via NEU Adapter-Side `_tick_loop_healthcheck.py` +
 `GET /runs/{id}/healthcheck`-Endpoint; Core unangetastet,
-AC-NO-TIME-konform). **Welle-4-Subdivision komplett**: 4a +
+[`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-konform). **Welle-4-Subdivision komplett**: 4a +
 4b-a/b/c alle Done; aktive Welle wandert auf Welle 5
 (Security-Audit + Eingabevalidierung).
 **M6-Welle-5a abgeschlossen 2026-06-06** mit Stack
@@ -1117,9 +1119,9 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         produktiv mit M6-Welle-2-C2 `235395e` via NEU
         `.github/workflows/release.yml` `produce-assets`-Job
         (Syft v1.17.0 gegen Runtime-Image, CycloneDX-JSON;
-        ADR 0042 `Provisional`).
+        [`ADR 0042`](../../adr/0042-sbom-tool-and-release-pattern.md) `Provisional`).
   - [x] GitHub-Actions-Workflow gegen Python 3.13 + 3.14
-        (Spike-0-Closure-D-8 + ADR 0002 §6.1) — produktiv mit
+        (Spike-0-Closure-D-8 + [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §6.1) — produktiv mit
         M6-Welle-3-C2 `ce13253` via NEU `.github/workflows/
         tests.yml` `strategy.matrix.python-version: ['3.13',
         '3.14']` (test-unit-Job; test-integration laeuft mit
@@ -1160,7 +1162,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         HTML-Tarball + OpenAPI-JSON + Demo-Abnahme-MD). ADR
         0042 `Provisional` verankert SBOM-Tool/Scan-Ziel +
         Release-Workflow-Pattern als Quality-Gate-Vertrag
-        (Schwester zu ADR 0029/0043).
+        (Schwester zu [`ADR 0029`](../../adr/0029-no-coverage-pragma-contract.md)/0043).
 
 ### M7 — MVP-Abschluss (`Done` 2026-06-12)
 
@@ -1193,15 +1195,15 @@ carveouts-Triage 034/035 → `Active in M7-Welle-3`)
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
 [`M7-welle-1.md`](../done/M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
 ([`M7-welle-1a.md`](../done/M7-welle-1a.md); Zeitreihen-Persistenz,
-NEU `TelemetrySinkPort` + ADR 0047). **Welle 1b weiter sub-sliced**
-(1b-a-D-1): 1b-a (`ReplaySnapshotPort`, ADR 0048) + 1b-b
+NEU `TelemetrySinkPort` + [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md)). **Welle 1b weiter sub-sliced**
+(1b-a-D-1): 1b-a (`ReplaySnapshotPort`, [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md)) + 1b-b
 (Lifecycle-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-
-Preflight, ADR 0049). **M7-Welle-1b-a Done 2026-06-09**
+Preflight, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **M7-Welle-1b-a Done 2026-06-09**
 ([`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md); `ReplaySnapshotPort`-
 Rekonstruktion aus `telemetry_points`). **M7-Welle-1b-b Done
 2026-06-09** ([`M7-welle-1b-b.md`](../done/M7-welle-1b-b.md); Closure —
 Core-`finalize()`-Naht + `replay_diff_status` + GG-TERM-Preflight +
-Zwei-Lauf-E2E-Beleg, ADR 0049). **`GG-MVP-002` ✓ produktiv**;
+Zwei-Lauf-E2E-Beleg, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **`GG-MVP-002` ✓ produktiv**;
 **M7-Welle-1 komplett** (1a + 1b-a + 1b-b; Gruppenplan wandert mit
 der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
@@ -1219,16 +1221,16 @@ jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
 **aktiviert mit Welle-3-C0 2026-06-11**: Gruppenplan
 [`M7-welle-3.md`](../done/M7-welle-3.md), sub-sliced **3a**
 (`max_age`-`STALE`-Stage, [`M7-welle-3a.md`](../done/M7-welle-3a.md),
-zuerst; ADR 0052) + **3b** (Adapter-Comm-Failure + Alarm; Slice-Doc
+zuerst; [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)) + **3b** (Adapter-Comm-Failure + Alarm; Slice-Doc
 via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
 **M7-Welle-3a Done 2026-06-11** (`max_age_ms`-Kwarg +
-Core-`STALE`-Stage + ADR 0052; commits `23c614a` + Review-Folge
+Core-`STALE`-Stage + [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md); commits `23c614a` + Review-Folge
 `5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
 `docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
 **M7-Welle-3b Done 2026-06-12** (`GG-SAFE-003` Comm-Failure,
 Trigger 035; [`M7-welle-3b.md`](../done/M7-welle-3b.md); NEU
 `CommFailureGuardedDeviceProtocolPort`-Wrapper +
-`adapter_communication_lost`-Alarm-Vertrag, ADR 0053; commits
+`adapter_communication_lost`-Alarm-Vertrag, [`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md); commits
 `3f28be1` + Review-Folge `82704b1`; 3b-D-1 = voller
 Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
 **`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
@@ -1261,7 +1263,7 @@ Vor M1 muessen folgende Punkte geklaert sein:
       [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)
       (`Accepted` 2026-05-17): zwei Prozesse, Postgres als
       Persistenz-Bus. Welle-6c-`deploy/compose.yml` hat den
-      Pattern de-facto implementiert; ADR 0012 formalisiert
+      Pattern de-facto implementiert; [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md) formalisiert
       nachtraeglich. `spec/architecture.md` §19
       `GG-AR-OPEN-002`-Zeile entsprechend auf `Geschlossen`.
 - [x] **Initiales Repository-Layout** gemaess der Hexagonalen Sicht

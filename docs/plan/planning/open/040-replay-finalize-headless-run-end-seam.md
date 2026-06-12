@@ -10,14 +10,14 @@ Trigger-Pfad).
 ## Kontext
 
 M7-Welle-1b-b liefert den Core-`TickLoop.finalize()`-Replay-Hook
-(ADR 0049). **Getriggert** wird er heute aber **ausschliesslich**
+([`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **Getriggert** wird er heute aber **ausschliesslich**
 vom `DemoTickLoopDriver.stop()` (asyncio-Driver, Lifespan-/extern-
 Stop-Pfad). Das deckt den produktiven Demo-/API-Pfad ab (dort
 endet ein Lauf ueber `stop()`), hat aber drei Lücken:
 
 1. **Natürliche Terminierung:** `_tick_forever()` verlaesst den
    Loop bei terminalem `control_state` (`stopped`/`completed`).
-   `"completed"` wird vom Core heute nie auto-gesetzt (ADR 0049
+   `"completed"` wird vom Core heute nie auto-gesetzt ([`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)
    §2.1), daher latent — aber falls eine spaetere Welle ein
    Tick-Budget / Szenario-Ende einfuehrt, das `completed`
    auto-setzt, feuert `finalize()` ohne expliziten `stop()`-Aufruf

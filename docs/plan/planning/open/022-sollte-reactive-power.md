@@ -30,7 +30,7 @@ Belastung (Scheinleistung).
 - ADR-Folge zu [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md)
   und [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md)
   fuer Q-Emission pro Geraet (PV-Wechselrichter, GridConnection).
-- Snapshot-Schema-Bump auf v3 (analog ADR 0015 Pattern v1→v2),
+- Snapshot-Schema-Bump auf v3 (analog [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) Pattern v1→v2),
   wenn das Bilanz-Mapping `imbalance_kvar` strukturierend
   ergaenzt.
 - Determinismus-Property-Test fuer Q-Bilanz.

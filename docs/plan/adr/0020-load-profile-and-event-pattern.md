@@ -136,7 +136,7 @@ class LoadEvent:
 **Pflicht-Invarianten** (`__post_init__`):
 
 - Alle `Decimal`-Felder als `Decimal` typisiert
-  (GG-DATA-005-Spiegel; Welle-5a-Review-M-4-Pattern).
+  ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)-Spiegel; Welle-5a-Review-M-4-Pattern).
 - `start_s >= 0`, `duration_s > 0`, `power_kw >= 0`.
 - `target_device_id != ""`.
 - Optional Welle-5b-Pflicht: `target_device_id`-Existenz im

@@ -87,7 +87,7 @@ Begruendung — primaer konzeptuell, sekundaer architektonisch:
   scenario/...`. `DeviceModel` braucht `ScenarioDevice` als
   Argument-Typ — der liegt in `hexagon/core/domain/scenario.py`,
   also formal als Port-Import erlaubt. Der hartere Stopper ist
-  also nicht AC-PORTS-NO-OUT, sondern die konzeptuelle Richtung
+  also nicht [`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), sondern die konzeptuelle Richtung
   oben.
 - **Erlaubte Richtung:** `AC-HEXAGON-PURE` erlaubt
   `hexagon/core/devices/* → hexagon.ports.driven.*` (Core darf

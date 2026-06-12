@@ -17,7 +17,7 @@ NO-OUT` verbietet `ports → adapters`-Importe), sondern als
 from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 **Bezug:** [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md),
-[`ADR 0002`](0002-language-and-build-stack.md) §A-1 AC-NO-RAND,
+[`ADR 0002`](0002-language-and-build-stack.md) §A-1 [`AC-NO-RAND`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 (Lifecycle), [`docs/plan/planning/done/003-random-port-adr.md`](../planning/done/003-random-port-adr.md)
 (geschlossen durch diese ADR — wandert nach `done/` bei Acceptance).
@@ -53,13 +53,13 @@ Gewichtung: P0 (Knock-out) > P1 > P2.
 
 | Kennung   | Kriterium                                                                            | Bezug                                          | Gewicht |
 | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------- | ------- |
-| K-DET     | Vollstaendige Determinismus-Garantie ueber Python-Versionen, Plattformen, Builds      | GG-SIM-001, GG-RT-002                          | P0      |
-| K-RESUME  | Random-State serialisierbar; Snapshot/Resume bit-identisch                            | GG-SIM-005                                     | P0      |
-| K-SUB     | Sub-Seeding stabil: gleicher Sub-Name → gleicher Sub-Stream, unabhaengig vom         | GG-SCN-002, GG-SIM-001                         | P0      |
+| K-DET     | Vollstaendige Determinismus-Garantie ueber Python-Versionen, Plattformen, Builds      | [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001), [`GG-RT-002`](../../../spec/lastenheft.md#gg-rt-002)                          | P0      |
+| K-RESUME  | Random-State serialisierbar; Snapshot/Resume bit-identisch                            | [`GG-SIM-005`](../../../spec/lastenheft.md#gg-sim-005)                                     | P0      |
+| K-SUB     | Sub-Seeding stabil: gleicher Sub-Name → gleicher Sub-Stream, unabhaengig vom         | [`GG-SCN-002`](../../../spec/lastenheft.md#gg-scn-002), [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)                         | P0      |
 |           | Aufruf-Pfad der Parent-Generators                                                    |                                                |         |
-| K-STDLIB  | Keine zusaetzliche C-Extension oder externe Dependency                                | GG-DEPLOY-002 (offline), GG-CICD-001 (reprod.) | P1      |
-| K-FUTURE  | Erweiterbar fuer ML/RL-Workloads (`GG-FUTURE-001/002`) ohne Determinismus-Bruch       | GG-FUTURE-001/002                              | P2      |
-| K-PERF    | Ausreichend schnell fuer `GG-RT-005` (10.000 Punkte/s; Random-Calls << 1 ms)          | GG-RT-005                                      | P2      |
+| K-STDLIB  | Keine zusaetzliche C-Extension oder externe Dependency                                | [`GG-DEPLOY-002`](../../../spec/lastenheft.md#gg-deploy-002) (offline), [`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001) (reprod.) | P1      |
+| K-FUTURE  | Erweiterbar fuer ML/RL-Workloads (`GG-FUTURE-001/002`) ohne Determinismus-Bruch       | [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002                              | P2      |
+| K-PERF    | Ausreichend schnell fuer `GG-RT-005` (10.000 Punkte/s; Random-Calls << 1 ms)          | [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005)                                      | P2      |
 
 ---
 

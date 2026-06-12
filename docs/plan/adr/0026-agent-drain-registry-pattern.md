@@ -210,7 +210,7 @@ erst nach **erfolgreichem** Apply-Durchlauf.
   auf derselben GridConnection-ID gewinnt weiterhin (Schritt
   A laeuft nach A0a).
 
-**Order-Vertrag** (GG-AGENT-008): Agent-Commands der
+**Order-Vertrag** ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)): Agent-Commands der
 **vorigen** Ticks werden in der **aktuellen** Tick in den
 Device-Command-Pfad eingespeist. Der final beobachtbare
 Device-State folgt weiterhin der bestehenden TickLoop-
@@ -371,7 +371,7 @@ def consume_for(self, receiver: str) -> Sequence[AgentMessage]:
 - **Destruktive Broadcast-Konsumption beim ersten
   `consume_for(...)`-Aufruf**: wuerde alle nachfolgenden
   Receiver vom Broadcast abschneiden. *Abgelehnt*: bricht
-  GG-AGENT-008-Broadcast-Semantik.
+  [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)-Broadcast-Semantik.
 - **Direct-Inbox-Drain** (gewaehlt): konsumiert nur
   `message.receiver == receiver`; Broadcasts bleiben
   unangetastet. *Vorteil*: schmale Eviction, keine
@@ -575,12 +575,12 @@ Dependencies.
 2. **`apply_command`-direct in derselben Tick (D2-Hook)**
    — TickLoop ruft `device.apply_command(...)` direkt nach
    `agent.tick(...)` in Schritt D2. *Abgelehnt*: bricht
-   GG-AGENT-008 Commit-Reihenfolge-Invariante (Commands
+   [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Commit-Reihenfolge-Invariante (Commands
    wirken in derselben Tick, in der sie emittiert wurden);
    produziert Re-Iteration der Devices.
 3. **Pre-Tick-Schritt A0 mit A0v/A0a-Aufteilung** (gewaehlt)
    — am Tick-Start, vor Step-A-Baseline/Profile/Event.
-   *Vorteil*: konsistent mit GG-AGENT-008; analog Welle-6b-
+   *Vorteil*: konsistent mit [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008); analog Welle-6b-
    LoadEvent-Overlay-Pattern; kein Scheduler-Vorgriff; A0v-
    Validierung **vor** Clock/Scheduler-Mutation garantiert
    Atomizitaet bei `AgentInvalidCommandTargetError`.
@@ -620,7 +620,7 @@ Dependencies.
    Per-Tick-Eviction bricht Multi-Receiver-Szenarien.
 2. **Destruktive Broadcast-Konsumption beim ersten
    `consume_for(...)`-Aufruf**. *Abgelehnt*: bricht
-   GG-AGENT-008-Broadcast-Semantik.
+   [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)-Broadcast-Semantik.
 3. **Direct-Inbox-Drain** (gewaehlt): nur
    `message.receiver == receiver`; Broadcasts bleiben
    nicht-destruktiv.
@@ -830,12 +830,12 @@ persistiert nur generischen Foundation-State.
 Haertung — Welle 4b. Welle 4a baut den Tuple ueber den
 Builder-Kwarg, nicht ueber Scenario-Daten.
 
-**GG-AGENT-007 Deadlines** — Welle 4c oder M5. Welle-4a-
+**[`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007) Deadlines** — Welle 4c oder M5. Welle-4a-
 `Agent.tick(context, bus)` hat kein Deadline-Argument; eine
 zukuenftige `AgentContext`-Erweiterung ist Welle-4b-oder-
 spaeter-Material.
 
-**GG-AGENT-008 Async-Kommunikation** — ADR-Folge zu ADR 0007
+**[`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Async-Kommunikation** — ADR-Folge zu ADR 0007
 `AsyncRandomPort`, kein Welle-4-Material.
 
 **Observability-Ports** (`GG-OTEL-001..004`) — Welle 5/6
@@ -850,7 +850,7 @@ M3-Welle-7.
 **In-Tick-Wirksamkeit fuer Agent-Commands** — eigene ADR-
 Folge, falls Welle 4b zeigt dass sie gebraucht wird. Welle
 4a-Vertrag ist explizit „Commands aus voriger Tick wirken in
-aktueller Tick" (GG-AGENT-008).
+aktueller Tick" ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)).
 
 **Multi-Receiver-Watermark fuer Broadcasts** — Welle 4a-
 `consume_for(...)` konsumiert nur Direct-Inbox; Broadcasts

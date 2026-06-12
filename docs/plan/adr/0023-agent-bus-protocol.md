@@ -96,10 +96,10 @@ in `hexagon/core/agents/`, **kein** Driven-Port unter
 scheidung dieser ADR und wird in §3 ausfuehrlich begruendet.
 
 Lastenheft `GG-AGENT-001..008` sind alle SOLLTE (keine MUSS).
-Welle 3 deckt das Minimum-Skelett fuer GG-AGENT-001/002/003/
+Welle 3 deckt das Minimum-Skelett fuer [`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)/002/003/
 004/006 ab (Protocol + Test-Isolierung + Determinismus +
 standardisierte Nachrichten + Snapshot-/Replay-Faehigkeit);
-GG-AGENT-005/007/008 (konkurrierende Strategien, Deadlines,
+[`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005)/007/008 (konkurrierende Strategien, Deadlines,
 Async-Kommunikation) bleiben Welle-4-Material oder werden
 ueber separate ADR-Folgen entschieden.
 
@@ -338,7 +338,7 @@ class AgentMessage:
 ```
 
 **Frozen-Vertrag** (Welle-3-Review-Folge H-1, 2026-05-21):
-AC-DOMAIN-FROZEN (ADR 0002 §A-1) wird durch
+[`AC-DOMAIN-FROZEN`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (ADR 0002 §A-1) wird durch
 `dataclass(frozen=True, slots=True)` erfuellt — Reassign
 auf Felder wirft `FrozenInstanceError`. **Kein MappingProxy-
 Wrap** auf `payload`, weil das Domain-Layer-Pattern in
@@ -400,7 +400,7 @@ Emissionen und **vor** `grid_model.update(...)`. Agents
 sehen damit den fertigen Welt-Zustand der aktuellen Tick
 (alle TelemetryPoints in `emitted`, alle Devices haben
 getickt), aber ihre Commands gehen in den Pending-Buffer und
-werden im **naechsten** Tick wirksam (GG-AGENT-008
+werden im **naechsten** Tick wirksam ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)
 Commit-Reihenfolge-Invariante).
 
 **Exception-Propagation-Vertrag** (analog ADR 0022 §2.4):
@@ -542,7 +542,7 @@ Drei Varianten waren denkbar:
      Import-Direction (`hexagon/ports/` darf nicht `core/`
      importieren) und ist hier nicht das maßgebliche
      Argument; entscheidend ist die fehlende Adapter-Boundary.
-   - **Test-Isolierungs-Argument**: GG-AGENT-002 verlangt
+   - **Test-Isolierungs-Argument**: [`GG-AGENT-002`](../../../spec/lastenheft.md#gg-agent-002) verlangt
      „isoliert testbar". Test-Isolierung wird ueber das
      `Agent`-Sub-Protocol erreicht: Test-Code instanziiert
      einen Mock-Agent direkt und ruft `agent.tick(context,
@@ -552,7 +552,7 @@ Drei Varianten waren denkbar:
    iteriert `agents`-Tuple, ruft `agent.tick(context, bus)`,
    bus-Buffer ist lokale Variable im TickLoop.
    *Abgelehnt*: bus muss snapshot-/replay-faehig sein
-   (GG-AGENT-003 + GG-AGENT-006); lokale Variable ist nicht
+   ([`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003) + [`GG-AGENT-006`](../../../spec/lastenheft.md#gg-agent-006)); lokale Variable ist nicht
    snapshot-faehig. Bus muss eigene Klasse sein.
 
 3. **AgentBus als Core-Klasse** (gewaehlt) — eigene Klasse
@@ -586,11 +586,11 @@ Positionen)**: drei Varianten waren denkbar:
    nicht durch Agent-Commands beeinflusst werden — also vor
    Bilanz, aber nach allen Telemetry-/State-Emissionen.
 
-**In-Tick-Wirksamkeit verboten (GG-AGENT-008)**: Agents
+**In-Tick-Wirksamkeit verboten ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008))**: Agents
 schreiben Commands in den Scheduler, der sie im **naechsten**
 Tick poppt. Re-Iteration der Devices nach Agent-Commands
 („in-Tick-Wirksamkeit") wuerde die Commit-Reihenfolge
-veraendern (GG-AGENT-008 Akzeptanz: „Asynchrone Verarbeitung
+veraendern ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Akzeptanz: „Asynchrone Verarbeitung
 darf die Commit-Reihenfolge eines Ticks nicht veraendern").
 Welle 4 oder spaeter kann ADR-Folge schreiben, wenn ein Agent-
 Typ in-Tick-Wirksamkeit braucht (z. B. Notfall-Trip-Agent
@@ -708,7 +708,7 @@ ADR-Cross-Refs (read-only fuer Welle 3):
 - TickLoop hat einen klar definierten Hook-Punkt analog Welle-
   1-Fault-Hook; Welle 4-Implementer kann sich einklinken.
 - AgentMessageBus ist Core-Klasse mit Snapshot-Surface — voll
-  snapshot-/replay-faehig (GG-AGENT-003 + GG-AGENT-006
+  snapshot-/replay-faehig ([`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003) + [`GG-AGENT-006`](../../../spec/lastenheft.md#gg-agent-006)
   Akzeptanz-Pfad fuer Welle 4 ist offen).
 - Welle 4 hat eine klare Schnittstelle, an die
   `RuleBasedAgent` + Welle-4-Registry einsteigen koennen.
@@ -727,7 +727,7 @@ ADR-Cross-Refs (read-only fuer Welle 3):
     Welle-1-`_assert_fault_list`).
   - Agent-Sub-Snapshot-Slot in `TickLoop.snapshot()` (analog
     Welle-6a-Devices-Sub-Snapshot).
-  - Priorisierung konkurrierender Agents (GG-AGENT-005).
+  - Priorisierung konkurrierender Agents ([`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005)).
 
 **Restpost — Snapshot-Schema:**
 
@@ -768,7 +768,7 @@ der Trainings-Loop bleibt extern.
 **Async-Kommunikation** (`GG-AGENT-008`) — Welle-3-Foundation
 ist synchron. Async-Variante kommt mit ADR-Folge zu ADR 0007
 `AsyncRandomPort` (siehe ADR 0007 §6), wenn ein konkreter
-Slice das braucht. GG-AGENT-008 Akzeptanz ist auch synchron
+Slice das braucht. [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Akzeptanz ist auch synchron
 erfuellbar — „Async-Verarbeitung **darf** die Commit-
 Reihenfolge nicht veraendern" ist ein Constraint, kein
 Implementation-Pflicht-Pfad.

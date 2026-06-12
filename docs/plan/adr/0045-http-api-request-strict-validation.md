@@ -242,7 +242,7 @@ ADR 0045 §2.1 fuer `RunCreateRequest` nicht erfuellt
 
 ## 3. Begruendung
 
-- **GG-SAFE-008-MUSS-Akzeptanz erfuellen.** Lastenheft
+- **[`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008)-MUSS-Akzeptanz erfuellen.** Lastenheft
   Z. 1404-1408 verlangt Validation „gegen Schema,
   Wertebereiche und Zielressourcen, bevor Eingaben in den
   Simulationskern gelangen". Default-Pydantic-Mode mit

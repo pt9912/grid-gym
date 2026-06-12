@@ -586,7 +586,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   Literals in `hexagon/core/domain/alarm.py` (pure Domain);
   NEU Mapper-Familie in `hexagon/core/simulation/alarm_
   mappers.py` (C2-Realization-Note 2: ausgelagert wegen
-  AC-PORTS-NO-OUT; 3 public functions per C2-Realization-
+  [`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert); 3 public functions per C2-Realization-
   Note 3 — `alarm_from_power_device_alarm` Union-typed +
   `alarm_from_smart_meter_alarm` + `dispatch_alarm_mapper`);
   NEU `TickResult.emitted_alarms`-Feld; TickLoop-Drain-
@@ -777,7 +777,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
     — NEU Mapper-Familie + `dispatch_alarm_mapper` +
     `UnknownRawAlarmTypeError` (C2-Realization-Note 2:
     ausgelagert aus `core/domain/alarm.py` wegen
-    AC-PORTS-NO-OUT). 3 public functions
+    [`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)). 3 public functions
     (`alarm_from_power_device_alarm` Union-typed
     konsolidiert aus 4 strukturell identischen Power-
     Device-Familien per C2-Realization-Note 3;

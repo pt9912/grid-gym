@@ -29,7 +29,7 @@
   — Slice-Doc (Decisions 1b-b-D-0..D-9); ADR 0049 fixiert
   D-1..D-6.
 - [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
-  GG-MVP-002-Gruppenplan (D-2/D-3).
+  [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (D-2/D-3).
 - [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — wird mit 1b-b-C3 aufgeloest (`done/`).
 - [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
@@ -97,7 +97,7 @@ Evidence sitzen **im Core-Spine**.
   braeuchte ein Tick-Budget/Szenario-Ende, das es nicht gibt —
   out-of-scope). `finalize()` laeuft **nach** dem terminalen
   `control_state` (der Lauf ist gestoppt).
-- **Begruendung (GG-AR-P-003/GG-AR-P-007):** Live + Replay teilen
+- **Begruendung ([`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)/[`GG-AR-P-007`](../../../spec/architecture.md#2-architekturprinzipien)):** Live + Replay teilen
   denselben Tick-Prozessor; die Replay-Diff-Orchestrierung gehoert
   in den Spine, nicht in einen Driving-Adapter — sonst diffte ein
   headless-Runner (Abnahme-CLI `GG-MVP-003`) ohne den Driver
@@ -213,8 +213,8 @@ Kwargs (`replay_snapshot`, `metrics_port`, `log_port`,
 `run_repository`) — Praezedenz exakt wie `telemetry_sink`
 (ADR 0047 §2.3). Keine Adapter-/Library-Importe im Core; die
 `ReplaySnapshotPort.read_samples`-Rueckgabe ist Core-Domain
-(`ReplaySample`, AC-PORTS-NO-OUT). `make arch-check`
-(AC-HEXAGON-PURE + AC-NO-FW + AC-PORTS-NO-OUT) verifiziert in C2.
+(`ReplaySample`, [`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)). `make arch-check`
+([`AC-HEXAGON-PURE`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + [`AC-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + [`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) verifiziert in C2.
 
 ---
 
@@ -223,7 +223,7 @@ Kwargs (`replay_snapshot`, `metrics_port`, `log_port`,
 - **`GG-MVP-002` schliessen.** Der integrierte Replay-Lifecycle
   ist die zweite (letzte) `GG-MVP-002`-Lücke; mit ihm flippt die
   Lastenheft-Akzeptanz „laesst sich deterministisch replayen".
-- **Spine statt Adapter (GG-AR-P-003/007).** Die Diff-/Metrik-/
+- **Spine statt Adapter ([`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)/007).** Die Diff-/Metrik-/
   Evidence-Orchestrierung im Core haelt Live + Replay + headless
   konsistent.
 - **Determinismus-Vorbedingung respektieren.** Der Preflight

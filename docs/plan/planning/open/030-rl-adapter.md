@@ -12,8 +12,8 @@ Multi-Agent-System); M3-Welle-7-Closure-Notiz in
 ## Trigger
 
 Das Multi-Agent-Subsystem aus M3-Welle 3/4 ist RL-faehig — der
-`AgentMessageBus` (ADR 0023) plus die `Agent`-Sub-Protocol-Surface
-(ADR 0023 §2.1) erlauben Agent-Implementer mit beliebigem internen
+`AgentMessageBus` ([`ADR 0023`](../../adr/0023-agent-bus-protocol.md)) plus die `Agent`-Sub-Protocol-Surface
+([`ADR 0023`](../../adr/0023-agent-bus-protocol.md) §2.1) erlauben Agent-Implementer mit beliebigem internen
 Verhalten, inklusive RL-Policies. Welle 4b hat mit `RuleBasedAgent`
 einen ersten konkreten Implementer geliefert; ein RL-Adapter ist
 das naechste konkrete Use-Case-Beispiel.
@@ -76,13 +76,13 @@ Aktivierung sobald **eines** der folgenden Ereignisse eintritt:
 
 - Lastenheft `GG-FUTURE-001/002` (RL-faehiges Multi-Agent-
   System).
-- ADR 0023 (`AgentBus Protocol`) §2.1 — `Agent`-Sub-Protocol-
+- [`ADR 0023`](../../adr/0023-agent-bus-protocol.md) (`AgentBus Protocol`) §2.1 — `Agent`-Sub-Protocol-
   Surface, die der RL-Adapter implementieren wird.
-- ADR 0026 (`Agent Drain Registry Pattern`) — Registry +
+- [`ADR 0026`](../../adr/0026-agent-drain-registry-pattern.md) (`Agent Drain Registry Pattern`) — Registry +
   Lifecycle-Pattern fuer den RL-Adapter (`_attach_agents()` +
   `set_run_id` + optional `_RandomAttachableAgent.attach_random`
   fuer deterministischen Trainings-Replay).
-- ADR 0027 (`Rule-Based Agent Scenario Pattern`) — Pattern-
+- [`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md) (`Rule-Based Agent Scenario Pattern`) — Pattern-
   Pendant; RL-Adapter ist ein Schwester-Implementer zu
   `RuleBasedAgent`.
 - M3-Welle-7-Closure in

@@ -8,7 +8,7 @@
 
 ## Trigger
 
-ADR 0005 nennt:
+[`ADR 0005`](../../adr/0005-type-check-gate.md) nennt:
 
 > ADR fuer Pyright als optionales Pre-Commit-Hook fuer
 > Entwickler-Maschinen (Trigger-basiert, sobald Editor-Parity-Druck

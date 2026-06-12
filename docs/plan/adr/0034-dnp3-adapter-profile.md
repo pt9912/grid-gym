@@ -642,7 +642,7 @@ ziehen.
     `dnp3_outstation.*` (Library-Reifegrad pruefen
     in C2).
   - `nfm-dnp3`/`dnp3-outstation`-Sichtbarkeit in
-    AC-PORTS-NO-FW/AC-NO-FW-Forbidden-Listen — Welle-0-
+    [`AC-PORTS-NO-FW`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/AC-NO-FW-Forbidden-Listen — Welle-0-
     Vorbelegung pruefen; ggf. C2-Edit.
 - **`Dockerfile`-Erweiterung:** `CRITICAL_COV_TARGETS`-
   Default um `src/grid_gym/adapters/driven/protocol_dnp3`

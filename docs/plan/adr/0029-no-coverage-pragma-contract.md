@@ -66,9 +66,9 @@ Alle vier Klassen lassen sich ohne Pragma-Annotation loesen:
   redundant.
 
 `ADR 0002 §A-1` listet zehn `tools/arch_check.py`-Contracts
-(AC-HEXAGON-PURE, AC-NO-JSON, AC-NO-TIME, AC-NO-RAND,
-AC-NO-IO-MOD nested, AC-DOMAIN-FROZEN, AC-NO-GOD-UTILS,
-AC-TYPED-ERRORS, AC-NO-CYCLES, AC-ADAPTER-LIGHTWEIGHT) sowie
+([`AC-HEXAGON-PURE`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-JSON`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-TIME`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-RAND`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
+[`AC-NO-IO-MOD`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) nested, [`AC-DOMAIN-FROZEN`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-GOD-UTILS`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
+[`AC-TYPED-ERRORS`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-CYCLES`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-ADAPTER-LIGHTWEIGHT`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) sowie
 sechs `import-linter`-Contracts (sechzehn A-1-Contracts
 insgesamt). Diese ADR fuegt einen elften `tools/arch_check.py`-
 Contract hinzu (siebzehn A-1-Contracts insgesamt) — die
@@ -128,7 +128,7 @@ zusaetzlich.
   Pragma-Vorkommen anders loesbar sind.** Protocol-Stubs ueber
   Regex-Exclude, Dead-Code per Loeschung, TYPE_CHECKING bereits
   abgedeckt. Keine offene Pragma-Anwendung blieb uebrig.
-- **Schwester-Pattern zu AC-NO-TIME / AC-NO-RAND.** Beide
+- **Schwester-Pattern zu [`AC-NO-TIME`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) / [`AC-NO-RAND`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert).** Beide
   verbieten Konstrukte projekt-weit, die in kontrollierten
   Konstellationen sinnvoll waeren, aber zu oft missbraucht
   werden (Wall-Clock im Determinismus-Kern bzw. Zufalls-Quellen

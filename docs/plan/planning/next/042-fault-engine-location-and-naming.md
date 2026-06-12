@@ -46,7 +46,7 @@ langfristig heissen und dokumentiert sind.
 
 - Neue Doku spricht von Core-Fault-Engine.
 - Historische Stellen bleiben unveraendert, wenn sie in Accepted ADRs
-  liegen; stattdessen ADR 0051 und diese Slice-Notiz referenzieren.
+  liegen; stattdessen [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) und diese Slice-Notiz referenzieren.
 - Falls lebende Doku oder `spec/architecture.md` falsche Dateinamen
   oder missverstaendliche Adapter-Begriffe fuehrt, diese
   aktualisieren.
@@ -90,7 +90,7 @@ Tests oder externe Imports sonst unnoetig brechen.
 
 ## 4. DoD
 
-- ADR 0051 ist im ADR-Index gelistet.
+- [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) ist im ADR-Index gelistet.
 - Lebende Doku benennt die Klassen als Core-Fault-Engines oder
   dokumentiert den historischen `*Adapter`-Namen explizit.
 - Wenn ein Rename erfolgt: Dateien und Symbole folgen der

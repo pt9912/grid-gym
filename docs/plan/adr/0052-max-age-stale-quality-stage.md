@@ -121,7 +121,7 @@ if self._max_age_ms is not None:
 - **NICHT Device-seitig** (N Pruefstellen, jedes Device muesste
   die Schwelle kennen) und **NICHT Sink-/Adapter-seitig**
   (Replay-/Stream-Pfad bliebe unmarkiert; Core-Semantik gehoert
-  in den Spine, GG-AR-P-003).
+  in den Spine, [`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)).
 - Quality-Austausch via `dataclasses.replace` (frozen + slots
   bleiben gewahrt; alle uebrigen Felder unveraendert —
   insbesondere `sequence`/`source`, das Scheduler-Tie-Breaking
@@ -190,7 +190,7 @@ frisch nicht).
   Emissions-Substanz fuer den seit M5-Welle-6b existierenden
   `Quality.STALE`-Enum-Wert; mit ihr flippt die letzte
   ✗-Lücken-Zeile des Welle-5a-Audits.
-- **Spine statt Device/Adapter (GG-AR-P-003).** Eine zentrale
+- **Spine statt Device/Adapter ([`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)).** Eine zentrale
   Stage im Tick-Prozessor wirkt auf jeden Lauf (Live, Demo,
   headless) und jeden Konsumenten (Stream, Persistenz, Replay)
   identisch — genau eine Pruefstelle.

@@ -28,7 +28,7 @@ SOC, Strom, Spannung, Ramp ab. Temperatur ist relevant fuer
   - Alternativ: stateful T mit thermischer Masse + Kuehlpfad.
 - Battery-Snapshot um `temperature_celsius`-Feld erweitert
   (additiv; Snapshot-Schema bleibt v2-kompatibel, weil das
-  Sub-Snapshot per ADR 0015 §2.3 frei erweiterbar ist).
+  Sub-Snapshot per [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) §2.3 frei erweiterbar ist).
 - Telemetry-Metric `temperature_celsius` (SI-Einheit per
   `GG-DATA-002`).
 - Property-Test fuer T-Determinismus.
