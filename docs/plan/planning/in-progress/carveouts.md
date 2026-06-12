@@ -56,26 +56,25 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 ## 2. Aktive Carveouts
 
-**Lesefuehrung (Post-M7-Index-Sweep 2026-06-12):** die
-Sektions-Nummern §2.1..§2.11 sind repo-weit als stabile Anker
-zitiert (u. a. die „§2.7-Auflage" in `docs/user/` + `roadmap.md`
-+ sechs `done/`-Wellen-Docs; §2.10 in Trigger 037) und werden
-deshalb **nicht umnummeriert**. Stattdessen sind die Sektionen
-**physisch nach Kategorie gruppiert** (A aktiv-Deferred → B
-Trigger-Gated → C Out-of-Scope → D Tombstones) — die
-Nummern-Reihenfolge innerhalb der Gruppen ist deshalb nicht
-monoton (historische Vergabe-Reihenfolge). Vollstaendig
-aufgeloeste Sektionen bleiben als Tombstone stehen, ihre Zeilen
-wandern nach §3. Kategorien-Uebersicht:
+**Lesefuehrung (Neuordnung 2026-06-12, Post-M7-Index-Sweep):**
+§2 ist nach Lebenszyklus geordnet und monoton nummeriert —
+§2.1 (`Deferred`/`Pattern-Forward`, Aktivierung per Mandat) →
+§2.2..§2.6 (`Trigger-Gated`, je formales `open/`-Trigger-Doc;
+zusammen 21 offene Trigger = `open/`-Bestand) → §2.7
+(`Out-of-Scope`, permanent). **§2.1 und §2.7 behalten bewusst
+ihre historischen Nummern** (die „§2.7-Auflage" ist in
+`docs/user/` + `roadmap.md` + `done/`-Wellen-Docs als
+normativer Anker zitiert). Alle uebrigen Sektionen wurden
+umnummeriert bzw. (vollstaendig aufgeloeste) nach §3
+ueberfuehrt — die **Nummern-Historie-Map in §3** uebersetzt
+Alt-Referenzen aus `done/`-Docs.
 
 | Kategorie | Sektionen | Bestand |
 | --------- | --------- | ------- |
 | `Deferred` / `Pattern-Forward` — kein Trigger, Aktivierung per Mandat | §2.1 (M5-Erbschaft) | 6 + 1 Items |
-| `Trigger-Gated` — formales `open/`-Trigger-Doc | §2.3 (RL-Adapter) · §2.4 (SOLLTE-Geraete/Netz, 9) · §2.5 (Tooling/Build, 6) · §2.6 (Spike, 1) · §2.10 (Multi-Node, 1) · §2.11 (M7-Replay-/Abnahme-Folge, 3) | 21 offene `open/`-Trigger |
+| `Trigger-Gated` — formales `open/`-Trigger-Doc | §2.2 (SOLLTE-Geraete/Netz, 9) · §2.3 (Tooling/Build, 6) · §2.4 (Forschung/Spike, 2) · §2.5 (Multi-Node, 1) · §2.6 (M7-Replay-/Abnahme-Folge, 3) | 21 offene `open/`-Trigger |
 | `Out-of-Scope` — permanent, kein Aufloesungs-Plan | §2.7 | 6 Items |
-| Aufgeloest — Tombstones, Zeilen in §3 | §2.2 (M4-Erbschaft) · §2.8 (M6-Vorbelegung) · §2.9 (Quality-Pipeline-Audit) | — |
-
-**— Kategorie A: `Deferred` / `Pattern-Forward` (kein Trigger; Aktivierung per Mandat) —**
+| Aufgeloest | → §3 (inkl. Nummern-Historie-Map) | — |
 
 ### 2.1 M5-Erbschaft fuer M6+ (6 `Deferred` + 1 `Pattern-Forward`)
 
@@ -98,17 +97,7 @@ nur fuer `Trigger-Gated`, §1-Konvention).
 | WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker | — |
 | Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7) | — |
 
-**— Kategorie B: `Trigger-Gated` (formales `open/`-Trigger-Doc) —**
-
-### 2.3 M3-Erbschaft (RL-Adapter)
-
-Quelle: [`../done/M3-results.md §5`](../done/M3-results.md).
-
-| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | --- | ------ | ------ | ---------------------- | ----------- |
-| Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | `Trigger-Gated` | M3-Welle-7 Decision (C3) | In Trigger Watch | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030-rl-adapter.md`](../open/030-rl-adapter.md) |
-
-### 2.4 M2-Erbschaft (SOLLTE-Geraete + Netzbilanz, 9 Items)
+### 2.2 M2-Erbschaft (SOLLTE-Geraete + Netzbilanz, 9 Items)
 
 Quelle: [`../done/M2-devices-results.md §5`](../done/M2-devices-results.md) +
 [`../done/M3-results.md §5`](../done/M3-results.md) +
@@ -129,7 +118,7 @@ Bedingung pro Item: „wenn konkreter Bedarf — eigener Slice".
 | Battery-Temperatur-Telemetry | `GG-BESS-006` | In Trigger Watch | [`023-sollte-battery-temperature.md`](../open/023-sollte-battery-temperature.md) |
 | Battery-Zellspannung-Telemetry | `GG-BESS-007` | In Trigger Watch | [`024-sollte-battery-cell-voltage.md`](../open/024-sollte-battery-cell-voltage.md) |
 
-### 2.5 Tooling- / Build- / Type-System-Trigger (6 offene Items)
+### 2.3 Tooling- / Build- / Type-System-Trigger (6 Items)
 
 Quelle: [`../open/`](../open/). Alle Items haben `Typ =
 Trigger-Gated`. (Zwei in M6 aufgeloeste Items — `make sbom`
@@ -145,13 +134,17 @@ Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt.)
 | Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (`make fullbuild`-Defer; M6-Welle-3-Post-Push-`ede21ad`-Aufdeckung) | **Temp-Deferral aktiv** seit M6-Welle-4a-C2 `8fbd17c` (NEU vulnignore-Pattern + ADR-0044; CI gruen via generierter `.trivyignore` mit `expires: 2026-06-20`); In Trigger Watch fuer echte Aufloesung | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build (erwartet 2026-06-09..06-12 per ~14-Tage-Kadenz) ODER Compliance-Druck ODER vulnignore-`expires`-Schwelle 2026-06-20 | [`033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
 
-### 2.6 Spike-Optional (1 Item)
+### 2.4 Forschungs- / Spike-Trigger (2 Items)
 
-| Item | Typ | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | --- | ------ | ---------------------- | ----------- |
-| BESS-Simulation Reserve-Market-Spike | `Trigger-Gated` (optionaler Spike) | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
+Zwei Einzel-Item-Domaenen-Trigger (vorher eigene Sektionen
+alt-§2.3 + alt-§2.6; bei der Neuordnung 2026-06-12 fusioniert).
 
-### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
+| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | --- | ------ | ------ | ---------------------- | ----------- |
+| Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | `Trigger-Gated` | M3-Welle-7 Decision (C3); [`../done/M3-results.md §5`](../done/M3-results.md) | In Trigger Watch | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030-rl-adapter.md`](../open/030-rl-adapter.md) |
+| BESS-Simulation Reserve-Market-Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
+
+### 2.5 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge, 1 Item)
 
 Quelle: [`../open/`](../open/) + Trigger
 [`037`](../open/037-deploy-007-010-multi-node-deployment.md).
@@ -164,7 +157,7 @@ Skalierungs- oder Compliance-Anker vorliegt.
 | ---- | ------ | ---------------------- | ----------- |
 | `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen und Rollback-Strategie | In Trigger Watch | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037-deploy-007-010-multi-node-deployment.md`](../open/037-deploy-007-010-multi-node-deployment.md) |
 
-### 2.11 M7-Erbschaft: Replay-/Abnahme-Folge-Trigger (3 Items)
+### 2.6 M7-Erbschaft: Replay-/Abnahme-Folge-Trigger (3 Items)
 
 Quelle: [`../open/`](../open/) + M7-Welle-1b-/Welle-2-Scope-
 Entscheide (siehe [`../done/M7-results.md §5`](../done/M7-results.md)).
@@ -177,8 +170,6 @@ in den Index nachgetragen.
 | Volle `GG-TERM-002/003`-Equality-Matrix (`platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash`; M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber 5 `RunMetadata`-Felder) | In Trigger Watch | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay | [`038-gg-term-002-003-full-equality-matrix.md`](../open/038-gg-term-002-003-full-equality-matrix.md) |
 | Oeffentliche API-Replay-Bedienung (`POST /runs` `replay_of` + `RunMetadata`-Spalte + Migration; M7-Welle-1b-b haelt die Referenz-Bindung per 1b-b-D-7 Runtime-/Test-/Demo-intern) | In Trigger Watch | Reviewer-/Stakeholder-Forderung nach API-getriggertem Replay ODER Compliance-Bedarf fuer persistente Referenz-Bindung | [`039-api-replay-trigger-surface.md`](../open/039-api-replay-trigger-surface.md) |
 | Core-Run-End-Naht fuer `TickLoop.finalize()` (heute Driver-getriggert; Headless-Runner / natuerliche Terminierung / Tick-Failure feuern den Replay-Diff nicht — `make accept` faehrt den Replay-Step deshalb standalone) | In Trigger Watch | Headless-Replay-Validierung im Abnahme-Pfad ODER Auto-`completed`-Transition | [`040-replay-finalize-headless-run-end-seam.md`](../open/040-replay-finalize-headless-run-end-seam.md) |
-
-**— Kategorie C: `Out-of-Scope` (permanent, kein Aufloesungs-Plan) —**
 
 ### 2.7 Permanent (`Out-of-Scope`)
 
@@ -206,42 +197,6 @@ Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
 (z. B. `Trigger-Gated` mit neu erstelltem `open/`-
 Trigger-Doc).
 
-**— Kategorie D: Aufgeloest (Tombstones — Zeilen in §3) —**
-
-### 2.2 M4-Erbschaft (aufgeloest — siehe §3)
-
-**Beide Items aufgeloest in M6** (IEC-61850-Smoke-Reaktivierung
-→ M6-Welle-6 Pfad B, ADR 0046; Base-Image-krb5-CVE-Bump →
-M6-Welle-1). Zeilen in §3; Sektions-Nummer bleibt fuer
-Cross-Ref-Stabilitaet erhalten (referenziert u. a. in
-[`../done/M6-welle-1.md`](../done/M6-welle-1.md) +
-[`../done/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)).
-
-### 2.8 M6-Vorbelegung (aufgeloest — siehe §3)
-
-**Aufgeloest 2026-06-08 mit der M6-Closure** (Eintrag in §3;
-Sektions-Nummern bleiben fuer Cross-Ref-Stabilitaet erhalten).
-Die hier vorbelegten Lastenheft-Familien (`GG-RT-*`/
-`GG-SAFE-*`/`GG-CICD-*`/`GG-DEPLOY-*`/SBOM) sind mit
-M6-Welle-0 in den formalen M6-Slice-Plan gewandert und durch
-die M6-Wellen 1..6 geliefert
-([`../done/M6-results.md §2`](../done/M6-results.md));
-Rest-Luecken liefen als Trigger 034/035/036 weiter und sind
-seit M7 ebenfalls aufgeloest.
-
-### 2.9 Quality-Pipeline-Audit-Luecken (aufgeloest — siehe §3)
-
-Quelle: [`../open/`](../open/) + [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md).
-**Beide Items geschlossen in M7-Welle-3** (`GG-SAFE-004` →
-3a, ADR 0052; `GG-SAFE-003` → 3b, ADR 0053 — alle vier
-`GG-SAFE-001..004` produktiv). Zeilen in §3; Sektions-Nummer
-bleibt fuer Cross-Ref-Stabilitaet erhalten. Historischer
-Kontext: aus dem M6-Welle-5a-Audit hervorgegangen
-(Welle-5a-D-3 Hybrid-Strategie: substantielle Substanz-Lücken
-als NEU `open/`-Trigger vertagt, nicht inline gefixt); eigene
-Cluster-Sektion statt §2.5-Verklumpung, weil SAFE-IDs
-Lastenheft-Domain-Items sind.
-
 ---
 
 ## 3. Resolved Carveouts (Audit-Trail-Auswahl)
@@ -250,19 +205,37 @@ Geschlossen mit M-Closure oder Welle-Lieferung; Eintraege
 bleiben hier eine kurze Weile fuer Audit-Trail (volle History
 in `done/`).
 
+**Nummern-Historie (Neuordnung 2026-06-12):** §2 wurde nach
+Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
+`done/`-Wellen-Docs uebersetzen sich so:
+
+| Alt | Inhalt | Neu |
+| --- | ------ | --- |
+| §2.1 M5-Erbschaft | `Deferred`/`Pattern-Forward` | §2.1 (unveraendert) |
+| §2.2 M4-Erbschaft | IEC-Smoke + krb5-Bump (aufgeloest in M6) | → §3-Zeilen |
+| §2.3 M3-Erbschaft (RL-Adapter) | Trigger 030 | §2.4 |
+| §2.4 M2-Erbschaft (SOLLTE) | Trigger 016..024 | §2.2 |
+| §2.5 Tooling/Build | Trigger 004/005/007/011/032/033 (008/031 aufgeloest → §3) | §2.3 |
+| §2.6 Spike-Optional | Trigger 026 | §2.4 |
+| §2.7 Permanent | `Out-of-Scope` („§2.7-Auflage") | §2.7 (unveraendert, bewusst gepinnt) |
+| §2.8 M6-Vorbelegung | aufgeloest mit M6-Closure | → §3-Zeile |
+| §2.9 Quality-Pipeline-Audit | Trigger 034/035 (geschlossen in M7-Welle-3) | → §3-Zeilen |
+| §2.10 Multi-Node-Familie | Trigger 037 | §2.5 |
+| §2.11 M7-Erbschaft | Trigger 038/039/040 | §2.6 |
+
 | Item | Geloest mit | Resolution-Hash |
 | ---- | ----------- | --------------- |
 | `--strict-bytes`-Aktivierung (`[tool.mypy]`) | M4-Welle-6a-C3 | Trigger-Doc nach [`../done/006-mypy-strict-bytes.md`](../done/006-mypy-strict-bytes.md) |
 | `GG-DEMO-008` Abnahmedoku (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6c-C2 | `0e604e4` — NEU [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md) |
 | `GG-DEMO-006` YAML-side Fault-Injection (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6a-C2 | `db3a0c2` |
 | `GG-UI-006..008` Geraete-Grafik + Fault-Form + Sim-Zustand | M5-Welle-6a/6b-C2 | `db3a0c2` + `9fcb887` |
-| §2.8 M6-Vorbelegung (Lastenheft-Familien `GG-RT-001..005` / `GG-SAFE-001..006` / `GG-CICD-*` / `GG-DEPLOY-*` / SBOM) | M6-Welle-0 (formaler Slice-Plan) + M6-Wellen 1..6 (Lieferung); M6-Closure 2026-06-08 — Rest-Luecken via Trigger 034/035/036 in M7 aufgeloest | [`../done/M6-results.md §2`](../done/M6-results.md) (Sektion §2.8 erst beim Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt) |
-| §2.2 IEC-61850-In-Process-Smoke Reaktivierung (M4-Erbschaft) | M6-Welle-6-C2 (Pfad B: Dockerfile-Stage `iec61850-test` Python 3.12 + `make test-iec61850`; ADR 0046; Pfad A cp314-Wheel bleibt bevorzugte Endform) | Trigger-Doc nach [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
-| §2.2 Base-Image-Bump fuer krb5-CVE-Drift (M4-Erbschaft, `make fullbuild`-Defer) | M6-Welle-1-C2 (Null-Code-Edit; Debian-13.5-Upstream-Drift) | `b514170` — Trigger-Doc nach [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
-| §2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; ADR 0042) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
-| §2.5 CI-Pflicht-Gate fuer `make fullbuild` | M6-Welle-3-C2 (NEU `.github/workflows/fullbuild.yml`) | `ce13253` — Trigger-Doc nach [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
-| §2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; Rest-Grenzen ADR 0052 §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
-| §2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, ADR 0053; Rest-Grenzen ADR 0053 §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
+| alt-§2.8 M6-Vorbelegung (Lastenheft-Familien `GG-RT-001..005` / `GG-SAFE-001..006` / `GG-CICD-*` / `GG-DEPLOY-*` / SBOM) | M6-Welle-0 (formaler Slice-Plan) + M6-Wellen 1..6 (Lieferung); M6-Closure 2026-06-08 — Rest-Luecken via Trigger 034/035/036 in M7 aufgeloest | [`../done/M6-results.md §2`](../done/M6-results.md) (Sektion §2.8 erst beim Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt) |
+| alt-§2.2 IEC-61850-In-Process-Smoke Reaktivierung (M4-Erbschaft) | M6-Welle-6-C2 (Pfad B: Dockerfile-Stage `iec61850-test` Python 3.12 + `make test-iec61850`; ADR 0046; Pfad A cp314-Wheel bleibt bevorzugte Endform) | Trigger-Doc nach [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
+| alt-§2.2 Base-Image-Bump fuer krb5-CVE-Drift (M4-Erbschaft, `make fullbuild`-Defer) | M6-Welle-1-C2 (Null-Code-Edit; Debian-13.5-Upstream-Drift) | `b514170` — Trigger-Doc nach [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
+| alt-§2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; ADR 0042) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
+| alt-§2.5 CI-Pflicht-Gate fuer `make fullbuild` | M6-Welle-3-C2 (NEU `.github/workflows/fullbuild.yml`) | `ce13253` — Trigger-Doc nach [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
+| alt-§2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; Rest-Grenzen ADR 0052 §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
+| alt-§2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, ADR 0053; Rest-Grenzen ADR 0053 §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)

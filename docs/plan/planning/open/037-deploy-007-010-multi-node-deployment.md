@@ -302,10 +302,10 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    anlegt, zieht der Folge-Slice zuerst diesen Trigger und die
    kanonische Audit-Surface nach). `GG-DEPLOY-007..010`
    flippt dort von ⏸ M7+ auf ✓ produktiv. Trigger 037 wandert
-   nach `done/` mit dem aufloesenden Slice. **carveouts §2.10-
-   Aufloesung:** die Row „`GG-DEPLOY-007..010` Kubernetes-
+   nach `done/` mit dem aufloesenden Slice. **carveouts-§2.5-Aufloesung
+   (ehem. §2.10):** die Row „`GG-DEPLOY-007..010` Kubernetes-
    Manifeste, Rolling Updates, Zero-Downtime-Grenzen und
-   Rollback-Strategie" in `carveouts.md §2.10` wandert in
+   Rollback-Strategie" in `carveouts.md §2.5` (ehem. §2.10) wandert in
    `§3 Resolved` (per Lifecycle-Klausel §4), falls die
    gesamte Familie geliefert ist. Bei Teil-Lieferung
    (z. B. nur `GG-DEPLOY-007` + `008` + `010` ohne das
@@ -388,7 +388,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
   — IP-/Netz-Beschraenkung im Demo-Compose; K8s-Deployment
   muss die Auflagen-Schicht analog umsetzen (Ingress-Form mit
   expliziter Whitelist).
-- [`carveouts.md §2.10 Multi-Node-Deployment-Familie`](../in-progress/carveouts.md)
+- [`carveouts.md §2.5 Multi-Node-Deployment-Familie`](../in-progress/carveouts.md)
   — Index-Row dieses Triggers; wird bei vollstaendiger
   Aufloesung nach `§3 Resolved` migriert (siehe Lieferung
   Punkt 7).
