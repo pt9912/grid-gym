@@ -8,8 +8,10 @@ Welle-7-Audit-Erbe.
 (11 broken Markdown-Refs nach dem `in-progress/ → done/`-Move
 des Slice-Plans).
 **Verlinkt:**
-[`tools/check_refs.py`](../../../../tools/check_refs.py),
-`Makefile`-Target `docs-check`, `Dockerfile`-Stage `docs-check`.
+`tools/check_refs.py` (geloescht 2026-06-12 — abgeloest durch
+d-check, siehe `.d-check.yml`),
+`Makefile`-Target `docs-check` (laeuft seither ueber d-check),
+`Dockerfile`-Stage `docs-check` (entfernt).
 
 ---
 

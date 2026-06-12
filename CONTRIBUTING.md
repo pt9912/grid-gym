@@ -5,7 +5,7 @@ This document covers the **license policy** that contributors
 need to be aware of, plus the **development workflow** that
 all changes go through. For architectural conventions and the
 A-1 contracts that arch-check enforces, see
-[`docs/plan/adr/0002-quality-gates.md`](docs/plan/adr/0002-quality-gates.md)
+the [ADR index](docs/plan/adr/README.md)
 and the [`AGENTS.md`](AGENTS.md) briefing.
 
 ---
@@ -123,9 +123,9 @@ make spdx-check         # tools/check_spdx.py (GPL-3.0-only header lint)
 ```
 
 For the typecheck stage (mypy --strict + strict_bytes), see
-[ADR 0005](docs/plan/adr/0005-mypy-vs-pyright-typecheck.md).
-For the coverage threshold, see
-[ADR 0007](docs/plan/adr/0007-coverage-thresholds.md).
+[ADR 0005](docs/plan/adr/0005-type-check-gate.md).
+For the coverage thresholds, see the `coverage-gate` targets in
+the [`Makefile`](Makefile).
 
 ### Slice Workflow
 

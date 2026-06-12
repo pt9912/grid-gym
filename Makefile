@@ -86,7 +86,7 @@ help:
 	@echo "  make arch-check        import-linter + tools/arch_check.py (20 A-1-Contracts: 6 import-linter + 14 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
-	@echo "  make docs-check        tools/check_refs.py — Markdown-Link-Validator (Trigger 002)"
+	@echo "  make docs-check        d-check — Markdown-Referenz-Validator (Trigger 002, .d-check.yml)"
 	@echo "  make spdx-check        tools/check_spdx.py — SPDX-License-Identifier-Lint fuer IEC-61850-GPL-Boundary (ADR 0035, M4 Welle 6b)"
 	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
 	@echo "  make noqa-gate         tools/check_noqa.py --fail-on-noqa (Plan §4 hart in 'make gates'; FILES=... fuer paketweise Scope-Eingrenzung)"
@@ -169,8 +169,14 @@ arch-check-imports:
 arch-check-custom:
 	$(DOCKER_BUILD) --target arch-check-custom -t $(IMAGE_PREFIX)-arch-check-custom:latest
 
+# Doku-Referenz-Checks via d-check (Digest-Pin auf v0.2.0, siehe
+# https://github.com/pt9912/d-check/releases/tag/v0.2.0); Konfiguration
+# in .d-check.yml. Ersetzt tools/check_refs.py und die zugehoerige
+# Dockerfile-Stage (Trigger 002 — geloescht).
+D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:f2e0ac7bd9650fe560058e530c8890a629e2df43b8b2e696e78488794d311846
+
 docs-check:
-	$(DOCKER_BUILD) --target docs-check -t $(IMAGE_PREFIX)-docs-check:latest
+	docker run --rm -v "$(CURDIR)":/repo:ro $(D_CHECK_IMAGE)
 
 # `tools/check_spdx.py` — SPDX-License-Identifier-Lint fuer die
 # IEC-61850-GPL-Boundary (ADR 0035 Decision I-f, M4 Welle 6b C1).

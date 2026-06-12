@@ -980,7 +980,7 @@ Smokes + Audit-Doku
 acht `GG-SAFE-*`-Lastenheft-IDs auditiert (sechs ✓ produktiv,
 zwei ⚠ partial mit `open/`-Triggern 034/035/036).
 **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
-C3 dieser Commit` (siehe [`M6-welle-5b.md`](M6-welle-5b.md);
+C3 dieser Commit` (siehe [`M6-welle-5b.md`](../done/M6-welle-5b.md);
 NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)
 `Provisional`; alle 6 GG-SAFE-007-Surfaces + 6 GG-SAFE-008-
 Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku

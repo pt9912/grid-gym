@@ -1,0 +1,14 @@
+# Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check) — ersetzt
+# tools/check_refs.py (Trigger 002; Rollout 2026-06-12,
+# Python-Familie). Scan über die Repo-Wurzel: deckt den Alt-Scope
+# (AGENTS.md, docs/, spec/, harness/) ab und nimmt die übrige
+# Root-Doku (README*, CHANGELOG, CONTRIBUTING) als Mehr-Abdeckung
+# mit; src/ (vendored UI-Doku) und .github/ (PR-Template mit
+# Platzhaltern) bleiben außen vor. `anchors` ist Mehr-Abdeckung —
+# die im Trigger-002-Scope vertagte Kennungs-Auflösung
+# (GG-*/AC-*/ADR-NNNN) kann später als ids-Konfiguration folgen.
+# Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
+scan:
+  roots: ["."]
+  ignore: ["src/**", ".github/**"]
+modules: [links, anchors]

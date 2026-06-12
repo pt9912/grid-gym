@@ -154,7 +154,7 @@ Negative-Pins oder eine begruendete Carveout-/Folge-Slice-Notiz.
 | `make gates`            | 10 A-1-Pflicht-Gates (lint, format-check, mypy --strict, arch-check `N` contracts, test-unit, coverage-gate 90/85, critical-coverage 90, dep-audit, noqa-gate, spdx-check). |
 | `make test-integration` | Sibling-Container-Tests (testcontainers; Postgres, OTLP-Collector).   |
 | `make fullbuild`        | `ci` + Runtime-Image + Compose-Smoke + Trivy-Image-Audit fuer alle relevanten Tags. |
-| `make docs-check`       | Markdown-Link-Validator (`tools/check_refs.py`). Prueft alle Bezuege im Repo. |
+| `make docs-check`       | Markdown-Referenz-Validator (d-check, digest-gepinnt; `.d-check.yml`). Prueft alle Bezuege im Repo. |
 
 **Vor jedem Push:** mindestens `make gates` + `make docs-check`
 gruen. Vor Welle-/Meilenstein-Closure zusaetzlich `make fullbuild`.
@@ -189,8 +189,9 @@ gelaufen ist, muss der Handoff den Grund nennen.
 - **Dateinamen / Pfade / Kennungen** stehen in Backticks
   (Monospace). Wenn klickbar, packe Codeblock in einen Markdown-
   Link: `` [`foo.md`](foo.md) `` rendert zu klickbarem Monospace.
-- **`tools/check_refs.py`** prueft alle Markdown-Links im Repo —
-  jeder broken Link bricht `make docs-check`. Tabellen-
+- **d-check** (digest-gepinnt, Konfiguration in
+  [`.d-check.yml`](.d-check.yml)) prueft alle Markdown-Links und
+  Heading-Anker im Repo — jeder broken Link bricht `make docs-check`. Tabellen-
   Bestand-Zeilen in `docs/plan/planning/**/README.md` sind
   bewusst als Links formatiert, damit Drift bei Move/Rename
   automatisch faellt.

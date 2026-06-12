@@ -77,15 +77,13 @@ COPY src/ src/
 COPY tests/ tests/
 COPY tools/ tools/
 COPY spec/ spec/
-# `docs/` wird vom `tools/check_refs.py`-Markdown-Link-Validator
-# (Welle-7-Audit-Erbe, Trigger 002) gebraucht — er aufloest
-# relative Pfade zwischen spec/ und docs/. `deploy/`, `Makefile`,
-# `Dockerfile` und `CHANGELOG.md` werden ebenfalls per Markdown-
-# Ref aus `docs/` referenziert (Slice-Plan + Trigger-Notes); die
-# `docs-check`-Stage braucht sie im Build-Kontext, damit
-# relative-Pfad-Aufloesung gegen reale Targets prueft. `AGENTS.md`
-# und `harness/` gehoeren seit der Harness-Schaerfung ebenfalls zum
-# docs-check-Scope, weil sie kanonische Quellen verlinken.
+# `docs/`, `harness/`, `deploy/`, `Makefile`, `Dockerfile`,
+# `CHANGELOG.md` und `AGENTS.md` waren urspruenglich fuer die
+# `docs-check`-Stage (tools/check_refs.py, Trigger 002) im
+# Build-Kontext; seit der Migration auf d-check (2026-06-12,
+# eigener Container via `make docs-check`, .d-check.yml) braucht
+# sie hier nur noch, was verbleibende Stages referenzieren
+# (z. B. Welle-6-Deploy-Smoke). Konservativ unveraendert gelassen.
 COPY docs/ docs/
 COPY harness/ harness/
 COPY deploy/ deploy/
@@ -166,17 +164,6 @@ FROM source AS arch-check
 RUN uv run lint-imports \
  && uv run python tools/arch_check.py
 
-# ---------------------------------------------------------------------------
-# docs-check: Markdown-Link-Validator (Trigger 002 Welle 7).
-# Scant docs/, spec/, harness/ und AGENTS.md nach relativen
-# `[text](path)`-Links und meldet nicht aufloesbare Pfade. Faengt
-# Audit-Lecks wie post-Move-Drift (z. B. `in-progress/ → done/`)
-# automatisiert ab.
-# ---------------------------------------------------------------------------
-FROM source AS docs-check
-RUN uv run python tools/check_refs.py
-
-# ---------------------------------------------------------------------------
 # spdx-check: tools/check_spdx.py — SPDX-License-Identifier-Lint fuer die
 # IEC-61850-GPL-Boundary (Welle-5b Decision I-f, ADR 0035; Welle-6b C1).
 # Verifiziert, dass alle Dateien unter protocol_iec61850/ + tests/.../iec61850/
