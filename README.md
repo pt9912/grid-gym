@@ -34,7 +34,15 @@ environment. The current implementation includes:
 - multi-agent scenarios with a rule-based agent
 - structured logs, metrics, and traces via the observability port trio
 - an OTLP adapter with a local OpenTelemetry Collector smoke test
-- an MQTT protocol adapter with Mosquitto-based integration tests
+- five protocol adapters (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) with
+  container-based integration tests
+- an HTTP API (FastAPI, REST + WebSocket) with a server-rendered web UI
+  (HTMX + Chart.js): live telemetry, replay controls, alarms
+- time-series persistence (Postgres) and a deterministic two-run replay
+  with `replay_diff_status` verdict
+- a telemetry quality pipeline (`STALE` max-age marking, comm-failure
+  `MISSING` + alarm) covering `GG-SAFE-001..004`
+- a machine-readable acceptance run via `make accept` (`AbnahmeReport` JSON)
 
 You can run the current gates and scenarios with:
 
@@ -43,13 +51,15 @@ make help
 make gates              # 10 mandatory gates (lint, format, typecheck,
                         # arch-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # unit test suite (~1722 tests as of 2026-06-04,
-                        # M5-Welle-4b closure + review-folge)
+make test-unit          # unit test suite (1796 tests as of 2026-06-12,
+                        # M7 closure / v0.1.0)
 make test-integration   # Compose/testcontainers integration suite
-                        # (80 passed + 4 skipped tests incl. OTLP, MQTT, Modbus,
-                        # OPC-UA, DNP3, IEC-61850, M5-HTTP-API, M5-UI-Foundation,
-                        # M5-Live-Telemetry, M5-Replay-Controls and M5-Alarms
-                        # smokes + async pub/sub probe)
+                        # (139 passed + 4 skipped as of 2026-06-12; incl.
+                        # protocol adapters (MQTT/Modbus/OPC-UA/DNP3/IEC-61850),
+                        # OTLP, HTTP-API/UI, persistence + replay-determinism
+                        # E2E and the GG-SAFE-001..004 quality-pipeline smokes;
+                        # the 4 skips are IEC-61850-on-Python-3.13 only —
+                        # covered by `make test-iec61850`)
 ```
 
 Example YAML scenarios live under
@@ -76,6 +86,8 @@ development gate is `make gates`.
 > 033-otel-collector-go-stdlib-cve-bump.md`; trigger stays open
 > as the canonical stable-watch).
 
+Current release: **v0.1.0** (2026-06-12) — see
+[Releases](https://github.com/pt9912/grid-gym/releases).
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
 publishes a container image to GHCR (`ghcr.io/<owner>/grid-gym:<tag>`)
@@ -99,8 +111,8 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   time model; snapshot envelopes and replay samples are
   byte-reproducible via canonical JSON serialization.
 - **Enforced architecture.** 20 architectural contracts run on every
-  `make arch-check`: 6 forbidden-import contracts via `lint-imports`
-  plus 14 custom AST/graph checks in
+  `make arch-check`: 7 forbidden-import contracts via `lint-imports`
+  plus 13 custom AST/graph checks in
   [`tools/arch_check.py`](tools/arch_check.py) (including
   `AC-ADAPTER-LIGHTWEIGHT`, `AC-OTLP-ADAPTER-NO-TIME`,
   `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`, and `AC-IEC61850-GPL-BOUNDARY`).
@@ -111,9 +123,11 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   IEC-61850 boundary) — all cache-free green without any local
   override.
 - **ADR-driven decisions.** Every load-bearing decision is recorded as
-  an [Architecture Decision Record](docs/plan/adr/); M1..M4 closure
-  ADRs are `Accepted`, future-milestone wave ADRs land as `Provisional`
-  and become `Accepted` at milestone closure.
+  an [Architecture Decision Record](docs/plan/adr/); all
+  milestone-closure ADRs through M7 are `Accepted` (49 of 53), wave
+  ADRs land as `Provisional` and become `Accepted` at milestone
+  closure (ADR 0050/0051 stay `Proposed` until their implementation
+  slices).
 - **CI mirrors local.** GitHub Actions runs the same `lint-imports`,
   `ruff check`, `tools/arch_check.py`, and `mypy --strict` gates on
   every pull request and `main` push
@@ -197,7 +211,8 @@ make format-check        # ruff format --check
 make typecheck           # mypy --strict (ADR 0005)
 make arch-check          # import-linter + tools/arch_check.py (ADR 0002 §A-1)
 make arch-check-imports  # import-linter only (7 forbidden-import contracts)
-make arch-check-custom   # tools/arch_check.py only (12 custom checks)
+make arch-check-custom   # tools/arch_check.py only (13 custom checks)
+make docs-check          # markdown link/anchor validator (pinned d-check container)
 make fullbuild           # gates + integration + runtime image + image-audit + compose smoke
 make perf                # GG-RT-004 + GG-RT-005 SOLLTE: pytest-benchmark vs tests/perf/baseline.json (20% Median-Drift; ADR 0041; opt-in `--extra perf`; tick-loop 100 devices x 10k ticks + telemetry-port 10k publish/s with payloads ≤256 byte)
 # GG-RT-001 MUSS Backpressure-Healthcheck: GET /runs/{id}/healthcheck → JSON with tick_duration_ms_p50/p95, missed_ticks_count, backpressure_status (Welle-4b-c).
@@ -223,7 +238,8 @@ According to the requirements specification, the MVP comprises at least:
 
 ## Optional / Roadmap Extensions
 
-The MVP scope above is implemented; the following extensions are
+The MVP scope above is implemented and shipped with **v0.1.0**
+(2026-06-12); the following extensions are
 intentionally held out of the MVP and tracked as optional
 additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.md)):
 
@@ -237,7 +253,8 @@ additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.
 
 ```text
 .
-├── .github/workflows/ci.yml     ← CI: 4 mandatory gates
+├── .github/workflows/           ← 6 CI workflows (ci, tests, coverage,
+│                                   dep-audit, fullbuild, release)
 ├── AGENTS.md, CHANGELOG.md, CONTRIBUTING.md, README.de.md, README.md
 │                                ← project docs + dual-license policy + AI-agent briefing
 ├── Dockerfile, Makefile, alembic.ini, pyproject.toml, uv.lock, .python-version
@@ -249,7 +266,7 @@ additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.
 ├── docs/
 │   ├── archive/                 ← discarded / historical drafts
 │   ├── plan/
-│   │   ├── adr/                 ← Architecture Decision Records (0001..0045)
+│   │   ├── adr/                 ← Architecture Decision Records (0001..0053)
 │   │   └── planning/
 │   │       ├── done/            ← completed slices + closure notes
 │   │       ├── in-progress/     ← active roadmap + slice plans
@@ -264,7 +281,8 @@ additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.
 ├── src/grid_gym/
 │   ├── adapters/
 │   │   ├── driven/
-│   │   │   ├── _protocol_otel_wrap.py     ← OtelSpanWrappedDeviceProtocolPort wrapper
+│   │   │   ├── _protocol_otel_wrap.py     ← OTel span wrapper (+ comm-failure
+│   │   │   │                                  wrapper `_protocol_comm_failure_wrap.py`)
 │   │   │   ├── alarm_stream_inmemory/     ← InMemoryAlarmStream + AlarmHistoryBuffer
 │   │   │   ├── observability_null/        ← Null Log / Metrics / Trace fallback
 │   │   │   ├── persistence_postgres/      ← Postgres RunRepository + alembic migrations
@@ -294,17 +312,22 @@ additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.
 │           ├── driven/         ← Clock, DeviceProtocol, Fault, Observability, Random, RunRepository
 │           └── driving/        ← AlarmStream, TelemetryStream
 ├── tests/
-│   ├── integration/             ← Compose-based integration tests (80 passed + 4 skipped)
-│   ├── unit/                    ← pytest unit tests (1722 as of 2026-06-04)
-│   └── unit/_arch_check_*       ← architecture tests (6 lint + 14 custom = 20 contracts)
+│   ├── integration/             ← Compose-based integration tests (139 passed + 4 skipped)
+│   ├── unit/                    ← pytest unit tests (1796 as of 2026-06-12)
+│   └── unit/_arch_check_*       ← architecture tests (7 lint + 13 custom = 20 contracts)
 └── tools/
+    ├── accept.py                    ← `make accept` acceptance CLI (GG-MVP-003)
     ├── arch_check.py                ← AST / graph architecture checks (ADR 0002 §A-1)
     ├── check_core_determinism.py    ← core determinism sweep
+    ├── check_demo_scenario_pin.py   ← demo scenario-hash pin lint (`accept-pin-check`)
     ├── check_noqa.py                ← `# noqa` ban gate
-    ├── check_refs.py                ← Markdown link validator (`make docs-check`)
     ├── check_spdx.py                ← SPDX header lint for the GPL-3.0-only boundary
+    ├── _demo_replay.py              ← headless demo replay helper
     ├── diagnose_otlp_span_export.py ← OTLP debug matrix script
+    ├── render_trivyignore.py        ← vulnignore → .trivyignore renderer (ADR 0044)
     └── wait_otel_collector.py       ← bounded liveness poll for distroless OTLP collector
+
+(`make docs-check` runs the pinned `d-check` container image — no in-repo script.)
 ```
 
 The documentation and planning structure is defined in
