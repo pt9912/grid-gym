@@ -26,7 +26,7 @@ wurde.
 ## 1. Konvention
 
 **Carveout** = bewusster Verzicht im aktuellen Lieferumfang.
-Vier Typen (siehe `Typ`-Spalte in jeder §2.x-Tabelle):
+Vier Typen (siehe `Typ`-Spalte in §2.1):
 
 | Typ | Definition | Lebenszeit |
 | --- | ---------- | ---------- |
@@ -46,6 +46,10 @@ Vier Typen (siehe `Typ`-Spalte in jeder §2.x-Tabelle):
 - `Resolved {date} ({M-Welle-Hash})` — geschlossen; Eintrag
   wandert in §3 Resolved-Block oder raus.
 
+**Hinweis:** die §2-Tabellen tragen seit der Neuordnung
+2026-06-12 keine Status-Spalte mehr — alles in §2 ist per
+Definition offen; Resolved-Eintraege leben in §3.
+
 **Typ vs. Status:** `Out-of-Scope`-Eintraege bleiben
 permanent auf `Open` (kein Resolve-Pfad); `Deferred` und
 `Trigger-Gated` durchlaufen typischerweise `Open` → `In
@@ -56,120 +60,72 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 ## 2. Aktive Carveouts
 
-**Lesefuehrung (Neuordnung 2026-06-12, Post-M7-Index-Sweep):**
-§2 ist nach Lebenszyklus geordnet und monoton nummeriert —
-§2.1 (`Deferred`/`Pattern-Forward`, Aktivierung per Mandat) →
-§2.2..§2.6 (`Trigger-Gated`, je formales `open/`-Trigger-Doc;
-zusammen 21 offene Trigger = `open/`-Bestand) → §2.7
-(`Out-of-Scope`, permanent). **§2.1 und §2.7 behalten bewusst
-ihre historischen Nummern** (die „§2.7-Auflage" ist in
-`docs/user/` + `roadmap.md` + `done/`-Wellen-Docs als
-normativer Anker zitiert). Alle uebrigen Sektionen wurden
-umnummeriert bzw. (vollstaendig aufgeloeste) nach §3
-ueberfuehrt — die **Nummern-Historie-Map in §3** uebersetzt
-Alt-Referenzen aus `done/`-Docs.
+**Lesefuehrung (Neuordnung 2026-06-12):** §2.1 ist **eine**
+Tabelle aller aktivierbaren Carveouts — 7 `Deferred`/
+`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 21
+`Trigger-Gated` (`T-nnn` = `open/`-Trigger-Nummer; zusammen
+deckungsgleich mit dem `open/`-Bestand). Begruendungen sind per
+ID nach §2.2 ausgelagert; fuer `T-nnn` traegt das Trigger-Doc
+Begruendung + erwartete Lieferung. **Keine Status-Spalte**:
+alles in §2 ist per Definition offen (Aufgeloestes → §3, dort
+auch die Nummern-Historie-Map). §2.7 (Permanent
+`Out-of-Scope`) behaelt seine gepinnte Nummer — die
+„§2.7-Auflage" ist repo-weit als normativer Anker zitiert;
+daher die bewusste Nummern-Luecke §2.3..§2.6.
 
-| Kategorie | Sektionen | Bestand |
-| --------- | --------- | ------- |
-| `Deferred` / `Pattern-Forward` — kein Trigger, Aktivierung per Mandat | §2.1 (M5-Erbschaft) | 6 + 1 Items |
-| `Trigger-Gated` — formales `open/`-Trigger-Doc | §2.2 (SOLLTE-Geraete/Netz, 9) · §2.3 (Tooling/Build, 6) · §2.4 (Forschung/Spike, 2) · §2.5 (Multi-Node, 1) · §2.6 (M7-Replay-/Abnahme-Folge, 3) | 21 offene `open/`-Trigger |
-| `Out-of-Scope` — permanent, kein Aufloesungs-Plan | §2.7 | 6 Items |
-| Aufgeloest | → §3 (inkl. Nummern-Historie-Map) | — |
+### 2.1 Aktivierbare Carveouts (7 per Mandat + 21 per Trigger)
 
-### 2.1 M5-Erbschaft fuer M6+ (6 `Deferred` + 1 `Pattern-Forward`)
+| ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
+| -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
+| D-1 | Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | M5-Erbschaft | `Deferred` | M5-Welle 1 (Stub) + ADR 0015 v2 | Replay-/Export-Konsument braucht den vollen Envelope-Body ueber HTTP | — |
+| D-2 | CSV/JSONL-Export-Endpunkte | M5-Erbschaft | `Deferred` | M5-Welle 6c §1.3 + `GG-ACCEPT-003` | konkreter Abnahme-/Analyse-Bedarf an Datei-Export | — |
+| D-3 | Inline-SVG-Geraete-Grafik | M5-Erbschaft | `Deferred` | M5-Welle 6b §1.3 + Decision 23 | UI-Polish-Mandat | — |
+| D-4 | Dynamische Fault-Activation ueber `POST /faults` | M5-Erbschaft | `Deferred` | M5-Welle 6a Decision 19 | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | — |
+| D-5 | URL-Versionierung `/api/v1`-Mount-Prefix | M5-Erbschaft | `Deferred` | M5-Welle 6b §10.1 URL-Realization-Note | vor der naechsten URL-Kollision / dem naechsten Endpoint-Schub | — |
+| D-6 | WebSocket-Live-Stream `/devices` | M5-Erbschaft | `Deferred` | M5-Welle 6b §1.3 | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | — |
+| D-7 | Welle-3-Pre-init-Defense-Pattern verallgemeinern | M5-Erbschaft | `Pattern-Forward` | M5-Welle 6b Review-Folge F2 (`cd7cfc6`) | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | — |
+| T-016 | EV-Charger-Device (`GG-DEV-015`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`016`](../open/016-sollte-ev-charger-device.md) |
+| T-017 | Transformer-Device (`GG-DEV-016`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`017`](../open/017-sollte-transformer-device.md) |
+| T-018 | Wind-Device (`GG-DEV-017`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`018`](../open/018-sollte-wind-device.md) |
+| T-019 | Diesel-Device (`GG-DEV-018`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`019`](../open/019-sollte-diesel-device.md) |
+| T-020 | Inselnetz-Bilanzmodell (`GG-GRID-005`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`020`](../open/020-sollte-island-grid.md) |
+| T-021 | Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`021`](../open/021-sollte-transformer-limits.md) |
+| T-022 | Blindleistung im Netzbilanzmodell (`GG-GRID-007`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`022`](../open/022-sollte-reactive-power.md) |
+| T-023 | Battery-Temperatur-Telemetry (`GG-BESS-006`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`023`](../open/023-sollte-battery-temperature.md) |
+| T-024 | Battery-Zellspannung-Telemetry (`GG-BESS-007`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`024`](../open/024-sollte-battery-cell-voltage.md) |
+| T-004 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004`](../open/004-canonical-encoder-alternative-adr.md) |
+| T-005 | Pyright-vs-mypy-Re-Eval | Tooling/Build | `Trigger-Gated` | M1-Tooling | sobald `ports/*` Generic-Protocols einfuehrt | [`005`](../open/005-pyright-vs-mypy-reeval.md) |
+| T-007 | Pyright-als-Pre-Commit-Hook-ADR | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei Editor-Parity-Druck | [`007`](../open/007-pyright-precommit-adr.md) |
+| T-011 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
+| T-032 | Release-Workflow-Sensor-Run-Verifikation (erstes reales Release steht aus) | Tooling/Build | `Trigger-Gated` | M6-Welle-2-DoD-Rest | erster echter `v*.*.*`-Tag-Push ODER Compliance-Druck | [`032`](../open/032-release-workflow-sensor-run.md) |
+| T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (Temp-Deferral via vulnignore aktiv, ADR 0044; `expires: 2026-06-20`) | Tooling/Build | `Trigger-Gated` | M6-Welle-3-Post-Push | OTel-Collector-Release > 0.153.0 mit `go1.26.4+` ODER Compliance-Druck ODER vulnignore-`expires` 2026-06-20 | [`033`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
+| T-030 | Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forschung/Spike | `Trigger-Gated` | M3-Welle-7 Decision (C3) | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030`](../open/030-rl-adapter.md) |
+| T-026 | BESS-Simulation Reserve-Market-Spike | Forschung/Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026`](../open/026-bess-simulation-reserve-market-spike.md) |
+| T-037 | `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen, Rollback-Strategie | Multi-Node | `Trigger-Gated` | M6-Welle-6-Audit | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037`](../open/037-deploy-007-010-multi-node-deployment.md) |
+| T-038 | Volle `GG-TERM-002/003`-Equality-Matrix (M7 liefert MVP-Preflight ueber 5 `RunMetadata`-Felder) | M7-Erbschaft | `Trigger-Gated` | M7-Welle-1b-a-D-6 | Compliance-/Audit-Bedarf ODER Multi-Plattform-/Multi-Adapter-Replay | [`038`](../open/038-gg-term-002-003-full-equality-matrix.md) |
+| T-039 | Oeffentliche API-Replay-Bedienung (`POST /runs` `replay_of` + Migration) | M7-Erbschaft | `Trigger-Gated` | M7-Welle-1b-b-D-7 | Stakeholder-Forderung nach API-Replay ODER Compliance-Bedarf persistente Referenz-Bindung | [`039`](../open/039-api-replay-trigger-surface.md) |
+| T-040 | Core-Run-End-Naht fuer `TickLoop.finalize()` (`make accept` faehrt Replay-Step standalone) | M7-Erbschaft | `Trigger-Gated` | M7-W1b-b-Review F4 / Welle 2 | Headless-Replay-Validierung im Abnahme-Pfad ODER Auto-`completed`-Transition | [`040`](../open/040-replay-finalize-headless-run-end-seam.md) |
 
-Quelle: [`../done/M5-results.md §5`](../done/M5-results.md)
-„Welle-7-Erbschaft fuer M6+" + §8 „Nicht-vollzogene Items".
-**Post-M7-Index-Sweep 2026-06-12:** Begruendungs-Spalte aus den
-Quell-Dokumenten nachgetragen + stale „M6 …"-Aktivierungen
-(M6/M7 sind abgeschlossen, kein Item wurde aktiviert) auf
-Bedarfs-Bedingungen umgestellt — kein Lastenheft-MUSS haengt an
-diesen Items; deshalb auch kein `open/`-Trigger-Doc (Pflicht
-nur fuer `Trigger-Gated`, §1-Konvention).
+### 2.2 Begruendungen (per ID)
 
-| Item | Typ | Quell-Welle | Status | Aktivierungs-Bedingung | Begruendung (warum vertagt) | Trigger-Doc |
-| ---- | --- | ----------- | ------ | ---------------------- | --------------------------- | ----------- |
-| Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | `Deferred` | Welle 1 (Stub) + ADR 0015 v2 | Open | Replay-/Export-Konsument braucht den vollen Envelope-Body ueber HTTP | `GET /snapshot` liefert den `schema_ref`-Pointer — das erfuellt die Akzeptanz; volle Body-Serialisierung ist ADR-0015-v2-Erbschaft ohne MUSS-ID-Anker (der Replay-Pfad liest seit M7-Welle-1b direkt aus `telemetry_points`, nicht ueber HTTP) | — (kein Open-Trigger) |
-| CSV/JSONL-Export-Endpunkte | `Deferred` | Welle 6c §1.3 + `GG-ACCEPT-003` | Open | konkreter Abnahme-/Analyse-Bedarf an Datei-Export | WS-Streams sind die dokumentierte Export-Surface (Welle-6c-Abnahmedoku); Datei-Export ist `GG-ACCEPT-003`-SOLLTE-Material ohne aktuellen Abnahme-Bedarf | — |
-| Inline-SVG-Geraete-Grafik | `Deferred` | Welle 6b §1.3 + Decision 23 | Open | UI-Polish-Mandat | `GG-UI-006`-Akzeptanz ist durch die HTMX-Polling-Tabelle erfuellt (Welle 6b, Decision 23); SVG-Grafik ist reiner UI-Polish ohne ID-Anker | — |
-| Dynamische Fault-Activation ueber `POST /faults` | `Deferred` | Welle 6a Decision 19 | Open | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | `POST /faults` ist bewusst Form-Validation-only (Decision 19); YAML-seitige Fault-Injection (`GG-DEMO-006`, M5-Welle-6a) deckt den Demo-/Abnahme-Bedarf | — |
-| URL-Versionierung `/api/v1`-Mount-Prefix | `Deferred` | Welle 6b §10.1 URL-Realization-Note | Open | vor der naechsten URL-Kollision / dem naechsten Endpoint-Schub | reine Konventions-Konsolidierung („natuerliche-URL-UI + suffixed-URL-JSON"-Pattern, §10.1) ohne Verhaltens-Effekt; lohnt erst, bevor neue Endpoints den Mismatch reproduzieren | — |
-| WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker | — |
-| Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7) | — |
+Nur `D-n`- und `P-n`-Eintraege — fuer `T-nnn` tragen die
+`open/`-Trigger-Docs Begruendung + erwartete Lieferung.
 
-### 2.2 M2-Erbschaft (SOLLTE-Geraete + Netzbilanz, 9 Items)
-
-Quelle: [`../done/M2-devices-results.md §5`](../done/M2-devices-results.md) +
-[`../done/M3-results.md §5`](../done/M3-results.md) +
-[`../done/M4-results.md §5`](../done/M4-results.md) (Re-Triage).
-
-Alle 9 Items haben `Typ = Trigger-Gated`; Aktivierungs-
-Bedingung pro Item: „wenn konkreter Bedarf — eigener Slice".
-
-| Item | Lastenheft-ID | Status | Trigger-Doc |
-| ---- | ------------- | ------ | ----------- |
-| EV-Charger-Device | `GG-DEV-015` | In Trigger Watch | [`016-sollte-ev-charger-device.md`](../open/016-sollte-ev-charger-device.md) |
-| Transformer-Device | `GG-DEV-016` | In Trigger Watch | [`017-sollte-transformer-device.md`](../open/017-sollte-transformer-device.md) |
-| Wind-Device | `GG-DEV-017` | In Trigger Watch | [`018-sollte-wind-device.md`](../open/018-sollte-wind-device.md) |
-| Diesel-Device | `GG-DEV-018` | In Trigger Watch | [`019-sollte-diesel-device.md`](../open/019-sollte-diesel-device.md) |
-| Inselnetz-Bilanzmodell | `GG-GRID-005` | In Trigger Watch | [`020-sollte-island-grid.md`](../open/020-sollte-island-grid.md) |
-| Transformatorgrenzen im Netzbilanzmodell | `GG-GRID-006` | In Trigger Watch | [`021-sollte-transformer-limits.md`](../open/021-sollte-transformer-limits.md) |
-| Blindleistung im Netzbilanzmodell | `GG-GRID-007` | In Trigger Watch | [`022-sollte-reactive-power.md`](../open/022-sollte-reactive-power.md) |
-| Battery-Temperatur-Telemetry | `GG-BESS-006` | In Trigger Watch | [`023-sollte-battery-temperature.md`](../open/023-sollte-battery-temperature.md) |
-| Battery-Zellspannung-Telemetry | `GG-BESS-007` | In Trigger Watch | [`024-sollte-battery-cell-voltage.md`](../open/024-sollte-battery-cell-voltage.md) |
-
-### 2.3 Tooling- / Build- / Type-System-Trigger (6 Items)
-
-Quelle: [`../open/`](../open/). Alle Items haben `Typ =
-Trigger-Gated`. (Zwei in M6 aufgeloeste Items — `make sbom`
-Trigger 008 + `fullbuild`-CI-Gate Trigger 031 — beim
-Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt.)
-
-| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------ | ---------------------- | ----------- |
-| Canonical-Encoder-Alternative-ADR (orjson, msgspec) | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
-| Pyright-vs-mypy-Re-Eval | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
-| Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
-| `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
-| Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
-| OTel-Collector Go-stdlib CVE-2026-42504-Bump (`make fullbuild`-Defer; M6-Welle-3-Post-Push-`ede21ad`-Aufdeckung) | **Temp-Deferral aktiv** seit M6-Welle-4a-C2 `8fbd17c` (NEU vulnignore-Pattern + ADR-0044; CI gruen via generierter `.trivyignore` mit `expires: 2026-06-20`); In Trigger Watch fuer echte Aufloesung | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build (erwartet 2026-06-09..06-12 per ~14-Tage-Kadenz) ODER Compliance-Druck ODER vulnignore-`expires`-Schwelle 2026-06-20 | [`033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
-
-### 2.4 Forschungs- / Spike-Trigger (2 Items)
-
-Zwei Einzel-Item-Domaenen-Trigger (vorher eigene Sektionen
-alt-§2.3 + alt-§2.6; bei der Neuordnung 2026-06-12 fusioniert).
-
-| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | --- | ------ | ------ | ---------------------- | ----------- |
-| Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | `Trigger-Gated` | M3-Welle-7 Decision (C3); [`../done/M3-results.md §5`](../done/M3-results.md) | In Trigger Watch | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030-rl-adapter.md`](../open/030-rl-adapter.md) |
-| BESS-Simulation Reserve-Market-Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
-
-### 2.5 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge, 1 Item)
-
-Quelle: [`../open/`](../open/) + Trigger
-[`037`](../open/037-deploy-007-010-multi-node-deployment.md).
-Alle Items haben `Typ = Trigger-Gated`; aus dem M6-Welle-6-
-Deploy-Hardening-Audit hervorgegangen. `GG-DEPLOY-007..010`
-bleiben Post-MVP/M7+-Material, bis ein konkreter Multi-Node-,
-Skalierungs- oder Compliance-Anker vorliegt.
-
-| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------ | ---------------------- | ----------- |
-| `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen und Rollback-Strategie | In Trigger Watch | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037-deploy-007-010-multi-node-deployment.md`](../open/037-deploy-007-010-multi-node-deployment.md) |
-
-### 2.6 M7-Erbschaft: Replay-/Abnahme-Folge-Trigger (3 Items)
-
-Quelle: [`../open/`](../open/) + M7-Welle-1b-/Welle-2-Scope-
-Entscheide (siehe [`../done/M7-results.md §5`](../done/M7-results.md)).
-Alle Items haben `Typ = Trigger-Gated`; in M7 als dokumentierte
-Scope-Carveouts eroeffnet, beim M7-Closure (Welle-X, 2026-06-12)
-in den Index nachgetragen.
-
-| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------ | ---------------------- | ----------- |
-| Volle `GG-TERM-002/003`-Equality-Matrix (`platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash`; M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber 5 `RunMetadata`-Felder) | In Trigger Watch | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay | [`038-gg-term-002-003-full-equality-matrix.md`](../open/038-gg-term-002-003-full-equality-matrix.md) |
-| Oeffentliche API-Replay-Bedienung (`POST /runs` `replay_of` + `RunMetadata`-Spalte + Migration; M7-Welle-1b-b haelt die Referenz-Bindung per 1b-b-D-7 Runtime-/Test-/Demo-intern) | In Trigger Watch | Reviewer-/Stakeholder-Forderung nach API-getriggertem Replay ODER Compliance-Bedarf fuer persistente Referenz-Bindung | [`039-api-replay-trigger-surface.md`](../open/039-api-replay-trigger-surface.md) |
-| Core-Run-End-Naht fuer `TickLoop.finalize()` (heute Driver-getriggert; Headless-Runner / natuerliche Terminierung / Tick-Failure feuern den Replay-Diff nicht — `make accept` faehrt den Replay-Step deshalb standalone) | In Trigger Watch | Headless-Replay-Validierung im Abnahme-Pfad ODER Auto-`completed`-Transition | [`040-replay-finalize-headless-run-end-seam.md`](../open/040-replay-finalize-headless-run-end-seam.md) |
+| ID | Begruendung (warum vertagt / warum out-of-scope) |
+| -- | ------------------------------------------------ |
+| D-1 | `GET /snapshot` liefert den `schema_ref`-Pointer — das erfuellt die Akzeptanz; volle Body-Serialisierung ist ADR-0015-v2-Erbschaft ohne MUSS-ID-Anker (der Replay-Pfad liest seit M7-Welle-1b direkt aus `telemetry_points`, nicht ueber HTTP). |
+| D-2 | WS-Streams sind die dokumentierte Export-Surface (Welle-6c-Abnahmedoku); Datei-Export ist `GG-ACCEPT-003`-SOLLTE-Material ohne aktuellen Abnahme-Bedarf. |
+| D-3 | `GG-UI-006`-Akzeptanz ist durch die HTMX-Polling-Tabelle erfuellt (Welle 6b, Decision 23); SVG-Grafik ist reiner UI-Polish ohne ID-Anker. |
+| D-4 | `POST /faults` ist bewusst Form-Validation-only (Decision 19); YAML-seitige Fault-Injection (`GG-DEMO-006`, M5-Welle-6a) deckt den Demo-/Abnahme-Bedarf. |
+| D-5 | Reine Konventions-Konsolidierung („natuerliche-URL-UI + suffixed-URL-JSON"-Pattern, §10.1) ohne Verhaltens-Effekt; lohnt erst, bevor neue Endpoints den Mismatch reproduzieren. |
+| D-6 | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker. |
+| D-7 | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7). |
+| P-1 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
+| P-2 | UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-ID verlangt; IP-/Netz-Beschraenkung ist im Demo-Compose verankert (separate Auflagen-Schicht, kein einzelner Lastenheft-ID). `GG-SAFE-008` ist davon abzugrenzen — verlangt **externe Eingabevalidierung an REST/WS/Adapter-Schnittstellen** (M6-Security-Welle, siehe `M6-welle-0.md §1.3`). |
+| P-3 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
+| P-4 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
+| P-5 | Voller Anlagen-Schaltplan ist Post-MVP-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |
+| P-6 | `done/M5-results.md` ist Maintainer-Closure-Artefakt; `docs/user/gg-demo-008-abnahme.md` erfuellt `GG-DEMO-008`. End-User-Tutorial waere ein eigener Slice-Trigger (kein eingeplantes Ziel-M). |
 
 ### 2.7 Permanent (`Out-of-Scope`)
 
@@ -178,24 +134,24 @@ Quelle: [`../done/M5-results.md §8`](../done/M5-results.md) +
 [`../done/M3-results.md §7`](../done/M3-results.md). Diese
 Items haben **keinen Aufloesungs-Plan** im Repo — entweder
 strukturell ausgeschlossen (Lastenheft) oder bedingungs-
-optional (z. B. „nur bei Stakeholder-Druck").
+optional (z. B. „nur bei Stakeholder-Druck"). Begruendung per
+ID in §2.2.
 
-| Item | Typ | Quelle | Begruendung |
-| ---- | --- | ------ | ----------- |
-| Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
-| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration | UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-ID verlangt; IP-/Netz-Beschraenkung ist im Demo-Compose verankert (separate Auflagen-Schicht, kein einzelner Lastenheft-ID). `GG-SAFE-008` ist davon abzugrenzen — `GG-SAFE-008` verlangt **externe Eingabevalidierung an REST/WS/Adapter-Schnittstellen** und gehoert zur M6-Security-Welle (siehe `M6-welle-0.md §1.3`). |
-| SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
-| Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
-| Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik §2.1) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 | Voller Anlagen-Schaltplan ist M6+-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |
-| End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 | `done/M5-results.md` ist Maintainer-Closure-Artefakt; `docs/user/gg-demo-008-abnahme.md` erfuellt `GG-DEMO-008`. End-User-Tutorial waere ein eigener Slice-Trigger (kein eingeplantes Ziel-M). |
+| ID | Item | Typ | Quelle |
+| -- | ---- | --- | ------ |
+| P-1 | Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 |
+| P-2 | Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration |
+| P-3 | SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 |
+| P-4 | Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 |
+| P-5 | Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik D-3) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 |
+| P-6 | End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 |
 
 **Konvention fuer `Out-of-Scope`-Eintraege:** bleiben
 permanent im Index, wandern **nicht** in §3 Resolved.
 Falls Stakeholder-Druck oder Lastenheft-Aenderung das
 Item ploetzlich aktiv werden laesst, wandert es per
-Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
-(z. B. `Trigger-Gated` mit neu erstelltem `open/`-
-Trigger-Doc).
+Lifecycle-Klausel (§4) nach §2.1 um (Typ-Wechsel zu
+`Trigger-Gated` mit neu erstelltem `open/`-Trigger-Doc).
 
 ---
 
@@ -211,17 +167,17 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 
 | Alt | Inhalt | Neu |
 | --- | ------ | --- |
-| §2.1 M5-Erbschaft | `Deferred`/`Pattern-Forward` | §2.1 (unveraendert) |
+| §2.1 M5-Erbschaft | `Deferred`/`Pattern-Forward` | §2.1-Tabelle, Zeilen D-1..D-7 |
 | §2.2 M4-Erbschaft | IEC-Smoke + krb5-Bump (aufgeloest in M6) | → §3-Zeilen |
-| §2.3 M3-Erbschaft (RL-Adapter) | Trigger 030 | §2.4 |
-| §2.4 M2-Erbschaft (SOLLTE) | Trigger 016..024 | §2.2 |
-| §2.5 Tooling/Build | Trigger 004/005/007/011/032/033 (008/031 aufgeloest → §3) | §2.3 |
-| §2.6 Spike-Optional | Trigger 026 | §2.4 |
-| §2.7 Permanent | `Out-of-Scope` („§2.7-Auflage") | §2.7 (unveraendert, bewusst gepinnt) |
+| §2.3 M3-Erbschaft (RL-Adapter) | Trigger 030 | §2.1-Tabelle, Zeile T-030 |
+| §2.4 M2-Erbschaft (SOLLTE) | Trigger 016..024 | §2.1-Tabelle, Zeilen T-016..T-024 |
+| §2.5 Tooling/Build | Trigger 004/005/007/011/032/033 (008/031 aufgeloest → §3) | §2.1-Tabelle, Zeilen T-004..T-033 |
+| §2.6 Spike-Optional | Trigger 026 | §2.1-Tabelle, Zeile T-026 |
+| §2.7 Permanent | `Out-of-Scope` („§2.7-Auflage") | §2.7 (unveraendert, bewusst gepinnt; Zeilen P-1..P-6, Begruendungen in §2.2) |
 | §2.8 M6-Vorbelegung | aufgeloest mit M6-Closure | → §3-Zeile |
 | §2.9 Quality-Pipeline-Audit | Trigger 034/035 (geschlossen in M7-Welle-3) | → §3-Zeilen |
-| §2.10 Multi-Node-Familie | Trigger 037 | §2.5 |
-| §2.11 M7-Erbschaft | Trigger 038/039/040 | §2.6 |
+| §2.10 Multi-Node-Familie | Trigger 037 | §2.1-Tabelle, Zeile T-037 |
+| §2.11 M7-Erbschaft | Trigger 038/039/040 | §2.1-Tabelle, Zeilen T-038..T-040 |
 
 | Item | Geloest mit | Resolution-Hash |
 | ---- | ----------- | --------------- |
