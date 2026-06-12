@@ -28,7 +28,7 @@ Konvention),
 Pattern — diese ADR ist Schaerfung von ADR 0013 §2.4 fuer den
 Battery-spezifischen Snapshot-Vertrag, kein Supersedes).
 M2-Slice-Plan
-[`done/M2-devices.md`](../planning/done/M2-devices.md)
+[`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
 §3 Welle 2. Lastenheft §10 (`GG-BESS-001..008`),
 §9.1 (`GG-DEV-010`).
 

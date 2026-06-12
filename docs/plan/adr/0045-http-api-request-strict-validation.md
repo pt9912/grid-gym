@@ -321,7 +321,7 @@ ADR 0045 §2.1 fuer `RunCreateRequest` nicht erfuellt
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 produktive Implementation der §2-Entscheidung leben in der
 zugehoerigen Slice-Doc
-[`M6-welle-5b.md`](../planning/done/M6-welle-5b.md).
+[`M6-welle-5b.md`](../planning/done-archive/M6-welle-5b.md).
 Status-Pfad (`Proposed → Provisional → Accepted`): siehe
 Status-Header dieser ADR.
 

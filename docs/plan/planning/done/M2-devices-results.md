@@ -4,8 +4,8 @@
 `make fullbuild` cache-frei gruen **ohne**
 `CRITICAL_COV_TARGETS`-Override seit Welle-6c-Feat
 (`c31052c`).
-**Bezug:** Slice-Plan [`M2-devices.md`](M2-devices.md);
-Welle-6c-Slice-Begleit [`welle-6c.md`](welle-6c.md);
+**Bezug:** Slice-Plan [`M2-devices.md`](../done-archive/M2-devices.md);
+Welle-6c-Slice-Begleit [`welle-6c.md`](../done-archive/welle-6c.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §3 M2.
 
@@ -19,17 +19,17 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | 0b    | 2026-05-18  | Trigger 015 (Runtime-Image-Hardening) — Vorabraeumung S-4                                                                                             | `ee37f36` |
 | 0c    | 2026-05-18  | S-6 Lastenheft-Coverage-Sweep                                                                                                                         | `314f853` |
 | 0-RF  | 2026-05-18  | Welle-0-Review-Fixes                                                                                                                                  | `d490905`, `51a5f4e`, `6d39c7a`, `df99d97`, `6e108d6` |
-| 1     | 2026-05-18  | ADR 0013 `DeviceModel`-Protocol; `core/devices/_protocol.py` + Protocol-Adherence-Test (`NullDevice`)                                                 | `b927e7a` + Review-Folge (`88252f1`, `9a61823`, `129c137`, `a6c912c`, `6e108d6`) |
-| 2     | 2026-05-18  | ADR 0014 Battery-Snapshot-Schema; `BatteryDevice` mit SOC/Ramp/Wirkungsgrad; Trigger 013 mechanisch geschlossen                                       | `6247228`, `48f0106`, `5866117`, `9a138c2` + Review-Folge (`4600e79`, `eb09e9b`, `d7bc2d9`, `f4988ff`, `bd13882`) |
-| 3a    | 2026-05-18  | ADR 0016 PV-Pattern; `PvDevice` mit konstantem `rated_power_kw`                                                                                       | `2abbd12` + Review-Folge |
-| 3b    | 2026-05-18  | ADR 0016 Load-Pattern (gemeinsame ADR); `LoadDevice` mit `set_power_kw`-Command                                                                       | `e5d3c9a` + Review-Folge (`6cad963`, `ea875c3`, `60582e7`, `45a9be6`, `b4e3ce7`) |
-| 4a    | 2026-05-19  | ADR 0017 GridConnection-Pattern; `GridConnectionDevice` stateful `import_kwh`/`export_kwh`                                                            | `b73b44a` + Review-Folge (`579cd5a`, `1ed976a`, `7ad78e4`, `bdce682`) |
-| 4b    | 2026-05-19  | ADR 0018 SmartMeter-Pattern; `SmartMeterDevice` mit `attach_sources`                                                                                  | `94efb2a` + Review-Folge (`1093b2c`, `bc94a8c`, `d3769dc`, `85dced7`) |
-| 5a    | 2026-05-19  | ADR 0019 GridModelBilanz; Frequenz/Spannung-Pfade                                                                                                     | `268a1c0` + Review-Folge (`676f684`, `16f8b9b`, `91e0118`, `1af57b8`) |
-| 5b    | 2026-05-19  | ADR 0020 LoadProfile + LoadEvent; `CRITICAL_COV_TARGETS` Default um `core/grid_model` erweitert; M2-Default-Gate erstmals ohne Override gruen          | `fa02c0b` + Review-Folge (`5f64f78`, `47c054a`, `12ad8f9`, `e5f8f86`, `29d23bb`) |
-| 6a    | 2026-05-19  | ADR 0015 Snapshot-Envelope-v2 (Provisional); TickLoop iteriert Devices + ruft `grid_model.update`; Sub-Snapshots `devices.<typ>.<id>` + `grid_model`; `TickLoopSnapshotVersionError` | `27a441f` + Review-Folge (`ff45c11`, `e3909f0`, `f7f21a6`, `da8deef`, `779fcea`) + Doc-Sync `765d348` |
-| 6b    | 2026-05-19  | ADR 0021 Scenario-Loader + TickLoop-Event-Wiring (Provisional); `build_devices`/`build_tick_loop`; LoadEvent/LoadProfile-Wiring; GridConnection-Auto-Schluss; 14 Review-Findings in feat-Commit                | `8c26498` (ADR-Proposed), `c58dbc2` (ADR-Round-1), `0f1c597` (feat + Review-Folge), `93f784f` (Doc-Sync) |
-| 6c    | 2026-05-20  | MVP-Demo-Szenario `tests/integration/scenarios/mvp_demo.yaml`; Determinismus-Integrationstest + Postgres-Roundtrip; Permutations-Property-Test; ADR 0015 + 0021 → `Accepted`; 2 Review-Folge-Commits         | `8a3aa2f`, `c31052c`, `6adb041`, `43aabbd`, `7a3c171` |
+| 1     | 2026-05-18  | [`ADR 0013`](../../adr/0013-device-model-protocol.md) `DeviceModel`-Protocol; `core/devices/_protocol.py` + Protocol-Adherence-Test (`NullDevice`)                                                 | `b927e7a` + Review-Folge (`88252f1`, `9a61823`, `129c137`, `a6c912c`, `6e108d6`) |
+| 2     | 2026-05-18  | [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) Battery-Snapshot-Schema; `BatteryDevice` mit SOC/Ramp/Wirkungsgrad; Trigger 013 mechanisch geschlossen                                       | `6247228`, `48f0106`, `5866117`, `9a138c2` + Review-Folge (`4600e79`, `eb09e9b`, `d7bc2d9`, `f4988ff`, `bd13882`) |
+| 3a    | 2026-05-18  | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) PV-Pattern; `PvDevice` mit konstantem `rated_power_kw`                                                                                       | `2abbd12` + Review-Folge |
+| 3b    | 2026-05-18  | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) Load-Pattern (gemeinsame ADR); `LoadDevice` mit `set_power_kw`-Command                                                                       | `e5d3c9a` + Review-Folge (`6cad963`, `ea875c3`, `60582e7`, `45a9be6`, `b4e3ce7`) |
+| 4a    | 2026-05-19  | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) GridConnection-Pattern; `GridConnectionDevice` stateful `import_kwh`/`export_kwh`                                                            | `b73b44a` + Review-Folge (`579cd5a`, `1ed976a`, `7ad78e4`, `bdce682`) |
+| 4b    | 2026-05-19  | [`ADR 0018`](../../adr/0018-smart-meter-device-pattern.md) SmartMeter-Pattern; `SmartMeterDevice` mit `attach_sources`                                                                                  | `94efb2a` + Review-Folge (`1093b2c`, `bc94a8c`, `d3769dc`, `85dced7`) |
+| 5a    | 2026-05-19  | [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md) GridModelBilanz; Frequenz/Spannung-Pfade                                                                                                     | `268a1c0` + Review-Folge (`676f684`, `16f8b9b`, `91e0118`, `1af57b8`) |
+| 5b    | 2026-05-19  | [`ADR 0020`](../../adr/0020-load-profile-and-event-pattern.md) LoadProfile + LoadEvent; `CRITICAL_COV_TARGETS` Default um `core/grid_model` erweitert; M2-Default-Gate erstmals ohne Override gruen          | `fa02c0b` + Review-Folge (`5f64f78`, `47c054a`, `12ad8f9`, `e5f8f86`, `29d23bb`) |
+| 6a    | 2026-05-19  | [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) Snapshot-Envelope-v2 (Provisional); TickLoop iteriert Devices + ruft `grid_model.update`; Sub-Snapshots `devices.<typ>.<id>` + `grid_model`; `TickLoopSnapshotVersionError` | `27a441f` + Review-Folge (`ff45c11`, `e3909f0`, `f7f21a6`, `da8deef`, `779fcea`) + Doc-Sync `765d348` |
+| 6b    | 2026-05-19  | [`ADR 0021`](../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md) Scenario-Loader + TickLoop-Event-Wiring (Provisional); `build_devices`/`build_tick_loop`; LoadEvent/LoadProfile-Wiring; GridConnection-Auto-Schluss; 14 Review-Findings in feat-Commit                | `8c26498` (ADR-Proposed), `c58dbc2` (ADR-Round-1), `0f1c597` (feat + Review-Folge), `93f784f` (Doc-Sync) |
+| 6c    | 2026-05-20  | MVP-Demo-Szenario `tests/integration/scenarios/mvp_demo.yaml`; Determinismus-Integrationstest + Postgres-Roundtrip; Permutations-Property-Test; [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) + 0021 → `Accepted`; 2 Review-Folge-Commits         | `8a3aa2f`, `c31052c`, `6adb041`, `43aabbd`, `7a3c171` |
 | 7     | 2026-05-20  | Closure: Slice-Plan + `welle-6c.md` nach `done/`; `M2-devices-results.md`; 9 SOLLTE-Open-Trigger (`016..024`); `roadmap.md` M2 → `Done`, M3 → naechster aktiver Slice                                          | dieser Commit-Stack |
 
 ## 2. Abnahme-Belege
@@ -100,7 +100,7 @@ Spiegelt das M1-Welle-7-Pattern (siehe
 
 - **S-1 (Trigger 014, generic snapshot codec)** —
   erfuellt in Welle 0a (`3322cb8`); Closure-Notiz in
-  [`done/014-generic-snapshot-format-codec.md`](014-generic-snapshot-format-codec.md).
+  [`done/014-generic-snapshot-format-codec.md`](../done-archive/014-generic-snapshot-format-codec.md).
 - **S-2 (Sub-Slicing-Heuristik)** — erfuellt in
   `M2-devices.md §3 Sub-Slicing-Schwelle`; aktiv eingesetzt
   fuer Wellen 0 (0a/0b/0c), 3 (3a/3b), 4 (4a/4b),
@@ -110,11 +110,11 @@ Spiegelt das M1-Welle-7-Pattern (siehe
   `make fullbuild` cache-frei gruen **ohne** Override.
 - **S-4 (Trigger 015, runtime image hardening)** —
   erfuellt in Welle 0b (`ee37f36`); Closure-Notiz in
-  [`done/015-runtime-image-hardening.md`](015-runtime-image-hardening.md).
+  [`done/015-runtime-image-hardening.md`](../done-archive/015-runtime-image-hardening.md).
 - **S-5 (ADR-Erweiterungs-Pattern, ohne Supersedes)** —
   erfuellt durch 9 neue ADRs (0013..0021), alle als
-  Erweiterungen ohne Supersedes (ADR 0011 Pattern
-  konsequent fortgefuehrt). ADR 0015 (Snapshot-Envelope
+  Erweiterungen ohne Supersedes ([`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) Pattern
+  konsequent fortgefuehrt). [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) (Snapshot-Envelope
   v1→v2) ist der einzige strukturierende Bruch im
   Sub-Snapshot-Vertrag und mit `TickLoopSnapshotVersionError`
   fail-fast erzwungen.
@@ -164,7 +164,7 @@ Pfad bleibt M6-Material (`GG-PERSIST-*`-Slice).
 - ✓ `in-progress/M2-devices.md` (vollzogen 2026-05-18 mit
   Welle-0a-Start) → ✓ `done/M2-devices.md` (vollzogen
   2026-05-20 mit Welle-7-Closure-Commit-Stack); Forwarder-
-  Stub bleibt in `in-progress/` per ADR 0006 §3
+  Stub bleibt in `in-progress/` per [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3
   (Accepted-ADRs zeigen weiterhin auf den `in-progress/`-
   Pfad).
 - ✓ `in-progress/welle-6c.md` (Slice-Begleit, vollzogen

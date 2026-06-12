@@ -37,7 +37,7 @@ Adapter-Profile-Parsing hinzu, ohne den
 `TickLoopWiring`-Vertrag zu aendern) + §2.5
 (Scenario-YAML-Top-Level-Block-Pattern: Praezedenz fuer
 Decision 4a-Wahl),
-[`Trigger 014`](../planning/done/014-generic-snapshot-format-codec.md)
+[`Trigger 014`](../planning/done-archive/014-generic-snapshot-format-codec.md)
 (`canonical_json`-Source: M2-Welle-0a-Closure unter
 `src/grid_gym/hexagon/core/serialization/canonical.py`;
 Pattern-Praezedenz fuer Decision 4b deterministische
@@ -48,9 +48,9 @@ Encoder-Routine, ohne sie zu reimplementieren),
 Pointer — Welle 2 wrappt **noch keine** Adapter-Calls; das
 ist Welle-6-Material).
 M4-Slice-Plan
-[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 2; M4-Welle-0-Decision-Liste
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 Decision 4 (Profile-Deklaration) + Decision 5
 (Test-Sibling-Container) + Decision 6
 (`AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
@@ -68,7 +68,7 @@ eigener Compose-Service; **Mosquitto-Sibling ist
 Test-Infrastruktur unter `tests/integration/compose.yml`**,
 nicht im Produktions-Deployment).
 M3-Welle-6 als Pattern-Anker:
-[`done/M3-welle-6.md`](../planning/done/M3-welle-6.md) +
+[`done/M3-welle-6.md`](../planning/done-archive/M3-welle-6.md) +
 [`tests/integration/test_otlp_compose_smoke.py`](../../../tests/integration/test_otlp_compose_smoke.py)
 (testcontainers-Sibling-Pattern; Compose-Erweiterung um
 neuen Service; Healthcheck-Wait-Loop).
@@ -100,7 +100,7 @@ MQTT-Adapter notwendigen Sub-Entscheidungen **konkret**:
   Surface gemarshalt?
 
 Die M4-Welle-0-Decision-Liste
-([`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3)
+([`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3)
 hat Decision 4 als Adapter-spezifische Frage markiert
 („MQTT setzt das Pattern; Modbus + OPC-UA folgen oder
 schaerfen pro Adapter-ADR"). ADR 0031 entscheidet Decision
@@ -484,7 +484,7 @@ SDK uebernimmt).
   `mosquitto_sub -t '$SYS/broker/uptime' -C 1`. Port 1883
   exponiert. Lizenz EPL-2.0/EDL-1.0 (redistributable;
   Welle-0-Decision-5-Note in
-  [`done/M4-welle-0.md`](../planning/done/M4-welle-0.md)
+  [`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md)
   §3 hat die Vorabklaerung dokumentiert).
 - **`pyproject.toml`-Erweiterung:** `paho-mqtt>=2.0` in
   `[project] dependencies`. `paho`-Eintrag in den
@@ -502,7 +502,7 @@ SDK uebernimmt).
   Smoke-Regression-Schutz pruefen — der Welle-1-§7-
   Folge-Pflicht-Planted-Violator-Property-Test bleibt
   Welle-6-Material (siehe
-  [`../planning/done/M4-welle-1.md`](../planning/done/M4-welle-1.md)
+  [`../planning/done/M4-welle-1.md`](../planning/done-archive/M4-welle-1.md)
   §7 Folge-Mitigation; Welle-2-`M4-welle-2.md`
   §2-Anti-Scope hat den Verzicht normativ festgeschrieben).
 - **Scenario-Loader bleibt MQTT-frei** ([`AC-HEXAGON-PURE`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)):

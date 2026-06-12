@@ -25,12 +25,12 @@
 - [`ADR 0048`](0048-replay-snapshot-port-reconstruction.md) —
   `ReplaySnapshotPort` (1b-a); liefert `expected`/`actual`-
   `ReplaySample`-Sequenzen.
-- [`M7-welle-1b-b.md`](../planning/done/M7-welle-1b-b.md)
+- [`M7-welle-1b-b.md`](../planning/done-archive/M7-welle-1b-b.md)
   — Slice-Doc (Decisions 1b-b-D-0..D-9); ADR 0049 fixiert
   D-1..D-6.
-- [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
+- [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md) —
   [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (D-2/D-3).
-- [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [Trigger 036](../planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
   — wird mit 1b-b-C3 aufgeloest (`done/`).
 - [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-Matrix (Carveout).
@@ -261,7 +261,7 @@ Kwargs (`replay_snapshot`, `metrics_port`, `log_port`,
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-1b-b.md`](../planning/done/M7-welle-1b-b.md)
+Slice-Doc [`M7-welle-1b-b.md`](../planning/done-archive/M7-welle-1b-b.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Zwei-Lauf-Replay-Lifecycle-Smoke). Status-Pfad (`Proposed →
 Provisional → Accepted`): `Accepted` gezogen 2026-06-12 mit

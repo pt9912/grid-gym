@@ -63,13 +63,13 @@ Pflege als Maintenance-Edit),
 Supersedes-Pattern als Fallback bei Welle-6-OTLP-Compose-Smoke-Bruch,
 siehe §4.2),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md §3 Welle 5/6`](../planning/done/M3-faults-agents-observability.md),
+[`in-progress/M3-faults-agents-observability.md §3 Welle 5/6`](../planning/done-archive/M3-faults-agents-observability.md),
 Welle-5-Slice-Doc
-[`done/M3-welle-5.md §3`](../planning/done/M3-welle-5.md)
+[`done/M3-welle-5.md §3`](../planning/done-archive/M3-welle-5.md)
 (Welle-5-Triage-Vorgabe — diese ADR formalisiert die dort gesetzten
 Contracts),
 Welle-6-Slice-Doc
-[`done/M3-welle-6.md §3`](../planning/done/M3-welle-6.md)
+[`done/M3-welle-6.md §3`](../planning/done-archive/M3-welle-6.md)
 (Welle-6-C0-Decisions: gRPC-Transport, D-4 Span-Dauer-Quelle, Compose-
 Smoke-Determinismus — §4.5 unten nimmt sie normativ in diese ADR auf).
 
@@ -106,13 +106,13 @@ Reihenfolge-Vertraege, die Welle-5-Hooks **nicht antasten** duerfen
 (nur additive Anhaengung).
 
 `Open-Trigger 006` (`--strict-bytes`-Aktivierung,
-[`open/006-mypy-strict-bytes.md`](../planning/done/006-mypy-strict-bytes.md))
+[`open/006-mypy-strict-bytes.md`](../planning/done-archive/006-mypy-strict-bytes.md))
 ist potentieller Konsument: OTLP-Adapter (Welle 6) arbeitet auf
 Protobuf-Bytes-Pfaden. Welle 5 fuehrt **noch keinen** Bytes-Vertrag
 ein — Trigger 006 bleibt mit Welle-6-Aktivierungs-Notiz offen.
 
 Welle-5-Slice-Doc
-[`M3-welle-5.md §3`](../planning/done/M3-welle-5.md) hat die
+[`M3-welle-5.md §3`](../planning/done-archive/M3-welle-5.md) hat die
 Triage-Resultate vor C1 festgelegt; diese ADR schreibt sie normativ
 auf, ohne sie ergebnis-offen neu zu verhandeln.
 
@@ -395,7 +395,7 @@ mit der Welle-6-Lieferung.
   Adapter) vorbehalten.
 - **Null-Adapter mit Default-`call_count`/`last_call`:**
   Senkt das in
-  [`M3-welle-5.md §7 R-2`](../planning/done/M3-welle-5.md)
+  [`M3-welle-5.md §7 R-2`](../planning/done-archive/M3-welle-5.md)
   identifizierte Coverage-Risiko der Null-Default-Verdrahtung —
   Tests haben **immer** eine strukturierte Assertion-Surface, ohne
   explizit `record_calls=True` aktivieren zu muessen. Voll-History
@@ -418,7 +418,7 @@ mit der Welle-6-Lieferung.
 Diese ADR ist `Proposed` zum Zeitpunkt der M3-Welle-5-C1. Sie wird
 mit dem Welle-5-Merge auf `Provisional` gehoben, sofern der
 Lieferungs-Vertrag aus
-[`M3-welle-5.md §6 Verifikationspfad`](../planning/done/M3-welle-5.md)
+[`M3-welle-5.md §6 Verifikationspfad`](../planning/done-archive/M3-welle-5.md)
 gruen ist:
 
 - `make gates` A-1 ohne Override.
@@ -505,7 +505,7 @@ Adapter Welle-5-Vertrags-Stellen schaerfen:
 Diese Sektion loest die in §4.4 dokumentierten Welle-6-Forward-
 Pointer mit normativen C1.2-Entscheidungen auf und nimmt zusaetzlich
 die in
-[`M3-welle-6.md`](../planning/done/M3-welle-6.md)
+[`M3-welle-6.md`](../planning/done-archive/M3-welle-6.md)
 festgelegten C0-Decisions verbindlich in diese ADR auf. Schaerfung-
 ohne-Supersede per [`ADR 0011`](0011-schaerfung-ohne-abloesung.md).
 Folge-Vertraege gelten fuer den OTLP-Adapter in

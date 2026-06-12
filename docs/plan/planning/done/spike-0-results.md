@@ -2,7 +2,7 @@
 
 **Status:** Done — Spike-0 abgeschlossen 2026-05-15
 **Datum:** 2026-05-15
-**Bezug:** [`spike-0.md`](spike-0.md) §0 (Closure-Notiz),
+**Bezug:** [`spike-0.md`](../done-archive/spike-0.md) §0 (Closure-Notiz),
 [`ADR 0002`](../../adr/0002-language-and-build-stack.md) (`Accepted`),
 [`ADR 0005`](../../adr/0005-type-check-gate.md) (`Accepted`)
 
@@ -13,7 +13,7 @@
 Detail-Records zur Acceptance-Entscheidung von `ADR 0002` und
 `ADR 0005`. Dokumentiert Welle-fuer-Welle den Gate-Status, die
 18 Verstoss-Verifikationen aus Welle 4 (16 A-1-Contracts plus
-AC-NO-IO-MOD-nested plus LSP-Variance via mypy — Branch × Gate
+[`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack)-nested plus LSP-Variance via mypy — Branch × Gate
 Matrix in §3) und die Befunde aus drei Reviews (zwei Pre-Acceptance,
 ein Post-Acceptance — §4 und §6). Pre-Acceptance-Schaerfungen sind
 per `ADR 0006` §3 erlaubt; alle Drift-Items wurden vor Acceptance
@@ -30,7 +30,7 @@ eingearbeitet (§5).
 | 3 — `tools/arch_check.py` Contracts | Neun Contracts implementiert (HEXAGON-PURE, NO-JSON, NO-TIME, NO-RAND, DOMAIN-FROZEN, NO-GOD-UTILS, TYPED-ERRORS, NO-CYCLES, ADAPTER-LIGHTWEIGHT) | `make arch-check` mit allen Contracts gruen | `aed2189` |
 | 3.1 — Review-Fixes (4 Commits) | Blocker B-1/B-2/B-3 + I-1 (Pfad-Matcher, SCC-Dedup, Tuple-Exception, NO-IO-MOD-nested); AST-Aliasing-Trio (I-2..I-8); canonical.py (Surrogate, Cycle, -0); Config-Sanity (mypy-Pin, ruff-preview-Caveat, Pfad-Normalisierung, Pfad-Existenz-Guard) | Alle Gates bleiben gruen; 55 Unit-Tests | `9d7a3fb`, `d0c8559`, `facd9aa`, `0e11ca8` |
 | 4 — Verstoss-Verifikation | 18 verify-and-revert-Zyklen auf main; pro Contract exakt eine Violation, exakt das erwartete Gate rot | siehe §3 Matrix | (kein Commit — temp Files, sauber zurueckgerollt) |
-| 5 — Acceptance-Hebung | ADR 0002 + ADR 0005 `Provisional → Accepted`; `architecture.md §19` `GG-AR-OPEN-001` geschlossen; `roadmap.md §4` Vorbedingungen 1+3 abgehakt; Headers (Dockerfile/Makefile/pyproject.toml) auf verbindlichen Stack; Closure-Notiz `done/spike-0.md §0`; `make gates CRITICAL_COV_TARGETS=...serialization` gruen. | `make gates` gruen mit Spike-0-Override | `5763445`, `3645473`, `522ec17`, `5281d15` |
+| 5 — Acceptance-Hebung | [`ADR 0002`](../../adr/0002-language-and-build-stack.md) + [`ADR 0005`](../../adr/0005-type-check-gate.md) `Provisional → Accepted`; `architecture.md §19` `GG-AR-OPEN-001` geschlossen; `roadmap.md §4` Vorbedingungen 1+3 abgehakt; Headers (Dockerfile/Makefile/pyproject.toml) auf verbindlichen Stack; Closure-Notiz `done/spike-0.md §0`; `make gates CRITICAL_COV_TARGETS=...serialization` gruen. | `make gates` gruen mit Spike-0-Override | `5763445`, `3645473`, `522ec17`, `5281d15` |
 | 5.1 — Post-Acceptance-Konsistenz | Cross-Ref-Drift (`spec/architecture.md §1/§4.2/§7`, `Makefile`-Count, `README`-Projektstruktur, `roadmap`-Stand, `Dockerfile`-openapi-Kommentar) und Closure-Drift (`spike-0-results.md` Header/§1/§2, `spike-0.md §7`); M1-Vorbereitung (`roadmap §3`-Vorbelegung, `open/README` Trigger-Priorisierung, `Dockerfile` Path-Guard-Hinweis, `tests/arch/` Vollstaendigkeits-Test); Trigger 001 von `open/` → `next/` aktiviert | reine Doku-Edits, Gates bleiben gruen | folgt aus drittem Review |
 
 ---
@@ -67,7 +67,7 @@ nur den erstausloesenden — beide sind in der Realitaet scharf.
 | LSP variance | `mypy --strict` | ✓ | Subklasse weitet Return-Typ `int` → `object` | `[override]` + `[explicit-override]` (mypy 2 errors in 1 file) |
 
 **Ergebnis: 18 von 18 Contracts haben Zaehne.** Pro Violation exakt
-das erwartete Gate rot, alle anderen gruen. AC-NO-IO-MOD ist zweimal
+das erwartete Gate rot, alle anderen gruen. [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack) ist zweimal
 verifiziert (Top-Level via import-linter und nested via
 arch_check.py).
 
@@ -88,14 +88,14 @@ arch_check.py).
   `pyproject.toml` referenziert beide; hatchling scheitert beim
   editable Install ohne sie. `COPY LICENSE README.md ./` in den
   source-Stage ergaenzt.
-- **ruff 0.15 Drift gegenueber ADR 0002 §A-1:** Regeln `PLR0902`
+- **ruff 0.15 Drift gegenueber [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1:** Regeln `PLR0902`
   (too-many-instance-attributes) und `PLR0903` (too-few-public-methods)
   sind in ruff 0.15 nicht implementiert. `PLR0904`
   (too-many-public-methods) und `PLR0916` (too-many-boolean-expressions)
   stehen unter dem `preview`-Flag. `pyproject.toml` aktiviert
   `[tool.ruff.lint] preview = true` und entfernt die nicht
   implementierten Regeln. Restanteil bleibt Code-Review
-  (Trigger 001). ADR-0002-Schliff folgt als separater
+  (Trigger 001). [`ADR-0002`](../../adr/0002-language-and-build-stack.md)-Schliff folgt als separater
   Pre-Acceptance-Commit (`ADR 0006` §3 erlaubt).
 - **import-linter `include_external_packages = true` notwendig:**
   sobald `forbidden_modules` externe Pakete enthaelt (`fastapi`,
@@ -163,47 +163,47 @@ sobald der Hauptprojekt-Code die volle kritische Domain abdeckt.
 
 ## 5. Drift-Liste fuer ADR-Pre-Acceptance-Schliff (eingearbeitet)
 
-Alle zehn Items wurden vor Welle 5 in ADR 0002 / ADR 0005
+Alle zehn Items wurden vor Welle 5 in [`ADR 0002`](../../adr/0002-language-and-build-stack.md) / [`ADR 0005`](../../adr/0005-type-check-gate.md)
 eingearbeitet (Commit `201daee`). `ADR 0006 §3` erlaubt
 Pre-Acceptance-Schaerfungen mit Header-Eintrag
 „Letzte inhaltliche Aenderung".
 
-- **D-1 ✓** ADR 0002 §A-1 `ruff`-Regel-Liste: `PLR0902`/`PLR0903`
+- **D-1 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 `ruff`-Regel-Liste: `PLR0902`/`PLR0903`
   entfernen, `preview = true`-Hinweis mit Caveat zur impliziten
   Aktivierung weiterer Preview-Regeln in Gruppen-Praefixen
   (`B`, `S`, `N`, `TRY`, `RUF`), Restanteil als Code-Review-pflichtig.
-- **D-2 ✓** ADR 0005 mypy-Floor: `>=1.13` → `>=2.0,<3.0`.
-  pyproject.toml bereits gepinnt; ADR 0005 §5.1-Snippet und
+- **D-2 ✓** [`ADR 0005`](../../adr/0005-type-check-gate.md) mypy-Floor: `>=1.13` → `>=2.0,<3.0`.
+  pyproject.toml bereits gepinnt; [`ADR 0005`](../../adr/0005-type-check-gate.md) §5.1-Snippet und
   Header-Eintrag synchronisiert.
-- **D-3 ✓** ADR 0002 §A-1 AC-NO-IO-MOD: aufgeteilt nach import-linter
+- **D-3 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack): aufgeteilt nach import-linter
   (Top-Level `socket`/`pathlib`) und `tools/arch_check.py`
   (`_check_no_io_mod_nested` fuer Subpakete `urllib.request`/
   `http.client`/`logging.handlers`).
-- **D-4 ✓** ADR 0002 §A-1 AC-DOMAIN-FROZEN: `slots=True` Pflicht,
+- **D-4 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 [`AC-DOMAIN-FROZEN`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack): `slots=True` Pflicht,
   `FrozenModel` als `ast.Name` ODER `ast.Attribute`, nur
   Top-Level-Klassen via `tree.body`.
-- **D-5 ✓** ADR 0002 §A-1: AC-HEXAGON-PURE als 16. Contract
+- **D-5 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1: [`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack) als 16. Contract
   aufgenommen (war im Code seit Welle 3, in der Tabelle fehlend).
   „fuenfzehn" → „sechzehn" an sechs Stellen synchronisiert.
-  Tabu-Abdeckungs-Matrix: GG-AR-TABU-002 ergaenzt.
-- **D-6 ✓** ADR 0002 §A-1 Operative Anforderung:
+  Tabu-Abdeckungs-Matrix: [`GG-AR-TABU-002`](../../../../spec/architecture.md#architektur-tabus-build-architekturtest) ergaenzt.
+- **D-6 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 Operative Anforderung:
   `[tool.importlinter] include_external_packages = true` als
   Pflicht-Konfigurations-Schluessel dokumentiert.
-- **D-7 ✓** ADR 0002 §A-1 AC-NO-TIME erfasst weiterhin
+- **D-7 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 [`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) erfasst weiterhin
   `asyncio.get_event_loop().time` (war ADR-Pflicht, Implementation
   fehlte). Implementation in `tools/arch_check.py` ergaenzt
   (`_is_asyncio_event_loop_time_call` Variante A: Attribute-Call,
   Variante B: `from asyncio import get_event_loop`).
-- **D-8 ✓** ADR 0002 §6.1 Toolchain-Pinning: CI-Matrix-Behauptung
+- **D-8 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §6.1 Toolchain-Pinning: CI-Matrix-Behauptung
   abgeschwaecht. Heute `make ... PYTHON_VERSION=3.13` Override
   testbar; vollwertige GitHub-Actions-Matrix kommt als Folgewelle
   nach M1.
-- **D-9 ✓** ADR 0002 §A-2 Custom-Emitter-Snippet aktualisiert:
+- **D-9 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-2 Custom-Emitter-Snippet aktualisiert:
   sechs typisierte Fehlerklassen, `seen`-Zyklusabwehr,
   Signed-Zero-Normalisierung, Surrogate-Check, RFC-8259-
   U+2028/U+2029/U+007F-Note. Alternativ-Encoder-Vertrag um
   Cycle-Detection / Surrogate-Rejection / Signed-Zero verschaerft.
-- **D-10 ✓** ADR 0002 §A-1 AC-TYPED-ERRORS: Tuple-Form
+- **D-10 ✓** [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §A-1 [`AC-TYPED-ERRORS`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack): Tuple-Form
   (`except (Exception, ...):`, rekursiv) und Attribute-Form
   (`raise builtins.Exception(...)` / `except mod.Exception:`)
   ADR-konform dokumentiert.
@@ -247,12 +247,12 @@ In zwei Commits abgearbeitet:
 | Commit | Befunde | Datei |
 | ------ | ------- | ----- |
 | `fb90154` | B-A: `asyncio.get_event_loop().time` (Variante A: Attribute-Call; Variante B: `from asyncio import get_event_loop`) | `tools/arch_check.py` |
-| `201daee` | B-B (AC-HEXAGON-PURE als 16. Contract im ADR), D-1..D-10 (alle Drift-Items in §A-1, §A-2, §6.1 von ADR 0002 sowie §5.1 von ADR 0005) | `docs/plan/adr/0002-language-and-build-stack.md`, `docs/plan/adr/0005-type-check-gate.md` |
+| `201daee` | B-B ([`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack) als 16. Contract im ADR), D-1..D-10 (alle Drift-Items in §A-1, §A-2, §6.1 von [`ADR 0002`](../../adr/0002-language-and-build-stack.md) sowie §5.1 von [`ADR 0005`](../../adr/0005-type-check-gate.md)) | `docs/plan/adr/0002-language-and-build-stack.md`, `docs/plan/adr/0005-type-check-gate.md` |
 | (folgt) | B-C: Welle-5-Schritt-7 `make fullbuild` → `make gates` reduziert, Spike-0-Closure-Note-Struktur konkretisiert, Welle-5-Schritt-4/6 ergaenzt | `docs/plan/planning/next/spike-0.md`, `spike-0-results.md` |
 
 **Gate-Status nach B-A + D-1..D-10:** alle Welle-1..4-Gates bleiben
 gruen. `make arch-check` faengt jetzt zusaetzlich
-`asyncio.get_event_loop().time()` als AC-NO-TIME-Verstoss.
+`asyncio.get_event_loop().time()` als [`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Verstoss.
 
 **Important-Items I-A..I-K aus dem Review** (Docstring-Polituren in
 `arch_check.py` und `canonical.py`): folgen als separater Commit

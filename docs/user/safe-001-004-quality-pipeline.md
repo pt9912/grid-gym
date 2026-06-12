@@ -1,7 +1,7 @@
 # Quality-Pipeline-Audit (`GG-SAFE-001..004`)
 
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit;
-[`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done/M6-welle-5a.md)).
+[`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done-archive/M6-welle-5a.md)).
 **Stand:** 2026-06-06 (Welle-5a-Audit) · `GG-SAFE-004`-Flip
 ✗ → ✓ 2026-06-11 (M7-Welle-3a-C2, [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md)) ·
 `GG-SAFE-003`-Flip ⚠ → ✓ 2026-06-11 (M7-Welle-3b-C2, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md))
@@ -209,10 +209,10 @@ py:33-42`.
 
 ## Verwandte Triggers
 
-- [`done/034-safe-004-max-age-stale-quality.md`](../plan/planning/done/034-safe-004-max-age-stale-quality.md)
+- [`done/034-safe-004-max-age-stale-quality.md`](../plan/planning/done-archive/034-safe-004-max-age-stale-quality.md)
   — `GG-SAFE-004` Lücke; **aufgeloest via M7-Welle-3a**
   (Trigger-Close mit 3a-C3/C4a).
-- [`done/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/done/035-safe-003-comm-failure-missing-quality.md)
+- [`done/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/done-archive/035-safe-003-comm-failure-missing-quality.md)
   — `GG-SAFE-003` partial Lücke; **aufgeloest via M7-Welle-3b**
   (Trigger-Close mit 3b-C3/C4a).
 

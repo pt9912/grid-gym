@@ -19,7 +19,7 @@ from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 [Architektur](../../../spec/architecture.md),
 [`ADR 0002`](0002-language-and-build-stack.md) §A-1 [`AC-NO-RAND`](0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
-(Lifecycle), [`docs/plan/planning/done/003-random-port-adr.md`](../planning/done/003-random-port-adr.md)
+(Lifecycle), [`docs/plan/planning/done/003-random-port-adr.md`](../planning/done-archive/003-random-port-adr.md)
 (geschlossen durch diese ADR — wandert nach `done/` bei Acceptance).
 
 ---
@@ -159,7 +159,7 @@ ohne Mehrwert.
 
 Lokaler Vertrag fuer den Provisional-Status (per Lifecycle-Pflicht
 aus `ADR 0006`). Die Durchfuehrung geschieht in M1 Welle 2 (siehe
-[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done/M1-tick-loop-spine.md) §3 Welle 2).
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done-archive/M1-tick-loop-spine.md) §3 Welle 2).
 
 **Akzeptanzkriterien:**
 

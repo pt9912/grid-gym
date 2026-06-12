@@ -15,7 +15,7 @@ bei Acceptance dieser ADR von `Offen` auf `Geschlossen` zu setzen),
 mit getrennten Healthchecks),
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 §2 (direktes Acceptance ohne Spike),
-[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done/M1-tick-loop-spine.md)
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done-archive/M1-tick-loop-spine.md)
 §3 Welle 6c (operative Lieferung),
 [`deploy/compose.yml`](../../../deploy/compose.yml)
 (Production-Stack-Definition).

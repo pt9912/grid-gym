@@ -51,7 +51,7 @@ Vorlage — Sub-Protocol + Hook-Pattern; ADR 0023 spiegelt das
 **bewusst nicht 1:1** fuer den Bus selbst — siehe §3 Begruendung
 „AgentBus vs. Driven-Port"),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md`](../planning/done/M3-faults-agents-observability.md)
+[`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 3.
 Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..008`).
 Architektur §5 Komponentensicht (`GG-AR-COMP-AGENTS`),

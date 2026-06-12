@@ -14,7 +14,7 @@
   — getrennte `AC-ADAPTER-PURE`-Bridge-Bereinigung.
 - [`spec/architecture.md`](../../../../spec/architecture.md)
   — `GG-AR-COMP-FAULTS`.
-- [`welle-2.md`](../done/welle-2.md)
+- [`welle-2.md`](../done-archive/welle-2.md)
   — historische Standortentscheidung fuer `hexagon/core/faults`.
 
 ---

@@ -46,7 +46,7 @@ Envelope-v2-Vertrag — Welle 1 fuegt **keine** neuen
 Sub-Snapshots hinzu; Snapshot-Bump v2 → v3 ist erst
 Welle-2/M6-Material, siehe §2.6 unten).
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md`](../planning/done/M3-faults-agents-observability.md)
+[`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 1.
 Lastenheft §14 Fault Injection (`GG-FAULT-001..010`), §20
 Sicherheitsanforderungen (`GG-SAFE-001..006`).

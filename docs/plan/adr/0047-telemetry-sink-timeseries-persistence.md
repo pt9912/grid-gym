@@ -23,10 +23,10 @@
   (`str(Decimal)`-Wrap), Vorbild fuer die `value`-Persistenz.
 - [`ADR 0015`](0015-snapshot-envelope-v2.md) — Snapshot-/
   Serialisierungs-Pattern (kanonische String-Form).
-- [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md) —
+- [`M7-welle-1a.md`](../planning/done-archive/M7-welle-1a.md) —
   Slice-Doc (Decisions 1a-D-0..D-3); ADR 0047 fixiert sie.
-- [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
-  + [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
+- [Trigger 036](../planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
+  + [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md) —
   Replay-Source-Integration (Welle 1b) konsumiert die hier
   persistierten Zeitreihen; 1b-Substanz traegt ADR 0048
   (`ReplaySnapshotPort`, 1b-a) + ADR 0049 (Replay-Lifecycle,
@@ -41,7 +41,7 @@
 (`GG-PERSIST-003`), aber **Telemetrie-Zeitreihen** (`GG-PERSIST-001`)
 werden nicht produktiv persistiert. Die Lastenheft-Akzeptanz
 (Z. 130-135) verlangt „persistiert Zeitreihen". Die
-[`M7-welle-1.md`](../planning/done/M7-welle-1.md)-Sub-Slicing-
+[`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md)-Sub-Slicing-
 Entscheidung (D-4 = B) schneidet die Zeitreihen-Persistenz als
 **Welle 1a** (dieser ADR); die `ReplaySnapshotPort`-Substanz ist
 **Welle 1b-a** (ADR 0048), die Lifecycle-/`replay_diff_status`-
@@ -223,7 +223,7 @@ Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md)
+Slice-Doc [`M7-welle-1a.md`](../planning/done-archive/M7-welle-1a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Persistenz-Smoke). Status-Pfad (`Proposed → Provisional →
 Accepted`): siehe Status-Header; `Accepted` gezogen 2026-06-12

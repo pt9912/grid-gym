@@ -1,7 +1,7 @@
 # Geraete-Fallback + Replay-Determinismus (`GG-SAFE-005/006`)
 
 **Quelle:** M6-Welle-5c (SOLLTE-Items + IP/Netz-Beschraenkung;
-[`../plan/planning/done/M6-welle-5c.md`](../plan/planning/done/M6-welle-5c.md)).
+[`../plan/planning/done/M6-welle-5c.md`](../plan/planning/done-archive/M6-welle-5c.md)).
 **Stand:** 2026-06-07.
 
 Dieses Dokument auditiert die produktive Substanz fuer die
@@ -152,7 +152,7 @@ jetzt produktiv im Lauf-Lifecycle verankert:
   (path/expected/actual/tick/device_id/classification) emittiert
   `finalize()` maschinenlesbar via `log_port`.
 
-[Trigger 036](../plan/planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
+[Trigger 036](../plan/planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
 ist damit aufgeloest (→ `done/` mit M7-Welle-1b-b-C3). Die
 **oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`)
 bleibt separater Scope ([Trigger 039](../plan/planning/open/039-api-replay-trigger-surface.md)).

@@ -17,7 +17,7 @@ A-1-Vertrag nur erweitert, nicht aufweicht),
 [`docs/user/code-review.md`](../../user/code-review.md) §3.5
 (Folge-ADR-Pflicht bei Aenderung der A-1-Reichweiten),
 M1-Slice-Plan
-[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done/M1-tick-loop-spine.md)
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done-archive/M1-tick-loop-spine.md)
 §3 Welle 1 (Trigger der Erweiterung — `Quality`/`CommandResult`
 als Enums).
 

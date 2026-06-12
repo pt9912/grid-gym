@@ -283,7 +283,7 @@ die Schwelle Maschinen-spezifisch lockern.
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 Erst-Anwendung der §2-Substanz leben in der zugehoerigen
 Slice-Doc
-[`M6-welle-4b-a.md`](../planning/done/M6-welle-4b-a.md).
+[`M6-welle-4b-a.md`](../planning/done-archive/M6-welle-4b-a.md).
 Dort sind die NEU-Files (`pyproject.toml`-Perf-Extra,
 `Dockerfile`-`perf`-Stage, `tests/perf/`-Layer,
 `Makefile`-`perf`- und `perf-baseline-update`-Targets) mit

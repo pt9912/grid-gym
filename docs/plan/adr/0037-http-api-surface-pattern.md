@@ -11,7 +11,7 @@ Initial-Entwurf (`Proposed`) 2026-06-01 mit M5-Welle-1-C1
 [`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
 konkret fuer M5-Welle-1-Implementation und schliesst zwei
 Decisions aus der M5-Welle-0-Decision-Liste (siehe
-[`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
+[`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
 Decisions 4 + 9). Plus ein Roadmap-Typo-Fix als Welle-1-
 Folge. Welle 1..6c haben die Surface produktiv-belegt
 (Welle-4a Replay-Controls, Welle-6a Cross-Field-Validation,
@@ -42,9 +42,9 @@ Commit)
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie) + §5
   (`GG-AR-COMP-API`-Slot in `adapters/driving/http_api/`).
-- [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
+- [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
-- [`../planning/done/M5-welle-1.md §3`](../planning/done/M5-welle-1.md)
+- [`../planning/done/M5-welle-1.md §3`](../planning/done-archive/M5-welle-1.md)
   (Welle-1-Indications fuer beide Decisions; Self-Close-
   Move M5-Welle-2-Pre-C0a `c7c2641`).
 - HTTP-API-Stub aus M1-Welle-7 in
@@ -288,9 +288,9 @@ zugewiesen).
 - [Architektur §4.2 + §5](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   (Driving-Port-Familie `GG-AR-PORT-DRV-*`,
   `GG-AR-COMP-API`-Slot).
-- [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
+- [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
-- [`../planning/done/M5-welle-1.md §3`](../planning/done/M5-welle-1.md)
+- [`../planning/done/M5-welle-1.md §3`](../planning/done-archive/M5-welle-1.md)
   (Welle-1-Indications fuer beide Decisions; Self-Close-
   Move M5-Welle-2-Pre-C0a `c7c2641`).
 - **HTMX-FastAPI-Smoke-Probe-Run** `9c20dad` (validiert

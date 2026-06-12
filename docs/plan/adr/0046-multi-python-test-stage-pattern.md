@@ -35,7 +35,7 @@ M6-Welle-6-C1).
 - [`ADR 0028`](0028-link-maintenance-accepted-adr-bezug.md)
   — Link-Maintenance-Pattern fuer den ADR-Index-Update an
   der ADR-0002-Zeile.
-- [Trigger 009](../planning/done/009-iec61850-smoke-reactivation.md)
+- [Trigger 009](../planning/done-archive/009-iec61850-smoke-reactivation.md)
   — Aktivierungs-Trigger (IEC-61850-In-Process-Smoke-
   Reaktivierung). Trigger 009 nennt explizit „Eventueller
   ADR 0036 wenn das Pattern repo-weit als 'Library-Compat-
@@ -56,7 +56,7 @@ Docker-Stack auf Python 3.14 segfaultet im
 `_pyiec61850.so`-SWIG-Layer mit exit 139 beim ersten
 `IedServer.start()`.
 
-[Trigger 009](../planning/done/009-iec61850-smoke-reactivation.md)
+[Trigger 009](../planning/done-archive/009-iec61850-smoke-reactivation.md)
 hat dem Library-Upgrade-Pfad (Pfad A) am 2026-06-01 einen
 Probe-Run gemacht:
 
@@ -190,7 +190,7 @@ RUN python -m pip install <test-runtime-set inkl. pyiec61850-ng + pytest + …>
   fixieren" als Welle-6-Schaerfungspfad. ADR 0046 ist dieser
   Commit.
 - **Multi-Python-Cost isoliert.** Option B aus
-  [Trigger 009 / Welle-6-D-4](../planning/done/M6-welle-6.md)
+  [Trigger 009 / Welle-6-D-4](../planning/done-archive/M6-welle-6.md)
   (eigener Docker-Compose-Service) waere Overkill: der Smoke
   braucht keinen Sibling-Sim-Container, nur einen zweiten
   Interpreter. Eine Dockerfile-Stage haelt den Cost auf einem
@@ -234,7 +234,7 @@ RUN python -m pip install <test-runtime-set inkl. pyiec61850-ng + pytest + …>
   beide Stages (`make test-integration` auf 3.14 +
   `make test-iec61850` auf 3.12). Diese Substanz lebt im
   Welle-6-Slice-Doc
-  ([`M6-welle-6.md`](../planning/done/M6-welle-6.md)
+  ([`M6-welle-6.md`](../planning/done-archive/M6-welle-6.md)
   D-4) und in der Audit-Doku `docs/user/deploy-hardening.md`,
   nicht als ADR-Decision-Text — sie ist Anwendung des
   Patterns, nicht das Pattern selbst.
@@ -251,7 +251,7 @@ RUN python -m pip install <test-runtime-set inkl. pyiec61850-ng + pytest + …>
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 Erst-Anwendung (Trigger-009-Pfad-B via `iec61850-test`-Stage)
 leben in der zugehoerigen Slice-Doc
-[`M6-welle-6.md`](../planning/done/M6-welle-6.md) (C2:
+[`M6-welle-6.md`](../planning/done-archive/M6-welle-6.md) (C2:
 `feat(deploy)`). Die NEU-Build-Substanz (Dockerfile-Stage
 `iec61850-test`, `make test-iec61850`-Target, `make ci`-
 Recipe-Erweiterung, versions-bedingter Skip-Marker in

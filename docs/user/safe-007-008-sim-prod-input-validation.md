@@ -1,7 +1,7 @@
 # Sim/Prod-Marker + REST-Input-Validation (`GG-SAFE-007/008`)
 
 **Quelle:** M6-Welle-5b (Sim/Prod-Marker + Input-Validation;
-[`../plan/planning/done/M6-welle-5b.md`](../plan/planning/done/M6-welle-5b.md)).
+[`../plan/planning/done/M6-welle-5b.md`](../plan/planning/done-archive/M6-welle-5b.md)).
 **Stand:** 2026-06-07.
 
 Dieses Dokument auditiert die produktive Substanz fuer die beiden

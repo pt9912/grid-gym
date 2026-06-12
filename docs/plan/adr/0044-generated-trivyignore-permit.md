@@ -268,7 +268,7 @@ basiert mit Audit-Trail durch `vulnignore.yaml`).
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 Erst-Anwendung (Trigger-033-Temp-Deferral via vulnignore-
 Pattern) leben in der zugehoerigen Slice-Doc
-[`M6-welle-4a.md`](../planning/done/M6-welle-4a.md). Die
+[`M6-welle-4a.md`](../planning/done-archive/M6-welle-4a.md). Die
 NEU-Files (`tools/render_trivyignore.py`,
 `deploy/security/vulnignore.yaml`, `.gitignore`-Eintrag,
 `render-trivyignore`-Makefile-Target,

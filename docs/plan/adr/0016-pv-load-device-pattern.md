@@ -23,7 +23,7 @@ ohne SOC-/Ramp-/Safety-Komplexitaet),
 Pattern — diese ADR ist Erweiterung von ADR 0013 §2.4 fuer den
 PV/Load-Snapshot-Vertrag, kein Supersedes).
 M2-Slice-Plan
-[`done/M2-devices.md`](../planning/done/M2-devices.md)
+[`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
 §3 Welle 3. Lastenheft §9.1 (`GG-DEV-011` PV, `GG-DEV-013` Load).
 
 ---

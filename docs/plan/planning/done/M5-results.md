@@ -7,19 +7,19 @@ krb5-CVE-Drift in Debian-13-Base (M4-Welle-7-Erbschaft; siehe
 §2 Defer-Pfad). Alle fuenf M5-ADRs (0036/0037/0038/0039/0040)
 sind mit Welle-7-C1 `62f988d` auf `Accepted` promoted.
 **Bezug:** Slice-Plan
-[`M5-ui-demo.md`](M5-ui-demo.md);
+[`M5-ui-demo.md`](../done-archive/M5-ui-demo.md);
 Welle-Slice-Begleit-Docs
-[`M5-welle-0.md`](M5-welle-0.md),
-[`M5-welle-1.md`](M5-welle-1.md),
-[`M5-welle-2.md`](M5-welle-2.md),
-[`M5-welle-3.md`](M5-welle-3.md),
-[`M5-welle-4a.md`](M5-welle-4a.md),
-[`M5-welle-4b.md`](M5-welle-4b.md),
-[`M5-welle-5.md`](M5-welle-5.md),
-[`M5-welle-6a.md`](M5-welle-6a.md),
-[`M5-welle-6b.md`](M5-welle-6b.md),
-[`M5-welle-6c.md`](M5-welle-6c.md),
-[`M5-welle-7.md`](M5-welle-7.md);
+[`M5-welle-0.md`](../done-archive/M5-welle-0.md),
+[`M5-welle-1.md`](../done-archive/M5-welle-1.md),
+[`M5-welle-2.md`](../done-archive/M5-welle-2.md),
+[`M5-welle-3.md`](../done-archive/M5-welle-3.md),
+[`M5-welle-4a.md`](../done-archive/M5-welle-4a.md),
+[`M5-welle-4b.md`](../done-archive/M5-welle-4b.md),
+[`M5-welle-5.md`](../done-archive/M5-welle-5.md),
+[`M5-welle-6a.md`](../done-archive/M5-welle-6a.md),
+[`M5-welle-6b.md`](../done-archive/M5-welle-6b.md),
+[`M5-welle-6c.md`](../done-archive/M5-welle-6c.md),
+[`M5-welle-7.md`](../done-archive/M5-welle-7.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §3 M5.
 
@@ -29,14 +29,14 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 
 | Welle | Datum        | Lieferung                                                                                                                                                                                                                                                                                                                              | Commits                                                                                                                                                                                                       |
 | ----- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | 2026-06-01   | Vorabraeumung + Slice-Plan-Eroeffnung (`M5-ui-demo.md` als kanonische M5-Slice-Spezifikation; 10 Decisions vorbelegt) + Pre-M5-Welle-0-Sondierungs-ADR 0036 (`Proposed`) + Trigger-Triage (Trigger 010 base-image-krb5-bump als M4-Welle-7-Erbschaft).                                                                                  | `d93ae57` (C0 Slice-Doc), `aa1db52` (Review-Folge 12 Findings), `b8bef6c` (C1 NEU M5-ui-demo.md), `112efd3` (C2 Trigger-Triage + Status-Flip), Self-Close `fd642df`.                                           |
-| 1     | 2026-06-01   | HTTP-API-Surface (5 REST + 1 WebSocket): `POST /runs` + `GET /runs/{id}` + `/status` + `/snapshot` + `POST /control` + `POST /faults` + `WS /telemetry`. 4 neue Module mit `AC-NO-GOD-UTILS`-Split (`_dependencies.py` + `_schemas.py` + `_runs_router.py` + `_runs_action_router.py`). ADR 0036 → `Provisional` + NEU ADR 0037 (HTTP-API-Surface-Pattern). +16 Unit + +2 Integration. | Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe), C0 `e573f67`, C1 `d468e68` (NEU ADR 0037), C2 `ae630ce`, C3 `f9f514d`, Self-Close `c7c2641`.                                                                     |
+| 0     | 2026-06-01   | Vorabraeumung + Slice-Plan-Eroeffnung (`M5-ui-demo.md` als kanonische M5-Slice-Spezifikation; 10 Decisions vorbelegt) + Pre-M5-Welle-0-Sondierungs-[`ADR 0036`](../../adr/0036-ui-stack-choice.md) (`Proposed`) + Trigger-Triage (Trigger 010 base-image-krb5-bump als M4-Welle-7-Erbschaft).                                                                                  | `d93ae57` (C0 Slice-Doc), `aa1db52` (Review-Folge 12 Findings), `b8bef6c` (C1 NEU M5-ui-demo.md), `112efd3` (C2 Trigger-Triage + Status-Flip), Self-Close `fd642df`.                                           |
+| 1     | 2026-06-01   | HTTP-API-Surface (5 REST + 1 WebSocket): `POST /runs` + `GET /runs/{id}` + `/status` + `/snapshot` + `POST /control` + `POST /faults` + `WS /telemetry`. 4 neue Module mit `AC-NO-GOD-UTILS`-Split (`_dependencies.py` + `_schemas.py` + `_runs_router.py` + `_runs_action_router.py`). [`ADR 0036`](../../adr/0036-ui-stack-choice.md) → `Provisional` + NEU [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) (HTTP-API-Surface-Pattern). +16 Unit + +2 Integration. | Pre-C0c `9c20dad` (HTMX-FastAPI-Smoke-Probe), C0 `e573f67`, C1 `d468e68` (NEU [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md)), C2 `ae630ce`, C3 `f9f514d`, Self-Close `c7c2641`.                                                                     |
 | 2     | 2026-06-01   | UI-Foundation: 6 Templates (`base.html` + 5 Page/Partial-Paare) + 3 vendored Static-Assets (HTMX 2.0.9 + Chart.js 4.5.1 + `style.css`) + `_templates.py`-Jinja2-Factory + `routes.py`-APIRouter mit 2 Page-Routes. Jinja2 als neue Dep; `StaticFiles`-Mount auf `/static`. +10 Unit + +2 Integration.                                                                                  | C0 `64d5129`, C2 `5234617`, C3 `97c718f`, Self-Close `8d60e16`.                                                                                                                                                |
-| 3     | 2026-06-01   | Live-Telemetry-Dashboard (`GG-UI-002/003/009 + GG-API-002`): NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + `DemoTelemetryGenerator` + WS-Subscribe-Wiring + UI-Page `/dashboard` mit Chart.js-Time-Series + 6-Zustands-Quality-Marker. NEU ADR 0038. +16 Unit + +6 Integration.                                                                                              | Pre-C0c `5349923` (Asyncio-Pub/Sub-Probe), C0 `ab55ec7`, C1 `9f3c00d` (NEU ADR 0038), C2 `82bdf39`, C3 `0e0473d`, Self-Close `4517f51`.                                                                        |
-| 4a    | 2026-06-02   | Replay-Controls + TickLoop-Wiring (`GG-UI-004`): RunStatus-Literal + `RunRepositoryPort.update_status`/`get_status` + TickLoop `request(action)`-Konsolidierung + NEU `TickLoopRegistry` + NEU `DemoTickLoopDriver` + UI-Page `/control` + NEU `_demo_setup.py`-Komposition-Root. NEU ADR 0039. +24 Unit + +1 Integration.                                                              | C0 `3544dee` (Welle-4-Sub-Slicing), C1 `f1284c4` (NEU ADR 0039), C2 `9c188e0`, C3 `2b4e5b3`, Self-Close `d1b0eb7`.                                                                                             |
-| 4b    | 2026-06-02   | Alarm-Aggregation + AlarmStreamPort + UI-Tabelle (`GG-UI-005`): NEU `Alarm`-Domain-Type + Mapper-Familie in `core/simulation/alarm_mappers.py` + `TickResult.emitted_alarms` + TickLoop-Drain-Hook + NEU `AlarmStreamPort` + NEU `InMemoryAlarmStream` + `AlarmHistoryBuffer` + REST `/alarms-history` + WS `/alarms-stream` + UI 6-Spalten-Tabelle + NEU `_alarm_setup.py`. NEU ADR 0040. Loest ADR-0014-§6-Forward-Pointer. +31 Unit + +1 Integration. | C0 `08b5ba7`, C1 `850cf85` (NEU ADR 0040), C2 `b7ac7b3`, C3 `4dca6aa`, Review-Folge `52afd1a`/`fe1db21`/`ced9661`/`1fba165` (15 Findings), Self-Close `a030c0e`.                                                |
+| 3     | 2026-06-01   | Live-Telemetry-Dashboard (`GG-UI-002/003/009 + GG-API-002`): NEU `TelemetryStreamPort` + `InMemoryTelemetryStream` + `DemoTelemetryGenerator` + WS-Subscribe-Wiring + UI-Page `/dashboard` mit Chart.js-Time-Series + 6-Zustands-Quality-Marker. NEU [`ADR 0038`](../../adr/0038-telemetry-stream-port.md). +16 Unit + +6 Integration.                                                                                              | Pre-C0c `5349923` (Asyncio-Pub/Sub-Probe), C0 `ab55ec7`, C1 `9f3c00d` (NEU [`ADR 0038`](../../adr/0038-telemetry-stream-port.md)), C2 `82bdf39`, C3 `0e0473d`, Self-Close `4517f51`.                                                                        |
+| 4a    | 2026-06-02   | Replay-Controls + TickLoop-Wiring (`GG-UI-004`): RunStatus-Literal + `RunRepositoryPort.update_status`/`get_status` + TickLoop `request(action)`-Konsolidierung + NEU `TickLoopRegistry` + NEU `DemoTickLoopDriver` + UI-Page `/control` + NEU `_demo_setup.py`-Komposition-Root. NEU [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md). +24 Unit + +1 Integration.                                                              | C0 `3544dee` (Welle-4-Sub-Slicing), C1 `f1284c4` (NEU [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)), C2 `9c188e0`, C3 `2b4e5b3`, Self-Close `d1b0eb7`.                                                                                             |
+| 4b    | 2026-06-02   | Alarm-Aggregation + AlarmStreamPort + UI-Tabelle (`GG-UI-005`): NEU `Alarm`-Domain-Type + Mapper-Familie in `core/simulation/alarm_mappers.py` + `TickResult.emitted_alarms` + TickLoop-Drain-Hook + NEU `AlarmStreamPort` + NEU `InMemoryAlarmStream` + `AlarmHistoryBuffer` + REST `/alarms-history` + WS `/alarms-stream` + UI 6-Spalten-Tabelle + NEU `_alarm_setup.py`. NEU [`ADR 0040`](../../adr/0040-alarm-aggregation-and-stream-port.md). Loest [`ADR-0014`](../../adr/0014-battery-snapshot-schema.md)-§6-Forward-Pointer. +31 Unit + +1 Integration. | C0 `08b5ba7`, C1 `850cf85` (NEU [`ADR 0040`](../../adr/0040-alarm-aggregation-and-stream-port.md)), C2 `b7ac7b3`, C3 `4dca6aa`, Review-Folge `52afd1a`/`fe1db21`/`ced9661`/`1fba165` (15 Findings), Self-Close `a030c0e`.                                                |
 | 5     | 2026-06-03   | Demo-Pipeline + Scenario-Loader-Wiring (`GG-DEMO-001..005 + 007`): NEU `deploy/scenarios/gg-demo.yaml` + NEU `__main__.py` (`python -m grid_gym demo`) + NEU `InMemoryRunRepository` + NEU `_demo_scenario_setup.py` + Lifespan-env-var-Branch `GRID_GYM_DEMO_SCENARIO_PATH` (Decision 6) + NEU `make demo`/`demo-stop` Targets + compose.yml Service-Konfiguration. +6 Integration. | Pre-C0b `45335eb`, C0 `155c421`, C2 `904ef47`, Doku-Sibling `5ab0f67` (M5-ui-demo.md 780→321 Zeilen), C3 `61f5156`, Review-Folge `0e2bc41` (15 Findings W5-F1..F15), Self-Close `da8d728`/`2c9d8da`.            |
-| 6a    | 2026-06-03   | Fault-Flow (`GG-UI-007` + `GG-DEMO-006`): NEU `gg-demo.yaml`-`faults:`-Block (cell_failure Tick 900 + voltage_drop Tick 1200) + NEU `_compose_fault_port` Battery+Grid-Adapter-Composition + UI-Page `/faults` mit HTMX-Form + NEU `routes_faults.py`-Modul-Split AC-NO-GOD-UTILS + Cross-Field-Validation im POST-Handler (Decision 20) + NEU public `tick_loop.device_types`-Property. Welle-6-Sub-Slicing-Beschluss 6 → 6a/6b/6c. +7 Integration.  | C0 `1d6d85e`, C2 `db3a0c2`, C3 `ed8fa74`, Self-Close `70fb82c`/`b19aeae`, Review-Folge `1e3a793` (15 Findings F1..F15).                                                                                        |
+| 6a    | 2026-06-03   | Fault-Flow (`GG-UI-007` + `GG-DEMO-006`): NEU `gg-demo.yaml`-`faults:`-Block (cell_failure Tick 900 + voltage_drop Tick 1200) + NEU `_compose_fault_port` Battery+Grid-Adapter-Composition + UI-Page `/faults` mit HTMX-Form + NEU `routes_faults.py`-Modul-Split [`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) + Cross-Field-Validation im POST-Handler (Decision 20) + NEU public `tick_loop.device_types`-Property. Welle-6-Sub-Slicing-Beschluss 6 → 6a/6b/6c. +7 Integration.  | C0 `1d6d85e`, C2 `db3a0c2`, C3 `ed8fa74`, Self-Close `70fb82c`/`b19aeae`, Review-Folge `1e3a793` (15 Findings F1..F15).                                                                                        |
 | 6b    | 2026-06-04   | UI-Visualization (`GG-UI-006` + `GG-UI-008`): NEU `GET /runs/{id}/devices/state` JSON-Surface (URL-Realization-Note: `/state`-Sub-Pfad statt natuerlicher URL wegen FastAPI-Routenkonflikt mit UI-Page) + NEU `DevicesResponse`/`DeviceStateEntry`-Pydantic-Modelle + `_aggregate_quality`/`_extract_state_subset`-Helper + NEU `routes_visualization.py` + 4 Templates `devices.html`/`_devices_content.html`/`system.html`/`_system_content.html`. NEU public `tick_loop.devices`-Property (Review-Folge F9). +22 Unit + +16 Integration (kumuliert). | C0 `efc2c10`, C2 `9fcb887`, C3 `580b2f0`, Self-Close `b30280e`/`3a6f150`, Review-Folge `cd7cfc6` (15 Findings F1..F15).                                                                                        |
 | 6c    | 2026-06-04   | Abnahmedoku (`GG-DEMO-008`): NEU `docs/user/gg-demo-008-abnahme.md` mit 6-Schritt-Abnahmereihenfolge (Start / Healthcheck / Scenario / Fault-Injection / Replay / Export) + Top-Level-Doku-Sync + Status-Block-Kompression auf User-Feedback. Reiner Doku-Slice ohne Code-Diff; Test-Counts unveraendert. Loest letzte Welle-5-Anti-Scope-Erbschaft auf.                                | C0 `3db9fcd`, C2 `0e604e4`, C3 `06bf338`, Self-Close `c317200`/`cfb9626`. EoD-Sync `01e4bf5` (Welle-6b-Closure-Chronik).                                                                                       |
 | 7     | 2026-06-04   | Closure: 5 M5-ADRs (0036..0040) `Provisional → Accepted`; `done/M5-results.md` (dieses Dokument); `roadmap.md` M5 → `Done`; S-1..S-6-Sweep; `make fullbuild`-krb5-CVE-Defer-Pfad dokumentiert (M4-Erbschaft); Self-Close-Move `M5-ui-demo.md` + `M5-welle-7.md`.                                                                                                                       | C0 `c28a11b`, C1 `62f988d` (5 ADRs → Accepted), C2 (dieser Commit; M5-results.md), C3 (folgt; Roadmap-DoD + Top-Level-Sync), C4a/b (folgt; Self-Close-Move + Cross-Doc-Refs).                                  |
@@ -63,7 +63,7 @@ Move-Pattern (Pflicht per `planning/README.md`) ist in allen
   `coverage-gate-critical` (90 % critical domain),
   `dep-audit`, `noqa-gate`, `spdx-check`.
 - **`make test-integration`:** 80 passed + 4 skipped (IEC-
-  61850-2c-Mock-only-Fallback per ADR 0035 §2.5; Trigger 009
+  61850-2c-Mock-only-Fallback per [`ADR 0035`](../../adr/0035-iec61850-adapter-profile.md) §2.5; Trigger 009
   fuer Reaktivierung).
 - **`make docs-check`:** cache-frei gruen ueber alle
   Markdown-Refs in der Repo.
@@ -176,7 +176,7 @@ cache-frei gruen am Welle-7-Closure-Hash.**
 
 **S-5 — ADR-Erweiterungs-Pattern fortgefuehrt.**
 
-- 5 neue M5-ADRs ohne Supersedes (per ADR 0011):
+- 5 neue M5-ADRs ohne Supersedes (per [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)):
   0036 (UI-Stack), 0037 (HTTP-API-Surface), 0038
   (TelemetryStreamPort), 0039 (Run-Control), 0040 (Alarm-
   Stream-Port).
@@ -187,8 +187,8 @@ cache-frei gruen am Welle-7-Closure-Hash.**
   Stream) — jeder dieser Konzerne ist eine distinkte
   Architektur-Decision mit eigener Welle-Lieferung +
   ADR-Body-Substanz. Drei Optionen waeren gewesen: (a) ADRs
-  zusammenfassen (gegen ADR-0011-Schaerfungs-ohne-Supersede-
-  Pattern), (b) Decisions ohne ADR (gegen ADR-0006-Decision-
+  zusammenfassen (gegen [`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfungs-ohne-Supersede-
+  Pattern), (b) Decisions ohne ADR (gegen [`ADR-0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Decision-
   Locality), (c) status quo (5 fokussierte ADRs). Maintainer-
   Entscheid: (c) — pattern-konsistent mit M3 (6 ADRs) und
   M4 (6 ADRs).
@@ -217,7 +217,7 @@ cache-frei gruen am Welle-7-Closure-Hash.**
   weitere Endpoints denselben Mismatch reproduzieren.
 - **Snapshot-Envelope-v2-Serialisierung:** `GET /snapshot`
   liefert heute nur den `schema_ref`-Pointer; volle
-  Envelope-Body-Serialisierung bleibt M6-Material (ADR 0015
+  Envelope-Body-Serialisierung bleibt M6-Material ([`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md)
   v2-Snapshot-Erbschaft).
 - **CSV/JSONL-Export-Endpunkte:** Welle-6c-Abnahmedoku
   dokumentiert WS-Streams als Export-Surface; Datei-Export
@@ -243,7 +243,7 @@ cache-frei gruen am Welle-7-Closure-Hash.**
 
 - ADRs 0036..0040 alle `Accepted` (Welle-7-C1 `62f988d`);
   keine offenen Migrations-Klauseln.
-- ADR 0036 §2.5 Migrations-Pfad SvelteKit-SPA + Plotly/
+- [`ADR 0036`](../../adr/0036-ui-stack-choice.md) §2.5 Migrations-Pfad SvelteKit-SPA + Plotly/
   ECharts bleibt dokumentiert fuer Stakeholder-Druck-
   Eskalation.
 
@@ -306,7 +306,7 @@ Doc-Body verankert):
   Pages + Charting-Re-Eval).
 
 **Keine Supersedes** in M5 (pattern-konsistent mit M3 + M4;
-per ADR 0011).
+per [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)).
 
 ---
 
@@ -337,9 +337,9 @@ per ADR 0011).
   Schnittstellen — gehoert zur M6-Security-Welle, nicht zum
   UI-Auth-Komplex.
 - **SvelteKit-SPA / React-SPA Migration** — M6+ falls
-  Stakeholder-Druck (ADR 0036 §2.5 Migrations-Pfad).
+  Stakeholder-Druck ([`ADR 0036`](../../adr/0036-ui-stack-choice.md) §2.5 Migrations-Pfad).
 - **Plotly.js / ECharts** — M6+ falls Chart.js-Limitationen
-  in Welle 3/4/6b sichtbar werden (ADR 0036 §2.5 +
+  in Welle 3/4/6b sichtbar werden ([`ADR 0036`](../../adr/0036-ui-stack-choice.md) §2.5 +
   Welle-6b-Decision-23-Re-Eval).
 - **Base-Image-krb5-Bump** (Trigger 010) — M4-Welle-7-
   Erbschaft; M6 oder eigener Slice.
@@ -350,18 +350,18 @@ per ADR 0011).
 
 ## References
 
-- Slice-Plan: [`M5-ui-demo.md`](M5-ui-demo.md).
-- Welle-Slice-Docs: [`M5-welle-0.md`](M5-welle-0.md),
-  [`M5-welle-1.md`](M5-welle-1.md),
-  [`M5-welle-2.md`](M5-welle-2.md),
-  [`M5-welle-3.md`](M5-welle-3.md),
-  [`M5-welle-4a.md`](M5-welle-4a.md),
-  [`M5-welle-4b.md`](M5-welle-4b.md),
-  [`M5-welle-5.md`](M5-welle-5.md),
-  [`M5-welle-6a.md`](M5-welle-6a.md),
-  [`M5-welle-6b.md`](M5-welle-6b.md),
-  [`M5-welle-6c.md`](M5-welle-6c.md),
-  [`M5-welle-7.md`](M5-welle-7.md).
+- Slice-Plan: [`M5-ui-demo.md`](../done-archive/M5-ui-demo.md).
+- Welle-Slice-Docs: [`M5-welle-0.md`](../done-archive/M5-welle-0.md),
+  [`M5-welle-1.md`](../done-archive/M5-welle-1.md),
+  [`M5-welle-2.md`](../done-archive/M5-welle-2.md),
+  [`M5-welle-3.md`](../done-archive/M5-welle-3.md),
+  [`M5-welle-4a.md`](../done-archive/M5-welle-4a.md),
+  [`M5-welle-4b.md`](../done-archive/M5-welle-4b.md),
+  [`M5-welle-5.md`](../done-archive/M5-welle-5.md),
+  [`M5-welle-6a.md`](../done-archive/M5-welle-6a.md),
+  [`M5-welle-6b.md`](../done-archive/M5-welle-6b.md),
+  [`M5-welle-6c.md`](../done-archive/M5-welle-6c.md),
+  [`M5-welle-7.md`](../done-archive/M5-welle-7.md).
 - M5-ADRs:
   [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md),
   [`../../adr/0037-http-api-surface-pattern.md`](../../adr/0037-http-api-surface-pattern.md),

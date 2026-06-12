@@ -18,7 +18,7 @@
   Fault-Klassen-Standort auf diese Folgeentscheidung.
 - [`spec/architecture.md`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) —
   `GG-AR-COMP-FAULTS` und `GG-AR-PORT-DRN-011`.
-- [`welle-2.md`](../planning/done/welle-2.md) — historischer
+- [`welle-2.md`](../planning/done-archive/welle-2.md) — historischer
   Welle-2-Plan; dokumentiert, dass `BatteryFaultAdapter` und
   `GridFaultAdapter` bewusst unter `hexagon/core/faults/` liegen.
 - [`042-fault-engine-location-and-naming.md`](../planning/next/042-fault-engine-location-and-naming.md)

@@ -84,7 +84,7 @@ Commit)
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort` — Welle 4a
   erweitert den Vertrag um `update_status` + `get_status`,
   symmetrisch zur Welle-1-`exists`-Extension).
-- [`../planning/done/M5-welle-4a.md §3`](../planning/done/M5-welle-4a.md)
+- [`../planning/done/M5-welle-4a.md §3`](../planning/done-archive/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14 final +
   C2-Realization-Notes).
 - **Vorbild-Probes** — kein eigener Welle-4a-Probe noetig,
@@ -498,7 +498,7 @@ def get_run_status(
 - **Alarm-Aggregation + AlarmStreamPort** in Welle-4b-
   Pre-C0a `d1b0eb7` + Pre-C0b `e325307` + C0 eroeffnet
   (siehe
-  [`../planning/done/M5-welle-4b.md`](../planning/done/M5-welle-4b.md));
+  [`../planning/done/M5-welle-4b.md`](../planning/done-archive/M5-welle-4b.md));
   NEU ADR 0040 fuer C1 vorbereitet. **Welle-4b-C0-Pre-
   Research erweiterte den Welle-4a-Era-Plan von 2 auf
   3 Decisions** (15 NEU Unified `Alarm`-Domain-Schema +
@@ -720,7 +720,7 @@ def get_run_status(
   `GG-UI-004` (Replay-Controls-UI-Akzeptanz).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort`).
-- [`../planning/done/M5-welle-4a.md §3`](../planning/done/M5-welle-4a.md)
+- [`../planning/done/M5-welle-4a.md §3`](../planning/done-archive/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14).
 - **Vorbild-Probes** — keine eigene Welle-4a-Probe:
   - Welle-1-HTMX-FastAPI-Probe `9c20dad` — 4 Tests in

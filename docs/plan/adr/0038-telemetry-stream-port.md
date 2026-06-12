@@ -12,7 +12,7 @@ Override). Initial-Entwurf (`Proposed`) 2026-06-01 mit
 M5-Welle-3-C1 `9f3c00d`. Die ADR schaerft die Telemetry-
 Source-Architektur fuer die Live-Telemetry-Dashboard-
 Welle und schliesst Welle-0-Decision 11 (siehe
-[`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)).
+[`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)).
 Sie verankert eine NEUE Driving-Port-Surface
 `TelemetryStreamPort` (mit `publish()`/`subscribe()`/
 `TelemetryPoint`) plus den Stand-Adapter
@@ -54,10 +54,10 @@ Commit)
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie; `TelemetryStream
   Port` erweitert die Familie um einen Live-Pull-Slot).
-- [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
+- [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decision 11 (Telemetry-Source-Architektur war als offene
   Decision in Welle 0 hinterlegt; Welle 3 schliesst sie).
-- [`../planning/done/M5-welle-3.md §3`](../planning/done/M5-welle-3.md)
+- [`../planning/done/M5-welle-3.md §3`](../planning/done-archive/M5-welle-3.md)
   (Welle-3-Slice-Doc mit Decision-3/7/11 final).
 - **Probe-Run-Beleg** `5349923` — 4 Tests gruen in
   [`../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py`](../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py)
@@ -377,9 +377,9 @@ deterministisch (kein Wait-on-GC).
   Zeitreihen + Quality-Marker).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie).
-- [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
+- [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decision 11 (offene Decision, hier final geschlossen).
-- [`../planning/done/M5-welle-3.md §3`](../planning/done/M5-welle-3.md)
+- [`../planning/done/M5-welle-3.md §3`](../planning/done-archive/M5-welle-3.md)
   (Welle-3-Slice-Doc mit Decisions 3/7/11).
 - **Probe-Run-Beleg** `5349923` — 4 Tests gruen in
   [`../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py`](../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py)

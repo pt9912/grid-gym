@@ -25,7 +25,7 @@
   Modbus-Beleg positiv) + Doku-Review-Folge 2026-05-31
   (Move von `M4-welle-3.md` nach `done/`, Smoke-Abdeckung
   praezisiert, Folge-Slice
-  [`031`](../done/031-modbus-adapter-review-folge.md)
+  [`031`](../done-archive/031-modbus-adapter-review-folge.md)
   mit FC06-Guard und Fehler-Taxonomie umgesetzt);
   **Welle 4 `Done`** geschlossen 2026-05-31 mit C0 `7937e70`
   + C1 `74ed35b` + C2 `78fdd7a` (feat: `protocol_opcua/`-6-
@@ -35,7 +35,7 @@
   + C3 `7ad5baf` ([`ADR 0033`](../../adr/0033-opcua-adapter-profile.md) → `Provisional`, `M4-welle-4.md`
   → `Done`, Top-Level-Doku-Sync in 5 Docs) + Slice-032-
   Review-Folge 2026-05-31
-  ([`../done/032-opcua-adapter-review-folge.md`](../done/032-opcua-adapter-review-folge.md);
+  ([`../done/032-opcua-adapter-review-folge.md`](../done-archive/032-opcua-adapter-review-folge.md);
   6 HIGH + 11 MEDIUM Code-Review-Findings adressiert:
   Lifecycle-Lock + Start-Timeout in `OpcuaLoopThread`,
   Port-Exception-Filter um `RuntimeError`/`CancelledError`,
@@ -194,7 +194,7 @@
   **Welle 6a (Fault-Flow: UI-Form-Validation + YAML-
   Fault-Demo) abgeschlossen 2026-06-03** mit C0
   `1d6d85e` (Slice-Doc
-  [`M5-welle-6a.md`](../done/M5-welle-6a.md) + Sub-
+  [`M5-welle-6a.md`](../done-archive/M5-welle-6a.md) + Sub-
   Slicing-Beschluss + Decisions 19/20 final) + C2
   `db3a0c2` (Code-Merge: YAML-faults +
   `_compose_fault_port` Battery+Grid-Composition + UI-
@@ -214,7 +214,7 @@
   **Welle 6b (UI-Visualization: `GG-UI-006` Geraete-
   Grafik + `GG-UI-008` Sim-Zustand-Dashboard)
   abgeschlossen 2026-06-04** mit C0 `efc2c10` (Slice-
-  Doc [`M5-welle-6b.md`](../done/M5-welle-6b.md) + Decisions
+  Doc [`M5-welle-6b.md`](../done-archive/M5-welle-6b.md) + Decisions
   21/22/23 final) + C2 `9fcb887` (Code-Merge: NEU
   `GET /runs/{id}/devices/state` JSON-Surface in
   `_runs_router.py` + NEU `DevicesResponse`/
@@ -249,7 +249,7 @@
   Plotly/ECharts-Spike).
   **Welle 6c (Abnahmedoku `GG-DEMO-008`) abgeschlossen
   2026-06-04** mit C0 `3db9fcd` (Slice-Doc
-  [`M5-welle-6c.md`](../done/M5-welle-6c.md)) + C2 `0e604e4`
+  [`M5-welle-6c.md`](../done-archive/M5-welle-6c.md)) + C2 `0e604e4`
   (NEU `docs/user/gg-demo-008-abnahme.md` mit
   6-Schritt-Abnahmereihenfolge per `GG-DEMO-008`
   Lastenheft §24; Top-Level-Doku-Sync + Status-Block-
@@ -263,7 +263,7 @@
   Fault-Flow + 6b UI-Visualization + 6c Abnahmedoku;
   drei Sub-Slices analog M4-Welle-6 → 6a/6b-Pattern).
   **Welle 7 (M5-Closure) eroeffnet 2026-06-04** mit C0
-  (Slice-Doc [`M5-welle-7.md`](../done/M5-welle-7.md); Pattern
+  (Slice-Doc [`M5-welle-7.md`](../done-archive/M5-welle-7.md); Pattern
   analog M4-Welle-7). Welle-7-Substanz: 5 M5-ADRs
   (0036..0040) `Provisional → Accepted` (C1), NEU
   `done/M5-results.md` mit Welle-Tabelle/Abnahme-Belegen/
@@ -285,7 +285,7 @@
   Thread-Marshal, FC03/FC10-Defaults, Slave-Unit-ID per Target,
   in-process pymodbus-Server-Smoke; `Accepted` 2026-06-01 mit
   M4-Welle-7-C1). Review-Folge
-  [`031`](../done/031-modbus-adapter-review-folge.md)
+  [`031`](../done-archive/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-
   Fehler-Taxonomie und bewusste Smoke-Abgrenzung
   umgesetzt. **0033 `Accepted`** (M4-Welle-4 OPC-UA-
@@ -412,7 +412,7 @@ Vorbedingungen.
 `GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
 (`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
 2026-05-17 `Done` — Closure-Notiz in
-[`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md) +
+[`done/M1-tick-loop-spine.md`](../done-archive/M1-tick-loop-spine.md) +
 Welle-Tabelle in
 [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 M2..M6 sind vorbelegt (Scope-Skizze hier, aktive Slice-Plaene
@@ -425,10 +425,10 @@ Vorbelegung in §3 M6; Slice-Plan entsteht in M6-Welle-0.
 siehe [`done/M4-results.md`](../done/M4-results.md).)
 
 M2 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
-([`done/M2-devices.md`](../done/M2-devices.md)) inkl. Welle-7-Closure
+([`done/M2-devices.md`](../done-archive/M2-devices.md)) inkl. Welle-7-Closure
 ([`done/M2-devices-results.md`](../done/M2-devices-results.md)).
 M3 ist abgeschlossen: Slice-Plan ist nach `done/` gewandert
-([`done/M3-faults-agents-observability.md`](../done/M3-faults-agents-observability.md))
+([`done/M3-faults-agents-observability.md`](../done-archive/M3-faults-agents-observability.md))
 inkl. Welle-7-Closure
 ([`done/M3-results.md`](../done/M3-results.md)).
 
@@ -537,7 +537,7 @@ maschinenlesbar.
         M2-`devices/battery`, siehe Abnahme-Hinweis unten)
         (2026-05-17).
   - [x] Welle 7 — Closure-Notiz
-        [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md)
+        [`done/M1-tick-loop-spine.md`](../done-archive/M1-tick-loop-spine.md)
         + Welle-Tabelle in
         [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md);
         Triggers 009 + 010 nach `done/`, Trigger 015 (Production-
@@ -552,17 +552,17 @@ maschinenlesbar.
   M1-Abschluss. Volle Default-Gruen-Linie schliesst M2 (siehe
   M2-DoD).
 - **Status:** Done (2026-05-17) — Closure-Notiz
-  [`done/M1-tick-loop-spine.md`](../done/M1-tick-loop-spine.md),
+  [`done/M1-tick-loop-spine.md`](../done-archive/M1-tick-loop-spine.md),
   Welle-Tabelle
   [`done/M1-tick-loop-results.md`](../done/M1-tick-loop-results.md).
 
 ### M2 — Geraetemodelle
 
-**Slice-Plan:** [`done/M2-devices.md`](../done/M2-devices.md)
+**Slice-Plan:** [`done/M2-devices.md`](../done-archive/M2-devices.md)
 (Closure-Notiz); Welle-Tabelle + Abnahme-Belege:
 [`done/M2-devices-results.md`](../done/M2-devices-results.md);
 Welle-6c-Slice-Begleit:
-[`done/welle-6c.md`](../done/welle-6c.md).
+[`done/welle-6c.md`](../done-archive/welle-6c.md).
 
 - **Lieferziel:** produktive Geraetemodelle (Battery/BESS, PV,
   Load, Smart Meter, Grid Connection) als Konsumenten des
@@ -640,7 +640,7 @@ Drift seit M3-Welle-7-`c61ab0d` (nicht durch M4 verursacht;
 Base-Image-Bump als M5-Welle-0-Trigger); aufgeloest in
 M6-Welle-1-C2 `b514170` (2026-06-05) ohne Code-Edit
 (Debian-13.5-Upstream-Drift; siehe
-[`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md)). M3 ist `Done` (2026-05-25,
+[`../done/010-base-image-krb5-cve-bump.md`](../done-archive/010-base-image-krb5-cve-bump.md)). M3 ist `Done` (2026-05-25,
 siehe [`done/M3-results.md`](../done/M3-results.md)): drei Sub-
 Bereiche (Faults, Multi-Agent, Observability) ueber Welle 0..7
 geliefert; sechs M3-ADRs (0022/0023/0024/0025/0026/0027) auf
@@ -714,7 +714,7 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
 M4-Abschluss-Belege in
 [`../done/M4-results.md`](../done/M4-results.md);
 Slice-Plan in
-[`M4-protocol-adapters.md`](../done/M4-protocol-adapters.md)
+[`M4-protocol-adapters.md`](../done-archive/M4-protocol-adapters.md)
 (wandert nach `done/` mit Welle-7-C4-Self-Close-Move).
 9 Wellen 0..6b geliefert (5 produktive Adapter +
 2 Cross-Adapter-Hardening-Wellen); 6 M4-ADRs
@@ -761,7 +761,7 @@ Slice-Plan in
 ### M5 — UI + Demo (`Done` 2026-06-04)
 
 Welle 0 eroeffnet 2026-06-01 mit Slice-Doc + Slice-Plan
-([`M5-welle-0.md`](../done/M5-welle-0.md) + [`M5-ui-demo.md`](../done/M5-ui-demo.md))
+([`M5-welle-0.md`](../done-archive/M5-welle-0.md) + [`M5-ui-demo.md`](../done-archive/M5-ui-demo.md))
 + Pre-M5-Welle-0-Sondierungs-ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
 mit Maintainer-Decision-Indication „Option 1 (FastAPI +
@@ -876,7 +876,7 @@ einer Folge-Lieferung adressiert ohne ADR-Aenderung
 (Self-Close-Move `M5-welle-4b.md → done/`, rename-only) +
 Pre-C0b `45335eb` (Cross-Doc-Refs-Sync nach Move, 5 Files) +
 C0 `155c421` (Slice-Doc
-[`M5-welle-5.md`](../done/M5-welle-5.md) + Decisions 5/6/18 final +
+[`M5-welle-5.md`](../done-archive/M5-welle-5.md) + Decisions 5/6/18 final +
 Sub-Slicing-Risk-Verifikation — Single-Slice ohne
 Splittung). Welle 5 ist die **Demo-Welle** in M5: erfuellt
 `GG-DEMO-001..005` (5 MUSS) plus `GG-DEMO-007` (1 SOLLTE
@@ -938,7 +938,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 ### M6 — Performance + Security + CI/CD-Haertung (`Done` 2026-06-08)
 
 **Slice-Plan:**
-[`M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)
+[`M6-perf-security-cicd.md`](../done-archive/M6-perf-security-cicd.md)
 (angelegt M6-Welle-0-C1 `e050035`). **M6 abgeschlossen
 2026-06-08 mit Welle 7 (M6-Closure)**: [`ADR 0041`](../../adr/0041-performance-bench-pattern.md)..0046
 `Provisional → Accepted` (W7-C1), NEU
@@ -948,7 +948,7 @@ Roadmap-DoD-Sweep + Top-Level-Sync (W7-C3), Self-Close-Move
 (W7-C4a/C4b). Pattern analog M4-/M5-Welle-7. **M6-Welle-6
 (Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
 + Trigger 009) abgeschlossen 2026-06-08** (siehe
-[`M6-welle-6.md`](../done/M6-welle-6.md)) mit Stack C0 `fab6a8c`
+[`M6-welle-6.md`](../done-archive/M6-welle-6.md)) mit Stack C0 `fab6a8c`
 (Slice-Doc) / C1 `1d478e3` (NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md) `Provisional`) /
 C2 `f07e996` (feat: `GG-DEPLOY-006` NEU `/ready`-Endpoint
 mit Three-State-Status + Komponenten-Breakdown
@@ -966,7 +966,7 @@ M6-Welle-7-Closure. Self-Close-Folge C4a/C4b dient als
 M6-Welle-7-Pre-C0a/Pre-C0b.
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
 `4b76ff7..C4b dieser Commit` (siehe
-[`M6-welle-5c.md`](../done/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
+[`M6-welle-5c.md`](../done-archive/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
 an 4 Geraeten (Battery/Load/GridConnection/PV) per
 Lastenheft-Traceability Z. 2291; `GG-SAFE-006` ⚠ partial
 (Core-Diff-Algorithm `diff_replay` ✓ produktiv; Per-Lauf-
@@ -982,7 +982,7 @@ Smokes + Audit-Doku
 acht `GG-SAFE-*`-Lastenheft-IDs auditiert (sechs ✓ produktiv,
 zwei ⚠ partial mit `open/`-Triggern 034/035/036).
 **M6-Welle-5b abgeschlossen 2026-06-07** mit Stack `0d3bb61..
-C3 dieser Commit` (siehe [`M6-welle-5b.md`](../done/M6-welle-5b.md);
+C3 dieser Commit` (siehe [`M6-welle-5b.md`](../done-archive/M6-welle-5b.md);
 NEU [ADR 0045](../../adr/0045-http-api-request-strict-validation.md)
 `Provisional`; alle 6 [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)-Surfaces + 6 [`GG-SAFE-008`](../../../../spec/lastenheft.md#gg-safe-008)-
 Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku
@@ -993,19 +993,19 @@ Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku
 Healthcheck (alle vier Sub-Slices Done).
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
-[`../done/M6-welle-0.md`](../done/M6-welle-0.md)).
+[`../done/M6-welle-0.md`](../done-archive/M6-welle-0.md)).
 **M6-Welle-1 abgeschlossen 2026-06-05** mit Stack
 `4b1b3e9..d51d6e7` (siehe
-[`M6-welle-1.md`](../done/M6-welle-1.md); inkl. C4a `1fbd0ac`
+[`M6-welle-1.md`](../done-archive/M6-welle-1.md); inkl. C4a `1fbd0ac`
 Self-Close-Move + C4b `d51d6e7` Cross-Doc-Refs-Sync):
 Trigger-010-Aufloesung ohne Code-Edit durch Debian-13.5-
 Upstream-Patch-Drift + Trigger-015-Pattern; NEU [`ADR 0043`](../../adr/0043-image-audit-strategy.md)
 `Provisional` (Image-Audit-Strategie); Welle-1-D-1 (CI-
 Pflicht-Gate fuer `make fullbuild`) auf M6-Welle-3 vertagt
-ueber NEU [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md).
+ueber NEU [`../done/031-ci-make-fullbuild-gate.md`](../done-archive/031-ci-make-fullbuild-gate.md).
 **M6-Welle-2 abgeschlossen 2026-06-05** mit Stack
 `0cc28f3..b41b7fc` (siehe
-[`M6-welle-2.md`](../done/M6-welle-2.md); Self-Close-Move-Folge
+[`M6-welle-2.md`](../done-archive/M6-welle-2.md); Self-Close-Move-Folge
 Stack umfasst C0/2 Review-Folgen/C1/C2/C3/C3-Sensor-
 Erweiterung + C4a `c51d905` Self-Close-Move + C4b `b41b7fc`
 Cross-Doc-Refs-Sync): Trigger-
@@ -1019,7 +1019,7 @@ Pattern; Accept in M6-Welle-7-Closure-C1 gebuendelt mit
 [`ADR 0041`](../../adr/0041-performance-bench-pattern.md) + [`ADR 0043`](../../adr/0043-image-audit-strategy.md)).
 **M6-Welle-3 abgeschlossen 2026-06-05** mit Stack
 `08a8034..c36f734` (siehe
-[`M6-welle-3.md`](../done/M6-welle-3.md); Self-Close-Move-
+[`M6-welle-3.md`](../done-archive/M6-welle-3.md); Self-Close-Move-
 Folge C4a/C4b ausstehend als Welle-4-Pre-C0a/Pre-C0b):
 NEU 4 GitHub-Actions-Workflows (`tests.yml`/`coverage.yml`/
 `dep-audit.yml`/`fullbuild.yml`); Python-3.13/3.14-Matrix
@@ -1176,13 +1176,13 @@ Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
 wandern bei Aktivierung nach `in-progress/`):
 
 - `GG-MVP-002` ReplaySource-Integration — **aktiv als M7-Welle-1**
-  (Gruppenplan [`M7-welle-1.md`](../done/M7-welle-1.md); sub-sliced **1a**
+  (Gruppenplan [`M7-welle-1.md`](../done-archive/M7-welle-1.md); sub-sliced **1a**
   Zeitreihen-Persistenz / **1b** Replay-Lifecycle +
   `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
   (in 1b).
 - `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
   — **Done 2026-06-10 als M7-Welle-2** (Plan
-  [`M7-welle-2.md`](../done/M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
+  [`M7-welle-2.md`](../done-archive/M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
   034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
   036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
@@ -1193,15 +1193,15 @@ Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md` +
 carveouts-Triage 034/035 → `Active in M7-Welle-3`)
 **abgeschlossen** (C0..C4b). **M7-Welle-1** (`GG-MVP-002`) aktiv,
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
-[`M7-welle-1.md`](../done/M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
-([`M7-welle-1a.md`](../done/M7-welle-1a.md); Zeitreihen-Persistenz,
+[`M7-welle-1.md`](../done-archive/M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
+([`M7-welle-1a.md`](../done-archive/M7-welle-1a.md); Zeitreihen-Persistenz,
 NEU `TelemetrySinkPort` + [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md)). **Welle 1b weiter sub-sliced**
 (1b-a-D-1): 1b-a (`ReplaySnapshotPort`, [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md)) + 1b-b
 (Lifecycle-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-
 Preflight, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **M7-Welle-1b-a Done 2026-06-09**
-([`M7-welle-1b-a.md`](../done/M7-welle-1b-a.md); `ReplaySnapshotPort`-
+([`M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md); `ReplaySnapshotPort`-
 Rekonstruktion aus `telemetry_points`). **M7-Welle-1b-b Done
-2026-06-09** ([`M7-welle-1b-b.md`](../done/M7-welle-1b-b.md); Closure —
+2026-06-09** ([`M7-welle-1b-b.md`](../done-archive/M7-welle-1b-b.md); Closure —
 Core-`finalize()`-Naht + `replay_diff_status` + GG-TERM-Preflight +
 Zwei-Lauf-E2E-Beleg, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **`GG-MVP-002` ✓ produktiv**;
 **M7-Welle-1 komplett** (1a + 1b-a + 1b-b; Gruppenplan wandert mit
@@ -1209,18 +1209,18 @@ der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
 [Trigger 039](../open/039-api-replay-trigger-surface.md).
 **M7-Welle-2 Done 2026-06-10** (`GG-MVP-003` Abnahme-CLI;
-[`M7-welle-2.md`](../done/M7-welle-2.md); `make accept` + `tools/accept.py` +
+[`M7-welle-2.md`](../done-archive/M7-welle-2.md); `make accept` + `tools/accept.py` +
 Shared `src/grid_gym/scenario_yaml.py`, D-1..D-10 final mit D-10-
 Revision C, Replay-Step standalone wegen
 [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md);
 commits `33ac255` + `92d10f5`). **`GG-MVP-003` ✓ produktiv → alle vier
 `GG-MVP-*`-Punkte produktiv** (001/002/003/004). **Aktiver Slice
 jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
-[`max_age`](../done/034-safe-004-max-age-stale-quality.md) + 035
-[Comm-Failure](../done/035-safe-003-comm-failure-missing-quality.md)),
+[`max_age`](../done-archive/034-safe-004-max-age-stale-quality.md) + 035
+[Comm-Failure](../done-archive/035-safe-003-comm-failure-missing-quality.md)),
 **aktiviert mit Welle-3-C0 2026-06-11**: Gruppenplan
-[`M7-welle-3.md`](../done/M7-welle-3.md), sub-sliced **3a**
-(`max_age`-`STALE`-Stage, [`M7-welle-3a.md`](../done/M7-welle-3a.md),
+[`M7-welle-3.md`](../done-archive/M7-welle-3.md), sub-sliced **3a**
+(`max_age`-`STALE`-Stage, [`M7-welle-3a.md`](../done-archive/M7-welle-3a.md),
 zuerst; [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)) + **3b** (Adapter-Comm-Failure + Alarm; Slice-Doc
 via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
 **M7-Welle-3a Done 2026-06-11** (`max_age_ms`-Kwarg +
@@ -1228,7 +1228,7 @@ Core-`STALE`-Stage + [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)
 `5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
 `docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
 **M7-Welle-3b Done 2026-06-12** (`GG-SAFE-003` Comm-Failure,
-Trigger 035; [`M7-welle-3b.md`](../done/M7-welle-3b.md); NEU
+Trigger 035; [`M7-welle-3b.md`](../done-archive/M7-welle-3b.md); NEU
 `CommFailureGuardedDeviceProtocolPort`-Wrapper +
 `adapter_communication_lost`-Alarm-Vertrag, [`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md); commits
 `3f28be1` + Review-Folge `82704b1`; 3b-D-1 = voller
@@ -1236,7 +1236,7 @@ Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
 **`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
 komplett — alle vier `GG-SAFE-001..004` produktiv.**
 **M7-Welle-X Done 2026-06-12** (M7-Closure;
-[`M7-welle-X.md`](../done/M7-welle-X.md)): fuenf M7-ADRs
+[`M7-welle-X.md`](../done-archive/M7-welle-X.md)): fuenf M7-ADRs
 0047/0048/0049/0052/0053 `Provisional → Accepted` (0050/0051
 bleiben `Proposed` per X-D-2 — eigene Lifecycle-Bedingungen,
 Umsetzungsslices kein M7-Lieferpunkt) + NEU
@@ -1257,7 +1257,7 @@ Vor M1 muessen folgende Punkte geklaert sein:
 - [x] **`GG-AR-OPEN-001` Sprach- und Build-Wahl** — geschlossen mit
       `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
       (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
-      [`docs/plan/planning/done/spike-0.md`](../done/spike-0.md).
+      [`docs/plan/planning/done/spike-0.md`](../done-archive/spike-0.md).
 - [x] **`GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse**
       — geschlossen mit
       [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)
@@ -1278,4 +1278,4 @@ Vor M1 muessen folgende Punkte geklaert sein:
       Erfuellt 2026-05-15 mit
       [`docs/user/code-review.md`](../../../user/code-review.md) und
       `.github/PULL_REQUEST_TEMPLATE.md`; Closure-Notiz in
-      [`done/001-code-review-doc.md`](../done/001-code-review-doc.md).
+      [`done/001-code-review-doc.md`](../done-archive/001-code-review-doc.md).

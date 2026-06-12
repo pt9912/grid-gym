@@ -2,7 +2,7 @@
 
 **Status:** Open — Trigger-Watch
 **Datum:** 2026-05-20
-**Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done/M2-devices.md)
+**Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §10.6 (`GG-BESS-006`/`007`).
 
 ---

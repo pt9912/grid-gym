@@ -1,19 +1,4 @@
-# Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check) — ersetzt
-# tools/check_refs.py (Trigger 002; Rollout 2026-06-12,
-# Python-Familie). Scan über die Repo-Wurzel: deckt den Alt-Scope
-# (AGENTS.md, docs/, spec/, harness/) ab und nimmt die übrige
-# Root-Doku (README*, CHANGELOG, CONTRIBUTING) als Mehr-Abdeckung
-# mit; src/ (vendored UI-Doku) und .github/ (PR-Template mit
-# Platzhaltern) bleiben außen vor. `anchors` ist Mehr-Abdeckung.
-# `ids` (Trigger 043, d-check v0.3.0 <modul>.scope): Linkpflicht für
-# Kennungen überall außer in eingefrorener Historie:
-# docs/plan/planning/done/** (Wellen-/Closure-Audit-Trail) und
-# CHANGELOG.md (released Einträge). ADRs + aktive Planning-Docs
-# sind drin (Link-Pflege per ADR-0028-Linie). AC-*-Target ist das
-# adr/-VERZEICHNIS: Contracts deklarieren sich in ihrem
-# jeweiligen ADR (0002 §A-1, 0029, 0035, …) — adr-interne
-# Vorkommen sind target-exempt.
-# Muster-Reihenfolge = Präzedenz (GG-AR- vor GG-).
+# Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check)
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
@@ -22,13 +7,19 @@ modules: [links, anchors, ids]
 ids:
   scope:
     roots: ["."]
-    ignore: ["docs/plan/planning/done/**", "CHANGELOG.md", "src/**", ".github/**"]
+    ignore:
+      [
+        "docs/plan/planning/done-archive/**",
+        "CHANGELOG.md",
+        "src/**",
+        ".github/**",
+      ]
   patterns:
     - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
       target: spec/architecture.md
     - regex: 'GG-[A-Z]+-\d{3}'
       target: spec/lastenheft.md
-    - regex: 'AC-[A-Z][A-Z0-9-]+'
+    - regex: "AC-[A-Z][A-Z0-9-]+"
       target: docs/plan/adr/
     - regex: 'ADR[- ]\d{4}'
       target: docs/plan/adr/

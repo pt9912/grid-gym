@@ -2,7 +2,7 @@
 
 **Quelle:** M6-Welle-5c (SOLLTE-Items + IP/Netz-
 Beschraenkung;
-[`../plan/planning/done/M6-welle-5c.md`](../plan/planning/done/M6-welle-5c.md)).
+[`../plan/planning/done/M6-welle-5c.md`](../plan/planning/done-archive/M6-welle-5c.md)).
 **Stand:** 2026-06-07.
 
 Dieses Dokument richtet sich an Maintainer und Demo-Operator,

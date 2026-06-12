@@ -6,7 +6,7 @@
 Review-Folge 2026-05-31: Welle-3-Smoke-Abdeckung praezisiert,
 FC06-Multi-Register-Guard und Read-/Write-Fehler-Taxonomie
 in
-[`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+[`done/031`](../planning/done-archive/031-modbus-adapter-review-folge.md)
 umgesetzt. Initial-Entwurf
 (`Proposed`) 2026-05-30 mit M4-Welle-3-C1 `a86ac46`; C2-Merge
 `d721982` (feat `protocol_modbus/`-5-Modul-Paket + 95 neue
@@ -55,9 +55,9 @@ ist strikt, Roundtrip ist tolerant),
 (OTLP-Adapter-Praezedenz fuer Welle-6-Span-Wrap-Forward-
 Pointer — Welle 3 wrappt **noch keine** Adapter-Calls).
 M4-Slice-Plan
-[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 3; M4-Welle-0-Decision-Liste
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 Decision 4 (Profile-Deklaration) + Decision 5
 (Test-Sibling-Container — **Modbus-Container-Lizenz-
 Risiko explizit dokumentiert**) + Decision 6
@@ -80,7 +80,7 @@ Mosquitto-Sibling-Pattern als Praezedenz fuer Sibling-
 im-Test; **Welle 3 weicht bewusst ab** (siehe §2.6
 Decision M-f).
 Trigger 006
-[`open/006`](../planning/done/006-mypy-strict-bytes.md)
+[`open/006`](../planning/done-archive/006-mypy-strict-bytes.md)
 (`mypy --strict-bytes`) — Modbus ist die erste produktive
 `bytes`/`int`/`float`-Konvertierungs-Stelle im Repo;
 C3-Re-Eval folgt mit konkretem Code-Beleg.
@@ -121,7 +121,7 @@ Sub-Entscheidungen **konkret**:
   Server-Sibling im Integration-Test bereitgestellt?
 
 Die M4-Welle-0-Decision-Liste
-([`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3)
+([`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3)
 hat Decision 4 (Profile-Deklaration) als Adapter-
 spezifische Frage markiert und Decision 5 (Test-Sibling-
 Container) das **Modbus-Container-Lizenz-Risiko** explizit
@@ -405,7 +405,7 @@ Welle 3 Allow-List, Access-Vertraeglichkeit (kein FC03
 mit `access="write"`, kein FC06 mit `access="read"`) und
 seit Review-Folge 2026-05-31 datatype-spezifisch, dass
 FC06 nur fuer Single-Register-Datatypes erlaubt ist
-([`done/031`](../planning/done/031-modbus-adapter-review-folge.md)).
+([`done/031`](../planning/done-archive/031-modbus-adapter-review-folge.md)).
 
 **Begruendung:**
 
@@ -426,7 +426,7 @@ dispatcht function_code -> `client.write_register(...)`
 oder `client.write_registers(...)`. Default-Resolver
 (`access -> function_code`) im `_config.py`. FC06 fuer
 Multi-Register-Datatypes wird seit
-[`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+[`done/031`](../planning/done-archive/031-modbus-adapter-review-folge.md)
 fail-fast als Config-Fehler abgelehnt.
 
 ### 2.5 Decision M-e — Slave-Unit-ID per Target (final)
@@ -642,7 +642,7 @@ offen.
   Smoke-Regression-Schutz pruefen — der Welle-1-§7-
   Folge-Pflicht-Planted-Violator-Property-Test bleibt
   Welle-6-Material (siehe
-  [`../planning/done/M4-welle-1.md`](../planning/done/M4-welle-1.md)
+  [`../planning/done/M4-welle-1.md`](../planning/done-archive/M4-welle-1.md)
   §7 Folge-Mitigation; Welle-2-Verzicht wurde in
   ADR 0031 §4 dokumentiert; Welle 3 setzt das Pattern
   fort).
@@ -715,14 +715,14 @@ offen.
   abgeschlossen: `mypy --strict-bytes` laeuft ohne
   zusaetzliche `# type: ignore`-Inflation gegen den
   Modbus-Code (siehe
-  [`open/006`](../planning/done/006-mypy-strict-bytes.md);
+  [`open/006`](../planning/done-archive/006-mypy-strict-bytes.md);
   Trigger ist aktivierungs-reif; Aktivierung bleibt
   separater Folge-Slice).
   Doku-Review-Folge 2026-05-31: Integration-Smoke ist
   als Default-Profil-E2E-Test dokumentiert; Byte-Order-/
   Word-Swap-Matrix und Unit-ID-Override sind nicht als
   E2E-Smoke geliefert. Review-Folge
-  [`done/031`](../planning/done/031-modbus-adapter-review-folge.md)
+  [`done/031`](../planning/done-archive/031-modbus-adapter-review-folge.md)
   hat FC06-Multi-Register-Guard, Read-/Write-Fehler-
   Taxonomie und Adapter-Rand-Fehleruebersetzung umgesetzt.
 - **Accepted** — 2026-06-01 mit M4-Welle-7-C1 (dieser

@@ -4,7 +4,7 @@
 **Datum:** 2026-06-07
 **Quelle:** M6-Welle-6-C0 (Deploy-Hardening + IEC-Smoke-
 Pfad-B; siehe
-[`../in-progress/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)
+[`../in-progress/M6-perf-security-cicd.md`](../done-archive/M6-perf-security-cicd.md)
 §3.1 Welle-Status-Tabelle: „`GG-DEPLOY-007..010` ⏸ M7+
 per Lastenheft-Traceability Z. 2308").
 
@@ -374,7 +374,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 
 ## Bezug
 
-- [`../in-progress/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)
+- [`../in-progress/M6-perf-security-cicd.md`](../done-archive/M6-perf-security-cicd.md)
   §3.1 Welle-Status-Tabelle — Welle-6-Substanz fuer
   `GG-DEPLOY-006` (`/ready`-Endpoint) ist die Vorbedingung
   fuer K8s-Readiness-Probe; `GG-DEPLOY-007..010` bleiben dort

@@ -264,7 +264,7 @@ docker compose -f tests/integration/compose.yml run --rm test-runner \
 ```
 
 Historischer Kontext zur Tooling-Erbschaft: Trigger 029
-([`done/029-otlp-span-grpc-export-edge-case.md`](../plan/planning/done/029-otlp-span-grpc-export-edge-case.md))
+([`done/029-otlp-span-grpc-export-edge-case.md`](../plan/planning/done-archive/029-otlp-span-grpc-export-edge-case.md))
 wurde als Fehlbefund geschlossen — der vermutete OTLP-gRPC-Span-
 Export-Bug existierte nicht, der Smoke-Test hatte schlicht das
 `Name           : tick.cycle`-Padding-Format nicht im Span-Regex
@@ -292,8 +292,8 @@ Telemetry-Endpunkt und das Diagnose-Tooling.
 
 - [ADR 0024 — Observability-Port-Trio](../plan/adr/0024-observability-port-trio.md)
 - [ADR 0027 — RuleBasedAgent + Scenario-Pattern](../plan/adr/0027-rule-based-agent-scenario-pattern.md)
-- [M3-Welle-6 Slice-Plan](../plan/planning/done/M3-welle-6.md)
-- [Trigger 029 — OTLP-Span-gRPC-Export-Edge-Case (Done: Fehlbefund)](../plan/planning/done/029-otlp-span-grpc-export-edge-case.md)
+- [M3-Welle-6 Slice-Plan](../plan/planning/done-archive/M3-welle-6.md)
+- [Trigger 029 — OTLP-Span-gRPC-Export-Edge-Case (Done: Fehlbefund)](../plan/planning/done-archive/029-otlp-span-grpc-export-edge-case.md)
 - [`deploy/compose.yml`](../../deploy/compose.yml)
 - [`deploy/otel-collector-config.yaml`](../../deploy/otel-collector-config.yaml)
 - [`tools/wait_otel_collector.py`](../../tools/wait_otel_collector.py)

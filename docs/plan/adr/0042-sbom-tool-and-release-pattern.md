@@ -27,7 +27,7 @@ Provisional`; 2026-06-08 — `Provisional → Accepted`
   Pattern fuer Trivy-Image-Audit; ADR 0042 und ADR 0043
   leben parallel ohne Tool-Konflikt (Syft fuer SBOM-
   Generierung, Trivy fuer Vuln-Scanning).
-- [Trigger 008](../planning/done/008-sbom-activation.md) —
+- [Trigger 008](../planning/done-archive/008-sbom-activation.md) —
   SBOM-Aktivierungs-Erst-Anwendungsfall.
 
 ---
@@ -51,7 +51,7 @@ Demo-Abnahmeartefakte." Vor dieser ADR existierte im Repo:
   Workflow im Repo; deckt vier A-1-Pflicht-Gates (lint,
   format-check, typecheck, arch-check). **Kein Release-
   Workflow vorhanden**.
-- **Trigger 008** ([`done/008-sbom-activation.md`](../planning/done/008-sbom-activation.md))
+- **Trigger 008** ([`done/008-sbom-activation.md`](../planning/done-archive/008-sbom-activation.md))
   als SBOM-Aktivierungs-Anker bereits formalisiert.
 
 Das ist eine A-1-Luecke: ein zukuenftiger Reviewer kann
@@ -236,7 +236,7 @@ dieser ADR; sie pinnt `linux/amd64`-only.
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 Erst-Anwendung der §2-Substanz (Trigger-008-Aufloesung)
 leben in der zugehoerigen Slice-Doc
-[`M6-welle-2.md`](../planning/done/M6-welle-2.md). Dort sind
+[`M6-welle-2.md`](../planning/done-archive/M6-welle-2.md). Dort sind
 die NEU-Files (`.github/workflows/release.yml`,
 `.gitignore`-`artifacts/`-Block) und die Edits am
 `Makefile`-`sbom`-Target sowie am `Dockerfile` mit

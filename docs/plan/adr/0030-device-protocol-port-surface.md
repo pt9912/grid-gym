@@ -40,9 +40,9 @@ Decision 2 „Port bleibt Protokoll-Library-frei";
 Trio-Definitionen in §2.2–§2.4 spiegeln das Pattern
 pro Port).
 M4-Slice-Plan
-[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 1; M4-Welle-0-Decision-Liste
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 (Items 1, 2, 3, 7).
 Lastenheft §16 (`GG-MQTT-001`, `GG-MODB-001`,
 `GG-OPCUA-001`, `GG-DNP3-001`, `GG-IEC-001` — alle
@@ -56,7 +56,7 @@ explizite Adapter-Verortung — daraus folgt, und **diese
 ADR schreibt es normativ fest**, dass Protokoll-Adapter
 im `simulation`-Container leben und keinen eigenen
 Compose-Service erhalten; vgl. Welle-0-Inferenz in
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md)
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md)
 §1).
 
 ---
@@ -72,7 +72,7 @@ Port-Surface, auf der Welle 2..5 die konkreten Adapter
 (MQTT/Modbus/OPC-UA/DNP3/IEC) aufsetzen.
 
 Die M4-Welle-0-Decision-Liste
-([`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3)
+([`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3)
 hat sieben offene Fragen gesammelt. ADR 0030 entscheidet
 die Surface-relevanten Fragen — Decision 2 (Sync/Async),
 Decision 3 (Lifecycle), Decision 7 (Snapshot-Pflicht) —

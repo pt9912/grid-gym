@@ -3,7 +3,7 @@
 **Status:** Done (2026-05-17). M1-Abschluss-Gate
 `make fullbuild` mit explizitem
 `CRITICAL_COV_TARGETS`-Override gruen.
-**Bezug:** Slice-Plan [`M1-tick-loop-spine.md`](M1-tick-loop-spine.md);
+**Bezug:** Slice-Plan [`M1-tick-loop-spine.md`](../done-archive/M1-tick-loop-spine.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §3 M1.
 
@@ -13,11 +13,11 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 
 | Welle | Datum       | Lieferung                                                                                           | Commits          |
 | ----- | ----------- | --------------------------------------------------------------------------------------------------- | ---------------- |
-| 0     | 2026-05-15  | ADR 0007 `Provisional`, Trigger 001 (Code-Review-Doku + PR-Template), Lock-Refresh                  | siehe Trigger 001 |
+| 0     | 2026-05-15  | [`ADR 0007`](../../adr/0007-random-port.md) `Provisional`, Trigger 001 (Code-Review-Doku + PR-Template), Lock-Refresh                  | siehe Trigger 001 |
 | 1     | 2026-05-17  | Domain-Modelle: `Quality`/`CommandResult` (StrEnum), `RunMetadata`/`TelemetryPoint`/`Command`/`Event` (Frozen-Dataclasses), `SnapshotEnvelope` mit `version:int`-Konvention | `7d4cee5`, `97dad24` |
-| 2     | 2026-05-17  | Driven-Ports `ClockPort`/`RandomPort`; `MersenneTwisterRandomPort`-Adapter; ADR 0007 `Accepted` + Trigger 003 done | `33d6ec8`, `72ebaa1`, `efe6f60` |
+| 2     | 2026-05-17  | Driven-Ports `ClockPort`/`RandomPort`; `MersenneTwisterRandomPort`-Adapter; [`ADR 0007`](../../adr/0007-random-port.md) `Accepted` + Trigger 003 done | `33d6ec8`, `72ebaa1`, `efe6f60` |
 | 3     | 2026-05-17  | Deterministischer `Scheduler` mit Tie-Breaking `(time, priority, source, sequence, event_id)`       | `75b0940`, `ae20b4f` |
-| 4     | 2026-05-17  | `TickLoop` + `TickResult`; Snapshot-Composition via `RandomPort.snapshot_as_mapping` (ADR 0010); Trigger 012 done; ADR 0011 (Schaerfung ohne Supersedes) | `75804e6`, `28adab0`, `9f595e7`, `d08b5a9` |
+| 4     | 2026-05-17  | `TickLoop` + `TickResult`; Snapshot-Composition via `RandomPort.snapshot_as_mapping` ([`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)); Trigger 012 done; [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) (Schaerfung ohne Supersedes) | `75804e6`, `28adab0`, `9f595e7`, `d08b5a9` |
 | 5     | 2026-05-17  | Scenario-Loader + Validator + Hash (`GG-SCN-001..008`); Replay-Mapper + Diff (`GG-REPLAY-001..003`/`007`); Triggers 013 + 014 (open) | `d4029e3`, `b2e1517`, `04ce698`, `51bf108`, `b18f3f1` |
 | 6a    | 2026-05-17  | FastAPI-Adapter `adapters/driving/http_api/`; `make openapi-validate` gruen                          | `ffbca2c` |
 | 6b    | 2026-05-17  | `RunRepositoryPort` + `InMemoryRunRepository`; FastAPI-Wiring via `configure_run_repository`        | `395634f` |
@@ -101,7 +101,7 @@ Triggers vermerkt:
   (`Accepted`).
 - `ADR 0011` — Schaerfung durch parallele ADR ohne Supersedes
   (`Accepted`, Self-bootstrap).
-- `ADR 0008` — Enum-Subklassen als AC-DOMAIN-FROZEN-Form
+- `ADR 0008` — Enum-Subklassen als [`AC-DOMAIN-FROZEN-F`](../../adr/0008-enum-as-domain-frozen-form.md#adr-0008--enum-subklassen-als-ac-domain-frozen-form)orm
   (`Provisional` → `Accepted` mit M1-Welle-1-PR-Mergung).
 
 ## 6. Reviewer-Stempel
@@ -176,7 +176,7 @@ dieses Stacks bzw. Welle-7-Final-Review-Output). Befunde:
     `uv sync --no-editable` + Shebang-Rewrite) als M2-Welle-0-
     Vorab-Raeumung einplanen, bevor neue Adapter mit den
     Welle-6d-Pragma-Hacks koppeln.
-  - **S-5**: ADR-0008+0011-Erweiterungs-Pattern strikt
+  - **S-5**: [`ADR-0008`](../../adr/0008-enum-as-domain-frozen-form.md)+0011-Erweiterungs-Pattern strikt
     fortsetzen (neue Domain-Form → eigene Erweiterungs-ADR,
     nicht Supersedes).
   - **S-6**: Lastenheft-Sektionen-6-25-Coverage als

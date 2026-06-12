@@ -13,9 +13,9 @@ Skizze, abgeloeste Felder),
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 §3 (Erweiterungs-ADR ohne `Supersedes`, weil rein erweiternd),
 M1-Slice-Plan
-[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done/M1-tick-loop-spine.md)
+[`docs/plan/planning/done/M1-tick-loop-spine.md`](../planning/done-archive/M1-tick-loop-spine.md)
 §3 Welle 2,
-[`docs/plan/planning/done/003-random-port-adr.md`](../planning/done/003-random-port-adr.md)
+[`docs/plan/planning/done/003-random-port-adr.md`](../planning/done-archive/003-random-port-adr.md)
 (Trigger-Closure).
 
 ---

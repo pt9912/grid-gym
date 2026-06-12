@@ -68,7 +68,7 @@ make demo-stop
 **Welle:** M5-Welle-5 (Demo-Pipeline +
 `GRID_GYM_DEMO_SCENARIO_PATH`-Lifespan-Branch + `make demo`-
 Target);
-[`docs/plan/planning/done/M5-welle-5.md`](../plan/planning/done/M5-welle-5.md).
+[`docs/plan/planning/done/M5-welle-5.md`](../plan/planning/done-archive/M5-welle-5.md).
 
 ---
 
@@ -93,7 +93,7 @@ Service-Health ist ausserdem im Welle-6b-System-Dashboard sichtbar
 
 **Welle:** M1-Welle-6a (Liveness-Probe) + M5-Welle-2 (UI-Health-
 Page);
-[`docs/plan/planning/done/M5-welle-2.md`](../plan/planning/done/M5-welle-2.md).
+[`docs/plan/planning/done/M5-welle-2.md`](../plan/planning/done-archive/M5-welle-2.md).
 
 ---
 
@@ -119,7 +119,7 @@ Browser:
 - Quality-Marker wechseln im Fault-Window (siehe Schritt 4).
 
 **Welle:** M5-Welle-3 (Live-Telemetry-Dashboard);
-[`docs/plan/planning/done/M5-welle-3.md`](../plan/planning/done/M5-welle-3.md).
+[`docs/plan/planning/done/M5-welle-3.md`](../plan/planning/done-archive/M5-welle-3.md).
 
 ### 3.2 Geraete-Tabelle (`GG-UI-006`)
 
@@ -144,7 +144,7 @@ curl -s http://localhost:8000/runs/demo-run-0001/devices/state | jq .
 ```
 
 **Welle:** M5-Welle-6b (UI-Visualization-Pages + Devices-API);
-[`docs/plan/planning/done/M5-welle-6b.md`](../plan/planning/done/M5-welle-6b.md).
+[`docs/plan/planning/done/M5-welle-6b.md`](../plan/planning/done-archive/M5-welle-6b.md).
 
 ### 3.3 Simulations-Zustands-Dashboard (`GG-UI-008`)
 
@@ -168,9 +168,9 @@ curl -s http://localhost:8000/runs/demo-run-0001/status | jq .
 
 **Welle:** M5-Welle-4a (Status-Endpunkt + TickLoop-Wiring) +
 M5-Welle-6b (System-Page);
-[`docs/plan/planning/done/M5-welle-4a.md`](../plan/planning/done/M5-welle-4a.md)
+[`docs/plan/planning/done/M5-welle-4a.md`](../plan/planning/done-archive/M5-welle-4a.md)
 +
-[`docs/plan/planning/done/M5-welle-6b.md`](../plan/planning/done/M5-welle-6b.md).
+[`docs/plan/planning/done/M5-welle-6b.md`](../plan/planning/done-archive/M5-welle-6b.md).
 
 ### 3.4 Alarme
 
@@ -185,7 +185,7 @@ erscheinen die im Fault-Window emittierten Alarme (siehe
 Schritt 4).
 
 **Welle:** M5-Welle-4b (Alarm-Aggregation + Alarm-Tabelle);
-[`docs/plan/planning/done/M5-welle-4b.md`](../plan/planning/done/M5-welle-4b.md).
+[`docs/plan/planning/done/M5-welle-4b.md`](../plan/planning/done-archive/M5-welle-4b.md).
 
 ---
 
@@ -227,7 +227,7 @@ Outputs (`GG-SIM-001`).
 
 **Welle:** M5-Welle-6a (`_compose_fault_port` Battery + Grid-
 Adapter; YAML-`faults:`-Block);
-[`docs/plan/planning/done/M5-welle-6a.md`](../plan/planning/done/M5-welle-6a.md).
+[`docs/plan/planning/done/M5-welle-6a.md`](../plan/planning/done-archive/M5-welle-6a.md).
 
 ### 4.2 UI-Form-Validation (`GG-UI-007`)
 
@@ -288,7 +288,7 @@ curl -s -X POST http://localhost:8000/runs/demo-run-0001/control \
 ```
 
 **Welle:** M5-Welle-4a (TickLoop-Control + Replay-UI);
-[`docs/plan/planning/done/M5-welle-4a.md`](../plan/planning/done/M5-welle-4a.md).
+[`docs/plan/planning/done/M5-welle-4a.md`](../plan/planning/done-archive/M5-welle-4a.md).
 
 ---
 
@@ -317,7 +317,7 @@ Heutiger Endpoint liefert nur den **Schema-Pointer**; der volle
 M6-Replay-Surface (siehe Bekannte Einschraenkungen unten).
 
 **Welle:** M5-Welle-1 (Endpoint-Stub) + [`ADR 0015`](../plan/adr/0015-snapshot-envelope-v2.md) (Envelope-v2);
-[`docs/plan/planning/done/M5-welle-1.md`](../plan/planning/done/M5-welle-1.md).
+[`docs/plan/planning/done/M5-welle-1.md`](../plan/planning/done-archive/M5-welle-1.md).
 
 ### 6.2 Live-Telemetry-Stream (WebSocket)
 
@@ -345,9 +345,9 @@ curl -s 'http://localhost:8000/runs/demo-run-0001/alarms-history?limit=50' | jq 
 
 **Welle:** M5-Welle-3 (Telemetry-WS) + M5-Welle-4b (Alarm-WS +
 History);
-[`docs/plan/planning/done/M5-welle-3.md`](../plan/planning/done/M5-welle-3.md)
+[`docs/plan/planning/done/M5-welle-3.md`](../plan/planning/done-archive/M5-welle-3.md)
 +
-[`docs/plan/planning/done/M5-welle-4b.md`](../plan/planning/done/M5-welle-4b.md).
+[`docs/plan/planning/done/M5-welle-4b.md`](../plan/planning/done-archive/M5-welle-4b.md).
 
 ### 6.3 Postgres-Persistenz
 
@@ -423,5 +423,5 @@ ohne Override; `make test-integration` gruen).
   (Trigger 009).
 
 Siehe
-[`docs/plan/planning/in-progress/M5-ui-demo.md §3.2 Welle 7`](../plan/planning/done/M5-ui-demo.md)
+[`docs/plan/planning/in-progress/M5-ui-demo.md §3.2 Welle 7`](../plan/planning/done-archive/M5-ui-demo.md)
 fuer den Welle-7-Closure-Plan.

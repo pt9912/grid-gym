@@ -18,15 +18,15 @@ Pattern-Praezedenz: jedes Profil ist inline im
 
 | Adapter         | ADR                                                                  | Status       | Lastenheft-Cluster | M4-Welle | DoD-Beleg                                                                                                                |
 | --------------- | -------------------------------------------------------------------- | ------------ | ------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **MQTT**        | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md)         | Provisional  | `GG-MQTT-001`      | Welle 2  | [`done/M4-welle-2.md`](../docs/plan/planning/done/M4-welle-2.md)                                                       |
-| **Modbus-TCP**  | [`ADR 0032`](../docs/plan/adr/0032-modbus-adapter-profile.md)       | Provisional  | `GG-MODB-001`      | Welle 3  | [`done/M4-welle-3.md`](../docs/plan/planning/done/M4-welle-3.md) + [Slice 031](../docs/plan/planning/done/031-modbus-adapter-review-folge.md) |
-| **OPC-UA**      | [`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md)        | Provisional  | `GG-OPCUA-001`     | Welle 4  | [`done/M4-welle-4.md`](../docs/plan/planning/done/M4-welle-4.md) + [Slice 032](../docs/plan/planning/done/032-opcua-adapter-review-folge.md)  |
-| **DNP3**        | [`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md)         | Provisional  | `GG-DNP3-001`      | Welle 5a | [`done/M4-welle-5a.md`](../docs/plan/planning/done/M4-welle-5a.md)                                                     |
-| **IEC-61850**   | [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md)     | Provisional  | `GG-IEC-001`       | Welle 5b | [`done/M4-welle-5b.md`](../docs/plan/planning/done/M4-welle-5b.md) + [Slice 033](../docs/plan/planning/done/033-iec61850-adapter-review-folge.md) |
+| **MQTT**        | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md)         | Provisional  | `GG-MQTT-001`      | Welle 2  | [`done/M4-welle-2.md`](../docs/plan/planning/done-archive/M4-welle-2.md)                                                       |
+| **Modbus-TCP**  | [`ADR 0032`](../docs/plan/adr/0032-modbus-adapter-profile.md)       | Provisional  | `GG-MODB-001`      | Welle 3  | [`done/M4-welle-3.md`](../docs/plan/planning/done-archive/M4-welle-3.md) + [Slice 031](../docs/plan/planning/done-archive/031-modbus-adapter-review-folge.md) |
+| **OPC-UA**      | [`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md)        | Provisional  | `GG-OPCUA-001`     | Welle 4  | [`done/M4-welle-4.md`](../docs/plan/planning/done-archive/M4-welle-4.md) + [Slice 032](../docs/plan/planning/done-archive/032-opcua-adapter-review-folge.md)  |
+| **DNP3**        | [`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md)         | Provisional  | `GG-DNP3-001`      | Welle 5a | [`done/M4-welle-5a.md`](../docs/plan/planning/done-archive/M4-welle-5a.md)                                                     |
+| **IEC-61850**   | [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md)     | Provisional  | `GG-IEC-001`       | Welle 5b | [`done/M4-welle-5b.md`](../docs/plan/planning/done-archive/M4-welle-5b.md) + [Slice 033](../docs/plan/planning/done-archive/033-iec61850-adapter-review-folge.md) |
 
 **Status-Pfad:** Alle 5 ADRs sind aktuell `Provisional`. Die
 geplante M4-Welle-7-Closure schaerft alle 5 auf `Accepted`
-(siehe [M4-Slice-Plan](../docs/plan/planning/done/M4-protocol-adapters.md)
+(siehe [M4-Slice-Plan](../docs/plan/planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 7).
 
 ---

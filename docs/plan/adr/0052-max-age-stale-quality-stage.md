@@ -20,11 +20,11 @@
 - [`ADR 0049`](0049-replay-lifecycle-finalize-hook.md) §2.7 —
   Praezedenz fuer optionale keyword-only Core-Kwargs mit
   `None`-Default = Feature aus.
-- [`M7-welle-3a.md`](../planning/done/M7-welle-3a.md) —
+- [`M7-welle-3a.md`](../planning/done-archive/M7-welle-3a.md) —
   Slice-Doc (Decisions 3a-D-1..D-5); ADR 0052 fixiert D-1..D-5.
-- [`M7-welle-3.md`](../planning/done/M7-welle-3.md) —
+- [`M7-welle-3.md`](../planning/done-archive/M7-welle-3.md) —
   Welle-3-Gruppenplan (Sub-Slicing D-1, ADR-Numbering D-3).
-- [Trigger 034](../planning/done/034-safe-004-max-age-stale-quality.md)
+- [Trigger 034](../planning/done-archive/034-safe-004-max-age-stale-quality.md)
   — `GG-SAFE-004`-Lücken-Verankerung; wird mit 3a-C3 aufgeloest
   (`done/`).
 - [`../../user/safe-001-004-quality-pipeline.md`](../../user/safe-001-004-quality-pipeline.md)
@@ -228,7 +228,7 @@ frisch nicht).
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-3a.md`](../planning/done/M7-welle-3a.md)
+Slice-Doc [`M7-welle-3a.md`](../planning/done-archive/M7-welle-3a.md)
 (C2: Code-Substanz; Verifikation inkl. `make accept` Exit 0 als
 Demo-Unveraendert-Beleg). Status-Pfad (`Proposed → Provisional →
 Accepted`): `Accepted` gezogen 2026-06-12 mit M7-Welle-X-C1
@@ -274,7 +274,7 @@ Accepted`): `Accepted` gezogen 2026-06-12 mit M7-Welle-X-C1
   die Markierung; Alarm-Substanz ist `GG-SAFE-003`-Material
   (Welle 3b, Trigger 035).
 - **Comm-Failure-Quality (`MISSING`) + Adapter-Lifecycle** —
-  Welle 3b ([Trigger 035](../planning/done/035-safe-003-comm-failure-missing-quality.md);
+  Welle 3b ([Trigger 035](../planning/done-archive/035-safe-003-comm-failure-missing-quality.md);
   ADR-Nummer 0053 reserviert).
 - **`Quality.NAN`-/`ESTIMATED`-Emitter** — eigene Scopes
   (NAN bleibt per M2-Trigger-014-Entscheidung

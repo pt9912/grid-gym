@@ -12,7 +12,7 @@ Vertrag), [`ADR 0009`](0009-randomport-snapshot-schema-rng-version.md)
 (Snapshot-Schema), [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 §3 (Erweiterung ohne Supersedes), Welle-1-`SnapshotEnvelope`
 in `hexagon/core/domain/snapshot.py`,
-[`docs/plan/planning/done/012-snapshot-composition.md`](../planning/done/012-snapshot-composition.md)
+[`docs/plan/planning/done/012-snapshot-composition.md`](../planning/done-archive/012-snapshot-composition.md)
 (Trigger, geschlossen durch diese ADR — wandert nach `done/`
 synchron zu Welle-4-Closure).
 

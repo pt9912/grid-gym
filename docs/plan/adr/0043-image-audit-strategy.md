@@ -23,7 +23,7 @@ M6-Welle-1-C1).
   Schwester-Pattern (Coverage-Gate als eigenstaendiger
   Vertrag); ADR 0043 folgt derselben Form fuer den Image-
   Audit-Gate.
-- [Trigger 010](../planning/done/010-base-image-krb5-cve-bump.md)
+- [Trigger 010](../planning/done-archive/010-base-image-krb5-cve-bump.md)
   — Erst-Anwendungsfall des §2.2-Defer-Patterns; krb5-CVE-
   Famille als Drift-Quelle.
 
@@ -40,7 +40,7 @@ mit Fix-Version `1.21.3-5+deb13u1`. Die CVE-Drift ist eine
 reine Base-Image-Lieferketten-Drift, nicht durch grid-gym-
 Code verursacht — sie wurde ueber mehrere M-Closures als
 dokumentierter Defer-Pfad gefuehrt, formalisiert in
-[Trigger 010](../planning/done/010-base-image-krb5-cve-bump.md);
+[Trigger 010](../planning/done-archive/010-base-image-krb5-cve-bump.md);
 ADR 0043 verankert das Aufloesungs-Pattern als Pflicht-
 Vertrag.
 
@@ -185,7 +185,7 @@ frei gruen), erfolgt im selben Slice-Closure-Commit:
 Lieferplan, Commit-Hashes und Verifikations-Gates fuer die
 Erst-Anwendung der §2-Substanz (Trigger-010-Aufloesung)
 leben in der zugehoerigen Slice-Doc
-[`M6-welle-1.md`](../planning/done/M6-welle-1.md). Status-
+[`M6-welle-1.md`](../planning/done-archive/M6-welle-1.md). Status-
 Pfad (`Proposed → Provisional → Accepted`): siehe Status-
 Header dieser ADR.
 

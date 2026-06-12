@@ -78,9 +78,9 @@ Welle-4a-ADR 0026),
 [`ADR 0026`](0026-agent-drain-registry-pattern.md) §2.6 + §6
 (Foundation-State-Snapshot + Welle-4b-Pflicht-Konsequenzen),
 M3-Slice-Plan
-[`in-progress/M3-faults-agents-observability.md`](../planning/done/M3-faults-agents-observability.md)
+[`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4b-Slice-Doc
-[`done/welle-4b.md`](../planning/done/welle-4b.md).
+[`done/welle-4b.md`](../planning/done-archive/welle-4b.md).
 Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..006`); §16
 Kommunikationsschnittstellen (`GG-DATA-004` `Command`).
 Architektur §6 Datenfluss Tick-Loop (Schritt D2 + A0v/A0a),

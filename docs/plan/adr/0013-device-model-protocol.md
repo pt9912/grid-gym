@@ -28,7 +28,7 @@ Vertrag fuer Geraete-Fault-Streams),
 ADR-Pattern; diese ADR erweitert `ADR 0002 §A-1`-Komponenten-
 Liste um `GG-AR-COMP-DEVICES::DeviceModel`),
 M2-Slice-Plan
-[`done/M2-devices.md`](../planning/done/M2-devices.md)
+[`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
 §3 Welle 1, Lastenheft §9 (`GG-DEV-001..003`).
 
 ---

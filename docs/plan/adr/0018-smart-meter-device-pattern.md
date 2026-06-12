@@ -48,7 +48,7 @@ ADR-Pattern — diese ADR erweitert ADR 0013 §2.4 fuer den
 SmartMeter-spezifischen Snapshot-Vertrag und das
 `attach_sources`-Hook, kein Supersedes).
 M2-Slice-Plan
-[`done/M2-devices.md`](../planning/done/M2-devices.md)
+[`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
 §3 Welle 4b. Lastenheft §9.1 (`GG-DEV-014`).
 
 ---

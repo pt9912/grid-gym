@@ -137,11 +137,11 @@ commits within a slice are typically C0..C4
 
 Examples:
 
-- [`done/M4-welle-6a.md`](docs/plan/planning/done/M4-welle-6a.md) —
+- [`done/M4-welle-6a.md`](docs/plan/planning/done-archive/M4-welle-6a.md) —
   Cross-Adapter-Hardening (OTel-Span-Wrap, profile index).
-- [`done/033-iec61850-adapter-review-folge.md`](docs/plan/planning/done/033-iec61850-adapter-review-folge.md) —
+- [`done/033-iec61850-adapter-review-folge.md`](docs/plan/planning/done-archive/033-iec61850-adapter-review-folge.md) —
   IEC-61850 review-follow-up (15 findings).
-- [`done/034-iec61850-otel-wrap-review-folge.md`](docs/plan/planning/done/034-iec61850-otel-wrap-review-folge.md) —
+- [`done/034-iec61850-otel-wrap-review-folge.md`](docs/plan/planning/done-archive/034-iec61850-otel-wrap-review-folge.md) —
   OTel-wrap review-follow-up (15 findings).
 
 When in doubt about whether your change deserves its own

@@ -22,12 +22,12 @@
   Driven-Lese-Port + `connection_factory`-Adapter-Pattern).
 - [`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wiring.md)
   §2.9 — kanonische `Decimal`-/Byte-Stabilitaets-Konvention.
-- [`M7-welle-1b-a.md`](../planning/done/M7-welle-1b-a.md)
+- [`M7-welle-1b-a.md`](../planning/done-archive/M7-welle-1b-a.md)
   — Slice-Doc (Decisions 1b-a-D-0..D-6); ADR 0048 fixiert
   D-2/D-3/D-4.
-- [`M7-welle-1.md`](../planning/done/M7-welle-1.md) —
+- [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md) —
   [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (D-1/D-1.1).
-- [Trigger 036](../planning/done/036-safe-006-replay-diff-status-replay-source-integration.md)
+- [Trigger 036](../planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Replay-Lifecycle (Welle 1b-b, ADR 0049) konsumiert den hier
   rekonstruierten `ReplaySample`-Strom.
 
@@ -45,7 +45,7 @@ Offen bleibt die **End-to-End-Replay-Verkabelung**:
 persistierten Lauf liefert, und (b) der Lauf-Lifecycle-Hook, der
 `diff_replay()` aufruft + `replay_diff_status` emittiert.
 
-Die [`M7-welle-1.md`](../planning/done/M7-welle-1.md)-Sub-
+Die [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md)-Sub-
 Slicing-Entscheidung (D-4 = B) schneidet Welle **1b** in **1b-a**
 (dieser ADR — Persistenz-Lese-Substanz) + **1b-b** (Lifecycle-
 Hook + `replay_diff_status` + `GG-TERM-002/003`-Preflight,
@@ -222,7 +222,7 @@ arch-check` ([`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekt
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-1b-a.md`](../planning/done/M7-welle-1b-a.md)
+Slice-Doc [`M7-welle-1b-a.md`](../planning/done-archive/M7-welle-1b-a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Rekonstruktions-Smoke). Status-Pfad (`Proposed → Provisional →
 Accepted`): siehe Status-Header; `Accepted` gezogen 2026-06-12

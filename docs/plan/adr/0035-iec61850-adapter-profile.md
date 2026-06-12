@@ -47,7 +47,7 @@ und ADR 0033 (M4-Welle-4) und ADR 0032 (M4-Welle-3) und
 ADR 0031 (M4-Welle-2).
 
 **Slice 033 (M4-Welle-5b-C2-Review-Folge 2026-06-01,
-[`../planning/done/033-iec61850-adapter-review-folge.md`](../planning/done/033-iec61850-adapter-review-folge.md)):**
+[`../planning/done/033-iec61850-adapter-review-folge.md`](../planning/done-archive/033-iec61850-adapter-review-folge.md)):**
 15 Findings adressiert (10 HIGH + 5 MEDIUM) ohne ADR-Status-
 Aenderung. Wichtigste Schaerfungen:
 
@@ -150,9 +150,9 @@ in zwei Punkten ab: **eine** Library statt zwei
 (Welle-3-Modbus-Pattern), und **NEU Decision I-f Lizenz-
 Boundary** (GPL-Isolation auf `protocol_iec61850/*`).
 M4-Slice-Plan
-[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 5b; M4-Welle-0-Decision-Liste
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 Decision 1 (DNP3/IEC-Disposition — Welle 1 hat den
 Verzicht-Default provisorisch gewaehlt; Welle 5a hat den
 DNP3-Teil aufgeloest, Welle 5b loest den IEC-61850-Teil

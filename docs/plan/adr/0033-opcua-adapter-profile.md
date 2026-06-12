@@ -58,9 +58,9 @@ fuer Decision O-e: pymodbus liefert Server in derselben
 BSD-Library, asyncua liefert Server in derselben
 LGPL-Library; gleiches Pattern).
 M4-Slice-Plan
-[`done/M4-protocol-adapters.md`](../planning/done/M4-protocol-adapters.md)
+[`done/M4-protocol-adapters.md`](../planning/done-archive/M4-protocol-adapters.md)
 §3 Welle 4; M4-Welle-0-Decision-Liste
-[`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3
+[`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 Decision 2 (Sync vs. async-Vertrag — Welle-1-final
 `sync-Protocol` greift hier produktiv: asyncua ist
 rein-async, Welle-4-Adapter haelt einen eigenen
@@ -136,7 +136,7 @@ den OPC-UA-Adapter notwendigen Sub-Entscheidungen
   Server-Sibling im Integration-Test bereitgestellt?
 
 Die M4-Welle-0-Decision-Liste
-([`done/M4-welle-0.md`](../planning/done/M4-welle-0.md) §3)
+([`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3)
 hat Decision 4 (Profile-Deklaration) als Adapter-
 spezifische Frage markiert und Decision 5 (Test-Sibling-
 Container) das Lizenz-Risiko von Server-Containern
@@ -814,7 +814,7 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
   gruen ohne `CRITICAL_COV_TARGETS`-Override.
 - **Slice-032-Schaerfung** — 2026-05-31 (Welle-4-Review-
   Folge,
-  [`done/032-opcua-adapter-review-folge.md`](../planning/done/032-opcua-adapter-review-folge.md)).
+  [`done/032-opcua-adapter-review-folge.md`](../planning/done-archive/032-opcua-adapter-review-folge.md)).
   ADR bleibt `Provisional`, Body geschaerft an drei
   Stellen: §2.1 Konsequenz (Optional-Felder
   `namespace_index`/`identifier_type` aus dem Schema
