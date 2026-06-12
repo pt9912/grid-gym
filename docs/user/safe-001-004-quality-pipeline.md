@@ -212,7 +212,7 @@ py:33-42`.
 - [`done/034-safe-004-max-age-stale-quality.md`](../plan/planning/done/034-safe-004-max-age-stale-quality.md)
   — `GG-SAFE-004` Lücke; **aufgeloest via M7-Welle-3a**
   (Trigger-Close mit 3a-C3/C4a).
-- [`open/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/open/035-safe-003-comm-failure-missing-quality.md)
+- [`done/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/done/035-safe-003-comm-failure-missing-quality.md)
   — `GG-SAFE-003` partial Lücke; **aufgeloest via M7-Welle-3b**
   (Trigger-Close mit 3b-C3/C4a).
 

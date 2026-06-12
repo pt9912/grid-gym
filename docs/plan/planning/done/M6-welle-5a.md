@@ -101,7 +101,7 @@ Alarm-Emission-Verifikation, ADR-Bedarf.
   model.py:202`) ist Konfigurations-Pre-Attach, NICHT echter
   Adapter-Verbindungs-Verlust — `GG-SAFE-003`-Substanz nur
   **partial**, vollstaendige Adapter-Lifecycle-Hook + Alarm-
-  Emission fehlt. Folge-Pfad: [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md).
+  Emission fehlt. Folge-Pfad: [Trigger 035](035-safe-003-comm-failure-missing-quality.md).
 - **Fault-Injection** (M3 Welle 1/2; ADR 0022 + 0025):
   `FAULT_INJECTED`-Quality + Alarm-Emission per Fault-Adapter.
 
@@ -129,7 +129,7 @@ identifiziert**. Drei orthogonale Liefer-Items:
      deckt **Teil-Substanz** (SmartMeter-pre-attach →
      `Quality.MISSING`; ADR 0018 §2.3); voller Adapter-
      Comm-Failure-Akzeptanz-Umfang ist `pytest.skip` mit
-     Pointer auf [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md).
+     Pointer auf [Trigger 035](035-safe-003-comm-failure-missing-quality.md).
    - `test_safe_003_comm_failure_emits_missing_or_stale`:
      `pytest.skip` mit Pointer auf Trigger 035 (voller
      Umfang ist Welle-5a-Audit-Lücke).

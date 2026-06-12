@@ -25,12 +25,12 @@ Sprung (dieser Commit, M7-Welle-3b-C1).
   `OtelSpanWrappedDeviceProtocolPort`-Praezedenz
   (`_protocol_otel_wrap.py`; Composition-Wrapper um
   `DeviceProtocolPort`, Best-Effort-Robustheit).
-- [`M7-welle-3b.md`](../planning/in-progress/M7-welle-3b.md) —
+- [`M7-welle-3b.md`](../planning/done/M7-welle-3b.md) —
   Slice-Doc (Decisions 3b-D-1..D-8); ADR 0053 fixiert D-1..D-6.
-- [`M7-welle-3.md`](../planning/in-progress/M7-welle-3.md) —
+- [`M7-welle-3.md`](../planning/done/M7-welle-3.md) —
   Welle-3-Gruppenplan (D-4-Scope-Schalter → §2.1; ADR-Numbering
   D-3).
-- [Trigger 035](../planning/open/035-safe-003-comm-failure-missing-quality.md)
+- [Trigger 035](../planning/done/035-safe-003-comm-failure-missing-quality.md)
   — `GG-SAFE-003`-partial-Lücken-Verankerung; wird mit 3b-C3
   aufgeloest (`done/`).
 - [`../../user/safe-001-004-quality-pipeline.md`](../../user/safe-001-004-quality-pipeline.md)
@@ -251,7 +251,7 @@ Punkte maschinell unterscheidbar. C2 pinnt den Feld-Vertrag.
 ## 5. Lieferung
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
-Slice-Doc [`M7-welle-3b.md`](../planning/in-progress/M7-welle-3b.md).
+Slice-Doc [`M7-welle-3b.md`](../planning/done/M7-welle-3b.md).
 Status-Pfad (`Proposed → Provisional → Accepted`): `Accepted`
 mit M7-Welle-X-Closure (gebuendelt mit ADR 0047..0052).
 

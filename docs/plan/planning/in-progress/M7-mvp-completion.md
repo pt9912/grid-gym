@@ -67,7 +67,7 @@ mit M7-Closure.
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
 | 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](../done/M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
 | 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](../done/M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
-| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
+| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](../done/M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](../done/M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
 | X | M7-Closure | Pending | TBD | `done/M7-results.md` + ADR-Accept + Roadmap-DoD-Sweep |
 
 **Aktiver Slice:** **M7-Welle-X** (M7-Closure; letzter M7-Slice).
@@ -89,15 +89,15 @@ M7-Substanz-Welle.
   Tage). NEU `make accept` + `tools/accept.py` (Headless-TickLoop-
   Runner-Helper) + drei Sub-Steps + `AbnahmeReport`-Schema.
 - **Welle 3** — Safety-Closure: Gruppenplan
-  [`M7-welle-3.md`](M7-welle-3.md) (~3-4.5 Tage; sub-sliced
+  [`M7-welle-3.md`](../done/M7-welle-3.md) (~3-4.5 Tage; sub-sliced
   3a/3b). **3a** ([`M7-welle-3a.md`](../done/M7-welle-3a.md), ~1-1.5
   Tage): NEU `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage
   + ADR 0052; loest Trigger 034
   ([`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md)).
-  **3b** ([`M7-welle-3b.md`](M7-welle-3b.md), In Progress
-  2026-06-11, ~2-2.5 Tage): NEU Comm-Failure-Wrapper
-  + `adapter_communication_lost`-Alarm; loest Trigger 035
-  ([`../open/035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md)).
+  **3b** ([`M7-welle-3b.md`](../done/M7-welle-3b.md), Done
+  2026-06-12): NEU Comm-Failure-Wrapper
+  + `adapter_communication_lost`-Alarm + ADR 0053; loest Trigger 035
+  ([`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md)).
 
 ---
 

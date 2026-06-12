@@ -20,7 +20,7 @@ Sprung (dieser Commit, M7-Welle-3a-C1).
   `None`-Default = Feature aus.
 - [`M7-welle-3a.md`](../planning/done/M7-welle-3a.md) —
   Slice-Doc (Decisions 3a-D-1..D-5); ADR 0052 fixiert D-1..D-5.
-- [`M7-welle-3.md`](../planning/in-progress/M7-welle-3.md) —
+- [`M7-welle-3.md`](../planning/done/M7-welle-3.md) —
   Welle-3-Gruppenplan (Sub-Slicing D-1, ADR-Numbering D-3).
 - [Trigger 034](../planning/done/034-safe-004-max-age-stale-quality.md)
   — `GG-SAFE-004`-Lücken-Verankerung; wird mit 3a-C3 aufgeloest
@@ -272,7 +272,7 @@ ADR 0047..0049).
   die Markierung; Alarm-Substanz ist `GG-SAFE-003`-Material
   (Welle 3b, Trigger 035).
 - **Comm-Failure-Quality (`MISSING`) + Adapter-Lifecycle** —
-  Welle 3b ([Trigger 035](../planning/open/035-safe-003-comm-failure-missing-quality.md);
+  Welle 3b ([Trigger 035](../planning/done/035-safe-003-comm-failure-missing-quality.md);
   ADR-Nummer 0053 reserviert).
 - **`Quality.NAN`-/`ESTIMATED`-Emitter** — eigene Scopes
   (NAN bleibt per M2-Trigger-014-Entscheidung

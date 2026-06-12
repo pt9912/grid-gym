@@ -21,7 +21,7 @@ aktiver Slice danach → M7-Welle-X).
 Zweites (letztes) Sub-Slice von **M7-Welle-3** (Safety-Closure;
 Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)): schliesst die
 `GG-SAFE-003`-partial-Lücke
-([Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md),
+([Trigger 035](035-safe-003-comm-failure-missing-quality.md),
 M6-Welle-5a-Audit ⚠). **Monolithisch** (ein Code-Commit C2): ein
 geteilter Wrapper + Alarm-Vertrag + Tests + Doku-Flip sind eng
 gekoppelt; die fuenf Adapter werden nicht einzeln angefasst
@@ -29,7 +29,7 @@ gekoppelt; die fuenf Adapter werden nicht einzeln angefasst
 verbleibt nur M7-Welle-X (M7-Closure).
 **Datum:** 2026-06-11 (Welle-3b-C0) · Done 2026-06-12
 (Review-Folge + C3).
-**Quelle:** [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)
+**Quelle:** [Trigger 035](035-safe-003-comm-failure-missing-quality.md)
 + Lastenheft §20 Z. 1365-1371 +
 [`M7-welle-3.md`](M7-welle-3.md) (D-4-Scope-Schalter +
 F4-Erbschaft).
@@ -437,11 +437,11 @@ F4-Helper-Lift (D-7).
 
 - [`M7-welle-3.md`](M7-welle-3.md) — Welle-3-Gruppenplan
   (D-4-Scope-Schalter → 3b-D-1; F4-Erbschaft → 3b-D-7).
-- [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)
+- [Trigger 035](035-safe-003-comm-failure-missing-quality.md)
   — Lücken-Verankerung + erwartete Lieferung (M6-Welle-5a-Audit).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)
   — Audit-Tabelle (Flip-Ziel ⚠ → ✓).
-- [`../done/M7-welle-3a.md`](../done/M7-welle-3a.md) —
+- [`M7-welle-3a.md`](M7-welle-3a.md) —
   Schwester-Slice (`GG-SAFE-004`, ADR 0052; Slice-Doc-Pattern).
 - [`../../adr/0030-device-protocol-port-surface.md`](../../adr/0030-device-protocol-port-surface.md)
   — `DeviceProtocolPort`-Vertrag (wird additiv geschaerft).

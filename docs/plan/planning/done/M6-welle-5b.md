@@ -855,6 +855,6 @@ Drift auftritt.
   — DeviceProtocolPort-Foundation (M4); Welle-5b-D-4 Option
   B DrivenSide-Audit-Tabelle-Anker.
 - [`../open/034-safe-004-max-age-stale-quality.md`](034-safe-004-max-age-stale-quality.md)
-  + [`../open/035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md)
+  + [`035-safe-003-comm-failure-missing-quality.md`](035-safe-003-comm-failure-missing-quality.md)
   — Welle-5a-Audit-Lücken-Trigger (Folge-Pfad; nicht Welle-
   5b-Scope).
