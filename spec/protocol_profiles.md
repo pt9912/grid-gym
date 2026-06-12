@@ -8,7 +8,7 @@ Adapter-ADRs, Welle-Lieferung und DoD-Belege.
 Pakete unter `src/grid_gym/adapters/driven/protocol_*/`).
 Pattern-Praezedenz: jedes Profil ist inline im
 `protocol_ports`-Block des Scenario-YAML konfigurierbar
-(Decision-Praezedenz ADR 0031 §2.1 bis ADR 0035 §2.1).
+(Decision-Praezedenz [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) §2.1 bis [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) §2.1).
 
 **Stand:** 2026-06-01 (M4-Welle-6a-C1).
 
@@ -198,17 +198,17 @@ IEC-62351; Welle 6 oder M6); kein aarch64-Wheel-Support
 Alle 5 Adapter teilen ueber `DeviceProtocolPort`
 (`GG-AR-PORT-DRN-007`) folgende Eigenschaften:
 
-1. **Sync-Vertrag** (ADR 0030 §2.1): `start()`/`stop()`/
+1. **Sync-Vertrag** ([`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1): `start()`/`stop()`/
    `read(target)`/`write(target, command)` sind alle sync;
    keine async-Surface am Port.
-2. **Caller-Scope-Lifecycle** (ADR 0030 §2.2): TickLoop
+2. **Caller-Scope-Lifecycle** ([`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.2): TickLoop
    ruft `start_protocol_ports()` (FIFO) und
    `stop_protocol_ports()` (LIFO) mit Best-Effort-Partial-
    Cleanup via `__context__`-Chain.
-3. **Stateless aus Replay-Sicht** (ADR 0030 §2.3):
+3. **Stateless aus Replay-Sicht** ([`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.3):
    Reconnect-State, Session-State, IIN-Restart-Flag etc.
    sind volatile; Snapshot-Schema bleibt v2 in M4.
-4. **Inline-Profile-Pattern** (ADR 0031..0035 §2.1): jedes
+4. **Inline-Profile-Pattern** ([`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md)..0035 §2.1): jedes
    Adapter-Profil ist inline im `protocol_ports`-Block des
    Scenario-YAML konfiguriert; kein separates
    `<adapter>_profiles`-Top-Level (YAGNI).
@@ -222,7 +222,7 @@ Alle 5 Adapter teilen ueber `DeviceProtocolPort`
 
 Welle 6a haertet diese Pattern-Decisions:
 
-1. **OTel-Span-Wrap** (ADR 0024 §4.5 Forward-Pointer) —
+1. **OTel-Span-Wrap** ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5 Forward-Pointer) —
    jeder `read(target)`/`write(target, command)`-Call wird
    in einen TracePort-Span umschlossen mit Standard-
    Attributen `adapter_type`/`target`/`reference`/
@@ -246,7 +246,7 @@ von `Provisional` auf `Accepted` und erzeugt
 (C0/C1/C2/C3-Hashes pro Welle, Test-Counts, Coverage,
 Contracts, Per-Welle-Reviews).
 
-**ADR 0030 §2.4** (Welle-1-DNP3/IEC-Verzicht-Default) wird
+**[`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.4** (Welle-1-DNP3/IEC-Verzicht-Default) wird
 mit Welle-7-Closure auf „durch Welle-5a (DNP3) **und**
 Welle-5b (IEC-61850) aufgeloest" geschaerft (Pattern
-ADR 0011).
+[`ADR 0011`](../docs/plan/adr/0011-schaerfung-ohne-abloesung.md)).

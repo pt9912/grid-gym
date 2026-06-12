@@ -10,8 +10,8 @@ Audit-Doku fuer die `GG-MVP-002`-Akzeptanz (Lastenheft Z. 130-135):
 > kanonische Ergebnisdateien oder leerer Replay-Diff).
 
 Geliefert ueber **M7-Welle-1** in drei Sub-Slices: 1a (Zeitreihen-
-Persistenz, ADR 0047), 1b-a (`ReplaySnapshotPort`, ADR 0048),
-1b-b (Replay-Lifecycle, ADR 0049).
+Persistenz, [`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.md)), 1b-a (`ReplaySnapshotPort`, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)),
+1b-b (Replay-Lifecycle, [`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md)).
 
 ---
 
@@ -21,8 +21,8 @@ Persistenz, ADR 0047), 1b-a (`ReplaySnapshotPort`, ADR 0048),
 | ---------- | ------------- | --------- | ------ |
 | **Szenario startet ueber API** | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Pflicht-Entitaeten: GridConnection + PV + Last + Smart Meter + Batteriespeicher). | `tests/integration/test_mvp_demo_scenario.py` | ✓ Produktiv |
 | **Live-Telemetrie** | WebSocket-Streams `/runs/{id}/telemetry` + `/runs/{id}/alarms-stream`. | M5-Welle-2-/4b-Smokes | ✓ Produktiv |
-| **Persistiert Zeitreihen** | `TelemetrySinkPort` (Driven) + `PostgresTelemetrySinkAdapter` → `telemetry_points` (append-only, `value` byte-stabil als `TEXT`/`str(Decimal)`); Core-Spine-Wiring pro Tick (ADR 0047). | `tests/integration/test_mvp_002_timeseries_persistence_smoke.py` | ✓ Produktiv (1a) |
-| **Deterministisch replaybar** | `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `ReplaySample`-Sequenzen aus `telemetry_points` (Timestamp deterministisch aus `simulation_time`, ADR 0048); `TickLoop.finalize()` difft `expected`/`actual` via `diff_replay()` + emittiert `replay_diff_status` nach `GG-TERM-002/003`-Preflight (ADR 0049). | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py` + `tests/unit/…/test_tick_loop_replay_finalize.py` | ✓ Produktiv (1b-a/1b-b) |
+| **Persistiert Zeitreihen** | `TelemetrySinkPort` (Driven) + `PostgresTelemetrySinkAdapter` → `telemetry_points` (append-only, `value` byte-stabil als `TEXT`/`str(Decimal)`); Core-Spine-Wiring pro Tick ([`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.md)). | `tests/integration/test_mvp_002_timeseries_persistence_smoke.py` | ✓ Produktiv (1a) |
+| **Deterministisch replaybar** | `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `ReplaySample`-Sequenzen aus `telemetry_points` (Timestamp deterministisch aus `simulation_time`, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)); `TickLoop.finalize()` difft `expected`/`actual` via `diff_replay()` + emittiert `replay_diff_status` nach `GG-TERM-002/003`-Preflight ([`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md)). | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py` + `tests/unit/…/test_tick_loop_replay_finalize.py` | ✓ Produktiv (1b-a/1b-b) |
 
 ---
 

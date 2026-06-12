@@ -30,7 +30,7 @@ Pro Tick-Iteration:
 | `fault.inject` | `_apply_fault_injection` (M3-Welle-2 Schritt A2) | `tick` (int)                                  | `tick.cycle` |
 | `agent.tick`   | `_run_agent_tick_phase` (M3-Welle-3 Schritt D2) | `tick` (int), `agent_id` (str)                | `tick.cycle` |
 
-Span-IDs sind **kein** Teil des Snapshot-Schemas (ADR 0024 §2.5);
+Span-IDs sind **kein** Teil des Snapshot-Schemas ([`ADR 0024`](../plan/adr/0024-observability-port-trio.md) §2.5);
 Trace-IDs sind cross-cutting und stehen nicht im Determinismus-
 Vertrag. `OtlpTraceAdapter` zieht `trace_id`/`span_id` von der
 OTel-SDK (`secrets.token_bytes`-default).
@@ -148,7 +148,7 @@ Fallback:
 
 Validierung in `__post_init__` (siehe
 [`src/grid_gym/adapters/driven/telemetry_otlp/_config.py`](../../src/grid_gym/adapters/driven/telemetry_otlp/_config.py)).
-HTTP/protobuf ist explizit Out-of-Scope (Welle-6-Pin, ADR 0024
+HTTP/protobuf ist explizit Out-of-Scope (Welle-6-Pin, [`ADR 0024`](../plan/adr/0024-observability-port-trio.md)
 §4.5.6); fuer eine spaetere HTTP-Aktivierung braucht es eine
 ADR-Folge + Allow-List-Erweiterung.
 

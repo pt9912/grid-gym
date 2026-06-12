@@ -49,8 +49,8 @@ Markierung — **M3 mit Replay-Source-Integration**."
 | **Volatile Felder** | `diff_replay(*, volatile_fields=None)` Parameter mit Default `_VOLATILE_FIELDS_DEFAULT = frozenset({"import_sequence"})`. | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt Default + Override) | ✓ **Produktiv** |
 | **Betroffene Ticks** | `ReplayDelta.tick = simulation_time // tick_ms` (Aggregation pro Tick im Diff-Algorithm). | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt Tick-Aggregation) | ✓ **Produktiv** |
 | **Abweichungsklassifikation** | `ReplayDeltaClassification` StrEnum mit `FACHLICH` / `VOLATIL`; `ReplayDelta.classification` pro Delta. | `tests/unit/hexagon/core/replay/test_diff.py` (pinnt beide Werte) | ✓ **Produktiv** |
-| **Per-Lauf-Status-Marker (`replay_diff_status`)** | ✓ **produktiv** (M7-Welle-1b-b, ADR 0049 §2.4): `TickLoop.finalize()` emittiert `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0 diverged, attributes={run_id, reference_run_id, status})` bei preflight-validem Vergleich. | `tests/integration/test_mvp_002_replay_lifecycle_smoke.py` (clean/diverged) + `tests/unit/hexagon/core/simulation/test_tick_loop_replay_finalize.py`. | ✓ **Produktiv** |
-| **ReplaySource-Integration** | ✓ **produktiv** (M7-Welle-1b-a/1b-b, ADR 0048/0049): `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `expected`/`actual`-`ReplaySample`-Sequenzen aus den persistierten `telemetry_points`; der Core-`finalize()`-Hook ruft `diff_replay()` mit der expliziten `replay_reference_run_id`-Bindung. | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py`. | ✓ **Produktiv** |
+| **Per-Lauf-Status-Marker (`replay_diff_status`)** | ✓ **produktiv** (M7-Welle-1b-b, [`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.4): `TickLoop.finalize()` emittiert `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0 diverged, attributes={run_id, reference_run_id, status})` bei preflight-validem Vergleich. | `tests/integration/test_mvp_002_replay_lifecycle_smoke.py` (clean/diverged) + `tests/unit/hexagon/core/simulation/test_tick_loop_replay_finalize.py`. | ✓ **Produktiv** |
+| **ReplaySource-Integration** | ✓ **produktiv** (M7-Welle-1b-a/1b-b, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)/0049): `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `expected`/`actual`-`ReplaySample`-Sequenzen aus den persistierten `telemetry_points`; der Core-`finalize()`-Hook ruft `diff_replay()` mit der expliziten `replay_reference_run_id`-Bindung. | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py`. | ✓ **Produktiv** |
 
 **Legende**:
 - ✓ Produktiv: Akzeptanz vollstaendig erfuellt + Smoke-/Unit-
@@ -131,20 +131,20 @@ Lastenheft-genannten Akzeptanz-Komponenten vollstaendig ab:
   StrEnum mit zwei Werten (`FACHLICH` / `VOLATIL`)
   maschinenlesbar pro Delta.
 
-**Geschlossen (M7-Welle-1b-a/1b-b, ADR 0048/0049):** der
+**Geschlossen (M7-Welle-1b-a/1b-b, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)/0049):** der
 Per-Lauf-Status-Marker plus die ReplaySource-Integration sind
 jetzt produktiv im Lauf-Lifecycle verankert:
 
 - `spec/architecture.md §15` (Z. 820 + 823) listet
   `replay_diff_status` als Pflicht-Metrik. `TickLoop.finalize()`
-  (Core-Spine, ADR 0049 §2.1/§2.4) emittiert sie als binaeren
+  (Core-Spine, [`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.1/§2.4) emittiert sie als binaeren
   `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0
   diverged, attributes={run_id, reference_run_id, status})` bei
   preflight-validem Vergleich (`GG-TERM-002/003`-MVP-Preflight
   ueber 5 `RunMetadata`-Felder; volle Matrix Carveout Trigger
   038).
 - Die ReplaySource-Integration laeuft ueber den
-  `ReplaySnapshotPort` (ADR 0048): `read_samples(run_id)`
+  `ReplaySnapshotPort` ([`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)): `read_samples(run_id)`
   rekonstruiert `expected`/`actual`-`ReplaySample`-Sequenzen aus
   den persistierten `telemetry_points`; der `finalize()`-Hook
   difft die explizit gebundene `replay_reference_run_id` gegen

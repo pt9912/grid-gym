@@ -207,7 +207,7 @@ Das Demo-Scenario aktiviert zwei Faults automatisch:
 - **`voltage_drop`** auf `grid-connection-1` ab Sim-Zeit
   **1 200 000 ms** (Tick 1200) fuer 60 000 ms. Effekt: halbiert
   `current_voltage_v`; Devices-Page zeigt `voltage_drop_active:
-  true`; kein Alarm (Telemetry-Only-Effekt per ADR 0025).
+  true`; kein Alarm (Telemetry-Only-Effekt per [`ADR 0025`](../plan/adr/0025-fault-recovery-pattern.md)).
 
 **Verifikation (manuell):**
 
@@ -316,7 +316,7 @@ Heutiger Endpoint liefert nur den **Schema-Pointer**; der volle
 `SnapshotEnvelope`-v2-Body kommt mit M5-Welle-7-Closure /
 M6-Replay-Surface (siehe Bekannte Einschraenkungen unten).
 
-**Welle:** M5-Welle-1 (Endpoint-Stub) + ADR 0015 (Envelope-v2);
+**Welle:** M5-Welle-1 (Endpoint-Stub) + [`ADR 0015`](../plan/adr/0015-snapshot-envelope-v2.md) (Envelope-v2);
 [`docs/plan/planning/done/M5-welle-1.md`](../plan/planning/done/M5-welle-1.md).
 
 ### 6.2 Live-Telemetry-Stream (WebSocket)
@@ -385,7 +385,7 @@ docker compose -f deploy/compose.yml exec db \
   (HTMX-Polling); kein Inline-SVG-Anlagen-Schaltbild. Inline-
   SVG ist Welle-7+/M6.
 - **IEC-61850-Protocol-Adapter** ist `2c-Mock-only-Fallback`
-  aktiv (ADR 0035 §2.5; Trigger 009) — `python -m grid_gym demo`
+  aktiv ([`ADR 0035`](../plan/adr/0035-iec61850-adapter-profile.md) §2.5; Trigger 009) — `python -m grid_gym demo`
   laeuft ohne IEC-Adapter.
 
 ---

@@ -3,8 +3,8 @@
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit;
 [`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done/M6-welle-5a.md)).
 **Stand:** 2026-06-06 (Welle-5a-Audit) · `GG-SAFE-004`-Flip
-✗ → ✓ 2026-06-11 (M7-Welle-3a-C2, ADR 0052) ·
-`GG-SAFE-003`-Flip ⚠ → ✓ 2026-06-11 (M7-Welle-3b-C2, ADR 0053)
+✗ → ✓ 2026-06-11 (M7-Welle-3a-C2, [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md)) ·
+`GG-SAFE-003`-Flip ⚠ → ✓ 2026-06-11 (M7-Welle-3b-C2, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md))
 — **alle vier `GG-SAFE-001..004`-MUSS-IDs produktiv**.
 
 Dieses Dokument auditiert die existierende Quality-Pipeline-
@@ -18,10 +18,10 @@ Test-Pfade und Lieferstatus dokumentiert.
 
 | ID | Lastenheft-Akzeptanz | Substanz-Pfad | Test-Pfad | Status |
 | -- | -------------------- | ------------- | --------- | ------ |
-| **GG-SAFE-001** | Ungueltige Daten erkannt: Schema-/Wertebereich-/Einheiten-Fehler → `invalid`-Quality oder Validierungs-Fehler + Alarm/Fehler-Datensatz. | `hexagon/core/scenario/loader.py::load_scenario` (Schema-Validierung) + `adapters/driving/http_api/_schemas.py` (Pydantic-API-Validierung) + `adapters/driven/protocol_opcua/_port.py:312` + `adapters/driven/protocol_iec61850/_port.py:368` (Adapter-`Quality.INVALID`-Emission) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_001_invalid_scenario_schema_rejected` + `::test_safe_001_invalid_scenario_wrong_type_rejected` (Schwester fuer Typ-Fehler-Pfad) + `tests/unit/hexagon/core/scenario/test_loader.py` (Loader-Validierung) | ✓ **Produktiv** |
-| **GG-SAFE-002** | NaN-Werte rejected: vor Zustandsfortschreibung erkannt, als `nan`-Quality serialisiert + Alarm/typisierter Fehler. | `hexagon/core/serialization/canonical.py::canonical_json` rejected `Decimal("NaN")`/`Decimal("Infinity")` mit `NonFiniteDecimalError` | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_002_nan_value_rejected_at_serialization` + `tests/unit/hexagon/core/serialization/test_canonical.py` | ✓ **Produktiv** |
-| **GG-SAFE-003** | Kommunikationsausfaelle erkannt: betroffene Telemetrie `missing`/`stale` + Alarm mit Ziel/Startzeit/Ursache. | `adapters/driven/_protocol_comm_failure_wrap.py::CommFailureGuardedDeviceProtocolPort` (Composition-Wrapper um alle fuenf Protocol-Adapter: typisierte Read-Fehler → `Quality.MISSING`-Point + `adapter_communication_lost`-Alarm mit Ziel/Startzeit/Ursache; ADR 0053, M7-Welle-3b) + Teil-Substanz `hexagon/core/devices/smart_meter/model.py:202` (SmartMeter-pre-attach → `MISSING`) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_003_comm_failure_emits_missing_or_stale` (reaktiviert) + `::test_safe_003_smart_meter_pre_attach_emits_missing` + `tests/unit/adapters/driven/test_protocol_comm_failure_wrap.py` (per-Adapter-Familie) | ✓ **Produktiv** (M7-Welle-3b) |
-| **GG-SAFE-004** | Veraltete Daten markiert: `max_age`-Ueberschreitung → deterministisch `stale`-Quality. | `hexagon/core/simulation/tick_loop.py::_apply_max_age_stage` (`STALE`-Stage vor dem `TickResult`-Bau; Stream + Persistenz + Replay identisch markiert) + keyword-only Kwarg `max_age_ms` am `TickLoop`-Konstruktor und in `TickLoopWiring`/`build_tick_loop` (ADR 0052; M7-Welle-3a) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_004_stale_data_quality_after_max_age` (reaktiviert) + `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3a_max_age.py` (Boundary/Override/Determinismus) | ✓ **Produktiv** (M7-Welle-3a) |
+| **[`GG-SAFE-001`](../../spec/lastenheft.md)** | Ungueltige Daten erkannt: Schema-/Wertebereich-/Einheiten-Fehler → `invalid`-Quality oder Validierungs-Fehler + Alarm/Fehler-Datensatz. | `hexagon/core/scenario/loader.py::load_scenario` (Schema-Validierung) + `adapters/driving/http_api/_schemas.py` (Pydantic-API-Validierung) + `adapters/driven/protocol_opcua/_port.py:312` + `adapters/driven/protocol_iec61850/_port.py:368` (Adapter-`Quality.INVALID`-Emission) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_001_invalid_scenario_schema_rejected` + `::test_safe_001_invalid_scenario_wrong_type_rejected` (Schwester fuer Typ-Fehler-Pfad) + `tests/unit/hexagon/core/scenario/test_loader.py` (Loader-Validierung) | ✓ **Produktiv** |
+| **[`GG-SAFE-002`](../../spec/lastenheft.md)** | NaN-Werte rejected: vor Zustandsfortschreibung erkannt, als `nan`-Quality serialisiert + Alarm/typisierter Fehler. | `hexagon/core/serialization/canonical.py::canonical_json` rejected `Decimal("NaN")`/`Decimal("Infinity")` mit `NonFiniteDecimalError` | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_002_nan_value_rejected_at_serialization` + `tests/unit/hexagon/core/serialization/test_canonical.py` | ✓ **Produktiv** |
+| **[`GG-SAFE-003`](../../spec/lastenheft.md)** | Kommunikationsausfaelle erkannt: betroffene Telemetrie `missing`/`stale` + Alarm mit Ziel/Startzeit/Ursache. | `adapters/driven/_protocol_comm_failure_wrap.py::CommFailureGuardedDeviceProtocolPort` (Composition-Wrapper um alle fuenf Protocol-Adapter: typisierte Read-Fehler → `Quality.MISSING`-Point + `adapter_communication_lost`-Alarm mit Ziel/Startzeit/Ursache; [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md), M7-Welle-3b) + Teil-Substanz `hexagon/core/devices/smart_meter/model.py:202` (SmartMeter-pre-attach → `MISSING`) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_003_comm_failure_emits_missing_or_stale` (reaktiviert) + `::test_safe_003_smart_meter_pre_attach_emits_missing` + `tests/unit/adapters/driven/test_protocol_comm_failure_wrap.py` (per-Adapter-Familie) | ✓ **Produktiv** (M7-Welle-3b) |
+| **[`GG-SAFE-004`](../../spec/lastenheft.md)** | Veraltete Daten markiert: `max_age`-Ueberschreitung → deterministisch `stale`-Quality. | `hexagon/core/simulation/tick_loop.py::_apply_max_age_stage` (`STALE`-Stage vor dem `TickResult`-Bau; Stream + Persistenz + Replay identisch markiert) + keyword-only Kwarg `max_age_ms` am `TickLoop`-Konstruktor und in `TickLoopWiring`/`build_tick_loop` ([`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md); M7-Welle-3a) | `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py::test_safe_004_stale_data_quality_after_max_age` (reaktiviert) + `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3a_max_age.py` (Boundary/Override/Determinismus) | ✓ **Produktiv** (M7-Welle-3a) |
 
 **Legende**:
 - ✓ Produktiv: Akzeptanz vollstaendig erfuellt + Smoke-Test
@@ -122,14 +122,14 @@ Alarm mit Ziel, Startzeit und Ursache wird erzeugt.
   Startzeit (`simulation_time_ms`, Sim-Zeit via `ClockPort` —
   `AC-NO-TIME`), Ursache (`message` mit Exception-Klassenname
   maschinenlesbar praefixt); `severity="warning"`.
-- **Abgrenzungen** (ADR 0053 §2.3/§7): MQTT-`read() → None`
+- **Abgrenzungen** ([`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md) §2.3/§7): MQTT-`read() → None`
   (leere Queue) ist kein Ausfall; `start`/`stop`/`write`
   bleiben Pass-Through fail-fast; der Wrapper ist opt-in
   (Verdrahter-Entscheidung).
 - **Teil-Substanz bleibt**: SmartMeter-pre-attach → `MISSING`
-  (`smart_meter/model.py:202`, ADR 0018 §2.3 —
+  (`smart_meter/model.py:202`, [`ADR 0018`](../plan/adr/0018-smart-meter-device-pattern.md) §2.3 —
   Konfigurations-Zustand, komplementaer zum Adapter-Pfad).
-- **Scope-Lesart** (ADR 0053 §2.1): der Flip bindet an die
+- **Scope-Lesart** ([`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md) §2.1): der Flip bindet an die
   Adapter-Substanz + Test-Sibling-E2E — es gibt keinen
   produktiven Adapter-`read()`-Pfad im TickLoop (dokumentierte
   Bestand-Grenze, kein Requirement); Praezedenz ist die
@@ -164,14 +164,14 @@ ueberschreiten erhalten deterministisch den Qualitaetsstatus
   = None` am `TickLoop`-Konstruktor + `TickLoopWiring`/
   `build_tick_loop`-Symmetrie. `None` (Default) = Stage aus;
   `<= 0` → typisierter `TickLoopInvalidMaxAgeMsError`. Bewusst
-  **kein** Scenario-Schema-Feld (Hash-Pin-Schutz; ADR 0052 §2.1).
+  **kein** Scenario-Schema-Feld (Hash-Pin-Schutz; [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md) §2.1).
 - **Severity-Override**: `STALE` (Severity 3) ersetzt nur
   `VALID`/`ESTIMATED`/`LIMITED` (0..2); schwerere Befunde
   (`FAULT_INJECTED`/`INVALID`/`NAN`/`MISSING`) dominieren.
 - **Determinismus**: Vergleich nur ueber Sim-Zeit (`AC-NO-TIME`
   gewahrt) — zwei gleich-konfigurierte Laeufe markieren
   identische Punkte.
-- **Bewusste Grenze** (ADR 0052 §6): heutige produktive Devices
+- **Bewusste Grenze** ([`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md) §6): heutige produktive Devices
   emittieren frische Punkte (Alter 0); das Demo-Wiring laesst
   die Stage aus (`None`), weil keine konkrete Stakeholder-
   Schwelle existiert. Der Akzeptanz-Beleg lebt im reaktivierten
@@ -191,14 +191,14 @@ Qualitaetsstatuswerte (`GG-DATA-003`):
 
 - `VALID` (Severity 0): regulaerer Mess-Wert.
 - `STALE` (3): veraltet (`GG-SAFE-004`; ✓ produktiv seit
-  M7-Welle-3a via `max_age`-Stage, ADR 0052).
+  M7-Welle-3a via `max_age`-Stage, [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md)).
 - `ESTIMATED` (1): geschaetzt.
 - `LIMITED` (2): clipped/limited (Device-Saturation).
 - `INVALID` (5): semantisch ungueltig (`GG-SAFE-001`).
 - `NAN` (6): NaN/Inf (`GG-SAFE-002`; produktiv ueber
   `canonical_json`-Reject statt Enum-Emission).
 - `MISSING` (7): fehlend (`GG-SAFE-003`; ✓ produktiv seit
-  M7-Welle-3b via Comm-Failure-Wrapper, ADR 0053; plus
+  M7-Welle-3b via Comm-Failure-Wrapper, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md); plus
   SmartMeter-pre-attach-Teil-Substanz seit M2).
 - `FAULT_INJECTED` (4): durch Fault-Injection markiert.
 

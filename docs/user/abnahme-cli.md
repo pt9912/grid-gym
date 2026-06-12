@@ -87,7 +87,7 @@ aufgenommen (alle drei Entries bleiben praesent).
 ## JSON-Schema-Vertrag
 
 Der `AbnahmeReport` ist ein Pydantic-`strict`+`extra="forbid"`-Modell
-(Vorbild ADR 0045). Happy-Path (ohne `reason`):
+(Vorbild [`ADR 0045`](../plan/adr/0045-http-api-request-strict-validation.md)). Happy-Path (ohne `reason`):
 
 ```json
 {
