@@ -1,9 +1,11 @@
 # ADR 0047 — TelemetrySinkPort Zeitreihen-Persistenz (M7 Welle 1a)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-
-Sprung (dieser Commit, M7-Welle-1a-C1).
+**Status:** Accepted — gezogen 2026-06-12 mit M7-Welle-X-C1
+(M7-Closure-Welle). Provisional-Schritt 2026-06-08 (direkter
+`Proposed → Provisional`-Sprung mit M7-Welle-1a-C1).
 **Datum:** 2026-06-08
-**Status geaendert am:** 2026-06-08 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-06-08 — `Proposed → Provisional`;
+2026-06-12 — `Provisional → Accepted` (M7-Welle-X-Closure).
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
@@ -224,8 +226,8 @@ Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
 Slice-Doc [`M7-welle-1a.md`](../planning/done/M7-welle-1a.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Persistenz-Smoke). Status-Pfad (`Proposed → Provisional →
-Accepted`): siehe Status-Header; `Accepted` mit M7-Welle-X-Closure
-(gebuendelt mit ADR 0048 + ADR 0049).
+Accepted`): siehe Status-Header; `Accepted` gezogen 2026-06-12
+mit M7-Welle-X-C1 (gebuendelt mit ADR 0048 + ADR 0049).
 
 ---
 

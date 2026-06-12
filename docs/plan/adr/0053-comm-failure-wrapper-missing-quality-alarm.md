@@ -1,9 +1,11 @@
 # ADR 0053 — Comm-Failure-Wrapper: Read-Fehler → `MISSING`-Quality + `adapter_communication_lost`-Alarm (M7 Welle 3b)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-
-Sprung (dieser Commit, M7-Welle-3b-C1).
+**Status:** Accepted — gezogen 2026-06-12 mit M7-Welle-X-C1
+(M7-Closure-Welle). Provisional-Schritt 2026-06-11 (direkter
+`Proposed → Provisional`-Sprung mit M7-Welle-3b-C1).
 **Datum:** 2026-06-11
-**Status geaendert am:** 2026-06-11 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-06-11 — `Proposed → Provisional`;
+2026-06-12 — `Provisional → Accepted` (M7-Welle-X-Closure).
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
@@ -253,7 +255,8 @@ Punkte maschinell unterscheidbar. C2 pinnt den Feld-Vertrag.
 Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
 Slice-Doc [`M7-welle-3b.md`](../planning/done/M7-welle-3b.md).
 Status-Pfad (`Proposed → Provisional → Accepted`): `Accepted`
-mit M7-Welle-X-Closure (gebuendelt mit ADR 0047..0052).
+gezogen 2026-06-12 mit M7-Welle-X-C1 (gebuendelt mit
+ADR 0047..0052).
 
 ---
 

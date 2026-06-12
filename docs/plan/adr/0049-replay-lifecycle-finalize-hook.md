@@ -1,9 +1,11 @@
 # ADR 0049 — Replay-Lifecycle: Terminal-Hook + `replay_diff_status` + GG-TERM-Preflight (M7 Welle 1b-b)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-
-Sprung (dieser Commit, M7-Welle-1b-b-C1).
+**Status:** Accepted — gezogen 2026-06-12 mit M7-Welle-X-C1
+(M7-Closure-Welle). Provisional-Schritt 2026-06-09 (direkter
+`Proposed → Provisional`-Sprung mit M7-Welle-1b-b-C1).
 **Datum:** 2026-06-09
-**Status geaendert am:** 2026-06-09 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-06-09 — `Proposed → Provisional`;
+2026-06-12 — `Provisional → Accepted` (M7-Welle-X-Closure).
 **Bezug:**
 
 - [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
@@ -262,8 +264,8 @@ Lieferplan, Commit-Hashes + Verifikations-Gates leben in der
 Slice-Doc [`M7-welle-1b-b.md`](../planning/done/M7-welle-1b-b.md)
 (C2: Code-Substanz; C2-Verifikation inkl. `make test-integration`-
 Zwei-Lauf-Replay-Lifecycle-Smoke). Status-Pfad (`Proposed →
-Provisional → Accepted`): `Accepted` mit M7-Welle-X-Closure
-(gebuendelt mit ADR 0047 + ADR 0048).
+Provisional → Accepted`): `Accepted` gezogen 2026-06-12 mit
+M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
 
 ---
 
