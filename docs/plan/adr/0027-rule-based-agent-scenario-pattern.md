@@ -657,11 +657,11 @@ Sub-Snapshot-Layout ist neu).
   `ScenarioUnknownAgentPluginError`,
   `TickLoopAgentInstanceSnapshotMismatchError`).
 - `tests/unit/hexagon/core/agents/test_rule_based.py` (NEU).
-- `tests/unit/hexagon/core/scenario/test_loader_welle_4b.py`
+- `tests/unit/hexagon/core/scenario/test_loader_welle_4b.py` <!-- d-check:ignore (historisch: heute test_loader_welle_4b_agents.py) -->
   (NEU oder Aufnahme in bestehende `test_loader_welle_6b.py`).
 - `tests/unit/hexagon/core/simulation/test_tick_loop_welle_
   4b_snapshot.py` (NEU).
-- `tests/property/test_rule_based_determinism.py` (NEU
+- `tests/property/test_rule_based_determinism.py` (NEU <!-- d-check:ignore (historisch: heute tests/unit/hexagon/core/agents/test_rule_based.py) -->
   oder Aufnahme in bestehendes Property-Test-Modul).
 - `tests/integration/test_agents_demo_e2e.py` (NEU).
 - `tests/integration/scenarios/agents_demo.yaml` (NEU).

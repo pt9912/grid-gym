@@ -166,7 +166,7 @@ aus `ADR 0006`). Die Durchfuehrung geschieht in M1 Welle 2 (siehe
 1. `hexagon/ports/driven/random.py` liefert das `RandomPort`-Protocol
    gemaess §5.1 (siehe unten).
 2. Fake-Implementation `FixedSeedRandom` in
-   `tests/unit/hexagon/ports/driven/conftest.py` oder als Test-Helfer.
+   `tests/unit/hexagon/ports/driven/conftest.py` oder als Test-Helfer. <!-- d-check:ignore (historisch: Fakes leben heute in _fakes.py) -->
 3. `hypothesis`-Property-Test: zwei Generatoren mit demselben Seed
    produzieren identische Sequenzen ueber `next_int`, `next_float`
    und Sub-Port-Aufrufe.
@@ -295,7 +295,7 @@ Wesentliche Eigenschaften:
 
 Bei Acceptance schliesst diese ADR:
 
-- **Trigger 003** (`docs/plan/planning/done/003-random-port-adr.md`)
+- **Trigger 003** (`docs/plan/planning/done-archive/003-random-port-adr.md`)
   wandert nach `done/`.
 - `GG-AR-PORT-DRN-010` ist damit implementierungs-spezifiziert
   (sprach- und PRNG-Wahl).

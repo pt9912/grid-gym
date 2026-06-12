@@ -5,7 +5,7 @@ mit der M1-Welle-1-PR-Mergung.
 **Datum:** 2026-05-17
 **Status geaendert am:** 2026-05-17 — `Proposed → Provisional` mit
 Freigabe der Implementierung in
-`tools/arch_check.py::_inherits_enum`. Acceptance synchron zur
+`tools/arch_check.py` (`_inherits_enum`). Acceptance synchron zur
 M1-Welle-1-PR; bei Mergung wird der Status auf `Accepted` gehoben.
 **Letzte inhaltliche Aenderung:** 2026-05-17 — erste Fassung.
 **Bezug:**
@@ -70,7 +70,7 @@ demselben literalen Namen matchen — das ist die etablierte
 Heuristik der `FrozenModel`-Erkennung; sie hat dieselben Grenzen
 (keine Import-Resolving, kein Alias-Tracking).
 
-Implementierung in `tools/arch_check.py::_inherits_enum` als
+Implementierung in `tools/arch_check.py` (`_inherits_enum`) als
 zusaetzliche `or`-Alternative in `_is_frozen_class`:
 
 ```python

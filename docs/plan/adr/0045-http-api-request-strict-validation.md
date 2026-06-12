@@ -194,7 +194,7 @@ nicht verankert (siehe §7 Out-of-Scope).
 ### §2.4 RunCreateRequest-Konsolidierung
 
 `RunCreateRequest` und `RunCreateResponse` sind heute lokal
-in `src/grid_gym/adapters/driving/http_api/app.py:139-160`
+in `src/grid_gym/adapters/driving/http_api/app.py` (Z. 139-160)
 definiert, waehrend die uebrigen Request-/Response-Schemas
 (`ControlRequest`, `FaultInjectionRequest`,
 `RunDetailResponse`, etc.) in `_schemas.py` konsolidiert

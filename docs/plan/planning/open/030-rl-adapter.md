@@ -25,7 +25,7 @@ TickLoop-Vertrag (Agent-Protocol).
 
 ## Erwartete Lieferung
 
-- **Adapter-Modul** `src/grid_gym/adapters/driven/rl_agent/`
+- **Adapter-Modul** `src/grid_gym/adapters/driven/rl_agent/` <!-- d-check:ignore (geplant: entsteht mit Trigger-Aktivierung) -->
   (oder `core/agents/rl_agent/`, je nach Architektur-Entscheidung):
   - `RlAgentAdapter` (oder `RlAgent`) implementiert das
     `Agent`-Sub-Protocol; `tick(...)` ruft eine extern injizierte

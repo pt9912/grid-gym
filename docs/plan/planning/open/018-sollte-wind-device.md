@@ -24,7 +24,7 @@ Wind wird relevant fuer realistische Erneuerbare-Mix-Szenarien
   (PV-Pattern) mit Wind-spezifischen Akzeptanzkriterien
   (cut-in-/cut-out-/rated-Wind-Geschwindigkeiten, kubisch-
   proportionale Leistungskennlinie zwischen cut-in und Nennwind).
-- `src/grid_gym/hexagon/core/devices/wind/`-Submodul mit
+- `src/grid_gym/hexagon/core/devices/wind/`-Submodul mit <!-- d-check:ignore (geplant: entsteht mit Trigger-Aktivierung) -->
   `WindDevice`, `WindConfig`, Property-Test fuer Determinismus.
 - Profile-Eingang (analog `LoadProfile`) fuer Windgeschwindigkeit;
   alternativ stochastisches Modell mit Seed.

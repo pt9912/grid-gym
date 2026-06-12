@@ -363,7 +363,7 @@ mit eigenem Test-Modul
 (start/stop idempotent, Teardown bei pending Tasks,
 Cancellation-Semantik, Timeout-Propagation). Welle-6-
 Schaerfung kann die Klasse nach
-`src/grid_gym/adapters/driven/_async_bridge/` oder
+`src/grid_gym/adapters/driven/_async_bridge/` oder <!-- d-check:ignore (Entwurfs-Option, nicht gebaut — realisiert als protocol_opcua-interner OpcuaLoopThread) -->
 aequivalent extrahieren, wenn Welle 5+ sie tatsaechlich
 reusen; bis dahin bleibt sie Welle-4-lokal.
 
@@ -781,7 +781,7 @@ Wartungslast (analog ADR 0032 §3 A8 fuer pymodbus).
     Test (Welle-1-§7-Folge-Pflicht).
   - OPC-UA-Subscription-Pfad (optional, je nach Bedarf).
   - Cross-Adapter-Profil-Index unter
-    `spec/protocol_profiles/`.
+    `spec/protocol_profiles/`. <!-- d-check:ignore (historisch: als Einzeldatei spec/protocol_profiles.md realisiert) -->
 
 ---
 

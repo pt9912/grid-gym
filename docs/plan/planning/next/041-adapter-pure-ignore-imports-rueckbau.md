@@ -79,7 +79,7 @@ Aktuelle Ausnahmen:
 
 - `_demo_setup.py` und `_demo_scenario_setup.py` in ein neues
   Composition-Root-Paket verschieben, z. B.
-  `src/grid_gym/composition/`.
+  `src/grid_gym/composition/`. <!-- d-check:ignore (geplant: entsteht mit Slice 041) -->
 - Reiner `git mv`-Commit zuerst, Inhaltsrewrite danach.
 - `app.py`, `__main__.py`, Tests und Doku-Referenzen anpassen.
 - Entfernbare `pyproject.toml`-Eintraege:

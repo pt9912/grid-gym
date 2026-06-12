@@ -59,8 +59,8 @@ korrespondierenden Trigger gelebt (Welle-6-Audit-Befund).
 ## Substanz-Stand (Welle-6-Audit 2026-06-07)
 
 - ✗ **Kein Kubernetes-Manifest-Artefakt im Repo**: kein
-  `deploy/k8s/`, kein `deploy/helm/`, kein
-  `deploy/kustomize/`-Verzeichnis. Compose-Stack
+  `deploy/k8s/`, kein `deploy/helm/`, kein <!-- d-check:ignore (geplant: Trigger-037-Lieferung; heute bewusst nicht vorhanden) -->
+  `deploy/kustomize/`-Verzeichnis. Compose-Stack <!-- d-check:ignore (geplant: Trigger-037-Lieferung; heute bewusst nicht vorhanden) -->
   (`deploy/compose.yml`) ist die einzige Deployment-Form.
 
 - ✗ **Keine Rolling-Update-Doku**: weder ein
@@ -110,8 +110,8 @@ korrespondierenden Trigger gelebt (Welle-6-Audit-Befund).
 Bei Aktivierung (siehe Aktivierungs-Bedingung) entweder ein
 eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 
-1. **K8s-Manifest-Artefakte** unter `deploy/k8s/` (oder
-   `deploy/helm/`-Chart, je nach D-1-Entscheidung im
+1. **K8s-Manifest-Artefakte** unter `deploy/k8s/` (oder <!-- d-check:ignore (geplant: Trigger-037-Lieferung) -->
+   `deploy/helm/`-Chart, je nach D-1-Entscheidung im <!-- d-check:ignore (geplant: Trigger-037-Lieferung) -->
    Folge-Slice-C0):
    - `Deployment` fuer `api` mit Readiness-Probe gegen
      `/ready` + Liveness-Probe gegen `/health` (Welle-6-
@@ -161,7 +161,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      `compose.yml`-Substanz.
 
 2. **Rolling-Update-Strategie-Doku** in
-   `docs/user/k8s-deploy.md` (oder `deploy/k8s/README.md`):
+   `docs/user/k8s-deploy.md` (oder `deploy/k8s/README.md`): <!-- d-check:ignore (geplant: Trigger-037-Lieferung) -->
    - `Deployment.spec.strategy.type: RollingUpdate` mit
      `maxUnavailable: 0` + `maxSurge: 1` fuer api (kann
      unterbrechungsfrei).
@@ -240,7 +240,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 
 6. **NEU K8s-Smoke** (lokal via kind), bewusst **nicht** im
    Default-`make test-integration`-Pfad:
-   `tests/k8s/test_k8s_deployment_smoke.py` plus separates
+   `tests/k8s/test_k8s_deployment_smoke.py` plus separates <!-- d-check:ignore (geplant: Trigger-037-Lieferung) -->
    `make test-k8s`-Target analog Welle-6-`make test-iec61850`.
    Hintergrund: `make test-integration` ruft heute pauschal
    `pytest tests/integration/` auf; ein Kind/K8s-Smoke unter
@@ -359,7 +359,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
   Wechsel.
 - **Kein automatischer NEU-ADR-Zwang fuer statische K8s-
   Manifeste** — reine Operations-Artefakte unter
-  `deploy/k8s/` koennen Slice-Substanz bleiben. **ADR-
+  `deploy/k8s/` koennen Slice-Substanz bleiben. **ADR- <!-- d-check:ignore (geplant: Trigger-037-Lieferung) -->
   Pruefpunkt im Folge-Slice-C0:** Sobald `make k8s-validate`
   oder `make test-k8s` in `make ci`, `make fullbuild` oder
   einen verbindlichen Workflow aufgenommen wird, entsteht ein

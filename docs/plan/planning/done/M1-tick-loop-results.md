@@ -145,13 +145,13 @@ dieses Stacks bzw. Welle-7-Final-Review-Output). Befunde:
   vor M2):** Triggers 013 und 014 sind **bewusst aktiv offen**,
   nicht „nicht-final umgesetzt":
   - **Trigger 013** (`diff_replay`-tick-ms-Parameter,
-    `docs/plan/planning/open/013-replay-diff-tick-ms-parameter.md`):
+    `docs/plan/planning/done-archive/013-replay-diff-tick-ms-parameter.md`):
     aktuell `tick = simulation_time // 1000` ist Welle-5-Default
     fuer `tick_ms=1000`. Aktivierung mit erstem Replay-Diff
     gegen `tick_ms != 1000` — typisch M2-Geraet mit
     `tick_ms=10/100`.
   - **Trigger 014** (`generic-snapshot-format-codec`,
-    `docs/plan/planning/open/014-generic-snapshot-format-codec.md`):
+    `docs/plan/planning/done-archive/014-generic-snapshot-format-codec.md`):
     fuenffaches `*FormatError`-Pattern (RandomPort, Scheduler,
     TickLoop, Scenario, Replay) ist heute pre-mature-
     abstraction-konform belassen. Aktivierung mit sechstem

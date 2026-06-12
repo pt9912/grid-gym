@@ -765,7 +765,7 @@ mehrere Komponenten:
   `tests/unit/adapters/driven/protocol_iec61850/*.py` +
   1 `tests/integration/test_iec61850_*.py` + 2 `__init__.py`
   unter `tests/unit/adapters/driven/protocol_iec61850/`).
-  Welle-6-Schaerfung kann `tools/check_refs.py` um einen
+  Welle-6-Schaerfung kann `tools/check_refs.py` um einen <!-- d-check:ignore (historisch: check_refs abgeloest durch d-check, 766ae8c) -->
   SPDX-Header-Konsistenz-Check erweitern.
 - **CONTRIBUTING.md-Sync** (falls vorhanden) ist
   Welle-6-Material; Welle-5b-Minimum ist nur SPDX +
@@ -1057,7 +1057,7 @@ XML-Konfigurationsformat. Verworfen, weil:
     `IedServer(model_path=...)`-Argument.
   - aarch64-Wheel-Support (Source-Build oder
     upstream-Wheel falls verfuegbar).
-  - **`tools/check_refs.py`-SPDX-Header-Konsistenz-Check
+  - **`tools/check_refs.py`-SPDX-Header-Konsistenz-Check <!-- d-check:ignore (historisch: check_refs abgeloest durch d-check, 766ae8c) -->
     fuer GPL-Boundary-Files** (Decision-I-f-Folge-
     Pflicht).
   - **`CONTRIBUTING.md`-Sync** (falls vorhanden) mit
@@ -1068,7 +1068,7 @@ XML-Konfigurationsformat. Verworfen, weil:
   - Cross-Adapter-Tick-Caching (generisches Pattern,
     nicht IEC-61850-spezifisch).
   - **Adapter-Profil-Index** unter
-    `spec/protocol_profiles/` mit Verweisen auf
+    `spec/protocol_profiles/` mit Verweisen auf <!-- d-check:ignore (historisch: als Einzeldatei spec/protocol_profiles.md realisiert) -->
     ADR 0031..0035.
 
 ---

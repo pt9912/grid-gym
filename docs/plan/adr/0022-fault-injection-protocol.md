@@ -77,7 +77,7 @@ Scenario-Schema ist seit M1-Welle-5 (`d4029e3` ff.) als
 optionales Top-Level-Element validiert: `start_simulation_time`,
 `duration_ms`, `target`, `type`, `payload`, `recovery` sind
 strukturell gepinnt
-(`src/grid_gym/hexagon/core/scenario/validator.py:243-263`,
+(`src/grid_gym/hexagon/core/scenario/validator.py` (Z. 243-263),
 `_assert_fault_list`). **Aber**: der Validator prueft NICHT,
 ob `fault.target` in `devices` existiert — anders als der
 parallel laufende `_assert_event_list` (Zeile 198-222), der
@@ -102,7 +102,7 @@ realisiert genau diese Sub-Protocol-Schicht.
 
 **Beobachtung 3 — TickLoop hat kein Fault-Konsument.**
 Der Welle-6b-Vor-Tick-Block
-(`src/grid_gym/hexagon/core/simulation/tick_loop.py:289-302`,
+(`src/grid_gym/hexagon/core/simulation/tick_loop.py` (Z. 289-302),
 `_consume_load_inputs_into`) konsumiert LoadEvents +
 LoadProfiles, aber kein Pendant fuer Faults. ADR 0021 §2.5
 fixiert das Vor-Tick-Block-Pattern; Welle 1 fuegt einen
@@ -276,7 +276,7 @@ Fault-Typen sind ueberhaupt definiert? Welche Recovery-Modi?)
 ### 2.4 TickLoop-Hook im Vor-Tick-Block
 
 `TickLoop.tick()`
-(`src/grid_gym/hexagon/core/simulation/tick_loop.py:240-332`)
+(`src/grid_gym/hexagon/core/simulation/tick_loop.py` (Z. 240-332))
 erhaelt einen neuen Hook-Punkt **nach** dem LoadEvent-/Profile-
 Overlay (Zeile 302 `_consume_load_inputs_into`) und **vor**
 der ersten Device-Iteration (Zeile 306 erste
@@ -420,7 +420,7 @@ denkbar:
    haben.
 
 **ScenarioFault-Wiederverwendung**: `ScenarioFault` (M1-Welle-
-5, `src/grid_gym/hexagon/core/domain/scenario.py:100-114`)
+5, `src/grid_gym/hexagon/core/domain/scenario.py` (Z. 100-114))
 hat schon alle sechs Pflicht-Felder
 (`start_simulation_time`, `duration_ms`, `target`, `type`,
 `payload`, `recovery`). Keine neue Domain-Form noetig; Welle 1
@@ -550,7 +550,7 @@ ADR-Cross-Refs (read-only fuer Welle 1):
 **Pflege-Gleichheit:**
 
 - `_DEVICE_FACTORIES` (Scenario-Loader,
-  `src/grid_gym/hexagon/core/scenario/loader.py:59-65`)
+  `src/grid_gym/hexagon/core/scenario/loader.py` (Z. 59-65))
   ist von Welle 1 **nicht** betroffen — Fault-Adapter sind
   nicht ueber Loader-Factory dispatched. Welle 2 entscheidet,
   ob ein Fault-Adapter-Registry analog `_DEVICE_FACTORIES`

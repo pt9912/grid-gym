@@ -151,7 +151,7 @@ ersetzt. Statt dessen gilt:
   Sektion noch keine Kennung hat, wird die Kennung im selben
   Edit eingefuehrt (siehe Regel fuer Ziele ohne Kennung).
 - Dokumentations-Tooling (z. B. ein moeglicher
-  `tools/check_refs.py` als Folgearbeit) kann spaeter ueber die
+  `tools/check_refs.py` als Folgearbeit) kann spaeter ueber die <!-- d-check:ignore (historisch: check_refs abgeloest durch d-check, 766ae8c) -->
   Kennungen einen Index erzeugen und nicht aufgeloeste Verweise
   melden.
 - Die Pflege-Regeln in `ADR 0001` bleiben unveraendert; diese
@@ -163,7 +163,7 @@ ersetzt. Statt dessen gilt:
 ## 5. Nicht Gegenstand dieser ADR
 
 - Konkrete Linter-Implementierung fuer Querverweise (eigener
-  Folge-ADR oder einfach `tools/check_refs.py` als Routinearbeit).
+  Folge-ADR oder einfach `tools/check_refs.py` als Routinearbeit). <!-- d-check:ignore (historisch: check_refs abgeloest durch d-check, 766ae8c) -->
 - Renaming-Regeln fuer Kennungen (Kennungen sind unveraenderlich,
   sobald veroeffentlicht — ohnehin Konvention der `GG-*`-Familie).
 - HTML-/PDF-Rendering, Cross-Reference-Erzeugung in einem

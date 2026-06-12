@@ -209,7 +209,7 @@ angelegt.
 
 - Einfuehrung eines Kennungsraums fuer Slice-Plaene (eigener
   Folge-ADR, falls noetig).
-- Automatisierte Link-Validierung (`tools/check_refs.py` existiert
+- Automatisierte Link-Validierung (`tools/check_refs.py` existiert <!-- d-check:ignore (historisch: check_refs abgeloest durch d-check, 766ae8c) -->
   bereits als Trigger-002-Closure 2026-05-17 mit Welle-7-Audit;
   eine Erweiterung um automatische Pfad-Migration ist
   Routinearbeit, kein ADR-Stoff).

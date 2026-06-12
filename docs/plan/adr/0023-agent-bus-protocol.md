@@ -685,7 +685,7 @@ beides additiv per ADR 0015 §2.3 ohne v2→v3-Bump.
 | `tests/unit/hexagon/core/agents/test_protocol.py`                   | NEU |
 | `tests/unit/hexagon/core/agents/test_bus.py`                        | NEU |
 | `tests/unit/hexagon/core/domain/test_agent_message.py`              | NEU |
-| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` | NEU |
+| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` | NEU | <!-- d-check:ignore (historisch: RENAME zu test_tick_loop_welle_4a_agent.py per ADR 0026) -->
 | `Dockerfile`                                                        | EDIT (`CRITICAL_COV_TARGETS` + `core/agents`; siehe §4 In-Scope-Note zur `agent_message.py`-Erfassung) |
 
 ADR-Cross-Refs (read-only fuer Welle 3):
@@ -742,7 +742,7 @@ ADR-Cross-Refs (read-only fuer Welle 3):
 **Pflege-Gleichheit:**
 
 - `_DEVICE_FACTORIES` (Scenario-Loader,
-  `src/grid_gym/hexagon/core/scenario/loader.py:59-65`) ist
+  `src/grid_gym/hexagon/core/scenario/loader.py` (Z. 59-65)) ist
   von Welle 3 **nicht** betroffen — Agent-Faktoren sind
   Welle-4-Material.
 - `_DEVICE_TYPE_BY_CLASS_NAME` (TickLoop) bleibt unveraendert.

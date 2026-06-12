@@ -104,7 +104,7 @@ ist.
 
 ## Verifikation
 
-`tests/integration/test_m6_welle_5c_safe_005_006_compose_smoke.py::test_demo_compose_host_bind_defaults_to_loopback`
+`tests/integration/test_m6_welle_5c_safe_005_006_compose_smoke.py` (`test_demo_compose_host_bind_defaults_to_loopback`)
 inspiziert die `deploy/compose.yml`-Quelle und pinnt zwei
 Eigenschaften in CI:
 

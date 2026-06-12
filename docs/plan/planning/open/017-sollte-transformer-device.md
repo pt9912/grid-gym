@@ -24,7 +24,7 @@ Szenario modelliert werden muss.
   mit Transformer-spezifischen Akzeptanzkriterien (Wandlungs-
   verhaeltnis, Kupferverluste, Eisenverluste, Saettigungs-
   Kennlinie).
-- `src/grid_gym/hexagon/core/devices/transformer/`-Submodul mit
+- `src/grid_gym/hexagon/core/devices/transformer/`-Submodul mit <!-- d-check:ignore (geplant: entsteht mit Trigger-Aktivierung) -->
   `TransformerDevice`, `TransformerConfig`, Snapshot-Roundtrip,
   Determinismus-Property-Test.
 - Scenario-Validator + Loader-Factory-Eintrag.

@@ -22,7 +22,7 @@ Schluss). Diesel ist relevant fuer Inselnetz-Szenarien
   hat) mit Diesel-spezifischen Akzeptanzkriterien (Kraftstoff-
   Vorrat in Litern, Verbrauch in l/kWh, Min-Startleistung,
   Ramp-Limits, Anfahr-/Abstell-Hysterese).
-- `src/grid_gym/hexagon/core/devices/diesel/`-Submodul mit
+- `src/grid_gym/hexagon/core/devices/diesel/`-Submodul mit <!-- d-check:ignore (geplant: entsteht mit Trigger-Aktivierung) -->
   `DieselDevice`, `DieselConfig`, Determinismus-Property-Test.
 - Scenario-Validator + Loader-Factory-Eintrag.
 - `CRITICAL_COV_TARGETS`-Default um `devices/diesel` erweitert.

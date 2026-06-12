@@ -248,7 +248,7 @@ In zwei Commits abgearbeitet:
 | ------ | ------- | ----- |
 | `fb90154` | B-A: `asyncio.get_event_loop().time` (Variante A: Attribute-Call; Variante B: `from asyncio import get_event_loop`) | `tools/arch_check.py` |
 | `201daee` | B-B ([`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack) als 16. Contract im ADR), D-1..D-10 (alle Drift-Items in §A-1, §A-2, §6.1 von [`ADR 0002`](../../adr/0002-language-and-build-stack.md) sowie §5.1 von [`ADR 0005`](../../adr/0005-type-check-gate.md)) | `docs/plan/adr/0002-language-and-build-stack.md`, `docs/plan/adr/0005-type-check-gate.md` |
-| (folgt) | B-C: Welle-5-Schritt-7 `make fullbuild` → `make gates` reduziert, Spike-0-Closure-Note-Struktur konkretisiert, Welle-5-Schritt-4/6 ergaenzt | `docs/plan/planning/next/spike-0.md`, `spike-0-results.md` |
+| (folgt) | B-C: Welle-5-Schritt-7 `make fullbuild` → `make gates` reduziert, Spike-0-Closure-Note-Struktur konkretisiert, Welle-5-Schritt-4/6 ergaenzt | `docs/plan/planning/done-archive/spike-0.md`, `spike-0-results.md` |
 
 **Gate-Status nach B-A + D-1..D-10:** alle Welle-1..4-Gates bleiben
 gruen. `make arch-check` faengt jetzt zusaetzlich

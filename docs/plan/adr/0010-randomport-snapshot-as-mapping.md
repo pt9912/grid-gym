@@ -48,7 +48,7 @@ muss. Hier prallt der `bytes`-Vertrag mit der
   internen `_build_payload()`-Funktion, sodass es nur EINEN
   Wahrheitspfad fuer das Snapshot-Schema gibt.
 
-Trigger 012 (`docs/plan/planning/done/012-snapshot-composition.md`)
+Trigger 012 (`docs/plan/planning/done-archive/012-snapshot-composition.md`)
 hatte Variante 3 als „Option A (empfohlen)" gelistet.
 
 ---

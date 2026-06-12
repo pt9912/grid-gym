@@ -28,10 +28,10 @@ Validierung" als Ankertyp.
 
 | Geraet | Substanz-Pfad | Test-Pfad | Status |
 | ------ | ------------- | --------- | ------ |
-| **Battery** | `hexagon/core/devices/battery/commands.py::validate_set_power_command` (REJECTED/LIMITED/SOC-Alarm-Outcome); `model.py::apply_command` ruft den Validator + clampt Power auf `[min_power_kw, max_power_kw]`. | `tests/unit/hexagon/core/devices/battery/test_commands.py` + Smoke `tests/integration/test_m6_welle_5c_safe_005_006_compose_smoke.py::test_safe_005_battery_fallback_canonical` | ✓ **Produktiv** |
-| **Load** | `hexagon/core/devices/load/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Power-Clamp. | `tests/unit/hexagon/core/devices/load/test_commands.py` + Compose-Smoke `::test_safe_005_load_fallback_canonical` | ✓ **Produktiv** |
-| **GridConnection** | `hexagon/core/devices/grid_connection/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Import/Export-Power-Clamp. | `tests/unit/hexagon/core/devices/grid_connection/test_commands.py` + Compose-Smoke `::test_safe_005_grid_connection_fallback_canonical` | ✓ **Produktiv** |
-| **PV** | `hexagon/core/devices/pv/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Curtail-Clamp auf `[0, p_max_kw]`. | `tests/unit/hexagon/core/devices/pv/test_commands.py` + Compose-Smoke `::test_safe_005_pv_fallback_canonical` | ✓ **Produktiv** |
+| **Battery** | `hexagon/core/devices/battery/commands.py::validate_set_power_command` (REJECTED/LIMITED/SOC-Alarm-Outcome); `model.py::apply_command` ruft den Validator + clampt Power auf `[min_power_kw, max_power_kw]`. | `tests/unit/hexagon/core/devices/battery/test_commands.py` + Smoke `tests/integration/test_m6_welle_5c_safe_005_006_compose_smoke.py` (`test_safe_005_battery_fallback_canonical`) | ✓ **Produktiv** |
+| **Load** | `hexagon/core/devices/load/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Power-Clamp. | `tests/unit/hexagon/core/devices/load/test_load_device.py` + Compose-Smoke `::test_safe_005_load_fallback_canonical` | ✓ **Produktiv** |
+| **GridConnection** | `hexagon/core/devices/grid_connection/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Import/Export-Power-Clamp. | `tests/unit/hexagon/core/devices/grid_connection/test_grid_connection_device.py` + Compose-Smoke `::test_safe_005_grid_connection_fallback_canonical` | ✓ **Produktiv** |
+| **PV** | `hexagon/core/devices/pv/commands.py::validate_set_power_command` (REJECTED/LIMITED); `model.py::apply_command` mit Curtail-Clamp auf `[0, p_max_kw]`. | `tests/unit/hexagon/core/devices/pv/test_pv_device.py` + Compose-Smoke `::test_safe_005_pv_fallback_canonical` | ✓ **Produktiv** |
 
 ### `GG-SAFE-006` — Replay-Diff-Determinismus
 

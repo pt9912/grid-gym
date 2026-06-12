@@ -735,7 +735,7 @@ Pattern. ADR 0026 referenziert ADR 0023 §6 explizit als
 | `src/grid_gym/hexagon/core/scenario/loader.py`                      | EDIT (`build_tick_loop(agents=)`-Symmetrie + GridModelBilanz-Overlay-Verdrahtung) |
 | `src/grid_gym/hexagon/core/errors.py`                               | EDIT (`AgentRegistryError`/`AgentDuplicateIdError` + `AgentCommandDrainError`/`AgentInvalidCommandTargetError` + fuenf TickLoopAgentSnapshot-Errors) |
 | `tests/unit/hexagon/core/agents/test_bus.py`                        | EDIT (`consume_for`-Direct-Inbox-Tests + Broadcast-Retention) |
-| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` → `test_tick_loop_welle_4a_agent.py` | RENAME + EDIT (Konstruktor-Kwarg statt `_set_agents_for_testing`, Duplicate-ID-Fail-Fast, Auto-Bus) |
+| `tests/unit/hexagon/core/simulation/test_tick_loop_welle_3_agent.py` → `test_tick_loop_welle_4a_agent.py` | RENAME + EDIT (Konstruktor-Kwarg statt `_set_agents_for_testing`, Duplicate-ID-Fail-Fast, Auto-Bus) | <!-- d-check:ignore (RENAME-Zeile: Alt-Name bewusst genannt) -->
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_drain.py` | NEU (Schritt-A0-Drain-Tests inkl. GridConnection-Override + Fail-Fast-ohne-Partial-Mutation + LoadDevice-Baseline-gewinnt) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_lifecycle.py` | NEU (`_attach_agents()`-Tests + `_RandomAttachableAgent`-Runtime-Check) |
 | `tests/unit/hexagon/core/simulation/test_tick_loop_welle_4a_snapshot.py` | NEU (`agent_bus` + `pending_agent_commands`-Roundtrip + CommandResult-/Payload-Validierung + Resume-Match-Checks) |
@@ -807,7 +807,7 @@ ADR-Cross-Refs (read-only fuer Welle 4a):
 **Pflege-Gleichheit:**
 
 - `_DEVICE_FACTORIES` (Scenario-Loader,
-  `src/grid_gym/hexagon/core/scenario/loader.py:60-65`) ist
+  `src/grid_gym/hexagon/core/scenario/loader.py` (Z. 60-65)) ist
   von Welle 4a **nicht** betroffen — Welle 4b fuegt eine
   parallele Agent-Factory-Map ein.
 - `_DEVICE_TYPE_BY_CLASS_NAME` (TickLoop) bleibt unveraendert.

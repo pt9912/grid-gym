@@ -25,7 +25,7 @@ Szenarien, V2G-Demos).
 - ADR-Folge analog [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md)
   mit EV-spezifischen Akzeptanzkriterien (Lade-/Entlade-Curves,
   Stecker-Zustand, optional bidirektional fuer V2G).
-- `src/grid_gym/hexagon/core/devices/ev_charger/`-Submodul mit
+- `src/grid_gym/hexagon/core/devices/ev_charger/`-Submodul mit <!-- d-check:ignore (geplant: entsteht mit Trigger-Aktivierung) -->
   `EvChargerDevice`, `EvChargerConfig`, Snapshot-Roundtrip-Test,
   Property-Test fuer Determinismus.
 - `_DEVICE_FACTORIES["ev_charger"]`-Eintrag in

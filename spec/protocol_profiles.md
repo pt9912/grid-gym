@@ -232,7 +232,7 @@ Welle 6a haertet diese Pattern-Decisions:
 2. **`AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Property-
    Test** (Welle-1-§7-Folge-Pflicht) — Welle-6a-C3 zieht
    den Test produktiv ein.
-3. **`tools/check_refs.py`** verifiziert die Markdown-
+3. **`make docs-check`** (d-check) verifiziert die Markdown-
    Konsistenz zwischen `spec/protocol_profiles.md` (diesem
    Index) und den 5 Adapter-ADRs.
 

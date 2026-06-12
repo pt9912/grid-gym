@@ -3,7 +3,7 @@
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
-modules: [links, anchors, ids]
+modules: [links, anchors, ids, codepaths]
 ids:
   scope:
     roots: ["."]
@@ -23,3 +23,15 @@ ids:
       target: docs/plan/adr/
     - regex: 'ADR[- ]\d{4}'
       target: docs/plan/adr/
+
+# Pfade in Inline-Code (DC-FA-CODE-001, aktiviert 2026-06-12 nach
+# User-Befund "done/M5-results.md in carveouts-Prosa"): explizite
+# Pfade in Backticks muessen existieren. Gleiche Historie-Grenze
+# wie ids. Geplante/historische Pfade tragen den zeilen-scoped
+# d-check:ignore-Marker mit Begruendung. Zeilen-/Symbol-Refs
+# stehen ausserhalb des Code-Spans: `pfad.py` (Z. 12-15).
+codepaths:
+  scope:
+    roots: ["."]
+    ignore: ["docs/plan/planning/done-archive/**", "CHANGELOG.md", "src/**", ".github/**"]
+  roots: [docs, spec, src, tests, tools, deploy, harness]

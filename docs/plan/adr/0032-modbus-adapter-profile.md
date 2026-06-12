@@ -670,7 +670,7 @@ offen.
   Konvertierungs-Pfad im Repo. C3 prueft mit konkretem
   `_codec.py`-Code, ob `mypy --strict-bytes` jetzt ohne
   `# type: ignore`-Inflation greift. Trigger-006-Body
-  in `docs/plan/planning/done/006-mypy-strict-bytes.md`
+  in `docs/plan/planning/done-archive/006-mypy-strict-bytes.md`
   wird mit Modbus-Beleg synced (Zahlen vor/nach
   potentieller Aktivierung) und entweder nach `next/`
   gezogen (positiv) oder bleibt in `open/` (negativ).
