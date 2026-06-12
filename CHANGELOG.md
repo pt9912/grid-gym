@@ -7,7 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nichts ausstehend._
+### Added
+
+- `docs/plan/planning/done-archive/` — eingefrorene
+  Detail-Historie abgeschlossener Meilensteine (91 Wellen-/
+  Slice-/Trigger-Docs per Move; `done/` haelt dauerhaft die
+  `M*-results.md` + die in-flight-Artefakte des aktiven
+  Meilensteins). `docs/archive/` materialisiert (war seit
+  ADR 0001 versprochen).
+- d-check-Module `ids` (Linkpflicht fuer Kennungen
+  `GG-*`/`GG-AR-*`/`AC-*`/`ADR NNNN` inkl. Familien-Wildcards)
+  und `codepaths` (Pfade in Inline-Code) produktiv in
+  `.d-check.yml` — moeglich durch d-check v0.3.0
+  `<modul>.scope` (Change Request dieses Repos). Ausnahmen nur
+  eingefrorene Historie (`done-archive/**`, `CHANGELOG.md`).
+- Trigger 043 (ids-Linkpflicht) aufgeloest; NEU Trigger 044
+  (Linkpflicht auch fuer Inline-Code-Kennungen; wartet auf
+  d-check-`inline-code`-Option, CR #3).
+
+### Changed
+
+- Doku-Sweeps zur Linkpflicht: ~620 nackte Kennungen auf ihre
+  Definition verlinkt (mit Abschnitts-Ankern; `AC-*`-Target =
+  deklarierendes ADR), ~120 Bestands-Links um Kapitel-/
+  ID-Anker ergaenzt, 70 Inline-Code-Pfade korrigiert/markiert
+  (`d-check:ignore` fuer Geplantes/Historisches).
+- READMEs (en/de) Stale-Sweep nach M7-Closure + v0.1.0
+  (Test-Counts 1796/139+4, Arch-Contracts 7+13,
+  Projektbaum, Release-Verweis).
+- `carveouts.md` neu geordnet: Ein-Tabellen-Design mit
+  ID-Schema (`D-n`/`T-nnn`/`P-n`), Begruendungen per ID,
+  Nummern-Historie-Map.
 
 ## [0.1.0] - 2026-06-12
 

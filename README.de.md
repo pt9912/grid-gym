@@ -184,7 +184,8 @@ Stand **2026-06-12**:
 - **Post-MVP-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
   automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
   Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
-  (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
+  (Bedarfs-getrieben), 044 (d-check-Inline-Code-Linkpflicht) plus
+  der Trigger-Gated-Bestand tragen
   dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete
   `planning/next/`-Plaene (041 `AC-ADAPTER-PURE`-Rueckbau, 042
   Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051)
