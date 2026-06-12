@@ -49,7 +49,7 @@ Feedback-Gates, die reale Projektzustaende messen:
 | --- | --- | --- |
 | `make lint` | Ruff-Regeln inkl. Safety-, Komplexitaets-, Naming- und Import-Verbote | Nach Python-Codeaenderungen |
 | `make format-check` | Ruff-Format ohne Auto-Fix | Vor Handoff mit Python-Diff |
-| `make typecheck` | `mypy --strict` gemaess ADR 0005 | Nach Typ-, Port- oder API-Aenderungen |
+| `make typecheck` | `mypy --strict` gemaess [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) | Nach Typ-, Port- oder API-Aenderungen |
 | `make arch-check` | Import-Linter plus `tools/arch_check.py` fuer `GG-AR-TABU-*` | Nach Architektur-, Port-, Adapter- und Dependency-Aenderungen |
 | `make docs-check` | Markdown-Link-Validator | Nach Doku-, Spec-, ADR- oder Planning-Aenderungen |
 | `make spdx-check` | SPDX-Identifier-Gate fuer Lizenz-Boundaries | Nach IEC-61850-/License-Boundary-Aenderungen |
@@ -85,7 +85,7 @@ passende Sensor nicht ausgefuehrt wurde.
 - Replay-, Determinismus-, Fault- oder Demo-Aenderungen brauchen
   Replay-/Golden-Evidence nach [`harness/replay.md`](replay.md).
 - Accepted ADRs werden nicht inhaltlich umgeschrieben; Korrekturen
-  entstehen als Folge-ADR oder per ADR-0011-Schaerfung-ohne-Abloesung.
+  entstehen als Folge-ADR oder per [`ADR-0011`](../docs/plan/adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung-ohne-Abloesung.
 
 ## Role Separation
 

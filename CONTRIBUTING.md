@@ -94,7 +94,7 @@ generators, `reuse-tool`, `scancode-toolkit`) reads SPDX
 headers per file. Without per-file markers, a downstream
 packager that bundles the GPL-isolated sub-module separately
 would have no way to know which files are MIT vs GPL —
-which is the situation that ADR 0035 §I-f explicitly avoids
+which is the situation that [`ADR 0035`](docs/plan/adr/0035-iec61850-adapter-profile.md) §I-f explicitly avoids
 by making the boundary opt-in via `pip install
 grid-gym[iec61850]`.
 
@@ -170,12 +170,12 @@ target. The 10 A-1 gates as of M4 Welle 6b:
 
 1. `lint` (ruff)
 2. `format-check` (ruff format)
-3. `typecheck` (mypy --strict + strict_bytes; ADR 0005)
+3. `typecheck` (mypy --strict + strict_bytes; [`ADR 0005`](docs/plan/adr/0005-type-check-gate.md))
 4. `arch-check` (import-linter + tools/arch_check.py; 20
-   contracts; ADR 0002 §A-1 + ADR 0024 §4.5.5 + ADR 0029 +
-   Slice 028 + ADR 0035 §I-f)
+   contracts; [`ADR 0002`](docs/plan/adr/0002-language-and-build-stack.md) §A-1 + [`ADR 0024`](docs/plan/adr/0024-observability-port-trio.md) §4.5.5 + [`ADR 0029`](docs/plan/adr/0029-no-coverage-pragma-contract.md) +
+   Slice 028 + [`ADR 0035`](docs/plan/adr/0035-iec61850-adapter-profile.md) §I-f)
 5. `test-unit`
-6. `coverage-gate` (90% line / 85% branch; ADR 0007)
+6. `coverage-gate` (90% line / 85% branch; [`ADR 0007`](docs/plan/adr/0007-random-port.md))
 7. `coverage-gate-critical` (90% on critical-domain targets)
 8. `dep-audit`
 9. `noqa-gate` (Slice 027 — no `# noqa` markers)

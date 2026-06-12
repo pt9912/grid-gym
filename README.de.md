@@ -77,7 +77,7 @@ Entwicklungsgate ist `make gates`.
 > `deploy/security/vulnignore.yaml` (Audit-Source-of-Truth mit
 > Pflicht-Feldern `id`/`reason`/`expires`/`scope`) gerendert
 > per `make render-trivyignore` zu
-> `deploy/security/.trivyignore` (siehe ADR 0044). Abgelaufene
+> `deploy/security/.trivyignore` (siehe [`ADR 0044`](docs/plan/adr/0044-generated-trivyignore-permit.md)). Abgelaufene
 > Eintraege brechen den Build und erzwingen Maintenance ohne
 > externe Erinnerung. Aktueller Einzel-Eintrag: CVE-2026-42504
 > (Go-stdlib-MIME-Header-DoS) im gepinnten `otel/opentelemetry-
@@ -128,7 +128,7 @@ und `release.yml` (Tag-Push oder workflow_dispatch).
   als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
   alle Meilenstein-Closure-ADRs bis M7 sind `Accepted` (49 von 53),
   Wellen-ADRs landen als `Provisional` und werden mit Meilenstein-
-  Closure `Accepted` (ADR 0050/0051 bleiben `Proposed` bis zu ihren
+  Closure `Accepted` ([`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 bleiben `Proposed` bis zu ihren
   Umsetzungsslices).
 - **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
   `lint-imports`-, `ruff check`-, `tools/arch_check.py`- und
@@ -165,7 +165,7 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 Stand **2026-06-12**:
 
 - **M1..M7 · `Done`** — **der MVP ist geliefert** (49 ADRs
-  `Accepted` ueber M1..M7, plus ADR 0050/0051 `Proposed`). Closure-
+  `Accepted` ueber M1..M7, plus [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 `Proposed`). Closure-
   Artefakte:
   [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md)
   +
@@ -175,7 +175,7 @@ Stand **2026-06-12**:
   Abnahme-CLI `make accept` `GG-MVP-003`) und alle vier
   `GG-SAFE-001..004`-MUSS-IDs sind produktiv. Fuenf M7-ADRs
   (0047/0048/0049/0052/0053) `Accepted` mit Welle-X-Closure;
-  ADR 0050/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
+  [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
 - **v0.1.0 released** (2026-06-12): erster realer Lauf des
   Release-Workflows — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.1.0`
   (+ digest-gleiches `:latest`), GitHub-Release mit SBOM
@@ -186,14 +186,14 @@ Stand **2026-06-12**:
   Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
   (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
   dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete
-  `planning/next/`-Plaene (041 AC-ADAPTER-PURE-Rueckbau, 042
-  Fault-Engine-Naming — Umsetzungsslices fuer ADR 0050/0051)
+  `planning/next/`-Plaene (041 `AC-ADAPTER-PURE`-Rueckbau, 042
+  Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051)
   warten auf ein Mandat. Ein neuer Meilenstein entsteht bei
   Trigger-Aktivierung oder Stakeholder-Mandat.
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte
-`make test-iec61850`-Stage per ADR 0046) zum M7-Closure
+`make test-iec61850`-Stage per [`ADR 0046`](docs/plan/adr/0046-multi-python-test-stage-pattern.md)) zum M7-Closure
 (2026-06-12). `make gates` 10-stufig cache-frei gruen ohne Override;
 `make fullbuild` inkl. `accept-pin-check` gruen.
 

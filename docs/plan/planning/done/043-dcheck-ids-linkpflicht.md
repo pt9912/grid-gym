@@ -13,6 +13,14 @@ ID-Anker repo-weit). `ids` produktiv in `.d-check.yml`
 (Scope `spec/` + `docs/user/`, 4 Muster mit
 GG-AR-vor-GG-Praezedenz); `make docs-check` cache-frei gruen
 mit 0 Befunden. Move nach `done/` in diesem Commit.
+**Scope-Nachtrag (User-Review, gleicher Tag):** ids-Scope von
+`spec/` + `docs/user/` auf alle lebenden Doku-Flaechen
+erweitert (`roots: ["."]` mit Ignore fuer `docs/plan/**` +
+`CHANGELOG.md`) — 23 weitere Kennungen in READMEs/
+CONTRIBUTING/harness verlinkt bzw. in Backtick-Form gebracht
+(`AC-ADAPTER-PURE` hat keine Definition in architecture.md);
+ausgeschlossen bleibt nur Historie (Planning-Docs,
+Accepted-ADRs, released Changelog-Eintraege).
 **Datum:** 2026-06-12
 **Quelle:** Trigger-002-Erbschaft (Kennungs-Aufloesung
 `GG-*`/`AC-*`/`ADR NNNN` war dort vertagt; Trigger 002 wurde
