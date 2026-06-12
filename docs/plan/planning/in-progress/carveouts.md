@@ -60,16 +60,22 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 Quelle: [`../done/M5-results.md §5`](../done/M5-results.md)
 „Welle-7-Erbschaft fuer M6+" + §8 „Nicht-vollzogene Items".
+**Post-M7-Index-Sweep 2026-06-12:** Begruendungs-Spalte aus den
+Quell-Dokumenten nachgetragen + stale „M6 …"-Aktivierungen
+(M6/M7 sind abgeschlossen, kein Item wurde aktiviert) auf
+Bedarfs-Bedingungen umgestellt — kein Lastenheft-MUSS haengt an
+diesen Items; deshalb auch kein `open/`-Trigger-Doc (Pflicht
+nur fuer `Trigger-Gated`, §1-Konvention).
 
-| Item | Typ | Quell-Welle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | --- | ----------- | ------ | ---------------------- | ----------- |
-| Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | `Deferred` | Welle 1 (Stub) + ADR 0015 v2 | Open | M6-Replay-Surface oder eigener Slice | — (kein Open-Trigger) |
-| CSV/JSONL-Export-Endpunkte | `Deferred` | Welle 6c §1.3 + `GG-ACCEPT-003` | Open | M6 oder eigener Slice | — |
-| Inline-SVG-Geraete-Grafik | `Deferred` | Welle 6b §1.3 + Decision 23 | Open | M6 (UI-Polish-Welle) | — |
-| Dynamische Fault-Activation ueber `POST /faults` | `Deferred` | Welle 6a Decision 19 | Open | M6 (Fault-Pipeline-Erweiterung) | — |
-| URL-Versionierung `/api/v1`-Mount-Prefix | `Deferred` | Welle 6b §10.1 URL-Realization-Note | Open | vor naechster URL-Kollision oder M6-Welle-X | — |
-| WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | M6 (UI-Live-Updates statt 1s-Polling) | — |
-| Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | M6-Welle-X-Adapter-Hardening-Sweep | — |
+| Item | Typ | Quell-Welle | Status | Aktivierungs-Bedingung | Begruendung (warum vertagt) | Trigger-Doc |
+| ---- | --- | ----------- | ------ | ---------------------- | --------------------------- | ----------- |
+| Snapshot-Envelope-v2-Body-Serialisierung (`GET /snapshot`) | `Deferred` | Welle 1 (Stub) + ADR 0015 v2 | Open | Replay-/Export-Konsument braucht den vollen Envelope-Body ueber HTTP | `GET /snapshot` liefert den `schema_ref`-Pointer — das erfuellt die Akzeptanz; volle Body-Serialisierung ist ADR-0015-v2-Erbschaft ohne MUSS-ID-Anker (der Replay-Pfad liest seit M7-Welle-1b direkt aus `telemetry_points`, nicht ueber HTTP) | — (kein Open-Trigger) |
+| CSV/JSONL-Export-Endpunkte | `Deferred` | Welle 6c §1.3 + `GG-ACCEPT-003` | Open | konkreter Abnahme-/Analyse-Bedarf an Datei-Export | WS-Streams sind die dokumentierte Export-Surface (Welle-6c-Abnahmedoku); Datei-Export ist `GG-ACCEPT-003`-SOLLTE-Material ohne aktuellen Abnahme-Bedarf | — |
+| Inline-SVG-Geraete-Grafik | `Deferred` | Welle 6b §1.3 + Decision 23 | Open | UI-Polish-Mandat | `GG-UI-006`-Akzeptanz ist durch die HTMX-Polling-Tabelle erfuellt (Welle 6b, Decision 23); SVG-Grafik ist reiner UI-Polish ohne ID-Anker | — |
+| Dynamische Fault-Activation ueber `POST /faults` | `Deferred` | Welle 6a Decision 19 | Open | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | `POST /faults` ist bewusst Form-Validation-only (Decision 19); YAML-seitige Fault-Injection (`GG-DEMO-006`, M5-Welle-6a) deckt den Demo-/Abnahme-Bedarf | — |
+| URL-Versionierung `/api/v1`-Mount-Prefix | `Deferred` | Welle 6b §10.1 URL-Realization-Note | Open | vor der naechsten URL-Kollision / dem naechsten Endpoint-Schub | reine Konventions-Konsolidierung („natuerliche-URL-UI + suffixed-URL-JSON"-Pattern, §10.1) ohne Verhaltens-Effekt; lohnt erst, bevor neue Endpoints den Mismatch reproduzieren | — |
+| WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker | — |
+| Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7) | — |
 
 ### 2.2 M4-Erbschaft (2 Items; ueber M5 weitergereicht)
 
