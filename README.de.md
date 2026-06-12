@@ -167,8 +167,11 @@ Stand **2026-06-12**:
   automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
   Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
   (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
-  dokumentierte Aktivierungs-Bedingungen; ein neuer Meilenstein
-  entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
+  dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete
+  `planning/next/`-Plaene (041 AC-ADAPTER-PURE-Rueckbau, 042
+  Fault-Engine-Naming — Umsetzungsslices fuer ADR 0050/0051)
+  warten auf ein Mandat. Ein neuer Meilenstein entsteht bei
+  Trigger-Aktivierung oder Stakeholder-Mandat.
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte

@@ -163,8 +163,11 @@ As of **2026-06-12**:
 - **Post-MVP mode: trigger watch** — no successor milestone is
   auto-opened. Open triggers 033 (OTel-collector CVE stable watch),
   037 (multi-node deployment), 038/039/040 (demand-driven) plus the
-  trigger-gated backlog carry documented activation conditions; a
-  new milestone opens on trigger activation or stakeholder mandate.
+  trigger-gated backlog carry documented activation conditions; two
+  prepared `planning/next/` plans (041 AC-ADAPTER-PURE bridge
+  retirement, 042 fault-engine naming — implementation slices for
+  ADR 0050/0051) await a mandate. A new milestone opens on trigger
+  activation or stakeholder mandate.
 
 **Test balance:** 139 integration passed + 4 skipped (remaining
 skips are IEC-61850-on-Python-3.13 only, covered by the dedicated

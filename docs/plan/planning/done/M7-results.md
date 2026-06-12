@@ -124,9 +124,15 @@ Audit-Dokus unter `docs/user/`: `replay-determinism-e2e.md`,
   (volle `GG-TERM-002/003`-Equality-Matrix), 039 (oeffentliche
   API-Replay-Bedienung), 040 (Core-Run-End-Naht fuer
   `TickLoop.finalize()` ohne Driver).
+- **Next-Plaene** (`planning/next/`; konkret geplant, nicht
+  aktiv — KEINE Trigger-Bedingung, Aktivierung per Mandat):
+  [`041-adapter-pure-ignore-imports-rueckbau.md`](../next/041-adapter-pure-ignore-imports-rueckbau.md)
+  (Umsetzungsslice fuer ADR 0050) +
+  [`042-fault-engine-location-and-naming.md`](../next/042-fault-engine-location-and-naming.md)
+  (Umsetzungsslice fuer ADR 0051).
 - **ADR 0050/0051 (`Proposed`):** AC-ADAPTER-PURE-Bridge-
-  Rueckbau (Umsetzungsslice `next/041-…`) + Fault-Engine-
-  Standort/-Naming — `Provisional` erst mit Umsetzungsslice.
+  Rueckbau + Fault-Engine-Standort/-Naming — `Provisional` erst
+  mit dem jeweiligen Umsetzungsslice (next/041 bzw. next/042).
 - **IEC-61850 Pfad-A-Watch (M6-Erbschaft):** cp314-Wheel von
   `pyiec61850-ng` loest die `iec61850-test`-Compat-Stage ab
   (ADR 0046 §7); bis dahin 4 versions-bedingte Integration-Skips.
