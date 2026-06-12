@@ -1,10 +1,15 @@
-# Slice-Plan — M7 MVP-Abschluss — In Progress
+# Slice-Plan — M7 MVP-Abschluss — Done
 
-**Status:** In Progress — eroeffnet 2026-06-08 mit M7-Welle-0-C1
-(dieser Commit; NEU Slice-Plan). M7 ist der Container fuer die
-nach M6 verbliebene MVP-Arbeit plus die offenen Safety-Trigger.
-Eroeffnet als M6-Welle-7-Closure-Handoff (Entscheidung 2026-06-08,
-M6-welle-7-Review-Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
+**Status:** Done (2026-06-12, M7-Welle-X-Closure) — **der MVP
+ist geliefert**: alle vier `GG-MVP-*`-Punkte + alle vier
+`GG-SAFE-001..004` produktiv; fuenf M7-ADRs
+(0047/0048/0049/0052/0053) `Accepted`, 0050/0051 `Proposed`
+(Welle-X-D-2). Closure-Artefakt
+[`done/M7-results.md`](../done/M7-results.md); Post-M7-Modus =
+Trigger-Watch (Welle-X-D-4, kein M8-Auto-Open).
+Eroeffnet 2026-06-08 mit M7-Welle-0-C1 als
+M6-Welle-7-Closure-Handoff (Entscheidung 2026-06-08,
+M6-welle-7-Review-Befund 3 — M2..M6 waren vorbelegt, M7 war NEU).
 Welle 0 (Slice-Plan-Eroeffnung + Trigger-Triage) siehe
 [`M7-welle-0.md`](../done/M7-welle-0.md).
 
@@ -64,18 +69,17 @@ mit M7-Closure.
 
 | # | Titel | Status | Slice-Doc | Scope / Trigger |
 | - | ----- | ------ | --------- | --------------- |
-| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
+| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **Done 2026-06-08** (C0..C4b) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
 | 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](../done/M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
 | 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](../done/M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
 | 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](../done/M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](../done/M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
-| X | M7-Closure | Pending | TBD | `done/M7-results.md` + ADR-Accept + Roadmap-DoD-Sweep |
+| X | M7-Closure | **Done 2026-06-12** (C0 `6746321` + C1 `cdef313` + C2 `4be2a00` + C3 + C4a/C4b) | [`M7-welle-X.md`](M7-welle-X.md) | NEU [`done/M7-results.md`](../done/M7-results.md) + 5 ADRs `Accepted` (0050/0051 `Proposed`, X-D-2) + Roadmap-DoD-Sweep + Self-Close-Move; Post-M7 = Trigger-Watch (X-D-4) |
 
-**Aktiver Slice:** **M7-Welle-X** (M7-Closure; letzter M7-Slice).
-M7-Welle-3 **Done 2026-06-12** (Safety-Closure: 3a `GG-SAFE-004`
-✓ + 3b `GG-SAFE-003` ✓; ADR 0052/0053; Trigger 034/035 Closed) —
-**alle vier `GG-MVP-*`-Punkte UND alle vier `GG-SAFE-001..004`
-produktiv**. Vor der M7-Closure verbleibt keine offene
-M7-Substanz-Welle.
+**Aktiver Slice:** keiner — **M7 ist abgeschlossen (Welle-X-
+Closure 2026-06-12); der MVP ist geliefert.** Alle vier
+`GG-MVP-*`-Punkte UND alle vier `GG-SAFE-001..004` produktiv;
+Post-M7-Modus = Trigger-Watch (Welle-X-D-4; offene Trigger
+033/037/038/039/040 + Trigger-Gated-Bestand).
 
 ### 3.2 Pending-Wellen-Vorbelegung
 

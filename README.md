@@ -146,27 +146,31 @@ logic.
 
 ## Status
 
-As of **2026-06-08**:
+As of **2026-06-12**:
 
-- **M1..M6 · `Done`** (44 ADRs `Accepted` across M1..M6). Closure
+- **M1..M7 · `Done`** — **the MVP is delivered** (49 ADRs
+  `Accepted` across M1..M7, plus ADR 0050/0051 `Proposed`). Closure
   artefacts:
-  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md)
+  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md)
   +
-  [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
-- **M6 — Performance + Security + CI/CD** · `Done` (2026-06-08;
-  Welle 0..7). All six M6 ADRs (0041..0046) `Accepted` at Welle-7
-  closure.
-- **M7 — MVP completion** · `Vorbelegung` (opened 2026-06-08 as the
-  M6-Welle-7 closure handoff). Container for the remaining MVP work
-  (`GG-MVP-002` replay-source-integration, `GG-MVP-003` abnahme-cli)
-  plus open `open/` triggers (033/034/035/036/037). Active slice:
-  M7-Welle-0 (slice plan opens there).
+  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md).
+- **M7 — MVP completion** · `Done` (2026-06-12; Welle 0..X). All
+  four `GG-MVP-*` items (replay-source integration `GG-MVP-002`,
+  acceptance CLI `make accept` `GG-MVP-003`) and all four
+  `GG-SAFE-001..004` MUSS IDs are productive. Five M7 ADRs
+  (0047/0048/0049/0052/0053) `Accepted` at Welle-X closure;
+  ADR 0050/0051 stay `Proposed` (own lifecycle conditions).
+- **Post-MVP mode: trigger watch** — no successor milestone is
+  auto-opened. Open triggers 033 (OTel-collector CVE stable watch),
+  037 (multi-node deployment), 038/039/040 (demand-driven) plus the
+  trigger-gated backlog carry documented activation conditions; a
+  new milestone opens on trigger activation or stakeholder mandate.
 
-**Test balance:** 1722 unit + 80 integration passed + 4 skipped at
-M5 closure (2026-06-04); M6-Welle-5a added 7 integration smoke tests
-for `GG-SAFE-001..004`. IEC-61850 2c-mock-only fallback per ADR 0035
-§2.5, trigger 009. `make gates` 10-stage cache-free green without
-override.
+**Test balance:** 139 integration passed + 4 skipped (remaining
+skips are IEC-61850-on-Python-3.13 only, covered by the dedicated
+`make test-iec61850` stage per ADR 0046) at M7 closure (2026-06-12).
+`make gates` 10-stage cache-free green without override;
+`make fullbuild` incl. `accept-pin-check` green.
 
 **Pointers:** demo acceptance steps `GG-DEMO-008` →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);

@@ -149,27 +149,32 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-08**:
+Stand **2026-06-12**:
 
-- **M1..M6 · `Done`** (44 ADRs `Accepted` ueber M1..M6). Closure-
+- **M1..M7 · `Done`** — **der MVP ist geliefert** (49 ADRs
+  `Accepted` ueber M1..M7, plus ADR 0050/0051 `Proposed`). Closure-
   Artefakte:
-  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md)
+  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md)
   +
-  [`docs/plan/planning/done/M5-results.md`](docs/plan/planning/done/M5-results.md).
-- **M6 — Performance + Security + CI/CD** · `Done` (2026-06-08;
-  Welle 0..7). Alle sechs M6-ADRs (0041..0046) `Accepted` mit
-  Welle-7-Closure.
-- **M7 — MVP-Abschluss** · `Vorbelegung` (eroeffnet 2026-06-08 als
-  M6-Welle-7-Closure-Handoff). Container fuer die restliche
-  MVP-Arbeit (`GG-MVP-002` replay-source-integration, `GG-MVP-003`
-  abnahme-cli) plus offene `open/`-Trigger (033/034/035/036/037).
-  Aktiver Slice: M7-Welle-0 (Slice-Plan entsteht dort).
+  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md).
+- **M7 — MVP-Abschluss** · `Done` (2026-06-12; Welle 0..X). Alle
+  vier `GG-MVP-*`-Punkte (ReplaySource-Integration `GG-MVP-002`,
+  Abnahme-CLI `make accept` `GG-MVP-003`) und alle vier
+  `GG-SAFE-001..004`-MUSS-IDs sind produktiv. Fuenf M7-ADRs
+  (0047/0048/0049/0052/0053) `Accepted` mit Welle-X-Closure;
+  ADR 0050/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
+- **Post-MVP-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
+  automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
+  Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
+  (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
+  dokumentierte Aktivierungs-Bedingungen; ein neuer Meilenstein
+  entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
 
-**Testbilanz:** 1722 Unit + 80 Integration passed + 4 skipped zum
-M5-Closure (2026-06-04); M6-Welle-5a ergaenzt 7 Integration-Smoke-
-Tests fuer `GG-SAFE-001..004`. IEC-61850-2c-Mock-only-Fallback gemaess
-ADR 0035 §2.5, Trigger 009. `make gates` 10-stufig cache-frei gruen
-ohne Override.
+**Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
+Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte
+`make test-iec61850`-Stage per ADR 0046) zum M7-Closure
+(2026-06-12). `make gates` 10-stufig cache-frei gruen ohne Override;
+`make fullbuild` inkl. `accept-pin-check` gruen.
 
 **Pointer:** Abnahmereihenfolge `GG-DEMO-008` →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);

@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M6 abgeschlossen (M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md); M4 mit Welle 7 Closure 2026-06-01, [`../done/M4-results.md`](../done/M4-results.md)). **M6 abgeschlossen 2026-06-08** (alle sechs M6-ADRs 0041..0046 `Accepted`). **Aktiver Slice: M7** (NEU eroeffnet 2026-06-08 als M6-Welle-7-Closure-Handoff) — Container fuer die restliche MVP-Arbeit `GG-MVP-002` replay-source-integration + `GG-MVP-003` abnahme-cli plus offene Trigger 033/034/035/036/037; M7-Slice-Plan entsteht in M7-Welle-0 (Pattern analog M6-Welle-0).
-**Stand:** 2026-06-04
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; ein neuer Meilenstein entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
+**Stand:** 2026-06-12
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
@@ -146,7 +146,9 @@
   Positiv). 10/10 A-1-Gates gruen (NEU 10.
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
   `AC-IEC61850-GPL-BOUNDARY`).
-- **Aktiver Slice: M7** (NEU 2026-06-08; M6 Performance +
+- **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (M7
+  MVP-Abschluss abgeschlossen 2026-06-12,
+  [`../done/M7-results.md`](../done/M7-results.md); M6 Performance +
   Security + CI/CD-Haertung abgeschlossen 2026-06-08). M5-Closure
   2026-06-04 mit Welle-7-Hash-Stack
   `c28a11b`/`62f988d`/`5087c8a`/`9978e21`/`e21795f`/
@@ -609,7 +611,8 @@ Welle-6c-Slice-Begleit:
   `done/M2-devices-results.md` etabliert und 9 SOLLTE-Open-
   Trigger (`016..024`) in `open/` aktiviert.
 
-**Aktiver Slice: M7** (M6 abgeschlossen 2026-06-08).
+**Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (M7
+abgeschlossen 2026-06-12; M6 abgeschlossen 2026-06-08).
 **M5 ist `Done`** (2026-06-04,
 siehe [`done/M5-results.md`](../done/M5-results.md)): 10
 Wellen 0..6c geliefert (Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/
@@ -1159,7 +1162,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         Release-Workflow-Pattern als Quality-Gate-Vertrag
         (Schwester zu ADR 0029/0043).
 
-### M7 — MVP-Abschluss (`In Progress` 2026-06-08)
+### M7 — MVP-Abschluss (`Done` 2026-06-12)
 
 **Slice-Plan:** entsteht in M7-Welle-0 (Pattern analog
 M6-Welle-0). M7 ist der Container fuer die nach M6 verbliebene
@@ -1230,9 +1233,18 @@ Trigger 035; [`M7-welle-3b.md`](../done/M7-welle-3b.md); NEU
 Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
 **`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
 komplett — alle vier `GG-SAFE-001..004` produktiv.**
-**Aktiver Slice jetzt: M7-Welle-X** (M7-Closure;
-`done/M7-results.md` + ADR-Accept 0047..0053 +
-Roadmap-DoD-Sweep).
+**M7-Welle-X Done 2026-06-12** (M7-Closure;
+[`M7-welle-X.md`](M7-welle-X.md)): fuenf M7-ADRs
+0047/0048/0049/0052/0053 `Provisional → Accepted` (0050/0051
+bleiben `Proposed` per X-D-2 — eigene Lifecycle-Bedingungen,
+Umsetzungsslices kein M7-Lieferpunkt) + NEU
+[`done/M7-results.md`](../done/M7-results.md)
+(MVP-Abschluss-Kriterium gepinnt). **M7 ist abgeschlossen —
+der MVP ist geliefert** (alle vier `GG-MVP-*` + alle vier
+`GG-SAFE-001..004` produktiv). **Post-M7: Trigger-Watch, kein
+M8-Auto-Open (X-D-4)** — offene Trigger 033/037/038/039/040 +
+Trigger-Gated-Bestand; neuer Meilenstein bei
+Trigger-Aktivierung oder Stakeholder-Mandat.
 
 ---
 

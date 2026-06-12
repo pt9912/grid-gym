@@ -1,10 +1,15 @@
 # Welle X — M7 Closure (MVP-Abschluss)
 
-**Status:** In Progress — eroeffnet mit Welle-X-C0 (dieser
-Commit). Pattern analog
+**Status:** Done 2026-06-12 (M7-Closure-Welle) — Stack C0
+`6746321` (Slice-Doc + Decisions X-D-1..D-4) + C1 `cdef313`
+(5 M7-ADRs 0047/0048/0049/0052/0053 `Provisional → Accepted`;
+0050/0051 bleiben `Proposed`) + C2 `4be2a00` (NEU
+`done/M7-results.md` + `done/README.md`-Bestand-Sweep) + C3
+(dieser Commit; Top-Level-Sync + Roadmap-DoD-Sweep + DoD §9) +
+C4a/C4b (Self-Close-Move + Cross-Doc-Refs-Sync). Pattern analog
 [`../done/M6-welle-7.md`](../done/M6-welle-7.md) +
 [`../done/M5-welle-7.md`](../done/M5-welle-7.md).
-**Datum:** 2026-06-12 (Welle-X-C0).
+**Datum:** 2026-06-12 (Welle-X-C0 · Done 2026-06-12).
 **Quelle:** [`M7-mvp-completion.md §3`](M7-mvp-completion.md)
 (Welle-X-Zeile) + [`../done/M7-welle-0.md`](../done/M7-welle-0.md)
 M7-D-4 (MVP-Abschluss-Kriterium) +
@@ -231,22 +236,26 @@ Watch-Modus + die offenen Trigger als Eintrittspunkte.
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C1: ADR 0047/0048/0049/0052/0053 `Accepted` +
-      README-Index-Status (0050/0051 bleiben `Proposed`, X-D-2).
-- [ ] C2: `done/M7-results.md` mit 6 Sektionen + ADR-Sweep +
-      MVP-Abschluss-Kriterium gepinnt (X-D-3).
-- [ ] C3: `roadmap.md` M7 `Done` + alle Live-`Aktiver
-      Slice`-Anker gesweept (historische Belege unberuehrt) +
+- [x] C1: ADR 0047/0048/0049/0052/0053 `Accepted` +
+      README-Index-Status (0050/0051 bleiben `Proposed`, X-D-2)
+      — `cdef313`.
+- [x] C2: `done/M7-results.md` mit 6 Sektionen + ADR-Sweep +
+      MVP-Abschluss-Kriterium gepinnt (X-D-3) — `4be2a00`
+      (inkl. `done/README.md`-Bestand-Sweep Welle 2/3/3a/3b).
+- [x] C3: `roadmap.md` M7 `Done` + alle Live-`Aktiver
+      Slice`-Anker gesweept (Top-Status + Bullet Z. ~149 +
+      Z. ~612 + §M7-Schluss; historische Belege unberuehrt) +
       Post-MVP-Trigger-Watch-Status (X-D-4).
-- [ ] C3: `README.md`/`README.de.md` Status-Block neu (M1..M7;
-      ADR 44→49 Accepted; Post-MVP-Modus).
-- [ ] C3: `M7-mvp-completion.md` Welle-Tabelle (0 + X → Done) +
+- [x] C3: `README.md`/`README.de.md` Status-Block neu (M1..M7;
+      ADR 44→49 Accepted; Post-MVP-Modus; Testbilanz 139/4).
+- [x] C3: `M7-mvp-completion.md` Welle-Tabelle (0 + X → Done) +
       Status-Header Done.
 - [ ] C4a: `M7-mvp-completion.md` + `M7-welle-X.md` → `done/`
       (rename-only).
 - [ ] C4b: Cross-Doc-Refs-Sync; `make docs-check` cache-frei
       gruen.
-- [ ] `make gates` cache-frei gruen am Closure-Hash.
+- [x] `make gates` cache-frei gruen am Closure-Hash
+      (C3-Verifikation 2026-06-12).
 
 ---
 
