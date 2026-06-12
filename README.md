@@ -161,8 +161,10 @@ As of **2026-06-12**:
   (0047/0048/0049/0052/0053) `Accepted` at Welle-X closure;
   ADR 0050/0051 stay `Proposed` (own lifecycle conditions).
 - **Post-MVP mode: trigger watch** — no successor milestone is
-  auto-opened. Open triggers 033 (OTel-collector CVE stable watch),
-  037 (multi-node deployment), 038/039/040 (demand-driven) plus the
+  auto-opened. Open triggers 032 (release-workflow sensor run — no
+  tag/release has been cut yet; the first real release resolves it),
+  033 (OTel-collector CVE stable watch), 037 (multi-node
+  deployment), 038/039/040 (demand-driven) plus the
   trigger-gated backlog carry documented activation conditions; two
   prepared `planning/next/` plans (041 AC-ADAPTER-PURE bridge
   retirement, 042 fault-engine naming — implementation slices for

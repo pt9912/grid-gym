@@ -89,7 +89,8 @@ Audit-Dokus unter `docs/user/`: `replay-determinism-e2e.md`,
 - **S-1 M7-Trigger-Sweep:** aufgeloest — 036 (W1b-b), 034 (W3a),
   035 (W3b). NEU eroeffnet — 038 (volle GG-TERM-Matrix, W1b-a),
   039 (API-Replay-Bedienung, W1b-b), 040 (finalize-Headless-
-  Naht, W1b-b-Review/W2). Offen bleiben 033 (OTel-CVE
+  Naht, W1b-b-Review/W2). Offen bleiben 032 (Release-Workflow-
+  Sensor-Run — erstes reales Release steht aus) + 033 (OTel-CVE
   Stable-Watch) + 037 (Multi-Node) + 038/039/040
   (Bedarfs-getrieben) + Trigger-Gated-Bestand (`carveouts.md`).
 - **S-2 Sub-Slicing-Schwelle:** Welle 1 → 1a/1b → 1b-a/1b-b
@@ -119,9 +120,14 @@ Audit-Dokus unter `docs/user/`: `replay-determinism-e2e.md`,
 
 ## 5. Welle-X-Erbschaft (Post-MVP)
 
-- **Offene `open/`-Trigger:** 033 (OTel-Collector Go-stdlib-CVE,
-  Stable-Watch), 037 (`GG-DEPLOY-007..010` Multi-Node/K8s), 038
-  (volle `GG-TERM-002/003`-Equality-Matrix), 039 (oeffentliche
+- **Offene `open/`-Trigger:** 032 (**Release-Workflow-Sensor-Run**
+  — die Release-Infrastruktur aus M6-Welle-2/ADR 0042 ist nie
+  real gelaufen; es existiert noch KEIN Tag/Release. „Der MVP
+  ist geliefert" meint Requirement-Coverage am HEAD, nicht ein
+  publiziertes Release-Artefakt — das erste Release loest 032
+  auf), 033 (OTel-Collector Go-stdlib-CVE, Stable-Watch), 037
+  (`GG-DEPLOY-007..010` Multi-Node/K8s), 038 (volle
+  `GG-TERM-002/003`-Equality-Matrix), 039 (oeffentliche
   API-Replay-Bedienung), 040 (Core-Run-End-Naht fuer
   `TickLoop.finalize()` ohne Driver).
 - **Next-Plaene** (`planning/next/`; konkret geplant, nicht

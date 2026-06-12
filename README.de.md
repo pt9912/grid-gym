@@ -164,7 +164,9 @@ Stand **2026-06-12**:
   (0047/0048/0049/0052/0053) `Accepted` mit Welle-X-Closure;
   ADR 0050/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
 - **Post-MVP-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
-  automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
+  automatisch eroeffnet. Offene Trigger 032 (Release-Workflow-
+  Sensor-Run — es wurde noch kein Tag/Release geschnitten; das
+  erste reale Release loest ihn auf), 033 (OTel-Collector-CVE
   Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
   (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
   dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete

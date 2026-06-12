@@ -202,6 +202,20 @@ Skalierungs- oder Compliance-Anker vorliegt.
 | ---- | ------ | ---------------------- | ----------- |
 | `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen und Rollback-Strategie | In Trigger Watch | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037-deploy-007-010-multi-node-deployment.md`](../open/037-deploy-007-010-multi-node-deployment.md) |
 
+### 2.11 M7-Erbschaft: Replay-/Abnahme-Folge-Trigger (3 Items)
+
+Quelle: [`../open/`](../open/) + M7-Welle-1b-/Welle-2-Scope-
+Entscheide (siehe [`../done/M7-results.md §5`](../done/M7-results.md)).
+Alle Items haben `Typ = Trigger-Gated`; in M7 als dokumentierte
+Scope-Carveouts eroeffnet, beim M7-Closure (Welle-X, 2026-06-12)
+in den Index nachgetragen.
+
+| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
+| ---- | ------ | ---------------------- | ----------- |
+| Volle `GG-TERM-002/003`-Equality-Matrix (`platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash`; M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber 5 `RunMetadata`-Felder) | In Trigger Watch | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay | [`038-gg-term-002-003-full-equality-matrix.md`](../open/038-gg-term-002-003-full-equality-matrix.md) |
+| Oeffentliche API-Replay-Bedienung (`POST /runs` `replay_of` + `RunMetadata`-Spalte + Migration; M7-Welle-1b-b haelt die Referenz-Bindung per 1b-b-D-7 Runtime-/Test-/Demo-intern) | In Trigger Watch | Reviewer-/Stakeholder-Forderung nach API-getriggertem Replay ODER Compliance-Bedarf fuer persistente Referenz-Bindung | [`039-api-replay-trigger-surface.md`](../open/039-api-replay-trigger-surface.md) |
+| Core-Run-End-Naht fuer `TickLoop.finalize()` (heute Driver-getriggert; Headless-Runner / natuerliche Terminierung / Tick-Failure feuern den Replay-Diff nicht — `make accept` faehrt den Replay-Step deshalb standalone) | In Trigger Watch | Headless-Replay-Validierung im Abnahme-Pfad ODER Auto-`completed`-Transition | [`040-replay-finalize-headless-run-end-seam.md`](../open/040-replay-finalize-headless-run-end-seam.md) |
+
 ---
 
 ## 3. Resolved Carveouts (Audit-Trail-Auswahl)
