@@ -159,20 +159,17 @@ Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
 (z. B. `Trigger-Gated` mit neu erstelltem `open/`-
 Trigger-Doc).
 
-### 2.8 M6-Vorbelegung (Lastenheft-Pflicht-IDs)
+### 2.8 M6-Vorbelegung (aufgeloest — siehe §3)
 
-Quelle: [`roadmap.md §4 M6`](roadmap.md). Diese sind keine
-Carveouts im engeren Sinne (M6 ist der Hauptbestimmungs-Ort),
-sondern Vorbelegungs-DoD-Items, die mit M6-Welle-0 in einen
-formalen M6-Slice-Plan wandern.
-
-| Lastenheft-Familie | Anzahl IDs | Lieferziel |
-| ------------------ | ---------- | ---------- |
-| `GG-RT-001..005` | 5 | Performance-Schranken (10k-Points/s-Benchmark) |
-| `GG-SAFE-001..006` | 6 | Sicherheits-Audit |
-| `GG-CICD-001..00X` | ≥7 | CI/CD-Vollausbau (4 Slice-025-ausgelagerte Items + Release-Workflow + SBOM + Test-Matrix) |
-| `GG-DEPLOY-001..00X` | ≥X | Deploy-Hardening (Container-Smoke + Image-Audit + krb5-Bump-Erbschaft) |
-| `GG-SBOM-001..00X` | ≥1 | SBOM-Generierung (Trigger 008) |
+**Aufgeloest 2026-06-08 mit der M6-Closure** (Eintrag in §3;
+Sektions-Nummer bleibt fuer Cross-Ref-Stabilitaet erhalten,
+§2.9..2.11 behalten ihre Anker). Die hier vorbelegten
+Lastenheft-Familien (`GG-RT-*`/`GG-SAFE-*`/`GG-CICD-*`/
+`GG-DEPLOY-*`/SBOM) sind mit M6-Welle-0 in den formalen
+M6-Slice-Plan gewandert und durch die M6-Wellen 1..6 geliefert
+([`../done/M6-results.md §2`](../done/M6-results.md));
+Rest-Luecken liefen als Trigger 034/035/036 weiter und sind
+seit M7 ebenfalls aufgeloest.
 
 ### 2.9 Quality-Pipeline-Audit-Luecken (M6-Welle-5a, 2 Items)
 
@@ -230,6 +227,7 @@ in `done/`).
 | `GG-DEMO-008` Abnahmedoku (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6c-C2 | `0e604e4` — NEU [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md) |
 | `GG-DEMO-006` YAML-side Fault-Injection (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6a-C2 | `db3a0c2` |
 | `GG-UI-006..008` Geraete-Grafik + Fault-Form + Sim-Zustand | M5-Welle-6a/6b-C2 | `db3a0c2` + `9fcb887` |
+| §2.8 M6-Vorbelegung (Lastenheft-Familien `GG-RT-001..005` / `GG-SAFE-001..006` / `GG-CICD-*` / `GG-DEPLOY-*` / SBOM) | M6-Welle-0 (formaler Slice-Plan) + M6-Wellen 1..6 (Lieferung); M6-Closure 2026-06-08 — Rest-Luecken via Trigger 034/035/036 in M7 aufgeloest | [`../done/M6-results.md §2`](../done/M6-results.md) (Sektion §2.8 erst beim Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)
