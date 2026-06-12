@@ -195,13 +195,13 @@ anders angegeben):**
    Belege. Pattern-Praezedenz: `spec/architecture.md` §7
    Tabelle als Vorbild fuer Tabellen-Struktur.
 
-2. **EDIT `spec/lastenheft.md §16-Implementierungs-Matrix
+2. **EDIT `spec/lastenheft.md` §16-Implementierungs-Matrix
    (C1)**: `🔲 M4` → `✅ M4` fuer alle 5 Adapter-Cluster
    (MQTT/Modbus/OPC-UA/DNP3/IEC-61850). Hinweis-Block
    fuer ADR-0035-Decision-I-f Lizenz-Boundary-Pattern
    (GPLv3-Sub-Modul).
 
-3. **EDIT `spec/architecture.md §8.2 (C1)**: Adapter-
+3. **EDIT `spec/architecture.md` §8.2 (C1)**: Adapter-
    Verortung scharf setzen — alle 5 `protocol_*`-Adapter
    als konkrete `DeviceProtocolPort`-Implementer
    referenziert; OTel-Span-Wrap-Pattern als Welle-6a-
