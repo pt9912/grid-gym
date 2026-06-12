@@ -76,7 +76,7 @@ Abgeleitet aus dem Lastenheft. Gewichtung: P0 (Knock-out) > P1 > P2.
 | K-OBS     | Strukturierte Logs, Metriken, OpenTelemetry-Exporter                            | [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004                               | P1      |
 | K-TEST    | Unit/Integration/Architekturtest-Stack reif; Coverage-Reports                   | [`GG-TESTTYPE-001`](../../../spec/lastenheft.md#gg-testtype-001)..007, [`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001)..005          | P1      |
 | K-CONTAIN | Container-Image klein und reproduzierbar; offline-faehig                        | [`GG-DEPLOY-001`](../../../spec/lastenheft.md#gg-deploy-001)/002/011                          | P1      |
-| K-ECO     | Energie-/Power-Flow-Domaene: Bibliotheken oder Bindings verfuegbar               | [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/002/007, GG-FUTURE-* (MPC/RL)      | P2      |
+| K-ECO     | Energie-/Power-Flow-Domaene: Bibliotheken oder Bindings verfuegbar               | [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/002/007, `GG-FUTURE-*` (MPC/RL)      | P2      |
 | K-DEV     | Entwicklungs-Velocity; Hexagonal-Idiome; Team-Erfahrung                          | (Projekt-extern)                               | P2      |
 
 ---

@@ -55,7 +55,7 @@ Nicht Gegenstand dieses Dokuments:
 | GG-AR-P-011 | Simulationsadapter sind als solche gekennzeichnet und versprechen keine produktive Steuerung  | [`GG-SAFE-007`](lastenheft.md#gg-safe-007), [`GG-NONGOAL-001`](lastenheft.md#gg-nongoal-001)                    |
 | GG-AR-P-012 | Plattform laeuft offline lokal in Docker Compose; PostgreSQL ist Pflicht-Persistenz           | [`GG-DEPLOY-001`](lastenheft.md#gg-deploy-001)/002/011, [`GG-PERSIST-005`](lastenheft.md#gg-persist-005)          |
 | GG-AR-P-013 | Konfiguration statt Code: Geraete, Szenarien, Faults, Replays sind YAML-deklariert            | [`GG-SCN-001`](lastenheft.md#gg-scn-001), [`GG-ARCH-004`](lastenheft.md#gg-arch-004)                        |
-| GG-AR-P-014 | Architektur-Tabus werden per Build-/Architekturtest erzwungen                                 | [`GG-PRINC-006`](lastenheft.md#gg-princ-006), [`GG-CC-002`](lastenheft.md#gg-cc-002)/003/004, GG-ARCHTEST-* |
+| GG-AR-P-014 | Architektur-Tabus werden per Build-/Architekturtest erzwungen                                 | [`GG-PRINC-006`](lastenheft.md#gg-princ-006), [`GG-CC-002`](lastenheft.md#gg-cc-002)/003/004, `GG-ARCHTEST-*` |
 
 ---
 
@@ -496,7 +496,7 @@ Simulationszeit in ms, Integer-Sequenzen).
 | `POST /runs/{id}/resume`    | Resume                                         | [`GG-API-001`](lastenheft.md#gg-api-001), [`GG-SIM-008`](lastenheft.md#gg-sim-008)    |
 | `POST /runs/{id}/stop`      | Stop                                           | [`GG-API-001`](lastenheft.md#gg-api-001)                |
 | `GET  /runs/{id}/status`    | Statusabfrage                                  | [`GG-API-001`](lastenheft.md#gg-api-001), [`GG-DEPLOY-006`](lastenheft.md#gg-deploy-006) |
-| `POST /runs/{id}/faults`    | Fault injizieren                               | [`GG-API-001`](lastenheft.md#gg-api-001), GG-FAULT-*    |
+| `POST /runs/{id}/faults`    | Fault injizieren                               | [`GG-API-001`](lastenheft.md#gg-api-001), `GG-FAULT-*`    |
 | `POST /runs/{id}/snapshot`  | Snapshot erzeugen / fortsetzen                 | [`GG-SIM-005`](lastenheft.md#gg-sim-005)                |
 | `WS   /runs/{id}/telemetry` | Live-Telemetrie-Stream (sortiert, sequenziert) | [`GG-API-002`](lastenheft.md#gg-api-002)                |
 | `GET  /openapi.json`        | OpenAPI-Vertrag                                | [`GG-API-003`](lastenheft.md#gg-api-003)                |
@@ -934,7 +934,7 @@ gemaess `ADR 0004` §2.2; loest die zuvor positionsabhaengige
 | Integration Tests  | `tests/integration/...`                           | [`GG-TESTTYPE-002`](lastenheft.md#gg-testtype-002), [`GG-TEST-007`](lastenheft.md#gg-test-007)          |
 | Architekturtests   | `tests/arch/...` — erzwingt `GG-AR-TABU-001..008` | [`GG-TESTTYPE-003`](lastenheft.md#gg-testtype-003), [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005 |
 | Contract Tests     | OpenAPI / WebSocket / Adapter                     | [`GG-TESTTYPE-004`](lastenheft.md#gg-testtype-004), [`GG-API-003`](lastenheft.md#gg-api-003)           |
-| E2E / Demo-Abnahme | `tests/e2e/demo`                                  | [`GG-TESTTYPE-005`](lastenheft.md#gg-testtype-005), GG-DEMO-*            | <!-- d-check:ignore (geplant: E2E-Verzeichnis nicht angelegt; Demo-Abnahme via make accept, `GG-MVP-003`) -->
+| E2E / Demo-Abnahme | `tests/e2e/demo`                                  | [`GG-TESTTYPE-005`](lastenheft.md#gg-testtype-005), `GG-DEMO-*`            | <!-- d-check:ignore (geplant: E2E-Verzeichnis nicht angelegt; Demo-Abnahme via make accept, `GG-MVP-003`) -->
 | Replay-Diff-Tests  | Golden-File-Vergleich (Referenzlauf)              | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-REPLAY-007`](lastenheft.md#gg-replay-007)             |
 | Fault-Tests        | scenario-driven                                   | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                     |
 | Performance-Tests  | Referenzumgebung aus `GG-RT-001`-Akzeptanz        | [`GG-TESTTYPE-006`](lastenheft.md#gg-testtype-006), [`GG-RT-004`](lastenheft.md#gg-rt-004)/005        |

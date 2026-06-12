@@ -23,6 +23,15 @@ ids:
       target: docs/plan/adr/
     - regex: 'ADR[- ]\d{4}'
       target: docs/plan/adr/
+    # Familien-Wildcards (Kurzschrift, z. B. GG-DEMO-*): erzwingen
+    # Link ODER Backtick-Form (Inline-Code ist linkpflichtfrei) —
+    # nackte Familien-Refs fallen sonst durchs \d{3}-Raster.
+    - regex: 'GG-AR-[A-Z0-9-]*\*'
+      target: spec/architecture.md
+    - regex: 'GG-[A-Z][A-Z0-9-]*\*'
+      target: spec/lastenheft.md
+    - regex: 'AC-[A-Z][A-Z0-9-]*\*'
+      target: docs/plan/adr/
 
 # Pfade in Inline-Code (DC-FA-CODE-001, aktiviert 2026-06-12 nach
 # User-Befund "done/M5-results.md in carveouts-Prosa"): explizite
