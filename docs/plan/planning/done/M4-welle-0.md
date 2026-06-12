@@ -26,7 +26,7 @@ M3 ist seit 2026-05-25 mit Welle-7-Closure abgeschlossen
 [`roadmap.md §3 M4`](../in-progress/roadmap.md) der naechste
 aktive Slice mit
 fuenf Sub-Adaptern entlang
-[`spec/lastenheft.md §16`](../../../../spec/lastenheft.md):
+[`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen):
 
 - **MQTT** (`GG-MQTT-001`, SOLLTE) — paho-mqtt; Topic-Schema,
   Payload-Format, QoS, Pub/Sub-Richtung; deterministischer
@@ -51,13 +51,13 @@ dokumentieren, **keine** produktive Anlagensteuerung.
 **Architektur-Anker:**
 
 - `GG-AR-PORT-DRN-007` (`DeviceProtocolPort`) —
-  [`spec/architecture.md §7`](../../../../spec/architecture.md)
-  Z. 249 + [`§8.2`](../../../../spec/architecture.md) Z. 510–512.
+  [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
+  Z. 249 + [`§8.2`](../../../../spec/architecture.md#82-adapter-interfaces-driven) Z. 510–512.
   Read/Write-Operationen mit Mapping auf `TelemetryPoint` /
   `Command`; Adapter dokumentieren Topic-, Register-, Node-
   bzw. LN/CDC-Profile.
 - `GG-AR-COMP-PROTOCOLS` (Komponentensicht; Mapping
-  [`spec/lastenheft.md §27`](../../../../spec/lastenheft.md)
+  [`spec/lastenheft.md §27`](../../../../spec/lastenheft.md#27-v-modell-aehnliche-rueckverfolgbarkeit)
   Z. 2166–2170).
 - **Code-Status (2026-05-26):**
   `src/grid_gym/hexagon/ports/driven/` enthaelt

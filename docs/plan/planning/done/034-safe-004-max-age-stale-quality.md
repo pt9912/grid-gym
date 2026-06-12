@@ -99,7 +99,7 @@ Aktivierung erfolgt bei einer der folgenden Bedingungen:
   `open/`-Trigger).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)
   Audit-Tabelle mit Status-Spalte „Lücke" fuer SAFE-004.
-- [`../../../../spec/lastenheft.md §20 GG-SAFE-004`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §20 GG-SAFE-004`](../../../../spec/lastenheft.md#20-sicherheitsanforderungen)
   — Lastenheft-Akzeptanz-Quelle.
 - [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)
   + ADR 0016/0017/0018 — Device-Quality-Emission-Pattern

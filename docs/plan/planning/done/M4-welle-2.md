@@ -314,12 +314,12 @@ Status-Pfad `Proposed → Provisional → Accepted`:
 
 **Bezug:**
 
-- [`spec/architecture.md §7`](../../../../spec/architecture.md)
+- [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
   Z. 249 (`GG-AR-PORT-DRN-007` Tabelle — Surface bleibt
   ADR-0030-Vertrag) +
-  [`§8.2`](../../../../spec/architecture.md) Z. 510–512
+  [`§8.2`](../../../../spec/architecture.md#82-adapter-interfaces-driven) Z. 510–512
   (Adapter-Interfaces-Driven-Beschreibung).
-- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   Z. 1120–1133 (`GG-MQTT-001`: SOLLTE-Cluster fuer
   Topic-Schema + Payload-Format + QoS + Pub/Sub-Richtung +
   Adapter-Smoke).

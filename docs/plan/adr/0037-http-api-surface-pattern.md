@@ -8,7 +8,7 @@ unit + 41 integration Tests; 10/10 A-1-Gates gruen).
 Initial-Entwurf (`Proposed`) 2026-06-01 mit M5-Welle-1-C1
 `d468e68`. Die ADR schaerft die HTTP-API-Surface
 (`GG-API-001..004`) aus
-[`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md)
+[`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
 konkret fuer M5-Welle-1-Implementation und schliesst zwei
 Decisions aus der M5-Welle-0-Decision-Liste (siehe
 [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
@@ -36,10 +36,10 @@ Commit)
   HTMX + Jinja2 + Chart.js" — ADR 0037 konkretisiert
   die HTTP-API-Surface, auf der die HTMX/Jinja2-UI ab
   Welle 2 aufbaut).
-- [Lastenheft](../../../spec/lastenheft.md) §16
+- [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
   (`GG-API-001..004` Kommunikationsschnittstellen mit
   REST + WebSocket + OpenAPI + Standard-Fehlerformat).
-- [Architektur](../../../spec/architecture.md) §4.2
+- [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie) + §5
   (`GG-AR-COMP-API`-Slot in `adapters/driving/http_api/`).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
@@ -283,9 +283,9 @@ zugewiesen).
 - [`ADR 0036 §2.1 + §6`](0036-ui-stack-choice.md)
   (UI-Stack-Wahl mit FastAPI + HTMX; ADR 0037 liefert
   die HTTP-API-Surface, auf der HTMX-UI aufbaut).
-- [Lastenheft §16](../../../spec/lastenheft.md)
+- [Lastenheft §16](../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-API-001..004`).
-- [Architektur §4.2 + §5](../../../spec/architecture.md)
+- [Architektur §4.2 + §5](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   (Driving-Port-Familie `GG-AR-PORT-DRV-*`,
   `GG-AR-COMP-API`-Slot).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)

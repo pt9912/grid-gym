@@ -20,7 +20,7 @@ Foundation-Welle (M5-Welle-2 lieferte die UI-Huelse,
 M5-Welle-3 fuellt sie mit Live-Telemetry-Inhalt). Welle 3
 erfuellt **`GG-UI-002` (Live-Telemetry)**, **`GG-UI-003`
 (Zeitreihen)** und **`GG-UI-009` (Quality-Marker)** aus
-[Lastenheft §17](../../../../spec/lastenheft.md).
+[Lastenheft §17](../../../../spec/lastenheft.md#17-visualisierung).
 
 **Pre-C0 abgeschlossen (3 Commits):**
 
@@ -42,7 +42,7 @@ erfuellt **`GG-UI-002` (Live-Telemetry)**, **`GG-UI-003`
 Decision-Liste** (§3) sammelt drei Decisions:
 
 - **Decision 3 (WebSocket vs SSE)** — durch
-  [Lastenheft §16 `GG-API-002`](../../../../spec/lastenheft.md)
+  [Lastenheft §16 `GG-API-002`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   bereits vorgegeben (**WebSocket Pflicht**). Welle 3
   bestaetigt das im ADR.
 - **Decision 7 (Charting-Library-Final)** — Chart.js
@@ -608,9 +608,9 @@ Bestand-Eintrag + Aktive-Welle-Marker.
   produktiv).
 - [`../../adr/0037-http-api-surface-pattern.md`](../../adr/0037-http-api-surface-pattern.md)
   (WS-Endpoint aus Welle 1; Welle 3 stellt Producer um).
-- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-API-002` WebSocket-Telemetrie-Pflicht).
-- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md#17-visualisierung)
   (`GG-UI-002/003/009` Live-Telemetry +
   Zeitreihen + Quality-Marker).
 - Asyncio-Pub/Sub-Smoke-Probe-Run `5349923` (validiert

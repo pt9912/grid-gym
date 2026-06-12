@@ -766,7 +766,7 @@ Vertrag.
   (BatteryFaultAdapter/GridFaultAdapter).
 - [`../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md`](../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md)
   — Scenario-Loader + `TickLoopWiring.fault_port`-Slot.
-- [`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md#17-visualisierung)
   `GG-UI-007` + `GG-DEMO-006` Akzeptanztexte.
 - Pattern-Vorbild **Sub-Slicing-Beschluss**:
   [`M4-welle-6a.md`](M4-welle-6a.md)

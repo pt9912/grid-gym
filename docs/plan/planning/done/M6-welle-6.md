@@ -1122,11 +1122,11 @@ Pattern aus Welle-3 (`feat(observability)`-Doppel-Commit).
   `done/`.
 - [`M6-perf-security-cicd.md §3.2 Welle 6`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-6-Vorbelegung.
-- [`../../../../spec/lastenheft.md §23 GG-DEPLOY-001..011`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §23 GG-DEPLOY-001..011`](../../../../spec/lastenheft.md#23-deployment)
   — Lastenheft-Akzeptanz fuer Deploy-IDs (Z. 1833-1920);
   plus Realisierungs-Traceability §23 (Z. 2307-2309
   fuer `GG-DEPLOY-001..011`).
-- [`../../../../spec/architecture.md §15`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §15`](../../../../spec/architecture.md#15-beobachtbarkeit)
   — Architektur-§15 Beobachtbarkeit (Metrik-Liste; bietet
   den Kontext fuer Three-State-Status, ohne Healthcheck-
   Endpoint-Form normativ vorzugeben).

@@ -165,5 +165,5 @@ M6-Welle-7-C4a); dann `git mv → done/` + `done/M7-results.md`.
   [`M7-welle-2.md`](M7-welle-2.md)
   (`GG-MVP-003`).
 - [`roadmap.md §M7`](../in-progress/roadmap.md) — M7-Vorbelegung.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   (`GG-MVP-002/003`, `GG-SAFE-003/004/006`, `GG-REPLAY-004..006`).

@@ -681,7 +681,7 @@ Abschluss-Notiz (analog M5-Welle-6c-Subdivision-Abschluss
   Welle-4b-a Bench-Foundation (ADR-0041).
 - [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
-- [`../../../../spec/lastenheft.md §7 GG-RT-001`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §7 GG-RT-001`](../../../../spec/lastenheft.md#7-echtzeit-und-zeitmodell)
   — Lastenheft-Akzeptanz (10ms/100ms/1000ms-Tick-Modi +
   Healthcheck-Doku im 10ms-Modus).
 - [`../../adr/0024-observability-port-trio.md`](../../adr/0024-observability-port-trio.md)

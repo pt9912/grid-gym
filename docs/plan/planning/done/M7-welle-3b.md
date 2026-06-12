@@ -450,5 +450,5 @@ F4-Helper-Lift (D-7).
   Injection (Decision 16).
 - [`../../adr/0024-observability-port-trio.md`](../../adr/0024-observability-port-trio.md)
   §4.5 — OTel-Wrapper-Praezedenz (`_protocol_otel_wrap.py`).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-safe-003)
   §20 `GG-SAFE-003` (Z. 1365-1371).

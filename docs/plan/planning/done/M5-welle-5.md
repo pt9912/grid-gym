@@ -1031,7 +1031,7 @@ keinen Welle-5-C3-Bestandteil bilden:
   — `RuleBasedAgent`-Snapshot-Vertrag
   (Welle-5-Demo nutzt `agent_type=rule_based`
   ueber die bestehende Factory-Map).
-- [`../../../../spec/lastenheft.md §24`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §24`](../../../../spec/lastenheft.md#24-demo-system)
   `GG-DEMO-001..008` (Demo-Anspruch).
 - [`../../../../spec/architecture.md §Scenario`](../../../../spec/architecture.md)
   (kanonisches YAML-Schema; Welle-5-Demo nutzt

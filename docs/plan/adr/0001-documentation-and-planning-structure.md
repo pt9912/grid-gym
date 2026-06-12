@@ -22,7 +22,7 @@ stabile Dokumentationsstruktur fuer:
 Die Struktur soll klein genug fuer den Projektstart bleiben, aber
 spaeter Meilensteine, weitere ADRs und Umsetzungsslices aufnehmen
 koennen. Sie muss zudem den V-Modell-Anforderungen aus
-[§27 Lastenheft](../../../spec/lastenheft.md) (Rueckverfolgbarkeit
+[§27 Lastenheft](../../../spec/lastenheft.md#27-v-modell-aehnliche-rueckverfolgbarkeit) (Rueckverfolgbarkeit
 Anforderung → Design → Implementierung → Test) und der
 Anforderung `GG-TRACE-001` Rechnung tragen.
 

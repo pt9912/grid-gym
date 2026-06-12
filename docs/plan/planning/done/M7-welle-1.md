@@ -553,9 +553,9 @@ kein `GG-MVP-002`-Statusflip vor der zweiten Closure.
 - [`../in-progress/roadmap.md §3 GG-MVP-002`](../in-progress/roadmap.md)
   — MVP-Abnahmescope-Tabelle; wird erst nach Zeitreihen-
   Persistenz- und Replay-E2E-Evidence auf ✓ produktiv geflippt.
-- [`../../../../spec/lastenheft.md §3 GG-MVP-002`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §3 GG-MVP-002`](../../../../spec/lastenheft.md#3-mvp-abnahmescope)
   — Akzeptanz-Quelle (Z. 130-135).
-- [`../../../../spec/architecture.md §4.2 + §8 + §15`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §4.2 + §8 + §15`](../../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   — `TelemetrySinkPort` (§4.2 Z. 244 + §8 Z. 542);
   `ReplaySourcePort` (§4.2 Z. 248 + §8 Z. 544);
   `replay_diff_status`-Metrik (§15 Z. 820 + 823).

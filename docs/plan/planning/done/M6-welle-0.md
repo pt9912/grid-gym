@@ -548,7 +548,7 @@ Jobs in einem Commit (analog Slice 025).
   primaere Pflege-Welle).
 - [`roadmap.md §3 M6`](../in-progress/roadmap.md) — M6-Vorbelegung mit
   Lieferziel + Lastenheft-IDs + DoD-Checkboxen.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-safe-008)
   §22 (`GG-RT-*`) + §23 (`GG-SAFE-*` inkl. `GG-SAFE-008`
   externe Eingabevalidierung) + CI/CD-Kapitel
   (`GG-CICD-001..007` inkl. `GG-CICD-007` Release-Workflow

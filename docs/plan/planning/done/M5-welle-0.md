@@ -62,9 +62,9 @@ M4 ist seit 2026-06-01 mit Welle-7-Closure abgeschlossen
 ([`../done/M4-results.md`](../done/M4-results.md)). M5 ist
 laut [`roadmap.md §3 M5`](../in-progress/roadmap.md) der naechste aktive
 Slice mit zwei Sub-Bereichen entlang
-[`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
+[`../../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md#17-visualisierung)
 plus Cross-Cutting aus
-[`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md):
+[`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen):
 
 - **UI** (`GG-UI-001..009`, **sechs MUSS** —
   `GG-UI-001..005` + `GG-UI-009` Datenqualitaet — und
@@ -83,12 +83,12 @@ plus Cross-Cutting aus
 Plus Cross-Cutting:
 
 - **HTTP-API-Surface** (`GG-API-001..004` aus
-  [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+  [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   Kommunikationsschnittstellen): die in M1 angelegte
   Stub-Surface (`POST /runs` + `/health`) wird in M5 zur
   vollen REST + WebSocket vervollstaendigt. **Driving-
   Port-Erweiterung** unter
-  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md)
+  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   `GG-AR-PORT-DRV-*`-Familie; nicht zu verwechseln mit
   den Driven-Ports (DRN-007 `DeviceProtocolPort`)
   aus M4.
@@ -147,7 +147,7 @@ Stand 2026-06-01 (M4-Closure):
 - [`deploy/compose.yml`](../../../../deploy/compose.yml)
   als produktiver Compose-File.
 - **`GG-AR-COMP-UI`-Slot** in
-  [`../../../spec/architecture.md §5`](../../../../spec/architecture.md)
+  [`../../../spec/architecture.md §5`](../../../../spec/architecture.md#5-komponentensicht)
   auf `ui/`-Top-Level-Verzeichnis vorbelegt (das
   Verzeichnis existiert **noch nicht**).
 - **5 produktive Geraetemodelle** (`battery`/`pv`/`load`/
@@ -176,7 +176,7 @@ Aus [`../done/M4-results.md §5`](../done/M4-results.md):
   wrappt `DeviceProtocolPort.read/write`-Calls).
   HTTP-API und UI sind **Driving-Ports**
   (`GG-AR-PORT-DRV-*`, siehe
-  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md)),
+  [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)),
   nicht Driven. Driving-Side-Analogon waere
   **FastAPI-Middleware** oder OpenTelemetry-ASGI-
   Instrumentation (`opentelemetry-instrumentation-
@@ -463,9 +463,9 @@ Bestand-Eintrag.
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   — Pre-M5-Welle-0-Sondierungs-ADR (UI-Stack-Wahl mit
   Maintainer-Decision-Indication „Option 1 + Chart.js").
-- [`../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md)
+- [`../../../spec/lastenheft.md §17 + §24`](../../../../spec/lastenheft.md#17-visualisierung)
   — UI-Pflicht + Demo-System.
-- [`../../../spec/architecture.md §5`](../../../../spec/architecture.md)
+- [`../../../spec/architecture.md §5`](../../../../spec/architecture.md#5-komponentensicht)
   — `GG-AR-COMP-UI`-Slot in `ui/`-Top-Level-Verzeichnis;
   `GG-AR-COMP-API` in `adapters/driving/http_api`.
 - [`roadmap.md §3 M5`](../in-progress/roadmap.md) — M5-Vorbelegung

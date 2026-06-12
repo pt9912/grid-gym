@@ -350,5 +350,5 @@ Comm-Failure (3b), Alarm-Vertrag (3b).
   — Schaerfungs-Pattern (Scenario-Schema-Folgeoption).
 - [`../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md`](../../adr/0021-scenario-loader-and-tick-loop-event-wiring.md)
   — `build_tick_loop`-Vertrag.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-safe-004)
   §20 `GG-SAFE-004` (Z. 1373-1378).

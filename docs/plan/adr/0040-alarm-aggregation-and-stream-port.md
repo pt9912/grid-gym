@@ -124,13 +124,13 @@ Commit)
   §3.2 (Welle-4a-Forward-Pointer auf Welle 4b mit NEU
   ADR 0040; in Welle-4b-C0 von ursprueglich 2 auf 3
   Decisions erweitert — siehe Welle-4b-Slice-Doc §0).
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   `GG-UI-005` (UI-Akzeptanz: „Das UI MUSS Alarme
   visualisieren koennen. Akzeptanz: Das UI zeigt
   Alarmzeit, Ziel, Schweregrad, Code, Nachricht und
   aktuellen Status in einer aktualisierbaren Tabelle
   an.").
-- [Lastenheft](../../../spec/lastenheft.md) §23
+- [Lastenheft](../../../spec/lastenheft.md#23-deployment) §23
   `GG-PERSIST-004` (Postgres-Alarm-Persistenz —
   Welle-4b-Anti-Scope; M3-Welle-6c-Material).
 - [Architektur](../../../spec/architecture.md) §Alarm
@@ -874,9 +874,9 @@ Quality-Marker-Pattern: `severity-info` (neutral),
 - [`ADR 0039`](0039-run-control-and-status-tracking.md)
   §3.2 (Welle-4a-Forward-Pointer auf Welle 4b mit
   NEU ADR 0040; Decision-Plan von 2 auf 3 erweitert).
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   `GG-UI-005` (UI-Akzeptanz: 6 Pflicht-Spalten).
-- [Lastenheft](../../../spec/lastenheft.md) §23
+- [Lastenheft](../../../spec/lastenheft.md#23-deployment) §23
   `GG-PERSIST-004` (Postgres-Alarm-Persistenz —
   Welle-4b-Anti-Scope; M3-Welle-6c).
 - [Architektur](../../../spec/architecture.md) §Alarm

@@ -614,7 +614,7 @@ als Lehre verankert.
   aufgeloest).
 - [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung + Sub-Slicing-Notiz.
-- [`../../../../spec/lastenheft.md §7 GG-RT-005`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §7 GG-RT-005`](../../../../spec/lastenheft.md#7-echtzeit-und-zeitmodell)
   — Lastenheft-Akzeptanz (10 000 Points/s + ≤ 256 Byte).
 - [`../../adr/0041-performance-bench-pattern.md`](../../adr/0041-performance-bench-pattern.md)
   — Bench-Pattern-Vertrag (Welle-4b-b nutzt das ohne

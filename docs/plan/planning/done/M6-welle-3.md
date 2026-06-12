@@ -781,7 +781,7 @@ nach `ede21ad`):
   — M6-Slice-Plan Welle-3-Vorbelegung.
 - [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md)
   — Trigger 031 mit Aktivierungs-Substanz.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-cicd-002)
   §22 `GG-CICD-002/003/005/006`-Akzeptanz.
 - [`../../adr/0002-language-and-build-stack.md §6.1`](../../adr/0002-language-and-build-stack.md)
   — Python-3.13/3.14-Matrix-Pflicht-Quelle.

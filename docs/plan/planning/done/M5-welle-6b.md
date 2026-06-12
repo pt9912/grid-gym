@@ -731,7 +731,7 @@ heben.
   + [`../../adr/0018-smart-meter-device-pattern.md`](../../adr/0018-smart-meter-device-pattern.md)
   — Device-Snapshot-Schemas (Welle-6b-Decision-21-
   State-Subset entstammt diesen ADRs).
-- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md#17-visualisierung)
   `GG-UI-006` + `GG-UI-008` Akzeptanztexte.
 - Pattern-Vorbild **AC-NO-GOD-UTILS-Modul-Split**:
   [`M5-welle-6a.md`](M5-welle-6a.md)

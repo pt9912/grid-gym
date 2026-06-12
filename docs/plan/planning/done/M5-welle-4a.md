@@ -827,9 +827,9 @@ Status-/DoD-Sync nach C2-Code-Merge:
   §2 (TelemetryStreamPort als Welle-3-Vorlaeufer; Welle
   4a fuegt einen zweiten REST-GET-Status-Endpunkt hinzu,
   kein zweiter Stream).
-- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-API-001` Replay-Steuerung-Pflicht).
-- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md#17-visualisierung)
   (`GG-UI-004` Replay-Controls-Akzeptanz).
 - M5-Welle-Pattern-Vorbilder:
   [`../done/M5-welle-1.md`](../done/M5-welle-1.md)

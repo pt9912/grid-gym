@@ -260,5 +260,5 @@ Sub-Slice-Doc.
 - [`../../adr/0024-observability-port-trio.md`](../../adr/0024-observability-port-trio.md)
   + [`../../adr/0040-alarm-aggregation-and-stream-port.md`](../../adr/0040-alarm-aggregation-and-stream-port.md)
   — Alarm-/Observability-Vertraege (3b-Vorbild).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-safe-003)
   §20 (`GG-SAFE-003` Z. 1365-1371 + `GG-SAFE-004` Z. 1373-1378).

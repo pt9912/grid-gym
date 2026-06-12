@@ -333,9 +333,9 @@ Welle 5a bringt **eine** neue ADR: **ADR 0034**
 
 **Bezug:**
 
-- [`spec/architecture.md §7`](../../../../spec/architecture.md)
+- [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
   Z. 249 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle).
-- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-DNP3-001` Cluster).
 - [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3
   Decision-Liste.

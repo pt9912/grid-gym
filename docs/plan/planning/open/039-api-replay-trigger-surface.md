@@ -65,5 +65,5 @@ konsumiert.
   — Strict-Request-Body-Vertrag fuer ein `replay_of`-Feld.
 - [`../../adr/0048-replay-snapshot-port-reconstruction.md`](../../adr/0048-replay-snapshot-port-reconstruction.md)
   — `ReplaySnapshotPort` (die Bindung konsumiert ihn).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   — `GG-MVP-002`-Akzeptanz.

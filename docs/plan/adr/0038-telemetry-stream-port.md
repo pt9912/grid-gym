@@ -43,15 +43,15 @@ Commit)
   `/runs/{id}/telemetry` aus Welle 1 ist der
   Konsumer-Pfad, der in Welle 3 von Counter-Stub auf
   `TelemetryStreamPort.subscribe()` umgestellt wird).
-- [Lastenheft](../../../spec/lastenheft.md) §16
+- [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
   (`GG-API-002` WebSocket-Telemetrie: Akzeptanz „WebSocket-
   Nachrichten enthalten Lauf-ID, Simulationszeit,
   Sequenznummer und Telemetrie-Payload").
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   (`GG-UI-002` Live-Telemetry / `GG-UI-003` Zeitreihen /
   `GG-UI-009` Quality-Marker — alle drei sind Welle-3-
   Akzeptanz-Ziele).
-- [Architektur](../../../spec/architecture.md) §4.2
+- [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie; `TelemetryStream
   Port` erweitert die Familie um einen Live-Pull-Slot).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
@@ -370,12 +370,12 @@ deterministisch (kein Wait-on-GC).
 - [`ADR 0037`](0037-http-api-surface-pattern.md)
   (HTTP-API-Surface-Pattern; WS-Endpoint, der hier den
   Konsumer-Pfad bildet).
-- [Lastenheft](../../../spec/lastenheft.md) §16
+- [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
   `GG-API-002` (WebSocket-Telemetrie-Akzeptanz).
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   `GG-UI-002/003/009` (Live-Telemetry +
   Zeitreihen + Quality-Marker).
-- [Architektur](../../../spec/architecture.md) §4.2
+- [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done/M5-welle-0.md)
   Decision 11 (offene Decision, hier final geschlossen).

@@ -477,9 +477,9 @@ Bestand-Eintrag.
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   — Pre-M5-Welle-0-Sondierungs-ADR (Welle 1 zieht es auf
   `Provisional`).
-- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-API-001..004` Kommunikationsschnittstellen).
-- [`../../../../spec/architecture.md §4.2 + §5`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §4.2 + §5`](../../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   (Driving-Port-Familie `GG-AR-PORT-DRV-*`;
   `GG-AR-COMP-API`-Slot).
 - HTMX-FastAPI-Smoke-Probe-Run `9c20dad` (Probe-Validation

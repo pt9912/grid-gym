@@ -303,10 +303,10 @@ otel_wrap.py`-Wrapper braucht keinen eigenen ADR.
 
 **Bezug:**
 
-- [`spec/architecture.md §7`](../../../../spec/architecture.md)
+- [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
   Z. 249 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle —
   5 Adapter-Pakete vollstaendig).
-- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   (`GG-MQTT-001` / `GG-MODB-001` / `GG-OPCUA-001` /
   `GG-DNP3-001` / `GG-IEC-001` Cluster — alle 5 SOLLTE-
   erfuellt mit Welle-2/3/4/5a/5b).

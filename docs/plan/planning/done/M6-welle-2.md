@@ -50,7 +50,7 @@ Slicing).
 hat Welle 2 als „SBOM-Aktivierung + Release-Workflow"
 vorbelegt mit ADR-Lifecycle-Vorbelegung „NEU ADR 0042
 (SBOM-Tool-Wahl) + CI-Hook-Pattern". Welle 2 deckt die
-volle [`GG-CICD-007`](../../../../spec/lastenheft.md)-
+volle [`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007)-
 Akzeptanz ab (5 Asset-Klassen, siehe §1.3).
 
 ### 1.1 Existierende Substanz (vor Welle 2)
@@ -1262,7 +1262,7 @@ in Trigger 032 verankert (drei Klassen).
   Erweiterung (ADR 0002 §A-1 bleibt unangefasst; ADR
   0042 ist eigenstaendiger Quality-Gate-Vertrag analog
   ADR 0029/0043).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-cicd-007)
   §22 `GG-CICD-007` — Akzeptanz „Pipeline veroeffentlicht
   Container-Images, Testberichte, Coverage-Berichte,
   OpenAPI-Spezifikation und Demo-Abnahmeartefakte".

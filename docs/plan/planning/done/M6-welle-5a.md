@@ -555,7 +555,7 @@ Feature-Welle).
   Komplett-Abschluss.
 - [`../in-progress/M6-perf-security-cicd.md §3.2 Welle 5`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-5-Vorbelegung.
-- [`../../../../spec/lastenheft.md §20 GG-SAFE-001..008`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §20 GG-SAFE-001..008`](../../../../spec/lastenheft.md#20-sicherheitsanforderungen)
   — Lastenheft-Akzeptanz fuer die Quality-Pipeline + Input-
   Validation + Sim/Prod-Trennung.
 - [`../../adr/0014-battery-snapshot-schema.md`](../../adr/0014-battery-snapshot-schema.md)

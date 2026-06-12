@@ -2,7 +2,7 @@
 
 **Status:** Produktiv ab M7-Welle-2 (2026-06-10).
 **Bezug:**
-[`spec/lastenheft.md §3 GG-MVP-003`](../../spec/lastenheft.md)
+[`spec/lastenheft.md §3 GG-MVP-003`](../../spec/lastenheft.md#3-mvp-abnahmescope)
 (Z. 138-144),
 [`docs/plan/adr/0045-http-api-request-strict-validation.md`](../plan/adr/0045-http-api-request-strict-validation.md)
 (Pydantic-Strict-Vorbild),

@@ -131,7 +131,7 @@ Hintergrund liegt in [`M6-welle-0.md`](../done/M6-welle-0.md) §1).
   + M4-/M5-ADRs (0030..0040) — M6 baut auf der voll-
   ausgereiften Adapter- + Driving-Surface auf, ohne neuen
   Driving-Port einzuziehen.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-rt-001)
   Kap. 7 (`GG-RT-001..005`; `GG-RT-006` Replay-Zeit-
   multiplikator gehoert zu M3, nicht M6) + Kap. 20
   (`GG-SAFE-001..008`) + Kap. 22 (`GG-CICD-001..007` inkl.

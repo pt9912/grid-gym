@@ -1095,7 +1095,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
 - [`roadmap.md §3 GG-MVP-003`](../in-progress/roadmap.md)
   — MVP-Abnahmescope-Tabelle; ✗ Lücke; wird mit Welle-X-
   Closure auf ✓ produktiv geflippt.
-- [`../../../../spec/lastenheft.md §3 GG-MVP-003`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §3 GG-MVP-003`](../../../../spec/lastenheft.md#3-mvp-abnahmescope)
   — Akzeptanz-Quelle (Z. 138-144).
 - [`M7-welle-1.md`](../done/M7-welle-1.md)
   — Schwester-Plan fuer `GG-MVP-002`; potenzielle

@@ -126,7 +126,7 @@ Aktivierung erfolgt bei einer der folgenden Bedingungen:
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)
   Audit-Tabelle mit Status-Spalte „partial Lücke" fuer SAFE-
   003.
-- [`../../../../spec/lastenheft.md §20 GG-SAFE-003`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §20 GG-SAFE-003`](../../../../spec/lastenheft.md#20-sicherheitsanforderungen)
   — Lastenheft-Akzeptanz-Quelle.
 - [`../../adr/0018-smart-meter-device-pattern.md`](../../adr/0018-smart-meter-device-pattern.md)
   §2.3 SmartMeter-pre-attach-MISSING-Substanz (Teil-produktiv).

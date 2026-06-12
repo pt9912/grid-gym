@@ -19,7 +19,7 @@
   HTTP-Kompositions-Bridge.
 - [`ADR 0040`](0040-alarm-aggregation-and-stream-port.md) —
   Stream-Port-Praezedenz fuer Driving-Port-Surfaces.
-- [`spec/architecture.md`](../../../spec/architecture.md) —
+- [`spec/architecture.md`](../../../spec/architecture.md#2-architekturprinzipien) —
   `GG-AR-P-002`, `GG-AR-P-003`, `GG-AR-TABU-001..004` und
   Driving-Port-Liste.
 - [`041-adapter-pure-ignore-imports-rueckbau.md`](../planning/next/041-adapter-pure-ignore-imports-rueckbau.md)

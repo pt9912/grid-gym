@@ -43,9 +43,9 @@ Erweiterungen); `Bezug:`-Liste L-3 (`ADR 0011` ergaenzt). Vor-
 `Accepted`-Schliff per ADR 0006 §4; ADR-Index `Letzte inhaltliche
 Aenderung`-Datum gepflegt.
 **Bezug:**
-[Lastenheft](../../../spec/lastenheft.md) §19 Telemetrie
+[Lastenheft](../../../spec/lastenheft.md#19-telemetrie) §19 Telemetrie
 (`GG-OTEL-001..004`),
-[Architektur](../../../spec/architecture.md) §4.2 Driven-Ports-Tabelle
+[Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2 Driven-Ports-Tabelle
 (`GG-AR-PORT-DRN-008`), §5 Komponentensicht (`GG-AR-COMP-OBS`), §15
 Beobachtbarkeit,
 [`ADR 0007`](0007-random-port.md) (Driven-Port-Pattern-Praezedenz,

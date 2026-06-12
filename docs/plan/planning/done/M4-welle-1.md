@@ -86,8 +86,8 @@ Welle 1 ist die **Port-Foundation**:
 - Neuer Driven-Port
   `src/grid_gym/hexagon/ports/driven/device_protocol.py`
   als Python-`Protocol` (`GG-AR-PORT-DRN-007`,
-  [`spec/architecture.md §7`](../../../../spec/architecture.md)
-  Z. 249 + [`§8.2`](../../../../spec/architecture.md)
+  [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
+  Z. 249 + [`§8.2`](../../../../spec/architecture.md#82-adapter-interfaces-driven)
   Z. 510–512).
 - ADR 0030 (Proposed in C1, Provisional mit C2-Merge,
   Accepted mit M4-Welle-7-Closure) schliesst Decisions
@@ -191,11 +191,11 @@ Status-Pfad `Proposed → Provisional → Accepted`:
 
 **Bezug:**
 
-- [`spec/architecture.md §7`](../../../../spec/architecture.md)
+- [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
   Z. 249 (`GG-AR-PORT-DRN-007` Tabelle) +
-  [`§8.2`](../../../../spec/architecture.md) Z. 510–512
+  [`§8.2`](../../../../spec/architecture.md#82-adapter-interfaces-driven) Z. 510–512
   (Adapter-Interfaces-Driven-Beschreibung).
-- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   Z. 1120–1163 (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
 - [`M4-welle-0.md`](M4-welle-0.md) §3
   Decision-Liste (Items 1, 2, 3, 7) als Quelle der

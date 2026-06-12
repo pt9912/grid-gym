@@ -549,9 +549,9 @@ Bestand-Eintrag.
   Chart.js"; vendored Static-Asset-Pattern).
 - [`../../adr/0037-http-api-surface-pattern.md`](../../adr/0037-http-api-surface-pattern.md)
   (HTTP-API-Surface, auf der die UI aufbaut).
-- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md#17-visualisierung)
   (`GG-UI-001..009` Visualisierungs-Anforderungen).
-- [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §4.2`](../../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   (Driving-Port-Familie; UI als Driving-Adapter parallel
   zum HTTP-API).
 - [`../../../../tools/arch_check.py`](../../../../tools/arch_check.py)

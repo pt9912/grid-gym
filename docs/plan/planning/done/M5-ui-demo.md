@@ -2,7 +2,7 @@
 
 **Status:** In Progress — eroeffnet 2026-06-01 mit
 M5-Welle-0-C1 (dieser Commit). Sieben Wellen 0..7 entlang
-[`../../../../spec/lastenheft.md §16 + §17 + §24`](../../../../spec/lastenheft.md)
+[`../../../../spec/lastenheft.md §16 + §17 + §24`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
 (`GG-API-001..004` + `GG-UI-001..009` + `GG-DEMO-001..008`).
 Pre-M5-Welle-0-Sondierungs-ADR
 [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
@@ -29,7 +29,7 @@ Hintergrund liegt in [`M5-welle-0.md`](../done/M5-welle-0.md) §1).
   (M5 erweitert die **Driving**-Port-Familie `DRV-*`).
 - [`../../adr/0036-ui-stack-choice.md`](../../adr/0036-ui-stack-choice.md)
   als Pre-M5-Welle-0-Sondierungs-ADR.
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-api-001)
   §16 (`GG-API-001..004`) + §17 (`GG-UI-001..009`) + §24
   (`GG-DEMO-001..008`).
 - [`../../../../spec/architecture.md`](../../../../spec/architecture.md)

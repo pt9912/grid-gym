@@ -1299,10 +1299,10 @@ Forward-Defense).
 - [`../../adr/0039-run-control-and-status-tracking.md`](../../adr/0039-run-control-and-status-tracking.md)
   §3.2 — Welle-4a-Forward-Pointer „Alarm-Aggregation +
   AlarmStreamPort kommt in Welle 4b mit NEU ADR 0040".
-- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §17`](../../../../spec/lastenheft.md#17-visualisierung)
   (`GG-UI-005` Alarm-Visualisierung-Akzeptanz: 6 Pflicht-
   Spalten Zeit/Ziel/Schweregrad/Code/Nachricht/Status).
-- [`../../../../spec/lastenheft.md §23`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §23`](../../../../spec/lastenheft.md#23-deployment)
   (`GG-PERSIST-004` Alarm-Historien-Persistenz —
   M3-Welle-6c-Material, Welle-4b-Anti-Scope).
 - [`../../../../spec/architecture.md §Alarm`](../../../../spec/architecture.md)

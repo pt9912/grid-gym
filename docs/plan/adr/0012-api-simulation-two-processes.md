@@ -9,9 +9,9 @@ de-facto-Entscheidung nachtraeglich. Direkter
 **Datum:** 2026-05-17
 **Status geaendert am:** 2026-05-17 — `Proposed → Accepted`.
 **Bezug:**
-[Architektur](../../../spec/architecture.md) §19 (`GG-AR-OPEN-002`,
+[Architektur](../../../spec/architecture.md#19-offene-architektonische-punkte) §19 (`GG-AR-OPEN-002`,
 bei Acceptance dieser ADR von `Offen` auf `Geschlossen` zu setzen),
-[Architektur](../../../spec/architecture.md) §16 (API/Simulation/UI
+[Architektur](../../../spec/architecture.md#16-deployment-sicht) §16 (API/Simulation/UI
 mit getrennten Healthchecks),
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md)
 §2 (direktes Acceptance ohne Spike),

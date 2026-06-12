@@ -237,7 +237,7 @@ Adapterprofile, `sim_start_time`, separater `config_hash`,
 `GG-TERM-002/003`.** Das Lastenheft nennt mehr Pflichtfelder —
 u. a. Plattformarchitektur, Konfiguration, Startzeit im
 Simulationszeitmodell und aktivierte Adapter
-([`spec/lastenheft.md` GG-TERM-002/003](../../../../spec/lastenheft.md)).
+([`spec/lastenheft.md` GG-TERM-002/003](../../../../spec/lastenheft.md#gg-term-002)).
 Verankert als **dokumentierter `GG-TERM-002/003`-Carveout**; die
 volle Matrix wird per ADR-0011-Pattern auf
 [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
@@ -370,7 +370,7 @@ Flip, keine neue Alembic-Migration (alles 1b-b bzw. entfaellt).
   — volle `GG-TERM-002/003`-Equality-Matrix (1b-D-6-Carveout).
 - [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 (wird in 1b-b aufgeloest).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   (`GG-MVP-002`, `GG-REPLAY-002/003/007`, `GG-TERM-002/003`).
 - [`../../adr/0011-schaerfung-ohne-abloesung.md`](../../adr/0011-schaerfung-ohne-abloesung.md)
   — Schaerfungs-Pattern fuer ADR 0048 + Trigger-038-Defer.

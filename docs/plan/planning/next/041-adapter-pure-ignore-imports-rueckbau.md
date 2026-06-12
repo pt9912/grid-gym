@@ -11,7 +11,7 @@
   `AC-PORTS-NO-OUT`).
 - [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)
   — historische Run-Control-/TickLoop-Bridge.
-- [`spec/architecture.md`](../../../../spec/architecture.md)
+- [`spec/architecture.md`](../../../../spec/architecture.md#2-architekturprinzipien)
   — `GG-AR-P-002`, `GG-AR-P-003`, `GG-AR-TABU-001..004`.
 - [`pyproject.toml`](../../../../pyproject.toml)
   — aktueller `AC-ADAPTER-PURE`-`ignore_imports`-Block.

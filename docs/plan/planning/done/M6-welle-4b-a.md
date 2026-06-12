@@ -669,7 +669,7 @@ Bindestrich-Trennung als visuelle Marker.
   — M6-D-7-Bench-Framework-Vorbelegung (pytest-benchmark).
 - [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench).
-- [`../../../../spec/lastenheft.md §7 GG-RT-001..006`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §7 GG-RT-001..006`](../../../../spec/lastenheft.md#7-echtzeit-und-zeitmodell)
   — Lastenheft-Akzeptanz fuer `GG-RT-002` + `GG-RT-003` +
   `GG-RT-004`.
 - [`../../adr/0007-random-port.md §5.2`](../../adr/0007-random-port.md)

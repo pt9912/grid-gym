@@ -254,7 +254,7 @@ kein Query-/Export-API ueber den Smoke-Bedarf hinaus.
   Slice-Plan.
 - [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 (wird in 1b aufgeloest).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   (`GG-MVP-002`, `GG-PERSIST-001`, `GG-DATA-001`).
 - [`../../adr/0011-schaerfung-ohne-abloesung.md`](../../adr/0011-schaerfung-ohne-abloesung.md)
   — Schaerfungs-Pattern fuer ADR 0047.

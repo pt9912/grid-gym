@@ -2,7 +2,7 @@
 
 **Status:** Lebend ab M5-Welle-6c-C2 (2026-06-04).
 **Bezug:**
-[`spec/lastenheft.md §24 GG-DEMO-008`](../../spec/lastenheft.md),
+[`spec/lastenheft.md §24 GG-DEMO-008`](../../spec/lastenheft.md#24-demo-system),
 M5-Welle-5 (Demo-Pipeline + Scenario-Loader, `Done` 2026-06-03),
 M5-Welle-6a (Fault-Flow, `Done` 2026-06-03), M5-Welle-6b
 (UI-Visualization, `Done` 2026-06-04).

@@ -360,7 +360,7 @@ verankert.
 - [`M5-welle-6b.md`](M5-welle-6b.md)
   — Welle-6b-Devices/System-Pages (von Abnahmedoku
   zitiert).
-- [`../../../../spec/lastenheft.md §24`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §24`](../../../../spec/lastenheft.md#24-demo-system)
   `GG-DEMO-008` Akzeptanztext.
 - Pattern-Vorbild **Welle-ohne-C1 + ohne neue Tests**:
   ueber `M5-welle-5` / `M5-welle-6a` / `M5-welle-6b`

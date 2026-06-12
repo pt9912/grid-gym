@@ -742,12 +742,12 @@ explizit abgegrenzt.
   Lücken (Triggers 034/035).
 - [`M6-perf-security-cicd.md §3.2 Welle 5`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-5c-Vorbelegung.
-- [`../../../../spec/lastenheft.md §20 GG-SAFE-005/006`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md §20 GG-SAFE-005/006`](../../../../spec/lastenheft.md#20-sicherheitsanforderungen)
   — Lastenheft-Akzeptanz fuer Fallback-Zustaende +
   Non-Determinism-Detection (Z. 1380-1393); plus
   Realisierungs-Traceability §23 (Z. 2291 fuer GG-SAFE-005,
   Z. 2292 fuer GG-SAFE-006).
-- [`../../../../spec/architecture.md §15`](../../../../spec/architecture.md)
+- [`../../../../spec/architecture.md §15`](../../../../spec/architecture.md#15-beobachtbarkeit)
   — Observability-Metrik-Liste (Z. 820) mit
   `replay_diff_status` + Replay-Diff-Status-Tabelle (Z. 823)
   „maschinenlesbarer Statuswert pro Lauf" mit Verweis auf

@@ -38,9 +38,9 @@ ADR 0030 fuer M4);
 [`ADR 0030`](0030-device-protocol-port-surface.md) §2.1
 (Adapter-Hexagon-Pattern; UI ist `adapters/driving/`-Layer
 analog HTTP-API);
-[Lastenheft](../../../spec/lastenheft.md) §17 (`GG-UI-001..009`)
+[Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17 (`GG-UI-001..009`)
 + §24 (`GG-DEMO-001..008`);
-[Architektur](../../../spec/architecture.md) §5 (`GG-AR-COMP-UI`-
+[Architektur](../../../spec/architecture.md#5-komponentensicht) §5 (`GG-AR-COMP-UI`-
 Slot in `ui/`).
 
 M5-Slice-Plan
@@ -59,7 +59,7 @@ Material — nicht erst Welle 1.
 
 ### 1.1 Lastenheft-Pflicht
 
-[`spec/lastenheft.md §17`](../../../spec/lastenheft.md) listet
+[`spec/lastenheft.md §17`](../../../spec/lastenheft.md#17-visualisierung) listet
 **neun UI-Anforderungen** fuer M5:
 
 | ID            | Verbindlichkeit | Inhalt                                                                          |
@@ -74,7 +74,7 @@ Material — nicht erst Welle 1.
 | `GG-UI-008`   | SOLLTE          | Simulationszustaende (Laufstatus/Sim-Zeit/Tick-Zaehler/Dienst-Zustand)          |
 | `GG-UI-009`   | MUSS            | Datenqualitaet sichtbar (`stale/invalid/nan/missing/fault_injected`)            |
 
-Plus [`§24 Demo-System`](../../../spec/lastenheft.md) (`GG-DEMO-
+Plus [`§24 Demo-System`](../../../spec/lastenheft.md#24-demo-system) (`GG-DEMO-
 001..008`) als MUSS: lokale Demo-Umgebung nach
 `docker compose up`-Start, Live-Telemetry binnen 30s,
 mindestens 1 Replay-Szenario, dokumentierte Abnahmereihenfolge.
@@ -94,7 +94,7 @@ Stand 2026-06-01 (M4-Closure):
   produktiver Compose-File mit `otel-collector`-Sibling
   und Sibling-Services aus M2..M4.
 - **`GG-AR-COMP-UI`-Slot** in
-  [`spec/architecture.md §5`](../../../spec/architecture.md) auf
+  [`spec/architecture.md §5`](../../../spec/architecture.md#5-komponentensicht) auf
   `ui/`-Top-Level-Verzeichnis vorbelegt; das Verzeichnis
   existiert **noch nicht**.
 
@@ -614,9 +614,9 @@ folgendem Kriterium:
   spaeter eine GPL-lizenzierte Komponente in `ui/`
   einfuehrt (aktuell **keine** GPL-Komponente in der
   Sondierung).
-- [Lastenheft §17](../../../spec/lastenheft.md) +
-  [§24](../../../spec/lastenheft.md) — UI-Pflicht + Demo-System.
-- [Architektur §5 + §8.2](../../../spec/architecture.md) —
+- [Lastenheft §17](../../../spec/lastenheft.md#17-visualisierung) +
+  [§24](../../../spec/lastenheft.md#24-demo-system) — UI-Pflicht + Demo-System.
+- [Architektur §5 + §8.2](../../../spec/architecture.md#5-komponentensicht) —
   `GG-AR-COMP-UI`-Slot + Adapter-Hexagon-Pattern.
 - [`../planning/done/M4-results.md §5`](../planning/done/M4-results.md)
   — M4-Welle-7-Erbschaft: M5 als naechster aktiver Slice;

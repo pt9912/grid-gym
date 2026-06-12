@@ -369,7 +369,7 @@ per ADR 0011).
   [`../../adr/0039-run-control-and-status-tracking.md`](../../adr/0039-run-control-and-status-tracking.md),
   [`../../adr/0040-alarm-aggregation-and-stream-port.md`](../../adr/0040-alarm-aggregation-and-stream-port.md).
 - Lastenheft:
-  [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+  [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-api-001)
   §16 (`GG-API-001..004`) + §17 (`GG-UI-001..009`) + §24
   (`GG-DEMO-001..008`).
 - End-User-Abnahmedoku:

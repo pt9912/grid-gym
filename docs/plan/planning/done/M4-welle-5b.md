@@ -471,10 +471,10 @@ Status-Pfad `Proposed → Provisional → Accepted`:
 
 **Bezug:**
 
-- [`spec/architecture.md §7`](../../../../spec/architecture.md)
+- [`spec/architecture.md §7`](../../../../spec/architecture.md#7-domain-modell-skizze)
   Z. 249 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle —
   Welle 5b loest IEC-61850-Verzicht-Default aus §2.4 auf).
-- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md)
+- [`spec/lastenheft.md §16`](../../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
   Z. 1155-1157 (`GG-IEC-001` Cluster — SOLLTE-Pflicht;
   Welle 5b liefert die SOLLTE-Erfuellung).
 - [`../done/M4-welle-0.md`](../done/M4-welle-0.md) §3

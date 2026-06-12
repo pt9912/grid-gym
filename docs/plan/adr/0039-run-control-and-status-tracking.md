@@ -70,17 +70,17 @@ Commit)
   py`-Stub aus Welle 3 wird durch echtes TickLoop-Wiring
   im Welle-4a-Lifespan-Driver ersetzt; ADR 0038-Surface
   bleibt unveraendert).
-- [Lastenheft](../../../spec/lastenheft.md) §16
+- [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
   (`GG-API-001` REST-Schnittstellen: Akzeptanz „REST
   bietet Endpunkte fuer Szenario-Start, Pause, Resume,
   Stop, Status, Snapshot und Fault Injection". Welle 4a
   schliesst den Pause/Resume/Stop/Status-Anteil; Snapshot
   ist Welle-1-`GET /snapshot`-Stub + Welle-6c-Postgres).
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   (`GG-UI-004` Replay-Steuerung-Akzeptanz: „UI bietet
   fuer einen vorhandenen Lauf mindestens Start, Pause,
   Resume, Stop und Anzeige des Replay-Status an").
-- [Architektur](../../../spec/architecture.md) §4.2
+- [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort` — Welle 4a
   erweitert den Vertrag um `update_status` + `get_status`,
   symmetrisch zur Welle-1-`exists`-Extension).
@@ -714,11 +714,11 @@ def get_run_status(
 - [`ADR 0038`](0038-telemetry-stream-port.md) §3.2
   (Welle-4-Folge: TickLoop-Wiring ersetzt Demo-
   Generator).
-- [Lastenheft](../../../spec/lastenheft.md) §16
+- [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
   `GG-API-001` (REST-Replay-Steuerung-Pflicht).
-- [Lastenheft](../../../spec/lastenheft.md) §17
+- [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
   `GG-UI-004` (Replay-Controls-UI-Akzeptanz).
-- [Architektur](../../../spec/architecture.md) §4.2
+- [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRN-003` `RunRepositoryPort`).
 - [`../planning/done/M5-welle-4a.md §3`](../planning/done/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14).

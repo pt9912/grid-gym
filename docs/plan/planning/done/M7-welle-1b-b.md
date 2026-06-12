@@ -419,7 +419,7 @@ Severity-Stufen-Metrik, asynchroner Diff.
   — volle GG-TERM-002/003-Matrix (Carveout).
 - [Trigger 039](../open/039-api-replay-trigger-surface.md) —
   oeffentliche API-Replay-Bedienung (1b-b-D-7-Carveout).
-- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
+- [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   (`GG-MVP-002`, `GG-SAFE-006`, `GG-REPLAY-002/003/007`,
   `GG-TERM-002/003`).
 - [`../../adr/0011-schaerfung-ohne-abloesung.md`](../../adr/0011-schaerfung-ohne-abloesung.md)
