@@ -341,7 +341,7 @@ Comm-Failure (3b), Alarm-Vertrag (3b).
   Lücken-Verankerung + erwartete Lieferung (M6-Welle-5a-Audit).
 - [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md)
   — Audit-Tabelle (Flip-Ziel) + Quality-Enum-Referenz.
-- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Slice-Plan
+- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Slice-Plan
   (§2 Erfolgskriterien).
 - [`../done/M7-welle-1b-b.md`](M7-welle-1b-b.md) —
   Kwarg-Praezedenz (`replay_snapshot`/`replay_reference_run_id`)

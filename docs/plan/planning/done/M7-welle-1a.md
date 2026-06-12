@@ -250,7 +250,7 @@ kein Query-/Export-API ueber den Smoke-Bedarf hinaus.
 
 - [`M7-welle-1.md`](../done/M7-welle-1.md) — GG-MVP-002-Gruppenplan +
   Sub-Slicing-Beschluss + D-0..D-5.
-- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
+- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
 - [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](../done/036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 (wird in 1b aufgeloest).

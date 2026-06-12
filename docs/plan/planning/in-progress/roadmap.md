@@ -1234,7 +1234,7 @@ Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
 **`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
 komplett — alle vier `GG-SAFE-001..004` produktiv.**
 **M7-Welle-X Done 2026-06-12** (M7-Closure;
-[`M7-welle-X.md`](M7-welle-X.md)): fuenf M7-ADRs
+[`M7-welle-X.md`](../done/M7-welle-X.md)): fuenf M7-ADRs
 0047/0048/0049/0052/0053 `Provisional → Accepted` (0050/0051
 bleiben `Proposed` per X-D-2 — eigene Lifecycle-Bedingungen,
 Umsetzungsslices kein M7-Lieferpunkt) + NEU

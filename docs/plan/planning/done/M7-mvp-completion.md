@@ -5,13 +5,13 @@ ist geliefert**: alle vier `GG-MVP-*`-Punkte + alle vier
 `GG-SAFE-001..004` produktiv; fuenf M7-ADRs
 (0047/0048/0049/0052/0053) `Accepted`, 0050/0051 `Proposed`
 (Welle-X-D-2). Closure-Artefakt
-[`done/M7-results.md`](../done/M7-results.md); Post-M7-Modus =
+[`done/M7-results.md`](M7-results.md); Post-M7-Modus =
 Trigger-Watch (Welle-X-D-4, kein M8-Auto-Open).
 Eroeffnet 2026-06-08 mit M7-Welle-0-C1 als
 M6-Welle-7-Closure-Handoff (Entscheidung 2026-06-08,
 M6-welle-7-Review-Befund 3 — M2..M6 waren vorbelegt, M7 war NEU).
 Welle 0 (Slice-Plan-Eroeffnung + Trigger-Triage) siehe
-[`M7-welle-0.md`](../done/M7-welle-0.md).
+[`M7-welle-0.md`](M7-welle-0.md).
 
 ---
 
@@ -22,8 +22,8 @@ gelassen haben, und auditiert die verbliebenen Safety-Lücken:
 
 | Sub-Bereich | ID / Trigger | Beleg-Familie |
 | ----------- | ------------ | ------------- |
-| **Replay-Spine-Closure** | `GG-MVP-002` / Trigger 036 (`GG-SAFE-006`) | NEU `ReplaySourcePort` + Per-Lauf-`replay_diff_status`-Metrik + Core-Spine-Lifecycle-Hook ueber den bestehenden `diff_replay()`-Algorithm. Plan [`M7-welle-1.md`](../done/M7-welle-1.md). |
-| **Abnahme-Tooling** | `GG-MVP-003` | NEU `make accept` + `tools/accept.py` (Szenario-Validierung + deterministischer Replay + `/ready`-Healthcheck-Aggregat) + `AbnahmeReport`-JSON-Schema (Pydantic-strict). Plan [`M7-welle-2.md`](../done/M7-welle-2.md). |
+| **Replay-Spine-Closure** | `GG-MVP-002` / Trigger 036 (`GG-SAFE-006`) | NEU `ReplaySourcePort` + Per-Lauf-`replay_diff_status`-Metrik + Core-Spine-Lifecycle-Hook ueber den bestehenden `diff_replay()`-Algorithm. Plan [`M7-welle-1.md`](M7-welle-1.md). |
+| **Abnahme-Tooling** | `GG-MVP-003` | NEU `make accept` + `tools/accept.py` (Szenario-Validierung + deterministischer Replay + `/ready`-Healthcheck-Aggregat) + `AbnahmeReport`-JSON-Schema (Pydantic-strict). Plan [`M7-welle-2.md`](M7-welle-2.md). |
 | **Safety-Closure** | Trigger 034 (`GG-SAFE-004`) + 035 (`GG-SAFE-003`) | `max_age`-`STALE`-Markierung + Adapter-Comm-Failure → `MISSING`/`STALE` + Alarm. |
 
 **Architektur-Erbschaft:** Replay-Core (`hexagon/core/replay/
@@ -69,11 +69,11 @@ mit M7-Closure.
 
 | # | Titel | Status | Slice-Doc | Scope / Trigger |
 | - | ----- | ------ | --------- | --------------- |
-| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **Done 2026-06-08** (C0..C4b) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
-| 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](../done/M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
-| 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](../done/M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
-| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](../done/M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](../done/M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
-| X | M7-Closure | **Done 2026-06-12** (C0 `6746321` + C1 `cdef313` + C2 `4be2a00` + C3 + C4a/C4b) | [`M7-welle-X.md`](M7-welle-X.md) | NEU [`done/M7-results.md`](../done/M7-results.md) + 5 ADRs `Accepted` (0050/0051 `Proposed`, X-D-2) + Roadmap-DoD-Sweep + Self-Close-Move; Post-M7 = Trigger-Watch (X-D-4) |
+| 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **Done 2026-06-08** (C0..C4b) | [`M7-welle-0.md`](M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
+| 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
+| 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
+| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
+| X | M7-Closure | **Done 2026-06-12** (C0 `6746321` + C1 `cdef313` + C2 `4be2a00` + C3 + C4a/C4b) | [`M7-welle-X.md`](M7-welle-X.md) | NEU [`done/M7-results.md`](M7-results.md) + 5 ADRs `Accepted` (0050/0051 `Proposed`, X-D-2) + Roadmap-DoD-Sweep + Self-Close-Move; Post-M7 = Trigger-Watch (X-D-4) |
 
 **Aktiver Slice:** keiner — **M7 ist abgeschlossen (Welle-X-
 Closure 2026-06-12); der MVP ist geliefert.** Alle vier
@@ -84,24 +84,24 @@ Post-M7-Modus = Trigger-Watch (Welle-X-D-4; offene Trigger
 ### 3.2 Pending-Wellen-Vorbelegung
 
 - **Welle 1** — `GG-MVP-002`: Plan
-  [`M7-welle-1.md`](../done/M7-welle-1.md)
+  [`M7-welle-1.md`](M7-welle-1.md)
   (~6-7 Tage; ggf. Sub-Slicing). NEU `ReplaySourcePort`-Driven-
   Slot + `replay_diff_status`-Metrik + TickLoop-/Run-Lifecycle-
   Hook. Loest Trigger 036.
 - **Welle 2** — `GG-MVP-003`: Plan
-  [`M7-welle-2.md`](../done/M7-welle-2.md) (~1.5-2.5
+  [`M7-welle-2.md`](M7-welle-2.md) (~1.5-2.5
   Tage). NEU `make accept` + `tools/accept.py` (Headless-TickLoop-
   Runner-Helper) + drei Sub-Steps + `AbnahmeReport`-Schema.
 - **Welle 3** — Safety-Closure: Gruppenplan
-  [`M7-welle-3.md`](../done/M7-welle-3.md) (~3-4.5 Tage; sub-sliced
-  3a/3b). **3a** ([`M7-welle-3a.md`](../done/M7-welle-3a.md), ~1-1.5
+  [`M7-welle-3.md`](M7-welle-3.md) (~3-4.5 Tage; sub-sliced
+  3a/3b). **3a** ([`M7-welle-3a.md`](M7-welle-3a.md), ~1-1.5
   Tage): NEU `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage
   + ADR 0052; loest Trigger 034
-  ([`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md)).
-  **3b** ([`M7-welle-3b.md`](../done/M7-welle-3b.md), Done
+  ([`034-safe-004-max-age-stale-quality.md`](034-safe-004-max-age-stale-quality.md)).
+  **3b** ([`M7-welle-3b.md`](M7-welle-3b.md), Done
   2026-06-12): NEU Comm-Failure-Wrapper
   + `adapter_communication_lost`-Alarm + ADR 0053; loest Trigger 035
-  ([`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md)).
+  ([`035-safe-003-comm-failure-missing-quality.md`](035-safe-003-comm-failure-missing-quality.md)).
 
 ---
 
@@ -156,14 +156,14 @@ M6-Welle-7-C4a); dann `git mv → done/` + `done/M7-results.md`.
 
 ## References
 
-- [`M7-welle-0.md`](../done/M7-welle-0.md) — Welle-0-Begleitdoc +
+- [`M7-welle-0.md`](M7-welle-0.md) — Welle-0-Begleitdoc +
   Decision-Liste + Trigger-Triage.
-- [`../done/M6-results.md`](../done/M6-results.md) — M6-Closure +
+- [`M6-results.md`](M6-results.md) — M6-Closure +
   §5 Welle-7-Erbschaft fuer M7.
-- [`M7-welle-1.md`](../done/M7-welle-1.md)
+- [`M7-welle-1.md`](M7-welle-1.md)
   (`GG-MVP-002`) +
-  [`M7-welle-2.md`](../done/M7-welle-2.md)
+  [`M7-welle-2.md`](M7-welle-2.md)
   (`GG-MVP-003`).
-- [`roadmap.md §M7`](roadmap.md) — M7-Vorbelegung.
+- [`roadmap.md §M7`](../in-progress/roadmap.md) — M7-Vorbelegung.
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md)
   (`GG-MVP-002/003`, `GG-SAFE-003/004/006`, `GG-REPLAY-004..006`).

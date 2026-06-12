@@ -364,7 +364,7 @@ Flip, keine neue Alembic-Migration (alles 1b-b bzw. entfaellt).
 - [`M7-welle-1a.md`](../done/M7-welle-1a.md) — Welle 1a
   (Zeitreihen-Persistenz, ADR 0047); liefert die `telemetry_
   points`-Lese-Quelle fuer 1b-a.
-- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
+- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
 - [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
   — volle `GG-TERM-002/003`-Equality-Matrix (1b-D-6-Carveout).

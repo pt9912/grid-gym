@@ -14,7 +14,7 @@ Fuenf M7-ADRs (0047/0048/0049/0052/0053) sind mit Welle-X-C1
 auf `Accepted` promoted; ADR 0050/0051 bleiben bewusst
 `Proposed` (Welle-X-D-2).
 **Bezug:** Slice-Plan
-[`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md);
+[`M7-mvp-completion.md`](M7-mvp-completion.md);
 Welle-Slice-Begleit-Docs
 [`M7-welle-0.md`](M7-welle-0.md),
 [`M7-welle-1.md`](M7-welle-1.md) (Gruppenplan),
@@ -25,7 +25,7 @@ Welle-Slice-Begleit-Docs
 [`M7-welle-3.md`](M7-welle-3.md) (Gruppenplan),
 [`M7-welle-3a.md`](M7-welle-3a.md),
 [`M7-welle-3b.md`](M7-welle-3b.md),
-[`M7-welle-X.md`](../in-progress/M7-welle-X.md);
+[`M7-welle-X.md`](M7-welle-X.md);
 Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 §M7.
 
@@ -196,9 +196,9 @@ textlich unveraendert.
 
 ## References
 
-- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) —
+- [`M7-mvp-completion.md`](M7-mvp-completion.md) —
   M7-Meilenstein-Slice-Plan.
-- [`M7-welle-X.md`](../in-progress/M7-welle-X.md) — Closure-Welle
+- [`M7-welle-X.md`](M7-welle-X.md) — Closure-Welle
   (Decisions X-D-1..D-4).
 - [`M6-results.md`](M6-results.md) + [`M5-results.md`](M5-results.md)
   — Results-Doc-Vorbilder.

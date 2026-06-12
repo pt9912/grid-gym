@@ -27,7 +27,7 @@ der 3b-C4-Sequenz; aktiver Slice danach → **M7-Welle-X**
 (M7-Closure).
 **Datum:** 2026-06-11 (Welle-3-C0 · 3a Done · 3b-C0) · Welle-3-
 Closure 2026-06-12.
-**Quelle:** [`M7-mvp-completion.md §3`](../in-progress/M7-mvp-completion.md) +
+**Quelle:** [`M7-mvp-completion.md §3`](M7-mvp-completion.md) +
 Trigger 034/035 (M6-Welle-5a-Audit) +
 [`roadmap.md §M7`](../in-progress/roadmap.md).
 
@@ -247,7 +247,7 @@ Sub-Slice-Doc.
 
 ## References
 
-- [`M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md) — M7-Meilenstein-
+- [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan (§2 Erfolgskriterien, §3 Welle-Tabelle).
 - [`M7-welle-3a.md`](M7-welle-3a.md) — Sub-Slice 3a (Trigger 034).
 - [Trigger 034](034-safe-004-max-age-stale-quality.md) +

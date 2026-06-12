@@ -7,13 +7,13 @@
 `done/M7-results.md` + `done/README.md`-Bestand-Sweep) + C3
 (dieser Commit; Top-Level-Sync + Roadmap-DoD-Sweep + DoD §9) +
 C4a/C4b (Self-Close-Move + Cross-Doc-Refs-Sync). Pattern analog
-[`../done/M6-welle-7.md`](../done/M6-welle-7.md) +
-[`../done/M5-welle-7.md`](../done/M5-welle-7.md).
+[`M6-welle-7.md`](M6-welle-7.md) +
+[`M5-welle-7.md`](M5-welle-7.md).
 **Datum:** 2026-06-12 (Welle-X-C0 · Done 2026-06-12).
 **Quelle:** [`M7-mvp-completion.md §3`](M7-mvp-completion.md)
-(Welle-X-Zeile) + [`../done/M7-welle-0.md`](../done/M7-welle-0.md)
+(Welle-X-Zeile) + [`M7-welle-0.md`](M7-welle-0.md)
 M7-D-4 (MVP-Abschluss-Kriterium) +
-[`roadmap.md §M7`](roadmap.md).
+[`roadmap.md §M7`](../in-progress/roadmap.md).
 
 ---
 
@@ -210,7 +210,7 @@ ADR 0050/0051 (X-D-2), bestehende `done/M7-welle-*.md`.
 ## 7. Risiken
 
 - **R1 Move-Fan-out** — `M7-mvp-completion.md` ist breit
-  referenziert; C4b muss alle Inbound-Links auf `../done/`
+  referenziert; C4b muss alle Inbound-Links auf ``
   umbiegen. Mitigation: `make docs-check` nach C4b.
 - **R2 roadmap-Multi-Anker-Sweep** — `Aktiver Slice`-Marker an
   mehreren Live-Stellen + historische Belege, die NICHT
@@ -263,11 +263,11 @@ Watch-Modus + die offenen Trigger als Eintrittspunkte.
 
 - [`M7-mvp-completion.md`](M7-mvp-completion.md) —
   M7-Meilenstein-Slice-Plan.
-- [`../done/M7-welle-0.md`](../done/M7-welle-0.md) — M7-D-1..D-4
+- [`M7-welle-0.md`](M7-welle-0.md) — M7-D-1..D-4
   (Eroeffnungs-Decisions; D-4 → X-D-3).
-- [`../done/M6-welle-7.md`](../done/M6-welle-7.md) +
-  [`../done/M5-welle-7.md`](../done/M5-welle-7.md) —
+- [`M6-welle-7.md`](M6-welle-7.md) +
+  [`M5-welle-7.md`](M5-welle-7.md) —
   Closure-Welle-Vorbilder.
-- [`../done/M6-results.md`](../done/M6-results.md) —
+- [`M6-results.md`](M6-results.md) —
   Results-Doc-Vorbild.
 - ADR-Index [`../../adr/README.md`](../../adr/README.md).

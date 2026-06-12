@@ -63,7 +63,7 @@ ist.
 
 - [`../done/M7-welle-1b-b.md`](../done/M7-welle-1b-b.md) —
   Replay-Lifecycle-Slice (1b-b-D-1 Terminal-Naht).
-- [`../in-progress/M7-mvp-completion.md`](../in-progress/M7-mvp-completion.md)
+- [`../done/M7-mvp-completion.md`](../done/M7-mvp-completion.md)
   — `GG-MVP-003`-Abnahme-CLI ist M7-Welle-2 (Headless-Konsument).
 - [`../../adr/0049-replay-lifecycle-finalize-hook.md`](../../adr/0049-replay-lifecycle-finalize-hook.md)
   — §2.1 Terminal-Naht (Driver triggert, Core entscheidet).
