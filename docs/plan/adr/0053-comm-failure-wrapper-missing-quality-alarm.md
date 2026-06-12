@@ -155,10 +155,17 @@ None]`-Callback — der Verdrahter entscheidet das Ziel
 (`AlarmStreamPort.publish` + History-Buffer im API-Kontext;
 Listen-Collector im Test). Kein Driving-Port-Halt im
 Driven-Ring; Late-Binding-Praezedenz `_demo_setup.py:176`.
-**Best-Effort:** wirft `on_alarm` selbst, wird das gefangen
-(Pattern `_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS`,
-`_protocol_otel_wrap.py:135`) — der `MISSING`-Point hat Vorrang
-vor dem Alarm-Nebenkanal.
+**Best-Effort (geschaerft per C2-Review-Folge F1):** der
+GESAMTE Alarm-Nebenkanal — Alarm-Konstruktion inkl. werfendem
+`alarm_id_source` UND `on_alarm`-Callback — wird am
+`read()`-Call-Site Best-Effort gefangen (geteiltes Catch-Tupel
+`BEST_EFFORT_CALLBACK_EXCEPTIONS` aus
+`_protocol_wrap_common.py`, Single-Source mit dem
+OTel-Wrapper, Review-Folge F4) — der `MISSING`-Point hat
+Vorrang vor dem Alarm-Nebenkanal. **Zeitstempel (Review-Folge
+F2):** die Sim-Zeit wird genau einmal pro gefangenem Fehler
+gelesen — `Alarm.simulation_time_ms` und
+`Point.simulation_time` sind identisch.
 
 ### §2.5 Kontext-Injection (3b-D-5)
 
@@ -176,7 +183,7 @@ Praezedenz `TickLoop`).
 TelemetryPoint(
     run_id=self._run_id,             # Wrapper-Kontext (§2.5)
     tick=0,                           # Platzhalter-Konvention (§1)
-    simulation_time=self._clock.now(),
+    simulation_time=now_ms,           # EIN clock.now() pro Fehler (F2)
     device_id=target,
     metric="",                        # unbekannt ohne Codec-Config
     value=Decimal("0"),               # Praezedenz SmartMeter-MISSING
@@ -226,11 +233,18 @@ Punkte maschinell unterscheidbar. C2 pinnt den Feld-Vertrag.
   stale` + Flip `docs/user/safe-001-004-quality-pipeline.md`
   `GG-SAFE-003` ⚠ → ✓ (C2).
 - ADR-Index NEU ADR-0053-Zeile (C1).
+- NEU `adapters/driven/_protocol_wrap_common.py` —
+  geteiltes Best-Effort-Catch-Tupel beider Wrapper
+  (C2-Review-Folge F4); `_protocol_otel_wrap.py` bezieht sein
+  Tupel seither von dort (einzige Bestand-Beruehrung, reines
+  Konstanten-Hoisting). Geteilter `RecordingTracePort`-Test-
+  Fake in `tests/unit/hexagon/ports/driven/_fakes.py`
+  (Review-Folge F3, Dedup-Praezedenz 3a-F3).
 - **Unberuehrt:** die fuenf Protocol-Adapter (nur gewrappt),
-  `_protocol_otel_wrap.py`, `DeviceProtocolPort`-Vertrag,
-  `Alarm`-Domain + `alarm_mappers.py`, `AlarmStreamPort`,
-  TickLoop + ADR-0052-Stage, Demo-Wiring (keine
-  `protocol_ports` — `make accept`-Pins unberuehrt).
+  `DeviceProtocolPort`-Vertrag, `Alarm`-Domain +
+  `alarm_mappers.py`, `AlarmStreamPort`, TickLoop +
+  ADR-0052-Stage, Demo-Wiring (keine `protocol_ports` —
+  `make accept`-Pins unberuehrt).
 
 ---
 

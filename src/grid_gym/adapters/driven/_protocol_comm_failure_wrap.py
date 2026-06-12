@@ -37,10 +37,14 @@ Sim-Zeit — der Wrapper traegt sie keyword-only injiziert
 deterministische Sim-Zeit-Quelle, `AC-NO-TIME` gewahrt). Der
 Wrapper wird **pro Lauf** konstruiert.
 
-**Alarm-Nebenkanal-Robustheit (ADR 0053 §2.4):** wirft der
-injizierte `on_alarm`-Callback selbst, wird das Best-Effort
-gefangen (Catch-Tupel-Pattern aus `_protocol_otel_wrap.py`) —
-der `MISSING`-Point hat Vorrang vor dem Alarm-Nebenkanal.
+**Alarm-Nebenkanal-Robustheit (ADR 0053 §2.4, Review-Folge
+F1):** der GESAMTE Alarm-Nebenkanal (Alarm-Konstruktion inkl.
+`alarm_id_source` + `on_alarm`-Callback) ist Best-Effort
+gefangen (geteiltes Catch-Tupel aus
+`_protocol_wrap_common.py`) — der `MISSING`-Point hat Vorrang
+vor dem Alarm-Nebenkanal. Pro gefangenem Fehler wird die
+Sim-Zeit genau einmal gelesen — Point und Alarm tragen
+denselben Zeitstempel (Review-Folge F2).
 """
 
 from __future__ import annotations
@@ -51,6 +55,9 @@ from collections.abc import Callable
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
+from grid_gym.adapters.driven._protocol_wrap_common import (
+    BEST_EFFORT_CALLBACK_EXCEPTIONS,
+)
 from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
@@ -61,7 +68,7 @@ from grid_gym.hexagon.ports.driven.device_protocol import (
 
 if TYPE_CHECKING:
     from grid_gym.hexagon.core.domain.command import Command
-    from grid_gym.hexagon.ports.driven.clock import ClockPort
+    from grid_gym.hexagon.ports.driven.clock import ClockPort, SimulationTime
 
 
 ADAPTER_COMMUNICATION_LOST_CODE = "adapter_communication_lost"
@@ -76,20 +83,12 @@ maschinell unterscheidbar von regulaeren Adapter-Emissionen
 
 _ZERO = Decimal("0")
 
-# Best-Effort-Catch-Tupel fuer den `on_alarm`-Nebenkanal —
-# identisches Pattern zu `_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS`
-# in `_protocol_otel_wrap.py` (ADR 0024 §2.4): bekannte
-# Callback-Bug-Klassen werden geschluckt (der MISSING-Point hat
-# Vorrang), unbekannte Exceptions propagieren als sichtbares
-# Signal.
-_BEST_EFFORT_ALARM_EXCEPTIONS: tuple[type[BaseException], ...] = (
-    RuntimeError,
-    AttributeError,
-    TypeError,
-    ValueError,
-    KeyError,
-    OSError,
-)
+# Best-Effort-Catch-Tupel fuer den Alarm-Nebenkanal — geteilte
+# Single-Source mit `_protocol_otel_wrap.py` (Review-Folge F4;
+# ADR 0024 §2.4-Semantik): bekannte Callback-Bug-Klassen werden
+# geschluckt (der MISSING-Point hat Vorrang), unbekannte
+# Exceptions propagieren als sichtbares Signal.
+_BEST_EFFORT_ALARM_EXCEPTIONS = BEST_EFFORT_CALLBACK_EXCEPTIONS
 
 
 def _default_alarm_id_source() -> str:
@@ -160,12 +159,20 @@ class CommFailureGuardedDeviceProtocolPort:
         `DeviceProtocolPortReadError`-Subklassen → synthetisierter
         `Quality.MISSING`-Point (§2.6) + `adapter_communication_
         lost`-Alarm (§2.4). `None` (MQTT-leere Queue) bleibt
-        `None` — kein Ausfall."""
+        `None` — kein Ausfall.
+
+        Review-Folge F1/F2: die Sim-Zeit wird genau EINMAL pro
+        Fehler gelesen (Point + Alarm teilen den Zeitstempel);
+        der gesamte Alarm-Nebenkanal (Konstruktion inkl.
+        `alarm_id_source` + Callback) ist Best-Effort gefangen —
+        der `MISSING`-Point hat Vorrang."""
         try:
             return self._wrapped.read(target)
         except DeviceProtocolPortReadError as exc:
-            self._emit_comm_lost_alarm(target, exc)
-            return self._missing_point(target)
+            now_ms = self._clock.now()
+            with contextlib.suppress(*_BEST_EFFORT_ALARM_EXCEPTIONS):
+                self._emit_comm_lost_alarm(target, exc, now_ms)
+            return self._missing_point(target, now_ms)
 
     def write(self, target: str, command: "Command") -> None:
         """Pass-Through fail-fast (ADR 0053 §7): der Command-Pfad
@@ -177,7 +184,7 @@ class CommFailureGuardedDeviceProtocolPort:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _missing_point(self, target: str) -> TelemetryPoint:
+    def _missing_point(self, target: str, now_ms: "SimulationTime") -> TelemetryPoint:
         """ADR 0053 §2.6: synthetisierter `MISSING`-Point.
 
         `tick`/`sequence` folgen der Platzhalter-Konvention der
@@ -185,11 +192,12 @@ class CommFailureGuardedDeviceProtocolPort:
         `metric`/`unit` bleiben leer (die Codec-Konfiguration des
         Targets ist bewusst Adapter-intern — keine
         Codec-Introspektion); `value` = 0 (Praezedenz
-        SmartMeter-pre-attach-MISSING, ADR 0018 §2.3)."""
+        SmartMeter-pre-attach-MISSING, ADR 0018 §2.3). `now_ms`
+        kommt vom Caller — ein Zeitstempel pro Fehler (F2)."""
         return TelemetryPoint(
             run_id=self._run_id,
             tick=0,
-            simulation_time=self._clock.now(),
+            simulation_time=now_ms,
             device_id=target,
             metric="",
             value=_ZERO,
@@ -199,17 +207,24 @@ class CommFailureGuardedDeviceProtocolPort:
             sequence=0,
         )
 
-    def _emit_comm_lost_alarm(self, target: str, exc: DeviceProtocolPortReadError) -> None:
+    def _emit_comm_lost_alarm(
+        self,
+        target: str,
+        exc: DeviceProtocolPortReadError,
+        now_ms: "SimulationTime",
+    ) -> None:
         """ADR 0053 §2.4: `adapter_communication_lost`-Alarm mit
         den drei Akzeptanz-Pflichtfeldern Ziel (`target`),
-        Startzeit (`simulation_time_ms`, Sim-Zeit) und Ursache
-        (`message`, Exception-Klassenname maschinenlesbar
-        praefixt). Best-Effort: Callback-Fehler werden gefangen —
-        der `MISSING`-Point hat Vorrang."""
+        Startzeit (`simulation_time_ms`, Sim-Zeit — identisch mit
+        `Point.simulation_time`, F2) und Ursache (`message`,
+        Exception-Klassenname maschinenlesbar praefixt).
+        Best-Effort liegt am Call-Site in `read()` (F1): auch
+        Konstruktions-Fehler (z. B. werfender `alarm_id_source`)
+        verhindern den `MISSING`-Point nicht."""
         alarm = Alarm(
             alarm_id=self._alarm_id_source(),
             run_id=self._run_id,
-            simulation_time_ms=self._clock.now(),
+            simulation_time_ms=now_ms,
             target=target,
             code=ADAPTER_COMMUNICATION_LOST_CODE,
             severity="warning",
@@ -217,5 +232,4 @@ class CommFailureGuardedDeviceProtocolPort:
             status="active",
             fault_id=None,
         )
-        with contextlib.suppress(*_BEST_EFFORT_ALARM_EXCEPTIONS):
-            self._on_alarm(alarm)
+        self._on_alarm(alarm)

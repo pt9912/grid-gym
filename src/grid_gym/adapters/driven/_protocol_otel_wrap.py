@@ -106,6 +106,9 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
+from grid_gym.adapters.driven._protocol_wrap_common import (
+    BEST_EFFORT_CALLBACK_EXCEPTIONS,
+)
 from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPort,
     DeviceProtocolPortReadError,
@@ -131,15 +134,10 @@ typed-narrow statt freier String — Caller-Mistakes
 # Slice 034 F9: einheitliches Best-Effort-Catch-Tupel ueber
 # alle drei Helper. ADR 0024 §2.4-Adapter-Robustheit; unbekannte
 # Exceptions duerfen propagieren (sichtbares Signal statt
-# stiller Swallow).
-_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS: tuple[type[BaseException], ...] = (
-    RuntimeError,
-    AttributeError,
-    TypeError,
-    ValueError,
-    KeyError,
-    OSError,
-)
+# stiller Swallow). M7-Welle-3b-Review-Folge F4: Single-Source
+# in `_protocol_wrap_common.py` (geteilt mit dem
+# Comm-Failure-Wrapper).
+_BEST_EFFORT_OBSERVABILITY_EXCEPTIONS = BEST_EFFORT_CALLBACK_EXCEPTIONS
 
 
 class OtelSpanWrappedDeviceProtocolPort:

@@ -15,8 +15,13 @@ Composition-Wrapper:
   Reads unveraendert durchreicht — kein Point, kein Alarm.
 - Nicht-Read-Fehler (`write`/`start`) NICHT faengt
   (Pass-Through fail-fast, §2.3/§7).
-- Alarm-Nebenkanal-Fehler (werfender `on_alarm`) Best-Effort
-  schluckt — der `MISSING`-Point hat Vorrang (§2.4; 3b-R3).
+- Alarm-Nebenkanal-Fehler (werfender `on_alarm` UND werfender
+  `alarm_id_source` — Review-Folge F1: der gesamte Nebenkanal
+  inkl. Alarm-Konstruktion) Best-Effort schluckt — der
+  `MISSING`-Point hat Vorrang (§2.4; 3b-R3).
+- pro gefangenem Fehler die Sim-Zeit genau einmal liest —
+  Point und Alarm tragen denselben Zeitstempel (Review-Folge
+  F2).
 - mit dem OTel-Wrapper komponiert (Comm-Failure aussen, OTel
   innen) — der innere Span sieht den Original-Fehler als
   `error`-Event, der aeussere Wrapper liefert den
@@ -24,13 +29,12 @@ Composition-Wrapper:
 
 Tests verwenden `MagicMock(spec=DeviceProtocolPort)`
 (Slice-034-F7-Pattern: Protocol-Surface-Drift wird erkannt)
-+ `FakeClock` + Listen-Collector als `on_alarm`-Senke.
++ `FakeClock` + geteilten `RecordingTracePort` (`_fakes.py`,
+Review-Folge F3) + Listen-Collector als `on_alarm`-Senke.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import dataclass, field
 from decimal import Decimal
 from unittest.mock import MagicMock
 
@@ -60,8 +64,7 @@ from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPortStartError,
     DeviceProtocolPortWriteError,
 )
-from grid_gym.hexagon.ports.driven.observability import SpanContext
-from tests.unit.hexagon.ports.driven._fakes import FakeClock
+from tests.unit.hexagon.ports.driven._fakes import FakeClock, RecordingTracePort
 
 _RUN_ID = "welle-3b-comm-failure-test"
 
@@ -121,55 +124,21 @@ def _make_point(target: str) -> TelemetryPoint:
     )
 
 
-@dataclass
-class _RecordedSpan:
-    name: str
-    attributes: dict[str, object]
-    events: list[tuple[str, dict[str, object]]] = field(default_factory=list)
-    ended: bool = False
+class _CountingClock:
+    """`ClockPort`-Double, das `now()`-Calls zaehlt — pinnt
+    Review-Folge F2 (genau ein Sim-Zeit-Read pro gefangenem
+    Fehler; Point und Alarm teilen den Zeitstempel)."""
 
+    def __init__(self, now_ms: int) -> None:
+        self._now = now_ms
+        self.now_calls = 0
 
-class _RecordingTracePort:
-    """Minimal-Recording-TracePort (Pattern
-    `test_protocol_otel_wrap.py::_RecordingTracePort`) fuer den
-    Kompositions-Pin 3b-R2."""
+    def now(self) -> int:
+        self.now_calls += 1
+        return self._now
 
-    def __init__(self) -> None:
-        self.spans: list[_RecordedSpan] = []
-        self._index: dict[SpanContext, int] = {}
-
-    def start_span(
-        self,
-        name: str,
-        *,
-        parent: SpanContext | None = None,
-        attributes: Mapping[str, object] | None = None,
-    ) -> SpanContext:
-        recorded = _RecordedSpan(name=name, attributes=dict(attributes or {}))
-        idx = len(self.spans)
-        self.spans.append(recorded)
-        context = SpanContext(
-            trace_id=f"trace-{idx}",
-            span_id=f"span-{idx}",
-            parent_span_id=None,
-        )
-        self._index[context] = idx
-        return context
-
-    def end_span(self, context: SpanContext) -> None:
-        idx = self._index.get(context)
-        if idx is not None:
-            self.spans[idx].ended = True
-
-    def record_event(
-        self,
-        context: SpanContext,
-        name: str,
-        attributes: Mapping[str, object] | None = None,
-    ) -> None:
-        idx = self._index.get(context)
-        if idx is not None:
-            self.spans[idx].events.append((name, dict(attributes or {})))
+    def advance(self, delta_ms: int) -> None:
+        self._now += delta_ms
 
 
 # ---------------------------------------------------------------------------
@@ -324,13 +293,62 @@ def test_on_alarm_failure_does_not_suppress_missing_point() -> None:
     assert point.quality is Quality.MISSING
 
 
+def test_alarm_id_source_failure_does_not_suppress_missing_point() -> None:
+    """Review-Folge F1: der GESAMTE Alarm-Nebenkanal ist
+    Best-Effort — auch ein Fehler in der Alarm-KONSTRUKTION
+    (werfender `alarm_id_source`, VOR dem `on_alarm`-Call)
+    verhindert den `MISSING`-Point nicht."""
+    alarms: list[Alarm] = []
+    clock = FakeClock()
+    clock.advance(1000)
+
+    def _broken_id_source() -> str:
+        raise RuntimeError("id source down")
+
+    wrapper = CommFailureGuardedDeviceProtocolPort(
+        _make_failing_adapter(DeviceProtocolPortReadError("boom")),
+        run_id=_RUN_ID,
+        clock=clock,
+        on_alarm=alarms.append,
+        alarm_id_source=_broken_id_source,
+    )
+
+    point = wrapper.read("t-1")
+    assert point is not None
+    assert point.quality is Quality.MISSING
+    assert alarms == [], "Alarm-Konstruktion brach — kein halber Alarm emittiert"
+
+
+def test_single_clock_read_per_failure_shares_timestamp() -> None:
+    """Review-Folge F2: pro gefangenem Read-Fehler wird die
+    Sim-Zeit genau EINMAL gelesen — `Point.simulation_time` und
+    `Alarm.simulation_time_ms` tragen denselben Stempel (kein
+    Divergenz-Risiko bei fortschreitender Clock)."""
+    alarms: list[Alarm] = []
+    clock = _CountingClock(3000)
+    wrapper = CommFailureGuardedDeviceProtocolPort(
+        _make_failing_adapter(DeviceProtocolPortReadError("boom")),
+        run_id=_RUN_ID,
+        clock=clock,
+        on_alarm=alarms.append,
+        alarm_id_source=lambda: "alarm-0",
+    )
+
+    point = wrapper.read("t-1")
+
+    assert clock.now_calls == 1, "genau ein Sim-Zeit-Read pro Fehler"
+    assert point is not None
+    assert point.simulation_time == 3000
+    assert alarms[0].simulation_time_ms == 3000
+
+
 def test_composition_outer_comm_failure_inner_otel() -> None:
     """3b-R2 / ADR 0053 §2.2: Komposition Comm-Failure AUSSEN /
     OTel INNEN — der innere Span sieht den Original-Fehler als
     `error`-Event (und wird geschlossen), der aeussere Wrapper
     liefert trotzdem den `MISSING`-Point + Alarm."""
     alarms: list[Alarm] = []
-    trace = _RecordingTracePort()
+    trace = RecordingTracePort()
     inner = OtelSpanWrappedDeviceProtocolPort(
         _make_failing_adapter(
             Iec61850PortReadConnectionLostError("t-iec", "IED1/LD0/MMXU1.TotW", "MX")

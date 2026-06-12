@@ -14,11 +14,18 @@ koennen, ohne dass es zwei Klassen mit gleichem Verhalten gibt.
 `RunRepositoryPort`. Welle 6c liefert die produktive
 `PostgresRunRepository`-Implementation; bis dahin reicht der
 In-Memory-Fake fuer Unit-Tests + FastAPI-Wiring.
+
+`RecordedSpan`/`RecordingTracePort` sind das geteilte
+`TracePort`-Test-Double der Protocol-Wrapper-Tests
+(M7-Welle-3b-C2-Review-Folge F3: vorher 1:1-Kopien in
+`test_protocol_otel_wrap.py` + `test_protocol_comm_failure_
+wrap.py`; Dedup-Praezedenz 3a-F3).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.domain.run import RunMetadata, RunStatus
@@ -27,6 +34,7 @@ from grid_gym.hexagon.core.errors import (
     RunNotFoundError,
 )
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
+from grid_gym.hexagon.ports.driven.observability import SpanContext
 
 
 @dataclass(slots=True)
@@ -47,6 +55,62 @@ class FakeClock:
         if delta_ms <= 0:
             raise ValueError(f"delta_ms must be positive, got {delta_ms}")
         self._now += delta_ms
+
+
+@dataclass
+class RecordedSpan:
+    """Aufgezeichneter Span fuer Test-Assertions."""
+
+    name: str
+    attributes: dict[str, object]
+    events: list[tuple[str, dict[str, object]]] = field(default_factory=list)
+    ended: bool = False
+
+
+class RecordingTracePort:
+    """`TracePort`-Test-Double, das alle Span-Open/Event/Close-
+    Calls aufzeichnet und in einer Liste exposes (geteilt von
+    den Protocol-Wrapper-Tests; Review-Folge 3b-F3)."""
+
+    def __init__(self) -> None:
+        self.spans: list[RecordedSpan] = []
+        # context → span-index mapping
+        self._index: dict[SpanContext, int] = {}
+
+    def start_span(
+        self,
+        name: str,
+        *,
+        parent: SpanContext | None = None,
+        attributes: Mapping[str, object] | None = None,
+    ) -> SpanContext:
+        recorded = RecordedSpan(name=name, attributes=dict(attributes or {}))
+        idx = len(self.spans)
+        self.spans.append(recorded)
+        context = SpanContext(
+            trace_id=f"trace-{idx}",
+            span_id=f"span-{idx}",
+            parent_span_id=None,
+        )
+        self._index[context] = idx
+        return context
+
+    def end_span(self, context: SpanContext) -> None:
+        idx = self._index.get(context)
+        if idx is None:
+            return
+        self.spans[idx].ended = True
+
+    def record_event(
+        self,
+        context: SpanContext,
+        name: str,
+        attributes: Mapping[str, object] | None = None,
+    ) -> None:
+        idx = self._index.get(context)
+        if idx is None:
+            return
+        self.spans[idx].events.append((name, dict(attributes or {})))
 
 
 FixedSeedRandom = MersenneTwisterRandomPort
