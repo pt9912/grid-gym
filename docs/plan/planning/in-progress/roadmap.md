@@ -1222,13 +1222,17 @@ via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
 Core-`STALE`-Stage + ADR 0052; commits `23c614a` + Review-Folge
 `5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
 `docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
-**Aktiver Slice jetzt: M7-Welle-3b** (`GG-SAFE-003` Comm-Failure,
-Trigger 035) — **aktiviert mit 3b-C0 2026-06-11**
-([`M7-welle-3b.md`](M7-welle-3b.md); NEU
+**M7-Welle-3b Done 2026-06-12** (`GG-SAFE-003` Comm-Failure,
+Trigger 035; [`M7-welle-3b.md`](M7-welle-3b.md); NEU
 `CommFailureGuardedDeviceProtocolPort`-Wrapper +
-`adapter_communication_lost`-Alarm-Vertrag, ADR 0053; 3b-D-1 =
-voller Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
-danach M7-Welle-X (M7-Closure).
+`adapter_communication_lost`-Alarm-Vertrag, ADR 0053; commits
+`3f28be1` + Review-Folge `82704b1`; 3b-D-1 = voller
+Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
+**`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
+komplett — alle vier `GG-SAFE-001..004` produktiv.**
+**Aktiver Slice jetzt: M7-Welle-X** (M7-Closure;
+`done/M7-results.md` + ADR-Accept 0047..0053 +
+Roadmap-DoD-Sweep).
 
 ---
 

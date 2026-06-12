@@ -187,7 +187,7 @@ Build-Trigger.
 | Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | ------ | ---------------------- | ----------- |
 | `GG-SAFE-004` `max_age`-stale-Quality-Markierung | **Geschlossen 2026-06-11 via M7-Welle-3a** ([`M7-welle-3a.md`](../done/M7-welle-3a.md); `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; `GG-SAFE-004` ✓ produktiv) | erledigt — Trigger 034 Closed (Move `done/` in 3a-C4a); Rest-Grenzen dokumentiert in ADR 0052 §7 (Scenario-Schema-Feld + Demo-Schwelle = additive Schaerfungen) | [`034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
-| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke — SmartMeter-pre-attach teil-produktiv) | **Active in M7-Welle-3b** (3b-C0 2026-06-11; Slice-Doc [`M7-welle-3b.md`](M7-welle-3b.md)) | aktiviert — Scope-Entscheid gefallen (3b-D-1: voller Akzeptanz-Umfang via Comm-Failure-Wrapper + Test-Sibling, KEIN Carveout); Lieferung via 3b-C2 | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
+| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING` + Alarm | **Geschlossen 2026-06-12 via M7-Welle-3b** ([`M7-welle-3b.md`](M7-welle-3b.md); `CommFailureGuardedDeviceProtocolPort`-Wrapper + `adapter_communication_lost`-Alarm, ADR 0053; `GG-SAFE-003` ✓ produktiv) | erledigt — Trigger 035 Closed (Move `done/` in 3b-C4a); Rest-Grenzen dokumentiert in ADR 0053 §2.1/§7 (kein produktiver `read()`-Pfad = Bestand-Grenze; kein Last-Value-`STALE`; kein Retry/Reconnect = additive Schaerfungen) | [`035-safe-003-comm-failure-missing-quality.md`](../open/035-safe-003-comm-failure-missing-quality.md) |
 
 ### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
 

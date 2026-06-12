@@ -1,17 +1,22 @@
 # Welle 3b — M7 Safety-Closure: Adapter-Comm-Failure → `MISSING` + Alarm (`GG-SAFE-003`)
 
-**Status:** In Progress — **Pause-Stand 2026-06-11** (Pattern
-`7dbc07b`): C0 `6324042` (Slice-Doc + Decisions 3b-D-1..D-8) +
-C1 `caae16e` (NEU ADR 0053 `Provisional`) + C2 `3f28be1`
-(Code: `CommFailureGuardedDeviceProtocolPort` + 8 Unit-Tests +
+**Status:** Done (2026-06-12) — C0 `6324042` (Slice-Doc +
+Decisions 3b-D-1..D-8) + C1 `caae16e` (NEU ADR 0053
+`Provisional`) + C2 `3f28be1`
+(`CommFailureGuardedDeviceProtocolPort` + 8 Unit-Tests +
 Smoke-Reaktivierung `test_safe_003_*` + Doku-Flip `GG-SAFE-003`
-⚠ → ✓ — **alle vier `GG-SAFE-001..004` produktiv**) committed +
-gepusht; alle Gates (`gates`/`test-integration` 139 passed /
+⚠ → ✓) + C2-Review-Folge `82704b1` (F1 Alarm-Nebenkanal-Vorrang
+komplett Best-Effort + F2 ein `clock.now()` pro Fehler — Point
+und Alarm teilen den Zeitstempel + F3 Shared-`RecordingTracePort`-
+Fake in `_fakes.py` + F4 geteiltes Catch-Tupel NEU
+`_protocol_wrap_common.py`; 2 neue Unit-Test-Pins; ADR 0053
+§2.4/§2.6/§4 geschaerft) + C3 (dieser Commit; DoD §9 abgehakt,
+Trigger 035 → Closed). **Alle vier `GG-SAFE-001..004`
+produktiv.** Alle Gates (`gates`/`test-integration` 139 passed /
 4 skipped/`fullbuild` inkl. `accept-pin-check`/`docs-check`)
-cache-frei gruen 2026-06-11. **Naechste Schritte (offen):**
-C2-Code-Review auf `3f28be1` (Projekt-Pattern: Review +
-Review-Folge VOR C3) → C3 (DoD §9 + Status-Sync + Trigger 035 →
-Closed) → C4a/C4b (Self-Close-Move + Gruppenplan → `done/`).
+cache-frei gruen 2026-06-12. **Offen:** C4a/C4b (Self-Close-Move
++ Trigger 035 + Gruppenplan → `done/` — **M7-Welle-3 komplett**;
+aktiver Slice danach → M7-Welle-X).
 
 Zweites (letztes) Sub-Slice von **M7-Welle-3** (Safety-Closure;
 Gruppenplan [`M7-welle-3.md`](M7-welle-3.md)): schliesst die
@@ -22,7 +27,8 @@ geteilter Wrapper + Alarm-Vertrag + Tests + Doku-Flip sind eng
 gekoppelt; die fuenf Adapter werden nicht einzeln angefasst
 (3b-D-2). Mit 3b-Closure ist **M7-Welle-3 komplett** — danach
 verbleibt nur M7-Welle-X (M7-Closure).
-**Datum:** 2026-06-11 (Welle-3b-C0 · C2/Pause-Stand 2026-06-11).
+**Datum:** 2026-06-11 (Welle-3b-C0) · Done 2026-06-12
+(Review-Folge + C3).
 **Quelle:** [Trigger 035](../open/035-safe-003-comm-failure-missing-quality.md)
 + Lastenheft §20 Z. 1365-1371 +
 [`M7-welle-3.md`](M7-welle-3.md) (D-4-Scope-Schalter +
@@ -393,28 +399,32 @@ danach → **M7-Welle-X** (M7-Closure).
 
 ## 9. DoD-Checkliste (mit C3 abzuhaken)
 
-- [ ] C0 — Slice-Doc §1..§9 + Decision-Liste 3b-D-1..D-8 +
-      Refs-Sync.
-- [ ] C1 — NEU ADR 0053 `Provisional` (Wrapper + Mapping +
-      Alarm-Vertrag + Kontext-Injection + Scope-Lesart).
-- [ ] C2 — `CommFailureGuardedDeviceProtocolPort` (read-Catch →
+- [x] C0 — Slice-Doc §1..§9 + Decision-Liste 3b-D-1..D-8 +
+      Refs-Sync (`6324042`).
+- [x] C1 — NEU ADR 0053 `Provisional` (Wrapper + Mapping +
+      Alarm-Vertrag + Kontext-Injection + Scope-Lesart;
+      `caae16e`).
+- [x] C2 — `CommFailureGuardedDeviceProtocolPort` (read-Catch →
       `MISSING`-Point per D-6 + `adapter_communication_lost`-
       Alarm per D-4; start/stop/write Pass-Through; None ≠
-      Ausfall).
-- [ ] C2 — Unit-Tests: 5 Adapter-Familien-Fehlerfaelle +
+      Ausfall; `3f28be1` + Review-Folge `82704b1`: F1
+      Nebenkanal-Vorrang + F2 Ein-Zeitstempel + F3/F4 Dedup).
+- [x] C2 — Unit-Tests: 5 Adapter-Familien-Fehlerfaelle +
       Alarm-Felder (Ziel/Startzeit/Ursache) + None-Pass-Through
       + Nicht-Read-Fehler ungefangen + OTel-Komposition (R2) +
-      on_alarm-Robustheit (R3).
-- [ ] C2 — Smoke `test_safe_003_comm_failure_emits_missing_or_
+      on_alarm-Robustheit (R3; per Review-Folge geschaerft um
+      alarm_id_source-Robustheit + Ein-Zeitstempel-Pin — 10
+      Tests).
+- [x] C2 — Smoke `test_safe_003_comm_failure_emits_missing_or_
       stale` reaktiviert + gruen.
-- [ ] C2 — Doku-Flip `safe-001-004-quality-pipeline.md`
+- [x] C2 — Doku-Flip `safe-001-004-quality-pipeline.md`
       `GG-SAFE-003` ⚠ → ✓ (inkl. D-1-Scope-Lesart).
-- [ ] `make gates` + `make test-integration` + `make fullbuild`
+- [x] `make gates` + `make test-integration` + `make fullbuild`
       (inkl. `accept-pin-check`) + `make docs-check` cache-frei
-      gruen.
-- [ ] C3 — 3b `Done`; **`GG-SAFE-003` ✓ produktiv**; Trigger 035
+      gruen (zuletzt 2026-06-12 nach Review-Folge).
+- [x] C3 — 3b `Done`; **`GG-SAFE-003` ✓ produktiv**; Trigger 035
       → Closed (Move `done/` in C4a); Wellen-Closure-Sync;
-      aktiver Slice → M7-Welle-X.
+      aktiver Slice → M7-Welle-X (dieser Commit).
 
 **Anti-Scope (3b NICHT):** produktiver `read()`-Pfad /
 Demo-Aktivierung, `start()`-/`write()`-Fehler-Mapping,

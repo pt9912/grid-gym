@@ -1,6 +1,20 @@
 # 035 — `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING`/`STALE` + Alarm (partial Lücke)
 
-**Status:** Open — partial Substanz-Lücke aus M6-Welle-5a-Audit
+**Status:** Closed (2026-06-12) — aufgeloest durch **M7-Welle-3b**
+(NEU `CommFailureGuardedDeviceProtocolPort`-Composition-Wrapper
+`adapters/driven/_protocol_comm_failure_wrap.py`, ADR 0053:
+`read()`-Fehler aller fuenf Adapter-Familien → synthetisierter
+`Quality.MISSING`-Point + `adapter_communication_lost`-Alarm mit
+Ziel/Startzeit/Ursache; Smoke `test_safe_003_comm_failure_emits_
+missing_or_stale` reaktiviert). `GG-SAFE-003` flippt ⚠ → ✓ in
+`docs/user/safe-001-004-quality-pipeline.md`. Bewusste Grenzen
+(ADR 0053 §2.1/§7): Wrapper statt per-Adapter-Hook (Abweichung
+von „Erwartete Lieferung" Pkt. 1 — Composition ist die
+Single-Source-Form), Alarm via injizierten `on_alarm`-Callback
+statt direktem `AlarmStreamPort`-Halt im Driven-Ring, einheitlich
+`MISSING` (kein Last-Value-`STALE`), kein produktiver
+`read()`-Pfad (dokumentierte Bestand-Grenze, §2.1-Scope-Lesart).
+Move nach `done/` in der 3b-C4a-Sequenz.
 **Datum:** 2026-06-06
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit; siehe
 `docs/user/safe-001-004-quality-pipeline.md`).

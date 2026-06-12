@@ -67,19 +67,15 @@ mit M7-Closure.
 | 0 | Slice-Plan-Eroeffnung + Trigger-Triage | **In Progress 2026-06-08** (C0..C2) | [`M7-welle-0.md`](../done/M7-welle-0.md) | Plan-Welle; carveouts-Triage 034/035/036 → Active |
 | 1 | ReplaySource-Integration (`GG-MVP-002`) | **Done 2026-06-09** (1a + 1b-a + 1b-b) | [`M7-welle-1.md`](../done/M7-welle-1.md) | `ReplaySnapshotPort` + `replay_diff_status` + Core-`finalize()`-Hook + `GG-TERM`-Preflight; ADR 0047/0048/0049; Trigger 036 aufgeloest. `GG-MVP-002` ✓ produktiv |
 | 2 | Abnahme-CLI (`GG-MVP-003`) | **Done 2026-06-10** (C0 + C2 + Review-Folge + C3) | [`M7-welle-2.md`](../done/M7-welle-2.md) | `make accept` + `tools/accept.py` + `_demo_replay`-Helper + `check_demo_scenario_pin`-Lint + `AbnahmeReport`-Schema + Shared `scenario_yaml` (D-10-Revision C); kein ADR fuer CLI (D-6), aber NEU ADR 0050/0051 (Adapter-Pure-Folge, Proposed). `GG-MVP-003` ✓ produktiv. commits `33ac255` + `92d10f5` |
-| 3 | Safety-Closure (`GG-SAFE-003/004`) | **In Progress 2026-06-11 — aktiver Slice** (3a **Done 2026-06-11**: `GG-SAFE-004` ✓ produktiv, ADR 0052, Trigger 034 Closed; **3b In Progress** seit 3b-C0 2026-06-11) | [`M7-welle-3.md`](M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) Done + **3b** [`M7-welle-3b.md`](M7-welle-3b.md)) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b) |
+| 3 | Safety-Closure (`GG-SAFE-003/004`) | **Done 2026-06-12** (3a Done 2026-06-11: `GG-SAFE-004` ✓ produktiv, ADR 0052; 3b Done 2026-06-12: `GG-SAFE-003` ✓ produktiv, ADR 0053 + Review-Folge; **alle vier `GG-SAFE-001..004` produktiv**; Trigger 034 + 035 Closed) | [`M7-welle-3.md`](M7-welle-3.md) (Gruppenplan; **3a** [`M7-welle-3a.md`](../done/M7-welle-3a.md) + **3b** [`M7-welle-3b.md`](M7-welle-3b.md); Move `done/` in 3b-C4a) | Trigger 034 (`max_age`, Welle 3a ✓) + 035 (Comm-Failure, Welle 3b ✓) |
 | X | M7-Closure | Pending | TBD | `done/M7-results.md` + ADR-Accept + Roadmap-DoD-Sweep |
 
-**Aktiver Slice:** **M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`;
-Trigger 034/035; **aktiviert mit Welle-3-C0 2026-06-11** —
-Gruppenplan [`M7-welle-3.md`](M7-welle-3.md), sub-sliced **3a**
-`max_age`-`STALE`-Stage ([`M7-welle-3a.md`](../done/M7-welle-3a.md),
-zuerst) + **3b** Adapter-Comm-Failure + Alarm, per Welle-3-D-1;
-ADR-Numbering 0052 (3a) + 0053 reserviert (3b)). M7-Welle-2 **Done
-2026-06-10** (`GG-MVP-003` ✓ produktiv) → **beide MVP-MUSS-IDs
-(`GG-MVP-002` + `GG-MVP-003`) erfuellt; alle vier `GG-MVP-*`-Punkte
-produktiv**. Es verbleiben die SOLLTE-/Audit-IDs `GG-SAFE-003/004`
-(Welle 3) vor der M7-Closure.
+**Aktiver Slice:** **M7-Welle-X** (M7-Closure; letzter M7-Slice).
+M7-Welle-3 **Done 2026-06-12** (Safety-Closure: 3a `GG-SAFE-004`
+✓ + 3b `GG-SAFE-003` ✓; ADR 0052/0053; Trigger 034/035 Closed) —
+**alle vier `GG-MVP-*`-Punkte UND alle vier `GG-SAFE-001..004`
+produktiv**. Vor der M7-Closure verbleibt keine offene
+M7-Substanz-Welle.
 
 ### 3.2 Pending-Wellen-Vorbelegung
 
