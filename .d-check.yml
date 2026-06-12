@@ -17,7 +17,10 @@ ids:
   patterns:
     - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
       target: spec/architecture.md
-    - regex: 'GG-[A-Z]+-\d{3}'
+    # Benannte Architektur-IDs ohne Ziffern (Komponenten/Tabus):
+    - regex: 'GG-AR-COMP-[A-Z0-9]+'
+      target: spec/architecture.md
+    - regex: 'GG-[A-Z][A-Z0-9]*-\d{3}'
       target: spec/lastenheft.md
     - regex: "AC-[A-Z][A-Z0-9-]+"
       target: docs/plan/adr/
