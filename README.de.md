@@ -163,10 +163,13 @@ Stand **2026-06-12**:
   `GG-SAFE-001..004`-MUSS-IDs sind produktiv. Fuenf M7-ADRs
   (0047/0048/0049/0052/0053) `Accepted` mit Welle-X-Closure;
   ADR 0050/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
+- **v0.1.0 released** (2026-06-12): erster realer Lauf des
+  Release-Workflows — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.1.0`
+  (+ digest-gleiches `:latest`), GitHub-Release mit SBOM
+  (CycloneDX, digest-gebunden), JUnit-XML, Coverage-HTML,
+  OpenAPI-JSON und Abnahme-Doku; Trigger 032 aufgeloest.
 - **Post-MVP-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
-  automatisch eroeffnet. Offene Trigger 032 (Release-Workflow-
-  Sensor-Run — es wurde noch kein Tag/Release geschnitten; das
-  erste reale Release loest ihn auf), 033 (OTel-Collector-CVE
+  automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
   Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
   (Bedarfs-getrieben) plus der Trigger-Gated-Bestand tragen
   dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete

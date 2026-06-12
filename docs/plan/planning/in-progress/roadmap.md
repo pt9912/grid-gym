@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 032 (Release-Workflow-Sensor-Run — erstes reales Release steht aus)/033/037/038/039/040 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) AC-ADAPTER-PURE-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer ADR 0050/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) AC-ADAPTER-PURE-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer ADR 0050/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
 **Stand:** 2026-06-12
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -1242,7 +1242,7 @@ Umsetzungsslices kein M7-Lieferpunkt) + NEU
 (MVP-Abschluss-Kriterium gepinnt). **M7 ist abgeschlossen —
 der MVP ist geliefert** (alle vier `GG-MVP-*` + alle vier
 `GG-SAFE-001..004` produktiv). **Post-M7: Trigger-Watch, kein
-M8-Auto-Open (X-D-4)** — offene Trigger 032 (Release-Workflow-Sensor-Run — erstes reales Release steht aus)/033/037/038/039/040 +
+M8-Auto-Open (X-D-4)** — offene Trigger 033/037/038/039/040 +
 Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat.
 

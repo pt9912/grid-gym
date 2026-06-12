@@ -62,7 +62,7 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 **Lesefuehrung (Neuordnung 2026-06-12):** §2.1 ist **eine**
 Tabelle aller aktivierbaren Carveouts — 7 `Deferred`/
-`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 21
+`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 20
 `Trigger-Gated` (`T-nnn` = `open/`-Trigger-Nummer; zusammen
 deckungsgleich mit dem `open/`-Bestand). Begruendungen sind per
 ID nach §2.2 ausgelagert; fuer `T-nnn` traegt das Trigger-Doc
@@ -73,7 +73,7 @@ auch die Nummern-Historie-Map). §2.7 (Permanent
 „§2.7-Auflage" ist repo-weit als normativer Anker zitiert;
 daher die bewusste Nummern-Luecke §2.3..§2.6.
 
-### 2.1 Aktivierbare Carveouts (7 per Mandat + 21 per Trigger)
+### 2.1 Aktivierbare Carveouts (7 per Mandat + 20 per Trigger)
 
 | ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
 | -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
@@ -97,7 +97,6 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 | T-005 | Pyright-vs-mypy-Re-Eval | Tooling/Build | `Trigger-Gated` | M1-Tooling | sobald `ports/*` Generic-Protocols einfuehrt | [`005`](../open/005-pyright-vs-mypy-reeval.md) |
 | T-007 | Pyright-als-Pre-Commit-Hook-ADR | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei Editor-Parity-Druck | [`007`](../open/007-pyright-precommit-adr.md) |
 | T-011 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
-| T-032 | Release-Workflow-Sensor-Run-Verifikation (erstes reales Release steht aus) | Tooling/Build | `Trigger-Gated` | M6-Welle-2-DoD-Rest | erster echter `v*.*.*`-Tag-Push ODER Compliance-Druck | [`032`](../open/032-release-workflow-sensor-run.md) |
 | T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (Temp-Deferral via vulnignore aktiv, ADR 0044; `expires: 2026-06-20`) | Tooling/Build | `Trigger-Gated` | M6-Welle-3-Post-Push | OTel-Collector-Release > 0.153.0 mit `go1.26.4+` ODER Compliance-Druck ODER vulnignore-`expires` 2026-06-20 | [`033`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
 | T-030 | Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forschung/Spike | `Trigger-Gated` | M3-Welle-7 Decision (C3) | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030`](../open/030-rl-adapter.md) |
 | T-026 | BESS-Simulation Reserve-Market-Spike | Forschung/Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026`](../open/026-bess-simulation-reserve-market-spike.md) |
@@ -171,7 +170,7 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 | §2.2 M4-Erbschaft | IEC-Smoke + krb5-Bump (aufgeloest in M6) | → §3-Zeilen |
 | §2.3 M3-Erbschaft (RL-Adapter) | Trigger 030 | §2.1-Tabelle, Zeile T-030 |
 | §2.4 M2-Erbschaft (SOLLTE) | Trigger 016..024 | §2.1-Tabelle, Zeilen T-016..T-024 |
-| §2.5 Tooling/Build | Trigger 004/005/007/011/032/033 (008/031 aufgeloest → §3) | §2.1-Tabelle, Zeilen T-004..T-033 |
+| §2.5 Tooling/Build | Trigger 004/005/007/011/032/033 (008/031/032 aufgeloest → §3) | §2.1-Tabelle, Zeilen T-004..T-033 |
 | §2.6 Spike-Optional | Trigger 026 | §2.1-Tabelle, Zeile T-026 |
 | §2.7 Permanent | `Out-of-Scope` („§2.7-Auflage") | §2.7 (unveraendert, bewusst gepinnt; Zeilen P-1..P-6, Begruendungen in §2.2) |
 | §2.8 M6-Vorbelegung | aufgeloest mit M6-Closure | → §3-Zeile |
@@ -191,6 +190,7 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 | alt-§2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; ADR 0042) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
 | alt-§2.5 CI-Pflicht-Gate fuer `make fullbuild` | M6-Welle-3-C2 (NEU `.github/workflows/fullbuild.yml`) | `ce13253` — Trigger-Doc nach [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
 | alt-§2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; Rest-Grenzen ADR 0052 §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
+| T-032 Release-Workflow-Sensor-Run-Verifikation | Release v0.1.0 2026-06-12 (Tag-Push, erster realer `release.yml`-Lauf `27415174757`: 3 Jobs gruen, GHCR-Image + `:latest` digest-gleich, 5 Assets, SBOM-Digest-Bindung) | Trigger-Doc nach [`032-release-workflow-sensor-run.md`](../done/032-release-workflow-sensor-run.md) |
 | alt-§2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, ADR 0053; Rest-Grenzen ADR 0053 §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M

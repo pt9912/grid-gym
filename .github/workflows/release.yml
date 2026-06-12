@@ -24,9 +24,9 @@
 # - ADR 0042 (`docs/plan/adr/0042-sbom-tool-and-release-pattern.md`).
 # - M6-Slice-Plan Welle 2 (`docs/plan/planning/done/M6-welle-2.md`;
 #   in M6-Welle-2-C4a `c51d905` self-closed).
-# - Trigger 032 (`docs/plan/planning/open/032-release-workflow-
-#   sensor-run.md`; reale GitHub-Actions-Run-Verifikation als
-#   bedingte Folge-Operation).
+# - Trigger 032 (`docs/plan/planning/done/032-release-workflow-
+#   sensor-run.md`; aufgeloest 2026-06-12 mit Release v0.1.0
+#   (erster realer Lauf)).
 # - Lastenheft `GG-CICD-007` (`spec/lastenheft.md` Z.1821-1827).
 
 name: Release

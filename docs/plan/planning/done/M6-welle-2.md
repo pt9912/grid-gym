@@ -1231,7 +1231,7 @@ Closure-Korrektur-Stand (`<this commit>`):
   Vergleich + docker-pull + docker:-prefix Syft).
 
 **Sensor-Run-Pflicht** (siehe
-[`../open/032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md)):
+[`032-release-workflow-sensor-run.md`](032-release-workflow-sensor-run.md)):
 unveraendert; die F1+F3+F4-Verifikations-Pflichten sind
 in Trigger 032 verankert (drei Klassen).
 

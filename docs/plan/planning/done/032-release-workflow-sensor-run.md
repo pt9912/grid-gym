@@ -1,6 +1,21 @@
 # 032 — Release-Workflow-Sensor-Run-Verifikation
 
-**Status:** Open — Trigger-Watch
+**Status:** Closed (2026-06-12) — aufgeloest durch das erste
+reale Release **v0.1.0** (User-Mandat; Aktivierungs-Variante B
+Tag-Push). GitHub-Actions-Run `27415174757`
+(`.github/workflows/release.yml`), Verifikation per
+Checkliste unten: alle 3 Jobs gruen; GHCR-Image
+`ghcr.io/pt9912/grid-gym:v0.1.0` publiziert + lokal gepullt;
+`:latest` gesetzt und digest-gleich (Tag-Commit == main-Tip;
+`sha256:5c31883918…`); GitHub-Release mit allen 5 Asset-Files
+(SBOM/JUnit/Coverage/OpenAPI/Abnahme-Doku); SBOM bindet an den
+gepushten Image-Digest (`metadata.component.version` ==
+Image-Digest). **Rest-Vermerk:** die `workflow_dispatch`-
+Pfad-Checks (Injection-Guard, Tag-Ref-Checkout bei
+Manual-Dispatch) wurden nicht real exerziert — der
+Tag-Push-Pfad braucht sie nicht; sie bleiben code-verifiziert
+per Welle-2-Review-Folgen 3/4. Move nach `done/` in diesem
+Commit.
 **Datum:** 2026-06-05
 **Quelle:** M6-Welle-2-Post-Closure-Review-Folge F1 HIGH
 ([`../done/M6-welle-2.md §9 DoD`](../done/M6-welle-2.md);
