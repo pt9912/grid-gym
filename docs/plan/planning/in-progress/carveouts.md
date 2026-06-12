@@ -56,7 +56,22 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 ## 2. Aktive Carveouts
 
-### 2.1 M5-Erbschaft fuer M6+ (6 Items)
+**Lesefuehrung (Post-M7-Index-Sweep 2026-06-12):** die
+Sektions-Nummern §2.1..§2.11 sind repo-weit als stabile Anker
+zitiert (u. a. die „§2.7-Auflage" in `docs/user/` + `roadmap.md`
++ sechs `done/`-Wellen-Docs; §2.10 in Trigger 037) und werden
+deshalb **nicht umnummeriert**. Vollstaendig aufgeloeste
+Sektionen bleiben als Tombstone stehen, ihre Zeilen wandern
+nach §3. Kategorien-Uebersicht:
+
+| Kategorie | Sektionen | Bestand |
+| --------- | --------- | ------- |
+| `Deferred` / `Pattern-Forward` — kein Trigger, Aktivierung per Mandat | §2.1 (M5-Erbschaft) | 6 + 1 Items |
+| `Trigger-Gated` — formales `open/`-Trigger-Doc | §2.3 (RL-Adapter) · §2.4 (SOLLTE-Geraete/Netz, 9) · §2.5 (Tooling/Build, 6) · §2.6 (Spike, 1) · §2.10 (Multi-Node, 1) · §2.11 (M7-Replay-/Abnahme-Folge, 3) | 21 offene `open/`-Trigger |
+| `Out-of-Scope` — permanent, kein Aufloesungs-Plan | §2.7 | 6 Items |
+| Aufgeloest — Tombstones, Zeilen in §3 | §2.2 (M4-Erbschaft) · §2.8 (M6-Vorbelegung) · §2.9 (Quality-Pipeline-Audit) | — |
+
+### 2.1 M5-Erbschaft fuer M6+ (6 `Deferred` + 1 `Pattern-Forward`)
 
 Quelle: [`../done/M5-results.md §5`](../done/M5-results.md)
 „Welle-7-Erbschaft fuer M6+" + §8 „Nicht-vollzogene Items".
@@ -77,16 +92,14 @@ nur fuer `Trigger-Gated`, §1-Konvention).
 | WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker | — |
 | Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7) | — |
 
-### 2.2 M4-Erbschaft (2 Items; ueber M5 weitergereicht)
+### 2.2 M4-Erbschaft (aufgeloest — siehe §3)
 
-Quelle: [`../done/M4-results.md §5`](../done/M4-results.md) +
-[`../done/M5-results.md §5`](../done/M5-results.md) +
-[`../open/`](../open/).
-
-| Item | Typ | Quelle | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | --- | ------ | ------ | ---------------------- | ----------- |
-| IEC-61850-In-Process-Smoke Reaktivierung | `Aufgeloest` | M4-Welle-5b + M4-Welle-6b-C3 | **Aufgeloest in M6-Welle-6-C2** (Pfad B; NEU Dockerfile-Stage `iec61850-test` auf Python 3.12 + `make test-iec61850` + versions-bedingter Skip-Marker; ADR 0046) | n/a (aufgeloest; Pfad A `pyiec61850-ng` cp314-Wheel bleibt bevorzugte Endform) | [`009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
-| Base-Image-Bump fuer krb5-CVE-Drift (`make fullbuild`-Defer) | `Aufgeloest` | M3-Welle-7-`c61ab0d` pre-existing | **Aufgeloest in M6-Welle-1-C2 `b514170`** (Null-Code-Edit; Debian-13.5-Upstream-Drift + Trigger-015-`apt-get upgrade`-Pattern) | n/a (aufgeloest) | [`010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
+**Beide Items aufgeloest in M6** (IEC-61850-Smoke-Reaktivierung
+→ M6-Welle-6 Pfad B, ADR 0046; Base-Image-krb5-CVE-Bump →
+M6-Welle-1). Zeilen in §3; Sektions-Nummer bleibt fuer
+Cross-Ref-Stabilitaet erhalten (referenziert u. a. in
+[`../done/M6-welle-1.md`](../done/M6-welle-1.md) +
+[`../done/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)).
 
 ### 2.3 M3-Erbschaft (RL-Adapter)
 
@@ -117,19 +130,19 @@ Bedingung pro Item: „wenn konkreter Bedarf — eigener Slice".
 | Battery-Temperatur-Telemetry | `GG-BESS-006` | In Trigger Watch | [`023-sollte-battery-temperature.md`](../open/023-sollte-battery-temperature.md) |
 | Battery-Zellspannung-Telemetry | `GG-BESS-007` | In Trigger Watch | [`024-sollte-battery-cell-voltage.md`](../open/024-sollte-battery-cell-voltage.md) |
 
-### 2.5 Tooling- / Build- / Type-System-Trigger (8 Items)
+### 2.5 Tooling- / Build- / Type-System-Trigger (6 offene Items)
 
 Quelle: [`../open/`](../open/). Alle Items haben `Typ =
-Trigger-Gated`.
+Trigger-Gated`. (Zwei in M6 aufgeloeste Items — `make sbom`
+Trigger 008 + `fullbuild`-CI-Gate Trigger 031 — beim
+Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt.)
 
 | Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
 | ---- | ------ | ---------------------- | ----------- |
 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | In Trigger Watch | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004-canonical-encoder-alternative-adr.md`](../open/004-canonical-encoder-alternative-adr.md) |
 | Pyright-vs-mypy-Re-Eval | In Trigger Watch | sobald `ports/*` Generic-Protocols einfuehrt | [`005-pyright-vs-mypy-reeval.md`](../open/005-pyright-vs-mypy-reeval.md) |
 | Pyright-als-Pre-Commit-Hook-ADR | In Trigger Watch | bei Editor-Parity-Druck | [`007-pyright-precommit-adr.md`](../open/007-pyright-precommit-adr.md) |
-| `make sbom` scharfschalten (`GG-CICD-007`) | **Aufgeloest in M6-Welle-2-C2 `235395e`** (NEU `.github/workflows/release.yml` mit 3 Jobs + 6 publizierte Artefakte; Makefile sbom-Scan-Ziel auf Runtime-Image; ADR 0042 `Provisional`) | n/a (aufgeloest) | [`008-sbom-activation.md`](../done/008-sbom-activation.md) |
 | `MLRandomPort` Sub-Seed-Wortbreite (ADR 0007 §5.2/§6) | In Trigger Watch | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011-mlrandomport-subseed-width.md`](../open/011-mlrandomport-subseed-width.md) |
-| CI-Pflicht-Gate fuer `make fullbuild` (M6-Welle-1-D-1-Vertagung) | **Aufgeloest in M6-Welle-3-C2 `ce13253`** (NEU `.github/workflows/fullbuild.yml` mit Hybrid Push/PR-Paths-Filter + workflow_dispatch; `make fullbuild` cache-frei gruen) | n/a (aufgeloest) | [`031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
 | Release-Workflow-Sensor-Run-Verifikation (M6-Welle-2-DoD-Reste) | In Trigger Watch | erster echter `v*.*.*`-Tag-Push ODER M6-Welle-3-Entscheidung ODER Compliance-Druck | [`032-release-workflow-sensor-run.md`](../open/032-release-workflow-sensor-run.md) |
 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (`make fullbuild`-Defer; M6-Welle-3-Post-Push-`ede21ad`-Aufdeckung) | **Temp-Deferral aktiv** seit M6-Welle-4a-C2 `8fbd17c` (NEU vulnignore-Pattern + ADR-0044; CI gruen via generierter `.trivyignore` mit `expires: 2026-06-20`); In Trigger Watch fuer echte Aufloesung | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build (erwartet 2026-06-09..06-12 per ~14-Tage-Kadenz) ODER Compliance-Druck ODER vulnignore-`expires`-Schwelle 2026-06-20 | [`033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
 
@@ -177,20 +190,18 @@ M6-Slice-Plan gewandert und durch die M6-Wellen 1..6 geliefert
 Rest-Luecken liefen als Trigger 034/035/036 weiter und sind
 seit M7 ebenfalls aufgeloest.
 
-### 2.9 Quality-Pipeline-Audit-Luecken (M6-Welle-5a, 2 Items)
+### 2.9 Quality-Pipeline-Audit-Luecken (aufgeloest — siehe §3)
 
 Quelle: [`../open/`](../open/) + [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md).
-Alle Items haben `Typ = Trigger-Gated`; aus M6-Welle-5a-Audit
-hervorgegangen (Welle-5a-D-3 Hybrid-Strategie: substantielle
-Substanz-Lücken werden als NEU `open/`-Trigger vertagt, nicht
-inline gefixt). Eigene Cluster-Sektion statt §2.5-Verklumpung,
-weil SAFE-IDs Lastenheft-Domain-Items sind, nicht Tooling-/
-Build-Trigger.
-
-| Item | Status | Aktivierungs-Bedingung | Trigger-Doc |
-| ---- | ------ | ---------------------- | ----------- |
-| `GG-SAFE-004` `max_age`-stale-Quality-Markierung | **Geschlossen 2026-06-11 via M7-Welle-3a** ([`M7-welle-3a.md`](../done/M7-welle-3a.md); `TickLoop`-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; `GG-SAFE-004` ✓ produktiv) | erledigt — Trigger 034 Closed (Move `done/` in 3a-C4a); Rest-Grenzen dokumentiert in ADR 0052 §7 (Scenario-Schema-Feld + Demo-Schwelle = additive Schaerfungen) | [`034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
-| `GG-SAFE-003` Adapter-Kommunikationsausfall → `MISSING` + Alarm | **Geschlossen 2026-06-12 via M7-Welle-3b** ([`M7-welle-3b.md`](../done/M7-welle-3b.md); `CommFailureGuardedDeviceProtocolPort`-Wrapper + `adapter_communication_lost`-Alarm, ADR 0053; `GG-SAFE-003` ✓ produktiv) | erledigt — Trigger 035 Closed (Move `done/` in 3b-C4a); Rest-Grenzen dokumentiert in ADR 0053 §2.1/§7 (kein produktiver `read()`-Pfad = Bestand-Grenze; kein Last-Value-`STALE`; kein Retry/Reconnect = additive Schaerfungen) | [`035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
+**Beide Items geschlossen in M7-Welle-3** (`GG-SAFE-004` →
+3a, ADR 0052; `GG-SAFE-003` → 3b, ADR 0053 — alle vier
+`GG-SAFE-001..004` produktiv). Zeilen in §3; Sektions-Nummer
+bleibt fuer Cross-Ref-Stabilitaet erhalten. Historischer
+Kontext: aus dem M6-Welle-5a-Audit hervorgegangen
+(Welle-5a-D-3 Hybrid-Strategie: substantielle Substanz-Lücken
+als NEU `open/`-Trigger vertagt, nicht inline gefixt); eigene
+Cluster-Sektion statt §2.5-Verklumpung, weil SAFE-IDs
+Lastenheft-Domain-Items sind.
 
 ### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
 
@@ -234,6 +245,12 @@ in `done/`).
 | `GG-DEMO-006` YAML-side Fault-Injection (Welle-5-Anti-Scope-Erbschaft) | M5-Welle-6a-C2 | `db3a0c2` |
 | `GG-UI-006..008` Geraete-Grafik + Fault-Form + Sim-Zustand | M5-Welle-6a/6b-C2 | `db3a0c2` + `9fcb887` |
 | §2.8 M6-Vorbelegung (Lastenheft-Familien `GG-RT-001..005` / `GG-SAFE-001..006` / `GG-CICD-*` / `GG-DEPLOY-*` / SBOM) | M6-Welle-0 (formaler Slice-Plan) + M6-Wellen 1..6 (Lieferung); M6-Closure 2026-06-08 — Rest-Luecken via Trigger 034/035/036 in M7 aufgeloest | [`../done/M6-results.md §2`](../done/M6-results.md) (Sektion §2.8 erst beim Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt) |
+| §2.2 IEC-61850-In-Process-Smoke Reaktivierung (M4-Erbschaft) | M6-Welle-6-C2 (Pfad B: Dockerfile-Stage `iec61850-test` Python 3.12 + `make test-iec61850`; ADR 0046; Pfad A cp314-Wheel bleibt bevorzugte Endform) | Trigger-Doc nach [`../done/009-iec61850-smoke-reactivation.md`](../done/009-iec61850-smoke-reactivation.md) |
+| §2.2 Base-Image-Bump fuer krb5-CVE-Drift (M4-Erbschaft, `make fullbuild`-Defer) | M6-Welle-1-C2 (Null-Code-Edit; Debian-13.5-Upstream-Drift) | `b514170` — Trigger-Doc nach [`../done/010-base-image-krb5-cve-bump.md`](../done/010-base-image-krb5-cve-bump.md) |
+| §2.5 `make sbom` scharfschalten (`GG-CICD-007`) | M6-Welle-2-C2 (NEU `.github/workflows/release.yml`, 6 Artefakte; ADR 0042) | `235395e` — Trigger-Doc nach [`../done/008-sbom-activation.md`](../done/008-sbom-activation.md) |
+| §2.5 CI-Pflicht-Gate fuer `make fullbuild` | M6-Welle-3-C2 (NEU `.github/workflows/fullbuild.yml`) | `ce13253` — Trigger-Doc nach [`../done/031-ci-make-fullbuild-gate.md`](../done/031-ci-make-fullbuild-gate.md) |
+| §2.9 `GG-SAFE-004` `max_age`-stale-Quality-Markierung | M7-Welle-3a (TickLoop-Kwarg `max_age_ms` + Core-`STALE`-Stage, ADR 0052; Rest-Grenzen ADR 0052 §7) | `23c614a` + Review-Folge `5a9960a` — Trigger-Doc nach [`../done/034-safe-004-max-age-stale-quality.md`](../done/034-safe-004-max-age-stale-quality.md) |
+| §2.9 `GG-SAFE-003` Adapter-Comm-Failure → `MISSING` + Alarm | M7-Welle-3b (`CommFailureGuardedDeviceProtocolPort` + `adapter_communication_lost`-Alarm, ADR 0053; Rest-Grenzen ADR 0053 §2.1/§7) | `3f28be1` + Review-Folge `82704b1` — Trigger-Doc nach [`../done/035-safe-003-comm-failure-missing-quality.md`](../done/035-safe-003-comm-failure-missing-quality.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)
