@@ -62,7 +62,7 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 
 **Lesefuehrung (Neuordnung 2026-06-12):** §2.1 ist **eine**
 Tabelle aller aktivierbaren Carveouts — 7 `Deferred`/
-`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 20
+`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 21
 `Trigger-Gated` (`T-nnn` = `open/`-Trigger-Nummer; zusammen
 deckungsgleich mit dem `open/`-Bestand). Begruendungen sind per
 ID nach §2.2 ausgelagert; fuer `T-nnn` traegt das Trigger-Doc
@@ -73,7 +73,7 @@ auch die Nummern-Historie-Map). §2.7 (Permanent
 „§2.7-Auflage" ist repo-weit als normativer Anker zitiert;
 daher die bewusste Nummern-Luecke §2.3..§2.6.
 
-### 2.1 Aktivierbare Carveouts (7 per Mandat + 20 per Trigger)
+### 2.1 Aktivierbare Carveouts (7 per Mandat + 21 per Trigger)
 
 | ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
 | -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
@@ -98,6 +98,7 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 | T-007 | Pyright-als-Pre-Commit-Hook-ADR | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei Editor-Parity-Druck | [`007`](../open/007-pyright-precommit-adr.md) |
 | T-011 | `MLRandomPort` Sub-Seed-Wortbreite ([`ADR 0007`](../../adr/0007-random-port.md) §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
 | T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump (Temp-Deferral via vulnignore aktiv, [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md); `expires: 2026-06-20`) | Tooling/Build | `Trigger-Gated` | M6-Welle-3-Post-Push | OTel-Collector-Release > 0.153.0 mit `go1.26.4+` ODER Compliance-Druck ODER vulnignore-`expires` 2026-06-20 | [`033`](../open/033-otel-collector-go-stdlib-cve-bump.md) |
+| T-044 | d-check-`ids`-Linkpflicht auch fuer Inline-Code-Kennungen (CR #3 `inline-code`-Option uebergeben 2026-06-12; danach ~1072er-Sweep) | Tooling/Build | `Trigger-Gated` | Trigger-043-Folge (User-Review der Zwei-Stufen-Konvention) | d-check-Release mit `inline-code`-Option | [`044`](../open/044-dcheck-ids-inline-code.md) |
 | T-030 | Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forschung/Spike | `Trigger-Gated` | M3-Welle-7 Decision (C3) | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030`](../open/030-rl-adapter.md) |
 | T-026 | BESS-Simulation Reserve-Market-Spike | Forschung/Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026`](../open/026-bess-simulation-reserve-market-spike.md) |
 | T-037 | `GG-DEPLOY-007..010` Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen, Rollback-Strategie | Multi-Node | `Trigger-Gated` | M6-Welle-6-Audit | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037`](../open/037-deploy-007-010-multi-node-deployment.md) |
