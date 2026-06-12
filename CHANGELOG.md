@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Nichts ausstehend._
+
+## [0.1.0] - 2026-06-12
+
+Erstes Release — **der MVP ist geliefert** (M1..M7: alle vier
+`GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004`-MUSS-IDs
+produktiv; 49 ADRs `Accepted`, Closure-Artefakt
+`docs/plan/planning/done/M7-results.md`). Der Tag-Push dieses
+Releases ist zugleich der erste reale Lauf des
+Release-Workflows (`.github/workflows/release.yml`, ADR 0042)
+und loest Trigger 032 auf. Alle folgenden Eintraege sind die
+kumulierte Historie seit Projektstart.
+
 ### Added
 
 - `spec/architecture.md` v0.1.0 — Architekturbeschreibung mit
