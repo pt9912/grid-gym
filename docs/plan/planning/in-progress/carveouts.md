@@ -60,9 +60,13 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 Sektions-Nummern §2.1..§2.11 sind repo-weit als stabile Anker
 zitiert (u. a. die „§2.7-Auflage" in `docs/user/` + `roadmap.md`
 + sechs `done/`-Wellen-Docs; §2.10 in Trigger 037) und werden
-deshalb **nicht umnummeriert**. Vollstaendig aufgeloeste
-Sektionen bleiben als Tombstone stehen, ihre Zeilen wandern
-nach §3. Kategorien-Uebersicht:
+deshalb **nicht umnummeriert**. Stattdessen sind die Sektionen
+**physisch nach Kategorie gruppiert** (A aktiv-Deferred → B
+Trigger-Gated → C Out-of-Scope → D Tombstones) — die
+Nummern-Reihenfolge innerhalb der Gruppen ist deshalb nicht
+monoton (historische Vergabe-Reihenfolge). Vollstaendig
+aufgeloeste Sektionen bleiben als Tombstone stehen, ihre Zeilen
+wandern nach §3. Kategorien-Uebersicht:
 
 | Kategorie | Sektionen | Bestand |
 | --------- | --------- | ------- |
@@ -70,6 +74,8 @@ nach §3. Kategorien-Uebersicht:
 | `Trigger-Gated` — formales `open/`-Trigger-Doc | §2.3 (RL-Adapter) · §2.4 (SOLLTE-Geraete/Netz, 9) · §2.5 (Tooling/Build, 6) · §2.6 (Spike, 1) · §2.10 (Multi-Node, 1) · §2.11 (M7-Replay-/Abnahme-Folge, 3) | 21 offene `open/`-Trigger |
 | `Out-of-Scope` — permanent, kein Aufloesungs-Plan | §2.7 | 6 Items |
 | Aufgeloest — Tombstones, Zeilen in §3 | §2.2 (M4-Erbschaft) · §2.8 (M6-Vorbelegung) · §2.9 (Quality-Pipeline-Audit) | — |
+
+**— Kategorie A: `Deferred` / `Pattern-Forward` (kein Trigger; Aktivierung per Mandat) —**
 
 ### 2.1 M5-Erbschaft fuer M6+ (6 `Deferred` + 1 `Pattern-Forward`)
 
@@ -92,14 +98,7 @@ nur fuer `Trigger-Gated`, §1-Konvention).
 | WebSocket-Live-Stream `/devices` | `Deferred` | Welle 6b §1.3 | Open | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | 1s-HTMX-Polling erfuellt die `GG-UI-*`-Akzeptanz; Live-Push ist UX-Optimierung ohne ID-Anker | — |
 | Welle-3-Pre-init-Defense-Pattern verallgemeinern | `Pattern-Forward` | Welle 6b Review-Folge F2 (`cd7cfc6`) | Open | naechster device-iterierender Driving-Adapter, der `device.snapshot()` konsumiert | Generalisierungs-Empfehlung aus einem Einzel-Befund (`_extract_state_subset`-silent-drop); ein Lift ohne zweiten Adopter waere Spekulation (Pattern: Lift erst bei Wiederholung, vgl. 3b-D-7) | — |
 
-### 2.2 M4-Erbschaft (aufgeloest — siehe §3)
-
-**Beide Items aufgeloest in M6** (IEC-61850-Smoke-Reaktivierung
-→ M6-Welle-6 Pfad B, ADR 0046; Base-Image-krb5-CVE-Bump →
-M6-Welle-1). Zeilen in §3; Sektions-Nummer bleibt fuer
-Cross-Ref-Stabilitaet erhalten (referenziert u. a. in
-[`../done/M6-welle-1.md`](../done/M6-welle-1.md) +
-[`../done/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)).
+**— Kategorie B: `Trigger-Gated` (formales `open/`-Trigger-Doc) —**
 
 ### 2.3 M3-Erbschaft (RL-Adapter)
 
@@ -152,57 +151,6 @@ Post-M7-Index-Sweep 2026-06-12 nach §3 ueberfuehrt.)
 | ---- | --- | ------ | ---------------------- | ----------- |
 | BESS-Simulation Reserve-Market-Spike | `Trigger-Gated` (optionaler Spike) | In Trigger Watch | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026-bess-simulation-reserve-market-spike.md`](../open/026-bess-simulation-reserve-market-spike.md) |
 
-### 2.7 Permanent (`Out-of-Scope`)
-
-Quelle: [`../done/M5-results.md §8`](../done/M5-results.md) +
-[`../done/M4-results.md §7`](../done/M4-results.md) +
-[`../done/M3-results.md §7`](../done/M3-results.md). Diese
-Items haben **keinen Aufloesungs-Plan** im Repo — entweder
-strukturell ausgeschlossen (Lastenheft) oder bedingungs-
-optional (z. B. „nur bei Stakeholder-Druck").
-
-| Item | Typ | Quelle | Begruendung |
-| ---- | --- | ------ | ----------- |
-| Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
-| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration | UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-ID verlangt; IP-/Netz-Beschraenkung ist im Demo-Compose verankert (separate Auflagen-Schicht, kein einzelner Lastenheft-ID). `GG-SAFE-008` ist davon abzugrenzen — `GG-SAFE-008` verlangt **externe Eingabevalidierung an REST/WS/Adapter-Schnittstellen** und gehoert zur M6-Security-Welle (siehe `M6-welle-0.md §1.3`). |
-| SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
-| Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
-| Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik §2.1) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 | Voller Anlagen-Schaltplan ist M6+-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |
-| End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 | `done/M5-results.md` ist Maintainer-Closure-Artefakt; `docs/user/gg-demo-008-abnahme.md` erfuellt `GG-DEMO-008`. End-User-Tutorial waere ein eigener Slice-Trigger (kein eingeplantes Ziel-M). |
-
-**Konvention fuer `Out-of-Scope`-Eintraege:** bleiben
-permanent im Index, wandern **nicht** in §3 Resolved.
-Falls Stakeholder-Druck oder Lastenheft-Aenderung das
-Item ploetzlich aktiv werden laesst, wandert es per
-Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
-(z. B. `Trigger-Gated` mit neu erstelltem `open/`-
-Trigger-Doc).
-
-### 2.8 M6-Vorbelegung (aufgeloest — siehe §3)
-
-**Aufgeloest 2026-06-08 mit der M6-Closure** (Eintrag in §3;
-Sektions-Nummer bleibt fuer Cross-Ref-Stabilitaet erhalten,
-§2.9..2.11 behalten ihre Anker). Die hier vorbelegten
-Lastenheft-Familien (`GG-RT-*`/`GG-SAFE-*`/`GG-CICD-*`/
-`GG-DEPLOY-*`/SBOM) sind mit M6-Welle-0 in den formalen
-M6-Slice-Plan gewandert und durch die M6-Wellen 1..6 geliefert
-([`../done/M6-results.md §2`](../done/M6-results.md));
-Rest-Luecken liefen als Trigger 034/035/036 weiter und sind
-seit M7 ebenfalls aufgeloest.
-
-### 2.9 Quality-Pipeline-Audit-Luecken (aufgeloest — siehe §3)
-
-Quelle: [`../open/`](../open/) + [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md).
-**Beide Items geschlossen in M7-Welle-3** (`GG-SAFE-004` →
-3a, ADR 0052; `GG-SAFE-003` → 3b, ADR 0053 — alle vier
-`GG-SAFE-001..004` produktiv). Zeilen in §3; Sektions-Nummer
-bleibt fuer Cross-Ref-Stabilitaet erhalten. Historischer
-Kontext: aus dem M6-Welle-5a-Audit hervorgegangen
-(Welle-5a-D-3 Hybrid-Strategie: substantielle Substanz-Lücken
-als NEU `open/`-Trigger vertagt, nicht inline gefixt); eigene
-Cluster-Sektion statt §2.5-Verklumpung, weil SAFE-IDs
-Lastenheft-Domain-Items sind.
-
 ### 2.10 Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge)
 
 Quelle: [`../open/`](../open/) + Trigger
@@ -229,6 +177,70 @@ in den Index nachgetragen.
 | Volle `GG-TERM-002/003`-Equality-Matrix (`platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash`; M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber 5 `RunMetadata`-Felder) | In Trigger Watch | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay | [`038-gg-term-002-003-full-equality-matrix.md`](../open/038-gg-term-002-003-full-equality-matrix.md) |
 | Oeffentliche API-Replay-Bedienung (`POST /runs` `replay_of` + `RunMetadata`-Spalte + Migration; M7-Welle-1b-b haelt die Referenz-Bindung per 1b-b-D-7 Runtime-/Test-/Demo-intern) | In Trigger Watch | Reviewer-/Stakeholder-Forderung nach API-getriggertem Replay ODER Compliance-Bedarf fuer persistente Referenz-Bindung | [`039-api-replay-trigger-surface.md`](../open/039-api-replay-trigger-surface.md) |
 | Core-Run-End-Naht fuer `TickLoop.finalize()` (heute Driver-getriggert; Headless-Runner / natuerliche Terminierung / Tick-Failure feuern den Replay-Diff nicht — `make accept` faehrt den Replay-Step deshalb standalone) | In Trigger Watch | Headless-Replay-Validierung im Abnahme-Pfad ODER Auto-`completed`-Transition | [`040-replay-finalize-headless-run-end-seam.md`](../open/040-replay-finalize-headless-run-end-seam.md) |
+
+**— Kategorie C: `Out-of-Scope` (permanent, kein Aufloesungs-Plan) —**
+
+### 2.7 Permanent (`Out-of-Scope`)
+
+Quelle: [`../done/M5-results.md §8`](../done/M5-results.md) +
+[`../done/M4-results.md §7`](../done/M4-results.md) +
+[`../done/M3-results.md §7`](../done/M3-results.md). Diese
+Items haben **keinen Aufloesungs-Plan** im Repo — entweder
+strukturell ausgeschlossen (Lastenheft) oder bedingungs-
+optional (z. B. „nur bei Stakeholder-Druck").
+
+| Item | Typ | Quelle | Begruendung |
+| ---- | --- | ------ | ----------- |
+| Produktive Anlagensteuerung | `Out-of-Scope` | Lastenheft Z. 1161–1163 | Lastenheft fixiert: grid-gym ist Simulations-/Test-Werkzeug, **nicht** Steuerungs-Plattform. |
+| Multi-User + Auth im UI-Layer | `Out-of-Scope` | M5-results §8 + Lastenheft Demo-Compose-Konfiguration | UI-Layer-Auth ist nicht von einer `GG-SAFE-*`-ID verlangt; IP-/Netz-Beschraenkung ist im Demo-Compose verankert (separate Auflagen-Schicht, kein einzelner Lastenheft-ID). `GG-SAFE-008` ist davon abzugrenzen — `GG-SAFE-008` verlangt **externe Eingabevalidierung an REST/WS/Adapter-Schnittstellen** und gehoert zur M6-Security-Welle (siehe `M6-welle-0.md §1.3`). |
+| SvelteKit-SPA / React-SPA-Migration | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 | Nur bei Stakeholder-Druck (Architektur-Reinheit > UX-Glanz); kein Roadmap-Plan. |
+| Plotly.js / ECharts als Charting-Library | `Out-of-Scope`-bedingt | M5-results §8 + ADR 0036 §2.5 + Welle-6b Decision 23 | Nur bei Chart.js-Limitationen (Re-Eval-Schwelle in Welle 3/4/6b unerreicht); kein Roadmap-Plan. |
+| Inline-SVG-Anlagenschaltbild (≠ Inline-SVG-Geraete-Grafik §2.1) | `Out-of-Scope` | M5-results §8 + Welle-6b §1.3 | Voller Anlagen-Schaltplan ist M6+-Material; UI-Tabelle (Welle 6b) erfuellt `GG-UI-006`-Akzeptanz. |
+| End-User-Tutorial / Onboarding-Doku | `Out-of-Scope` | M5-results §8 | `done/M5-results.md` ist Maintainer-Closure-Artefakt; `docs/user/gg-demo-008-abnahme.md` erfuellt `GG-DEMO-008`. End-User-Tutorial waere ein eigener Slice-Trigger (kein eingeplantes Ziel-M). |
+
+**Konvention fuer `Out-of-Scope`-Eintraege:** bleiben
+permanent im Index, wandern **nicht** in §3 Resolved.
+Falls Stakeholder-Druck oder Lastenheft-Aenderung das
+Item ploetzlich aktiv werden laesst, wandert es per
+Lifecycle-Klausel (§4) in eine andere §2.x-Kategorie um
+(z. B. `Trigger-Gated` mit neu erstelltem `open/`-
+Trigger-Doc).
+
+**— Kategorie D: Aufgeloest (Tombstones — Zeilen in §3) —**
+
+### 2.2 M4-Erbschaft (aufgeloest — siehe §3)
+
+**Beide Items aufgeloest in M6** (IEC-61850-Smoke-Reaktivierung
+→ M6-Welle-6 Pfad B, ADR 0046; Base-Image-krb5-CVE-Bump →
+M6-Welle-1). Zeilen in §3; Sektions-Nummer bleibt fuer
+Cross-Ref-Stabilitaet erhalten (referenziert u. a. in
+[`../done/M6-welle-1.md`](../done/M6-welle-1.md) +
+[`../done/M6-perf-security-cicd.md`](../done/M6-perf-security-cicd.md)).
+
+### 2.8 M6-Vorbelegung (aufgeloest — siehe §3)
+
+**Aufgeloest 2026-06-08 mit der M6-Closure** (Eintrag in §3;
+Sektions-Nummern bleiben fuer Cross-Ref-Stabilitaet erhalten).
+Die hier vorbelegten Lastenheft-Familien (`GG-RT-*`/
+`GG-SAFE-*`/`GG-CICD-*`/`GG-DEPLOY-*`/SBOM) sind mit
+M6-Welle-0 in den formalen M6-Slice-Plan gewandert und durch
+die M6-Wellen 1..6 geliefert
+([`../done/M6-results.md §2`](../done/M6-results.md));
+Rest-Luecken liefen als Trigger 034/035/036 weiter und sind
+seit M7 ebenfalls aufgeloest.
+
+### 2.9 Quality-Pipeline-Audit-Luecken (aufgeloest — siehe §3)
+
+Quelle: [`../open/`](../open/) + [`../../../user/safe-001-004-quality-pipeline.md`](../../../user/safe-001-004-quality-pipeline.md).
+**Beide Items geschlossen in M7-Welle-3** (`GG-SAFE-004` →
+3a, ADR 0052; `GG-SAFE-003` → 3b, ADR 0053 — alle vier
+`GG-SAFE-001..004` produktiv). Zeilen in §3; Sektions-Nummer
+bleibt fuer Cross-Ref-Stabilitaet erhalten. Historischer
+Kontext: aus dem M6-Welle-5a-Audit hervorgegangen
+(Welle-5a-D-3 Hybrid-Strategie: substantielle Substanz-Lücken
+als NEU `open/`-Trigger vertagt, nicht inline gefixt); eigene
+Cluster-Sektion statt §2.5-Verklumpung, weil SAFE-IDs
+Lastenheft-Domain-Items sind.
 
 ---
 
