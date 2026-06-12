@@ -1,6 +1,18 @@
 # 043 — `ids`-Linkpflicht fuer Kennungen via d-check-Modul-Scope
 
-**Status:** Open — Trigger-Watch
+**Status:** Closed (2026-06-12) — aufgeloest durch d-check
+**v0.3.0** (liefert `<modul>.scope` per grid-gym-CR, dort
+slice-017/`DC-FA-CONF-002`; Digest-Pin-Bump `84ca599` durch den
+Maintainer) + ids-Aktivierung in grid-gym: Linkpflicht-Sweep
+Stufe 1 `01f2a49` (84 Kennungen, docs/user + lastenheft +
+protocol_profiles) + Stufe 2 `4d37a65` (228 Kennungen
+architecture.md inkl. Traceability-Gewinn; Review-Schaerfung:
+alle Links mit Abschnitts-Anker statt nur Datei) +
+Bestands-Link-Anker-Sweep `8c0646c` (99 Kapitel- + 20
+ID-Anker repo-weit). `ids` produktiv in `.d-check.yml`
+(Scope `spec/` + `docs/user/`, 4 Muster mit
+GG-AR-vor-GG-Praezedenz); `make docs-check` cache-frei gruen
+mit 0 Befunden. Move nach `done/` in diesem Commit.
 **Datum:** 2026-06-12
 **Quelle:** Trigger-002-Erbschaft (Kennungs-Aufloesung
 `GG-*`/`AC-*`/`ADR NNNN` war dort vertagt; Trigger 002 wurde

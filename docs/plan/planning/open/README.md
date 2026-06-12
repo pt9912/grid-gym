@@ -29,7 +29,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`004-canonical-encoder-alternative-adr.md`](004-canonical-encoder-alternative-adr.md) | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec) | bei messbarem Perf-Druck am Telemetrie-Pfad |
 | [`005-pyright-vs-mypy-reeval.md`](005-pyright-vs-mypy-reeval.md) | Re-Eval mypy vs. pyright bei generischen Protocols | sobald `ports/*` Generic-Protocols einfuehrt |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md) | ADR fuer pyright als Pre-Commit-Hook | bei Editor-Parity-Druck |
-| [`043-dcheck-ids-linkpflicht.md`](043-dcheck-ids-linkpflicht.md) | d-check-`ids`-Linkpflicht fuer `GG-*`/`AC-*`/ADR-Kennungen (Trigger-002-Erbschaft; gemessen: 312 kuratierte Befunde, blockiert durch globalen d-check-Scan-Scope) | d-check-Release mit `<modul>.scope`-Feature (CR uebergeben 2026-06-12) ODER Doppelpass-Bruecken-Entscheid |
 | [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump (ADR-0043-konformer Defer-Pfad ueber ADR-0044-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
 
 **M3-/Multi-Agent-Folge:**

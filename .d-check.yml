@@ -4,11 +4,26 @@
 # (AGENTS.md, docs/, spec/, harness/) ab und nimmt die übrige
 # Root-Doku (README*, CHANGELOG, CONTRIBUTING) als Mehr-Abdeckung
 # mit; src/ (vendored UI-Doku) und .github/ (PR-Template mit
-# Platzhaltern) bleiben außen vor. `anchors` ist Mehr-Abdeckung —
-# die im Trigger-002-Scope vertagte Kennungs-Auflösung
-# (GG-*/AC-*/ADR-NNNN) kann später als ids-Konfiguration folgen.
+# Platzhaltern) bleiben außen vor. `anchors` ist Mehr-Abdeckung.
+# `ids` (Trigger 043, d-check v0.3.0 <modul>.scope): Linkpflicht für
+# Kennungen auf dem kuratierten Scope spec/ + docs/user/ — die
+# historischen Planning-Docs bleiben bewusst außen vor (Retro-
+# Verlinkung wäre Audit-Trail-Umschreiben; Trigger-043-Nicht-Ziel).
+# Muster-Reihenfolge = Präzedenz (GG-AR- vor GG-).
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
-modules: [links, anchors]
+modules: [links, anchors, ids]
+ids:
+  scope:
+    roots: ["spec", "docs/user"]
+  patterns:
+    - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
+      target: spec/architecture.md
+    - regex: 'GG-[A-Z]+-\d{3}'
+      target: spec/lastenheft.md
+    - regex: 'AC-[A-Z][A-Z0-9-]+'
+      target: spec/architecture.md
+    - regex: 'ADR[- ]\d{4}'
+      target: docs/plan/adr/
