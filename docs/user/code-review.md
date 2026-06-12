@@ -34,7 +34,7 @@ abgehakt — ein Reviewer muss sie nicht erneut pruefen:
 | `make typecheck`     | `mypy --strict` mit `enable_error_code = [redundant-self, possibly-undefined, truthy-bool, truthy-iterable, unused-awaitable, explicit-override, mutable-override]` | [`ADR 0005`](../plan/adr/0005-type-check-gate.md) §5.1            |
 | `make arch-check`    | 6 import-linter-Contracts (`AC-CORE-NO-ADAPTERS` bis `AC-NO-IO-MOD`) + 10 AST-Contracts via `tools/arch_check.py` (`AC-HEXAGON-PURE`, `AC-NO-JSON`, `AC-NO-TIME`, `AC-NO-RAND`, `AC-NO-IO-MOD-NESTED`, `AC-DOMAIN-FROZEN`, `AC-NO-GOD-UTILS`, `AC-TYPED-ERRORS`, `AC-NO-CYCLES`, `AC-ADAPTER-LIGHTWEIGHT`) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1 |
 | `make test-unit`     | pytest mit `hypothesis`-Property-Tests; arch_check-Vollstaendigkeit (`test_arch_check_registration.py`) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-2 / Drittes Review §3 |
-| `make coverage-gate-critical` | ≥ 90 % Line + Branch auf kritischer Domain (mit Build-Arg-Override im Spike-0/M1-Stand) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1, [`GG-COV-003`](../../spec/lastenheft.md) |
+| `make coverage-gate-critical` | ≥ 90 % Line + Branch auf kritischer Domain (mit Build-Arg-Override im Spike-0/M1-Stand) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1, [`GG-COV-003`](../../spec/lastenheft.md#gg-cov-003) |
 
 **Wenn `make gates` rot ist, ist die PR nicht reviewable.** Bitte zuerst
 gruen bekommen, dann Review anfordern.
