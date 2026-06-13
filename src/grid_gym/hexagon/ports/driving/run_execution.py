@@ -10,6 +10,11 @@ mehr (`AC-ADAPTER-PURE`, 041-C2).
 `devices` ist bewusst `tuple[object, ...]`, damit Adapter keine
 `core.devices.DeviceModel` importieren muessen — Konsumenten casten auf
 ihr eigenes schicht-lokales View-Protocol.
+
+Stub-Form: Docstring + `...` auf eigener Zeile (nicht inline) wie
+`alarm_stream`/`telemetry_stream` — so greift der Coverage-Exclude
+`^\\s*\\.\\.\\.\\s*$` und `ruff format` kollabiert den Body nicht zu
+inline-`...` (das ungedeckte Branch-Kanten erzeugte).
 """
 
 from __future__ import annotations
@@ -32,25 +37,43 @@ class RunExecutionPort(Protocol):
     """
 
     @property
-    def run_id(self) -> str: ...
+    def run_id(self) -> str:
+        """Stabile Lauf-Identitaet (`GG-DATA-001`)."""
+        ...
 
     @property
-    def tick_ms(self) -> int: ...
+    def tick_ms(self) -> int:
+        """Schrittweite je `tick()` in ms (`GG-SIM-002`)."""
+        ...
 
     @property
-    def tick_count(self) -> int: ...
+    def tick_count(self) -> int:
+        """0-basierter Tick-Zaehler."""
+        ...
 
     @property
-    def control_state(self) -> RunStatus: ...
+    def control_state(self) -> RunStatus:
+        """Run-Lifecycle-State (ADR 0039)."""
+        ...
 
     @property
-    def device_types(self) -> Mapping[str, str]: ...
+    def device_types(self) -> Mapping[str, str]:
+        """`device_id` → `device_type`-Lookup fuer die Router."""
+        ...
 
     @property
-    def devices(self) -> tuple[object, ...]: ...
+    def devices(self) -> tuple[object, ...]:
+        """Geraete-Sequenz; Konsumenten casten auf ihr View-Protocol."""
+        ...
 
-    def request(self, action: ControlAction) -> None: ...
+    def request(self, action: ControlAction) -> None:
+        """Dispatcht eine Control-Action (pause/resume/stop)."""
+        ...
 
-    def tick(self) -> TickResult: ...
+    def tick(self) -> TickResult:
+        """Fuehrt einen Tick aus und liefert das Ergebnis."""
+        ...
 
-    def finalize(self) -> tuple[ReplayDelta, ...]: ...
+    def finalize(self) -> tuple[ReplayDelta, ...]:
+        """Schliesst den Lauf ab und liefert die Replay-Deltas."""
+        ...
