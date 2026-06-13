@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-13
+
+Doku-/Tooling-Härtungs-Release ohne Runtime-Code-Änderung (`src/`,
+`Dockerfile`, Dependencies identisch zu 0.1.0): Harness-Baseline-
+Adoption, d-check-`ids`/`codepaths`-Disziplin, Doku-Sweeps und
+M8-Roadmap-Planung.
+
 ### Added
 
 - `docs/plan/planning/done-archive/` — eingefrorene
