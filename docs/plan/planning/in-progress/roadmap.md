@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
-**Stand:** 2026-06-12
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat. **2026-06-13: M8 „SOLLTE-Geraete & Netz" per Stakeholder-Mandat eroeffnet → Release v0.2.0; Slice-Plan entsteht in M8-Welle-0 (siehe §4 M8).**
+**Stand:** 2026-06-13
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
@@ -1246,7 +1246,62 @@ der MVP ist geliefert** (alle vier `GG-MVP-*` + alle vier
 `GG-SAFE-001..004` produktiv). **Post-M7: Trigger-Watch, kein
 M8-Auto-Open (X-D-4)** — offene Trigger 033/037/038/039/040/044 +
 Trigger-Gated-Bestand; neuer Meilenstein bei
-Trigger-Aktivierung oder Stakeholder-Mandat.
+Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
+2026-06-13 als M8 eroeffnet (unten).**
+
+### M8 — SOLLTE-Geraete & Netz (`Geplant` — eroeffnet 2026-06-13 per Stakeholder-Mandat) → Release v0.2.0
+
+**Slice-Plan:** entsteht in M8-Welle-0 (Pattern analog M6/M7-Welle-0:
+Slice-Plan-Eroeffnung + Trigger-Triage). M8 ist der **erste
+Post-MVP-Feature-Meilenstein**; er aktiviert die SOLLTE-Geraete-/Netz-
+Cluster aus dem [`carveouts.md`](carveouts.md)-Index plus die zwei
+vorbereiteten Architektur-Cleanups. **Release-Ziel: v0.2.0**
+(Minor-Bump — neue Gerätemodelle sind additive Features).
+
+**Vorbelegter Scope** (Wellen-Skizze; konkrete Slice-Plaene wandern bei
+Aktivierung `open/` → `in-progress/`):
+
+- **Welle 0 — Architektur-Cleanup (Voraussetzung).** Slice
+  [`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md)
+  (`AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau,
+  [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) +
+  Slice [`042`](../next/042-fault-engine-location-and-naming.md)
+  (Fault-Engine-Standort/Naming,
+  [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)).
+  **Acceptance-Trigger:** [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+  `Proposed → Accepted` (Welle-X-D-2-Erbschaft). Zieht die Adapter-
+  Purity- und Fault-Engine-Struktur sauber, auf der die neuen
+  Geraete-Adapter aufsetzen.
+- **Welle 1 — Geraete.** `T-016` EV-Charger (`GG-DEV-015`,
+  [`016`](../open/016-sollte-ev-charger-device.md)), `T-017`
+  Transformer (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)),
+  `T-018` Wind (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)),
+  `T-019` Diesel (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)).
+  Aktiviert zugleich `D-7` (Pre-init-Defense-Pattern verallgemeinern):
+  die neuen device-iterierenden Driving-Adapter sind die Adoptions-Welle
+  fuer dieses `Pattern-Forward`-Carveout (Aktivierungs-Bedingung erfuellt).
+- **Welle 2 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
+  (`GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md)), `T-021`
+  Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)),
+  `T-022` Blindleistung (`GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)).
+- **Welle 3 — BESS-Telemetry.** `T-023` Battery-Temperatur
+  (`GG-BESS-006`, [`023`](../open/023-sollte-battery-temperature.md)),
+  `T-024` Battery-Zellspannung (`GG-BESS-007`,
+  [`024`](../open/024-sollte-battery-cell-voltage.md)).
+
+**Anti-Scope (nicht in M8):** Export & Live-API (→ M9: `T-038`/`T-039`
+Equality-Matrix + API-Replay, dazu `D-1`/`D-2`/`D-6`),
+Multi-Node/Deployment (→ M10: `T-037`, `GG-DEPLOY-007..010`),
+Forschungs-Spikes `T-030`/`T-026` (optional). Tooling-Querschnitt-Trigger
+(`T-004`/`T-005`/`T-007`/`T-011`/`T-033`/`T-044`/`T-040`) laufen unabhaengig
+und sind kein M8-Lieferpunkt. Diese Skizze nennt nur die Leit-Posten je
+Meilenstein; die **vollstaendige** Carveout-Zuordnung (inkl. restliche
+M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
+
+**Status:** `Geplant` — eroeffnet 2026-06-13. Naechster Schritt:
+M8-Welle-0 (Slice-Plan + Trigger-Triage; `041`/`042` aktivieren, sobald
+[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+akzeptiert).
 
 ---
 

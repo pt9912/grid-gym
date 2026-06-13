@@ -24,8 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trigger 043 (ids-Linkpflicht) aufgeloest; NEU Trigger 044
   (Linkpflicht auch fuer Inline-Code-Kennungen; wartet auf
   d-check-`inline-code`-Option, CR #3).
+- `harness/conventions.md` (NEU) — formale Adoption des
+  AI-Harness-Kurses als Baseline (gepinnt Tag `templates-v2`),
+  Adaptions-Block `MR-000..005`, Modus-Deklaration pro Sub-Area;
+  plus `docs/reviews/`-Review-Report-Template.
 
 ### Changed
+
+- Roadmap erweitert: NEU Meilenstein **M8 — SOLLTE-Geraete & Netz**
+  (→ Release v0.2.0) per Stakeholder-Mandat eroeffnet; Wellen-Skizze
+  0..3 (Cleanup `041`/`042` → Geraete `T-016..019` → Netz
+  `T-020..022` → BESS-Telemetry `T-023/024`); M9/M10 als Skizze.
 
 - Doku-Sweeps zur Linkpflicht: ~620 nackte Kennungen auf ihre
   Definition verlinkt (mit Abschnitts-Ankern; `AC-*`-Target =
