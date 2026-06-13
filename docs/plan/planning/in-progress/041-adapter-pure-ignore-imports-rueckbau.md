@@ -1,8 +1,9 @@
 # 041 — AC-ADAPTER-PURE-`ignore_imports`-Rueckbau
 
-**Status:** In Progress (M8-Welle-1) — C1..C3b Done 2026-06-13 (**8 von 8
-Bruecken entfernt**, `ignore_imports = []`, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
-`Accepted`); offen nur C4 (`pyproject.toml`-Kommentar-Cleanup)
+**Status:** Done 2026-06-13 (M8-Welle-1) — C1..C4 abgeschlossen: **8 von 8
+Bruecken entfernt** (`ignore_imports = []`),
+[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`
++ NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -127,13 +128,16 @@ App-Bootstrap-Inversion.
   (0 Ignores), `make fullbuild` gruen (Compose-Smoke ueber neuen
   Entrypoint), NEU `tests/unit/composition/test_asgi.py`.
 
-### C4 — Kommentar- und Doku-Rueckbau
+### C4 — Kommentar- und Doku-Rueckbau (Done 2026-06-13)
 
-- `pyproject.toml`-Kommentarblock fuer die historischen Bruecken
-  kuerzen oder entfernen.
-- ADR-/Plan-Referenzen aktualisieren.
-- Falls alle acht Eintraege weg sind: [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) fuer spaetere
-  `Accepted`-Closure vormerken.
+- ✅ `pyproject.toml`-`ignore_imports`-Kommentarblock (historische
+  Welle-4a/5/6a-Bruecken) durch eine knappe „alles zurueckgebaut +
+  neue Eintraege ADR-pflichtig"-Notiz ersetzt; leere Liste auf eine
+  Zeile (`ignore_imports = []`).
+- ✅ ADR-/Plan-Referenzen aktualisiert (`ADR 0050` `Accepted`, ADR-Index,
+  roadmap, NEU `ADR 0054`).
+- ✅ Alle acht Eintraege weg →
+  [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`.
 
 ## 4. Nicht-Ziele
 
