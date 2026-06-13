@@ -1,6 +1,7 @@
 # 041 — AC-ADAPTER-PURE-`ignore_imports`-Rueckbau
 
-**Status:** Next — Scope skizziert, noch nicht aktiv
+**Status:** In Progress (M8-Welle-1) — C1 Done 2026-06-13 (1 von 8
+Bruecken entfernt); naechste Tranche C2 (Run-Execution-Port)
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -51,15 +52,18 @@ Aktuelle Ausnahmen:
   synchronisieren.
 - Sensor: `make docs-check`.
 
-### C1 — Fault-Type-Quick-Win
+### C1 — Fault-Type-Quick-Win (Done 2026-06-13)
 
-- Fault-Type-Konstanten in eine adapter-erlaubte Surface ziehen
-  (`hexagon.core.domain.fault` oder Port-Modul).
-- `_runs_action_router.py` auf diese Surface umstellen.
-- `pyproject.toml`-Eintrag
+- ✅ Fault-Type-Konstanten nach `hexagon.core.domain.fault` (NEU)
+  verschoben; `hexagon.core.faults.types` re-exportiert von dort
+  (4 Core-Konsumenten unveraendert, Single-Source-of-Truth gewahrt).
+- ✅ `_runs_action_router.py` importiert die Konstanten aus
+  `hexagon.core.domain.fault`.
+- ✅ `pyproject.toml`-Eintrag
   `_runs_action_router -> grid_gym.hexagon.core.faults.types`
-  entfernen.
-- Tests: `make arch-check`, engste Router-/Fault-Tests.
+  entfernt (8 → 7 `ignore_imports`).
+- ✅ Sensoren: `make arch-check` 7/7 KEPT, `make typecheck`/`lint`/
+  `format-check` gruen, `make test-unit` 1796 passed. Verhaltensneutral.
 
 ### C2 — Run-Ausfuehrungs-Port
 

@@ -1,25 +1,19 @@
-"""Fault-Typen-Konstanten (M3 Welle 2 Review-Folge L-4).
+"""Fault-Typen-Konstanten — Re-Export (Single Source: `core.domain.fault`).
 
-Zentrale Definition der Fault-Type-Strings. Welle-2-Closed-Set:
-ein einziger Typ pro Geraet (`cell_failure` fuer Battery,
-`voltage_drop` fuer GridConnection). Welle 3+ erweitert den Set
-um weitere Typen aus `GG-FAULT-005..010` (z. B.
-`overcurrent`, `temperature_runaway`, `island_mode_failure`).
-
-Diese Konstanten werden von Devices (`inject_fault`/
-`clear_fault`-Dispatch) und Adaptern (Filter-Liste im
-Konstruktor) gleichermassen konsumiert. Konstante-Drift
-vermeidet die typische "Magic-String"-Falle.
+Die Konstanten sind mit 041-C1 (M8-Welle-1, ADR 0050 §2.2) nach
+`hexagon.core.domain.fault` verschoben, damit HTTP-Adapter sie ueber die
+adapter-erlaubte Domain-Surface konsumieren koennen, ohne `core.faults`
+zu importieren (`AC-ADAPTER-PURE`). Dieses Modul bleibt als Re-Export
+erhalten, damit Devices (`inject_fault`/`clear_fault`-Dispatch) und
+Fault-Engines (Filter-Liste im Konstruktor) unveraendert
+`from ...core.faults.types import FAULT_TYPE_*` nutzen koennen.
 """
 
 from __future__ import annotations
 
-from typing import Final
+from grid_gym.hexagon.core.domain.fault import (
+    FAULT_TYPE_CELL_FAILURE,
+    FAULT_TYPE_VOLTAGE_DROP,
+)
 
-FAULT_TYPE_CELL_FAILURE: Final[str] = "cell_failure"
-"""Battery-Fault: Zell-Defekt mit reduzierter Discharge-Faehigkeit
-(ADR 0025 §2.1)."""
-
-FAULT_TYPE_VOLTAGE_DROP: Final[str] = "voltage_drop"
-"""GridConnection-Fault: Spannungs-Einbruch ohne Power-Flow-Mutation
-(ADR 0025 §2.1 + ADR 0022 §2.4 GridConnection-Constraint)."""
+__all__ = ["FAULT_TYPE_CELL_FAILURE", "FAULT_TYPE_VOLTAGE_DROP"]

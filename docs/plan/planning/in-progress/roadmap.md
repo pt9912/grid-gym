@@ -1298,11 +1298,13 @@ und sind kein M8-Lieferpunkt. Diese Skizze nennt nur die Leit-Posten je
 Meilenstein; die **vollstaendige** Carveout-Zuordnung (inkl. restliche
 M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
 
-**Status:** `In Progress` — Welle 0 aktiv seit 2026-06-13
-([`M8-welle-0.md`](M8-welle-0.md)); `041`/`042` nach `in-progress/`
-aktiviert, Cross-Refs nachgezogen. Naechster Schritt: Welle 1 — 041-C1
-(Fault-Type-Quick-Win); [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
-springen auf `Provisional`, sobald die erste Tranche gruen ist.
+**Status:** `In Progress` — Welle 1 laeuft seit 2026-06-13
+([`M8-welle-0.md`](M8-welle-0.md)). **041-C1 Done**: Fault-Type-Quick-Win
+(Konstanten nach `hexagon.core.domain.fault`, 8 → 7 `ignore_imports`,
+[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) →
+`Provisional`). Naechste Tranche 041-C2 (Run-Execution-Port);
+[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) bleibt
+`Proposed` bis 042-C1.
 
 ---
 

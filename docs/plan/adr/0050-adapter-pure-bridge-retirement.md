@@ -1,6 +1,6 @@
 # ADR 0050 — AC-ADAPTER-PURE Bridge-Rueckbau fuer HTTP-Demo-Wiring
 
-**Status:** Proposed
+**Status:** Provisional
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -195,7 +195,11 @@ Kosten und Risiken:
 
 ADR 0050 kann auf `Provisional` springen, sobald der erste
 Umsetzungsslice mindestens einen `ignore_imports`-Eintrag entfernt und
-`make arch-check` ohne neue Ausnahme gruen ist.
+`make arch-check` ohne neue Ausnahme gruen ist. → **`Provisional`
+2026-06-13 mit 041-C1**: Fault-Type-Konstanten nach
+`hexagon.core.domain.fault` verschoben (`core.faults.types`
+re-exportiert), `_runs_action_router`-Eintrag entfernt (8 → 7 Bruecken),
+`make arch-check` 7/7 gruen.
 
 `Accepted` ist erst sinnvoll, wenn alle acht oben genannten
 `ignore_imports`-Eintraege entfernt oder per Folge-ADR bewusst neu

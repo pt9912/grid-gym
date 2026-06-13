@@ -48,11 +48,11 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     get_tick_loop_registry,
 )
-from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
-from grid_gym.hexagon.core.faults.types import (
+from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_CELL_FAILURE,
     FAULT_TYPE_VOLTAGE_DROP,
 )
+from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
