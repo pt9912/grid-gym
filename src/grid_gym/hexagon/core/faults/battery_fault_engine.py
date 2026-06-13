@@ -1,4 +1,4 @@
-"""`BatteryFaultAdapter` — Recovery-Engine fuer Battery-Faults
+"""`BatteryFaultEngine` — Recovery-Engine fuer Battery-Faults
 (M3 Welle 2, ADR 0022 + ADR 0025).
 
 Implementiert das `FaultPort`-Protocol fuer den `cell_failure`-
@@ -36,13 +36,13 @@ from grid_gym.hexagon.core.faults._protocol import FaultInjectableDevice
 from grid_gym.hexagon.core.faults.types import FAULT_TYPE_CELL_FAILURE
 
 
-class BatteryFaultAdapter:
+class BatteryFaultEngine:
     """Driven-Adapter fuer Battery-`cell_failure`-Faults.
 
     Konstruktor-Injection von `scenario.faults` reicht; der
     Adapter filtert intern nach `type == "cell_failure"`. Andere
     Fault-Typen aus der Liste werden ignoriert (Welle-2-Closed-
-    Set; Grid-Faults gehoeren in den `GridFaultAdapter`).
+    Set; Grid-Faults gehoeren in den `GridFaultEngine`).
     """
 
     def __init__(self, faults: Sequence[ScenarioFault]) -> None:

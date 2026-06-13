@@ -29,7 +29,7 @@ from grid_gym.adapters.driven.persistence_postgres import PostgresRunRepository
 from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
-from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
+from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 from grid_gym.hexagon.core.scenario.loader import (
     LoadedScenario,
     TickLoopWiring,
@@ -57,8 +57,8 @@ def _drive_fault_demo(
     die Sub-Port-Reihenfolge im CompositeFaultPort um (Welle-2-
     Review M-2)."""
     composite = CompositeFaultPort(
-        battery_adapter=BatteryFaultAdapter(faults=loaded.scenario.faults),
-        grid_adapter=GridFaultAdapter(faults=loaded.scenario.faults),
+        battery_adapter=BatteryFaultEngine(faults=loaded.scenario.faults),
+        grid_adapter=GridFaultEngine(faults=loaded.scenario.faults),
         battery_first=battery_first,
     )
     loop = build_tick_loop(

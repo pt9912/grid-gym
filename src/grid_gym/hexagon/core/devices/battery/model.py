@@ -146,7 +146,7 @@ class BatteryDevice:
         self._sequence: int = 0
         # M3-Welle-2 (ADR 0025 §2.2): Fault-State-Flag.
         # Device haelt nur Physik-Flag; Adapter
-        # (BatteryFaultAdapter) haelt Scheduling-State
+        # (BatteryFaultEngine) haelt Scheduling-State
         # (`remaining_ticks`).
         self._cell_failure_active: bool = False
 

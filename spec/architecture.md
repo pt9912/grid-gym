@@ -708,9 +708,9 @@ Fault.
   und vor der ersten `_run_device_iteration`. Exception-Propagation
   bricht den Tick atomic ab (`AC-NO-TIME`-konform, kein Wall-Clock-
   Zugriff im Core).
-- **Konkrete Fault-Adapter:** `BatteryFaultAdapter`
+- **Konkrete Fault-Adapter:** `BatteryFaultEngine`
   (`hexagon/core/faults/battery_fault.py`) mit `cell_failure` und
-  `GridFaultAdapter` (`hexagon/core/faults/grid_fault.py`) mit
+  `GridFaultEngine` (`hexagon/core/faults/grid_fault.py`) mit
   `voltage_drop`. Beide leben **nicht** unter `adapters/driven/`,
   sondern unter `hexagon/core/faults/`, weil sie Domain-
   Orchestrierung sind und kein externes Protokoll uebersetzen.

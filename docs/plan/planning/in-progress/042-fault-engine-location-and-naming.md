@@ -1,6 +1,8 @@
 # 042 — Fault-Engine-Standort und `*FaultAdapter`-Naming
 
-**Status:** Next — Scope skizziert, noch nicht aktiv
+**Status:** Done 2026-06-13 (M8-Welle-1) — Rename umgesetzt
+(`*FaultAdapter` → `*FaultEngine`, Dateien + Symbole), **keine
+Compat-Aliase**, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`.
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -32,6 +34,15 @@ Der Slice ist getrennt von
 langfristig heissen und dokumentiert sind.
 
 ## 2. Tranchierung
+
+**Umsetzung 2026-06-13 (Done, C0..C3 in einem fullbuild-verifizierten
+Schritt):** Rename `BatteryFaultAdapter` → `BatteryFaultEngine` /
+`GridFaultAdapter` → `GridFaultEngine` (+ Dateien `*_fault_adapter.py`
+→ `*_fault_engine.py` via `git mv`), 17 src-/test-/tools-Dateien;
+`__init__`-Docstring + `spec/architecture.md` + `docs/user/observability.md`
+auf „Core-Fault-Engine"; `ADR 0025`-Pfad-Pflege. **Keine Compat-Aliase**
+(alle In-Repo-Referenzen umbenannt, kein Uebergangsbedarf). Standort
+bleibt `hexagon/core/faults` ([`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) §2.1).
 
 ### C0 — Referenz-Audit
 

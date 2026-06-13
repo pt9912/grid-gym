@@ -62,8 +62,8 @@ from grid_gym.hexagon.core.domain.run import RunMetadata
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioFault
 from grid_gym.hexagon.core.faults import (
-    BatteryFaultAdapter,
-    GridFaultAdapter,
+    BatteryFaultEngine,
+    GridFaultEngine,
 )
 from grid_gym.hexagon.core.scenario.loader import (
     TickLoopWiring,
@@ -281,8 +281,8 @@ hier eintragen, sonst werden YAML-faults mit unbekanntem Typ per
 
 class _DemoScenarioUnknownFaultTypeError(ValueError):
     """Welle-6a-Review F13: `gg-demo.yaml` enthaelt einen
-    `faults[].type`, fuer den weder `BatteryFaultAdapter` noch
-    `GridFaultAdapter` einen Filter haelt. Frueher silent gedroppt;
+    `faults[].type`, fuer den weder `BatteryFaultEngine` noch
+    `GridFaultEngine` einen Filter haelt. Frueher silent gedroppt;
     jetzt explizit fail-fast beim Demo-Lifespan-Startup, damit der
     Engineer den YAML-Tippfehler oder den fehlenden Welle-7+/M3-
     Adapter beim ersten `make demo` sieht."""
@@ -299,8 +299,8 @@ class _DemoScenarioUnknownFaultTypeError(ValueError):
 def _compose_fault_port(
     faults: tuple[ScenarioFault, ...],
 ) -> "_FaultPortComposition | None":
-    """Welle-6a Decision 19: kombiniert `BatteryFaultAdapter` +
-    `GridFaultAdapter` zu einem FaultPort, der pro Tick beide
+    """Welle-6a Decision 19: kombiniert `BatteryFaultEngine` +
+    `GridFaultEngine` zu einem FaultPort, der pro Tick beide
     Adapter sequenziell delegiert. Liefert `None` bei leerer
     Fault-Liste (Welle-5-Default-Verhalten unveraendert).
 
@@ -322,15 +322,15 @@ def _compose_fault_port(
         if fault.type not in _KNOWN_FAULT_TYPES:
             raise _DemoScenarioUnknownFaultTypeError(fault.type, tuple(sorted(_KNOWN_FAULT_TYPES)))
     return _FaultPortComposition(
-        battery_adapter=BatteryFaultAdapter(faults),
-        grid_adapter=GridFaultAdapter(faults),
+        battery_adapter=BatteryFaultEngine(faults),
+        grid_adapter=GridFaultEngine(faults),
     )
 
 
 class _FaultPortComposition:
     """Welle-6a-FaultPort-Composition (Decision 19): delegiert pro
-    `apply_active_faults`-Aufruf an `BatteryFaultAdapter` +
-    `GridFaultAdapter`. Pattern analog Welle-5-`_alarm_*_provider`-
+    `apply_active_faults`-Aufruf an `BatteryFaultEngine` +
+    `GridFaultEngine`. Pattern analog Welle-5-`_alarm_*_provider`-
     Closures (kleine Adapter-Composition im
     `_demo_scenario_setup`-Lifespan-Pfad statt eigener Adapter-
     Klasse unter `adapters/driven/fault_*/`).
@@ -339,8 +339,8 @@ class _FaultPortComposition:
     def __init__(
         self,
         *,
-        battery_adapter: BatteryFaultAdapter,
-        grid_adapter: GridFaultAdapter,
+        battery_adapter: BatteryFaultEngine,
+        grid_adapter: GridFaultEngine,
     ) -> None:
         self._battery_adapter = battery_adapter
         self._grid_adapter = grid_adapter

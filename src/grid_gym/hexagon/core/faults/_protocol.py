@@ -9,8 +9,8 @@ fault-faehig.
 **Welle-1-Stand**: dieses Modul liefert nur den Protocol-
 Vertrag. Konkrete Implementer (`BatteryDevice` mit
 `cell_failure`, `GridConnectionDevice` mit `voltage_drop`)
-kommen in Welle 2 zusammen mit `BatteryFaultAdapter` /
-`GridFaultAdapter` (siehe ADR 0022 §4 Reichweite).
+kommen in Welle 2 zusammen mit `BatteryFaultEngine` /
+`GridFaultEngine` (siehe ADR 0022 §4 Reichweite).
 """
 
 from __future__ import annotations

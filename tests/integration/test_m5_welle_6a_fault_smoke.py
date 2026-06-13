@@ -15,7 +15,7 @@ Pinnt die produktive Welle-6a-Wiring-Composition:
 
 2. Welle-6a-Demo-YAML-Faults sind reproduzierbar (Decision 19):
    - `gg-demo.yaml` `faults:`-Block via `_compose_fault_port`
-     verdrahtet `BatteryFaultAdapter` + `GridFaultAdapter` an
+     verdrahtet `BatteryFaultEngine` + `GridFaultEngine` an
      `TickLoopWiring.fault_port`.
    - Manueller `tick_loop.tick()`-Lauf ueber 1000 Ticks loest
      den `cell_failure`-Clamp aus (Agent-Discharge -30 trifft
@@ -253,12 +253,12 @@ def test_demo_yaml_faults_compose_and_apply_during_windows() -> None:
     assert snapshot_pre_window, "Pre-Fault-Window (Tick 100): Battery+Grid sollten faultsfrei sein"
     assert snapshot_in_cell_failure, (
         "Mid-cell_failure-Window (Tick 920): Battery._cell_failure_active "
-        "muss True sein — _compose_fault_port hat BatteryFaultAdapter "
+        "muss True sein — _compose_fault_port hat BatteryFaultEngine "
         "nicht korrekt verdrahtet."
     )
     assert snapshot_in_voltage_drop, (
         "Mid-voltage_drop-Window (Tick 1220): Grid._voltage_drop_active "
-        "muss True sein — _compose_fault_port hat GridFaultAdapter "
+        "muss True sein — _compose_fault_port hat GridFaultEngine "
         "nicht korrekt verdrahtet."
     )
     assert load_alarm_seen, (

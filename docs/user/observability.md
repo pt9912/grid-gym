@@ -60,7 +60,7 @@ Hauptdiagnose-Felder fuer Replay/Audit.
 
 ### 1.4 Welle-2 / Welle-3 Ergaenzungen
 
-- Fault-Adapter (`BatteryFaultAdapter`/`GridFaultAdapter`) emittieren
+- Fault-Adapter (`BatteryFaultEngine`/`GridFaultEngine`) emittieren
   Audit-Logs beim Inject (Welle-2-Pfad).
 - Agents (`RuleBasedAgent`) emittieren Decision-Trail-Logs ueber den
   AgentBus (Welle-3-Pfad).

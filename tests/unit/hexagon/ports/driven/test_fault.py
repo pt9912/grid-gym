@@ -19,8 +19,8 @@ from grid_gym.hexagon.ports.driven.fault import FaultPort
 class _RecordingFaultPort:
     """Inline-Stub: zeichnet `apply_active_faults`-Aufrufe auf.
 
-    Welle-1-Stub. Produktive Adapter (`BatteryFaultAdapter`,
-    `GridFaultAdapter`) kommen in Welle 2 unter
+    Welle-1-Stub. Produktive Adapter (`BatteryFaultEngine`,
+    `GridFaultEngine`) kommen in Welle 2 unter
     `adapters/driven/fault_*/`.
     """
 

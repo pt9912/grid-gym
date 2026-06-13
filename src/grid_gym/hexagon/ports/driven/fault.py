@@ -6,8 +6,8 @@ gesamte Entscheidung — welcher Fault wann auf welches Device —
 kapselt.
 
 **Welle-1-Stand**: dieses Modul liefert nur den Protocol-
-Vertrag. Konkrete Adapter (`BatteryFaultAdapter`,
-`GridFaultAdapter`) leben in Welle 2 unter
+Vertrag. Konkrete Adapter (`BatteryFaultEngine`,
+`GridFaultEngine`) leben in Welle 2 unter
 `adapters/driven/fault_*/` (siehe ADR 0022 §4 Reichweite).
 """
 
@@ -20,7 +20,7 @@ from grid_gym.hexagon.core.domain.device import DeviceTickContext
 
 # AC-PORTS-NO-OUT: `hexagon/ports/` darf NICHT von
 # `hexagon/core/devices/` importieren. Die Adapter-Welle-2-
-# Implementer (`BatteryFaultAdapter` u. ae.) typisieren die
+# Implementer (`BatteryFaultEngine` u. ae.) typisieren die
 # `devices`-Liste intern strenger (z. B. `Sequence[DeviceModel]`)
 # und filtern per `isinstance(d, FaultInjectableDevice)`. Welle-1-
 # Port-Surface bleibt deshalb structural (`Sequence[object]`).

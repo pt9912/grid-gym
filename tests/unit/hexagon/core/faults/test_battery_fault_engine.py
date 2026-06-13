@@ -1,4 +1,4 @@
-"""Unit-Tests fuer `BatteryFaultAdapter` (M3 Welle 2, ADR 0025).
+"""Unit-Tests fuer `BatteryFaultEngine` (M3 Welle 2, ADR 0025).
 
 Pinnt:
 - Window-Boundary half-open `[start, end)` (ADR 0025 §2.3).
@@ -22,7 +22,7 @@ from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice, ScenarioFault
 from grid_gym.hexagon.core.errors import FaultUnknownReferenceError
-from grid_gym.hexagon.core.faults import BatteryFaultAdapter
+from grid_gym.hexagon.core.faults import BatteryFaultEngine
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 
 
@@ -68,7 +68,7 @@ def _cell_failure_fault(
 
 def test_adapter_satisfies_fault_port_protocol() -> None:
     """`@runtime_checkable` erlaubt isinstance-Check."""
-    adapter = BatteryFaultAdapter(faults=())
+    adapter = BatteryFaultEngine(faults=())
     assert isinstance(adapter, FaultPort)
 
 
@@ -76,7 +76,7 @@ def test_adapter_activates_fault_in_window() -> None:
     """ADR 0025 §2.3: half-open `[start, end)` — Fault aktiv ab
     start_simulation_time."""
     device = _battery_device()
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=0, duration_ms=5000),)
     )
     adapter.apply_active_faults(
@@ -90,7 +90,7 @@ def test_adapter_skips_fault_outside_window() -> None:
     """ADR 0025 §2.3: end-exclusive — bei
     `now == start + duration_ms` ist der Fault inaktiv."""
     device = _battery_device()
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=0, duration_ms=5000),)
     )
     adapter.apply_active_faults(
@@ -104,7 +104,7 @@ def test_adapter_auto_recovers_after_window() -> None:
     """ADR 0025 §2.2: Adapter setzt Device-Flag bei Window-Ende
     zurueck (active → inactive)."""
     device = _battery_device()
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=0, duration_ms=2000),)
     )
     # Tick im Fenster → aktiv.
@@ -135,7 +135,7 @@ def test_adapter_idempotent_inject_in_active_window(monkeypatch: pytest.MonkeyPa
 
     monkeypatch.setattr(device, "inject_fault", recording_inject)
 
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=0, duration_ms=5000),)
     )
     # Drei Ticks im Fenster — inject_fault soll nur EINMAL aufgerufen werden.
@@ -151,7 +151,7 @@ def test_adapter_manual_recovery_clears_flag_immediately() -> None:
     """ADR 0025 §2.1: `manual-recover-fault` schlaegt
     Auto-Schedule (Manual-Override-Prioritaet)."""
     device = _battery_device()
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=0, duration_ms=10000),)
     )
     # Erst aktivieren.
@@ -184,7 +184,7 @@ def test_register_manual_recovery_rejects_unknown_reference(
     """ADR 0025 §2.1: unbekannte `(fault_id, target_device_id)`-
     Kombination wirft `FaultUnknownReferenceError` — beide Felder
     werden geprueft (Welle-2-Review L-5)."""
-    adapter = BatteryFaultAdapter(faults=(_cell_failure_fault(),))
+    adapter = BatteryFaultEngine(faults=(_cell_failure_fault(),))
     with pytest.raises(FaultUnknownReferenceError):
         adapter.register_manual_recovery(fault_id, target_device_id)
 
@@ -221,9 +221,7 @@ def test_adapter_fault_id_uses_original_scenario_index() -> None:
         payload={},
         recovery="auto-recover-after-N-ticks",
     )
-    adapter = BatteryFaultAdapter(
-        faults=(voltage_drop_first, cell_failure_middle, overcurrent_last)
-    )
+    adapter = BatteryFaultEngine(faults=(voltage_drop_first, cell_failure_middle, overcurrent_last))
     # Der Scenario-Index ist 1, nicht 0 (gefilterter Index).
     adapter.register_manual_recovery("fault-1", "battery-1")  # darf nicht werfen
     # `fault-0` ist NICHT bekannt (Scenario-Index 0 ist voltage_drop, wurde gefiltert).
@@ -239,7 +237,7 @@ def test_adapter_handles_missing_target_silently_without_inject(
     fehlt), wird kein `inject_fault` aufgerufen, und der Adapter-
     State bleibt korrekt.
     """
-    adapter = BatteryFaultAdapter(faults=(_cell_failure_fault(),))
+    adapter = BatteryFaultEngine(faults=(_cell_failure_fault(),))
     # Leere Devices-Liste — Target kann nicht aufgeloest werden.
     adapter.apply_active_faults(
         (),
@@ -257,7 +255,7 @@ def test_adapter_manual_recovery_before_window_does_not_crash() -> None:
     `currently_active` aufgerufen.
     """
     device = _battery_device()
-    adapter = BatteryFaultAdapter(
+    adapter = BatteryFaultEngine(
         faults=(_cell_failure_fault(start_simulation_time=10000, duration_ms=5000),)
     )
     # Manual-Recovery zu fruh (Fault noch nicht im Window).
@@ -274,7 +272,7 @@ def test_adapter_manual_recovery_before_window_does_not_crash() -> None:
 def test_adapter_ignores_non_cell_failure_faults() -> None:
     """Welle-2-Closed-Set: nur `cell_failure` wird konsumiert.
     Andere Typen werden ignoriert (Grid-Faults gehen in den
-    GridFaultAdapter)."""
+    GridFaultEngine)."""
     device = _battery_device()
     voltage_drop_fault = ScenarioFault(
         start_simulation_time=0,
@@ -284,7 +282,7 @@ def test_adapter_ignores_non_cell_failure_faults() -> None:
         payload={},
         recovery="auto-recover-after-N-ticks",
     )
-    adapter = BatteryFaultAdapter(faults=(voltage_drop_fault,))
+    adapter = BatteryFaultEngine(faults=(voltage_drop_fault,))
     adapter.apply_active_faults(
         (device,),
         DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),

@@ -24,7 +24,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
-from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
+from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 
 
 class CompositeFaultPort:
@@ -33,8 +33,8 @@ class CompositeFaultPort:
 
     def __init__(
         self,
-        battery_adapter: BatteryFaultAdapter,
-        grid_adapter: GridFaultAdapter,
+        battery_adapter: BatteryFaultEngine,
+        grid_adapter: GridFaultEngine,
         *,
         battery_first: bool = True,
     ) -> None:

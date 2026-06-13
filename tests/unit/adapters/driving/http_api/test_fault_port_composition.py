@@ -27,7 +27,7 @@ from grid_gym.composition._demo_scenario_setup import (
 from grid_gym.hexagon.core.domain.scenario import ScenarioFault
 
 if TYPE_CHECKING:
-    from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
+    from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 
 
 def _make_cell_failure(start_ms: int = 10000, dur_ms: int = 5000) -> ScenarioFault:

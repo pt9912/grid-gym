@@ -394,8 +394,8 @@ rechtfertigt.
 | `src/grid_gym/hexagon/core/devices/battery/snapshot.py`             | EDIT (`fault_state`-Block) |
 | `src/grid_gym/hexagon/core/devices/grid_connection/model.py`        | EDIT (`inject_fault` + `clear_fault` + `_pending_voltage_v`) |
 | `src/grid_gym/hexagon/core/devices/grid_connection/snapshot.py`     | EDIT (`fault_state`-Block) |
-| `src/grid_gym/hexagon/core/faults/battery_fault_adapter.py`         | NEU (Recovery-Engine + Idempotenz) |
-| `src/grid_gym/hexagon/core/faults/grid_fault_adapter.py`            | NEU (Recovery-Engine + Idempotenz) |
+| `src/grid_gym/hexagon/core/faults/battery_fault_engine.py`          | NEU (Recovery-Engine + Idempotenz; umbenannt aus `battery_fault_adapter.py` per ADR 0051) |
+| `src/grid_gym/hexagon/core/faults/grid_fault_engine.py`             | NEU (Recovery-Engine + Idempotenz; umbenannt aus `grid_fault_adapter.py` per ADR 0051) |
 | `src/grid_gym/hexagon/core/faults/types.py`                         | NEU (zentrale `FAULT_TYPE_*`-Konstanten, Welle-2-Review-Folge L-4) |
 | `src/grid_gym/hexagon/core/errors.py`                               | EDIT (`FaultUnsupportedTypeError`, `FaultInvalidPayloadError`, `FaultUnknownReferenceError`) |
 

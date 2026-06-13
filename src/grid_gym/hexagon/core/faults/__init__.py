@@ -3,12 +3,14 @@
 Re-exportiert die Sub-Protocol-Surface
 (`FaultInjectableDevice`) als oeffentliches Paket-Interface.
 Konkrete Fault-Engine-Logik (Aktivitaets-Checks, Target-
-Resolution, Type-Dispatch) lebt in den `FaultPort`-Adaptern
-unter `adapters/driven/fault_*/` (Welle 2).
+Resolution, Type-Dispatch) lebt als Core-Fault-Engines
+(`BatteryFaultEngine`/`GridFaultEngine`) in diesem Paket
+(ADR 0051 — `FaultPort`-Implementierung im Core, kein Outer-Ring-
+Adapter trotz historischem `*FaultAdapter`-Namen).
 """
 
 from grid_gym.hexagon.core.faults._protocol import FaultInjectableDevice
-from grid_gym.hexagon.core.faults.battery_fault_adapter import BatteryFaultAdapter
-from grid_gym.hexagon.core.faults.grid_fault_adapter import GridFaultAdapter
+from grid_gym.hexagon.core.faults.battery_fault_engine import BatteryFaultEngine
+from grid_gym.hexagon.core.faults.grid_fault_engine import GridFaultEngine
 
-__all__ = ["BatteryFaultAdapter", "FaultInjectableDevice", "GridFaultAdapter"]
+__all__ = ["BatteryFaultEngine", "FaultInjectableDevice", "GridFaultEngine"]

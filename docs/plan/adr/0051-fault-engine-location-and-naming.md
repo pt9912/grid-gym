@@ -1,6 +1,6 @@
 # ADR 0051 — Fault-Engine-Standort und Adapter-Begriffsklaerung
 
-**Status:** Proposed
+**Status:** Accepted
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -152,3 +152,10 @@ mindestens die Doku-/Code-Begriffsklaerung produktiv verankert und
 - die Rename-Entscheidung umgesetzt ist, oder
 - bewusst entschieden wurde, die historischen Klassennamen dauerhaft
   beizubehalten und nur die Doku-Begriffsklaerung zu fuehren.
+
+→ **`Accepted` 2026-06-13 mit Slice 042**: Rename umgesetzt
+(`BatteryFaultAdapter` → `BatteryFaultEngine`, `GridFaultAdapter` →
+`GridFaultEngine`; Dateien `*_fault_adapter.py` → `*_fault_engine.py`).
+**Keine Compatibility-Aliase** (bewusst, §2.3): alle In-Repo-Referenzen
+sind umbenannt, kein Uebergangsbedarf. Standort bleibt
+`hexagon/core/faults` (§2.1). `make fullbuild` gruen.

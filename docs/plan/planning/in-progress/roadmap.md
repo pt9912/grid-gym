@@ -1307,10 +1307,12 @@ App-Bootstrap-Hook-Inversion + `composition.asgi`-Entrypoint
 ([`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md))
 → **8 → 0** `ignore_imports` (`ignore_imports = []`),
 [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
-**`Accepted`**. **Slice 041 fachlich fertig** — offen nur C4
-(`pyproject.toml`-Kommentar-Cleanup). Danach Welle 2 (Geraete
-`T-016..019`). [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
-bleibt `Proposed` bis 042-C1.
+**`Accepted`**. **Slice 041 komplett** (C1..C4). **Slice 042 Done**:
+Fault-Engine-Rename (`*FaultAdapter` → `*FaultEngine`, Standort bleibt
+`hexagon/core/faults`, keine Aliase),
+[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+`Accepted` + NEU `ADR 0054`. **M8-Welle 1 (Architektur-Cleanup)
+abgeschlossen** — naechste Welle 2 (Geraete `T-016..019`).
 
 ---
 

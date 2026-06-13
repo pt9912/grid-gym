@@ -429,7 +429,7 @@ def build_tick_loop(
     fuer Fault-Injection. `None`-Default skippt den TickLoop-
     Vor-Tick-Block-Schritt-A2-Hook; Welle-2-Aufrufer mit
     `scenario.faults`-Inhalt konstruieren typischerweise
-    `BatteryFaultAdapter` + `GridFaultAdapter` aus
+    `BatteryFaultEngine` + `GridFaultEngine` aus
     `scenario.faults` und komponieren sie in einen produktiven
     FaultPort (Composition-Pattern ist M3-Welle-3-Material;
     Welle-2-Integrationstests komponieren test-side).

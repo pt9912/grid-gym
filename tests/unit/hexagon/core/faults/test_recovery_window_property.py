@@ -3,7 +3,7 @@ und Per-Fault-Determinismus (M3 Welle 2 Item 9, ADR 0025 §2.3
 + §2.4).
 
 Pinnt:
-- **Half-open `[start, end)`**: BatteryFaultAdapter aktiviert den
+- **Half-open `[start, end)`**: BatteryFaultEngine aktiviert den
   Fault genau in `[start, start+duration)`-Ticks, nicht davor
   oder danach. Property-Test mit `@given(start_ms, duration_ms)`.
 - **Per-Fault-Determinismus**: gleicher Seed + identische
@@ -31,7 +31,7 @@ from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice, ScenarioFault
-from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
+from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 
 
 def _battery() -> BatteryDevice:
@@ -113,7 +113,7 @@ def test_battery_fault_window_half_open_property(start_ms: int, duration_ms: int
     expected_active = (True, True, False)
     for probe_time, expected in zip(probe_times, expected_active, strict=True):
         device = _battery()
-        adapter = BatteryFaultAdapter(faults=(fault,))
+        adapter = BatteryFaultEngine(faults=(fault,))
         adapter.apply_active_faults(
             (device,),
             DeviceTickContext(tick=0, simulation_time=probe_time, tick_ms=1000),
@@ -166,7 +166,7 @@ def test_battery_fault_telemetry_deterministic_per_seed(seed: int) -> None:
             MersenneTwisterRandomPort(seed=seed_value),
         )
         device.set_run_id("property-test")
-        adapter = BatteryFaultAdapter(faults=(fault,))
+        adapter = BatteryFaultEngine(faults=(fault,))
         emissions: list[Decimal] = []
         for tick_num in range(10):
             sim_time = tick_num * 1000
@@ -187,7 +187,7 @@ def test_battery_fault_telemetry_deterministic_per_seed(seed: int) -> None:
 
 def test_battery_fault_telemetry_battery_seed_independent_in_welle_2() -> None:
     """Welle-2-Review L-4: in Welle 2 ignorieren BatteryDevice und
-    BatteryFaultAdapter den `RandomPort` voellig (kein
+    BatteryFaultEngine den `RandomPort` voellig (kein
     stochastischer Anteil). Telemetry ist seed-unabhaengig.
 
     Welle-3-Forward-Pointer: bei stochastischer Recovery
@@ -204,7 +204,7 @@ def test_battery_fault_telemetry_battery_seed_independent_in_welle_2() -> None:
 
     def _run(seed_value: int) -> tuple[Decimal, ...]:
         device = _battery_with_seed(seed_value)
-        adapter = BatteryFaultAdapter(faults=(fault,))
+        adapter = BatteryFaultEngine(faults=(fault,))
         emissions: list[Decimal] = []
         for tick_num in range(10):
             sim_time = tick_num * 1000
@@ -256,7 +256,7 @@ def _battery_with_seed(seed_value: int) -> BatteryDevice:
 )
 @settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_grid_fault_window_half_open_property(start_ms: int, duration_ms: int) -> None:
-    """ADR 0025 §2.3 fuer GridFaultAdapter: half-open `[start,
+    """ADR 0025 §2.3 fuer GridFaultEngine: half-open `[start,
     end)`. Welle-2-Test spiegelt `test_battery_fault_window_*`."""
     assume(duration_ms >= 2000)
     end_ms = start_ms + duration_ms
@@ -272,7 +272,7 @@ def test_grid_fault_window_half_open_property(start_ms: int, duration_ms: int) -
     expected_active = (True, True, False)
     for probe_time, expected in zip(probe_times, expected_active, strict=True):
         device = _grid_device()
-        adapter = GridFaultAdapter(faults=(fault,))
+        adapter = GridFaultEngine(faults=(fault,))
         adapter.apply_active_faults(
             (device,),
             DeviceTickContext(tick=0, simulation_time=probe_time, tick_ms=1000),

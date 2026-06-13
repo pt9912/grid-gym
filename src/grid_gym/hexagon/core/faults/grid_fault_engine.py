@@ -1,7 +1,7 @@
-"""`GridFaultAdapter` — Recovery-Engine fuer GridConnection-Faults
+"""`GridFaultEngine` — Recovery-Engine fuer GridConnection-Faults
 (M3 Welle 2, ADR 0022 + ADR 0025).
 
-Spiegelt das `BatteryFaultAdapter`-Pattern (`battery_fault_adapter.py`),
+Spiegelt das `BatteryFaultEngine`-Pattern (`battery_fault_engine.py`),
 spezialisiert auf den `voltage_drop`-Fault-Typ. Pro Tick ruft
 `TickLoop.tick()` im Vor-Tick-Block-Schritt-A2 (ADR 0022 §2.4)
 genau einmal `apply_active_faults(devices, context)`; der Adapter:
@@ -41,13 +41,13 @@ from grid_gym.hexagon.core.faults._protocol import FaultInjectableDevice
 from grid_gym.hexagon.core.faults.types import FAULT_TYPE_VOLTAGE_DROP
 
 
-class GridFaultAdapter:
+class GridFaultEngine:
     """Driven-Adapter fuer GridConnection-`voltage_drop`-Faults.
 
     Konstruktor-Injection von `scenario.faults` reicht; der
     Adapter filtert intern nach `type == "voltage_drop"`. Andere
     Fault-Typen aus der Liste werden ignoriert (Welle-2-Closed-
-    Set; Battery-Faults gehoeren in den `BatteryFaultAdapter`).
+    Set; Battery-Faults gehoeren in den `BatteryFaultEngine`).
     """
 
     def __init__(self, faults: Sequence[ScenarioFault]) -> None:

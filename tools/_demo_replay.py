@@ -31,7 +31,7 @@ from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import Scenario, ScenarioFault
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
-from grid_gym.hexagon.core.faults import BatteryFaultAdapter, GridFaultAdapter
+from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 from grid_gym.hexagon.core.scenario.loader import TickLoopWiring, build_tick_loop
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
 
@@ -40,7 +40,7 @@ from grid_gym.hexagon.core.serialization.canonical import canonical_json
 # tools-interne Konstante gespiegelt (kein Test-Import aus `tools/`).
 MIN_DETERMINISM_TICKS: int = 100
 
-# Fault-Typen, fuer die `BatteryFaultAdapter`/`GridFaultAdapter` einen
+# Fault-Typen, fuer die `BatteryFaultEngine`/`GridFaultEngine` einen
 # Filter halten (Spiegel von `_demo_scenario_setup._KNOWN_FAULT_TYPES`).
 _KNOWN_FAULT_TYPES: frozenset[str] = frozenset({"cell_failure", "voltage_drop"})
 
@@ -69,13 +69,13 @@ class _StepClock:
 
 
 class _FaultPortComposition:
-    """Delegiert `apply_active_faults` an `BatteryFaultAdapter` +
-    `GridFaultAdapter` (Reihenfolge Battery → Grid; deterministisch,
+    """Delegiert `apply_active_faults` an `BatteryFaultEngine` +
+    `GridFaultEngine` (Reihenfolge Battery → Grid; deterministisch,
     ADR 0025 §2.4). Spiegel der `_demo_scenario_setup`-Composition."""
 
     def __init__(self, faults: tuple[ScenarioFault, ...]) -> None:
-        self._battery_adapter = BatteryFaultAdapter(faults)
-        self._grid_adapter = GridFaultAdapter(faults)
+        self._battery_adapter = BatteryFaultEngine(faults)
+        self._grid_adapter = GridFaultEngine(faults)
 
     def apply_active_faults(
         self,
