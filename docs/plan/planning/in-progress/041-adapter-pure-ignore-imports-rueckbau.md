@@ -1,7 +1,8 @@
 # 041 — AC-ADAPTER-PURE-`ignore_imports`-Rueckbau
 
-**Status:** In Progress (M8-Welle-1) — C1 Done 2026-06-13 (1 von 8
-Bruecken entfernt); naechste Tranche C2 (Run-Execution-Port)
+**Status:** In Progress (M8-Welle-1) — C1+C2 Done 2026-06-13 (4 von 8
+Bruecken entfernt); naechste Tranche C3 (Demo-/Scenario-Bootstrap nach
+`composition/`)
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -65,19 +66,27 @@ Aktuelle Ausnahmen:
 - ✅ Sensoren: `make arch-check` 7/7 KEPT, `make typecheck`/`lint`/
   `format-check` gruen, `make test-unit` 1796 passed. Verhaltensneutral.
 
-### C2 — Run-Ausfuehrungs-Port
+### C2 — Run-Ausfuehrungs-Port (Done 2026-06-13)
 
-- Neuen Driving-Port einfuehren, Arbeitsname
-  `ActiveRunPort`/`RunExecutionPort`.
-- `ControlAction` aus `hexagon.core.simulation.tick_loop` in eine
-  erlaubte Domain-Surface verschieben.
-- `TickLoopRegistry`, `_runs_action_router.py`, `_runs_router.py`,
-  `_tick_loop_driver.py` und `_tick_loop_healthcheck.py` gegen den
-  Port typisieren.
-- Entfernbare `pyproject.toml`-Eintraege:
-  `_tick_loop_registry`, `_tick_loop_driver`,
-  `_tick_loop_healthcheck` -> `simulation.tick_loop`.
-- Tests: `make arch-check`, `make test-unit`.
+- ✅ NEU `hexagon/ports/driving/run_execution.py` —
+  `RunExecutionPort` (Protocol, 9-Member-Surface aus `ADR 0050` §2.3:
+  `run_id`/`tick_ms`/`tick_count`/`control_state`/`device_types`/
+  `devices` + `request`/`tick`/`finalize`). `devices` als
+  `tuple[object, ...]` (keine `DeviceModel`-Import-Pflicht).
+- ✅ `ControlAction` aus `core.simulation.tick_loop` nach
+  `core.domain.run` verschoben (`tick_loop` importiert von dort;
+  `Literal`-Import dort entfernt).
+- ✅ `TickLoopRegistry`, `_tick_loop_driver.py`,
+  `_tick_loop_healthcheck.py` gegen `RunExecutionPort` typisiert;
+  `_runs_router.py`/`_runs_action_router.py` sehen den Port
+  transparent ueber die Registry (nur Surface-Member genutzt).
+  `TickLoop` erfuellt den Port strukturell — kein Vererbungs-Zwang.
+- ✅ 3 `pyproject.toml`-Eintraege entfernt
+  (`_tick_loop_registry`/`_tick_loop_driver`/`_tick_loop_healthcheck`
+  -> `simulation.tick_loop`); jetzt **4** Bruecken (von 8).
+- ✅ Sensoren: `make arch-check` 7/7 KEPT, `make typecheck` Success
+  (180 Dateien), `make lint`/`format-check` gruen, `make test-unit`
+  1796 passed. Verhaltensneutral.
 
 ### C3 — Demo-/Scenario-Bootstrap aus `adapters/` herausziehen
 

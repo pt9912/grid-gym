@@ -61,10 +61,9 @@ from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassifi
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
-from typing import Literal
 
 from grid_gym.hexagon.core.domain.alarm import Alarm
-from grid_gym.hexagon.core.domain.run import RunStatus
+from grid_gym.hexagon.core.domain.run import ControlAction, RunStatus
 from grid_gym.hexagon.core.simulation.alarm_mappers import dispatch_alarm_mapper
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
@@ -183,11 +182,6 @@ def _default_alarm_id_source() -> str:
     `alarm_id_source`-Konstruktor-Kwarg."""
     return str(uuid.uuid4())
 
-
-ControlAction = Literal["pause", "resume", "stop"]
-"""M5-Welle-4a (ADR 0037 Decision API-1 + ADR 0039 Decision 13)
-Control-Action-Vokabel, gespiegelt aus dem HTTP-`ControlRequest`-
-Body. `TickLoop.request(action)` dispatched ueber diesen Literal."""
 
 _CONTROL_ACTION_TRANSITIONS: Final[
     Mapping[ControlAction, tuple[RunStatus, tuple[RunStatus, ...]]]

@@ -23,7 +23,7 @@ from fastapi import Request
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
     TickLoopHealthcheckAdapter,
 )
-from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from grid_gym.hexagon.ports.driving.run_execution import RunExecutionPort
 
 
 class TickLoopRegistry:
@@ -43,10 +43,10 @@ class TickLoopRegistry:
     """
 
     def __init__(self) -> None:
-        self._tick_loops: dict[str, TickLoop] = {}
+        self._tick_loops: dict[str, RunExecutionPort] = {}
         self._healthcheck_adapters: dict[str, TickLoopHealthcheckAdapter] = {}
 
-    def register(self, tick_loop: TickLoop) -> None:
+    def register(self, tick_loop: RunExecutionPort) -> None:
         """Registriert einen `TickLoop` unter seiner `run_id`.
 
         Ueberschreibt eine vorhandene Registrierung mit demselben
@@ -56,7 +56,7 @@ class TickLoopRegistry:
         """
         self._tick_loops[tick_loop.run_id] = tick_loop
 
-    def tick_loop_for(self, run_id: str) -> TickLoop | None:
+    def tick_loop_for(self, run_id: str) -> RunExecutionPort | None:
         """Liefert den `TickLoop` zu `run_id` oder ``None``.
 
         Aufrufer (HTTP-Endpoints) muessen den `None`-Fall

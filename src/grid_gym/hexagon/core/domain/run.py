@@ -42,6 +42,15 @@ UI-CSS-Klassen).
 """
 
 
+ControlAction = Literal["pause", "resume", "stop"]
+"""Control-Action-Vokabel (M5-Welle-4a, ADR 0037 Decision API-1 + ADR
+0039 Decision 13), gespiegelt aus dem HTTP-`ControlRequest`-Body.
+Verschoben aus `core.simulation.tick_loop` in 041-C2 (ADR 0050 §2.3),
+damit der `RunExecutionPort` sie ohne `core.simulation`-Import
+referenzieren kann (`AC-ADAPTER-PURE`). `RunExecutionPort.request(action)`
+und `TickLoop.request(action)` dispatchen ueber diesen Literal."""
+
+
 @dataclass(frozen=True, slots=True)
 class RunMetadata:
     """Metadaten eines reproduzierbaren Simulationslaufs.

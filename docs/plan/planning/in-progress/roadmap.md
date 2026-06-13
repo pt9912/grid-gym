@@ -1299,12 +1299,13 @@ Meilenstein; die **vollstaendige** Carveout-Zuordnung (inkl. restliche
 M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
 
 **Status:** `In Progress` — Welle 1 laeuft seit 2026-06-13
-([`M8-welle-0.md`](M8-welle-0.md)). **041-C1 Done**: Fault-Type-Quick-Win
-(Konstanten nach `hexagon.core.domain.fault`, 8 → 7 `ignore_imports`,
-[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) →
-`Provisional`). Naechste Tranche 041-C2 (Run-Execution-Port);
-[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) bleibt
-`Proposed` bis 042-C1.
+([`M8-welle-0.md`](M8-welle-0.md)). **041-C1+C2 Done**: Fault-Type-Surface
+nach `hexagon.core.domain.fault` + NEU `RunExecutionPort` (Driving-Port),
+`ControlAction` nach `hexagon.core.domain.run`; **8 → 4**
+`ignore_imports`, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
+`Provisional`. Naechste Tranche 041-C3 (Demo-/Scenario-Bootstrap nach
+`composition/`); [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+bleibt `Proposed` bis 042-C1.
 
 ---
 

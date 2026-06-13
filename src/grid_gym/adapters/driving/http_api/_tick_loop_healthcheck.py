@@ -38,7 +38,7 @@ from collections import deque
 from collections.abc import Callable
 from typing import Final
 
-from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from grid_gym.hexagon.ports.driving.run_execution import RunExecutionPort
 
 # Welle-4b-c-D-3: Default-Window-Size 100 Ticks (10ms-Modus: 1 Sekunde
 # Window; 100ms-Modus: 10 Sekunden; 1000ms-Modus: 100 Sekunden).
@@ -76,7 +76,7 @@ class TickLoopHealthcheckAdapter:
 
     def __init__(
         self,
-        tick_loop: TickLoop,
+        tick_loop: RunExecutionPort,
         *,
         window_size: int = _DEFAULT_WINDOW_SIZE,
         clock_source: Callable[[], float] = time.perf_counter,
@@ -90,7 +90,7 @@ class TickLoopHealthcheckAdapter:
         self._durations_ms: deque[float] = deque(maxlen=window_size)
 
     @property
-    def tick_loop(self) -> TickLoop:
+    def tick_loop(self) -> RunExecutionPort:
         """TickLoop-Read-Access fuer Driver/Registry."""
         return self._tick_loop
 

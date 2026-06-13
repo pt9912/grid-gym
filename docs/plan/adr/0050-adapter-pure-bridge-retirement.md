@@ -199,7 +199,11 @@ Umsetzungsslice mindestens einen `ignore_imports`-Eintrag entfernt und
 2026-06-13 mit 041-C1**: Fault-Type-Konstanten nach
 `hexagon.core.domain.fault` verschoben (`core.faults.types`
 re-exportiert), `_runs_action_router`-Eintrag entfernt (8 → 7 Bruecken),
-`make arch-check` 7/7 gruen.
+`make arch-check` 7/7 gruen. **041-C2**: NEU `RunExecutionPort`
+(`hexagon/ports/driving/run_execution.py`, §2.3-Surface), `ControlAction`
+nach `hexagon.core.domain.run`; Registry/Driver/Healthcheck gegen den
+Port typisiert, 3 weitere Eintraege entfernt (7 → 4 Bruecken),
+`make typecheck` Success.
 
 `Accepted` ist erst sinnvoll, wenn alle acht oben genannten
 `ignore_imports`-Eintraege entfernt oder per Folge-ADR bewusst neu

@@ -32,9 +32,9 @@ from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
 )
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
-from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+from grid_gym.hexagon.ports.driving.run_execution import RunExecutionPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import (
     TelemetryPoint as PortTelemetryPoint,
 )
@@ -83,7 +83,7 @@ class DemoTickLoopDriver:
 
     def __init__(
         self,
-        tick_loop: TickLoop,
+        tick_loop: RunExecutionPort,
         *,
         tick_interval_s: float = _DEFAULT_TICK_INTERVAL_S,
         alarm_stream_provider: AlarmStreamProvider | None = None,
