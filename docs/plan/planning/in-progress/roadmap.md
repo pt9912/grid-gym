@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 geplant** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2-4** liefern SOLLTE-Geraete/Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-016..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 gestartet (2a-Design Done)** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2-4** liefern SOLLTE-Geraete/Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-016..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
 **Stand:** 2026-06-13
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -1312,8 +1312,12 @@ Fault-Engine-Rename (`*FaultAdapter` → `*FaultEngine`, Standort bleibt
 `hexagon/core/faults`, keine Aliase),
 [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
 `Accepted` + NEU `ADR 0054`. **M8-Welle 1 (Architektur-Cleanup)
-abgeschlossen** — naechste Welle 2 (Geraete `T-016..019`,
-[`M8-welle-2.md`](M8-welle-2.md)).
+abgeschlossen**. **Welle 2 (Geraete) gestartet**
+([`M8-welle-2.md`](M8-welle-2.md)): **2a-C1 Done** —
+[`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) (EV-Charger:
+SoC + CC/CV-Ladekennlinie + durchgaengiges V2G + `connection_loss`-Fault)
+entworfen + reviewt (`Proposed`); naechster Schritt 2a-C2/C3
+(Implementierung `devices/ev_charger/`).
 
 ---
 

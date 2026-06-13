@@ -28,13 +28,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   AI-Harness-Kurses als Baseline (gepinnt Tag `templates-v2`),
   Adaptions-Block `MR-000..005`, Modus-Deklaration pro Sub-Area;
   plus `docs/reviews/`-Review-Report-Template.
+- M8-ADRs: NEU `ADR 0050` (AC-ADAPTER-PURE-Bridge-Rueckbau),
+  `ADR 0051` (Fault-Engine-Standort/Naming), `ADR 0054`
+  (Composition-ASGI-Entrypoint + Scenario-Hook-Inversion) — alle
+  `Accepted`; NEU `ADR 0055` (EV-Charger-Device-Design: SoC + CC/CV +
+  V2G + `connection_loss`-Fault, `Proposed` — entworfen + reviewt).
+- NEU `grid_gym/composition/`-Paket (Composition Root) mit
+  `composition.asgi`-Entrypoint; NEU
+  `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU
+  `hexagon/core/domain/fault.py` (Fault-Type-Single-Source).
+- NEU `M8-welle-2.md` (Geraete-Wellen-Plan) + Welle-1-Closure/Lerneintrag
+  in `M8-welle-0.md`.
 
 ### Changed
 
 - Roadmap erweitert: NEU Meilenstein **M8 — SOLLTE-Geraete & Netz**
-  (→ Release v0.2.0) per Stakeholder-Mandat eroeffnet; Wellen-Skizze
-  0..3 (Cleanup `041`/`042` → Geraete `T-016..019` → Netz
-  `T-020..022` → BESS-Telemetry `T-023/024`); M9/M10 als Skizze.
+  (→ Release v0.2.0). Wellen: 0 = Eroeffnung, 1 = Architektur-Cleanup
+  (Done), 2 = Geraete `T-016..019`, 3 = Netz `T-020..022`,
+  4 = BESS-Telemetry `T-023/024`; M9/M10 als Skizze.
+- **M8-Welle 1 (Architektur-Cleanup) abgeschlossen** (Slices 041+042,
+  verhaltensneutral, je `make fullbuild` + CI verifiziert):
+  `AC-ADAPTER-PURE`-`ignore_imports` **8 → 0** (`ignore_imports = []`)
+  — Run-Ausfuehrung ueber NEU `RunExecutionPort`, Fault-Konstanten +
+  `ControlAction` nach `core.domain.*`, Demo-/Scenario-Bootstrap nach
+  `composition/` mit App-Bootstrap-Hook-Inversion +
+  `composition.asgi`-uvicorn-Entrypoint (`Dockerfile`/`__main__`/
+  Compose); Fault-Engines `*FaultAdapter` → `*FaultEngine` (Standort
+  bleibt `hexagon/core/faults`). M8-Wellen-Nummerierung vereinheitlicht.
 
 - Doku-Sweeps zur Linkpflicht: ~620 nackte Kennungen auf ihre
   Definition verlinkt (mit Abschnitts-Ankern; `AC-*`-Target =
