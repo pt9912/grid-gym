@@ -63,11 +63,14 @@ Verstoss → `EvChargerConfigInvalidValueError`):
   kein Opt-out).
 - `nominal_voltage_v` — Nennspannung, `> 0`.
 - `battery_capacity_kwh` — Kapazitaet des verbundenen Fahrzeug-Akkus, `> 0`.
-- `cv_phase_start_soc` — SoC-Schwelle des CC→CV-Uebergangs, `0 < x < 1`
-  (z. B. `0.8`).
+- `cv_phase_start_soc` — SoC-Schwelle des CC→CV-Uebergangs,
+  `0 < x <= 0.99` (z. B. `0.8`; Obergrenze haelt den Taper-Nenner
+  `1 - cv_phase_start_soc` endlich).
 
-Dynamische Init-Params (kein Static-Config, nicht `scenario_hash`-relevant
-ueber den Config-Block hinaus): `initial_soc` (`0 .. 1`, Default `0.5`),
+Init-Params sind Scenario-`params` und damit **Teil des `scenario_hash`**
+(`asdict(scenario)`) — gleicher Hash ⇒ gleicher Lauf, ADR-konform:
+`initial_soc` (`0 .. 1`, Default `0.5`; in `initialize` zu
+`initial_stored_kwh = initial_soc * battery_capacity_kwh` umgerechnet),
 `initial_plug_state` (Default `"unplugged"`).
 
 ### 2.4 CC/CV-Ladekennlinie (Lade-Richtung)
@@ -97,11 +100,14 @@ Entladung ist auf `max_discharge_kw` gecappt (flach, kein Taper) und
 ### 2.6 Command-Surface
 
 - `set_charge_power` (`value` kW): bei `unplugged`/`connection_loss` →
-  `rejected`. Sonst Clamp auf `[-max_discharge_kw, +effective_max_charge_kw]`
-  unter Beruecksichtigung von `soc` (voll ⇒ kein Laden, leer ⇒ kein
-  Entladen); ausserhalb → `limited`, sonst `accepted`.
+  `rejected`. Sonst nur **grobe Cap-Pruefung** gegen `[-max_discharge_kw,
+  +max_charge_kw]` (ausserhalb → `limited` auf den Cap, sonst `accepted`);
+  setzt `_pending_power_kw`. **Die SoC-/Kennlinien-abhaengige Begrenzung
+  passiert NICHT hier, sondern pro Tick** (§2.8) — sonst clampte ein
+  gehaltenes Command gegen einen veralteten SoC.
 - `set_plug_state` (`value ∈ {"plugged","unplugged"}`): `→ unplugged`
-  setzt `_pending_power_kw = 0`.
+  setzt `_pending_power_kw = 0` (Re-Aktivierung nach `plugged` braucht ein
+  neues `set_charge_power`).
 
 ### 2.7 Fault-Injection
 
@@ -115,12 +121,22 @@ aktiv, ist `power_kw` hart `0` (kein Energiefluss, SoC eingefroren), analog
 
 ### 2.8 Tick-Mechanik + Snapshot + Determinismus
 
-- Tick (`Decimal`-Localcontext, `prec=28`, `ROUND_HALF_EVEN`):
-  `new_power_kw = 0` bei `unplugged`/`connection_loss`, sonst
-  `_pending_power_kw` (bereits SoC-/Kennlinien-geclampt beim Command). SoC
-  fortschreiben: `stored_kwh += charge_kwh` bzw. `-= discharge_kwh`
-  (clamp `[0, battery_capacity_kwh]`). `charged_kwh`/`discharged_kwh`
-  akkumulieren.
+- Tick (`Decimal`-Localcontext, `prec=28`, `ROUND_HALF_EVEN`) — **die
+  SoC-Begrenzung passiert pro Tick gegen den aktuellen `stored_kwh`, nicht
+  beim Command** (sonst veralteter Clamp):
+  1. `unplugged`/`connection_loss` ⇒ `new_power_kw = 0`.
+  2. Sonst `requested = _pending_power_kw`, gegen den **aktuellen** SoC neu
+     begrenzen: Laden auf `+effective_max_charge_kw(soc)` (CV-Taper §2.4),
+     Entladen auf `-max_discharge_kw`.
+  3. **Energie-Limit**: die Tick-Energie wird auf den verfuegbaren Rest
+     gedeckelt — Laden auf `battery_capacity_kwh - stored_kwh`, Entladen auf
+     `stored_kwh`. Reicht der Rest nicht fuer die volle Tick-Dauer, wird
+     `new_power_kw` entsprechend reduziert, sodass **`power_kw`-Telemetrie
+     und tatsaechlich gespeicherte Energie konsistent sind** (nie `soc > 1`
+     oder `soc < 0`, keine Energie aus dem Nichts).
+  4. `stored_kwh` um die tatsaechliche Tick-Energie fortschreiben (Ergebnis
+     liegt per Konstruktion in `[0, battery_capacity_kwh]`); `charged_kwh`/
+     `discharged_kwh` akkumulieren; `_current_power_kw = new_power_kw`.
 - Telemetrie (alphabetisch, `quantize(0.000001)`): `charged_kwh`,
   `connection_loss` (`1`/`0`), `discharged_kwh`, `plug_state` (`1`/`0`),
   `power_kw`, `soc` (`0..1`), `voltage_v`.
@@ -128,7 +144,9 @@ aktiv, ist `power_kw` hart `0` (kein Energiefluss, SoC eingefroren), analog
   `sequence`/`config`/`plug_state`/`stored_kwh`/`current_power_kw`/
   `pending_power_kw`/`charged_kwh`/`discharged_kwh`/`connection_loss_active`.
   `from_snapshot(snapshot()) == device` byte-stabil.
-- Pre-init-Guards + `initialize`-Once analog ADR 0013/0017.
+- Voll-`DeviceModel`-Surface inkl. `device_id`/`set_run_id` und
+  `attach_random` (Random-Re-Attach nach `from_snapshot`, wie die fuenf
+  Bestandsgeraete); Pre-init-Guards + `initialize`-Once analog ADR 0013/0017.
 
 ## 3. Begruendung
 
@@ -141,12 +159,20 @@ minimalen Realismus-Stufen mit klarem Schaerfungspfad.
 
 ## 4. Reichweite + Operative Artefakte
 
-Welle 2a-C2/C3: `devices/ev_charger/`-Submodul, `_DEVICE_FACTORIES
-["ev_charger"]` in `core/scenario/loader.py`, Scenario-Validator-
-Schaerfung, `CRITICAL_COV_TARGETS += devices/ev_charger`, NEU
-`FAULT_TYPE_CONNECTION_LOSS`. Akzeptanz `GG-DEV-015`: Minimalmodell (hier
-realistisch erfuellt) + Szenario-YAML-Beispiel + deterministischer
-Smoke-Test (Lade-CC/CV-Verlauf, V2G, Fault, Snapshot-Roundtrip).
+Welle 2a-C2/C3 — Integrationspunkte:
+
+- `devices/ev_charger/`-Submodul; `_DEVICE_FACTORIES["ev_charger"]` in
+  `core/scenario/loader.py`; Scenario-Validator-Schaerfung der `params`.
+- NEU `FAULT_TYPE_CONNECTION_LOSS` in `core.domain.fault` (+ Re-Export ueber
+  `core.faults.types`); **der HTTP-Fault-Validator-Whitelist
+  `_FAULT_TYPE_TO_DEVICE_TYPE` in `_runs_action_router.py` bekommt
+  `connection_loss → ev_charger`** (sonst lehnt `POST /faults` ihn mit 422 ab).
+- `CRITICAL_COV_TARGETS += src/grid_gym/hexagon/core/devices/ev_charger`
+  (`Dockerfile`-ARG + Makefile).
+
+Akzeptanz `GG-DEV-015`: Modell + Szenario-YAML-Beispiel + deterministischer
+Smoke-Test (Lade-CC/CV-Verlauf, V2G, `connection_loss`-Fault,
+Snapshot-Roundtrip).
 
 ## 5. Konsequenzen
 
