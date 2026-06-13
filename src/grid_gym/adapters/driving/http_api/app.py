@@ -60,7 +60,7 @@ from __future__ import annotations
 
 import os
 import uuid
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Final
@@ -127,6 +127,46 @@ class _DemoScenarioPathNotFoundError(FileNotFoundError):
             "volume-mount in compose.yml, or pass --scenario explicitly via "
             "`python -m grid_gym demo`."
         )
+
+
+ScenarioConfigurator = Callable[[FastAPI, Path], None]
+"""Signatur des Scenario-Demo-Setups (`configure_scenario_demo_run`). Per
+`_register_scenario_configurator` aus dem Composition-Root
+(`grid_gym.composition.asgi`) injiziert — `app.py` importiert das
+Scenario-Bootstrap (`composition._demo_scenario_setup`) nicht mehr direkt,
+sonst entstuende die indirekte Kette Adapter → composition →
+`core.scenario`/`core.faults` (`AC-ADAPTER-PURE`, 041-C3b)."""
+
+
+class _ScenarioConfiguratorNotRegisteredError(RuntimeError):
+    """`GRID_GYM_DEMO_SCENARIO_PATH` gesetzt, aber kein Scenario-
+    Konfigurator registriert: die App lief ueber den reinen Adapter-
+    Entrypoint statt `grid_gym.composition.asgi:app` (041-C3b)."""
+
+    def __init__(self, path_str: str) -> None:
+        super().__init__(
+            f"GRID_GYM_DEMO_SCENARIO_PATH={path_str!r} is set but no scenario "
+            "configurator is registered. Start the app via the composition "
+            "entrypoint `grid_gym.composition.asgi:app`, not the bare adapter "
+            "`grid_gym.adapters.driving.http_api:app`."
+        )
+
+
+def _raise_scenario_configurator_unregistered(_app: FastAPI, scenario_path: Path) -> None:
+    """Fail-closed Default-Konfigurator — aktiv, solange der
+    Composition-Root keinen registriert hat."""
+    raise _ScenarioConfiguratorNotRegisteredError(str(scenario_path))
+
+
+_scenario_configurator: ScenarioConfigurator = _raise_scenario_configurator_unregistered
+
+
+def _register_scenario_configurator(configurator: ScenarioConfigurator) -> None:
+    """Injiziert den Scenario-Demo-Konfigurator (Composition Root,
+    `grid_gym.composition.asgi`). Der Lifespan-Env-Branch ruft ihn, wenn
+    `GRID_GYM_DEMO_SCENARIO_PATH` gesetzt ist."""
+    global _scenario_configurator
+    _scenario_configurator = configurator
 
 
 """M5-Welle-5 (Slice-Doc Decision 6): Pfad-zur-Demo-YAML-Datei.
@@ -233,15 +273,11 @@ def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
     scenario_path = Path(scenario_path_raw)
     if not scenario_path.is_file():
         raise _DemoScenarioPathNotFoundError(scenario_path_raw)
-    # Inline-Import des Welle-5-Helpers (Slice-Doc §9 Cycle-
-    # Vermeidung): `_demo_scenario_setup` selbst importiert
-    # `app.py` nicht; der Inline-Import hier ist nur eine Lazy-
-    # Optimierung, damit Tests ohne env-var keinen YAML-Helper
-    # initialisieren.
-    from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
-        configure_scenario_demo_run,
-    )
-
+    # 041-C3b: `app.py` importiert das Scenario-Bootstrap NICHT mehr
+    # (sonst Adapter → composition → core.scenario/faults, indirekte
+    # AC-ADAPTER-PURE-Verletzung). Der Composition-Root
+    # `grid_gym.composition.asgi` registriert den Konfigurator via
+    # `_register_scenario_configurator`; der Default ist fail-closed.
     configure_run_repository(InMemoryRunRepository())
     configure_telemetry_stream(InMemoryTelemetryStream())
     configure_tick_loop_registry(TickLoopRegistry())
@@ -250,7 +286,7 @@ def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
     # `app` importiert (Cycle).
     app_.state.alarm_stream = InMemoryAlarmStream()
     app_.state.alarm_history_buffer = AlarmHistoryBuffer()
-    configure_scenario_demo_run(app_, scenario_path)
+    _scenario_configurator(app_, scenario_path)
     # Welle-5-Review F9: Sentinel-Attr erst NACH erfolgreichem
     # `configure_scenario_demo_run` setzen — sonst blockt der Skip-
     # Guard zukuenftige Retries nach einer Setup-Exception (F2

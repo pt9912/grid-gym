@@ -1,8 +1,8 @@
 # 041 — AC-ADAPTER-PURE-`ignore_imports`-Rueckbau
 
-**Status:** In Progress (M8-Welle-1) — C1+C2+C3a Done 2026-06-13 (6 von 8
-Bruecken entfernt); offen: C3b (`_demo_scenario_setup`-Inversion mit
-App-Bootstrap-Hook + Composition-ASGI-Entrypoint) → dann 0 Bruecken
+**Status:** In Progress (M8-Welle-1) — C1..C3b Done 2026-06-13 (**8 von 8
+Bruecken entfernt**, `ignore_imports = []`, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
+`Accepted`); offen nur C4 (`pyproject.toml`-Kommentar-Cleanup)
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -108,20 +108,24 @@ App-Bootstrap-Inversion.
   (`_demo_setup -> simulation.tick_loop`/`scheduler`); jetzt **2** Bruecken.
 - ✅ Sensoren: `make arch-check` 7/7 KEPT, `make gates` gruen.
 
-#### C3b — `_demo_scenario_setup`-Inversion (offen — alle Bruecken weg)
+#### C3b — `_demo_scenario_setup`-Inversion (Done 2026-06-13, `ADR 0054`)
 
-- App-Bootstrap invertieren: `app.py`-Lifespan exportiert einen Hook statt
-  das Scenario-Bootstrap zu importieren; ein Composition-Root-ASGI-
-  Entrypoint (`grid_gym.composition.asgi`) verdrahtet
-  `configure_scenario_demo_run` und registriert den Hook.
-- `_demo_scenario_setup.py` nach `composition/` verschieben.
-- `Dockerfile`/`deploy/compose.yml`-uvicorn-Target auf den Composition-
-  Entrypoint umstellen; Integration-/Compose-Smokes anpassen.
-- Entfernbare Eintraege: `_demo_scenario_setup -> scenario.loader` +
-  `-> core.faults` → **0** Bruecken → `ADR 0050` `Accepted`.
-- Eigene Mini-ADR-Entscheidung fuer den Entrypoint-Wechsel; Verifikation
-  per vollem `make fullbuild`.
-- Tests: `make arch-check`, Integration-/HTTP-/Compose-Smokes, `make gates`.
+- ✅ App-Bootstrap invertiert: `app.py` exportiert den
+  `_`-Hook `_register_scenario_configurator` + fail-closed Default;
+  der Lifespan-Env-Branch ruft den registrierten Konfigurator statt
+  das Scenario-Bootstrap zu importieren.
+- ✅ `_demo_scenario_setup.py` per `git mv` nach `composition/`;
+  NEU `grid_gym.composition.asgi` verdrahtet + registriert beim Import.
+- ✅ uvicorn-Target (`Dockerfile`-ENTRYPOINT, `__main__`, Env-Smokes)
+  → `composition.asgi:app`.
+- ✅ Letzte 2 Eintraege entfernt → **`ignore_imports = []`** (0 Bruecken)
+  → [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`.
+- ✅ NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)
+  (Entrypoint-Wechsel + Hook-Inversion). Hook `_`-prefixt
+  (`AC-NO-GOD-UTILS` max 5 public top-level functions in `app.py`).
+- ✅ Sensoren: `make arch-check` 7/7 + `tools/arch_check.py` clean
+  (0 Ignores), `make fullbuild` gruen (Compose-Smoke ueber neuen
+  Entrypoint), NEU `tests/unit/composition/test_asgi.py`.
 
 ### C4 — Kommentar- und Doku-Rueckbau
 

@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
+from grid_gym.composition._demo_scenario_setup import (
     _DemoScenarioUnknownFaultTypeError,
     _FaultPortComposition,
     _compose_fault_port,

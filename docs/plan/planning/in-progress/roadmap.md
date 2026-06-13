@@ -1301,12 +1301,15 @@ M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
 **Status:** `In Progress` — Welle 1 laeuft seit 2026-06-13
 ([`M8-welle-0.md`](M8-welle-0.md)). **041-C1+C2 Done**: Fault-Type-Surface
 nach `hexagon.core.domain.fault` + NEU `RunExecutionPort` (Driving-Port),
-`ControlAction` nach `hexagon.core.domain.run`; **C3a** NEU `composition/`-Paket +
-`_demo_setup` verschoben → **8 → 2**
-`ignore_imports`, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
-`Provisional`. Offen: 041-C3b (App-Bootstrap-Inversion fuer
-`_demo_scenario_setup` → 0 Bruecken → `Accepted`);
-[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+`ControlAction` nach `hexagon.core.domain.run`; **C3a/C3b** NEU
+`composition/`-Paket, `_demo_setup`+`_demo_scenario_setup` verschoben,
+App-Bootstrap-Hook-Inversion + `composition.asgi`-Entrypoint
+([`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md))
+→ **8 → 0** `ignore_imports` (`ignore_imports = []`),
+[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
+**`Accepted`**. **Slice 041 fachlich fertig** — offen nur C4
+(`pyproject.toml`-Kommentar-Cleanup). Danach Welle 2 (Geraete
+`T-016..019`). [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
 bleibt `Proposed` bis 042-C1.
 
 ---

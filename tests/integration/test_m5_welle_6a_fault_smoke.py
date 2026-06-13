@@ -30,10 +30,11 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
+from grid_gym.composition._demo_scenario_setup import (
     _DEMO_RUN_ID,
 )
-from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR, app
+from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR
+from grid_gym.composition.asgi import app
 
 
 _DEMO_SCENARIO_PATH: Path = (
@@ -197,7 +198,7 @@ def test_demo_yaml_faults_compose_and_apply_during_windows() -> None:
     """
     from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
     from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
-    from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
+    from grid_gym.composition._demo_scenario_setup import (
         _compose_fault_port,
         _DemoSimulationClock,
     )

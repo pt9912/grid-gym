@@ -513,7 +513,7 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=5 \
 # konsumiert (Welle-0b-Review H-1: Welle-0b-Erst-Wurf hatte sie zwar
 # in ENV gesetzt, aber per exec-form-ENTRYPOINT ignoriert; das war
 # ein dokumentations-naher Lie und ist hier behoben).
-ENTRYPOINT exec uvicorn grid_gym.adapters.driving.http_api:app --host "$GRID_GYM_HOST" --port "$GRID_GYM_PORT"
+ENTRYPOINT exec uvicorn grid_gym.composition.asgi:app --host "$GRID_GYM_HOST" --port "$GRID_GYM_PORT"
 
 # ---------------------------------------------------------------------------
 # iec61850-test: Library-Compat-Test-Stage auf Python 3.12 (ADR 0046,

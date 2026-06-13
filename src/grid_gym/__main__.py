@@ -149,7 +149,7 @@ def _run_demo(args: argparse.Namespace) -> int:
     import uvicorn
 
     uvicorn.run(
-        "grid_gym.adapters.driving.http_api:app",
+        "grid_gym.composition.asgi:app",
         host=args.host,
         port=args.port,
         reload=False,

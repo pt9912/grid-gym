@@ -36,11 +36,12 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from grid_gym.adapters.driving.http_api._demo_scenario_setup import (
+from grid_gym.composition._demo_scenario_setup import (
     _DEMO_RUN_ID,
 )
 from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
-from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR, app
+from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR
+from grid_gym.composition.asgi import app
 
 # M7-Welle-2 (D-10-Revision C): der Demo-YAML-Load liegt jetzt im
 # Shared-Helper `grid_gym.scenario_yaml` (Test-Helper komponiert ihn

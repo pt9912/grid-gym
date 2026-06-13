@@ -1,6 +1,6 @@
 # ADR 0050 — AC-ADAPTER-PURE Bridge-Rueckbau fuer HTTP-Demo-Wiring
 
-**Status:** Provisional
+**Status:** Accepted
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -205,9 +205,16 @@ nach `hexagon.core.domain.run`; Registry/Driver/Healthcheck gegen den
 Port typisiert, 3 weitere Eintraege entfernt (7 → 4 Bruecken),
 `make typecheck` Success. **041-C3a**: NEU `grid_gym.composition`-Paket
 (§2.5), `_demo_setup` per `git mv` dorthin (kein src-Adapter-Importer),
-2 Eintraege entfernt (4 → 2 Bruecken). Rest (2 Bruecken,
-`_demo_scenario_setup`) braucht App-Bootstrap-Inversion (C3b) wegen
-indirekter `forbidden`-Pruefung — `Accepted` erst dann.
+2 Eintraege entfernt (4 → 2 Bruecken). **041-C3b**: App-Bootstrap-
+Inversion ([`ADR 0054`](0054-composition-asgi-entrypoint-and-scenario-hook.md))
+— `_demo_scenario_setup` nach `composition/`, `app.py` registriert den
+Scenario-Konfigurator per Hook statt ihn zu importieren, neuer
+`composition.asgi`-Entrypoint; letzte 2 Eintraege entfernt →
+**`ignore_imports = []`** (0 Bruecken).
+
+→ **`Accepted` 2026-06-13**: alle acht Bruecken entfernt,
+`make arch-check` 7/7 + `tools/arch_check.py` clean (0 Ignores),
+`make fullbuild` gruen.
 
 `Accepted` ist erst sinnvoll, wenn alle acht oben genannten
 `ignore_imports`-Eintraege entfernt oder per Folge-ADR bewusst neu

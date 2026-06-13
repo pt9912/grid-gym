@@ -42,8 +42,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from grid_gym.adapters.driving.http_api._demo_scenario_setup import _DEMO_RUN_ID
-from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR, app
+from grid_gym.composition._demo_scenario_setup import _DEMO_RUN_ID
+from grid_gym.adapters.driving.http_api.app import _DEMO_SCENARIO_ENV_VAR
+from grid_gym.composition.asgi import app
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
