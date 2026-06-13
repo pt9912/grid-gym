@@ -102,8 +102,8 @@ Diese Revision deckte zugleich die breitere `AC-ADAPTER-PURE`-Bruecken-
 Lage des produktiven http_api-Demo-Wirings auf → **NEU ADR 0050**
 (Bridge-Rueckbau) + **ADR 0051** (Fault-Engine-Standort/Naming), beide
 `Proposed`, mit den Umsetzungsslices
-[`next/041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) +
-[`next/042`](../next/042-fault-engine-location-and-naming.md).
+[`next/041`](../in-progress/041-adapter-pure-ignore-imports-rueckbau.md) +
+[`next/042`](../in-progress/042-fault-engine-location-and-naming.md).
 **D-6 („kein NEU ADR") bleibt fuer die Abnahme-CLI selbst gueltig** —
 0050/0051 betreffen die separat-aufgeschobene Adapter-Cleanup-Linie,
 nicht `tools/accept.py`; C1 entfaellt unveraendert.

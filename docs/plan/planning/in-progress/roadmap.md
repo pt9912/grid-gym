@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (Welle-X-D-4): offene Trigger 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)) tragen dokumentierte Aktivierungs-Bedingungen; dazu zwei vorbereitete `next/`-Plaene ([`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md) [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau + [`042`](../next/042-fault-engine-location-and-naming.md) Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/0051, Aktivierung per Mandat). Ein neuer Meilenstein/Slice entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat. **2026-06-13: M8 „SOLLTE-Geraete & Netz" per Stakeholder-Mandat eroeffnet → Release v0.2.0; Slice-Plan entsteht in M8-Welle-0 (siehe §4 M8).**
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 bleiben `Proposed`, Welle-X-D-2). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 0 aktiv** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): Welle 0 aktiviert die Cleanup-Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)); Welle 1-3 liefern SOLLTE-Geraete/Netz/BESS-Telemetry (Trigger T-016..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
 **Stand:** 2026-06-13
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -1249,7 +1249,7 @@ Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
 2026-06-13 als M8 eroeffnet (unten).**
 
-### M8 — SOLLTE-Geraete & Netz (`Geplant` — eroeffnet 2026-06-13 per Stakeholder-Mandat) → Release v0.2.0
+### M8 — SOLLTE-Geraete & Netz (`In Progress` — Welle 0 seit 2026-06-13) → Release v0.2.0
 
 **Slice-Plan:** entsteht in M8-Welle-0 (Pattern analog M6/M7-Welle-0:
 Slice-Plan-Eroeffnung + Trigger-Triage). M8 ist der **erste
@@ -1262,10 +1262,10 @@ vorbereiteten Architektur-Cleanups. **Release-Ziel: v0.2.0**
 Aktivierung `open/` → `in-progress/`):
 
 - **Welle 0 — Architektur-Cleanup (Voraussetzung).** Slice
-  [`041`](../next/041-adapter-pure-ignore-imports-rueckbau.md)
+  [`041`](041-adapter-pure-ignore-imports-rueckbau.md)
   (`AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau,
   [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) +
-  Slice [`042`](../next/042-fault-engine-location-and-naming.md)
+  Slice [`042`](042-fault-engine-location-and-naming.md)
   (Fault-Engine-Standort/Naming,
   [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)).
   **Acceptance-Trigger:** [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
@@ -1298,10 +1298,11 @@ und sind kein M8-Lieferpunkt. Diese Skizze nennt nur die Leit-Posten je
 Meilenstein; die **vollstaendige** Carveout-Zuordnung (inkl. restliche
 M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
 
-**Status:** `Geplant` — eroeffnet 2026-06-13. Naechster Schritt:
-M8-Welle-0 (Slice-Plan + Trigger-Triage; `041`/`042` aktivieren, sobald
-[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
-akzeptiert).
+**Status:** `In Progress` — Welle 0 aktiv seit 2026-06-13
+([`M8-welle-0.md`](M8-welle-0.md)); `041`/`042` nach `in-progress/`
+aktiviert, Cross-Refs nachgezogen. Naechster Schritt: Welle 1 — 041-C1
+(Fault-Type-Quick-Win); [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/[`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
+springen auf `Provisional`, sobald die erste Tranche gruen ist.
 
 ---
 

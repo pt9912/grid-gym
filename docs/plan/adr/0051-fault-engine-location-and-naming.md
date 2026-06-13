@@ -21,8 +21,8 @@
 - [`welle-2.md`](../planning/done-archive/welle-2.md) — historischer
   Welle-2-Plan; dokumentiert, dass `BatteryFaultAdapter` und
   `GridFaultAdapter` bewusst unter `hexagon/core/faults/` liegen.
-- [`042-fault-engine-location-and-naming.md`](../planning/next/042-fault-engine-location-and-naming.md)
-  — geplanter Umsetzungsslice.
+- [`042-fault-engine-location-and-naming.md`](../planning/in-progress/042-fault-engine-location-and-naming.md)
+  — Umsetzungsslice (M8-Welle-0/1 aktiv).
 
 ---
 
