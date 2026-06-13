@@ -29,11 +29,11 @@ Welle-X-D-4 „kein M8-Auto-Open").
 
 | Item | Quelle | M8-Welle | Charakter |
 | ---- | ------ | -------- | --------- |
-| `AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau | [`041-...`](041-adapter-pure-ignore-imports-rueckbau.md) ([`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) | **Welle 0/1** | Architektur-Cleanup, Voraussetzung; 8 Bruecken in Tranchen C1..C4. |
-| Fault-Engine-Standort/Naming | [`042-...`](042-fault-engine-location-and-naming.md) ([`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)) | **Welle 0/1** | `*FaultAdapter` → `*FaultEngine`, Standort bleibt `hexagon/core/faults`. |
-| EV-Charger / Transformer / Wind / Diesel | T-016..019 ([`016`](../open/016-sollte-ev-charger-device.md)..[`019`](../open/019-sollte-diesel-device.md)) | **Welle 1** | `GG-DEV-015..018`; neue Geraetemodelle. Aktiviert zugleich `D-7` (Pre-init-Defense-Pattern). |
-| Inselnetz / Transformatorgrenzen / Blindleistung | T-020..022 ([`020`](../open/020-sollte-island-grid.md)..[`022`](../open/022-sollte-reactive-power.md)) | **Welle 2** | `GG-GRID-005..007`; Netzbilanz-Erweiterung. |
-| Battery-Temperatur / Zellspannung | T-023/024 ([`023`](../open/023-sollte-battery-temperature.md), [`024`](../open/024-sollte-battery-cell-voltage.md)) | **Welle 3** | `GG-BESS-006/007`; Telemetrie-Erweiterung. |
+| `AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau | [`041-...`](041-adapter-pure-ignore-imports-rueckbau.md) ([`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) | **Welle 1** | Architektur-Cleanup, Voraussetzung; 8 Bruecken in Tranchen C1..C4. |
+| Fault-Engine-Standort/Naming | [`042-...`](042-fault-engine-location-and-naming.md) ([`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)) | **Welle 1** | `*FaultAdapter` → `*FaultEngine`, Standort bleibt `hexagon/core/faults`. |
+| EV-Charger / Transformer / Wind / Diesel | T-016..019 ([`016`](../open/016-sollte-ev-charger-device.md)..[`019`](../open/019-sollte-diesel-device.md)) | **Welle 2** | `GG-DEV-015..018`; neue Geraetemodelle. Aktiviert zugleich `D-7` (Pre-init-Defense-Pattern). |
+| Inselnetz / Transformatorgrenzen / Blindleistung | T-020..022 ([`020`](../open/020-sollte-island-grid.md)..[`022`](../open/022-sollte-reactive-power.md)) | **Welle 3** | `GG-GRID-005..007`; Netzbilanz-Erweiterung. |
+| Battery-Temperatur / Zellspannung | T-023/024 ([`023`](../open/023-sollte-battery-temperature.md), [`024`](../open/024-sollte-battery-cell-voltage.md)) | **Welle 4** | `GG-BESS-006/007`; Telemetrie-Erweiterung. |
 
 ### 1.2 Bleibt Trigger-Gated (kein M8-Pflicht-Item)
 

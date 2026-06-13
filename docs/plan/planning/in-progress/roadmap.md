@@ -1249,7 +1249,7 @@ Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
 2026-06-13 als M8 eroeffnet (unten).**
 
-### M8 — SOLLTE-Geraete & Netz (`In Progress` — Welle 0 seit 2026-06-13) → Release v0.2.0
+### M8 — SOLLTE-Geraete & Netz (`In Progress` seit 2026-06-13 — Welle 1 Done, Welle 2 geplant) → Release v0.2.0
 
 **Slice-Plan:** entsteht in M8-Welle-0 (Pattern analog M6/M7-Welle-0:
 Slice-Plan-Eroeffnung + Trigger-Triage). M8 ist der **erste
@@ -1261,7 +1261,7 @@ vorbereiteten Architektur-Cleanups. **Release-Ziel: v0.2.0**
 **Vorbelegter Scope** (Wellen-Skizze; konkrete Slice-Plaene wandern bei
 Aktivierung `open/` → `in-progress/`):
 
-- **Welle 0 — Architektur-Cleanup (Voraussetzung).** Slice
+- **Welle 1 — Architektur-Cleanup (Voraussetzung; Done 2026-06-13).** Slice
   [`041`](041-adapter-pure-ignore-imports-rueckbau.md)
   (`AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau,
   [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) +
@@ -1272,7 +1272,7 @@ Aktivierung `open/` → `in-progress/`):
   `Proposed → Accepted` (Welle-X-D-2-Erbschaft). Zieht die Adapter-
   Purity- und Fault-Engine-Struktur sauber, auf der die neuen
   Geraete-Adapter aufsetzen.
-- **Welle 1 — Geraete.** `T-016` EV-Charger (`GG-DEV-015`,
+- **Welle 2 — Geraete** (geplant, [`M8-welle-2.md`](M8-welle-2.md))**.** `T-016` EV-Charger (`GG-DEV-015`,
   [`016`](../open/016-sollte-ev-charger-device.md)), `T-017`
   Transformer (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)),
   `T-018` Wind (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)),
@@ -1280,11 +1280,11 @@ Aktivierung `open/` → `in-progress/`):
   Aktiviert zugleich `D-7` (Pre-init-Defense-Pattern verallgemeinern):
   die neuen device-iterierenden Driving-Adapter sind die Adoptions-Welle
   fuer dieses `Pattern-Forward`-Carveout (Aktivierungs-Bedingung erfuellt).
-- **Welle 2 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
+- **Welle 3 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
   (`GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md)), `T-021`
   Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)),
   `T-022` Blindleistung (`GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)).
-- **Welle 3 — BESS-Telemetry.** `T-023` Battery-Temperatur
+- **Welle 4 — BESS-Telemetry.** `T-023` Battery-Temperatur
   (`GG-BESS-006`, [`023`](../open/023-sollte-battery-temperature.md)),
   `T-024` Battery-Zellspannung (`GG-BESS-007`,
   [`024`](../open/024-sollte-battery-cell-voltage.md)).
