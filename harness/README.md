@@ -23,6 +23,11 @@ kanonische Quelle und diese Datei wird angepasst.
 | 9 | [`AGENTS.md`](../AGENTS.md) | Agent-Briefing und Hard Rules |
 | 10 | Diese Datei | Harness-Einstieg |
 
+[`harness/conventions.md`](conventions.md) steht ausserhalb dieser
+numerierten Kette: sie ist autoritativ fuer *Form*-Fragen (Baseline-
+Adoption, `MR-NNN`-Adaptionen, Modus pro Sub-Area), nicht ueber *Inhalt* —
+bei Konflikt mit einer kanonischen Quelle wird sie angepasst.
+
 ## Guides
 
 Feedforward-Quellen, die Arbeit vor der Umsetzung lenken:
@@ -40,6 +45,7 @@ Feedforward-Quellen, die Arbeit vor der Umsetzung lenken:
 | [`harness/replay.md`](replay.md) | Replay-/Golden-Regeln fuer Simulation, Faults und Demo |
 | [`harness/verification.md`](verification.md) | Verification-Evidence und Slice-Closure-Schema |
 | [`AGENTS.md`](../AGENTS.md) | Hard Rules, Commit-Konvention, Markdown-Regeln |
+| [`harness/conventions.md`](conventions.md) | Baseline-Adoption (AI-Harness-Kurs), Adaptions-Block (`MR-NNN`), Modus pro Sub-Area |
 
 ## Sensors
 
