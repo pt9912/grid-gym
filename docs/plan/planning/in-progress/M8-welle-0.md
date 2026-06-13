@@ -1,11 +1,11 @@
 # Welle 0 — M8 Slice-Plan-Eroeffnung + Trigger-Triage
 
-**Status:** In Progress (eroeffnet 2026-06-13 per Stakeholder-Mandat) —
-Vorabraeumung + Slice-Aktivierung fuer **M8 (SOLLTE-Geraete & Netz →
-Release v0.2.0)**. Pattern analog
+**Status:** Done 2026-06-13 — Vorabraeumung + Slice-Aktivierung fuer
+**M8 (SOLLTE-Geraete & Netz → Release v0.2.0)**, plus Closure von Welle 1
+(Architektur-Cleanup, siehe §3). Pattern analog
 [`../done-archive/M7-welle-0.md`](../done-archive/M7-welle-0.md). Welle 0
-ist ein reines Doc-Arbeitspaket (kein Code-Pfad-Wechsel); die
-Code-Substanz beginnt mit Welle 1 (041-C1).
+selbst war ein reines Doc-Arbeitspaket; die Code-Substanz lief in Welle 1
+(Slices 041 + 042, beide Done).
 
 **Container:** Der Meilenstein-Scope lebt in
 [`roadmap.md`](roadmap.md) §4 M8 (Wellen-Skizze 0..3) — anders als M4..M7
@@ -61,17 +61,62 @@ Welle-X-D-4 „kein M8-Auto-Open").
    `Proposed → Provisional` sobald der jeweils erste Umsetzungs-Tranche
    gruen ist (041-C1 bzw. 042-C1).
 
-## 3. Naechster Schritt
+## 3. Welle-1-Closure — Architektur-Cleanup (Done 2026-06-13)
 
-**Welle 1 — 041-C1 (Fault-Type-Quick-Win):** Fault-Type-Konstanten in
-eine adapter-erlaubte Surface ziehen, `_runs_action_router.py` umstellen,
-den `_runs_action_router → core.faults.types`-`ignore_imports`-Eintrag
-aus [`pyproject.toml`](../../../../pyproject.toml) entfernen.
-Sensor: `make arch-check` + engste Router-/Fault-Tests. Verhaltensneutral.
+Welle 1 (Slices 041 + 042) lieferte die Adapter-/Core-Entkopplung als
+Voraussetzung fuer die Geraete-Wellen — verhaltensneutral, je per
+`make fullbuild` (inkl. Compose-Smoke) und CI verifiziert:
+
+- **Slice [`041`](041-adapter-pure-ignore-imports-rueckbau.md)**
+  (`AC-ADAPTER-PURE`-Bridge-Rueckbau, C1..C4): **8 → 0**
+  `ignore_imports` (`ignore_imports = []`). NEU `RunExecutionPort`
+  (Driving-Port), `ControlAction`/Fault-Konstanten nach `core.domain.*`,
+  Demo-/Scenario-Bootstrap im Composition-Root `grid_gym.composition`
+  mit eigenem `composition.asgi`-Entrypoint.
+  [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) + NEU
+  [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)
+  `Accepted`.
+- **Slice [`042`](042-fault-engine-location-and-naming.md)**
+  (Fault-Engine-Naming): `*FaultAdapter` → `*FaultEngine`, Standort
+  bleibt `hexagon/core/faults`, keine Compat-Aliase.
+  [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`.
+
+Alle 7 Architektur-Contracts gruen **ohne Ausnahme**.
+
+### Lerneintrag (Closure-Pflicht)
+
+1. **`AC-ADAPTER-PURE` prueft indirekte Ketten.** Ein Modul nach
+   `composition/` zu verschieben reicht NICHT, solange ein Adapter es
+   noch importiert (Adapter → composition → `core.*` bleibt verboten).
+   Loesung: Dependency invertieren — Hook im Adapter + Registrierung im
+   Composition-Entrypoint
+   ([`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)).
+   Betraf das Scenario-Bootstrap (041-C3b), nicht `_demo_setup` (C3a,
+   kein src-Adapter-Importer → reiner Move genuegte).
+2. **`make coverage-gate` vor dem Push fahren, nicht nur `test-unit`.**
+   Neue Protocol-/Port-Stubs druecken die Branch-Coverage; inline
+   `def f(): ...` erzeugt ungedeckte Branch-Kanten — Block-Form + Docstring
+   nutzen (Coverage-Exclude greift nur auf `...` allein auf der Zeile).
+   Kostete in 041-C2 einen CI-Fix.
+3. **`tools/`/`deploy/` im Rename-/Audit-Scope nicht vergessen** — die
+   `codepaths`-roots umfassen sie; ein src+tests-only-Audit uebersah
+   `tools/_demo_replay.py` (042, typecheck-Fehler nach dem Rename).
+4. **Keine Compat-Aliase bei vollstaendigem In-Repo-Rename**
+   ([`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) §2.3) —
+   alle Referenzen umbenennbar, kein Uebergangsbedarf, kein spaeterer
+   Alias-Removal-Slice.
+5. **`app.py`-Public-Function-Cap** (`AC-NO-GOD-UTILS`, max 5 public
+   top-level): neue Funktionen `_`-prefixen (Cross-Modul-`_`-Import ist
+   im Repo etabliert, z. B. `_DEMO_RUN_ID`).
+
+### Naechster Schritt
+
+Welle 2 — Geraete `T-016..019` (`GG-DEV-015..018`); erstes echtes Feature,
+eigene Welle-Doc bei Aktivierung.
 
 ## 4. DoD (Welle 0)
 
 - [x] `041`/`042` nach `in-progress/` aktiviert (reiner `git mv`).
 - [x] Cross-Refs nachgezogen (`ADR 0050`/`ADR 0051`, ADR-Index, roadmap, M7-results).
 - [x] `roadmap.md`-Status auf „M8 Welle 0 aktiv" geflippt.
-- [ ] `make docs-check` gruen.
+- [x] `make docs-check` gruen.
