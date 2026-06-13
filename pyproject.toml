@@ -566,33 +566,15 @@ forbidden_modules = [
     "grid_gym.hexagon.core.faults",
     "grid_gym.hexagon.core.agents",
 ]
-# M5-Welle-4a (ADR 0039 Decision 13): die HTTP-Driving-Adapter-
-# Komposition braucht `TickLoop` + `Scheduler` als Demo-Setup-
-# Konstruktoren (`configure_demo_run`) und `TickLoop`-Typ als
-# Registry-Eintraege fuer die Pause/Resume/Stop-Wiring. ADR 0039
-# §2.2 Option C verwarf einen separaten `ControlPort` (YAGNI:
-# Control-Flag ist triviales Enum-Triple, keine Substituierbarkeit
-# noetig). Dieser Block ist die Komposition-Root-Brueck-Erlaubnis
-# fuer den HTTP-Adapter — `app.py` ist der Demo-Setup-Bootstrap,
-# `_tick_loop_registry.py` ist der adapter-interne Multi-Run-
-# Lookup. Andere Adapter-Pakete duerfen `simulation` weiterhin
-# nicht touchen.
-#
-# M5-Welle-5 (Slice-Doc Decision 6): scenario-getriebener Demo-
-# Lifespan-Pfad braucht zusaetzlich `load_scenario` +
-# `build_tick_loop` aus `hexagon.core.scenario.loader`. Pattern
-# parallel zu `_demo_setup` — beide sind Bootstrap-Module der
-# HTTP-Adapter-Komposition; andere Adapter-Pakete bleiben ohne
-# `scenario`-Bridge.
-#
-# M5-Welle-6a (Slice-Doc Decision 19): FaultPort-Composition
-# braucht `BatteryFaultAdapter` + `GridFaultAdapter` aus
-# `hexagon.core.faults` und `DeviceTickContext` aus
-# `hexagon.core.domain.device` (FaultPort-apply_active_faults-
-# Signatur). Pattern analog Welle-5-`scenario.loader`-Bridge;
-# nur im Bootstrap-Modul, andere Adapter-Pakete unberuehrt.
-ignore_imports = [
-]
+# 041-C1..C3b (ADR 0050, M8-Welle-1): alle historischen Demo-/Run-/
+# Fault-Bootstrap-Bruecken sind zurueckgebaut. Run-Ausfuehrung laeuft
+# ueber `RunExecutionPort` (Driving-Port), Fault-Konstanten ueber
+# `core.domain.fault`, und das Demo-/Scenario-Bootstrap lebt im
+# Composition-Root `grid_gym.composition` (Entrypoint `composition.asgi`,
+# ADR 0054) statt im HTTP-Adapter. `AC-ADAPTER-PURE` haelt damit OHNE
+# Ausnahme; ein neuer `ignore_imports`-Eintrag waere ADR-pflichtig
+# (ADR 0050 §2.1).
+ignore_imports = []
 
 [[tool.importlinter.contracts]]
 name = "AC-NO-FW"
