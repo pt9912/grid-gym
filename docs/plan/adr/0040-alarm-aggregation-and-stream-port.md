@@ -823,7 +823,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
     `alarm_stream`/`alarm_history_buffer`-Kwargs +
     NEU `_publish_emitted_alarms`-Helper (AC-ADAPTER-
     LIGHTWEIGHT-Cyclomatic-Drop).
-  - `src/grid_gym/adapters/driving/http_api/_demo_setup.py`
+  - `src/grid_gym/composition/_demo_setup.py`
     — liest `alarm_stream` + `alarm_history_buffer`
     aus `app.state` und reicht sie an den
     `DemoTickLoopDriver` weiter.

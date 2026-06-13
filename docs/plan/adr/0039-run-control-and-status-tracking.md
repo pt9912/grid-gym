@@ -662,7 +662,7 @@ def get_run_status(
   - `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
     — NEU `DemoTickLoopDriver`-Asyncio-Task-Wrapper
     mit Cooperative-State-Loop.
-  - `src/grid_gym/adapters/driving/http_api/_demo_setup.py`
+  - `src/grid_gym/composition/_demo_setup.py`
     — NEU `configure_demo_run`-Komposition-Root
     (Auslagerung aus `app.py` wegen
     `AC-NO-GOD-UTILS max=5 public top-level functions`).

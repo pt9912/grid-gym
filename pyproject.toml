@@ -592,8 +592,6 @@ forbidden_modules = [
 # Signatur). Pattern analog Welle-5-`scenario.loader`-Bridge;
 # nur im Bootstrap-Modul, andere Adapter-Pakete unberuehrt.
 ignore_imports = [
-    "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.tick_loop",
-    "grid_gym.adapters.driving.http_api._demo_setup -> grid_gym.hexagon.core.simulation.scheduler",
     "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.scenario.loader",
     "grid_gym.adapters.driving.http_api._demo_scenario_setup -> grid_gym.hexagon.core.faults",
 ]

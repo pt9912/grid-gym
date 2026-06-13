@@ -203,7 +203,11 @@ re-exportiert), `_runs_action_router`-Eintrag entfernt (8 → 7 Bruecken),
 (`hexagon/ports/driving/run_execution.py`, §2.3-Surface), `ControlAction`
 nach `hexagon.core.domain.run`; Registry/Driver/Healthcheck gegen den
 Port typisiert, 3 weitere Eintraege entfernt (7 → 4 Bruecken),
-`make typecheck` Success.
+`make typecheck` Success. **041-C3a**: NEU `grid_gym.composition`-Paket
+(§2.5), `_demo_setup` per `git mv` dorthin (kein src-Adapter-Importer),
+2 Eintraege entfernt (4 → 2 Bruecken). Rest (2 Bruecken,
+`_demo_scenario_setup`) braucht App-Bootstrap-Inversion (C3b) wegen
+indirekter `forbidden`-Pruefung — `Accepted` erst dann.
 
 `Accepted` ist erst sinnvoll, wenn alle acht oben genannten
 `ignore_imports`-Eintraege entfernt oder per Folge-ADR bewusst neu

@@ -1,8 +1,8 @@
 # 041 — AC-ADAPTER-PURE-`ignore_imports`-Rueckbau
 
-**Status:** In Progress (M8-Welle-1) — C1+C2 Done 2026-06-13 (4 von 8
-Bruecken entfernt); naechste Tranche C3 (Demo-/Scenario-Bootstrap nach
-`composition/`)
+**Status:** In Progress (M8-Welle-1) — C1+C2+C3a Done 2026-06-13 (6 von 8
+Bruecken entfernt); offen: C3b (`_demo_scenario_setup`-Inversion mit
+App-Bootstrap-Hook + Composition-ASGI-Entrypoint) → dann 0 Bruecken
 **Datum:** 2026-06-09
 **Bezug:**
 
@@ -90,18 +90,38 @@ Aktuelle Ausnahmen:
 
 ### C3 — Demo-/Scenario-Bootstrap aus `adapters/` herausziehen
 
-- `_demo_setup.py` und `_demo_scenario_setup.py` in ein neues
-  Composition-Root-Paket verschieben, z. B.
-  `src/grid_gym/composition/`. <!-- d-check:ignore (geplant: entsteht mit Slice 041) -->
-- Reiner `git mv`-Commit zuerst, Inhaltsrewrite danach.
-- `app.py`, `__main__.py`, Tests und Doku-Referenzen anpassen.
-- Entfernbare `pyproject.toml`-Eintraege:
-  `_demo_setup -> simulation.tick_loop`,
-  `_demo_setup -> simulation.scheduler`,
-  `_demo_scenario_setup -> scenario.loader`,
-  `_demo_scenario_setup -> core.faults`.
-- Tests: `make arch-check`, Demo-/HTTP-Smokes, danach `make gates`
-  nach Moeglichkeit.
+Gesplittet nach Befund (2026-06-13): `AC-ADAPTER-PURE` (`type = forbidden`,
+kein `allow_indirect_imports`) prueft **indirekte** Ketten. `_demo_setup`
+hat keinen src-Adapter-Importer → risikoarmer Sofort-Move.
+`_demo_scenario_setup` wird per `app.py`-Lifespan
+(`_configure_scenario_demo_from_env_if_requested`, lazy import) gezogen —
+ein reiner Move liesse die Kette `app` (Adapter) → `composition` →
+`core.scenario`/`core.faults` bestehen → Verletzung. Loesung braucht eine
+App-Bootstrap-Inversion.
+
+#### C3a — `_demo_setup` nach `composition/` (Done 2026-06-13)
+
+- ✅ NEU `src/grid_gym/composition/`-Paket (Composition Root, `ADR 0050` §2.5).
+- ✅ `_demo_setup.py` per reinem `git mv` (byte-identisch, 100% Rename) nach
+  `composition/`; einziger Importer (1 Unit-Test) nachgezogen.
+- ✅ 2 `pyproject.toml`-Eintraege entfernt
+  (`_demo_setup -> simulation.tick_loop`/`scheduler`); jetzt **2** Bruecken.
+- ✅ Sensoren: `make arch-check` 7/7 KEPT, `make gates` gruen.
+
+#### C3b — `_demo_scenario_setup`-Inversion (offen — alle Bruecken weg)
+
+- App-Bootstrap invertieren: `app.py`-Lifespan exportiert einen Hook statt
+  das Scenario-Bootstrap zu importieren; ein Composition-Root-ASGI-
+  Entrypoint (`grid_gym.composition.asgi`) verdrahtet
+  `configure_scenario_demo_run` und registriert den Hook.
+- `_demo_scenario_setup.py` nach `composition/` verschieben.
+- `Dockerfile`/`deploy/compose.yml`-uvicorn-Target auf den Composition-
+  Entrypoint umstellen; Integration-/Compose-Smokes anpassen.
+- Entfernbare Eintraege: `_demo_scenario_setup -> scenario.loader` +
+  `-> core.faults` → **0** Bruecken → `ADR 0050` `Accepted`.
+- Eigene Mini-ADR-Entscheidung fuer den Entrypoint-Wechsel; Verifikation
+  per vollem `make fullbuild`.
+- Tests: `make arch-check`, Integration-/HTTP-/Compose-Smokes, `make gates`.
 
 ### C4 — Kommentar- und Doku-Rueckbau
 

@@ -261,7 +261,7 @@ def test_configure_demo_run_orphan_guard_rejects_second_run_id() -> None:
     zweiten `run_id` orphant den bisherigen Driver — der Guard
     weist hart ab statt stille Drop."""
     from grid_gym.adapters.driven.random_mt import MersenneTwisterRandomPort
-    from grid_gym.adapters.driving.http_api._demo_setup import (
+    from grid_gym.composition._demo_setup import (
         _DemoTickLoopDriverAlreadyConfiguredError,
         configure_demo_run,
     )
