@@ -34,6 +34,7 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
     assert_decimal,
     assert_int,
     assert_mapping,
+    assert_optional_fault_flag,
     assert_required_keys,
     assert_str,
 )
@@ -164,7 +165,9 @@ class EvChargerSnapshot:
             pending_power_kw=pending_power_kw,
             charged_kwh=charged_kwh,
             discharged_kwh=discharged_kwh,
-            connection_loss_active=_connection_loss_from_state(state),
+            connection_loss_active=assert_optional_fault_flag(
+                state, _FAULT_STATE_KEY, _CONNECTION_LOSS_KEY, SUBSYSTEM
+            ),
         )
 
 
@@ -192,23 +195,6 @@ def _config_from_state(raw: object) -> EvChargerConfig:
     except EvChargerConfigError as err:
         raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
     return config
-
-
-def _connection_loss_from_state(state: Mapping[str, object]) -> bool:
-    """Liest das `connection_loss_active`-Flag aus dem optionalen
-    `fault_state`-Block (Backward-Compat: Default False)."""
-    if _FAULT_STATE_KEY not in state:
-        return False
-    fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
-    raw_flag = fault_state.get(_CONNECTION_LOSS_KEY, False)
-    if not isinstance(raw_flag, bool):
-        raise WrongTypeError(
-            SUBSYSTEM,
-            f"{_FAULT_STATE_KEY}.{_CONNECTION_LOSS_KEY}",
-            "bool",
-            type(raw_flag).__name__,
-        )
-    return raw_flag
 
 
 __all__ = [

@@ -30,6 +30,7 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
     assert_decimal,
     assert_int,
     assert_mapping,
+    assert_optional_fault_flag,
     assert_required_keys,
     assert_str,
 )
@@ -179,18 +180,9 @@ class GridConnectionSnapshot:
             if _PENDING_VOLTAGE_V_KEY in state
             else config.nominal_voltage_v
         )
-        voltage_drop_active = False
-        if _FAULT_STATE_KEY in state:
-            fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
-            raw_flag = fault_state.get("voltage_drop_active", False)
-            if not isinstance(raw_flag, bool):
-                raise WrongTypeError(
-                    SUBSYSTEM,
-                    f"{_FAULT_STATE_KEY}.voltage_drop_active",
-                    "bool",
-                    type(raw_flag).__name__,
-                )
-            voltage_drop_active = raw_flag
+        voltage_drop_active = assert_optional_fault_flag(
+            state, _FAULT_STATE_KEY, "voltage_drop_active", SUBSYSTEM
+        )
 
         return cls(
             version=version,

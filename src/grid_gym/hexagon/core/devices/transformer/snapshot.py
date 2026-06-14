@@ -31,6 +31,7 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
     assert_decimal,
     assert_int,
     assert_mapping,
+    assert_optional_fault_flag,
     assert_required_keys,
     assert_str,
 )
@@ -124,7 +125,9 @@ class TransformerSnapshot:
             current_primary_power_kw=current_primary_power_kw,
             pending_power_kw=pending_power_kw,
             throughput_kwh=throughput_kwh,
-            winding_fault_active=_winding_fault_from_state(state),
+            winding_fault_active=assert_optional_fault_flag(
+                state, _FAULT_STATE_KEY, _WINDING_FAULT_KEY, SUBSYSTEM
+            ),
         )
 
 
@@ -141,23 +144,6 @@ def _config_from_state(raw: object) -> TransformerConfig:
     except TransformerConfigError as err:
         raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
     return config
-
-
-def _winding_fault_from_state(state: Mapping[str, object]) -> bool:
-    """Liest das `winding_fault_active`-Flag aus dem optionalen
-    `fault_state`-Block (Backward-Compat: Default False)."""
-    if _FAULT_STATE_KEY not in state:
-        return False
-    fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
-    raw_flag = fault_state.get(_WINDING_FAULT_KEY, False)
-    if not isinstance(raw_flag, bool):
-        raise WrongTypeError(
-            SUBSYSTEM,
-            f"{_FAULT_STATE_KEY}.{_WINDING_FAULT_KEY}",
-            "bool",
-            type(raw_flag).__name__,
-        )
-    return raw_flag
 
 
 __all__ = [

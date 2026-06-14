@@ -69,6 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Slice 045 — `fault_state`-Flag-Reader-Dedup**: NEU
+  `snapshot_codec.assert_optional_fault_flag(...)` als geteilter Reader
+  fuer optionale Fault-Bool-Flags (ADR 0025 §2.2-Konvention); die vier
+  Device-Snapshots (battery/grid_connection/ev_charger/transformer)
+  konsumieren ihn jetzt statt je einer eigenen Kopie. Verhaltensneutral
+  (alle Fault-Roundtrip-Tests unveraendert gruen).
 - Roadmap erweitert: NEU Meilenstein **M8 — SOLLTE-Geraete & Netz**
   (→ Release v0.2.0). Wellen: 0 = Eroeffnung, 1 = Architektur-Cleanup
   (Done), 2 = Geraete `T-016..019`, 3 = Netz `T-020..022`,

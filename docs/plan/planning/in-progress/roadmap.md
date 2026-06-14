@@ -1336,6 +1336,10 @@ Saettigungs-Hard-Cap + `winding_fault`-Schutz). NEU
 + Alarm-Mapper + HTTP-`POST /faults`-Whitelist (`winding_fault`) +
 Visualization-Subset + `CRITICAL_COV_TARGETS`); `transformer_demo.yaml`
 + Unit-/Integration-Smokes. `make gates` gruen, Trigger 017 aufgeloest.
+**Slice 045** ([`045-fault-state-flag-codec-dedup.md`](045-fault-state-flag-codec-dedup.md)):
+verhaltensneutraler Dedup — NEU `snapshot_codec.assert_optional_fault_flag`,
+vier Device-Snapshots (battery/grid_connection/ev_charger/transformer)
+auf den geteilten Reader migriert (loest die 2a/2b-Review-Deferral).
 Naechster Schritt **2c (Wind)**.
 
 ---

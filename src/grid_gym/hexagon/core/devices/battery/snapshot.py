@@ -33,6 +33,7 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
     assert_decimal,
     assert_int,
     assert_mapping,
+    assert_optional_fault_flag,
     assert_required_keys,
     assert_str,
 )
@@ -187,18 +188,9 @@ class BatterySnapshot:
         # M3-Welle-2 (ADR 0025 §2.2): fault_state ist optional;
         # Welle-1-Snapshots ohne den Block defaultet alle Flags
         # auf False.
-        cell_failure_active = False
-        if _FAULT_STATE_KEY in state:
-            fault_state = assert_mapping(state[_FAULT_STATE_KEY], _FAULT_STATE_KEY, SUBSYSTEM)
-            raw_flag = fault_state.get("cell_failure_active", False)
-            if not isinstance(raw_flag, bool):
-                raise WrongTypeError(
-                    SUBSYSTEM,
-                    f"{_FAULT_STATE_KEY}.cell_failure_active",
-                    "bool",
-                    type(raw_flag).__name__,
-                )
-            cell_failure_active = raw_flag
+        cell_failure_active = assert_optional_fault_flag(
+            state, _FAULT_STATE_KEY, "cell_failure_active", SUBSYSTEM
+        )
 
         return cls(
             version=version,

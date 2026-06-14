@@ -120,6 +120,37 @@ def assert_mapping(value: object, key: str, subsystem: str) -> dict[str, object]
     return value
 
 
+def assert_optional_fault_flag(
+    state: Mapping[str, object],
+    fault_state_key: str,
+    flag_key: str,
+    subsystem: str,
+) -> bool:
+    """Liest ein optionales Bool-Flag aus dem additiven `fault_state`-
+    Sub-Block (ADR 0025 §2.2-Konvention).
+
+    Sammelt das wortgleiche Pattern, das in den Geraete-Snapshots
+    (`battery`/`grid_connection`/`ev_charger`/`transformer`) mehrfach als
+    privater Reader auftaucht (M8-Welle-2b-Review-Folge, Slice 045).
+
+    - `fault_state_key` fehlt im `state` → `False` (Backward-Compat:
+      Welle-1-Snapshots ohne Fault-Block bleiben roundtrip-faehig).
+    - Block vorhanden, `flag_key` fehlt → `False` (Default).
+    - `flag_key` vorhanden, aber nicht `bool` → `WrongTypeError(subsystem,
+      f"{fault_state_key}.{flag_key}", "bool", actual_type)`.
+    - sonst der Bool-Wert.
+    """
+    if fault_state_key not in state:
+        return False
+    fault_state = assert_mapping(state[fault_state_key], fault_state_key, subsystem)
+    raw_flag = fault_state.get(flag_key, False)
+    if not isinstance(raw_flag, bool):
+        raise WrongTypeError(
+            subsystem, f"{fault_state_key}.{flag_key}", "bool", type(raw_flag).__name__
+        )
+    return raw_flag
+
+
 def assert_payload_canonical_compatible(
     payload: object,
     subsystem: str,
