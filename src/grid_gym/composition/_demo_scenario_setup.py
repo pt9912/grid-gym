@@ -33,7 +33,7 @@ Komposition-Root-Hinweis: importiert `load_scenario` +
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from pathlib import Path
 from typing import Final, cast
 
@@ -59,11 +59,14 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     _TickLoopRegistryNotConfiguredError,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
-from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioFault
-from grid_gym.hexagon.core.faults import (
-    BatteryFaultEngine,
-    GridFaultEngine,
+from grid_gym.hexagon.core.faults import ScenarioFaultEngine
+from grid_gym.hexagon.core.faults.types import (
+    FAULT_TYPE_CELL_FAILURE,
+    FAULT_TYPE_CONNECTION_LOSS,
+    FAULT_TYPE_GENSET_FAULT,
+    FAULT_TYPE_VOLTAGE_DROP,
+    FAULT_TYPE_WINDING_FAULT,
 )
 from grid_gym.hexagon.core.scenario.loader import (
     TickLoopWiring,
@@ -272,113 +275,69 @@ def _cast_tick_loop_registry_or_raise(app_: FastAPI) -> TickLoopRegistry:
     return cast(TickLoopRegistry, registry)
 
 
-_KNOWN_FAULT_TYPES: Final[frozenset[str]] = frozenset({"cell_failure", "voltage_drop"})
-"""Welle-6a-Review F13: Whitelist der vom Demo-FaultPort-Composer
-unterstuetzten Fault-Typen. Welle-7+/M3-Fault-Adapter muessen sich
-hier eintragen, sonst werden YAML-faults mit unbekanntem Typ per
-`_DemoScenarioUnknownFaultTypeError` rejected statt silent gedroppt."""
+_KNOWN_FAULT_TYPES: Final[frozenset[str]] = frozenset(
+    {
+        FAULT_TYPE_CELL_FAILURE,
+        FAULT_TYPE_VOLTAGE_DROP,
+        FAULT_TYPE_CONNECTION_LOSS,
+        FAULT_TYPE_WINDING_FAULT,
+        FAULT_TYPE_GENSET_FAULT,
+    }
+)
+"""ADR 0059: single source of truth der vom Demo-FaultPort
+unterstuetzten Fault-Typen — zugleich die `supported_types` der
+produktiven `ScenarioFaultEngine`. Neue fault-faehige Geraete
+tragen ihren `FAULT_TYPE_*` hier ein (mehr braucht es nicht: die
+generische Engine reicht den Typ an das Ziel-Geraet durch, das ihn
+validiert). YAML-faults mit einem Typ ausserhalb dieser Menge
+werden per `_DemoScenarioUnknownFaultTypeError` rejected statt
+silent gedroppt (Welle-6a-Review F13)."""
 
 
 class _DemoScenarioUnknownFaultTypeError(ValueError):
     """Welle-6a-Review F13: `gg-demo.yaml` enthaelt einen
-    `faults[].type`, fuer den weder `BatteryFaultEngine` noch
-    `GridFaultEngine` einen Filter haelt. Frueher silent gedroppt;
+    `faults[].type`, fuer den kein Geraet einen Handler hat
+    (nicht in `_KNOWN_FAULT_TYPES`). Frueher silent gedroppt;
     jetzt explizit fail-fast beim Demo-Lifespan-Startup, damit der
-    Engineer den YAML-Tippfehler oder den fehlenden Welle-7+/M3-
-    Adapter beim ersten `make demo` sieht."""
+    Engineer den YAML-Tippfehler oder den fehlenden Geraete-Fault-
+    Typ beim ersten `make demo` sieht."""
 
     def __init__(self, unknown_type: str, known: tuple[str, ...]) -> None:
         super().__init__(
             f"Demo scenario YAML declares fault type {unknown_type!r}, "
-            f"but no FaultAdapter is wired for it. Known fault types: "
-            f"{known}. Either fix the YAML, or extend "
-            "`_compose_fault_port` with a new adapter."
+            f"but no device handles it. Known fault types: "
+            f"{known}. Either fix the YAML, or add the new "
+            "`FAULT_TYPE_*` to `_KNOWN_FAULT_TYPES`."
         )
 
 
 def _compose_fault_port(
     faults: tuple[ScenarioFault, ...],
-) -> "_FaultPortComposition | None":
-    """Welle-6a Decision 19: kombiniert `BatteryFaultEngine` +
-    `GridFaultEngine` zu einem FaultPort, der pro Tick beide
-    Adapter sequenziell delegiert. Liefert `None` bei leerer
-    Fault-Liste (Welle-5-Default-Verhalten unveraendert).
+) -> "ScenarioFaultEngine | None":
+    """ADR 0059: liefert **eine** generische `ScenarioFaultEngine`
+    ueber alle bekannten Fault-Typen (`_KNOWN_FAULT_TYPES`). Liefert
+    `None` bei leerer Fault-Liste (Welle-5-Default-Verhalten
+    unveraendert).
 
-    M3-Welle-2-Pattern: jeder Adapter filtert intern nach
-    `fault.type`; ungenutzte Faults sind No-Op. Die Composition
-    haelt beide Adapter im Konstruktor und delegiert pro
-    `apply_active_faults`-Aufruf an beide.
+    Vorher (Welle-6a Decision 19) komponierte `_FaultPortComposition`
+    `BatteryFaultEngine` + `GridFaultEngine` sequenziell mit
+    try/finally-Cross-Adapter-Isolation. Mit der generischen Engine
+    entfaellt das: eine Engine verarbeitet alle Typen in einer
+    Schleife in Fault-Listen-Reihenfolge — inhaerent deterministisch
+    (ADR 0021 §2.9), kein Adapter-Ordering noetig.
 
     Welle-6a-Review F13: unbekannte `fault.type`-Werte werden
     fail-fast mit `_DemoScenarioUnknownFaultTypeError` rejected
-    statt silent gedroppt (Battery+Grid-Adapter filtern beide
-    intern auf bekannte Typen — eine Demo-YAML mit fault_type=
-    `thermal_runaway` wuerde ohne diesen Check kommentar- und
-    log-frei keine Wirkung haben).
+    statt silent gedroppt (die Engine wuerde sie sonst stumm auf
+    `_KNOWN_FAULT_TYPES` filtern — eine Demo-YAML mit fault_type=
+    `thermal_runaway` haette ohne diesen Check keine Wirkung).
     """
     if not faults:
         return None
     for fault in faults:
         if fault.type not in _KNOWN_FAULT_TYPES:
             raise _DemoScenarioUnknownFaultTypeError(fault.type, tuple(sorted(_KNOWN_FAULT_TYPES)))
-    return _FaultPortComposition(
-        battery_adapter=BatteryFaultEngine(faults),
-        grid_adapter=GridFaultEngine(faults),
-    )
-
-
-class _FaultPortComposition:
-    """Welle-6a-FaultPort-Composition (Decision 19): delegiert pro
-    `apply_active_faults`-Aufruf an `BatteryFaultEngine` +
-    `GridFaultEngine`. Pattern analog Welle-5-`_alarm_*_provider`-
-    Closures (kleine Adapter-Composition im
-    `_demo_scenario_setup`-Lifespan-Pfad statt eigener Adapter-
-    Klasse unter `adapters/driven/fault_*/`).
-    """
-
-    def __init__(
-        self,
-        *,
-        battery_adapter: BatteryFaultEngine,
-        grid_adapter: GridFaultEngine,
-    ) -> None:
-        self._battery_adapter = battery_adapter
-        self._grid_adapter = grid_adapter
-
-    def apply_active_faults(
-        self,
-        devices: Sequence[object],
-        context: DeviceTickContext,
-    ) -> None:
-        """`FaultPort.apply_active_faults`-Delegation: beide Adapter
-        sequenziell aufrufen. Reihenfolge Battery → Grid ist
-        deterministisch (deterministische Telemetry-Sequenz per
-        Welle-2-`fault_demo.yaml`-Pattern; ADR 0025 §2.4).
-
-        Welle-6a-Review F12: jeder Adapter-Aufruf ist in try/except
-        isoliert. Eine Battery-Adapter-Exception in Tick N darf
-        den Grid-Adapter im selben Tick **nicht** ueberspringen —
-        sonst verletzt die Composition die ADR-0021-§2.9-byte-
-        identische-Telemetry-Determinismus-Garantie (gleicher Seed
-        + gleiche Fault-Sequenz → identische State-Mutationen).
-        Aufgefangene Exceptions werden geloggt; FaultPort-Protocol-
-        Vertrag (ADR 0022 §2.4 Exception-Propagation) bleibt
-        gewahrt, indem die Exception nach BEIDEN Adapter-Aufrufen
-        re-raised wird, falls eine flog (Battery zuerst, Grid
-        nachgereiht).
-        """
-        # Welle-6a-Review F12: `try/finally` garantiert, dass der
-        # Grid-Adapter im selben Tick aufgerufen wird, selbst wenn
-        # Battery raises. Falls Battery raised:
-        # - Grid laeuft im finally-Block;
-        # - eine eventuelle Grid-Exception maskiert die Battery-
-        #   Exception (Python-Standard-Verhalten; beide bleiben
-        #   via `__context__`-Chain inspizierbar).
-        # Sonst (Battery OK): Grid laeuft regulaer.
-        try:
-            self._battery_adapter.apply_active_faults(devices, context)
-        finally:
-            self._grid_adapter.apply_active_faults(devices, context)
+    return ScenarioFaultEngine(faults, supported_types=_KNOWN_FAULT_TYPES, subsystem="demo")
 
 
 class _DemoSimulationClockInvalidDeltaError(ValueError):

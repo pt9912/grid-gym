@@ -73,7 +73,7 @@ auch die Nummern-Historie-Map). §2.7 (Permanent
 „§2.7-Auflage" ist repo-weit als normativer Anker zitiert;
 daher die bewusste Nummern-Luecke §2.3..§2.6.
 
-### 2.1 Aktivierbare Carveouts (7 per Mandat + 21 per Trigger)
+### 2.1 Aktivierbare Carveouts (6 per Mandat + 21 per Trigger)
 
 | ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
 | -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
@@ -83,7 +83,6 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 | D-4 | Dynamische Fault-Activation ueber `POST /faults` | M5-Erbschaft | `Deferred` | M5-Welle 6a Decision 19 | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | — |
 | D-5 | URL-Versionierung `/api/v1`-Mount-Prefix | M5-Erbschaft | `Deferred` | M5-Welle 6b §10.1 URL-Realization-Note | vor der naechsten URL-Kollision / dem naechsten Endpoint-Schub | — |
 | D-6 | WebSocket-Live-Stream `/devices` | M5-Erbschaft | `Deferred` | M5-Welle 6b §1.3 | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | — |
-| D-8 | Scenario-/runtime-getriebene Fault-Engines (`*FaultEngine`) + `_KNOWN_FAULT_TYPES`-Update fuer `connection_loss`/`winding_fault`/`genset_fault` | M8-Welle-2-Erbschaft | `Deferred` | M8-Welle-2a/2b/2d ([`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)/[`ADR 0056`](../../adr/0056-transformer-device-pattern.md)/[`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) §6) | Inselnetz-/Resilienz-Szenario braucht zeitgefensterte Fault-Injection dieser Typen | — |
 | T-020 | Inselnetz-Bilanzmodell (`GG-GRID-005`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`020`](../open/020-sollte-island-grid.md) |
 | T-021 | Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`021`](../open/021-sollte-transformer-limits.md) |
 | T-022 | Blindleistung im Netzbilanzmodell (`GG-GRID-007`) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`022`](../open/022-sollte-reactive-power.md) |
@@ -195,6 +194,7 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 | T-018 Wind-Device (`GG-DEV-017`) | M8-Welle-2c (NEU `hexagon/core/devices/wind_turbine/` als `DeviceModel`, stochastischer `RandomPort`-Konsument, [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`; [`M8-welle-2c.md`](M8-welle-2c.md)) | `make gates` gruen; Trigger-Doc [`018`](../open/018-sollte-wind-device.md) (Archivierung nach `done-archive/` mit M8-Closure) |
 | T-019 Diesel-Device (`GG-DEV-018`) | M8-Welle-2d (NEU `hexagon/core/devices/diesel_generator/` als `DeviceModel`+`FaultInjectableDevice`, Hysterese+Kraftstoff+`genset_fault`, [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`; [`M8-welle-2d.md`](M8-welle-2d.md)) — **schliesst die Welle-2-Geraete-Reihe ab** | `make gates` gruen; Trigger-Doc [`019`](../open/019-sollte-diesel-device.md) (Archivierung nach `done-archive/` mit M8-Closure) |
 | D-7 Pre-init-Defense-Pattern verallgemeinern (M5-Erbschaft, `Pattern-Forward`) | M8-Welle-2a adoptiert: erster neuer device-iterierender Konsument von `device.snapshot()` (NEU `_extract_ev_charger_state` in `_runs_router._STATE_EXTRACTORS`) folgt dem None-on-pre-init-Vertrag des Dispatch-Mechanismus | [`M8-welle-2a.md`](M8-welle-2a.md) §3 |
+| D-8 Scenario-/runtime-getriebene Fault-Engines + `_KNOWN_FAULT_TYPES` fuer `connection_loss`/`winding_fault`/`genset_fault` | M8-Welle-2-D8 (Cross-Cutting-Review-Folge): generische [`ScenarioFaultEngine`](../../../../src/grid_gym/hexagon/core/faults/scenario_fault_engine.py) generalisiert Battery/Grid-Engine; `_compose_fault_port` = Single-Engine, `_KNOWN_FAULT_TYPES` auf 5 Typen — die drei neuen Typen wirken end-to-end ohne per-Typ-Engine-Code, [`ADR 0059`](../../adr/0059-generic-scenario-fault-engine.md) `Accepted` | `make gates`/`docs-check`/`test-integration` gruen; [`M8-welle-2-d8.md`](M8-welle-2-d8.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)

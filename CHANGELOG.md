@@ -37,7 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Wind-Turbine-Device-Pattern: kubische Kennlinie + stochastischer
   seeded `RandomPort`-Windeingang), `ADR 0058` (Diesel-Generator-Device-
   Pattern: Kraftstoff + Verbrauch + Anfahr-/Abstell-Hysterese + Ramp +
-  `genset_fault`) — alle `Accepted`.
+  `genset_fault`), `ADR 0059` (generische `ScenarioFaultEngine`: eine Engine
+  ueber `supported_types` statt einer Klasse pro Fault-Typ; Carveout D-8) —
+  alle `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -87,6 +89,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Trigger 019 aufgeloest. **Damit ist M8-Welle 2 (alle vier SOLLTE-
   Geraete `GG-DEV-015..018`) komplett.**
   ([`M8-welle-2d.md`](docs/plan/planning/in-progress/M8-welle-2d.md))
+- **M8-Welle 2-D8 — Generische `ScenarioFaultEngine`** (Cross-Cutting-
+  Review-Folge, [`ADR 0059`](docs/plan/adr/0059-generic-scenario-fault-engine.md)
+  `Accepted`): NEU `hexagon/core/faults/scenario_fault_engine.py`
+  generalisiert die bis auf zwei Stellen identischen `BatteryFaultEngine`/
+  `GridFaultEngine` (ADR 0025-Scheduling) zu **einer** Engine
+  (`faults, supported_types, subsystem`); Battery/Grid bleiben duenne
+  Compat-Subklassen (M3-Tests unveraendert gruen). `_compose_fault_port`
+  liefert nun eine Single-Engine (Klasse `_FaultPortComposition` entfernt),
+  `_KNOWN_FAULT_TYPES` auf 5 Typen (single source of truth). **Damit wirken
+  `connection_loss`/`winding_fault`/`genset_fault` end-to-end ueber YAML-
+  Szenarien ohne per-Typ-Engine-Code (Carveout D-8 aufgeloest).** Dead
+  `assert_supported_type` entfernt. NEU
+  `tests/integration/scenarios/diesel_fault_demo.yaml` + Unit-/Integration-
+  Smokes. ([`M8-welle-2-d8.md`](docs/plan/planning/in-progress/M8-welle-2-d8.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

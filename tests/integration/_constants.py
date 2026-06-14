@@ -75,6 +75,17 @@ DIESEL_DEMO_TICKS: Final[int] = 60
 """Tick-Anzahl fuer den Diesel-Demo-Lauf (Idle-Smoke; Hysterese-/
 Kraftstoff-/Fault-Dynamik ist im Unit-Test gepinnt)."""
 
+DIESEL_FAULT_DEMO_SCENARIO_PATH: Final[Path] = (
+    Path(__file__).parent / "scenarios" / "diesel_fault_demo.yaml"
+)
+"""Pfad zur YAML-Fixture des Diesel-Fault-Demo-Szenarios (M8-Welle-2-D8,
+ADR 0059): genset_fault end-to-end ueber die generische
+`ScenarioFaultEngine`."""
+
+DIESEL_FAULT_DEMO_TICKS: Final[int] = 30
+"""Tick-Anzahl fuer den Diesel-Fault-Demo-Lauf — deckt das
+genset_fault-Window (Tick 5..15) + Recovery ab."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

@@ -1,0 +1,55 @@
+# M8-Welle-2-D8 Diesel-Fault-Demo-Szenario (ADR 0059, Carveout D-8).
+#
+# Beweist den End-to-End-Fault-Pfad fuer einen der drei NEUEN Welle-2-
+# Fault-Typen ueber die generische `ScenarioFaultEngine`:
+#
+#   YAML faults-Block -> Loader -> TickLoop-Vor-Tick-Block ->
+#   ScenarioFaultEngine.apply_active_faults -> DieselGeneratorDevice
+#   .inject_fault("genset_fault", ...) -> genset_fault-Telemetrie.
+#
+# Der Genset bleibt ohne Command STOPPED; die `genset_fault`-Telemetrie
+# (1/0) ist trotzdem pro Tick beobachtbar und reflektiert den
+# injizierten Schutz-Trip. Window 5000..15000 ms (Tick 5 bis exklusiv
+# Tick 15, ADR 0025 §2.3 half-open).
+#
+# Determinismus-Vertrag (ADR 0021 §2.9 + ADR 0025 §2.4): zwei Laeufe
+# mit gleichem Seed liefern byte-identische Telemetrie.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "diesel-fault-demo"
+  name: "M8-Welle-2-D8 Diesel-Fault-Demo (genset_fault via ScenarioFaultEngine)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 30
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie die uebrigen Demos
+
+devices:
+  - id: "dg-1"
+    type: "diesel_generator"
+    params:
+      max_power_kw: "100"
+      min_start_power_kw: "20"
+      min_stop_power_kw: "10"
+      fuel_capacity_l: "500"
+      initial_fuel_l: "500"
+      fuel_per_kwh_l: "0.3"
+      ramp_kw_per_s: "50"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "1000"
+      max_export_kw: "1000"
+
+faults:
+  # genset_fault von Tick 5 (sim_time 5000) bis Tick 15 exklusiv
+  # (sim_time 15000) — 10 Ticks aktiv.
+  - start_simulation_time: 5000
+    duration_ms: 10000
+    target: "dg-1"
+    type: "genset_fault"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"
