@@ -61,6 +61,13 @@ DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
         "turns_ratio",
         "no_load_loss_kw",
         "load_loss_kw",
+        # M8-Welle-2c Wind-Turbine (ADR 0057 §2.3); `rated_power_kw` ist
+        # schon oben gelistet.
+        "cut_in_speed_ms",
+        "rated_speed_ms",
+        "cut_out_speed_ms",
+        "min_wind_speed_ms",
+        "max_wind_speed_ms",
     }
 )
 

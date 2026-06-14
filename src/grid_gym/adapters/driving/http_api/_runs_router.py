@@ -427,6 +427,20 @@ def _extract_transformer_state(
     }
 
 
+def _extract_wind_turbine_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """ADR 0057 §2.6 Wind-Turbine-Subset; gibt None bei pre-init.
+    Command-/Fault-los — nur Erzeugungs-State."""
+    if "current_power_kw" not in snap:
+        return None
+    return {
+        "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
+        "current_wind_speed_ms": _snap_decimal_str(snap, "current_wind_speed_ms"),
+        "generated_kwh": _snap_decimal_str(snap, "generated_kwh"),
+    }
+
+
 # Welle-6b-Review F2 + Slice-Doc-Vorschlag „dispatch dict": per-typ
 # Extractor analog `alarm_mappers.dispatch_alarm_mapper`. Welle-7+/M3-
 # Geraete tragen sich hier ein, ohne `_extract_state_subset` weiter
@@ -439,6 +453,7 @@ _STATE_EXTRACTORS: Mapping[str, _StateExtractor] = {
     "grid_connection": _extract_grid_connection_state,
     "ev_charger": _extract_ev_charger_state,
     "transformer": _extract_transformer_state,
+    "wind_turbine": _extract_wind_turbine_state,
 }
 
 

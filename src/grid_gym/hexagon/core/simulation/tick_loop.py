@@ -158,6 +158,7 @@ _DEVICE_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
     "SmartMeterDevice": "smart_meter",
     "EvChargerDevice": "ev_charger",
     "TransformerDevice": "transformer",
+    "WindTurbineDevice": "wind_turbine",
 }
 """Welle-6a-Device-Type-Mapping fuer Sub-Snapshot-Key-Konstruktion
 (ADR 0015 §2.3). Welle 7+/M3-Geraete muessen sich hier eintragen
@@ -215,6 +216,16 @@ _BILANZ_SOURCE_BUCKETS: Final[Mapping[str, str]] = {
     "load": "load",
     "battery": "storage",
     "grid_connection": "grid_connection",
+    # M8-Welle-2 SOLLTE-Geraete (Review-Folge 2c): EV-Charger ist ein
+    # Speicher (Laden positiv, V2G negativ; vorzeichenkonsistent wie
+    # Battery), Wind ist Erzeugung. Ohne diese Eintraege fielen ihre
+    # `power_kw`-Punkte
+    # als `unknown_source` aus der Netzbilanz (Geraet im Grid unsichtbar).
+    # Transformer steht bewusst NICHT hier: er emittiert
+    # `primary_power_kw`/`secondary_power_kw` (Pass-Through), nicht
+    # `power_kw`, und wird vom Metrik-Filter ohnehin uebersprungen.
+    "ev_charger": "storage",
+    "wind_turbine": "generation",
 }
 """TelemetryPoint.source -> Bilanz-Bucket fuer
 `GridModelBilanz.update(...)` (ADR 0019 §2.2 Sign-Konvention).

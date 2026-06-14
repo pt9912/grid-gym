@@ -33,8 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Composition-ASGI-Entrypoint + Scenario-Hook-Inversion), `ADR 0055`
   (EV-Charger-Device-Pattern: SoC + CC/CV + V2G + `connection_loss`-
   Fault), `ADR 0056` (Transformer-Device-Pattern: Wandlungsverhaeltnis
-  + Eisen-/Kupferverluste + Saettigung + `winding_fault`) — alle
-  `Accepted`.
+  + Eisen-/Kupferverluste + Saettigung + `winding_fault`), `ADR 0057`
+  (Wind-Turbine-Device-Pattern: kubische Kennlinie + stochastischer
+  seeded `RandomPort`-Windeingang) — alle `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -60,6 +61,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
   `devices/transformer` erweitert. Trigger 017 aufgeloest.
   ([`M8-welle-2b.md`](docs/plan/planning/in-progress/M8-welle-2b.md))
+- **M8-Welle 2c — Wind-Turbine (`GG-DEV-017`)**: NEU
+  `hexagon/core/devices/wind_turbine/` (`WindTurbineDevice` als
+  `DeviceModel`) nach dem PV-Muster — command-loser Generator mit
+  kubischer Leistungskennlinie (cut-in/rated/cut-out) und
+  **stochastischem seeded `RandomPort`-Windeingang** (erster echter
+  `RandomPort`-Konsument; aktiviert die `attach_random`-Resume-Mechanik).
+  Kein Command/Alarm/Fault. Verdrahtet ueber 6 Naehte; NEU Szenario-
+  Beispiel `tests/integration/scenarios/wind_turbine_demo.yaml` +
+  Unit-/Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
+  `devices/wind_turbine` erweitert. Trigger 018 aufgeloest.
+  ([`M8-welle-2c.md`](docs/plan/planning/in-progress/M8-welle-2c.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

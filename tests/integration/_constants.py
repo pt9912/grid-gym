@@ -57,6 +57,16 @@ TRANSFORMER_DEMO_TICKS: Final[int] = 60
 """Tick-Anzahl fuer den Transformer-Demo-Lauf (Idle-Smoke; Verlust-/
 Saettigungs-/Fault-Dynamik ist im Unit-Test gepinnt)."""
 
+WIND_TURBINE_DEMO_SCENARIO_PATH: Final[Path] = (
+    Path(__file__).parent / "scenarios" / "wind_turbine_demo.yaml"
+)
+"""Pfad zur YAML-Fixture des Wind-Turbine-Demo-Szenarios (M8-Welle-2c,
+GG-DEV-017, ADR 0057)."""
+
+WIND_TURBINE_DEMO_TICKS: Final[int] = 60
+"""Tick-Anzahl fuer den Wind-Turbine-Demo-Lauf (stochastischer Lauf;
+Kennlinien-Werte sind im Unit-Test via konstantem Wind gepinnt)."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

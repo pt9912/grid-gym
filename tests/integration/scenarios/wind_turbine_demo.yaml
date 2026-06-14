@@ -1,0 +1,41 @@
+# M8-Welle-2c Wind-Turbine-Demo-Szenario (GG-DEV-017, ADR 0057).
+#
+# Zeigt das Wind-SOLLTE-Geraet (Lastenheft §9.4) im Tick-Loop: ein
+# command-loser Generator mit kubischer Leistungskennlinie und
+# stochastischem, seeded Windgeschwindigkeits-Eingang. Wind ist das
+# erste Geraet, das den RandomPort tatsaechlich konsumiert (eine
+# next_float()-Ziehung pro Tick, deterministisch ueber den Szenario-Seed).
+#
+# Anders als die EV-/Transformer-Demos idlet Wind NICHT: es erzeugt pro
+# Tick variable Einspeisung. Determinismus-Vertrag (ADR 0057 §2.6): zwei
+# Laeufe mit gleichem Seed liefern byte-identische
+# TickResult.emitted_telemetry. Die Kennlinien-Werte sind im Unit-Test
+# (konstanter Wind via min==max) gepinnt.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "wind-turbine-demo"
+  name: "M8-Welle-2c Wind-Turbine-Demo (kubische Kennlinie + stochastisch)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 60
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie die uebrigen Demos
+
+devices:
+  - id: "wt-1"
+    type: "wind_turbine"
+    params:
+      rated_power_kw: "2000"
+      cut_in_speed_ms: "2"
+      rated_speed_ms: "15"
+      cut_out_speed_ms: "25"
+      min_wind_speed_ms: "2"
+      max_wind_speed_ms: "20"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "5000"
+      max_export_kw: "5000"

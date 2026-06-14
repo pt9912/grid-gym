@@ -47,6 +47,7 @@ from grid_gym.hexagon.core.devices.load import LoadDevice
 from grid_gym.hexagon.core.devices.pv import PvDevice
 from grid_gym.hexagon.core.devices.smart_meter import SmartMeterDevice
 from grid_gym.hexagon.core.devices.transformer import TransformerDevice
+from grid_gym.hexagon.core.devices.wind_turbine import WindTurbineDevice
 from grid_gym.hexagon.core.domain.scenario import (
     Scenario,
     ScenarioAgent,
@@ -95,6 +96,7 @@ _DEVICE_FACTORIES: Final[Mapping[str, Callable[[], DeviceModel]]] = {
     "smart_meter": SmartMeterDevice,
     "ev_charger": EvChargerDevice,
     "transformer": TransformerDevice,
+    "wind_turbine": WindTurbineDevice,
 }
 """Welle-6b (ADR 0021 §2.2): Hartzweig-Factory-Map fuer Device-
 Dispatch nach `ScenarioDevice.type`. Pflegegleichheit mit
