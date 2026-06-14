@@ -47,6 +47,16 @@ EV_CHARGER_DEMO_TICKS: Final[int] = 60
 """Tick-Anzahl fuer den EV-Charger-Demo-Lauf (Idle-Smoke ueber 60
 Ticks; Lade-/V2G-/Fault-Dynamik ist im Unit-Test gepinnt)."""
 
+TRANSFORMER_DEMO_SCENARIO_PATH: Final[Path] = (
+    Path(__file__).parent / "scenarios" / "transformer_demo.yaml"
+)
+"""Pfad zur YAML-Fixture des Transformer-Demo-Szenarios (M8-Welle-2b,
+GG-DEV-016, ADR 0056)."""
+
+TRANSFORMER_DEMO_TICKS: Final[int] = 60
+"""Tick-Anzahl fuer den Transformer-Demo-Lauf (Idle-Smoke; Verlust-/
+Saettigungs-/Fault-Dynamik ist im Unit-Test gepinnt)."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

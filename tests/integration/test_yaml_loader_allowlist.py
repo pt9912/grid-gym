@@ -29,6 +29,7 @@ from grid_gym.hexagon.core.devices.grid_connection.config import GridConnectionC
 from grid_gym.hexagon.core.devices.load.config import LoadConfig
 from grid_gym.hexagon.core.devices.pv.config import PvConfig
 from grid_gym.hexagon.core.devices.smart_meter.config import SmartMeterConfig
+from grid_gym.hexagon.core.devices.transformer.config import TransformerConfig
 
 from grid_gym.scenario_yaml import DEVICE_DECIMAL_PARAMS
 
@@ -40,6 +41,7 @@ _DEVICE_CONFIG_CLASSES = (
     LoadConfig,
     PvConfig,
     SmartMeterConfig,
+    TransformerConfig,
 )
 
 

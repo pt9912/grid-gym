@@ -1,6 +1,11 @@
 # 017 — SOLLTE: Transformer-Device (`GG-DEV-016`)
 
-**Status:** Open — Trigger-Watch
+**Status:** Resolved — M8-Welle-2b (2026-06-14). Geliefert via
+[`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted` +
+`hexagon/core/devices/transformer/`
+([`M8-welle-2b.md`](../in-progress/M8-welle-2b.md)). Doc-Archivierung
+nach `done-archive/` folgt mit der M8-Meilenstein-Closure
+(`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).

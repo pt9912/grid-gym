@@ -29,3 +29,8 @@ FAULT_TYPE_CONNECTION_LOSS: Final[str] = "connection_loss"
 """EV-Charger-Fault: Verbindungsabriss waehrend der Session — solange
 aktiv ist `power_kw` hart `0` (SoC eingefroren), analog `unplugged`
 (M8-Welle-2a, ADR 0055 §2.7)."""
+
+FAULT_TYPE_WINDING_FAULT: Final[str] = "winding_fault"
+"""Transformer-Fault: Schutzausloesung (Ueberlast/Kurzschluss) — solange
+aktiv ist der Transformator isoliert/de-energized, `primary_power`/
+`secondary_power`/`loss` hart `0` (M8-Welle-2b, ADR 0056 §2.6)."""

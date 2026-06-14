@@ -157,6 +157,7 @@ _DEVICE_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
     "GridConnectionDevice": "grid_connection",
     "SmartMeterDevice": "smart_meter",
     "EvChargerDevice": "ev_charger",
+    "TransformerDevice": "transformer",
 }
 """Welle-6a-Device-Type-Mapping fuer Sub-Snapshot-Key-Konstruktion
 (ADR 0015 §2.3). Welle 7+/M3-Geraete muessen sich hier eintragen

@@ -1,0 +1,42 @@
+# M8-Welle-2b Transformer-Demo-Szenario (GG-DEV-016, ADR 0056).
+#
+# Zeigt das Transformer-SOLLTE-Geraet (Lastenheft §9.4) im Tick-Loop:
+# ein MS/NS-Transformator (20 kV → 400 V, turns_ratio 50) mit Eisen-/
+# Kupferverlusten, Saettigungs-Hard-Cap und winding_fault-Schutz.
+#
+# Steuerung (ADR 0056 §2.5) laeuft zur Laufzeit ueber die API:
+#   - Durchsatz: POST .../commands {type: "set_power_kw", value: "500"}
+#   - Schutz:    POST .../faults   {fault_type: "winding_fault", target: "tr-1"}
+#
+# Ohne Command idlet der Transformer bei primary_power_kw = 0 (nur
+# Eisen-/Leerlaufverlust). Die Verlust-/Saettigungs-/Fault-Dynamik ist
+# deterministisch im Unit-Test gepinnt; dieser Smoke pinnt die
+# End-to-End-Verdrahtung (YAML → Decimal-Coercion → Loader → TickLoop)
+# + Determinismus (ADR 0056 §2.7).
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "transformer-demo"
+  name: "M8-Welle-2b Transformer-Demo (MS/NS, Verluste + winding_fault)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 60
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie die uebrigen Demos
+
+devices:
+  - id: "tr-1"
+    type: "transformer"
+    params:
+      rated_power_kw: "1000"
+      primary_voltage_v: "20000"
+      turns_ratio: "50"
+      no_load_loss_kw: "5"
+      load_loss_kw: "20"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "20000"
+      max_import_kw: "1000"
+      max_export_kw: "1000"

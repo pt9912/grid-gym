@@ -55,6 +55,12 @@ DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
         "battery_capacity_kwh",
         "cv_phase_start_soc",
         "initial_soc",
+        # M8-Welle-2b Transformer (ADR 0056 §2.3); `rated_power_kw` ist
+        # schon oben (PV/Load) gelistet.
+        "primary_voltage_v",
+        "turns_ratio",
+        "no_load_loss_kw",
+        "load_loss_kw",
     }
 )
 

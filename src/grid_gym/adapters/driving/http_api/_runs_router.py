@@ -411,6 +411,22 @@ def _extract_ev_charger_state(
     }
 
 
+def _extract_transformer_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """ADR 0056 §2.7 Transformer-Subset; gibt None bei pre-init.
+
+    `winding_fault_active` lebt im `fault_state`-Sub-Block (analog
+    Battery/GridConnection/EV)."""
+    if "current_primary_power_kw" not in snap:
+        return None
+    return {
+        "current_primary_power_kw": _snap_decimal_str(snap, "current_primary_power_kw"),
+        "throughput_kwh": _snap_decimal_str(snap, "throughput_kwh"),
+        "winding_fault_active": _snap_fault_flag(snap, "winding_fault_active"),
+    }
+
+
 # Welle-6b-Review F2 + Slice-Doc-Vorschlag „dispatch dict": per-typ
 # Extractor analog `alarm_mappers.dispatch_alarm_mapper`. Welle-7+/M3-
 # Geraete tragen sich hier ein, ohne `_extract_state_subset` weiter
@@ -422,6 +438,7 @@ _STATE_EXTRACTORS: Mapping[str, _StateExtractor] = {
     "load": _extract_pv_or_load_state,
     "grid_connection": _extract_grid_connection_state,
     "ev_charger": _extract_ev_charger_state,
+    "transformer": _extract_transformer_state,
 }
 
 

@@ -52,6 +52,7 @@ from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_CELL_FAILURE,
     FAULT_TYPE_CONNECTION_LOSS,
     FAULT_TYPE_VOLTAGE_DROP,
+    FAULT_TYPE_WINDING_FAULT,
 )
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -142,6 +143,7 @@ _FAULT_TYPE_TO_DEVICE_TYPE: Final[Mapping[str, str]] = {
     FAULT_TYPE_CELL_FAILURE: "battery",
     FAULT_TYPE_VOLTAGE_DROP: "grid_connection",
     FAULT_TYPE_CONNECTION_LOSS: "ev_charger",
+    FAULT_TYPE_WINDING_FAULT: "transformer",
 }
 """M5-Welle-6a (Decision 20): Whitelist Fault-Typ ↔ Device-Typ.
 Welle-7+/M3-Fault-Typen muessen sich hier eintragen oder eine

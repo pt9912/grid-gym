@@ -32,7 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ADR 0051` (Fault-Engine-Standort/Naming), `ADR 0054`
   (Composition-ASGI-Entrypoint + Scenario-Hook-Inversion), `ADR 0055`
   (EV-Charger-Device-Pattern: SoC + CC/CV + V2G + `connection_loss`-
-  Fault) — alle `Accepted`.
+  Fault), `ADR 0056` (Transformer-Device-Pattern: Wandlungsverhaeltnis
+  + Eisen-/Kupferverluste + Saettigung + `winding_fault`) — alle
+  `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -46,6 +48,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Integration-Smokes (≥ 100-Tick-Determinismus, Snapshot-Roundtrip).
   `CRITICAL_COV_TARGETS`-Default um `devices/ev_charger` erweitert.
   Trigger 016 aufgeloest. ([`M8-welle-2a.md`](docs/plan/planning/in-progress/M8-welle-2a.md))
+- **M8-Welle 2b — Transformer (`GG-DEV-016`)**: NEU
+  `hexagon/core/devices/transformer/` (`TransformerDevice` als
+  `DeviceModel` + `FaultInjectableDevice`) nach dem GridConnection-Set-
+  Power-Muster — Wandlungsverhaeltnis (`turns_ratio`), Eisen-/Leerlauf-
+  verlust (konstant) + Kupfer-/Lastverlust (quadratisch), Saettigungs-
+  Hard-Cap bei `rated_power_kw` und `winding_fault`-Schutzausloesung
+  (NEU `FAULT_TYPE_WINDING_FAULT` → Sekundaer/Verlust hart `0`).
+  Verdrahtet ueber dieselben 8 Integrations-Naehte; NEU Szenario-Beispiel
+  `tests/integration/scenarios/transformer_demo.yaml` + Unit-/
+  Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
+  `devices/transformer` erweitert. Trigger 017 aufgeloest.
+  ([`M8-welle-2b.md`](docs/plan/planning/in-progress/M8-welle-2b.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU
