@@ -41,6 +41,7 @@ from grid_gym.hexagon.core.agents.rule_based import (
 )
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
+from grid_gym.hexagon.core.devices.ev_charger import EvChargerDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.devices.load import LoadDevice
 from grid_gym.hexagon.core.devices.pv import PvDevice
@@ -91,6 +92,7 @@ _DEVICE_FACTORIES: Final[Mapping[str, Callable[[], DeviceModel]]] = {
     "load": LoadDevice,
     "grid_connection": GridConnectionDevice,
     "smart_meter": SmartMeterDevice,
+    "ev_charger": EvChargerDevice,
 }
 """Welle-6b (ADR 0021 §2.2): Hartzweig-Factory-Map fuer Device-
 Dispatch nach `ScenarioDevice.type`. Pflegegleichheit mit

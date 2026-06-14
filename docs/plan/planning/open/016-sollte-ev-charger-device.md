@@ -1,6 +1,11 @@
 # 016 — SOLLTE: EV-Charger-Device (`GG-DEV-015`)
 
-**Status:** Open — Trigger-Watch
+**Status:** Resolved — M8-Welle-2a (2026-06-14). Geliefert via
+[`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted` +
+`hexagon/core/devices/ev_charger/`
+([`M8-welle-2a.md`](../in-progress/M8-welle-2a.md)). Doc-Archivierung
+nach `done-archive/` folgt mit der M8-Meilenstein-Closure
+(`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).

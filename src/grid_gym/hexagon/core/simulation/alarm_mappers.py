@@ -31,6 +31,7 @@ als Tupel auswerten"):
 from __future__ import annotations
 
 from grid_gym.hexagon.core.devices.battery.commands import BatteryAlarm
+from grid_gym.hexagon.core.devices.ev_charger.commands import EvChargerAlarm
 from grid_gym.hexagon.core.devices.grid_connection.commands import GridConnectionAlarm
 from grid_gym.hexagon.core.devices.load.commands import LoadAlarm
 from grid_gym.hexagon.core.devices.pv.commands import PvAlarm
@@ -61,11 +62,12 @@ def _power_alarm_code_severity(
     return ("command_rejected", "critical")
 
 
-PowerDeviceAlarm = BatteryAlarm | PvAlarm | LoadAlarm | GridConnectionAlarm
-"""Welle-4b-Union der vier strukturell identischen Power-Device-
-Alarms (5-Feld-Schema mit `target_device_id`/`limit`/`limit_unit`/
-`result`/`command_id`). SmartMeter hat ein abweichendes 4-Feld-
-Schema und bekommt einen eigenen Mapper."""
+PowerDeviceAlarm = BatteryAlarm | PvAlarm | LoadAlarm | GridConnectionAlarm | EvChargerAlarm
+"""Welle-4b-Union der strukturell identischen Power-Device-Alarms
+(5-Feld-Schema mit `target_device_id`/`limit`/`limit_unit`/`result`/
+`command_id`). M8-Welle-2a ergaenzt `EvChargerAlarm` (gleiches Schema).
+SmartMeter hat ein abweichendes 4-Feld-Schema und bekommt einen
+eigenen Mapper."""
 
 
 def alarm_from_power_device_alarm(
@@ -150,7 +152,7 @@ def dispatch_alarm_mapper(
     (Pattern analog `_DEVICE_TYPE_BY_CLASS_NAME` im Snapshot-
     Schema).
     """
-    if isinstance(raw, BatteryAlarm | PvAlarm | LoadAlarm | GridConnectionAlarm):
+    if isinstance(raw, BatteryAlarm | PvAlarm | LoadAlarm | GridConnectionAlarm | EvChargerAlarm):
         return alarm_from_power_device_alarm(
             raw,
             run_id=run_id,

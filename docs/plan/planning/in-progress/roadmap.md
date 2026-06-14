@@ -1,7 +1,7 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 gestartet (2a-Design Done)** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2-4** liefern SOLLTE-Geraete/Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-016..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
-**Stand:** 2026-06-13
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 (Geraete), 2a (EV-Charger) Done** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2a (EV-Charger, `GG-DEV-015`) Done 2026-06-14** ([`M8-welle-2a.md`](M8-welle-2a.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted`, Trigger 016 aufgeloest); **Welle 2b-d + 3-4** liefern die restlichen SOLLTE-Geraete/Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-017..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
+**Stand:** 2026-06-14
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
   M3 `Done` (Welle 0..7), **M4 `Done`** (Welle 0..7 abgeschlossen
@@ -1272,14 +1272,15 @@ Aktivierung `open/` → `in-progress/`):
   `Proposed → Accepted` (Welle-X-D-2-Erbschaft). Zieht die Adapter-
   Purity- und Fault-Engine-Struktur sauber, auf der die neuen
   Geraete-Adapter aufsetzen.
-- **Welle 2 — Geraete** (geplant, [`M8-welle-2.md`](M8-welle-2.md))**.** `T-016` EV-Charger (`GG-DEV-015`,
-  [`016`](../open/016-sollte-ev-charger-device.md)), `T-017`
-  Transformer (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)),
+- **Welle 2 — Geraete** ([`M8-welle-2.md`](M8-welle-2.md))**.** `T-016` EV-Charger (`GG-DEV-015`,
+  [`016`](../open/016-sollte-ev-charger-device.md)) **Done** (2a,
+  [`M8-welle-2a.md`](M8-welle-2a.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted`, Trigger 016 aufgeloest),
+  `T-017`
+  Transformer (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)) **(2b naechst)**,
   `T-018` Wind (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)),
   `T-019` Diesel (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)).
-  Aktiviert zugleich `D-7` (Pre-init-Defense-Pattern verallgemeinern):
-  die neuen device-iterierenden Driving-Adapter sind die Adoptions-Welle
-  fuer dieses `Pattern-Forward`-Carveout (Aktivierungs-Bedingung erfuellt).
+  `D-7` (Pre-init-Defense-Pattern) ist mit Welle 2a adoptiert (erste
+  device-iterierende Sub-Welle; Aktivierungs-Bedingung erfuellt).
 - **Welle 3 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
   (`GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md)), `T-021`
   Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)),
@@ -1313,11 +1314,18 @@ Fault-Engine-Rename (`*FaultAdapter` → `*FaultEngine`, Standort bleibt
 [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
 `Accepted` + NEU `ADR 0054`. **M8-Welle 1 (Architektur-Cleanup)
 abgeschlossen**. **Welle 2 (Geraete) gestartet**
-([`M8-welle-2.md`](M8-welle-2.md)): **2a-C1 Done** —
-[`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) (EV-Charger:
-SoC + CC/CV-Ladekennlinie + durchgaengiges V2G + `connection_loss`-Fault)
-entworfen + reviewt (`Proposed`); naechster Schritt 2a-C2/C3
-(Implementierung `devices/ev_charger/`).
+([`M8-welle-2.md`](M8-welle-2.md)): **2a (EV-Charger) Done**
+([`M8-welle-2a.md`](M8-welle-2a.md)) —
+[`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) **`Accepted`**
+(EV-Charger: SoC + CC/CV-Ladekennlinie + durchgaengiges V2G +
+`connection_loss`-Fault). NEU `hexagon/core/devices/ev_charger/`
+(`DeviceModel` + `FaultInjectableDevice`) + Loader-Factory +
+`DEVICE_DECIMAL_PARAMS` + `_DEVICE_TYPE_BY_CLASS_NAME` + Alarm-Mapper
++ HTTP-`POST /faults`-Whitelist (`connection_loss`) +
+Visualization-State-Subset + `CRITICAL_COV_TARGETS`; Szenario-Beispiel
+`ev_charger_demo.yaml` + Unit-/Integration-Smokes (≥ 100-Tick-
+Determinismus, Snapshot-Roundtrip). `make gates` gruen, Trigger 016
+aufgeloest, `D-7` adoptiert. Naechster Schritt **2b (Transformer)**.
 
 ---
 

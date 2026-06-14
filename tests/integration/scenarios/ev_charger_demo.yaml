@@ -1,0 +1,52 @@
+# M8-Welle-2a EV-Charger-Demo-Szenario (GG-DEV-015, ADR 0055).
+#
+# Zeigt das EV-Charger-SOLLTE-Geraet (Lastenheft §9.4) im Tick-Loop:
+# ein realistischer Ladepunkt mit Fahrzeug-SoC, CC/CV-Ladekennlinie,
+# durchgaengigem V2G und `connection_loss`-Fault, an einem
+# Netzanschlusspunkt.
+#
+# Steuerung (ADR 0055 §2.6) laeuft zur Laufzeit ueber die API/Agenten,
+# nicht statisch im Szenario:
+#
+# - Laden:     POST .../commands {type: "set_charge_power", value: "11"}
+# - V2G:       POST .../commands {type: "set_charge_power", value: "-11"}
+# - Stecker:   POST .../commands {type: "set_plug_state", value: "unplugged"}
+# - Fault:     POST .../faults   {fault_type: "connection_loss", target: "ev-1"}
+#
+# Ohne Command idlet der EV bei `power_kw = 0` (SoC konstant). Die
+# Lade-/V2G-/Fault-Dynamik ist deterministisch im Unit-Test gepinnt
+# (`tests/unit/.../ev_charger/`); dieser Integration-Smoke pinnt die
+# End-to-End-Verdrahtung (YAML → Decimal-Coercion → Loader → TickLoop)
+# + Determinismus.
+#
+# Determinismus-Vertrag (ADR 0055 §2.8): zwei Laeufe mit gleichem Seed
+# produzieren byte-identische `TickResult.emitted_telemetry`-Folgen.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "ev-charger-demo"
+  name: "M8-Welle-2a EV-Charger-Demo (CC/CV + V2G + connection_loss)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 60
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie die uebrigen Demos
+
+devices:
+  - id: "ev-1"
+    type: "ev_charger"
+    params:
+      max_charge_kw: "11"
+      max_discharge_kw: "11"
+      nominal_voltage_v: "400"
+      battery_capacity_kwh: "60"
+      cv_phase_start_soc: "0.8"
+      initial_soc: "0.2"
+      initial_plug_state: "plugged"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "100"
+      max_export_kw: "100"

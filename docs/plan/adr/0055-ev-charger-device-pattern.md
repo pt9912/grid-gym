@@ -1,6 +1,6 @@
 # ADR 0055 — EV-Charger-Device-Pattern (M8 Welle 2a)
 
-**Status:** Proposed
+**Status:** Accepted
 **Datum:** 2026-06-13
 **Bezug:**
 
@@ -189,3 +189,33 @@ Snapshot-Roundtrip).
 - Multi-EV-Pool / Smart-Charging-Logik — eigenes ML-Slice.
 - Protokollanschluss (ISO 15118 / OCPP) — Adapter-Slice (M4-Material).
 - Weitere EV-Fault-Typen (Ueberhitzung, Ladeabbruch-Codes) — Folge-ADR.
+- Scenario-getriebene EV-Fault-Engine (`EvChargerFaultEngine` analog
+  `BatteryFaultEngine`) fuer zeitgefensterte `connection_loss`-Injection
+  im TickLoop — Folge-Slice (Welle-2a deckt die `FaultInjectableDevice`-
+  Surface + den HTTP-`POST /faults`-Pfad; die zeitgesteuerte Window-
+  Engine ist M-Folge-Material wie die produktive Composite-FaultPort).
+
+## 7. Acceptance (Fitness Functions)
+
+`Accepted` mit Welle 2a-C2/C3. Die Entscheidung ist maschinell gebunden:
+
+- **Device-Submodul + Determinismus + Snapshot-Roundtrip** —
+  [`tests/unit/hexagon/core/devices/ev_charger/test_ev_charger_device.py`](../../../tests/unit/hexagon/core/devices/ev_charger/test_ev_charger_device.py)
+  (Config-Range, CC/CV-Taper, V2G, Energie-Limit, ≥ 100-Tick-
+  Determinismus-Property, byte-stabiler Snapshot-Roundtrip) +
+  [`test_fault_injection.py`](../../../tests/unit/hexagon/core/devices/ev_charger/test_fault_injection.py)
+  (`connection_loss` Inject/Clear/Idempotenz, SoC-Freeze, `fault_state`-
+  Roundtrip).
+- **End-to-End-Wiring** — Szenario-Beispiel
+  [`tests/integration/scenarios/ev_charger_demo.yaml`](../../../tests/integration/scenarios/ev_charger_demo.yaml)
+  + Smoke
+  [`test_ev_charger_scenario.py`](../../../tests/integration/test_ev_charger_scenario.py)
+  (YAML → Decimal-Coercion → `load_scenario` → `build_tick_loop`,
+  Determinismus, 7-Metrik-Surface).
+- **Map-Konsistenz** — `_DEVICE_FACTORIES` ↔ `_DEVICE_TYPE_BY_CLASS_NAME`
+  per `test_loader_factory_sync.py`; `DEVICE_DECIMAL_PARAMS`-Drift per
+  `test_yaml_loader_allowlist.py`.
+- **Gates** — `make gates` gruen (10 A-1-Gates), inkl.
+  `coverage-gate-critical` ≥ 90 % auf
+  `src/grid_gym/hexagon/core/devices/ev_charger` (Dockerfile-
+  `CRITICAL_COV_TARGETS`-Default erweitert).

@@ -393,6 +393,24 @@ def _extract_grid_connection_state(
     }
 
 
+def _extract_ev_charger_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """ADR 0055 §2.8 EV-Charger-Subset; gibt None bei pre-init.
+
+    `plug_state` ist ein String-Zustand (kein Decimal); SoC wird ueber
+    `stored_kwh` angezeigt. `connection_loss_active` lebt im
+    `fault_state`-Sub-Block (analog Battery/GridConnection)."""
+    if "current_power_kw" not in snap or "plug_state" not in snap:
+        return None
+    return {
+        "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
+        "stored_kwh": _snap_decimal_str(snap, "stored_kwh"),
+        "plug_state": str(snap["plug_state"]),
+        "connection_loss_active": _snap_fault_flag(snap, "connection_loss_active"),
+    }
+
+
 # Welle-6b-Review F2 + Slice-Doc-Vorschlag „dispatch dict": per-typ
 # Extractor analog `alarm_mappers.dispatch_alarm_mapper`. Welle-7+/M3-
 # Geraete tragen sich hier ein, ohne `_extract_state_subset` weiter
@@ -403,6 +421,7 @@ _STATE_EXTRACTORS: Mapping[str, _StateExtractor] = {
     "pv": _extract_pv_or_load_state,
     "load": _extract_pv_or_load_state,
     "grid_connection": _extract_grid_connection_state,
+    "ev_charger": _extract_ev_charger_state,
 }
 
 

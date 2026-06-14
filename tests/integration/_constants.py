@@ -37,6 +37,16 @@ AGENTS_DEMO_TICKS: Final[int] = 60
 """Tick-Anzahl fuer den Agents-Demo-Lauf — deckt alle drei
 zeitgesteuerten Phasen (Idle/Charge/Discharge) ab."""
 
+EV_CHARGER_DEMO_SCENARIO_PATH: Final[Path] = (
+    Path(__file__).parent / "scenarios" / "ev_charger_demo.yaml"
+)
+"""Pfad zur YAML-Fixture des EV-Charger-Demo-Szenarios (M8-Welle-2a,
+GG-DEV-015, ADR 0055)."""
+
+EV_CHARGER_DEMO_TICKS: Final[int] = 60
+"""Tick-Anzahl fuer den EV-Charger-Demo-Lauf (Idle-Smoke ueber 60
+Ticks; Lade-/V2G-/Fault-Dynamik ist im Unit-Test gepinnt)."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

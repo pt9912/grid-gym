@@ -9,7 +9,8 @@ sodass der Single-Source-of-Truth-Vertrag erhalten bleibt.
 
 Welle-2-Closed-Set: ein Typ pro Geraet (`cell_failure` fuer Battery,
 `voltage_drop` fuer GridConnection). Welle 3+ erweitert den Set um
-weitere Typen aus `GG-FAULT-005..010`.
+weitere Typen aus `GG-FAULT-005..010`. M8-Welle-2a ergaenzt
+`connection_loss` fuer den EV-Charger (`GG-DEV-015`, ADR 0055 §2.7).
 """
 
 from __future__ import annotations
@@ -23,3 +24,8 @@ FAULT_TYPE_CELL_FAILURE: Final[str] = "cell_failure"
 FAULT_TYPE_VOLTAGE_DROP: Final[str] = "voltage_drop"
 """GridConnection-Fault: Spannungs-Einbruch ohne Power-Flow-Mutation
 (ADR 0025 §2.1 + ADR 0022 §2.4 GridConnection-Constraint)."""
+
+FAULT_TYPE_CONNECTION_LOSS: Final[str] = "connection_loss"
+"""EV-Charger-Fault: Verbindungsabriss waehrend der Session — solange
+aktiv ist `power_kw` hart `0` (SoC eingefroren), analog `unplugged`
+(M8-Welle-2a, ADR 0055 §2.7)."""

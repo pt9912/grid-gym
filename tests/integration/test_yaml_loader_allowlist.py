@@ -24,6 +24,7 @@ from decimal import Decimal
 from typing import get_type_hints
 
 from grid_gym.hexagon.core.devices.battery.config import BatteryConfig
+from grid_gym.hexagon.core.devices.ev_charger.config import EvChargerConfig
 from grid_gym.hexagon.core.devices.grid_connection.config import GridConnectionConfig
 from grid_gym.hexagon.core.devices.load.config import LoadConfig
 from grid_gym.hexagon.core.devices.pv.config import PvConfig
@@ -34,6 +35,7 @@ from grid_gym.scenario_yaml import DEVICE_DECIMAL_PARAMS
 
 _DEVICE_CONFIG_CLASSES = (
     BatteryConfig,
+    EvChargerConfig,
     GridConnectionConfig,
     LoadConfig,
     PvConfig,

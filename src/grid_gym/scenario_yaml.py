@@ -50,6 +50,11 @@ DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
         "nominal_voltage_v",
         "max_import_kw",
         "max_export_kw",
+        # M8-Welle-2a EV-Charger (ADR 0055 §2.3). `initial_plug_state`
+        # bleibt String und wird bewusst NICHT coerced.
+        "battery_capacity_kwh",
+        "cv_phase_start_soc",
+        "initial_soc",
     }
 )
 

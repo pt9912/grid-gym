@@ -30,9 +30,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   plus `docs/reviews/`-Review-Report-Template.
 - M8-ADRs: NEU `ADR 0050` (AC-ADAPTER-PURE-Bridge-Rueckbau),
   `ADR 0051` (Fault-Engine-Standort/Naming), `ADR 0054`
-  (Composition-ASGI-Entrypoint + Scenario-Hook-Inversion) — alle
-  `Accepted`; NEU `ADR 0055` (EV-Charger-Device-Design: SoC + CC/CV +
-  V2G + `connection_loss`-Fault, `Proposed` — entworfen + reviewt).
+  (Composition-ASGI-Entrypoint + Scenario-Hook-Inversion), `ADR 0055`
+  (EV-Charger-Device-Pattern: SoC + CC/CV + V2G + `connection_loss`-
+  Fault) — alle `Accepted`.
+- **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
+  `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
+  `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
+  CC/CV-Ladekennlinie (linearer Taper ab `cv_phase_start_soc`),
+  durchgaengigem V2G (hart bei `soc=0` gestoppt), Stecker-Zustand und
+  `connection_loss`-Fault (NEU `FAULT_TYPE_CONNECTION_LOSS`). Verdrahtet
+  ueber `_DEVICE_FACTORIES["ev_charger"]`, `DEVICE_DECIMAL_PARAMS`,
+  `_DEVICE_TYPE_BY_CLASS_NAME`, Alarm-Mapper, HTTP-`POST /faults`-
+  Whitelist und Visualization-State-Subset. NEU Szenario-Beispiel
+  `tests/integration/scenarios/ev_charger_demo.yaml` + Unit-/
+  Integration-Smokes (≥ 100-Tick-Determinismus, Snapshot-Roundtrip).
+  `CRITICAL_COV_TARGETS`-Default um `devices/ev_charger` erweitert.
+  Trigger 016 aufgeloest. ([`M8-welle-2a.md`](docs/plan/planning/in-progress/M8-welle-2a.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU
