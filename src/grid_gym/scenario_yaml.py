@@ -68,6 +68,14 @@ DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
         "cut_out_speed_ms",
         "min_wind_speed_ms",
         "max_wind_speed_ms",
+        # M8-Welle-2d Diesel-Generator (ADR 0058 §2.3); `ramp_kw_per_s`
+        # ist schon oben (Battery) gelistet.
+        "max_power_kw",
+        "min_start_power_kw",
+        "min_stop_power_kw",
+        "fuel_capacity_l",
+        "initial_fuel_l",
+        "fuel_per_kwh_l",
     }
 )
 

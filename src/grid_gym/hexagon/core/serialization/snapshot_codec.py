@@ -67,6 +67,19 @@ def assert_int(value: object, key: str, subsystem: str) -> int:
     return value
 
 
+def assert_bool(value: object, key: str, subsystem: str) -> bool:
+    """Prueft, dass `value` ein `bool` ist.
+
+    Wirft `WrongTypeError(subsystem, key, "bool", actual_type)` bei
+    Verstoss. Komplement zu `assert_int` (das `bool` ablehnt); fuer
+    Top-Level-Bool-State-Felder wie `diesel_generator.running`
+    (M8-Welle-2d).
+    """
+    if not isinstance(value, bool):
+        raise WrongTypeError(subsystem, key, "bool", type(value).__name__)
+    return value
+
+
 def assert_str(value: object, key: str, subsystem: str) -> str:
     """Prueft, dass `value` ein `str` ist.
 

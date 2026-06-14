@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 (Geraete), 2a+2b+2c Done** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2a (EV-Charger, `GG-DEV-015`) + 2b (Transformer, `GG-DEV-016`) Done 2026-06-14** ([`M8-welle-2a.md`](M8-welle-2a.md)/[`M8-welle-2b.md`](M8-welle-2b.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)/[`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 016/017 aufgeloest); **Welle 2c (Wind-Turbine, `GG-DEV-017`) Done 2026-06-14** ([`M8-welle-2c.md`](M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest; erster `RandomPort`-Konsument); **Welle 2d + 3-4** liefern die restlichen SOLLTE-Geraete/Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-019..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 (Geraete) komplett (2a-2d Done)** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2a (EV-Charger, `GG-DEV-015`) + 2b (Transformer, `GG-DEV-016`) Done 2026-06-14** ([`M8-welle-2a.md`](M8-welle-2a.md)/[`M8-welle-2b.md`](M8-welle-2b.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)/[`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 016/017 aufgeloest); **Welle 2c (Wind-Turbine, `GG-DEV-017`) Done 2026-06-14** ([`M8-welle-2c.md`](M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest; erster `RandomPort`-Konsument); **Welle 2d (Diesel-Generator, `GG-DEV-018`) Done 2026-06-14** ([`M8-welle-2d.md`](M8-welle-2d.md), [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`, Trigger 019 aufgeloest; Hysterese + Kraftstoff + genset_fault) — **damit alle vier SOLLTE-Geraete (`GG-DEV-015..018`) geliefert**; **Welle 3-4** liefern Netz/BESS-Telemetry ([`M8-welle-2.md`](M8-welle-2.md); Trigger T-020..024). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
 **Stand:** 2026-06-14
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -1280,7 +1280,8 @@ Aktivierung `open/` → `in-progress/`):
   [`M8-welle-2b.md`](M8-welle-2b.md), [`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 017 aufgeloest),
   `T-018` Wind (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)) **Done** (2c,
   [`M8-welle-2c.md`](M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest),
-  `T-019` Diesel (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)) **(2d naechst)**.
+  `T-019` Diesel (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)) **Done** (2d,
+  [`M8-welle-2d.md`](M8-welle-2d.md), [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`, Trigger 019 aufgeloest). **Welle 2 (Geraete) komplett.**
   `D-7` (Pre-init-Defense-Pattern) ist mit Welle 2a adoptiert (erste
   device-iterierende Sub-Welle; Aktivierungs-Bedingung erfuellt).
 - **Welle 3 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
@@ -1348,8 +1349,17 @@ auf den geteilten Reader migriert (loest die 2a/2b-Review-Deferral).
 `RandomPort`-Konsument, aktiviert die `attach_random`-Resume-Mechanik
 real). NEU `hexagon/core/devices/wind_turbine/` ueber 6 Naehte (kein
 Alarm/Fault); `wind_turbine_demo.yaml` + Unit-/Integration-Smokes.
-`make gates` gruen, Trigger 018 aufgeloest. Naechster Schritt
-**2d (Diesel)**.
+`make gates` gruen, Trigger 018 aufgeloest. **2d (Diesel-Generator) Done**
+([`M8-welle-2d.md`](M8-welle-2d.md)) —
+[`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) **`Accepted`**
+(Battery-Muster: Kraftstoff-Vorrat + Verbrauch + Ramp + Anfahr-/Abstell-
+Hysterese (running-Zustandsmaschine) + `genset_fault`-Schutz). NEU
+`hexagon/core/devices/diesel_generator/` ueber 9 Naehte (inkl.
+`_BILANZ_SOURCE_BUCKETS`-`generation` proaktiv aus 2c-Lerneintrag + NEU
+`snapshot_codec.assert_bool`); `diesel_demo.yaml` + Unit-/Integration-
+Smokes. `make gates` gruen, Trigger 019 aufgeloest. **Damit ist Welle 2
+(alle vier SOLLTE-Geraete `GG-DEV-015..018`) komplett.** Naechster
+Schritt **Welle 3 (Netzbilanz, `T-020..022`)**.
 
 ---
 

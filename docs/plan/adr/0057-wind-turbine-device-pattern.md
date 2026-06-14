@@ -1,6 +1,6 @@
 # ADR 0057 — Wind-Turbine-Device-Pattern (M8 Welle 2c)
 
-**Status:** Proposed
+**Status:** Accepted
 **Datum:** 2026-06-14
 **Bezug:**
 

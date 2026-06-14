@@ -67,6 +67,14 @@ WIND_TURBINE_DEMO_TICKS: Final[int] = 60
 """Tick-Anzahl fuer den Wind-Turbine-Demo-Lauf (stochastischer Lauf;
 Kennlinien-Werte sind im Unit-Test via konstantem Wind gepinnt)."""
 
+DIESEL_DEMO_SCENARIO_PATH: Final[Path] = Path(__file__).parent / "scenarios" / "diesel_demo.yaml"
+"""Pfad zur YAML-Fixture des Diesel-Generator-Demo-Szenarios (M8-Welle-2d,
+GG-DEV-018, ADR 0058)."""
+
+DIESEL_DEMO_TICKS: Final[int] = 60
+"""Tick-Anzahl fuer den Diesel-Demo-Lauf (Idle-Smoke; Hysterese-/
+Kraftstoff-/Fault-Dynamik ist im Unit-Test gepinnt)."""
+
 _FALLBACK_TOOL_VERSION: Final[str] = "0.0.0+local"
 """Sentinel-Version fuer Test-Umgebungen, in denen `grid-gym` nicht
 als Distribution installiert ist (z. B. ad-hoc `pytest`-Lauf ohne

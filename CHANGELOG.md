@@ -35,7 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Fault), `ADR 0056` (Transformer-Device-Pattern: Wandlungsverhaeltnis
   + Eisen-/Kupferverluste + Saettigung + `winding_fault`), `ADR 0057`
   (Wind-Turbine-Device-Pattern: kubische Kennlinie + stochastischer
-  seeded `RandomPort`-Windeingang) — alle `Accepted`.
+  seeded `RandomPort`-Windeingang), `ADR 0058` (Diesel-Generator-Device-
+  Pattern: Kraftstoff + Verbrauch + Anfahr-/Abstell-Hysterese + Ramp +
+  `genset_fault`) — alle `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -72,6 +74,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Unit-/Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
   `devices/wind_turbine` erweitert. Trigger 018 aufgeloest.
   ([`M8-welle-2c.md`](docs/plan/planning/in-progress/M8-welle-2c.md))
+- **M8-Welle 2d — Diesel-Generator (`GG-DEV-018`)**: NEU
+  `hexagon/core/devices/diesel_generator/` (`DieselGeneratorDevice` als
+  `DeviceModel` + `FaultInjectableDevice`) nach dem Battery-Muster —
+  Kraftstoff-Vorrat (l) + Verbrauch (l/kWh) + Min-Startleistung + Ramp +
+  Anfahr-/Abstell-Hysterese (running-Zustandsmaschine) + Kraftstoff-Run-
+  Dry + `genset_fault`-Schutz (NEU `FAULT_TYPE_GENSET_FAULT`). Verdrahtet
+  ueber 9 Naehte inkl. `_BILANZ_SOURCE_BUCKETS` (`generation`); NEU
+  `snapshot_codec.assert_bool`. NEU Szenario-Beispiel
+  `tests/integration/scenarios/diesel_demo.yaml` + Unit-/Integration-
+  Smokes. `CRITICAL_COV_TARGETS` um `devices/diesel_generator` erweitert.
+  Trigger 019 aufgeloest. **Damit ist M8-Welle 2 (alle vier SOLLTE-
+  Geraete `GG-DEV-015..018`) komplett.**
+  ([`M8-welle-2d.md`](docs/plan/planning/in-progress/M8-welle-2d.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

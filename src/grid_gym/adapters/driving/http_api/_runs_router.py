@@ -441,6 +441,22 @@ def _extract_wind_turbine_state(
     }
 
 
+def _extract_diesel_generator_state(
+    snap: Mapping[str, object],
+) -> dict[str, str | bool] | None:
+    """ADR 0058 §2.8 Diesel-Subset; gibt None bei pre-init. `running`
+    ist ein Top-Level-Bool; `genset_fault_active` lebt im
+    `fault_state`-Sub-Block."""
+    if "current_power_kw" not in snap:
+        return None
+    return {
+        "current_power_kw": _snap_decimal_str(snap, "current_power_kw"),
+        "fuel_l": _snap_decimal_str(snap, "fuel_l"),
+        "running": bool(snap.get("running", False)),
+        "genset_fault_active": _snap_fault_flag(snap, "genset_fault_active"),
+    }
+
+
 # Welle-6b-Review F2 + Slice-Doc-Vorschlag „dispatch dict": per-typ
 # Extractor analog `alarm_mappers.dispatch_alarm_mapper`. Welle-7+/M3-
 # Geraete tragen sich hier ein, ohne `_extract_state_subset` weiter
@@ -454,6 +470,7 @@ _STATE_EXTRACTORS: Mapping[str, _StateExtractor] = {
     "ev_charger": _extract_ev_charger_state,
     "transformer": _extract_transformer_state,
     "wind_turbine": _extract_wind_turbine_state,
+    "diesel_generator": _extract_diesel_generator_state,
 }
 
 

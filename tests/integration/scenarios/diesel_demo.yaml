@@ -1,0 +1,44 @@
+# M8-Welle-2d Diesel-Generator-Demo-Szenario (GG-DEV-018, ADR 0058).
+#
+# Zeigt das Diesel-SOLLTE-Geraet (Lastenheft §9.4) im Tick-Loop: ein
+# dispatchbarer Generator mit Kraftstoff-Vorrat, Verbrauch, Ramp,
+# Anfahr-/Abstell-Hysterese und genset_fault-Schutz — als Backup-Quelle
+# fuer Inselnetz-/Notstrom-Szenarien.
+#
+# Steuerung (ADR 0058 §2.6) laeuft zur Laufzeit ueber die API:
+#   - Dispatch: POST .../commands {type: "set_power_kw", value: "60"}
+#   - Schutz:   POST .../faults   {fault_type: "genset_fault", target: "dg-1"}
+#
+# Ohne Command bleibt der Genset STOPPED (power 0, kein Verbrauch). Die
+# Hysterese-/Ramp-/Kraftstoff-/Fault-Dynamik ist deterministisch im
+# Unit-Test gepinnt; dieser Smoke pinnt die End-to-End-Verdrahtung
+# (YAML → Decimal-Coercion → Loader → TickLoop) + Determinismus.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "diesel-demo"
+  name: "M8-Welle-2d Diesel-Generator-Demo (Hysterese + Kraftstoff + genset_fault)"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 60
+  seed: 12648430  # 0xC0FFEE — gleicher Seed wie die uebrigen Demos
+
+devices:
+  - id: "dg-1"
+    type: "diesel_generator"
+    params:
+      max_power_kw: "100"
+      min_start_power_kw: "20"
+      min_stop_power_kw: "10"
+      fuel_capacity_l: "500"
+      initial_fuel_l: "500"
+      fuel_per_kwh_l: "0.3"
+      ramp_kw_per_s: "50"
+  - id: "grid-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "1000"
+      max_export_kw: "1000"

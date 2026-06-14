@@ -1,6 +1,11 @@
 # 019 — SOLLTE: Diesel-Device (`GG-DEV-018`)
 
-**Status:** Open — Trigger-Watch
+**Status:** Resolved — M8-Welle-2d (2026-06-14). Geliefert via
+[`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`
++ `hexagon/core/devices/diesel_generator/`
+([`M8-welle-2d.md`](../in-progress/M8-welle-2d.md)). Doc-Archivierung nach
+`done-archive/` folgt mit der M8-Meilenstein-Closure (`carveouts.md`
+§3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).
