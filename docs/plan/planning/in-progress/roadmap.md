@@ -1289,10 +1289,14 @@ Aktivierung `open/` → `in-progress/`):
   generische `ScenarioFaultEngine` generalisiert Battery/Grid-Engine →
   `connection_loss`/`winding_fault`/`genset_fault` wirken end-to-end ueber
   YAML; **Carveout D-8 aufgeloest**.
-- **Welle 3 — Netzbilanz.** `T-020` Inselnetz-Bilanzmodell
-  (`GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md)), `T-021`
-  Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)),
-  `T-022` Blindleistung (`GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)).
+- **Welle 3 — Netzbilanz** ([`M8-welle-3.md`](M8-welle-3.md); Geplant,
+  eroeffnet 2026-06-15)**.** Drei Schaerfungen des `GridModelBilanz`
+  ([`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)), sub-sliced
+  3a → 3b → 3c: `T-020` Inselnetz-Bilanzmodell (`GG-GRID-005`,
+  [`020`](../open/020-sollte-island-grid.md), 3a), `T-021`
+  Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md), 3b),
+  `T-022` Blindleistung (`GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md), 3c;
+  Snapshot-Schema v2→v3).
 - **Welle 4 — BESS-Telemetry.** `T-023` Battery-Temperatur
   (`GG-BESS-006`, [`023`](../open/023-sollte-battery-temperature.md)),
   `T-024` Battery-Zellspannung (`GG-BESS-007`,
@@ -1370,8 +1374,12 @@ generische `ScenarioFaultEngine` (eine Engine ueber `supported_types` statt
 Klasse-pro-Typ) generalisiert Battery/Grid; `_compose_fault_port` =
 Single-Engine, `_KNOWN_FAULT_TYPES` 5 Typen → `connection_loss`/
 `winding_fault`/`genset_fault` end-to-end ueber YAML (**Carveout D-8
-aufgeloest**). `make gates`/`docs-check`/`test-integration` gruen. Naechster
-Schritt **Welle 3 (Netzbilanz, `T-020..022`)**.
+aufgeloest**). `make gates`/`docs-check`/`test-integration` gruen. **Welle 3
+(Netzbilanz) eroeffnet 2026-06-15** ([`M8-welle-3.md`](M8-welle-3.md);
+Status `Geplant`, sub-sliced 3a Inselnetz → 3b Trafo-Grenzen → 3c
+Blindleistung; `T-020..022`/`GG-GRID-005..007`; Schaerfung von
+[`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), 3c mit
+Snapshot v2→v3).
 
 ---
 
