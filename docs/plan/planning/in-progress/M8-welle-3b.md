@@ -60,8 +60,10 @@ eigene Per-Device-Saettigung; 3b ist die **Netz-Grenze im Bilanzmodell**.
 ## 4. Risiken / offene Design-Fragen
 
 - **Scheinleistungs-Basis vor 3c**: solange nur `|P|`, ist die Grenze eine
-  Wirkleistungs-Naeherung — explizit dokumentieren; 3c-Verzahnung
-  (Grenze auf `S` statt `|P|`) als Forward-Pointer.
+  Wirkleistungs-Naeherung — explizit dokumentieren; 3c-Verzahnung (Grenze
+  auf `S = sqrt(P² + Q²)` statt `|P|`). **3c re-pinnt die Boundary-Tests
+  dieser Grenze** beim Wechsel auf `S` (Verhaltens-/Pin-Wechsel an der
+  Grenze).
 - **Abgrenzung zum Geraet (2b)**: die Doppeldeutigkeit „Transformer" muss
   klar bleiben (Geraet = Per-Device-Saettigung, 3b = Netz-Grenze).
 - **Determinismus** der Zeit-Strom-Integration (`Decimal`-Akkumulation,

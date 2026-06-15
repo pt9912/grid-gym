@@ -61,7 +61,8 @@ lokalen Schaerfungen 3a/3b.
     Envelope-Body.
 - **Scheinleistung**: `S = sqrt(P² + Q²)` — kanonische `Decimal`-Rundung
   (Design-Frage: sqrt-Praezision); verzahnt mit der 3b-Trafo-Grenze
-  ([`M8-welle-3b.md`](M8-welle-3b.md)), die bis hier auf `|P|` rechnet.
+  ([`M8-welle-3b.md`](M8-welle-3b.md)), die bis hier auf `|P|` rechnet —
+  **3c re-pinnt deren Boundary-Tests** auf `S`.
 
 ## 4. Risiken / offene Design-Fragen
 

@@ -20,8 +20,9 @@ externen Slack-Bus**, in dem ein internes Grid-Forming-Geraet (typisch
 Diesel-Generator oder Battery-Inverter) die Bilanz schliesst und
 Frequenz/Spannung haelt. Heute injiziert der TickLoop den Residual als
 Auto-Slack in den `grid_connection`
-([`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) §2.7,
-`src/grid_gym/hexagon/core/simulation/tick_loop.py`); im Inselnetz
+([`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md) §2.2,
+Auto-Schluss; Code in `src/grid_gym/hexagon/core/simulation/tick_loop.py`);
+im Inselnetz
 entfaellt dieser Pfad, der Residual wird vom Grid-Forming-Geraet
 absorbiert.
 
@@ -30,27 +31,35 @@ absorbiert.
 - [ ] **Config + Insel-Fork**: `is_islanded: bool` + `forming_device_id:
       str | None` additiv in `GridModelConfig`
       (`src/grid_gym/hexagon/core/grid_model/config.py`), Default
-      `False`/`None`; Inselnetz-Imbalance ohne `grid_connection`-Slack;
-      ≥ 100-Tick-Determinismus-Property.
+      `False`/`None`; **Presence-Validierung** am Config-Rand
+      (`forming_device_id` gesetzt wenn `is_islanded`); Inselnetz-Imbalance
+      ohne `grid_connection`-Slack; ≥ 100-Tick-Determinismus-Property.
 - [ ] **TickLoop-Auto-Close**: im Inselnetz Residual-Injektion auf das
       `forming_device_id`-Geraet statt `grid_connection`; deterministische
-      Forming-Election (explizite ID, Config-Error bei fehlender/
-      unbekannter ID); **`is_islanded=False` bit-genau wie heute**
-      (Regressions-Pin auf `EXPECTED_DEMO_*`).
+      Forming-Election; **Existence-Validierung im TickLoop-Wiring** (die ID
+      verweist auf ein reales Device — geprueft dort, wo
+      `_apply_grid_connection_auto_close` das Geraet aufloest, nicht in der
+      Config); **`is_islanded=False` bit-genau wie heute** (Regressions-Pin
+      auf `EXPECTED_DEMO_*`).
 - [ ] **Gates**: `make gates` gruen (`coverage-gate-critical` ≥ 90 % auf
       `grid_model`, kein neuer Target); NEU ADR `Accepted`; Trigger 020
       aufgeloest.
 
 ## 3. Design-Skizze (C1)
 
-- **Config** (`grid_model/config.py`): zwei additive Felder; Validierung
-  im `__post_init__` — `forming_device_id` MUSS gesetzt sein wenn
-  `is_islanded` (Config-Error-Pattern wie `BatteryConfigInvalidValueError`).
+- **Config** (`grid_model/config.py`): zwei additive Felder.
+  `__post_init__` prueft nur **Presence** — `forming_device_id` gesetzt
+  wenn `is_islanded` (Config-Error-Pattern wie
+  `BatteryConfigInvalidValueError`). `GridModelConfig` kennt **keine
+  Device-Registry** → keine Existenz-Pruefung an dieser Stelle.
 - **Auto-Close** (`tick_loop.py`): heute `pre_grid_residual = generation
   - load - storage`, dann `set_power_kw := -residual` auf den
   `grid_connection`. Insel-Pfad: Residual-Ziel = Grid-Forming-Geraet;
   `grid_connection` wird **nicht** als Slack genutzt (oder ist im
-  Inselnetz-Szenario abwesend).
+  Inselnetz-Szenario abwesend). **Existence-Check hier**: beim Aufloesen
+  des `forming_device_id` (analog dazu, wie
+  `_apply_grid_connection_auto_close` das `grid_dev` aufloest) — eine
+  unbekannte ID ist ein Wiring-Fehler, kein Config-Fehler.
 - **Frequenz/Spannung**: `GridModelBilanz` haelt sie weiter proportional;
   ohne externe Referenz greifen die Insel-Toleranzbaender. Kein
   Droop-Detailmodell (out-of-scope, §5).
