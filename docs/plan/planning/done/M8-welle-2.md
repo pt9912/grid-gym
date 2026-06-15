@@ -1,15 +1,25 @@
 # Welle 2 — M8 SOLLTE-Geraete (`GG-DEV-015..018`)
 
-**Status:** Geplant (M8-Welle-2, eroeffnet 2026-06-13) — erstes echtes
+**Status:** Done (M8-Welle-2, eroeffnet 2026-06-13, geschlossen
+2026-06-14) — erstes echtes
 Feature von M8: die vier SOLLTE-Geraetemodelle aus Lastenheft §9.4, die M2
 bewusst out-of-scope hielt. Reine Core-Domain-Erweiterung, kein neuer
 Port/Adapter-Typ. Dieser Plan ist die Welle-2-C0-Substanz.
 
-**Container:** Meilenstein-Scope in [`roadmap.md`](roadmap.md) §4 M8;
-Welle-0-Triage in [`M8-welle-0.md`](../done/M8-welle-0.md). Voraussetzung
+**Container:** Meilenstein-Scope in [`roadmap.md`](../in-progress/roadmap.md) §4 M8;
+Welle-0-Triage in [`M8-welle-0.md`](M8-welle-0.md). Voraussetzung
 (M8-Welle 1, Architektur-Cleanup) ist abgeschlossen — `RunExecutionPort`
 + `ignore_imports = []`, sodass neue Geraete-Driving-Adapter (falls fuer
 UI/HTTP noetig) keine `AC-ADAPTER-PURE`-Bridge erben.
+
+**Closure (2026-06-14):** alle vier Sub-Wellen geliefert —
+[`2a`](M8-welle-2a.md) / [`2b`](M8-welle-2b.md) / [`2c`](M8-welle-2c.md) /
+[`2d`](M8-welle-2d.md) (`GG-DEV-015..018`) + Welle-2-D8 (generische
+`ScenarioFaultEngine`, [`M8-welle-2-d8.md`](M8-welle-2-d8.md),
+[`ADR 0059`](../../adr/0059-generic-scenario-fault-engine.md) `Accepted`).
+`D-7` (Pre-init-Defense) in Welle 2a adoptiert/aufgeloest. Welle 3
+(Netz, `T-020..022`) + Welle 4 (BESS, `T-023/024`) sind eigene Wellen
+(siehe §5 Nicht-Ziele), noch nicht eroeffnet.
 
 ---
 

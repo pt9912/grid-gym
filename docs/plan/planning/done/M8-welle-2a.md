@@ -1,11 +1,11 @@
 # Welle 2a — EV-Charger (`GG-DEV-015`, ADR 0055)
 
 **Status:** Done (M8-Welle-2a, geschlossen 2026-06-14) — erstes SOLLTE-
-Geraet aus [`M8-welle-2.md`](../in-progress/M8-welle-2.md) §3. Reine Core-Domain-
+Geraet aus [`M8-welle-2.md`](M8-welle-2.md) §3. Reine Core-Domain-
 Erweiterung (kein neuer Port/Adapter-Typ) + die zugehoerigen
 Verdrahtungs- und Validierungs-Naehte.
 
-**Container:** [`M8-welle-2.md`](../in-progress/M8-welle-2.md) (Welle-2-C0-Plan, Sub-
+**Container:** [`M8-welle-2.md`](M8-welle-2.md) (Welle-2-C0-Plan, Sub-
 Slicing 2a..2d); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted`.
 Trigger: [`016`](../open/016-sollte-ev-charger-device.md) (mit dieser
@@ -62,7 +62,7 @@ Visualization-State-Subset und `CRITICAL_COV_TARGETS`-Erweiterung.
   `BatteryFaultEngine`) ist Folge-Slice ([`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §6). Der
   Integration-Smoke faehrt den EV daher idle (Determinismus + Wiring),
   die Lade-/V2G-/Fault-Dynamik ist im Unit-Test gepinnt.
-- **`D-7`-Adoption** (Pre-init-Defense, [`M8-welle-2.md`](../in-progress/M8-welle-2.md)
+- **`D-7`-Adoption** (Pre-init-Defense, [`M8-welle-2.md`](M8-welle-2.md)
   §3): die `snapshot()`/`telemetry()`-Pre-init-Pfade liefern minimal
   (`{"version": 1}` / `()`); `_extract_ev_charger_state` gibt bei
   pre-init `None` zurueck (Aufrufer silent-droppt). Erste device-

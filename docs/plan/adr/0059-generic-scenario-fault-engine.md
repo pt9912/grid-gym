@@ -19,7 +19,7 @@
   deren Runtime-Engine je ADR §6 deferred wurde (Carveout D-8).
 - [`carveouts.md`](../planning/in-progress/carveouts.md) §2.1 **D-8** —
   der mit diesem ADR aktivierte Carveout (Slice-Origin).
-- [`M8-welle-2.md`](../planning/in-progress/M8-welle-2.md) — Welle-2-Plan;
+- [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Welle-2-Plan;
   Cross-Cutting-Review (`5792ab8`), der die Altitude-Schuld benannte.
 
 ---

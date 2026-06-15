@@ -1,11 +1,11 @@
 # Welle 2b — Transformer (`GG-DEV-016`, ADR 0056)
 
 **Status:** Done (M8-Welle-2b, geschlossen 2026-06-14) — zweites SOLLTE-
-Geraet aus [`M8-welle-2.md`](../in-progress/M8-welle-2.md) §3. Reine Core-Domain-
+Geraet aus [`M8-welle-2.md`](M8-welle-2.md) §3. Reine Core-Domain-
 Erweiterung + die acht Verdrahtungs-Naehte (Checkliste aus
 [`M8-welle-2a.md`](M8-welle-2a.md) §4).
 
-**Container:** [`M8-welle-2.md`](../in-progress/M8-welle-2.md) (Welle-2-C0-Plan);
+**Container:** [`M8-welle-2.md`](M8-welle-2.md) (Welle-2-C0-Plan);
 [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 [`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`.
 Trigger: [`017`](../open/017-sollte-transformer-device.md) (mit dieser

@@ -17,7 +17,7 @@
   Recovery-Muster (Vorbild fuer den EV-Fault).
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md) — `GG-DEV-015`.
 - [`016-sollte-ev-charger-device.md`](../planning/open/016-sollte-ev-charger-device.md)
-  — Trigger; [`M8-welle-2.md`](../planning/in-progress/M8-welle-2.md) — Plan.
+  — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
 ---
 
