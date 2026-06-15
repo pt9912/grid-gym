@@ -133,9 +133,9 @@ Audit-Dokus unter `docs/user/`: `replay-determinism-e2e.md`,
   `TickLoop.finalize()` ohne Driver).
 - **Next-Plaene** (`planning/next/`; konkret geplant, nicht
   aktiv — KEINE Trigger-Bedingung, Aktivierung per Mandat):
-  [`041-adapter-pure-ignore-imports-rueckbau.md`](../in-progress/041-adapter-pure-ignore-imports-rueckbau.md)
+  [`041-adapter-pure-ignore-imports-rueckbau.md`](041-adapter-pure-ignore-imports-rueckbau.md)
   (Umsetzungsslice fuer [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) +
-  [`042-fault-engine-location-and-naming.md`](../in-progress/042-fault-engine-location-and-naming.md)
+  [`042-fault-engine-location-and-naming.md`](042-fault-engine-location-and-naming.md)
   (Umsetzungsslice fuer [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)).
 - **[`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)/0051 (`Proposed`):** [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Bridge-
   Rueckbau + Fault-Engine-Standort/-Naming — `Provisional` erst

@@ -155,7 +155,7 @@ Realismus-Stufen mit klarem Schaerfungspfad.
 ## 4. Reichweite + Operative Artefakte
 
 Welle 2b-C2/C3 — Integrationspunkte (8 Naehte, Checkliste aus
-[`M8-welle-2a.md`](../planning/in-progress/M8-welle-2a.md) §4):
+[`M8-welle-2a.md`](../planning/done/M8-welle-2a.md) §4):
 
 - `devices/transformer/`-Submodul; `_DEVICE_FACTORIES["transformer"]` in
   `core/scenario/loader.py`; `DEVICE_DECIMAL_PARAMS` um die neuen

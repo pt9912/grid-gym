@@ -1,10 +1,10 @@
 # Welle 2d — Diesel-Generator (`GG-DEV-018`, ADR 0058)
 
 **Status:** Done (M8-Welle-2d, geschlossen 2026-06-14) — viertes (letztes)
-SOLLTE-Geraet aus [`M8-welle-2.md`](M8-welle-2.md) §3. **Schliesst die
+SOLLTE-Geraet aus [`M8-welle-2.md`](../in-progress/M8-welle-2.md) §3. **Schliesst die
 Welle-2-Geraete-Reihe ab.**
 
-**Container:** [`M8-welle-2.md`](M8-welle-2.md); [`roadmap.md`](roadmap.md)
+**Container:** [`M8-welle-2.md`](../in-progress/M8-welle-2.md); [`roadmap.md`](../in-progress/roadmap.md)
 §4 M8. Design (C1):
 [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`.
 Trigger: [`019`](../open/019-sollte-diesel-device.md) (mit dieser Welle
@@ -109,4 +109,5 @@ faehrt idle wie EV/Transformer; das generische Command-Routing durch den
 Loop ist via Agents/Battery-Integration gedeckt) + `_clamp_power`-
 Unterschranke (defensiv, per Sign-Konvention `power_kw >= 0`); Snapshot-
 State-Range-Validierung (etabliertes Geraete-Muster: Devices vertrauen
-eigenen Snapshots).
+eigenen Snapshots). Der Command-E2E-Teil ist als Trigger
+[`046`](../open/046-command-driven-integration-e2e.md) getrackt.

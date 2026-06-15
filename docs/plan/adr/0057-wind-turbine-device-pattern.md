@@ -141,7 +141,7 @@ testbar.
 ## 4. Reichweite + Operative Artefakte
 
 Welle 2c-C2/C3 — Integrationspunkte (Teilmenge der 8-Naht-Checkliste aus
-[`M8-welle-2a.md`](../planning/in-progress/M8-welle-2a.md) §4; **keine**
+[`M8-welle-2a.md`](../planning/done/M8-welle-2a.md) §4; **keine**
 Alarm-/Fault-Naht):
 
 - `devices/wind_turbine/`-Submodul; `_DEVICE_FACTORIES["wind_turbine"]`;

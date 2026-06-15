@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tests/integration/scenarios/ev_charger_demo.yaml` + Unit-/
   Integration-Smokes (≥ 100-Tick-Determinismus, Snapshot-Roundtrip).
   `CRITICAL_COV_TARGETS`-Default um `devices/ev_charger` erweitert.
-  Trigger 016 aufgeloest. ([`M8-welle-2a.md`](docs/plan/planning/in-progress/M8-welle-2a.md))
+  Trigger 016 aufgeloest. ([`M8-welle-2a.md`](docs/plan/planning/done/M8-welle-2a.md))
 - **M8-Welle 2b — Transformer (`GG-DEV-016`)**: NEU
   `hexagon/core/devices/transformer/` (`TransformerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) nach dem GridConnection-Set-
@@ -64,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tests/integration/scenarios/transformer_demo.yaml` + Unit-/
   Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
   `devices/transformer` erweitert. Trigger 017 aufgeloest.
-  ([`M8-welle-2b.md`](docs/plan/planning/in-progress/M8-welle-2b.md))
+  ([`M8-welle-2b.md`](docs/plan/planning/done/M8-welle-2b.md))
 - **M8-Welle 2c — Wind-Turbine (`GG-DEV-017`)**: NEU
   `hexagon/core/devices/wind_turbine/` (`WindTurbineDevice` als
   `DeviceModel`) nach dem PV-Muster — command-loser Generator mit
@@ -75,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Beispiel `tests/integration/scenarios/wind_turbine_demo.yaml` +
   Unit-/Integration-Smokes. `CRITICAL_COV_TARGETS`-Default um
   `devices/wind_turbine` erweitert. Trigger 018 aufgeloest.
-  ([`M8-welle-2c.md`](docs/plan/planning/in-progress/M8-welle-2c.md))
+  ([`M8-welle-2c.md`](docs/plan/planning/done/M8-welle-2c.md))
 - **M8-Welle 2d — Diesel-Generator (`GG-DEV-018`)**: NEU
   `hexagon/core/devices/diesel_generator/` (`DieselGeneratorDevice` als
   `DeviceModel` + `FaultInjectableDevice`) nach dem Battery-Muster —
@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Smokes. `CRITICAL_COV_TARGETS` um `devices/diesel_generator` erweitert.
   Trigger 019 aufgeloest. **Damit ist M8-Welle 2 (alle vier SOLLTE-
   Geraete `GG-DEV-015..018`) komplett.**
-  ([`M8-welle-2d.md`](docs/plan/planning/in-progress/M8-welle-2d.md))
+  ([`M8-welle-2d.md`](docs/plan/planning/done/M8-welle-2d.md))
 - **M8-Welle 2-D8 — Generische `ScenarioFaultEngine`** (Cross-Cutting-
   Review-Folge, [`ADR 0059`](docs/plan/adr/0059-generic-scenario-fault-engine.md)
   `Accepted`): NEU `hexagon/core/faults/scenario_fault_engine.py`
@@ -102,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Szenarien ohne per-Typ-Engine-Code (Carveout D-8 aufgeloest).** Dead
   `assert_supported_type` entfernt. NEU
   `tests/integration/scenarios/diesel_fault_demo.yaml` + Unit-/Integration-
-  Smokes. ([`M8-welle-2-d8.md`](docs/plan/planning/in-progress/M8-welle-2-d8.md))
+  Smokes. ([`M8-welle-2-d8.md`](docs/plan/planning/done/M8-welle-2-d8.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

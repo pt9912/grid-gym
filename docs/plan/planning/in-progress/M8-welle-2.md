@@ -6,7 +6,7 @@ bewusst out-of-scope hielt. Reine Core-Domain-Erweiterung, kein neuer
 Port/Adapter-Typ. Dieser Plan ist die Welle-2-C0-Substanz.
 
 **Container:** Meilenstein-Scope in [`roadmap.md`](roadmap.md) §4 M8;
-Welle-0-Triage in [`M8-welle-0.md`](M8-welle-0.md). Voraussetzung
+Welle-0-Triage in [`M8-welle-0.md`](../done/M8-welle-0.md). Voraussetzung
 (M8-Welle 1, Architektur-Cleanup) ist abgeschlossen — `RunExecutionPort`
 + `ignore_imports = []`, sodass neue Geraete-Driving-Adapter (falls fuer
 UI/HTTP noetig) keine `AC-ADAPTER-PURE`-Bridge erben.

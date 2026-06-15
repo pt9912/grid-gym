@@ -8,7 +8,7 @@ selbst war ein reines Doc-Arbeitspaket; die Code-Substanz lief in Welle 1
 (Slices 041 + 042, beide Done).
 
 **Container:** Der Meilenstein-Scope lebt in
-[`roadmap.md`](roadmap.md) §4 M8 (Wellen-Skizze 0..3) — anders als M4..M7
+[`roadmap.md`](../in-progress/roadmap.md) §4 M8 (Wellen-Skizze 0..3) — anders als M4..M7
 braucht M8 **kein** eigenes `M{N}-<name>.md`-Container-Doc, weil die
 Wellen bereits auf existierende Slice-Plaene (`041`/`042`) bzw.
 `open/`-Trigger-Docs (`T-016..024`) abgebildet sind. Welle-0 oeffnet den

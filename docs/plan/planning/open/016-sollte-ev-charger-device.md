@@ -3,7 +3,7 @@
 **Status:** Resolved — M8-Welle-2a (2026-06-14). Geliefert via
 [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted` +
 `hexagon/core/devices/ev_charger/`
-([`M8-welle-2a.md`](../in-progress/M8-welle-2a.md)). Doc-Archivierung
+([`M8-welle-2a.md`](../done/M8-welle-2a.md)). Doc-Archivierung
 nach `done-archive/` folgt mit der M8-Meilenstein-Closure
 (`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20

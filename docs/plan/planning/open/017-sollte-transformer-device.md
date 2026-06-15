@@ -3,7 +3,7 @@
 **Status:** Resolved — M8-Welle-2b (2026-06-14). Geliefert via
 [`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted` +
 `hexagon/core/devices/transformer/`
-([`M8-welle-2b.md`](../in-progress/M8-welle-2b.md)). Doc-Archivierung
+([`M8-welle-2b.md`](../done/M8-welle-2b.md)). Doc-Archivierung
 nach `done-archive/` folgt mit der M8-Meilenstein-Closure
 (`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20

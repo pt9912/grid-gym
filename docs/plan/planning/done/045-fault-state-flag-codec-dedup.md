@@ -5,7 +5,7 @@ aus der M8-Welle-2-Review-Folge. Loest die in
 [`M8-welle-2a.md`](M8-welle-2a.md) §5 + [`M8-welle-2b.md`](M8-welle-2b.md)
 §5 dokumentierte Deferral auf.
 
-**Container:** [`roadmap.md`](roadmap.md) §4 M8. Kein neuer ADR — nutzt die
+**Container:** [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Kein neuer ADR — nutzt die
 bestehende `snapshot_codec`-Infrastruktur (deren Modul-Docstring genau
 das Sammeln N-fach duplizierter struktureller Reader vorsieht); keine
 Vertragsaenderung, kein Verhaltens-Delta.

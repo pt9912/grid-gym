@@ -3,7 +3,7 @@
 **Status:** Resolved — M8-Welle-2c (2026-06-14). Geliefert via
 [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted` +
 `hexagon/core/devices/wind_turbine/`
-([`M8-welle-2c.md`](../in-progress/M8-welle-2c.md)). Doc-Archivierung nach
+([`M8-welle-2c.md`](../done/M8-welle-2c.md)). Doc-Archivierung nach
 `done-archive/` folgt mit der M8-Meilenstein-Closure (`carveouts.md`
 §3-Konvention).
 **Datum:** 2026-05-20

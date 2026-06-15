@@ -143,7 +143,7 @@ sind die bewusst minimalen Realismus-Stufen mit klarem Schaerfungspfad.
 ## 4. Reichweite + Operative Artefakte
 
 Welle 2d-C2/C3 — Integrationspunkte (8-Naht-Checkliste aus
-[`M8-welle-2a.md`](../planning/in-progress/M8-welle-2a.md) §4 **plus** die
+[`M8-welle-2a.md`](../planning/done/M8-welle-2a.md) §4 **plus** die
 in Welle 2c gelernte Bilanz-Naht):
 
 - `devices/diesel_generator/`-Submodul;

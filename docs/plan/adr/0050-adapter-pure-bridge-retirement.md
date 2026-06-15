@@ -22,7 +22,7 @@
 - [`spec/architecture.md`](../../../spec/architecture.md#2-architekturprinzipien) —
   `GG-AR-P-002`, `GG-AR-P-003`, `GG-AR-TABU-001..004` und
   Driving-Port-Liste.
-- [`041-adapter-pure-ignore-imports-rueckbau.md`](../planning/in-progress/041-adapter-pure-ignore-imports-rueckbau.md)
+- [`041-adapter-pure-ignore-imports-rueckbau.md`](../planning/done/041-adapter-pure-ignore-imports-rueckbau.md)
   — Umsetzungsslice (M8-Welle-0/1 aktiv).
 
 ---
