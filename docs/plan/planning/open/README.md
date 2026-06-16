@@ -30,6 +30,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`005-pyright-vs-mypy-reeval.md`](005-pyright-vs-mypy-reeval.md) | Re-Eval mypy vs. pyright bei generischen Protocols | sobald `ports/*` Generic-Protocols einfuehrt |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md) | ADR fuer pyright als Pre-Commit-Hook | bei Editor-Parity-Druck |
 | [`044-dcheck-ids-inline-code.md`](044-dcheck-ids-inline-code.md) | d-check-`ids`-Linkpflicht auch fuer Inline-Code-Kennungen (gemessen: ~1072 verlinkbare Backtick-Vorkommen; CR #3 `inline-code`-Option uebergeben) | d-check-Release mit `inline-code`-Option |
+| [`048-dcheck-matrix-modul.md`](048-dcheck-matrix-modul.md) | d-check-`matrix`-Modul (Referenzrichtungs-Gate, SDP) — Trockenlauf 2026-06-16 misst 119 Befunde (117 `matrix-forbidden` Spec→ADR abwaerts, 2 `matrix-inactive`); Voll-SDP braucht Doku-Umbau, Empfehlung Hybrid (Status-Regel zuerst) | Scope-Entscheidung 2026-06-17 (Option A/B/C/D) |
 | [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump ([`ADR-0043`](../../adr/0043-image-audit-strategy.md)-konformer Defer-Pfad ueber [`ADR-0044`](../../adr/0044-generated-trivyignore-permit.md)-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
 
 **M3-/Multi-Agent-Folge:**
