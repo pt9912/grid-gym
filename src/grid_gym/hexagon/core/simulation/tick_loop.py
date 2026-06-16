@@ -58,6 +58,7 @@ from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.quality import QUALITY_SEVERITY, Quality
 from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassification
+from grid_gym.hexagon.core.domain.event import GridConstraintViolationEvent
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
@@ -1224,13 +1225,19 @@ class TickLoop:
             # Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
             self._run_agent_tick_phase(context, tick_span)
             # Schritt E — Bilanz-Aggregation.
+            grid_events: tuple[GridConstraintViolationEvent, ...] = ()
             if self._grid_model is not None:
+                # M8-Welle-3b (ADR 0061 §2.4): tick_ms + simulation_time
+                # fuer den Transformer-Constraint-Layer (ignoriert ohne Layer).
                 self._grid_model.update(
                     generation_kw=bucket_sums["generation"],
                     load_kw=bucket_sums["load"],
                     storage_kw=bucket_sums["storage"],
                     grid_connection_kw=bucket_sums["grid_connection"],
+                    tick_ms=self._tick_ms,
+                    simulation_time=now,
                 )
+                grid_events = self._grid_model.last_constraint_violations
         self._unknown_source_count += unknown_count
 
         # M7-Welle-3a (ADR 0052 §2.2): max_age-STALE-Stage VOR dem
@@ -1242,6 +1249,7 @@ class TickLoop:
             popped_events=popped,
             emitted_telemetry=tuple(self._apply_max_age_stage(emitted, now)),
             emitted_alarms=self._drain_and_map_device_alarms(now),
+            emitted_grid_events=grid_events,
         )
         self._tick_count += 1
         self._persist_emitted_telemetry(result)

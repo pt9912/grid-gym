@@ -43,7 +43,15 @@ from contextlib import contextmanager
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Self, override
 
-from grid_gym.hexagon.core.grid_model.config import GridModelConfig
+from grid_gym.hexagon.core.domain.event import (
+    CONSTRAINT_TRANSFORMER_HOT_SPOT,
+    GridConstraintViolationEvent,
+)
+from grid_gym.hexagon.core.grid_model.config import (
+    GridModelConfig,
+    GridModelConfigError,
+    TransformerLimitConfig,
+)
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.grid_model.snapshot import (
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
@@ -52,7 +60,12 @@ from grid_gym.hexagon.core.grid_model.snapshot import (
 )
 
 _ZERO = Decimal(0)
+_THOUSAND = Decimal(1000)
 _GRID_MODEL_DECIMAL_PRECISION = 28
+# M8-Welle-3b (ADR 0061 §2.2): Quantisierungs-Schritt fuer die akkumulierte
+# Top-Oil-Temperatur — haelt die Stellenzahl gebunden + den Snapshot lesbar
+# (deterministisch im ROUND_HALF_EVEN-Context).
+_THETA_QUANTUM = Decimal("0.000001")
 
 
 @contextmanager
@@ -86,6 +99,18 @@ class GridModelBilanz:
         # uebersetzt wird. update() konsumiert ihn nicht.
         self._active_load_events: tuple[LoadEvent, ...] = active_load_events
         self._active_load_profiles: tuple[LoadProfile, ...] = active_load_profiles
+        # M8-Welle-3b (ADR 0061 §2.2): akkumulierte Top-Oil-Temperatur des
+        # Transformer-Constraint-Layers — `None`, wenn kein Layer
+        # konfiguriert (bit-genau heutiges Verhalten); sonst auf
+        # Umgebungstemperatur initialisiert.
+        self._top_oil_temp_c: Decimal | None = (
+            config.transformer_limit.ambient_temp_c
+            if config.transformer_limit is not None
+            else None
+        )
+        # Transientes Tick-Output (ADR 0061 §2.3): die im letzten update()
+        # erkannten Verletzungen. KEIN Snapshot-State, NICHT in __eq__.
+        self._last_constraint_violations: tuple[GridConstraintViolationEvent, ...] = ()
 
     @property
     def config(self) -> GridModelConfig:
@@ -119,12 +144,27 @@ class GridModelBilanz:
     def active_load_profiles(self) -> tuple[LoadProfile, ...]:
         return self._active_load_profiles
 
+    @property
+    def top_oil_temp_c(self) -> Decimal | None:
+        """M8-Welle-3b (ADR 0061 §2.2): akkumulierte Top-Oil-Temperatur
+        des Transformer-Constraint-Layers; `None` ohne Layer."""
+        return self._top_oil_temp_c
+
+    @property
+    def last_constraint_violations(self) -> tuple[GridConstraintViolationEvent, ...]:
+        """M8-Welle-3b (ADR 0061 §2.4): die im letzten `update(...)`
+        erkannten Netz-Constraint-Verletzungen (leer, wenn keine). Der
+        TickLoop drainst sie in `TickResult.emitted_grid_events`."""
+        return self._last_constraint_violations
+
     def update(
         self,
         generation_kw: Decimal,
         load_kw: Decimal,
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
+        tick_ms: int | None = None,
+        simulation_time: int | None = None,
     ) -> None:
         """Schreitet das Modell um genau einen Tick fort
         (ADR 0019 §2.6).
@@ -146,6 +186,13 @@ class GridModelBilanz:
         Schreibt `frequency_hz`, `voltage_v`,
         `last_imbalance_kw` und `clamp_event_count` fort.
         Kein Rueckgabewert — Welle 6 liest die Properties.
+
+        M8-Welle-3b (ADR 0061 §2.4): mit aktivem `transformer_limit` sind
+        `tick_ms` (für `dt_s`) und `simulation_time` (für das Event)
+        Pflicht; der TickLoop reicht sie durch. Ohne Layer werden sie
+        ignoriert (Bestands-Aufrufer + Inaktiv-Pfad byte-identisch).
+        Die erkannten Verletzungen liegen danach in
+        `last_constraint_violations`.
         """
         with _grid_model_decimal_context():
             self._update_in_context(
@@ -153,6 +200,8 @@ class GridModelBilanz:
                 load_kw=load_kw,
                 storage_kw=storage_kw,
                 grid_connection_kw=grid_connection_kw,
+                tick_ms=tick_ms,
+                simulation_time=simulation_time,
             )
 
     def _update_in_context(
@@ -162,6 +211,8 @@ class GridModelBilanz:
         load_kw: Decimal,
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
+        tick_ms: int | None,
+        simulation_time: int | None,
     ) -> None:
         imbalance_kw = generation_kw - load_kw - storage_kw + grid_connection_kw
         self._last_imbalance_kw = imbalance_kw
@@ -195,6 +246,60 @@ class GridModelBilanz:
         self._current_voltage_v = clamped_volt
         self._clamp_event_count += clamp_increment
 
+        # M8-Welle-3b (ADR 0061 §2.2/§2.4): Transformer-Constraint-Layer.
+        self._apply_transformer_constraint(
+            grid_connection_kw=grid_connection_kw,
+            tick_ms=tick_ms,
+            simulation_time=simulation_time,
+        )
+
+    def _apply_transformer_constraint(
+        self,
+        *,
+        grid_connection_kw: Decimal,
+        tick_ms: int | None,
+        simulation_time: int | None,
+    ) -> None:
+        """ADR 0061 §2.2: vereinfachtes Single-Zonen-Thermomodell als
+        Zeit-Strom-Mechanismus. No-op ohne `transformer_limit` (Inaktiv-
+        Pfad byte-identisch). `last_constraint_violations` wird je Tick neu
+        gesetzt (transientes Output)."""
+        limit = self._config.transformer_limit
+        if limit is None:
+            self._last_constraint_violations = ()
+            return
+        if tick_ms is None or simulation_time is None:
+            raise GridModelConfigError(
+                "GridModelBilanz.update(...) mit aktivem transformer_limit "
+                "erfordert tick_ms und simulation_time (ADR 0061 §2.4)."
+            )
+        assert self._top_oil_temp_c is not None  # __init__-Invariante bei aktivem Layer
+        dt_s = Decimal(tick_ms) / _THOUSAND
+        apparent_power_kva = abs(grid_connection_kw)
+        load_pu = apparent_power_kva / limit.max_apparent_power_kva
+        load_pu_sq = load_pu * load_pu
+        theta_oil_ss = limit.ambient_temp_c + limit.top_oil_rise_rated_c * load_pu_sq
+        theta_oil = self._top_oil_temp_c + (theta_oil_ss - self._top_oil_temp_c) * (
+            dt_s / limit.top_oil_time_constant_s
+        )
+        theta_oil = theta_oil.quantize(_THETA_QUANTUM)
+        self._top_oil_temp_c = theta_oil
+        theta_hs = (theta_oil + limit.hot_spot_rise_rated_c * load_pu_sq).quantize(_THETA_QUANTUM)
+        if theta_hs > limit.hot_spot_limit_c:
+            self._last_constraint_violations = (
+                GridConstraintViolationEvent(
+                    constraint=CONSTRAINT_TRANSFORMER_HOT_SPOT,
+                    simulation_time=simulation_time,
+                    apparent_power_kva=apparent_power_kva,
+                    limit_kva=limit.max_apparent_power_kva,
+                    top_oil_temp_c=theta_oil,
+                    hot_spot_temp_c=theta_hs,
+                    hot_spot_limit_c=limit.hot_spot_limit_c,
+                ),
+            )
+        else:
+            self._last_constraint_violations = ()
+
     def snapshot(self) -> Mapping[str, object]:
         """Liefert den Bilanz-Zustand als `Mapping[str, object]`
         mit `version` als Erst-Feld (ADR 0013 §2.4 Konvention)."""
@@ -208,6 +313,7 @@ class GridModelBilanz:
             clamp_event_count=self._clamp_event_count,
             active_load_events=self._active_load_events,
             active_load_profiles=self._active_load_profiles,
+            top_oil_temp_c=self._top_oil_temp_c,
         )
         return snap.to_dict()
 
@@ -226,6 +332,10 @@ class GridModelBilanz:
         bilanz._last_imbalance_kw = snap.last_imbalance_kw
         bilanz._clamp_event_count = snap.clamp_event_count
         bilanz._model_kind = snap.model_kind
+        # M8-Welle-3b (ADR 0061 §2.5): Thermo-State aus dem opt-in-Snapshot.
+        # `__init__` hat ihn bereits auf ambient (bei aktivem Layer) bzw.
+        # None gesetzt; der Snapshot-Wert ueberschreibt fuer den Resume.
+        bilanz._top_oil_temp_c = snap.top_oil_temp_c
         return bilanz
 
     @override
@@ -241,6 +351,7 @@ class GridModelBilanz:
             and self._model_kind == other._model_kind
             and self._active_load_events == other._active_load_events
             and self._active_load_profiles == other._active_load_profiles
+            and self._top_oil_temp_c == other._top_oil_temp_c
         )
 
     @override
@@ -255,6 +366,7 @@ class GridModelBilanz:
                 self._model_kind,
                 self._active_load_events,
                 self._active_load_profiles,
+                self._top_oil_temp_c,
             )
         )
 

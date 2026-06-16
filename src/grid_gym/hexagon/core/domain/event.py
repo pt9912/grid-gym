@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from decimal import Decimal
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,3 +43,40 @@ class Event:
     payload: Mapping[str, object]
     priority: int
     sequence: int
+
+
+@dataclass(frozen=True, slots=True)
+class GridConstraintViolationEvent:
+    """Pro-Tick-Laufzeit-Event einer Netz-Constraint-Verletzung
+    (M8 Welle 3b, ADR 0061 §2.3).
+
+    **Kein** Scheduler-`Event` (nicht eingeplant, sondern pro Tick aus
+    `GridModelBilanz.update(...)` emittiert) und **kein** Config-
+    Construction-Error (die Grenzwert-Config-Validierung ist davon
+    getrennt). Frozen + immutable (AC-DOMAIN-FROZEN). Transientes
+    Tick-Output (kein Snapshot-State; re-derived je Tick).
+
+    Felder:
+    - `constraint`: Kennung der verletzten Grenze
+      (`"transformer_hot_spot"` in Welle 3b).
+    - `simulation_time`: Sim-Zeit (ms) des ausloesenden Ticks.
+    - `apparent_power_kva`: Scheinleistung am Modell-Trafo
+      (`S ≈ |grid_connection_kw|` bis 3c; ADR 0061 §2.2).
+    - `limit_kva`: Nennscheinleistung `max_apparent_power_kva` (Basis
+      fuer `load_pu`).
+    - `top_oil_temp_c` / `hot_spot_temp_c`: Thermo-Zustand zum Tick.
+    - `hot_spot_limit_c`: ueberschrittene Ausloese-Schwelle.
+    """
+
+    constraint: str
+    simulation_time: int
+    apparent_power_kva: Decimal
+    limit_kva: Decimal
+    top_oil_temp_c: Decimal
+    hot_spot_temp_c: Decimal
+    hot_spot_limit_c: Decimal
+
+
+CONSTRAINT_TRANSFORMER_HOT_SPOT = "transformer_hot_spot"
+"""ADR 0061 §2.3: `GridConstraintViolationEvent.constraint`-Wert fuer die
+Transformer-Hot-Spot-Ausloesung (einzige Verletzung in Welle 3b)."""

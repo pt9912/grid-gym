@@ -32,12 +32,14 @@ from grid_gym.hexagon.core.domain.scenario import (
 )
 from grid_gym.hexagon.core.errors import (
     ScenarioInvalidLoadTargetError,
+    ScenarioMissingKeysError,
     ScenarioMissingSourceDeviceError,
     ScenarioUnknownDeviceTypeError,
 )
 from grid_gym.hexagon.core.grid_model import (
     GridModelConfig,
     GridModelConfigInvalidValueError,
+    TransformerLimitConfig,
 )
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.loader import (
@@ -773,3 +775,77 @@ def test_build_tick_loop_smoke_runs_one_tick() -> None:
     assert "pv" in sources
     assert "load" in sources
     assert "grid_connection" in sources
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3b: Transformer-Constraint-Block aus YAML (ADR 0061)
+# ---------------------------------------------------------------------------
+
+
+def _transformer_limit_block() -> dict[str, object]:
+    return {
+        "max_apparent_power_kva": Decimal("100"),
+        "ambient_temp_c": Decimal("20"),
+        "top_oil_rise_rated_c": Decimal("40"),
+        "hot_spot_rise_rated_c": Decimal("30"),
+        "top_oil_time_constant_s": Decimal("10"),
+        "hot_spot_limit_c": Decimal("98"),
+    }
+
+
+def test_load_scenario_transformer_limit_from_yaml() -> None:
+    """ADR 0061 §2.1: optionaler `transformer_limit`-Block im `grid_model`
+    wird in `TransformerLimitConfig` geladen."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = {**_grid_model_block(), "transformer_limit": _transformer_limit_block()}
+    loaded = load_scenario(raw)
+    limit = (
+        loaded.scenario.grid_model_config and loaded.scenario.grid_model_config.transformer_limit
+    )
+    assert isinstance(limit, TransformerLimitConfig)
+    assert limit.max_apparent_power_kva == Decimal("100")
+    assert limit.hot_spot_limit_c == Decimal("98")
+
+
+def test_load_scenario_transformer_limit_missing_key_rejected() -> None:
+    """Validator verlangt alle 6 Pflicht-Decimal-Felder im Block."""
+    raw = _minimal_raw_mapping()
+    bad_block = _transformer_limit_block()
+    del bad_block["hot_spot_limit_c"]
+    raw["grid_model"] = {**_grid_model_block(), "transformer_limit": bad_block}
+    with pytest.raises(ScenarioMissingKeysError):
+        load_scenario(raw)
+
+
+def test_load_scenario_transformer_limit_invalid_value_rejected() -> None:
+    """Wertebereichs-Invariante (hot_spot_limit > ambient) erzwingt der
+    TransformerLimitConfig-Konstruktor."""
+    raw = _minimal_raw_mapping()
+    bad_block = {**_transformer_limit_block(), "hot_spot_limit_c": Decimal("10")}
+    raw["grid_model"] = {**_grid_model_block(), "transformer_limit": bad_block}
+    with pytest.raises(GridModelConfigInvalidValueError):
+        load_scenario(raw)
+
+
+def test_connected_grid_model_scenario_hash_omits_transformer_key() -> None:
+    """ADR 0061 §2.5: ohne `transformer_limit` traegt die Hash-`asdict`-Form
+    den Key nicht (opt-in → `EXPECTED_DEMO_SCENARIO_HASH` stabil)."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = _grid_model_block()
+    payload = _scenario_hash_payload(load_scenario(raw).scenario)
+    config_payload = payload["grid_model_config"]
+    assert isinstance(config_payload, dict)
+    assert "transformer_limit" not in config_payload
+
+
+def test_transformer_scenario_hash_differs_from_plain() -> None:
+    """ADR 0061 §2.5: ein Szenario mit Transformer-Block traegt ihn im Hash
+    und unterscheidet sich vom Pendant ohne Block."""
+    raw_plain = _minimal_raw_mapping()
+    raw_plain["grid_model"] = _grid_model_block()
+    raw_limit = _minimal_raw_mapping()
+    raw_limit["grid_model"] = {
+        **_grid_model_block(),
+        "transformer_limit": _transformer_limit_block(),
+    }
+    assert load_scenario(raw_plain).scenario_hash != load_scenario(raw_limit).scenario_hash

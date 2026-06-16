@@ -38,8 +38,10 @@ from typing import Final, Self
 
 from grid_gym.hexagon.core.errors import VersionError, WrongTypeError
 from grid_gym.hexagon.core.grid_model.config import (
+    TRANSFORMER_LIMIT_FIELD_NAMES,
     GridModelConfig,
     GridModelConfigError,
+    TransformerLimitConfig,
 )
 from grid_gym.hexagon.core.grid_model.loads import (
     LoadEvent,
@@ -101,6 +103,8 @@ _V2_ADDITIONAL_KEYS: Final[frozenset[str]] = frozenset(
 )
 _V2_TOP_KEYS: Final[frozenset[str]] = _V1_TOP_KEYS | _V2_ADDITIONAL_KEYS
 _CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
+# M8-Welle-3b (ADR 0061 §2.5): Pflicht-Keys des opt-in Transformer-Blocks.
+_TRANSFORMER_LIMIT_KEYS: Final[frozenset[str]] = frozenset(TRANSFORMER_LIMIT_FIELD_NAMES)
 
 # Welle-5b-Review L-3: Welle-4a/5a-Review-L-3-Spiegel — Tupel als
 # Single-Source-of-Truth fuer geordnete Serialisierung, frozenset
@@ -140,6 +144,10 @@ class GridModelSnapshot:
     clamp_event_count: int
     active_load_events: tuple[LoadEvent, ...]
     active_load_profiles: tuple[LoadProfile, ...]
+    # M8-Welle-3b (ADR 0061 §2.5): akkumulierter Thermo-State des
+    # Transformer-Constraint-Layers; `None` ohne Layer (opt-in, kein
+    # Versions-Bump).
+    top_oil_temp_c: Decimal | None = None
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -154,7 +162,14 @@ class GridModelSnapshot:
         if self.config.is_islanded:
             config_dict["is_islanded"] = self.config.is_islanded
             config_dict["forming_device_id"] = self.config.forming_device_id
-        return {
+        # M8-Welle-3b (ADR 0061 §2.5): Transformer-Block opt-in im config-
+        # Sub-Mapping (nur bei aktivem Layer → Default byte-identisch).
+        if self.config.transformer_limit is not None:
+            config_dict["transformer_limit"] = {
+                key: getattr(self.config.transformer_limit, key)
+                for key in TRANSFORMER_LIMIT_FIELD_NAMES
+            }
+        top_level: dict[str, object] = {
             "version": self.version,
             "config": config_dict,
             "model_kind": self.model_kind,
@@ -180,6 +195,11 @@ class GridModelSnapshot:
                 for profile in self.active_load_profiles
             ],
         }
+        # M8-Welle-3b (ADR 0061 §2.5): Thermo-State opt-in (nur bei aktivem
+        # Layer → Default byte-identisch, kein Versions-Bump).
+        if self.top_oil_temp_c is not None:
+            top_level["top_oil_temp_c"] = self.top_oil_temp_c
+        return top_level
 
     @classmethod
     def from_dict(cls, state: Mapping[str, object]) -> Self:
@@ -250,6 +270,14 @@ class GridModelSnapshot:
             active_load_events = _parse_load_events(state["active_load_events"])
             active_load_profiles = _parse_load_profiles(state["active_load_profiles"])
 
+        # M8-Welle-3b (ADR 0061 §2.5): Thermo-State optional lesen
+        # (backward-compat — Alt-Snapshots ohne den Key lesen als „kein Layer").
+        top_oil_temp_c = (
+            assert_decimal(state["top_oil_temp_c"], "top_oil_temp_c", SUBSYSTEM)
+            if "top_oil_temp_c" in state
+            else None
+        )
+
         return cls(
             version=version,
             config=config,
@@ -260,6 +288,7 @@ class GridModelSnapshot:
             clamp_event_count=clamp_event_count,
             active_load_events=active_load_events,
             active_load_profiles=active_load_profiles,
+            top_oil_temp_c=top_oil_temp_c,
         )
 
 
@@ -290,13 +319,37 @@ def _parse_config(raw: object) -> GridModelConfig:
         else None
     )
     try:
+        # _parse_transformer_limit konstruiert TransformerLimitConfig (mit
+        # eigener Wertebereichs-Validierung); muss daher INNERHALB des
+        # try liegen, damit auch dessen GridModelConfigError zu WrongTypeError
+        # ueberfuehrt wird.
+        transformer_limit = _parse_transformer_limit(config_state)
         return GridModelConfig(
             **config_fields,
             is_islanded=is_islanded,
             forming_device_id=forming_device_id,
+            transformer_limit=transformer_limit,
         )
     except GridModelConfigError as err:
         raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
+
+
+def _parse_transformer_limit(config_state: Mapping[str, object]) -> TransformerLimitConfig | None:
+    """M8-Welle-3b (ADR 0061 §2.5): liest den optionalen
+    `transformer_limit`-Block aus dem `config`-Sub-Mapping (opt-in —
+    Alt-Snapshots ohne den Key lesen als „kein Layer"). Die Wertebereichs-
+    Invarianten (ADR 0061 §2.1) erzwingt der `TransformerLimitConfig`-
+    Konstruktor; sein `GridModelConfigError` wird vom Aufrufer zu
+    `WrongTypeError` ueberfuehrt."""
+    if "transformer_limit" not in config_state:
+        return None
+    block = assert_mapping(config_state["transformer_limit"], "config.transformer_limit", SUBSYSTEM)
+    assert_required_keys(block, _TRANSFORMER_LIMIT_KEYS, SUBSYSTEM)
+    fields = {
+        key: assert_decimal(block[key], f"config.transformer_limit.{key}", SUBSYSTEM)
+        for key in TRANSFORMER_LIMIT_FIELD_NAMES
+    }
+    return TransformerLimitConfig(**fields)
 
 
 def _parse_load_events(raw: object) -> tuple[LoadEvent, ...]:

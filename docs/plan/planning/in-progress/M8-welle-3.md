@@ -2,8 +2,11 @@
 
 **Status:** In Arbeit (M8-Welle-3, eroeffnet 2026-06-15) — **3a (Inselnetz)
 Done 2026-06-16** ([`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md)
-`Accepted`, [`M8-welle-3a.md`](M8-welle-3a.md), Trigger 020 aufgeloest);
-**3b (Trafo-Grenzen) + 3c (Blindleistung) offen**. Die Netz-Welle von M8:
+`Accepted`, [`M8-welle-3a.md`](M8-welle-3a.md), Trigger 020 aufgeloest) +
+**3b (Trafo-Grenzen) Done 2026-06-16**
+([`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`,
+[`M8-welle-3b.md`](M8-welle-3b.md), Trigger 021 aufgeloest);
+**3c (Blindleistung) offen**. Die Netz-Welle von M8:
 drei Schaerfungen des bestehenden Netzbilanzmodells
 (`GridModelBilanz`, [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))
 aus Lastenheft §11.5, die M2 als SOLLTE markierte. Reine Core-Domain-/
@@ -97,15 +100,18 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   Tie-Break); Existenz-Check im TickLoop-Wiring. Forming-Ueberlast via
   Geraete-Clamp (Constraint-Event deferred → 3b). Black-Start minimal (Init
   ohne Netzanschluss); Multi-Insel-Synchronisation out-of-scope (§5).
-- **Welle 3b — Transformatorgrenzen** ([`M8-welle-3b.md`](M8-welle-3b.md),
-  `GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)):
-  `max_apparent_power_kva` + Ueberlast-Zeit-Strom-Kennlinie + simples
-  Thermomodell (Top-Oil/Hot-Spot) auf **Bilanz-Ebene**; Grenz-Check pro
-  Tick → `GridConstraintViolationEvent` (pro-Tick-Laufzeit-Event, Pattern
-  wie `LoadEvent` / der Event-Domaintyp — **nicht** eine Config-
-  Construction-Exception). NEU ADR.
-  **Klar abgegrenzt** vom Transformer-**Geraet** (Welle 2b, das nur
-  Per-Device-Saettigung clamped) — 3b ist die Netz-Grenze im Bilanzmodell.
+- **Welle 3b — Transformatorgrenzen — Done 2026-06-16**
+  ([`M8-welle-3b.md`](M8-welle-3b.md),
+  `GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md),
+  [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`):
+  `max_apparent_power_kva` + simples **Single-Zonen-Thermomodell als
+  Zeit-Strom-Mechanismus** (Top-Oil/Hot-Spot, `S≈|grid_connection_kw|` bis
+  3c) auf **Bilanz-Ebene**; Grenz-Check pro Tick → `GridConstraintViolationEvent`
+  (NEU frozen Domain-Event, pro-Tick in `TickResult.emitted_grid_events` —
+  **nicht** eine Config-Construction-Exception). Snapshot + Scenario-Hash
+  opt-in (kein Versions-Bump). **Klar abgegrenzt** vom Transformer-**Geraet**
+  (Welle 2b, das nur Per-Device-Saettigung clamped) — 3b ist die Netz-Grenze
+  im Bilanzmodell.
 - **Welle 3c — Blindleistung** ([`M8-welle-3c.md`](M8-welle-3c.md),
   `GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)):
   `reactive_power_kvar`-Telemetry in den Q-emittierenden Geraeten

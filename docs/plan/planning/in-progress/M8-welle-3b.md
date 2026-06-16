@@ -1,7 +1,12 @@
 # Welle 3b — Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`)
 
-**Status:** Geplant (M8-Welle-3b) — zweite Sub-Welle der Netz-Welle.
-**Noch nicht umgesetzt** — DoD (§2) offen.
+**Status:** Done (M8-Welle-3b, 2026-06-16) — zweite Sub-Welle der Netz-Welle.
+Geliefert via [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md)
+`Accepted` (`TransformerLimitConfig` + Single-Zonen-Thermomodell +
+`GridConstraintViolationEvent`). Trigger
+[`021`](../open/021-sollte-transformer-limits.md) aufgeloest. Doc-Verschiebung
+nach `done/` folgt mit der Welle-3-Gesamt-Closure (3a/3b/3c als Gruppe).
+DoD (§2) erfuellt.
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](roadmap.md) §4 M8. Design (C1):
@@ -26,16 +31,24 @@ eigene Per-Device-Saettigung; 3b ist die **Netz-Grenze im Bilanzmodell**.
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [ ] **Config-Block**: `max_apparent_power_kva` + Ueberlastkennlinie +
-      Thermomodell-Parameter additiv in `GridModelConfig`
-      (`src/grid_gym/hexagon/core/grid_model/config.py`), Default
-      **inaktiv** (keine Grenze = heutiges Verhalten); ≥ 100-Tick-
-      Determinismus-Property.
-- [ ] **Pro-Tick-Grenz-Check** in der Bilanz → `GridConstraintViolationEvent`
-      bei Verletzung (emittiert in `TickResult`); Boundary-Pins (knapp
-      unter/ueber Grenze + Zeit-Strom-Akkumulation ueber mehrere Ticks).
-- [ ] **Gates**: `make gates` gruen (`coverage-gate-critical` ≥ 90 % auf
-      `grid_model`); NEU ADR `Accepted`; Trigger 021 aufgeloest.
+- [x] **Config-Block**: NEU `TransformerLimitConfig` (nested, opt-in) in
+      `GridModelConfig` (`src/grid_gym/hexagon/core/grid_model/config.py`) —
+      `max_apparent_power_kva` + Thermomodell-Parameter, Default
+      **inaktiv** (`None` = keine Grenze = bit-genau heutiges Verhalten);
+      die Top-Oil-Zeitkonstante traegt die Zeit-Strom-Kennlinie;
+      ≥ 100-Tick-Determinismus-Property. YAML-`transformer_limit`-Block.
+- [x] **Pro-Tick-Grenz-Check** in `GridModelBilanz.update(...)` →
+      `GridConstraintViolationEvent` (NEU frozen Domain-Event) bei
+      Hot-Spot-Ueberschreitung, gedrained in `TickResult.emitted_grid_events`;
+      Boundary-Pins (unter Grenze nie / moderate Dauer-Ueberlast nach
+      Zeit-Akkumulation / kurze Ueberlast nie).
+- [x] **Gates**: lint/format/typecheck/arch/test-unit/`coverage-gate-critical`
+      ≥ 90 % auf `grid_model` (config 100 % / bilanz 98 % / snapshot 93 %) +
+      `docs-check` + `accept-pin-check` gruen; NEU
+      [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md)
+      `Accepted`; Trigger 021 aufgeloest. (`is_islanded=False`/inaktiv
+      bit-genau; `EXPECTED_DEMO_*` via opt-in Snapshot-/Scenario-Hash
+      unberuehrt.)
 
 ## 3. Design-Skizze (C1)
 

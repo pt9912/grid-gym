@@ -25,6 +25,7 @@ from grid_gym.hexagon.core.grid_model.config import (
     GridModelConfig,
     GridModelConfigError,
     GridModelConfigInvalidValueError,
+    TransformerLimitConfig,
 )
 from grid_gym.hexagon.core.grid_model.loads import (
     LoadEvent,
@@ -57,6 +58,7 @@ __all__ = [
     "GridModelConfigError",
     "GridModelConfigInvalidValueError",
     "GridModelSnapshot",
+    "TransformerLimitConfig",
     "LoadEvent",
     "LoadProfile",
     "LoadProfileEmptyError",

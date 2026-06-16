@@ -66,7 +66,12 @@ from grid_gym.hexagon.core.errors import (
     ScenarioUnknownAgentTypeError,
     ScenarioUnknownDeviceTypeError,
 )
-from grid_gym.hexagon.core.grid_model import GridModelBilanz, GridModelConfig
+from grid_gym.hexagon.core.grid_model import (
+    GridModelBilanz,
+    GridModelConfig,
+    TransformerLimitConfig,
+)
+from grid_gym.hexagon.core.grid_model.config import TRANSFORMER_LIMIT_FIELD_NAMES
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.validator import validate_scenario_mapping
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
@@ -150,11 +155,17 @@ def _scenario_hash_payload(scenario: Scenario) -> dict[str, object]:
     Kopie; das Entfernen beruehrt das (frozen) `scenario` nicht."""
     payload = asdict(scenario)
     grid_model_config = scenario.grid_model_config
-    if grid_model_config is not None and not grid_model_config.is_islanded:
+    if grid_model_config is not None:
         config_payload = payload.get("grid_model_config")
         if isinstance(config_payload, dict):
-            config_payload.pop("is_islanded", None)
-            config_payload.pop("forming_device_id", None)
+            if not grid_model_config.is_islanded:
+                config_payload.pop("is_islanded", None)
+                config_payload.pop("forming_device_id", None)
+            # M8-Welle-3b (ADR 0061 §2.5): Transformer-Block opt-in — im
+            # Default (`None`) aus der Hash-Form entfernen, damit der
+            # additive Config-Zuwachs den scenario_hash nicht verschiebt.
+            if grid_model_config.transformer_limit is None:
+                config_payload.pop("transformer_limit", None)
     return payload
 
 
@@ -370,6 +381,20 @@ def _parse_grid_model_config(raw: Mapping[str, object]) -> GridModelConfig | Non
         voltage_clamp_max_v=cast(Decimal, block["voltage_clamp_max_v"]),
         is_islanded=cast(bool, block.get("is_islanded", False)),
         forming_device_id=cast("str | None", block.get("forming_device_id")),
+        transformer_limit=_parse_transformer_limit(block),
+    )
+
+
+def _parse_transformer_limit(block: Mapping[str, object]) -> TransformerLimitConfig | None:
+    """M8-Welle-3b (ADR 0061 §2.1): liest den optionalen
+    `transformer_limit`-Block. Validator hat Mapping + 6 Decimal-Pflicht-
+    Felder bereits geprueft; die Wertebereichs-Invarianten erzwingt der
+    `TransformerLimitConfig`-Konstruktor."""
+    if "transformer_limit" not in block:
+        return None
+    limit_block = cast(Mapping[str, object], block["transformer_limit"])
+    return TransformerLimitConfig(
+        **{key: cast(Decimal, limit_block[key]) for key in TRANSFORMER_LIMIT_FIELD_NAMES}
     )
 
 

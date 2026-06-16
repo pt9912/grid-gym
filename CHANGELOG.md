@@ -40,8 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `genset_fault`), `ADR 0059` (generische `ScenarioFaultEngine`: eine Engine
   ueber `supported_types` statt einer Klasse pro Fault-Typ; Carveout D-8),
   `ADR 0060` (Inselnetz-Bilanzmodell: `is_islanded`/`forming_device_id` +
-  Forming-Geraet als Slack + opt-in Snapshot-/Scenario-Hash) — alle
-  `Accepted`.
+  Forming-Geraet als Slack + opt-in Snapshot-/Scenario-Hash),
+  `ADR 0061` (Transformatorgrenzen im Netzbilanzmodell: `TransformerLimitConfig`
+  + Single-Zonen-Thermomodell als Zeit-Strom-Mechanismus +
+  `GridConstraintViolationEvent`) — alle `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -123,6 +125,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dedizierter `GridConstraintViolationEvent` deferred → 3b.
   `is_islanded=False` bit-genau wie heute. Trigger 020 aufgeloest.
   ([`M8-welle-3a.md`](docs/plan/planning/in-progress/M8-welle-3a.md))
+- **M8-Welle 3b — Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`)**
+  ([`ADR 0061`](docs/plan/adr/0061-transformer-limit-bilanz-pattern.md)
+  `Accepted`, Schaerfung von `ADR 0019` ohne Supersedes): NEU
+  `TransformerLimitConfig` (nested, opt-in) in `GridModelConfig` — die
+  **Netz-Grenze** im Bilanzmodell, klar abgegrenzt vom Transformer-**Geraet**
+  (`ADR 0056`, Per-Device-Saettigung). Vereinfachtes Single-Zonen-
+  **Thermomodell als Zeit-Strom-Mechanismus**: `S=|grid_connection_kw|`
+  (≈|P| bis 3c), Top-Oil-Euler-Integration + Hot-Spot-Gradient; bei
+  `hot_spot > limit` pro-Tick NEU `GridConstraintViolationEvent` (frozen
+  Domain-Event in `domain/event.py`, getragen in
+  `TickResult.emitted_grid_events`). Die thermische Traegheit τ **ist** die
+  Zeit-Strom-Kennlinie (kurze Ueberlast erlaubt, dauerhafte nicht).
+  `top_oil_temp_c` ist akkumulierter State; Snapshot + Scenario-Hash opt-in
+  (kein Versions-Bump, `EXPECTED_DEMO_*` unberuehrt). YAML-`transformer_limit`-
+  Block (Validator + Loader). `transformer_limit=None` bit-genau wie heute.
+  Trigger 021 aufgeloest.
+  ([`M8-welle-3b.md`](docs/plan/planning/in-progress/M8-welle-3b.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

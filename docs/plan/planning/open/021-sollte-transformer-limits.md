@@ -1,6 +1,12 @@
 # 021 — SOLLTE: Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`)
 
-**Status:** Open — Trigger-Watch
+**Status:** Resolved — M8-Welle-3b (2026-06-16). Geliefert via
+[`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`
++ `GridModelConfig.transformer_limit` (Single-Zonen-Thermomodell als
+Zeit-Strom-Mechanismus) + pro-Tick `GridConstraintViolationEvent` in
+`TickResult.emitted_grid_events`
+([`M8-welle-3b.md`](../in-progress/M8-welle-3b.md)). Doc-Archivierung nach
+`done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).

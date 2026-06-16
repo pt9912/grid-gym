@@ -42,6 +42,7 @@ from grid_gym.hexagon.core.errors import (
     ScenarioUnsupportedTimeMappingError,
     ScenarioWrongTypeError,
 )
+from grid_gym.hexagon.core.grid_model.config import TRANSFORMER_LIMIT_FIELD_NAMES
 from grid_gym.hexagon.core.serialization.snapshot_codec import (
     assert_payload_canonical_compatible,
 )
@@ -92,6 +93,9 @@ _REQUIRED_GRID_MODEL: Final[frozenset[str]] = frozenset(
         "voltage_clamp_max_v",
     }
 )
+# M8-Welle-3b (ADR 0061 §2.1): Pflicht-Keys des optionalen
+# `transformer_limit`-Blocks im `grid_model` (Single-Source aus config).
+_REQUIRED_TRANSFORMER_LIMIT: Final[frozenset[str]] = frozenset(TRANSFORMER_LIMIT_FIELD_NAMES)
 _REQUIRED_LOAD_EVENT: Final[frozenset[str]] = frozenset(
     {"start_s", "duration_s", "target_device_id", "power_kw"}
 )
@@ -335,6 +339,14 @@ def _assert_grid_model_block(raw: Mapping[str, object]) -> None:
     _assert_required_keys("grid_model", block, _REQUIRED_GRID_MODEL)
     for field in _REQUIRED_GRID_MODEL:
         _assert_decimal(block, f"grid_model.{field}")
+    # M8-Welle-3b (ADR 0061 §2.1): optionaler Transformer-Constraint-Block.
+    if "transformer_limit" in block:
+        limit_block = _assert_mapping(block, "transformer_limit")
+        _assert_required_keys(
+            "grid_model.transformer_limit", limit_block, _REQUIRED_TRANSFORMER_LIMIT
+        )
+        for field in _REQUIRED_TRANSFORMER_LIMIT:
+            _assert_decimal(limit_block, f"grid_model.transformer_limit.{field}")
 
 
 def _assert_load_events_block(

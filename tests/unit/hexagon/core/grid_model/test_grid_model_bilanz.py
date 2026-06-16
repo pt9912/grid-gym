@@ -34,6 +34,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from grid_gym.hexagon.core.domain.event import (
+    CONSTRAINT_TRANSFORMER_HOT_SPOT,
+    GridConstraintViolationEvent,
+)
 from grid_gym.hexagon.core.errors import (
     MissingKeysError,
     VersionError,
@@ -43,12 +47,14 @@ from grid_gym.hexagon.core.grid_model import (
     CONFIG_FIELD_NAMES,
     GridModelBilanz,
     GridModelConfig,
+    GridModelConfigError,
     GridModelConfigInvalidValueError,
     GridModelSnapshot,
     LoadEvent,
     LoadProfile,
     MODEL_KIND_SIMPLIFIED_PROPORTIONAL,
     SNAPSHOT_VERSION,
+    TransformerLimitConfig,
 )
 
 
@@ -64,6 +70,7 @@ def _config(
     voltage_clamp_max_v: Decimal = Decimal("520"),
     is_islanded: bool = False,
     forming_device_id: str | None = None,
+    transformer_limit: TransformerLimitConfig | None = None,
 ) -> GridModelConfig:
     return GridModelConfig(
         nominal_frequency_hz=nominal_frequency_hz,
@@ -76,6 +83,7 @@ def _config(
         voltage_clamp_max_v=voltage_clamp_max_v,
         is_islanded=is_islanded,
         forming_device_id=forming_device_id,
+        transformer_limit=transformer_limit,
     )
 
 
@@ -892,6 +900,249 @@ def test_from_dict_islanded_missing_forming_id_reraises_as_wrong_type() -> None:
     state = dict(bilanz.snapshot())
     bad_config = dict(cast(Mapping[str, object], state["config"]))
     del bad_config["forming_device_id"]  # Presence-Verletzung
+    state["config"] = bad_config
+    with pytest.raises(WrongTypeError) as exc_info:
+        GridModelSnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "grid_model"
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3b: TransformerLimitConfig + Thermomodell (ADR 0061)
+# ---------------------------------------------------------------------------
+
+
+def _transformer_limit(
+    *,
+    max_apparent_power_kva: Decimal = Decimal("100"),
+    ambient_temp_c: Decimal = Decimal("20"),
+    top_oil_rise_rated_c: Decimal = Decimal("40"),
+    hot_spot_rise_rated_c: Decimal = Decimal("30"),
+    top_oil_time_constant_s: Decimal = Decimal("10"),
+    hot_spot_limit_c: Decimal = Decimal("98"),
+) -> TransformerLimitConfig:
+    return TransformerLimitConfig(
+        max_apparent_power_kva=max_apparent_power_kva,
+        ambient_temp_c=ambient_temp_c,
+        top_oil_rise_rated_c=top_oil_rise_rated_c,
+        hot_spot_rise_rated_c=hot_spot_rise_rated_c,
+        top_oil_time_constant_s=top_oil_time_constant_s,
+        hot_spot_limit_c=hot_spot_limit_c,
+    )
+
+
+def test_valid_transformer_limit_constructs() -> None:
+    limit = _transformer_limit()
+    assert limit.max_apparent_power_kva == Decimal("100")
+    assert limit.hot_spot_limit_c == Decimal("98")
+
+
+def test_transformer_limit_zero_apparent_power_rejected() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _transformer_limit(max_apparent_power_kva=Decimal("0"))
+    assert "max_apparent_power_kva" in str(exc_info.value)
+
+
+def test_transformer_limit_nonpositive_time_constant_rejected() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError):
+        _transformer_limit(top_oil_time_constant_s=Decimal("0"))
+
+
+def test_transformer_limit_hot_spot_below_ambient_rejected() -> None:
+    """ADR 0061 §2.1: hot_spot_limit_c > ambient_temp_c (sonst Trip bei
+    Nulllast)."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _transformer_limit(ambient_temp_c=Decimal("100"), hot_spot_limit_c=Decimal("98"))
+    assert "hot_spot_limit_c" in str(exc_info.value)
+
+
+def test_transformer_limit_float_rejected() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _transformer_limit(max_apparent_power_kva=100.0)  # type: ignore[arg-type]
+    assert "Decimal" in str(exc_info.value)
+
+
+def test_config_transformer_limit_default_none() -> None:
+    assert _config().transformer_limit is None
+
+
+def test_config_rejects_non_transformer_limit_object() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(transformer_limit="not-a-config")  # type: ignore[arg-type]
+    assert "transformer_limit" in str(exc_info.value)
+
+
+# --- Thermomodell-Verhalten -------------------------------------------------
+
+
+def _run_transformer(
+    *,
+    grid_connection_kw: Decimal,
+    n_ticks: int,
+    limit: TransformerLimitConfig | None = None,
+    tick_ms: int = 1000,
+) -> tuple[GridModelBilanz, list[int]]:
+    """Faehrt die Bilanz mit konstanter Netzanschluss-Last; liefert die
+    Bilanz + die Pro-Tick-Anzahl der Constraint-Verletzungen."""
+    bilanz = GridModelBilanz(config=_config(transformer_limit=limit or _transformer_limit()))
+    counts: list[int] = []
+    for i in range(n_ticks):
+        bilanz.update(
+            generation_kw=Decimal("0"),
+            load_kw=Decimal("0"),
+            storage_kw=Decimal("0"),
+            grid_connection_kw=grid_connection_kw,
+            tick_ms=tick_ms,
+            simulation_time=(i + 1) * tick_ms,
+        )
+        counts.append(len(bilanz.last_constraint_violations))
+    return bilanz, counts
+
+
+def test_inactive_layer_emits_no_violations_and_no_thermo_state() -> None:
+    """ADR 0061 §2.6: ohne transformer_limit bleibt top_oil None und es
+    werden keine Verletzungen emittiert (Inaktiv-Pfad)."""
+    bilanz = GridModelBilanz(config=_config())
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("500"),
+        tick_ms=1000,
+        simulation_time=1000,
+    )
+    assert bilanz.top_oil_temp_c is None
+    assert bilanz.last_constraint_violations == ()
+
+
+def test_top_oil_initialized_to_ambient_when_layer_active() -> None:
+    bilanz = GridModelBilanz(config=_config(transformer_limit=_transformer_limit()))
+    assert bilanz.top_oil_temp_c == Decimal("20")
+
+
+def test_under_limit_load_never_trips() -> None:
+    """ADR 0061 §2.2 Boundary (unter Grenze): dauerhafte Last unter der
+    Hot-Spot-Schwelle erwaermt das Oel, loest aber nie aus."""
+    bilanz, counts = _run_transformer(grid_connection_kw=Decimal("80"), n_ticks=50)
+    assert sum(counts) == 0
+    # Top-Oil naehert sich der Steady-State (20 + 40*0.8^2 = 45.6), bleibt
+    # aber unter der Hot-Spot-Grenze.
+    assert bilanz.top_oil_temp_c is not None
+    assert bilanz.top_oil_temp_c < Decimal("98")
+
+
+def test_sustained_overload_trips_after_time_accumulation() -> None:
+    """ADR 0061 §2.2 Boundary (ueber Grenze) + Zeit-Akkumulation: eine
+    moderate Dauer-Ueberlast loest NICHT sofort aus (thermische Traegheit),
+    aber nach Akkumulation ueber mehrere Ticks."""
+    _bilanz, counts = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=60)
+    # Tick 0: noch kein Trip (Oel kaum erwaermt).
+    assert counts[0] == 0
+    # Irgendwann kippt es und bleibt dann verletzt.
+    assert sum(counts) > 0
+    first_trip = next(i for i, c in enumerate(counts) if c > 0)
+    assert first_trip > 0
+    # Ab dem Trip bleibt die Dauer-Ueberlast verletzt.
+    assert all(c == 1 for c in counts[first_trip:])
+
+
+def test_brief_overload_does_not_trip() -> None:
+    """ADR 0061 §2.2: kurze Ueberlast (1 Tick) loest nicht aus — die
+    thermische Traegheit IST die Zeit-Strom-Kennlinie."""
+    bilanz = GridModelBilanz(config=_config(transformer_limit=_transformer_limit()))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("130"),  # 1 Tick Ueberlast
+        tick_ms=1000,
+        simulation_time=1000,
+    )
+    assert bilanz.last_constraint_violations == ()
+
+
+def test_violation_event_carries_thermo_evidence() -> None:
+    """ADR 0061 §2.3: das Event traegt Constraint-Kennung + Thermo-Werte."""
+    bilanz, counts = _run_transformer(grid_connection_kw=Decimal("200"), n_ticks=1)
+    assert counts[0] == 1  # 200 kVA = 2x Nennlast -> sofortiger Hot-Spot-Trip
+    event = bilanz.last_constraint_violations[0]
+    assert isinstance(event, GridConstraintViolationEvent)
+    assert event.constraint == CONSTRAINT_TRANSFORMER_HOT_SPOT
+    assert event.apparent_power_kva == Decimal("200")
+    assert event.limit_kva == Decimal("100")
+    assert event.hot_spot_temp_c > event.hot_spot_limit_c
+    assert event.simulation_time == 1000
+
+
+def test_active_layer_without_tick_ms_raises() -> None:
+    """ADR 0061 §2.4: aktiver Layer ohne tick_ms/simulation_time ist ein
+    Wiring-Fehler."""
+    bilanz = GridModelBilanz(config=_config(transformer_limit=_transformer_limit()))
+    with pytest.raises(GridModelConfigError):
+        bilanz.update(
+            generation_kw=Decimal("0"),
+            load_kw=Decimal("0"),
+            storage_kw=Decimal("0"),
+            grid_connection_kw=Decimal("200"),
+        )
+
+
+def test_transformer_thermo_determinism_over_100_ticks() -> None:
+    """ADR 0061 §2.6: gleiche Eingangssequenz -> byte-identische
+    top_oil-/Violation-Spur ueber >= 100 Ticks."""
+    bilanz_a, counts_a = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=100)
+    bilanz_b, counts_b = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=100)
+    assert counts_a == counts_b
+    assert bilanz_a.top_oil_temp_c == bilanz_b.top_oil_temp_c
+    assert len(counts_a) == 100
+
+
+# --- Snapshot opt-in (ADR 0061 §2.5) ----------------------------------------
+
+
+def test_connected_snapshot_omits_transformer_keys() -> None:
+    """ADR 0061 §2.5: ohne Layer KEINE transformer_limit-/top_oil-Keys
+    (byte-identisch zu vor 3b)."""
+    state = GridModelBilanz(config=_config()).snapshot()
+    assert "top_oil_temp_c" not in state
+    config_state = cast(Mapping[str, object], state["config"])
+    assert "transformer_limit" not in config_state
+
+
+def test_transformer_snapshot_emits_block_and_state() -> None:
+    bilanz, _counts = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=10)
+    state = bilanz.snapshot()
+    assert state["version"] == SNAPSHOT_VERSION  # kein Versions-Bump
+    assert state["top_oil_temp_c"] == bilanz.top_oil_temp_c
+    config_state = cast(Mapping[str, object], state["config"])
+    block = config_state["transformer_limit"]
+    assert isinstance(block, dict)
+    assert block["max_apparent_power_kva"] == Decimal("100")
+
+
+def test_transformer_snapshot_roundtrip() -> None:
+    bilanz, _counts = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=10)
+    restored = GridModelBilanz.from_snapshot(bilanz.snapshot())
+    assert restored == bilanz
+    assert restored.config.transformer_limit == _transformer_limit()
+    assert restored.top_oil_temp_c == bilanz.top_oil_temp_c
+
+
+def test_from_dict_without_transformer_keys_reads_inactive() -> None:
+    """ADR 0061 §2.5 backward-compat: ein Snapshot OHNE transformer-Keys
+    (Bestand) liest als „kein Layer"."""
+    state = GridModelBilanz(config=_config()).snapshot()
+    restored = GridModelSnapshot.from_dict(state)
+    assert restored.config.transformer_limit is None
+    assert restored.top_oil_temp_c is None
+
+
+def test_from_dict_invalid_transformer_limit_reraises_as_wrong_type() -> None:
+    bilanz, _counts = _run_transformer(grid_connection_kw=Decimal("130"), n_ticks=2)
+    state = dict(bilanz.snapshot())
+    bad_config = dict(cast(Mapping[str, object], state["config"]))
+    bad_block = dict(cast(Mapping[str, object], bad_config["transformer_limit"]))
+    bad_block["max_apparent_power_kva"] = Decimal("-1")  # Invariant-Verletzung
+    bad_config["transformer_limit"] = bad_block
     state["config"] = bad_config
     with pytest.raises(WrongTypeError) as exc_info:
         GridModelSnapshot.from_dict(state)

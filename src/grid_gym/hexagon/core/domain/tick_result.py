@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grid_gym.hexagon.core.domain.alarm import Alarm
-from grid_gym.hexagon.core.domain.event import Event
+from grid_gym.hexagon.core.domain.event import Event, GridConstraintViolationEvent
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 
 
@@ -53,6 +53,11 @@ class TickResult:
       Welle 4b, ADR 0040 Decision 16). Default `()` — bestehende
       `TickResult`-Konstruktionen bleiben kompatibel; Welle-4-
       Tests ohne Devices bekommen leeres Tupel.
+    - `emitted_grid_events`: pro-Tick emittierte
+      `GridConstraintViolationEvent`-Eintraege aus dem
+      Netzbilanzmodell (M8 Welle 3b, ADR 0061 §2.4 — Transformer-
+      Hot-Spot-Ueberlast). Default `()` — Bestands-Konstruktionen +
+      der Inaktiv-Pfad (kein `transformer_limit`) bleiben kompatibel.
     """
 
     tick: int
@@ -61,6 +66,7 @@ class TickResult:
     emitted_telemetry: tuple[TelemetryPoint, ...]
     paused: bool = False
     emitted_alarms: tuple[Alarm, ...] = ()
+    emitted_grid_events: tuple[GridConstraintViolationEvent, ...] = ()
 
     @classmethod
     def paused_result(
