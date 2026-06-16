@@ -32,15 +32,17 @@ Beide Sub-Wellen erweitern dasselbe Battery-Submodul
 (`src/grid_gym/hexagon/core/devices/battery/`: `config.py`, `model.py`,
 `snapshot.py`). Heutiger Stand
 ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)): der
-`BatterySnapshot` (`version=1`) traegt SOC, Strom/Leistung, Ramp und das
-opt-in Fault-Flag `cell_failure_active` — **additive Felder ohne Versions-
-Bump** sind also bereits etabliert. Welle 4 setzt genau dieses Muster fort:
-zwei neue **opt-in** Telemetrie-/State-Felder, je per Config aktiviert.
+`BatterySnapshot` (`version=1`) traegt SOC, Strom/Leistung und Ramp;
+[`ADR 0025`](../../adr/0025-fault-recovery-pattern.md) hat den
+`fault_state`-Block additiv ohne Versions-Bump ergaenzt. Welle 4 setzt die
+additive No-Bump-Disziplin fort, waehlt fuer neue Default-aus-Telemetrie aber
+einen strengeren **opt-in serialisiert**-Vertrag: inaktive Temperatur-/
+Zellspannungsfelder werden gar nicht geschrieben.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
 | 4a Temperatur | `GG-BESS-006` | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
-| 4b Zellspannung | `GG-BESS-007` | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
+| 4b Zellspannung | `GG-BESS-007` | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `nominal_pack_voltage_v` + `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port und **keine
 Bilanz-Beruehrung** — Temperatur/Zellspannung sind Geraete-interne Groessen,
@@ -63,8 +65,10 @@ kein Supersede). `devices/battery/` liegt bereits in `CRITICAL_COV_TARGETS`
   geschrieben, und `from_dict` akzeptiert fehlende neue Keys als inaktive
   Defaults.
 - `BatterySnapshot` additiv erweitert: **opt-in serialisiert** (Feld nur bei
-  aktivem Feature im Mapping → roundtrip byte-identisch, **kein Versions-Bump**,
-  wie `cell_failure_active`); v1-Lesepfad fuer Altschnappschuesse.
+  aktivem Feature im Mapping → roundtrip byte-identisch, **kein Versions-Bump**;
+  strenger als der immer emittierte `fault_state`-Block aus
+  [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)); v1-Lesepfad fuer
+  Altschnappschuesse.
 - Neue Telemetry-Metric(s) **nur bei aktiver Config** (kein Feature →
   **kein** Punkt, nicht `0`); Determinismus-Property-Test (gleicher Seed →
   identische Trace, `AC-NO-RAND`). RandomPort-konsumierende Features brauchen
@@ -73,9 +77,11 @@ kein Supersede). `devices/battery/` liegt bereits in `CRITICAL_COV_TARGETS`
 - `make gates` gruen (A-1-Gates), `coverage-gate-critical` ≥ 90 % auf
   `devices/battery` (ohne neuen Target); bei Snapshot-Aenderung Roundtrip-Pin
   **inkl. v1-backward-compat-Lesepfad**.
-- **`EXPECTED_DEMO_*`-Hash-Pins unberuehrt**: die Battery im `mvp_demo.yaml`
-  aktiviert die neuen Felder **nicht** → keine neue Telemetrie, Scenario-Hash
-  strippt Default-Felder → byte-stabil (`accept-pin-check` gruen).
+- **`EXPECTED_DEMO_*`-Hash-Pins unberuehrt**: die Battery im Abnahme-Szenario
+  [`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
+  aktiviert die neuen Felder **nicht** → keine neue Telemetrie; die
+  Scenario-Hash-Default-Strip-Regel fuer neue Battery-Defaults ist Teil der
+  C1-Umsetzung → byte-stabil (`accept-pin-check` gruen).
 
 ## 3. Tranchierung (Sub-Slicing)
 
@@ -108,9 +114,10 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   inaktiv). Derating/thermische Constraints **out-of-scope** (§5, M3-Material).
 - **Welle 4b — Battery-Zellspannung** ([`M8-welle-4b.md`](M8-welle-4b.md),
   `GG-BESS-007`, [`024`](../open/024-sollte-battery-cell-voltage.md), NEU ADR):
-  `n_cells: int` + `cell_voltages_v: tuple[Decimal, ...]`. Vereinfacht alle
-  Zellen identisch (`pack_voltage / n_cells`); erweitert per-Zelle mit
-  seeded `RandomPort.sub_port("cell-<idx>")`-Rauschen (deterministisch).
+  `nominal_pack_voltage_v: Decimal` + `n_cells: int` +
+  `cell_voltages_v: tuple[Decimal, ...]`. Vereinfacht alle Zellen identisch
+  (`nominal_pack_voltage_v / n_cells`); erweitert per-Zelle mit seeded
+  `RandomPort.sub_port("cell-<idx>")`-Rauschen (deterministisch).
   Telemetrie **aggregiert**: `cell_voltage_delta_v` als normativer
   `GG-BESS-007`-Akzeptanzpunkt (`max-min`), optional `min_cell_voltage_v` +
   `max_cell_voltage_v` als Debug-/Boundary-Kontext statt N Punkte — bounded
@@ -123,11 +130,16 @@ Aggregation), wird sie nach demselben Schema weiter getrancht.
 
 ## 4. Risiken
 
-- **Pin-Neutralitaet (beide):** `mvp_demo.yaml` enthaelt eine Battery — jede
-  **immer-aktive** Telemetrie/State-Erweiterung wuerde
-  `EXPECTED_DEMO_TELEMETRY_STREAM_HASH` brechen. Zwingend **opt-in im
+- **Pin-Neutralitaet (beide):** [`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
+  enthaelt eine Battery — jede **immer-aktive** Telemetrie/State-Erweiterung
+  wuerde `EXPECTED_DEMO_TELEMETRY_STREAM_HASH` brechen. Zwingend **opt-in im
   Szenario** (Feld nur bei gesetzter Config), Snapshot **opt-in serialisiert**,
-  Scenario-Hash strippt Default-Felder — exakt die Welle-3-Disziplin.
+  Scenario-Hash strippt neue Battery-Default-Felder — exakt die Welle-3-
+  Disziplin.
+- **Spannungsquelle (4b):** `BatteryConfig` enthaelt heute keinen Pack-
+  Spannungswert. 4b muss deshalb `nominal_pack_voltage_v` als expliziten
+  opt-in Parameter einfuehren und validieren; SOC-/OCV-Kennlinien bleiben
+  ausserhalb dieses Telemetrie-Slices.
 - **Determinismus (4b):** per-Zelle Rauschen ueber `RandomPort.sub_port`
   braucht stabile Sub-Seed-Ableitung (vgl. Trigger
   [`011`](../open/011-mlrandomport-subseed-width.md), Sub-Seed-Breite) +
@@ -168,7 +180,8 @@ Aggregation), wird sie nach demselben Schema weiter getrancht.
 - [x] Reihenfolge fixiert: **4a Temperatur → 4b Zellspannung** (skalare
       Telemetrie vor Tuple-/Rausch-Feld).
 - [x] Pin-/Schema-Strategie fixiert: beide additiv + **opt-in** ohne
-      Versions-Bump (wie `cell_failure_active`); `mvp_demo.yaml`-Battery
+      Versions-Bump (strengere Opt-in-Serialisierung als `fault_state`);
+      [`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
       aktiviert nichts → `EXPECTED_DEMO_*` unberuehrt. Konkrete Feld-/
       Telemetrie-Liste ist Slice-Design-Item (4a/4b §3).
 - [x] `make docs-check` gruen.

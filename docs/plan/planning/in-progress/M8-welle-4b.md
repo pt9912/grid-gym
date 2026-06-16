@@ -19,8 +19,8 @@ Reihenfolge 4a → 4b — bewusst zuletzt: Tuple-Feld + Rausch-Quelle);
 
 Eine **Zellspannungs-Telemetrie** als opt-in Erweiterung des `BatteryDevice`:
 das Pack wird in `n_cells` Zellen aufgeloest, jede mit eigener Spannung
-(`pack_voltage / n_cells`, optional ueberlagert mit seeded Rauschen). Heute
-deckt der Battery-Snapshot
+(`nominal_pack_voltage_v / n_cells`, optional ueberlagert mit seeded
+Rauschen). Heute deckt der Battery-Snapshot
 ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) nur Pack-Niveau (SOC)
 ab. Emittiert wird **aggregiert** `cell_voltage_delta_v` (`max-min`) als
 normativer `GG-BESS-007`-Akzeptanzpunkt; `min_cell_voltage_v` /
@@ -31,16 +31,17 @@ kein Punkt).
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [ ] **Config + Zell-Modell**: opt-in `n_cells: int` (+ optionale Rausch-
-      Amplitude) additiv in `BatteryConfig`, Default = inaktiv; fehlende neue
-      Config-Keys in alten Snapshots/Szenarien lesen als inaktive Defaults;
-      `BatteryDevice` berechnet `cell_voltages_v` — vereinfacht alle Zellen
-      identisch, erweitert per-Zelle mit seeded
+- [ ] **Config + Zell-Modell**: opt-in `nominal_pack_voltage_v: Decimal` +
+      `n_cells: int` (+ optionale Rausch-Amplitude) additiv in
+      `BatteryConfig`, Default = inaktiv; fehlende neue Config-Keys in alten
+      Snapshots/Szenarien lesen als inaktive Defaults; `BatteryDevice`
+      berechnet `cell_voltages_v` — vereinfacht alle Zellen identisch auf Basis
+      `nominal_pack_voltage_v / n_cells`, erweitert per-Zelle mit seeded
       `RandomPort.sub_port("cell-<idx>")`-Rauschen; Determinismus-Property
       (gleicher Seed → byte-identische Zellspannungs-Trace, `AC-NO-RAND`);
-      Resume-Pins: aktive Rausch-Config + `from_snapshot` ohne
-      `attach_random` wirft typisiert fail-loud, mit `attach_random` laeuft der
-      Trace deterministisch weiter.
+      Resume-Pins: aktive Rausch-Config + `from_snapshot` ohne `attach_random`
+      wirft typisiert fail-loud, mit `attach_random` laeuft der Trace
+      deterministisch weiter.
 - [ ] **Telemetrie + Snapshot opt-in**: aggregierte
       `cell_voltage_delta_v`-`TelemetryPoint` (SI per `GG-DATA-002`, `max-min`)
       **nur bei aktiver Config**; optionale `min_cell_voltage_v`/
@@ -52,14 +53,16 @@ kein Punkt).
       Roundtrip byte-stabil inkl. Tuple-Kanonik.
 - [ ] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
       `coverage-gate-critical` ≥ 90 % auf `devices/battery` (kein neuer
-      Target) + `docs-check` + **`accept-pin-check` gruen** (mvp_demo-Battery
+      Target) + `docs-check` + **`accept-pin-check` gruen**
+      ([`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
       ohne Zell-Config → `EXPECTED_DEMO_*` unberuehrt); NEU ADR `Accepted`;
       Trigger 024 aufgeloest.
 
 ## 3. Design-Skizze (C1)
 
-- **Config** (`battery/config.py`): `n_cells: int` opt-in (Default `None`/`0`
-  = inaktiv) + optionale Rausch-Amplitude; `__post_init__` validiert
+- **Config** (`battery/config.py`): `nominal_pack_voltage_v: Decimal` +
+  `n_cells: int` opt-in (Default `None`/`0` = inaktiv) + optionale Rausch-
+  Amplitude; `__post_init__` validiert `nominal_pack_voltage_v > 0` und
   `n_cells ≥ 1` wenn gesetzt (Bestands-Error-Pattern). Snapshot-`config`
   schreibt inaktive Zell-Defaults nicht und liest fehlende neue Keys als
   inaktiv.
@@ -67,11 +70,11 @@ kein Punkt).
   Rauschen — `RandomPort.sub_port("cell-<idx>")` pro Zelle, deterministische
   Sub-Seed-Ableitung (vgl. Trigger
   [`011`](../open/011-mlrandomport-subseed-width.md)). Ohne Rausch-Amplitude
-  sind alle Zellen identisch (`pack_voltage / n_cells`), rein deterministisch
-  ohne `RandomPort`-Zug. Mit Rausch-Amplitude ist `attach_random` nach
-  `from_snapshot` Pflicht; fehlt er, wirft der Tick typisiert statt
-  nicht-deterministisch still weiterzulaufen. Kanonische `Decimal`-Rundung,
-  kein Float-Drift.
+  sind alle Zellen identisch (`nominal_pack_voltage_v / n_cells`), rein
+  deterministisch ohne `RandomPort`-Zug. Mit Rausch-Amplitude ist
+  `attach_random` nach `from_snapshot` Pflicht; fehlt er, wirft der Tick
+  typisiert statt nicht-deterministisch still weiterzulaufen. Kanonische
+  `Decimal`-Rundung, kein Float-Drift.
 - **Telemetrie**: **aggregiert** mit `cell_voltage_delta_v = max-min` statt N
   per-Zelle-Punkte — erfuellt das `GG-BESS-007`-Akzeptanzkriterium und haelt
   die Telemetrie-Flaeche bounded. `min_cell_voltage_v`/`max_cell_voltage_v`
@@ -93,6 +96,10 @@ kein Punkt).
   Drift bricht den Determinismus-Pin. Resume braucht eigene Pins:
   `from_snapshot` rekonstruiert Battery-State ohne RandomPort; aktive
   Rausch-Config darf erst nach `attach_random` weiterlaufen.
+- **Spannungsquelle**: heutige Battery-Config hat keinen Pack-
+  Spannungsparameter. C1/ADR muessen `nominal_pack_voltage_v` als explizite
+  opt-in Quelle fixieren; SOC-/OCV-Kennlinien oder Zell-Chemie bleiben
+  Nicht-Ziel.
 - **Telemetrie-Aggregation**: `cell_voltage_delta_v` ist normativ; C1
   entscheidet nur, ob `min_cell_voltage_v`/`max_cell_voltage_v` zusaetzlich als
   Debug-/Boundary-Kontext emittiert werden. Per-Zelle blaeht den Stream und

@@ -22,9 +22,9 @@ Eine **Temperatur-Telemetrie** als opt-in Erweiterung des `BatteryDevice`
 (`load_pu²`) + Umgebungstemperatur + Temperaturanstieg bei Volllast, und
 emittiert sie als `TelemetryPoint`. Heute deckt der Battery-Snapshot
 ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) nur SOC, Strom/
-Leistung, Ramp und das Fault-Flag ab — Temperatur fehlt. **Ohne aktive
-Thermo-Config bleibt das Verhalten bit-genau wie heute** (kein Feld, kein
-Punkt).
+Leistung, Ramp und den additiven `fault_state`-Block ab — Temperatur fehlt.
+**Ohne aktive Thermo-Config bleibt das Verhalten bit-genau wie heute** (kein
+Feld, kein Punkt).
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
@@ -44,12 +44,14 @@ Punkt).
       (SI per `GG-DATA-002`) **nur bei aktiver Config** (inaktiv → kein
       Punkt); `BatterySnapshot` traegt den T-State **additiv opt-in
       serialisiert** (kein Versions-Bump, v1-Lesepfad fuer Altschnappschuesse,
-      wie `cell_failure_active`); neue Thermo-Config-Keys werden bei inaktivem
-      Feature nicht ins Snapshot-`config`-Mapping geschrieben; Roundtrip
-      byte-stabil.
+      strenger als der immer emittierte `fault_state`-Block aus
+      [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)); neue Thermo-
+      Config-Keys werden bei inaktivem Feature nicht ins Snapshot-`config`-
+      Mapping geschrieben; Roundtrip byte-stabil.
 - [ ] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
       `coverage-gate-critical` ≥ 90 % auf `devices/battery` (kein neuer
-      Target) + `docs-check` + **`accept-pin-check` gruen** (mvp_demo-Battery
+      Target) + `docs-check` + **`accept-pin-check` gruen**
+      ([`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
       ohne Thermo-Config → `EXPECTED_DEMO_*` unberuehrt); NEU ADR `Accepted`;
       Trigger 023 aufgeloest.
 
