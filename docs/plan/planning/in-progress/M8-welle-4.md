@@ -39,8 +39,8 @@ zwei neue **opt-in** Telemetrie-/State-Felder, je per Config aktiviert.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
-| 4a Temperatur | `GG-BESS-006` | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus Verlustleistung (`power_kw²·R_i`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
-| 4b Zellspannung | `GG-BESS-007` | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; aggregierte `min/max_cell_voltage_v`-Telemetrie |
+| 4a Temperatur | `GG-BESS-006` | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
+| 4b Zellspannung | `GG-BESS-007` | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port und **keine
 Bilanz-Beruehrung** — Temperatur/Zellspannung sind Geraete-interne Groessen,
@@ -58,13 +58,18 @@ kein Supersede). `devices/battery/` liegt bereits in `CRITICAL_COV_TARGETS`
   mit modell-/telemetrie-spezifischen Akzeptanzkriterien.
 - `BatteryConfig`-Erweiterung: neue Felder **additiv + opt-in** mit
   backward-compat-Default (Bestands-Szenarien unveraendert ladbar;
-  Default-Pfad = heutiges Verhalten bit-genau).
+  Default-Pfad = heutiges Verhalten bit-genau). Snapshot-`config`-Mapping bleibt
+  ebenfalls default-neutral: neue Config-Keys werden bei inaktivem Feature nicht
+  geschrieben, und `from_dict` akzeptiert fehlende neue Keys als inaktive
+  Defaults.
 - `BatterySnapshot` additiv erweitert: **opt-in serialisiert** (Feld nur bei
   aktivem Feature im Mapping → roundtrip byte-identisch, **kein Versions-Bump**,
   wie `cell_failure_active`); v1-Lesepfad fuer Altschnappschuesse.
 - Neue Telemetry-Metric(s) **nur bei aktiver Config** (kein Feature →
   **kein** Punkt, nicht `0`); Determinismus-Property-Test (gleicher Seed →
-  identische Trace, `AC-NO-RAND`).
+  identische Trace, `AC-NO-RAND`). RandomPort-konsumierende Features brauchen
+  zusaetzlich Resume-Pins (`from_snapshot` + `attach_random`; fehlender
+  `attach_random` fail-loud typisiert).
 - `make gates` gruen (A-1-Gates), `coverage-gate-critical` ≥ 90 % auf
   `devices/battery` (ohne neuen Target); bei Snapshot-Aenderung Roundtrip-Pin
   **inkl. v1-backward-compat-Lesepfad**.
@@ -96,18 +101,21 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   **stateful Single-Zonen-Thermomodell** (analog dem Top-Oil-Euler aus
   [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md):
   `theta += (theta_ss − theta)·(dt/τ)`, `theta_ss = T_ambient + rise·load_pu²`)
-  — die Modell-Tiefe (zustandsfrei vs. stateful) ist 4a-Design-Item. Opt-in
-  Thermo-Config (`R_internal`/`T_ambient`/`τ` o. Ae.); Snapshot additiv
-  opt-in (kein Bump). Derating/thermische Constraints **out-of-scope** (§5,
-  M3-Material).
+  — stateful ist fuer 4a fixiert; C1 entscheidet nur Parameter-Namen,
+  Initialwert und Rundung. Opt-in Thermo-Config
+  (`thermal_rise_c_at_full_load`/`T_ambient`/`τ` o. Ae.); Snapshot und
+  eingebettete Config additiv opt-in (kein Bump, fehlende neue Config-Keys =
+  inaktiv). Derating/thermische Constraints **out-of-scope** (§5, M3-Material).
 - **Welle 4b — Battery-Zellspannung** ([`M8-welle-4b.md`](M8-welle-4b.md),
   `GG-BESS-007`, [`024`](../open/024-sollte-battery-cell-voltage.md), NEU ADR):
   `n_cells: int` + `cell_voltages_v: tuple[Decimal, ...]`. Vereinfacht alle
   Zellen identisch (`pack_voltage / n_cells`); erweitert per-Zelle mit
   seeded `RandomPort.sub_port("cell-<idx>")`-Rauschen (deterministisch).
-  Telemetrie **aggregiert** (`min_cell_voltage_v` + `max_cell_voltage_v`)
-  statt N Punkte — bounded Telemetrie-Flaeche; per-Zelle als Alternative
-  (Design-Item). Snapshot additiv opt-in.
+  Telemetrie **aggregiert**: `cell_voltage_delta_v` als normativer
+  `GG-BESS-007`-Akzeptanzpunkt (`max-min`), optional `min_cell_voltage_v` +
+  `max_cell_voltage_v` als Debug-/Boundary-Kontext statt N Punkte — bounded
+  Telemetrie-Flaeche; per-Zelle als Alternative (Design-Item). Snapshot
+  additiv opt-in.
 
 **Schwellen-Hinweis:** sollte eine Sub-Welle selbst > 300 Zeilen / > 5
 Commits werden (4b ist Kandidat wegen Tuple-Feld + Rausch-Quelle + Telemetrie-
@@ -127,6 +135,10 @@ Aggregation), wird sie nach demselben Schema weiter getrancht.
 - **Stateful T (4a):** ein zustandsbehaftetes Thermomodell fuehrt akkumulierten
   State (`temperature_celsius`) → muss in den Snapshot, und der Roundtrip muss
   byte-stabil bleiben (gleiche τ-Euler-Integration wie 3b).
+- **Config-Opt-in (beide):** `BatterySnapshot.to_dict()` bettet heute alle
+  `BatteryConfig`-Felder ein. Neue Default-Config-Keys duerfen deshalb im
+  inaktiven Pfad nicht unbemerkt in Snapshots/Scenario-Pins auftauchen;
+  `from_dict` muss Alt-Snapshots ohne diese Keys als inaktiv lesen.
 - **Coverage:** `devices/battery` ist bereits coverage-critical; neue Branches
   (opt-in-Pfade) duerfen die ≥ 90 %-Schwelle nicht druecken — die
   Default-aus-Pfade brauchen ebenfalls Tests.
