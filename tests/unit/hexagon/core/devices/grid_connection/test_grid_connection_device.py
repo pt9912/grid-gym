@@ -822,3 +822,73 @@ def _config() -> GridConnectionConfig:
         max_import_kw=Decimal("100"),
         max_export_kw=Decimal("50"),
     )
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3c-b-2: Q-Auto-Schluss-Emission (ADR 0064)
+# ---------------------------------------------------------------------------
+
+
+def _q_command(reactive_value: Decimal, power_value: Decimal = Decimal("0")) -> Command:
+    return Command(
+        command_id="auto-close-q",
+        simulation_time=0,
+        target_device_id="grid-1",
+        type=COMMAND_TYPE_SET_POWER_KW,
+        payload={"value": power_value, "reactive_value": reactive_value},
+        validation_status="validated",
+        result=CommandResult.IGNORED,
+    )
+
+
+def _q_points(device: GridConnectionDevice) -> list[TelemetryPoint]:
+    device.set_run_id("r")
+    out = device.tick(_context())
+    return [p for p in out.telemetry if p.metric == "reactive_power_kvar"]
+
+
+def test_grid_q_command_emits_reactive_telemetry() -> None:
+    """ADR 0064 §2.1: reactive_value im Auto-Schluss-Command → der
+    Netzanschluss emittiert reactive_power_kvar."""
+    device = _initialize(GridConnectionDevice())
+    device.apply_command(_q_command(Decimal("-15")))
+    q = _q_points(device)
+    assert len(q) == 1
+    assert q[0].value == Decimal("-15.000000")
+    assert q[0].unit == "kvar"
+    assert q[0].source == "grid_connection"
+
+
+def test_grid_no_reactive_value_no_q_point() -> None:
+    """ADR 0064 §2.1: ohne reactive_value (Bestands-Command) KEIN Q-Punkt."""
+    device = _initialize(GridConnectionDevice())
+    device.apply_command(_command(value=Decimal("10")))  # nur P
+    assert _q_points(device) == []
+
+
+def test_grid_zero_q_emits_no_point() -> None:
+    """ADR 0064 §2.1 pin-neutral: Q=0 → kein reactive_power_kvar-Punkt."""
+    device = _initialize(GridConnectionDevice())
+    device.apply_command(_q_command(Decimal("0")))
+    assert _q_points(device) == []
+
+
+def test_grid_q_snapshot_opt_in_roundtrip() -> None:
+    device = _initialize(GridConnectionDevice())
+    device.set_run_id("r")
+    device.apply_command(_q_command(Decimal("-15")))
+    device.tick(_context())
+    state = device.snapshot()
+    assert state["current_reactive_power_kvar"] == Decimal("-15")
+    restored = GridConnectionDevice.from_snapshot(state)
+    assert restored == device
+
+
+def test_grid_zero_q_snapshot_omits_keys() -> None:
+    """ADR 0064 §2.3: Q=0 → Snapshot OHNE Q-Keys (byte-identisch)."""
+    device = _initialize(GridConnectionDevice())
+    device.set_run_id("r")
+    device.tick(_context())
+    state = device.snapshot()
+    assert "current_reactive_power_kvar" not in state
+    assert "pending_reactive_power_kvar" not in state

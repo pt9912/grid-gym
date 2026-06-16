@@ -1,16 +1,19 @@
 # Welle 3c — Blindleistung im Netzbilanzmodell (`GG-GRID-007`)
 
-**Status:** In Arbeit (re-tranchiert 3c-a → 3c-b-1 → 3c-b-2, siehe §4) —
-**3c-a Done 2026-06-16**
+**Status:** **Done 2026-06-16** (re-tranchiert 3c-a → 3c-b-1 → 3c-b-2,
+siehe §4) — **3c-a**
 ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`):
 Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung +
-`voltage_sensitivity_v_per_kvar` opt-in + GridModelSnapshot v2→v3). **3c-b-1
-Done 2026-06-16** ([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)
+`voltage_sensitivity_v_per_kvar` opt-in + GridModelSnapshot v2→v3). **3c-b-1**
+([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)
 `Accepted`): erste Q-Quelle — `DeviceTickContext.grid_voltage_v` (lagged) +
 opt-in PV-`VoltVarConfig`-Q(U) + TickLoop-`reactive_kvar`-Aggregation →
-`grid_model.update`; Q-frei pin-neutral. **Offen: 3c-b-2** —
-GridConnection-Q-Auto-Schluss + Transformer `S=sqrt(P²+Q²)` (re-pinnt
-3b-Boundary) + Trigger-022-Closure. **Trigger 022 bleibt offen bis 3c-b-2.**
+`grid_model.update`; Q-frei pin-neutral. **3c-b-2**
+([`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md)
+`Accepted`): GridConnection-Q-Auto-Schluss (Spiegel zum P-Slack) +
+Transformer `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary als Q=0-Regressionspin) +
+opt-in GridConnection-Snapshot-Q. **Trigger 022 aufgeloest — `GG-GRID-007`
+komplett; M8-Welle 3 (Netz) abgeschlossen.**
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
 Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](roadmap.md)
@@ -34,21 +37,25 @@ lokalen Schaerfungen 3a/3b.
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [~] **Q-Emission + Bilanz** (3c-a: Bilanz Done / 3c-b: Geraete-Q offen):
-      `imbalance_kvar` parallel zu `imbalance_kw` in `GridModelBilanz` +
-      Q-Spannungskopplung **Done** (3c-a,
+- [x] **Q-Emission + Bilanz**: `imbalance_kvar` parallel zu `imbalance_kw`
+      in `GridModelBilanz` + Q-Spannungskopplung **Done** (3c-a,
       [`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md);
       ≥ 100-Tick-Determinismus, **Q-frei bit-genau** gepinnt).
       `reactive_power_kvar`-Telemetry + Q(U)-Kennlinie in den Q-Geraeten
-      (PV, GridConnection) **offen (3c-b)**.
-- [~] **Schema additiv + backward-compat** (3c-a: GridModelSnapshot Done /
-      3c-b: Device-Snapshots offen): GridModelSnapshot **v2→v3** mit
-      v1/v2-Lesepfad + Roundtrip-Pins **Done** (3c-a); PV-/GridConnection-
-      Device-Snapshots **offen (3c-b)**.
-- [~] **Gates**: 3c-a-Gates gruen (`coverage-gate-critical` ≥ 90 %
-      `grid_model`); [`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md)
-      `Accepted`. **Trigger 022 bleibt offen bis 3c-b**; die beruehrten
-      Geraete-Module + Demo-Re-Pin folgen mit 3c-b.
+      **Done**: PV-Q(U) (3c-b-1,
+      [`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)) +
+      GridConnection-Q-Auto-Schluss (3c-b-2,
+      [`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md)).
+- [x] **Schema additiv + backward-compat**: GridModelSnapshot **v2→v3** mit
+      v1/v2-Lesepfad + Roundtrip-Pins **Done** (3c-a); PV- (3c-b-1) +
+      GridConnection-Device-Snapshots (3c-b-2) tragen Q **opt-in** (kein
+      Versions-Bump, Q-frei byte-identisch).
+- [x] **Gates**: alle Slice-Gates gruen (`coverage-gate-critical` ≥ 90 %
+      `grid_model`); [`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md)/
+      [`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)/
+      [`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md)
+      `Accepted`. **Trigger 022 aufgeloest**; Demo pin-neutral (Q-frei) ueber
+      alle drei Slices.
 
 ## 3. Design-Skizze (C1)
 

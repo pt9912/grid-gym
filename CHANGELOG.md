@@ -47,7 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ADR 0062` (Blindleistung im Netzbilanzmodell, 3c-a: `imbalance_kvar` +
   Q-Spannungskopplung + GridModelSnapshot v2→v3),
   `ADR 0063` (PV-Q(U)-Emission + Spannungs-Feedback, 3c-b-1:
-  `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig`) — alle
+  `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig`),
+  `ADR 0064` (GridConnection-Q-Auto-Schluss + Transformer-Scheinleistung
+  `S=sqrt(P²+Q²)`, 3c-b-2: schliesst `GG-GRID-007`) — alle
   `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
@@ -178,6 +180,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   der Q-freie Demo emittiert keine Q-Telemetrie → `EXPECTED_DEMO_*` unberuehrt.
   **Deferred → 3c-b-2:** GridConnection-Q-Auto-Schluss, Transformer
   `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary), Trigger-022-Closure.
+  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
+- **M8-Welle 3c-b-2 — GridConnection-Q-Auto-Schluss + Transformer-
+  Scheinleistung (`GG-GRID-007`, schliesst die Welle)**
+  ([`ADR 0064`](docs/plan/adr/0064-grid-connection-q-transformer-apparent-power.md)
+  `Accepted`, Folge zu `ADR 0017`/`ADR 0061`; Re-Tranche von 3c-b): der
+  zweite Q-Pfad + die Scheinleistungs-Grenze. Der **Netzanschluss absorbiert
+  den Q-Residual** (Spiegel zum P-Slack-Auto-Schluss): der TickLoop reicht
+  `grid_connection_kvar = -Σ(geraete-Q)` als Command (`reactive_value`) an
+  das `GridConnectionDevice`, das `reactive_power_kvar` **opt-in** emittiert
+  (Q=0 → **kein** Punkt) und in `grid_model.update(grid_connection_kvar=...)`
+  einspeist → `imbalance_kvar` schliesst sich (Q gehalten). Die
+  **Transformer-Grenze rechnet jetzt auf `S=sqrt(P²+Q²)`** der
+  Netzanschluss-Leistung statt `|P|` — `sqrt(P²)=|P|` exakt fuer
+  terminierende Decimals, daher bleiben die 3b-Boundary-Tests als
+  Q=0-Regressionspin gruen. `GridConnectionDevice` + `GridConnectionSnapshot`
+  fuehren `current/pending_reactive_power_kvar` (opt-in serialisiert, kein
+  Versions-Bump). **Pin-neutral**: Q-frei byte-identisch, `EXPECTED_DEMO_*`
+  unberuehrt. **Trigger 022 aufgeloest** — `GG-GRID-007` komplett; damit ist
+  **M8-Welle 3 (Netz, `GG-GRID-005..007`) abgeschlossen**.
   ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU

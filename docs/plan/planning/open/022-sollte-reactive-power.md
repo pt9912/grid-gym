@@ -1,14 +1,17 @@
 # 022 — SOLLTE: Blindleistung im Netzbilanzmodell (`GG-GRID-007`)
 
-**Status:** In Arbeit (teil-geliefert) — **3c-a Done 2026-06-16**
+**Status:** **Resolved 2026-06-16** — `GG-GRID-007` komplett ueber die
+Re-Tranche 3c-a/3c-b-1/3c-b-2. **3c-a**
 ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`):
-Q-Bilanz im `grid_model`. **3c-b-1 Done 2026-06-16**
+Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung +
+GridModelSnapshot v2→v3). **3c-b-1**
 ([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md) `Accepted`):
 erste Q-Quelle — `DeviceTickContext.grid_voltage_v` (lagged) + opt-in
-PV-Q(U) + TickLoop-`reactive_kvar`-Aggregation. **Offen: 3c-b-2** —
-GridConnection-Q-Auto-Schluss + Transformer `S=sqrt(P²+Q²)`. Trigger wird
-mit **3c-b-2** aufgeloest
-([`M8-welle-3c.md`](../in-progress/M8-welle-3c.md) §4 Re-Tranche).
+PV-Q(U) + TickLoop-`reactive_kvar`-Aggregation. **3c-b-2**
+([`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md)
+`Accepted`): GridConnection-Q-Auto-Schluss (Spiegel zum P-Slack) +
+Transformer-Scheinleistung `S=sqrt(P²+Q²)` (re-pinnt die 3b-Boundary als
+Q=0-Regressionspin). Alle Schritte pin-neutral (Q-frei byte-identisch).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).

@@ -1199,6 +1199,9 @@ class TickLoop:
             # M8-Welle-3c-b-1 (ADR 0063 §2.4): Summe der signierten
             # `reactive_power_kvar`-Telemetrie (kein Source-Bucket-Vorzeichen).
             "reactive_kvar": _ZERO,
+            # M8-Welle-3c-b-2 (ADR 0064 §2.2): Q durch den Modell-Trafo
+            # (GridConnection-Q-Auto-Schluss) fuer S=sqrt(P²+Q²).
+            "grid_connection_kvar": _ZERO,
         }
         unknown_count = 0
 
@@ -1443,6 +1446,7 @@ class TickLoop:
             storage_kw=bucket_sums["storage"],
             grid_connection_kw=bucket_sums["grid_connection"],
             reactive_power_kvar=bucket_sums["reactive_kvar"],
+            grid_connection_kvar=bucket_sums["grid_connection_kvar"],
             tick_ms=self._tick_ms,
             simulation_time=now,
         )
@@ -1546,6 +1550,13 @@ class TickLoop:
         Heuristik: nur LoadEvent/LoadProfile qualifizieren — keine
         M1-Scheduler-Events (Welle-6b-Review-Round-1-High-3)."""
         pre_grid_residual = bucket_sums["generation"] - bucket_sums["load"] - bucket_sums["storage"]
+        # M8-Welle-3c-b-2 (ADR 0064 §2.1): der Netzanschluss absorbiert auch
+        # den Q-Residual (Summe der Nicht-Grid-Geraete-Q, z. B. PV-Q(U)).
+        # `grid_connection_kvar` = die Q durch den Modell-Trafo (fuer die
+        # 3b-Scheinleistung S=sqrt(P²+Q²), ADR 0064 §2.2).
+        q_residual = bucket_sums["reactive_kvar"]
+        grid_connection_kvar = -q_residual
+        bucket_sums["grid_connection_kvar"] = grid_connection_kvar
         for grid_dev in grid_devices:
             if grid_dev.device_id in manual_override_grid_ids:
                 continue
@@ -1563,7 +1574,7 @@ class TickLoop:
                     simulation_time=now_ms,
                     target_device_id=grid_dev.device_id,
                     type="set_power_kw",
-                    payload={"value": -pre_grid_residual},
+                    payload={"value": -pre_grid_residual, "reactive_value": grid_connection_kvar},
                     validation_status="validated",
                     result=CommandResult.IGNORED,
                 )

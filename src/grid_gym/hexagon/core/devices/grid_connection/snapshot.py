@@ -69,6 +69,9 @@ _CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
 _FAULT_STATE_KEY: Final[str] = "fault_state"
 _CURRENT_VOLTAGE_V_KEY: Final[str] = "current_voltage_v"
 _PENDING_VOLTAGE_V_KEY: Final[str] = "pending_voltage_v"
+# M8-Welle-3c-b-2 (ADR 0064 §2.3): opt-in Q-State-Keys.
+_CURRENT_REACTIVE_POWER_KVAR_KEY: Final[str] = "current_reactive_power_kvar"
+_PENDING_REACTIVE_POWER_KVAR_KEY: Final[str] = "pending_reactive_power_kvar"
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,11 +99,16 @@ class GridConnectionSnapshot:
     current_voltage_v: Decimal = Decimal(0)
     pending_voltage_v: Decimal = Decimal(0)
     voltage_drop_active: bool = False
+    # M8-Welle-3c-b-2 (ADR 0064 §2.3): Q-Auto-Schluss-State, additiv +
+    # opt-in serialisiert (Default 0 → Q-frei byte-identisch, kein
+    # Versions-Bump). Alt-Snapshots ohne die Keys lesen als 0.
+    current_reactive_power_kvar: Decimal = Decimal(0)
+    pending_reactive_power_kvar: Decimal = Decimal(0)
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
         `version` als Erst-Feld (ADR 0013 §2.4)."""
-        return {
+        payload: dict[str, object] = {
             "version": self.version,
             "device_id": self.device_id,
             "run_id": self.run_id,
@@ -122,6 +130,14 @@ class GridConnectionSnapshot:
                 "voltage_drop_active": self.voltage_drop_active,
             },
         }
+        # M8-Welle-3c-b-2 (ADR 0064 §2.3): Q-State opt-in (Default 0 → kein
+        # Key → byte-identisch).
+        if self.current_reactive_power_kvar != Decimal(0) or self.pending_reactive_power_kvar != (
+            Decimal(0)
+        ):
+            payload[_CURRENT_REACTIVE_POWER_KVAR_KEY] = self.current_reactive_power_kvar
+            payload[_PENDING_REACTIVE_POWER_KVAR_KEY] = self.pending_reactive_power_kvar
+        return payload
 
     @classmethod
     def from_dict(cls, state: Mapping[str, object]) -> Self:
@@ -183,6 +199,21 @@ class GridConnectionSnapshot:
         voltage_drop_active = assert_optional_fault_flag(
             state, _FAULT_STATE_KEY, "voltage_drop_active", SUBSYSTEM
         )
+        # M8-Welle-3c-b-2 (ADR 0064 §2.3): opt-in Q-State (fehlt → 0).
+        current_reactive_power_kvar = (
+            assert_decimal(
+                state[_CURRENT_REACTIVE_POWER_KVAR_KEY], _CURRENT_REACTIVE_POWER_KVAR_KEY, SUBSYSTEM
+            )
+            if _CURRENT_REACTIVE_POWER_KVAR_KEY in state
+            else Decimal(0)
+        )
+        pending_reactive_power_kvar = (
+            assert_decimal(
+                state[_PENDING_REACTIVE_POWER_KVAR_KEY], _PENDING_REACTIVE_POWER_KVAR_KEY, SUBSYSTEM
+            )
+            if _PENDING_REACTIVE_POWER_KVAR_KEY in state
+            else Decimal(0)
+        )
 
         return cls(
             version=version,
@@ -197,6 +228,8 @@ class GridConnectionSnapshot:
             current_voltage_v=current_voltage_v,
             pending_voltage_v=pending_voltage_v,
             voltage_drop_active=voltage_drop_active,
+            current_reactive_power_kvar=current_reactive_power_kvar,
+            pending_reactive_power_kvar=pending_reactive_power_kvar,
         )
 
 

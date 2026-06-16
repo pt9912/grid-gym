@@ -173,6 +173,7 @@ class GridModelBilanz:
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
         reactive_power_kvar: Decimal = _ZERO,
+        grid_connection_kvar: Decimal = _ZERO,
         tick_ms: int | None = None,
         simulation_time: int | None = None,
     ) -> None:
@@ -211,6 +212,7 @@ class GridModelBilanz:
                 storage_kw=storage_kw,
                 grid_connection_kw=grid_connection_kw,
                 reactive_power_kvar=reactive_power_kvar,
+                grid_connection_kvar=grid_connection_kvar,
                 tick_ms=tick_ms,
                 simulation_time=simulation_time,
             )
@@ -223,6 +225,7 @@ class GridModelBilanz:
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
         reactive_power_kvar: Decimal,
+        grid_connection_kvar: Decimal,
         tick_ms: int | None,
         simulation_time: int | None,
     ) -> None:
@@ -267,6 +270,7 @@ class GridModelBilanz:
         # M8-Welle-3b (ADR 0061 §2.2/§2.4): Transformer-Constraint-Layer.
         self._apply_transformer_constraint(
             grid_connection_kw=grid_connection_kw,
+            grid_connection_kvar=grid_connection_kvar,
             tick_ms=tick_ms,
             simulation_time=simulation_time,
         )
@@ -275,6 +279,7 @@ class GridModelBilanz:
         self,
         *,
         grid_connection_kw: Decimal,
+        grid_connection_kvar: Decimal,
         tick_ms: int | None,
         simulation_time: int | None,
     ) -> None:
@@ -292,7 +297,12 @@ class GridModelBilanz:
         # ist nur das mypy-Narrowing (kein assert — S101).
         top_oil = self._top_oil_temp_c if self._top_oil_temp_c is not None else limit.ambient_temp_c
         dt_s = Decimal(tick_ms) / _THOUSAND
-        apparent_power_kva = abs(grid_connection_kw)
+        # M8-Welle-3c-b-2 (ADR 0064 §2.2): Scheinleistung S = sqrt(P²+Q²).
+        # Bei Q=0 ist sqrt(P²) == |P| exakt (terminierende Decimals) → die
+        # 3b-Boundary-Pins bleiben byte-identisch.
+        apparent_power_kva = (
+            grid_connection_kw * grid_connection_kw + grid_connection_kvar * grid_connection_kvar
+        ).sqrt()
         load_pu = apparent_power_kva / limit.max_apparent_power_kva
         load_pu_sq = load_pu * load_pu
         theta_oil_ss = limit.ambient_temp_c + limit.top_oil_rise_rated_c * load_pu_sq

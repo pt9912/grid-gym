@@ -106,6 +106,11 @@ class GridConnectionDevice:
         self._config: GridConnectionConfig | None = None
         self._current_power_kw: Decimal = _ZERO
         self._pending_power_kw: Decimal = _ZERO
+        # M8-Welle-3c-b-2 (ADR 0064 §2.1): Q-Auto-Schluss-State. Der
+        # Netzanschluss absorbiert den Q-Residual (Spiegel zum P-Slack);
+        # `0` ohne Q-Quelle → keine Q-Telemetrie (opt-in, pin-neutral).
+        self._current_reactive_power_kvar: Decimal = _ZERO
+        self._pending_reactive_power_kvar: Decimal = _ZERO
         self._import_kwh: Decimal = _ZERO
         self._export_kwh: Decimal = _ZERO
         # M3-Welle-2 (ADR 0025 §2.2): Voltage-State + Fault-Flag.
@@ -184,6 +189,13 @@ class GridConnectionDevice:
             self._pending_power_kw = outcome.pending_power_kw
         if outcome.alarm is not None:
             self._alarms.append(outcome.alarm)
+        # M8-Welle-3c-b-2 (ADR 0064 §2.1): Q-Auto-Schluss — der TickLoop reicht
+        # den zu absorbierenden Q-Residual als `reactive_value` im selben
+        # Auto-Schluss-Command durch (kein eigener Command-Typ). Kein Clamp
+        # (Slack absorbiert unbegrenzt); nur die Auto-Schluss-Stelle sendet es.
+        reactive_value = command.payload.get("reactive_value") if command.payload else None
+        if isinstance(reactive_value, Decimal):
+            self._pending_reactive_power_kvar = reactive_value
         return outcome.result
 
     def tick(self, context: DeviceTickContext) -> DeviceTickOutcome:
@@ -202,6 +214,8 @@ class GridConnectionDevice:
         # beruehrt diese Felder NICHT.
         new_voltage_v = self._pending_voltage_v
         self._current_voltage_v = new_voltage_v
+        # M8-Welle-3c-b-2 (ADR 0064 §2.1): Q-State-Commit (analog Power).
+        self._current_reactive_power_kvar = self._pending_reactive_power_kvar
 
         # Energie-Akkumulation: delta_kwh = |power_kw| * (tick_ms / 3_600_000).
         # tick_ms wird zu Decimal gehoben, damit der Local-Context greift
@@ -294,6 +308,8 @@ class GridConnectionDevice:
             current_voltage_v=self._current_voltage_v,
             pending_voltage_v=self._pending_voltage_v,
             voltage_drop_active=self._voltage_drop_active,
+            current_reactive_power_kvar=self._current_reactive_power_kvar,
+            pending_reactive_power_kvar=self._pending_reactive_power_kvar,
         )
         return snap.to_dict()
 
@@ -315,6 +331,8 @@ class GridConnectionDevice:
         device._current_voltage_v = snap.current_voltage_v
         device._pending_voltage_v = snap.pending_voltage_v
         device._voltage_drop_active = snap.voltage_drop_active
+        device._current_reactive_power_kvar = snap.current_reactive_power_kvar
+        device._pending_reactive_power_kvar = snap.pending_reactive_power_kvar
         device._run_id = snap.run_id
         device._sequence = snap.sequence
         return device
@@ -332,6 +350,8 @@ class GridConnectionDevice:
             and self._current_voltage_v == other._current_voltage_v
             and self._pending_voltage_v == other._pending_voltage_v
             and self._voltage_drop_active == other._voltage_drop_active
+            and self._current_reactive_power_kvar == other._current_reactive_power_kvar
+            and self._pending_reactive_power_kvar == other._pending_reactive_power_kvar
             and self._device_id_or_none() == other._device_id_or_none()
             and self._run_id == other._run_id
             and self._sequence == other._sequence
@@ -349,6 +369,8 @@ class GridConnectionDevice:
                 self._current_voltage_v,
                 self._pending_voltage_v,
                 self._voltage_drop_active,
+                self._current_reactive_power_kvar,
+                self._pending_reactive_power_kvar,
                 self._device_id_or_none(),
                 self._run_id,
                 self._sequence,
@@ -370,14 +392,24 @@ class GridConnectionDevice:
         power_kw = new_power_kw.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         voltage_v = new_voltage_v.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
-        # Vier Tupel; alphabetisch sortiert nach Metrikname
-        # (ADR 0017 §2.5 + M3-Welle-2 ADR 0025 §2.1 voltage_v).
-        emissions = (
+        # Alphabetisch sortiert nach Metrikname (ADR 0017 §2.5 + M3-Welle-2
+        # ADR 0025 §2.1 voltage_v). M8-Welle-3c-b-2 (ADR 0064 §2.1): das
+        # opt-in reactive_power_kvar (nur bei Q != 0) liegt alphabetisch
+        # zwischen power_kw und voltage_v → Q-frei byte-identisch.
+        emissions: list[tuple[str, Decimal, str]] = [
             ("export_kwh", export_kwh, "kWh"),
             ("import_kwh", import_kwh, "kWh"),
             ("power_kw", power_kw, "kW"),
-            ("voltage_v", voltage_v, "V"),
-        )
+        ]
+        if self._current_reactive_power_kvar != _ZERO:
+            emissions.append(
+                (
+                    "reactive_power_kvar",
+                    self._current_reactive_power_kvar.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN),
+                    "kvar",
+                )
+            )
+        emissions.append(("voltage_v", voltage_v, "V"))
         points = []
         for metric, value, unit in emissions:
             self._sequence += 1

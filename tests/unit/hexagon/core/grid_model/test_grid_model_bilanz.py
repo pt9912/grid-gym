@@ -1323,3 +1323,74 @@ def test_from_dict_v3_missing_imbalance_kvar_rejected() -> None:
     del state["last_imbalance_kvar"]
     with pytest.raises(MissingKeysError):
         GridModelSnapshot.from_dict(state)
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3c-b-2: Transformer-Scheinleistung S = sqrt(P²+Q²) (ADR 0064)
+# ---------------------------------------------------------------------------
+
+
+def _transformer_event(
+    *, grid_connection_kw: Decimal, grid_connection_kvar: Decimal
+) -> GridConstraintViolationEvent | None:
+    """Ein Tick mit hoher Last → liefert (falls vorhanden) den
+    Constraint-Event, dessen apparent_power_kva == S."""
+    bilanz = GridModelBilanz(config=_config(transformer_limit=_transformer_limit()))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=grid_connection_kw,
+        grid_connection_kvar=grid_connection_kvar,
+        tick_ms=1000,
+        simulation_time=1000,
+    )
+    return bilanz.last_constraint_violations[0] if bilanz.last_constraint_violations else None
+
+
+def test_transformer_apparent_power_q_zero_equals_abs_p() -> None:
+    """ADR 0064 §2.2 Regressionspin: bei Q=0 ist S=sqrt(P²)==|P| exakt —
+    das 3b-Verhalten bleibt byte-identisch."""
+    event = _transformer_event(grid_connection_kw=Decimal("200"), grid_connection_kvar=Decimal("0"))
+    assert event is not None
+    assert event.apparent_power_kva == Decimal("200")  # |200|, kein sqrt-Drift
+
+
+def test_transformer_apparent_power_with_q() -> None:
+    """ADR 0064 §2.2: S = sqrt(P²+Q²). P=120, Q=160 → S=200 (2x Nennlast
+    → Trip; apparent_power_kva belegt den Q-Beitrag)."""
+    event = _transformer_event(
+        grid_connection_kw=Decimal("120"), grid_connection_kvar=Decimal("160")
+    )
+    assert event is not None
+    assert event.apparent_power_kva == Decimal("200")  # sqrt(14400+25600)
+
+
+def test_transformer_q_pushes_over_limit() -> None:
+    """ADR 0064 §2.2: eine Last knapp unter Nennleistung (P=80, kein Trip)
+    kippt mit Q (S=100) ueber die thermische Grenze."""
+    # P=80 allein: load_pu=0.8 → unter der Hot-Spot-Grenze (kein Trip).
+    assert (
+        _transformer_event(grid_connection_kw=Decimal("80"), grid_connection_kvar=Decimal("0"))
+        is None
+    )
+    # P=80, Q=180 → S=sqrt(6400+32400)=sqrt(38800)≈196.9 → 2x Nennlast → Trip.
+    event = _transformer_event(
+        grid_connection_kw=Decimal("80"), grid_connection_kvar=Decimal("180")
+    )
+    assert event is not None
+
+
+def test_transformer_grid_connection_kvar_default_zero() -> None:
+    """Default grid_connection_kvar=0 → Bestands-3b-Aufrufer (ohne Q) sehen
+    S=|P| (Backward-Compat)."""
+    bilanz = GridModelBilanz(config=_config(transformer_limit=_transformer_limit()))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("200"),
+        tick_ms=1000,
+        simulation_time=1000,
+    )
+    assert bilanz.last_constraint_violations[0].apparent_power_kva == Decimal("200")
