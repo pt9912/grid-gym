@@ -183,6 +183,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ID-Schema (`D-n`/`T-nnn`/`P-n`), Begruendungen per ID,
   Nummern-Historie-Map.
 - Trivy-Scanner-Pin `0.71.0 → 0.71.1` (Makefile `TRIVY_IMAGE`).
+- NEU `make static-gates` — schneller Pre-Push-Sweep der **statischen**
+  Code-Gates (`lint` + `format-check` + `typecheck` + `arch-check` +
+  `noqa-gate` + `spdx-check`) ohne die pytest-Stages (`test-unit`/
+  `coverage-gate*`) und `dep-audit`. Faengt alle ruff-/mypy-/arch-Befunde
+  in einem Lauf (kein Einzel-Gate uebersehen) und ist frei vom lokalen
+  `pyiec61850`-Env-Artefakt; die volle `make gates`-Linie bleibt
+  unveraendert.
 
 ### Security
 

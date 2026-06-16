@@ -55,7 +55,7 @@ DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \
 	dep-audit image-audit openapi-validate \
 	render-trivyignore \
 	perf perf-baseline-update \
-	gates ci fullbuild \
+	static-gates gates ci fullbuild \
 	build runtime test-container demo demo-stop \
 	lock-refresh rebase-base \
 	sbom \
@@ -114,6 +114,7 @@ help:
 	@echo "  make perf-baseline-update       Maintainer-only: Bench-Lauf + Bind-Mount-Write nach tests/perf/baseline.json"
 	@echo ""
 	@echo "Aggregator:"
+	@echo "  make static-gates      Schneller Pre-Push-Sweep: lint + format-check + typecheck + arch-check + noqa-gate + spdx-check (kein pytest/dep-audit)"
 	@echo "  make gates             lint + format-check + typecheck + arch-check + test-unit + coverage-gate + coverage-gate-critical + dep-audit + noqa-gate + spdx-check"
 	@echo "  make ci                gates + test-integration + test-iec61850 + openapi-validate + image-audit"
 	@echo "  make fullbuild         ci + build + runtime"
@@ -409,6 +410,16 @@ perf-baseline-update:
 	@echo "[perf-baseline-update] tests/perf/baseline.json updated; commit with subject \"perf: baseline update — <reason>\""
 
 # --- Aggregierte Gates -----------------------------------------------------
+
+# static-gates: die statischen Code-Gates aus `gates` OHNE die pytest-
+# Stages (test-unit/coverage-gate*) und ohne dep-audit. Gedacht als
+# schneller Pre-Push-Sweep, der lint/format/type/arch/noqa/spdx in EINEM
+# Lauf abdeckt — damit kein Einzel-Gate (z. B. `lint` vs. `format-check`)
+# uebersehen wird. Laeuft rein ueber Docker-Build-Stages (kein pytest),
+# also frei vom lokalen `pyiec61850`-Env-Artefakt und der Netz-/Zeit-
+# Abhaengigkeit von dep-audit. Vor dem Push zusaetzlich `make docs-check`.
+static-gates: lint format-check typecheck arch-check noqa-gate spdx-check
+	@echo "[static-gates] static code gates green: lint, format-check, typecheck, arch-check, noqa-gate, spdx-check (kein pytest; test-unit/coverage/dep-audit separat via 'make gates')"
 
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
 	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
