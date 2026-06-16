@@ -62,6 +62,8 @@ def _config(
     voltage_sensitivity_v_per_kw: Decimal = Decimal("0.1"),
     voltage_clamp_min_v: Decimal = Decimal("280"),
     voltage_clamp_max_v: Decimal = Decimal("520"),
+    is_islanded: bool = False,
+    forming_device_id: str | None = None,
 ) -> GridModelConfig:
     return GridModelConfig(
         nominal_frequency_hz=nominal_frequency_hz,
@@ -72,6 +74,8 @@ def _config(
         voltage_sensitivity_v_per_kw=voltage_sensitivity_v_per_kw,
         voltage_clamp_min_v=voltage_clamp_min_v,
         voltage_clamp_max_v=voltage_clamp_max_v,
+        is_islanded=is_islanded,
+        forming_device_id=forming_device_id,
     )
 
 
@@ -770,6 +774,125 @@ def test_from_dict_v2_invalid_load_profile_reraises_as_wrong_type() -> None:
     bad_profile = dict(profiles_raw[0])
     bad_profile["tick_ms"] = 0  # Invariant-Verletzung
     state["active_load_profiles"] = [bad_profile]
+    with pytest.raises(WrongTypeError) as exc_info:
+        GridModelSnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "grid_model"
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3a: Inselnetz-Config-Invarianten (ADR 0060 §2.1)
+# ---------------------------------------------------------------------------
+
+
+def test_island_fields_default_to_connected() -> None:
+    """ADR 0060 §2.1: Default netzgekoppelt — is_islanded=False,
+    forming_device_id=None (backward-compat)."""
+    config = _config()
+    assert config.is_islanded is False
+    assert config.forming_device_id is None
+
+
+def test_valid_islanded_config_constructs() -> None:
+    config = _config(is_islanded=True, forming_device_id="diesel-1")
+    assert config.is_islanded is True
+    assert config.forming_device_id == "diesel-1"
+
+
+def test_islanded_without_forming_device_id_rejected() -> None:
+    """ADR 0060 §2.1 Biconditional: Inselnetz ohne Forming-ID ist ein
+    Konfigurationsfehler."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(is_islanded=True, forming_device_id=None)
+    assert "forming_device_id" in str(exc_info.value)
+
+
+def test_forming_device_id_without_islanded_rejected() -> None:
+    """ADR 0060 §2.1 Biconditional (Rueckrichtung): Forming-ID im
+    netzgekoppelten Modus ist ein Tippfehler-Indikator."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(is_islanded=False, forming_device_id="diesel-1")
+    assert "forming_device_id" in str(exc_info.value)
+
+
+def test_non_bool_is_islanded_rejected() -> None:
+    """ADR 0060 §2.1: is_islanded muss bool sein (kein int-Subclass-
+    Schmuggel als truthy)."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(is_islanded=1, forming_device_id="diesel-1")  # type: ignore[arg-type]
+    assert "is_islanded" in str(exc_info.value)
+
+
+def test_empty_forming_device_id_rejected() -> None:
+    """ADR 0060 §2.1: forming_device_id muss non-empty str sein."""
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(is_islanded=True, forming_device_id="")
+    assert "forming_device_id" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3a: Snapshot opt-in + backward-compat (ADR 0060 §2.4)
+# ---------------------------------------------------------------------------
+
+
+def test_connected_snapshot_omits_island_keys() -> None:
+    """ADR 0060 §2.4: im netzgekoppelten Default emittiert das
+    config-Sub-Mapping KEINE Insel-Keys — byte-identisch zu ADR 0019
+    (EXPECTED_DEMO_* unberuehrt, kein Schema-Bump)."""
+    bilanz = GridModelBilanz(config=_config())
+    config_state = cast(Mapping[str, object], bilanz.snapshot()["config"])
+    assert "is_islanded" not in config_state
+    assert "forming_device_id" not in config_state
+    assert set(config_state.keys()) == set(CONFIG_FIELD_NAMES)
+
+
+def test_islanded_snapshot_emits_island_keys() -> None:
+    """ADR 0060 §2.4: nur im Inselnetz tragen die Snapshot-config-Keys
+    is_islanded/forming_device_id; Schema-Version bleibt 2."""
+    bilanz = GridModelBilanz(config=_config(is_islanded=True, forming_device_id="diesel-1"))
+    state = bilanz.snapshot()
+    assert state["version"] == SNAPSHOT_VERSION
+    config_state = cast(Mapping[str, object], state["config"])
+    assert config_state["is_islanded"] is True
+    assert config_state["forming_device_id"] == "diesel-1"
+
+
+def test_islanded_snapshot_roundtrip() -> None:
+    """ADR 0060 §2.4: Inselnetz-Snapshot ist self-sufficient
+    roundtrip-faehig."""
+    bilanz = GridModelBilanz(config=_config(is_islanded=True, forming_device_id="battery-1"))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("10"),
+        storage_kw=Decimal("-10"),
+        grid_connection_kw=Decimal("0"),
+    )
+    restored = GridModelBilanz.from_snapshot(bilanz.snapshot())
+    assert restored == bilanz
+    assert restored.config.is_islanded is True
+    assert restored.config.forming_device_id == "battery-1"
+
+
+def test_from_dict_v2_without_island_keys_reads_connected() -> None:
+    """ADR 0060 §2.4 backward-compat: ein v2-Snapshot OHNE Insel-Keys
+    (Bestand vor Welle 3a) liest als netzgekoppelt."""
+    bilanz = GridModelBilanz(config=_config())
+    state = bilanz.snapshot()
+    config_state = cast(Mapping[str, object], state["config"])
+    assert "is_islanded" not in config_state  # Bestands-Form
+    restored = GridModelSnapshot.from_dict(state)
+    assert restored.config.is_islanded is False
+    assert restored.config.forming_device_id is None
+
+
+def test_from_dict_islanded_missing_forming_id_reraises_as_wrong_type() -> None:
+    """ADR 0060 §2.4: ein korrupter Insel-Snapshot (is_islanded=True ohne
+    forming_device_id) wird ueber die Config-Presence-Invariante zu
+    WrongTypeError(subsystem='grid_model') ueberfuehrt."""
+    bilanz = GridModelBilanz(config=_config(is_islanded=True, forming_device_id="diesel-1"))
+    state = dict(bilanz.snapshot())
+    bad_config = dict(cast(Mapping[str, object], state["config"]))
+    del bad_config["forming_device_id"]  # Presence-Verletzung
+    state["config"] = bad_config
     with pytest.raises(WrongTypeError) as exc_info:
         GridModelSnapshot.from_dict(state)
     assert exc_info.value.subsystem == "grid_model"

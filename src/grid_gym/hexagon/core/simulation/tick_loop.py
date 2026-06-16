@@ -86,6 +86,7 @@ from grid_gym.hexagon.core.errors import (
     TickLoopSnapshotWrongTypeError,
     TickLoopStoppedError,
     TickLoopUnknownDeviceTypeError,
+    TickLoopUnknownFormingDeviceError,
 )
 from grid_gym.hexagon.core.replay.diff import diff_replay
 from grid_gym.hexagon.ports.driven.replay_snapshot import ReplaySnapshotPort
@@ -354,6 +355,10 @@ class TickLoop:
         # per device_id; einmal im Konstruktor aufgebaut, in
         # jedem Tick wiederverwendet.
         self._device_by_id: dict[str, DeviceModel] = {d.device_id: d for d in self._devices}
+        # M8-Welle-3a (ADR 0060 §2.3): Inselnetz-Forming-Geraet-Existenz-
+        # Check im Wiring (Config + Geraete-Liste zusammengefuehrt), nicht
+        # in der Config. Fail-Fast beim Bau statt pro Tick.
+        self._validate_forming_device()
         # Welle-6b-Review M-2: konstante Load-Baseline-Map einmal
         # cachen statt jeden Tick aus `_devices` zu filtern.
         # `rated_power_kw` ist pro LoadDevice nach `initialize(...)`
@@ -402,6 +407,28 @@ class TickLoop:
         Quell-Referenzen, die hier nicht verfuegbar sind."""
         for device in self._devices:
             device.set_run_id(self._run_id)
+
+    def _validate_forming_device(self) -> None:
+        """M8-Welle-3a (ADR 0060 §2.3): prueft, dass ein Inselnetz-
+        `forming_device_id` auf ein real registriertes Geraet zeigt.
+
+        No-op ohne grid_model oder im netzgekoppelten Modus
+        (`is_islanded=False`). Die Config-Presence-Invariante (ADR 0060
+        §2.1) garantiert, dass `forming_device_id` im Inselnetz non-None
+        ist; hier wird nur die Referenz-Integritaet gegen `_device_by_id`
+        geprueft (Wiring-Schicht). Unbekannte ID = Wiring-Fehler ->
+        `TickLoopUnknownFormingDeviceError`.
+
+        Das aufgeloeste Forming-Geraet wird in `_forming_device`
+        gehalten; dieses Feld ist zugleich der Insel-Modus-Diskriminator
+        fuer den Tick-Fork (non-None genau im Inselnetz)."""
+        self._forming_device: DeviceModel | None = None
+        if self._grid_model is None or not self._grid_model.config.is_islanded:
+            return
+        forming_id = self._grid_model.config.forming_device_id
+        if forming_id not in self._device_by_id:
+            raise TickLoopUnknownFormingDeviceError(forming_id or "", tuple(self._device_by_id))
+        self._forming_device = self._device_by_id[forming_id]
 
     def _attach_observability_ports(
         self,
@@ -1176,18 +1203,24 @@ class TickLoop:
             )
             # Schritt A2 — Fault-Injection (M3-Welle-1, ADR 0022 §2.4).
             self._apply_fault_injection(context, tick_span)
-            grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
-            non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
-            # Schritt B — Erste Iteration (ohne GridConnection).
-            unknown_count += self._run_device_iteration(
-                non_grid_devices, context, emitted, bucket_sums
-            )
-            # Schritt C — GridConnection-Auto-Schluss (ADR 0021 §2.7).
-            self._apply_grid_connection_auto_close(
-                grid_devices, bucket_sums, manual_override_grid_ids, now
-            )
-            # Schritt D — Zweite Iteration (GridConnection ticken).
-            unknown_count += self._run_device_iteration(grid_devices, context, emitted, bucket_sums)
+            # Schritt B/C/D — Slack-Pfad. M8-Welle-3a (ADR 0060 §2.2): im
+            # Inselnetz haelt das Forming-Geraet den Slack statt des
+            # GridConnection. `_forming_device` ist genau im Inselnetz
+            # non-None (Wiring-Check ADR 0060 §2.3); der netzgekoppelte
+            # Default-Pfad ist textlich unveraendert (is_islanded=False
+            # bit-genau, ADR 0060 §2.5).
+            if self._forming_device is not None:
+                unknown_count += self._run_islanded_iterations(
+                    self._forming_device,
+                    context,
+                    emitted,
+                    bucket_sums,
+                    now,
+                )
+            else:
+                unknown_count += self._run_grid_connected_iterations(
+                    context, emitted, bucket_sums, manual_override_grid_ids, now
+                )
             # Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
             self._run_agent_tick_phase(context, tick_span)
             # Schritt E — Bilanz-Aggregation.
@@ -1377,6 +1410,90 @@ class TickLoop:
                     continue
                 bucket_sums[bucket] += point.value
         return unknown
+
+    def _run_grid_connected_iterations(
+        self,
+        context: DeviceTickContext,
+        emitted: list[TelemetryPoint],
+        bucket_sums: dict[str, Decimal],
+        manual_override_grid_ids: list[str],
+        now_ms: int,
+    ) -> int:
+        """Netzgekoppelter Slack-Pfad (ADR 0021 §2.7) — Schritt B/C/D
+        unveraendert: erste Iteration ohne GridConnection, Auto-Schluss,
+        zweite Iteration mit GridConnection. Liefert die kumulierte
+        Unknown-Source-Anzahl beider Iterationen."""
+        grid_devices = [d for d in self._devices if isinstance(d, GridConnectionDevice)]
+        non_grid_devices = [d for d in self._devices if not isinstance(d, GridConnectionDevice)]
+        unknown = self._run_device_iteration(non_grid_devices, context, emitted, bucket_sums)
+        self._apply_grid_connection_auto_close(
+            grid_devices, bucket_sums, manual_override_grid_ids, now_ms
+        )
+        unknown += self._run_device_iteration(grid_devices, context, emitted, bucket_sums)
+        return unknown
+
+    def _run_islanded_iterations(
+        self,
+        forming_dev: DeviceModel,
+        context: DeviceTickContext,
+        emitted: list[TelemetryPoint],
+        bucket_sums: dict[str, Decimal],
+        now_ms: int,
+    ) -> int:
+        """Inselnetz-Slack-Pfad (ADR 0060 §2.2) — Spiegel des
+        netzgekoppelten Zwei-Pass mit dem Forming-Geraet in der
+        Slack-Rolle: erste Iteration ueber alle Geraete **ausser** dem
+        Forming-Geraet, Forming-Auto-Schluss, zweite Iteration nur ueber
+        das Forming-Geraet. Liefert die kumulierte Unknown-Source-Anzahl."""
+        first_pass = [d for d in self._devices if d.device_id != forming_dev.device_id]
+        unknown = self._run_device_iteration(first_pass, context, emitted, bucket_sums)
+        self._apply_islanded_forming_close(forming_dev, bucket_sums, now_ms)
+        unknown += self._run_device_iteration([forming_dev], context, emitted, bucket_sums)
+        return unknown
+
+    def _apply_islanded_forming_close(
+        self,
+        forming_dev: DeviceModel,
+        bucket_sums: dict[str, Decimal],
+        now_ms: int,
+    ) -> None:
+        """ADR 0060 §2.2: Inselnetz-Slack — das Forming-Geraet absorbiert
+        das Residual `generation - load - storage + grid_connection`.
+
+        Vorzeichen pro Bilanz-Bucket (`_BILANZ_SOURCE_BUCKETS`): Storage
+        ist der einzige Bucket mit invertiertem Bilanz-Beitrag (`-power`)
+        -> `set_power_kw = +residual`; Generation/GridConnection tragen
+        `+power` -> `set_power_kw = -residual`. Ueberschreitet der Sollwert
+        die Geraete-Kapazitaet, clampt das Geraet selbst (ADR 0060 §2.6;
+        Diesel/Battery `LIMITED`-Alarm) — der Residual bleibt dann teilweise
+        unabsorbiert und Frequenz/Spannung deviieren ehrlich.
+
+        Anders als der GridConnection-Auto-Schluss kennt der Insel-Slack
+        **keinen** Manual-Override-Skip: das Forming-Geraet ist im Inselnetz
+        per Definition der Slack, sein Sollwert ist TickLoop-eigen (Spiegel
+        zur exklusiven Load-Baseline). Agentengetriebene Droop-Regelung des
+        Forming-Geraets ist out-of-scope (ADR 0060 §7)."""
+        residual = (
+            bucket_sums["generation"]
+            - bucket_sums["load"]
+            - bucket_sums["storage"]
+            + bucket_sums["grid_connection"]
+        )
+        bucket = _BILANZ_SOURCE_BUCKETS.get(_device_type_for(forming_dev))
+        setpoint = residual if bucket == "storage" else -residual
+        forming_dev.apply_command(
+            Command(
+                command_id=(
+                    f"island_forming_close_{forming_dev.device_id}_tick_{self._tick_count}"
+                ),
+                simulation_time=now_ms,
+                target_device_id=forming_dev.device_id,
+                type="set_power_kw",
+                payload={"value": setpoint},
+                validation_status="validated",
+                result=CommandResult.IGNORED,
+            )
+        )
 
     def _apply_grid_connection_auto_close(
         self,

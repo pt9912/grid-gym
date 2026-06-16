@@ -1,7 +1,13 @@
 # Welle 3a — Inselnetz-Bilanzmodell (`GG-GRID-005`)
 
-**Status:** Geplant (M8-Welle-3a) — erste Sub-Welle der Netz-Welle, lokale
-Schaerfung des `GridModelBilanz`. **Noch nicht umgesetzt** — DoD (§2) offen.
+**Status:** Done (M8-Welle-3a, 2026-06-16) — erste Sub-Welle der Netz-Welle,
+lokale Schaerfung des `GridModelBilanz`. Geliefert via
+[`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`
+(`is_islanded`/`forming_device_id` + Forming-Geraet als Slack + opt-in
+Snapshot-/Scenario-Hash). Trigger
+[`020`](../open/020-sollte-island-grid.md) aufgeloest. Doc-Verschiebung nach
+`done/` folgt mit der **Welle-3-Gesamt-Closure** (3a/3b/3c als Gruppe, wie
+Welle 2). DoD (§2) erfuellt.
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](roadmap.md) §4 M8. Design (C1):
@@ -28,22 +34,30 @@ absorbiert.
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [ ] **Config + Insel-Fork**: `is_islanded: bool` + `forming_device_id:
+- [x] **Config + Insel-Fork**: `is_islanded: bool` + `forming_device_id:
       str | None` additiv in `GridModelConfig`
       (`src/grid_gym/hexagon/core/grid_model/config.py`), Default
       `False`/`None`; **Presence-Validierung** am Config-Rand
-      (`forming_device_id` gesetzt wenn `is_islanded`); Inselnetz-Imbalance
-      ohne `grid_connection`-Slack; ≥ 100-Tick-Determinismus-Property.
-- [ ] **TickLoop-Auto-Close**: im Inselnetz Residual-Injektion auf das
-      `forming_device_id`-Geraet statt `grid_connection`; deterministische
-      Forming-Election; **Existence-Validierung im TickLoop-Wiring** (die ID
-      verweist auf ein reales Device — geprueft dort, wo
-      `_apply_grid_connection_auto_close` das Geraet aufloest, nicht in der
-      Config); **`is_islanded=False` bit-genau wie heute** (Regressions-Pin
-      auf `EXPECTED_DEMO_*`).
-- [ ] **Gates**: `make gates` gruen (`coverage-gate-critical` ≥ 90 % auf
-      `grid_model`, kein neuer Target); NEU ADR `Accepted`; Trigger 020
-      aufgeloest.
+      (Biconditional: `forming_device_id` gesetzt **gdw** `is_islanded`);
+      Inselnetz-Imbalance ohne `grid_connection`-Slack; ≥ 100-Tick-
+      Determinismus-Property. YAML-`grid_model`-Sektion liest die Felder.
+- [x] **TickLoop-Auto-Close**: im Inselnetz Residual-Injektion auf das
+      `forming_device_id`-Geraet statt `grid_connection` (Vorzeichen pro
+      `_BILANZ_SOURCE_BUCKETS`: Generation `-residual`, Storage `+residual`);
+      deterministische Forming-Election (explizite ID); **Existence-
+      Validierung im TickLoop-Wiring** (`_validate_forming_device` →
+      `TickLoopUnknownFormingDeviceError`, nicht in der Config);
+      **`is_islanded=False` bit-genau wie heute** (Connected-Pfad textlich
+      unveraendert; `EXPECTED_DEMO_*` via opt-in Snapshot-/Scenario-Hash
+      unberuehrt, [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md)
+      §2.4).
+- [x] **Gates**: lint/format/typecheck/arch/test-unit/`coverage-gate-critical`
+      ≥ 90 % auf `grid_model` (kein neuer Target — config 100 % / snapshot
+      92 % / tick_loop 97 %) + `docs-check` + `accept-pin-check` gruen
+      (`dep-audit` flaggt nur Bestands-CVEs in `cryptography`/`starlette`,
+      von 3a unberuehrt); NEU
+      [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`;
+      Trigger 020 aufgeloest.
 
 ## 3. Design-Skizze (C1)
 

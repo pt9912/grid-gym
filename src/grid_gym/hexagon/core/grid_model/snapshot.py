@@ -47,6 +47,7 @@ from grid_gym.hexagon.core.grid_model.loads import (
     LoadProfileFormatError,
 )
 from grid_gym.hexagon.core.serialization.snapshot_codec import (
+    assert_bool,
     assert_decimal,
     assert_int,
     assert_mapping,
@@ -144,9 +145,18 @@ class GridModelSnapshot:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
         `version` als Erst-Feld (ADR 0013 §2.4). Welle 5b emittiert
         ausschliesslich v2-Snapshots (kein Down-Grade auf v1)."""
+        config_dict: dict[str, object] = {
+            key: getattr(self.config, key) for key in CONFIG_FIELD_NAMES
+        }
+        # M8-Welle-3a (ADR 0060 §2.4): Insel-Keys opt-in — nur bei
+        # is_islanded emittieren, damit der Connected-Default byte-identisch
+        # bleibt (EXPECTED_DEMO_*-Hash-Pins unberuehrt, kein Schema-Bump v2->v3).
+        if self.config.is_islanded:
+            config_dict["is_islanded"] = self.config.is_islanded
+            config_dict["forming_device_id"] = self.config.forming_device_id
         return {
             "version": self.version,
-            "config": {key: getattr(self.config, key) for key in CONFIG_FIELD_NAMES},
+            "config": config_dict,
             "model_kind": self.model_kind,
             "current_frequency_hz": self.current_frequency_hz,
             "current_voltage_v": self.current_voltage_v,
@@ -229,17 +239,7 @@ class GridModelSnapshot:
         )
         clamp_event_count = assert_int(state["clamp_event_count"], "clamp_event_count", SUBSYSTEM)
 
-        config_state = assert_mapping(state["config"], "config", SUBSYSTEM)
-        assert_required_keys(config_state, _CONFIG_KEYS, SUBSYSTEM)
-        config_fields = {
-            key: assert_decimal(config_state[key], f"config.{key}", SUBSYSTEM)
-            for key in CONFIG_FIELD_NAMES
-        }
-
-        try:
-            config = GridModelConfig(**config_fields)
-        except GridModelConfigError as err:
-            raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
+        config = _parse_config(state["config"])
 
         if version == 1:
             # Backward-Compat: v1-Snapshots haben keine LoadEvents/
@@ -261,6 +261,42 @@ class GridModelSnapshot:
             active_load_events=active_load_events,
             active_load_profiles=active_load_profiles,
         )
+
+
+def _parse_config(raw: object) -> GridModelConfig:
+    """Rekonstruiert die `GridModelConfig` aus dem `config`-Sub-Mapping.
+
+    Die acht Decimal-Felder sind Pflicht; die M8-Welle-3a-Insel-Keys
+    (`is_islanded`/`forming_device_id`, ADR 0060 §2.4) werden **optional**
+    gelesen (backward-compat — Alt-Snapshots ohne die Keys lesen als
+    netzgekoppelt). Die Presence-Biconditional (ADR 0060 §2.1) erzwingt der
+    `GridModelConfig`-Konstruktor; sein `GridModelConfigError` wird zu
+    `WrongTypeError(subsystem="grid_model", field="config")` ueberfuehrt
+    (Welle-3-Review-L-1 / Welle-4b-Review-M-2-Pattern)."""
+    config_state = assert_mapping(raw, "config", SUBSYSTEM)
+    assert_required_keys(config_state, _CONFIG_KEYS, SUBSYSTEM)
+    config_fields = {
+        key: assert_decimal(config_state[key], f"config.{key}", SUBSYSTEM)
+        for key in CONFIG_FIELD_NAMES
+    }
+    is_islanded = (
+        assert_bool(config_state["is_islanded"], "config.is_islanded", SUBSYSTEM)
+        if "is_islanded" in config_state
+        else False
+    )
+    forming_device_id = (
+        assert_str(config_state["forming_device_id"], "config.forming_device_id", SUBSYSTEM)
+        if "forming_device_id" in config_state
+        else None
+    )
+    try:
+        return GridModelConfig(
+            **config_fields,
+            is_islanded=is_islanded,
+            forming_device_id=forming_device_id,
+        )
+    except GridModelConfigError as err:
+        raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err
 
 
 def _parse_load_events(raw: object) -> tuple[LoadEvent, ...]:

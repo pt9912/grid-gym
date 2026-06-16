@@ -1,6 +1,11 @@
 # 020 — SOLLTE: Inselnetz-Bilanzmodell (`GG-GRID-005`)
 
-**Status:** Open — Trigger-Watch
+**Status:** Resolved — M8-Welle-3a (2026-06-16). Geliefert via
+[`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`
++ `GridModelConfig.is_islanded`/`forming_device_id` + TickLoop-Insel-Fork
+(Forming-Geraet als Slack) ([`M8-welle-3a.md`](../in-progress/M8-welle-3a.md)).
+Doc-Archivierung nach `done-archive/` folgt mit der M8-Meilenstein-Closure
+([`carveouts.md`](../in-progress/carveouts.md) §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).

@@ -35,7 +35,10 @@ from grid_gym.hexagon.core.errors import (
     ScenarioMissingSourceDeviceError,
     ScenarioUnknownDeviceTypeError,
 )
-from grid_gym.hexagon.core.grid_model import GridModelConfig
+from grid_gym.hexagon.core.grid_model import (
+    GridModelConfig,
+    GridModelConfigInvalidValueError,
+)
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.loader import (
     TickLoopWiring,
@@ -43,6 +46,7 @@ from grid_gym.hexagon.core.scenario.loader import (
     build_tick_loop,
     load_scenario,
     _parse_grid_model_config,
+    _scenario_hash_payload,
     parse_load_events,
     parse_load_profiles,
 )
@@ -414,6 +418,73 @@ def test_load_scenario_with_grid_model_section_populates_config() -> None:
     loaded = load_scenario(raw)
     assert loaded.scenario.grid_model_config is not None
     assert loaded.scenario.grid_model_config.nominal_frequency_hz == Decimal("50")
+
+
+def _grid_model_block() -> dict[str, object]:
+    return {
+        "nominal_frequency_hz": Decimal("50"),
+        "frequency_sensitivity_hz_per_kw": Decimal("0.001"),
+        "frequency_clamp_min_hz": Decimal("45"),
+        "frequency_clamp_max_hz": Decimal("55"),
+        "nominal_voltage_v": Decimal("400"),
+        "voltage_sensitivity_v_per_kw": Decimal("0.1"),
+        "voltage_clamp_min_v": Decimal("280"),
+        "voltage_clamp_max_v": Decimal("520"),
+    }
+
+
+def test_load_scenario_islanded_grid_model_from_yaml() -> None:
+    """ADR 0060 §2.1: die optionale `grid_model`-Sektion akzeptiert
+    `is_islanded` + `forming_device_id` aus dem Szenario-YAML."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = {
+        **_grid_model_block(),
+        "is_islanded": True,
+        "forming_device_id": "diesel-1",
+    }
+    loaded = load_scenario(raw)
+    assert loaded.scenario.grid_model_config is not None
+    assert loaded.scenario.grid_model_config.is_islanded is True
+    assert loaded.scenario.grid_model_config.forming_device_id == "diesel-1"
+
+
+def test_load_scenario_islanded_without_forming_id_rejected() -> None:
+    """ADR 0060 §2.1: `is_islanded` ohne `forming_device_id` verletzt die
+    Config-Presence-Biconditional (vom GridModelConfig-Konstruktor)."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = {**_grid_model_block(), "is_islanded": True}
+    with pytest.raises(GridModelConfigInvalidValueError):
+        load_scenario(raw)
+
+
+def test_connected_grid_model_scenario_hash_omits_island_keys() -> None:
+    """ADR 0060 §2.4: der `scenario_hash` eines netzgekoppelten Szenarios
+    ist byte-identisch, ob die additiven Insel-Felder existieren oder nicht
+    (opt-in) — das schuetzt `EXPECTED_DEMO_SCENARIO_HASH` + Replay-Baselines
+    gegen den additiven Config-Zuwachs. Pin: die Hash-`asdict`-Form traegt
+    im Default keine Insel-Keys."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = _grid_model_block()
+    loaded = load_scenario(raw)
+    payload = _scenario_hash_payload(loaded.scenario)
+    config_payload = payload["grid_model_config"]
+    assert isinstance(config_payload, dict)
+    assert "is_islanded" not in config_payload
+    assert "forming_device_id" not in config_payload
+
+
+def test_islanded_scenario_hash_differs_from_connected() -> None:
+    """ADR 0060 §2.4: ein explizit islandetes Szenario traegt die Insel-Keys
+    im Hash und unterscheidet sich daher vom netzgekoppelten Pendant."""
+    raw_connected = _minimal_raw_mapping()
+    raw_connected["grid_model"] = _grid_model_block()
+    raw_island = _minimal_raw_mapping()
+    raw_island["grid_model"] = {
+        **_grid_model_block(),
+        "is_islanded": True,
+        "forming_device_id": "diesel-1",
+    }
+    assert load_scenario(raw_connected).scenario_hash != load_scenario(raw_island).scenario_hash
 
 
 def test_load_scenario_with_load_events_populates_tuple() -> None:

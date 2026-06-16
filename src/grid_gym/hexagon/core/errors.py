@@ -508,6 +508,24 @@ class TickLoopUnknownDeviceTypeError(TickLoopError):
         )
 
 
+class TickLoopUnknownFormingDeviceError(TickLoopError):
+    """M8-Welle-3a (ADR 0060 §2.3): Inselnetz-Config referenziert ueber
+    `forming_device_id` ein Geraet, das nicht in der TickLoop-Device-Liste
+    registriert ist.
+
+    Wiring-Schicht-Fehler (Config + Geraete-Liste werden im Konstruktor
+    zusammengefuehrt) — kein Config-Format-Fehler (`GridModelConfig` kennt
+    keine Device-Registry; ADR 0060 §2.1). Fail-Fast beim Bau statt pro
+    Tick. Pattern-Spiegel zu `AgentInvalidCommandTargetError`."""
+
+    def __init__(self, forming_device_id: str, known: tuple[str, ...]) -> None:
+        super().__init__(
+            f"Inselnetz-forming_device_id {forming_device_id!r} verweist auf "
+            f"kein registriertes Geraet. Bekannt: {sorted(known)}."
+        )
+        self.forming_device_id = forming_device_id
+
+
 class TickLoopSnapshotFormatError(TickLoopError, SnapshotFormatError):
     """Wurzel der TickLoop-Snapshot-Format-Vertragsverletzungen.
 

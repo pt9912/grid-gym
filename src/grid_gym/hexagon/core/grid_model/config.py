@@ -64,6 +64,13 @@ class GridModelConfig:
     voltage_sensitivity_v_per_kw: Decimal
     voltage_clamp_min_v: Decimal
     voltage_clamp_max_v: Decimal
+    # M8-Welle-3a (ADR 0060 §2.1): additive Inselnetz-Felder. Default
+    # `False`/`None` = netzgekoppelt = bit-genau heutiges Verhalten. Die
+    # Existenz des referenzierten Geraets wird NICHT hier geprueft (Config
+    # kennt keine Device-Registry) — das macht das TickLoop-Wiring
+    # (ADR 0060 §2.3).
+    is_islanded: bool = False
+    forming_device_id: str | None = None
 
     def __post_init__(self) -> None:
         # Welle-5a-Review M-4: Decimal-Typ-Pruefung an allen
@@ -128,6 +135,43 @@ class GridModelConfig:
                     self.voltage_clamp_max_v,
                 ),
                 "clamp_min < nominal < clamp_max",
+            )
+        self._validate_island_presence()
+
+    def _validate_island_presence(self) -> None:
+        """M8-Welle-3a (ADR 0060 §2.1): Inselnetz-Presence-Invarianten.
+
+        Reine Format-/Presence-Pruefung am Config-Rand (kein
+        Device-Existenz-Check — der lebt im TickLoop-Wiring, ADR 0060
+        §2.3). `bool`-Check VOR der Biconditional, damit ein
+        int-Subclass-Schmuggel nicht als truthy durchrutscht.
+        """
+        if not isinstance(self.is_islanded, bool):
+            raise GridModelConfigInvalidValueError(
+                "is_islanded",
+                self.is_islanded,
+                f"bool (got {type(self.is_islanded).__name__})",
+            )
+        if self.forming_device_id is not None and (
+            not isinstance(self.forming_device_id, str) or not self.forming_device_id
+        ):
+            raise GridModelConfigInvalidValueError(
+                "forming_device_id",
+                self.forming_device_id,
+                "None or non-empty str",
+            )
+        # Biconditional: Forming-ID gesetzt genau dann wenn Inselnetz.
+        if self.is_islanded and self.forming_device_id is None:
+            raise GridModelConfigInvalidValueError(
+                "forming_device_id",
+                self.forming_device_id,
+                "set when is_islanded=True",
+            )
+        if not self.is_islanded and self.forming_device_id is not None:
+            raise GridModelConfigInvalidValueError(
+                "forming_device_id",
+                self.forming_device_id,
+                "None when is_islanded=False",
             )
 
 

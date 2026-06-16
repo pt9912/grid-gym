@@ -1,14 +1,18 @@
 # Welle 3 — M8 Netz (`GG-GRID-005..007`)
 
-**Status:** Geplant (M8-Welle-3, eroeffnet 2026-06-15) — die Netz-Welle
-von M8: drei Schaerfungen des bestehenden Netzbilanzmodells
+**Status:** In Arbeit (M8-Welle-3, eroeffnet 2026-06-15) — **3a (Inselnetz)
+Done 2026-06-16** ([`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md)
+`Accepted`, [`M8-welle-3a.md`](M8-welle-3a.md), Trigger 020 aufgeloest);
+**3b (Trafo-Grenzen) + 3c (Blindleistung) offen**. Die Netz-Welle von M8:
+drei Schaerfungen des bestehenden Netzbilanzmodells
 (`GridModelBilanz`, [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))
 aus Lastenheft §11.5, die M2 als SOLLTE markierte. Reine Core-Domain-/
 Bilanz-Erweiterung — **kein neues Geraet, kein neuer Port/Adapter-Typ**.
-Dieser Plan ist die Welle-3-C0-Substanz. Der **Wellen-Status bleibt
-`Geplant`**, bis die Sub-Wellen 3a/3b/3c geliefert sind; die `[x]` in §6
-quittieren ausschliesslich das **C0-Eroeffnungs-Gate** (Plan +
-Entscheidungen + `docs-check`), **nicht** den Wellen-Abschluss.
+Dieser Plan ist die Welle-3-C0-Substanz. Der **Wellen-Status bleibt offen**,
+bis auch 3b/3c geliefert sind; die `[x]` in §6 quittieren ausschliesslich
+das **C0-Eroeffnungs-Gate** (Plan + Entscheidungen + `docs-check`), **nicht**
+den Wellen-Abschluss. Doc-Verschiebung der Sub-Wellen nach `done/` erfolgt
+als Gruppe mit der Welle-3-Gesamt-Closure (wie Welle 2).
 
 **Container:** Meilenstein-Scope in [`roadmap.md`](roadmap.md) §4 M8;
 Welle-Triage in [`M8-welle-0.md`](../done/M8-welle-0.md) §1.1 (Welle 3 =
@@ -81,15 +85,18 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
 - **Welle 3-C0 — Eroeffnung** (dieser Plan): Bestaetigung gegen
   [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), Reihenfolge,
   Schema-Strategie. Sensor: `make docs-check`.
-- **Welle 3a — Inselnetz** ([`M8-welle-3a.md`](M8-welle-3a.md),
-  `GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md)):
+- **Welle 3a — Inselnetz — Done 2026-06-16**
+  ([`M8-welle-3a.md`](M8-welle-3a.md),
+  `GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md),
+  [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`):
   `is_islanded: bool` + `forming_device_id: str | None` in
   `GridModelConfig`; TickLoop-Auto-Close waehlt im Inselnetz **das
-  Grid-Forming-Geraet** statt `grid_connection` als Slack; Frequenz-/
-  Spannungstoleranzen ohne externen Slack; deterministische Forming-
-  Election (explizite ID, kein impliziter Tie-Break). NEU ADR. Black-Start
-  minimal (Init ohne Netzanschluss); Multi-Insel-Synchronisation
-  out-of-scope (§5).
+  Grid-Forming-Geraet** statt `grid_connection` als Slack (Vorzeichen pro
+  Bilanz-Bucket); Frequenz-/Spannungstoleranzen ohne externen Slack;
+  deterministische Forming-Election (explizite ID, kein impliziter
+  Tie-Break); Existenz-Check im TickLoop-Wiring. Forming-Ueberlast via
+  Geraete-Clamp (Constraint-Event deferred → 3b). Black-Start minimal (Init
+  ohne Netzanschluss); Multi-Insel-Synchronisation out-of-scope (§5).
 - **Welle 3b — Transformatorgrenzen** ([`M8-welle-3b.md`](M8-welle-3b.md),
   `GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md)):
   `max_apparent_power_kva` + Ueberlast-Zeit-Strom-Kennlinie + simples

@@ -127,12 +127,35 @@ def load_scenario(raw: Mapping[str, object]) -> LoadedScenario:
     `GG-SCN-001`-Schema verletzt. Bei erfolgreicher Validierung
     wird ein `Scenario` mit Tuple-Sequenzen konstruiert; der
     `scenario_hash` ist
-    `sha256(canonical_json(asdict(scenario))).hexdigest()`.
+    `sha256(canonical_json(_scenario_hash_payload(scenario))).hexdigest()`
+    — die `asdict`-Form mit opt-in Inselnetz-Config-Feldern
+    (ADR 0060 §2.4, siehe `_scenario_hash_payload`).
     """
     validate_scenario_mapping(raw)
     scenario = _build_scenario(raw)
-    digest = hashlib.sha256(canonical_json(asdict(scenario))).hexdigest()
+    digest = hashlib.sha256(canonical_json(_scenario_hash_payload(scenario))).hexdigest()
     return LoadedScenario(scenario=scenario, scenario_hash=digest)
+
+
+def _scenario_hash_payload(scenario: Scenario) -> dict[str, object]:
+    """Canonical `asdict`-Form fuer den `scenario_hash`.
+
+    M8-Welle-3a (ADR 0060 §2.4): die Inselnetz-`GridModelConfig`-Felder
+    (`is_islanded`/`forming_device_id`) sind **opt-in** — im netzgekoppelten
+    Default (`is_islanded=False`) werden sie aus der Hash-Form entfernt,
+    damit der additive Config-Zuwachs den `scenario_hash` eines Bestands-
+    Szenarios **nicht** verschiebt (`EXPECTED_DEMO_*`-Pins + Replay-
+    Baselines stabil). Spiegel zur opt-in Snapshot-Serialisierung
+    (`GridModelSnapshot.to_dict`). `asdict` liefert eine frische, tiefe
+    Kopie; das Entfernen beruehrt das (frozen) `scenario` nicht."""
+    payload = asdict(scenario)
+    grid_model_config = scenario.grid_model_config
+    if grid_model_config is not None and not grid_model_config.is_islanded:
+        config_payload = payload.get("grid_model_config")
+        if isinstance(config_payload, dict):
+            config_payload.pop("is_islanded", None)
+            config_payload.pop("forming_device_id", None)
+    return payload
 
 
 def _build_scenario(raw: Mapping[str, object]) -> Scenario:
@@ -326,7 +349,13 @@ def _smart_meter_aggregate_ids(scenario_device: ScenarioDevice) -> tuple[str, ..
 def _parse_grid_model_config(raw: Mapping[str, object]) -> GridModelConfig | None:
     """Welle-6b (ADR 0021 §2.3): liest die optionale `grid_model`-
     Sektion aus dem validierten Mapping in einen `GridModelConfig`.
-    Validator hat alle Pflicht-Decimal-Felder bereits geprueft."""
+    Validator hat alle Pflicht-Decimal-Felder bereits geprueft.
+
+    M8-Welle-3a (ADR 0060 §2.1): die Inselnetz-Felder `is_islanded`
+    (Default `False`) + `forming_device_id` (Default `None`) sind
+    **optional**; ihre Presence-Biconditional + Typ-Invarianten erzwingt der
+    `GridModelConfig`-Konstruktor (analog den 8 Pflicht-Decimals, deren
+    Clamp-/Sign-Invarianten ebenfalls erst der Konstruktor prueft)."""
     if "grid_model" not in raw:
         return None
     block = cast(Mapping[str, object], raw["grid_model"])
@@ -339,6 +368,8 @@ def _parse_grid_model_config(raw: Mapping[str, object]) -> GridModelConfig | Non
         voltage_sensitivity_v_per_kw=cast("Decimal", block["voltage_sensitivity_v_per_kw"]),
         voltage_clamp_min_v=cast(Decimal, block["voltage_clamp_min_v"]),
         voltage_clamp_max_v=cast(Decimal, block["voltage_clamp_max_v"]),
+        is_islanded=cast(bool, block.get("is_islanded", False)),
+        forming_device_id=cast("str | None", block.get("forming_device_id")),
     )
 
 
