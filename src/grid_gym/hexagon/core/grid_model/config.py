@@ -38,6 +38,18 @@ class GridModelConfigInvalidValueError(GridModelConfigError):
         super().__init__(f"GridModelConfig.{field}={value!r} violates constraint {constraint!r}")
 
 
+class GridModelTransformerWiringError(GridModelConfigError):
+    """M8-Welle-3b (ADR 0061 §2.4): `GridModelBilanz.update(...)` mit aktivem
+    `transformer_limit`, aber ohne `tick_ms`/`simulation_time` — Wiring-
+    Fehler (der TickLoop reicht beide durch)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "GridModelBilanz.update(...) mit aktivem transformer_limit "
+            "erfordert tick_ms und simulation_time (ADR 0061 §2.4)."
+        )
+
+
 # M8-Welle-3b (ADR 0061 §2.1): Pflicht-Decimal-Felder des Transformer-
 # Constraint-Blocks (Single-Source-of-Truth fuer no-float-Pruefung +
 # Snapshot-Serialisierung).

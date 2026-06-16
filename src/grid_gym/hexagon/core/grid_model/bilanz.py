@@ -49,7 +49,7 @@ from grid_gym.hexagon.core.domain.event import (
 )
 from grid_gym.hexagon.core.grid_model.config import (
     GridModelConfig,
-    GridModelConfigError,
+    GridModelTransformerWiringError,
     TransformerLimitConfig,
 )
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
@@ -269,19 +269,16 @@ class GridModelBilanz:
             self._last_constraint_violations = ()
             return
         if tick_ms is None or simulation_time is None:
-            raise GridModelConfigError(
-                "GridModelBilanz.update(...) mit aktivem transformer_limit "
-                "erfordert tick_ms und simulation_time (ADR 0061 §2.4)."
-            )
-        assert self._top_oil_temp_c is not None  # __init__-Invariante bei aktivem Layer
+            raise GridModelTransformerWiringError
+        # __init__ setzt top_oil bei aktivem Layer auf ambient; der Fallback
+        # ist nur das mypy-Narrowing (kein assert — S101).
+        top_oil = self._top_oil_temp_c if self._top_oil_temp_c is not None else limit.ambient_temp_c
         dt_s = Decimal(tick_ms) / _THOUSAND
         apparent_power_kva = abs(grid_connection_kw)
         load_pu = apparent_power_kva / limit.max_apparent_power_kva
         load_pu_sq = load_pu * load_pu
         theta_oil_ss = limit.ambient_temp_c + limit.top_oil_rise_rated_c * load_pu_sq
-        theta_oil = self._top_oil_temp_c + (theta_oil_ss - self._top_oil_temp_c) * (
-            dt_s / limit.top_oil_time_constant_s
-        )
+        theta_oil = top_oil + (theta_oil_ss - top_oil) * (dt_s / limit.top_oil_time_constant_s)
         theta_oil = theta_oil.quantize(_THETA_QUANTUM)
         self._top_oil_temp_c = theta_oil
         theta_hs = (theta_oil + limit.hot_spot_rise_rated_c * load_pu_sq).quantize(_THETA_QUANTUM)

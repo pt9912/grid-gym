@@ -1224,20 +1224,8 @@ class TickLoop:
                 )
             # Schritt D2 — Agent-Tick (M3-Welle-3, ADR 0023 §2.4).
             self._run_agent_tick_phase(context, tick_span)
-            # Schritt E — Bilanz-Aggregation.
-            grid_events: tuple[GridConstraintViolationEvent, ...] = ()
-            if self._grid_model is not None:
-                # M8-Welle-3b (ADR 0061 §2.4): tick_ms + simulation_time
-                # fuer den Transformer-Constraint-Layer (ignoriert ohne Layer).
-                self._grid_model.update(
-                    generation_kw=bucket_sums["generation"],
-                    load_kw=bucket_sums["load"],
-                    storage_kw=bucket_sums["storage"],
-                    grid_connection_kw=bucket_sums["grid_connection"],
-                    tick_ms=self._tick_ms,
-                    simulation_time=now,
-                )
-                grid_events = self._grid_model.last_constraint_violations
+            # Schritt E — Bilanz-Aggregation + Constraint-Drain.
+            grid_events = self._update_grid_model(bucket_sums, now)
         self._unknown_source_count += unknown_count
 
         # M7-Welle-3a (ADR 0052 §2.2): max_age-STALE-Stage VOR dem
@@ -1418,6 +1406,28 @@ class TickLoop:
                     continue
                 bucket_sums[bucket] += point.value
         return unknown
+
+    def _update_grid_model(
+        self,
+        bucket_sums: dict[str, Decimal],
+        now: int,
+    ) -> tuple[GridConstraintViolationEvent, ...]:
+        """Schritt E — `grid_model.update(...)` mit den vier Bilanz-Werten
+        + `tick_ms`/`simulation_time` (M8-Welle-3b, ADR 0061 §2.4: fuer den
+        Transformer-Constraint-Layer; ohne Layer ignoriert). Liefert die
+        pro-Tick emittierten `GridConstraintViolationEvent`s (leer ohne
+        grid_model bzw. ohne Verletzung). No-op-Skip ohne grid_model."""
+        if self._grid_model is None:
+            return ()
+        self._grid_model.update(
+            generation_kw=bucket_sums["generation"],
+            load_kw=bucket_sums["load"],
+            storage_kw=bucket_sums["storage"],
+            grid_connection_kw=bucket_sums["grid_connection"],
+            tick_ms=self._tick_ms,
+            simulation_time=now,
+        )
+        return self._grid_model.last_constraint_violations
 
     def _run_grid_connected_iterations(
         self,

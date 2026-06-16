@@ -360,7 +360,11 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # GridModelBilanz traegt analog zur Geraete-API eine breite Property-/
 # Methoden-Surface (Welle-5b-Erweiterung um active_load_events +
 # active_load_profiles bringt die Zahl ueber den Default-Schwellenwert).
-"src/grid_gym/hexagon/core/grid_model/bilanz.py" = ["PLR0904"]
+"src/grid_gym/hexagon/core/grid_model/bilanz.py" = ["PLR0904", "PLR0913"]
+# PLR0913 (M8-Welle-3b, ADR 0061 §2.4): `update(...)` + `_update_in_context`
+# tragen die vier Bilanz-Power-Werte plus `tick_ms`/`simulation_time` fuer
+# den Transformer-Constraint-Layer (6 Argumente). Eine Buendelung in eine
+# Dataclass waere Over-Engineering; Pattern analog tick_loop.py.
 # TickLoop ist der zentrale Simulations-Orchestrator und nimmt
 # Welle-6a alle Dependencies (run_id, tick_ms, clock, random,
 # scheduler, devices, grid_model) als Konstruktor-kwargs entgegen
