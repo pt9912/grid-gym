@@ -25,7 +25,11 @@ from grid_gym.hexagon.core.devices.pv.commands import (
     PvAlarm,
     validate_set_power_command,
 )
-from grid_gym.hexagon.core.devices.pv.config import PvConfig
+from grid_gym.hexagon.core.devices.pv.config import (
+    VOLT_VAR_FIELD_NAMES,
+    PvConfig,
+    VoltVarConfig,
+)
 from grid_gym.hexagon.core.devices.pv.snapshot import (
     SNAPSHOT_VERSION,
     PvSnapshot,
@@ -225,7 +229,7 @@ class PvDevice:
         device_id = cast(ScenarioDevice, self._scenario_device).id
         power_kw = new_power_kw.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         self._sequence += 1
-        return (
+        points: list[TelemetryPoint] = [
             TelemetryPoint(
                 run_id=self._run_id,
                 tick=context.tick,
@@ -237,8 +241,32 @@ class PvDevice:
                 quality=Quality.VALID,
                 source=_PV_SOURCE,
                 sequence=self._sequence,
-            ),
-        )
+            )
+        ]
+        # M8-Welle-3c-b-1 (ADR 0063 §2.3): Q(U)-Telemetrie opt-in — nur bei
+        # konfigurierter Kurve UND verfuegbarer Netzspannung. Ohne Kurve (oder
+        # ohne Spannung): KEIN reactive_power_kvar-Punkt (nicht 0 kvar).
+        config = cast(PvConfig, self._config)
+        if config.volt_var is not None and context.grid_voltage_v is not None:
+            reactive_kvar = config.volt_var.reactive_power_kvar(context.grid_voltage_v).quantize(
+                _QUANTUM, rounding=ROUND_HALF_EVEN
+            )
+            self._sequence += 1
+            points.append(
+                TelemetryPoint(
+                    run_id=self._run_id,
+                    tick=context.tick,
+                    simulation_time=context.simulation_time,
+                    device_id=device_id,
+                    metric="reactive_power_kvar",
+                    value=reactive_kvar,
+                    unit="kvar",
+                    quality=Quality.VALID,
+                    source=_PV_SOURCE,
+                    sequence=self._sequence,
+                )
+            )
+        return tuple(points)
 
 
 def _config_from_params(params: Mapping[str, object]) -> PvConfig:
@@ -251,8 +279,34 @@ def _config_from_params(params: Mapping[str, object]) -> PvConfig:
         if not isinstance(value, Decimal):
             raise WrongTypeError(_SUBSYSTEM, f"params.{key}", "Decimal", type(value).__name__)
         fields[key] = value
-    return PvConfig(**fields)
+    return PvConfig(**fields, volt_var=_volt_var_from_params(params))
 
 
-def _config_to_params(config: PvConfig) -> Mapping[str, Decimal]:
-    return {key: getattr(config, key) for key in _PARAM_KEYS}
+def _volt_var_from_params(params: Mapping[str, object]) -> VoltVarConfig | None:
+    """M8-Welle-3c-b-1 (ADR 0063 §2.2): liest die optionale `volt_var`-Kurve
+    aus den Scenario-Params (opt-in — fehlt → `None` → keine Q-Emission)."""
+    if "volt_var" not in params:
+        return None
+    block = params["volt_var"]
+    if not isinstance(block, Mapping):
+        raise WrongTypeError(_SUBSYSTEM, "params.volt_var", "Mapping", type(block).__name__)
+    fields: dict[str, Decimal] = {}
+    for key in VOLT_VAR_FIELD_NAMES:
+        if key not in block:
+            raise MissingKeysError(_SUBSYSTEM, [f"volt_var.{key}"])
+        value = block[key]
+        if not isinstance(value, Decimal):
+            raise WrongTypeError(
+                _SUBSYSTEM, f"params.volt_var.{key}", "Decimal", type(value).__name__
+            )
+        fields[key] = value
+    return VoltVarConfig(**fields)
+
+
+def _config_to_params(config: PvConfig) -> Mapping[str, object]:
+    params: dict[str, object] = {key: getattr(config, key) for key in _PARAM_KEYS}
+    # M8-Welle-3c-b-1 (ADR 0063): volt_var als nested Params-Block, damit der
+    # Resume-`ScenarioDevice.params`-Record die Kurve wiedergibt.
+    if config.volt_var is not None:
+        params["volt_var"] = {key: getattr(config.volt_var, key) for key in VOLT_VAR_FIELD_NAMES}
+    return params

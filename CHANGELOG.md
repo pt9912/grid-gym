@@ -45,7 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   + Single-Zonen-Thermomodell als Zeit-Strom-Mechanismus +
   `GridConstraintViolationEvent`),
   `ADR 0062` (Blindleistung im Netzbilanzmodell, 3c-a: `imbalance_kvar` +
-  Q-Spannungskopplung + GridModelSnapshot v2→v3) — alle `Accepted`.
+  Q-Spannungskopplung + GridModelSnapshot v2→v3),
+  `ADR 0063` (PV-Q(U)-Emission + Spannungs-Feedback, 3c-b-1:
+  `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig`) — alle
+  `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -159,6 +162,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   heute. **Deferred → 3c-b:** Geraete-Q-Emission (PV-Q(U)/GridConnection-Q),
   Device-Snapshots, TickLoop-Q-Aggregation, Transformer `S=sqrt(P²+Q²)`,
   Demo-Telemetry-Re-Pin; **Trigger 022 bleibt offen bis 3c-b**.
+  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
+- **M8-Welle 3c-b-1 — PV-Q(U)-Emission + Spannungs-Feedback (`GG-GRID-007`,
+  teilweise)**
+  ([`ADR 0063`](docs/plan/adr/0063-pv-volt-var-q-emission-pattern.md)
+  `Accepted`, Folge zu `ADR 0016`; Re-Tranche von 3c-b): die erste Q-Quelle.
+  NEU `DeviceTickContext.grid_voltage_v` (optional) — der TickLoop reicht die
+  **aktuelle `GridModelBilanz.voltage_v` (lagged = voriger Tick)** an die
+  Geraete, damit die Q(U)-Kopplung deterministisch ohne Iteration ist. NEU
+  opt-in `VoltVarConfig` in `PvConfig` (Deadband + Droop + Clamp); das PV
+  emittiert `reactive_power_kvar`-Telemetrie **nur bei konfigurierter Kurve**
+  (kein Curve → **kein** Punkt, nicht `0 kvar`). Der TickLoop aggregiert einen
+  `reactive_kvar`-Bucket → `grid_model.update(reactive_power_kvar=...)`.
+  PvSnapshot serialisiert `volt_var` opt-in (kein Versions-Bump). **Pin-neutral**:
+  der Q-freie Demo emittiert keine Q-Telemetrie → `EXPECTED_DEMO_*` unberuehrt.
+  **Deferred → 3c-b-2:** GridConnection-Q-Auto-Schluss, Transformer
+  `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary), Trigger-022-Closure.
   ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU

@@ -21,6 +21,7 @@ Daten-Frozen-Dataclasses: Eingabe und Ausgabe je Tick einer
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 
@@ -37,11 +38,19 @@ class DeviceTickContext:
     - `tick_ms` — konfigurierte Tick-Dauer in ms (`GG-SIM-002`,
       Whitelist 10/100/1000); fuer Energie-/SOC-Updates noetig
       (Leistung mal Dauer ergibt Energie).
+    - `grid_voltage_v` — aktuelle Netzspannung (V) aus dem
+      `GridModelBilanz` (M8-Welle-3c-b-1, ADR 0063 §2.1). Der TickLoop
+      reicht die Spannung des **vorigen** Ticks durch (`grid_model.update`
+      laeuft erst nach der Iteration → lagged, deterministisch ohne
+      Iteration). `None` = keine Spannungsinformation (kein `grid_model`
+      bzw. Standalone); ein Q(U)-Geraet emittiert dann kein Q. Bestands-
+      Geraete (ohne Q(U)) ignorieren das Feld → bit-genau.
     """
 
     tick: int
     simulation_time: int
     tick_ms: int
+    grid_voltage_v: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)

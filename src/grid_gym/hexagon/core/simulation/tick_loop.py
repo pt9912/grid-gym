@@ -152,6 +152,10 @@ _REQUIRED_SUB_SNAPSHOT_KEYS: Final[frozenset[str]] = frozenset({"scheduler", "ra
 _POWER_KW_METRIC: Final[str] = "power_kw"
 """TelemetryPoint.metric, ueber den die Bilanz aggregiert (ADR 0019 §2.2)."""
 
+_REACTIVE_POWER_KVAR_METRIC: Final[str] = "reactive_power_kvar"
+"""M8-Welle-3c-b-1 (ADR 0063 §2.4): Q-Telemetrie-Metric, signiert in den
+`reactive_kvar`-Bucket -> `grid_model.update(reactive_power_kvar=...)`."""
+
 _DEVICE_TYPE_BY_CLASS_NAME: Final[Mapping[str, str]] = {
     "BatteryDevice": "battery",
     "PvDevice": "pv",
@@ -1174,6 +1178,11 @@ class TickLoop:
             tick=self._tick_count,
             simulation_time=now,
             tick_ms=self._tick_ms,
+            # M8-Welle-3c-b-1 (ADR 0063 §2.1): lagged Netzspannung — der
+            # `grid_model.update(...)` laeuft erst nach der Iteration, also
+            # ist `voltage_v` hier die Spannung des vorigen Ticks (Q(U)-
+            # Feedback deterministisch ohne Iteration).
+            grid_voltage_v=(self._grid_model.voltage_v if self._grid_model is not None else None),
         )
         emitted: list[TelemetryPoint] = []
         # Welle-6b-Review M-1: `list[str]` statt `set[str]` — die
@@ -1187,6 +1196,9 @@ class TickLoop:
             "load": _ZERO,
             "storage": _ZERO,
             "grid_connection": _ZERO,
+            # M8-Welle-3c-b-1 (ADR 0063 §2.4): Summe der signierten
+            # `reactive_power_kvar`-Telemetrie (kein Source-Bucket-Vorzeichen).
+            "reactive_kvar": _ZERO,
         }
         unknown_count = 0
 
@@ -1398,6 +1410,11 @@ class TickLoop:
             outcome = device.tick(context)
             for point in outcome.telemetry:
                 emitted.append(point)
+                # M8-Welle-3c-b-1 (ADR 0063 §2.4): Q-Telemetrie signiert
+                # in den reactive_kvar-Bucket (keine Source-Bucket-Pruefung).
+                if point.metric == _REACTIVE_POWER_KVAR_METRIC:
+                    bucket_sums["reactive_kvar"] += point.value
+                    continue
                 if point.metric != _POWER_KW_METRIC:
                     continue
                 bucket = _BILANZ_SOURCE_BUCKETS.get(point.source)
@@ -1413,7 +1430,8 @@ class TickLoop:
         now: int,
     ) -> tuple[GridConstraintViolationEvent, ...]:
         """Schritt E — `grid_model.update(...)` mit den vier Bilanz-Werten
-        + `tick_ms`/`simulation_time` (M8-Welle-3b, ADR 0061 §2.4: fuer den
+        + `reactive_power_kvar` (M8-Welle-3c-b-1, ADR 0063 §2.4: aggregierte
+        Geraete-Q) + `tick_ms`/`simulation_time` (M8-Welle-3b, ADR 0061 §2.4:
         Transformer-Constraint-Layer; ohne Layer ignoriert). Liefert die
         pro-Tick emittierten `GridConstraintViolationEvent`s (leer ohne
         grid_model bzw. ohne Verletzung). No-op-Skip ohne grid_model."""
@@ -1424,6 +1442,7 @@ class TickLoop:
             load_kw=bucket_sums["load"],
             storage_kw=bucket_sums["storage"],
             grid_connection_kw=bucket_sums["grid_connection"],
+            reactive_power_kvar=bucket_sums["reactive_kvar"],
             tick_ms=self._tick_ms,
             simulation_time=now,
         )

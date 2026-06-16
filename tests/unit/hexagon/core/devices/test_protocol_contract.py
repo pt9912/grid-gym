@@ -207,16 +207,19 @@ def test_device_tick_outcome_is_frozen() -> None:
         outcome.telemetry = ()  # type: ignore[misc]
 
 
-def test_device_tick_context_carries_only_sim_time_fields() -> None:
+def test_device_tick_context_carries_only_sim_time_and_grid_fields() -> None:
     """Welle-1-Bewusste-Auslassung: kein `random_sub_port`-Feld,
-    kein `pending_commands`-Feld (siehe ADR 0013 §2.2/§2.3)."""
+    kein `pending_commands`-Feld (siehe ADR 0013 §2.2/§2.3). M8-Welle-3c-b-1
+    (ADR 0063 §2.1) ergaenzt `grid_voltage_v` (lagged Netzspannung fuer
+    Q(U)) — weiterhin reine Lese-Skalare, keine Ports/Buffer."""
     ctx = _make_context(tick=3)
     assert ctx.tick == 3
     assert ctx.simulation_time == 3000
     assert ctx.tick_ms == 1000
+    assert ctx.grid_voltage_v is None  # Default ohne grid_model
     # Es soll KEIN Random-Port- oder Pending-Commands-Feld geben.
     field_names = {f for f in ctx.__dataclass_fields__}
-    assert field_names == {"tick", "simulation_time", "tick_ms"}
+    assert field_names == {"tick", "simulation_time", "tick_ms", "grid_voltage_v"}
 
 
 # ---------------------------------------------------------------------------

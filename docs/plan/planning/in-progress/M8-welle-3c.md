@@ -1,13 +1,16 @@
 # Welle 3c — Blindleistung im Netzbilanzmodell (`GG-GRID-007`)
 
-**Status:** In Arbeit (re-tranchiert 3c-a/3c-b, siehe §4) — **3c-a Done
-2026-06-16** ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md)
-`Accepted`): Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung
-+ `voltage_sensitivity_v_per_kvar` opt-in + GridModelSnapshot v2→v3,
-backward-compat; Q-frei bit-genau, Demo-Pins unberuehrt). **Offen: 3c-b** —
-Geraete-Q-Emission (PV-Q(U), GridConnection-Q) + Device-Snapshots +
-TickLoop-Q-Aggregation + Transformer `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary)
-+ Demo-Telemetry-Re-Pin. **Trigger 022 bleibt offen bis 3c-b.**
+**Status:** In Arbeit (re-tranchiert 3c-a → 3c-b-1 → 3c-b-2, siehe §4) —
+**3c-a Done 2026-06-16**
+([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`):
+Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung +
+`voltage_sensitivity_v_per_kvar` opt-in + GridModelSnapshot v2→v3). **3c-b-1
+Done 2026-06-16** ([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)
+`Accepted`): erste Q-Quelle — `DeviceTickContext.grid_voltage_v` (lagged) +
+opt-in PV-`VoltVarConfig`-Q(U) + TickLoop-`reactive_kvar`-Aggregation →
+`grid_model.update`; Q-frei pin-neutral. **Offen: 3c-b-2** —
+GridConnection-Q-Auto-Schluss + Transformer `S=sqrt(P²+Q²)` (re-pinnt
+3b-Boundary) + Trigger-022-Closure. **Trigger 022 bleibt offen bis 3c-b-2.**
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
 Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](roadmap.md)

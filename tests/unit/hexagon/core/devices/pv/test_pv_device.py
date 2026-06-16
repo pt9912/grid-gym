@@ -36,6 +36,7 @@ from grid_gym.hexagon.core.devices.pv.commands import (
 from grid_gym.hexagon.core.devices.pv.config import (
     PvConfig,
     PvConfigInvalidValueError,
+    VoltVarConfig,
 )
 from grid_gym.hexagon.core.devices.pv.snapshot import (
     SNAPSHOT_VERSION,
@@ -541,3 +542,155 @@ def test_full_100_tick_trace_has_100_telemetry_points() -> None:
     """PV emittiert 1 Metric/Tick → 100 Ticks * 1 = 100 Points."""
     trace = _run_pv(seed=42, command_powers=(Decimal("750"),))
     assert len(trace) == 100
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3c-b-1: Volt-Var-Q(U)-Emission (ADR 0063)
+# ---------------------------------------------------------------------------
+
+
+def _volt_var(
+    *,
+    reference_voltage_v: Decimal = Decimal("400"),
+    deadband_v: Decimal = Decimal("5"),
+    droop_kvar_per_v: Decimal = Decimal("2"),
+    max_kvar: Decimal = Decimal("50"),
+) -> VoltVarConfig:
+    return VoltVarConfig(
+        reference_voltage_v=reference_voltage_v,
+        deadband_v=deadband_v,
+        droop_kvar_per_v=droop_kvar_per_v,
+        max_kvar=max_kvar,
+    )
+
+
+def _volt_var_params() -> dict[str, object]:
+    return {
+        "reference_voltage_v": Decimal("400"),
+        "deadband_v": Decimal("5"),
+        "droop_kvar_per_v": Decimal("2"),
+        "max_kvar": Decimal("50"),
+    }
+
+
+def _pv_with_volt_var() -> PvDevice:
+    pv = PvDevice()
+    pv.initialize(
+        ScenarioDevice(
+            id="pv-1",
+            type="pv",
+            params={"rated_power_kw": Decimal("100"), "volt_var": _volt_var_params()},
+        ),
+        FixedSeedRandom(seed=0),
+    )
+    pv.set_run_id("r")
+    return pv
+
+
+def _ctx(voltage: Decimal | None) -> DeviceTickContext:
+    return DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000, grid_voltage_v=voltage)
+
+
+# --- VoltVarConfig + Q(U)-Auswertung ---------------------------------------
+
+
+def test_volt_var_default_none() -> None:
+    assert PvConfig(rated_power_kw=Decimal("100")).volt_var is None
+
+
+def test_volt_var_zero_droop_rejected() -> None:
+    with pytest.raises(PvConfigInvalidValueError) as exc_info:
+        _volt_var(droop_kvar_per_v=Decimal("0"))
+    assert "droop_kvar_per_v" in str(exc_info.value)
+
+
+def test_volt_var_negative_deadband_rejected() -> None:
+    with pytest.raises(PvConfigInvalidValueError):
+        _volt_var(deadband_v=Decimal("-1"))
+
+
+def test_volt_var_float_rejected() -> None:
+    with pytest.raises(PvConfigInvalidValueError) as exc_info:
+        _volt_var(max_kvar=50.0)  # type: ignore[arg-type]
+    assert "Decimal" in str(exc_info.value)
+
+
+def test_q_u_deadband_returns_zero() -> None:
+    vv = _volt_var()
+    assert vv.reactive_power_kvar(Decimal("402")) == Decimal("0")  # within +/-5
+    assert vv.reactive_power_kvar(Decimal("400")) == Decimal("0")
+
+
+def test_q_u_high_voltage_absorbs() -> None:
+    """ADR 0063 §2.2: hohe Spannung -> -Q (induktiv absorbieren)."""
+    # U=410, dv=10, excess=5, Q=-2*5=-10
+    assert _volt_var().reactive_power_kvar(Decimal("410")) == Decimal("-10")
+
+
+def test_q_u_low_voltage_injects() -> None:
+    """ADR 0063 §2.2: niedrige Spannung -> +Q (kapazitiv einspeisen)."""
+    assert _volt_var().reactive_power_kvar(Decimal("390")) == Decimal("10")
+
+
+def test_q_u_clamps_at_max_kvar() -> None:
+    # U=500, dv=100, excess=95, droop*95=190 -> clamp 50
+    assert _volt_var().reactive_power_kvar(Decimal("500")) == Decimal("-50")
+
+
+# --- Telemetrie-Emission (opt-in) ------------------------------------------
+
+
+def test_no_volt_var_emits_no_q_telemetry() -> None:
+    """ADR 0063 §2.3: ohne Kurve KEIN reactive_power_kvar-Punkt (nicht 0)."""
+    pv = PvDevice()
+    pv.initialize(_scenario_device(rated_power_kw=Decimal("100")), FixedSeedRandom(seed=0))
+    pv.set_run_id("r")
+    out = pv.tick(_ctx(Decimal("410")))
+    assert [p.metric for p in out.telemetry] == ["power_kw"]
+
+
+def test_volt_var_without_voltage_emits_no_q() -> None:
+    """ADR 0063 §2.3: Kurve, aber keine Netzspannung -> kein Q-Punkt."""
+    out = _pv_with_volt_var().tick(_ctx(None))
+    assert [p.metric for p in out.telemetry] == ["power_kw"]
+
+
+def test_volt_var_emits_q_telemetry() -> None:
+    out = _pv_with_volt_var().tick(_ctx(Decimal("410")))
+    q = [p for p in out.telemetry if p.metric == "reactive_power_kvar"]
+    assert len(q) == 1
+    assert q[0].value == Decimal("-10.000000")
+    assert q[0].unit == "kvar"
+    assert q[0].source == "pv"
+
+
+def test_volt_var_in_deadband_emits_zero_q_point() -> None:
+    """ADR 0063 §2.3: mit Kurve wird auch in der Deadband ein 0-kvar-Punkt
+    emittiert (Kurve konfiguriert) — anders als ganz ohne Kurve."""
+    out = _pv_with_volt_var().tick(_ctx(Decimal("402")))
+    q = [p for p in out.telemetry if p.metric == "reactive_power_kvar"]
+    assert len(q) == 1
+    assert q[0].value == Decimal("0.000000")
+
+
+# --- Snapshot opt-in (ADR 0063 §2.5) ---------------------------------------
+
+
+def test_no_volt_var_snapshot_omits_key() -> None:
+    pv = PvDevice()
+    pv.initialize(_scenario_device(rated_power_kw=Decimal("100")), FixedSeedRandom(seed=0))
+    pv.set_run_id("r")
+    config_state = cast(Mapping[str, object], pv.snapshot()["config"])
+    assert "volt_var" not in config_state
+
+
+def test_volt_var_snapshot_roundtrip() -> None:
+    pv = _pv_with_volt_var()
+    pv.tick(_ctx(Decimal("410")))
+    state = pv.snapshot()
+    config_state = cast(Mapping[str, object], state["config"])
+    assert isinstance(config_state["volt_var"], dict)
+    restored = PvDevice.from_snapshot(state)
+    assert restored == pv
+    restored_config = cast(PvConfig, restored._config)  # type: ignore[attr-defined]
+    assert restored_config.volt_var == _volt_var()
