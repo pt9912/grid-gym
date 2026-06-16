@@ -19,7 +19,7 @@ Bilanz-Erweiterung — **kein neues Geraet, kein neuer Port/Adapter-Typ**.
 `GG-GRID-005..007` komplett. Doc-Verschiebung der Sub-Wellen nach `done/`
 erfolgt als Gruppe mit dieser Welle-3-Gesamt-Closure (wie Welle 2).
 
-**Container:** Meilenstein-Scope in [`roadmap.md`](roadmap.md) §4 M8;
+**Container:** Meilenstein-Scope in [`roadmap.md`](../in-progress/roadmap.md) §4 M8;
 Welle-Triage in [`M8-welle-0.md`](../done/M8-welle-0.md) §1.1 (Welle 3 =
 `T-020..022`). Voraussetzung (Welle 2, SOLLTE-Geraete) abgeschlossen
 ([`M8-welle-2.md`](../done/M8-welle-2.md)) — die neuen Geraete
@@ -145,7 +145,7 @@ Geraete-Q-Emission).
   (analog dem v1→v2-Bump,
   [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)/[`ADR 0020`](../../adr/0020-load-profile-and-event-pattern.md)).
   Der `SnapshotEnvelope` ([`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md))
-  bleibt unveraendert. Beruehrt ggf. `D-1` ([`carveouts.md`](carveouts.md));
+  bleibt unveraendert. Beruehrt ggf. `D-1` ([`carveouts.md`](../in-progress/carveouts.md));
   Q-Felder additiv + opt-in.
 - **Determinismus:** Q(U)-Kennlinien, Zeit-Strom-Ueberlastkennlinie und
   Thermomodell brauchen `Decimal`-Rundungs-Disziplin (`AC-NO-RAND`,

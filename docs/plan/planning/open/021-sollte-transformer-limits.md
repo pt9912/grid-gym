@@ -5,7 +5,7 @@
 + `GridModelConfig.transformer_limit` (Single-Zonen-Thermomodell als
 Zeit-Strom-Mechanismus) + pro-Tick `GridConstraintViolationEvent` in
 `TickResult.emitted_grid_events`
-([`M8-welle-3b.md`](../in-progress/M8-welle-3b.md)). Doc-Archivierung nach
+([`M8-welle-3b.md`](../done/M8-welle-3b.md)). Doc-Archivierung nach
 `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)

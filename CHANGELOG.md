@@ -131,7 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   via Geraete-eigenem `set_power_kw`-Clamp (Diesel/Battery `LIMITED`-Alarm);
   dedizierter `GridConstraintViolationEvent` deferred → 3b.
   `is_islanded=False` bit-genau wie heute. Trigger 020 aufgeloest.
-  ([`M8-welle-3a.md`](docs/plan/planning/in-progress/M8-welle-3a.md))
+  ([`M8-welle-3a.md`](docs/plan/planning/done/M8-welle-3a.md))
 - **M8-Welle 3b — Transformatorgrenzen im Netzbilanzmodell (`GG-GRID-006`)**
   ([`ADR 0061`](docs/plan/adr/0061-transformer-limit-bilanz-pattern.md)
   `Accepted`, Schaerfung von `ADR 0019` ohne Supersedes): NEU
@@ -148,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (kein Versions-Bump, `EXPECTED_DEMO_*` unberuehrt). YAML-`transformer_limit`-
   Block (Validator + Loader). `transformer_limit=None` bit-genau wie heute.
   Trigger 021 aufgeloest.
-  ([`M8-welle-3b.md`](docs/plan/planning/in-progress/M8-welle-3b.md))
+  ([`M8-welle-3b.md`](docs/plan/planning/done/M8-welle-3b.md))
 - **M8-Welle 3c-a — Blindleistung im Netzbilanzmodell: Q-Bilanz + Schema-Bump
   (`GG-GRID-007`, teilweise)**
   ([`ADR 0062`](docs/plan/adr/0062-reactive-power-bilanz-pattern.md)
@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   heute. **Deferred → 3c-b:** Geraete-Q-Emission (PV-Q(U)/GridConnection-Q),
   Device-Snapshots, TickLoop-Q-Aggregation, Transformer `S=sqrt(P²+Q²)`,
   Demo-Telemetry-Re-Pin; **Trigger 022 bleibt offen bis 3c-b**.
-  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
+  ([`M8-welle-3c.md`](docs/plan/planning/done/M8-welle-3c.md))
 - **M8-Welle 3c-b-1 — PV-Q(U)-Emission + Spannungs-Feedback (`GG-GRID-007`,
   teilweise)**
   ([`ADR 0063`](docs/plan/adr/0063-pv-volt-var-q-emission-pattern.md)
@@ -180,7 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   der Q-freie Demo emittiert keine Q-Telemetrie → `EXPECTED_DEMO_*` unberuehrt.
   **Deferred → 3c-b-2:** GridConnection-Q-Auto-Schluss, Transformer
   `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary), Trigger-022-Closure.
-  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
+  ([`M8-welle-3c.md`](docs/plan/planning/done/M8-welle-3c.md))
 - **M8-Welle 3c-b-2 — GridConnection-Q-Auto-Schluss + Transformer-
   Scheinleistung (`GG-GRID-007`, schliesst die Welle)**
   ([`ADR 0064`](docs/plan/adr/0064-grid-connection-q-transformer-apparent-power.md)
@@ -199,7 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Versions-Bump). **Pin-neutral**: Q-frei byte-identisch, `EXPECTED_DEMO_*`
   unberuehrt. **Trigger 022 aufgeloest** — `GG-GRID-007` komplett; damit ist
   **M8-Welle 3 (Netz, `GG-GRID-005..007`) abgeschlossen**.
-  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
+  ([`M8-welle-3c.md`](docs/plan/planning/done/M8-welle-3c.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

@@ -19,7 +19,7 @@ Schaerfung zu [`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)
 [`ADR 0062`](0062-reactive-power-bilanz-pattern.md) §2.1 (Q-Bilanz),
 [`ADR 0063`](0063-pv-volt-var-q-emission-pattern.md) §2.4 (TickLoop-Q-
 Aggregation — der GridConnection ist die zweite Q-Quelle/-Senke).
-Slice-Plan [`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md) §4
+Slice-Plan [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) §4
 (Re-Tranche 3c-b-2). Trigger
 [`022`](../planning/open/022-sollte-reactive-power.md) (`GG-GRID-007`;
 **mit dieser ADR aufgeloest**).

@@ -27,8 +27,8 @@ Netzanschluss),
 Clamp, kein neuer Constraint-Pfad in 3a),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-ADR-
 Pattern). Slice-Plan
-[`M8-welle-3a.md`](../planning/in-progress/M8-welle-3a.md); Container
-[`M8-welle-3.md`](../planning/in-progress/M8-welle-3.md). Trigger
+[`M8-welle-3a.md`](../planning/done/M8-welle-3a.md); Container
+[`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
 [`020`](../planning/open/020-sollte-island-grid.md) (`GG-GRID-005`,
 Lastenheft §11.5).
 
@@ -239,10 +239,10 @@ die Ueberlast sichtbar.
 
 Ein **dedizierter** `GridConstraintViolationEvent` fuer die Forming-
 Ueberlast ist **bewusst deferred** auf
-[`M8-welle-3b.md`](../planning/in-progress/M8-welle-3b.md) (Transformator-
+[`M8-welle-3b.md`](../planning/done/M8-welle-3b.md) (Transformator-
 /Netz-Grenzen) — dort entsteht der Event-Domaintyp, den 3a dann
 wiederverwenden kann. Welle 3a bleibt eine reine Slack-Umleitung
-(Slice-Plan [`M8-welle-3a.md`](../planning/in-progress/M8-welle-3a.md) §4:
+(Slice-Plan [`M8-welle-3a.md`](../planning/done/M8-welle-3a.md) §4:
 „C1-Entscheidung … Moegliche Wiederverwendung des
 `GridConstraintViolationEvent` aus 3b").
 
@@ -280,7 +280,7 @@ jeden Bestands-Snapshot und die `EXPECTED_DEMO_*`-Pins beruehren, obwohl
 sich am netzgekoppelten Default **nichts** aendert. Die opt-in-Emission
 haelt den Default byte-identisch und traegt die Insel-Information nur dort,
 wo sie semantisch existiert. Der Schema-Bump bleibt 3c vorbehalten
-([`M8-welle-3.md`](../planning/in-progress/M8-welle-3.md) §6), wo die
+([`M8-welle-3.md`](../planning/done/M8-welle-3.md) §6), wo die
 Q-Felder mehrere Snapshots additiv erweitern.
 
 **Forming-Ueberlast ueber Geraete-Clamp:** Die Geraete tragen ihre
@@ -312,9 +312,9 @@ Diese ADR gilt fuer:
 Diese ADR gilt NICHT fuer:
 
 - Transformator-/Netz-Grenzen + `GridConstraintViolationEvent`
-  ([`M8-welle-3b.md`](../planning/in-progress/M8-welle-3b.md), `GG-GRID-006`).
+  ([`M8-welle-3b.md`](../planning/done/M8-welle-3b.md), `GG-GRID-006`).
 - Blindleistung / Q + Snapshot-Schema-Bump
-  ([`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md), `GG-GRID-007`).
+  ([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), `GG-GRID-007`).
 - Droop-/Detail-Frequenzregelung, Schwarzstart-Synchronisation,
   Lastabwurf (§7).
 
@@ -383,5 +383,5 @@ Diese ADR gilt NICHT fuer:
 - **Lastabwurf / Load-Shedding** bei Forming-Ueberlast — Multi-Agent-
   Kontext, separater Trigger.
 - **Dedizierter Forming-Ueberlast-Constraint-Event** — deferred auf
-  [`M8-welle-3b.md`](../planning/in-progress/M8-welle-3b.md) (§2.6).
-- **Blindleistung im Inselbetrieb** — [`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md).
+  [`M8-welle-3b.md`](../planning/done/M8-welle-3b.md) (§2.6).
+- **Blindleistung im Inselbetrieb** — [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md).

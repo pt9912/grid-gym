@@ -9,7 +9,7 @@ nach `done/` folgt mit der Welle-3-Gesamt-Closure (3a/3b/3c als Gruppe).
 DoD (§2) erfuellt.
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
-Reihenfolge 3a → 3b → 3c); [`roadmap.md`](roadmap.md) §4 M8. Design (C1):
+Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
 Trigger: [`021`](../open/021-sollte-transformer-limits.md) (`GG-GRID-006`,

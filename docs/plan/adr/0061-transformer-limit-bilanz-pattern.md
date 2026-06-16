@@ -25,8 +25,8 @@ Scenario-Hash-Serialisierung — 3b uebernimmt dasselbe Muster fuer den
 Transformer-Block + Thermo-State),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-ADR-
 Pattern). Slice-Plan
-[`M8-welle-3b.md`](../planning/in-progress/M8-welle-3b.md); Container
-[`M8-welle-3.md`](../planning/in-progress/M8-welle-3.md). Trigger
+[`M8-welle-3b.md`](../planning/done/M8-welle-3b.md); Container
+[`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
 [`021`](../planning/open/021-sollte-transformer-limits.md) (`GG-GRID-006`,
 Lastenheft §11.5).
 
@@ -122,7 +122,7 @@ Quantisierung deterministisch im Context).
 **Scheinleistungs-Basis (C1-Entscheidung):** `S ≈ |grid_connection_kw|` —
 die Import/Export-Wirkleistung am Netzanschluss (der Modell-Trafo traegt
 den Netzaustausch). **Bis 3c gilt `S ≈ |P|`** (nur Wirkleistung);
-[`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md) erweitert die
+[`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) erweitert die
 Basis auf `S = sqrt(P² + Q²)` und **re-pinnt die Boundary-Tests dieser
 Grenze** (Verhaltenswechsel an der Grenze, §4). Im Inselnetz
 ([`ADR 0060`](0060-island-grid-bilanz-pattern.md)) ist `grid_connection_kw`
@@ -254,7 +254,7 @@ Feld), `hexagon/core/grid_model/bilanz.py` (Thermo-Step + State + Emission),
 Block, optional), `tests/unit/hexagon/core/grid_model|simulation|scenario/`.
 
 Gilt NICHT fuer: Blindleistung / `S = sqrt(P²+Q²)`
-([`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md), `GG-GRID-007`),
+([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), `GG-GRID-007`),
 Schutzgeraete-Logik (M4), Asset-Lifecycle/Reparatur, IEC-Loading-Guide-
 Mehrzonen-Thermik (§7).
 

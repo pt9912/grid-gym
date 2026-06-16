@@ -16,7 +16,7 @@ opt-in GridConnection-Snapshot-Q. **Trigger 022 aufgeloest — `GG-GRID-007`
 komplett; M8-Welle 3 (Netz) abgeschlossen.**
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
-Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](roadmap.md)
+Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](../in-progress/roadmap.md)
 §4 M8. Design (C1): NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)) + Q-Emission als
 Folge zu [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) (PV) /
@@ -90,7 +90,7 @@ lokalen Schaerfungen 3a/3b.
   Device-Snapshots), falls > 300 Zeilen / > 5 Commits.
 - **Replay/Export**: der Schema-Bump beruehrt Replay-/Export-Konsumenten
   und die `EXPECTED_DEMO_*`-Hash-Pins; Backward-Compat zwingend; beruehrt
-  ggf. `D-1` ([`carveouts.md`](carveouts.md)).
+  ggf. `D-1` ([`carveouts.md`](../in-progress/carveouts.md)).
 - **Determinismus**: Q(U)-Kennlinie + `sqrt`-Praezision (`Decimal`,
   `AC-NO-RAND`).
 

@@ -10,7 +10,7 @@ Snapshot-/Scenario-Hash). Trigger
 Welle 2). DoD (§2) erfuellt.
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
-Reihenfolge 3a → 3b → 3c); [`roadmap.md`](roadmap.md) §4 M8. Design (C1):
+Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
 Trigger: [`020`](../open/020-sollte-island-grid.md) (`GG-GRID-005`,

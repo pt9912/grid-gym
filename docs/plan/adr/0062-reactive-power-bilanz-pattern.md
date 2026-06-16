@@ -21,9 +21,9 @@ Serialisierung im Snapshot + Scenario-Hash — die `voltage_sensitivity_v_per_kv
 nutzt dasselbe Muster),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-ADR-
 Pattern). Slice-Plan
-[`M8-welle-3c.md`](../planning/in-progress/M8-welle-3c.md) (§4 Re-Tranche
+[`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) (§4 Re-Tranche
 3c-a/3c-b); Container
-[`M8-welle-3.md`](../planning/in-progress/M8-welle-3.md). Trigger
+[`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
 [`022`](../planning/open/022-sollte-reactive-power.md) (`GG-GRID-007`,
 Lastenheft §11.5; **teilweise** — Geraete-Q-Emission in 3c-b).
 
