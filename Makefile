@@ -170,11 +170,11 @@ arch-check-imports:
 arch-check-custom:
 	$(DOCKER_BUILD) --target arch-check-custom -t $(IMAGE_PREFIX)-arch-check-custom:latest
 
-# Doku-Referenz-Checks via d-check (Digest-Pin auf v0.3.0, siehe
-# https://github.com/pt9912/d-check/releases/tag/v0.3.0); Konfiguration
+# Doku-Referenz-Checks via d-check (Digest-Pin auf v0.10.0, siehe
+# https://github.com/pt9912/d-check/releases/tag/v0.10.0); Konfiguration
 # in .d-check.yml. Ersetzt tools/check_refs.py und die zugehoerige
 # Dockerfile-Stage (Trigger 002 — geloescht).
-D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:f7f2c2c72802aa1497069a85f67aebafd1543d25071a4e2e99b089a07cd3afdb
+D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:ca49d33f22ecadfd08db03e4487b52b3f2a70dec01a41f2d0f472bfc2012797c
 
 docs-check:
 	docker run --rm -v "$(CURDIR)":/repo:ro $(D_CHECK_IMAGE)
