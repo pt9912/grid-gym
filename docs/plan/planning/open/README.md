@@ -54,6 +54,12 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | ----- | ------- | ----------- |
 | [`037-deploy-007-010-multi-node-deployment.md`](037-deploy-007-010-multi-node-deployment.md) | `GG-DEPLOY-007..010` Kubernetes-Manifeste + Rolling-Updates + Zero-Downtime + Rollback — komplett Lücke; Architektur §16 Z. 916 fordert „Trigger-getriebene Folgearbeit" (diese Notiz erfuellt die Verankerungs-Pflicht) | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck |
 
+**Protokolladapter-Erweiterungen:**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`047-device-management-protocol-adapters.md`](047-device-management-protocol-adapters.md) | SNMP/LwM2M als Device-Management- und Telemetry-Simulationsadapter (`GG-SNMP-001`, `GG-LWM2M-001`) — noch ohne Profil-ADR, Adapter-Code oder Smoke-Test | Stakeholder-Bedarf fuer SNMP-/LwM2M-Demo ODER Integrationspartner-Mapping ODER Validation-Befund zu Device-Management-Protokollen |
+
 **SOLLTE — M2-Welle-7-Erbschaft** (Quelle: [`../done/M2-devices.md`](../done-archive/M2-devices.md) §4 Out-of-Scope):
 
 | Datei | Trigger | Aktivierung |

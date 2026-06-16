@@ -1158,6 +1158,30 @@ Akzeptanz: Wenn IEC61850 implementiert ist, dokumentiert der Adapter Logical
 Nodes, Datenattribute, Report-/Control-Verhalten, Fehlerverhalten und Zuordnung
 zu Simulationszeit.
 
+## GG-SNMP-001
+
+Die Plattform SOLLTE SNMP als Simulationsadapter fuer Device-Management-
+und Telemetrie-Use-Cases unterstuetzen.
+
+Akzeptanz: Wenn SNMP implementiert ist, dokumentiert der Adapter
+OID-/MIB-Mapping, SNMP-Version, Security-Annahmen, Polling-/Set-/Trap-
+Richtung, Fehlerverhalten und Zuordnung zu Simulationszeit. Ein
+deterministischer Adapter-Smoke-Test weist mindestens einen Polling-
+Telemetriepfad nach; Schreibpfade werden nur aktiviert, wenn das
+Adapter-Profil sie ausdruecklich vorsieht.
+
+## GG-LWM2M-001
+
+Die Plattform SOLLTE LwM2M als Simulationsadapter fuer Device-Management-
+und Telemetrie-Use-Cases unterstuetzen.
+
+Akzeptanz: Wenn LwM2M implementiert ist, dokumentiert der Adapter
+Object-/Resource-Mapping, Client-/Server-Rolle, CoAP-/Security-Annahmen,
+Observe-/Read-/Write-/Execute-Richtung, Fehlerverhalten und Zuordnung zu
+Simulationszeit. Ein deterministischer Adapter-Smoke-Test weist mindestens
+einen Observe- oder Polling-Telemetriepfad nach; Write/Execute-Pfade werden
+nur aktiviert, wenn das Adapter-Profil sie ausdruecklich vorsieht.
+
 Akzeptanz fuer alle Protokolladapter: Adapter muessen klar als Simulations- und
 Testadapter dokumentiert sein und duerfen keine produktive Anlagensteuerung
 versprechen.
@@ -2168,6 +2192,8 @@ keine eigene Kennung traegt.
 | GG-OPCUA-001       | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
 | GG-DNP3-001        | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
 | GG-IEC-001         | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-SNMP-001        | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
+| GG-LWM2M-001       | `GG-AR-COMP-PROTOCOLS` + `GG-AR-PORT-DRN-007`                                                       |
 | GG-UI-001..009     | `GG-AR-COMP-UI`                                                                                     |
 | GG-PERSIST-001..004 | `GG-AR-COMP-PERSIST` Schema + `GG-AR-PORT-DRN-002`                                                 |
 | GG-PERSIST-005     | `GG-AR-COMP-PERSIST` (PostgreSQL Pflicht)                                                          |
@@ -2279,6 +2305,8 @@ Matrix unten.
 | GG-OPCUA-001         | OPC-UA-Adapter (`adapters/driven/protocol_opcua/`) — M4 Welle 4 + Slice 032 ([`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional`; siehe [`spec/protocol_profiles.md`](protocol_profiles.md) §OPC-UA). **Erster rein-async-Stack** im Repo via eigenen `OpcuaLoopThread`. 8 Datatypes, Polling-Read + Direct-Write, in-process `asyncua.Server`-Smoke.                                                                          | ✅ M4       |
 | GG-DNP3-001          | DNP3-Adapter (`adapters/driven/protocol_dnp3/`) — M4 Welle 5a ([`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional`; siehe [`spec/protocol_profiles.md`](protocol_profiles.md) §DNP3). **Zwei-Library-Setup** `nfm-dnp3` (Master, MIT, produktiv) + `dnp3-outstation` (Outstation, MIT, **nur Test-Sibling**). Group/Variation-Set `{(1,1),(1,2),(30,1),(30,5)}`, Class-0-Polling-Read mit Resultat-Filter-by-Index. **Erfuellung ueber Pfad A** (Adapter geliefert); historische Akzeptanz erlaubte alternativ dokumentierten Out-of-Scope-Verzicht (Slice 034 F15: Audit-Trail-Note).            | ✅ M4       |
 | GG-IEC-001           | IEC-61850-Adapter (`adapters/driven/protocol_iec61850/`) — M4 Welle 5b + Slice 033 ([`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) `Provisional`; siehe [`spec/protocol_profiles.md`](protocol_profiles.md) §IEC-61850). **GPLv3-isoliert** per SPDX-Header pro Datei (Decision I-f; **erstmaliger Repo-Praezedenzfall** fuer GPL-isolierte Sub-Module in einem sonst MIT-Projekt). `pyiec61850-ng` als opt-in Extra `pip install grid-gym[iec61850]`. Datatype-Set `{bool,int32,float,string}` × FC `{MX,ST,SP,CF,DC}`. Integration-Smoke aktuell unter 2c-Mock-only-Fallback (Python-3.14-SWIG-Inkompat; Welle-6b-Schaerfung). **Erfuellung ueber Pfad A** (Adapter geliefert); historische Akzeptanz erlaubte alternativ dokumentierten Out-of-Scope-Verzicht (Slice 034 F15: Audit-Trail-Note). | ✅ M4       |
+| GG-SNMP-001          | SNMP-Adapter (`adapters/driven/protocol_snmp/`) — Device-Management-/Telemetry-Folgearbeit. Profil, ADR, Library-Wahl, Smoke-Sibling und Implementierung sind noch offen; Trigger-Watch [`047-device-management-protocol-adapters.md`](../docs/plan/planning/open/047-device-management-protocol-adapters.md). Kein Support-Claim bis Adapter + Profil geliefert sind.                                                                                                                                        | 🔲 Open     |
+| GG-LWM2M-001         | LwM2M-Adapter (`adapters/driven/protocol_lwm2m/`) — Device-Management-/Telemetry-Folgearbeit. Profil, ADR, Library-Wahl, Smoke-Sibling und Implementierung sind noch offen; Trigger-Watch [`047-device-management-protocol-adapters.md`](../docs/plan/planning/open/047-device-management-protocol-adapters.md). Kein Support-Claim bis Adapter + Profil geliefert sind.                                                                                                                                      | 🔲 Open     |
 | GG-UI-001..009       | Web-UI (`ui/`-Modul) — M5.                                                                                                                                                                                                                                                                                                                                                                       | 🔲 M5       |
 | GG-PERSIST-001       | `adapters/driven/persistence_postgres/` mit `runs`-Schema. Telemetrie-/Alarm-Schema folgt mit `TelemetrySinkPort` (M3).                                                                                                                                                                                                                                                                       | ✓ M1 (`runs`), 🔲 M3 (Telemetrie/Alarme) |
 | GG-PERSIST-002..004  | Telemetrie-Persistenz, Alarm-Persistenz, Retention-Policies — M3.                                                                                                                                                                                                                                                                                                                              | 🔲 M3       |
