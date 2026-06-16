@@ -405,9 +405,10 @@ def test_from_snapshot_does_not_restore_devices_or_grid_model() -> None:
     assert resumed._grid_model is None  # type: ignore[attr-defined]
 
 
-def test_snapshot_grid_model_sub_snapshot_carries_v2() -> None:
-    """grid_model traegt ADR-0020-Snapshot-Version v2 (eigene
-    Versionierung, unabhaengig von TickLoop-Snapshot-Version)."""
+def test_snapshot_grid_model_sub_snapshot_carries_current_version() -> None:
+    """grid_model traegt seine eigene Snapshot-Version (unabhaengig von
+    der TickLoop-Snapshot-Version); ab M8-Welle-3c-a v3 (ADR 0062 §2.3,
+    `last_imbalance_kvar`)."""
     bilanz = GridModelBilanz(config=_grid_model_config())
     loop = _make_loop(grid_model=bilanz)
     snap = loop.snapshot()
@@ -415,4 +416,4 @@ def test_snapshot_grid_model_sub_snapshot_carries_v2() -> None:
     assert isinstance(sub, Mapping)
     grid_payload = sub["grid_model"]
     assert isinstance(grid_payload, Mapping)
-    assert grid_payload["version"] == 2  # ADR 0020 §2.5 (LoadEvent/Profile)
+    assert grid_payload["version"] == 3

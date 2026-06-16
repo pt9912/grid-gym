@@ -71,6 +71,7 @@ def _config(
     is_islanded: bool = False,
     forming_device_id: str | None = None,
     transformer_limit: TransformerLimitConfig | None = None,
+    voltage_sensitivity_v_per_kvar: Decimal = Decimal("0.2"),
 ) -> GridModelConfig:
     return GridModelConfig(
         nominal_frequency_hz=nominal_frequency_hz,
@@ -84,6 +85,7 @@ def _config(
         is_islanded=is_islanded,
         forming_device_id=forming_device_id,
         transformer_limit=transformer_limit,
+        voltage_sensitivity_v_per_kvar=voltage_sensitivity_v_per_kvar,
     )
 
 
@@ -366,15 +368,17 @@ _EXPECTED_TOP_LEVEL_KEYS = frozenset(
         "current_frequency_hz",
         "current_voltage_v",
         "last_imbalance_kw",
+        "last_imbalance_kvar",
         "clamp_event_count",
         "active_load_events",
         "active_load_profiles",
     }
 )
 """Welle-5a-Review L-3: Test-eigene Single-Source-of-Truth fuer
-die Top-Level-Snapshot-Keys (parallel zu `_V2_TOP_KEYS` in
+die Top-Level-Snapshot-Keys (parallel zu `_V3_TOP_KEYS` in
 snapshot.py). Welle 5b ergaenzt `active_load_events`
-+ `active_load_profiles` (Snapshot v1→v2)."""
++ `active_load_profiles` (v1→v2); M8-Welle-3c-a ergaenzt
+`last_imbalance_kvar` (v2→v3, ADR 0062 §2.3)."""
 
 
 def test_snapshot_carries_required_fields() -> None:
@@ -613,13 +617,14 @@ def test_bilanz_constructor_accepts_events_and_profiles() -> None:
     assert bilanz.active_load_profiles == (_sample_profile(),)
 
 
-def test_snapshot_v2_emits_version_two() -> None:
-    """ADR 0020 §2.5: Welle 5b emittiert ausschliesslich v2-
-    Snapshots (kein Down-Grade auf v1)."""
+def test_snapshot_emits_current_version_three() -> None:
+    """M8-Welle-3c-a (ADR 0062 §2.3): emittiert ausschliesslich v3-
+    Snapshots (kein Down-Grade); `last_imbalance_kvar` immer present."""
     bilanz = GridModelBilanz(config=_config())
     state = bilanz.snapshot()
-    assert state["version"] == 2
-    assert SNAPSHOT_VERSION == 2
+    assert state["version"] == 3
+    assert SNAPSHOT_VERSION == 3
+    assert state["last_imbalance_kvar"] == Decimal("0")
 
 
 def test_snapshot_v2_serializes_events_as_list_of_mappings() -> None:
@@ -708,29 +713,33 @@ def test_from_dict_v1_backward_compat_reads_empty_lists() -> None:
     assert restored.active_load_profiles == ()
 
 
-def test_from_dict_v1_to_v2_write_upgrade() -> None:
-    """ADR 0020 §2.6: v1-Read → v2-Write (kein Down-Grade).
-    Nach from_dict eines v1-Snapshots emittiert die Bilanz beim
-    naechsten snapshot() bereits v2."""
-    bilanz_v2 = GridModelBilanz(config=_config())
-    state_v2 = dict(bilanz_v2.snapshot())
+def test_from_dict_v1_write_upgrade_to_current() -> None:
+    """ADR 0020 §2.6 + ADR 0062 §2.3: v1-Read → aktuelle-Version-Write
+    (kein Down-Grade). Nach from_dict eines v1-Snapshots emittiert die
+    Bilanz beim naechsten snapshot() bereits v3 (mit Q-Defaults)."""
+    bilanz_v3 = GridModelBilanz(config=_config())
+    state_v3 = dict(bilanz_v3.snapshot())
+    # v1 hat weder LoadEvents/Profiles (v2) noch last_imbalance_kvar (v3).
     state_v1 = {
-        k: v for k, v in state_v2.items() if k not in {"active_load_events", "active_load_profiles"}
+        k: v
+        for k, v in state_v3.items()
+        if k not in {"active_load_events", "active_load_profiles", "last_imbalance_kvar"}
     }
     state_v1["version"] = 1
 
     restored = GridModelBilanz.from_snapshot(state_v1)
     new_state = restored.snapshot()
-    assert new_state["version"] == 2
+    assert new_state["version"] == 3
     assert new_state["active_load_events"] == []
     assert new_state["active_load_profiles"] == []
+    assert new_state["last_imbalance_kvar"] == Decimal("0")
 
 
-def test_from_dict_unsupported_version_three_rejected() -> None:
-    """Nur v1 und v2 sind in Welle 5b zugelassen."""
+def test_from_dict_unsupported_version_four_rejected() -> None:
+    """Nur v1/v2/v3 sind zugelassen (ADR 0062 §2.3)."""
     bilanz = GridModelBilanz(config=_config())
     state = dict(bilanz.snapshot())
-    state["version"] = 3
+    state["version"] = 4
     with pytest.raises(VersionError):
         GridModelSnapshot.from_dict(state)
 
@@ -1147,3 +1156,170 @@ def test_from_dict_invalid_transformer_limit_reraises_as_wrong_type() -> None:
     with pytest.raises(WrongTypeError) as exc_info:
         GridModelSnapshot.from_dict(state)
     assert exc_info.value.subsystem == "grid_model"
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3c-a: Blindleistung — Q-Bilanz + Schema-Bump (ADR 0062)
+# ---------------------------------------------------------------------------
+
+
+def test_voltage_sensitivity_v_per_kvar_default() -> None:
+    """ADR 0062 §2.2: Default 0.2 V/kvar."""
+    assert _config().voltage_sensitivity_v_per_kvar == Decimal("0.2")
+
+
+def test_zero_voltage_sensitivity_v_per_kvar_rejected() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(voltage_sensitivity_v_per_kvar=Decimal("0"))
+    assert "voltage_sensitivity_v_per_kvar" in str(exc_info.value)
+
+
+def test_float_voltage_sensitivity_v_per_kvar_rejected() -> None:
+    with pytest.raises(GridModelConfigInvalidValueError) as exc_info:
+        _config(voltage_sensitivity_v_per_kvar=0.2)  # type: ignore[arg-type]
+    assert "Decimal" in str(exc_info.value)
+
+
+def test_q_free_voltage_bit_identical() -> None:
+    """ADR 0062 §2.1 Regression: ohne Q-Eingang ist die Spannung
+    bit-genau wie ohne Q-Feature (der k_vq-Term verschwindet)."""
+    bilanz = GridModelBilanz(config=_config())
+    bilanz.update(
+        generation_kw=Decimal("3"),
+        load_kw=Decimal("1"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+    )
+    # imbalance_kw=2 -> volt = 400 + 0.1*2 = 400.2 (unveraendert, kein Q-Term).
+    assert bilanz.voltage_v == Decimal("400.2")
+    assert bilanz.last_imbalance_kvar == Decimal("0")
+
+
+def test_reactive_power_shifts_voltage_only() -> None:
+    """ADR 0062 §2.1: Q koppelt an die Spannung (k_vq=0.2), nicht an die
+    Frequenz."""
+    bilanz = GridModelBilanz(config=_config())
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+        reactive_power_kvar=Decimal("10"),
+    )
+    assert bilanz.last_imbalance_kvar == Decimal("10")
+    assert bilanz.voltage_v == Decimal("402")  # 400 + 0.2*10
+    assert bilanz.frequency_hz == Decimal("50")  # Q wirkt NICHT auf die Frequenz
+
+
+def test_negative_reactive_power_lowers_voltage() -> None:
+    """ADR 0062 §2.1 Sign-Konvention: induktive Last (Q<0) senkt die
+    Spannung."""
+    bilanz = GridModelBilanz(config=_config())
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+        reactive_power_kvar=Decimal("-10"),
+    )
+    assert bilanz.voltage_v == Decimal("398")  # 400 - 0.2*10
+
+
+def test_custom_voltage_sensitivity_v_per_kvar_applies() -> None:
+    bilanz = GridModelBilanz(config=_config(voltage_sensitivity_v_per_kvar=Decimal("0.5")))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+        reactive_power_kvar=Decimal("10"),
+    )
+    assert bilanz.voltage_v == Decimal("405")  # 400 + 0.5*10
+
+
+def _run_pq(
+    inputs: tuple[tuple[Decimal, Decimal], ...],
+) -> tuple[tuple[Decimal, Decimal, Decimal], ...]:
+    """Faehrt die Bilanz ueber (grid_connection_kw, reactive_power_kvar)-
+    Paare; sammelt (voltage, frequency, imbalance_kvar)."""
+    bilanz = GridModelBilanz(config=_config())
+    trace: list[tuple[Decimal, Decimal, Decimal]] = []
+    for p, q in inputs:
+        bilanz.update(
+            generation_kw=Decimal("0"),
+            load_kw=Decimal("0"),
+            storage_kw=Decimal("0"),
+            grid_connection_kw=p,
+            reactive_power_kvar=q,
+        )
+        trace.append((bilanz.voltage_v, bilanz.frequency_hz, bilanz.last_imbalance_kvar))
+    return tuple(trace)
+
+
+def test_q_bilanz_determinism_over_100_ticks() -> None:
+    """ADR 0062 §2.4: gleiche (P, Q)-Sequenz -> byte-identische Spur."""
+    inputs = tuple((Decimal(i % 7), Decimal((i % 5) - 2)) for i in range(100))
+    assert _run_pq(inputs) == _run_pq(inputs)
+    assert len(_run_pq(inputs)) == 100
+
+
+# --- Snapshot v2->v3 (ADR 0062 §2.3) ----------------------------------------
+
+
+def test_snapshot_v3_carries_imbalance_kvar() -> None:
+    bilanz = GridModelBilanz(config=_config())
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+        reactive_power_kvar=Decimal("7"),
+    )
+    state = bilanz.snapshot()
+    assert state["version"] == 3
+    assert state["last_imbalance_kvar"] == Decimal("7")
+
+
+def test_default_config_snapshot_omits_q_sensitivity() -> None:
+    """ADR 0062 §2.2: Default-k_vq → config-Sub-Mapping OHNE den Key
+    (opt-in, Scenario-Hash byte-stabil)."""
+    state = GridModelBilanz(config=_config()).snapshot()
+    config_state = cast(Mapping[str, object], state["config"])
+    assert "voltage_sensitivity_v_per_kvar" not in config_state
+
+
+def test_custom_q_sensitivity_serialized_and_roundtrips() -> None:
+    bilanz = GridModelBilanz(config=_config(voltage_sensitivity_v_per_kvar=Decimal("0.5")))
+    bilanz.update(
+        generation_kw=Decimal("0"),
+        load_kw=Decimal("0"),
+        storage_kw=Decimal("0"),
+        grid_connection_kw=Decimal("0"),
+        reactive_power_kvar=Decimal("3"),
+    )
+    state = bilanz.snapshot()
+    config_state = cast(Mapping[str, object], state["config"])
+    assert config_state["voltage_sensitivity_v_per_kvar"] == Decimal("0.5")
+    restored = GridModelBilanz.from_snapshot(state)
+    assert restored == bilanz
+    assert restored.config.voltage_sensitivity_v_per_kvar == Decimal("0.5")
+    assert restored.last_imbalance_kvar == Decimal("3")
+
+
+def test_from_dict_v2_backward_compat_reads_zero_kvar() -> None:
+    """ADR 0062 §2.3: ein v2-Snapshot (ohne last_imbalance_kvar) liest als
+    Q-frei (0)."""
+    state_v3 = dict(GridModelBilanz(config=_config()).snapshot())
+    state_v2 = {k: v for k, v in state_v3.items() if k != "last_imbalance_kvar"}
+    state_v2["version"] = 2
+    restored = GridModelSnapshot.from_dict(state_v2)
+    assert restored.version == 2
+    assert restored.last_imbalance_kvar == Decimal("0")
+
+
+def test_from_dict_v3_missing_imbalance_kvar_rejected() -> None:
+    """ADR 0062 §2.3: v3-Read verlangt last_imbalance_kvar Pflicht."""
+    state = dict(GridModelBilanz(config=_config()).snapshot())
+    del state["last_imbalance_kvar"]
+    with pytest.raises(MissingKeysError):
+        GridModelSnapshot.from_dict(state)

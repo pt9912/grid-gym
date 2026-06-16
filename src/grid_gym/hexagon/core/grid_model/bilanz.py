@@ -92,6 +92,9 @@ class GridModelBilanz:
         self._current_frequency_hz: Decimal = config.nominal_frequency_hz
         self._current_voltage_v: Decimal = config.nominal_voltage_v
         self._last_imbalance_kw: Decimal = _ZERO
+        # M8-Welle-3c-a (ADR 0062 §2.1): Blindleistungs-Bilanz parallel zu
+        # `_last_imbalance_kw`. `0` ohne Q-Eingang (Q-frei bit-genau).
+        self._last_imbalance_kvar: Decimal = _ZERO
         self._clamp_event_count: int = 0
         self._model_kind: str = MODEL_KIND_SIMPLIFIED_PROPORTIONAL
         # Welle 5b (ADR 0020 §2.5): passive State, der vom
@@ -129,6 +132,12 @@ class GridModelBilanz:
         return self._last_imbalance_kw
 
     @property
+    def last_imbalance_kvar(self) -> Decimal:
+        """M8-Welle-3c-a (ADR 0062 §2.1): letzte Blindleistungs-Bilanz
+        (parallel zu `last_imbalance_kw`); `0` ohne Q-Eingang."""
+        return self._last_imbalance_kvar
+
+    @property
     def clamp_event_count(self) -> int:
         return self._clamp_event_count
 
@@ -163,6 +172,7 @@ class GridModelBilanz:
         load_kw: Decimal,
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
+        reactive_power_kvar: Decimal = _ZERO,
         tick_ms: int | None = None,
         simulation_time: int | None = None,
     ) -> None:
@@ -200,6 +210,7 @@ class GridModelBilanz:
                 load_kw=load_kw,
                 storage_kw=storage_kw,
                 grid_connection_kw=grid_connection_kw,
+                reactive_power_kvar=reactive_power_kvar,
                 tick_ms=tick_ms,
                 simulation_time=simulation_time,
             )
@@ -211,19 +222,26 @@ class GridModelBilanz:
         load_kw: Decimal,
         storage_kw: Decimal,
         grid_connection_kw: Decimal,
+        reactive_power_kvar: Decimal,
         tick_ms: int | None,
         simulation_time: int | None,
     ) -> None:
         imbalance_kw = generation_kw - load_kw - storage_kw + grid_connection_kw
         self._last_imbalance_kw = imbalance_kw
+        # M8-Welle-3c-a (ADR 0062 §2.1): Q-Bilanz parallel zur Wirkleistung.
+        imbalance_kvar = reactive_power_kvar
+        self._last_imbalance_kvar = imbalance_kvar
 
         raw_freq = (
             self._config.nominal_frequency_hz
             + self._config.frequency_sensitivity_hz_per_kw * imbalance_kw
         )
+        # Q koppelt nur an die Spannung (ADR 0062 §2.1 / §3): bei `Q == 0`
+        # verschwindet der Term -> raw_volt bit-genau wie heute.
         raw_volt = (
             self._config.nominal_voltage_v
             + self._config.voltage_sensitivity_v_per_kw * imbalance_kw
+            + self._config.voltage_sensitivity_v_per_kvar * imbalance_kvar
         )
 
         clamp_increment = 0
@@ -307,6 +325,7 @@ class GridModelBilanz:
             current_frequency_hz=self._current_frequency_hz,
             current_voltage_v=self._current_voltage_v,
             last_imbalance_kw=self._last_imbalance_kw,
+            last_imbalance_kvar=self._last_imbalance_kvar,
             clamp_event_count=self._clamp_event_count,
             active_load_events=self._active_load_events,
             active_load_profiles=self._active_load_profiles,
@@ -327,6 +346,7 @@ class GridModelBilanz:
         bilanz._current_frequency_hz = snap.current_frequency_hz
         bilanz._current_voltage_v = snap.current_voltage_v
         bilanz._last_imbalance_kw = snap.last_imbalance_kw
+        bilanz._last_imbalance_kvar = snap.last_imbalance_kvar
         bilanz._clamp_event_count = snap.clamp_event_count
         bilanz._model_kind = snap.model_kind
         # M8-Welle-3b (ADR 0061 §2.5): Thermo-State aus dem opt-in-Snapshot.
@@ -344,6 +364,7 @@ class GridModelBilanz:
             and self._current_frequency_hz == other._current_frequency_hz
             and self._current_voltage_v == other._current_voltage_v
             and self._last_imbalance_kw == other._last_imbalance_kw
+            and self._last_imbalance_kvar == other._last_imbalance_kvar
             and self._clamp_event_count == other._clamp_event_count
             and self._model_kind == other._model_kind
             and self._active_load_events == other._active_load_events
@@ -359,6 +380,7 @@ class GridModelBilanz:
                 self._current_frequency_hz,
                 self._current_voltage_v,
                 self._last_imbalance_kw,
+                self._last_imbalance_kvar,
                 self._clamp_event_count,
                 self._model_kind,
                 self._active_load_events,

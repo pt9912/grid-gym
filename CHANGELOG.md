@@ -43,7 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Forming-Geraet als Slack + opt-in Snapshot-/Scenario-Hash),
   `ADR 0061` (Transformatorgrenzen im Netzbilanzmodell: `TransformerLimitConfig`
   + Single-Zonen-Thermomodell als Zeit-Strom-Mechanismus +
-  `GridConstraintViolationEvent`) — alle `Accepted`.
+  `GridConstraintViolationEvent`),
+  `ADR 0062` (Blindleistung im Netzbilanzmodell, 3c-a: `imbalance_kvar` +
+  Q-Spannungskopplung + GridModelSnapshot v2→v3) — alle `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -142,6 +144,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Block (Validator + Loader). `transformer_limit=None` bit-genau wie heute.
   Trigger 021 aufgeloest.
   ([`M8-welle-3b.md`](docs/plan/planning/in-progress/M8-welle-3b.md))
+- **M8-Welle 3c-a — Blindleistung im Netzbilanzmodell: Q-Bilanz + Schema-Bump
+  (`GG-GRID-007`, teilweise)**
+  ([`ADR 0062`](docs/plan/adr/0062-reactive-power-bilanz-pattern.md)
+  `Accepted`, Schaerfung von `ADR 0019` ohne Supersedes; Re-Tranche von 3c):
+  `GridModelBilanz.update(reactive_power_kvar=0)` fuehrt `last_imbalance_kvar`
+  parallel zu `last_imbalance_kw`; **Q koppelt nur an die Spannung**
+  (`voltage_v += voltage_sensitivity_v_per_kvar * imbalance_kvar`), nicht an
+  die Frequenz. NEU opt-in Config-Feld `voltage_sensitivity_v_per_kvar`
+  (Default `0.2`; Serialisierung opt-in → Scenario-Hash byte-stabil).
+  `GridModelSnapshot` **v2→v3** (`last_imbalance_kvar` immer present;
+  v1/v2-Backward-Compat liest `0`) — pin-neutral (`EXPECTED_DEMO_*` hashen
+  Telemetry-Stream + Scenario-Hash, nicht den Snapshot). `Q=0` bit-genau wie
+  heute. **Deferred → 3c-b:** Geraete-Q-Emission (PV-Q(U)/GridConnection-Q),
+  Device-Snapshots, TickLoop-Q-Aggregation, Transformer `S=sqrt(P²+Q²)`,
+  Demo-Telemetry-Re-Pin; **Trigger 022 bleibt offen bis 3c-b**.
+  ([`M8-welle-3c.md`](docs/plan/planning/in-progress/M8-welle-3c.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

@@ -71,7 +71,10 @@ from grid_gym.hexagon.core.grid_model import (
     GridModelConfig,
     TransformerLimitConfig,
 )
-from grid_gym.hexagon.core.grid_model.config import TRANSFORMER_LIMIT_FIELD_NAMES
+from grid_gym.hexagon.core.grid_model.config import (
+    DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR,
+    TRANSFORMER_LIMIT_FIELD_NAMES,
+)
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.validator import validate_scenario_mapping
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
@@ -166,6 +169,13 @@ def _scenario_hash_payload(scenario: Scenario) -> dict[str, object]:
             # additive Config-Zuwachs den scenario_hash nicht verschiebt.
             if grid_model_config.transformer_limit is None:
                 config_payload.pop("transformer_limit", None)
+            # M8-Welle-3c-a (ADR 0062 §2.2): Q-Spannungs-Sensitivitaet opt-in —
+            # im Default aus der Hash-Form entfernen.
+            if (
+                grid_model_config.voltage_sensitivity_v_per_kvar
+                == DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR
+            ):
+                config_payload.pop("voltage_sensitivity_v_per_kvar", None)
     return payload
 
 
@@ -382,6 +392,10 @@ def _parse_grid_model_config(raw: Mapping[str, object]) -> GridModelConfig | Non
         is_islanded=cast(bool, block.get("is_islanded", False)),
         forming_device_id=cast("str | None", block.get("forming_device_id")),
         transformer_limit=_parse_transformer_limit(block),
+        voltage_sensitivity_v_per_kvar=cast(
+            Decimal,
+            block.get("voltage_sensitivity_v_per_kvar", DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR),
+        ),
     )
 
 

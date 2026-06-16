@@ -38,6 +38,7 @@ from typing import Final, Self
 
 from grid_gym.hexagon.core.errors import VersionError, WrongTypeError
 from grid_gym.hexagon.core.grid_model.config import (
+    DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR,
     TRANSFORMER_LIMIT_FIELD_NAMES,
     GridModelConfig,
     GridModelConfigError,
@@ -58,11 +59,12 @@ from grid_gym.hexagon.core.serialization.snapshot_codec import (
 )
 
 SUBSYSTEM: Final[str] = "grid_model"
-SNAPSHOT_VERSION: Final[int] = 2
-"""Welle 5b: Versions-Bump v1->v2 mit Backward-Compat-Lesepfad
-fuer v1-Snapshots aus Welle 5a."""
+SNAPSHOT_VERSION: Final[int] = 3
+"""M8-Welle-3c-a (ADR 0062 §2.3): Versions-Bump v2->v3 mit additivem
+`last_imbalance_kvar`; v1/v2-Backward-Compat-Lesepfad (Q-frei -> `0`).
+v1->v2 (Welle 5b) ergaenzte LoadEvents/Profiles."""
 
-_SUPPORTED_VERSIONS: Final[frozenset[int]] = frozenset({1, 2})
+_SUPPORTED_VERSIONS: Final[frozenset[int]] = frozenset({1, 2, 3})
 
 # ADR 0019 §2.4 Welle-5a-Identifier; Welle-5+/M3 kann auf
 # "power-flow-adapter" o.ae. umstellen.
@@ -102,6 +104,9 @@ _V2_ADDITIONAL_KEYS: Final[frozenset[str]] = frozenset(
     }
 )
 _V2_TOP_KEYS: Final[frozenset[str]] = _V1_TOP_KEYS | _V2_ADDITIONAL_KEYS
+# v3-Zusatzfeld (M8-Welle-3c-a, ADR 0062 §2.3): Blindleistungs-Bilanz.
+_V3_ADDITIONAL_KEYS: Final[frozenset[str]] = frozenset({"last_imbalance_kvar"})
+_V3_TOP_KEYS: Final[frozenset[str]] = _V2_TOP_KEYS | _V3_ADDITIONAL_KEYS
 _CONFIG_KEYS: Final[frozenset[str]] = frozenset(CONFIG_FIELD_NAMES)
 # M8-Welle-3b (ADR 0061 §2.5): Pflicht-Keys des opt-in Transformer-Blocks.
 _TRANSFORMER_LIMIT_KEYS: Final[frozenset[str]] = frozenset(TRANSFORMER_LIMIT_FIELD_NAMES)
@@ -144,6 +149,9 @@ class GridModelSnapshot:
     clamp_event_count: int
     active_load_events: tuple[LoadEvent, ...]
     active_load_profiles: tuple[LoadProfile, ...]
+    # M8-Welle-3c-a (ADR 0062 §2.3): Blindleistungs-Bilanz (v3-Pflichtfeld;
+    # Default `0` fuer v1/v2-Backward-Compat-Konstruktion).
+    last_imbalance_kvar: Decimal = Decimal(0)
     # M8-Welle-3b (ADR 0061 §2.5): akkumulierter Thermo-State des
     # Transformer-Constraint-Layers; `None` ohne Layer (opt-in, kein
     # Versions-Bump).
@@ -162,6 +170,13 @@ class GridModelSnapshot:
         if self.config.is_islanded:
             config_dict["is_islanded"] = self.config.is_islanded
             config_dict["forming_device_id"] = self.config.forming_device_id
+        # M8-Welle-3c-a (ADR 0062 §2.2): Q-Spannungs-Sensitivitaet opt-in —
+        # nur bei Abweichung vom Default emittieren (Default → Scenario-Hash/
+        # Snapshot byte-stabil).
+        if self.config.voltage_sensitivity_v_per_kvar != DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR:
+            config_dict["voltage_sensitivity_v_per_kvar"] = (
+                self.config.voltage_sensitivity_v_per_kvar
+            )
         # M8-Welle-3b (ADR 0061 §2.5): Transformer-Block opt-in im config-
         # Sub-Mapping (nur bei aktivem Layer → Default byte-identisch).
         if self.config.transformer_limit is not None:
@@ -176,6 +191,7 @@ class GridModelSnapshot:
             "current_frequency_hz": self.current_frequency_hz,
             "current_voltage_v": self.current_voltage_v,
             "last_imbalance_kw": self.last_imbalance_kw,
+            "last_imbalance_kvar": self.last_imbalance_kvar,
             "clamp_event_count": self.clamp_event_count,
             "active_load_events": [
                 {
@@ -233,8 +249,10 @@ class GridModelSnapshot:
         if version not in _SUPPORTED_VERSIONS:
             raise VersionError(SUBSYSTEM, expected=SNAPSHOT_VERSION, found=version)
 
-        # Pflicht-Felder gelten fuer beide Versionen; v2 erweitert.
-        required_keys = _V1_TOP_KEYS if version == 1 else _V2_TOP_KEYS
+        # Pflicht-Felder pro Version (v2 erweitert v1 um LoadEvents/Profiles,
+        # v3 um last_imbalance_kvar — ADR 0062 §2.3). `version` ist oben gegen
+        # _SUPPORTED_VERSIONS geprueft.
+        required_keys = {1: _V1_TOP_KEYS, 2: _V2_TOP_KEYS, 3: _V3_TOP_KEYS}[version]
         assert_required_keys(state, required_keys, SUBSYSTEM)
 
         model_kind = assert_str(state["model_kind"], "model_kind", SUBSYSTEM)
@@ -258,6 +276,13 @@ class GridModelSnapshot:
             state["last_imbalance_kw"], "last_imbalance_kw", SUBSYSTEM
         )
         clamp_event_count = assert_int(state["clamp_event_count"], "clamp_event_count", SUBSYSTEM)
+        # M8-Welle-3c-a (ADR 0062 §2.3): v3-Pflichtfeld; v1/v2-Backward-Compat
+        # liest `0` (Q-frei). `_V3_TOP_KEYS` erzwingt Praesenz fuer v3.
+        last_imbalance_kvar = (
+            assert_decimal(state["last_imbalance_kvar"], "last_imbalance_kvar", SUBSYSTEM)
+            if "last_imbalance_kvar" in state
+            else Decimal(0)
+        )
 
         config = _parse_config(state["config"])
 
@@ -285,6 +310,7 @@ class GridModelSnapshot:
             current_frequency_hz=current_frequency_hz,
             current_voltage_v=current_voltage_v,
             last_imbalance_kw=last_imbalance_kw,
+            last_imbalance_kvar=last_imbalance_kvar,
             clamp_event_count=clamp_event_count,
             active_load_events=active_load_events,
             active_load_profiles=active_load_profiles,
@@ -318,6 +344,17 @@ def _parse_config(raw: object) -> GridModelConfig:
         if "forming_device_id" in config_state
         else None
     )
+    # M8-Welle-3c-a (ADR 0062 §2.2): Q-Spannungs-Sensitivitaet opt-in lesen
+    # (fehlt → Default; backward-compat).
+    voltage_sensitivity_v_per_kvar = (
+        assert_decimal(
+            config_state["voltage_sensitivity_v_per_kvar"],
+            "config.voltage_sensitivity_v_per_kvar",
+            SUBSYSTEM,
+        )
+        if "voltage_sensitivity_v_per_kvar" in config_state
+        else DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR
+    )
     try:
         # _parse_transformer_limit konstruiert TransformerLimitConfig (mit
         # eigener Wertebereichs-Validierung); muss daher INNERHALB des
@@ -329,6 +366,7 @@ def _parse_config(raw: object) -> GridModelConfig:
             is_islanded=is_islanded,
             forming_device_id=forming_device_id,
             transformer_limit=transformer_limit,
+            voltage_sensitivity_v_per_kvar=voltage_sensitivity_v_per_kvar,
         )
     except GridModelConfigError as err:
         raise WrongTypeError(SUBSYSTEM, "config", "valid", str(err)) from err

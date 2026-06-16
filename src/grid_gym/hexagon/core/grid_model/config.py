@@ -25,6 +25,12 @@ from grid_gym.hexagon.core.errors import GridGymError
 
 _ZERO = Decimal(0)
 
+# M8-Welle-3c-a (ADR 0062 §2.2): Default der Q-Spannungs-Sensitivitaet
+# (ca. 2x voltage_sensitivity_v_per_kw; Q koppelt staerker an die Spannung).
+# Single-Source fuer den opt-in-Serialisierungs-Vergleich (Snapshot +
+# Scenario-Hash) und den Loader-Fallback.
+DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR: Decimal = Decimal("0.2")
+
 
 class GridModelConfigError(GridGymError):
     """Wurzel der `GridModelConfig`-Validierungs-Fehler."""
@@ -157,6 +163,11 @@ class GridModelConfig:
     # `None` (Default) = kein Layer = bit-genau heutiges Verhalten. Eigene
     # Frozen-Dataclass mit eigener Validierung (oben).
     transformer_limit: TransformerLimitConfig | None = None
+    # M8-Welle-3c-a (ADR 0062 §2.2): Q-Spannungs-Sensitivitaet (V/kvar).
+    # Additiv mit Default; nur bei Q != 0 wirksam (`k_vq * 0 = 0` → Q-frei
+    # bit-genau). Opt-in serialisiert (Default → Snapshot/Scenario-Hash
+    # byte-stabil).
+    voltage_sensitivity_v_per_kvar: Decimal = DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR
 
     def __post_init__(self) -> None:
         # Welle-5a-Review M-4: Decimal-Typ-Pruefung an allen
@@ -180,26 +191,7 @@ class GridModelConfig:
                 raise GridModelConfigInvalidValueError(
                     field_name, value, f"Decimal (got {type(value).__name__})"
                 )
-        if self.nominal_frequency_hz <= _ZERO:
-            raise GridModelConfigInvalidValueError(
-                "nominal_frequency_hz", self.nominal_frequency_hz, "> 0"
-            )
-        if self.nominal_voltage_v <= _ZERO:
-            raise GridModelConfigInvalidValueError(
-                "nominal_voltage_v", self.nominal_voltage_v, "> 0"
-            )
-        if self.frequency_sensitivity_hz_per_kw <= _ZERO:
-            raise GridModelConfigInvalidValueError(
-                "frequency_sensitivity_hz_per_kw",
-                self.frequency_sensitivity_hz_per_kw,
-                "> 0",
-            )
-        if self.voltage_sensitivity_v_per_kw <= _ZERO:
-            raise GridModelConfigInvalidValueError(
-                "voltage_sensitivity_v_per_kw",
-                self.voltage_sensitivity_v_per_kw,
-                "> 0",
-            )
+        self._validate_positive_scalars()
         if not (
             self.frequency_clamp_min_hz < self.nominal_frequency_hz < self.frequency_clamp_max_hz
         ):
@@ -231,6 +223,29 @@ class GridModelConfig:
                 self.transformer_limit,
                 f"None or TransformerLimitConfig (got {type(self.transformer_limit).__name__})",
             )
+
+    def _validate_positive_scalars(self) -> None:
+        """Sollwerte + Sensitivitaeten > 0 (ADR 0019 §2.4a; M8-Welle-3c-a
+        ergaenzt die Q-Spannungs-Sensitivitaet, ADR 0062 §2.2). Aus
+        `__post_init__` extrahiert (C901-Komplexitaet)."""
+        # M8-Welle-3c-a: Q-Sensitivitaet hat ihren eigenen Decimal-Check
+        # (nicht im 8-Felder-Loop oben), dann den Positiv-Check.
+        if not isinstance(self.voltage_sensitivity_v_per_kvar, Decimal):
+            raise GridModelConfigInvalidValueError(
+                "voltage_sensitivity_v_per_kvar",
+                self.voltage_sensitivity_v_per_kvar,
+                f"Decimal (got {type(self.voltage_sensitivity_v_per_kvar).__name__})",
+            )
+        positive_fields = (
+            "nominal_frequency_hz",
+            "nominal_voltage_v",
+            "frequency_sensitivity_hz_per_kw",
+            "voltage_sensitivity_v_per_kw",
+            "voltage_sensitivity_v_per_kvar",
+        )
+        for field_name in positive_fields:
+            if getattr(self, field_name) <= _ZERO:
+                raise GridModelConfigInvalidValueError(field_name, getattr(self, field_name), "> 0")
 
     def _validate_island_presence(self) -> None:
         """M8-Welle-3a (ADR 0060 §2.1): Inselnetz-Presence-Invarianten.
@@ -270,9 +285,11 @@ class GridModelConfig:
 
 
 __all__ = [
+    "DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR",
     "TRANSFORMER_LIMIT_FIELD_NAMES",
     "GridModelConfig",
     "GridModelConfigError",
     "GridModelConfigInvalidValueError",
+    "GridModelTransformerWiringError",
     "TransformerLimitConfig",
 ]

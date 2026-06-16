@@ -849,3 +849,47 @@ def test_transformer_scenario_hash_differs_from_plain() -> None:
         "transformer_limit": _transformer_limit_block(),
     }
     assert load_scenario(raw_plain).scenario_hash != load_scenario(raw_limit).scenario_hash
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-3c-a: Q-Spannungs-Sensitivitaet aus YAML (ADR 0062)
+# ---------------------------------------------------------------------------
+
+
+def test_load_scenario_q_sensitivity_default_when_absent() -> None:
+    """ADR 0062 §2.2: ohne den Key gilt der Default (0.2)."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = _grid_model_block()
+    loaded = load_scenario(raw)
+    assert loaded.scenario.grid_model_config is not None
+    assert loaded.scenario.grid_model_config.voltage_sensitivity_v_per_kvar == Decimal("0.2")
+
+
+def test_load_scenario_q_sensitivity_from_yaml() -> None:
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = {**_grid_model_block(), "voltage_sensitivity_v_per_kvar": Decimal("0.5")}
+    loaded = load_scenario(raw)
+    assert loaded.scenario.grid_model_config is not None
+    assert loaded.scenario.grid_model_config.voltage_sensitivity_v_per_kvar == Decimal("0.5")
+
+
+def test_default_q_sensitivity_scenario_hash_omits_key() -> None:
+    """ADR 0062 §2.2: Default-k_vq → Hash-asdict OHNE den Key (opt-in →
+    EXPECTED_DEMO_SCENARIO_HASH stabil)."""
+    raw = _minimal_raw_mapping()
+    raw["grid_model"] = _grid_model_block()
+    payload = _scenario_hash_payload(load_scenario(raw).scenario)
+    config_payload = payload["grid_model_config"]
+    assert isinstance(config_payload, dict)
+    assert "voltage_sensitivity_v_per_kvar" not in config_payload
+
+
+def test_custom_q_sensitivity_scenario_hash_differs() -> None:
+    raw_default = _minimal_raw_mapping()
+    raw_default["grid_model"] = _grid_model_block()
+    raw_custom = _minimal_raw_mapping()
+    raw_custom["grid_model"] = {
+        **_grid_model_block(),
+        "voltage_sensitivity_v_per_kvar": Decimal("0.5"),
+    }
+    assert load_scenario(raw_default).scenario_hash != load_scenario(raw_custom).scenario_hash

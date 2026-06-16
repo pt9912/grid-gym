@@ -6,7 +6,10 @@ Done 2026-06-16** ([`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md)
 **3b (Trafo-Grenzen) Done 2026-06-16**
 ([`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`,
 [`M8-welle-3b.md`](M8-welle-3b.md), Trigger 021 aufgeloest);
-**3c (Blindleistung) offen**. Die Netz-Welle von M8:
+**3c (Blindleistung) re-tranchiert — 3c-a (Q-Bilanz) Done 2026-06-16**
+([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`),
+**3c-b (Geraete-Q + Transformer-S) offen** (Trigger 022 bleibt offen bis
+3c-b). Die Netz-Welle von M8:
 drei Schaerfungen des bestehenden Netzbilanzmodells
 (`GridModelBilanz`, [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))
 aus Lastenheft §11.5, die M2 als SOLLTE markierte. Reine Core-Domain-/
@@ -112,18 +115,22 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   opt-in (kein Versions-Bump). **Klar abgegrenzt** vom Transformer-**Geraet**
   (Welle 2b, das nur Per-Device-Saettigung clamped) — 3b ist die Netz-Grenze
   im Bilanzmodell.
-- **Welle 3c — Blindleistung** ([`M8-welle-3c.md`](M8-welle-3c.md),
+- **Welle 3c — Blindleistung — re-tranchiert (3c-a Done / 3c-b offen)**
+  ([`M8-welle-3c.md`](M8-welle-3c.md),
   `GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)):
-  `reactive_power_kvar`-Telemetry in den Q-emittierenden Geraeten
-  (PV-Wechselrichter, GridConnection) mit Q(U)-Kennlinie; `imbalance_kvar`
-  parallel zu `imbalance_kw` in `GridModelBilanz`; additive
-  **Snapshot-Erweiterung** mit backward-compat-Lesepfad (analog dem
-  GridModelSnapshot-v1→v2-Bump,
-  [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)/[`ADR 0020`](../../adr/0020-load-profile-and-event-pattern.md)).
-  Die konkrete Schema-Liste (mehrere beruehrte Snapshots) ist
-  3c-Design-Item ([`M8-welle-3c.md`](M8-welle-3c.md) §3). NEU ADR(s) als
-  Folge zu 0019 + 0016/0017. **Bewusst zuletzt:** groesste Flaeche (alle
-  Q-Geraete) + Schema-Migration mit Replay-/Export-Beruehrung.
+  **3c-a Done 2026-06-16**
+  ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`)
+  — `imbalance_kvar` parallel zu `imbalance_kw` in `GridModelBilanz` +
+  Q-Spannungskopplung (`voltage_sensitivity_v_per_kvar` opt-in) + additive
+  **GridModelSnapshot v2→v3** mit v1/v2-Backward-Compat-Lesepfad (analog
+  dem v1→v2-Bump,
+  [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)/[`ADR 0020`](../../adr/0020-load-profile-and-event-pattern.md));
+  Q-frei bit-genau, Demo-Pins unberuehrt. **3c-b offen:**
+  `reactive_power_kvar`-Telemetry + Q(U)-Kennlinie in den Q-emittierenden
+  Geraeten (PV-Wechselrichter, GridConnection) + Device-Snapshots +
+  Transformer `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary) + Demo-Telemetry-Re-Pin.
+  NEU ADR(s) als Folge zu 0019 + 0016/0017. **Bewusst zuletzt:** groesste
+  Flaeche (alle Q-Geraete) + Schema-Migration mit Replay-/Export-Beruehrung.
 
 **Schwellen-Hinweis:** sollte eine Sub-Welle selbst > 300 Zeilen / > 5
 Commits werden (3c ist Kandidat wegen Schema + Multi-Geraete-Q), wird sie

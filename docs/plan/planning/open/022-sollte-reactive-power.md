@@ -1,6 +1,12 @@
 # 022 — SOLLTE: Blindleistung im Netzbilanzmodell (`GG-GRID-007`)
 
-**Status:** Open — Trigger-Watch
+**Status:** In Arbeit (teil-geliefert) — **3c-a Done 2026-06-16**
+([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`):
+Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung +
+GridModelSnapshot v2→v3). **Offen: 3c-b** — Geraete-Q-Emission (PV-Q(U),
+GridConnection-Q) + Device-Snapshots + TickLoop-Q-Aggregation + Transformer
+`S=sqrt(P²+Q²)`. Trigger wird mit **3c-b** aufgeloest
+([`M8-welle-3c.md`](../in-progress/M8-welle-3c.md) §4 Re-Tranche).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).
