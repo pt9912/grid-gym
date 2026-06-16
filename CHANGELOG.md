@@ -38,8 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   seeded `RandomPort`-Windeingang), `ADR 0058` (Diesel-Generator-Device-
   Pattern: Kraftstoff + Verbrauch + Anfahr-/Abstell-Hysterese + Ramp +
   `genset_fault`), `ADR 0059` (generische `ScenarioFaultEngine`: eine Engine
-  ueber `supported_types` statt einer Klasse pro Fault-Typ; Carveout D-8) —
-  alle `Accepted`.
+  ueber `supported_types` statt einer Klasse pro Fault-Typ; Carveout D-8),
+  `ADR 0060` (Inselnetz-Bilanzmodell: `is_islanded`/`forming_device_id` +
+  Forming-Geraet als Slack + opt-in Snapshot-/Scenario-Hash) — alle
+  `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
   `DeviceModel` + `FaultInjectableDevice`) mit Fahrzeug-SoC,
@@ -103,6 +105,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `assert_supported_type` entfernt. NEU
   `tests/integration/scenarios/diesel_fault_demo.yaml` + Unit-/Integration-
   Smokes. ([`M8-welle-2-d8.md`](docs/plan/planning/done/M8-welle-2-d8.md))
+- **M8-Welle 3a — Inselnetz-Bilanzmodell (`GG-GRID-005`)**
+  ([`ADR 0060`](docs/plan/adr/0060-island-grid-bilanz-pattern.md)
+  `Accepted`, Schaerfung von `ADR 0019` ohne Supersedes): `GridModelConfig`
+  bekommt additiv `is_islanded`/`forming_device_id` (Presence-Biconditional
+  am Config-Rand). Im Inselnetz haelt ein internes **Grid-Forming-Geraet**
+  (Diesel/Battery) den Slack statt des `GridConnectionDevice` — der TickLoop-
+  Fork spiegelt den GridConnection-Auto-Schluss: Forming-Geraet aus erster
+  Iteration ausgeschlossen, Residual `gen-load-storage+grid` ihm via
+  `set_power_kw` zugewiesen, **Vorzeichen pro `_BILANZ_SOURCE_BUCKETS`**
+  (Generation `-residual`, Storage `+residual`). Existenz-Check im TickLoop-
+  Wiring (NEU `TickLoopUnknownFormingDeviceError`), nicht in der Config.
+  Snapshot **und** Scenario-Hash opt-in (Insel-Keys nur bei `is_islanded`):
+  kein Schema-Bump, `EXPECTED_DEMO_*` unberuehrt; backward-compat-Lesepfad.
+  Scenario-YAML-`grid_model`-Sektion liest die Insel-Felder. Forming-Ueberlast
+  via Geraete-eigenem `set_power_kw`-Clamp (Diesel/Battery `LIMITED`-Alarm);
+  dedizierter `GridConstraintViolationEvent` deferred → 3b.
+  `is_islanded=False` bit-genau wie heute. Trigger 020 aufgeloest.
+  ([`M8-welle-3a.md`](docs/plan/planning/in-progress/M8-welle-3a.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU
@@ -143,6 +163,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `carveouts.md` neu geordnet: Ein-Tabellen-Design mit
   ID-Schema (`D-n`/`T-nnn`/`P-n`), Begruendungen per ID,
   Nummern-Historie-Map.
+- Trivy-Scanner-Pin `0.71.0 → 0.71.1` (Makefile `TRIVY_IMAGE`).
+
+### Security
+
+- Dependency-Bump zur Behebung der von `dep-audit` (`pip-audit --strict`)
+  gemeldeten Bestands-CVEs: `cryptography 48.0.0 → 49.0.0`
+  (GHSA-537c-gmf6-5ccf), `starlette 1.0.1 → 1.3.1` (CVE-2026-48818 /
+  -48817 / -54283 / -54282), `pyopenssl 26.2.0 → 26.3.0` (transitiv).
+  `fastapi` bleibt `0.136.1` (akzeptiert `starlette 1.3.1`). Verifiziert:
+  `dep-audit`/`typecheck`/`test-unit` (2108)/`openapi-validate`/
+  `image-audit` gruen.
 
 ## [0.1.0] - 2026-06-12
 
