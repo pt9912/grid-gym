@@ -174,7 +174,7 @@ arch-check-custom:
 # https://github.com/pt9912/d-check/releases/tag/v0.10.0); Konfiguration
 # in .d-check.yml. Ersetzt tools/check_refs.py und die zugehoerige
 # Dockerfile-Stage (Trigger 002 — geloescht).
-D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:ca49d33f22ecadfd08db03e4487b52b3f2a70dec01a41f2d0f472bfc2012797c
+D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:6ec1c463b5276b3314881839bd800b5e9aab12fa624a35d31618cecb62f17795
 
 docs-check:
 	docker run --rm -v "$(CURDIR)":/repo:ro $(D_CHECK_IMAGE)

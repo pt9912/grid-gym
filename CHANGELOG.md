@@ -34,9 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Prozess im Body, Provenance je Datei unter ausgenommener
   `## Historie`-Sektion (bzw. Traceability-Matrizen via
   `exclude-sections`); Aufwaerts-Refs (`GG-*`/`GG-AR-*`) verlinkt.
-  `ADR 0004`-Bezug bereinigt (redundanter `ADR 0003`-Link),
-  `ADR 0006`-Supersede-Lineage als Inline-Code (offener d-check-CR:
-  Lineage-Carve-out). `AGENTS.md` §2.5 nachgezogen.
+  `ADR 0004`-Bezug bereinigt (redundanter `ADR 0003`-Link).
+  `AGENTS.md` §2.5 nachgezogen.
+- d-check **v0.11.0** gepinnt (`D_CHECK_IMAGE`-Digest) + `matrix`-
+  Supersede-Lineage-Carve-out aktiviert (`allow-supersede-lineage` +
+  `supersede-fields: [Supersedes, Aenderungstyp]`, Trigger 050 Resolved):
+  die abloesende ADR darf ihre abgeloeste verlinken — `ADR 0006`-Bezug auf
+  `ADR 0003` wieder als klickbarer Link (Inline-Code-Workaround entfernt).
+  Boundary verifiziert: Nicht-Lineage-Verweise auf inaktive ADRs bleiben
+  `matrix-inactive`.
 - `harness/conventions.md` (NEU) — formale Adoption des
   AI-Harness-Kurses als Baseline (gepinnt Tag `templates-v2`),
   Adaptions-Block `MR-000..005`, Modus-Deklaration pro Sub-Area;

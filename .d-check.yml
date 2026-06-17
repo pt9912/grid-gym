@@ -72,7 +72,14 @@ matrix:
     - {from: technik, to: slice, allow: false}
     - {from: sicht, to: adr, allow: false}
     - {from: sicht, to: slice, allow: false}
-  status: {forbidden: [superseded, deprecated]}
+  status:
+    forbidden: [superseded, deprecated]
+    # d-check v0.11.0 (Trigger 050): Supersede-Lineage-Carve-out — die
+    # abloesende ADR darf ihre abgeloeste ADR verlinken, wenn ein
+    # Supersede-Feld (`Supersedes`/`Aenderungstyp`) das Ziel nennt. Alle
+    # anderen Verweise auf inaktive Dokumente bleiben `matrix-inactive`.
+    allow-supersede-lineage: true
+    supersede-fields: [Supersedes, Aenderungstyp]
   # SDP Regel 5 (Body vs. Changelog): ADR-/Slice-Provenance lebt nur unter
   # einer Historie-Sektion — diese Ueberschriften sind vom Richtungs-Gate
   # ausgenommen.

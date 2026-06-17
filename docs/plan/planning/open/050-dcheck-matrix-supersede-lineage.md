@@ -1,6 +1,16 @@
 # 050 — d-check `matrix`-Modul: Supersede-Lineage-Carve-out (CR)
 
-**Status:** Open — Trigger-Watch
+**Status:** **Resolved 2026-06-17** — d-check **v0.11.0** liefert den
+Lineage-Carve-out (`allow-supersede-lineage` + `supersede-fields`). Migration
+vollzogen: `D_CHECK_IMAGE` auf den v0.11.0-Digest gepinnt
+([`Makefile`](../../../../Makefile)), `matrix.status.allow-supersede-lineage:
+true` + `supersede-fields: [Supersedes, Aenderungstyp]` in
+[`.d-check.yml`](../../../../.d-check.yml), `ADR 0006`-Bezug auf `ADR 0003`
+wieder als **klickbarer Link** (Inline-Code-Workaround entfernt).
+`make docs-check` gruen; **Boundary verifiziert** (Nicht-Lineage-Verweis auf
+`ADR 0003` bleibt `matrix-inactive` → Carve-out scoped, Gate nicht
+geschwaecht). Doc-Archivierung nach `done-archive/` folgt mit der
+M8-Meilenstein-Closure.
 **Datum:** 2026-06-17
 **Quelle:** Slice [`049`](../done/049-sdp-matrix-doku-umbau.md) §3 +
 Trigger [`048`](048-dcheck-matrix-modul.md) (Out-of-Scope: Lineage-Carve-out).
