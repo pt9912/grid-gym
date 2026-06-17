@@ -29,9 +29,14 @@ class BatteryConfigError(GridGymError):
 
 class BatteryConfigInvalidValueError(BatteryConfigError):
     """Ein einzelner Konfigurationswert ist ausserhalb des
-    erlaubten Wertebereichs."""
+    erlaubten Wertebereichs.
 
-    def __init__(self, field: str, value: Decimal, constraint: str) -> None:
+    `value` ist `object` (nicht `Decimal`), damit auch No-float-/
+    Typ-Verstoesse des opt-in Thermo-Blocks (M8-Welle-4a, ADR 0065 §2.1)
+    typisiert gemeldet werden koennen — analog `PvConfigInvalidValueError`.
+    """
+
+    def __init__(self, field: str, value: object, constraint: str) -> None:
         super().__init__(f"BatteryConfig.{field}={value} violates constraint {constraint!r}")
 
 
@@ -45,6 +50,58 @@ class BatteryConfigInconsistentRangeError(BatteryConfigError):
 
     def __init__(self, field: str, value: Decimal, range_description: str) -> None:
         super().__init__(f"BatteryConfig.{field}={value} inconsistent with {range_description}")
+
+
+# M8-Welle-4a (ADR 0065 §2.1): Pflicht-Decimal-Felder des opt-in
+# Thermo-Blocks (Single-Source fuer no-float + Snapshot-Serialisierung).
+THERMAL_FIELD_NAMES: tuple[str, ...] = (
+    "ambient_temp_c",
+    "thermal_rise_c_at_full_load",
+    "thermal_time_constant_s",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class ThermalConfig:
+    """Single-Zonen-Thermomodell eines Battery-Packs (M8-Welle-4a,
+    `GG-BESS-006`, ADR 0065 §2.1).
+
+    Stateful Euler-Modell, analog dem Top-Oil-Thermomodell aus
+    [`ADR 0061`](../../../../../../docs/plan/adr/0061-transformer-limit-bilanz-pattern.md)
+    §2.2:
+
+        load_pu   = abs(power_kw) / max(max_charge_kw, max_discharge_kw)
+        theta_ss  = ambient_temp_c + thermal_rise_c_at_full_load * load_pu**2
+        theta    += (theta_ss - theta) * (dt_s / thermal_time_constant_s)
+
+    `theta` ist akkumulierter Geraete-State (`temperature_celsius`), bei
+    aktivem Block auf `ambient_temp_c` kaltgestartet (ADR 0065 §2.4 — kein
+    separater Initialwert).
+
+    Invarianten (Verstoss -> `BatteryConfigInvalidValueError`):
+
+    - `thermal_rise_c_at_full_load` — Temperaturanstieg bei Volllast, > 0.
+    - `thermal_time_constant_s` — thermische Traegheit (Tau), > 0.
+    - `ambient_temp_c` — Umgebungstemperatur, beliebiges `Decimal` (auch
+      negativ: Tiefsttemperatur-Umgebung).
+
+    Die No-float-Typpruefung (`GG-DATA-005`) liegt — wie im Bestands-
+    Battery-Pattern — in den Parsern (`_thermal_from_params` /
+    Snapshot-`assert_decimal`), nicht im Konstruktor.
+    """
+
+    ambient_temp_c: Decimal
+    thermal_rise_c_at_full_load: Decimal
+    thermal_time_constant_s: Decimal
+
+    def __post_init__(self) -> None:
+        positive: tuple[tuple[str, Decimal], ...] = (
+            ("thermal_rise_c_at_full_load", self.thermal_rise_c_at_full_load),
+            ("thermal_time_constant_s", self.thermal_time_constant_s),
+        )
+        for field, value in positive:
+            if value <= _ZERO:
+                raise BatteryConfigInvalidValueError(f"thermal.{field}", value, "> 0")
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +134,10 @@ class BatteryConfig:
     charge_efficiency: Decimal
     discharge_efficiency: Decimal
     ramp_kw_per_s: Decimal
+    # M8-Welle-4a (ADR 0065 §2.1): opt-in Single-Zonen-Thermomodell.
+    # `None` (Default) = keine Temperatur-Telemetrie (kein
+    # `temperature_celsius`-Punkt, bit-genau heutiges Verhalten).
+    thermal: ThermalConfig | None = None
 
     def __post_init__(self) -> None:
         # Reduziert C901-Komplexitaet, indem die Pruefungen tabellarisch
@@ -110,6 +171,15 @@ class BatteryConfig:
                 raise BatteryConfigInvalidValueError(field, value, "in (0, 1]")
 
         self._validate_consistency()
+
+        # M8-Welle-4a (ADR 0065 §2.1): opt-in Thermo-Block — defensiver
+        # Typ-Guard (analog `PvConfig.volt_var`). `None` = inaktiv.
+        if self.thermal is not None and not isinstance(self.thermal, ThermalConfig):
+            raise BatteryConfigInvalidValueError(
+                "thermal",
+                self.thermal,
+                f"None or ThermalConfig (got {type(self.thermal).__name__})",
+            )
 
     def _validate_consistency(self) -> None:
         if self.min_soc_pct >= self.max_soc_pct:

@@ -22,8 +22,10 @@ from decimal import Decimal
 from typing import Final, Self
 
 from grid_gym.hexagon.core.devices.battery.config import (
+    THERMAL_FIELD_NAMES,
     BatteryConfig,
     BatteryConfigError,
+    ThermalConfig,
 )
 from grid_gym.hexagon.core.errors import (
     VersionError,
@@ -70,6 +72,8 @@ _CONFIG_KEYS: Final[frozenset[str]] = frozenset(
         "ramp_kw_per_s",
     }
 )
+# M8-Welle-4a (ADR 0065 §2.5): Pflicht-Keys des opt-in thermal-Blocks.
+_THERMAL_KEYS: Final[frozenset[str]] = frozenset(THERMAL_FIELD_NAMES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,6 +101,10 @@ class BatterySnapshot:
     # `False` haelt Snapshot-Roundtrip mit Welle-1-Snapshots
     # ohne `fault_state`-Block kompatibel.
     cell_failure_active: bool = False
+    # M8-Welle-4a (ADR 0065 §2.5): akkumulierte Pack-Temperatur des opt-in
+    # Thermomodells; `None` ohne Thermo-Block (opt-in serialisiert, kein
+    # Versions-Bump — strenger als der immer emittierte `fault_state`-Block).
+    temperature_celsius: Decimal | None = None
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -107,23 +115,33 @@ class BatterySnapshot:
         Feld-Reihenfolge aus `BatteryConfig` (lesbar, deterministisch
         ueber dict-Insertion-Order; canonical_json sortiert
         spaeter ohnehin lexikographisch).
+
+        M8-Welle-4a (ADR 0065 §2.5): der opt-in `thermal`-Block im
+        `config`-Sub-Mapping und der Top-Level `temperature_celsius`-State
+        werden **nur bei aktivem Thermomodell** geschrieben — ohne Block
+        byte-identisch (kein Versions-Bump; `EXPECTED_DEMO_*` unberuehrt).
         """
-        return {
+        config_dict: dict[str, object] = {
+            "capacity_kwh": self.config.capacity_kwh,
+            "initial_soc_pct": self.config.initial_soc_pct,
+            "min_soc_pct": self.config.min_soc_pct,
+            "max_soc_pct": self.config.max_soc_pct,
+            "max_charge_kw": self.config.max_charge_kw,
+            "max_discharge_kw": self.config.max_discharge_kw,
+            "charge_efficiency": self.config.charge_efficiency,
+            "discharge_efficiency": self.config.discharge_efficiency,
+            "ramp_kw_per_s": self.config.ramp_kw_per_s,
+        }
+        if self.config.thermal is not None:
+            config_dict["thermal"] = {
+                key: getattr(self.config.thermal, key) for key in THERMAL_FIELD_NAMES
+            }
+        result: dict[str, object] = {
             "version": self.version,
             "device_id": self.device_id,
             "run_id": self.run_id,
             "sequence": self.sequence,
-            "config": {
-                "capacity_kwh": self.config.capacity_kwh,
-                "initial_soc_pct": self.config.initial_soc_pct,
-                "min_soc_pct": self.config.min_soc_pct,
-                "max_soc_pct": self.config.max_soc_pct,
-                "max_charge_kw": self.config.max_charge_kw,
-                "max_discharge_kw": self.config.max_discharge_kw,
-                "charge_efficiency": self.config.charge_efficiency,
-                "discharge_efficiency": self.config.discharge_efficiency,
-                "ramp_kw_per_s": self.config.ramp_kw_per_s,
-            },
+            "config": config_dict,
             "soc_kwh": self.soc_kwh,
             "current_power_kw": self.current_power_kw,
             "pending_power_kw": self.pending_power_kw,
@@ -134,6 +152,9 @@ class BatterySnapshot:
                 "cell_failure_active": self.cell_failure_active,
             },
         }
+        if self.temperature_celsius is not None:
+            result["temperature_celsius"] = self.temperature_celsius
+        return result
 
     @classmethod
     def from_dict(cls, state: Mapping[str, object]) -> Self:
@@ -174,6 +195,9 @@ class BatterySnapshot:
                 charge_efficiency=_config_decimal(config_state, "charge_efficiency"),
                 discharge_efficiency=_config_decimal(config_state, "discharge_efficiency"),
                 ramp_kw_per_s=_config_decimal(config_state, "ramp_kw_per_s"),
+                # M8-Welle-4a (ADR 0065 §2.5): opt-in thermal-Block (fehlt
+                # -> None; Alt-Snapshots lesen als „kein Thermomodell").
+                thermal=_parse_thermal(config_state),
             )
         except BatteryConfigError as err:
             # Welle-2-Review M-5: BatteryConfigError ist nicht Teil
@@ -192,6 +216,14 @@ class BatterySnapshot:
             state, _FAULT_STATE_KEY, "cell_failure_active", SUBSYSTEM
         )
 
+        # M8-Welle-4a (ADR 0065 §2.5): Thermo-State opt-in lesen (backward-
+        # compat — Alt-Snapshots ohne den Key lesen als „kein Thermomodell").
+        temperature_celsius = (
+            assert_decimal(state["temperature_celsius"], "temperature_celsius", SUBSYSTEM)
+            if "temperature_celsius" in state
+            else None
+        )
+
         return cls(
             version=version,
             device_id=device_id,
@@ -202,6 +234,7 @@ class BatterySnapshot:
             current_power_kw=current_power_kw,
             pending_power_kw=pending_power_kw,
             cell_failure_active=cell_failure_active,
+            temperature_celsius=temperature_celsius,
         )
 
 
@@ -213,6 +246,23 @@ def _config_decimal(config_state: Mapping[str, object], leaf: str) -> Decimal:
     Codec-`assert_decimal` mit Battery-spezifischem Pfad-Prefix).
     """
     return assert_decimal(config_state[leaf], f"config.{leaf}", SUBSYSTEM)
+
+
+def _parse_thermal(config_state: Mapping[str, object]) -> ThermalConfig | None:
+    """M8-Welle-4a (ADR 0065 §2.5): liest den opt-in `thermal`-Block aus dem
+    `config`-Sub-Mapping (fehlt → `None`). Die Wertebereichs-Invarianten
+    (ADR 0065 §2.1) erzwingt der `ThermalConfig`-Konstruktor; sein
+    `BatteryConfigError` wird vom Aufrufer (`from_dict`) zu `WrongTypeError`
+    ueberfuehrt — spiegelt `_parse_volt_var` aus dem PV-Snapshot."""
+    if "thermal" not in config_state:
+        return None
+    block = assert_mapping(config_state["thermal"], "config.thermal", SUBSYSTEM)
+    assert_required_keys(block, _THERMAL_KEYS, SUBSYSTEM)
+    fields = {
+        key: assert_decimal(block[key], f"config.thermal.{key}", SUBSYSTEM)
+        for key in THERMAL_FIELD_NAMES
+    }
+    return ThermalConfig(**fields)
 
 
 # Welle-2-Review L-4: Error-Klassen NICHT re-exportiert — Aufrufer

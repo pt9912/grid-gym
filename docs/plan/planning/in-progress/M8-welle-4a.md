@@ -1,11 +1,14 @@
 # Welle 4a — Battery-Temperatur-Telemetrie (`GG-BESS-006`)
 
-**Status:** Geplant (M8-Welle-4a) — erste Sub-Welle der BESS-Telemetrie-Welle,
-additive Schaerfung des Battery-Modells. Liefert via NEU ADR (Nummer bei
-Slice-Eroeffnung, Schaerfung zu
-[`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), kein Supersede).
-Trigger [`023`](../open/023-sollte-battery-temperature.md) wird mit dieser
-Sub-Welle aufgeloest.
+**Status:** **Done (2026-06-17)** — erste Sub-Welle der BESS-Telemetrie-Welle,
+additive Schaerfung des Battery-Modells. Geliefert via
+[`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) `Accepted`
+(Schaerfung zu [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), kein
+Supersede). Trigger [`023`](../open/023-sollte-battery-temperature.md)
+aufgeloest. `make gates` + `docs-check` + `accept-pin-check` gruen
+(`coverage-gate-critical` 96 % auf `devices/battery`). Doc-Verschiebung nach
+`done/` erfolgt als Gruppe mit der Welle-4-Gesamt-Closure (siehe
+[`M8-welle-4.md`](M8-welle-4.md) §1).
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b); [`roadmap.md`](roadmap.md) §4 M8. Trigger:
@@ -28,32 +31,33 @@ Feld, kein Punkt).
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [ ] **Config + Thermo-Modell**: opt-in Thermo-Parameter additiv in
-      `BatteryConfig` (`config.py`, z. B.
-      `thermal_rise_c_at_full_load` / `ambient_temp_c` /
-      `thermal_time_constant_s`), Default = inaktiv; fehlende neue
-      Config-Keys in alten Snapshots/Szenarien lesen als inaktive Defaults.
-      `BatteryDevice` rechnet `temperature_celsius` als **stateful Single-
-      Zonen-Euler** (`theta += (theta_ss − theta)·(dt/τ)`,
+- [x] **Config + Thermo-Modell**: opt-in `ThermalConfig` (nested) additiv in
+      `BatteryConfig` (`config.py`: `ambient_temp_c` /
+      `thermal_rise_c_at_full_load` / `thermal_time_constant_s`), Default =
+      inaktiv; fehlende neue Config-Keys in alten Snapshots/Szenarien lesen
+      als inaktive Defaults. `BatteryDevice` rechnet `temperature_celsius`
+      als **stateful Single-Zonen-Euler** (`theta += (theta_ss - theta)·(dt/tau)`,
       `theta_ss = ambient + rise_at_full_load·load_pu²`, analog
       [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md));
-      ≥ 100-Tick-Determinismus-Property (gleicher Seed/Input → identische
-      T-Trace). C1 entscheidet Parameter-Namen, Initialwert und Rundung,
-      nicht die Modell-Tiefe.
-- [ ] **Telemetrie + Snapshot opt-in**: `temperature_celsius`-`TelemetryPoint`
-      (SI per `GG-DATA-002`) **nur bei aktiver Config** (inaktiv → kein
-      Punkt); `BatterySnapshot` traegt den T-State **additiv opt-in
-      serialisiert** (kein Versions-Bump, v1-Lesepfad fuer Altschnappschuesse,
-      strenger als der immer emittierte `fault_state`-Block aus
+      ≥ 100-Tick-Determinismus-Property + Aufheiz-/Abkuehl-/Steady-State-Pins.
+      C1: Parameter-Namen fixiert, **Kaltstart auf `ambient_temp_c`** (kein
+      `initial_temp_c`), Rundung `Decimal("0.000001")` ROUND_HALF_EVEN.
+- [x] **Telemetrie + Snapshot opt-in**: `temperature_celsius`-`TelemetryPoint`
+      (`unit="degC"`, SI per `GG-DATA-002`) **nur bei aktiver Config**
+      (inaktiv → kein Punkt, alphabetisch hinter `soc_pct`); `BatterySnapshot`
+      traegt den T-State **additiv opt-in serialisiert** (kein Versions-Bump,
+      v1-Lesepfad fuer Altschnappschuesse, strenger als der immer emittierte
+      `fault_state`-Block aus
       [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)); neue Thermo-
       Config-Keys werden bei inaktivem Feature nicht ins Snapshot-`config`-
       Mapping geschrieben; Roundtrip byte-stabil.
-- [ ] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
-      `coverage-gate-critical` ≥ 90 % auf `devices/battery` (kein neuer
+- [x] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
+      `coverage-gate-critical` 96 % auf `devices/battery` (kein neuer
       Target) + `docs-check` + **`accept-pin-check` gruen**
       ([`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
-      ohne Thermo-Config → `EXPECTED_DEMO_*` unberuehrt); NEU ADR `Accepted`;
-      Trigger 023 aufgeloest.
+      ohne Thermo-Config → `EXPECTED_DEMO_*` unberuehrt);
+      [`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md)
+      `Accepted`; Trigger 023 aufgeloest.
 
 ## 3. Design-Skizze (C1)
 

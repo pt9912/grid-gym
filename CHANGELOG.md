@@ -49,7 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ADR 0063` (PV-Q(U)-Emission + Spannungs-Feedback, 3c-b-1:
   `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig`),
   `ADR 0064` (GridConnection-Q-Auto-Schluss + Transformer-Scheinleistung
-  `S=sqrt(P²+Q²)`, 3c-b-2: schliesst `GG-GRID-007`) — alle
+  `S=sqrt(P²+Q²)`, 3c-b-2: schliesst `GG-GRID-007`),
+  `ADR 0065` (Battery-Temperatur-Telemetrie, 4a: opt-in `ThermalConfig` +
+  stateful Single-Zonen-Euler + opt-in `temperature_celsius`-Telemetrie/
+  -Snapshot; schliesst `GG-BESS-006`) — alle
   `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
@@ -200,6 +203,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unberuehrt. **Trigger 022 aufgeloest** — `GG-GRID-007` komplett; damit ist
   **M8-Welle 3 (Netz, `GG-GRID-005..007`) abgeschlossen**.
   ([`M8-welle-3c.md`](docs/plan/planning/done/M8-welle-3c.md))
+- **M8-Welle 4a — Battery-Temperatur-Telemetrie (`GG-BESS-006`)**
+  ([`ADR 0065`](docs/plan/adr/0065-battery-thermal-telemetry-pattern.md)
+  `Accepted`, Schaerfung zu `ADR 0014` ohne Supersede; spiegelt die
+  Single-Zonen-Euler-Thermik aus `ADR 0061` aufs Battery-Pack): NEU opt-in
+  `ThermalConfig` (nested) auf `BatteryConfig` (`ambient_temp_c`,
+  `thermal_rise_c_at_full_load`, `thermal_time_constant_s`). `BatteryDevice`
+  fuehrt `temperature_celsius` als **stateful** Geraete-State
+  (`theta += (theta_ss - theta)·dt/tau`, `theta_ss = ambient + rise·load_pu²`,
+  `load_pu = abs(power_kw)/max(max_charge_kw,max_discharge_kw)`; Kaltstart auf
+  `ambient_temp_c`) und emittiert einen `temperature_celsius`-`TelemetryPoint`
+  (`unit="degC"`) **nur bei aktivem Block** (inaktiv → kein Punkt, nicht `0`;
+  alphabetisch hinter `soc_pct`). `BatterySnapshot` serialisiert den
+  Thermo-Block + State **opt-in ohne Versions-Bump** (v1-backward-compat-
+  Lesepfad; strenger als der immer emittierte `fault_state`). Reine
+  Telemetrie — **kein** Trip/Alarm/Derating (M3). **Pin-neutral**:
+  Demo-Battery ohne `thermal`-Block → keine T-Telemetrie/-State,
+  `EXPECTED_DEMO_*` + Scenario-Hash unberuehrt. **Trigger 023 aufgeloest.**
+  ([`M8-welle-4a.md`](docs/plan/planning/in-progress/M8-welle-4a.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

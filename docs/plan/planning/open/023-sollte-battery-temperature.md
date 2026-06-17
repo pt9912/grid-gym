@@ -1,6 +1,13 @@
 # 023 — SOLLTE: Battery-Temperatur-Telemetry (`GG-BESS-006`)
 
-**Status:** Open — Trigger-Watch
+**Status:** **Resolved 2026-06-17** — M8-Welle-4a. Geliefert via
+[`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) `Accepted`
++ opt-in `ThermalConfig` auf `BatteryConfig` (stateful Single-Zonen-Euler,
+analog [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md))
++ opt-in `temperature_celsius`-Telemetrie (`unit="degC"`) + opt-in
+Snapshot-Serialisierung ohne Versions-Bump
+([`M8-welle-4a.md`](../in-progress/M8-welle-4a.md)). Doc-Archivierung nach
+`done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §10.6 (`GG-BESS-006`/`007`).

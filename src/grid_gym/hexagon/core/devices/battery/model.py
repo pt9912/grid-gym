@@ -31,7 +31,11 @@ from grid_gym.hexagon.core.devices.battery.commands import (
     BatteryAlarm,
     validate_set_power_command,
 )
-from grid_gym.hexagon.core.devices.battery.config import BatteryConfig
+from grid_gym.hexagon.core.devices.battery.config import (
+    THERMAL_FIELD_NAMES,
+    BatteryConfig,
+    ThermalConfig,
+)
 from grid_gym.hexagon.core.devices.battery.snapshot import (
     SNAPSHOT_VERSION,
     BatterySnapshot,
@@ -149,6 +153,11 @@ class BatteryDevice:
         # (BatteryFaultEngine) haelt Scheduling-State
         # (`remaining_ticks`).
         self._cell_failure_active: bool = False
+        # M8-Welle-4a (ADR 0065 §2.2): akkumulierte Pack-Temperatur des
+        # opt-in Thermomodells. `None`, solange kein `thermal`-Block
+        # konfiguriert ist (bit-genau heutiges Verhalten); `initialize`/
+        # `from_snapshot` setzen ihn bei aktivem Block auf `ambient_temp_c`.
+        self._temperature_celsius: Decimal | None = None
 
     # ------------------------------------------------------------------
     # Pflicht-Property (ADR 0013 §2.7)
@@ -215,6 +224,11 @@ class BatteryDevice:
         self._soc_kwh = config.initial_soc_kwh
         self._current_power_kw = _ZERO
         self._pending_power_kw = _ZERO
+        # M8-Welle-4a (ADR 0065 §2.4): Kaltstart auf Umgebungstemperatur bei
+        # aktivem Thermo-Block; sonst `None` (kein Temperatur-State/-Punkt).
+        self._temperature_celsius = (
+            config.thermal.ambient_temp_c if config.thermal is not None else None
+        )
 
     def apply_command(self, command: Command) -> CommandResult:
         if self._scenario_device is None or self._config is None:
@@ -340,9 +354,48 @@ class BatteryDevice:
         self._soc_kwh = new_soc_kwh
         self._current_power_kw = new_power_kw
 
+        # M8-Welle-4a (ADR 0065 §2.2): Thermo-Euler-Schritt auf der
+        # tatsaechlich gefahrenen Power dieses Ticks (post-Ramp/-Clamp).
+        # No-op ohne `thermal`-Block (Inaktiv-Pfad bit-identisch).
+        self._update_temperature(new_power_kw, dt_seconds, config)
+
         telemetry = self._emit_telemetry(context, new_soc_kwh, new_power_kw)
         self._last_telemetry = telemetry
         return DeviceTickOutcome(telemetry=telemetry)
+
+    def _update_temperature(
+        self,
+        power_kw: Decimal,
+        dt_seconds: Decimal,
+        config: BatteryConfig,
+    ) -> None:
+        """ADR 0065 §2.2: stateful Single-Zonen-Euler-Schritt (analog dem
+        Top-Oil-Thermomodell aus ADR 0061 §2.2). No-op ohne `thermal`-Block
+        — `_temperature_celsius` bleibt `None` (kein State, kein Punkt,
+        bit-identisch zum heutigen Battery-Pfad).
+
+            load_pu   = abs(power_kw) / max(max_charge_kw, max_discharge_kw)
+            theta_ss  = ambient + thermal_rise_c_at_full_load * load_pu**2
+            theta    += (theta_ss - theta) * (dt_s / thermal_time_constant_s)
+
+        Laeuft im `_battery_decimal_context` (prec=28, ROUND_HALF_EVEN);
+        `theta` wird auf `_QUANTUM` (6 Nachkommastellen) quantisiert —
+        gebundene Stellenzahl, kein Float-Drift im Snapshot/Telemetrie."""
+        thermal = config.thermal
+        if thermal is None:
+            return
+        # __init__/initialize/from_snapshot setzen den State bei aktivem Block;
+        # der ambient-Fallback ist nur mypy-Narrowing (kein assert — S101).
+        current = (
+            self._temperature_celsius
+            if self._temperature_celsius is not None
+            else thermal.ambient_temp_c
+        )
+        rated_kw = max(config.max_charge_kw, config.max_discharge_kw)
+        load_pu = abs(power_kw) / rated_kw
+        theta_ss = thermal.ambient_temp_c + thermal.thermal_rise_c_at_full_load * load_pu * load_pu
+        theta = current + (theta_ss - current) * (dt_seconds / thermal.thermal_time_constant_s)
+        self._temperature_celsius = theta.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
     def telemetry(self) -> tuple[TelemetryPoint, ...]:
         return self._last_telemetry
@@ -366,6 +419,7 @@ class BatteryDevice:
             current_power_kw=self._current_power_kw,
             pending_power_kw=self._pending_power_kw,
             cell_failure_active=self._cell_failure_active,
+            temperature_celsius=self._temperature_celsius,
         )
         return snap.to_dict()
 
@@ -391,6 +445,10 @@ class BatteryDevice:
         device._run_id = snap.run_id
         device._sequence = snap.sequence
         device._cell_failure_active = snap.cell_failure_active
+        # M8-Welle-4a (ADR 0065 §2.5): Thermo-State aus dem opt-in-Snapshot
+        # (None ohne Block; `__init__` hat ihn bereits konsistent gesetzt,
+        # der Snapshot-Wert ueberschreibt fuer den Resume).
+        device._temperature_celsius = snap.temperature_celsius
         return device
 
     # ------------------------------------------------------------------
@@ -415,6 +473,7 @@ class BatteryDevice:
             and self._run_id == other._run_id
             and self._sequence == other._sequence
             and self._cell_failure_active == other._cell_failure_active
+            and self._temperature_celsius == other._temperature_celsius
         )
 
     @override
@@ -429,6 +488,7 @@ class BatteryDevice:
                 self._run_id,
                 self._sequence,
                 self._cell_failure_active,
+                self._temperature_celsius,
             )
         )
 
@@ -501,12 +561,23 @@ class BatteryDevice:
         soc_kwh = new_soc_kwh.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         power_kw = new_power_kw.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
-        # Drei Tupel; alphabetisch sortiert nach Metrikname.
-        emissions = (
+        # Drei Bestands-Metriken; alphabetisch sortiert nach Metrikname.
+        emissions = [
             ("power_kw", power_kw, "kW"),
             ("soc_kwh", soc_kwh, "kWh"),
             ("soc_pct", soc_pct, "pct"),
-        )
+        ]
+        # M8-Welle-4a (ADR 0065 §2.2): opt-in `temperature_celsius`-Punkt
+        # **nur bei aktivem Thermomodell** (inaktiv -> kein Punkt, nicht `0`).
+        # Sortiert nach Metrikname hinter `soc_pct` -> ans Ende.
+        if self._temperature_celsius is not None:
+            emissions.append(
+                (
+                    "temperature_celsius",
+                    self._temperature_celsius.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN),
+                    "degC",
+                )
+            )
         points = []
         for metric, value, unit in emissions:
             self._sequence += 1
@@ -545,12 +616,39 @@ def _config_from_params(params: Mapping[str, object]) -> BatteryConfig:
         if not isinstance(value, Decimal):
             raise WrongTypeError(_SUBSYSTEM, f"params.{key}", "Decimal", type(value).__name__)
         fields[key] = value
-    return BatteryConfig(**fields)
+    return BatteryConfig(**fields, thermal=_thermal_from_params(params))
 
 
-def _config_to_params(config: BatteryConfig) -> Mapping[str, Decimal]:
+def _thermal_from_params(params: Mapping[str, object]) -> ThermalConfig | None:
+    """M8-Welle-4a (ADR 0065 §2.1): liest den optionalen `thermal`-Block aus
+    den Scenario-Params (opt-in — fehlt → `None` → kein Thermomodell).
+    Spiegelt `_volt_var_from_params` aus dem PV-Geraet; die No-float-Pruefung
+    (`GG-DATA-005`) liegt hier (nicht im `ThermalConfig`-Konstruktor)."""
+    if "thermal" not in params:
+        return None
+    block = params["thermal"]
+    if not isinstance(block, Mapping):
+        raise WrongTypeError(_SUBSYSTEM, "params.thermal", "Mapping", type(block).__name__)
+    fields: dict[str, Decimal] = {}
+    for key in THERMAL_FIELD_NAMES:
+        if key not in block:
+            raise MissingKeysError(_SUBSYSTEM, [f"thermal.{key}"])
+        value = block[key]
+        if not isinstance(value, Decimal):
+            raise WrongTypeError(
+                _SUBSYSTEM, f"params.thermal.{key}", "Decimal", type(value).__name__
+            )
+        fields[key] = value
+    return ThermalConfig(**fields)
+
+
+def _config_to_params(config: BatteryConfig) -> Mapping[str, object]:
     """Inverse von `_config_from_params`: serialisiert
     `BatteryConfig` zurueck in das Params-Mapping-Form fuer das
     synthesizte `ScenarioDevice` post-`from_snapshot`
-    (Welle-2-Review C-1)."""
-    return {key: getattr(config, key) for key in _PARAM_KEYS}
+    (Welle-2-Review C-1). M8-Welle-4a (ADR 0065): der opt-in `thermal`-Block
+    wird als nested Mapping nur bei aktivem Thermomodell wiedergegeben."""
+    params: dict[str, object] = {key: getattr(config, key) for key in _PARAM_KEYS}
+    if config.thermal is not None:
+        params["thermal"] = {key: getattr(config.thermal, key) for key in THERMAL_FIELD_NAMES}
+    return params

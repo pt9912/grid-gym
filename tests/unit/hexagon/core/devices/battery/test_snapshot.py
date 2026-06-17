@@ -15,7 +15,7 @@ from decimal import Decimal
 
 import pytest
 
-from grid_gym.hexagon.core.devices.battery.config import BatteryConfig
+from grid_gym.hexagon.core.devices.battery.config import BatteryConfig, ThermalConfig
 from grid_gym.hexagon.core.devices.battery.snapshot import (
     SNAPSHOT_VERSION,
     BatterySnapshot,
@@ -155,3 +155,104 @@ def test_from_dict_non_decimal_soc_kwh_rejected() -> None:
         BatterySnapshot.from_dict(state)
     assert exc_info.value.subsystem == "battery"
     assert "soc_kwh" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-4a (ADR 0065): opt-in Thermo-Block + temperature_celsius
+# ---------------------------------------------------------------------------
+
+
+def _make_thermal_snapshot() -> BatterySnapshot:
+    base = _make_snapshot()
+    thermal_config = BatteryConfig(
+        capacity_kwh=base.config.capacity_kwh,
+        initial_soc_pct=base.config.initial_soc_pct,
+        min_soc_pct=base.config.min_soc_pct,
+        max_soc_pct=base.config.max_soc_pct,
+        max_charge_kw=base.config.max_charge_kw,
+        max_discharge_kw=base.config.max_discharge_kw,
+        charge_efficiency=base.config.charge_efficiency,
+        discharge_efficiency=base.config.discharge_efficiency,
+        ramp_kw_per_s=base.config.ramp_kw_per_s,
+        thermal=ThermalConfig(
+            ambient_temp_c=Decimal("20"),
+            thermal_rise_c_at_full_load=Decimal("40"),
+            thermal_time_constant_s=Decimal("600"),
+        ),
+    )
+    return BatterySnapshot(
+        version=SNAPSHOT_VERSION,
+        device_id="battery-1",
+        run_id="run-42",
+        sequence=0,
+        config=thermal_config,
+        soc_kwh=Decimal("500"),
+        current_power_kw=Decimal("0"),
+        pending_power_kw=Decimal("0"),
+        temperature_celsius=Decimal("23.5"),
+    )
+
+
+def test_inactive_snapshot_omits_thermal_keys() -> None:
+    """Ohne Thermo-Block: weder `config.thermal` noch Top-Level
+    `temperature_celsius` werden serialisiert (opt-in, kein Versions-Bump)."""
+    state = _make_snapshot().to_dict()
+    assert "temperature_celsius" not in state
+    assert "thermal" not in state["config"]  # type: ignore[operator]
+
+
+def test_thermal_snapshot_roundtrip_byte_stable() -> None:
+    """Opt-in Thermo-Block + State roundtrippen byte-stabil."""
+    snapshot = _make_thermal_snapshot()
+    state = snapshot.to_dict()
+    assert state["temperature_celsius"] == Decimal("23.5")
+    assert "thermal" in state["config"]  # type: ignore[operator]
+    assert BatterySnapshot.from_dict(state) == snapshot
+
+
+def test_from_dict_v1_without_thermal_reads_as_inactive() -> None:
+    """Backward-compat (ADR 0065 §2.5): ein Snapshot ohne
+    `temperature_celsius`/`thermal` liest als „kein Thermomodell"."""
+    restored = BatterySnapshot.from_dict(_make_snapshot().to_dict())
+    assert restored.temperature_celsius is None
+    assert restored.config.thermal is None
+
+
+def test_from_dict_missing_thermal_sub_key_rejected() -> None:
+    state = dict(_make_thermal_snapshot().to_dict())
+    config = dict(state["config"])  # type: ignore[arg-type]
+    thermal = dict(config["thermal"])  # type: ignore[arg-type]
+    del thermal["thermal_time_constant_s"]
+    config["thermal"] = thermal
+    state["config"] = config
+    with pytest.raises(MissingKeysError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "battery"
+    assert "thermal_time_constant_s" in str(exc_info.value)
+
+
+def test_from_dict_non_mapping_thermal_rejected() -> None:
+    state = dict(_make_thermal_snapshot().to_dict())
+    config = dict(state["config"])  # type: ignore[arg-type]
+    config["thermal"] = ["not", "a", "mapping"]
+    state["config"] = config
+    with pytest.raises(WrongTypeError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "battery"
+    assert "thermal" in str(exc_info.value)
+
+
+def test_from_dict_invalid_thermal_value_rejected() -> None:
+    """Negativer `thermal_time_constant_s` verletzt die ThermalConfig-
+    Invariante -> via from_dict zu `WrongTypeError` ueberfuehrt
+    (ADR 0014 §2.2 M-5-Pattern)."""
+    state = dict(_make_thermal_snapshot().to_dict())
+    config = dict(state["config"])  # type: ignore[arg-type]
+    thermal = dict(config["thermal"])  # type: ignore[arg-type]
+    thermal["thermal_time_constant_s"] = Decimal("-1")
+    config["thermal"] = thermal
+    state["config"] = config
+    with pytest.raises(WrongTypeError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "battery"
+    assert "config" in str(exc_info.value)
