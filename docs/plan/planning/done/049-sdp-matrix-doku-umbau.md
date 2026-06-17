@@ -5,8 +5,8 @@
 d-check `matrix`-Modul (Referenzrichtungs-Gate, `DC-FA-MTX-001`) ist in
 `.d-check.yml` aktiv (volle Abwaerts-Regeln + Status-Regel +
 `exclude-sections`); die Spec-Straten sind zeitlos umgebaut, `make docs-check`
-gruen (0 Befunde). Doc-Verschiebung nach `done/` mit der M8-Meilenstein-
-Closure. **Scope-Praezisierung gegenueber der Eroeffnung** (User-Steuerung):
+gruen (0 Befunde). Nach `done/` verschoben (2026-06-17).
+**Scope-Praezisierung gegenueber der Eroeffnung** (User-Steuerung):
 der Body traegt **gar keine** ADR-Erwaehnung (auch nicht semantisch `ADR X`
 oder „ADR X §Y verbindlich"), **keine** Status-/Wellen-/Decision-Prozess-
 Angaben; Provenance vollstaendig in `## Historie`. Aufwaerts-Refs werden

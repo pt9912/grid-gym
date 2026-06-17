@@ -2,7 +2,7 @@
 
 **Status:** Open — Trigger-Watch
 **Datum:** 2026-06-17
-**Quelle:** Slice [`049`](../in-progress/049-sdp-matrix-doku-umbau.md) §3 +
+**Quelle:** Slice [`049`](../done/049-sdp-matrix-doku-umbau.md) §3 +
 Trigger [`048`](048-dcheck-matrix-modul.md) (Out-of-Scope: Lineage-Carve-out).
 d-check ist das Cross-Repo-Tool (`ghcr.io/pt9912/d-check`); das Feature wird
 **dort** ergaenzt, nicht repo-lokal.

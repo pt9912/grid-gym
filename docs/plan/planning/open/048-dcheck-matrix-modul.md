@@ -1,7 +1,7 @@
 # 048 — d-check `matrix`-Modul einfuehren (Referenzrichtungs-Gate, SDP)
 
 **Status:** **Resolved 2026-06-17** — **Option A (Voll-SDP)** gewaehlt und
-umgesetzt via Slice [`049`](../in-progress/049-sdp-matrix-doku-umbau.md): das
+umgesetzt via Slice [`049`](../done/049-sdp-matrix-doku-umbau.md): das
 `matrix`-Modul ist in [`.d-check.yml`](../../../../.d-check.yml) aktiv
 (SDP-Klassen + Abwaerts-Regeln + `status: forbidden: [superseded,
 deprecated]` + `exclude-sections` fuer die `## Historie`-/Traceability-
