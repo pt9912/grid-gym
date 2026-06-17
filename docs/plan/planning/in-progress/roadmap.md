@@ -1109,7 +1109,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
 
 - **Lieferziel:** harte Performance-Schranken aus [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)..005,
   Sicherheits-Audit ([`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006,
-  `GG-SBOM-*` ueber Trigger 008), CI/CD-Vollausbau
+  SBOM-Generierung ueber Trigger 008), CI/CD-Vollausbau
   ([`GG-CICD-001`](../../../../spec/lastenheft.md#gg-cicd-001)..00X).
 - **Lastenheft-IDs:** [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)..005, [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006,
   [`GG-CICD-001`](../../../../spec/lastenheft.md#gg-cicd-001)..00X, [`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..00X.
