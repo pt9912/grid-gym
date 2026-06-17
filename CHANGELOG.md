@@ -65,7 +65,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `S=sqrt(P²+Q²)`, 3c-b-2: schliesst `GG-GRID-007`),
   `ADR 0065` (Battery-Temperatur-Telemetrie, 4a: opt-in `ThermalConfig` +
   stateful Single-Zonen-Euler + opt-in `temperature_celsius`-Telemetrie/
-  -Snapshot; schliesst `GG-BESS-006`) — alle
+  -Snapshot; schliesst `GG-BESS-006`),
+  `ADR 0066` (Battery-Zellspannung-Telemetrie, 4b: opt-in `CellConfig` +
+  erster Battery-`RandomPort`-Konsum + per-Zelle tick-gekeytes Rauschen +
+  opt-in `cell_voltage_delta_v`-Telemetrie/`cell_voltages_v`-Snapshot;
+  schliesst `GG-BESS-007`) — alle
   `Accepted`.
 - **M8-Welle 2a — EV-Charger (`GG-DEV-015`)**: NEU
   `hexagon/core/devices/ev_charger/` (`EvChargerDevice` als
@@ -234,6 +238,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Demo-Battery ohne `thermal`-Block → keine T-Telemetrie/-State,
   `EXPECTED_DEMO_*` + Scenario-Hash unberuehrt. **Trigger 023 aufgeloest.**
   ([`M8-welle-4a.md`](docs/plan/planning/in-progress/M8-welle-4a.md))
+- **M8-Welle 4b — Battery-Zellspannung-Telemetrie (`GG-BESS-007`)**
+  ([`ADR 0066`](docs/plan/adr/0066-battery-cell-voltage-telemetry-pattern.md)
+  `Accepted`, Schaerfung zu `ADR 0014` ohne Supersede; Schwester-Slice zu
+  `ADR 0065`): NEU opt-in `CellConfig` (nested) auf `BatteryConfig`
+  (`nominal_pack_voltage_v`, `n_cells`, `noise_amplitude_v`) — **erster
+  Battery-`RandomPort`-Konsum** (Praezedenz `ADR 0057` Wind). `cell_voltages_v`
+  je Tick aus Basis `nominal_pack_voltage_v/n_cells`; bei `noise_amplitude_v>0`
+  pro Zelle `(draw*2-1)*amp` aus
+  `random.sub_port("cell-<i>").sub_port("tick-<t>").next_float()` — per-Zelle
+  unabhaengig, per-Tick variierend, **tick-gekeyt → resume-kontinuierlich**;
+  `noise=0` → alle Zellen identisch (kein `RandomPort`-Zug). Opt-in aggregierte
+  `cell_voltage_delta_v`-`TelemetryPoint` (`max-min`, `unit="V"`) **nur bei
+  aktivem Block** (bounded statt N per-Zelle); Emission alphabetisch sortiert.
+  `BatterySnapshot` opt-in (Config-`cell`-Block mit `n_cells:int` +
+  `cell_voltages_v: tuple[Decimal,...]` nur bei Non-Empty) **ohne
+  Versions-Bump** (v1-Lesepfad, Tuple-Kanonik). **Resume**: aktives Rauschen
+  ohne `attach_random` → fail-loud, danach byte-kontinuierlich. Reine
+  Telemetrie — **kein** Balancing/Abschaltung (M3). **Pin-neutral**: Demo ohne
+  `cell`-Block → `EXPECTED_DEMO_*` unberuehrt. **Trigger 024 aufgeloest** —
+  damit ist **M8-Welle 4 (BESS-Telemetrie, `GG-BESS-006/007`) abgeschlossen**.
+  ([`M8-welle-4b.md`](docs/plan/planning/in-progress/M8-welle-4b.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

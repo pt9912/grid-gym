@@ -22,9 +22,11 @@ from decimal import Decimal
 from typing import Final, Self
 
 from grid_gym.hexagon.core.devices.battery.config import (
+    CELL_FIELD_NAMES,
     THERMAL_FIELD_NAMES,
     BatteryConfig,
     BatteryConfigError,
+    CellConfig,
     ThermalConfig,
 )
 from grid_gym.hexagon.core.errors import (
@@ -74,6 +76,8 @@ _CONFIG_KEYS: Final[frozenset[str]] = frozenset(
 )
 # M8-Welle-4a (ADR 0065 §2.5): Pflicht-Keys des opt-in thermal-Blocks.
 _THERMAL_KEYS: Final[frozenset[str]] = frozenset(THERMAL_FIELD_NAMES)
+# M8-Welle-4b (ADR 0066 §2.5): Pflicht-Keys des opt-in cell-Blocks.
+_CELL_KEYS: Final[frozenset[str]] = frozenset(CELL_FIELD_NAMES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +109,10 @@ class BatterySnapshot:
     # Thermomodells; `None` ohne Thermo-Block (opt-in serialisiert, kein
     # Versions-Bump — strenger als der immer emittierte `fault_state`-Block).
     temperature_celsius: Decimal | None = None
+    # M8-Welle-4b (ADR 0066 §2.5): letzte Zellspannungen des opt-in Zell-
+    # Modells; leeres Tuple ohne Zell-Block bzw. vor dem ersten Tick (opt-in
+    # serialisiert nur bei Non-Empty, kein Versions-Bump).
+    cell_voltages_v: tuple[Decimal, ...] = ()
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -136,6 +144,14 @@ class BatterySnapshot:
             config_dict["thermal"] = {
                 key: getattr(self.config.thermal, key) for key in THERMAL_FIELD_NAMES
             }
+        # M8-Welle-4b (ADR 0066 §2.5): cell-Block opt-in (nur bei aktivem
+        # Zell-Modell). `n_cells` ist `int`, die uebrigen `Decimal`.
+        if self.config.cell is not None:
+            config_dict["cell"] = {
+                "nominal_pack_voltage_v": self.config.cell.nominal_pack_voltage_v,
+                "n_cells": self.config.cell.n_cells,
+                "noise_amplitude_v": self.config.cell.noise_amplitude_v,
+            }
         result: dict[str, object] = {
             "version": self.version,
             "device_id": self.device_id,
@@ -154,6 +170,11 @@ class BatterySnapshot:
         }
         if self.temperature_celsius is not None:
             result["temperature_celsius"] = self.temperature_celsius
+        # M8-Welle-4b (ADR 0066 §2.5): cell_voltages_v opt-in (nur bei
+        # Non-Empty → leeres Tuple bleibt byte-identisch wie heute);
+        # kanonisch als geordnete Decimal-Liste.
+        if self.cell_voltages_v:
+            result["cell_voltages_v"] = list(self.cell_voltages_v)
         return result
 
     @classmethod
@@ -198,6 +219,9 @@ class BatterySnapshot:
                 # M8-Welle-4a (ADR 0065 §2.5): opt-in thermal-Block (fehlt
                 # -> None; Alt-Snapshots lesen als „kein Thermomodell").
                 thermal=_parse_thermal(config_state),
+                # M8-Welle-4b (ADR 0066 §2.5): opt-in cell-Block (fehlt
+                # -> None; Alt-Snapshots lesen als „kein Zell-Modell").
+                cell=_parse_cell(config_state),
             )
         except BatteryConfigError as err:
             # Welle-2-Review M-5: BatteryConfigError ist nicht Teil
@@ -224,6 +248,10 @@ class BatterySnapshot:
             else None
         )
 
+        # M8-Welle-4b (ADR 0066 §2.5): Zellspannungs-Tuple opt-in lesen
+        # (fehlt → leeres Tuple; Alt-Snapshots roundtrip-faehig).
+        cell_voltages_v = _parse_cell_voltages(state)
+
         return cls(
             version=version,
             device_id=device_id,
@@ -235,6 +263,7 @@ class BatterySnapshot:
             pending_power_kw=pending_power_kw,
             cell_failure_active=cell_failure_active,
             temperature_celsius=temperature_celsius,
+            cell_voltages_v=cell_voltages_v,
         )
 
 
@@ -263,6 +292,41 @@ def _parse_thermal(config_state: Mapping[str, object]) -> ThermalConfig | None:
         for key in THERMAL_FIELD_NAMES
     }
     return ThermalConfig(**fields)
+
+
+def _parse_cell(config_state: Mapping[str, object]) -> CellConfig | None:
+    """M8-Welle-4b (ADR 0066 §2.5): liest den opt-in `cell`-Block aus dem
+    `config`-Sub-Mapping (fehlt → `None`). `n_cells` ist `int`, die uebrigen
+    `Decimal`. Die Wertebereichs-Invarianten (ADR 0066 §2.1) erzwingt der
+    `CellConfig`-Konstruktor; sein `BatteryConfigError` wird vom Aufrufer
+    (`from_dict`) zu `WrongTypeError` ueberfuehrt."""
+    if "cell" not in config_state:
+        return None
+    block = assert_mapping(config_state["cell"], "config.cell", SUBSYSTEM)
+    assert_required_keys(block, _CELL_KEYS, SUBSYSTEM)
+    return CellConfig(
+        nominal_pack_voltage_v=assert_decimal(
+            block["nominal_pack_voltage_v"], "config.cell.nominal_pack_voltage_v", SUBSYSTEM
+        ),
+        n_cells=assert_int(block["n_cells"], "config.cell.n_cells", SUBSYSTEM),
+        noise_amplitude_v=assert_decimal(
+            block["noise_amplitude_v"], "config.cell.noise_amplitude_v", SUBSYSTEM
+        ),
+    )
+
+
+def _parse_cell_voltages(state: Mapping[str, object]) -> tuple[Decimal, ...]:
+    """M8-Welle-4b (ADR 0066 §2.5): liest das opt-in `cell_voltages_v`-Tuple
+    (fehlt → leeres Tuple). Erwartet eine geordnete Liste von `Decimal`."""
+    if "cell_voltages_v" not in state:
+        return ()
+    raw = state["cell_voltages_v"]
+    if not isinstance(raw, list):
+        raise WrongTypeError(SUBSYSTEM, "cell_voltages_v", "list", type(raw).__name__)
+    return tuple(
+        assert_decimal(value, f"cell_voltages_v[{index}]", SUBSYSTEM)
+        for index, value in enumerate(raw)
+    )
 
 
 # Welle-2-Review L-4: Error-Klassen NICHT re-exportiert — Aufrufer

@@ -15,7 +15,11 @@ from decimal import Decimal
 
 import pytest
 
-from grid_gym.hexagon.core.devices.battery.config import BatteryConfig, ThermalConfig
+from grid_gym.hexagon.core.devices.battery.config import (
+    BatteryConfig,
+    CellConfig,
+    ThermalConfig,
+)
 from grid_gym.hexagon.core.devices.battery.snapshot import (
     SNAPSHOT_VERSION,
     BatterySnapshot,
@@ -256,3 +260,92 @@ def test_from_dict_invalid_thermal_value_rejected() -> None:
         BatterySnapshot.from_dict(state)
     assert exc_info.value.subsystem == "battery"
     assert "config" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# M8-Welle-4b (ADR 0066): opt-in cell-Block + cell_voltages_v
+# ---------------------------------------------------------------------------
+
+
+def _make_cell_snapshot() -> BatterySnapshot:
+    base = _make_snapshot()
+    cell_config = BatteryConfig(
+        capacity_kwh=base.config.capacity_kwh,
+        initial_soc_pct=base.config.initial_soc_pct,
+        min_soc_pct=base.config.min_soc_pct,
+        max_soc_pct=base.config.max_soc_pct,
+        max_charge_kw=base.config.max_charge_kw,
+        max_discharge_kw=base.config.max_discharge_kw,
+        charge_efficiency=base.config.charge_efficiency,
+        discharge_efficiency=base.config.discharge_efficiency,
+        ramp_kw_per_s=base.config.ramp_kw_per_s,
+        cell=CellConfig(
+            nominal_pack_voltage_v=Decimal("400"),
+            n_cells=4,
+            noise_amplitude_v=Decimal("0.5"),
+        ),
+    )
+    return BatterySnapshot(
+        version=SNAPSHOT_VERSION,
+        device_id="battery-1",
+        run_id="run-42",
+        sequence=0,
+        config=cell_config,
+        soc_kwh=Decimal("500"),
+        current_power_kw=Decimal("0"),
+        pending_power_kw=Decimal("0"),
+        cell_voltages_v=(Decimal("100.1"), Decimal("99.9"), Decimal("100.0"), Decimal("100.2")),
+    )
+
+
+def test_cell_snapshot_roundtrip_byte_stable() -> None:
+    snapshot = _make_cell_snapshot()
+    state = snapshot.to_dict()
+    assert state["cell_voltages_v"] == [
+        Decimal("100.1"),
+        Decimal("99.9"),
+        Decimal("100.0"),
+        Decimal("100.2"),
+    ]
+    assert "cell" in state["config"]  # type: ignore[operator]
+    assert state["config"]["cell"]["n_cells"] == 4  # type: ignore[index]
+    assert BatterySnapshot.from_dict(state) == snapshot
+
+
+def test_inactive_snapshot_omits_cell_keys() -> None:
+    state = _make_snapshot().to_dict()
+    assert "cell_voltages_v" not in state
+    assert "cell" not in state["config"]  # type: ignore[operator]
+
+
+def test_from_dict_missing_cell_sub_key_rejected() -> None:
+    state = dict(_make_cell_snapshot().to_dict())
+    config = dict(state["config"])  # type: ignore[arg-type]
+    cell = dict(config["cell"])  # type: ignore[arg-type]
+    del cell["n_cells"]
+    config["cell"] = cell
+    state["config"] = config
+    with pytest.raises(MissingKeysError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert "n_cells" in str(exc_info.value)
+
+
+def test_from_dict_cell_n_cells_wrong_type_rejected() -> None:
+    state = dict(_make_cell_snapshot().to_dict())
+    config = dict(state["config"])  # type: ignore[arg-type]
+    cell = dict(config["cell"])  # type: ignore[arg-type]
+    cell["n_cells"] = "4"  # str statt int
+    config["cell"] = cell
+    state["config"] = config
+    with pytest.raises(WrongTypeError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert "n_cells" in str(exc_info.value)
+
+
+def test_from_dict_non_list_cell_voltages_rejected() -> None:
+    state = dict(_make_cell_snapshot().to_dict())
+    state["cell_voltages_v"] = "not-a-list"
+    with pytest.raises(WrongTypeError) as exc_info:
+        BatterySnapshot.from_dict(state)
+    assert exc_info.value.subsystem == "battery"
+    assert "cell_voltages_v" in str(exc_info.value)

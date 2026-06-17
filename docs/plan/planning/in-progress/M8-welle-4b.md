@@ -1,11 +1,16 @@
 # Welle 4b — Battery-Zellspannung-Telemetrie (`GG-BESS-007`)
 
-**Status:** Geplant (M8-Welle-4b) — zweite Sub-Welle der BESS-Telemetrie-Welle,
+**Status:** **Done (2026-06-17)** — zweite Sub-Welle der BESS-Telemetrie-Welle,
 additive Schaerfung des Battery-Modells mit erstem Battery-`RandomPort`-
-Konsument. Liefert via NEU ADR (Nummer bei Slice-Eroeffnung, Schaerfung zu
+Konsument. Geliefert via
+[`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md)
+`Accepted` (Schaerfung zu
 [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), kein Supersede).
-Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) wird mit dieser
-Sub-Welle aufgeloest.
+Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) aufgeloest.
+`make gates` + `docs-check` + `accept-pin-check` gruen
+(`coverage-gate-critical` 96 % auf `devices/battery`). Doc-Verschiebung nach
+`done/` erfolgt als Gruppe mit der Welle-4-Gesamt-Closure (siehe
+[`M8-welle-4.md`](M8-welle-4.md) §1).
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b — bewusst zuletzt: Tuple-Feld + Rausch-Quelle);
@@ -31,32 +36,31 @@ kein Punkt).
 
 ## 2. DoD (≤ 3 beobachtbare Kriterien)
 
-- [ ] **Config + Zell-Modell**: opt-in `nominal_pack_voltage_v: Decimal` +
-      `n_cells: int` (+ optionale Rausch-Amplitude) additiv in
-      `BatteryConfig`, Default = inaktiv; fehlende neue Config-Keys in alten
-      Snapshots/Szenarien lesen als inaktive Defaults; `BatteryDevice`
-      berechnet `cell_voltages_v` — vereinfacht alle Zellen identisch auf Basis
-      `nominal_pack_voltage_v / n_cells`, erweitert per-Zelle mit seeded
-      `RandomPort.sub_port("cell-<idx>")`-Rauschen; Determinismus-Property
-      (gleicher Seed → byte-identische Zellspannungs-Trace, `AC-NO-RAND`);
-      Resume-Pins: aktive Rausch-Config + `from_snapshot` ohne `attach_random`
-      wirft typisiert fail-loud, mit `attach_random` laeuft der Trace
-      deterministisch weiter.
-- [ ] **Telemetrie + Snapshot opt-in**: aggregierte
-      `cell_voltage_delta_v`-`TelemetryPoint` (SI per `GG-DATA-002`, `max-min`)
-      **nur bei aktiver Config**; optionale `min_cell_voltage_v`/
-      `max_cell_voltage_v`-Punkte muessen ebenfalls opt-in bleiben;
-      `BatterySnapshot` traegt `cell_voltages_v:
-      tuple[Decimal, ...]` **additiv opt-in serialisiert** (kein Versions-Bump,
-      v1-Lesepfad fuer Altschnappschuesse); neue Zell-Config-Keys werden bei
-      inaktivem Feature nicht ins Snapshot-`config`-Mapping geschrieben;
-      Roundtrip byte-stabil inkl. Tuple-Kanonik.
-- [ ] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
-      `coverage-gate-critical` ≥ 90 % auf `devices/battery` (kein neuer
+- [x] **Config + Zell-Modell**: opt-in `CellConfig` (nested) additiv in
+      `BatteryConfig` (`nominal_pack_voltage_v: Decimal` + `n_cells: int` +
+      `noise_amplitude_v: Decimal = 0`), Default = inaktiv; fehlende neue
+      Config-Keys lesen als inaktive Defaults. `BatteryDevice` berechnet
+      `cell_voltages_v` — bei `noise=0` alle Zellen identisch
+      (`nominal_pack_voltage_v / n_cells`, kein `RandomPort`-Zug), bei
+      `noise>0` per-Zelle + per-Tick seeded Rauschen via
+      `random.sub_port("cell-<idx>").sub_port("tick-<t>")` (**tick-gekeyt →
+      resume-kontinuierlich**); ≥ 100-Tick-Determinismus-Property;
+      Resume-Pins: aktives Rauschen + `from_snapshot` ohne `attach_random`
+      wirft fail-loud, mit `attach_random` byte-kontinuierlich.
+- [x] **Telemetrie + Snapshot opt-in**: aggregierte
+      `cell_voltage_delta_v`-`TelemetryPoint` (`unit="V"`, `max-min`)
+      **nur bei aktiver Config** (alphabetisch zuerst); `min/max_cell_voltage_v`
+      als Debug-Kontext deferred. `BatterySnapshot` traegt `cell_voltages_v:
+      tuple[Decimal, ...]` **additiv opt-in serialisiert** (nur Non-Empty, kein
+      Versions-Bump, v1-Lesepfad); inaktive Zell-Defaults nicht im
+      Snapshot-`config`-Mapping; Roundtrip byte-stabil inkl. Tuple-Kanonik.
+- [x] **Gates + Pin-neutral**: lint/format/typecheck/arch/test-unit/
+      `coverage-gate-critical` 96 % auf `devices/battery` (kein neuer
       Target) + `docs-check` + **`accept-pin-check` gruen**
       ([`deploy/scenarios/gg-demo.yaml`](../../../../deploy/scenarios/gg-demo.yaml)
-      ohne Zell-Config → `EXPECTED_DEMO_*` unberuehrt); NEU ADR `Accepted`;
-      Trigger 024 aufgeloest.
+      ohne Zell-Config → `EXPECTED_DEMO_*` unberuehrt);
+      [`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md)
+      `Accepted`; Trigger 024 aufgeloest.
 
 ## 3. Design-Skizze (C1)
 

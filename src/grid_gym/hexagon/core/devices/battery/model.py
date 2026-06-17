@@ -34,6 +34,7 @@ from grid_gym.hexagon.core.devices.battery.commands import (
 from grid_gym.hexagon.core.devices.battery.config import (
     THERMAL_FIELD_NAMES,
     BatteryConfig,
+    CellConfig,
     ThermalConfig,
 )
 from grid_gym.hexagon.core.devices.battery.snapshot import (
@@ -84,6 +85,8 @@ def _battery_decimal_context() -> Iterator[None]:
 
 
 _ZERO = Decimal(0)
+_ONE = Decimal(1)
+_TWO = Decimal(2)
 _HUNDRED = Decimal(100)
 _QUANTUM = Decimal("0.000001")
 """GG-DATA-005-Soll: max. 6 Nachkommastellen in Telemetrie."""
@@ -158,6 +161,11 @@ class BatteryDevice:
         # konfiguriert ist (bit-genau heutiges Verhalten); `initialize`/
         # `from_snapshot` setzen ihn bei aktivem Block auf `ambient_temp_c`.
         self._temperature_celsius: Decimal | None = None
+        # M8-Welle-4b (ADR 0066 §2.2): letzte Zellspannungen des opt-in Zell-
+        # Modells. Leeres Tuple ohne `cell`-Block bzw. vor dem ersten Tick
+        # (bit-genau heutiges Verhalten); pro Tick aus Basis + seeded Rauschen
+        # neu berechnet (derived, nicht akkumuliert).
+        self._cell_voltages: tuple[Decimal, ...] = ()
 
     # ------------------------------------------------------------------
     # Pflicht-Property (ADR 0013 §2.7)
@@ -359,6 +367,10 @@ class BatteryDevice:
         # No-op ohne `thermal`-Block (Inaktiv-Pfad bit-identisch).
         self._update_temperature(new_power_kw, dt_seconds, config)
 
+        # M8-Welle-4b (ADR 0066 §2.2): Zellspannungen neu berechnen.
+        # No-op ohne `cell`-Block (Inaktiv-Pfad bit-identisch).
+        self._update_cell_voltages(context, config)
+
         telemetry = self._emit_telemetry(context, new_soc_kwh, new_power_kw)
         self._last_telemetry = telemetry
         return DeviceTickOutcome(telemetry=telemetry)
@@ -397,6 +409,40 @@ class BatteryDevice:
         theta = current + (theta_ss - current) * (dt_seconds / thermal.thermal_time_constant_s)
         self._temperature_celsius = theta.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
+    def _update_cell_voltages(self, context: DeviceTickContext, config: BatteryConfig) -> None:
+        """ADR 0066 §2.2: berechnet die `n_cells` Zellspannungen neu. No-op
+        ohne `cell`-Block (`_cell_voltages` bleibt leer — kein State, kein
+        Punkt, bit-identisch zum heutigen Battery-Pfad).
+
+        Basis je Zelle: `nominal_pack_voltage_v / n_cells`. Bei
+        `noise_amplitude_v == 0` sind alle Zellen identisch (kein
+        `RandomPort`-Zug). Bei `> 0` ueberlagert pro Zelle ein
+        deterministisches Rauschen in `[-amp, +amp)` aus
+        `random.sub_port("cell-<idx>").sub_port("tick-<tick>")` — per-Zelle
+        unabhaengig, per-Tick variierend und **tick-gekeyt** (Resume liefert
+        fuer denselben Tick byte-identisch denselben Wert). Ohne attach-ten
+        `RandomPort` (z. B. nach `from_snapshot`) wirft der Tick fail-loud."""
+        cell = config.cell
+        if cell is None:
+            return
+        base = cell.base_cell_voltage_v
+        if cell.noise_amplitude_v == _ZERO:
+            voltage = base.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
+            self._cell_voltages = tuple(voltage for _ in range(cell.n_cells))
+            return
+        if self._random is None:
+            # Resume-Vertrag (ADR 0066 §2.6): aktives Zell-Rauschen braucht
+            # nach `from_snapshot` ein `attach_random` vor dem ersten Tick.
+            raise DeviceNotInitializedError("tick")
+        voltages: list[Decimal] = []
+        for index in range(cell.n_cells):
+            draw = (
+                self._random.sub_port(f"cell-{index}").sub_port(f"tick-{context.tick}").next_float()
+            )
+            noise = (draw * _TWO - _ONE) * cell.noise_amplitude_v
+            voltages.append((base + noise).quantize(_QUANTUM, rounding=ROUND_HALF_EVEN))
+        self._cell_voltages = tuple(voltages)
+
     def telemetry(self) -> tuple[TelemetryPoint, ...]:
         return self._last_telemetry
 
@@ -420,6 +466,7 @@ class BatteryDevice:
             pending_power_kw=self._pending_power_kw,
             cell_failure_active=self._cell_failure_active,
             temperature_celsius=self._temperature_celsius,
+            cell_voltages_v=self._cell_voltages,
         )
         return snap.to_dict()
 
@@ -449,6 +496,10 @@ class BatteryDevice:
         # (None ohne Block; `__init__` hat ihn bereits konsistent gesetzt,
         # der Snapshot-Wert ueberschreibt fuer den Resume).
         device._temperature_celsius = snap.temperature_celsius
+        # M8-Welle-4b (ADR 0066 §2.5): letzte Zellspannungen aus dem opt-in-
+        # Snapshot. `_random` bleibt None — aktives Zell-Rauschen braucht ein
+        # `attach_random` vor dem ersten Tick (sonst fail-loud).
+        device._cell_voltages = snap.cell_voltages_v
         return device
 
     # ------------------------------------------------------------------
@@ -474,6 +525,7 @@ class BatteryDevice:
             and self._sequence == other._sequence
             and self._cell_failure_active == other._cell_failure_active
             and self._temperature_celsius == other._temperature_celsius
+            and self._cell_voltages == other._cell_voltages
         )
 
     @override
@@ -489,6 +541,7 @@ class BatteryDevice:
                 self._sequence,
                 self._cell_failure_active,
                 self._temperature_celsius,
+                self._cell_voltages,
             )
         )
 
@@ -561,7 +614,10 @@ class BatteryDevice:
         soc_kwh = new_soc_kwh.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
         power_kw = new_power_kw.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
 
-        # Drei Bestands-Metriken; alphabetisch sortiert nach Metrikname.
+        # Drei Bestands-Metriken; die opt-in Metriken werden additiv ergaenzt
+        # und das Ergebnis am Ende alphabetisch nach Metrikname sortiert
+        # (deterministische Reihenfolge, ADR 0014 §2.4). Ohne opt-in Metriken
+        # bleibt die Reihenfolge `power_kw`/`soc_kwh`/`soc_pct` byte-identisch.
         emissions = [
             ("power_kw", power_kw, "kW"),
             ("soc_kwh", soc_kwh, "kWh"),
@@ -569,7 +625,6 @@ class BatteryDevice:
         ]
         # M8-Welle-4a (ADR 0065 §2.2): opt-in `temperature_celsius`-Punkt
         # **nur bei aktivem Thermomodell** (inaktiv -> kein Punkt, nicht `0`).
-        # Sortiert nach Metrikname hinter `soc_pct` -> ans Ende.
         if self._temperature_celsius is not None:
             emissions.append(
                 (
@@ -578,6 +633,16 @@ class BatteryDevice:
                     "degC",
                 )
             )
+        # M8-Welle-4b (ADR 0066 §2.3): opt-in aggregierte
+        # `cell_voltage_delta_v`-Metrik (`max - min`) **nur bei aktivem
+        # Zell-Modell** (inaktiv -> kein Punkt). Bounded auf einen Punkt
+        # statt N per-Zelle-Punkte.
+        if self._cell_voltages:
+            delta = (max(self._cell_voltages) - min(self._cell_voltages)).quantize(
+                _QUANTUM, rounding=ROUND_HALF_EVEN
+            )
+            emissions.append(("cell_voltage_delta_v", delta, "V"))
+        emissions.sort(key=lambda emission: emission[0])
         points = []
         for metric, value, unit in emissions:
             self._sequence += 1
@@ -616,7 +681,9 @@ def _config_from_params(params: Mapping[str, object]) -> BatteryConfig:
         if not isinstance(value, Decimal):
             raise WrongTypeError(_SUBSYSTEM, f"params.{key}", "Decimal", type(value).__name__)
         fields[key] = value
-    return BatteryConfig(**fields, thermal=_thermal_from_params(params))
+    return BatteryConfig(
+        **fields, thermal=_thermal_from_params(params), cell=_cell_from_params(params)
+    )
 
 
 def _thermal_from_params(params: Mapping[str, object]) -> ThermalConfig | None:
@@ -642,13 +709,48 @@ def _thermal_from_params(params: Mapping[str, object]) -> ThermalConfig | None:
     return ThermalConfig(**fields)
 
 
+def _cell_from_params(params: Mapping[str, object]) -> CellConfig | None:
+    """M8-Welle-4b (ADR 0066 §2.1): liest den optionalen `cell`-Block aus den
+    Scenario-Params (opt-in — fehlt → `None`). `n_cells` ist `int`, die
+    uebrigen `Decimal`; die No-float-/Typpruefung liegt hier."""
+    if "cell" not in params:
+        return None
+    block = params["cell"]
+    if not isinstance(block, Mapping):
+        raise WrongTypeError(_SUBSYSTEM, "params.cell", "Mapping", type(block).__name__)
+    for key in ("nominal_pack_voltage_v", "n_cells", "noise_amplitude_v"):
+        if key not in block:
+            raise MissingKeysError(_SUBSYSTEM, [f"cell.{key}"])
+    n_cells = block["n_cells"]
+    # `bool` ist `int`-Subklasse — Zellzahl ist aber Ganzzahl, kein Flag.
+    if not isinstance(n_cells, int) or isinstance(n_cells, bool):
+        raise WrongTypeError(_SUBSYSTEM, "params.cell.n_cells", "int", type(n_cells).__name__)
+    decimals: dict[str, Decimal] = {}
+    for key in ("nominal_pack_voltage_v", "noise_amplitude_v"):
+        value = block[key]
+        if not isinstance(value, Decimal):
+            raise WrongTypeError(_SUBSYSTEM, f"params.cell.{key}", "Decimal", type(value).__name__)
+        decimals[key] = value
+    return CellConfig(
+        nominal_pack_voltage_v=decimals["nominal_pack_voltage_v"],
+        n_cells=n_cells,
+        noise_amplitude_v=decimals["noise_amplitude_v"],
+    )
+
+
 def _config_to_params(config: BatteryConfig) -> Mapping[str, object]:
     """Inverse von `_config_from_params`: serialisiert
     `BatteryConfig` zurueck in das Params-Mapping-Form fuer das
     synthesizte `ScenarioDevice` post-`from_snapshot`
-    (Welle-2-Review C-1). M8-Welle-4a (ADR 0065): der opt-in `thermal`-Block
-    wird als nested Mapping nur bei aktivem Thermomodell wiedergegeben."""
+    (Welle-2-Review C-1). M8-Welle-4a/4b: die opt-in `thermal`-/`cell`-Bloecke
+    werden als nested Mapping nur bei aktivem Modell wiedergegeben."""
     params: dict[str, object] = {key: getattr(config, key) for key in _PARAM_KEYS}
     if config.thermal is not None:
         params["thermal"] = {key: getattr(config.thermal, key) for key in THERMAL_FIELD_NAMES}
+    if config.cell is not None:
+        params["cell"] = {
+            "nominal_pack_voltage_v": config.cell.nominal_pack_voltage_v,
+            "n_cells": config.cell.n_cells,
+            "noise_amplitude_v": config.cell.noise_amplitude_v,
+        }
     return params

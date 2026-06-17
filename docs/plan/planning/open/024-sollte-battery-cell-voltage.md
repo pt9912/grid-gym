@@ -1,6 +1,12 @@
 # 024 — SOLLTE: Battery-Zellspannung-Telemetry (`GG-BESS-007`)
 
-**Status:** Open — Trigger-Watch
+**Status:** **Resolved 2026-06-17** — M8-Welle-4b. Geliefert via
+[`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md) `Accepted`
++ opt-in `CellConfig` auf `BatteryConfig` (erster Battery-`RandomPort`-
+Konsum) + per-Zelle tick-gekeytes seeded Rauschen + opt-in aggregierte
+`cell_voltage_delta_v`-Telemetrie + opt-in `cell_voltages_v`-Tuple-Snapshot
+ohne Versions-Bump ([`M8-welle-4b.md`](../in-progress/M8-welle-4b.md)). Doc-
+Archivierung nach `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
 (Welle-7-Erbschaft); Lastenheft §10.6 (`GG-BESS-006`/`007`).

@@ -104,6 +104,59 @@ class ThermalConfig:
                 raise BatteryConfigInvalidValueError(f"thermal.{field}", value, "> 0")
 
 
+# M8-Welle-4b (ADR 0066 §2.1): Pflicht-Felder des opt-in Zell-Blocks
+# (n_cells ist `int`, die uebrigen `Decimal`).
+CELL_FIELD_NAMES: tuple[str, ...] = (
+    "nominal_pack_voltage_v",
+    "n_cells",
+    "noise_amplitude_v",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class CellConfig:
+    """Zellspannungs-Modell eines Battery-Packs (M8-Welle-4b, `GG-BESS-007`,
+    ADR 0066 §2.1).
+
+    Das Pack wird in `n_cells` Zellen aufgeloest, jede mit Basisspannung
+    `nominal_pack_voltage_v / n_cells`. Bei `noise_amplitude_v > 0`
+    ueberlagert pro Zelle ein seeded, deterministisches Rauschen aus dem
+    `RandomPort` (per-Zelle + per-Tick unabhaengig); bei `0` sind alle Zellen
+    identisch (kein `RandomPort`-Zug).
+
+    Invarianten (Verstoss -> `BatteryConfigInvalidValueError`):
+
+    - `nominal_pack_voltage_v` — Pack-Nennspannung, > 0.
+    - `n_cells` — Zellzahl, >= 1 (`int`).
+    - `noise_amplitude_v` — Rausch-Amplitude (+/- um die Basisspannung), >= 0.
+
+    Die No-float-/Typpruefung (`GG-DATA-005`) liegt — wie im Bestands-
+    Battery-Pattern — in den Parsern (`_cell_from_params` /
+    Snapshot-`assert_*`), nicht im Konstruktor.
+    """
+
+    nominal_pack_voltage_v: Decimal
+    n_cells: int
+    noise_amplitude_v: Decimal = _ZERO
+
+    def __post_init__(self) -> None:
+        if self.nominal_pack_voltage_v <= _ZERO:
+            raise BatteryConfigInvalidValueError(
+                "cell.nominal_pack_voltage_v", self.nominal_pack_voltage_v, "> 0"
+            )
+        if self.n_cells < 1:
+            raise BatteryConfigInvalidValueError("cell.n_cells", self.n_cells, ">= 1")
+        if self.noise_amplitude_v < _ZERO:
+            raise BatteryConfigInvalidValueError(
+                "cell.noise_amplitude_v", self.noise_amplitude_v, ">= 0"
+            )
+
+    @property
+    def base_cell_voltage_v(self) -> Decimal:
+        """Basisspannung je Zelle (`nominal_pack_voltage_v / n_cells`)."""
+        return self.nominal_pack_voltage_v / Decimal(self.n_cells)
+
+
 @dataclass(frozen=True, slots=True)
 class BatteryConfig:
     """Statische Battery-Parameter (`GG-BESS-001..005, 008`).
@@ -138,6 +191,10 @@ class BatteryConfig:
     # `None` (Default) = keine Temperatur-Telemetrie (kein
     # `temperature_celsius`-Punkt, bit-genau heutiges Verhalten).
     thermal: ThermalConfig | None = None
+    # M8-Welle-4b (ADR 0066 §2.1): opt-in Zellspannungs-Modell.
+    # `None` (Default) = keine Zell-Telemetrie (kein `cell_voltage_delta_v`-
+    # Punkt, kein `cell_voltages_v`-State, bit-genau heutiges Verhalten).
+    cell: CellConfig | None = None
 
     def __post_init__(self) -> None:
         # Reduziert C901-Komplexitaet, indem die Pruefungen tabellarisch
@@ -179,6 +236,15 @@ class BatteryConfig:
                 "thermal",
                 self.thermal,
                 f"None or ThermalConfig (got {type(self.thermal).__name__})",
+            )
+
+        # M8-Welle-4b (ADR 0066 §2.1): opt-in Zell-Block — defensiver
+        # Typ-Guard. `None` = inaktiv.
+        if self.cell is not None and not isinstance(self.cell, CellConfig):
+            raise BatteryConfigInvalidValueError(
+                "cell",
+                self.cell,
+                f"None or CellConfig (got {type(self.cell).__name__})",
             )
 
     def _validate_consistency(self) -> None:
