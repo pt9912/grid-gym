@@ -101,7 +101,7 @@ parallele Laeufe gegen denselben Tag.
 **§2.3 Asset-Bundling.** Der Release-Workflow produziert
 **6 publizierte Artefakte pro Release** — 1 GHCR-Push plus
 5 GitHub-Release-Asset-Files, gemappt auf die 5
-`GG-CICD-007`-Lastenheft-Klassen:
+[`GG-CICD-007`](../../../spec/lastenheft.md#gg-cicd-007)-Lastenheft-Klassen:
 
 | Lastenheft-Klasse | Asset-Form | Datei / Ziel |
 | ----------------- | ---------- | ------------ |
@@ -254,7 +254,7 @@ Provisional → Accepted`): siehe Status-Header dieser ADR.
   Akzeptanz erfuellt; ADR-Bruch ist explizit definiert
   (Tool-Wechsel ohne ADR-Schaerfung).
 - **Positiv:** Trigger-008-Aufloesung wird produktiv —
-  `GG-CICD-007` SOLLTE-Akzeptanz erfuellt mit 5
+  [`GG-CICD-007`](../../../spec/lastenheft.md#gg-cicd-007) SOLLTE-Akzeptanz erfuellt mit 5
   publizierten Lastenheft-Klassen.
 - **Positiv:** Release-Workflow ist kanonisch verankert;
   ein spaeterer Workflow-Edit (z. B. zusaetzliche Asset-

@@ -35,16 +35,16 @@ verweisen; Verweise auf inaktive (superseded/deprecated) ADRs sind Befunde.
 | `spec/lastenheft.md` | 15 | 6 | 6 (1 Sicht, 5 Technik) |
 | `spec/protocol_profiles.md` | 19 | 9 | 0 |
 
-`matrix-inactive` (6): `ADR 0004` Z. 6 → `ADR 0003` (**echter Fix**: auf
-`ADR 0006` umstellen); `ADR 0006` Z. 6 → `ADR 0003` (**legitime
+`matrix-inactive` (6): [`ADR 0004`](../../adr/0004-identifier-based-cross-references.md) Z. 6 → `ADR 0003` (**echter Fix**: auf <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+[`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) umstellen); [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) Z. 6 → `ADR 0003` (**legitime <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 Supersede-Lineage** → `d-check:ignore` + CR-Notiz); 4× in Trigger
-[`048`](../open/048-dcheck-matrix-modul.md) selbst (diskutiert `ADR 0003`
+[`048`](../open/048-dcheck-matrix-modul.md) selbst (diskutiert `ADR 0003` <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 bewusst → `d-check:ignore`).
 
 ## 3. Fix-Mechanismus (Option Y, validiert)
 
 **Im bindenden Body: keine ADR-Referenz** — weder Link noch nackte Kennung
-(`` `ADR 0002` ``) noch „ADR X §Y verbindlich". Die Spec traegt ihre Aussage
+(`` [`ADR 0002`](../../adr/0002-language-and-build-stack.md) ``) noch „ADR X §Y verbindlich". Die Spec traegt ihre Aussage
 selbst; die ADR zeigt ueber ihren `**Bezug:**`-Header **aufwaerts** auf die
 `GG-*`-/`GG-AR-*`-ID. Body-Saetze werden so umformuliert, dass die
 ADR-Erwaehnung entfaellt, ohne die normative Aussage zu aendern.
@@ -62,11 +62,11 @@ kollabieren auf **eine** Provenance-Zeile → die Tabelle bleibt kompakt.
 Provenance-Zeile **oder** Prosa-Referenz ohne Link/Code (`codepaths` wuerde
 einen nackten Dateinamen pruefen).
 
-**Status-Befunde:** `ADR 0004`-Bezug — der redundante (bereits durch
-`ADR 0006` abgedeckte) `ADR 0003`-Link wurde aus dem Bezug-Header entfernt
-(Metadaten-Pflege, kein Decision-Edit). `ADR 0006`-Supersede-Lineage auf
+**Status-Befunde:** [`ADR 0004`](../../adr/0004-identifier-based-cross-references.md)-Bezug — der redundante (bereits durch
+[`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) abgedeckte) `ADR 0003`-Link wurde aus dem Bezug-Header entfernt <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+(Metadaten-Pflege, kein Decision-Edit). [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Supersede-Lineage auf
 `ADR 0003`: **`d-check:ignore` greift NICHT fuer `matrix-inactive`** → der
-Link wurde auf Inline-Code `` `ADR 0003` `` umgestellt (Referenz sichtbar,
+Link wurde auf Inline-Code `` `ADR 0003` `` umgestellt (Referenz sichtbar, <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 kein Link → kein Befund). Diskussions-Refs im Trigger 048 ebenfalls
 Inline-Code. **Offener d-check-CR:** Supersedes-Lineage-Carve-out im
 `matrix`-Modul (damit die abloesende ADR ihre abgeloeste verlinken darf).
@@ -89,7 +89,7 @@ Inline-Code. **Offener d-check-CR:** Supersedes-Lineage-Carve-out im
   ADR-/Welle-Provenance liegt in der Traceability-Matrix §27 (via
   `exclude-sections` ausgenommen) — keine Body-Edits noetig.
 - **Rang-Praezisierung:** `protocol_profiles → architecture` (`GG-AR-*`) waere
-  unter Vertrag › Technik › Sicht ein Abwaerts-Link → der `GG-AR-PORT-DRN-007`-
+  unter Vertrag › Technik › Sicht ein Abwaerts-Link → der [`GG-AR-PORT-DRN-007`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)-
   Bezug wurde aus `protocol_profiles.md` **entfernt** (nicht verlinkt); der
   umgekehrte `architecture → protocol_profiles`-Index-Link (aufwaerts) bleibt.
 

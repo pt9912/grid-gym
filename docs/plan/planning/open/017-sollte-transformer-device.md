@@ -8,13 +8,13 @@ nach `done-archive/` folgt mit der M8-Meilenstein-Closure
 (`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).
+(Welle-7-Erbschaft); Lastenheft §9.4 ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-DEV-016` definiert ein **Transformer-Geraetemodell**
+Lastenheft [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) definiert ein **Transformer-Geraetemodell**
 als SOLLTE-Item. M2 hat das out-of-scope gehalten; der MVP-Demo
 nutzt `GridConnectionDevice` als idealisierten Netzanschluss
 ohne Transformator-Verluste oder -Grenzen.
@@ -35,7 +35,7 @@ Szenario modelliert werden muss.
 - Scenario-Validator + Loader-Factory-Eintrag.
 - `CRITICAL_COV_TARGETS`-Default um `devices/transformer`
   erweitert.
-- Klare Abgrenzung zu Trigger 021 (`GG-GRID-006`
+- Klare Abgrenzung zu Trigger 021 ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006)
   Transformatorgrenzen im Netzbilanzmodell) — Trigger 017 ist
   ein Geraetemodell, Trigger 021 ist eine Netzbilanz-
   Erweiterung.

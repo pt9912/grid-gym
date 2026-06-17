@@ -8,13 +8,13 @@ Doc-Archivierung nach `done-archive/` folgt mit der M8-Meilenstein-Closure
 ([`carveouts.md`](../in-progress/carveouts.md) §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).
+(Welle-7-Erbschaft); Lastenheft §11.5 ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-GRID-005` definiert ein **Inselnetz-
+Lastenheft [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) definiert ein **Inselnetz-
 Bilanzmodell** als SOLLTE-Item. M2 deckt nur Netzanschluss-
 gebundene Bilanz (`GridModelBilanz` mit `grid_connection`-
 Auto-Schluss, [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))

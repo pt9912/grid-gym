@@ -38,9 +38,9 @@ ADR 0030 fuer M4);
 [`ADR 0030`](0030-device-protocol-port-surface.md) §2.1
 (Adapter-Hexagon-Pattern; UI ist `adapters/driving/`-Layer
 analog HTTP-API);
-[Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17 (`GG-UI-001..009`)
-+ §24 (`GG-DEMO-001..008`);
-[Architektur](../../../spec/architecture.md#5-komponentensicht) §5 (`GG-AR-COMP-UI`-
+[Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17 ([`GG-UI-001`](../../../spec/lastenheft.md#gg-ui-001)..009)
++ §24 ([`GG-DEMO-001`](../../../spec/lastenheft.md#gg-demo-001)..008);
+[Architektur](../../../spec/architecture.md#5-komponentensicht) §5 ([`GG-AR-COMP-UI`](../../../spec/architecture.md#5-komponentensicht)-
 Slot in `ui/`).
 
 M5-Slice-Plan
@@ -64,15 +64,15 @@ Material — nicht erst Welle 1.
 
 | ID            | Verbindlichkeit | Inhalt                                                                          |
 | ------------- | --------------- | ------------------------------------------------------------------------------- |
-| `GG-UI-001`   | MUSS            | Web-UI lokal nach `docker compose up` erreichbar                                |
-| `GG-UI-002`   | MUSS            | Live-Telemetry-Anzeige (Geraet/Metrik/Wert/Einheit/Sim-Zeit/Quality)            |
-| `GG-UI-003`   | MUSS            | Zeitreihen-Charts (mind. 1 Leistungs- + 1 SOC-Metrik)                           |
-| `GG-UI-004`   | MUSS            | Replay-Steuerung (Start/Pause/Resume/Stop + Status)                             |
-| `GG-UI-005`   | MUSS            | Alarme-Tabelle (Zeit/Ziel/Severity/Code/Message/Status)                         |
-| `GG-UI-006`   | SOLLTE          | Geraete-Grafik (mind. MVP-Geraetetypen)                                         |
-| `GG-UI-007`   | SOLLTE          | Fault-Injection-Eingabe-Form (Typ/Ziel/Startzeit/Dauer/Recovery)                |
-| `GG-UI-008`   | SOLLTE          | Simulationszustaende (Laufstatus/Sim-Zeit/Tick-Zaehler/Dienst-Zustand)          |
-| `GG-UI-009`   | MUSS            | Datenqualitaet sichtbar (`stale/invalid/nan/missing/fault_injected`)            |
+| [`GG-UI-001`](../../../spec/lastenheft.md#gg-ui-001)   | MUSS            | Web-UI lokal nach `docker compose up` erreichbar                                |
+| [`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)   | MUSS            | Live-Telemetry-Anzeige (Geraet/Metrik/Wert/Einheit/Sim-Zeit/Quality)            |
+| [`GG-UI-003`](../../../spec/lastenheft.md#gg-ui-003)   | MUSS            | Zeitreihen-Charts (mind. 1 Leistungs- + 1 SOC-Metrik)                           |
+| [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004)   | MUSS            | Replay-Steuerung (Start/Pause/Resume/Stop + Status)                             |
+| [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005)   | MUSS            | Alarme-Tabelle (Zeit/Ziel/Severity/Code/Message/Status)                         |
+| [`GG-UI-006`](../../../spec/lastenheft.md#gg-ui-006)   | SOLLTE          | Geraete-Grafik (mind. MVP-Geraetetypen)                                         |
+| [`GG-UI-007`](../../../spec/lastenheft.md#gg-ui-007)   | SOLLTE          | Fault-Injection-Eingabe-Form (Typ/Ziel/Startzeit/Dauer/Recovery)                |
+| [`GG-UI-008`](../../../spec/lastenheft.md#gg-ui-008)   | SOLLTE          | Simulationszustaende (Laufstatus/Sim-Zeit/Tick-Zaehler/Dienst-Zustand)          |
+| [`GG-UI-009`](../../../spec/lastenheft.md#gg-ui-009)   | MUSS            | Datenqualitaet sichtbar (`stale/invalid/nan/missing/fault_injected`)            |
 
 Plus [`§24 Demo-System`](../../../spec/lastenheft.md#24-demo-system) (`GG-DEMO-
 001..008`) als MUSS: lokale Demo-Umgebung nach
@@ -93,7 +93,7 @@ Stand 2026-06-01 (M4-Closure):
 - [`deploy/compose.yml`](../../../deploy/compose.yml) als
   produktiver Compose-File mit `otel-collector`-Sibling
   und Sibling-Services aus M2..M4.
-- **`GG-AR-COMP-UI`-Slot** in
+- **[`GG-AR-COMP-UI`](../../../spec/architecture.md#5-komponentensicht)-Slot** in
   [`spec/architecture.md §5`](../../../spec/architecture.md#5-komponentensicht) auf
   `ui/`-Top-Level-Verzeichnis vorbelegt; das Verzeichnis
   existiert **noch nicht**.
@@ -101,9 +101,9 @@ Stand 2026-06-01 (M4-Closure):
 ### 1.3 Architektur-Constraints aus M1..M4-Closure
 
 - **Hexagonale Architektur:** UI lebt in `adapters/driving/`-
-  Layer (siehe `GG-AR-PORT-DRG-002` Vorbelegung). Kein
+  Layer (siehe `GG-AR-PORT-DRG-002` Vorbelegung). Kein <!-- d-check:ignore (verworfener Slot, nie in spec, ADR 0037 Decision API-3 — nicht verlinkbar) -->
   direkter Kern-Zugriff; UI nutzt **nur**
-  `GG-API-001`/`002`/`003` (siehe Roadmap §3 M5-DoD).
+  [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)/`002`/`003` (siehe Roadmap §3 M5-DoD).
 - **10 A-1-Gates** (`make gates`) als harte CI-Pflicht
   ([`ADR 0002`](0002-language-and-build-stack.md) §A-1 +
   M4-Welle-6b-`spdx-check`-Erweiterung).
@@ -282,11 +282,11 @@ ausgewaehlt aus folgenden Gruenden:
    direkten `@app.websocket`-Support** fuer Live-Telemetry;
    externe Komponenten (z. B. `streamlit-autorefresh`) sind
    Polling-basiert und brechen das Live-Telemetry-Pattern
-   aus `GG-API-002`.
+   aus [`GG-API-002`](../../../spec/lastenheft.md#gg-api-002).
 4. **Replay-Controls fragil:** Forms-Submit-Mechanismus in
    Streamlit triggert Re-Run der gesamten Seite; nicht
    kompatibel mit dem `start_run/pause_run/resume_run`-
-   Idiom aus `GG-UI-004`.
+   Idiom aus [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004).
 
 Diese Option ist **bewusst nicht** als Empfehlung in §2.1-§2.3
 gefuehrt.
@@ -294,7 +294,7 @@ gefuehrt.
 ### 2.5 Charting-Library-Sub-Decision (orthogonal zur Stack-Wahl)
 
 Drei realistische Charting-Libraries fuer
-`GG-UI-002/003/009` (Live-Telemetry + Zeitreihen + Quality-
+[`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)/003/009 (Live-Telemetry + Zeitreihen + Quality-
 Status). Diese Sub-Decision ist **orthogonal zur Stack-Wahl
 in §2.1/2.2/2.3** — jede der UI-Stack-Optionen kann mit
 jeder der drei Charting-Libraries kombiniert werden. Final-
@@ -583,7 +583,7 @@ folgendem Kriterium:
     Festlegung (Maintainer-Indication validiert oder
     revidiert nach Probe-Run).
   - Welle 1 enthaelt die HTTP-API-Surface-Erweiterung
-    (`GG-API-001/002` Endpoint-Vervollstaendigung +
+    ([`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)/002 Endpoint-Vervollstaendigung +
     WebSocket-Route fuer Live-Telemetry). UI-Foundation
     (Jinja2-Templates + `adapters/driving/ui/`-Layout +
     Chart.js-Vendoring) folgt in Welle 2.
@@ -617,7 +617,7 @@ folgendem Kriterium:
 - [Lastenheft §17](../../../spec/lastenheft.md#17-visualisierung) +
   [§24](../../../spec/lastenheft.md#24-demo-system) — UI-Pflicht + Demo-System.
 - [Architektur §5 + §8.2](../../../spec/architecture.md#5-komponentensicht) —
-  `GG-AR-COMP-UI`-Slot + Adapter-Hexagon-Pattern.
+  [`GG-AR-COMP-UI`](../../../spec/architecture.md#5-komponentensicht)-Slot + Adapter-Hexagon-Pattern.
 - [`../planning/done/M4-results.md §5`](../planning/done/M4-results.md)
   — M4-Welle-7-Erbschaft: M5 als naechster aktiver Slice;
   Trigger 009 + Base-Image-Bump als M5-Welle-0-Folge-Pflichten.

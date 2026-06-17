@@ -41,7 +41,7 @@ Verweise sind:
 
 Die etablierten Kennungen sind dagegen positionsunabhaengig,
 selbst-beschreibend und werden bereits in
-`GG-TRACE-001`-Matrizen als stabile Referenz verwendet.
+[`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001)-Matrizen als stabile Referenz verwendet.
 
 ---
 
@@ -62,11 +62,11 @@ Beispiele:
 
 | Statt                              | Besser                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------ |
-| „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie `GG-AR-TABU-001..008`" (optional: „in `architecture.md` §4.2") |
-| „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „`GG-AR-OPEN-007` (UI-Architektur)" — §19 listet `GG-AR-OPEN-001..010`, ein pauschaler §19-Verweis ist mehrdeutig |
-| „`lastenheft.md §27.1`"              | „`GG-TRACE-001` (§27.1-Tabelle)"                                                |
-| „Komponente in §5"                   | „`GG-AR-COMP-DEVICES`"                                                          |
-| „Driving-Port in §4.2"               | „`GG-AR-PORT-DRV-003` (`ReplayPort`)"                                            |
+| „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008" (optional: „in `architecture.md` §4.2") |
+| „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „[`GG-AR-OPEN-007`](../../../spec/architecture.md#19-offene-architektonische-punkte) (UI-Architektur)" — §19 listet [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)..010, ein pauschaler §19-Verweis ist mehrdeutig |
+| „`lastenheft.md §27.1`"              | „[`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) (§27.1-Tabelle)"                                                |
+| „Komponente in §5"                   | „[`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht)"                                                          |
+| „Driving-Port in §4.2"               | „[`GG-AR-PORT-DRV-003`](../../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`ReplayPort`)"                                            |
 
 ### 2.2 Wenn kein Kennungsraum existiert
 
@@ -74,7 +74,7 @@ Hat das Referenzziel keine etablierte Kennung (z. B.
 `architecture.md` §17 „Testarchitektur"), gilt folgende Reihenfolge:
 
 1. **Bevorzugt:** Eine Kennung im passenden Raum **anlegen**
-   (Beispielname: `GG-AR-TEST-001` fuer Testarchitektur als
+   (Beispielname: [`GG-AR-TEST-001`](../../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) fuer Testarchitektur als
    Ganzes — die konkrete Familie und Nummerierung wird beim
    erstmaligen Anlegen in `architecture.md` normiert). Das ist im
    Rahmen der naechsten inhaltlichen Aenderung des betroffenen
@@ -90,7 +90,7 @@ Hat das Referenzziel keine etablierte Kennung (z. B.
 Innerhalb eines Dokuments (z. B. interne Querverweise in
 `architecture.md`) gilt dieselbe Regel. Kennungen sind auch hier
 gegenueber `§…`-Verweisen vorzuziehen. Die Klammer-Hilfe
-(„`GG-AR-TABU-005` (§4.2)") ist zulaessig.
+(„[`GG-AR-TABU-005`](../../../spec/architecture.md#architektur-tabus-build-architekturtest) (§4.2)") ist zulaessig.
 
 ### 2.4 ADRs
 

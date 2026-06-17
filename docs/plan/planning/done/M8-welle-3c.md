@@ -12,7 +12,7 @@ opt-in PV-`VoltVarConfig`-Q(U) + TickLoop-`reactive_kvar`-Aggregation →
 ([`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md)
 `Accepted`): GridConnection-Q-Auto-Schluss (Spiegel zum P-Slack) +
 Transformer `S=sqrt(P²+Q²)` (re-pinnt 3b-Boundary als Q=0-Regressionspin) +
-opt-in GridConnection-Snapshot-Q. **Trigger 022 aufgeloest — `GG-GRID-007`
+opt-in GridConnection-Snapshot-Q. **Trigger 022 aufgeloest — [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007)
 komplett; M8-Welle 3 (Netz) abgeschlossen.**
 
 **Container:** [`M8-welle-3.md`](M8-welle-3.md) §3 (Welle-3-C0-Plan,
@@ -21,7 +21,7 @@ Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](../in-progress
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)) + Q-Emission als
 Folge zu [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) (PV) /
 [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md). Trigger:
-[`022`](../open/022-sollte-reactive-power.md) (`GG-GRID-007`, Lastenheft
+[`022`](../open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), Lastenheft
 §11.5; mit dieser Welle aufzuloesen).
 
 ---
@@ -92,7 +92,7 @@ lokalen Schaerfungen 3a/3b.
   und die `EXPECTED_DEMO_*`-Hash-Pins; Backward-Compat zwingend; beruehrt
   ggf. `D-1` ([`carveouts.md`](../in-progress/carveouts.md)).
 - **Determinismus**: Q(U)-Kennlinie + `sqrt`-Praezision (`Decimal`,
-  `AC-NO-RAND`).
+  [`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)).
 
 ## 5. Nicht-Ziele (dieser Slice)
 

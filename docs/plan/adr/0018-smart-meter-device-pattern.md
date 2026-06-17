@@ -49,13 +49,13 @@ SmartMeter-spezifischen Snapshot-Vertrag und das
 `attach_sources`-Hook, kein Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 4b. Lastenheft §9.1 (`GG-DEV-014`).
+§3 Welle 4b. Lastenheft §9.1 ([`GG-DEV-014`](../../../spec/lastenheft.md#gg-dev-014)).
 
 ---
 
 ## 1. Kontext
 
-`SmartMeterDevice` (`GG-DEV-014`) ist die fuenfte und letzte
+`SmartMeterDevice` ([`GG-DEV-014`](../../../spec/lastenheft.md#gg-dev-014)) ist die fuenfte und letzte
 konkrete `DeviceModel`-Implementation des MVP. Strukturell ist
 es das einfachste Geraet:
 
@@ -90,7 +90,7 @@ weil:
 - Command-Surface ist **leer** (kein produktiver Command),
   waehrend GridConnection eine `set_power_kw`-Surface hat.
 
-Welle-4b-Minimum liefert die `GG-DEV-014`-Akzeptanz
+Welle-4b-Minimum liefert die [`GG-DEV-014`](../../../spec/lastenheft.md#gg-dev-014)-Akzeptanz
 „Minimalmodell + Beispiel + deterministischer Smoke-Test"
 vollstaendig.
 
@@ -510,5 +510,5 @@ liegen folgende Module:
 - **`set_mode`-Command** (Lade-/Liefer-Modus). Konsistent
   mit ADR 0014 §7 / ADR 0016 §7 / ADR 0017 §7: `set_mode`
   ist projektweit Welle-5+ / M3-Material.
-- **OTEL-Spans pro Aggregation** (`GG-OTEL-002`). Welle 4b
+- **OTEL-Spans pro Aggregation** ([`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)). Welle 4b
   konsumiert keine OTEL-Hooks; M3.

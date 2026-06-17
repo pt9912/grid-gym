@@ -30,10 +30,10 @@ ergaenzt; keine Architektur-Aenderung).
 (`RandomPort.sub_port`-Vertrag fuer Per-Agent-Sub-Streams,
 analog Fault-Stream-Pattern; §6 listet
 „`AsyncRandomPort` fuer asyncio-Multi-Agent-Bus
-(`GG-AGENT-008`)" als bewusst zurueckgestellten Folge-Punkt),
+([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008))" als bewusst zurueckgestellten Folge-Punkt),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-
 ADR-Pattern — diese ADR erweitert `ADR 0002 §A-1`-Komponenten-
-Liste um `GG-AR-COMP-AGENTS::Agent` + `AgentMessageBus`, ohne
+Liste um [`GG-AR-COMP-AGENTS`](../../../spec/architecture.md#5-komponentensicht)::Agent + `AgentMessageBus`, ohne
 Supersede),
 [`ADR 0013`](0013-device-model-protocol.md) §2.8 (Protocol-
 Evolution-Strategie fuer Post-MVP-Erweiterungen — `M3 Multi-
@@ -53,8 +53,8 @@ Vorlage — Sub-Protocol + Hook-Pattern; ADR 0023 spiegelt das
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 3.
-Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..008`).
-Architektur §5 Komponentensicht (`GG-AR-COMP-AGENTS`),
+Lastenheft §15 Multi-Agent-System ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..008).
+Architektur §5 Komponentensicht ([`GG-AR-COMP-AGENTS`](../../../spec/architecture.md#5-komponentensicht)),
 §6 Datenfluss Tick-Loop (Schritt 7 „AgentPort (optional)
 erzeugt Steuerentscheidungen"), §14 Multi-Agent-Subsystem
 („eigenes Kernmodul `hexagon/core/agents`", „eigener,
@@ -83,11 +83,11 @@ Pattern fuer Faults).
 
 Architektur §14 ist sehr eindeutig:
 
-> Agenten sind ein SOLLTE-Feature (`GG-AGENT-001`).
+> Agenten sind ein SOLLTE-Feature ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)).
 > Architektonisch sind sie ein eigenes Kernmodul
 > `hexagon/core/agents`, das […] einen eigenen,
 > deterministisch sortierten `AgentMessageBus`
-> (`GG-AGENT-004/008`) nutzt.
+> ([`GG-AGENT-004`](../../../spec/lastenheft.md#gg-agent-004)/008) nutzt.
 
 Konsequenz fuer Welle 3: `AgentMessageBus` ist **Core-Klasse**
 in `hexagon/core/agents/`, **kein** Driven-Port unter
@@ -95,7 +95,7 @@ in `hexagon/core/agents/`, **kein** Driven-Port unter
 (`FaultPort` als Driven-Port) ist die zentrale Designent-
 scheidung dieser ADR und wird in §3 ausfuehrlich begruendet.
 
-Lastenheft `GG-AGENT-001..008` sind alle SOLLTE (keine MUSS).
+Lastenheft [`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..008 sind alle SOLLTE (keine MUSS).
 Welle 3 deckt das Minimum-Skelett fuer [`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)/002/003/
 004/006 ab (Protocol + Test-Isolierung + Determinismus +
 standardisierte Nachrichten + Snapshot-/Replay-Faehigkeit);
@@ -649,14 +649,14 @@ beides additiv per ADR 0015 §2.3 ohne v2→v3-Bump.
   `_assert_agent_list`-Validator (analog ADR 0022 §2.3 fuer
   Faults).
 - Welle-4-Agent-Sub-Snapshot-Slot (`agents.<type>.<id>`).
-- Konkurrierende Strategien (`GG-AGENT-005`) — Priorisierungs-
+- Konkurrierende Strategien ([`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005)) — Priorisierungs-
   Mechanismus.
-- Property-Tests fuer Agent-Determinismus (`GG-AGENT-003`).
+- Property-Tests fuer Agent-Determinismus ([`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003)).
 
 **Out of Scope (M3-Welle-7+ oder Welle-4-Folge):**
 
-- Deadlines (`GG-AGENT-007`) — Welle 4 oder Welle-4-Folge.
-- Async-Kommunikation (`GG-AGENT-008`) — eigene ADR-Folge zu
+- Deadlines ([`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007)) — Welle 4 oder Welle-4-Folge.
+- Async-Kommunikation ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)) — eigene ADR-Folge zu
   ADR 0007 `AsyncRandomPort` (siehe ADR 0007 §6).
 - LogPort/MetricsPort-Injektion in Bus/Agent — Welle 5/6
   (ADR 0024).
@@ -664,7 +664,7 @@ beides additiv per ADR 0015 §2.3 ohne v2→v3-Bump.
   `open/`, Aktivierungs-Kriterium nicht erreicht.
 - Snapshot-Schema-Bump v2 → v3 — additive Sub-Snapshots
   reichen; v3-Bump bleibt M6.
-- RL-Adapter (`GG-FUTURE-001/002`).
+- RL-Adapter ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002).
 - In-Tick-Wirksamkeit fuer Agent-Commands — eigene ADR-Folge,
   falls noetig.
 
@@ -754,18 +754,18 @@ ADR-Cross-Refs (read-only fuer Welle 3):
 
 ## 7. Nicht Gegenstand
 
-**Observability-Ports** (`GG-OTEL-001..004`,
-`GG-AR-PORT-DRN-008`) — eigene ADR 0024 in M3-Welle-5+.
+**Observability-Ports** ([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004,
+[`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)) — eigene ADR 0024 in M3-Welle-5+.
 `LogPort`/`MetricsPort`/`TracePort` sind orthogonal zu
 AgentMessageBus und kommen spaeter. ADR 0023 §2.6 verbietet
 explizit den Vorgriff.
 
-**RL-Adapter** (`GG-FUTURE-001/002`) — eigener Slice nach
+**RL-Adapter** ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002) — eigener Slice nach
 M3-Welle-7. Welle-3-`Agent`-Protocol ist RL-faehig (Surface
 unterscheidet sich nicht zwischen Rule-Based und RL), aber
 der Trainings-Loop bleibt extern.
 
-**Async-Kommunikation** (`GG-AGENT-008`) — Welle-3-Foundation
+**Async-Kommunikation** ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)) — Welle-3-Foundation
 ist synchron. Async-Variante kommt mit ADR-Folge zu ADR 0007
 `AsyncRandomPort` (siehe ADR 0007 §6), wenn ein konkreter
 Slice das braucht. [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Akzeptanz ist auch synchron
@@ -773,12 +773,12 @@ erfuellbar — „Async-Verarbeitung **darf** die Commit-
 Reihenfolge nicht veraendern" ist ein Constraint, kein
 Implementation-Pflicht-Pfad.
 
-**Konkurrierende Strategien** (`GG-AGENT-005`) — Welle 4
+**Konkurrierende Strategien** ([`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005)) — Welle 4
 oder Welle-4-Folge. Welle-3-Foundation hat kein
 Priorisierungs-Konstrukt; Welle 4 wird es zusammen mit der
 Agent-Registry einbringen.
 
-**Deadlines** (`GG-AGENT-007`) — Welle 4 oder Welle-4-Folge.
+**Deadlines** ([`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007)) — Welle 4 oder Welle-4-Folge.
 Welle-3-`Agent.tick(context, bus)` hat kein Deadline-Argument;
 Welle 4 entscheidet, ob das ueber `DeviceTickContext`-
 Erweiterung (Vorgriff auf TickLoop-Kontrakt) oder ueber ein

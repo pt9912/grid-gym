@@ -41,8 +41,8 @@ fixierte Imbalance-Berechnung ist die Inverse dazu),
 Pattern — diese ADR baut auf ADR 0014 §2.2 auf, ohne Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 5a. Lastenheft §11 (`GG-GRID-001`/`002`),
-§5 `GG-AR-COMP-DEVICES` (System-Modell, nicht Device-Liste).
+§3 Welle 5a. Lastenheft §11 ([`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/`002`),
+§5 [`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht) (System-Modell, nicht Device-Liste).
 
 ---
 
@@ -53,8 +53,8 @@ MVP. Es konsumiert die `power_kw`-Telemetrie aller `PvDevice`/
 `LoadDevice`/`BatteryDevice`/`GridConnectionDevice`-Instanzen
 und leitet daraus zwei System-Groessen ab:
 
-- **Frequenz** (`frequency_hz`, `GG-GRID-001`).
-- **Spannung** je Anschlusspunkt (`voltage_v`, `GG-GRID-002`).
+- **Frequenz** (`frequency_hz`, [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)).
+- **Spannung** je Anschlusspunkt (`voltage_v`, [`GG-GRID-002`](../../../spec/lastenheft.md#gg-grid-002)).
 
 Welle-5a-Minimum ist ein **proportionales Modell** ohne
 Tragheits-/Daempfungs-Terme (keine Swing-Equation, kein
@@ -64,7 +64,7 @@ Power-Flow). Die Modell-Wahl ist bewusst klein:
   Imbalance-Aktualisierung springt `frequency_hz` direkt auf
   den neuen Wert.
 - **Keine reactive-power** — `Q` ist explizit out-of-scope
-  (`GG-GRID-007` SOLLTE, Post-MVP).
+  ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) SOLLTE, Post-MVP).
 - **Single-Bus-Approximation** — alle Anschlusspunkte liegen
   auf demselben Spannungsband; keine Transformer-Topologie.
 - **Safety-Clamps** — Frequenz/Spannung werden in
@@ -78,7 +78,7 @@ Power-Flow). Die Modell-Wahl ist bewusst klein:
 - Es ist **single-instance pro Simulation** (vergleiche
   ADR 0013 §2.1: Devices sind mehrfach instanziierbar).
 - Es liegt unter `hexagon/core/grid_model/`, **nicht** unter
-  `devices/` (per `GG-AR-COMP-DEVICES` §5: Modell ist kein
+  `devices/` (per [`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht) §5: Modell ist kein
   Geraet).
 - Snapshot-Sub-Key in `SnapshotEnvelope.sub_snapshots` ist
   `grid_model` (kein `devices.<id>`-Praefix).
@@ -207,7 +207,7 @@ die Wahl ist eine konservative Vorbelegung.
 **Safety-Clamp:** `0.7 * nominal_voltage_v ≤ voltage_v ≤ 1.3
 * nominal_voltage_v`. Analog zur Frequenz-Clamp.
 
-**Modell-Selbstkennzeichnung (`GG-GRID-002` Akzeptanz):**
+**Modell-Selbstkennzeichnung ([`GG-GRID-002`](../../../spec/lastenheft.md#gg-grid-002) Akzeptanz):**
 `GridModelSnapshot.model_kind: str` traegt den Wert
 `"simplified-proportional"`. Welle-5+/M3 koennte das auf
 `"power-flow-adapter"` umstellen; Welle 5a haelt es als
@@ -388,7 +388,7 @@ braucht Tragheit `H` und Nennleistung `S_base` als Modell-
 Parameter — beides ist im MVP nicht praezise modellierbar
 ohne Generatoren-Detailmodell (`GG-GEN-*` ist Post-MVP).
 Welle-5a-Proportionalmodell ist trivial deterministisch und
-deckt `GG-GRID-001` Akzeptanz („vereinfachtes Leistungs-
+deckt [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001) Akzeptanz („vereinfachtes Leistungs-
 bilanzmodell, das Frequenzabweichungen aus Erzeugung, Last
 und Speicherleistung ableitet") wortwoertlich.
 
@@ -396,7 +396,7 @@ und Speicherleistung ableitet") wortwoertlich.
 Hoch):** Wenn Welle 6 den Auto-Schluss als Default verdrahtet
 (`grid_connection.power_kw := -pre_grid_residual_kw`), wird
 `imbalance_kw` per Konstruktion `0` — und Frequenz/Spannung
-bleiben auf Nennwert. Lastenheft `GG-GRID-001` „aus Erzeugung,
+bleiben auf Nennwert. Lastenheft [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001) „aus Erzeugung,
 Last und Speicherleistung ableitet" ist trotzdem **wortwoertlich
 erfuellt**: die Formel verwendet diese drei Groessen als
 Bausteine. Die Akzeptanz wird ueber **manuelle Welle-5a-
@@ -422,8 +422,8 @@ Sekundaerregelung modelliert.
 **Single-Bus statt Power-Flow:** Eine echte Power-Flow-
 Analyse (Newton-Raphson, Backward-Forward-Sweep) braucht
 Knoten-Topologie + Leitungs-Impedanzen — keines ist in
-`GG-GRID-002` MUSS-Akzeptanz spezifiziert. `GG-GRID-006`
-(Transformatorgrenzen) und `GG-GRID-007` (Blindleistung)
+[`GG-GRID-002`](../../../spec/lastenheft.md#gg-grid-002) MUSS-Akzeptanz spezifiziert. [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)
+(Transformatorgrenzen) und [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) (Blindleistung)
 sind SOLLTE und out-of-scope. Welle-5a-Single-Bus ist
 ehrlich vereinfacht; `model_kind: "simplified-proportional"`
 kennzeichnet das (Lastenheft §11.2-Akzeptanz „muss kenntlich
@@ -468,7 +468,7 @@ Diese ADR gilt NICHT fuer:
 - `loads.py` und Load-Profile-Logik (Welle 5b — eigene
   ADR 0020).
 - TickLoop-Integration (Welle 6).
-- Power-Flow-Adapter (`GG-GRID-006`/`007` SOLLTE, Post-MVP).
+- Power-Flow-Adapter ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)/`007` SOLLTE, Post-MVP).
 - Fault-Injection-Pfade (`GG-FAULT-*`, M3).
 - Generator-Detail-Modelle (Tragheit, Daempfung — Post-MVP).
 
@@ -551,7 +551,7 @@ liegen folgende Module:
 
 **Was offen bleibt (Welle 5b+):**
 
-- LoadEvent/LoadProfile-Repraesentation (`GG-GRID-003`/`004`).
+- LoadEvent/LoadProfile-Repraesentation ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003)/`004`).
   ADR 0020, Welle 5b.
 - Snapshot-Versionssprung v1→v2 zwischen 5a (ohne Loads) und
   5b (mit Loads). Backward-Compat-Lesepfad in ADR 0020 §2.x
@@ -559,7 +559,7 @@ liegen folgende Module:
 - TickLoop-Verdrahtung + GridConnection-Schluss-Variable.
   Welle 6.
 - M3-Fault-Injection an Frequenz/Spannung
-  (`GG-FAULT-005`/`007`).
+  ([`GG-FAULT-005`](../../../spec/lastenheft.md#gg-fault-005)/`007`).
 - Generator-Detail-Modelle (Tragheit, Daempfung) —
   Post-MVP.
 
@@ -572,12 +572,12 @@ liegen folgende Module:
   benutzt die proportionale Form bewusst; Erweiterung ist
   Post-MVP (Generator-Detail-Modelle).
 - **Power-Flow-Topologie** (Knoten, Leitungen, Impedanzen).
-  `GG-GRID-006` SOLLTE; out-of-scope M2.
-- **Blindleistung / Q** (`GG-GRID-007` SOLLTE, Post-MVP).
-- **Inselnetz-Erkennung** (`GG-GRID-005` SOLLTE, Post-MVP);
+  [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006) SOLLTE; out-of-scope M2.
+- **Blindleistung / Q** ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) SOLLTE, Post-MVP).
+- **Inselnetz-Erkennung** ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005) SOLLTE, Post-MVP);
   Frequenz/Spannung im Inselbetrieb haengen von
   Generator-Detail-Modellen ab.
-- **Load-Profile/-Event-Repraesentation** (`GG-GRID-003`/
+- **Load-Profile/-Event-Repraesentation** ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003)/
   `004`). Welle 5b, eigene ADR 0020.
 - **TickLoop-Verdrahtung** (Welle 6).
 - **Telemetry-Emission**: Welle 5a `GridModelBilanz` emittiert

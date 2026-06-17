@@ -26,10 +26,10 @@ roundtrippable, das ist per Vertrag so gewollt).
 Vertrag fuer Geraete-Fault-Streams),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Erweiterungs-
 ADR-Pattern; diese ADR erweitert `ADR 0002 §A-1`-Komponenten-
-Liste um `GG-AR-COMP-DEVICES::DeviceModel`),
+Liste um [`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht)::DeviceModel),
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 1, Lastenheft §9 (`GG-DEV-001..003`).
+§3 Welle 1, Lastenheft §9 ([`GG-DEV-001`](../../../spec/lastenheft.md#gg-dev-001)..003).
 
 ---
 
@@ -42,7 +42,7 @@ beginnen, braucht die Plattform einen **expliziten Vertrag**:
 welche Methoden hat jedes Geraet, welche Typen werden ein-/
 ausgereicht, wie sieht der Lifecycle aus.
 
-Lastenheft `GG-DEV-001` Akzeptanz:
+Lastenheft [`GG-DEV-001`](../../../spec/lastenheft.md#gg-dev-001) Akzeptanz:
 
 > Jedes Geraetemodell implementiert mindestens `initialize`,
 > `tick`, `apply_command`, `snapshot` und `telemetry`.
@@ -151,7 +151,7 @@ Begruendung:
 **Ordering und Multiplicity** (Welle-1-Review H-6):
 
 - TickLoop ruft `apply_command(cmd)` in **Scenario-Source-Reihenfolge**
-  (`GG-ARCH-006`-Tie-Breaking auf `(time, priority, source,
+  ([`GG-ARCH-006`](../../../spec/lastenheft.md#gg-arch-006)-Tie-Breaking auf `(time, priority, source,
   sequence, event_id)`) auf. Mehrere Commands fuer dasselbe
   Device im selben Tick werden in dieser Reihenfolge angewendet —
   Devices duerfen sich darauf verlassen.
@@ -343,7 +343,7 @@ Diese ADR gilt fuer:
 
 Diese ADR gilt NICHT fuer:
 
-- Future-Geraete jenseits M2 (`GG-DEV-015..018` SOLLTE-Geraete);
+- Future-Geraete jenseits M2 ([`GG-DEV-015`](../../../spec/lastenheft.md#gg-dev-015)..018 SOLLTE-Geraete);
   diese erben den Vertrag mechanisch, aber ihre Aktivierung ist
   Post-MVP-Slice-Verantwortung.
 - Driving-Adapter (`adapters/driving/http_api/`); die kennen das
@@ -413,7 +413,7 @@ Module:
 - Konkrete Geraete-Snapshot-Schemata (Battery → ADR 0014,
   Envelope-v1→v2 → ADR 0015) folgen jeweils mit ihrer Welle.
 - Fault-Injection-Erweiterung des Protocols (`DeviceModel.inject_fault(...)`)
-  ist M3; diese ADR sieht das bewusst nicht vor (`GG-FAULT-001..010`-
+  ist M3; diese ADR sieht das bewusst nicht vor ([`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010-
   Out-of-Scope-Eintrag im Slice-Plan §4). Die Erweiterungs-
   Mechanik (separate Protocol-Klasse via Sub-Typing) ist in
   §2.8 fixiert.
@@ -433,11 +433,11 @@ Module:
 
 - **Geraete-Faults.** `DeviceModel.inject_fault(...)` oder
   aequivalent kommt mit M3; diese ADR fixiert das nicht.
-- **Multi-Agent-Steuerentscheidungen.** `AgentPort` (`GG-AGENT-001`)
+- **Multi-Agent-Steuerentscheidungen.** `AgentPort` ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001))
   spricht den TickLoop an, nicht die Devices direkt.
 - **Protocol-Adapter-Mapping.** MQTT/Modbus/OPC-UA/DNP3/IEC
   (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`) konsumieren das Geraete-
-  Surface via TickLoop und `DeviceProtocolPort` (`GG-AR-PORT-DRN-007`);
+  Surface via TickLoop und `DeviceProtocolPort` ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen));
   M4-Slice.
 - **`DeviceTickOutcome`-Erweiterung um Alarme.** Welle 1 liefert
   nur `telemetry`; Alarm-Felder kommen mit M3 Fault-Injection.

@@ -8,13 +8,13 @@
 §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).
+(Welle-7-Erbschaft); Lastenheft §9.4 ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-DEV-018` definiert ein **Diesel-Generator-Modell**
+Lastenheft [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018) definiert ein **Diesel-Generator-Modell**
 als SOLLTE-Item. M2 deckt das nicht ab; der MVP-Demo nutzt
 `GridConnectionDevice` fuer den Energiebilanz-Ausgleich (Auto-
 Schluss). Diesel ist relevant fuer Inselnetz-Szenarien
@@ -31,7 +31,7 @@ Schluss). Diesel ist relevant fuer Inselnetz-Szenarien
   `DieselDevice`, `DieselConfig`, Determinismus-Property-Test.
 - Scenario-Validator + Loader-Factory-Eintrag.
 - `CRITICAL_COV_TARGETS`-Default um `devices/diesel` erweitert.
-- Klare Abgrenzung zu Trigger 020 (`GG-GRID-005` Inselnetz) —
+- Klare Abgrenzung zu Trigger 020 ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) Inselnetz) —
   Diesel ist eine Quelle im Inselnetz, das Bilanzmodell selbst
   ist eigener Trigger.
 

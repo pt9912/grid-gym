@@ -5,8 +5,8 @@
 **Stand:** 2026-06-07.
 
 Dieses Dokument auditiert die produktive Substanz fuer die beiden
-MUSS-Akzeptanzen `GG-SAFE-007` (Sim/Prod-Trennung) und
-`GG-SAFE-008` (Input-Validation) aus dem Lastenheft (§20). Pro
+MUSS-Akzeptanzen [`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007) (Sim/Prod-Trennung) und
+[`GG-SAFE-008`](../../spec/lastenheft.md#gg-safe-008) (Input-Validation) aus dem Lastenheft (§20). Pro
 Surface werden Substanz-Pfade, Test-Pfade und Lieferstatus
 dokumentiert.
 
@@ -24,11 +24,11 @@ freigegeben."
 | Surface | Substanz-Pfad | Test-Pfad | Status |
 | ------- | ------------- | --------- | ------ |
 | **UI** | `adapters/driving/ui/templates/base.html` rendert `<div class="sim-banner">` ueber `<header>` mit englischem + deutschem Disclaimer; per `base.html`-Vererbung auf allen UI-Pages sichtbar. CSS in `adapters/driving/ui/static/style.css` `.sim-banner`. | `tests/integration/test_m6_welle_5b_safe_007_008_smoke.py` (`test_safe_007_ui_base_renders_simulation_banner`) (Demo-Page + Dashboard-Page) | ✓ **Produktiv** |
-| **API-Doku (OpenAPI)** | `adapters/driving/http_api/app.py::_APP_DESCRIPTION` nennt explizit `Simulation only — not approved for production grid control` plus `GG-SAFE-007`/`GG-NONGOAL-001`. Im OpenAPI-Schema unter `info.description` sichtbar. | `::test_safe_007_openapi_description_marks_simulation` | ✓ **Produktiv** |
+| **API-Doku (OpenAPI)** | `adapters/driving/http_api/app.py::_APP_DESCRIPTION` nennt explizit `Simulation only — not approved for production grid control` plus [`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007)/[`GG-NONGOAL-001`](../../spec/lastenheft.md#gg-nongoal-001). Im OpenAPI-Schema unter `info.description` sichtbar. | `::test_safe_007_openapi_description_marks_simulation` | ✓ **Produktiv** |
 | **API-Doku (README)** | `README.md` + `README.de.md` Blockquote unmittelbar nach dem Intro-Absatz: „Simulation only — not approved for production grid control." / „Nur Simulation — nicht fuer produktive Anlagensteuerung freigegeben." Inkl. Protocol-Adapter-Liste. | `::test_safe_007_readme_disclaimer_present` | ✓ **Produktiv** |
-| **Adapterkonfiguration (Scenario)** | `deploy/scenarios/gg-demo.yaml` Top-Level-Kommentar-Block (`# SIMULATION ONLY — NOT APPROVED FOR PRODUCTION GRID CONTROL.`) mit Verweis auf `GG-SAFE-007`/`GG-NONGOAL-001`. | `::test_safe_007_adapter_config_marks_simulation` | ✓ **Produktiv** |
-| **Adapterkonfiguration (Protocol-Modul)** | Modul-Docstring in `adapters/driven/protocol_{dnp3,iec61850,modbus,mqtt,opcua}/_config.py` (5 Module) trägt 3-Zeilen-Disclaimer mit `GG-SAFE-007`-Ref. | `::test_safe_007_adapter_config_marks_simulation` (deckt alle 5 Module ab) | ✓ **Produktiv** |
-| **Architektur-Belegung** | `tools/arch_check.py` (`AC-HEXAGON-PURE`)-Contract + `pyproject.toml` Allowlist verhindert Direct-Wire-Bypass: `hexagon/**` darf nur Whitelist-Pakete importieren, kein Driving-/Driven-Adapter kann den Kern umgehen. | `::test_safe_007_arch_check_hexagon_pure_whitelist` (Quell-Inspektion) + `make arch-check` (20/20 Contracts KEPT) | ✓ **Produktiv** |
+| **Adapterkonfiguration (Scenario)** | `deploy/scenarios/gg-demo.yaml` Top-Level-Kommentar-Block (`# SIMULATION ONLY — NOT APPROVED FOR PRODUCTION GRID CONTROL.`) mit Verweis auf [`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007)/[`GG-NONGOAL-001`](../../spec/lastenheft.md#gg-nongoal-001). | `::test_safe_007_adapter_config_marks_simulation` | ✓ **Produktiv** |
+| **Adapterkonfiguration (Protocol-Modul)** | Modul-Docstring in `adapters/driven/protocol_{dnp3,iec61850,modbus,mqtt,opcua}/_config.py` (5 Module) trägt 3-Zeilen-Disclaimer mit [`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007)-Ref. | `::test_safe_007_adapter_config_marks_simulation` (deckt alle 5 Module ab) | ✓ **Produktiv** |
+| **Architektur-Belegung** | `tools/arch_check.py` ([`AC-HEXAGON-PURE`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert))-Contract + `pyproject.toml` Allowlist verhindert Direct-Wire-Bypass: `hexagon/**` darf nur Whitelist-Pakete importieren, kein Driving-/Driven-Adapter kann den Kern umgehen. | `::test_safe_007_arch_check_hexagon_pure_whitelist` (Quell-Inspektion) + `make arch-check` (20/20 Contracts KEPT) | ✓ **Produktiv** |
 
 ### `GG-SAFE-008` — Input-Validation (REST + WebSocket + Adapter)
 
@@ -44,7 +44,7 @@ gelangen."
 | **REST Zielressourcen** | `adapters/driving/http_api/_runs_action_router.py::post_run_faults` Cross-Field-Validation (M5-Welle-6a Decision 20): drei Schichten (target-existiert / fault_type-bekannt / type↔target-passt), alle → 422 mit `ErrorResponse.code`. `_healthcheck_router._require_run_or_404`-Helper deckt `run_id`-Existenz an REST-/UI-Pfaden ab. | `::test_safe_008_fault_injection_unknown_target_rejected` + bestehende `tests/integration/test_m5_welle_6a_fault_smoke.py` | ✓ **Produktiv** |
 | **WebSocket Subscribe-only** | `adapters/driving/http_api/_runs_action_router.py`: beide WS-Handler (`ws_run_telemetry`, `ws_run_alarms_stream`) rufen `await websocket.accept()` und iterieren ueber `TelemetryStreamPort.subscribe` bzw. `AlarmStreamPort.subscribe`. Es gibt **keinen** `websocket.receive_*`-Call — keine Client-Payload-Konsumption am Kern ([`ADR 0045`](../plan/adr/0045-http-api-request-strict-validation.md) §2.3). | `::test_safe_008_websocket_no_client_payload_consumed` (Quell-Datei-Inspektion) | ✓ **Produktiv** |
 | **WebSocket `run_id`-Validation** | Repository-Lookup im WS-Handler vor `subscribe`; bei unbekanntem `run_id` → Policy-Close 1008 mit Reason. UUID-Format-Validation an Path-Parameters ist explizit out-of-scope ([`ADR 0045`](../plan/adr/0045-http-api-request-strict-validation.md) §7) — der Repository-Lookup faengt invalid-Strings ab. | `::test_safe_008_websocket_unknown_run_id_rejected` (Close-Code 1008-Belegung) | ✓ **Produktiv** |
-| **Driven-Adapter-Input** | Welle 5a (`GG-SAFE-001..004`-Audit; siehe [`safe-001-004-quality-pipeline.md`](safe-001-004-quality-pipeline.md)) hat die Adapter-Side-Quality-Emission auditiert: Schema-Validierung im Scenario-Loader (`hexagon/core/scenario/loader.py`), NaN-Reject im Serialisierungs-Pfad (`canonical_json`), Quality-Emission bei Lese-Fehlern pro Adapter (`protocol_*`-`_port.py`-Familie). | Welle-5a-Smoke-Suite `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py` (4 Pflicht + 2 Schwester + 2 Trigger-Skips) | ✓ **Produktiv** (siehe Welle 5a) |
+| **Driven-Adapter-Input** | Welle 5a ([`GG-SAFE-001`](../../spec/lastenheft.md#gg-safe-001)..004-Audit; siehe [`safe-001-004-quality-pipeline.md`](safe-001-004-quality-pipeline.md)) hat die Adapter-Side-Quality-Emission auditiert: Schema-Validierung im Scenario-Loader (`hexagon/core/scenario/loader.py`), NaN-Reject im Serialisierungs-Pfad (`canonical_json`), Quality-Emission bei Lese-Fehlern pro Adapter (`protocol_*`-`_port.py`-Familie). | Welle-5a-Smoke-Suite `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py` (4 Pflicht + 2 Schwester + 2 Trigger-Skips) | ✓ **Produktiv** (siehe Welle 5a) |
 
 **Legende**:
 - ✓ Produktiv: Akzeptanz vollstaendig erfuellt + Smoke-Test
@@ -83,7 +83,7 @@ allen drei Lastenheft-Pflicht-Surfaces:
   Modul-Docstring.
 
 Plus die Architektur-Belegung: `tools/arch_check.py` mit dem
-`AC-HEXAGON-PURE`-Contract verhindert strukturell, dass ein
+[`AC-HEXAGON-PURE`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Contract verhindert strukturell, dass ein
 Adapter den Hexagon-Kern direkt mit einem produktiven Anlagen-
 Backend verschaltet — der Kern darf nur Whitelist-Pakete
 importieren, und ein hypothetischer Produktiv-Anlagen-Adapter

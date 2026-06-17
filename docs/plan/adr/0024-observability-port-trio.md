@@ -23,7 +23,7 @@ ergaenzt; keine Architektur-Aenderung). **Vorherige Aenderung
 (2026-05-24)** — Slice 027 Paket C:
 `LogPort.log`-Surface auf `log(entry: LogEntry)` umgestellt (vorher
 6-Parameter `level/message/run_id/module/event_id/attributes`).
-Pflicht-Felder bleiben inhaltlich identisch (`GG-OTEL-002`),
+Pflicht-Felder bleiben inhaltlich identisch ([`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)),
 werden jetzt am `LogEntry`-frozen-dataclass-Envelope getragen.
 Adapter (NullLogAdapter, OtlpLogAdapter) + TickLoop-`_obs_log`-
 Helper + alle Tests entsprechend nachgezogen. Schaerfung-ohne-
@@ -44,9 +44,9 @@ Erweiterungen); `Bezug:`-Liste L-3 (`ADR 0011` ergaenzt). Vor-
 Aenderung`-Datum gepflegt.
 **Bezug:**
 [Lastenheft](../../../spec/lastenheft.md#19-telemetrie) §19 Telemetrie
-(`GG-OTEL-001..004`),
+([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004),
 [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2 Driven-Ports-Tabelle
-(`GG-AR-PORT-DRN-008`), §5 Komponentensicht (`GG-AR-COMP-OBS`), §15
+([`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)), §5 Komponentensicht ([`GG-AR-COMP-OBS`](../../../spec/architecture.md#5-komponentensicht)), §15
 Beobachtbarkeit,
 [`ADR 0007`](0007-random-port.md) (Driven-Port-Pattern-Praezedenz,
 PRNG-Wahl + Seeding-Kette),
@@ -80,18 +80,18 @@ Smoke-Determinismus — §4.5 unten nimmt sie normativ in diese ADR auf).
 Architektur §15 (Beobachtbarkeit) verlangt drei distinkte
 Observability-Aspekte:
 
-- **Strukturierte Logs** (`GG-OTEL-002`): JSON mit `ts`, `level`,
+- **Strukturierte Logs** ([`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)): JSON mit `ts`, `level`,
   `run_id`, `module`, `event_id`, `message`.
-- **Metriken** (`GG-OTEL-003`): `tick_duration_ms`,
+- **Metriken** ([`GG-OTEL-003`](../../../spec/lastenheft.md#gg-otel-003)): `tick_duration_ms`,
   `event_queue_len`, `telemetry_points_per_s`, `error_count`,
   `replay_diff_status`.
-- **Traces** (`GG-OTEL-001`/`004`): optional OTLP, traversierender
+- **Traces** ([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)/`004`): optional OTLP, traversierender
   Span Tick → Scheduler → Device → Adapter → Persistenz.
 
 Architektur §4.2 buendelt diese drei Aspekte unter einem
-**Driven-Port-Trio** `GG-AR-PORT-DRN-008` (`LogPort`, `MetricsPort`,
+**Driven-Port-Trio** [`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`LogPort`, `MetricsPort`,
 `TracePort`). Komponentensicht §5 lokalisiert die produktiven
-Adapter unter `adapters/driven/telemetry-*` (`GG-AR-COMP-OBS`).
+Adapter unter `adapters/driven/telemetry-*` ([`GG-AR-COMP-OBS`](../../../spec/architecture.md#5-komponentensicht)).
 
 `ADR 0023 §2.6` (Welle-3-Multi-Agent) hat das **Observability-
 Vorgriff-Verbot** dokumentiert: AgentBus/Agent **injizieren keine**
@@ -137,7 +137,7 @@ auf, ohne sie ergebnis-offen neu zu verhandeln.
 
 Die Ports leben unter `src/grid_gym/hexagon/ports/driven/
 observability.py` (drei Protocols in einer Datei — gemeinsame Domain
-„Observability", konsistent zur Bundelung in `GG-AR-PORT-DRN-008`).
+„Observability", konsistent zur Bundelung in [`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)).
 
 ### 2.2 `LogPort`
 
@@ -156,7 +156,7 @@ class LogPort(Protocol):
     def log(self, entry: LogEntry) -> None: ...
 ```
 
-- Surface deckt die in Architektur §15 / `GG-OTEL-002` geforderten
+- Surface deckt die in Architektur §15 / [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002) geforderten
   Pflicht-Felder ab — die Felder leben jetzt am `LogEntry`-Envelope
   (Slice 027 Paket C, ADR 0011-Schaerfung). Inhaltlich identisch zur
   vorherigen 6-Parameter-Signatur; der Aufrufer hat jetzt eine
@@ -165,7 +165,7 @@ class LogPort(Protocol):
   keine Level-Hierarchie aufzuzwingen — Adapter sind frei in der
   Mapping-Wahl (z. B. Python-`logging.DEBUG/INFO/...`).
 - `attributes` ist die strukturierte Payload (zusaetzliche Felder
-  ueber das `GG-OTEL-002`-Pflichtset hinaus).
+  ueber das [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)-Pflichtset hinaus).
 - `ts` wird **nicht** als Parameter gefuehrt — Adapter zieht die
   Zeit (typischerweise per `ClockPort` injiziert; Wall-Clock fuer
   Live, Simulations-Clock fuer Replay).
@@ -199,7 +199,7 @@ class MetricsPort(Protocol):
     ) -> None: ...
 ```
 
-- Drei Methoden decken die drei in §15 / `GG-OTEL-003` genannten
+- Drei Methoden decken die drei in §15 / [`GG-OTEL-003`](../../../spec/lastenheft.md#gg-otel-003) genannten
   Metrik-Familien ab:
   - `increment` — monoton steigende Counter (z. B.
     `error_count`, `telemetry_points_per_s`-Aggregator).
@@ -374,7 +374,7 @@ mit der Welle-6-Lieferung.
 
 ## 3. Begruendung
 
-- **Triade-Symmetrie:** Drei Aspekte aus `GG-OTEL-001..004` und
+- **Triade-Symmetrie:** Drei Aspekte aus [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004 und
   Architektur §15 werden als **drei separate Ports** modelliert
   (statt eines monolithischen `ObservabilityPort`). Vorteil:
   Test-Doubles koennen einzeln injiziert werden, OTLP-Adapter kann
@@ -758,7 +758,7 @@ README.de-Closure-Zeile.
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-AR-PORT-DRN-008` ist nach `Provisional` eines
+- **Positiv:** [`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) ist nach `Provisional` eines
   vollwertigen Driven-Ports — die Architektur-Tabelle muss
   textlich nicht geaendert werden (nur Verweis auf diese ADR).
 - **Positiv:** `ADR 0023 §2.6` (Observability-Vorgriff-Verbot) ist
@@ -791,7 +791,7 @@ README.de-Closure-Zeile.
   Var `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`). HTTP/protobuf bleibt
   Folge-Slice-Material.
 - Strukturierte-Logs-JSON-Schema (Pflicht-Felder + erweiterte
-  Attributes) jenseits der `GG-OTEL-002`-Grundfelder — Welle 6
+  Attributes) jenseits der [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)-Grundfelder — Welle 6
   oder Folge-ADR.
 - Metric-Naming-Konvention / Registry — lebt im OTLP-Adapter und
   in den Aufrufer-Modulen, nicht im Port-Vertrag.
@@ -799,6 +799,6 @@ README.de-Closure-Zeile.
   Grenzen — Post-M3.
 - Trigger 006 (`--strict-bytes`)-Aktivierungs-Zeitpunkt — explizit
   deferred auf Welle 6 (§2.7).
-- Healthcheck-Endpoint (`GG-DEPLOY-006`) — gehoert nicht zum
+- Healthcheck-Endpoint ([`GG-DEPLOY-006`](../../../spec/lastenheft.md#gg-deploy-006)) — gehoert nicht zum
   Observability-Port-Trio, ist eigener Adapter-Surface in
   `adapters/driving/http_api/`.

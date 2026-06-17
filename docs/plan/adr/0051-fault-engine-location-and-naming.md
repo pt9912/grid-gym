@@ -17,7 +17,7 @@
   `AC-ADAPTER-PURE`-Bridge-Rueckbau; verweist den
   Fault-Klassen-Standort auf diese Folgeentscheidung.
 - [`spec/architecture.md`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) —
-  `GG-AR-COMP-FAULTS` und `GG-AR-PORT-DRN-011`.
+  [`GG-AR-COMP-FAULTS`](../../../spec/architecture.md#5-komponentensicht) und [`GG-AR-PORT-DRN-011`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen).
 - [`welle-2.md`](../planning/done-archive/welle-2.md) — historischer
   Welle-2-Plan; dokumentiert, dass `BatteryFaultAdapter` und
   `GridFaultAdapter` bewusst unter `hexagon/core/faults/` liegen.
@@ -45,7 +45,7 @@ Der Name `*FaultAdapter` ist trotzdem missverstaendlich. In der
 Repo-Terminologie bedeutet `adapters/*` normalerweise Outer-Ring,
 I/O-, Framework- oder Infrastruktur-Code. Hier ist `Adapter` aber im
 Port-Pattern-Sinn gemeint: Die Klassen implementieren `FaultPort`,
-sind aber fachlich Teil von `GG-AR-COMP-FAULTS`.
+sind aber fachlich Teil von [`GG-AR-COMP-FAULTS`](../../../spec/architecture.md#5-komponentensicht).
 
 ## 2. Entscheidung
 

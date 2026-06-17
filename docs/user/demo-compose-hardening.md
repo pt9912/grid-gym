@@ -27,9 +27,9 @@ nicht fuer Multi-User-Zugriff oder offene Lab-Netze gehaertet;
 der Bind muss per Default die Reichweite auf den Maintainer-
 Host beschraenken.
 
-`GG-SAFE-008` (REST-Input-Validation) ist davon abzugrenzen
+[`GG-SAFE-008`](../../spec/lastenheft.md#gg-safe-008) (REST-Input-Validation) ist davon abzugrenzen
 — es regelt Eingaben **am Endpoint**, nicht die Erreichbarkeit
-des Endpoints. `GG-DEPLOY-011` regelt Offline-Runs (kein
+des Endpoints. [`GG-DEPLOY-011`](../../spec/lastenheft.md#gg-deploy-011) regelt Offline-Runs (kein
 Outbound-Network-Egress), nicht den Inbound-Port-Bind.
 
 ---
@@ -90,9 +90,9 @@ bewusst sein:
   (`carveouts.md §2.7` „Multi-User + Auth im UI-Layer"
   permanent Out-of-Scope).
 - Das Demo-Stack ist **nur Simulation** und nicht fuer
-  produktive Anlagensteuerung freigegeben (`GG-SAFE-007`;
+  produktive Anlagensteuerung freigegeben ([`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007);
   siehe [`safe-007-008-sim-prod-input-validation.md`](safe-007-008-sim-prod-input-validation.md)).
-- REST-Eingaben sind via `GG-SAFE-008` strict-validiert
+- REST-Eingaben sind via [`GG-SAFE-008`](../../spec/lastenheft.md#gg-safe-008) strict-validiert
   (Pydantic v2 mit `strict=True` + `extra="forbid"`), aber
   WebSocket- und UI-Endpunkte sind unauthentifiziert.
 
@@ -125,10 +125,10 @@ oder den ENV-Override entfernt, schlaegt der Smoke an.
   („separate Auflagen-Schicht, kein einzelner Lastenheft-
   ID").
 - [`safe-007-008-sim-prod-input-validation.md`](safe-007-008-sim-prod-input-validation.md):
-  `GG-SAFE-007` (Sim/Prod-Marker) + `GG-SAFE-008` (Input-
+  [`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007) (Sim/Prod-Marker) + [`GG-SAFE-008`](../../spec/lastenheft.md#gg-safe-008) (Input-
   Validation am Endpoint).
 - [`safe-005-006-fallback-determinism.md`](safe-005-006-fallback-determinism.md):
-  `GG-SAFE-005/006` Schwester-Audit der gleichen Welle.
+  [`GG-SAFE-005`](../../spec/lastenheft.md#gg-safe-005)/006 Schwester-Audit der gleichen Welle.
 - `Makefile`-Targets `demo` / `runtime` — sie sourcen
   `GRID_GYM_DEMO_HOST_BIND` aus dem Maintainer-Environment
   durch zur Compose-Interpolation.

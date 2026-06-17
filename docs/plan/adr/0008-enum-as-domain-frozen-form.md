@@ -36,8 +36,8 @@ Contract. Der Vertragstext erkennt heute zwei Frozen-Konventionen:
 Der Slice-Plan M1 Welle 1 verlangt zwei Enum-Klassen in
 `hexagon/core/domain/`:
 
-- `Quality` (`GG-DATA-003`) — Telemetrie-Qualitaetsstatus.
-- `CommandResult` (`GG-DATA-004`) — Steuerbefehl-Endstatus.
+- `Quality` ([`GG-DATA-003`](../../../spec/lastenheft.md#gg-data-003)) — Telemetrie-Qualitaetsstatus.
+- `CommandResult` ([`GG-DATA-004`](../../../spec/lastenheft.md#gg-data-004)) — Steuerbefehl-Endstatus.
 
 Beide sind Enum-Subklassen (konkret `enum.StrEnum`, damit
 `canonical_json` ueber den `str`-Branch serialisieren kann). Enum-
@@ -150,7 +150,7 @@ nur Member und literal docstrings im Body haben").
 
 ## 6. Konsequenzen
 
-- **Positiv:** Domain-Code kann Spec-Werte aus `GG-DATA-003`/`004`
+- **Positiv:** Domain-Code kann Spec-Werte aus [`GG-DATA-003`](../../../spec/lastenheft.md#gg-data-003)/`004`
   als Python-`StrEnum` modellieren — kein Workaround-Pattern.
   `canonical_json` serialisiert Member ueber den `str`-Branch
   ohne Konversion an der Domain-Eingangsgrenze.
@@ -177,5 +177,5 @@ nur Member und literal docstrings im Body haben").
 - Vertrag fuer Enum-Subklassen mit komplexem Body-Code (z. B.
   Methoden mit Seiteneffekten). Heuristik laesst das heute
   durch; Schaerfung waere eigene Folge-ADR.
-- Aenderungen an `GG-DATA-003`/`004`-Wertelisten — die Spec
+- Aenderungen an [`GG-DATA-003`](../../../spec/lastenheft.md#gg-data-003)/`004`-Wertelisten — die Spec
   bleibt unangetastet.

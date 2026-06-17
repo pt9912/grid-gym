@@ -1,6 +1,6 @@
 # Roadmap — grid-gym
 
-**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier `GG-SAFE-001..004` produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 (Geraete) komplett (2a-2d Done) + Welle 2-D8 (generische `ScenarioFaultEngine`) Done + Welle 3 (Netz) komplett (3a/3b/3c Done, `GG-GRID-005..007`)** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](../done/M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](../done/041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](../done/042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2a (EV-Charger, `GG-DEV-015`) + 2b (Transformer, `GG-DEV-016`) Done 2026-06-14** ([`M8-welle-2a.md`](../done/M8-welle-2a.md)/[`M8-welle-2b.md`](../done/M8-welle-2b.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)/[`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 016/017 aufgeloest); **Welle 2c (Wind-Turbine, `GG-DEV-017`) Done 2026-06-14** ([`M8-welle-2c.md`](../done/M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest; erster `RandomPort`-Konsument); **Welle 2d (Diesel-Generator, `GG-DEV-018`) Done 2026-06-14** ([`M8-welle-2d.md`](../done/M8-welle-2d.md), [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`, Trigger 019 aufgeloest; Hysterese + Kraftstoff + genset_fault) — **damit alle vier SOLLTE-Geraete (`GG-DEV-015..018`) geliefert**; **Welle 3 (Netz) Done 2026-06-16** (eroeffnet 2026-06-15, [`M8-welle-3.md`](../done/M8-welle-3.md); C0 + Slice-Plaene 3a/3b/3c, `T-020..022`/`GG-GRID-005..007`, Schaerfung von [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)): **Welle 3a (Inselnetz, `GG-GRID-005`) Done 2026-06-16** ([`M8-welle-3a.md`](../done/M8-welle-3a.md), [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`, Trigger 020 aufgeloest; `is_islanded`/`forming_device_id` + Forming-Geraet als Slack) + **Welle 3b (Trafo-Grenzen, `GG-GRID-006`) Done 2026-06-16** ([`M8-welle-3b.md`](../done/M8-welle-3b.md), [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`, Trigger 021 aufgeloest; `transformer_limit`-Thermomodell als Zeit-Strom-Mechanismus → pro-Tick `GridConstraintViolationEvent`, opt-in Snapshot-/Scenario-Hash, inaktiv bit-genau) + **Welle 3c (Blindleistung, `GG-GRID-007`) re-tranchiert — 3c-a (Q-Bilanz) Done 2026-06-16** ([`M8-welle-3c.md`](../done/M8-welle-3c.md), [`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`; `imbalance_kvar` + Q-Spannungskopplung + GridModelSnapshot v2→v3) + **3c-b-1 (PV-Q(U) + Spannungs-Feedback) Done 2026-06-16** ([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md) `Accepted`; `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig` + TickLoop-`reactive_kvar`-Aggregation, Q-frei pin-neutral) + **3c-b-2 (GridConnection-Q + Transformer-S=√(P²+Q²)) Done 2026-06-16** ([`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md) `Accepted`; Netzanschluss absorbiert den Q-Residual + Transformer-Scheinleistung S=√(P²+Q²) re-pinnt die 3b-Boundary als Q=0-Regressionspin), **Trigger 022 aufgeloest — `GG-GRID-005..007` komplett, Welle 3 (Netz) abgeschlossen**; **Welle 4 (BESS-Telemetrie) In Arbeit — eroeffnet 2026-06-16** ([`M8-welle-4.md`](../done/M8-welle-4.md); C0 + Slice-Plaene 4a/4b, `T-023/024`/`GG-BESS-006/007`, Telemetrie-Schaerfung von [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
+**Status:** M1..M7 abgeschlossen — **der MVP ist geliefert** (M7 mit Welle-X-Closure 2026-06-12, [`../done/M7-results.md`](../done/M7-results.md); M6 mit Welle 7 Closure 2026-06-08, [`../done/M6-results.md`](../done/M6-results.md); M5 mit Welle 7 Closure 2026-06-04, [`../done/M5-results.md`](../done/M5-results.md)). **M7 abgeschlossen 2026-06-12**: alle vier `GG-MVP-*`-Punkte + alle vier [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004 produktiv; fuenf M7-ADRs 0047/0048/0049/0052/0053 `Accepted` (0050/0051 damals `Proposed`, in M8-Welle-1 `Accepted`). **Release v0.1.0 publiziert 2026-06-12** (Tag-Push → erster realer `release.yml`-Lauf: GHCR-Image + 5 Assets + SBOM-Digest-Bindung; Trigger 032 aufgeloest). **Aktiver Meilenstein: M8 (SOLLTE-Geraete & Netz) → v0.2.0 — Welle 2 (Geraete) komplett (2a-2d Done) + Welle 2-D8 (generische `ScenarioFaultEngine`) Done + Welle 3 (Netz) komplett (3a/3b/3c Done, [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007)** (eroeffnet 2026-06-13 per Stakeholder-Mandat, [`M8-welle-0.md`](../done/M8-welle-0.md)): **Welle 1 (Architektur-Cleanup) Done** — Slices [`041`](../done/041-adapter-pure-ignore-imports-rueckbau.md) ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`) + [`042`](../done/042-fault-engine-location-and-naming.md) (Fault-Engine-Naming, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) `Accepted`), `ignore_imports = []`, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **Welle 2a (EV-Charger, [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)) + 2b (Transformer, [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016)) Done 2026-06-14** ([`M8-welle-2a.md`](../done/M8-welle-2a.md)/[`M8-welle-2b.md`](../done/M8-welle-2b.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)/[`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 016/017 aufgeloest); **Welle 2c (Wind-Turbine, [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017)) Done 2026-06-14** ([`M8-welle-2c.md`](../done/M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest; erster `RandomPort`-Konsument); **Welle 2d (Diesel-Generator, [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018)) Done 2026-06-14** ([`M8-welle-2d.md`](../done/M8-welle-2d.md), [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`, Trigger 019 aufgeloest; Hysterese + Kraftstoff + genset_fault) — **damit alle vier SOLLTE-Geraete ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018) geliefert**; **Welle 3 (Netz) Done 2026-06-16** (eroeffnet 2026-06-15, [`M8-welle-3.md`](../done/M8-welle-3.md); C0 + Slice-Plaene 3a/3b/3c, `T-020..022`/[`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007, Schaerfung von [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)): **Welle 3a (Inselnetz, [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)) Done 2026-06-16** ([`M8-welle-3a.md`](../done/M8-welle-3a.md), [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`, Trigger 020 aufgeloest; `is_islanded`/`forming_device_id` + Forming-Geraet als Slack) + **Welle 3b (Trafo-Grenzen, [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006)) Done 2026-06-16** ([`M8-welle-3b.md`](../done/M8-welle-3b.md), [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`, Trigger 021 aufgeloest; `transformer_limit`-Thermomodell als Zeit-Strom-Mechanismus → pro-Tick `GridConstraintViolationEvent`, opt-in Snapshot-/Scenario-Hash, inaktiv bit-genau) + **Welle 3c (Blindleistung, [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007)) re-tranchiert — 3c-a (Q-Bilanz) Done 2026-06-16** ([`M8-welle-3c.md`](../done/M8-welle-3c.md), [`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`; `imbalance_kvar` + Q-Spannungskopplung + GridModelSnapshot v2→v3) + **3c-b-1 (PV-Q(U) + Spannungs-Feedback) Done 2026-06-16** ([`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md) `Accepted`; `DeviceTickContext.grid_voltage_v` lagged + opt-in `VoltVarConfig` + TickLoop-`reactive_kvar`-Aggregation, Q-frei pin-neutral) + **3c-b-2 (GridConnection-Q + Transformer-S=√(P²+Q²)) Done 2026-06-16** ([`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md) `Accepted`; Netzanschluss absorbiert den Q-Residual + Transformer-Scheinleistung S=√(P²+Q²) re-pinnt die 3b-Boundary als Q=0-Regressionspin), **Trigger 022 aufgeloest — [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007 komplett, Welle 3 (Netz) abgeschlossen**; **Welle 4 (BESS-Telemetrie) In Arbeit — eroeffnet 2026-06-16** ([`M8-welle-4.md`](../done/M8-welle-4.md); C0 + Slice-Plaene 4a/4b, `T-023/024`/[`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)/007, Telemetrie-Schaerfung von [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)). Post-MVP-Trigger-Watch (Welle-X-D-4) laeuft weiter fuer 033/037/038/039/040/044 + Trigger-Gated-Bestand ([`carveouts.md`](carveouts.md)).
 **Stand:** 2026-06-16
 
 - **Meilensteine:** M1 `Done` (Welle 0..7), M2 `Done` (Welle 0..7),
@@ -145,7 +145,7 @@
   Boundary-Property + 1 F13-Cross-Adapter-Helper-
   Positiv). 10/10 A-1-Gates gruen (NEU 10.
   `spdx-check`); 20/20 Contracts KEPT (NEU 14.
-  `AC-IEC61850-GPL-BOUNDARY`).
+  [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md)).
 - **Aktiver Slice: keiner — Post-MVP-Trigger-Watch** (M7
   MVP-Abschluss abgeschlossen 2026-06-12,
   [`../done/M7-results.md`](../done/M7-results.md); M6 Performance +
@@ -170,7 +170,7 @@
   var-Branch + NEU `make demo`/`demo-stop` + NEU
   Welle-5-Smoke + Decision-18-Praezisierung in
   `compose.yml` per Service-Konfiguration +
-  `GG-DEMO-008`-Defer auf Welle 6) + Doku-Sibling-
+  [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008)-Defer auf Welle 6) + Doku-Sibling-
   Stack `5ab0f67`/`64c0fd9`/`5fe5082` + C3
   `61f5156` (Status/DoD-Sync + §10 C2-Realization-
   Notes) + C4a `da8d728` (Self-Close-Move) +
@@ -183,8 +183,8 @@
   Check + tick_interval_s=min(...) +
   __main__-Path-Resolution + Makefile-Wait-Timeout +
   dynamisches _reset_app_state). Lastenheft-Akzeptanz
-  `GG-DEMO-001..005 + 007` produktiv; `GG-DEMO-006` +
-  `GG-DEMO-008` Anti-Scope-Forward-Pointer auf
+  [`GG-DEMO-001`](../../../../spec/lastenheft.md#gg-demo-001)..005 + 007 produktiv; [`GG-DEMO-006`](../../../../spec/lastenheft.md#gg-demo-006) +
+  [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008) Anti-Scope-Forward-Pointer auf
   Welle 6.
   **Welle 6 ist per Welle-6a-C0 (2026-06-03) sub-
   gesliced** in 6a (Fault-Flow) + 6b (UI-
@@ -207,12 +207,12 @@
   C4b `b19aeae` (Cross-Doc-Refs-Sync, 8 Refs) +
   Review-Folge `1e3a793` (high-effort `/code-review`
   → 15 Findings F1..F15 adressiert). Lastenheft-Akzeptanz
-  `GG-UI-007` + `GG-DEMO-006` produktiv;
+  [`GG-UI-007`](../../../../spec/lastenheft.md#gg-ui-007) + [`GG-DEMO-006`](../../../../spec/lastenheft.md#gg-demo-006) produktiv;
   Welle-5-Anti-Scope-Aufnahme erfolgreich (Battery-
   cell_failure-Auto-Alarm bleibt Welle-6+/M3-Welle-2-
   Hardening-Material — Slice-Doc §10.1).
-  **Welle 6b (UI-Visualization: `GG-UI-006` Geraete-
-  Grafik + `GG-UI-008` Sim-Zustand-Dashboard)
+  **Welle 6b (UI-Visualization: [`GG-UI-006`](../../../../spec/lastenheft.md#gg-ui-006) Geraete-
+  Grafik + [`GG-UI-008`](../../../../spec/lastenheft.md#gg-ui-008) Sim-Zustand-Dashboard)
   abgeschlossen 2026-06-04** mit C0 `efc2c10` (Slice-
   Doc [`M5-welle-6b.md`](../done-archive/M5-welle-6b.md) + Decisions
   21/22/23 final) + C2 `9fcb887` (Code-Merge: NEU
@@ -221,7 +221,7 @@
   `DeviceStateEntry`-Pydantic-Modelle + NEU
   `_aggregate_quality`/`_extract_state_subset`-Helper
   + NEU `routes_visualization.py`-Modul-Split
-  `AC-NO-GOD-UTILS` analog Welle-6a `routes_faults.py` + NEU
+  [`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) analog Welle-6a `routes_faults.py` + NEU
   UI-Pages `/runs/{id}/devices` (HTMX-1s-Polling-
   Tabelle) + `/runs/{id}/system` (HTMX-Polling auf
   /status 1s + /health 5s) + 4 Templates + Navigation
@@ -238,7 +238,7 @@
   `_templates.py`, `QUALITY_SEVERITY` nach
   `core/domain/quality.py`). 1696 → 1722 Unit-Tests
   (+26); 64 → 80 Integration (+16). Lastenheft-
-  Akzeptanz `GG-UI-006 + GG-UI-008` produktiv.
+  Akzeptanz [`GG-UI-006`](../../../../spec/lastenheft.md#gg-ui-006) + [`GG-UI-008`](../../../../spec/lastenheft.md#gg-ui-008) produktiv.
   **Welle-6b-Realization-Notes** (Slice-Doc §10):
   JSON-URL wandert auf `/runs/{id}/devices/state`-
   Sub-Pfad (UI-Page behaelt natuerliche URL; Pattern
@@ -247,17 +247,17 @@
   [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)
   ein. Decision 23: Chart.js bleibt (kein
   Plotly/ECharts-Spike).
-  **Welle 6c (Abnahmedoku `GG-DEMO-008`) abgeschlossen
+  **Welle 6c (Abnahmedoku [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008)) abgeschlossen
   2026-06-04** mit C0 `3db9fcd` (Slice-Doc
   [`M5-welle-6c.md`](../done-archive/M5-welle-6c.md)) + C2 `0e604e4`
   (NEU `docs/user/gg-demo-008-abnahme.md` mit
-  6-Schritt-Abnahmereihenfolge per `GG-DEMO-008`
+  6-Schritt-Abnahmereihenfolge per [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008)
   Lastenheft §24; Top-Level-Doku-Sync + Status-Block-
   Kompression auf User-Feedback) + C3 (dieser Commit;
   Status/DoD-Sync + Welle-6-Subdivision-Abschluss-Note).
   Ausstehend: C4a Self-Close-Move + C4b Cross-Doc-Refs-
   Sync. Test-Counts unveraendert (1722/80; reiner Doku-
-  Slice). Welle-5-Anti-Scope-Erbschaft `GG-DEMO-008`
+  Slice). Welle-5-Anti-Scope-Erbschaft [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008)
   aufgeloest; letzte Welle-6-Sub-Slice.
   **Welle-6-Subdivision komplett 2026-06-04** (6a
   Fault-Flow + 6b UI-Visualization + 6c Abnahmedoku;
@@ -320,8 +320,8 @@
   (Pre-M5-Welle-0 UI-Stack-Choice — FastAPI + HTMX + Jinja2
   + Chart.js; Maintainer-Decision in M5-Welle-0); **0037
   `Provisional`** (M5-Welle-1 HTTP-API-Surface-Pattern;
-  Decision API-3 verwirft `UICommandPort`-Slot
-  `GG-AR-PORT-DRG-002` zugunsten direkter REST+WS-Nutzung);
+  Decision API-3 verwirft den `UICommandPort`-Slot
+  zugunsten direkter REST+WS-Nutzung);
   **0038 `Provisional`** (M5-Welle-3 TelemetryStreamPort);
   **0039 `Provisional`** (M5-Welle-4a Run-Control +
   RunStatus-Tracking); **0040 `Provisional`** (M5-Welle-4b
@@ -383,12 +383,12 @@
   ist aktivierungs-reif; Aktivierung selbst ist Folge-Slice
   (`[tool.mypy] strict_bytes = true` plus Sweep-Pruefung).
 - **Contracts:** 20 A-1 (6 lint-imports + 14 `tools/arch_check.py`
-  inkl. `AC-OTLP-ADAPTER-NO-TIME`, `AC-TICK-LOOP-PRIVATE-
-  RESUME-ERRORS` und NEU `AC-IEC61850-GPL-BOUNDARY` aus
-  M4-Welle-6b; `AC-NO-IO-MOD` ist in beiden Tools enforced
+  inkl. [`AC-OTLP-ADAPTER-NO-TIME`](../../adr/0024-observability-port-trio.md), `AC-TICK-LOOP-PRIVATE-
+  RESUME-ERRORS` und NEU [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md) aus
+  M4-Welle-6b; [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) ist in beiden Tools enforced
   und zaehlt als ein logischer Contract — kanonische
   Konvention per [`../done/M4-results.md`](../done/M4-results.md));
-  `AC-ADAPTER-LIGHTWEIGHT` erfasst `protocol_*`
+  [`AC-ADAPTER-LIGHTWEIGHT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) erfasst `protocol_*`
   weiter via `tools/arch_check.py:1089` (Regression-Schutz in
   Welle-1-C2 verifiziert, in Welle 2 + 3 produktiv bestaetigt;
   Welle-6b-C3 erweitert den Filter um Cross-Adapter-Helper
@@ -402,14 +402,14 @@
 
 Diese Roadmap fuehrt die Meilensteine, die sich aus dem Lastenheft und
 der Architektur ergeben. Sie ist die Quelle fuer die Status-Spalte
-der `GG-TRACE-001`-Implementierungsmatrix
+der [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Implementierungsmatrix
 ([Lastenheft §27.2](../../../../spec/lastenheft.md#272-anforderung-zu-implementierung))
 mit `M[N]`-Markern. §3 (MVP-Abnahmescope) liefert die
-Stakeholder-Sicht auf `GG-MVP-001..004`; §4 die
+Stakeholder-Sicht auf [`GG-MVP-001`](../../../../spec/lastenheft.md#gg-mvp-001)..004; §4 die
 Meilenstein-Detail-Sicht; §5 die `GG-AR-OPEN-*`-
 Vorbedingungen.
 
-`GG-AR-OPEN-001` (Sprach- und Build-Wahl) ist mit `ADR 0002`
+[`GG-AR-OPEN-001`](../../../../spec/architecture.md#19-offene-architektonische-punkte) (Sprach- und Build-Wahl) ist mit [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
 (`Accepted` 2026-05-15) geschlossen. M1 (Tick-Loop-Spine) ist seit
 2026-05-17 `Done` — Closure-Notiz in
 [`done/M1-tick-loop-spine.md`](../done-archive/M1-tick-loop-spine.md) +
@@ -459,7 +459,7 @@ Cross-cutting Abnahmekriterien aus Lastenheft §3 — Status-
 Snapshot pro `GG-MVP-*`-ID. Diese Tabelle ist die
 Stakeholder-Sicht; die einzelnen `GG-SIM/DEV/REPLAY/DEPLOY/
 ...`-IDs sind in §4 pro Meilenstein detailliert. Lastenheft-
-Traceability §27.2 Z. 2205: `GG-MVP-001..004` ist
+Traceability §27.2 Z. 2205: [`GG-MVP-001`](../../../../spec/lastenheft.md#gg-mvp-001)..004 ist
 „Scope-Festlegung; Auspraegung lebt in einzelnen
 `GG-SIM/DEV/...`-IDs" — diese Tabelle macht die Auspraegung
 maschinenlesbar.
@@ -467,9 +467,9 @@ maschinenlesbar.
 | ID | Akzeptanz (Lastenheft §3, Z. 123-150) | Stand 2026-06-07 | Substanz / Verankerung |
 | --- | --- | --- | --- |
 | **[`GG-MVP-001`](../../../../spec/lastenheft.md#gg-mvp-001)** | Lokaler Single-Node-Betrieb (API + UI + Simulationskern + Persistenz + Demo-Szenario via Docker Compose). | ✓ **produktiv** | `make demo` startet `deploy/compose.yml`-Stack (postgres + api + simulation-Stub + otel-collector); UI ist im `api`-Container (FastAPI-HTMX); Demo-Szenario `deploy/scenarios/gg-demo.yaml` via `GRID_GYM_DEMO_SCENARIO_PATH`. Welle-5c-Host-Bind-Hardening (`carveouts.md §2.7`). |
-| **[`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ✓ **produktiv** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓ + **Zeitreihen-Persistenz** ✓ (`TelemetrySinkPort` + `telemetry_points`, [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md), M7-Welle-1a) + **deterministisches Replay-E2E** ✓ (`ReplaySnapshotPort` [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md) + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-Preflight [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md), M7-Welle-1b; Zwei-Lauf-Beleg in `tests/integration/test_mvp_002_replay_lifecycle_smoke.py`; Audit `docs/user/replay-determinism-e2e.md`). Geliefert ueber M7-Welle-1 (1a + 1b-a + 1b-b); Trigger 036 aufgeloest. Carveouts: volle `GG-TERM`-Matrix (Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039). |
+| **[`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)** | E2E-Szenario mit GridConnection + PV + Last + Smart Meter + Batteriespeicher; startet ueber API + Live-Telemetrie + Persistenz + deterministisches Replay. | ✓ **produktiv** | Szenario-Start (POST /runs) ✓ + Live-Telemetrie (WebSocket) ✓ + Laufmetadaten-Persistenz (`PostgresRunRepository`) ✓ + **Zeitreihen-Persistenz** ✓ (`TelemetrySinkPort` + `telemetry_points`, [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md), M7-Welle-1a) + **deterministisches Replay-E2E** ✓ (`ReplaySnapshotPort` [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md) + Core-`TickLoop.finalize()`-Hook + `replay_diff_status` + [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-MVP-Preflight [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md), M7-Welle-1b; Zwei-Lauf-Beleg in `tests/integration/test_mvp_002_replay_lifecycle_smoke.py`; Audit `docs/user/replay-determinism-e2e.md`). Geliefert ueber M7-Welle-1 (1a + 1b-a + 1b-b); Trigger 036 aufgeloest. Carveouts: volle `GG-TERM`-Matrix (Trigger 038) + oeffentliche API-Replay-Bedienung (Trigger 039). |
 | **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)** | CLI/Script fuer Abnahmepruefungen — ein Befehl fuehrt deterministische Replay-Pruefung + Szenario-Validierung + Demo-Healthcheck aus + liefert maschinenlesbaren Status. | ✓ **produktiv** | `make accept` + `tools/accept.py` (M7-Welle-2): orchestriert no-fail-fast Step A (Szenario-Validierung `load_scenario` + Hash-Pin) → B (Headless-Zwei-Lauf-Determinismus via `build_tick_loop` + `diff_replay` + Telemetry-Stream-Hash-Pin) → C (`/ready`-Healthcheck) und schreibt den `AbnahmeReport` (Pydantic-strict) als JSON-only-stdout mit Tri-State-Exit 0/1/2 (D-9). Geteilter `tools/_demo_replay.py`-Helper + CI-Drift-Lint `tools/check_demo_scenario_pin.py` (`make ci`-Gate, D-8). Doku `docs/user/abnahme-cli.md`. Geliefert M7-Welle-2 (commits `33ac255` + `92d10f5`). |
-| **[`GG-MVP-004`](../../../../spec/lastenheft.md#gg-mvp-004)** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit `GG-DEPLOY-002` (Offline-MUSS) + `GG-DEPLOY-011` (Offline-Lauf-MUSS). |
+| **[`GG-MVP-004`](../../../../spec/lastenheft.md#gg-mvp-004)** | Demo offline ausfuehrbar (keine Cloud / kein Internet / keine realen Feldgeraete zur Laufzeit). | ✓ **produktiv** | `--no-pull`-Build-Pattern (Welle 0b/1); `deploy/compose.yml`-Services haben keine externen Cloud-Abhaengigkeiten; alle Adapter sind Container-intern oder Sibling-Compose; deckungsgleich mit [`GG-DEPLOY-002`](../../../../spec/lastenheft.md#gg-deploy-002) (Offline-MUSS) + [`GG-DEPLOY-011`](../../../../spec/lastenheft.md#gg-deploy-011) (Offline-Lauf-MUSS). |
 
 **Aktivierungs-Pfade fuer offene Punkte:**
 
@@ -478,13 +478,13 @@ maschinenlesbar.
   1b-b Replay-Lifecycle; [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md)/0048/0049). Trigger 036
   aufgeloest. Rest-Carveouts: volle `GG-TERM`-Matrix (Trigger 038),
   oeffentliche API-Replay-Bedienung (Trigger 039),
-  `GG-REPLAY-004..006` (SOLLTE, offen).
+  [`GG-REPLAY-004`](../../../../spec/lastenheft.md#gg-replay-004)..006 (SOLLTE, offen).
 - **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI** → **✓ geliefert ueber M7-Welle-2**
   (`make accept` + `tools/accept.py` + Shared
   `src/grid_gym/scenario_yaml.py`; D-10-Revision C; commits
   `33ac255` + `92d10f5`). **Damit alle vier `GG-MVP-*`-Punkte
   produktiv** — offen im M7-Meilenstein bleibt nur die Safety-Closure
-  `GG-SAFE-003/004` (M7-Welle-3, Trigger 034/035).
+  [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)/004 (M7-Welle-3, Trigger 034/035).
 
 ---
 
@@ -499,14 +499,14 @@ maschinenlesbar.
   Frozen-Dataclasses), `canonical_json`-Anbindung an Snapshot-Pfad,
   minimaler FastAPI-Adapter + Postgres-Persistenz fuer `runs`.
   Geraetemodelle (Battery, PV, Load, ...) folgen in M2+.
-- **Lastenheft-IDs:** `GG-SIM-001..005`, `GG-DATA-001..005`,
-  `GG-ARCH-005..008`, `GG-PRINC-001..006`, `GG-SCN-001..008`,
-  `GG-REPLAY-001..003`/`007`, `GG-API-001`/`003`,
-  `GG-PERSIST-003`/`009` (minimaler `runs`-Repository).
-- **Architekturartefakte:** `GG-AR-COMP-CORE`, `GG-AR-COMP-DOMAIN`,
-  `GG-AR-COMP-SCHED`, `GG-AR-PORT-DRN-001` (`ClockPort`),
-  `GG-AR-PORT-DRN-003` (`RunRepositoryPort`),
-  `GG-AR-PORT-DRN-010` (`RandomPort` — via
+- **Lastenheft-IDs:** [`GG-SIM-001`](../../../../spec/lastenheft.md#gg-sim-001)..005, [`GG-DATA-001`](../../../../spec/lastenheft.md#gg-data-001)..005,
+  [`GG-ARCH-005`](../../../../spec/lastenheft.md#gg-arch-005)..008, [`GG-PRINC-001`](../../../../spec/lastenheft.md#gg-princ-001)..006, [`GG-SCN-001`](../../../../spec/lastenheft.md#gg-scn-001)..008,
+  [`GG-REPLAY-001`](../../../../spec/lastenheft.md#gg-replay-001)..003/`007`, [`GG-API-001`](../../../../spec/lastenheft.md#gg-api-001)/`003`,
+  [`GG-PERSIST-003`](../../../../spec/lastenheft.md#gg-persist-003)/`009` (minimaler `runs`-Repository).
+- **Architekturartefakte:** [`GG-AR-COMP-CORE`](../../../../spec/architecture.md#5-komponentensicht), [`GG-AR-COMP-DOMAIN`](../../../../spec/architecture.md#5-komponentensicht),
+  [`GG-AR-COMP-SCHED`](../../../../spec/architecture.md#5-komponentensicht), [`GG-AR-PORT-DRN-001`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`ClockPort`),
+  [`GG-AR-PORT-DRN-003`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`RunRepositoryPort`),
+  [`GG-AR-PORT-DRN-010`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`RandomPort` — via
   [`ADR 0007`](../../adr/0007-random-port.md)).
 - **DoD-Checkliste:**
   - [x] Welle 0 — Vorbereitung ([`ADR 0007`](../../adr/0007-random-port.md) Provisional, Trigger 001,
@@ -518,12 +518,12 @@ maschinenlesbar.
         `MersenneTwisterRandomPort` Adapter, [`ADR 0007`](../../adr/0007-random-port.md) Accepted)
         (2026-05-17).
   - [x] Welle 3 — Scheduler mit Tie-Breaking
-        `(time, priority, source, sequence, event_id)` (`GG-ARCH-006`)
+        `(time, priority, source, sequence, event_id)` ([`GG-ARCH-006`](../../../../spec/lastenheft.md#gg-arch-006))
         (2026-05-17).
   - [x] Welle 4 — TickLoop + Snapshot-Envelope-Composition
-        (`GG-SIM-005`, [`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)) (2026-05-17).
-  - [x] Welle 5 — Scenario + Replay (`GG-SCN-001..008`,
-        `GG-REPLAY-001..003/007`) (2026-05-17).
+        ([`GG-SIM-005`](../../../../spec/lastenheft.md#gg-sim-005), [`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)) (2026-05-17).
+  - [x] Welle 5 — Scenario + Replay ([`GG-SCN-001`](../../../../spec/lastenheft.md#gg-scn-001)..008,
+        [`GG-REPLAY-001`](../../../../spec/lastenheft.md#gg-replay-001)..003/007) (2026-05-17).
   - [x] Welle 6a — FastAPI-Adapter + `make openapi-validate` gruen
         (2026-05-17).
   - [x] Welle 6b — `RunRepositoryPort` + `InMemoryRunRepository`
@@ -570,23 +570,23 @@ Welle-6c-Slice-Begleit:
   leer — Geraete emittieren `TelemetryPoint`-Tupel pro Tick.
   Geraete-Faults (mindestens Schnittstelle) und Snapshot-Versionierung
   pro Geraet.
-- **Lastenheft-IDs:** `GG-DEV-001..014`, `GG-BESS-001..008`,
-  `GG-GRID-001..007`. Plus Anschluss an
-  `GG-SCN-001` (Geraete-Definitionen im Scenario werden produktiv
+- **Lastenheft-IDs:** [`GG-DEV-001`](../../../../spec/lastenheft.md#gg-dev-001)..014, [`GG-BESS-001`](../../../../spec/lastenheft.md#gg-bess-001)..008,
+  [`GG-GRID-001`](../../../../spec/lastenheft.md#gg-grid-001)..007. Plus Anschluss an
+  [`GG-SCN-001`](../../../../spec/lastenheft.md#gg-scn-001) (Geraete-Definitionen im Scenario werden produktiv
   konsumiert).
-- **Architekturartefakte:** `GG-AR-COMP-DEVICES`, je Geraetetyp
+- **Architekturartefakte:** [`GG-AR-COMP-DEVICES`](../../../../spec/architecture.md#5-komponentensicht), je Geraetetyp
   ein Submodul unter `hexagon/core/devices/`. `RandomPort.sub_port`-
   Konventionen fuer Geraete-Fault-Streams.
 - **DoD-Checkliste:**
   - [x] `Battery`/BESS-Modell mit Lade-/Entlade-Vertrag
-        (`GG-BESS-001..008`) — M2 Welle 2, [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) `Accepted`.
+        ([`GG-BESS-001`](../../../../spec/lastenheft.md#gg-bess-001)..008) — M2 Welle 2, [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) `Accepted`.
   - [x] `PV`-Modell — M2 Welle 3a, [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) `Accepted`.
         Welle-3-Minimum (konstantes `rated_power_kw`-Modell);
         Generationsprofil-Eingang ist Welle-5-Material.
   - [x] `Load`-Modell — M2 Welle 3b, [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) `Accepted`.
   - [x] `SmartMeter`-Modell — M2 Welle 4b (`94efb2a`),
         [`ADR 0018`](../../adr/0018-smart-meter-device-pattern.md) `Accepted`.
-  - [x] `GridConnection`-Modell (`GG-GRID-001..007`) — M2 Welle 4a
+  - [x] `GridConnection`-Modell ([`GG-GRID-001`](../../../../spec/lastenheft.md#gg-grid-001)..007) — M2 Welle 4a
         (`b73b44a`), [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) `Accepted`.
   - [x] `TickLoop.tick()` ruft Geraete-`tick()`s in stabiler
         Reihenfolge auf; Telemetry-Sammlung pro Tick deterministisch
@@ -620,8 +620,8 @@ Wellen 0..6c geliefert (Sub-Slicing 4 → 4a/4b + 6 → 6a/6b/
 6c); fuenf M5-ADRs (0036/0037/0038/0039/0040) auf
 `Accepted`; `make gates` cache-frei gruen ohne Override
 mit 10 A-1-Gates; 1722 Unit-Tests + 80 passed + 4 skipped
-Integration-Tests; Lastenheft-Scope `GG-API-001..004` +
-`GG-UI-001..009` + `GG-DEMO-001..008` alle erfuellt.
+Integration-Tests; Lastenheft-Scope [`GG-API-001`](../../../../spec/lastenheft.md#gg-api-001)..004 +
+[`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..009 + [`GG-DEMO-001`](../../../../spec/lastenheft.md#gg-demo-001)..008 alle erfuellt.
 **`make fullbuild`** war zur M5-Closure noch pre-existing
 rot wegen krb5-CVE-Drift (M4-Welle-7-Erbschaft Trigger
 010; nicht durch M5 verursacht); **aufgeloest in M6-Welle-
@@ -634,7 +634,7 @@ Adapter-Hardening-Wellen); sechs M4-ADRs (0030/0031/0032/
 gruen ohne Override mit 10 A-1-Gates inkl. NEU
 `spdx-check`; 1584 Unit-Tests + 35 passed + 4 skipped
 Integration-Tests; 20 A-1-Contracts (14 arch_check inkl.
-NEU `AC-IEC61850-GPL-BOUNDARY`). `make fullbuild`
+NEU [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md)). `make fullbuild`
 war zur M4-Closure noch pre-existing rot wegen krb5-CVE-
 Drift seit M3-Welle-7-`c61ab0d` (nicht durch M4 verursacht;
 Base-Image-Bump als M5-Welle-0-Trigger); aufgeloest in
@@ -654,18 +654,18 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
 
 ### M3 — Faults + Multi-Agent + Observability (`Done` 2026-05-25)
 
-- **Lieferziel:** produktive Fault-Injection (`GG-FAULT-001..010`),
-  Multi-Agent-Subsystem (`GG-AGENT-001..008`) und
-  OpenTelemetry-Anbindung (`GG-OTEL-001..004`).
-- **Lastenheft-IDs:** `GG-FAULT-001..010`, `GG-AGENT-001..008`,
-  `GG-OTEL-001..004`, `GG-SAFE-001..006` (sicherheitsrelevante
+- **Lieferziel:** produktive Fault-Injection ([`GG-FAULT-001`](../../../../spec/lastenheft.md#gg-fault-001)..010),
+  Multi-Agent-Subsystem ([`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..008) und
+  OpenTelemetry-Anbindung ([`GG-OTEL-001`](../../../../spec/lastenheft.md#gg-otel-001)..004).
+- **Lastenheft-IDs:** [`GG-FAULT-001`](../../../../spec/lastenheft.md#gg-fault-001)..010, [`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..008,
+  [`GG-OTEL-001`](../../../../spec/lastenheft.md#gg-otel-001)..004, [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006 (sicherheitsrelevante
   Pfad-Kennzeichnung der Fault-Klassen).
-- **Architekturartefakte:** `GG-AR-COMP-FAULTS`,
-  `GG-AR-COMP-AGENTS`, `GG-AR-PORT-DRN-008`
+- **Architekturartefakte:** [`GG-AR-COMP-FAULTS`](../../../../spec/architecture.md#5-komponentensicht),
+  [`GG-AR-COMP-AGENTS`](../../../../spec/architecture.md#5-komponentensicht), [`GG-AR-PORT-DRN-008`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)
   (`LogPort`/`MetricsPort`/`TracePort`).
 - **DoD-Checkliste:**
   - [x] Fault-Definitions im Scenario werden vor `tick()` validiert
-        (`GG-SCN-006`) und im Tick-Loop ausgeloest
+        ([`GG-SCN-006`](../../../../spec/lastenheft.md#gg-scn-006)) und im Tick-Loop ausgeloest
         (M3-Welle-1 + Welle-2: [`ADR 0022`](../../adr/0022-fault-injection-protocol.md) + [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)).
   - [x] Mindestens ein konkreter Fault-Typ pro
         `Battery`/`Grid`-Achse implementiert: Battery
@@ -676,7 +676,7 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
         ([`ADR 0025`](../../adr/0025-fault-recovery-pattern.md) §2.1; Property-Tests fuer half-open
         `[start, end)`-Window + Unit-Tests fuer manuelle
         Recovery; `permanent`-Modus auf Welle 3+/M6 verschoben).
-  - [x] Multi-Agent-Bus implementiert (`GG-AGENT-001..006`):
+  - [x] Multi-Agent-Bus implementiert ([`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..006):
         Foundation (Welle 3: `Agent`-Protocol + `AgentMessageBus` +
         `AgentMessage` + TickLoop-Schritt-D2-Hook + Pending-Buffer),
         Foundation-Plumbing (Welle 4a: produktive
@@ -687,9 +687,9 @@ Wellen hinweg: **7 lint-imports + 12 `tools/arch_check.py`** =
         Scenario-`agents`-Top-Level-Block (nested Mapping) +
         bidirektionaler `agents.<type>.<id>`-Sub-Snapshot-Resume-
         Match + End-to-End-Demo `tests/integration/scenarios/
-        agents_demo.yaml`) sind `Done`. `GG-AGENT-007` Deadlines
-        und `GG-AGENT-008` Async bleiben Welle-4c+/M5-Material;
-        RL-Adapter (`GG-FUTURE-001/002`) bleiben Folge-Slice.
+        agents_demo.yaml`) sind `Done`. [`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007) Deadlines
+        und [`GG-AGENT-008`](../../../../spec/lastenheft.md#gg-agent-008) Async bleiben Welle-4c+/M5-Material;
+        RL-Adapter ([`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002) bleiben Folge-Slice.
   - [x] `LogPort`/`MetricsPort`/`TracePort` mit OTLP-Adapter
         (M3-Welle-5 Foundation + M3-Welle-6 OTLP-Adapter; ADR
         0024 `Accepted` mit M3-Welle-7-C1.3 `d13e1f3`).
@@ -723,9 +723,9 @@ Slice-Plan in
 
 - **Lieferziel:** produktive Driven-Adapter fuer die in Spec §16
   genannten Protokolle (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
-- **Lastenheft-IDs:** `GG-MQTT-001..00X`, `GG-MODB-001..00X`,
-  `GG-OPCUA-001..00X`, `GG-DNP3-001..00X`, `GG-IEC-001..00X`.
-- **Architekturartefakte:** `GG-AR-PORT-DRN-007`
+- **Lastenheft-IDs:** [`GG-MQTT-001`](../../../../spec/lastenheft.md#gg-mqtt-001)..00X, [`GG-MODB-001`](../../../../spec/lastenheft.md#gg-modb-001)..00X,
+  [`GG-OPCUA-001`](../../../../spec/lastenheft.md#gg-opcua-001)..00X, [`GG-DNP3-001`](../../../../spec/lastenheft.md#gg-dnp3-001)..00X, [`GG-IEC-001`](../../../../spec/lastenheft.md#gg-iec-001)..00X.
+- **Architekturartefakte:** [`GG-AR-PORT-DRN-007`](../../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)
   (`DeviceProtocolPort`), pro Protokoll ein
   `adapters/driven/protocol_<name>/`-Modul.
 - **DoD-Checkliste:**
@@ -780,8 +780,8 @@ Tests) + C0 `e573f67` (Slice-Doc) + C1 `d468e68` (ADR
 Endpunkt unter `src/grid_gym/adapters/driving/http_api/`
 in 4 Modulen + Pydantic-Schemas + 16 Unit + 2 Integration-
 Tests) + C3 `f9f514d` ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) → `Provisional` +
-Status/DoD-Sync + Roadmap-Typo-Fix `GG-AR-PORT-DRG-002`
-→ Verwerfung per [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-3). 1584 → 1600
+Status/DoD-Sync + Verwerfung des `UICommandPort`-Slots
+per [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-3). 1584 → 1600
 Unit-Tests (+16); 39 → 41 Integration (+2). 10/10 A-1-
 Gates gruen.
 
@@ -815,7 +815,7 @@ Series + 6-Zustands-Quality-Marker; 16 neue Unit + 2
 Integration-Tests) + C3 `0e0473d` ([`ADR 0038`](../../adr/0038-telemetry-stream-port.md) `Proposed →
 Provisional`). 1610 → 1626 Unit-Tests (+16); 43 → 49
 Integration (+6 inkl. 4 Probe-Tests). Lastenheft-Akzeptanz
-`GG-API-002` + `GG-UI-002/003/009` produktiv. 10/10 A-1-
+[`GG-API-002`](../../../../spec/lastenheft.md#gg-api-002) + [`GG-UI-002`](../../../../spec/lastenheft.md#gg-ui-002)/003/009 produktiv. 10/10 A-1-
 Gates gruen.
 
 **Welle 4a (Replay-Controls + TickLoop-Wiring) abgeschlossen
@@ -835,8 +835,8 @@ HTMX-Polling + NEU `_demo_setup.py`-Komposition-Root;
 24 neue Unit + 1 Integration-Test) + C3 (dieser Commit;
 [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md) `Proposed → Provisional`). 1626 → 1650 Unit-
 Tests (+24); 49 → 50 Integration (+1). Lastenheft-
-Akzeptanz `GG-UI-004` + Replay-Restcompletion-Anteil
-`GG-API-001` produktiv. 10/10 A-1-Gates gruen. **Welle-
+Akzeptanz [`GG-UI-004`](../../../../spec/lastenheft.md#gg-ui-004) + Replay-Restcompletion-Anteil
+[`GG-API-001`](../../../../spec/lastenheft.md#gg-api-001) produktiv. 10/10 A-1-Gates gruen. **Welle-
 4-Subdivision** (4a/4b; Pattern analog M4-Welle-5a/5b und
 M4-Welle-6a/6b) komplett abgeschlossen 2026-06-02.
 
@@ -861,7 +861,7 @@ Komposition-Root + DemoTickLoopDriver-Erweiterung; 31
 neue Unit + 1 Integration-Test) + C3 (dieser Commit;
 [`ADR 0040`](../../adr/0040-alarm-aggregation-and-stream-port.md) `Proposed → Provisional` + 4 C2-Realization-
 Notes). 1650 → 1681 Unit-Tests (+31); 50 → 51 Integration
-(+1). Lastenheft-Akzeptanz `GG-UI-005` produktiv;
+(+1). Lastenheft-Akzeptanz [`GG-UI-005`](../../../../spec/lastenheft.md#gg-ui-005) produktiv;
 [`ADR-0014`](../../adr/0014-battery-snapshot-schema.md)-§6-Forward-Pointer („AlarmSinkPort kommt mit
 M3") Driving-Side-Anteil produktiv aufgeloest (Postgres-
 Persistenz bleibt M3-Welle-6c). 10/10 A-1-Gates gruen.
@@ -879,11 +879,11 @@ C0 `155c421` (Slice-Doc
 [`M5-welle-5.md`](../done-archive/M5-welle-5.md) + Decisions 5/6/18 final +
 Sub-Slicing-Risk-Verifikation — Single-Slice ohne
 Splittung). Welle 5 ist die **Demo-Welle** in M5: erfuellt
-`GG-DEMO-001..005` (5 MUSS) plus `GG-DEMO-007` (1 SOLLTE
+[`GG-DEMO-001`](../../../../spec/lastenheft.md#gg-demo-001)..005 (5 MUSS) plus [`GG-DEMO-007`](../../../../spec/lastenheft.md#gg-demo-007) (1 SOLLTE
 eng inkludiert: RuleBasedAgent im kanonischen Demo-YAML
-ohne Agent-UI). `GG-DEMO-008` (Abnahmedoku) ist auf Welle 6
+ohne Agent-UI). [`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008) (Abnahmedoku) ist auf Welle 6
 verschoben (C2-Folge-Entscheid 2026-06-03: Filename +
-Substanz-Konsistenz mit `GG-DEMO-006`-Verschiebung;
+Substanz-Konsistenz mit [`GG-DEMO-006`](../../../../spec/lastenheft.md#gg-demo-006)-Verschiebung;
 Welle-6-Pfad `docs/user/gg-demo-008-abnahme.md`).
 Lieferziel: (1) kanonisches Demo-YAML
 unter `deploy/scenarios/gg-demo.yaml` mit 5 MVP-Devices + 1
@@ -900,18 +900,18 @@ Smoke-Test `test_m5_welle_5_demo_smoke.py` ohne Container.
 **Anti-Scope:** keine Multi-Run-Driver-Registry
 (`_DemoTickLoopDriverAlreadyConfiguredError` aus Welle-4b-
 Fix #13 schuetzt Single-Run), kein Snapshot-Resume in Demo
-(Welle-6+/M6-Material), `GG-DEMO-006` Fault-Injection +
-`GG-DEMO-008` Abnahmedoku deferiert auf Welle 6
-(`GG-UI-007`-Form-Substanz-Kopplung + Range-Konsistenz),
+(Welle-6+/M6-Material), [`GG-DEMO-006`](../../../../spec/lastenheft.md#gg-demo-006) Fault-Injection +
+[`GG-DEMO-008`](../../../../spec/lastenheft.md#gg-demo-008) Abnahmedoku deferiert auf Welle 6
+([`GG-UI-007`](../../../../spec/lastenheft.md#gg-ui-007)-Form-Substanz-Kopplung + Range-Konsistenz),
 keine neue Compose-Topologie (Decision 18),
 kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 **Naechster Schritt:** C1 → C2 → C3.
 
 - **Lieferziel:** Visualisierungs- und Demo-Layer
-  (`GG-UI-001..009`, `GG-DEMO-001..00X`).
-- **Lastenheft-IDs:** `GG-UI-001..009`, Demo-System aus Spec §24.
-- **Architekturartefakte:** `GG-AR-COMP-UI`. **Hinweis:**
-  Slot `GG-AR-PORT-DRG-002` (`UICommandPort`) ist mit
+  ([`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..009, [`GG-DEMO-001`](../../../../spec/lastenheft.md#gg-demo-001)..00X).
+- **Lastenheft-IDs:** [`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..009, Demo-System aus Spec §24.
+- **Architekturartefakte:** [`GG-AR-COMP-UI`](../../../../spec/architecture.md#5-komponentensicht). **Hinweis:**
+  Der `UICommandPort`-Slot ist mit
   M5-Welle-1-C3 [`verworfen`](../../adr/0037-http-api-surface-pattern.md)
   ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-3 — Typo gegen `GG-AR-PORT-DRV-*`-
   Konvention und semantisch ueberfluessig nach Decision
@@ -919,9 +919,9 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
   ohne separaten Driving-Port-Slot).
 - **DoD-Checkliste:**
   - [x] Web-UI mit Live-Telemetry-Stream
-        (`GG-UI-001..006`) — Welle 2 (Foundation) + 3
+        ([`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..006) — Welle 2 (Foundation) + 3
         (Dashboard) + 6b (Devices-Page).
-  - [x] Scenario-Editor (`GG-UI-006..008`) — Welle 5
+  - [x] Scenario-Editor ([`GG-UI-006`](../../../../spec/lastenheft.md#gg-ui-006)..008) — Welle 5
         (`gg-demo.yaml`-Loader) + 6a (Fault-Form) + 6b
         (Devices/System-Pages). Nicht Inline-WYSIWYG-
         Editor; Scenario-Editing laeuft ueber YAML-Datei
@@ -931,7 +931,7 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
         Welle 5 (Demo-Pipeline + Lifespan-env-var) +
         Welle 6c (Abnahmedoku
         [`../../../user/gg-demo-008-abnahme.md`](../../../user/gg-demo-008-abnahme.md)).
-  - [x] UI nutzt nur `GG-API-001`/`002`/`003` — kein direkter
+  - [x] UI nutzt nur [`GG-API-001`](../../../../spec/lastenheft.md#gg-api-001)/`002`/`003` — kein direkter
         Kern-Zugriff. **`UICommandPort`-Slot bewusst nicht
         verwendet** ([`ADR 0037`](../../adr/0037-http-api-surface-pattern.md) Decision API-2).
 
@@ -946,29 +946,29 @@ kein C1-ADR-Commit (Pattern analog Welle 2 `64d5129`).
 Roadmap-DoD-Sweep + Top-Level-Sync (W7-C3), Self-Close-Move
 `M6-perf-security-cicd.md` + `M6-welle-7.md` → `done/`
 (W7-C4a/C4b). Pattern analog M4-/M5-Welle-7. **M6-Welle-6
-(Deploy-Hardening + IEC-Smoke-Pfad-B; `GG-DEPLOY-001..011`
+(Deploy-Hardening + IEC-Smoke-Pfad-B; [`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..011
 + Trigger 009) abgeschlossen 2026-06-08** (siehe
 [`M6-welle-6.md`](../done-archive/M6-welle-6.md)) mit Stack C0 `fab6a8c`
 (Slice-Doc) / C1 `1d478e3` (NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md) `Provisional`) /
-C2 `f07e996` (feat: `GG-DEPLOY-006` NEU `/ready`-Endpoint
+C2 `f07e996` (feat: [`GG-DEPLOY-006`](../../../../spec/lastenheft.md#gg-deploy-006) NEU `/ready`-Endpoint
 mit Three-State-Status + Komponenten-Breakdown
-(api/ui/db/simulation) / `GG-DEPLOY-004` NEU
+(api/ui/db/simulation) / [`GG-DEPLOY-004`](../../../../spec/lastenheft.md#gg-deploy-004) NEU
 `.devcontainer/`-Konfig / Trigger 009 NEU Dockerfile-
 `iec61850-test`-Stage auf Python 3.12 + Makefile-Target
 `test-iec61850`; inkl. Code-Review-BLOCKER-Fix simulation-
 Healthcheck-Wiring) / C3 `79563c0` (Status/DoD-Sync) / C4a
 `79ac725` (Self-Close-Move rename-only) + C4b `d8dd8d2`
 (Cross-Doc-Refs-Sync).
-`GG-DEPLOY-001..006/011` ✓ produktiv, `GG-DEPLOY-007..010`
+[`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..006/011 ✓ produktiv, [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010
 ⏸ M7+; Trigger 009 aufgeloest (`open → done`); NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)
 `Multi-Python-Test-Stage-Pattern` bleibt `Provisional` bis
 M6-Welle-7-Closure. Self-Close-Folge C4a/C4b dient als
 M6-Welle-7-Pre-C0a/Pre-C0b.
 **M6-Welle-5c abgeschlossen 2026-06-07** mit Stack
 `4b76ff7..C4b dieser Commit` (siehe
-[`M6-welle-5c.md`](../done-archive/M6-welle-5c.md); `GG-SAFE-005` ✓ produktiv
+[`M6-welle-5c.md`](../done-archive/M6-welle-5c.md); [`GG-SAFE-005`](../../../../spec/lastenheft.md#gg-safe-005) ✓ produktiv
 an 4 Geraeten (Battery/Load/GridConnection/PV) per
-Lastenheft-Traceability Z. 2291; `GG-SAFE-006` ⚠ partial
+Lastenheft-Traceability Z. 2291; [`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006) ⚠ partial
 (Core-Diff-Algorithm `diff_replay` ✓ produktiv; Per-Lauf-
 Status-Marker `replay_diff_status` + `ReplaySourcePort`-
 Verkabelung fehlen → NEU Trigger 036); Demo-Compose-`ports`-
@@ -989,7 +989,7 @@ Surfaces ✓ produktiv; 11 NEU Integration-Smokes; Audit-Doku
 [`../../../user/safe-007-008-sim-prod-input-validation.md`](../../../user/safe-007-008-sim-prod-input-validation.md)).
 **Welle-4-Subdivision komplett abgeschlossen 2026-06-06**:
 4a Vulnignore-Pattern + 4b-a Bench-Foundation + 4b-b
-`GG-RT-005`-Telemetry-Bench + 4b-c `GG-RT-001`-Backpressure-
+[`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005)-Telemetry-Bench + 4b-c [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)-Backpressure-
 Healthcheck (alle vier Sub-Slices Done).
 **M6-Welle-0 abgeschlossen 2026-06-04** mit Stack
 `282a8cb..960f6ed` (siehe
@@ -1054,7 +1054,7 @@ Findings: F1 HIGH [`GG-RT-004`](../../../../spec/lastenheft.md#gg-rt-004)-Replay
 Extra-Pattern + F3/F4 MEDIUM) + C2 `5d8c497` NEU pytest-
 benchmark Dep + Dockerfile-perf-Stage + tests/perf/ Layer +
 Makefile-Targets + Maintainer-Dev-Host-Baseline + C3 dieser
-Commit Closure-Sync): `GG-RT-004`-Doppel-Akzeptanz produktiv
+Commit Closure-Sync): [`GG-RT-004`](../../../../spec/lastenheft.md#gg-rt-004)-Doppel-Akzeptanz produktiv
 (100 Geraete x 10 000 Ticks ohne verlorene Events UND ohne
 nichtdeterministischen Replay-Diff per [`ADR-0041`](../../adr/0041-performance-bench-pattern.md) §2.2; Bench-
 Median 519ms / 1.92 OPS; Regression-Schwelle 20% Median-
@@ -1065,7 +1065,7 @@ Drift gegen tests/perf/baseline.json per [`ADR-0041`](../../adr/0041-performance
 + D-2 canonical_json-API-Drift) + C0-Review-Folge-2 `935151e`
 (2 MEDIUM stale-Refs) + C2 `a2feff7` NEU `tests/perf/
 test_telemetry_port_bench.py` + Baseline-Update + C3 dieser
-Commit Closure-Sync): `GG-RT-005`-Doppel-Akzeptanz produktiv
+Commit Closure-Sync): [`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005)-Doppel-Akzeptanz produktiv
 (Payload ≤ 256 Byte canonical-serialisiert UND ~788 000
 Publish-OPS lokal weit ueber der 10 000-SOLLTE-Schwelle;
 Single-Queue-Subscriber-Slot-Setup vermeidet das No-Op-False-
@@ -1078,7 +1078,7 @@ Findings: F1 MEDIUM clock_source-Pflicht + F2-F7 LOW) + C2
 Integration-Smokes) + C2-Review-Folge `8785a6b` (7 Self-
 Review-Findings: F1 MEDIUM Datei-Naming-Drift + F2-F7 LOW +
 try/finally-Wrap + 4 NEU Driver-Hook-Unit-Tests) + C3 dieser
-Commit Closure-Sync): `GG-RT-001` MUSS-Akzeptanz produktiv
+Commit Closure-Sync): [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001) MUSS-Akzeptanz produktiv
 (Tick-Dauer/p95-Jitter/missed-Ticks/Backpressure-Status fuer
 10ms-Modus via NEU Adapter-Side `_tick_loop_healthcheck.py` +
 `GET /runs/{id}/healthcheck`-Endpoint; Core unangetastet,
@@ -1091,12 +1091,12 @@ Welle-5-Sub-Slicing-Beschluss + C2 `4c1a693` NEU
 `tests/integration/test_m6_welle_5a_safe_001_004_smoke.py`
 mit 7 Smokes + NEU `docs/user/safe-001-004-quality-pipeline.
 md` Audit-Tabelle + NEU 2 `open/`-Triggers 034
-(`GG-SAFE-004` `max_age`-stale-Quality-Lücke) + 035
-(`GG-SAFE-003` Adapter-Comm-Failure partial Lücke) +
+([`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) `max_age`-stale-Quality-Lücke) + 035
+([`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) Adapter-Comm-Failure partial Lücke) +
 C2-Review-Folge `52cb698` (6 Self-Review-Findings F1..F6
 adressiert: MEDIUM F1 Slice-Doc-§1.1-Factual-Fix +
 5 LOW F2..F6) + C3 Closure-Sync dieser Commit):
-`GG-SAFE-001..004`-MUSS audited (001/002 ✓ produktiv;
+[`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004-MUSS audited (001/002 ✓ produktiv;
 003 ⚠ partial Lücke → Trigger 035; 004 ✗ Lücke → Trigger
 034); C1 entfaellt (Welle-5a-D-5). Self-Close-Folge C4a/C4b
 folgt als Welle-5b-Pre-C0a/Pre-C0b.
@@ -1107,14 +1107,14 @@ Triage-Eingangsbestand:
 Trigger 008 + Trigger 031 alle `Aufgeloest`).
 
 
-- **Lieferziel:** harte Performance-Schranken aus `GG-RT-001..005`,
-  Sicherheits-Audit (`GG-SAFE-001..006`,
-  `GG-SBOM-001..00X` ueber Trigger 008), CI/CD-Vollausbau
-  (`GG-CICD-001..00X`).
-- **Lastenheft-IDs:** `GG-RT-001..005`, `GG-SAFE-001..006`,
-  `GG-CICD-001..00X`, `GG-DEPLOY-001..00X`.
+- **Lieferziel:** harte Performance-Schranken aus [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)..005,
+  Sicherheits-Audit ([`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006,
+  `GG-SBOM-*` ueber Trigger 008), CI/CD-Vollausbau
+  ([`GG-CICD-001`](../../../../spec/lastenheft.md#gg-cicd-001)..00X).
+- **Lastenheft-IDs:** [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)..005, [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006,
+  [`GG-CICD-001`](../../../../spec/lastenheft.md#gg-cicd-001)..00X, [`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..00X.
 - **DoD-Checkliste:**
-  - [ ] 10.000-Points/s-Benchmark (`GG-RT-005`) reproduzierbar.
+  - [ ] 10.000-Points/s-Benchmark ([`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005)) reproduzierbar.
   - [x] SBOM-Generierung im CI (Trigger 008 nach `done/`) —
         produktiv mit M6-Welle-2-C2 `235395e` via NEU
         `.github/workflows/release.yml` `produce-assets`-Job
@@ -1133,17 +1133,17 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         (`make runtime` pollt `/health`) — produktiv mit
         M6-Welle-3-C2 `ce13253` als Teil von `make fullbuild`
         in `fullbuild.yml`.
-  - [x] **CI-Erweiterung um Tests** (`GG-CICD-002`) — produktiv
+  - [x] **CI-Erweiterung um Tests** ([`GG-CICD-002`](../../../../spec/lastenheft.md#gg-cicd-002)) — produktiv
         mit M6-Welle-3-C2 `ce13253` via NEU `tests.yml`:
         `test-unit` (Python-3.13/3.14-Matrix) + `test-
         integration` (Default-Python). Slice 025 §2-M6-
         Vertagung damit aufgeloest.
-  - [x] **CI-Erweiterung um Coverage-Gates** (`GG-CICD-003`) —
+  - [x] **CI-Erweiterung um Coverage-Gates** ([`GG-CICD-003`](../../../../spec/lastenheft.md#gg-cicd-003)) —
         produktiv mit M6-Welle-3-C2 `ce13253` via NEU
         `coverage.yml`: `coverage-gate` (90% Line / 85% Branch)
         + `coverage-gate-critical` (90% Critical-Domain) als
         separate Jobs.
-  - [x] **CI-Erweiterung um Dependency-Audit** (`GG-CICD-006`) —
+  - [x] **CI-Erweiterung um Dependency-Audit** ([`GG-CICD-006`](../../../../spec/lastenheft.md#gg-cicd-006)) —
         produktiv mit M6-Welle-3-C2 `ce13253` via NEU
         `dep-audit.yml`. Plus pre-existing pip-PYSEC-2026-196-
         Drift im `uv.lock` mitbehoben (`pip 26.1.1 → 26.1.2`),
@@ -1152,7 +1152,7 @@ Trigger 008 + Trigger 031 alle `Aufgeloest`).
         bekannte Schwachstellen direkter und transitiver
         Abhaengigkeiten. Slice 025 §2 ausgelagert; lokal
         Pflicht via `make gates`.
-  - [x] **Release-Workflow** (`GG-CICD-007`) — produktiv mit
+  - [x] **Release-Workflow** ([`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007)) — produktiv mit
         M6-Welle-2-C2 `235395e`: NEU `.github/workflows/
         release.yml` mit Tag-Push (`v*.*.*`) + workflow_
         dispatch + 3 Jobs (build-and-publish-image / produce-
@@ -1175,47 +1175,47 @@ Befund 3 — M2..M6 waren vorbelegt, M7 ist NEU).
 **Vorbelegter Scope** (Scope-Skizze; konkrete Slice-Plaene
 wandern bei Aktivierung nach `in-progress/`):
 
-- `GG-MVP-002` ReplaySource-Integration — **aktiv als M7-Welle-1**
+- [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002) ReplaySource-Integration — **aktiv als M7-Welle-1**
   (Gruppenplan [`M7-welle-1.md`](../done-archive/M7-welle-1.md); sub-sliced **1a**
   Zeitreihen-Persistenz / **1b** Replay-Lifecycle +
   `replay_diff_status`, per D-4-Final B); aktiviert Trigger 036
   (in 1b).
-- `GG-MVP-003` Abnahme-CLI (`make accept` + `tools/accept.py`)
+- [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI (`make accept` + `tools/accept.py`)
   — **Done 2026-06-10 als M7-Welle-2** (Plan
-  [`M7-welle-2.md`](../done-archive/M7-welle-2.md); `GG-MVP-003` ✓ produktiv).
+  [`M7-welle-2.md`](../done-archive/M7-welle-2.md); [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) ✓ produktiv).
 - Offene `open/`-Trigger: 033 (OTel-Collector-CVE Stable-Watch),
-  034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003` Comm-Failure),
-  036 (`GG-SAFE-006` replay_diff_status), 037 (`GG-DEPLOY-007..
+  034 ([`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) max_age), 035 ([`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) Comm-Failure),
+  036 ([`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006) replay_diff_status), 037 (`GG-DEPLOY-007..
   010` Multi-Node-Deployment).
 
 **In Progress seit 2026-06-08.** M7-Welle-0 (Slice-Plan-
 Eroeffnung + Trigger-Triage; NEU `M7-mvp-completion.md` +
 carveouts-Triage 034/035 → `Active in M7-Welle-3`)
-**abgeschlossen** (C0..C4b). **M7-Welle-1** (`GG-MVP-002`) aktiv,
+**abgeschlossen** (C0..C4b). **M7-Welle-1** ([`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)) aktiv,
 sub-sliced 1a/1b (D-4-Final B; Gruppenplan
 [`M7-welle-1.md`](../done-archive/M7-welle-1.md)). **M7-Welle-1a Done 2026-06-09**
 ([`M7-welle-1a.md`](../done-archive/M7-welle-1a.md); Zeitreihen-Persistenz,
 NEU `TelemetrySinkPort` + [`ADR 0047`](../../adr/0047-telemetry-sink-timeseries-persistence.md)). **Welle 1b weiter sub-sliced**
 (1b-a-D-1): 1b-a (`ReplaySnapshotPort`, [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md)) + 1b-b
-(Lifecycle-Hook + `replay_diff_status` + `GG-TERM-002/003`-MVP-
+(Lifecycle-Hook + `replay_diff_status` + [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-MVP-
 Preflight, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **M7-Welle-1b-a Done 2026-06-09**
 ([`M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md); `ReplaySnapshotPort`-
 Rekonstruktion aus `telemetry_points`). **M7-Welle-1b-b Done
 2026-06-09** ([`M7-welle-1b-b.md`](../done-archive/M7-welle-1b-b.md); Closure —
 Core-`finalize()`-Naht + `replay_diff_status` + GG-TERM-Preflight +
-Zwei-Lauf-E2E-Beleg, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **`GG-MVP-002` ✓ produktiv**;
+Zwei-Lauf-E2E-Beleg, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)). **[`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002) ✓ produktiv**;
 **M7-Welle-1 komplett** (1a + 1b-a + 1b-b; Gruppenplan wandert mit
 der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
 [Trigger 039](../open/039-api-replay-trigger-surface.md).
-**M7-Welle-2 Done 2026-06-10** (`GG-MVP-003` Abnahme-CLI;
+**M7-Welle-2 Done 2026-06-10** ([`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI;
 [`M7-welle-2.md`](../done-archive/M7-welle-2.md); `make accept` + `tools/accept.py` +
 Shared `src/grid_gym/scenario_yaml.py`, D-1..D-10 final mit D-10-
 Revision C, Replay-Step standalone wegen
 [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md);
-commits `33ac255` + `92d10f5`). **`GG-MVP-003` ✓ produktiv → alle vier
+commits `33ac255` + `92d10f5`). **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) ✓ produktiv → alle vier
 `GG-MVP-*`-Punkte produktiv** (001/002/003/004). **Aktiver Slice
-jetzt: M7-Welle-3** (Safety-Closure `GG-SAFE-003/004`; Trigger 034
+jetzt: M7-Welle-3** (Safety-Closure [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)/004; Trigger 034
 [`max_age`](../done-archive/034-safe-004-max-age-stale-quality.md) + 035
 [Comm-Failure](../done-archive/035-safe-003-comm-failure-missing-quality.md)),
 **aktiviert mit Welle-3-C0 2026-06-11**: Gruppenplan
@@ -1225,16 +1225,16 @@ zuerst; [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)) + **3b** (A
 via 3b-C0; ADR-Nummer 0053 reserviert) per Welle-3-D-1.
 **M7-Welle-3a Done 2026-06-11** (`max_age_ms`-Kwarg +
 Core-`STALE`-Stage + [`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md); commits `23c614a` + Review-Folge
-`5a9960a`) — **`GG-SAFE-004` ✓ produktiv** (Audit-Flip in
+`5a9960a`) — **[`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) ✓ produktiv** (Audit-Flip in
 `docs/user/safe-001-004-quality-pipeline.md`); Trigger 034 Closed.
-**M7-Welle-3b Done 2026-06-12** (`GG-SAFE-003` Comm-Failure,
+**M7-Welle-3b Done 2026-06-12** ([`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) Comm-Failure,
 Trigger 035; [`M7-welle-3b.md`](../done-archive/M7-welle-3b.md); NEU
 `CommFailureGuardedDeviceProtocolPort`-Wrapper +
 `adapter_communication_lost`-Alarm-Vertrag, [`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md); commits
 `3f28be1` + Review-Folge `82704b1`; 3b-D-1 = voller
 Akzeptanz-Umfang via Test-Sibling, kein Carveout) —
-**`GG-SAFE-003` ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
-komplett — alle vier `GG-SAFE-001..004` produktiv.**
+**[`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) ✓ produktiv**; Trigger 035 Closed. **M7-Welle-3
+komplett — alle vier [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004 produktiv.**
 **M7-Welle-X Done 2026-06-12** (M7-Closure;
 [`M7-welle-X.md`](../done-archive/M7-welle-X.md)): fuenf M7-ADRs
 0047/0048/0049/0052/0053 `Provisional → Accepted` (0050/0051
@@ -1243,7 +1243,7 @@ Umsetzungsslices kein M7-Lieferpunkt) + NEU
 [`done/M7-results.md`](../done/M7-results.md)
 (MVP-Abschluss-Kriterium gepinnt). **M7 ist abgeschlossen —
 der MVP ist geliefert** (alle vier `GG-MVP-*` + alle vier
-`GG-SAFE-001..004` produktiv). **Post-M7: Trigger-Watch, kein
+[`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004 produktiv). **Post-M7: Trigger-Watch, kein
 M8-Auto-Open (X-D-4)** — offene Trigger 033/037/038/039/040/044 +
 Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
@@ -1263,7 +1263,7 @@ Aktivierung `open/` → `in-progress/`):
 
 - **Welle 1 — Architektur-Cleanup (Voraussetzung; Done 2026-06-13).** Slice
   [`041`](../done/041-adapter-pure-ignore-imports-rueckbau.md)
-  (`AC-ADAPTER-PURE`-`ignore_imports`-Rueckbau,
+  ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-`ignore_imports`-Rueckbau,
   [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)) +
   Slice [`042`](../done/042-fault-engine-location-and-naming.md)
   (Fault-Engine-Standort/Naming,
@@ -1272,15 +1272,15 @@ Aktivierung `open/` → `in-progress/`):
   `Proposed → Accepted` (Welle-X-D-2-Erbschaft). Zieht die Adapter-
   Purity- und Fault-Engine-Struktur sauber, auf der die neuen
   Geraete-Adapter aufsetzen.
-- **Welle 2 — Geraete** ([`M8-welle-2.md`](../done/M8-welle-2.md))**.** `T-016` EV-Charger (`GG-DEV-015`,
+- **Welle 2 — Geraete** ([`M8-welle-2.md`](../done/M8-welle-2.md))**.** `T-016` EV-Charger ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015),
   [`016`](../open/016-sollte-ev-charger-device.md)) **Done** (2a,
   [`M8-welle-2a.md`](../done/M8-welle-2a.md), [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted`, Trigger 016 aufgeloest),
   `T-017`
-  Transformer (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)) **Done** (2b,
+  Transformer ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), [`017`](../open/017-sollte-transformer-device.md)) **Done** (2b,
   [`M8-welle-2b.md`](../done/M8-welle-2b.md), [`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`, Trigger 017 aufgeloest),
-  `T-018` Wind (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)) **Done** (2c,
+  `T-018` Wind ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), [`018`](../open/018-sollte-wind-device.md)) **Done** (2c,
   [`M8-welle-2c.md`](../done/M8-welle-2c.md), [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`, Trigger 018 aufgeloest),
-  `T-019` Diesel (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)) **Done** (2d,
+  `T-019` Diesel ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), [`019`](../open/019-sollte-diesel-device.md)) **Done** (2d,
   [`M8-welle-2d.md`](../done/M8-welle-2d.md), [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`, Trigger 019 aufgeloest). **Welle 2 (Geraete) komplett.**
   `D-7` (Pre-init-Defense-Pattern) ist mit Welle 2a adoptiert (erste
   device-iterierende Sub-Welle; Aktivierungs-Bedingung erfuellt).
@@ -1292,23 +1292,23 @@ Aktivierung `open/` → `in-progress/`):
 - **Welle 3 — Netzbilanz** ([`M8-welle-3.md`](../done/M8-welle-3.md); **Done
   2026-06-16**, eroeffnet 2026-06-15)**.** Drei Schaerfungen des `GridModelBilanz`
   ([`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)), sub-sliced
-  3a → 3b → 3c: `T-020` Inselnetz-Bilanzmodell (`GG-GRID-005`,
+  3a → 3b → 3c: `T-020` Inselnetz-Bilanzmodell ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005),
   [`020`](../open/020-sollte-island-grid.md), 3a), `T-021`
-  Transformatorgrenzen (`GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md), 3b),
-  `T-022` Blindleistung (`GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md), 3c;
+  Transformatorgrenzen ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), [`021`](../open/021-sollte-transformer-limits.md), 3b),
+  `T-022` Blindleistung ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), [`022`](../open/022-sollte-reactive-power.md), 3c;
   Snapshot-Schema v2→v3).
 - **Welle 4 — BESS-Telemetrie** ([`M8-welle-4.md`](../done/M8-welle-4.md); In Arbeit,
   eroeffnet 2026-06-16). Zwei additive Telemetrie-Schaerfungen des
   Battery-Modells ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)),
-  sub-sliced 4a → 4b: `T-023` Battery-Temperatur (`GG-BESS-006`,
+  sub-sliced 4a → 4b: `T-023` Battery-Temperatur ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006),
   [`023`](../open/023-sollte-battery-temperature.md), 4a),
-  `T-024` Battery-Zellspannung (`GG-BESS-007`,
+  `T-024` Battery-Zellspannung ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007),
   [`024`](../open/024-sollte-battery-cell-voltage.md), 4b). Beide opt-in +
   pin-neutral; kein neues Geraet, keine Bilanz-Beruehrung.
 
 **Anti-Scope (nicht in M8):** Export & Live-API (→ M9: `T-038`/`T-039`
 Equality-Matrix + API-Replay, dazu `D-1`/`D-2`/`D-6`),
-Multi-Node/Deployment (→ M10: `T-037`, `GG-DEPLOY-007..010`),
+Multi-Node/Deployment (→ M10: `T-037`, [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010),
 Forschungs-Spikes `T-030`/`T-026` (optional). Tooling-Querschnitt-Trigger
 (`T-004`/`T-005`/`T-007`/`T-011`/`T-033`/`T-044`/`T-040`) laufen unabhaengig
 und sind kein M8-Lieferpunkt. Diese Skizze nennt nur die Leit-Posten je
@@ -1328,7 +1328,7 @@ App-Bootstrap-Hook-Inversion + `composition.asgi`-Entrypoint
 Fault-Engine-Rename (`*FaultAdapter` → `*FaultEngine`, Standort bleibt
 `hexagon/core/faults`, keine Aliase),
 [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md)
-`Accepted` + NEU `ADR 0054`. **M8-Welle 1 (Architektur-Cleanup)
+`Accepted` + NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md). **M8-Welle 1 (Architektur-Cleanup)
 abgeschlossen**. **Welle 2 (Geraete) gestartet**
 ([`M8-welle-2.md`](../done/M8-welle-2.md)): **2a (EV-Charger) Done**
 ([`M8-welle-2a.md`](../done/M8-welle-2a.md)) —
@@ -1371,7 +1371,7 @@ Hysterese (running-Zustandsmaschine) + `genset_fault`-Schutz). NEU
 `_BILANZ_SOURCE_BUCKETS`-`generation` proaktiv aus 2c-Lerneintrag + NEU
 `snapshot_codec.assert_bool`); `diesel_demo.yaml` + Unit-/Integration-
 Smokes. `make gates` gruen, Trigger 019 aufgeloest. **Damit ist Welle 2
-(alle vier SOLLTE-Geraete `GG-DEV-015..018`) komplett.** **Welle 2-D8
+(alle vier SOLLTE-Geraete [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018) komplett.** **Welle 2-D8
 (Cross-Cutting-Review-Folge) Done** ([`M8-welle-2-d8.md`](../done/M8-welle-2-d8.md)) —
 [`ADR 0059`](../../adr/0059-generic-scenario-fault-engine.md) **`Accepted`**:
 generische `ScenarioFaultEngine` (eine Engine ueber `supported_types` statt
@@ -1381,7 +1381,7 @@ Single-Engine, `_KNOWN_FAULT_TYPES` 5 Typen → `connection_loss`/
 aufgeloest**). `make gates`/`docs-check`/`test-integration` gruen. **Welle 3
 (Netzbilanz) eroeffnet 2026-06-15** ([`M8-welle-3.md`](../done/M8-welle-3.md);
 Status `Geplant`, sub-sliced 3a Inselnetz → 3b Trafo-Grenzen → 3c
-Blindleistung; `T-020..022`/`GG-GRID-005..007`; Schaerfung von
+Blindleistung; `T-020..022`/[`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007; Schaerfung von
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), 3c mit
 Snapshot v2→v3).
 
@@ -1391,23 +1391,23 @@ Snapshot v2→v3).
 
 Vor M1 muessen folgende Punkte geklaert sein:
 
-- [x] **`GG-AR-OPEN-001` Sprach- und Build-Wahl** — geschlossen mit
-      `ADR 0002` (`Accepted` 2026-05-15) und synchron `ADR 0005`
+- [x] **[`GG-AR-OPEN-001`](../../../../spec/architecture.md#19-offene-architektonische-punkte) Sprach- und Build-Wahl** — geschlossen mit
+      [`ADR 0002`](../../adr/0002-language-and-build-stack.md) (`Accepted` 2026-05-15) und synchron [`ADR 0005`](../../adr/0005-type-check-gate.md)
       (`Accepted` 2026-05-15). Spike-0 Closure-Notiz:
       [`docs/plan/planning/done/spike-0.md`](../done-archive/spike-0.md).
-- [x] **`GG-AR-OPEN-002` API/Simulation als ein oder zwei Prozesse**
+- [x] **[`GG-AR-OPEN-002`](../../../../spec/architecture.md#19-offene-architektonische-punkte) API/Simulation als ein oder zwei Prozesse**
       — geschlossen mit
       [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)
       (`Accepted` 2026-05-17): zwei Prozesse, Postgres als
       Persistenz-Bus. Welle-6c-`deploy/compose.yml` hat den
       Pattern de-facto implementiert; [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md) formalisiert
       nachtraeglich. `spec/architecture.md` §19
-      `GG-AR-OPEN-002`-Zeile entsprechend auf `Geschlossen`.
+      [`GG-AR-OPEN-002`](../../../../spec/architecture.md#19-offene-architektonische-punkte)-Zeile entsprechend auf `Geschlossen`.
 - [x] **Initiales Repository-Layout** gemaess der Hexagonalen Sicht
-      (`GG-AR-P-002`, `GG-AR-TABU-001..008`) — sprachunabhaengig in
+      ([`GG-AR-P-002`](../../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-TABU-001`](../../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008) — sprachunabhaengig in
       `spec/architecture.md` §4.2 mit `hexagon/`-Gruppierung fixiert;
       Python-Paketnamen (`src/grid_gym/hexagon/{core,ports}/`,
-      `src/grid_gym/adapters/`) durch `ADR 0002` §6.1 (`Accepted`
+      `src/grid_gym/adapters/`) durch [`ADR 0002`](../../adr/0002-language-and-build-stack.md) §6.1 (`Accepted`
       2026-05-15) verbindlich.
 - [x] **Trigger 001 (Code-Review-Doku + PR-Template)** — Post-
       Acceptance-Vorbedingung aus dem Dritten Spike-0-Review

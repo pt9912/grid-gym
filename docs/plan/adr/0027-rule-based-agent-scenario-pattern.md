@@ -81,8 +81,8 @@ M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4b-Slice-Doc
 [`done/welle-4b.md`](../planning/done-archive/welle-4b.md).
-Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..006`); §16
-Kommunikationsschnittstellen (`GG-DATA-004` `Command`).
+Lastenheft §15 Multi-Agent-System ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..006); §16
+Kommunikationsschnittstellen ([`GG-DATA-004`](../../../spec/lastenheft.md#gg-data-004) `Command`).
 Architektur §6 Datenfluss Tick-Loop (Schritt D2 + A0v/A0a),
 §14 Multi-Agent-Subsystem.
 
@@ -278,7 +278,7 @@ params:
 > Block-Scalar-Indikator. `threshold`-Werte fuer
 > Decimal-Felder (siehe Whitelist unten) muessen ebenfalls
 > als String quoted sein (`threshold: "20.5"`), damit
-> `GG-DATA-005` (kein `float`) eingehalten wird. Int-Felder
+> [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005) (kein `float`) eingehalten wird. Int-Felder
 > wie `tick` koennen unquoted bleiben.
 
 **Vertrag:**
@@ -325,7 +325,7 @@ params:
   Metrics nutzen denselben Comparator-Set wertbasiert ueber
   `Decimal.__lt__` etc.
 - Payload-Werte fuer Decimal-Felder (`power_kw` o. ae.) sind
-  Decimal-Strings (kein `float`, `GG-DATA-005`).
+  Decimal-Strings (kein `float`, [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)).
 
 **Erweiterungs-Pfad — Plugin-Hook (optional):**
 
@@ -601,7 +601,7 @@ fachliche Entscheidung in der Validator-Funktion und im
   (`LearnedPolicy`, `MPCController` etc.) — sauber via
   registrierter Factory mit eigenem Snapshot-Vertrag,
   ohne Determinismus-Bruch (Plugin-Implementer ist fuer
-  Determinismus verantwortlich; AC-Test mit `GG-AGENT-003`
+  Determinismus verantwortlich; AC-Test mit [`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003)
   pinnt das).
 - **Mutual Exclusivity** (Rules ODER Plugin, nicht beides)
   vermeidet Reihenfolge-Drift.
@@ -686,9 +686,9 @@ Sub-Snapshot-Layout ist neu).
   (`_assert_agent_instance_resume_match`) macht jeden
   Plugin-Roundtrip nach Welle-4b-Stand sichtbar
   (`TickLoopAgentInstanceSnapshotMismatchError`).
-- `GG-AGENT-005` Priorisierung konkurrierender Agents
+- [`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005) Priorisierung konkurrierender Agents
   (Welle 4c+; ADR 0023 §7 erlaubt Aufschub).
-- `GG-AGENT-007` Deadlines / `GG-AGENT-008` Async
+- [`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007) Deadlines / [`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Async
   (M5/ADR-Folge zu ADR 0007).
 - Telemetry-Forwarding-Schema im Bus (`message_type=
   "telemetry_metric"` ist Welle-4b-Konvention; produktive
@@ -707,8 +707,8 @@ Sub-Snapshot-Layout ist neu).
   ADR 0022/0023/0025/0026).
 - **Critical-Coverage:** `core/agents/rule_based.py` neu in
   Coverage-Gate-Critical-Liste.
-- **Lastenheft-Bezug:** `GG-AGENT-001..006` produktiv erfuellt
-  durch Welle-4b-Closure (`GG-AGENT-007/008` bleiben
+- **Lastenheft-Bezug:** [`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..006 produktiv erfuellt
+  durch Welle-4b-Closure ([`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007)/008 bleiben
   Forward-Pointer).
 - **Welle-4-Gate**: `make fullbuild` (oder reduzierte
   Variante per §2.5-Mitigation) cache-frei gruen ohne
@@ -734,8 +734,8 @@ Sub-Snapshot-Layout ist neu).
 
 - Plugin-Implementer muessen `AgentPlugin`-Protocol-Surface
   vollstaendig erfuellen + Determinismus-Vertrag
-  (`GG-AGENT-003`) per Property-Test selbst sichern.
-- Multi-Agent-Priorisierung (`GG-AGENT-005`) braucht neue
+  ([`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003)) per Property-Test selbst sichern.
+- Multi-Agent-Priorisierung ([`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005)) braucht neue
   ADR-Folge (Welle 4c oder spaeter).
 - Telemetry-Forwarding-Schema (Bus `message_type=
   "telemetry_metric"`) ggf. in ADR 0024 (Observability)
@@ -761,16 +761,16 @@ Sub-Snapshot-Layout ist neu).
 
 **Konkrete `AgentPlugin`-Implementer** — Welle 4c+ Material.
 
-**`GG-AGENT-005` Priorisierung konkurrierender Agents** —
+**[`GG-AGENT-005`](../../../spec/lastenheft.md#gg-agent-005) Priorisierung konkurrierender Agents** —
 ADR 0023 §7 erlaubt Aufschub; Welle 4c+ Material.
 
-**`GG-AGENT-007` Deadlines** — kein Welle-4-Material;
+**[`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007) Deadlines** — kein Welle-4-Material;
 M5/ADR-Folge.
 
-**`GG-AGENT-008` Async-Kommunikation** — kein Welle-4-Material;
+**[`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Async-Kommunikation** — kein Welle-4-Material;
 ADR-Folge zu ADR 0007 `AsyncRandomPort`.
 
-**Observability-Ports** (`GG-OTEL-001..004`) — Welle 5/6;
+**Observability-Ports** ([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004) — Welle 5/6;
 ADR 0024.
 
 **Telemetry-Forwarding-Mechanismus** (Live-Telemetry-Zugriff

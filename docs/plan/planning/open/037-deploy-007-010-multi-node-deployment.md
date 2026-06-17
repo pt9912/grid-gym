@@ -5,7 +5,7 @@
 **Quelle:** M6-Welle-6-C0 (Deploy-Hardening + IEC-Smoke-
 Pfad-B; siehe
 [`../in-progress/M6-perf-security-cicd.md`](../done-archive/M6-perf-security-cicd.md)
-§3.1 Welle-Status-Tabelle: „`GG-DEPLOY-007..010` ⏸ M7+
+§3.1 Welle-Status-Tabelle: „[`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 ⏸ M7+
 per Lastenheft-Traceability Z. 2308").
 
 ---
@@ -16,27 +16,27 @@ Die vier IDs decken die **Multi-Node-Deployment-Familie** ab
 (thematisch gekoppelt: K8s-Manifeste sind Vorbedingung fuer
 Rolling-Update/Zero-Downtime/Rollback):
 
-- **`GG-DEPLOY-007` SOLLTE** (Z. 1881-1887):
+- **[`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007) SOLLTE** (Z. 1881-1887):
   > Die Plattform SOLLTE Kubernetes-faehig deploybar sein.
   > Akzeptanz: Wenn Kubernetes-Deployment unterstuetzt wird,
   > sind Manifeste oder Helm/Kustomize-Artefakte fuer API,
   > UI, Simulationsdienst und Persistenzadapter dokumentiert.
 
-- **`GG-DEPLOY-008` SOLLTE** (Z. 1889-1895):
+- **[`GG-DEPLOY-008`](../../../../spec/lastenheft.md#gg-deploy-008) SOLLTE** (Z. 1889-1895):
   > Rolling Updates SOLLTEN fuer spaetere verteilte
   > Deployments unterstuetzt werden.
   > Akzeptanz: Wenn verteiltes Deployment implementiert ist,
   > dokumentiert die Plattform Update-Strategie,
   > Healthcheck-Gating und Verhalten laufender Simulationen.
 
-- **`GG-DEPLOY-009` KANN** (Z. 1897-1903):
+- **[`GG-DEPLOY-009`](../../../../spec/lastenheft.md#gg-deploy-009) KANN** (Z. 1897-1903):
   > Zero-Downtime-Deployment KANN fuer nicht laufkritische
   > Dienste unterstuetzt werden.
   > Akzeptanz: Wenn Zero-Downtime-Deployment implementiert
   > ist, sind betroffene Dienste, Einschraenkungen und
   > Ausschluss laufender Simulationen dokumentiert.
 
-- **`GG-DEPLOY-010` SOLLTE** (Z. 1905-1911):
+- **[`GG-DEPLOY-010`](../../../../spec/lastenheft.md#gg-deploy-010) SOLLTE** (Z. 1905-1911):
   > Rollback-Unterstuetzung SOLLTE fuer verteilte
   > Deployments bereitgestellt werden.
   > Akzeptanz: Wenn verteiltes Deployment implementiert ist,
@@ -123,7 +123,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      `replicas ≥ 1` ist Pflicht; im Single-Replica-Demo-Fall
      liefert `maxSurge: 1` bewusst `N+1` Pods waehrend des
      Rollouts (kein Drop unter `N`).
-   - **UI-Artefakt-Vertrag** fuer `GG-DEPLOY-007`:
+   - **UI-Artefakt-Vertrag** fuer [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007):
      Entweder dokumentierte Co-Location im `api`-Deployment
      mit eigener Route/Ingress-Regel fuer die UI-Surface
      (`/`, HTML-Template-Render, Sim/Prod-Banner) oder ein
@@ -166,7 +166,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      `maxUnavailable: 0` + `maxSurge: 1` fuer api (kann
      unterbrechungsfrei).
    - **Healthcheck-Gating** (Lastenheft-Pflicht-Item der
-     `GG-DEPLOY-008`-Akzeptanz Z. 1893-1895) ist explizit die
+     [`GG-DEPLOY-008`](../../../../spec/lastenheft.md#gg-deploy-008)-Akzeptanz Z. 1893-1895) ist explizit die
      **Kombination zweier Ebenen** und nicht durch die
      readinessProbe allein erfuellt: (a) **Pod-Ready-Gating
      durch K8s** — die `/ready`-readinessProbe haelt einen
@@ -190,7 +190,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
      Modus „active runs killing" akzeptiert, dokumentiert und
      getestet wird.
 
-3. **Zero-Downtime-Doku** (konditional via `GG-DEPLOY-009`
+3. **Zero-Downtime-Doku** (konditional via [`GG-DEPLOY-009`](../../../../spec/lastenheft.md#gg-deploy-009)
    `KANN`):
    - Welche Dienste sind Zero-Downtime-faehig (api nur fuer
      zustandslose HTTP-Pfade; simulation, live connections und
@@ -252,7 +252,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    die Gate-Aufnahme beschliesst. Der Smoke startet einen
    kind-Cluster, deployed die Manifeste, pollt `/ready` und
    prueft die UI-Route separat (HTML-Surface + Sim/Prod-
-   Marker), damit `GG-DEPLOY-007` nicht nur API/Simulation/
+   Marker), damit [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007) nicht nur API/Simulation/
    Persistenz abdeckt.
 
    Mindest-Pins:
@@ -300,16 +300,16 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
    (Welle-6-C2 plant `docs/user/deploy-hardening.md`; falls
    Welle 6 den Pfad bis zur Aktivierung umbenennt oder nicht
    anlegt, zieht der Folge-Slice zuerst diesen Trigger und die
-   kanonische Audit-Surface nach). `GG-DEPLOY-007..010`
+   kanonische Audit-Surface nach). [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010
    flippt dort von ⏸ M7+ auf ✓ produktiv. Trigger 037 wandert
    nach `done/` mit dem aufloesenden Slice. **carveouts-Aufloesung
-   (§2.1-Zeile T-037, ehem. §2.10):** die Row „`GG-DEPLOY-007..010` Kubernetes-
+   (§2.1-Zeile T-037, ehem. §2.10):** die Row „[`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 Kubernetes-
    Manifeste, Rolling Updates, Zero-Downtime-Grenzen und
    Rollback-Strategie" in `carveouts.md §2.1` (Zeile T-037, ehem. §2.10) wandert in
    `§3 Resolved` (per Lifecycle-Klausel §4), falls die
    gesamte Familie geliefert ist. Bei Teil-Lieferung
-   (z. B. nur `GG-DEPLOY-007` + `008` + `010` ohne das
-   `KANN`-Item `GG-DEPLOY-009`) bleibt die Row stehen und
+   (z. B. nur [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007) + `008` + `010` ohne das
+   `KANN`-Item [`GG-DEPLOY-009`](../../../../spec/lastenheft.md#gg-deploy-009)) bleibt die Row stehen und
    wird mit Hinweis auf die teil-erfuellten IDs geschaerft;
    die unaufgeloesten IDs erhalten einen Folge-Trigger oder
    bleiben explizit `Out-of-Scope`-bedingt.
@@ -334,7 +334,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 - **Compliance-Druck** (Production-Deployment): wenn ein
   Stakeholder einen produktionsnahen Deployment-Pfad
   abnehmen will (auch wenn `grid-gym` strukturell
-  Simulation-only bleibt per `GG-SAFE-007`).
+  Simulation-only bleibt per [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
 - **Architektur-Pflicht-Aufloesung**: Architektur §16
   Z. 916 fordert „Trigger-getriebene Folgearbeit". Diese
   Notiz erfuellt die Verankerungs-Pflicht; die volle
@@ -343,7 +343,7 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 ## Anti-Scope
 
 - **Keine produktive Anlagensteuerung** — strukturell per
-  `GG-SAFE-007` + Lastenheft Z. 1161-1163 ausgeschlossen.
+  [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) + Lastenheft Z. 1161-1163 ausgeschlossen.
   K8s-Deployment bleibt Simulation-only (die Sim/Prod-
   Marker aus Welle 5b — UI-Banner, OpenAPI-Description,
   Adapterkonfiguration — gelten auch fuer K8s-Deployment).
@@ -376,8 +376,8 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
 
 - [`../in-progress/M6-perf-security-cicd.md`](../done-archive/M6-perf-security-cicd.md)
   §3.1 Welle-Status-Tabelle — Welle-6-Substanz fuer
-  `GG-DEPLOY-006` (`/ready`-Endpoint) ist die Vorbedingung
-  fuer K8s-Readiness-Probe; `GG-DEPLOY-007..010` bleiben dort
+  [`GG-DEPLOY-006`](../../../../spec/lastenheft.md#gg-deploy-006) (`/ready`-Endpoint) ist die Vorbedingung
+  fuer K8s-Readiness-Probe; [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 bleiben dort
   als M7+-Folgearbeit verankert.
 - `spec/lastenheft.md` Z. 1881-1911 + §27.2 Z. 2308
   (Traceability) — Akzeptanz-Quelle und „Post-MVP"-Defer-

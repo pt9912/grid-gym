@@ -73,10 +73,10 @@ M4-Slice-Plan
 Decision 1 (DNP3/IEC-Disposition — Welle 1 hat den
 Verzicht-Default provisorisch gewaehlt; Welle 5a/5b
 loesen ihn per Spike-Lieferung auf).
-Lastenheft §16 (`GG-DNP3-001` SOLLTE-Cluster: Points,
+Lastenheft §16 ([`GG-DNP3-001`](../../../spec/lastenheft.md#gg-dnp3-001) SOLLTE-Cluster: Points,
 Variations, Qualitaetsflags, Fehlerverhalten +
 deterministischer Adapter-Smoke).
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-Tabelle
 — ADR 0030 hat den Slot belegt; Welle 5a liefert vierten
 Implementer) + §8.2 (Adapter-Interfaces-Driven-
 Beschreibung — Point-Schema konkretisiert die generische
@@ -86,7 +86,7 @@ Beschreibung fuer DNP3).
 
 ## 1. Kontext
 
-`GG-DNP3-001` (Lastenheft §16) verlangt einen DNP3-
+[`GG-DNP3-001`](../../../spec/lastenheft.md#gg-dnp3-001) (Lastenheft §16) verlangt einen DNP3-
 Adapter als **Simulations-/Testadapter** mit
 deterministischem Adapter-Smoke-Test. M4-Welle-2 hat
 MQTT (ADR 0031 `Provisional`), Welle 3 Modbus

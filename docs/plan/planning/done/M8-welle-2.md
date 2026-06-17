@@ -10,11 +10,11 @@ Port/Adapter-Typ. Dieser Plan ist die Welle-2-C0-Substanz.
 Welle-0-Triage in [`M8-welle-0.md`](M8-welle-0.md). Voraussetzung
 (M8-Welle 1, Architektur-Cleanup) ist abgeschlossen — `RunExecutionPort`
 + `ignore_imports = []`, sodass neue Geraete-Driving-Adapter (falls fuer
-UI/HTTP noetig) keine `AC-ADAPTER-PURE`-Bridge erben.
+UI/HTTP noetig) keine [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Bridge erben.
 
 **Closure (2026-06-14):** alle vier Sub-Wellen geliefert —
 [`2a`](M8-welle-2a.md) / [`2b`](M8-welle-2b.md) / [`2c`](M8-welle-2c.md) /
-[`2d`](M8-welle-2d.md) (`GG-DEV-015..018`) + Welle-2-D8 (generische
+[`2d`](M8-welle-2d.md) ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018) + Welle-2-D8 (generische
 `ScenarioFaultEngine`, [`M8-welle-2-d8.md`](M8-welle-2-d8.md),
 [`ADR 0059`](../../adr/0059-generic-scenario-fault-engine.md) `Accepted`).
 `D-7` (Pre-init-Defense) in Welle 2a adoptiert/aufgeloest. Welle 3
@@ -35,10 +35,10 @@ Scenario-Validator-Schaerfung der neuen `params`-Felder,
 
 | Geraet | ID | Trigger | Muster-ADR | Charakteristik |
 |---|---|---|---|---|
-| EV-Charger | `GG-DEV-015` | [`016`](../open/016-sollte-ev-charger-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Lade-/Entlade-Curves, `plug_state`, optional bidirektional (V2G) |
-| Transformer | `GG-DEV-016` | [`017`](../open/017-sollte-transformer-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Wandlungsverhaeltnis, Kupfer-/Eisenverluste, Saettigung |
-| Wind | `GG-DEV-017` | [`018`](../open/018-sollte-wind-device.md) | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) | Wind-Leistungs-Kurve (kubisch), cut-in/-out/rated |
-| Diesel | `GG-DEV-018` | [`019`](../open/019-sollte-diesel-device.md) | [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) | Kraftstoff-Vorrat (l), Verbrauch (l/kWh), Ramp-Limits, Start-/Stop-Hysterese |
+| EV-Charger | [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015) | [`016`](../open/016-sollte-ev-charger-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Lade-/Entlade-Curves, `plug_state`, optional bidirektional (V2G) |
+| Transformer | [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) | [`017`](../open/017-sollte-transformer-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Wandlungsverhaeltnis, Kupfer-/Eisenverluste, Saettigung |
+| Wind | [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017) | [`018`](../open/018-sollte-wind-device.md) | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) | Wind-Leistungs-Kurve (kubisch), cut-in/-out/rated |
+| Diesel | [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018) | [`019`](../open/019-sollte-diesel-device.md) | [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) | Kraftstoff-Vorrat (l), Verbrauch (l/kWh), Ramp-Limits, Start-/Stop-Hysterese |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port, keine neue
 Adapter-Familie — die Geraete sind `DeviceModel`-Implementierungen im Core
@@ -68,18 +68,18 @@ Vier unabhaengige Geraetemodelle ueberschreiten die Sub-Slicing-Schwelle
 loest ihn bei Closure auf.
 
 - **Welle 2-C0 — Eroeffnung** (dieser Plan): Muster-Bestaetigung gegen
-  `ADR 0014`/`0016`/`0017`, Reihenfolge-Entscheidung. Sensor: `make docs-check`.
-- **Welle 2a — EV-Charger** (`GG-DEV-015`, [`016`](../open/016-sollte-ev-charger-device.md)):
+  [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)/`0016`/`0017`, Reihenfolge-Entscheidung. Sensor: `make docs-check`.
+- **Welle 2a — EV-Charger** ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015), [`016`](../open/016-sollte-ev-charger-device.md)):
   NEU ADR + `devices/ev_charger/`.
-- **Welle 2b — Transformer** (`GG-DEV-016`, [`017`](../open/017-sollte-transformer-device.md)):
+- **Welle 2b — Transformer** ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), [`017`](../open/017-sollte-transformer-device.md)):
   NEU ADR + `devices/transformer/`.
-- **Welle 2c — Wind** (`GG-DEV-017`, [`018`](../open/018-sollte-wind-device.md)):
+- **Welle 2c — Wind** ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), [`018`](../open/018-sollte-wind-device.md)):
   NEU ADR + `devices/wind/`.
-- **Welle 2d — Diesel** (`GG-DEV-018`, [`019`](../open/019-sollte-diesel-device.md)):
+- **Welle 2d — Diesel** ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), [`019`](../open/019-sollte-diesel-device.md)):
   NEU ADR + `devices/diesel/`.
 
 **Reihenfolge-Vorschlag:** nach Muster-Naehe — 2a/2b (GridConnection-Muster,
-`ADR 0017`) zusammenhaengend, dann 2c (PV-Muster), 2d (Battery-Muster).
+[`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md)) zusammenhaengend, dann 2c (PV-Muster), 2d (Battery-Muster).
 Alternativ Use-Case-Prioritaet: Wind + Diesel zuerst, falls die Inselnetz-
 Story (Welle 3, `T-020`) vorgezogen werden soll. Entscheidung in
 Welle-2a-C0.
@@ -95,7 +95,7 @@ und der `D-7`-Eintrag dort aufgeloest.
   §2.1) — neue Geraete sind opt-in im Szenario; der MVP-Demo bleibt
   unveraendert.
 - **Determinismus:** kubische Wind-Kurve / Diesel-Ramp-Hysterese brauchen
-  `Decimal`-Rundungs-Disziplin (`AC-NO-RAND`, kanonische Serialisierung) —
+  `Decimal`-Rundungs-Disziplin ([`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), kanonische Serialisierung) —
   kein Float-Drift im Snapshot.
 - **Coverage-critical:** jedes Submodul MUSS in `CRITICAL_COV_TARGETS`,
   sonst faellt die kritische Domain unter 90 %.

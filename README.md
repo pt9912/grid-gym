@@ -12,7 +12,7 @@ injection, and protocol adapters for field-bus telemetry.
 > `grid-gym` is a simulation, replay, and validation environment.
 > Protocol adapters (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) are
 > intended to drive simulated devices or test rigs, not real plants
-> (`GG-SAFE-007`, `GG-NONGOAL-001`).
+> ([`GG-SAFE-007`](spec/lastenheft.md#gg-safe-007), [`GG-NONGOAL-001`](spec/lastenheft.md#gg-nongoal-001)).
 
 ## Who is it for?
 
@@ -41,7 +41,7 @@ environment. The current implementation includes:
 - time-series persistence (Postgres) and a deterministic two-run replay
   with `replay_diff_status` verdict
 - a telemetry quality pipeline (`STALE` max-age marking, comm-failure
-  `MISSING` + alarm) covering `GG-SAFE-001..004`
+  `MISSING` + alarm) covering [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004
 - a machine-readable acceptance run via `make accept` (`AbnahmeReport` JSON)
 
 You can run the current gates and scenarios with:
@@ -114,8 +114,8 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   `make arch-check`: 7 forbidden-import contracts via `lint-imports`
   plus 13 custom AST/graph checks in
   [`tools/arch_check.py`](tools/arch_check.py) (including
-  `AC-ADAPTER-LIGHTWEIGHT`, `AC-OTLP-ADAPTER-NO-TIME`,
-  `AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`, and `AC-IEC61850-GPL-BOUNDARY`).
+  [`AC-ADAPTER-LIGHTWEIGHT`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-OTLP-ADAPTER-NO-TIME`](docs/plan/adr/0024-observability-port-trio.md),
+  [`AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), and [`AC-IEC61850-GPL-BOUNDARY`](docs/plan/adr/0035-iec61850-adapter-profile.md)).
 - **Ten-stage mandatory gate.** `make gates` runs lint, format-check,
   `mypy --strict`, arch-check, unit tests, coverage (90 % line per
   module / 85 % critical), critical-coverage, dependency audit,
@@ -169,9 +169,9 @@ As of **2026-06-12**:
   +
   [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md).
 - **M7 — MVP completion** · `Done` (2026-06-12; Welle 0..X). All
-  four `GG-MVP-*` items (replay-source integration `GG-MVP-002`,
-  acceptance CLI `make accept` `GG-MVP-003`) and all four
-  `GG-SAFE-001..004` MUSS IDs are productive. Five M7 ADRs
+  four `GG-MVP-*` items (replay-source integration [`GG-MVP-002`](spec/lastenheft.md#gg-mvp-002),
+  acceptance CLI `make accept` [`GG-MVP-003`](spec/lastenheft.md#gg-mvp-003)) and all four
+  [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004 MUSS IDs are productive. Five M7 ADRs
   (0047/0048/0049/0052/0053) `Accepted` at Welle-X closure;
   [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 stay `Proposed` (own lifecycle conditions).
 - **v0.1.0 released** (2026-06-12): first real run of the release
@@ -184,7 +184,7 @@ As of **2026-06-12**:
   037 (multi-node deployment), 038/039/040 (demand-driven), 044
   (d-check inline-code id linking) plus the
   trigger-gated backlog carry documented activation conditions; two
-  prepared `planning/next/` plans (041 `AC-ADAPTER-PURE` bridge
+  prepared `planning/next/` plans (041 [`AC-ADAPTER-PURE`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) bridge
   retirement, 042 fault-engine naming — implementation slices for
   [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051) await a mandate. A new milestone opens on trigger
   activation or stakeholder mandate.
@@ -195,9 +195,9 @@ skips are IEC-61850-on-Python-3.13 only, covered by the dedicated
 `make gates` 10-stage cache-free green without override;
 `make fullbuild` incl. `accept-pin-check` green.
 
-**Pointers:** demo acceptance steps `GG-DEMO-008` →
+**Pointers:** demo acceptance steps [`GG-DEMO-008`](spec/lastenheft.md#gg-demo-008) →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
-quality-pipeline audit `GG-SAFE-001..004` →
+quality-pipeline audit [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004 →
 [`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md);
 ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
 AI-agent briefing → [`AGENTS.md`](AGENTS.md).
@@ -245,10 +245,10 @@ intentionally held out of the MVP and tracked as optional
 additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.md)):
 
 - additional time-series storage adapters
-  (TimescaleDB `GG-PERSIST-006`, InfluxDB `GG-PERSIST-007`)
-- hardware-in-the-loop (HIL) integration `GG-TEST-004`
-- model-predictive control (MPC) agents `GG-FUTURE-001`
-- reinforcement-learning (RL) agents `GG-FUTURE-002`
+  (TimescaleDB [`GG-PERSIST-006`](spec/lastenheft.md#gg-persist-006), InfluxDB [`GG-PERSIST-007`](spec/lastenheft.md#gg-persist-007))
+- hardware-in-the-loop (HIL) integration [`GG-TEST-004`](spec/lastenheft.md#gg-test-004)
+- model-predictive control (MPC) agents [`GG-FUTURE-001`](spec/lastenheft.md#gg-future-001)
+- reinforcement-learning (RL) agents [`GG-FUTURE-002`](spec/lastenheft.md#gg-future-002)
 
 ## Project Structure
 

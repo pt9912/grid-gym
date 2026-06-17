@@ -32,7 +32,7 @@ abgehakt — ein Reviewer muss sie nicht erneut pruefen:
 | `make lint`          | `ruff check`: A-1-Regelgruppen `BLE`/`TRY`/`B`/`DTZ`/`S`/`TID`/`C901`/`PLR*`/`N`/`RET`/`SIM`/`ARG`/`RUF` plus `flake8-tidy-imports.banned-{api,module-level-imports}` | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1 ruff-Block |
 | `make format-check`  | `ruff format --check`                           | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1            |
 | `make typecheck`     | `mypy --strict` mit `enable_error_code = [redundant-self, possibly-undefined, truthy-bool, truthy-iterable, unused-awaitable, explicit-override, mutable-override]` | [`ADR 0005`](../plan/adr/0005-type-check-gate.md) §5.1            |
-| `make arch-check`    | 6 import-linter-Contracts (`AC-CORE-NO-ADAPTERS` bis `AC-NO-IO-MOD`) + 10 AST-Contracts via `tools/arch_check.py` (`AC-HEXAGON-PURE`, `AC-NO-JSON`, `AC-NO-TIME`, `AC-NO-RAND`, `AC-NO-IO-MOD-NESTED`, `AC-DOMAIN-FROZEN`, `AC-NO-GOD-UTILS`, `AC-TYPED-ERRORS`, `AC-NO-CYCLES`, `AC-ADAPTER-LIGHTWEIGHT`) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1 |
+| `make arch-check`    | 6 import-linter-Contracts ([`AC-CORE-NO-ADAPTERS`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) bis [`AC-NO-IO-MOD`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) + 10 AST-Contracts via `tools/arch_check.py` ([`AC-HEXAGON-PURE`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-JSON`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-TIME`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-RAND`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-IO-MOD-NESTED`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-DOMAIN-FROZEN`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-GOD-UTILS`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-TYPED-ERRORS`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-CYCLES`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-ADAPTER-LIGHTWEIGHT`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1 |
 | `make test-unit`     | pytest mit `hypothesis`-Property-Tests; arch_check-Vollstaendigkeit (`test_arch_check_registration.py`) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-2 / Drittes Review §3 |
 | `make coverage-gate-critical` | ≥ 90 % Line + Branch auf kritischer Domain (mit Build-Arg-Override im Spike-0/M1-Stand) | [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) §A-1, [`GG-COV-003`](../../spec/lastenheft.md#gg-cov-003) |
 
@@ -49,7 +49,7 @@ vermerken.
 
 ### 3.1 `AC-ADAPTER-PURE`-Reststeuerung (Logik-Anteil von GG-AR-TABU-003)
 
-`AC-ADAPTER-PURE` (import-linter) und `AC-ADAPTER-LIGHTWEIGHT`
+[`AC-ADAPTER-PURE`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (import-linter) und [`AC-ADAPTER-LIGHTWEIGHT`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)
 (`tools/arch_check.py`) decken **Import-Grenze und strukturelle
 Komplexitaet**. Statische Tools koennen aber nicht erkennen, wenn
 ein Adapter **fachliche Entscheidungen** trifft, statt nur Protokolle
@@ -126,8 +126,8 @@ die strukturelle Seite. **Restanteil:**
 
 ### 3.5 `pyproject.toml`-Folge-ADR-Pflicht (Post-Acceptance)
 
-`ADR 0002` und `ADR 0005` sind seit 2026-05-15 `Accepted`. Per
-`ADR 0006 §3` sind die Entscheidungstexte immutable; Aenderungen an
+[`ADR 0002`](../plan/adr/0002-language-and-build-stack.md) und [`ADR 0005`](../plan/adr/0005-type-check-gate.md) sind seit 2026-05-15 `Accepted`. Per
+[`ADR 0006`](../plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 sind die Entscheidungstexte immutable; Aenderungen an
 verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
 
 **Welche `pyproject.toml`-Aenderungen sind ADR-relevant:**
@@ -141,7 +141,7 @@ verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
   / `banned-api` — Aenderung der A-1-Aufruf-Site-Verbote.
 - `[tool.ruff.lint.per-file-ignores]` — Aenderung des Reichweiten-
   Vertrags (z. B. Adapter-Boundary-Modul-Liste).
-- `[tool.ruff.lint.pylint] max-*` — Aenderung des `GG-CC-001`-
+- `[tool.ruff.lint.pylint] max-*` — Aenderung des [`GG-CC-001`](../../spec/lastenheft.md#gg-cc-001)-
   Methodenlaengen-Gates.
 - `[tool.mypy] strict` / `files` / `enable_error_code` /
   `disable_error_code` — Aenderung des [`ADR-0005`](../plan/adr/0005-type-check-gate.md)-Strict-Vertrags.
@@ -157,17 +157,17 @@ verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
   `mypy>=2.0,<3.0`-Untergrenze auf `>=2.1` heben). Major-Wechsel
   jedoch erfordert ADR.
 - Neue `[project.dependencies]` fuer M1-Slice-Domain-Code (nicht-
-  ADR-relevant, solange `AC-HEXAGON-PURE`-Whitelist mitgepflegt
+  ADR-relevant, solange [`AC-HEXAGON-PURE`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Whitelist mitgepflegt
   wird — wenn Whitelist sich aendert, ist Folge-ADR Pflicht).
 - Reine Format-/Kommentar-Aenderungen.
 
 **Pruefen pro `pyproject.toml`-PR:**
 
 - [ ] Beruehrt diese PR eine der oben gelisteten Sektionen?
-- [ ] Falls ja: ist eine Folge-ADR verlinkt (z. B. `ADR 0008`)?
+- [ ] Falls ja: ist eine Folge-ADR verlinkt (z. B. [`ADR 0008`](../plan/adr/0008-enum-as-domain-frozen-form.md))?
 - [ ] Falls Folge-ADR fehlt: PR blockiert, bis ADR vorliegt
       (`Provisional` reicht — Acceptance synchron zur PR-Mergung).
-- [ ] Per `ADR 0006 §3` darf die Folge-ADR auf eine `Accepted`-
+- [ ] Per [`ADR 0006`](../plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 darf die Folge-ADR auf eine `Accepted`-
       ADR (z. B. [`ADR 0002`](../plan/adr/0002-language-and-build-stack.md)) als „Supersedes" verweisen, falls die
       Aenderung den A-1-Vertrag tatsaechlich aufweicht. Bei reiner
       Erweiterung (neue Regel hinzu) reicht eine neue ADR ohne
@@ -186,10 +186,10 @@ verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
 
 ### 3.7 ADR-Querverweise
 
-- [ ] Sind Querverweise gemaess `ADR 0004` ueber Kennungen
+- [ ] Sind Querverweise gemaess [`ADR 0004`](../plan/adr/0004-identifier-based-cross-references.md) ueber Kennungen
       (`GG-*`/`GG-AR-*`/`AC-*`/`ADR-NNNN`) referenziert, nicht ueber
       `§...`-Sektionen?
-- [ ] Wenn neue Folge-ADR: Header-Schema gemaess `ADR 0006 §4`
+- [ ] Wenn neue Folge-ADR: Header-Schema gemaess [`ADR 0006`](../plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §4
       (`Status`, `Datum`, `Status geaendert am`, ggf.
       `Letzte inhaltliche Aenderung`, `Superseded by`)?
 
@@ -216,7 +216,7 @@ GitHub-Actions-Workflow), muss der Reviewer den lokalen
 
 - **Disagreement zwischen Reviewer und Autor**: ein zweiter
   Reviewer entscheidet.
-- **Folge-ADR-Frage strittig**: `ADR 0006 §3` ist verbindlich —
+- **Folge-ADR-Frage strittig**: [`ADR 0006`](../plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 ist verbindlich —
   Aenderung an `Accepted`-ADR-Vertraegen braucht Nachfolge-ADR. Bei
   Zweifel an „beruehrt die PR den Vertrag?": Folge-ADR schreiben
   (im Zweifel mehr Dokumentation, nicht weniger).

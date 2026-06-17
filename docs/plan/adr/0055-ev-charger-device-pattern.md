@@ -15,7 +15,7 @@
 - [`ADR 0022`](0022-fault-injection-protocol.md) /
   [`ADR 0025`](0025-fault-recovery-pattern.md) — `FaultInjectableDevice` +
   Recovery-Muster (Vorbild fuer den EV-Fault).
-- [`spec/lastenheft.md`](../../../spec/lastenheft.md) — `GG-DEV-015`.
+- [`spec/lastenheft.md`](../../../spec/lastenheft.md) — [`GG-DEV-015`](../../../spec/lastenheft.md#gg-dev-015).
 - [`016-sollte-ev-charger-device.md`](../planning/open/016-sollte-ev-charger-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
@@ -23,7 +23,7 @@
 
 ## 1. Kontext
 
-`GG-DEV-015` definiert einen **EV-Ladepunkt** (SOLLTE). Stakeholder-
+[`GG-DEV-015`](../../../spec/lastenheft.md#gg-dev-015) definiert einen **EV-Ladepunkt** (SOLLTE). Stakeholder-
 Entscheidung (M8-Welle-2a): **realistisches Modell** statt Power-Flow-
 Minimum — mit Fahrzeug-SoC, CC/CV-Ladekennlinie, **durchgaengig
 bidirektionalem V2G** und EV-Fault-Injection. Damit ist der EV-Ladepunkt
@@ -170,7 +170,7 @@ Welle 2a-C2/C3 — Integrationspunkte:
 - `CRITICAL_COV_TARGETS += src/grid_gym/hexagon/core/devices/ev_charger`
   (`Dockerfile`-ARG + Makefile).
 
-Akzeptanz `GG-DEV-015`: Modell + Szenario-YAML-Beispiel + deterministischer
+Akzeptanz [`GG-DEV-015`](../../../spec/lastenheft.md#gg-dev-015): Modell + Szenario-YAML-Beispiel + deterministischer
 Smoke-Test (Lade-CC/CV-Verlauf, V2G, `connection_loss`-Fault,
 Snapshot-Roundtrip).
 

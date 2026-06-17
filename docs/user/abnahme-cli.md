@@ -12,7 +12,7 @@
 Diese Doku beschreibt den **automatisierten** MVP-Abnahmepfad:
 ein einziger Befehl fuehrt deterministische Replay-Pruefung,
 Szenario-Validierung und Demo-Healthcheck aus und liefert einen
-**maschinenlesbaren** JSON-Status (`GG-MVP-003`-Akzeptanz).
+**maschinenlesbaren** JSON-Status ([`GG-MVP-003`](../../spec/lastenheft.md#gg-mvp-003)-Akzeptanz).
 
 ## Aufruf
 
@@ -148,8 +148,8 @@ make accept-pin-check          # Docker-Stage; grün = Pins aktuell
 ## Abgrenzung zu `gg-demo-008-abnahme.md`
 
 [`gg-demo-008-abnahme.md`](gg-demo-008-abnahme.md) beschreibt die
-**manuelle** 6-Schritt-Abnahmereihenfolge fuer `GG-DEMO-008`, die ein
+**manuelle** 6-Schritt-Abnahmereihenfolge fuer [`GG-DEMO-008`](../../spec/lastenheft.md#gg-demo-008), die ein
 Operator/Reviewer durcharbeitet (Walkthrough). Diese Doku deckt
-orthogonal den **automatisierten** `GG-MVP-003`-Pfad ab (ein-Schritt-
+orthogonal den **automatisierten** [`GG-MVP-003`](../../spec/lastenheft.md#gg-mvp-003)-Pfad ab (ein-Schritt-
 Aufruf + maschinenlesbarer JSON-Status). Beide koexistieren mit
 getrennten Anwendungsfaellen — kein Ersatz, keine Migration.

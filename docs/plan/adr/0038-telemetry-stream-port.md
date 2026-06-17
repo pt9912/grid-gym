@@ -29,7 +29,7 @@ Commit)
 
 - [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
   (Schaerfungs-ohne-Supersede-Pattern — ADR 0038
-  konkretisiert `GG-API-002` und `GG-UI-002/003/009` aus
+  konkretisiert [`GG-API-002`](../../../spec/lastenheft.md#gg-api-002) und [`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)/003/009 aus
   Lastenheft §16/§17 fuer Welle-3-Implementation).
 - [`ADR 0030`](0030-device-protocol-port-surface.md) §2.1
   (Adapter-Hexagon-Pattern auf Driven-Side; ADR 0038
@@ -44,12 +44,12 @@ Commit)
   Konsumer-Pfad, der in Welle 3 von Counter-Stub auf
   `TelemetryStreamPort.subscribe()` umgestellt wird).
 - [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
-  (`GG-API-002` WebSocket-Telemetrie: Akzeptanz „WebSocket-
+  ([`GG-API-002`](../../../spec/lastenheft.md#gg-api-002) WebSocket-Telemetrie: Akzeptanz „WebSocket-
   Nachrichten enthalten Lauf-ID, Simulationszeit,
   Sequenznummer und Telemetrie-Payload").
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  (`GG-UI-002` Live-Telemetry / `GG-UI-003` Zeitreihen /
-  `GG-UI-009` Quality-Marker — alle drei sind Welle-3-
+  ([`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002) Live-Telemetry / [`GG-UI-003`](../../../spec/lastenheft.md#gg-ui-003) Zeitreihen /
+  [`GG-UI-009`](../../../spec/lastenheft.md#gg-ui-009) Quality-Marker — alle drei sind Welle-3-
   Akzeptanz-Ziele).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie; `TelemetryStream
@@ -71,8 +71,8 @@ Commit)
 M5-Welle-1 hat die HTTP-API-Surface mit einem WebSocket-
 Endpunkt `WS /runs/{run_id}/telemetry` angelegt — der pusht
 in Welle 1 noch einen Timer-getriebenen Counter-Stub
-(`tick=0/1/2`, dann close). Welle 3 erfuellt `GG-UI-002`
-(Live-Telemetry), `GG-UI-003` (Zeitreihen) und `GG-UI-009`
+(`tick=0/1/2`, dann close). Welle 3 erfuellt [`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)
+(Live-Telemetry), [`GG-UI-003`](../../../spec/lastenheft.md#gg-ui-003) (Zeitreihen) und [`GG-UI-009`](../../../spec/lastenheft.md#gg-ui-009)
 (Quality-Marker) und ersetzt den Counter-Stub durch einen
 echten Live-Telemetry-Stream.
 
@@ -152,19 +152,19 @@ class TelemetryStreamPort(Protocol):
   Footprint und ueberlappende Mental-Models mit
   Pythons-eigenem `asyncio`.
 
-**`TelemetryPoint`-Feld-Abdeckung (`GG-API-002` +
-`GG-UI-002`):**
+**`TelemetryPoint`-Feld-Abdeckung ([`GG-API-002`](../../../spec/lastenheft.md#gg-api-002) +
+[`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)):**
 
-| `GG-API-002`-Pflicht | `TelemetryPoint`-Feld     |
+| [`GG-API-002`](../../../spec/lastenheft.md#gg-api-002)-Pflicht | `TelemetryPoint`-Feld     |
 | -------------------- | ------------------------- |
 | Lauf-ID              | `run_id`                  |
 | Simulationszeit      | `simulation_time_ms`      |
 | Sequenznummer        | `sequence`                |
 | Telemetrie-Payload   | `value` + `unit` + `metric`|
 
-`GG-UI-002`-Akzeptanz fordert zusaetzlich Geraet
+[`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)-Akzeptanz fordert zusaetzlich Geraet
 (`device_id`) und Qualitaetsstatus (`quality`).
-`GG-UI-009`-Akzeptanz fordert 6 Quality-Zustaende; die
+[`GG-UI-009`](../../../spec/lastenheft.md#gg-ui-009)-Akzeptanz fordert 6 Quality-Zustaende; die
 `Literal`-Type-Annotation deckt sie ab.
 
 ### 2.2 Decision 11b (Backpressure-Strategie) — Drop-Oldest
@@ -202,7 +202,7 @@ Haelfte des Bursts), und der letzte Eintrag hat
 `tick == 9` (juengste Message).
 
 **Welle-3-Default `maxsize=128`**: ~1.3 Sekunden Buffer bei
-100ms-Tick-Rate (`GG-SIM-002` standard); ueberbrueckt
+100ms-Tick-Rate ([`GG-SIM-002`](../../../spec/lastenheft.md#gg-sim-002) standard); ueberbrueckt
 Browser-Tab-Sleep-Phasen bis ca. 1s ohne sichtbare
 Drops fuer typische Web-Interaktion. Welle-4-Tuning
 moeglich bei Bedarf.
@@ -299,7 +299,7 @@ deterministisch (kein Wait-on-GC).
   der `demo_generator.py`-Stub. Echtes TickLoop-Wiring
   folgt in Welle 4.
 - **Persistence-Sink** — kein DB-Persist der publishten
-  Points. Snapshot/History gehoert zu `GG-API-001`-
+  Points. Snapshot/History gehoert zu [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)-
   `/runs/{id}/snapshot` (Welle-4-Material).
 - **OTel-Span-Wrap** — Welle 3 wraps nicht; M6 oder eine
   eigene Cross-Adapter-Hardening-Welle macht es analog
@@ -371,9 +371,9 @@ deterministisch (kein Wait-on-GC).
   (HTTP-API-Surface-Pattern; WS-Endpoint, der hier den
   Konsumer-Pfad bildet).
 - [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
-  `GG-API-002` (WebSocket-Telemetrie-Akzeptanz).
+  [`GG-API-002`](../../../spec/lastenheft.md#gg-api-002) (WebSocket-Telemetrie-Akzeptanz).
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  `GG-UI-002/003/009` (Live-Telemetry +
+  [`GG-UI-002`](../../../spec/lastenheft.md#gg-ui-002)/003/009 (Live-Telemetry +
   Zeitreihen + Quality-Marker).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie).

@@ -13,7 +13,7 @@
 - [`ADR 0039`](0039-run-control-and-status-tracking.md) — historische
   Demo-Bootstrap-/Lifespan-Verkabelung.
 - [`spec/architecture.md`](../../../spec/architecture.md#2-architekturprinzipien) —
-  `GG-AR-P-002`, `GG-AR-TABU-001..004`.
+  [`GG-AR-P-002`](../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..004.
 
 ---
 

@@ -1,9 +1,9 @@
 # Welle 4 — M8 BESS-Telemetrie (`GG-BESS-006/007`)
 
 **Status:** **Done (2026-06-17)** — beide Sub-Wellen geliefert:
-**4a (Temperatur, `GG-BESS-006`)** via
+**4a (Temperatur, [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006))** via
 [`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) und
-**4b (Zellspannung, `GG-BESS-007`)** via
+**4b (Zellspannung, [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007))** via
 [`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md) — beide
 `Accepted`, additive Telemetrie-Schaerfungen des Battery-Modells
 (`BatteryDevice`, [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) aus
@@ -41,13 +41,13 @@ Zellspannungsfelder werden gar nicht geschrieben.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
-| 4a Temperatur | `GG-BESS-006` | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
-| 4b Zellspannung | `GG-BESS-007` | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `nominal_pack_voltage_v` + `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
+| 4a Temperatur | [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006) | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
+| 4b Zellspannung | [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007) | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `nominal_pack_voltage_v` + `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port und **keine
 Bilanz-Beruehrung** — Temperatur/Zellspannung sind Geraete-interne Groessen,
 die als `TelemetryPoint` emittiert werden (Metric ist generisch, SI-Einheit
-per `GG-DATA-002`), nicht in `GridModelBilanz` aggregiert. Pro Sub-Welle eine
+per [`GG-DATA-002`](../../../../spec/lastenheft.md#gg-data-002)), nicht in `GridModelBilanz` aggregiert. Pro Sub-Welle eine
 ADR-Folge als **Erweiterung** von
 [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) (Schaerfung-Pattern,
 kein Supersede). `devices/battery/` liegt bereits in `CRITICAL_COV_TARGETS`
@@ -71,7 +71,7 @@ kein Supersede). `devices/battery/` liegt bereits in `CRITICAL_COV_TARGETS`
   Altschnappschuesse.
 - Neue Telemetry-Metric(s) **nur bei aktiver Config** (kein Feature →
   **kein** Punkt, nicht `0`); Determinismus-Property-Test (gleicher Seed →
-  identische Trace, `AC-NO-RAND`). RandomPort-konsumierende Features brauchen
+  identische Trace, [`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)). RandomPort-konsumierende Features brauchen
   zusaetzlich Resume-Pins (`from_snapshot` + `attach_random`; fehlender
   `attach_random` fail-loud typisiert).
 - `make gates` gruen (A-1-Gates), `coverage-gate-critical` ≥ 90 % auf
@@ -102,7 +102,7 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), Reihenfolge,
   opt-in/Pin-neutral-Strategie. Sensor: `make docs-check`.
 - **Welle 4a — Battery-Temperatur** ([`M8-welle-4a.md`](M8-welle-4a.md),
-  `GG-BESS-006`, [`023`](../open/023-sollte-battery-temperature.md), NEU ADR):
+  [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), [`023`](../open/023-sollte-battery-temperature.md), NEU ADR):
   `temperature_celsius` als Geraete-State + Telemetrie. T-Modell als
   **stateful Single-Zonen-Thermomodell** (analog dem Top-Oil-Euler aus
   [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md):
@@ -113,13 +113,13 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   eingebettete Config additiv opt-in (kein Bump, fehlende neue Config-Keys =
   inaktiv). Derating/thermische Constraints **out-of-scope** (§5, M3-Material).
 - **Welle 4b — Battery-Zellspannung** ([`M8-welle-4b.md`](M8-welle-4b.md),
-  `GG-BESS-007`, [`024`](../open/024-sollte-battery-cell-voltage.md), NEU ADR):
+  [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), [`024`](../open/024-sollte-battery-cell-voltage.md), NEU ADR):
   `nominal_pack_voltage_v: Decimal` + `n_cells: int` +
   `cell_voltages_v: tuple[Decimal, ...]`. Vereinfacht alle Zellen identisch
   (`nominal_pack_voltage_v / n_cells`); erweitert per-Zelle mit seeded
   `RandomPort.sub_port("cell-<idx>")`-Rauschen (deterministisch).
   Telemetrie **aggregiert**: `cell_voltage_delta_v` als normativer
-  `GG-BESS-007`-Akzeptanzpunkt (`max-min`), optional `min_cell_voltage_v` +
+  [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007)-Akzeptanzpunkt (`max-min`), optional `min_cell_voltage_v` +
   `max_cell_voltage_v` als Debug-/Boundary-Kontext statt N Punkte — bounded
   Telemetrie-Flaeche; per-Zelle als Alternative (Design-Item). Snapshot
   additiv opt-in.
@@ -174,7 +174,7 @@ Aggregation), wird sie nach demselben Schema weiter getrancht.
 
 - [x] `M8-welle-4.md` angelegt (dieser Plan) + Slice-Plaene
       [`M8-welle-4a.md`](M8-welle-4a.md)/[`M8-welle-4b.md`](M8-welle-4b.md).
-- [x] Scope fixiert: beide (`T-023/024`/`GG-BESS-006/007`) in Welle 4,
+- [x] Scope fixiert: beide (`T-023/024`/[`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)/007) in Welle 4,
       Telemetrie-Schaerfung von
       [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md).
 - [x] Reihenfolge fixiert: **4a Temperatur → 4b Zellspannung** (skalare

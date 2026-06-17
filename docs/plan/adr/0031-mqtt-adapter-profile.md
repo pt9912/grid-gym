@@ -54,11 +54,11 @@ M4-Slice-Plan
 Decision 4 (Profile-Deklaration) + Decision 5
 (Test-Sibling-Container) + Decision 6
 (`AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
-Lastenheft §16 (`GG-MQTT-001`, Z. 1120–1133 SOLLTE-Cluster:
+Lastenheft §16 ([`GG-MQTT-001`](../../../spec/lastenheft.md#gg-mqtt-001), Z. 1120–1133 SOLLTE-Cluster:
 Topic-Schema + Payload-Format + QoS + Pub/Sub-Richtung +
 Fehlerverhalten + deterministischer Adapter-Smoke-Test +
 Cross-Cutting-Pflicht „Simulations-/Testadapter").
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-Tabelle
 — ADR 0030 hat den Slot belegt; Welle 2 liefert ersten
 Implementer) + §8.2 (Adapter-Interfaces-Driven-
 Beschreibung — Topic-Schema-Profile konkretisiert die
@@ -77,7 +77,7 @@ neuen Service; Healthcheck-Wait-Loop).
 
 ## 1. Kontext
 
-`GG-MQTT-001` (Lastenheft §16 Z. 1120–1133) verlangt einen
+[`GG-MQTT-001`](../../../spec/lastenheft.md#gg-mqtt-001) (Lastenheft §16 Z. 1120–1133) verlangt einen
 MQTT-Adapter als **Simulations-/Testadapter** mit
 deterministischem Adapter-Smoke-Test. M4-Welle-1 hat die
 `DeviceProtocolPort`-Surface (ADR 0030 `Provisional`)

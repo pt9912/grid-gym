@@ -24,13 +24,13 @@ Pattern — diese ADR ist Erweiterung von ADR 0013 §2.4 fuer den
 PV/Load-Snapshot-Vertrag, kein Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 3. Lastenheft §9.1 (`GG-DEV-011` PV, `GG-DEV-013` Load).
+§3 Welle 3. Lastenheft §9.1 ([`GG-DEV-011`](../../../spec/lastenheft.md#gg-dev-011) PV, [`GG-DEV-013`](../../../spec/lastenheft.md#gg-dev-013) Load).
 
 ---
 
 ## 1. Kontext
 
-`PvDevice` (`GG-DEV-011`) und `LoadDevice` (`GG-DEV-013`) sind die
+`PvDevice` ([`GG-DEV-011`](../../../spec/lastenheft.md#gg-dev-011)) und `LoadDevice` ([`GG-DEV-013`](../../../spec/lastenheft.md#gg-dev-013)) sind die
 zweiten und dritten konkreten `DeviceModel`-Implementationen nach
 `BatteryDevice` (ADR 0014, Welle 2). Beide sind strukturell
 deutlich einfacher als die Battery:
@@ -53,7 +53,7 @@ Override via `set_power_kw`-Command. Zeitreihen-Profile
 Lines) kommen mit Welle 5 (Netzbilanzmodell-Integration) bzw.
 M3 (Replay-Source-Verkabelung). Die Lastenheft-Akzeptanz
 „Minimalmodell + Beispiel + deterministischer Smoke-Test"
-(`GG-DEV-011`/`013`) ist mit der Welle-3-Lieferung erfuellt.
+([`GG-DEV-011`](../../../spec/lastenheft.md#gg-dev-011)/`013`) ist mit der Welle-3-Lieferung erfuellt.
 
 ---
 
@@ -258,7 +258,7 @@ Integration koennen das Pattern mechanisch ausnutzen.
 **Welle-3-Minimum bewusst klein:** kein Generationsprofil, kein
 Replay-Source-Pfad. Welle 5+ Netzbilanzmodell und M3
 Replay-Integration erweitern; aber Welle 3 erfuellt
-`GG-DEV-011`/`013` als „Minimalmodell + Beispiel +
+[`GG-DEV-011`](../../../spec/lastenheft.md#gg-dev-011)/`013` als „Minimalmodell + Beispiel +
 deterministischer Smoke-Test" vollstaendig.
 
 **PV/Load-Duplikation explizit gehalten (Welle-3-Review M-1):**
@@ -333,7 +333,7 @@ Closure-Notiz verzeichnet.
   Lastgang-Profil fuer Load). Welle 5 Replay-Source.
 - Forecast-Telemetrie (`forecast_kw`-Metric). Post-MVP.
 - Inselnetz-Verhalten von PV (Frequenz-Halten,
-  `GG-GRID-005` SOLLTE). Post-MVP.
+  [`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005) SOLLTE). Post-MVP.
 
 ---
 

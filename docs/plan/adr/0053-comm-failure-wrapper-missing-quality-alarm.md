@@ -33,7 +33,7 @@
   Welle-3-Gruppenplan (D-4-Scope-Schalter → §2.1; ADR-Numbering
   D-3).
 - [Trigger 035](../planning/done-archive/035-safe-003-comm-failure-missing-quality.md)
-  — `GG-SAFE-003`-partial-Lücken-Verankerung; wird mit 3b-C3
+  — [`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003)-partial-Lücken-Verankerung; wird mit 3b-C3
   aufgeloest (`done/`).
 - [`../../user/safe-001-004-quality-pipeline.md`](../../user/safe-001-004-quality-pipeline.md)
   — Quality-Pipeline-Audit (Flip-Ziel ⚠ → ✓).
@@ -42,7 +42,7 @@
 
 ## 1. Kontext
 
-`GG-SAFE-003` (Lastenheft §20 Z. 1365-1371, MUSS) verlangt:
+[`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003) (Lastenheft §20 Z. 1365-1371, MUSS) verlangt:
 Kommunikationsausfaelle werden erkannt — dokumentierter
 Fehlerstatus, betroffene Telemetrie `missing` oder `stale`,
 Alarm mit Ziel, Startzeit und Ursache. Das M6-Welle-5a-Audit
@@ -85,7 +85,7 @@ Pfad.
 
 ### §2.1 Scope-Lesart: Adapter-Substanz + Test-Sibling-E2E (3b-D-1)
 
-Der `GG-SAFE-003`-Flip bindet an die **Erkennungs-/Markierungs-/
+Der [`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003)-Flip bindet an die **Erkennungs-/Markierungs-/
 Alarm-Substanz des Adapter-Rings**, belegt per Unit-Tests ueber
 alle fuenf Adapter-Familien + reaktiviertem Integration-Smoke —
 **nicht** an einen produktiven Demo-Lauf mit echtem
@@ -206,7 +206,7 @@ Punkte maschinell unterscheidbar. C2 pinnt den Feld-Vertrag.
 
 ## 3. Begruendung
 
-- **`GG-SAFE-003` schliessen.** Die typisierte Erkennungs-
+- **[`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003) schliessen.** Die typisierte Erkennungs-
   Substanz existiert seit M4/M5 — ADR 0053 liefert die fehlende
   Quality-/Alarm-Folge in genau einer Schicht; alle drei
   Alarm-Pflichtfelder der Akzeptanz (Ziel/Startzeit/Ursache)
@@ -233,7 +233,7 @@ Punkte maschinell unterscheidbar. C2 pinnt den Feld-Vertrag.
   OTel-Komposition + on_alarm-Robustheit) (C2).
 - Reaktivierung `test_safe_003_comm_failure_emits_missing_or_
   stale` + Flip `docs/user/safe-001-004-quality-pipeline.md`
-  `GG-SAFE-003` ⚠ → ✓ (C2).
+  [`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003) ⚠ → ✓ (C2).
 - ADR-Index NEU ADR-0053-Zeile (C1).
 - NEU `adapters/driven/_protocol_wrap_common.py` —
   geteiltes Best-Effort-Catch-Tupel beider Wrapper
@@ -262,7 +262,7 @@ ADR 0047..0052).
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-SAFE-003` flippt ⚠ → ✓; Trigger 035
+- **Positiv:** [`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003) flippt ⚠ → ✓; Trigger 035
   schliesst; **M7-Welle-3 komplett** — alle acht
   `GG-SAFE-*`-IDs sind damit produktiv oder bewusst verankert.
 - **Positiv:** der Wrapper ist die fertige Comm-Failure-Schicht

@@ -230,7 +230,7 @@ Header dieser ADR.
   GitHub-Dependabot). Der `TRIVY_IMAGE`-Default im
   `Makefile` ist die produktive Wahl; ein Wechsel waere
   ADR-pflichtig, aber ausserhalb ADR 0043.
-- **SBOM-Generierung im Release-Workflow** (`GG-CICD-007`
+- **SBOM-Generierung im Release-Workflow** ([`GG-CICD-007`](../../../spec/lastenheft.md#gg-cicd-007)
   + Trigger 008). Liegt bei
   [ADR 0042](0042-sbom-tool-and-release-pattern.md), die
   die SBOM-Tool-Wahl + den CI-Hook-Pattern traegt.

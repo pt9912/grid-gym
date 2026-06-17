@@ -24,7 +24,7 @@ spaeter Meilensteine, weitere ADRs und Umsetzungsslices aufnehmen
 koennen. Sie muss zudem den V-Modell-Anforderungen aus
 [§27 Lastenheft](../../../spec/lastenheft.md#27-v-modell-aehnliche-rueckverfolgbarkeit) (Rueckverfolgbarkeit
 Anforderung → Design → Implementierung → Test) und der
-Anforderung `GG-TRACE-001` Rechnung tragen.
+Anforderung [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) Rechnung tragen.
 
 ---
 
@@ -101,8 +101,8 @@ Wird ein Eintrag verworfen, wandert er nach `docs/archive/`.
 ## 5. Nicht Gegenstand dieser ADR
 
 - Wahl der Programmiersprache und des Build-Systems
-  (`GG-AR-OPEN-001`, eigene Folge-ADR).
-- Trennung von API- und Simulationsdienst (`GG-AR-OPEN-002`).
-- Persistenzzugriffsmuster (`GG-AR-OPEN-003`).
+  ([`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte), eigene Folge-ADR).
+- Trennung von API- und Simulationsdienst ([`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
+- Persistenzzugriffsmuster ([`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
 - Konkrete Pfade fuer Test-Artefakte, Container-Images oder
   Release-Pipelines.

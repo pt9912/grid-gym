@@ -1,6 +1,6 @@
 # 022 — SOLLTE: Blindleistung im Netzbilanzmodell (`GG-GRID-007`)
 
-**Status:** **Resolved 2026-06-16** — `GG-GRID-007` komplett ueber die
+**Status:** **Resolved 2026-06-16** — [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) komplett ueber die
 Re-Tranche 3c-a/3c-b-1/3c-b-2. **3c-a**
 ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`):
 Q-Bilanz im `grid_model` (`imbalance_kvar` + Q-Spannungskopplung +
@@ -14,13 +14,13 @@ Transformer-Scheinleistung `S=sqrt(P²+Q²)` (re-pinnt die 3b-Boundary als
 Q=0-Regressionspin). Alle Schritte pin-neutral (Q-frei byte-identisch).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).
+(Welle-7-Erbschaft); Lastenheft §11.5 ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-GRID-007` definiert **Blindleistung** als
+Lastenheft [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) definiert **Blindleistung** als
 SOLLTE-Item im Netzbilanzmodell. M2 deckt nur Wirkleistung
 (`power_kw`) ab; alle Devices emittieren `power_kw`, und
 `GridModelBilanz` ([`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))

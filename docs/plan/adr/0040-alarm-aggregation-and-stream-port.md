@@ -84,7 +84,7 @@ Commit)
 
 - [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
   (Schaerfungs-ohne-Supersede-Pattern — ADR 0040
-  konkretisiert `GG-UI-005` aus Lastenheft §17 sowie die
+  konkretisiert [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005) aus Lastenheft §17 sowie die
   `spec/architecture.md`-§Alarm-Vorbelegung fuer Welle-
   4b-Implementation).
 - [`ADR 0014`](0014-battery-snapshot-schema.md) §6
@@ -93,7 +93,7 @@ Commit)
   Welle 4b loest die Driving-Side-Variante
   (`AlarmStreamPort` + adapter-interner
   `AlarmHistoryBuffer`) produktiv aus; Postgres-
-  Persistenz (`GG-PERSIST-004`) bleibt M3-Welle-6c-
+  Persistenz ([`GG-PERSIST-004`](../../../spec/lastenheft.md#gg-persist-004)) bleibt M3-Welle-6c-
   Material). Pattern-Praezedenz fuer die hier
   ergaenzte `drain_alarms()`-Drain-Semantik.
 - [`ADR 0016`](0016-pv-load-device-pattern.md) §2.5 +
@@ -112,7 +112,7 @@ Commit)
   REST-Endpoint `GET /runs/{run_id}/alarms` und den
   WS-Endpoint `WS /runs/{run_id}/alarms-stream` unter
   bestehendem Pattern: REST fuer Hydration, WS fuer
-  Live-Stream, `GG-API-004`-`ErrorResponse`-Format
+  Live-Stream, [`GG-API-004`](../../../spec/lastenheft.md#gg-api-004)-`ErrorResponse`-Format
   fuer 404).
 - [`ADR 0038`](0038-telemetry-stream-port.md)
   (Pattern-Vorbild fuer `AlarmStreamPort` — Welle 4b
@@ -125,13 +125,13 @@ Commit)
   ADR 0040; in Welle-4b-C0 von ursprueglich 2 auf 3
   Decisions erweitert — siehe Welle-4b-Slice-Doc §0).
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  `GG-UI-005` (UI-Akzeptanz: „Das UI MUSS Alarme
+  [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005) (UI-Akzeptanz: „Das UI MUSS Alarme
   visualisieren koennen. Akzeptanz: Das UI zeigt
   Alarmzeit, Ziel, Schweregrad, Code, Nachricht und
   aktuellen Status in einer aktualisierbaren Tabelle
   an.").
 - [Lastenheft](../../../spec/lastenheft.md#23-deployment) §23
-  `GG-PERSIST-004` (Postgres-Alarm-Persistenz —
+  [`GG-PERSIST-004`](../../../spec/lastenheft.md#gg-persist-004) (Postgres-Alarm-Persistenz —
   Welle-4b-Anti-Scope; M3-Welle-6c-Material).
 - [Architektur](../../../spec/architecture.md) §Alarm
   (kanonisches 9-Feld-Schema `{alarm_id, run_id,
@@ -170,7 +170,7 @@ Wiring + RunStatus + die UI-Page `/runs/{id}/control`
 geliefert. Welle-4a-Anti-Scope-Item: **„Keine Alarm-
 Aggregation / AlarmStreamPort / Alarm-Tabelle-UI (Welle
 4b)"**. Welle 4b loest dieses Versprechen ein und
-implementiert `GG-UI-005` (Alarm-Visualisierung)
+implementiert [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005) (Alarm-Visualisierung)
 produktiv.
 
 Die Welle-4b-Implementation muss vier Architektur-Concerns
@@ -515,7 +515,7 @@ Adapter-internes Helper-Konzept.
   Buffer-Groesse).
 - **Response:** `AlarmsResponse{alarms: list[AlarmDto]}`
   als JSON-Array (neueste zuerst).
-- **404** mit `GG-API-004`-Format
+- **404** mit [`GG-API-004`](../../../spec/lastenheft.md#gg-api-004)-Format
   (`code="run_not_found"`) bei nicht-existentem Run.
 - **`tags=["runs"]`** fuer OpenAPI-Schema-Konsistenz.
 
@@ -563,7 +563,7 @@ Adapter-internes Helper-Konzept.
     sichtbar — fuer kritische Alarms unangemessen.
   - **Live-Feeling fehlt.**
 
-**6-Spalten-UI-Tabelle (`GG-UI-005`-Akzeptanz):**
+**6-Spalten-UI-Tabelle ([`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005)-Akzeptanz):**
 
 | Spalte | Quelle | Hinweis |
 | --- | --- | --- |
@@ -606,7 +606,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   `AlarmsResponse`-Schema. WS bewusst nicht im Schema
   (analog ADR 0037 §3-Klarstellung + ADR 0038-Pattern).
 - **UI-Page:** NEU `/runs/{run_id}/alarms`-Page mit
-  6-Spalten-Tabelle per `GG-UI-005` + 3 `severity-*`-
+  6-Spalten-Tabelle per [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005) + 3 `severity-*`-
   CSS-Klassen; HTMX-`hx-get` auf REST-`/alarms-history`-
   Endpoint fuer Initial-Hydration + `hx-ext="ws"` auf
   `/alarms-stream` fuer Live-Updates.
@@ -645,7 +645,7 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   TickLoop-Aggregations-Sequenz aendern sich nicht
   (Stream-Wiring + REST-History-Endpoint bleiben
   identisch).
-- **`GG-PERSIST-004`-Akzeptanz** erfuellt: „Alarme
+- **[`GG-PERSIST-004`](../../../spec/lastenheft.md#gg-persist-004)-Akzeptanz** erfuellt: „Alarme
   werden mit Lauf-ID, Simulationszeit, Ziel, Code,
   Schweregrad, Nachricht, Status und optionaler
   Fault-ID gespeichert und laufbezogen abgefragt." —
@@ -710,11 +710,11 @@ Quality-Marker-Pattern: `severity-info` (neutral),
 - **Alarm-Status-Lifecycle** (`acknowledged`/`resolved`).
   Welle-4b-`AlarmStatus` ist `Literal["active"]`.
   Lifecycle-Erweiterung ist Welle 6+/M6-Material.
-  `GG-UI-005`-Akzeptanz fordert „aktualisierbare
+  [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005)-Akzeptanz fordert „aktualisierbare
   Tabelle", nicht „quittierbare Alarme" — Live-Update
   via WS + Initial-Hydration via GET erfuellen die
   Akzeptanz produktiv.
-- **Postgres-Alarm-Persistenz** (`GG-PERSIST-004`).
+- **Postgres-Alarm-Persistenz** ([`GG-PERSIST-004`](../../../spec/lastenheft.md#gg-persist-004)).
   Welle-4b bleibt In-Memory (`AlarmHistoryBuffer`-Ring
   N=200). Schema-Migration + `PostgresAlarmRepository`-
   Implementation + NEU `AlarmRepositoryPort`-Driven-
@@ -875,9 +875,9 @@ Quality-Marker-Pattern: `severity-info` (neutral),
   §3.2 (Welle-4a-Forward-Pointer auf Welle 4b mit
   NEU ADR 0040; Decision-Plan von 2 auf 3 erweitert).
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  `GG-UI-005` (UI-Akzeptanz: 6 Pflicht-Spalten).
+  [`GG-UI-005`](../../../spec/lastenheft.md#gg-ui-005) (UI-Akzeptanz: 6 Pflicht-Spalten).
 - [Lastenheft](../../../spec/lastenheft.md#23-deployment) §23
-  `GG-PERSIST-004` (Postgres-Alarm-Persistenz —
+  [`GG-PERSIST-004`](../../../spec/lastenheft.md#gg-persist-004) (Postgres-Alarm-Persistenz —
   Welle-4b-Anti-Scope; M3-Welle-6c).
 - [Architektur](../../../spec/architecture.md) §Alarm
   (kanonisches 9-Feld-Schema).

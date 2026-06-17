@@ -41,13 +41,13 @@
 
 ## 1. Kontext
 
-`GG-MVP-002` (E2E-Szenario + deterministisches Replay) ist im
+[`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) (E2E-Szenario + deterministisches Replay) ist im
 **partial**-Stand. Welle **1a** ([ADR 0047](0047-telemetry-sink-timeseries-persistence.md))
 lieferte die Zeitreihen-Persistenz, Welle **1b-a**
 ([ADR 0048](0048-replay-snapshot-port-reconstruction.md)) den
 `ReplaySnapshotPort`, der `ReplaySample`-Sequenzen rekonstruiert.
 ADR 0049 (Welle 1b-b) schliesst die **Lauf-Lifecycle-
-Verkabelung** + flippt `GG-MVP-002`.
+Verkabelung** + flippt [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002).
 
 **Code-Ist-Stand (verifiziert):**
 
@@ -61,7 +61,7 @@ Verkabelung** + flippt `GG-MVP-002`.
 - **`diff_replay(expected, actual, *, tick_ms=1000,
   volatile_fields=None) -> tuple[ReplayDelta, ...]`** (Pure-
   Function; `volatile_fields`-Default `{"import_sequence"}`).
-- **`ReplayDelta`** traegt alle vier `GG-SAFE-006`-Detailfelder
+- **`ReplayDelta`** traegt alle vier [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006)-Detailfelder
   (`path`/`expected`/`actual`, `tick`, `device_id`,
   `classification`).
 - **`MetricsPort.gauge(name, value, *, attributes)`** +
@@ -85,7 +85,7 @@ Lifecycle.
 NEU **idempotente** Core-Methode `TickLoop.finalize()`. Der
 `DemoTickLoopDriver` (und der Lifespan-`stop()`-Pfad) ruft sie am
 Loop-Ende; der **Driver traegt KEINE Diff-Logik** — `diff_replay()`,
-die `replay_diff_status`-Emission und die `GG-SAFE-006`-Detail-
+die `replay_diff_status`-Emission und die [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006)-Detail-
 Evidence sitzen **im Core-Spine**.
 
 - **Idempotenz:** ein `_finalized`-Flag stellt sicher, dass
@@ -100,7 +100,7 @@ Evidence sitzen **im Core-Spine**.
 - **Begruendung ([`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)/[`GG-AR-P-007`](../../../spec/architecture.md#2-architekturprinzipien)):** Live + Replay teilen
   denselben Tick-Prozessor; die Replay-Diff-Orchestrierung gehoert
   in den Spine, nicht in einen Driving-Adapter — sonst diffte ein
-  headless-Runner (Abnahme-CLI `GG-MVP-003`) ohne den Driver
+  headless-Runner (Abnahme-CLI [`GG-MVP-003`](../../../spec/lastenheft.md#gg-mvp-003)) ohne den Driver
   nicht. Der Adapter **triggert**, der Core **entscheidet**.
 
 ### §2.2 Referenzlauf-Bindung (1b-b-D-2)
@@ -152,12 +152,12 @@ aktuellem Lauf (via `run_repository.get_by_id(...)`):
   Metrik bleibt nur fuer **valide** Vergleiche definiert (§2.4).
 - **C2-Pin:** **per-Feld**-Boundary-Tests (ein generischer
   Mismatch reicht nicht).
-- Die **volle** `GG-TERM-002/003`-Matrix (`platform_arch`,
+- Die **volle** [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Matrix (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) ist
   **NICHT** Gegenstand — Carveout
   [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
   (1b-a-D-6). Das ist eine bewusste Teil-Operationalisierung von
-  `GG-TERM-002/003`, nicht der volle Vertrag.
+  [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003, nicht der volle Vertrag.
 
 ### §2.4 `replay_diff_status`-Kodierung (1b-b-D-4)
 
@@ -187,13 +187,13 @@ metrics_port.gauge(
 ### §2.5 `GG-SAFE-006`-Detail-Evidence (1b-b-D-5)
 
 `finalize()` emittiert die `ReplayDelta`-Details maschinenlesbar
-via `log_port` — alle vier `GG-SAFE-006`-Akzeptanzfelder:
+via `log_port` — alle vier [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006)-Akzeptanzfelder:
 `path`/`expected`/`actual` (Replay-Diff), `tick` (betroffene
 Ticks), `device_id`, `classification` (`fachlich`/`volatil`). Die
 Felder liegen **bereits** in `ReplayDelta`; ADR 0049 liefert den
 **integrierten Lifecycle-Pfad**, der sie emittiert. Der Divergenz-
 Smoke pinnt alle vier Felder → `docs/user/safe-005-006-fallback-
-determinism.md` flippt `GG-SAFE-006` ⚠ → ✓ produktiv +
+determinism.md` flippt [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006) ⚠ → ✓ produktiv +
 Trigger 036 → `done/`.
 
 ### §2.6 Ausfuehrungsmodell (1b-b-D-6)
@@ -220,8 +220,8 @@ Kwargs (`replay_snapshot`, `metrics_port`, `log_port`,
 
 ## 3. Begruendung
 
-- **`GG-MVP-002` schliessen.** Der integrierte Replay-Lifecycle
-  ist die zweite (letzte) `GG-MVP-002`-Lücke; mit ihm flippt die
+- **[`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) schliessen.** Der integrierte Replay-Lifecycle
+  ist die zweite (letzte) [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Lücke; mit ihm flippt die
   Lastenheft-Akzeptanz „laesst sich deterministisch replayen".
 - **Spine statt Adapter ([`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien)/007).** Die Diff-/Metrik-/
   Evidence-Orchestrierung im Core haelt Live + Replay + headless
@@ -271,7 +271,7 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-MVP-002` flippt produktiv; `GG-SAFE-006`
+- **Positiv:** [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) flippt produktiv; [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006)
   flippt ⚠ → ✓; Trigger 036 schliesst.
 - **Positiv:** der Core-Spine-Hook gilt fuer **jeden** `TickLoop`-
   Lauf (Live, Demo, headless) — kein Driver-Coupling.
@@ -296,7 +296,7 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
   `RunMetadata`-Spalte + Migration + `RunCreateRequest`-Strict-
   Schaerfung) — [Trigger 039](../planning/open/039-api-replay-trigger-surface.md)
   (1b-b-D-7).
-- **Volle `GG-TERM-002/003`-Matrix** (`platform_arch`,
+- **Volle [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) —
   [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md).
 - **`started_at`/`ended_at`-Timestamp-Setzen** + `RunMetadata`-
@@ -307,11 +307,11 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
   (Headless-Runner / natuerliche Terminierung / Tick-Failure-
   Pfad) — heute triggert nur `DemoTickLoopDriver.stop()`;
   [Trigger 040](../planning/open/040-replay-finalize-headless-run-end-seam.md)
-  (C2-Review-Folge #4; Vorbedingung fuer `GG-MVP-003`-Headless-
+  (C2-Review-Folge #4; Vorbedingung fuer [`GG-MVP-003`](../../../spec/lastenheft.md#gg-mvp-003)-Headless-
   Abnahme-CLI).
 - **Severity-Stufen** des `replay_diff_status` (ordinal/`yellow`/
   `red`) — additive ADR-0011-Schaerfung bei Bedarf.
 - **Asynchroner/entkoppelter Diff** — additive Schaerfung bei
   Last-Druck.
-- **`GG-REPLAY-004..006`** (beschleunigtes Replay / Replay-Pause-
+- **[`GG-REPLAY-004`](../../../spec/lastenheft.md#gg-replay-004)..006** (beschleunigtes Replay / Replay-Pause-
   Resume / Delta-Analysen-API; SOLLTE) — eigener Scope.

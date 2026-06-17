@@ -12,7 +12,7 @@ aufgeloest. `make gates` + `docs-check` + `accept-pin-check` gruen
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
-[`023`](../open/023-sollte-battery-temperature.md) (`GG-BESS-006`, Lastenheft
+[`023`](../open/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 
 ---
@@ -43,7 +43,7 @@ Feld, kein Punkt).
       C1: Parameter-Namen fixiert, **Kaltstart auf `ambient_temp_c`** (kein
       `initial_temp_c`), Rundung `Decimal("0.000001")` ROUND_HALF_EVEN.
 - [x] **Telemetrie + Snapshot opt-in**: `temperature_celsius`-`TelemetryPoint`
-      (`unit="degC"`, SI per `GG-DATA-002`) **nur bei aktiver Config**
+      (`unit="degC"`, SI per [`GG-DATA-002`](../../../../spec/lastenheft.md#gg-data-002)) **nur bei aktiver Config**
       (inaktiv → kein Punkt, alphabetisch hinter `soc_pct`); `BatterySnapshot`
       traegt den T-State **additiv opt-in serialisiert** (kein Versions-Bump,
       v1-Lesepfad fuer Altschnappschuesse, strenger als der immer emittierte

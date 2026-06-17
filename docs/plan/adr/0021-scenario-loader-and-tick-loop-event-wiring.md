@@ -39,8 +39,8 @@ ADR-Pattern — Welle 6b erweitert ADR 0013/0017/0018/0019/0020
 ohne Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 6b. Lastenheft §3 (`GG-MVP-002`),
-`GG-SCN-001` (Scenario-Loader-Verantwortung).
+§3 Welle 6b. Lastenheft §3 ([`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)),
+[`GG-SCN-001`](../../../spec/lastenheft.md#gg-scn-001) (Scenario-Loader-Verantwortung).
 
 ---
 
@@ -61,7 +61,7 @@ Scenario-Loader** unter `hexagon/core/scenario/loader.py`:
   `PvDevice`, `LoadDevice`, `GridConnectionDevice`,
   `SmartMeterDevice`).
 - **LoadEvent / LoadProfile-Parsing** aus Scenario-YAML-Sektionen
-  `events:` und `load_profiles:` (`GG-GRID-003` / `004`).
+  `events:` und `load_profiles:` ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) / `004`).
 - **GridConnection-Auto-Schluss-Mechanik**: in jedem Tick, der
   keine manuelle `set_power_kw`-Anweisung an die GridConnection
   hat, wird `grid_connection.power_kw :=
@@ -74,7 +74,7 @@ Scenario-Loader** unter `hexagon/core/scenario/loader.py`:
 Welle-6b-Minimum laesst die Scenario-YAML-Format-Erweiterung
 schmal: keine OTEL-Hooks, kein Multi-Run-Scheduler, keine
 Plugin-Registry — alles M3-Material. M2-Welle-6b liefert nur
-das, was `GG-MVP-002` (End-to-End-Szenario) braucht.
+das, was [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) (End-to-End-Szenario) braucht.
 
 ---
 
@@ -174,9 +174,9 @@ Frozen-Dataclass-Datentyp, die mit M1 noch nicht existierten:
   (`grid_model:`-Sektion). Wenn `None`, baut der Loader einen
   `GridModelBilanz`-Standard-Setup oder laesst die Bilanz weg.
 - `load_events: tuple[LoadEvent, ...]` — Scenario-Lastspruenge
-  (`GG-GRID-004`); leeres Tupel wenn keine Events.
+  ([`GG-GRID-004`](../../../spec/lastenheft.md#gg-grid-004)); leeres Tupel wenn keine Events.
 - `load_profiles: tuple[LoadProfile, ...]` — Scenario-Last-
-  Profile (`GG-GRID-003` „Zeitreihen"); leeres Tupel wenn
+  Profile ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) „Zeitreihen"); leeres Tupel wenn
   keine Profile.
 
 **Welle-6b-Scope-Pflicht** (Round-1-High-1):

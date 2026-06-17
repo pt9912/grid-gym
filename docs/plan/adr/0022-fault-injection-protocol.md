@@ -48,11 +48,11 @@ Welle-2/M6-Material, siehe §2.6 unten).
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 1.
-Lastenheft §14 Fault Injection (`GG-FAULT-001..010`), §20
-Sicherheitsanforderungen (`GG-SAFE-001..006`).
-Architektur §5 Komponentensicht (`GG-AR-COMP-FAULTS`),
+Lastenheft §14 Fault Injection ([`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010), §20
+Sicherheitsanforderungen ([`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)..006).
+Architektur §5 Komponentensicht ([`GG-AR-COMP-FAULTS`](../../../spec/architecture.md#5-komponentensicht)),
 §13 Fault-Injection-Architektur, §4.2 Driven-Ports-Tabelle
-(`GG-AR-PORT-DRN-008` ist Observability — Fault-Port ist
+([`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) ist Observability — Fault-Port ist
 **kein** PORT-DRN-008, sondern eigener neuer Port-Slot —
 Architektur §4.2 Erweiterung wird in der ADR-Folge oder
 M3-Welle-7-Closure formalisiert).
@@ -482,7 +482,7 @@ waren denkbar:
 - Snapshot-Schema-Bump v2 → v3 (falls Welle 2 keine
   Sub-Snapshot-Erweiterung reicht, dann eigene Folge-ADR;
   sonst M6 `GG-PERSIST-*`).
-- RL-Adapter (`GG-FUTURE-001/002`).
+- RL-Adapter ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002).
 
 ---
 
@@ -562,12 +562,12 @@ ADR-Cross-Refs (read-only fuer Welle 1):
 
 ## 7. Nicht Gegenstand
 
-**Multi-Agent-Subsystem** (`GG-AGENT-001..008`) — eigene ADR
+**Multi-Agent-Subsystem** ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..008) — eigene ADR
 0023 in M3-Welle-3+. AgentBus + AgentPort sind orthogonal zu
 FaultPort und kommen mit ihrer eigenen Welle-Folge.
 
-**Observability-Ports** (`GG-OTEL-001..004`,
-`GG-AR-PORT-DRN-008`) — eigene ADR 0024 in M3-Welle-5+.
+**Observability-Ports** ([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004,
+[`GG-AR-PORT-DRN-008`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)) — eigene ADR 0024 in M3-Welle-5+.
 `LogPort`/`MetricsPort`/`TracePort` sind orthogonal zu
 FaultPort und kommen spaeter. Welle-5-ADR-Folge entscheidet,
 ob FaultPort-Aktivitaet ueber MetricsPort/TracePort
@@ -575,23 +575,23 @@ beobachtbar wird (Cross-Concern aus
 `M3-faults-agents-observability.md §5 Risiken`).
 
 **Konkrete Fault-Typen** (`cell_failure`, `voltage_drop`,
-weitere aus `GG-FAULT-001..010`) — Welle 2 entscheidet pro
+weitere aus [`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010) — Welle 2 entscheidet pro
 Geraet, welche Typen unterstuetzt werden. Welle-2-ADR (z. B.
 ADR 0025) kann FaultPort-Adapter-Vertrag schaerfen.
 
 **Recovery-Logik** (`auto-recover-after-N-ticks`,
 `manual-via-command`, `permanent` aus
-`GG-FAULT-001..010` + `GG-SAFE-001..006`) — Welle 2.
+[`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010 + [`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)..006) — Welle 2.
 ScenarioFault.recovery ist syntaktisch validiert; die
 semantische Interpretation lebt im Adapter.
 
-**RL-Adapter** (`GG-FUTURE-001/002`) — Folge-Slice nach
+**RL-Adapter** ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002) — Folge-Slice nach
 M3-Closure. M3-Multi-Agent-Bus ist RL-faehig, aber der RL-
 Trainings-Loop bleibt extern.
 
 **M4-Protokolladapter** (MQTT/Modbus/OPC-UA/DNP3/IEC) — M4.
 
-**Performance-Benchmarks** (`GG-RT-004/005`) — M6.
+**Performance-Benchmarks** ([`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004)/005) — M6.
 
 **SOLLTE-Geraete-/Netz-/Battery-Trigger** (`016..024` aus
 M2-Welle-7-Erbschaft) — eigene Slices nach M3-Closure.

@@ -13,7 +13,7 @@ aufgeloest).
 
 ## 1. Lieferziel
 
-Das Windkraftanlagen-Modell (`GG-DEV-017`, Lastenheft §9.4) als
+Das Windkraftanlagen-Modell ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), Lastenheft §9.4) als
 `DeviceModel` im Core: command-loser Generator nach dem PV-Muster
 ([`ADR 0016`](../../adr/0016-pv-load-device-pattern.md)) mit **kubischer
 Leistungskennlinie** (cut-in/rated/cut-out) und **stochastischem seeded

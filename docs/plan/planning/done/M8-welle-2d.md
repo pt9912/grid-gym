@@ -14,7 +14,7 @@ aufgeloest).
 
 ## 1. Lieferziel
 
-Das Dieselgenerator-Modell (`GG-DEV-018`, Lastenheft §9.4) als
+Das Dieselgenerator-Modell ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), Lastenheft §9.4) als
 `DeviceModel` + `FaultInjectableDevice` im Core: dispatchbarer Generator
 nach dem Battery-Muster ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md))
 mit Kraftstoff-Vorrat, Verbrauch, Ramp, Anfahr-/Abstell-Hysterese und

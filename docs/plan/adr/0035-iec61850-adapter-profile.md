@@ -157,10 +157,10 @@ Decision 1 (DNP3/IEC-Disposition — Welle 1 hat den
 Verzicht-Default provisorisch gewaehlt; Welle 5a hat den
 DNP3-Teil aufgeloest, Welle 5b loest den IEC-61850-Teil
 auf).
-Lastenheft §16 (`GG-IEC-001` SOLLTE-Cluster: Logical
+Lastenheft §16 ([`GG-IEC-001`](../../../spec/lastenheft.md#gg-iec-001) SOLLTE-Cluster: Logical
 Nodes, Common Data Classes, Datenattribute, MMS-Service-
 Mapping + deterministischer Adapter-Smoke).
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-Tabelle
 — ADR 0030 hat den Slot belegt; Welle 5b liefert
 **fuenften** Implementer und schliesst die Adapter-Mantel-
 Welle in M4) + §8.2 (Adapter-Interfaces-Driven-
@@ -171,7 +171,7 @@ Beschreibung fuer IEC-61850).
 
 ## 1. Kontext
 
-`GG-IEC-001` (Lastenheft §16, Z. 1155-1157) verlangt einen
+[`GG-IEC-001`](../../../spec/lastenheft.md#gg-iec-001) (Lastenheft §16, Z. 1155-1157) verlangt einen
 IEC-61850-Adapter als **Simulations-/Testadapter** mit
 deterministischem Adapter-Smoke-Test. M4-Welle-2 hat
 MQTT (ADR 0031 `Provisional`), Welle 3 Modbus (ADR 0032

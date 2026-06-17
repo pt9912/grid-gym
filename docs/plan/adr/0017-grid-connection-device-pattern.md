@@ -36,13 +36,13 @@ Pattern — diese ADR erweitert ADR 0013 §2.4 fuer den
 GridConnection-spezifischen Snapshot-Vertrag, kein Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 4a. Lastenheft §9.1 (`GG-DEV-012`).
+§3 Welle 4a. Lastenheft §9.1 ([`GG-DEV-012`](../../../spec/lastenheft.md#gg-dev-012)).
 
 ---
 
 ## 1. Kontext
 
-`GridConnectionDevice` (`GG-DEV-012`) ist die vierte konkrete
+`GridConnectionDevice` ([`GG-DEV-012`](../../../spec/lastenheft.md#gg-dev-012)) ist die vierte konkrete
 `DeviceModel`-Implementation nach `BatteryDevice` (ADR 0014),
 `PvDevice` und `LoadDevice` (ADR 0016). Strukturell sitzt es
 zwischen Battery (stateful, mit innerem Akkumulator) und
@@ -77,10 +77,10 @@ Welle 4b, wie ADR 0016 fuer PV+Load) ist gerechtfertigt, weil:
   SmartMeter), aber die Limit-Semantik bei GridConnection
   (Import-/Export-Caps) ist Welle-4a-spezifisch.
 
-Welle-4a-Minimum liefert die `GG-DEV-012`-Akzeptanz „Minimal-
+Welle-4a-Minimum liefert die [`GG-DEV-012`](../../../spec/lastenheft.md#gg-dev-012)-Akzeptanz „Minimal-
 modell + Beispiel + deterministischer Smoke-Test" vollstaendig;
 weitere Felder (z. B. `apparent_power_kva`, Leistungsfaktor,
-Blindleistung `GG-GRID-007`) sind Post-MVP.
+Blindleistung [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)) sind Post-MVP.
 
 ---
 
@@ -175,14 +175,14 @@ Spiegel):
 
 - `version: int` — Schema-Version (`1` in Welle 4a). Bumps
   kommen ueber Folge-ADRs (z. B. wenn Welle 4b oder M3
-  Blindleistung `GG-GRID-007` ergaenzt).
+  Blindleistung [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) ergaenzt).
 - `device_id: str` — Identitaet (`ScenarioDevice.id` aus
   `initialize()`).
-- `run_id: str` — `TelemetryPoint.run_id`-Wert (`GG-DATA-001`),
+- `run_id: str` — `TelemetryPoint.run_id`-Wert ([`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)),
   Pre-init `""` bis `set_run_id(...)`. Spiegelt ADR 0014 §2.2 /
   ADR 0016 §2.3.
 - `sequence: int` — monoton wachsender Telemetrie-Sequence-
-  Counter (`GG-ARCH-006`-Tie-Breaking). Persistiert, damit
+  Counter ([`GG-ARCH-006`](../../../spec/lastenheft.md#gg-arch-006)-Tie-Breaking). Persistiert, damit
   Resume nicht bei `0` neu startet.
 - `config: GridConnectionConfig` — vollstaendige Konfiguration
   eingebettet (`max_import_kw`, `max_export_kw`,
@@ -345,7 +345,7 @@ die Netzbilanz (siehe §2.2 oben).
 `RandomPort.sub_port("grid_connection.<device_id>")` wird in
 Welle 4a-Minimum nicht konsumiert; bleibt fuer M3-Fault-
 Injection reserviert (Spannungs-Drops, Frequenz-Spikes —
-`GG-FAULT-005`/`007`).
+[`GG-FAULT-005`](../../../spec/lastenheft.md#gg-fault-005)/`007`).
 
 ### 2.7 Determinismus
 
@@ -388,7 +388,7 @@ Welle 6 TickLoop-Integration mechanisch nutzbar.
 
 **Welle-4a-Minimum bewusst klein:** kein automatischer
 Bilanz-Schluss (das ist Welle 5/6), keine Blindleistung, kein
-Leistungsfaktor. Welle 4a erfuellt `GG-DEV-012` als
+Leistungsfaktor. Welle 4a erfuellt [`GG-DEV-012`](../../../spec/lastenheft.md#gg-dev-012) als
 „Minimalmodell + Beispiel + deterministischer Smoke-Test"
 vollstaendig; SOLLTE-Erweiterungen aus §11 (`GG-GRID-005..
 007`) sind Post-MVP.
@@ -414,10 +414,10 @@ Diese ADR gilt NICHT fuer:
 
 - SmartMeter (Welle 4b — eigene ADR 0018).
 - Netzbilanzmodell (Welle 5 — `grid_model`-Pfad, kein Device).
-- Frequenz-/Spannungs-Modell (Welle 5 — `GG-GRID-001..004`).
-- Inselnetz-Faehigkeit (`GG-GRID-005` SOLLTE, Post-MVP).
-- Transformatorgrenzen (`GG-GRID-006` SOLLTE, Post-MVP).
-- Blindleistung / Leistungsfaktor (`GG-GRID-007` SOLLTE,
+- Frequenz-/Spannungs-Modell (Welle 5 — [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)..004).
+- Inselnetz-Faehigkeit ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005) SOLLTE, Post-MVP).
+- Transformatorgrenzen ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006) SOLLTE, Post-MVP).
+- Blindleistung / Leistungsfaktor ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) SOLLTE,
   Post-MVP).
 
 ---
@@ -469,7 +469,7 @@ liegen folgende Module:
 - Automatischer Bilanz-Schluss am Anschlusspunkt (Restposten
   geht in `grid_balance_kw`). Welle 5/6.
 - Frequenz-/Spannungs-Abweichungs-Auswirkung auf
-  `GridConnectionDevice.telemetry()` — `GG-GRID-001`/`002`
+  `GridConnectionDevice.telemetry()` — [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/`002`
   modellieren das im Bilanzmodell, nicht im Device. Welle 5.
 - Fault-Injection ueber `RandomPort.sub_port` (Spannungs-
   Drops, Frequenz-Spikes, Anschluss-Trips). M3.
@@ -484,18 +484,18 @@ liegen folgende Module:
   battery)` und setzen es per `set_power_kw`-Command). Welle
   4a hat nur den manuellen Pfad ueber Scenario-Events.
 - **Blindleistung / Leistungsfaktor / Apparent-Power**
-  (`GG-GRID-007` SOLLTE, Post-MVP). Welle 4a hat nur
+  ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) SOLLTE, Post-MVP). Welle 4a hat nur
   Wirkleistung `power_kw`.
 - **Spannungs-/Frequenz-Telemetrie am Anschlusspunkt**
-  (`GG-GRID-001`/`002` — wird vom Netzbilanzmodell Welle 5
+  ([`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/`002` — wird vom Netzbilanzmodell Welle 5
   berechnet und ueber `grid_model`-Snapshot persistiert, nicht
   ueber `GridConnectionDevice`).
 - **Mehrere Anschlusspunkte mit unterschiedlichen
-  Spannungsebenen** (Transformatorgrenzen, `GG-GRID-006`
+  Spannungsebenen** (Transformatorgrenzen, [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)
   SOLLTE). Welle 4a unterstuetzt N `GridConnectionDevice`-
   Instanzen, aber alle auf derselben Spannungsebene
   (`nominal_voltage_v`).
-- **Anschluss-Trip / Inselbildung** (`GG-GRID-005` SOLLTE).
+- **Anschluss-Trip / Inselbildung** ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005) SOLLTE).
   M3 Fault-Injection.
 - **Kumulative-Energie-Reset** (z. B. taeglich, monatlich
   fuer Abrechnungszwecke). Welle 4a haelt die Summen monoton

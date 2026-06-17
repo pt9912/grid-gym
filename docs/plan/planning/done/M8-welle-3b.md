@@ -12,7 +12,7 @@ DoD (§2) erfuellt.
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
-Trigger: [`021`](../open/021-sollte-transformer-limits.md) (`GG-GRID-006`,
+Trigger: [`021`](../open/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006),
 Lastenheft §11.5; mit dieser Welle aufzuloesen).
 
 ---
@@ -80,7 +80,7 @@ eigene Per-Device-Saettigung; 3b ist die **Netz-Grenze im Bilanzmodell**.
 - **Abgrenzung zum Geraet (2b)**: die Doppeldeutigkeit „Transformer" muss
   klar bleiben (Geraet = Per-Device-Saettigung, 3b = Netz-Grenze).
 - **Determinismus** der Zeit-Strom-Integration (`Decimal`-Akkumulation,
-  `AC-NO-RAND`).
+  [`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)).
 
 ## 5. Nicht-Ziele (dieser Slice)
 

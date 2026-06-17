@@ -25,7 +25,7 @@
 - [`M7-welle-3.md`](../planning/done-archive/M7-welle-3.md) —
   Welle-3-Gruppenplan (Sub-Slicing D-1, ADR-Numbering D-3).
 - [Trigger 034](../planning/done-archive/034-safe-004-max-age-stale-quality.md)
-  — `GG-SAFE-004`-Lücken-Verankerung; wird mit 3a-C3 aufgeloest
+  — [`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004)-Lücken-Verankerung; wird mit 3a-C3 aufgeloest
   (`done/`).
 - [`../../user/safe-001-004-quality-pipeline.md`](../../user/safe-001-004-quality-pipeline.md)
   — Quality-Pipeline-Audit (Flip-Ziel ✗ → ✓).
@@ -34,7 +34,7 @@
 
 ## 1. Kontext
 
-`GG-SAFE-004` (Lastenheft §20 Z. 1373-1378, MUSS) verlangt:
+[`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004) (Lastenheft §20 Z. 1373-1378, MUSS) verlangt:
 Werte, deren Simulationszeitstempel die konfigurierte `max_age`
 ueberschreiten, erhalten **deterministisch** den Qualitaetsstatus
 `stale`. Das M6-Welle-5a-Audit stufte die ID als ✗ Lücke ein.
@@ -133,7 +133,7 @@ if self._max_age_ms is not None:
   nur nach Metrik, nie nach Quality — auch `INVALID`-/`MISSING`-
   Punkte gingen schon immer mit Rohwert ein). Ein als `STALE`
   markierter Punkt ist also mit seinem Rohwert in der Bilanz
-  verrechnet — **Markierung ≠ Filterung**; `GG-SAFE-004`
+  verrechnet — **Markierung ≠ Filterung**; [`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004)
   verlangt nur die Markierung, und die Stage aendert die
   Simulations-Physik bewusst nicht. Eine quality-gewichtete
   Bilanz waere eine eigene, additive Schaerfung mit eigenem
@@ -161,7 +161,7 @@ Die Alterspruefung vergleicht ausschliesslich
 `point.simulation_time`. **Kein Wall-Clock-Zugriff** —
 `AC-NO-TIME` bleibt im Core gewahrt; zwei gleich-konfigurierte
 Laeufe markieren identische Punkte (Replay-stabil,
-`GG-SAFE-004`-„deterministisch").
+[`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004)-„deterministisch").
 
 **Demo-Wiring bleibt `max_age_ms=None`** (Stage im Demo-Pfad
 aus): es existiert keine konkrete Stakeholder-Schwelle
@@ -186,7 +186,7 @@ frisch nicht).
 
 ## 3. Begruendung
 
-- **`GG-SAFE-004` schliessen.** Die Stage ist die fehlende
+- **[`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004) schliessen.** Die Stage ist die fehlende
   Emissions-Substanz fuer den seit M5-Welle-6b existierenden
   `Quality.STALE`-Enum-Wert; mit ihr flippt die letzte
   ✗-Lücken-Zeile des Welle-5a-Audits.
@@ -215,7 +215,7 @@ frisch nicht).
   (`tests/integration/test_m6_welle_5a_safe_001_004_smoke.py`)
   (C2).
 - Flip `docs/user/safe-001-004-quality-pipeline.md`
-  `GG-SAFE-004` ✗ → ✓ (C2).
+  [`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004) ✗ → ✓ (C2).
 - ADR-Index NEU ADR-0052-Zeile (C1).
 - **Unberuehrt:** `Quality`-Enum + `QUALITY_SEVERITY` (nur
   konsumiert), `TelemetryPoint`-Domain, Scenario-Schema +
@@ -238,7 +238,7 @@ Accepted`): `Accepted` gezogen 2026-06-12 mit M7-Welle-X-C1
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-SAFE-004` flippt ✗ → ✓ produktiv;
+- **Positiv:** [`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004) flippt ✗ → ✓ produktiv;
   Trigger 034 schliesst; der Welle-5a-Skip-Smoke wird
   reaktiviert.
 - **Positiv:** die Stage gilt fuer jeden `TickLoop`-Lauf —
@@ -270,8 +270,8 @@ Accepted`): `Accepted` gezogen 2026-06-12 mit M7-Welle-X-C1
   bei Bedarf.
 - **Demo-Schwellen-Aktivierung** — Einzeiler bei konkreter
   Anforderung (§2.4).
-- **Alarm-Emission bei `STALE`** — `GG-SAFE-004` verlangt nur
-  die Markierung; Alarm-Substanz ist `GG-SAFE-003`-Material
+- **Alarm-Emission bei `STALE`** — [`GG-SAFE-004`](../../../spec/lastenheft.md#gg-safe-004) verlangt nur
+  die Markierung; Alarm-Substanz ist [`GG-SAFE-003`](../../../spec/lastenheft.md#gg-safe-003)-Material
   (Welle 3b, Trigger 035).
 - **Comm-Failure-Quality (`MISSING`) + Adapter-Lifecycle** —
   Welle 3b ([Trigger 035](../planning/done-archive/035-safe-003-comm-failure-missing-quality.md);

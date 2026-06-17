@@ -8,13 +8,13 @@
 §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).
+(Welle-7-Erbschaft); Lastenheft §9.4 ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-DEV-017` definiert ein **Wind-Generator-Modell**
+Lastenheft [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017) definiert ein **Wind-Generator-Modell**
 als SOLLTE-Item. M2 deckt nur PV (`PvDevice`) als
 Erneuerbare-Einspeise-Variante ab; Wind hat eigene Charakteristiken
 (Windgeschwindigkeits-Leistungs-Kurve, Schaltzustaende

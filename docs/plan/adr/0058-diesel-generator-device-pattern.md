@@ -17,7 +17,7 @@
   [`ADR 0057`](0057-wind-turbine-device-pattern.md) — gleiche Sub-Welle-
   Familie (M8 Welle 2).
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-018) —
-  `GG-DEV-018` (Geraetetyp `diesel_generator`).
+  [`GG-DEV-018`](../../../spec/lastenheft.md#gg-dev-018) (Geraetetyp `diesel_generator`).
 - [`019-sollte-diesel-device.md`](../planning/open/019-sollte-diesel-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
@@ -25,7 +25,7 @@
 
 ## 1. Kontext
 
-`GG-DEV-018` definiert einen **Dieselgenerator** (SOLLTE). Trigger 019
+[`GG-DEV-018`](../../../spec/lastenheft.md#gg-dev-018) definiert einen **Dieselgenerator** (SOLLTE). Trigger 019
 pinnt den Scope: ein **dispatchbarer Generator mit endlicher Ressource**
 nach dem Battery-Muster ([`ADR 0014`](0014-battery-snapshot-schema.md)) —
 Kraftstoff-Vorrat (l), Verbrauch (l/kWh), Min-Startleistung, Ramp-Limit
@@ -80,7 +80,7 @@ Zustand `running ∈ {False, True}`. Pro Tick (vor der Leistungsberechnung):
 
 Bei `RUNNING` (Decimal-Localcontext, `prec=28`, `ROUND_HALF_EVEN`):
 
-1. **Ramp** (`GG-BESS-004`-Spiegel): `new_power` naehert sich `requested`
+1. **Ramp** ([`GG-BESS-004`](../../../spec/lastenheft.md#gg-bess-004)-Spiegel): `new_power` naehert sich `requested`
    um maximal `ramp_kw_per_s * dt_s` an; geclampt auf `[0, max_power_kw]`.
    Anfahren rampt von `0` hoch; Abstellen setzt instant `0` (kein
    Ramp-Down — bewusste Minimal-Vereinfachung).
@@ -159,7 +159,7 @@ in Welle 2c gelernte Bilanz-Naht):
 - NEU `snapshot_codec.assert_bool` (geteilter Codec-Primitive fuer das
   `running`-Bool).
 
-Akzeptanz `GG-DEV-018`: Modell + Szenario-YAML-Beispiel + deterministischer
+Akzeptanz [`GG-DEV-018`](../../../spec/lastenheft.md#gg-dev-018): Modell + Szenario-YAML-Beispiel + deterministischer
 Smoke-Test (Anfahr-/Abstell-Hysterese, Kraftstoff-Run-Dry, Ramp,
 `genset_fault`, Snapshot-Roundtrip).
 
@@ -176,7 +176,7 @@ Smoke-Test (Anfahr-/Abstell-Hysterese, Kraftstoff-Run-Dry, Ramp,
   out-of-scope.
 - Nachtanken zur Laufzeit, Ramp-Down beim Abstellen, Warmlauf/
   Mindestlaufzeit — Welle-3+-Schaerfung.
-- Inselnetz-Bilanzmodell selbst — Trigger 020 (`GG-GRID-005`).
+- Inselnetz-Bilanzmodell selbst — Trigger 020 ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005)).
 - Weitere Genset-Faults (Ueberhitzung, Oeldruck) — Folge-ADR.
 
 ## 7. Acceptance (Fitness Functions)

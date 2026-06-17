@@ -10,20 +10,20 @@ Bruecken entfernt** (`ignore_imports = []`),
 - [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
   — Architekturentscheidung fuer den Bridge-Rueckbau.
 - [`ADR 0002`](../../adr/0002-language-and-build-stack.md)
-  — A-1-Architekturtests (`AC-ADAPTER-PURE`,
-  `AC-PORTS-NO-OUT`).
+  — A-1-Architekturtests ([`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
+  [`AC-PORTS-NO-OUT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)).
 - [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)
   — historische Run-Control-/TickLoop-Bridge.
 - [`spec/architecture.md`](../../../../spec/architecture.md#2-architekturprinzipien)
-  — `GG-AR-P-002`, `GG-AR-P-003`, `GG-AR-TABU-001..004`.
+  — [`GG-AR-P-002`](../../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-P-003`](../../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-TABU-001`](../../../../spec/architecture.md#architektur-tabus-build-architekturtest)..004.
 - [`pyproject.toml`](../../../../pyproject.toml)
-  — aktueller `AC-ADAPTER-PURE`-`ignore_imports`-Block.
+  — aktueller [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-`ignore_imports`-Block.
 
 ---
 
 ## 1. Ziel
 
-Der aktuelle `AC-ADAPTER-PURE`-Contract ist nur mit acht
+Der aktuelle [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Contract ist nur mit acht
 `ignore_imports`-Eintraegen gruen. Dieser Slice baut diese Bruecken
 schrittweise ab, ohne die Gate-Regeln zu lockern und ohne Verhalten am
 HTTP-/Demo-Pfad zu aendern.
@@ -70,7 +70,7 @@ Aktuelle Ausnahmen:
 ### C2 — Run-Ausfuehrungs-Port (Done 2026-06-13)
 
 - ✅ NEU `hexagon/ports/driving/run_execution.py` —
-  `RunExecutionPort` (Protocol, 9-Member-Surface aus `ADR 0050` §2.3:
+  `RunExecutionPort` (Protocol, 9-Member-Surface aus [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) §2.3:
   `run_id`/`tick_ms`/`tick_count`/`control_state`/`device_types`/
   `devices` + `request`/`tick`/`finalize`). `devices` als
   `tuple[object, ...]` (keine `DeviceModel`-Import-Pflicht).
@@ -91,7 +91,7 @@ Aktuelle Ausnahmen:
 
 ### C3 — Demo-/Scenario-Bootstrap aus `adapters/` herausziehen
 
-Gesplittet nach Befund (2026-06-13): `AC-ADAPTER-PURE` (`type = forbidden`,
+Gesplittet nach Befund (2026-06-13): [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (`type = forbidden`,
 kein `allow_indirect_imports`) prueft **indirekte** Ketten. `_demo_setup`
 hat keinen src-Adapter-Importer → risikoarmer Sofort-Move.
 `_demo_scenario_setup` wird per `app.py`-Lifespan
@@ -102,7 +102,7 @@ App-Bootstrap-Inversion.
 
 #### C3a — `_demo_setup` nach `composition/` (Done 2026-06-13)
 
-- ✅ NEU `src/grid_gym/composition/`-Paket (Composition Root, `ADR 0050` §2.5).
+- ✅ NEU `src/grid_gym/composition/`-Paket (Composition Root, [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) §2.5).
 - ✅ `_demo_setup.py` per reinem `git mv` (byte-identisch, 100% Rename) nach
   `composition/`; einziger Importer (1 Unit-Test) nachgezogen.
 - ✅ 2 `pyproject.toml`-Eintraege entfernt
@@ -123,7 +123,7 @@ App-Bootstrap-Inversion.
   → [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`.
 - ✅ NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)
   (Entrypoint-Wechsel + Hook-Inversion). Hook `_`-prefixt
-  (`AC-NO-GOD-UTILS` max 5 public top-level functions in `app.py`).
+  ([`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) max 5 public top-level functions in `app.py`).
 - ✅ Sensoren: `make arch-check` 7/7 + `tools/arch_check.py` clean
   (0 Ignores), `make fullbuild` gruen (Compose-Smoke ueber neuen
   Entrypoint), NEU `tests/unit/composition/test_asgi.py`.
@@ -134,8 +134,8 @@ App-Bootstrap-Inversion.
   Welle-4a/5/6a-Bruecken) durch eine knappe „alles zurueckgebaut +
   neue Eintraege ADR-pflichtig"-Notiz ersetzt; leere Liste auf eine
   Zeile (`ignore_imports = []`).
-- ✅ ADR-/Plan-Referenzen aktualisiert (`ADR 0050` `Accepted`, ADR-Index,
-  roadmap, NEU `ADR 0054`).
+- ✅ ADR-/Plan-Referenzen aktualisiert ([`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`, ADR-Index,
+  roadmap, NEU [`ADR 0054`](../../adr/0054-composition-asgi-entrypoint-and-scenario-hook.md)).
 - ✅ Alle acht Eintraege weg →
   [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md) `Accepted`.
 
@@ -164,4 +164,4 @@ App-Bootstrap-Inversion.
 - Engste betroffene Unit-/Integration-Tests gruen oder mit Grund im
   Handoff genannt.
 - `make docs-check` gruen nach ADR-/Plan-Aenderungen.
-- Keine neue `AC-ADAPTER-PURE`-Ausnahme.
+- Keine neue [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Ausnahme.

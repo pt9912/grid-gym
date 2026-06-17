@@ -4,7 +4,7 @@
 (static-gates + test-unit + `coverage-gate-critical` ≥ 90 % auf
 `grid_model`/`devices/grid_connection` + `docs-check` + `accept-pin-check`
 gruen; `S=sqrt(P²)==|P|`-Q=0-Regressionspin + Q≠0-Boundary-Pins +
-Q-Absorptions-/Pin-Neutralitaets-Pins). **Schliesst `GG-GRID-007`**
+Q-Absorptions-/Pin-Neutralitaets-Pins). **Schliesst [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)**
 (Trigger [`022`](../planning/open/022-sollte-reactive-power.md)). Folge zu
 [`ADR 0017`](0017-grid-connection-device-pattern.md) (GridConnection) +
 Schaerfung zu [`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)
@@ -21,7 +21,7 @@ Schaerfung zu [`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)
 Aggregation — der GridConnection ist die zweite Q-Quelle/-Senke).
 Slice-Plan [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) §4
 (Re-Tranche 3c-b-2). Trigger
-[`022`](../planning/open/022-sollte-reactive-power.md) (`GG-GRID-007`;
+[`022`](../planning/open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007);
 **mit dieser ADR aufgeloest**).
 
 ---
@@ -33,7 +33,7 @@ das PV Q(U), der TickLoop aggregiert es in `imbalance_kvar`. **Offen:** im
 netzgekoppelten Fall absorbiert real der Netzanschluss die Blindleistung
 (wie er die Wirkleistung absorbiert), und die Transformer-Grenze
 ([`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)) rechnete bis hier
-auf `S ≈ |P|`. 3c-b-2 schliesst beides und **`GG-GRID-007`**:
+auf `S ≈ |P|`. 3c-b-2 schliesst beides und **[`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)**:
 
 - **GridConnection-Q-Auto-Schluss**: der Netzanschluss absorbiert den
   Q-Residual (parallel zum P-Auto-Schluss, [`ADR 0017`](0017-grid-connection-device-pattern.md)
@@ -149,9 +149,9 @@ maschinen-Detail, volle Lastflussrechnung.
 **Was sich aendert:**
 
 - GridConnection absorbiert + emittiert Q (opt-in); ist die zweite
-  Q-Quelle/-Senke (`GG-GRID-007`-Akzeptanz: PV **und** GridConnection).
+  Q-Quelle/-Senke ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)-Akzeptanz: PV **und** GridConnection).
 - Die Transformer-Grenze nutzt die echte Scheinleistung `S=sqrt(P²+Q²)`.
-- **Welle 3 (Netz) + `GG-GRID-007` vollstaendig** (3a/3b/3c-a/3c-b-1/3c-b-2).
+- **Welle 3 (Netz) + [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007) vollstaendig** (3a/3b/3c-a/3c-b-1/3c-b-2).
 
 **Was load-bearing bleibt:**
 

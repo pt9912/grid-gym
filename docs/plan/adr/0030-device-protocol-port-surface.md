@@ -44,11 +44,11 @@ M4-Slice-Plan
 §3 Welle 1; M4-Welle-0-Decision-Liste
 [`done/M4-welle-0.md`](../planning/done-archive/M4-welle-0.md) §3
 (Items 1, 2, 3, 7).
-Lastenheft §16 (`GG-MQTT-001`, `GG-MODB-001`,
-`GG-OPCUA-001`, `GG-DNP3-001`, `GG-IEC-001` — alle
+Lastenheft §16 ([`GG-MQTT-001`](../../../spec/lastenheft.md#gg-mqtt-001), [`GG-MODB-001`](../../../spec/lastenheft.md#gg-modb-001),
+[`GG-OPCUA-001`](../../../spec/lastenheft.md#gg-opcua-001), [`GG-DNP3-001`](../../../spec/lastenheft.md#gg-dnp3-001), [`GG-IEC-001`](../../../spec/lastenheft.md#gg-iec-001) — alle
 SOLLTE; Z. 1120–1163 inkl. Cross-Cutting-Pflicht
 „Simulations-/Testadapter").
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-
 Tabelle, Z. 249) + §8.2 (Adapter-Interfaces-Driven-
 Beschreibung, Z. 510–512) + §16 (Deployment-Sicht
 listet `simulation` als einzigen Worker-Service ohne
@@ -63,7 +63,7 @@ Compose-Service erhalten; vgl. Welle-0-Inferenz in
 
 ## 1. Kontext
 
-`GG-AR-PORT-DRN-007` (`DeviceProtocolPort`) ist in der
+[`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`DeviceProtocolPort`) ist in der
 Architektur seit Roadmap-Initialstand als Driven-Port-Slot
 vorbelegt, im Quellcode aber bis 2026-05-26 nicht
 implementiert. M4 (Protokolladapter) ist der naechste
@@ -90,7 +90,7 @@ Welle-1-C2).
 
 **Spannungsfeld:**
 
-- TickLoop ist sync (Architektur-Anker `GG-AR-COMP-CORE`).
+- TickLoop ist sync (Architektur-Anker [`GG-AR-COMP-CORE`](../../../spec/architecture.md#5-komponentensicht)).
   Eine async-`DeviceProtocolPort`-Surface wuerde einen
   Sync->Async-Shim im Kern erfordern, der alle bestehenden
   Driven-Port-Aufrufer (Persistenz, Telemetry, Random,
@@ -211,12 +211,12 @@ Schleifen.
   oder uebergibt keine `protocol_ports` — der Replay-Pfad
   laeuft, ohne dass MQTT-Verbindungen oder Modbus-Polls
   aufgemacht werden.
-- Konsistenz mit `GG-AR-OPEN-002`-Entscheidung
+- Konsistenz mit [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)-Entscheidung
   ([`ADR 0012`](0012-api-simulation-two-processes.md)):
   der `simulation`-Worker kann mehrere Runs hintereinander
   fahren, ohne dass Protokoll-Verbindungen zwischen
   Runs persistieren.
-- Konsistenz mit `GG-SIM-001`/`GG-ARCH-007`: `TickLoop`
+- Konsistenz mit [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)/[`GG-ARCH-007`](../../../spec/lastenheft.md#gg-arch-007): `TickLoop`
   bleibt tick-granular; die Anzahl und Kadenz der Ticks
   bleibt eine Caller-Entscheidung.
 - Konsistenz mit dem bestehenden Caller-pumpt-Pattern in
@@ -367,7 +367,7 @@ Lifecycle:** wuerde den Lifecycle fuer Caller sehr bequem
 machen, aber eine zweite TickLoop-Bedienform einfuehren:
 `tick()` fuer alte Caller, `run(ticks)` fuer neue Caller.
 Verworfen, weil das gegen die bisherige Tick-Granularitaet
-aus `GG-SIM-001`/`GG-ARCH-007` driftet und HTTP-API,
+aus [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)/[`GG-ARCH-007`](../../../spec/lastenheft.md#gg-arch-007) driftet und HTTP-API,
 MVP-Demo, Tests und Integration breit migriert werden
 muessten. Die Lifecycle-Sicherheit wird stattdessen ueber
 `start_protocol_ports()` / `stop_protocol_ports()` plus
@@ -495,7 +495,7 @@ normative Anhang-Inhalt selbst ist in Welle 1
 
 Welle 5 fuellt den Anhang entweder mit dem **Verzicht-
 Text** (Begruendung Lizenz/Maintenance, Hinweis auf
-SOLLTE-Charakter der `GG-DNP3-001`/`GG-IEC-001`-IDs) oder
+SOLLTE-Charakter der [`GG-DNP3-001`](../../../spec/lastenheft.md#gg-dnp3-001)/[`GG-IEC-001`](../../../spec/lastenheft.md#gg-iec-001)-IDs) oder
 laesst ihn als Platzhalter und referenziert einen eigenen
 Spike-ADR.
 

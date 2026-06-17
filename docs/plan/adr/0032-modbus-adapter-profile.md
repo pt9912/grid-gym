@@ -62,11 +62,11 @@ Decision 4 (Profile-Deklaration) + Decision 5
 (Test-Sibling-Container — **Modbus-Container-Lizenz-
 Risiko explizit dokumentiert**) + Decision 6
 (`AC-ADAPTER-LIGHTWEIGHT`-Pfad-Filter).
-Lastenheft §16 (`GG-MODB-001`, Z. 1134–1148 SOLLTE-Cluster:
+Lastenheft §16 ([`GG-MODB-001`](../../../spec/lastenheft.md#gg-modb-001), Z. 1134–1148 SOLLTE-Cluster:
 Register-Mapping + Datentypen + Byte-Reihenfolge + Read/
 Write-Operationen + Timeout-Verhalten + deterministischer
 Adapter-Smoke-Test).
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle —
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-Tabelle —
 ADR 0030 hat den Slot belegt; Welle 3 liefert zweiten
 Implementer) + §8.2 (Adapter-Interfaces-Driven-Beschreibung
 — Register-Schema konkretisiert die generische
@@ -89,7 +89,7 @@ C3-Re-Eval folgt mit konkretem Code-Beleg.
 
 ## 1. Kontext
 
-`GG-MODB-001` (Lastenheft §16 Z. 1134–1148) verlangt einen
+[`GG-MODB-001`](../../../spec/lastenheft.md#gg-modb-001) (Lastenheft §16 Z. 1134–1148) verlangt einen
 Modbus-TCP-Adapter als **Simulations-/Testadapter** mit
 deterministischem Adapter-Smoke-Test (mindestens ein Read-
 und ein Write-Pfad). M4-Welle-2 hat den ersten konkreten
@@ -347,7 +347,7 @@ ADR 0030 §2.1.
 - Tick-Latenz-Implikation ist real, aber **akzeptabel
   fuer Welle 3** (typische Sim-Scenarios haben < 20
   Modbus-Targets pro Tick; bei 50 ms Roundtrip ergibt
-  sich < 1 s Tick-Block — unter `GG-RT-002`-Schwelle).
+  sich < 1 s Tick-Block — unter [`GG-RT-002`](../../../spec/lastenheft.md#gg-rt-002)-Schwelle).
 
 **Konsequenz:** `ModbusDeviceProtocolPort.read()` ist
 blocking. Falls Welle 6+ Hochfrequenz-Telemetry-Scenarios

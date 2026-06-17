@@ -10,13 +10,13 @@
 
 ## 1. Zweck
 
-Detail-Records zur Acceptance-Entscheidung von `ADR 0002` und
-`ADR 0005`. Dokumentiert Welle-fuer-Welle den Gate-Status, die
+Detail-Records zur Acceptance-Entscheidung von [`ADR 0002`](../../adr/0002-language-and-build-stack.md) und
+[`ADR 0005`](../../adr/0005-type-check-gate.md). Dokumentiert Welle-fuer-Welle den Gate-Status, die
 18 Verstoss-Verifikationen aus Welle 4 (16 A-1-Contracts plus
 [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#adr-0002--sprach--und-build-stack)-nested plus LSP-Variance via mypy — Branch × Gate
 Matrix in §3) und die Befunde aus drei Reviews (zwei Pre-Acceptance,
 ein Post-Acceptance — §4 und §6). Pre-Acceptance-Schaerfungen sind
-per `ADR 0006` §3 erlaubt; alle Drift-Items wurden vor Acceptance
+per [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 erlaubt; alle Drift-Items wurden vor Acceptance
 eingearbeitet (§5).
 
 ---
@@ -30,7 +30,7 @@ eingearbeitet (§5).
 | 3 — `tools/arch_check.py` Contracts | Neun Contracts implementiert (HEXAGON-PURE, NO-JSON, NO-TIME, NO-RAND, DOMAIN-FROZEN, NO-GOD-UTILS, TYPED-ERRORS, NO-CYCLES, ADAPTER-LIGHTWEIGHT) | `make arch-check` mit allen Contracts gruen | `aed2189` |
 | 3.1 — Review-Fixes (4 Commits) | Blocker B-1/B-2/B-3 + I-1 (Pfad-Matcher, SCC-Dedup, Tuple-Exception, NO-IO-MOD-nested); AST-Aliasing-Trio (I-2..I-8); canonical.py (Surrogate, Cycle, -0); Config-Sanity (mypy-Pin, ruff-preview-Caveat, Pfad-Normalisierung, Pfad-Existenz-Guard) | Alle Gates bleiben gruen; 55 Unit-Tests | `9d7a3fb`, `d0c8559`, `facd9aa`, `0e11ca8` |
 | 4 — Verstoss-Verifikation | 18 verify-and-revert-Zyklen auf main; pro Contract exakt eine Violation, exakt das erwartete Gate rot | siehe §3 Matrix | (kein Commit — temp Files, sauber zurueckgerollt) |
-| 5 — Acceptance-Hebung | [`ADR 0002`](../../adr/0002-language-and-build-stack.md) + [`ADR 0005`](../../adr/0005-type-check-gate.md) `Provisional → Accepted`; `architecture.md §19` `GG-AR-OPEN-001` geschlossen; `roadmap.md §4` Vorbedingungen 1+3 abgehakt; Headers (Dockerfile/Makefile/pyproject.toml) auf verbindlichen Stack; Closure-Notiz `done/spike-0.md §0`; `make gates CRITICAL_COV_TARGETS=...serialization` gruen. | `make gates` gruen mit Spike-0-Override | `5763445`, `3645473`, `522ec17`, `5281d15` |
+| 5 — Acceptance-Hebung | [`ADR 0002`](../../adr/0002-language-and-build-stack.md) + [`ADR 0005`](../../adr/0005-type-check-gate.md) `Provisional → Accepted`; `architecture.md §19` [`GG-AR-OPEN-001`](../../../../spec/architecture.md#19-offene-architektonische-punkte) geschlossen; `roadmap.md §4` Vorbedingungen 1+3 abgehakt; Headers (Dockerfile/Makefile/pyproject.toml) auf verbindlichen Stack; Closure-Notiz `done/spike-0.md §0`; `make gates CRITICAL_COV_TARGETS=...serialization` gruen. | `make gates` gruen mit Spike-0-Override | `5763445`, `3645473`, `522ec17`, `5281d15` |
 | 5.1 — Post-Acceptance-Konsistenz | Cross-Ref-Drift (`spec/architecture.md §1/§4.2/§7`, `Makefile`-Count, `README`-Projektstruktur, `roadmap`-Stand, `Dockerfile`-openapi-Kommentar) und Closure-Drift (`spike-0-results.md` Header/§1/§2, `spike-0.md §7`); M1-Vorbereitung (`roadmap §3`-Vorbelegung, `open/README` Trigger-Priorisierung, `Dockerfile` Path-Guard-Hinweis, `tests/arch/` Vollstaendigkeits-Test); Trigger 001 von `open/` → `next/` aktiviert | reine Doku-Edits, Gates bleiben gruen | folgt aus drittem Review |
 
 ---
@@ -40,30 +40,30 @@ eingearbeitet (§5).
 Pro Contract eine Violation auf `main` eingebaut, Gate verifiziert,
 Violation sauber zurueckgerollt. `make arch-check` ist die
 Aggregator-Stage `lint-imports` + `arch_check.py`; bei mehrfachem
-Match (z. B. `import fastapi` triggert sowohl `AC-NO-FW` via
-`import-linter` als auch implizit `AC-HEXAGON-PURE` via
+Match (z. B. `import fastapi` triggert sowohl [`AC-NO-FW`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) via
+`import-linter` als auch implizit [`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) via
 `arch_check.py`) zeigt das `&&`-Shortcut des Aggregator-Stages
 nur den erstausloesenden — beide sind in der Realitaet scharf.
 
 | Contract | Erwartetes Gate | Erfolg | Test-Pattern | Violation-Detail |
 | -------- | --------------- | ------ | ------------ | ---------------- |
-| `AC-HEXAGON-PURE` | `arch_check.py` | ✓ | `import requests` in `hexagon/core/__welle4__.py` | `AC-HEXAGON-PURE  __welle4__.py:3  import requests` |
-| `AC-CORE-NO-ADAPTERS` | `import-linter` | ✓ | `from grid_gym.adapters import driving` in `hexagon/core/` | `AC-CORE-NO-ADAPTERS BROKEN` |
-| `AC-CORE-NO-DRIVING` | `import-linter` | ✓ | `from grid_gym.hexagon.ports import driving` in `hexagon/core/` | `AC-CORE-NO-DRIVING BROKEN` |
-| `AC-PORTS-NO-OUT` | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `hexagon/ports/` | `AC-PORTS-NO-OUT BROKEN` |
-| `AC-PORTS-NO-FW` | `import-linter` | ✓ | `import fastapi` in `hexagon/ports/` | `AC-PORTS-NO-FW BROKEN` |
-| `AC-ADAPTER-PURE` | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `adapters/driving/` | `AC-ADAPTER-PURE BROKEN` |
-| `AC-ADAPTER-LIGHTWEIGHT` | `arch_check.py` | ✓ | Funktion mit zyklomatischer Komplexitaet 10 in `adapters/driving/` | `function 'overcomplicated' complexity 10 > 8` |
-| `AC-NO-FW` | `import-linter` | ✓ | `import fastapi` in `hexagon/core/` | `AC-NO-FW BROKEN` |
-| `AC-NO-IO-MOD` (top-level) | `import-linter` | ✓ | `import socket` in `hexagon/core/` | `AC-NO-IO-MOD BROKEN` |
-| `AC-NO-IO-MOD` (nested) | `arch_check.py` | ✓ | `import urllib.request` in `hexagon/core/` | `AC-NO-IO-MOD  __welle4__.py:3  import urllib.request` |
-| `AC-NO-CYCLES` | `arch_check.py` | ✓ | Zwei Module zyklisch in `hexagon/core/` | `AC-NO-CYCLES  __welle4_a__ <-> __welle4_b__  cycle: a -> b -> a` (kanonisch dedupliziert auf 1 Violation) |
-| `AC-NO-TIME` (Aufruf-Site) | `arch_check.py` | ✓ | `time.monotonic()` in `hexagon/core/`; in Welle 5 zusaetzlich `asyncio.get_event_loop().time()` (Commit `fb90154`) | `AC-NO-TIME  __welle4__.py:7  time.monotonic() (via alias or attribute) — use ClockPort` |
-| `AC-NO-RAND` (Aufruf-Site) | `arch_check.py` | ✓ | `random.random()` via function-level import in `hexagon/core/` | `AC-NO-RAND  __welle4__.py:8  random.random() — use RandomPort` |
-| `AC-NO-JSON` | `arch_check.py` | ✓ | `json.dumps(...)` in `hexagon/core/` | `AC-NO-JSON  __welle4__.py:7  json.dumps() — use canonical_json()` |
-| `AC-DOMAIN-FROZEN` | `arch_check.py` | ✓ | Nicht-frozen Klasse `MutableTelemetry` in `hexagon/core/domain/` | `AC-DOMAIN-FROZEN  __welle4__.py:4  class 'MutableTelemetry' is not frozen` |
-| `AC-NO-GOD-UTILS` | `arch_check.py` | ✓ | Modul `string_utils.py` in `hexagon/core/` | `AC-NO-GOD-UTILS  string_utils.py  forbidden module name: string_utils.py` |
-| `AC-TYPED-ERRORS` | `arch_check.py` | ✓ | `except (ValueError, Exception):` Tuple-Form in `hexagon/core/` | `AC-TYPED-ERRORS  __welle4__.py:7  except Exception outside boundary-translation` (validates Welle-3-Fix B-3) |
+| [`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | `import requests` in `hexagon/core/__welle4__.py` | [`AC-HEXAGON-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:3  import requests |
+| [`AC-CORE-NO-ADAPTERS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `from grid_gym.adapters import driving` in `hexagon/core/` | [`AC-CORE-NO-ADAPTERS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-CORE-NO-DRIVING`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `from grid_gym.hexagon.ports import driving` in `hexagon/core/` | [`AC-CORE-NO-DRIVING`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-PORTS-NO-OUT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `hexagon/ports/` | [`AC-PORTS-NO-OUT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-PORTS-NO-FW`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `import fastapi` in `hexagon/ports/` | [`AC-PORTS-NO-FW`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `from grid_gym.hexagon.core import simulation` in `adapters/driving/` | [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-ADAPTER-LIGHTWEIGHT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | Funktion mit zyklomatischer Komplexitaet 10 in `adapters/driving/` | `function 'overcomplicated' complexity 10 > 8` |
+| [`AC-NO-FW`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `import-linter` | ✓ | `import fastapi` in `hexagon/core/` | [`AC-NO-FW`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (top-level) | `import-linter` | ✓ | `import socket` in `hexagon/core/` | [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) BROKEN |
+| [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (nested) | `arch_check.py` | ✓ | `import urllib.request` in `hexagon/core/` | [`AC-NO-IO-MOD`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:3  import urllib.request |
+| [`AC-NO-CYCLES`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | Zwei Module zyklisch in `hexagon/core/` | [`AC-NO-CYCLES`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4_a__ <-> __welle4_b__  cycle: a -> b -> a (kanonisch dedupliziert auf 1 Violation) |
+| [`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (Aufruf-Site) | `arch_check.py` | ✓ | `time.monotonic()` in `hexagon/core/`; in Welle 5 zusaetzlich `asyncio.get_event_loop().time()` (Commit `fb90154`) | [`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:7  time.monotonic() (via alias or attribute) — use ClockPort |
+| [`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (Aufruf-Site) | `arch_check.py` | ✓ | `random.random()` via function-level import in `hexagon/core/` | [`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:8  random.random() — use RandomPort |
+| [`AC-NO-JSON`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | `json.dumps(...)` in `hexagon/core/` | [`AC-NO-JSON`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:7  json.dumps() — use canonical_json() |
+| [`AC-DOMAIN-FROZEN`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | Nicht-frozen Klasse `MutableTelemetry` in `hexagon/core/domain/` | [`AC-DOMAIN-FROZEN`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:4  class 'MutableTelemetry' is not frozen |
+| [`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | Modul `string_utils.py` in `hexagon/core/` | [`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  string_utils.py  forbidden module name: string_utils.py |
+| [`AC-TYPED-ERRORS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) | `arch_check.py` | ✓ | `except (ValueError, Exception):` Tuple-Form in `hexagon/core/` | [`AC-TYPED-ERRORS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)  __welle4__.py:7  except Exception outside boundary-translation (validates Welle-3-Fix B-3) |
 | LSP variance | `mypy --strict` | ✓ | Subklasse weitet Return-Typ `int` → `object` | `[override]` + `[explicit-override]` (mypy 2 errors in 1 file) |
 
 **Ergebnis: 18 von 18 Contracts haben Zaehne.** Pro Violation exakt
@@ -96,7 +96,7 @@ arch_check.py).
   `[tool.ruff.lint] preview = true` und entfernt die nicht
   implementierten Regeln. Restanteil bleibt Code-Review
   (Trigger 001). [`ADR-0002`](../../adr/0002-language-and-build-stack.md)-Schliff folgt als separater
-  Pre-Acceptance-Commit (`ADR 0006` §3 erlaubt).
+  Pre-Acceptance-Commit ([`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 erlaubt).
 - **import-linter `include_external_packages = true` notwendig:**
   sobald `forbidden_modules` externe Pakete enthaelt (`fastapi`,
   `socket`, etc.), muss diese Top-Level-Konfiguration gesetzt sein.
@@ -148,7 +148,7 @@ XML-Checks) waere moeglich, aber unnoetig — der Mehraufwand ist
 
 Der `coverage-gate-critical`-Stage akzeptiert jetzt
 `ARG CRITICAL_COV_TARGETS` (Default: kritische Domain laut
-`GG-COV-003` — Simulation, Battery, Scenario, Replay). Wellen, die
+[`GG-COV-003`](../../../../spec/lastenheft.md#gg-cov-003) — Simulation, Battery, Scenario, Replay). Wellen, die
 nur einen Teilbereich implementieren, ueberschreiben per
 `--build-arg`. Beispiel Welle 2:
 
@@ -164,7 +164,7 @@ sobald der Hauptprojekt-Code die volle kritische Domain abdeckt.
 ## 5. Drift-Liste fuer ADR-Pre-Acceptance-Schliff (eingearbeitet)
 
 Alle zehn Items wurden vor Welle 5 in [`ADR 0002`](../../adr/0002-language-and-build-stack.md) / [`ADR 0005`](../../adr/0005-type-check-gate.md)
-eingearbeitet (Commit `201daee`). `ADR 0006 §3` erlaubt
+eingearbeitet (Commit `201daee`). [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3 erlaubt
 Pre-Acceptance-Schaerfungen mit Header-Eintrag
 „Letzte inhaltliche Aenderung".
 
@@ -263,5 +263,5 @@ einmalig nachgezogen werden — der Verstoss-Test fuer
 `asyncio.get_event_loop().time()` wurde im Pre-Acceptance-Schliff-
 Commit `fb90154` als Verifikations-Lauf bereits durchgefuehrt
 (bewusst eingefuegter Verstoss → Detection bestaetigt → revert).
-Matrix in §3 unter `AC-NO-TIME` deshalb mit Note „inkl.
+Matrix in §3 unter [`AC-NO-TIME`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) deshalb mit Note „inkl.
 `asyncio.get_event_loop().time` (Welle 5)".

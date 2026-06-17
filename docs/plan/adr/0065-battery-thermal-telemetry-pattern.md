@@ -7,7 +7,7 @@
 (Aufheiz-/Abkuehl-Monotonie, Steady-State gegen `theta_ss`) +
 Inaktiv-Regressions-Pin (`thermal=None` byte-genau wie heute) +
 opt-in-Snapshot-Roundtrip inkl. backward-compat-Lesepfad).
-**Schliesst `GG-BESS-006`** (Trigger
+**Schliesst [`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)** (Trigger
 [`023`](../planning/open/023-sollte-battery-temperature.md)).
 Additive **Schaerfung** von
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Battery-Snapshot-/Telemetrie-
@@ -31,7 +31,7 @@ Telemetrie-Emission an eine nested Config gebunden — Emission-Liste-Pattern),
 Feld), [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-Pattern).
 Slice-Plan [`M8-welle-4a.md`](../planning/done/M8-welle-4a.md);
 Container [`M8-welle-4.md`](../planning/done/M8-welle-4.md). Trigger
-[`023`](../planning/open/023-sollte-battery-temperature.md) (`GG-BESS-006`,
+[`023`](../planning/open/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006),
 Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 
 ---
@@ -40,7 +40,7 @@ Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 
 [`ADR 0014`](0014-battery-snapshot-schema.md) deckt im Battery-Modell SOC,
 Strom/Leistung, Ramp und (per [`ADR 0025`](0025-fault-recovery-pattern.md))
-den `fault_state`-Block ab — **keine Temperatur**. Lastenheft `GG-BESS-006`
+den `fault_state`-Block ab — **keine Temperatur**. Lastenheft [`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)
 (Trigger [`023`](../planning/open/023-sollte-battery-temperature.md)) verlangt
 **Temperatur-Telemetrie** als SOLLTE-Erweiterung. Der Trigger nennt zwei
 Modell-Optionen: zustandsfrei (`power² · R_internal + ambient`) **oder**
@@ -79,7 +79,7 @@ eigene Frozen-Dataclass (`slots=True`) mit `__post_init__`-Validierung
 | `thermal_rise_c_at_full_load` | K | `> 0` (Anstieg bei Volllast) |
 | `thermal_time_constant_s` | s | `> 0` (thermische Traegheit Tau) |
 
-Die No-float-Typpruefung (`GG-DATA-005`) liegt — wie im Bestands-Battery-
+Die No-float-Typpruefung ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)) liegt — wie im Bestands-Battery-
 Pattern — in den Parsern (`_thermal_from_params` / Snapshot-`assert_decimal`),
 nicht im `ThermalConfig`-Konstruktor. Das nested-opt-in-Config-Layout
 spiegelt `VoltVarConfig` aus
@@ -118,7 +118,7 @@ reine Telemetrie.
 ### 2.3 Telemetrie — opt-in `temperature_celsius`
 
 Ein zusaetzlicher `TelemetryPoint` (`metric="temperature_celsius"`,
-`unit="degC"`, SI-Stringtyp per `GG-DATA-002`), **conditional** an den
+`unit="degC"`, SI-Stringtyp per [`GG-DATA-002`](../../../spec/lastenheft.md#gg-data-002)), **conditional** an den
 `thermal`-Block gebunden (Emission-Liste-Pattern wie die opt-in Q-Telemetrie
 aus [`ADR 0063`](0063-pv-volt-var-q-emission-pattern.md) §2.3): ohne
 `thermal`-Block **kein** Punkt (nicht `0`). Der Punkt sortiert alphabetisch
@@ -227,7 +227,7 @@ Emission + Params-Roundtrip), `hexagon/core/devices/battery/snapshot.py`
 
 Gilt NICHT fuer: thermisches Derating/Notabschaltung (M3), aktive
 Kuehlung/Heizung (HVAC-Slice), Zellebene-Thermodynamik bzw. Zellspannung
-([`M8-welle-4b.md`](../planning/done/M8-welle-4b.md), `GG-BESS-007`),
+([`M8-welle-4b.md`](../planning/done/M8-welle-4b.md), [`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007)),
 Alterungs-/Kalender-Zyklen-Modelle (§7).
 
 ---
@@ -258,7 +258,7 @@ Alterungs-/Kalender-Zyklen-Modelle (§7).
   Battery-Verhalten.
 - **Zellebene-Thermodynamik / Zellspannung** — Pack-Niveau bleibt;
   Zellauffloesung ist [`M8-welle-4b.md`](../planning/done/M8-welle-4b.md)
-  (`GG-BESS-007`) bzw. eigener Slice.
+  ([`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007)) bzw. eigener Slice.
 - **Alterungs-/Lebensdauer-Modelle** (T-abhaengig) — eigener Trigger.
 - **`initial_temp_c` / vorgewaermtes Pack** — Kaltstart auf `ambient` genuegt
   fuer das Ersatzmodell; ein dedizierter Startwert ist ein Folge-Slice.

@@ -3,7 +3,7 @@
 **Status:** Open — Trigger-Watch (M3-Welle-7-Closure-Restposten
 2026-05-25).
 **Datum:** 2026-05-25.
-**Quelle:** Lastenheft `GG-FUTURE-001/002` (RL-faehiges
+**Quelle:** Lastenheft [`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002 (RL-faehiges
 Multi-Agent-System); M3-Welle-7-Closure-Notiz in
 [`../done/M3-results.md`](../done/M3-results.md) §5.
 
@@ -74,7 +74,7 @@ Aktivierung sobald **eines** der folgenden Ereignisse eintritt:
 
 ## Bezug
 
-- Lastenheft `GG-FUTURE-001/002` (RL-faehiges Multi-Agent-
+- Lastenheft [`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002 (RL-faehiges Multi-Agent-
   System).
 - [`ADR 0023`](../../adr/0023-agent-bus-protocol.md) (`AgentBus Protocol`) §2.1 — `Agent`-Sub-Protocol-
   Surface, die der RL-Adapter implementieren wird.

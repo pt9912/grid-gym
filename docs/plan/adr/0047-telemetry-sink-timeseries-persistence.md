@@ -36,9 +36,9 @@
 
 ## 1. Kontext
 
-`GG-MVP-002` (E2E-Szenario + deterministisches Replay) ist im
+[`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) (E2E-Szenario + deterministisches Replay) ist im
 **partial**-Stand: Laufmetadaten persistiert `PostgresRunRepository`
-(`GG-PERSIST-003`), aber **Telemetrie-Zeitreihen** (`GG-PERSIST-001`)
+([`GG-PERSIST-003`](../../../spec/lastenheft.md#gg-persist-003)), aber **Telemetrie-Zeitreihen** ([`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001))
 werden nicht produktiv persistiert. Die Lastenheft-Akzeptanz
 (Z. 130-135) verlangt „persistiert Zeitreihen". Die
 [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md)-Sub-Slicing-
@@ -50,7 +50,7 @@ Substanz **Welle 1b-b** (ADR 0049) per 1b-a-D-1-Sub-Slicing.
 **Code-Ist-Stand (verifiziert):**
 
 - `TelemetryPoint`-Domain (`hexagon/core/domain/telemetry.py`,
-  `GG-DATA-001`): `run_id`, `tick`, `simulation_time`,
+  [`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)): `run_id`, `tick`, `simulation_time`,
   `device_id`, `metric`, `value` (`Decimal`), `unit`, `quality`
   (`Quality`-StrEnum), `source`, `sequence`.
 - Der Core-`TickLoop` produziert pro Tick eine **deterministisch
@@ -157,7 +157,7 @@ ist ein **Driving**-Port (Adapter pusht an Subscriber), eine
 andere Kategorie. Ein Adapter-Tee fuer die **Persistenz** wuerde
 die Driven-Persistenz an einen konkreten Driver
 (`DemoTickLoopDriver`) koppeln — ein headless-Runner (Welle-1b-
-Replay, `GG-MVP-003`-Abnahme-CLI) wuerde dann ohne den Driver
+Replay, [`GG-MVP-003`](../../../spec/lastenheft.md#gg-mvp-003)-Abnahme-CLI) wuerde dann ohne den Driver
 nicht persistieren. Der Core-Kwarg persistiert dagegen **jeder**
 `TickLoop`-Lauf deterministisch.
 
@@ -173,7 +173,7 @@ nicht persistieren. Der Core-Kwarg persistiert dagegen **jeder**
 zurueckgelesen — keine Float-Konversion, keine Scale-
 Normalisierung. Damit ist die persistierte Zeitreihe byte-stabil
 gegen den Re-Run (Welle-1b-`diff_replay()`-Vorbedingung;
-`GG-AR-P-008`-Determinismus + ADR 0021 §2.9). Der 1a-Persistenz-
+[`GG-AR-P-008`](../../../spec/architecture.md#2-architekturprinzipien)-Determinismus + ADR 0021 §2.9). Der 1a-Persistenz-
 Smoke pinnt: Round-Trip `Decimal → TEXT → Decimal` ist
 verlustfrei + die `read_ordered`-Reihenfolge ist ueber den
 Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
@@ -184,8 +184,8 @@ Surrogat-`id` (Insertion-Reihenfolge) stabil — auch bei Ties
 
 ## 3. Begruendung
 
-- **`GG-PERSIST-001`-Pflicht liefern.** Die Zeitreihen-Persistenz
-  ist die erste der zwei `GG-MVP-002`-Lücken; ohne sie bleibt die
+- **[`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)-Pflicht liefern.** Die Zeitreihen-Persistenz
+  ist die erste der zwei [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Lücken; ohne sie bleibt die
   Lastenheft-Akzeptanz „persistiert Zeitreihen" offen.
 - **Driven-Port-Konsistenz (ADR 0039).** Der Sink folgt exakt dem
   `RunRepositoryPort`-Pattern: Driven-Protocol + Postgres-Adapter
@@ -233,7 +233,7 @@ mit M7-Welle-X-C1 (gebuendelt mit ADR 0048 + ADR 0049).
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-PERSIST-001`-Zeitreihen-Persistenz produktiv;
+- **Positiv:** [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)-Zeitreihen-Persistenz produktiv;
   liefert zugleich die deterministische Lese-Surface, auf die
   Welle 1b den `ReplaySnapshotPort`-Sample-Strom aufsetzt.
 - **Positiv:** `TEXT`-`value` garantiert Byte-Stabilitaet → 1b-
@@ -267,7 +267,7 @@ mit M7-Welle-X-C1 (gebuendelt mit ADR 0048 + ADR 0049).
 - **Core-Spine-Lifecycle-Hook + `diff_replay()`-Aufruf +
   `replay_diff_status`-Metrik** (D-2/D-3 des Gruppenplans) —
   Welle 1b-b, ADR 0049.
-- **`GG-TERM-002`/`GG-TERM-003`-Equality** — MVP-Preflight Welle
+- **[`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/[`GG-TERM-003`](../../../spec/lastenheft.md#gg-term-003)-Equality** — MVP-Preflight Welle
   1b-b (ADR 0049); volle Matrix Carveout Trigger 038.
 - **Query-/Export-API** ueber `read_ordered` (Smoke-Bedarf)
   hinaus — eigener spaeterer Scope.

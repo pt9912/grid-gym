@@ -13,9 +13,9 @@ Compat-Aliase**, [`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md
 - [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)
   — bestehendes Recovery-Pattern.
 - [`ADR 0050`](../../adr/0050-adapter-pure-bridge-retirement.md)
-  — getrennte `AC-ADAPTER-PURE`-Bridge-Bereinigung.
+  — getrennte [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Bridge-Bereinigung.
 - [`spec/architecture.md`](../../../../spec/architecture.md)
-  — `GG-AR-COMP-FAULTS`.
+  — [`GG-AR-COMP-FAULTS`](../../../../spec/architecture.md#5-komponentensicht).
 - [`welle-2.md`](../done-archive/welle-2.md)
   — historische Standortentscheidung fuer `hexagon/core/faults`.
 
@@ -40,7 +40,7 @@ Schritt):** Rename `BatteryFaultAdapter` → `BatteryFaultEngine` /
 `GridFaultAdapter` → `GridFaultEngine` (+ Dateien `*_fault_adapter.py`
 → `*_fault_engine.py` via `git mv`), 17 src-/test-/tools-Dateien;
 `__init__`-Docstring + `spec/architecture.md` + `docs/user/observability.md`
-auf „Core-Fault-Engine"; `ADR 0025`-Pfad-Pflege. **Keine Compat-Aliase**
+auf „Core-Fault-Engine"; [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)-Pfad-Pflege. **Keine Compat-Aliase**
 (alle In-Repo-Referenzen umbenannt, kein Uebergangsbedarf). Standort
 bleibt `hexagon/core/faults` ([`ADR 0051`](../../adr/0051-fault-engine-location-and-naming.md) §2.1).
 
@@ -108,4 +108,4 @@ Tests oder externe Imports sonst unnoetig brechen.
   Rename-Commit-Regel, Tests sind angepasst, Compatibility-Aliase sind
   bewusst entschieden.
 - `make docs-check` gruen.
-- Kein neuer `AC-ADAPTER-PURE`-`ignore_imports`-Eintrag.
+- Kein neuer [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-`ignore_imports`-Eintrag.

@@ -15,7 +15,7 @@ Welle aufgeloest).
 
 ## 1. Lieferziel
 
-Das Transformator-Modell (`GG-DEV-016`, Lastenheft §9.4) als
+Das Transformator-Modell ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), Lastenheft §9.4) als
 `DeviceModel` + `FaultInjectableDevice` im Core, mit Wandlungsverhaeltnis,
 Eisen-/Kupferverlusten, Saettigungs-Hard-Cap und `winding_fault`-
 Schutzausloesung ([`ADR 0056`](../../adr/0056-transformer-device-pattern.md)).
@@ -52,7 +52,7 @@ Folgt dem GridConnection-Set-Power-Muster
 - **Standalone-Device-Vereinfachung**: bei `primary_power_kw == 0` ist
   der Eisen-/Leerlaufverlust weiterhin praesent (`loss_kw =
   no_load_loss_kw`, `secondary_power_kw = 0`). Die netzseitige
-  Verlust-Verrechnung (Bilanz) ist Trigger 021 (`GG-GRID-006`), nicht
+  Verlust-Verrechnung (Bilanz) ist Trigger 021 ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006)), nicht
   dieses Geraet ([`ADR 0056`](../../adr/0056-transformer-device-pattern.md)
   §2.4).
 - **Saettigung = harter Knie-Cap** bei `rated_power_kw` (Command-seitig

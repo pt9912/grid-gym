@@ -17,15 +17,20 @@ ids:
   patterns:
     - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
       target: spec/architecture.md
+      link-policy: always
     # Benannte Architektur-IDs ohne Ziffern (Komponenten/Tabus):
     - regex: 'GG-AR-COMP-[A-Z0-9]+'
       target: spec/architecture.md
+      link-policy: always
     - regex: 'GG-[A-Z][A-Z0-9]*-\d{3}'
       target: spec/lastenheft.md
+      link-policy: always
     - regex: "AC-[A-Z][A-Z0-9-]+"
       target: docs/plan/adr/
+      link-policy: always
     - regex: 'ADR[- ]\d{4}'
       target: docs/plan/adr/
+      link-policy: always
     # Familien-Wildcards (Kurzschrift, z. B. GG-DEMO-*): erzwingen
     # Link ODER Backtick-Form (Inline-Code ist linkpflichtfrei) —
     # nackte Familien-Refs fallen sonst durchs \d{3}-Raster.

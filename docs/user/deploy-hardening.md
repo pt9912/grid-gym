@@ -11,10 +11,10 @@ analog [`safe-005-006-fallback-determinism.md`](safe-005-006-fallback-determinis
 (Welle 5c).
 
 Welle 6 liefert die letzten beiden offenen MUSS/SOLLTE-IDs des
-lokalen Deployment-Scopes: `GG-DEPLOY-006` (Three-State-
-Healthcheck via NEU `GET /ready`) und `GG-DEPLOY-004`
+lokalen Deployment-Scopes: [`GG-DEPLOY-006`](../../spec/lastenheft.md#gg-deploy-006) (Three-State-
+Healthcheck via NEU `GET /ready`) und [`GG-DEPLOY-004`](../../spec/lastenheft.md#gg-deploy-004)
 (DevContainer-Konfiguration). Die verteilte-Deployment-Familie
-`GG-DEPLOY-007..010` (Kubernetes / Rolling-Update / Zero-Downtime
+[`GG-DEPLOY-007`](../../spec/lastenheft.md#gg-deploy-007)..010 (Kubernetes / Rolling-Update / Zero-Downtime
 / Rollback) bleibt bewusst Post-MVP (M7+) und ist ueber
 [Trigger 037](../plan/planning/open/037-deploy-007-010-multi-node-deployment.md)
 verankert.
@@ -78,10 +78,10 @@ auf `unhealthy` gemappt.
 
 **Nicht-Pflicht-Komponente**: der `otel-collector` (Observability-
 Sibling, Welle-3-C2) ist **nicht** Teil der Lastenheft-Vier-
-Komponenten-Liste (`GG-OTEL-001..004` sind optional) und wird im
+Komponenten-Liste ([`GG-OTEL-001`](../../spec/lastenheft.md#gg-otel-001)..004 sind optional) und wird im
 `/ready`-Breakdown nicht gefuehrt.
 
-Architektur-Anker: `GG-AR-PORT-DRV-007` ist als Driving-Adapter-
+Architektur-Anker: [`GG-AR-PORT-DRV-007`](../../spec/architecture.md#driving-ports-vom-kern-angeboten) ist als Driving-Adapter-
 Surface realisiert (kein Hexagon-Core-Driving-Port), weil die
 Probe-Orchestrierung Driven-Side-Externals beruehrt (Postgres-
 `ping()`, UI-Template-Load, TickLoop-Adapter) — Welle-6-D-6.
@@ -99,7 +99,7 @@ Akzeptanz „Build-, Test- und Abnahmebefehle":
 
 | Task | Kommando | Zweck |
 | ---- | -------- | ----- |
-| **Build** | `make build` | Runtime-Image (`GG-DEPLOY-001`). |
+| **Build** | `make build` | Runtime-Image ([`GG-DEPLOY-001`](../../spec/lastenheft.md#gg-deploy-001)). |
 | **Test** | `make ci` | Pflicht-Gates + Integration + OpenAPI + Image-Audit. |
 | **Abnahme** | `make fullbuild` | Voller Abnahme-Lauf (M-Closure-Gate). |
 
@@ -128,7 +128,7 @@ Trigger-Aufloesung siehe
 - [ADR 0037 — HTTP-API-Surface-Pattern](../plan/adr/0037-http-api-surface-pattern.md)
   — `/ready` ist ein additiver Endpoint unter diesem Pattern.
 - [demo-compose-hardening.md](demo-compose-hardening.md) —
-  Compose-Stack-Haertung (`GG-DEPLOY-001/005`).
-- Lastenheft §23 (`GG-DEPLOY-001..011`, Z. 1833-1921);
-  Architektur §4.2 (`GG-AR-PORT-DRV-007`, Z. 237) + §15
+  Compose-Stack-Haertung ([`GG-DEPLOY-001`](../../spec/lastenheft.md#gg-deploy-001)/005).
+- Lastenheft §23 ([`GG-DEPLOY-001`](../../spec/lastenheft.md#gg-deploy-001)..011, Z. 1833-1921);
+  Architektur §4.2 ([`GG-AR-PORT-DRV-007`](../../spec/architecture.md#driving-ports-vom-kern-angeboten), Z. 237) + §15
   (Healthcheck, Z. 822).

@@ -129,21 +129,21 @@ Diese Items sind explizit als M2-Closure-Restposten in
 
 **SOLLTE-Geraete** (M3 oder eigene Slices):
 
-- Trigger [`016-sollte-ev-charger-device`](../open/016-sollte-ev-charger-device.md) — `GG-DEV-015` EV-Charger
-- Trigger [`017-sollte-transformer-device`](../open/017-sollte-transformer-device.md) — `GG-DEV-016` Transformer
-- Trigger [`018-sollte-wind-device`](../open/018-sollte-wind-device.md) — `GG-DEV-017` Wind
-- Trigger [`019-sollte-diesel-device`](../open/019-sollte-diesel-device.md) — `GG-DEV-018` Diesel
+- Trigger [`016-sollte-ev-charger-device`](../open/016-sollte-ev-charger-device.md) — [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015) EV-Charger
+- Trigger [`017-sollte-transformer-device`](../open/017-sollte-transformer-device.md) — [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) Transformer
+- Trigger [`018-sollte-wind-device`](../open/018-sollte-wind-device.md) — [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017) Wind
+- Trigger [`019-sollte-diesel-device`](../open/019-sollte-diesel-device.md) — [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018) Diesel
 
 **SOLLTE-Netz** (M3 oder eigene Slices):
 
-- Trigger [`020-sollte-island-grid`](../open/020-sollte-island-grid.md) — `GG-GRID-005` Inselnetz
-- Trigger [`021-sollte-transformer-limits`](../open/021-sollte-transformer-limits.md) — `GG-GRID-006` Transformatorgrenzen
-- Trigger [`022-sollte-reactive-power`](../open/022-sollte-reactive-power.md) — `GG-GRID-007` Blindleistung
+- Trigger [`020-sollte-island-grid`](../open/020-sollte-island-grid.md) — [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) Inselnetz
+- Trigger [`021-sollte-transformer-limits`](../open/021-sollte-transformer-limits.md) — [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006) Transformatorgrenzen
+- Trigger [`022-sollte-reactive-power`](../open/022-sollte-reactive-power.md) — [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) Blindleistung
 
 **SOLLTE-Battery** (M3-Telemetry-Erweiterung):
 
-- Trigger [`023-sollte-battery-temperature`](../open/023-sollte-battery-temperature.md) — `GG-BESS-006` Temperatur
-- Trigger [`024-sollte-battery-cell-voltage`](../open/024-sollte-battery-cell-voltage.md) — `GG-BESS-007` Zellspannung
+- Trigger [`023-sollte-battery-temperature`](../open/023-sollte-battery-temperature.md) — [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006) Temperatur
+- Trigger [`024-sollte-battery-cell-voltage`](../open/024-sollte-battery-cell-voltage.md) — [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007) Zellspannung
 
 **M3-/M6-Forward-Linked Triggers** (bereits vor M2 vermerkt,
 warten auf Aktivierung):
@@ -186,4 +186,4 @@ Pfad bleibt M6-Material (`GG-PERSIST-*`-Slice).
   wie `done/M1-tick-loop-spine.md`).
 - **`tool_version`-Bump**: bleibt auf `0.1.0`
   (`pyproject.toml`); ein Release-Bump kommt mit M6
-  (`GG-CICD-007` Release-Workflow).
+  ([`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007) Release-Workflow).

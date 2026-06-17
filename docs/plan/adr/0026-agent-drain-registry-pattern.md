@@ -60,8 +60,8 @@ M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 4 + Welle-4a-Slice-Doc
 [`done/welle-4a.md`](../planning/done-archive/welle-4a.md).
-Lastenheft §15 Multi-Agent-System (`GG-AGENT-001..008`); §16
-Kommunikationsschnittstellen (`GG-DATA-004` `Command`).
+Lastenheft §15 Multi-Agent-System ([`GG-AGENT-001`](../../../spec/lastenheft.md#gg-agent-001)..008); §16
+Kommunikationsschnittstellen ([`GG-DATA-004`](../../../spec/lastenheft.md#gg-data-004) `Command`).
 Architektur §6 Datenfluss Tick-Loop (Schritt 7 + neuer
 Schritt A0), §14 Multi-Agent-Subsystem.
 
@@ -706,19 +706,19 @@ Pattern. ADR 0026 referenziert ADR 0023 §6 explizit als
   `TickLoop.snapshot()`.
 - Agent-Factory-Map analog `_DEVICE_FACTORIES`.
 - Property-Determinismus-Tests pro Agent-Implementer
-  (`GG-AGENT-003`).
+  ([`GG-AGENT-003`](../../../spec/lastenheft.md#gg-agent-003)).
 - Welle-4-Abschluss-Gate (`make fullbuild` ohne Override mit
   End-to-End-Demo-Szenario).
 
 **Out of Scope (Welle 4c oder spaetere Folge):**
 
-- Deadlines (`GG-AGENT-007`).
-- Async-Kommunikation (`GG-AGENT-008`) — ADR-Folge zu ADR
+- Deadlines ([`GG-AGENT-007`](../../../spec/lastenheft.md#gg-agent-007)).
+- Async-Kommunikation ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)) — ADR-Folge zu ADR
   0007 `AsyncRandomPort`.
 - LogPort/MetricsPort-Injektion in Bus/Agent — Welle 5/6
   (ADR 0024).
 - Sub-Seed-Wortbreite (Trigger 011).
-- RL-Adapter (`GG-FUTURE-001/002`).
+- RL-Adapter ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002).
 - In-Tick-Wirksamkeit fuer Agent-Commands.
 - Multi-Receiver-Watermark fuer `consume_for(...)`-
   Per-Receiver-Tracking bei Broadcasts.
@@ -838,13 +838,13 @@ spaeter-Material.
 **[`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008) Async-Kommunikation** — ADR-Folge zu ADR 0007
 `AsyncRandomPort`, kein Welle-4-Material.
 
-**Observability-Ports** (`GG-OTEL-001..004`) — Welle 5/6
+**Observability-Ports** ([`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004) — Welle 5/6
 (ADR 0024).
 
 **Sub-Seed-Wortbreite-Erhoehung** (Trigger 011) — bleibt in
 `open/`, Aktivierungs-Kriterium nicht erreicht.
 
-**RL-Adapter** (`GG-FUTURE-001/002`) — eigener Slice nach
+**RL-Adapter** ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002) — eigener Slice nach
 M3-Welle-7.
 
 **In-Tick-Wirksamkeit fuer Agent-Commands** — eigene ADR-

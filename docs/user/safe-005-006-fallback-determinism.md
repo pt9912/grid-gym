@@ -5,8 +5,8 @@
 **Stand:** 2026-06-07.
 
 Dieses Dokument auditiert die produktive Substanz fuer die
-beiden SOLLTE-Akzeptanzen `GG-SAFE-005` (Geraete-Fallback)
-und `GG-SAFE-006` (Replay-Determinismus) aus dem Lastenheft
+beiden SOLLTE-Akzeptanzen [`GG-SAFE-005`](../../spec/lastenheft.md#gg-safe-005) (Geraete-Fallback)
+und [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006) (Replay-Determinismus) aus dem Lastenheft
 (§20). Pro ID werden Substanz-Pfade, Test-Pfade und
 Lieferstatus dokumentiert.
 
@@ -87,7 +87,7 @@ M2-Lastenheft-Geraeten (Battery / Load / GridConnection / PV):
    den Sicherheits-Wertebereich (`[min, max]`,
    `[0, p_max]` etc.).
 3. **Telemetrie** — Alle drei Outcome-Faelle werden ueber
-   die Quality-Pipeline (`GG-SAFE-001..004`-Substanz; siehe
+   die Quality-Pipeline ([`GG-SAFE-001`](../../spec/lastenheft.md#gg-safe-001)..004-Substanz; siehe
    [`safe-001-004-quality-pipeline.md`](safe-001-004-quality-pipeline.md))
    bzw. die `AlarmPort`-Emission abgebildet:
    - `REJECTED` → Alarm-Event mit `reason`-Code und
@@ -140,7 +140,7 @@ jetzt produktiv im Lauf-Lifecycle verankert:
   (Core-Spine, [`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.1/§2.4) emittiert sie als binaeren
   `metrics_port.gauge("replay_diff_status", 1.0 clean / 0.0
   diverged, attributes={run_id, reference_run_id, status})` bei
-  preflight-validem Vergleich (`GG-TERM-002/003`-MVP-Preflight
+  preflight-validem Vergleich ([`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003-MVP-Preflight
   ueber 5 `RunMetadata`-Felder; volle Matrix Carveout Trigger
   038).
 - Die ReplaySource-Integration laeuft ueber den
@@ -187,9 +187,9 @@ SPDX, plus Image-Audit ueber `make ci` / `make fullbuild`).
   Welle-5b.
 - [ADR 0048 — ReplaySnapshotPort](../plan/adr/0048-replay-snapshot-port-reconstruction.md)
   + [ADR 0049 — Replay-Lifecycle](../plan/adr/0049-replay-lifecycle-finalize-hook.md):
-  loesen die `GG-SAFE-006`-Lauf-Lifecycle-Verankerung (Trigger
+  loesen die [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006)-Lauf-Lifecycle-Verankerung (Trigger
   036 → `done/`).
 - [`replay-determinism-e2e.md`](replay-determinism-e2e.md):
-  `GG-MVP-002`-E2E-Replay-Determinismus-Audit (Schwester-Doku).
+  [`GG-MVP-002`](../../spec/lastenheft.md#gg-mvp-002)-E2E-Replay-Determinismus-Audit (Schwester-Doku).
 - `spec/architecture.md §15` (Z. 820 + 823) —
   Architektur-Vorgabe fuer `replay_diff_status`-Metrik.

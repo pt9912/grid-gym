@@ -26,9 +26,9 @@ from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 
 ## 1. Kontext
 
-`GG-SIM-001` (Determinismus), `GG-SCN-002` (deterministische
-Szenarien), `GG-SEED-001` (Seeds explizit seedbar) und
-`GG-AR-PORT-DRN-010` (`RandomPort` als Driven-Port) verlangen einen
+[`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001) (Determinismus), [`GG-SCN-002`](../../../spec/lastenheft.md#gg-scn-002) (deterministische
+Szenarien), [`GG-SEED-001`](../../../spec/lastenheft.md#gg-seed-001) (Seeds explizit seedbar) und
+[`GG-AR-PORT-DRN-010`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`RandomPort` als Driven-Port) verlangen einen
 deterministisch-reproduzierbaren Zufallsstrom je Simulationslauf.
 `ADR 0002 §A-1 AC-NO-RAND` verbietet direkte Aufrufe von `random.*`,
 `secrets.*` und `numpy.random.*` unter `hexagon/core/**`. Diese ADR
@@ -58,8 +58,8 @@ Gewichtung: P0 (Knock-out) > P1 > P2.
 | K-SUB     | Sub-Seeding stabil: gleicher Sub-Name → gleicher Sub-Stream, unabhaengig vom         | [`GG-SCN-002`](../../../spec/lastenheft.md#gg-scn-002), [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)                         | P0      |
 |           | Aufruf-Pfad der Parent-Generators                                                    |                                                |         |
 | K-STDLIB  | Keine zusaetzliche C-Extension oder externe Dependency                                | [`GG-DEPLOY-002`](../../../spec/lastenheft.md#gg-deploy-002) (offline), [`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001) (reprod.) | P1      |
-| K-FUTURE  | Erweiterbar fuer ML/RL-Workloads (`GG-FUTURE-001/002`) ohne Determinismus-Bruch       | [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002                              | P2      |
-| K-PERF    | Ausreichend schnell fuer `GG-RT-005` (10.000 Punkte/s; Random-Calls << 1 ms)          | [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005)                                      | P2      |
+| K-FUTURE  | Erweiterbar fuer ML/RL-Workloads ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002) ohne Determinismus-Bruch       | [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002                              | P2      |
+| K-PERF    | Ausreichend schnell fuer [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) (10.000 Punkte/s; Random-Calls << 1 ms)          | [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005)                                      | P2      |
 
 ---
 
@@ -89,7 +89,7 @@ Gewichtung: P0 (Knock-out) > P1 > P2.
   RL-Agenten leben in `hexagon/core/agents` als Folge-Slice und
   koennen einen separaten `MLRandomPort` einfuehren. `K-FUTURE o`.
 - Performance: MT19937 ist langsamer als PCG64 (~3x), aber fuer
-  einzelne Calls << 100 ns. Bei 10.000 Punkten/s (`GG-RT-005`)
+  einzelne Calls << 100 ns. Bei 10.000 Punkten/s ([`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005))
   irrelevant. `K-PERF +`.
 
 ### Option B: `numpy.random.Generator` (PCG64)
@@ -106,13 +106,13 @@ Gewichtung: P0 (Knock-out) > P1 > P2.
   Disziplin (jeder Sub-Stream muss vom Parent abgespalten werden).
   `K-SUB ++`.
 - Stdlib-only: numpy ist 70 MB zusaetzliche Runtime-Dependency.
-  Bricht das `GG-DEPLOY-002`-Offline-Versprechen nicht, aber
+  Bricht das [`GG-DEPLOY-002`](../../../spec/lastenheft.md#gg-deploy-002)-Offline-Versprechen nicht, aber
   vergroessert das Image und macht den Spike-0-Lock dicker.
   `K-STDLIB --`.
 - Future: ML/RL-Workloads nutzen `numpy.random` direkt — kein
   Bridge noetig. `K-FUTURE ++`.
 - Performance: PCG64 ist ~3x schneller als MT19937. Fuer
-  `GG-RT-005` ohnehin irrelevant.
+  [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) ohnehin irrelevant.
 
 ### Option C: Custom PRNG (z. B. xoshiro256**)
 
@@ -145,7 +145,7 @@ Begruendung:
   abgebildet — explizit deterministisch und reproducible.
 - `K-STDLIB`: kein numpy-Runtime-Dep im Spike-0-Lock, bleibt offline-
   konsistent.
-- Fuer `GG-FUTURE-001/002` (ML/RL) wird bei Bedarf ein separater
+- Fuer [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002 (ML/RL) wird bei Bedarf ein separater
   `MLRandomPort`-Adapter eingefuehrt — Folge-Slice, nicht Bestandteil
   dieser ADR.
 
@@ -297,7 +297,7 @@ Bei Acceptance schliesst diese ADR:
 
 - **Trigger 003** (`docs/plan/planning/done-archive/003-random-port-adr.md`)
   wandert nach `done/`.
-- `GG-AR-PORT-DRN-010` ist damit implementierungs-spezifiziert
+- [`GG-AR-PORT-DRN-010`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) ist damit implementierungs-spezifiziert
   (sprach- und PRNG-Wahl).
 - `AC-NO-RAND`-Vertrag aus `ADR 0002 §A-1` bekommt einen
   legitimen Zugangspfad: `RandomPort.next_*()` ueber
@@ -322,7 +322,7 @@ Bei Acceptance schliesst diese ADR:
 - `done/M1-tick-loop-spine.md §3 Welle 2` wird zu „Welle 2 fertig,
   ADR 0007 Accepted".
 - `architecture.md §9.x` (Driven-Port-Beschreibung von
-  `GG-AR-PORT-DRN-010`) bekommt einen Backlink-Satz „PRNG-Wahl
+  [`GG-AR-PORT-DRN-010`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)) bekommt einen Backlink-Satz „PRNG-Wahl
   und Seeding-Kette sind in ADR 0007 spezifiziert". Verhindert
   die Drift, die im Welle-5-Review beim Spike-0-Abschluss
   beobachtet wurde (zwei Stellen, an denen `RandomPort`-Vertrag
@@ -346,19 +346,19 @@ M1 selbst die erste Welle mit Zufallsverbrauch ist.
   Protocol-Adaptern). Entscheidung in Welle 2 final, ggf. mit
   kleinem Folge-ADR.
 - **`MLRandomPort`**: separater Port fuer ML/RL-Workloads
-  (`GG-FUTURE-001/002`); eigene ADR sobald MPC/RL aktiv wird.
+  ([`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002); eigene ADR sobald MPC/RL aktiv wird.
 - **`AsyncRandomPort`** fuer asyncio-Multi-Agent-Bus
-  (`GG-AGENT-008`): heute synchroner Vertrag; Async-Variante kommt
+  ([`GG-AGENT-008`](../../../spec/lastenheft.md#gg-agent-008)): heute synchroner Vertrag; Async-Variante kommt
   mit Multi-Agent-Slice.
 
 ---
 
 ## 7. Nicht Gegenstand dieser ADR
 
-- Wahl der ML/RL-Bibliothek (PyTorch vs. JAX) — siehe `GG-FUTURE-002`.
+- Wahl der ML/RL-Bibliothek (PyTorch vs. JAX) — siehe [`GG-FUTURE-002`](../../../spec/lastenheft.md#gg-future-002).
 - Kryptographisch sichere Zufallsquellen (`secrets`) — werden in
   `hexagon/core` nicht benoetigt; Authentifizierung ist
-  `GG-AR-OPEN-010` und kommt mit eigener Slice.
+  [`GG-AR-OPEN-010`](../../../spec/architecture.md#19-offene-architektonische-punkte) und kommt mit eigener Slice.
 - Quasi-zufaellige Sequenzen (Halton/Sobol) fuer Sampling-MPC —
   spaeter, eigene ADR.
 - Konkrete `random.Random`-Subclassing-Strategien (das ist

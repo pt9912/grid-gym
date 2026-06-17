@@ -35,7 +35,7 @@
 
 ## 1. Kontext
 
-`GG-MVP-002` (E2E-Szenario + deterministisches Replay) ist im
+[`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) (E2E-Szenario + deterministisches Replay) ist im
 **partial**-Stand. Welle **1a** ([ADR 0047](0047-telemetry-sink-timeseries-persistence.md))
 hat die erste Lücke geschlossen — produktive Telemetrie-Zeitreihen-
 Persistenz (`telemetry_points`, byte-stabiler `TEXT`-`value`).
@@ -48,7 +48,7 @@ persistierten Lauf liefert, und (b) der Lauf-Lifecycle-Hook, der
 Die [`M7-welle-1.md`](../planning/done-archive/M7-welle-1.md)-Sub-
 Slicing-Entscheidung (D-4 = B) schneidet Welle **1b** in **1b-a**
 (dieser ADR — Persistenz-Lese-Substanz) + **1b-b** (Lifecycle-
-Hook + `replay_diff_status` + `GG-TERM-002/003`-Preflight,
+Hook + `replay_diff_status` + [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Preflight,
 ADR 0049; 1b-a-D-1). ADR 0048 deckt ausschliesslich die
 `ReplaySnapshotPort`-Lese-/Rekonstruktions-Seite ab —
 **kein Core-Change** (reiner Driven-Adapter).
@@ -56,7 +56,7 @@ ADR 0049; 1b-a-D-1). ADR 0048 deckt ausschliesslich die
 **Code-Ist-Stand (verifiziert):**
 
 - `ReplaySample`-Domain (`hexagon/core/domain/replay.py:31-52`,
-  `GG-REPLAY-001/002/003`): Frozen-Dataclass, Felder `timestamp`
+  [`GG-REPLAY-001`](../../../spec/lastenheft.md#gg-replay-001)/002/003): Frozen-Dataclass, Felder `timestamp`
   (`str`), `simulation_time` (`int`), `device_id`, `metric`,
   `value` (`Decimal`), `unit`, `import_sequence` (`int`).
 - `diff_replay()` (`hexagon/core/replay/diff.py:63`): konsumiert
@@ -104,7 +104,7 @@ class ReplaySnapshotPort(Protocol):
   der Sink persistiert `TelemetryPoint`s; der Snapshot-Port
   rekonstruiert `ReplaySample`s — unterschiedliche Domain-Typen,
   unterschiedliche Konsumenten (1b-a-D-2). **NICHT** `SnapshotPort`
-  (`GG-AR-PORT-DRV-005`, **Driving**, ADR 0015) wiederverwenden:
+  ([`GG-AR-PORT-DRV-005`](../../../spec/architecture.md#driving-ports-vom-kern-angeboten), **Driving**, ADR 0015) wiederverwenden:
   eine Persistenz-Quelle aus einer Driving-Surface zu ziehen
   waere ein Schichten-Twist (Gruppenplan D-1).
 
@@ -124,7 +124,7 @@ wie `read_ordered`) und mappt **pro Zeile**
 | `metric` | `metric` | direkt. |
 | `unit` | `unit` | direkt. |
 | `value` | `Decimal(value)` aus `TEXT` | verlustfreier Round-Trip (1a §2.4). |
-| `import_sequence` | **0-basierte Enumeration ueber die `id`-Order** | deterministischer Tie-Break (`GG-REPLAY-003`). |
+| `import_sequence` | **0-basierte Enumeration ueber die `id`-Order** | deterministischer Tie-Break ([`GG-REPLAY-003`](../../../spec/lastenheft.md#gg-replay-003)). |
 | `timestamp` | **`str(simulation_time)`** | Derivations-Vertrag, siehe unten. |
 
 **Timestamp-Derivations-Vertrag (die D-1.1-Lücke):**
@@ -133,7 +133,7 @@ wie `read_ordered`) und mappt **pro Zeile**
 str(simulation_time)`) — **NICHT** aus `RunMetadata.started_at`
 (Wall-Clock) oder einem anderen lauf-variablen Wert.
 
-- **Begruendung:** `GG-REPLAY-002` definiert `timestamp` als
+- **Begruendung:** [`GG-REPLAY-002`](../../../spec/lastenheft.md#gg-replay-002) definiert `timestamp` als
   „unveraendert gespeicherten" Original-Zeitstempel. Fuer einen
   **simulations-erzeugten** (nicht extern aufgezeichneten) Lauf
   gibt es keinen externen Original-Stempel — der kanonische
@@ -141,7 +141,7 @@ str(simulation_time)`) — **NICHT** aus `RunMetadata.started_at`
 - **Determinismus-Konsequenz:** Zwei Laeufe desselben Szenarios
   (gleicher Seed/`tick_ms`/Szenario) erzeugen identische
   `simulation_time`-Folgen → identische `timestamp`-Werte →
-  leeren Replay-Diff (`GG-MVP-002`-Akzeptanz „byte-identische
+  leeren Replay-Diff ([`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Akzeptanz „byte-identische
   kanonische Ergebnisdateien oder leerer Replay-Diff"). Eine
   Wall-Clock-Ableitung wuerde den Self-Replay byte-instabil
   machen und den Determinismus-Beleg brechen.
@@ -181,7 +181,7 @@ arch-check` ([`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekt
 
 ## 3. Begruendung
 
-- **Zweite `GG-MVP-002`-Lücke vorbereiten.** Ohne eine Persistenz-
+- **Zweite [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Lücke vorbereiten.** Ohne eine Persistenz-
   Quelle fuer `ReplaySample`-Sequenzen kann der 1b-b-Lifecycle-
   Hook `diff_replay()` nicht mit `expected`-Samples speisen.
 - **Driven-Lese-Port-Konsistenz.** Der Snapshot-Port spiegelt das
@@ -191,7 +191,7 @@ arch-check` ([`AC-PORTS-NO-OUT`](0002-language-and-build-stack.md#a-1--architekt
 - **Timestamp-Determinismus ist Vertrags-kritisch.** Die
   `simulation_time`-Ableitung (statt Wall-Clock) ist die
   Voraussetzung fuer den byte-stabilen Self-Replay — die
-  zentrale `GG-MVP-002`-Akzeptanz.
+  zentrale [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Akzeptanz.
 - **Scope-Disziplin via No-New-Table.** Die telemetry_points-
   Wiederverwendung haelt 1b-a frei von Core-Change + zweiter
   Migration; der harte Teil (TickLoop-Terminal-Naht) bleibt
@@ -260,9 +260,9 @@ mit M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0049).
 
 - **Core-Spine-Lifecycle-Hook + `diff_replay()`-Aufruf +
   `replay_diff_status`-Metrik** — Welle 1b-b, **ADR 0049**.
-- **`GG-TERM-002/003`-MVP-E2E-Replay-Preflight** (5 vorhandene
+- **[`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-MVP-E2E-Replay-Preflight** (5 vorhandene
   `RunMetadata`-Felder) — Welle 1b-b, ADR 0049.
-- **Volle `GG-TERM-002/003`-Equality-Matrix** (`platform_arch`,
+- **Volle [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) —
   Carveout [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
   (1b-a-D-6).

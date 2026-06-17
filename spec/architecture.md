@@ -20,7 +20,7 @@ Injection, Agenten und Telemetrie strukturell verankert werden.
 Das Dokument ergaenzt das Lastenheft, ersetzt es nicht. Anforderungen
 referenzieren ihre `GG-*`-Kennung; Architekturkomponenten erhalten
 `GG-AR-*`-Kennungen fuer die Rueckverfolgbarkeit (Rueckverfolgbarkeits-
-tabelle weiter unten in diesem Dokument; `GG-TRACE-001` im Lastenheft).
+tabelle weiter unten in diesem Dokument; [`GG-TRACE-001`](lastenheft.md#gg-trace-001) im Lastenheft).
 Querverweis-Konvention: Kennungen sind primaere Referenz.
 
 Nicht Gegenstand dieses Dokuments:
@@ -84,8 +84,8 @@ Nicht Gegenstand dieses Dokuments:
 ```
 
 Alle Protokolladapter sind als Simulations- und Testadapter gekennzeichnet
-(`GG-AR-P-011`, `GG-SAFE-007`). Externe Netzwerkdienste sind fuer Demo- und
-Abnahmelaeufe nicht erforderlich (`GG-DEPLOY-011`).
+(`GG-AR-P-011`, [`GG-SAFE-007`](lastenheft.md#gg-safe-007)). Externe Netzwerkdienste sind fuer Demo- und
+Abnahmelaeufe nicht erforderlich ([`GG-DEPLOY-011`](lastenheft.md#gg-deploy-011)).
 
 Bezug: [`GG-ARCH-001`](lastenheft.md#gg-arch-001)/002/003, [`GG-PERSIST-005`](lastenheft.md#gg-persist-005), [`GG-DEPLOY-001`](lastenheft.md#gg-deploy-001)/002/011.
 
@@ -295,7 +295,7 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 | GG-AR-TABU-008 | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt | [`GG-CC-008`](lastenheft.md#gg-cc-008)                 |
 
 Diese Tabus werden durch Architekturtests erzwungen
-(`GG-ARCHTEST-001..005`; siehe `GG-AR-TEST-001` — Testarchitektur).
+([`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005; siehe `GG-AR-TEST-001` — Testarchitektur).
 
 ---
 
@@ -325,7 +325,7 @@ Diese Tabus werden durch Architekturtests erzwungen
 Der Tick-Loop ist die invariante Spine der Plattform. Live- und
 Replay-Laeufe nutzen denselben Prozessor (`GG-AR-P-007`). Innerhalb eines
 Ticks werden Schritte sequenziell ausgefuehrt; parallele Berechnung ist
-auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
+auf einen Tick beschraenkt und committet deterministisch ([`GG-SIM-004`](lastenheft.md#gg-sim-004)).
 
 Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert:
 
@@ -386,7 +386,7 @@ Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
 **Determinismusinvarianten:**
 
 - Tie-Breaking-Reihenfolge fuer Scheduler-Events ist dokumentiert und
-  getestet (`GG-ARCH-006`).
+  getestet ([`GG-ARCH-006`](lastenheft.md#gg-arch-006)).
 - AgentMessageBus-Sortierung `(simulation_time, sender, sequence)` ist
   deterministisch unabhaengig von Publish-Reihenfolge.
 - A0v/A0a-Trennung garantiert, dass ein
@@ -397,10 +397,10 @@ Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
   `AgentMessageBus`) ist Sub-Snapshot-persistiert, damit Snapshots
   zwischen Agent-Tick und Folgetick keine Commands verlieren.
 - Eingangswerte ohne gueltige Quelle werden mit Qualitaetsstatus
-  markiert, nie ungeprueft uebernommen (`GG-SAFE-001..004`,
+  markiert, nie ungeprueft uebernommen ([`GG-SAFE-001`](lastenheft.md#gg-safe-001)..004,
   `GG-AR-P-010`).
 - Persistenz darf gepuffert sein, solange Commit-Reihenfolge fachlich
-  stabil bleibt (`GG-RT-005`).
+  stabil bleibt ([`GG-RT-005`](lastenheft.md#gg-rt-005)).
 
 ---
 
@@ -462,8 +462,8 @@ FaultDefinition {
 }
 ```
 
-Alle Domain-Objekte sind unveraenderlich (`GG-CC-007`, `GG-AR-TABU-006`).
-Kanonische Serialisierung folgt `GG-DATA-005` (stabile Feldreihenfolge,
+Alle Domain-Objekte sind unveraenderlich ([`GG-CC-007`](lastenheft.md#gg-cc-007), `GG-AR-TABU-006`).
+Kanonische Serialisierung folgt [`GG-DATA-005`](lastenheft.md#gg-data-005) (stabile Feldreihenfolge,
 maximal sechs Nachkommastellen, ISO-8601-UTC oder ganzzahlige
 Simulationszeit in ms, Integer-Sequenzen).
 
@@ -485,9 +485,9 @@ Simulationszeit in ms, Integer-Sequenzen).
 | `WS   /runs/{id}/telemetry` | Live-Telemetrie-Stream (sortiert, sequenziert) | [`GG-API-002`](lastenheft.md#gg-api-002)                |
 | `GET  /openapi.json`        | OpenAPI-Vertrag                                | [`GG-API-003`](lastenheft.md#gg-api-003)                |
 
-Fehlerantworten folgen `GG-API-004`: `code`, `message`, `details`,
+Fehlerantworten folgen [`GG-API-004`](lastenheft.md#gg-api-004): `code`, `message`, `details`,
 `run_id?`, stabiler HTTP-Status. Eingaben werden vor Eintritt in den
-Simulationskern validiert (`GG-SAFE-008`).
+Simulationskern validiert ([`GG-SAFE-008`](lastenheft.md#gg-safe-008)).
 
 ### 8.2 Adapter-Interfaces (Driven)
 
@@ -530,7 +530,7 @@ Simulationskern validiert (`GG-SAFE-008`).
 `ConfigPort` liefert eine geschichtete Konfiguration in fester
 Praezedenz: CLI-Flags > Umgebungsvariablen > Konfigurationsdatei >
 eingebaute Defaults. Geheimnisse werden nie in Klartext geloggt
-(`GG-OTEL-002`).
+([`GG-OTEL-002`](lastenheft.md#gg-otel-002)).
 
 ---
 
@@ -552,7 +552,7 @@ Modulvertrag.
 Die Plattform unterscheidet **logische Tick-Dauer** (10 ms … 1 s) und
 **Wall-Clock-Verhalten** (Beschleunigung `0.5x / 1x / 10x / unbounded`).
 10 ms Tick ist im MVP ein Mess-/Diagnosemodus, kein garantierter
-Echtzeitbetrieb (`GG-RT-001`).
+Echtzeitbetrieb ([`GG-RT-001`](lastenheft.md#gg-rt-001)).
 
 ---
 
@@ -561,23 +561,23 @@ Echtzeitbetrieb (`GG-RT-001`).
 ### 10.1 Eingabe-Sicherheit
 
 - Externe Schnittstellen validieren Schema, Wertebereich, Zielressource
-  (`GG-SAFE-008`).
+  ([`GG-SAFE-008`](lastenheft.md#gg-safe-008)).
 - Stale-, NaN-, missing- und fault-injected-Werte werden vor
-  Zustandsfortschreibung erkannt und markiert (`GG-SAFE-001..004`).
-- Batteriemodell-spezifische Sicherheit (`GG-BESS-002/005`) ist in
+  Zustandsfortschreibung erkannt und markiert ([`GG-SAFE-001`](lastenheft.md#gg-safe-001)..004).
+- Batteriemodell-spezifische Sicherheit ([`GG-BESS-002`](lastenheft.md#gg-bess-002)/005) ist in
   `hexagon/core/devices/battery` lokalisiert, nicht im Adapter.
 
 ### 10.2 Sicherer Fallback
 
 Geraetemodelle SOLLTEN dokumentierte Fallback-Zustaende anbieten
-(`GG-SAFE-005`). Auslosung, Zielzustand, Telemetrie und Recovery
+([`GG-SAFE-005`](lastenheft.md#gg-safe-005)). Auslosung, Zielzustand, Telemetrie und Recovery
 gehoeren zur Modelldefinition, nicht zum Adapter.
 
 ### 10.3 Trennung Simulation vs. Produktion
 
 UI, OpenAPI-Beschreibung und Adapterkonfiguration kennzeichnen
-Simulationsadapter als nicht-produktiv (`GG-SAFE-007`,
-`GG-NONGOAL-001`). Die Architektur verhindert ueber `GG-AR-TABU-003`,
+Simulationsadapter als nicht-produktiv ([`GG-SAFE-007`](lastenheft.md#gg-safe-007),
+[`GG-NONGOAL-001`](lastenheft.md#gg-nongoal-001)). Die Architektur verhindert ueber `GG-AR-TABU-003`,
 dass Adapter fachliche Schreibwege an reale Anlagen oeffnen.
 
 ---
@@ -599,14 +599,14 @@ PostgreSQL  ←  Pflicht-MVP-Speicher (GG-PERSIST-005)
 Optionale Adapter:
 
 - **TimescaleDB** als drop-in fuer `telemetry_points` (Hypertables),
-  ohne Domain-Eingriff (`GG-PERSIST-006`).
+  ohne Domain-Eingriff ([`GG-PERSIST-006`](lastenheft.md#gg-persist-006)).
 - **InfluxDB** als alternativer Telemetry-Sink mit dokumentierten
-  Buckets/Tags (`GG-PERSIST-007`).
+  Buckets/Tags ([`GG-PERSIST-007`](lastenheft.md#gg-persist-007)).
 
 `RunRepositoryPort.delete(run_id)` entfernt alle laufbezogenen Datensaetze
-atomar, ohne andere Laeufe zu beruehren (`GG-PERSIST-009`).
+atomar, ohne andere Laeufe zu beruehren ([`GG-PERSIST-009`](lastenheft.md#gg-persist-009)).
 Erfassungszeit (`ingest_ts`) ist Betriebsmetadatum und im Replay-Diff
-als volatil klassifiziert (`GG-PERSIST-007`, `GG-REPLAY-007`).
+als volatil klassifiziert ([`GG-PERSIST-007`](lastenheft.md#gg-persist-007), [`GG-REPLAY-007`](lastenheft.md#gg-replay-007)).
 
 ---
 
@@ -616,7 +616,7 @@ als volatil klassifiziert (`GG-PERSIST-007`, `GG-REPLAY-007`).
 
 Szenarien sind YAML-Dateien mit `schema_version`, `metadata`,
 `simulation`, `devices`, optional `events`, `replay`, `faults`
-(`GG-SCN-001`). Beispiel: das YAML-Snippet zu `GG-SCN-001..008` im Lastenheft.
+([`GG-SCN-001`](lastenheft.md#gg-scn-001)). Beispiel: das YAML-Snippet zu [`GG-SCN-001`](lastenheft.md#gg-scn-001)..008 im Lastenheft.
 
 ### 12.2 Validierungs-Pipeline
 
@@ -639,8 +639,8 @@ YAML
 ```
 
 Ein Szenario wird **erst nach erfolgreicher Validierung** dem Tick-Loop
-uebergeben. Validierungsfehler verhindern den Lauf (`GG-SCN-008`,
-`GG-BESS-008`).
+uebergeben. Validierungsfehler verhindern den Lauf ([`GG-SCN-008`](lastenheft.md#gg-scn-008),
+[`GG-BESS-008`](lastenheft.md#gg-bess-008)).
 
 ### 12.3 Plattformkonfiguration
 
@@ -653,9 +653,9 @@ nicht im Code (`GG-AR-P-013`).
 ## 13. Fault-Injection-Architektur
 
 Faults sind erstklassige Domain-Events. Sie werden im Szenario deklariert
-(`GG-SCN-006`), vor dem ersten Tick validiert, im Tick-Loop als Events
+([`GG-SCN-006`](lastenheft.md#gg-scn-006)), vor dem ersten Tick validiert, im Tick-Loop als Events
 verarbeitet und in Laufmetadaten + Telemetrie persistiert
-(`GG-FAULT-010`).
+([`GG-FAULT-010`](lastenheft.md#gg-fault-010)).
 
 ```text
 ScenarioFaults  ──▶  FaultRegistry  ──▶  FaultRuntime  ──▶  Telemetry+Alarms
@@ -715,18 +715,18 @@ Roadmap, ADR-Folgepflege oder Closure-Notizen (analog zur
 
 ## 14. Multi-Agent-Subsystem (optional)
 
-Agenten sind ein SOLLTE-Feature (`GG-AGENT-001`). Architektonisch sind sie
+Agenten sind ein SOLLTE-Feature ([`GG-AGENT-001`](lastenheft.md#gg-agent-001)). Architektonisch sind sie
 ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 
 - liest ueber `ClockPort` und `TelemetryQueryPort`,
 - schreibt ueber `RunControlPort`/`DeviceProtocolPort`-Mapping nur per
   `Command`-Pfad,
 - nutzt einen eigenen, deterministisch sortierten `AgentMessageBus`
-  (`GG-AGENT-004/008`),
-- ist isoliert testbar (`GG-AGENT-002`),
-- ist snapshot-/replay-faehig (`GG-AGENT-006`, `GG-AGENT-003`).
+  ([`GG-AGENT-004`](lastenheft.md#gg-agent-004)/008),
+- ist isoliert testbar ([`GG-AGENT-002`](lastenheft.md#gg-agent-002)),
+- ist snapshot-/replay-faehig ([`GG-AGENT-006`](lastenheft.md#gg-agent-006), [`GG-AGENT-003`](lastenheft.md#gg-agent-003)).
 
-Konkurrierende Strategien (`GG-AGENT-005`) werden durch dokumentierte
+Konkurrierende Strategien ([`GG-AGENT-005`](lastenheft.md#gg-agent-005)) werden durch dokumentierte
 Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 
 **Produktive Surface:**
@@ -781,8 +781,8 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 **Erweiterungspunkte fuer Agenten:** Die Architektur erlaubt konkrete
 `AgentPlugin`-Implementer wie `LearnedPolicy` oder `MPCController`,
 Plugin-State-Restore in `RuleBasedAgent.from_snapshot`,
-Priorisierung konkurrierender Agents (`GG-AGENT-005`), Deadlines
-(`GG-AGENT-007`), asynchrone Agent-Ausfuehrung (`GG-AGENT-008`) und
+Priorisierung konkurrierender Agents ([`GG-AGENT-005`](lastenheft.md#gg-agent-005)), Deadlines
+([`GG-AGENT-007`](lastenheft.md#gg-agent-007)), asynchrone Agent-Ausfuehrung ([`GG-AGENT-008`](lastenheft.md#gg-agent-008)) und
 Telemetry-Forwarding ueber eine TickLoop-Bridge oder
 `TelemetryQueryPort`. Diese Punkte bleiben Architektur-Erweiterungen;
 Lieferzeitpunkt und Slice-Zuschnitt gehoeren in Roadmap, ADR-Folgepflege
@@ -886,12 +886,12 @@ docker compose up
 
 Vertraege:
 
-- Lauffaehig offline (`GG-DEPLOY-002/011`).
-- Linux x86_64 ist Referenzumgebung (`GG-DEPLOY-003`).
-- DevContainer ist SOLLTE (`GG-DEPLOY-004`).
+- Lauffaehig offline ([`GG-DEPLOY-002`](lastenheft.md#gg-deploy-002)/011).
+- Linux x86_64 ist Referenzumgebung ([`GG-DEPLOY-003`](lastenheft.md#gg-deploy-003)).
+- DevContainer ist SOLLTE ([`GG-DEPLOY-004`](lastenheft.md#gg-deploy-004)).
 - Kubernetes-Manifeste sind SOLLTE; Rolling Update, Zero-Downtime und
   Rollback sind explizit als Trigger-getriebene Folgearbeit dokumentiert
-  (`GG-DEPLOY-007..010`).
+  ([`GG-DEPLOY-007`](lastenheft.md#gg-deploy-007)..010).
 
 API, Simulation und UI MUESSEN getrennte Healthchecks liefern; die
 Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
@@ -912,22 +912,22 @@ Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
 | E2E / Demo-Abnahme | `tests/e2e/demo`                                  | [`GG-TESTTYPE-005`](lastenheft.md#gg-testtype-005), `GG-DEMO-*`            | <!-- d-check:ignore (geplant: E2E-Verzeichnis nicht angelegt; Demo-Abnahme via make accept, `GG-MVP-003`) -->
 | Replay-Diff-Tests  | Golden-File-Vergleich (Referenzlauf)              | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-REPLAY-007`](lastenheft.md#gg-replay-007)             |
 | Fault-Tests        | scenario-driven                                   | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                     |
-| Performance-Tests  | Referenzumgebung aus `GG-RT-001`-Akzeptanz        | [`GG-TESTTYPE-006`](lastenheft.md#gg-testtype-006), [`GG-RT-004`](lastenheft.md#gg-rt-004)/005        |
+| Performance-Tests  | Referenzumgebung aus [`GG-RT-001`](lastenheft.md#gg-rt-001)-Akzeptanz        | [`GG-TESTTYPE-006`](lastenheft.md#gg-testtype-006), [`GG-RT-004`](lastenheft.md#gg-rt-004)/005        |
 | Security-Tests     | Dependency-/Schwachstellen-Scan                   | [`GG-TESTTYPE-007`](lastenheft.md#gg-testtype-007), [`GG-CICD-005`](lastenheft.md#gg-cicd-005)/006      |
 
 Architekturtests sind ein **Quality Gate**: Verletzungen brechen den
-Build (`GG-AR-TABU-001..008`, `GG-ARCHTEST-001..005`).
+Build (`GG-AR-TABU-001..008`, [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005).
 
 ---
 
 ## 18. Rueckverfolgbarkeit Architektur ↔ Lastenheft
 
 Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
-`GG-TRACE-001` (Lastenheft §27.1).
+[`GG-TRACE-001`](lastenheft.md#gg-trace-001) (Lastenheft §27.1).
 
 | Architekturartefakt                                 | Lastenheft-Anforderung(en)                                                                                                                                                                                                                   |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GG-AR-P-001..014` Architekturprinzipien            | [`GG-ARCH-001`](lastenheft.md#gg-arch-001)..008, [`GG-PRINC-001`](lastenheft.md#gg-princ-001)..006, [`GG-CC-001`](lastenheft.md#gg-cc-001)..008 (Detail-Mapping pro `GG-PRINC-*` siehe `GG-TRACE-001` in `lastenheft.md` §27.1)                                                                                                          |
+| `GG-AR-P-001..014` Architekturprinzipien            | [`GG-ARCH-001`](lastenheft.md#gg-arch-001)..008, [`GG-PRINC-001`](lastenheft.md#gg-princ-001)..006, [`GG-CC-001`](lastenheft.md#gg-cc-001)..008 (Detail-Mapping pro `GG-PRINC-*` siehe [`GG-TRACE-001`](lastenheft.md#gg-trace-001) in `lastenheft.md` §27.1)                                                                                                          |
 | Schichtenmodell                                     | [`GG-ARCH-001`](lastenheft.md#gg-arch-001)/002                                                                                                                                                                                                                              |
 | Hexagonale Sicht (`GG-AR-P-002`)                    | [`GG-ARCH-002`](lastenheft.md#gg-arch-002)/003, [`GG-PRINC-003`](lastenheft.md#gg-princ-003)..006                                                                                                                                                                                                           |
 | `GG-AR-TABU-001..008` Architektur-Tabus             | [`GG-PRINC-006`](lastenheft.md#gg-princ-006), [`GG-CC-002`](lastenheft.md#gg-cc-002)/003/004/006/007/008, [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005                                                                                                                                                                            |
@@ -962,7 +962,7 @@ Diese Tabelle ist die Quelle fuer die Design-Mapping-Tabelle in
 | GG-AR-OPEN-005 | Replay-Diff-Klassifikation: Liste fachlich vs. volatil als Konfiguration oder hartcodiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
 | GG-AR-OPEN-006 | Snapshot-Format: einheitlich JSON-kanonisch, binaer, oder hybrid?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Offen                    |
 | GG-AR-OPEN-007 | UI-Architektur: SSR vs. SPA; eigene REST-Konsumentenschicht oder direkte WebSocket-Anbindung?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Offen                    |
-| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE (`GG-OTEL-001`) — **Geschlossen** mit [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) (`Accepted`): Port-Trio `LogPort`/`MetricsPort`/`TracePort` ist Pflicht-Surface (Default-Verkabelung Null-Adapter, keine externer Side-Effekt ohne explizite Injektion). OTLP-Adapter-Trio (`adapters/driven/telemetry_otlp/`) ist produktiv; `otel-collector`-Sibling in `deploy/compose.yml` und Compose-Smoke-Determinismus-Pattern fixiert. `GG-OTEL-001` bleibt formal SOLLTE — die Architektur stellt die Pflicht-Surface, die Adapter-Wahl ist Deployment-Entscheidung.                                                                                                                                                                                                                                                  | Geschlossen (2026-05-25) |
+| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE ([`GG-OTEL-001`](lastenheft.md#gg-otel-001)) — **Geschlossen** mit [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) (`Accepted`): Port-Trio `LogPort`/`MetricsPort`/`TracePort` ist Pflicht-Surface (Default-Verkabelung Null-Adapter, keine externer Side-Effekt ohne explizite Injektion). OTLP-Adapter-Trio (`adapters/driven/telemetry_otlp/`) ist produktiv; `otel-collector`-Sibling in `deploy/compose.yml` und Compose-Smoke-Determinismus-Pattern fixiert. [`GG-OTEL-001`](lastenheft.md#gg-otel-001) bleibt formal SOLLTE — die Architektur stellt die Pflicht-Surface, die Adapter-Wahl ist Deployment-Entscheidung.                                                                                                                                                                                                                                                  | Geschlossen (2026-05-25) |
 | GG-AR-OPEN-009 | Welche Protokolladapter sind ab MVP enthalten? Heute alle SOLLTE (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Offen                    |
 | GG-AR-OPEN-010 | Authentifizierung der API — heute nicht im Lastenheft normiert; spaetere `GG-SAFE-…`-Erweiterung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Offen                    |
 
@@ -1002,7 +1002,7 @@ Referenzrichtungs-Gate (`matrix`) ausgenommen.
 
 | Surface / Komponente | ADR |
 | --- | --- |
-| Sprach-/Build-Wahl, Domain-/No-Wall-Clock-Contracts (`AC-DOMAIN-FROZEN`, `AC-NO-TIME`, `AC-OTLP-ADAPTER-NO-TIME`) | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
+| Sprach-/Build-Wahl, Domain-/No-Wall-Clock-Contracts ([`AC-DOMAIN-FROZEN`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-TIME`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-OTLP-ADAPTER-NO-TIME`](../docs/plan/adr/0024-observability-port-trio.md)) | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
 | Kennungs-Querverweis-Konvention | [`ADR 0004`](../docs/plan/adr/0004-identifier-based-cross-references.md) |
 | `RandomPort` — PRNG-Wahl + Seeding-Kette | [`ADR 0007`](../docs/plan/adr/0007-random-port.md) |
 | `SnapshotEnvelope` — additive Sub-Snapshots | [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3 |

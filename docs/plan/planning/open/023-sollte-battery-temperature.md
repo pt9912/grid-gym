@@ -10,13 +10,13 @@ Snapshot-Serialisierung ohne Versions-Bump
 `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §10.6 (`GG-BESS-006`/`007`).
+(Welle-7-Erbschaft); Lastenheft §10.6 ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)/`007`).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-BESS-006` definiert **Temperatur-Telemetry** als
+Lastenheft [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006) definiert **Temperatur-Telemetry** als
 SOLLTE-Erweiterung des Battery-Modells. M2 deckt
 ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) nur
 SOC, Strom, Spannung, Ramp ab. Temperatur ist relevant fuer
@@ -37,7 +37,7 @@ SOC, Strom, Spannung, Ramp ab. Temperatur ist relevant fuer
   (additiv; Snapshot-Schema bleibt v2-kompatibel, weil das
   Sub-Snapshot per [`ADR 0015`](../../adr/0015-snapshot-envelope-v2.md) §2.3 frei erweiterbar ist).
 - Telemetry-Metric `temperature_celsius` (SI-Einheit per
-  `GG-DATA-002`).
+  [`GG-DATA-002`](../../../../spec/lastenheft.md#gg-data-002)).
 - Property-Test fuer T-Determinismus.
 
 ## Aktivierungs-Kriterium

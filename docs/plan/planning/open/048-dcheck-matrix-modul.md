@@ -7,7 +7,7 @@ umgesetzt via Slice [`049`](../done/049-sdp-matrix-doku-umbau.md): das
 deprecated]` + `exclude-sections` fuer die `## Historie`-/Traceability-
 Sektionen). Die Spec-Straten wurden zeitlos umgebaut (ADR-/Welle-/Status-
 Provenance in ausgenommene `## Historie`-Sektionen); `make docs-check` gruen.
-`ADR 0004`-Bezug bereinigt, `ADR 0006`-Supersede-Lineage als Inline-Code (kein
+[`ADR 0004`](../../adr/0004-identifier-based-cross-references.md)-Bezug bereinigt, [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Supersede-Lineage als Inline-Code (kein
 Lineage-Carve-out im Modul → offener d-check-CR, siehe unten). Doc-
 Archivierung nach `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-06-16
@@ -55,16 +55,16 @@ Die 117 Richtungs-Befunde verteilen sich auf:
 Die 2 Status-Befunde:
 
 - `docs/plan/adr/0004-identifier-based-cross-references.md` Z. 6
-  (`**Bezug:**`) → `ADR 0003`
+  (`**Bezug:**`) → `ADR 0003` <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
   (Status `Superseded`). **Echter Befund** — der Bezug zeigt auf eine
   abgeloeste ADR und sollte auf die abloesende
   [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
   zeigen.
 - `docs/plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md`
-  Z. 6 (`**Bezug:**`) → `ADR 0003`.
+  Z. 6 (`**Bezug:**`) → `ADR 0003`. <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
   **Grenzfall** — [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
   *ist* die abloesende ADR; ihr Verweis auf
-  `ADR 0003` ist legitime
+  `ADR 0003` ist legitime <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
   Supersede-Lineage (Regelwerk Regel 2: ADR→ADR-Lineage ist normativ).
   Das `matrix`-Modul kennt heute keinen Lineage-Carve-out → potenzieller
   d-check-Change-Request (Supersedes-Feld als erlaubte Kante).
@@ -119,7 +119,7 @@ eigenen Doku-Umbau-Slice planen.
 3. **Bezug-Fix** in
    [ADR 0004](../../adr/0004-identifier-based-cross-references.md):
    Bezug von der abgeloesten
-   `ADR 0003` auf
+   `ADR 0003` auf <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
    [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
    umstellen — **Achtung Pflege-Regel
    [ADR 0001](../../adr/0001-documentation-and-planning-structure.md) §4:

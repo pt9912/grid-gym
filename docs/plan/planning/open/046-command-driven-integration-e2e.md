@@ -11,7 +11,7 @@
 ## Kontext
 
 Jedes der vier SOLLTE-Geraete (EV-Charger, Transformer, Wind-Turbine,
-Diesel-Generator; `GG-DEV-015..018`) bringt eine `apply_command`-
+Diesel-Generator; [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018) bringt eine `apply_command`-
 Implementierung mit (Geraete-`_protocol.py`-Vertrag,
 `src/grid_gym/hexagon/core/devices/_protocol.py`). Die zugehoerigen
 Szenario-Smokes — `tests/integration/test_ev_charger_scenario.py`,

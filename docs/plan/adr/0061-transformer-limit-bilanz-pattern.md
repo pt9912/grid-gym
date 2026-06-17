@@ -27,7 +27,7 @@ Transformer-Block + Thermo-State),
 Pattern). Slice-Plan
 [`M8-welle-3b.md`](../planning/done/M8-welle-3b.md); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`021`](../planning/open/021-sollte-transformer-limits.md) (`GG-GRID-006`,
+[`021`](../planning/open/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006),
 Lastenheft §11.5).
 
 ---
@@ -36,7 +36,7 @@ Lastenheft §11.5).
 
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) kennt im Netzbilanzmodell
 nur Frequenz-/Spannungs-Clamps — **keine Wandlungs-/Belastungsgrenze**.
-Lastenheft `GG-GRID-006` (Trigger
+Lastenheft [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006) (Trigger
 [`021`](../planning/open/021-sollte-transformer-limits.md)) verlangt
 **Transformatorgrenzen auf Bilanz-Ebene**: eine Scheinleistungs-Grenze
 mit Ueberlast-Zeit-Strom-Verhalten und einem vereinfachten Thermomodell
@@ -84,7 +84,7 @@ mit `__post_init__`-Validierung (Pattern-Spiegel zu
 | `top_oil_time_constant_s` | s | `> 0` (Oel-Zeitkonstante τ) |
 | `hot_spot_limit_c` | °C | `> ambient_temp_c` (Ausloese-Schwelle) |
 
-Alle Felder `Decimal` (`GG-DATA-005` no-float-Pruefung). `hot_spot_limit_c >
+Alle Felder `Decimal` ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005) no-float-Pruefung). `hot_spot_limit_c >
 ambient_temp_c` schliesst aus, dass das Modell bei Nulllast ausloest.
 
 Eine geometrische Stabilitaets-Bedingung (`τ ≥ tick_ms/1000`) wird **nicht**
@@ -254,7 +254,7 @@ Feld), `hexagon/core/grid_model/bilanz.py` (Thermo-Step + State + Emission),
 Block, optional), `tests/unit/hexagon/core/grid_model|simulation|scenario/`.
 
 Gilt NICHT fuer: Blindleistung / `S = sqrt(P²+Q²)`
-([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), `GG-GRID-007`),
+([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)),
 Schutzgeraete-Logik (M4), Asset-Lifecycle/Reparatur, IEC-Loading-Guide-
 Mehrzonen-Thermik (§7).
 

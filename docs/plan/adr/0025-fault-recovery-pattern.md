@@ -43,9 +43,9 @@ um Recovery-Semantik, kein Supersedes).
 M3-Slice-Plan
 [`in-progress/M3-faults-agents-observability.md`](../planning/done-archive/M3-faults-agents-observability.md)
 §3 Welle 2.
-Lastenheft §14 Fault Injection (`GG-FAULT-001..010`;
+Lastenheft §14 Fault Injection ([`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010;
 insbesondere die Recovery-Pflicht aus
-`GG-FAULT-003`/`004`/`005`).
+[`GG-FAULT-003`](../../../spec/lastenheft.md#gg-fault-003)/`004`/`005`).
 
 ---
 

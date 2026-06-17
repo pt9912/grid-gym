@@ -9,19 +9,19 @@ Zeit-Strom-Mechanismus) + pro-Tick `GridConstraintViolationEvent` in
 `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §11.5 (`GG-GRID-005..007`).
+(Welle-7-Erbschaft); Lastenheft §11.5 ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-GRID-006` definiert **Transformatorgrenzen** im
+Lastenheft [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006) definiert **Transformatorgrenzen** im
 Netzbilanzmodell als SOLLTE-Item. M2 deckt das nicht ab;
 `GridModelBilanz` ([`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))
 kennt aktuell nur Frequenz- und Spannungs-Clamps, aber keine
 Wandlungs-Grenzen oder Saettigung.
 
-Klare Abgrenzung zu Trigger 017 (`GG-DEV-016` Transformer-Device):
+Klare Abgrenzung zu Trigger 017 ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) Transformer-Device):
 Trigger 017 ist ein eigenstaendiges Geraetemodell; Trigger 021
 ist eine **Erweiterung des Bilanzmodells** um Trafo-Grenzwerte
 (z. B. Ueberlast-Schutzkennlinien, thermische Grenzen).

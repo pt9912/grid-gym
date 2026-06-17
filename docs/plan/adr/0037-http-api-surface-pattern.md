@@ -7,7 +7,7 @@
 unit + 41 integration Tests; 10/10 A-1-Gates gruen).
 Initial-Entwurf (`Proposed`) 2026-06-01 mit M5-Welle-1-C1
 `d468e68`. Die ADR schaerft die HTTP-API-Surface
-(`GG-API-001..004`) aus
+([`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004) aus
 [`../../../spec/lastenheft.md §16`](../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
 konkret fuer M5-Welle-1-Implementation und schliesst zwei
 Decisions aus der M5-Welle-0-Decision-Liste (siehe
@@ -26,7 +26,7 @@ Commit)
 - [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
   (Schaerfungs-ohne-Supersede-Pattern — ADR 0037 schaerft
   ADR 0030 §2.1 konkret fuer Driving-Ports und
-  konkretisiert `GG-API-001..004` aus Lastenheft §16).
+  konkretisiert [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004 aus Lastenheft §16).
 - [`ADR 0030`](0030-device-protocol-port-surface.md) §2.1
   (Adapter-Hexagon-Pattern; ADR 0037 spiegelt das Pattern
   auf die Driving-Side: `GG-AR-PORT-DRV-*`-Familie statt
@@ -37,11 +37,11 @@ Commit)
   die HTTP-API-Surface, auf der die HTMX/Jinja2-UI ab
   Welle 2 aufbaut).
 - [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
-  (`GG-API-001..004` Kommunikationsschnittstellen mit
+  ([`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004 Kommunikationsschnittstellen mit
   REST + WebSocket + OpenAPI + Standard-Fehlerformat).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
   (`GG-AR-PORT-DRV-*`-Driving-Port-Familie) + §5
-  (`GG-AR-COMP-API`-Slot in `adapters/driving/http_api/`).
+  ([`GG-AR-COMP-API`](../../../spec/architecture.md#5-komponentensicht)-Slot in `adapters/driving/http_api/`).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
 - [`../planning/done/M5-welle-1.md §3`](../planning/done-archive/M5-welle-1.md)
@@ -58,7 +58,7 @@ Commit)
 M1-Welle-7 hat die HTTP-API-Surface als Stub angelegt
 (`GET /health` + `POST /runs` + `GET /openapi.json`). M5-
 Welle-1 erweitert sie zur vollen REST + WebSocket-Surface
-gemaess `GG-API-001..004`. Zwei Architektur-Entscheidungen
+gemaess [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004. Zwei Architektur-Entscheidungen
 muessen vor C2-Code-Lieferung geklaert werden:
 
 - **Decision 4 (Replay-Controls-API-Vertrag)** — wie wird
@@ -70,7 +70,7 @@ muessen vor C2-Code-Lieferung geklaert werden:
 Plus ein dritter, kleinerer Punkt:
 
 - **Decision RT (Roadmap-Typo)** — Roadmap §3 M5 erwaehnt
-  `GG-AR-PORT-DRG-002` als „UICommandPort, sofern getrennt
+  `GG-AR-PORT-DRG-002` als „UICommandPort, sofern getrennt <!-- d-check:ignore (verworfener Slot, nie in spec — nicht verlinkbar) -->
   vom HTTP-API". Der Slot-Suffix `DRG-` ist ein Typo gegen
   Architektur-§4.2-Konvention `DRV-*` (Driving-Ports);
   `DRV-002` ist bereits `ScenarioPort` vergeben. Decision RT
@@ -169,12 +169,12 @@ UI nutzt die HTTP-API direkt via REST + WebSocket.
 **Konsequenz fuer Roadmap §3 M5:** der Hinweis „sofern
 getrennt vom HTTP-API" wird im Welle-1-C3-Doku-Sync als
 **verworfen** markiert. Roadmap-Bullet wird umformuliert
-auf „UI nutzt `GG-API-001/002/003` direkt — kein separater
+auf „UI nutzt [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)/002/003 direkt — kein separater
 UICommandPort-Slot (siehe ADR 0037 §2.2)".
 
 ### 2.3 Decision API-3 (Roadmap-Typo `DRG-002`) — Slot-Name verworfen
 
-**Gewaehlt:** Slot-Name `GG-AR-PORT-DRG-002` wird
+**Gewaehlt:** Slot-Name `GG-AR-PORT-DRG-002` wird <!-- d-check:ignore (verworfener Slot, nie in spec — nicht verlinkbar) -->
 **verworfen**. Es gibt keinen neuen Driving-Port-Slot fuer
 „UICommandPort" (siehe Decision API-2). Der Typo
 `DRG-` ist semantisch ungebraucht; die naechste freie
@@ -234,10 +234,10 @@ zugewiesen).
 - **Echte `TickLoop`-Pause/Resume-Wiring** — Welle 4.
 - **Echte `FaultPort`-Submit-Wiring** — Welle 6.
 - **Echte `TelemetrySinkPort`-WebSocket-Producer** — Welle 3.
-- **Multi-User-Auth** — M6 (`GG-SAFE-001..006`).
+- **Multi-User-Auth** — M6 ([`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)..006).
 - **Rate-Limiting / API-Throttling** — M6.
 - **GraphQL- oder gRPC-Alternativen** — strukturell
-  ausgeschlossen fuer M5; `GG-API-001..004` verlangt REST
+  ausgeschlossen fuer M5; [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004 verlangt REST
   + WebSocket explizit.
 
 ## 5. Status-Pfad
@@ -256,7 +256,7 @@ zugewiesen).
   Body-Validation; Decision API-2 produktiv durch
   Abwesenheit eines `UICommandPort`-Slots im Repo;
   Decision API-3 in C3 (dieser Commit) durch
-  `roadmap.md §3 M5`-Edit (`GG-AR-PORT-DRG-002` → Verwerfung).
+  `roadmap.md §3 M5`-Edit (`GG-AR-PORT-DRG-002` → Verwerfung). <!-- d-check:ignore (verworfener Slot, nie in spec — nicht verlinkbar) -->
 - **Accepted** — 2026-06-04 mit M5-Welle-7-C1 (dieser
   Commit; M5-Closure-Welle). Welle 1..6c haben die HTTP-
   API-Surface produktiv-belegt; keine offenen Decisions
@@ -284,10 +284,10 @@ zugewiesen).
   (UI-Stack-Wahl mit FastAPI + HTMX; ADR 0037 liefert
   die HTTP-API-Surface, auf der HTMX-UI aufbaut).
 - [Lastenheft §16](../../../spec/lastenheft.md#16-kommunikationsschnittstellen)
-  (`GG-API-001..004`).
+  ([`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004).
 - [Architektur §4.2 + §5](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports)
   (Driving-Port-Familie `GG-AR-PORT-DRV-*`,
-  `GG-AR-COMP-API`-Slot).
+  [`GG-AR-COMP-API`](../../../spec/architecture.md#5-komponentensicht)-Slot).
 - [`../planning/done/M5-welle-0.md §3`](../planning/done-archive/M5-welle-0.md)
   Decisions 4 + 9 + Decision-9-Roadmap-Typo-Notiz.
 - [`../planning/done/M5-welle-1.md §3`](../planning/done-archive/M5-welle-1.md)

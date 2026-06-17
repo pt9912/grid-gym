@@ -2,13 +2,13 @@
 
 **Quelle:** M6-Welle-5a-C2 (Quality-Pipeline-Audit;
 [`../plan/planning/done/M6-welle-5a.md`](../plan/planning/done-archive/M6-welle-5a.md)).
-**Stand:** 2026-06-06 (Welle-5a-Audit) · `GG-SAFE-004`-Flip
+**Stand:** 2026-06-06 (Welle-5a-Audit) · [`GG-SAFE-004`](../../spec/lastenheft.md#gg-safe-004)-Flip
 ✗ → ✓ 2026-06-11 (M7-Welle-3a-C2, [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md)) ·
-`GG-SAFE-003`-Flip ⚠ → ✓ 2026-06-11 (M7-Welle-3b-C2, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md))
-— **alle vier `GG-SAFE-001..004`-MUSS-IDs produktiv**.
+[`GG-SAFE-003`](../../spec/lastenheft.md#gg-safe-003)-Flip ⚠ → ✓ 2026-06-11 (M7-Welle-3b-C2, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md))
+— **alle vier [`GG-SAFE-001`](../../spec/lastenheft.md#gg-safe-001)..004-MUSS-IDs produktiv**.
 
 Dieses Dokument auditiert die existierende Quality-Pipeline-
-Substanz gegen die vier MUSS-Akzeptanzen `GG-SAFE-001..004`
+Substanz gegen die vier MUSS-Akzeptanzen [`GG-SAFE-001`](../../spec/lastenheft.md#gg-safe-001)..004
 aus dem Lastenheft (§20). Pro ID werden Substanz-Pfade,
 Test-Pfade und Lieferstatus dokumentiert.
 
@@ -120,7 +120,7 @@ Alarm mit Ziel, Startzeit und Ursache wird erzeugt.
 - **Alarm mit allen drei Akzeptanz-Pflichtfeldern**:
   `code="adapter_communication_lost"`, Ziel (`target`),
   Startzeit (`simulation_time_ms`, Sim-Zeit via `ClockPort` —
-  `AC-NO-TIME`), Ursache (`message` mit Exception-Klassenname
+  [`AC-NO-TIME`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)), Ursache (`message` mit Exception-Klassenname
   maschinenlesbar praefixt); `severity="warning"`.
 - **Abgrenzungen** ([`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md) §2.3/§7): MQTT-`read() → None`
   (leere Queue) ist kein Ausfall; `start`/`stop`/`write`
@@ -168,7 +168,7 @@ ueberschreiten erhalten deterministisch den Qualitaetsstatus
 - **Severity-Override**: `STALE` (Severity 3) ersetzt nur
   `VALID`/`ESTIMATED`/`LIMITED` (0..2); schwerere Befunde
   (`FAULT_INJECTED`/`INVALID`/`NAN`/`MISSING`) dominieren.
-- **Determinismus**: Vergleich nur ueber Sim-Zeit (`AC-NO-TIME`
+- **Determinismus**: Vergleich nur ueber Sim-Zeit ([`AC-NO-TIME`](../plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)
   gewahrt) — zwei gleich-konfigurierte Laeufe markieren
   identische Punkte.
 - **Bewusste Grenze** ([`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md) §6): heutige produktive Devices
@@ -187,17 +187,17 @@ ueberschreiten erhalten deterministisch den Qualitaetsstatus
 ## Quality-Enum-Referenz
 
 `hexagon/core/domain/quality.py` definiert die acht
-Qualitaetsstatuswerte (`GG-DATA-003`):
+Qualitaetsstatuswerte ([`GG-DATA-003`](../../spec/lastenheft.md#gg-data-003)):
 
 - `VALID` (Severity 0): regulaerer Mess-Wert.
-- `STALE` (3): veraltet (`GG-SAFE-004`; ✓ produktiv seit
+- `STALE` (3): veraltet ([`GG-SAFE-004`](../../spec/lastenheft.md#gg-safe-004); ✓ produktiv seit
   M7-Welle-3a via `max_age`-Stage, [`ADR 0052`](../plan/adr/0052-max-age-stale-quality-stage.md)).
 - `ESTIMATED` (1): geschaetzt.
 - `LIMITED` (2): clipped/limited (Device-Saturation).
-- `INVALID` (5): semantisch ungueltig (`GG-SAFE-001`).
-- `NAN` (6): NaN/Inf (`GG-SAFE-002`; produktiv ueber
+- `INVALID` (5): semantisch ungueltig ([`GG-SAFE-001`](../../spec/lastenheft.md#gg-safe-001)).
+- `NAN` (6): NaN/Inf ([`GG-SAFE-002`](../../spec/lastenheft.md#gg-safe-002); produktiv ueber
   `canonical_json`-Reject statt Enum-Emission).
-- `MISSING` (7): fehlend (`GG-SAFE-003`; ✓ produktiv seit
+- `MISSING` (7): fehlend ([`GG-SAFE-003`](../../spec/lastenheft.md#gg-safe-003); ✓ produktiv seit
   M7-Welle-3b via Comm-Failure-Wrapper, [`ADR 0053`](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md); plus
   SmartMeter-pre-attach-Teil-Substanz seit M2).
 - `FAULT_INJECTED` (4): durch Fault-Injection markiert.
@@ -210,10 +210,10 @@ py:33-42`.
 ## Verwandte Triggers
 
 - [`done/034-safe-004-max-age-stale-quality.md`](../plan/planning/done-archive/034-safe-004-max-age-stale-quality.md)
-  — `GG-SAFE-004` Lücke; **aufgeloest via M7-Welle-3a**
+  — [`GG-SAFE-004`](../../spec/lastenheft.md#gg-safe-004) Lücke; **aufgeloest via M7-Welle-3a**
   (Trigger-Close mit 3a-C3/C4a).
 - [`done/035-safe-003-comm-failure-missing-quality.md`](../plan/planning/done-archive/035-safe-003-comm-failure-missing-quality.md)
-  — `GG-SAFE-003` partial Lücke; **aufgeloest via M7-Welle-3b**
+  — [`GG-SAFE-003`](../../spec/lastenheft.md#gg-safe-003) partial Lücke; **aufgeloest via M7-Welle-3b**
   (Trigger-Close mit 3b-C3/C4a).
 
 ## Verwandte ADRs
@@ -231,6 +231,6 @@ py:33-42`.
 - [ADR 0040](../plan/adr/0040-alarm-aggregation-and-stream-port.md)
   — Alarm-Emission via `AlarmStreamPort`.
 - [ADR 0052](../plan/adr/0052-max-age-stale-quality-stage.md)
-  — `max_age`-`STALE`-Stage (`GG-SAFE-004`, M7-Welle-3a).
+  — `max_age`-`STALE`-Stage ([`GG-SAFE-004`](../../spec/lastenheft.md#gg-safe-004), M7-Welle-3a).
 - [ADR 0053](../plan/adr/0053-comm-failure-wrapper-missing-quality-alarm.md)
-  — Comm-Failure-Wrapper (`GG-SAFE-003`, M7-Welle-3b).
+  — Comm-Failure-Wrapper ([`GG-SAFE-003`](../../spec/lastenheft.md#gg-safe-003), M7-Welle-3b).

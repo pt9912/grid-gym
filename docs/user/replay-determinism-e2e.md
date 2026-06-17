@@ -1,6 +1,6 @@
 # Replay-Determinismus E2E (`GG-MVP-002`)
 
-Audit-Doku fuer die `GG-MVP-002`-Akzeptanz (Lastenheft Z. 130-135):
+Audit-Doku fuer die [`GG-MVP-002`](../../spec/lastenheft.md#gg-mvp-002)-Akzeptanz (Lastenheft Z. 130-135):
 
 > Der MVP MUSS mindestens ein End-to-End-Szenario mit
 > Netzanschlusspunkt, PV, Lastprofil, Smart Meter und
@@ -22,7 +22,7 @@ Persistenz, [`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.
 | **Szenario startet ueber API** | `POST /runs` + Demo-Szenario `deploy/scenarios/gg-demo.yaml` (5 Pflicht-Entitaeten: GridConnection + PV + Last + Smart Meter + Batteriespeicher). | `tests/integration/test_mvp_demo_scenario.py` | ✓ Produktiv |
 | **Live-Telemetrie** | WebSocket-Streams `/runs/{id}/telemetry` + `/runs/{id}/alarms-stream`. | M5-Welle-2-/4b-Smokes | ✓ Produktiv |
 | **Persistiert Zeitreihen** | `TelemetrySinkPort` (Driven) + `PostgresTelemetrySinkAdapter` → `telemetry_points` (append-only, `value` byte-stabil als `TEXT`/`str(Decimal)`); Core-Spine-Wiring pro Tick ([`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.md)). | `tests/integration/test_mvp_002_timeseries_persistence_smoke.py` | ✓ Produktiv (1a) |
-| **Deterministisch replaybar** | `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `ReplaySample`-Sequenzen aus `telemetry_points` (Timestamp deterministisch aus `simulation_time`, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)); `TickLoop.finalize()` difft `expected`/`actual` via `diff_replay()` + emittiert `replay_diff_status` nach `GG-TERM-002/003`-Preflight ([`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md)). | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py` + `tests/unit/…/test_tick_loop_replay_finalize.py` | ✓ Produktiv (1b-a/1b-b) |
+| **Deterministisch replaybar** | `ReplaySnapshotPort.read_samples(run_id)` rekonstruiert `ReplaySample`-Sequenzen aus `telemetry_points` (Timestamp deterministisch aus `simulation_time`, [`ADR 0048`](../plan/adr/0048-replay-snapshot-port-reconstruction.md)); `TickLoop.finalize()` difft `expected`/`actual` via `diff_replay()` + emittiert `replay_diff_status` nach [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003-Preflight ([`ADR 0049`](../plan/adr/0049-replay-lifecycle-finalize-hook.md)). | `tests/integration/test_mvp_002_replay_snapshot_smoke.py` + `…_replay_lifecycle_smoke.py` + `tests/unit/…/test_tick_loop_replay_finalize.py` | ✓ Produktiv (1b-a/1b-b) |
 
 ---
 
@@ -48,23 +48,23 @@ Persistenz, [`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.
    expliziten `replay_reference_run_id`-Bindung difft er
    `actual = read_samples(run_id)` gegen
    `expected = read_samples(reference_run_id)` — nach einem
-   `GG-TERM-002/003`-MVP-Preflight (Gleichheit von
+   [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003-MVP-Preflight (Gleichheit von
    `scenario_hash`, `schema_version`, `seed`, `tick_ms`,
    `tool_version`). Ergebnis: `replay_diff_status`-Gauge
    (`1.0` clean / `0.0` diverged) + maschinenlesbare
-   `GG-SAFE-006`-Detail-Logs.
+   [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006)-Detail-Logs.
 
 **Zwei-Lauf-Beleg:** `test_mvp_002_replay_lifecycle_smoke.py`
 faehrt zwei echte Demo-Szenario-Laeufe mit gleichem Seed,
 persistiert beide nach Postgres und belegt ueber den
 `finalize()`-Hook einen **leeren Diff** (`replay_diff_status =
-1.0`) — die `GG-TERM-002`-Akzeptanz „leerer Replay-Diff".
+1.0`) — die [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)-Akzeptanz „leerer Replay-Diff".
 
 ---
 
 ## Carveouts
 
-- **`GG-TERM-002/003` volle Equality-Matrix** (`platform_arch`,
+- **[`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003 volle Equality-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, separater `config_hash`)
   ist nicht Teil des MVP-Preflights —
   [Trigger 038](../plan/planning/open/038-gg-term-002-003-full-equality-matrix.md).
@@ -73,7 +73,7 @@ persistiert beide nach Postgres und belegt ueber den
   [Trigger 039](../plan/planning/open/039-api-replay-trigger-surface.md).
   Der Determinismus-Beleg laeuft ueber den Zwei-Lauf-E2E-Smoke;
   die Referenz-Bindung ist heute Runtime/Test/Demo-intern.
-- **`GG-REPLAY-004..006`** (beschleunigtes Replay / Replay-Pause-
+- **[`GG-REPLAY-004`](../../spec/lastenheft.md#gg-replay-004)..006** (beschleunigtes Replay / Replay-Pause-
   Resume / Delta-Analysen-API; SOLLTE) bleiben offen.
 
 ---
@@ -84,6 +84,6 @@ persistiert beide nach Postgres und belegt ueber den
 - [ADR 0048 — ReplaySnapshotPort Rekonstruktion](../plan/adr/0048-replay-snapshot-port-reconstruction.md)
 - [ADR 0049 — Replay-Lifecycle: Terminal-Hook + `replay_diff_status` + GG-TERM-Preflight](../plan/adr/0049-replay-lifecycle-finalize-hook.md)
 - [`safe-005-006-fallback-determinism.md`](safe-005-006-fallback-determinism.md)
-  — `GG-SAFE-006`-Schwester-Audit (mit 1b-b ✓ produktiv).
-- `spec/lastenheft.md` — `GG-MVP-002`, `GG-TERM-002/003`,
-  `GG-REPLAY-002/003/007`, `GG-SAFE-006`.
+  — [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006)-Schwester-Audit (mit 1b-b ✓ produktiv).
+- `spec/lastenheft.md` — [`GG-MVP-002`](../../spec/lastenheft.md#gg-mvp-002), [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003,
+  [`GG-REPLAY-002`](../../spec/lastenheft.md#gg-replay-002)/003/007, [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006).

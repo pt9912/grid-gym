@@ -24,7 +24,7 @@ Pattern). Slice-Plan
 [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) (§4 Re-Tranche
 3c-a/3c-b); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`022`](../planning/open/022-sollte-reactive-power.md) (`GG-GRID-007`,
+[`022`](../planning/open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007),
 Lastenheft §11.5; **teilweise** — Geraete-Q-Emission in 3c-b).
 
 ---
@@ -33,7 +33,7 @@ Lastenheft §11.5; **teilweise** — Geraete-Q-Emission in 3c-b).
 
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) modelliert nur
 **Wirkleistung**: `imbalance_kw` treibt Frequenz und Spannung proportional;
-Blindleistung (`Q`) ist explizit out-of-scope (§7). Lastenheft `GG-GRID-007`
+Blindleistung (`Q`) ist explizit out-of-scope (§7). Lastenheft [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)
 (Trigger [`022`](../planning/open/022-sollte-reactive-power.md)) verlangt
 **Blindleistung im Netzbilanzmodell**: `reactive_power_kvar` pro
 Q-emittierendem Geraet (PV-Wechselrichter mit Q(U)-Kennlinie, GridConnection),
@@ -96,7 +96,7 @@ zum heutigen Wert (Regressions-Pin Pflicht).
 `GridModelConfig` bekommt `voltage_sensitivity_v_per_kvar: Decimal` mit
 **Default** `Decimal("0.2")` (≈ 2× `voltage_sensitivity_v_per_kw`; Q koppelt
 staerker an die Spannung als P). `__post_init__` validiert `> 0` (Decimal,
-`GG-DATA-005` no-float).
+[`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005) no-float).
 
 **Opt-in-Serialisierung** (Spiegel zu
 [`ADR 0060`](0060-island-grid-bilanz-pattern.md) §2.4): das Feld wird im

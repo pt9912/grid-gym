@@ -35,16 +35,16 @@ synchron.
 
 ## 1. Kontext
 
-`GG-QG-005` (Static-Analysis-Gate) sowie die Akzeptanzkriterien fuer
-`GG-PRINC-004` (LSP) und `GG-PRINC-005` (ISP) sind in `ADR 0002` und
-der V-Modell-Traceability-Matrix `GG-TRACE-001` (§27.1-Tabelle in
-`spec/lastenheft.md`, Zeilen `GG-PRINC-004/005`) aktuell nur
+[`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate) sowie die Akzeptanzkriterien fuer
+[`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004) (LSP) und [`GG-PRINC-005`](../../../spec/lastenheft.md#gg-princ-005) (ISP) sind in `ADR 0002` und
+der V-Modell-Traceability-Matrix [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) (§27.1-Tabelle in
+`spec/lastenheft.md`, Zeilen [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004)/005) aktuell nur
 teilweise automatisiert:
 
 - `ruff` deckt SRP-/ISP-Heuristiken auf Klassen-Ebene
   (`PLR0902`/`PLR0903`/`PLR0904`) ab und liefert McCabe-Komplexitaet.
 - `import-linter` + `tools/arch_check.py` decken DIP-Abhaengigkeiten
-  und die Tabus aus `GG-AR-TABU-001..008` ab.
+  und die Tabus aus [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 ab.
 - **LSP (Liskov Substitution Principle)** und **strukturelle
   ISP-Pruefungen** (Protocol-Konformitaet, ob ein Klient nur eine
   Teilmenge eines Ports nutzt) sind weder von `ruff` noch von
@@ -58,7 +58,7 @@ das Gate ist.
 
 ## 2. Bewertungskriterien
 
-Abgeleitet aus `GG-QG-005`, `GG-PRINC-004/005`, `GG-CC-005` (formale
+Abgeleitet aus [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005), [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004)/005, [`GG-CC-005`](../../../spec/lastenheft.md#gg-cc-005) (formale
 Naming-Konsistenz auf Typebene) und der `uv`-getriebenen Toolchain aus
 `ADR 0002`.
 
@@ -259,12 +259,12 @@ selbst ist davon nicht zwingend betroffen — nur dieses vierte Gate.
 Bei Acceptance schliesst diese ADR die folgenden Trace-Lasten; die
 genaue Wirkung pro Lifecycle-Stand steht im Wirkungs-Abschnitt:
 
-- `GG-QG-005` (Static-Analysis-Gate, SOLLTE) erhaelt eine konkrete
+- [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) erhaelt eine konkrete
   Pflicht-Implementierung.
-- `GG-PRINC-004` (LSP) und `GG-PRINC-005` (ISP) werden auf
+- [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004) (LSP) und [`GG-PRINC-005`](../../../spec/lastenheft.md#gg-princ-005) (ISP) werden auf
   automatisierter Type-Ebene abgedeckt; Restanteil bleibt
   Code-Review.
-- `GG-CC-005` (sprechende Namen) bleibt heuristisch via `ruff N`;
+- [`GG-CC-005`](../../../spec/lastenheft.md#gg-cc-005) (sprechende Namen) bleibt heuristisch via `ruff N`;
   mypy ergaenzt nichts spezifisches.
 
 ### 5.3 Wirkung auf andere Dokumente
@@ -278,20 +278,20 @@ legitimiert:
 - `Dockerfile`-Stage `typecheck` (siehe `make typecheck`).
 - `Makefile` Aggregator `gates`: `typecheck` zwischen
   `format-check` und `arch-check`.
-- Die `GG-TRACE-001`-Matrix in `spec/lastenheft.md` darf auf
+- Die [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001)-Matrix in `spec/lastenheft.md` darf auf
   diese ADR verweisen (V-Modell-Trace fuer
-  `GG-PRINC-004/005`), aber `GG-QG-005` und
-  `GG-PRINC-004/005` bleiben formal **nicht** als
+  [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004)/005), aber [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) und
+  [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004)/005 bleiben formal **nicht** als
   abschliessend automatisiert markiert (siehe
   Provisional-Stufe der Lifecycle-Tabelle in `ADR 0006`).
 
 **Bei `Accepted`** (synchron zur Akzeptanz von `ADR 0002`):
 
-- Die `GG-TRACE-001`-Matrix in `spec/lastenheft.md` markiert
+- Die [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001)-Matrix in `spec/lastenheft.md` markiert
   das Type-Check-Gate als geschlossene Implementierung fuer
-  `GG-PRINC-004/005` (Variance + Protocol-Konformitaet);
+  [`GG-PRINC-004`](../../../spec/lastenheft.md#gg-princ-004)/005 (Variance + Protocol-Konformitaet);
   Restanteil bleibt Code-Review.
-- `GG-QG-005` (Static-Analysis-Gate, SOLLTE) traegt diese ADR
+- [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) traegt diese ADR
   als verbindliche Pflicht-Implementierung.
 
 ### 5.4 Migrations-Pfad
@@ -330,7 +330,7 @@ legitimiert:
   Coverage-Schwelle.
 - Aktivierung des `--strict-bytes` Modus (bei
   `bytes`/`str`-Trennscharfe) sobald das Domain-Modell konsolidiert
-  ist (`GG-DATA-005` UTF-8-Bytes-Vertrag).
+  ist ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005) UTF-8-Bytes-Vertrag).
 
 ---
 

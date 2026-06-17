@@ -15,7 +15,7 @@
 - [`ADR 0055`](0055-ev-charger-device-pattern.md) — EV-Charger (M8-Welle-2a);
   gleiche Sub-Welle-Familie, gleiche 8-Naht-Integration.
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-016) —
-  `GG-DEV-016`.
+  [`GG-DEV-016`](../../../spec/lastenheft.md#gg-dev-016).
 - [`017-sollte-transformer-device.md`](../planning/open/017-sollte-transformer-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
@@ -23,9 +23,9 @@
 
 ## 1. Kontext
 
-`GG-DEV-016` definiert einen **Transformator** (SOLLTE). Trigger 017 pinnt
+[`GG-DEV-016`](../../../spec/lastenheft.md#gg-dev-016) definiert einen **Transformator** (SOLLTE). Trigger 017 pinnt
 den Scope: ein **Geraetemodell** (kein Netzbilanz-Element — das ist
-Trigger 021 / `GG-GRID-006`) mit **Wandlungsverhaeltnis**, **Kupfer-
+Trigger 021 / [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)) mit **Wandlungsverhaeltnis**, **Kupfer-
 (Last-)Verlusten**, **Eisen- (Leerlauf-)Verlusten** und einer
 **Saettigungs-Kennlinie**. Stakeholder-Entscheidung (M8-Welle-2b):
 zusaetzlich ein **Schutz-Fault** (`winding_fault`) fuer die vom Trigger
@@ -100,7 +100,7 @@ Pro Tick (Decimal-Localcontext, `prec=28`, `ROUND_HALF_EVEN`):
 Leerlaufverlust weiterhin praesent (`loss_kw = no_load_loss_kw`,
 `secondary_power_kw = 0`). Der Transformer ist ein eigenstaendiges
 Geraetemodell — die netzseitige Verlust-Verrechnung (Bilanz) ist
-Trigger 021 (`GG-GRID-006`), nicht dieses Geraet.
+Trigger 021 ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)), nicht dieses Geraet.
 
 ### 2.5 Command-Surface
 
@@ -167,7 +167,7 @@ Welle 2b-C2/C3 — Integrationspunkte (8 Naehte, Checkliste aus
 - `_runs_router._STATE_EXTRACTORS["transformer"]`; `CRITICAL_COV_TARGETS
   += devices/transformer`.
 
-Akzeptanz `GG-DEV-016`: Modell + Szenario-YAML-Beispiel + deterministischer
+Akzeptanz [`GG-DEV-016`](../../../spec/lastenheft.md#gg-dev-016): Modell + Szenario-YAML-Beispiel + deterministischer
 Smoke-Test (Verlust-/Saettigungs-Verlauf, `winding_fault`, Snapshot-
 Roundtrip).
 
@@ -187,7 +187,7 @@ Roundtrip).
 - Weiche Saettigungs-Kennlinie + Spannungs-Droop — Welle-3+-Schaerfung
   (harter Cap + konstante Sekundaerspannung reichen fuer Welle 2b).
 - Netzbilanz-seitige Verlust-/Grenzen-Verrechnung — Trigger 021
-  (`GG-GRID-006`), kein Geraetemodell.
+  ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)), kein Geraetemodell.
 - Weitere Transformer-Faults (Teilausfall, Oel-/Buchholz) — Folge-ADR.
 
 ## 7. Acceptance (Fitness Functions)

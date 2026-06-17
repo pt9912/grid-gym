@@ -9,7 +9,7 @@ de-facto-Entscheidung nachtraeglich. Direkter
 **Datum:** 2026-05-17
 **Status geaendert am:** 2026-05-17 — `Proposed → Accepted`.
 **Bezug:**
-[Architektur](../../../spec/architecture.md#19-offene-architektonische-punkte) §19 (`GG-AR-OPEN-002`,
+[Architektur](../../../spec/architecture.md#19-offene-architektonische-punkte) §19 ([`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte),
 bei Acceptance dieser ADR von `Offen` auf `Geschlossen` zu setzen),
 [Architektur](../../../spec/architecture.md#16-deployment-sicht) §16 (API/Simulation/UI
 mit getrennten Healthchecks),
@@ -24,7 +24,7 @@ mit getrennten Healthchecks),
 
 ## 1. Kontext
 
-`spec/architecture.md` §19 fuehrt `GG-AR-OPEN-002` als offene
+`spec/architecture.md` §19 fuehrt [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) als offene
 architektonische Frage: API-Service und Simulationsdienst als
 ein Prozess oder zwei. `roadmap.md` §4 Vorbedingungen listet
 denselben Punkt als „offen, eigene Folge-ADR".
@@ -35,7 +35,7 @@ In M1 Welle 6c ist die Topologie de-facto fixiert worden:
 TickLoop-Runner) als zwei separate Services. Beide teilen sich
 den `postgres`-Service als gemeinsame Persistenzschicht.
 
-Diese ADR formalisiert den Pattern, damit `GG-AR-OPEN-002`
+Diese ADR formalisiert den Pattern, damit [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)
 geschlossen ist und M2-Geraetemodelle auf einer fixierten
 Topologie aufsetzen koennen.
 
@@ -82,7 +82,7 @@ Konkret:
   Async-Loop und TickLoop um den GIL konkurrieren; Two-Process
   erlaubt OS-Scheduling-Trennung.
 - **Persistenz-Bus statt Direkt-IPC:** Postgres ist ohnehin
-  Pflicht-Komponente (`GG-PERSIST-001..009`); ein zweiter IPC-
+  Pflicht-Komponente ([`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009); ein zweiter IPC-
   Layer (gRPC, Pipe, Socket) waere unnoetige Kopplung. Auch
   schreibt der Pattern den natuerlichen Replay-Vertrag fest:
   Telemetrie wird einmal geschrieben, von API + UI gelesen.
@@ -97,7 +97,7 @@ abgewogen:
 
 - **Ein-Prozess-Setup mit FastAPI-`BackgroundTasks`**:
   funktioniert fuer M1-Stub-Loops, kollidiert aber mit Multi-
-  Agent (M3) und Performance-Schranken (M6, `GG-RT-005`
+  Agent (M3) und Performance-Schranken (M6, [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005)
   10.000 Punkte/s). Verworfen.
 - **API + Simulation + UI als drei Prozesse:** ueberzogen fuer
   M1/M2. UI bleibt M5-Scope; bis dahin reicht api + sim. Eine
@@ -110,13 +110,13 @@ abgewogen:
 - `deploy/compose.yml` bleibt strukturell unveraendert; M2
   ersetzt nur den `simulation`-Stub-Container-Command durch den
   produktiven TickLoop-Runner.
-- `spec/architecture.md` §19 muss `GG-AR-OPEN-002` von `Offen`
+- `spec/architecture.md` §19 muss [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) von `Offen`
   auf „Geschlossen durch ADR 0012" umstellen — das ist eine
   zulaessige Aenderung am normativen Dokument
   (`ADR 0006 §5` operative Artefakte; `spec/architecture.md`
   ist normativ, aber `GG-AR-OPEN-*`-Eintraege duerfen bei
   Acceptance einer Folge-ADR geschlossen werden).
-- `roadmap.md §4` Vorbedingungen: `GG-AR-OPEN-002`-Checkbox
+- `roadmap.md §4` Vorbedingungen: [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)-Checkbox
   abgehakt mit Verweis auf diese ADR.
 - M3 Multi-Agent kann eine Message-Queue als zusaetzlichen
   IPC-Pfad zwischen api und sim einfuehren — diese ADR
@@ -132,14 +132,14 @@ abgewogen:
 - `Dockerfile` `runtime`-Stage: gemeinsames Image fuer beide
   Services; Trennung erfolgt nur ueber `command` + `entrypoint`
   im Compose.
-- `spec/architecture.md` §19 `GG-AR-OPEN-002`: Status auf
+- `spec/architecture.md` §19 [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte): Status auf
   `Geschlossen` mit ADR-0012-Verweis.
 
 ---
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-AR-OPEN-002` geschlossen — M2 hat keine
+- **Positiv:** [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) geschlossen — M2 hat keine
   Topologie-Drift mehr als Risiko.
 - **Positiv:** Failure-/Skalierungs-Isolation strukturell
   belegt.
@@ -153,7 +153,7 @@ abgewogen:
 - **Negativ:** Postgres als Persistenz-Bus zwischen beiden
   Services bedeutet, dass jede Tick-Telemetry-Persistierung in
   M2 eine DB-Round-Trip kostet. Performance-Schranken aus
-  `GG-RT-005` koennen das verschaerfen — M6-Slice prueft, ob
+  [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) koennen das verschaerfen — M6-Slice prueft, ob
   ein Batch-Insert / Streaming-Pfad noetig ist.
 
 ---

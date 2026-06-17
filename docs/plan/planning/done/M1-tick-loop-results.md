@@ -18,7 +18,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | 2     | 2026-05-17  | Driven-Ports `ClockPort`/`RandomPort`; `MersenneTwisterRandomPort`-Adapter; [`ADR 0007`](../../adr/0007-random-port.md) `Accepted` + Trigger 003 done | `33d6ec8`, `72ebaa1`, `efe6f60` |
 | 3     | 2026-05-17  | Deterministischer `Scheduler` mit Tie-Breaking `(time, priority, source, sequence, event_id)`       | `75b0940`, `ae20b4f` |
 | 4     | 2026-05-17  | `TickLoop` + `TickResult`; Snapshot-Composition via `RandomPort.snapshot_as_mapping` ([`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md)); Trigger 012 done; [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) (Schaerfung ohne Supersedes) | `75804e6`, `28adab0`, `9f595e7`, `d08b5a9` |
-| 5     | 2026-05-17  | Scenario-Loader + Validator + Hash (`GG-SCN-001..008`); Replay-Mapper + Diff (`GG-REPLAY-001..003`/`007`); Triggers 013 + 014 (open) | `d4029e3`, `b2e1517`, `04ce698`, `51bf108`, `b18f3f1` |
+| 5     | 2026-05-17  | Scenario-Loader + Validator + Hash ([`GG-SCN-001`](../../../../spec/lastenheft.md#gg-scn-001)..008); Replay-Mapper + Diff ([`GG-REPLAY-001`](../../../../spec/lastenheft.md#gg-replay-001)..003/`007`); Triggers 013 + 014 (open) | `d4029e3`, `b2e1517`, `04ce698`, `51bf108`, `b18f3f1` |
 | 6a    | 2026-05-17  | FastAPI-Adapter `adapters/driving/http_api/`; `make openapi-validate` gruen                          | `ffbca2c` |
 | 6b    | 2026-05-17  | `RunRepositoryPort` + `InMemoryRunRepository`; FastAPI-Wiring via `configure_run_repository`        | `395634f` |
 | 6c    | 2026-05-17  | `PostgresRunRepository` + alembic + Integration-Tests via testcontainers; Triggers 009 + 010 done   | `f7b699d` |
@@ -82,26 +82,26 @@ Triggers vermerkt:
 ## 4. Was M1 NICHT geliefert hat
 
 - Geraetemodelle (Battery, PV, Load, Smart Meter, Grid
-  Connection) — `GG-DEV-010..014`, `GG-BESS-001..008`,
-  `GG-GRID-001..007`. **M2**.
-- Fault Injection — `GG-FAULT-001..010`. **M3**.
-- Multi-Agent-Subsystem — `GG-AGENT-001..008`. **M3**.
-- OpenTelemetry-Tracing — `GG-OTEL-001..004`. **M3**.
+  Connection) — [`GG-DEV-010`](../../../../spec/lastenheft.md#gg-dev-010)..014, [`GG-BESS-001`](../../../../spec/lastenheft.md#gg-bess-001)..008,
+  [`GG-GRID-001`](../../../../spec/lastenheft.md#gg-grid-001)..007. **M2**.
+- Fault Injection — [`GG-FAULT-001`](../../../../spec/lastenheft.md#gg-fault-001)..010. **M3**.
+- Multi-Agent-Subsystem — [`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..008. **M3**.
+- OpenTelemetry-Tracing — [`GG-OTEL-001`](../../../../spec/lastenheft.md#gg-otel-001)..004. **M3**.
 - Protokolladapter (MQTT/Modbus/OPC-UA/DNP3/IEC) — **M4**.
-- UI/Demo — `GG-UI-001..009`. **M5**.
-- Performance-Benchmarks (`GG-RT-004/005`),
+- UI/Demo — [`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..009. **M5**.
+- Performance-Benchmarks ([`GG-RT-004`](../../../../spec/lastenheft.md#gg-rt-004)/005),
   Production-Image-Hardening (Trigger 015), SBOM (Trigger 008),
   GitHub-Actions-Matrix — **M6**.
 
 ## 5. ADRs aus M1
 
-- `ADR 0007` — `RandomPort`-Implementierung (`Accepted`).
-- `ADR 0009` — `RandomPort`-Snapshot-Schema (`Accepted`).
-- `ADR 0010` — `RandomPort.snapshot_as_mapping` Composition-API
+- [`ADR 0007`](../../adr/0007-random-port.md) — `RandomPort`-Implementierung (`Accepted`).
+- [`ADR 0009`](../../adr/0009-randomport-snapshot-schema-rng-version.md) — `RandomPort`-Snapshot-Schema (`Accepted`).
+- [`ADR 0010`](../../adr/0010-randomport-snapshot-as-mapping.md) — `RandomPort.snapshot_as_mapping` Composition-API
   (`Accepted`).
-- `ADR 0011` — Schaerfung durch parallele ADR ohne Supersedes
+- [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) — Schaerfung durch parallele ADR ohne Supersedes
   (`Accepted`, Self-bootstrap).
-- `ADR 0008` — Enum-Subklassen als [`AC-DOMAIN-FROZEN-F`](../../adr/0008-enum-as-domain-frozen-form.md#adr-0008--enum-subklassen-als-ac-domain-frozen-form)orm
+- [`ADR 0008`](../../adr/0008-enum-as-domain-frozen-form.md) — Enum-Subklassen als [`AC-DOMAIN-FROZEN-F`](../../adr/0008-enum-as-domain-frozen-form.md#adr-0008--enum-subklassen-als-ac-domain-frozen-form)orm
   (`Provisional` → `Accepted` mit M1-Welle-1-PR-Mergung).
 
 ## 6. Reviewer-Stempel

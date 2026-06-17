@@ -34,7 +34,7 @@ Lastenheft-Akzeptanzen mit Bench-Charakter (z. B.
 [`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) SOLLTE
 „10 000 Zeitreihenpunkte/s am Telemetrie-Port"), die auf
 demselben Pattern aufsetzen koennen. Vor dieser ADR ist
-`GG-RT-004` weder gemessen noch durch ein wiederholbares Pattern
+[`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004) weder gemessen noch durch ein wiederholbares Pattern
 abgedeckt — grid-gym hat **keine bestehende Bench-Substanz**:
 
 - Kein `tests/perf/`-Verzeichnis.
@@ -86,7 +86,7 @@ Begruendung:
 
 - Konsistenz mit pytest-Infrastruktur (Marker, Conftest,
   Fixtures, Dockerfile-Stage-Pattern).
-- `GG-RT-004`/`GG-RT-005` sind Makro-Bench (10 000 Ticks bzw.
+- [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004)/[`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) sind Makro-Bench (10 000 Ticks bzw.
   10 000 Points/s); pyperf-Praezision ist Overkill, asv-
   Continuous-Tracking ist Tooling-Overhead ohne klaren Mehrwert.
 
@@ -107,15 +107,15 @@ Pflicht-Parameter fuer alle `tests/perf/`-Bench-Tests:
 
 Tests werden mit `pytest.mark.benchmark`-Decorator markiert oder
 nutzen die `benchmark`-Fixture direkt. Jeder Bench-Test definiert
-sein **Akzeptanz-Pruefen** (z. B. fuer `GG-RT-004`: „100 Geraete
+sein **Akzeptanz-Pruefen** (z. B. fuer [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004): „100 Geraete
 × 10 000 Ticks ohne verlorene Events **UND** ohne
 nichtdeterministischen Replay-Diff" via zwei Assert-Pflichten:
 (a) Lost-Event-Counter == 0 nach dem Lauf und (b) Replay-
 Determinismus-Vergleich (Snapshot-Gleichheit ueber zwei Runs
 mit identischem Seed).
 
-**Pflicht-Akzeptanz `GG-RT-004` produktiv** (Lastenheft Z. 486):
-zwei Klassen-Asserts pro Bench-Test, der `GG-RT-004` adressiert.
+**Pflicht-Akzeptanz [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004) produktiv** (Lastenheft Z. 486):
+zwei Klassen-Asserts pro Bench-Test, der [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004) adressiert.
 Ein Bench-Test, der nur Throughput misst ohne den Replay-Diff zu
 verifizieren, erfuellt die Lastenheft-Akzeptanz **NICHT** —
 ADR-0041-konform ist nur die Doppel-Klasse.
@@ -298,7 +298,7 @@ Provisional → Accepted`): siehe Status-Header dieser ADR.
   Pflicht-Pfad gefuehrt. Reviewer koennen aus ADR-0041 ableiten,
   welche Bench-Form zulaessig ist und wie die Regression-
   Schwelle gepflegt wird.
-- **Positiv:** `GG-RT-004` SOLLTE-Akzeptanz wird produktiv
+- **Positiv:** [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004) SOLLTE-Akzeptanz wird produktiv
   messbar; weitere Lastenheft-Akzeptanzen mit Bench-Charakter
   koennen auf demselben Pattern andocken (substanzielle
   Protokoll- oder Schwellen-Aenderungen per ADR-0011-
@@ -342,7 +342,7 @@ Provisional → Accepted`): siehe Status-Header dieser ADR.
 - **`tests/perf/`-Coverage-Pflicht.** Bench-Tests sind nicht
   Coverage-relevant; `pyproject.toml`-`[tool.coverage.run].
   source` bleibt unveraendert.
-- **Backpressure-Healthcheck-Surface** (`GG-RT-001`).
+- **Backpressure-Healthcheck-Surface** ([`GG-RT-001`](../../../spec/lastenheft.md#gg-rt-001)).
   Out-of-scope dieser ADR; sie deckt das Bench-Pattern,
   nicht die TickLoop-Healthcheck-Surface.
 - **Snapshot-Envelope-v2-Body-Serialisierung** (carveouts).

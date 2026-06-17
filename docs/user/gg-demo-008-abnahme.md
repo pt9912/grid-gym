@@ -9,7 +9,7 @@ M5-Welle-6a (Fault-Flow, `Done` 2026-06-03), M5-Welle-6b
 
 Diese Doku beschreibt die **reproduzierbare Abnahmereihenfolge**
 fuer den grid-gym-MVP-Demo-Lauf. Die sechs Schritte spiegeln den
-Akzeptanztext von `GG-DEMO-008` 1:1 und sind so durchnummeriert,
+Akzeptanztext von [`GG-DEMO-008`](../../spec/lastenheft.md#gg-demo-008) 1:1 und sind so durchnummeriert,
 wie sie ein Operator oder Reviewer abarbeiten soll.
 
 Jeder Schritt nennt das auszufuehrende Kommando, das erwartete
@@ -103,7 +103,7 @@ Das Demo-Scenario `gg-demo.yaml` enthaelt fuenf MVP-Geraete
 (`battery-1`, `pv-1`, `load-1`, `grid-connection-1`,
 `smart-meter-1`) + einen `RuleBasedAgent`, der die Battery
 zeitgesteuert steuert. Drei UI-Pages decken die Akzeptanz von
-`GG-UI-002`/`003`/`006`/`008`/`009` ab.
+[`GG-UI-002`](../../spec/lastenheft.md#gg-ui-002)/`003`/`006`/`008`/`009` ab.
 
 ### 3.1 Live-Telemetry-Dashboard
 
@@ -223,7 +223,7 @@ curl -s http://localhost:8000/runs/demo-run-0001/devices/state | \
 
 Reproduzierbarkeit: das Scenario laeuft mit fixem Seed (siehe
 `gg-demo.yaml`-Header); identische Tick-Counts liefern identische
-Outputs (`GG-SIM-001`).
+Outputs ([`GG-SIM-001`](../../spec/lastenheft.md#gg-sim-001)).
 
 **Welle:** M5-Welle-6a (`_compose_fault_port` Battery + Grid-
 Adapter; YAML-`faults:`-Block);
@@ -294,7 +294,7 @@ curl -s -X POST http://localhost:8000/runs/demo-run-0001/control \
 
 ## 6. Export
 
-`GG-DEMO-008` verlangt einen Export-Schritt — der MVP deckt die
+[`GG-DEMO-008`](../../spec/lastenheft.md#gg-demo-008) verlangt einen Export-Schritt — der MVP deckt die
 zwei produktiven Export-Surfaces ab:
 
 ### 6.1 Snapshot (REST)
@@ -371,7 +371,7 @@ docker compose -f deploy/compose.yml exec db \
   Envelope. Volle Serialisierung ist M5-Welle-7-Closure /
   M6-Material.
 - **Kein CSV/JSONL-Export-Endpunkt.** Telemetry/Alarme sind
-  ueber WS streambar; Datei-Export ist `GG-ACCEPT-003`-Welle-7-
+  ueber WS streambar; Datei-Export ist [`GG-ACCEPT-003`](../../spec/lastenheft.md#gg-accept-003)-Welle-7-
   Material.
 - **`POST /runs/{id}/faults`** ist Form-Validation-only — keine
   dynamische TickLoop-Activation (Welle-6a Decision 19;
@@ -381,7 +381,7 @@ docker compose -f deploy/compose.yml exec db \
   ueber den Lifespan-getriebenen `_demo_scenario_setup` mit
   fixem Run-ID `demo-run-0001` — die Demo nutzt also nicht den
   POST-Endpunkt sondern den Auto-Setup.
-- **`GG-UI-006`-Geraete-Grafik** ist Tabellen-basiert
+- **[`GG-UI-006`](../../spec/lastenheft.md#gg-ui-006)-Geraete-Grafik** ist Tabellen-basiert
   (HTMX-Polling); kein Inline-SVG-Anlagen-Schaltbild. Inline-
   SVG ist Welle-7+/M6.
 - **IEC-61850-Protocol-Adapter** ist `2c-Mock-only-Fallback`
@@ -414,7 +414,7 @@ ohne Override; `make test-integration` gruen).
 
 ## Forward-Pointer
 
-- **M5-Welle-7 (M5-Closure):** schliesst `GG-ACCEPT-001..003`
+- **M5-Welle-7 (M5-Closure):** schliesst [`GG-ACCEPT-001`](../../spec/lastenheft.md#gg-accept-001)..003
   (Abnahme-Artefakte, Modellgrenzen-Doku) ab; ueberfuehrt alle
   M5-ADRs (0036..0040) auf `Accepted`.
 - **M6 (Performance + Security + CI/CD):** liefert die volle

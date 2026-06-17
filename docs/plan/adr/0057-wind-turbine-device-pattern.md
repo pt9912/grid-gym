@@ -15,7 +15,7 @@
   [`ADR 0056`](0056-transformer-device-pattern.md) — gleiche Sub-Welle-
   Familie (M8 Welle 2), gleiche Integrations-Naht-Checkliste.
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-017) —
-  `GG-DEV-017` (Geraetetyp `wind_turbine`).
+  [`GG-DEV-017`](../../../spec/lastenheft.md#gg-dev-017) (Geraetetyp `wind_turbine`).
 - [`018-sollte-wind-device.md`](../planning/open/018-sollte-wind-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
@@ -23,7 +23,7 @@
 
 ## 1. Kontext
 
-`GG-DEV-017` definiert eine **Windkraftanlage** (SOLLTE). Trigger 018
+[`GG-DEV-017`](../../../spec/lastenheft.md#gg-dev-017) definiert eine **Windkraftanlage** (SOLLTE). Trigger 018
 pinnt den Scope: ein **Generator-Geraetemodell** analog PV
 ([`ADR 0016`](0016-pv-load-device-pattern.md)) mit einer **kubischen
 Leistungskennlinie** zwischen cut-in- und Nennwindgeschwindigkeit und
@@ -150,7 +150,7 @@ Alarm-/Fault-Naht):
 - `_runs_router._STATE_EXTRACTORS["wind_turbine"]`; `CRITICAL_COV_TARGETS
   += devices/wind_turbine`.
 
-Akzeptanz `GG-DEV-017`: Modell + Szenario-YAML-Beispiel + deterministischer
+Akzeptanz [`GG-DEV-017`](../../../spec/lastenheft.md#gg-dev-017): Modell + Szenario-YAML-Beispiel + deterministischer
 Smoke-Test (Kennlinien-Werte, stochastische Determinismus-Property,
 Snapshot-Roundtrip).
 

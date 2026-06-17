@@ -33,16 +33,16 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | ----- | ----- | --------- | ----- |
 | 0 | 2026-06-04 | Slice-Plan-Eroeffnung + Trigger-Triage (7 Decisions vorbelegt; 3 Trigger reklassifiziert: 008→W2, 009→W6, 010→W1). | `282a8cb..960f6ed` |
 | 1 | 2026-06-05 | Base-Image-Bump / krb5-CVE (Trigger 010, M4-Erbschaft) — Null-Code-Edit durch Debian-13.5-Upstream-Drift + `apt-get upgrade`-Pattern. NEU [`ADR 0043`](../../adr/0043-image-audit-strategy.md) (Image-Audit-Strategie). | `4b1b3e9..4517614` (C1 ADR `c44e6d5`; C2 `b514170`) |
-| 2 | 2026-06-05 | SBOM-Aktivierung + Release-Workflow (`GG-CICD-007`, Trigger 008): NEU `make sbom` (Syft) + `.github/workflows/release.yml` (6 Artefakte). NEU [`ADR 0042`](../../adr/0042-sbom-tool-and-release-pattern.md). | `0cc28f3..b41b7fc` (C2 `235395e`) |
-| 3 | 2026-06-05 | CI/CD-Vollausbau (`GG-CICD-002/003/005/006`): 4 GitHub-Actions-Workflows + Python-3.13/3.14-Matrix; Trigger 031 (`make fullbuild`-CI-Gate) aufgeloest. C1 entfaellt. | `08a8034..c36f734` (C2 `ce13253`; Post-Push `0891f65`) |
+| 2 | 2026-06-05 | SBOM-Aktivierung + Release-Workflow ([`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007), Trigger 008): NEU `make sbom` (Syft) + `.github/workflows/release.yml` (6 Artefakte). NEU [`ADR 0042`](../../adr/0042-sbom-tool-and-release-pattern.md). | `0cc28f3..b41b7fc` (C2 `235395e`) |
+| 3 | 2026-06-05 | CI/CD-Vollausbau ([`GG-CICD-002`](../../../../spec/lastenheft.md#gg-cicd-002)/003/005/006): 4 GitHub-Actions-Workflows + Python-3.13/3.14-Matrix; Trigger 031 (`make fullbuild`-CI-Gate) aufgeloest. C1 entfaellt. | `08a8034..c36f734` (C2 `ce13253`; Post-Push `0891f65`) |
 | 4a | 2026-06-06 | Generated-Trivyignore-Permit (vulnignore-Pattern aus m-trace; Trigger-033-Temp-Deferral). NEU [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md) ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR-0043`](../../adr/0043-image-audit-strategy.md) §2.2). | `9bb6a92..789ac50` (C1 ADR `94dff9e`; C2 `8fbd17c`) |
-| 4b-a | 2026-06-06 | Performance-Bench-Foundation (`GG-RT-004`): NEU `tests/perf/` + Dockerfile-`perf`-Stage + `make perf` + opt-in `[perf]`-Extra. NEU [`ADR 0041`](../../adr/0041-performance-bench-pattern.md). | `f2fbcc0..76a2f40` (C1 ADR `43569d2`; C2 `5d8c497`) |
-| 4b-b | 2026-06-06 | `GG-RT-005` Telemetry-Port-Throughput-Bench (10 000 Points/s ≤ 256 Byte). C1 entfaellt ([`ADR-0041`](../../adr/0041-performance-bench-pattern.md)-Schaerfung negativ). | `beb5dee..c8625f7` (C2 `a2feff7`) |
-| 4b-c | 2026-06-06 | `GG-RT-001` Backpressure-Healthcheck: NEU `TickLoopHealthcheckAdapter` + `GET /runs/{id}/healthcheck`. C1 entfaellt. **Welle-4-Subdivision komplett.** | `c5543fd..7001989` (C2 `a98f967`) |
-| 5a | 2026-06-06 | Quality-Pipeline-Audit (`GG-SAFE-001..004` MUSS): 7 Smokes + Audit-Doku. 001/002 ✓ produktiv; 003 ⚠ partial → Trigger 035; 004 ✗ → Trigger 034. C1 entfaellt. | `4b36185..52cb698` (C2 `4c1a693`) |
-| 5b | 2026-06-07 | Sim/Prod-Marker + Input-Validation (`GG-SAFE-007/008` MUSS): NEU `_BaseRequest`-Strict-Mixin + 11 Smokes. NEU [`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md). | `0d3bb61..06a20c3` (C1 ADR `cee5aab`; C2 `b580840`) |
-| 5c | 2026-06-07 | SOLLTE-Items + IP/Netz (`GG-SAFE-005/006` SOLLTE + Demo-Compose-`ports`-Hardening): 6 Smokes + 2 Audit-Doks. 005 ✓ produktiv; 006 ⚠ partial → Trigger 036. **Welle-5-Subdivision komplett.** C1 entfaellt. | `4b76ff7..` (C2 `f03c4c7`; C3 `b943099`; C4a `4db4715`) |
-| 6 | 2026-06-08 | Deploy-Hardening + IEC-Smoke-Pfad-B (`GG-DEPLOY-001..011` + Trigger 009): NEU `GET /ready` Three-State (`GG-DEPLOY-006`) + `.devcontainer/` (`GG-DEPLOY-004`) + Dockerfile-Stage `iec61850-test` (Python 3.12) + 7 Smokes + Audit-Doku. NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md). Code-Review-BLOCKER-Fix (simulation-Healthcheck-Wiring) + 2 latente Slice-033-IEC-Bug-Fixes. | `fab6a8c..d8dd8d2` (C1 ADR `1d478e3`; C2 `f07e996`; C3 `79563c0`; C4a `79ac725`; C4b `d8dd8d2`) |
+| 4b-a | 2026-06-06 | Performance-Bench-Foundation ([`GG-RT-004`](../../../../spec/lastenheft.md#gg-rt-004)): NEU `tests/perf/` + Dockerfile-`perf`-Stage + `make perf` + opt-in `[perf]`-Extra. NEU [`ADR 0041`](../../adr/0041-performance-bench-pattern.md). | `f2fbcc0..76a2f40` (C1 ADR `43569d2`; C2 `5d8c497`) |
+| 4b-b | 2026-06-06 | [`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005) Telemetry-Port-Throughput-Bench (10 000 Points/s ≤ 256 Byte). C1 entfaellt ([`ADR-0041`](../../adr/0041-performance-bench-pattern.md)-Schaerfung negativ). | `beb5dee..c8625f7` (C2 `a2feff7`) |
+| 4b-c | 2026-06-06 | [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001) Backpressure-Healthcheck: NEU `TickLoopHealthcheckAdapter` + `GET /runs/{id}/healthcheck`. C1 entfaellt. **Welle-4-Subdivision komplett.** | `c5543fd..7001989` (C2 `a98f967`) |
+| 5a | 2026-06-06 | Quality-Pipeline-Audit ([`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004 MUSS): 7 Smokes + Audit-Doku. 001/002 ✓ produktiv; 003 ⚠ partial → Trigger 035; 004 ✗ → Trigger 034. C1 entfaellt. | `4b36185..52cb698` (C2 `4c1a693`) |
+| 5b | 2026-06-07 | Sim/Prod-Marker + Input-Validation ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)/008 MUSS): NEU `_BaseRequest`-Strict-Mixin + 11 Smokes. NEU [`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md). | `0d3bb61..06a20c3` (C1 ADR `cee5aab`; C2 `b580840`) |
+| 5c | 2026-06-07 | SOLLTE-Items + IP/Netz ([`GG-SAFE-005`](../../../../spec/lastenheft.md#gg-safe-005)/006 SOLLTE + Demo-Compose-`ports`-Hardening): 6 Smokes + 2 Audit-Doks. 005 ✓ produktiv; 006 ⚠ partial → Trigger 036. **Welle-5-Subdivision komplett.** C1 entfaellt. | `4b76ff7..` (C2 `f03c4c7`; C3 `b943099`; C4a `4db4715`) |
+| 6 | 2026-06-08 | Deploy-Hardening + IEC-Smoke-Pfad-B ([`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..011 + Trigger 009): NEU `GET /ready` Three-State ([`GG-DEPLOY-006`](../../../../spec/lastenheft.md#gg-deploy-006)) + `.devcontainer/` ([`GG-DEPLOY-004`](../../../../spec/lastenheft.md#gg-deploy-004)) + Dockerfile-Stage `iec61850-test` (Python 3.12) + 7 Smokes + Audit-Doku. NEU [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md). Code-Review-BLOCKER-Fix (simulation-Healthcheck-Wiring) + 2 latente Slice-033-IEC-Bug-Fixes. | `fab6a8c..d8dd8d2` (C1 ADR `1d478e3`; C2 `f07e996`; C3 `79563c0`; C4a `79ac725`; C4b `d8dd8d2`) |
 | 7 | 2026-06-08 | Closure: 6 M6-ADRs `Provisional → Accepted`; `done/M6-results.md` (dieses Dokument); `roadmap.md` M6 → `Done`; S-1..S-6-Sweep; Self-Close-Move `M6-perf-security-cicd.md` + `M6-welle-7.md`. | C0 (Slice-Doc) / C1 (6 ADRs → Accepted) / C2 (dieses Doc) / C3 (Roadmap-DoD + Top-Level-Sync) / C4a/C4b (Self-Close-Move + Refs) |
 
 ---
@@ -51,15 +51,15 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 
 | Lastenheft-Kategorie | Stand nach M6 |
 | -------------------- | ------------- |
-| `GG-CICD-002/003/005/006/007` | ✓ produktiv (Welle 2+3): GitHub-Actions-Matrix-CI + SBOM + Release-Workflow + `make fullbuild`-CI-Gate. |
-| `GG-QG-002` (Image-Audit) | ✓ produktiv (Welle 1): `make image-audit` (Trivy) als verankerter Pflicht-Gate-Vertrag ([`ADR 0043`](../../adr/0043-image-audit-strategy.md)). |
-| `GG-RT-001/004/005` | ✓ produktiv (Welle 4b): Backpressure-Healthcheck + Tick-Loop-Bench + Telemetry-Port-Bench ([`ADR 0041`](../../adr/0041-performance-bench-pattern.md)). |
-| `GG-SAFE-001/002/005/007/008` | ✓ produktiv (Welle 5): Quality-Pipeline + Fallback + Sim/Prod-Marker + strikte Input-Validation ([`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md)). |
-| `GG-SAFE-003` | ⚠ partial Lücke → [Trigger 035](../done-archive/035-safe-003-comm-failure-missing-quality.md). |
-| `GG-SAFE-004` | ✗ Lücke → [Trigger 034](../done-archive/034-safe-004-max-age-stale-quality.md). |
-| `GG-SAFE-006` | ⚠ partial (`diff_replay` ✓; `replay_diff_status` + `ReplaySourcePort` fehlen) → [Trigger 036](../done-archive/036-safe-006-replay-diff-status-replay-source-integration.md). |
-| `GG-DEPLOY-001..006/011` | ✓ produktiv (Welle 1/5c/6): Compose + offline + Linux + DevContainer + `docker compose up`-Demo-`healthy` + `/ready`-Three-State-Healthcheck ([`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)). |
-| `GG-DEPLOY-007..010` | ⏸ M7+ (verteiltes Deployment / Kubernetes / Rolling-Update / Rollback) → [Trigger 037](../open/037-deploy-007-010-multi-node-deployment.md). |
+| [`GG-CICD-002`](../../../../spec/lastenheft.md#gg-cicd-002)/003/005/006/007 | ✓ produktiv (Welle 2+3): GitHub-Actions-Matrix-CI + SBOM + Release-Workflow + `make fullbuild`-CI-Gate. |
+| [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002) (Image-Audit) | ✓ produktiv (Welle 1): `make image-audit` (Trivy) als verankerter Pflicht-Gate-Vertrag ([`ADR 0043`](../../adr/0043-image-audit-strategy.md)). |
+| [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)/004/005 | ✓ produktiv (Welle 4b): Backpressure-Healthcheck + Tick-Loop-Bench + Telemetry-Port-Bench ([`ADR 0041`](../../adr/0041-performance-bench-pattern.md)). |
+| [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)/002/005/007/008 | ✓ produktiv (Welle 5): Quality-Pipeline + Fallback + Sim/Prod-Marker + strikte Input-Validation ([`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md)). |
+| [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) | ⚠ partial Lücke → [Trigger 035](../done-archive/035-safe-003-comm-failure-missing-quality.md). |
+| [`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) | ✗ Lücke → [Trigger 034](../done-archive/034-safe-004-max-age-stale-quality.md). |
+| [`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006) | ⚠ partial (`diff_replay` ✓; `replay_diff_status` + `ReplaySourcePort` fehlen) → [Trigger 036](../done-archive/036-safe-006-replay-diff-status-replay-source-integration.md). |
+| [`GG-DEPLOY-001`](../../../../spec/lastenheft.md#gg-deploy-001)..006/011 | ✓ produktiv (Welle 1/5c/6): Compose + offline + Linux + DevContainer + `docker compose up`-Demo-`healthy` + `/ready`-Three-State-Healthcheck ([`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)). |
+| [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 | ⏸ M7+ (verteiltes Deployment / Kubernetes / Rolling-Update / Rollback) → [Trigger 037](../open/037-deploy-007-010-multi-node-deployment.md). |
 
 Audit-Dokus unter `docs/user/`: `safe-001-004-quality-pipeline.md`,
 `safe-005-006-fallback-determinism.md`,
@@ -93,7 +93,7 @@ Audit-Dokus unter `docs/user/`: `safe-001-004-quality-pipeline.md`,
 - **S-1 M6-Trigger-Sweep:** in M6 eroeffnet/aufgeloest — Trigger 010
   (W1 ✓), 008 (W2 ✓), 031 (W3 ✓), 009 (W6 ✓) aufgeloest; Trigger
   033 (OTel-Collector-CVE, Temp-Deferral via vulnignore), 034/035
-  (`GG-SAFE-003/004`), 036 (`GG-SAFE-006`), 037 (`GG-DEPLOY-007..
+  ([`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)/004), 036 ([`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006)), 037 (`GG-DEPLOY-007..
   010`) bleiben offen als M7+/Stable-Watch.
 - **S-2 Sub-Slicing-Schwelle:** Welle 4 → 4a/4b(-a/b/c), Welle 5 →
   5a/5b/5c, Welle 6 monolithisch (User-Ask „Alles fixen", Welle-6-
@@ -117,12 +117,12 @@ Audit-Dokus unter `docs/user/`: `safe-001-004-quality-pipeline.md`,
 ## 5. Welle-7-Erbschaft fuer M7+
 
 - **Offene `open/`-Trigger:** 033 (OTel-Collector Go-stdlib-CVE,
-  Stable-Watch), 034 (`GG-SAFE-004` max_age), 035 (`GG-SAFE-003`
-  Comm-Failure), 036 (`GG-SAFE-006` replay_diff_status +
-  ReplaySourcePort), 037 (`GG-DEPLOY-007..010` Multi-Node).
+  Stable-Watch), 034 ([`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) max_age), 035 ([`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)
+  Comm-Failure), 036 ([`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006) replay_diff_status +
+  ReplaySourcePort), 037 ([`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 Multi-Node).
 - **Next-Plaene** (`planning/next/`): `replay-source-integration.md`
-  (`GG-MVP-002`, aktiviert Trigger 036), `abnahme-cli.md`
-  (`GG-MVP-003` `make accept`).
+  ([`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002), aktiviert Trigger 036), `abnahme-cli.md`
+  ([`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) `make accept`).
 - **IEC-61850 Pfad-A-Watch:** sobald `pyiec61850-ng` ein
   cp314-/ABI3-Wheel publiziert, faellt die `iec61850-test`-Compat-
   Stage weg (Skip-Marker-Entfernung + Stage-Removal als
@@ -136,7 +136,7 @@ Audit-Dokus unter `docs/user/`: `safe-001-004-quality-pipeline.md`,
 - `M6-results.md` (dieses Doc) liegt in `done/`.
 - Aktiver Slice wechselt nach M6-Closure auf **M7** (Entscheidung
   2026-06-08, M6-welle-7-Review-Befund 3): M7-Vorbelegung in
-  `roadmap.md §M7` (Container fuer `GG-MVP-002` + `GG-MVP-003` +
+  `roadmap.md §M7` (Container fuer [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002) + [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) +
   offene Trigger 033/034/035/036/037); M7-Slice-Plan entsteht in
   M7-Welle-0 (Pattern analog M6-Welle-0).
 
@@ -161,10 +161,10 @@ Supersedes; die geschaerften ADRs bleiben textlich unveraendert.
 
 ## 8. Nicht-vollzogene Items (bewusst)
 
-- **`GG-SAFE-003/004/006`-Vollausbau** — partial/Lücke, ueber
+- **[`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)/004/006-Vollausbau** — partial/Lücke, ueber
   Trigger 034/035/036 in `open/` verankert (Compliance-/Reale-
   Compose-Demo-getrieben).
-- **Verteiltes Deployment (`GG-DEPLOY-007..010`)** — Post-MVP,
+- **Verteiltes Deployment ([`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010)** — Post-MVP,
   Trigger 037.
 - **IEC-61850 Real-Library auf Python 3.14** — Compat-Stage auf
   3.12 ([`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)); Pfad A (cp314-Wheel) bleibt bevorzugte Endform.

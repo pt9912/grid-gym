@@ -9,7 +9,7 @@
 
 ## Lastenheft-Akzeptanz
 
-`GG-TERM-002` (Determinismus) + `GG-TERM-003` (Reproduzierbarkeit)
+[`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002) (Determinismus) + [`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003) (Reproduzierbarkeit)
 sind normative Begriffsdefinitionen
 ([`spec/lastenheft.md`](../../../../spec/lastenheft.md)):
 
@@ -24,8 +24,8 @@ sind normative Begriffsdefinitionen
 > Startzeit im Simulationszeitmodell, Seed, Tick-Groesse und
 > aktivierte Adapter.
 
-Der *testbare* Determinismus-Vertrag traced auf `GG-AR-P-008`
-(`GG-SIM-001/002/003`, `GG-RT-002`); `GG-TERM-002/003` liefern die
+Der *testbare* Determinismus-Vertrag traced auf [`GG-AR-P-008`](../../../../spec/architecture.md#2-architekturprinzipien)
+([`GG-SIM-001`](../../../../spec/lastenheft.md#gg-sim-001)/002/003, [`GG-RT-002`](../../../../spec/lastenheft.md#gg-rt-002)); [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003 liefern die
 normative Feld-/Akzeptanz-Definition (n/a in der Impl-Matrix,
 Lastenheft Z. 2203).
 
@@ -44,7 +44,7 @@ Replay-Preflight** ueber die bereits stabil strukturierten
 Preflight-Vertrag (formal in [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md), 1b-b): „Replay-Diff wird
 nur ausgefuehrt, wenn die vorhandenen deterministischen
 Vergleichsmetadaten gleich sind; fehlende Vollfelder bleiben als
-dokumentierter `GG-TERM-002/003`-Carveout offen." Boundary-Pins
+dokumentierter [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Carveout offen." Boundary-Pins
 einzeln fuer die 5 Felder (1b-b).
 
 ## Offene Vollfelder (dieser Trigger)
@@ -78,7 +78,7 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 
 ## Wandert nach
 
-`done/`, sobald die volle `GG-TERM-002/003`-Matrix strukturiert,
+`done/`, sobald die volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Matrix strukturiert,
 kanonisiert und per-Feld-Boundary-getestet im Replay-Preflight
 verankert ist.
 
@@ -89,6 +89,6 @@ verankert ist.
 - [`../done/M7-welle-1.md`](../done-archive/M7-welle-1.md)
   — [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (§2.5 + R4 auf Preflight korrigiert).
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
-  — `GG-TERM-002`/`GG-TERM-003` normative Definitionen.
+  — [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/[`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003) normative Definitionen.
 - [`../../adr/0011-schaerfung-ohne-abloesung.md`](../../adr/0011-schaerfung-ohne-abloesung.md)
   — Schaerfungs-Pattern fuer die additive Vollausbau-ADR.

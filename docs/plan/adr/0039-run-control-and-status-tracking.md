@@ -40,7 +40,7 @@ Commit)
   mutables Feld in `RunMetadata`).
 - [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)
   (Schaerfungs-ohne-Supersede-Pattern — ADR 0039
-  konkretisiert `GG-API-001` + `GG-UI-004` aus
+  konkretisiert [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001) + [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004) aus
   Lastenheft §16/§17 fuer Welle-4a-Implementation).
 - [`ADR 0015`](0015-snapshot-envelope-v2.md)
   (TickLoop-Snapshot-Envelope-v2: das NEU
@@ -71,17 +71,17 @@ Commit)
   im Welle-4a-Lifespan-Driver ersetzt; ADR 0038-Surface
   bleibt unveraendert).
 - [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
-  (`GG-API-001` REST-Schnittstellen: Akzeptanz „REST
+  ([`GG-API-001`](../../../spec/lastenheft.md#gg-api-001) REST-Schnittstellen: Akzeptanz „REST
   bietet Endpunkte fuer Szenario-Start, Pause, Resume,
   Stop, Status, Snapshot und Fault Injection". Welle 4a
   schliesst den Pause/Resume/Stop/Status-Anteil; Snapshot
   ist Welle-1-`GET /snapshot`-Stub + Welle-6c-Postgres).
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  (`GG-UI-004` Replay-Steuerung-Akzeptanz: „UI bietet
+  ([`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004) Replay-Steuerung-Akzeptanz: „UI bietet
   fuer einen vorhandenen Lauf mindestens Start, Pause,
   Resume, Stop und Anzeige des Replay-Status an").
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
-  (`GG-AR-PORT-DRN-003` `RunRepositoryPort` — Welle 4a
+  ([`GG-AR-PORT-DRN-003`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) `RunRepositoryPort` — Welle 4a
   erweitert den Vertrag um `update_status` + `get_status`,
   symmetrisch zur Welle-1-`exists`-Extension).
 - [`../planning/done/M5-welle-4a.md §3`](../planning/done-archive/M5-welle-4a.md)
@@ -162,8 +162,8 @@ Bezug zu einem echten TickLoop-Tick. Welle-3-Anti-Scope:
 **Welle 4 ersetzt**)".
 
 M5-Welle-4a loest diese zwei Forward-Pointer ein und
-erfuellt `GG-UI-004` (Replay-Controls) + den Replay-
-Restcompletion-Anteil `GG-API-001` (Pause/Resume/Stop/
+erfuellt [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004) (Replay-Controls) + den Replay-
+Restcompletion-Anteil [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001) (Pause/Resume/Stop/
 Status-Endpunkte produktiv, nicht mehr Stub).
 
 Drei Architektur-Concerns formen das Welle-4a-Pattern:
@@ -335,14 +335,14 @@ class TickLoop:
 `TickLoopInvalidTransitionError(current_state, target_state,
 run_id)`; der HTTP-Adapter mapped das auf **409 Conflict**
 mit `ErrorResponse(code="invalid_transition", ...)` (siehe
-ADR 0037 §2 Error-Format `GG-API-004`).
+ADR 0037 §2 Error-Format [`GG-API-004`](../../../spec/lastenheft.md#gg-api-004)).
 
 **Begruendung gegen Alternativen:**
 
 - **Option A — TickLoop bekommt internen Run-Loop +
   Threading + asyncio-Queue fuer Control-Messages.**
   Bricht das Tick-Loop-Determinismus-Versprechen
-  (`GG-SIM-001`) und macht Snapshot-Tests instabil
+  ([`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)) und macht Snapshot-Tests instabil
   (Threading-Scheduler-Drift). Welle-6a hat den
   TickLoop-Sync-Vertrag explizit verankert. **Verworfen.**
 - **Option C — Control-Events via NEU `ControlPort`-
@@ -602,7 +602,7 @@ def get_run_status(
 - **`request_resume` von `stopped`-State.** Welle 4a
   behandelt `stopped` als terminal. `Resume` von einem
   gestoppten Run wuerde einen neuen Lauf bedeuten
-  (`GG-DATA-001` neue `run_id`); das ist ein Welle-5-
+  ([`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001) neue `run_id`); das ist ein Welle-5-
   Scenario-Loader-Concern.
 
 ## 5. Status-Pfad
@@ -715,11 +715,11 @@ def get_run_status(
   (Welle-4-Folge: TickLoop-Wiring ersetzt Demo-
   Generator).
 - [Lastenheft](../../../spec/lastenheft.md#16-kommunikationsschnittstellen) §16
-  `GG-API-001` (REST-Replay-Steuerung-Pflicht).
+  [`GG-API-001`](../../../spec/lastenheft.md#gg-api-001) (REST-Replay-Steuerung-Pflicht).
 - [Lastenheft](../../../spec/lastenheft.md#17-visualisierung) §17
-  `GG-UI-004` (Replay-Controls-UI-Akzeptanz).
+  [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004) (Replay-Controls-UI-Akzeptanz).
 - [Architektur](../../../spec/architecture.md#42-hexagonale-sicht-driving--driven-ports) §4.2
-  (`GG-AR-PORT-DRN-003` `RunRepositoryPort`).
+  ([`GG-AR-PORT-DRN-003`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) `RunRepositoryPort`).
 - [`../planning/done/M5-welle-4a.md §3`](../planning/done-archive/M5-welle-4a.md)
   (Welle-4a-Slice-Doc mit Decisions 12/13/14).
 - **Vorbild-Probes** — keine eigene Welle-4a-Probe:
@@ -732,7 +732,7 @@ def get_run_status(
     [`../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py`](../../../tests/integration/test_m5_welle_3_async_pubsub_probe.py)
     decken asyncio-Pub/Sub-Pattern ab.
 - Pattern-Praezedenz **Driven-Port-Extension**: Welle-1-
-  `RunRepositoryPort.exists` (`GG-AR-PORT-DRN-003` als
+  `RunRepositoryPort.exists` ([`GG-AR-PORT-DRN-003`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) als
   wachsender Port-Vertrag).
 - Pattern-Praezedenz **Cooperative-Pre-Tick-Hook**: ADR
   0022 §2.4 (FaultPort-TickLoop-Hook im Vor-Tick-Block).

@@ -29,8 +29,8 @@ Pattern — diese ADR ist Schaerfung von ADR 0013 §2.4 fuer den
 Battery-spezifischen Snapshot-Vertrag, kein Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 2. Lastenheft §10 (`GG-BESS-001..008`),
-§9.1 (`GG-DEV-010`).
+§3 Welle 2. Lastenheft §10 ([`GG-BESS-001`](../../../spec/lastenheft.md#gg-bess-001)..008),
+§9.1 ([`GG-DEV-010`](../../../spec/lastenheft.md#gg-dev-010)).
 
 ---
 
@@ -48,7 +48,7 @@ Vorlage fuer PV/Load/SmartMeter/GridConnection (Welle 3/4) dienen:
 3. **Command-Surface** (welche `Command.type`-Werte akzeptiert
    das Geraet, wie validiert es Payloads, wann gibt es
    `ACCEPTED`/`LIMITED`/`REJECTED`/`IGNORED`).
-4. **Alarm-Pfad** (`GG-BESS-002` fordert Alarme; voller
+4. **Alarm-Pfad** ([`GG-BESS-002`](../../../spec/lastenheft.md#gg-bess-002) fordert Alarme; voller
    `AlarmSinkPort` ist M3).
 
 Diese ADR fixiert die Wahl explizit; M2 Welle 3/4 Geraete erben
@@ -65,7 +65,7 @@ oder analog), nicht durch Supersedes von ADR 0014.
 
 - `__init__.py` — Re-Export `BatteryDevice` als Paket-Symbol.
 - `config.py` — `BatteryConfig` Frozen-Dataclass mit Validierung
-  (`GG-BESS-008`).
+  ([`GG-BESS-008`](../../../spec/lastenheft.md#gg-bess-008)).
 - `commands.py` — Command-Typen-Parser, `BatteryAlarm`-Domain-
   Klasse, Power-/SOC-Grenz-Validierung.
 - `snapshot.py` — `BatterySnapshot` Frozen-Dataclass + dict-
@@ -79,27 +79,27 @@ Feldern (Welle-2-Review-Schaerfung C-1/H-1/H-2):
 
 - `version: int` — Schema-Version (`1` in Welle 2). Bumps
   kommen ueber Folge-ADRs (z. B. wenn Welle 3 einen
-  Temperatur-Zustand `GG-BESS-006` ergaenzt).
+  Temperatur-Zustand [`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006) ergaenzt).
 - `device_id: str` — Identitaet (`ScenarioDevice.id` aus
   `initialize()`); damit `from_snapshot(state)` einen
   funktionsfaehigen Device-Vertrag (`device.device_id`,
   `device.apply_command()`, `device.tick()`) wiederherstellen
   kann **ohne** Aufrufer-Pflicht zur erneuten `initialize()`-
   Invokation.
-- `run_id: str` — `TelemetryPoint.run_id`-Wert (`GG-DATA-001`).
+- `run_id: str` — `TelemetryPoint.run_id`-Wert ([`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)).
   Pre-init `""`; wird durch einen separaten Lifecycle-Hook
   gesetzt (siehe §2.6 unten). Persistiert in Snapshot, damit
   Resume die gleiche `run_id` weiterfuehrt.
 - `sequence: int` — Monoton wachsender `TelemetryPoint.sequence`-
-  Counter (`GG-ARCH-006`-Tie-Breaking). Persistiert in
+  Counter ([`GG-ARCH-006`](../../../spec/lastenheft.md#gg-arch-006)-Tie-Breaking). Persistiert in
   Snapshot, damit Resume nicht bei `0` neu startet und mit
   bestehenden Sequenzen kollidiert.
 - `config: BatteryConfig` — vollstaendige Konfiguration eingebettet,
   damit `from_snapshot(state)` self-contained ist und keinen
   externen `ScenarioDevice` braucht.
-- `soc_kwh: Decimal` — aktueller Energieinhalt (`GG-BESS-001`).
+- `soc_kwh: Decimal` — aktueller Energieinhalt ([`GG-BESS-001`](../../../spec/lastenheft.md#gg-bess-001)).
 - `current_power_kw: Decimal` — aktueller Lade-/Entladestrom
-  nach Ramp-Limiting (`GG-BESS-004`); negativ = Entladen,
+  nach Ramp-Limiting ([`GG-BESS-004`](../../../spec/lastenheft.md#gg-bess-004)); negativ = Entladen,
   positiv = Laden.
 - `pending_power_kw: Decimal` — letzter vom `apply_command`
   akzeptierter Soll-Wert (vor Ramp). Mehrfach-Commands im selben
@@ -185,18 +185,18 @@ zeitabhaengige Fortschreibung.
 
 `tick(context)` mit `context.tick_ms`:
 
-1. **Ramp-Limit** (`GG-BESS-004`): `delta_power_kw` zwischen
+1. **Ramp-Limit** ([`GG-BESS-004`](../../../spec/lastenheft.md#gg-bess-004)): `delta_power_kw` zwischen
    `current_power_kw` und `pending_power_kw` wird auf
    `ramp_kw_per_s * (tick_ms / 1000)` gekappt. Daraus folgt
    `new_power_kw`.
-2. **Energiebilanz** (`GG-BESS-001/003`):
+2. **Energiebilanz** ([`GG-BESS-001`](../../../spec/lastenheft.md#gg-bess-001)/003):
    `delta_t_hours = tick_ms / (1000 * 3600)`.
    - Laden (`power > 0`): `energy_delta = power * delta_t_hours *
      charge_efficiency`.
    - Entladen (`power < 0`): `energy_delta = power * delta_t_hours
      / discharge_efficiency`.
    - Stillstand (`power == 0`): `energy_delta = 0`.
-3. **SOC-Hard-Clamp** (`GG-BESS-005`):
+3. **SOC-Hard-Clamp** ([`GG-BESS-005`](../../../spec/lastenheft.md#gg-bess-005)):
    `new_soc_kwh = clamp(current_soc_kwh + energy_delta,
    min_soc_pct * capacity_kwh / 100,
    max_soc_pct * capacity_kwh / 100)`. Damit kommt das Geraet
@@ -223,10 +223,10 @@ zeitabhaengige Fortschreibung.
    tick(...) → SOC-Clamp greift → Power+Pending zero → Alarm`.
    Aufrufer, die die Battery weiter laden/entladen wollen,
    muessen nach dem Saturation-Alarm einen neuen `set_power_kw`-
-   Befehl absetzen (bewusst kein „auto-resume" — `GG-BESS-005`
+   Befehl absetzen (bewusst kein „auto-resume" — [`GG-BESS-005`](../../../spec/lastenheft.md#gg-bess-005)
    Akzeptanz „nicht ungeprueft uebernommen" verbietet stille
    Fortschreibung).
-4. **Telemetrie** (`GG-DEV-002`, `GG-DATA-001/002`):
+4. **Telemetrie** ([`GG-DEV-002`](../../../spec/lastenheft.md#gg-dev-002), [`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)/002):
    `TelemetryPoint`-Tupel mit Metriken
    - `("soc_pct", new_soc_kwh / capacity_kwh * 100, "pct")`,
    - `("soc_kwh", new_soc_kwh, "kWh")`,
@@ -236,7 +236,7 @@ zeitabhaengige Fortschreibung.
    (Temperatur, Zellspannung) sind eigene ADRs.
 
 Decimal-Quantisierung: alle internen Berechnungen halten
-mindestens 6 Nachkommastellen (`GG-DATA-005`-Soll). Telemetrie-
+mindestens 6 Nachkommastellen ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)-Soll). Telemetrie-
 Werte werden vor Emission auf 6 Nachkommastellen quantisiert
 via `Decimal.quantize(Decimal("0.000001"),
 rounding=ROUND_HALF_EVEN)`.
@@ -268,7 +268,7 @@ Welle-2-Tests pruefen die Alarme direkt am Device.
 `BatteryDevice.tick()` ist deterministisch by-construction:
 
 - Decimal-Arithmetik ist plattformuebergreifend stabil
-  (`GG-DATA-005`).
+  ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)).
 - `RandomPort` wird in Welle 2 nicht konsumiert (keine
   stochastischen Anteile). Welle 3+ Fault-Injection wird den Port
   via `random.sub_port(...)`-Konvention nutzen.
@@ -306,7 +306,7 @@ ist nur ein frueher Hinweis fuer den Aufrufer.
 
 **Alarm-Pfad in-device statt AlarmSinkPort jetzt:** Welle-2-
 Scope-Disziplin (`AlarmSinkPort` ist M3 per Roadmap). In-Device-
-Sammlung erfuellt `GG-BESS-002` Akzeptanz ("Alarm wird erzeugt"),
+Sammlung erfuellt [`GG-BESS-002`](../../../spec/lastenheft.md#gg-bess-002) Akzeptanz ("Alarm wird erzeugt"),
 ohne M3-Port-Surface vorzuziehen. Welle 6 TickLoop kann die
 Alarme bereits einsammeln; M3 fuegt nur die Persistenz hinzu.
 
@@ -334,7 +334,7 @@ Diese ADR gilt NICHT fuer:
   Test), aber jede eigene ADR fixiert das jeweilige Snapshot-
   und Command-Surface.
 - `AlarmSinkPort` (M3).
-- Fault-Injection (M3, `GG-FAULT-001..010`).
+- Fault-Injection (M3, [`GG-FAULT-001`](../../../spec/lastenheft.md#gg-fault-001)..010).
 - Snapshot-v1→v2-Bump-Mechanik im Envelope-Level (Welle 6 +
   ADR 0015).
 
@@ -348,7 +348,7 @@ liegen folgende Module:
 - `src/grid_gym/hexagon/core/devices/battery/__init__.py` —
   Re-Export `BatteryDevice`.
 - `src/grid_gym/hexagon/core/devices/battery/config.py` —
-  `BatteryConfig` mit Validierung (`GG-BESS-008`).
+  `BatteryConfig` mit Validierung ([`GG-BESS-008`](../../../spec/lastenheft.md#gg-bess-008)).
 - `src/grid_gym/hexagon/core/devices/battery/commands.py` —
   `BatteryAlarm`-Domain-Klasse + Command-Validator.
 - `src/grid_gym/hexagon/core/devices/battery/snapshot.py` —
@@ -393,7 +393,7 @@ Closure-Notiz verzeichnet.
 **Was offen bleibt (Welle 3+-Material):**
 
 - PV/Load-spezifische Snapshot- und Command-Schemata.
-- Temperatur (`GG-BESS-006`) und Zellspannung (`GG-BESS-007`)
+- Temperatur ([`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)) und Zellspannung ([`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007))
   — Post-MVP, eigene ADR-Erweiterung.
 - TickLoop-Integration (Welle 6).
 - `AlarmSinkPort` (M3).
@@ -408,7 +408,7 @@ Closure-Notiz verzeichnet.
   projektweit Welle-5-Material (Curtailment/Mode-Switching
   zusammen mit Lastprofilen) — ADR 0016 §7 spiegelt.
 - **Stoechiometrische BESS-Modellierung.** Welle 2 nutzt das
-  Vereinfachungsmodell aus `GG-BESS-001..005` (kein Coulomb-
+  Vereinfachungsmodell aus [`GG-BESS-001`](../../../spec/lastenheft.md#gg-bess-001)..005 (kein Coulomb-
   Counting, kein OCV-Lookup, keine Stromdynamik unter Ramp).
 - **Tick-Loop-Integration.** Welle 6, ADR ggf. eigene.
 - **Multi-Geraete-Inter-Battery-Effekte.** Welle 5 Netzbilanz

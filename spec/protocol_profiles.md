@@ -175,7 +175,7 @@ Status und den DoD-/Review-Beleg. Sie ist vom Referenzrichtungs-Gate
 | **IEC-61850** (`protocol_iec61850`) | [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) | Provisional | M4-Welle 5b — [`M4-welle-5b`](../docs/plan/planning/done-archive/M4-welle-5b.md) + [Slice 033](../docs/plan/planning/done-archive/033-iec61850-adapter-review-folge.md) (Lizenz-Boundary I-f) |
 | **Port-Sync-Vertrag / Caller-Scope-Lifecycle / Replay-Stateless** | [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1–2.4 | — | — |
 | **Inline-Profile-Pattern** | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) §2.1 … [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) §2.1 | — | — |
-| **OTel-Span-Wrap / Cross-Adapter-Hardening** (inkl. `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Test + `make docs-check`-Konsistenzpruefung) | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5 | — | M4-Welle 6a |
+| **OTel-Span-Wrap / Cross-Adapter-Hardening** (inkl. [`AC-ADAPTER-LIGHTWEIGHT`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Planted-Violator-Test + `make docs-check`-Konsistenzpruefung) | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5 | — | M4-Welle 6a |
 | **ADR-Closure `Provisional → Accepted`** | Pattern [`ADR 0011`](../docs/plan/adr/0011-schaerfung-ohne-abloesung.md) | geplant (M4-Welle 7) | [M4-Slice-Plan](../docs/plan/planning/done-archive/M4-protocol-adapters.md) §3 Welle 7 |
 
 **Bibliothekswahl (Detail in den Adapter-ADRs):** MQTT `paho-mqtt>=2.0`

@@ -15,7 +15,7 @@ Spike Pflicht-Bestandteil des Welle-PR-Merges ist; Welle-5b-
 Review-Folge hat das geleistet).
 **Geschaerft am:** 2026-05-19 (Pre-Implementation, Commit
 `53a4f91`) — §2.4 Datei-I/O herausgenommen
-(`GG-AR-TABU-002`-Defense; `parse_csv_profile`/
+([`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)-Defense; `parse_csv_profile`/
 `parse_json_profile` als pure Parser); §2.3 Profil-Index-
 Formel korrigiert (off-by-one gegen TickLoop-Clock-Konvention);
 §2.2 Restore-Konvention auf `LoadConfig.rated_power_kw`
@@ -45,33 +45,33 @@ ADR-Pattern — diese ADR erweitert ADR 0019 §2.5 fuer das
 Load-Repraesentations-Schema, kein Supersedes).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 5b. Lastenheft §11 (`GG-GRID-003`/`004`).
+§3 Welle 5b. Lastenheft §11 ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003)/`004`).
 
 ---
 
 ## 1. Kontext
 
 Welle 5b ergaenzt das Welle-5a-Netzbilanzmodell um die
-Lastenheft-Akzeptanz fuer `GG-GRID-003` und `GG-GRID-004`:
+Lastenheft-Akzeptanz fuer [`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) und [`GG-GRID-004`](../../../spec/lastenheft.md#gg-grid-004):
 
-- **`GG-GRID-003`** verlangt, dass Lasten als **konstante
+- **[`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003)** verlangt, dass Lasten als **konstante
   Werte, Zeitreihen oder Szenario-Events** definiert werden
   koennen.
-- **`GG-GRID-004`** verlangt, dass Szenarien **Lastspruenge
+- **[`GG-GRID-004`](../../../spec/lastenheft.md#gg-grid-004)** verlangt, dass Szenarien **Lastspruenge
   mit Startzeit, Dauer und Leistung** definieren koennen.
 
 Der **konstante** Pfad ist bereits ueber `LoadDevice` (Welle 3)
 abgedeckt: `LoadDevice.rated_power_kw` ist der Default-Verbrauch
 ohne Scenario-Events. Welle 5b fuegt:
 
-- **`LoadEvent`-Dataclass** (`GG-GRID-004`): Scenario-Event mit
+- **`LoadEvent`-Dataclass** ([`GG-GRID-004`](../../../spec/lastenheft.md#gg-grid-004)): Scenario-Event mit
   `start_s`, `duration_s`, `target_device_id`, `power_kw`. Wird
   in Welle 6 vom TickLoop konsumiert und in
   `LoadDevice.apply_command(Command.type="set_power_kw")`
   uebersetzt; nach `start_s + duration_s` wird der Default-
   Restore-Wert `LoadConfig.rated_power_kw` gesetzt (kein
   Stack-Restore des Vor-Event-Werts; siehe §2.2).
-- **`LoadProfile`-Dataclass** (`GG-GRID-003` „Zeitreihen"):
+- **`LoadProfile`-Dataclass** ([`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) „Zeitreihen"):
   Tick-indizierte `Decimal`-Folge fuer einen `target_device_id`.
 - **CSV/JSON-Parser** als Free-Functions:
   `parse_csv_profile(text)` und `parse_json_profile(payload)` →
@@ -87,8 +87,8 @@ ohne Scenario-Events. Welle 5b fuegt:
 
 **Welle-5b-Driftrisiko gegen M3:** Der M2-Slice-Plan §4
 markiert „Replay-Source-Pfade" als M3-Material. Welle 5b
-nimmt einen Teil davon vorweg, weil `GG-GRID-003` und
-`GG-GRID-004` MUSS-Akzeptanz sind und Lastenheft-Lieferung in
+nimmt einen Teil davon vorweg, weil [`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003) und
+[`GG-GRID-004`](../../../spec/lastenheft.md#gg-grid-004) MUSS-Akzeptanz sind und Lastenheft-Lieferung in
 M2 erforderlich ist. M3 baut auf Welle 5b auf: dieselbe
 `LoadProfile`-Repraesentation wird in M3 fuer komplexere
 Replay-Quellen (z. B. PV-Solarprofile, Stochastik) wieder-
@@ -261,7 +261,7 @@ ist explizit gegen Interpolation; M3-Material).
 ### 2.4 CSV/JSON-Parser (Pure Free-Functions, kein Datei-I/O)
 
 **Architektur-Pflicht (Review-Round-1-High-1):** Core ist
-I/O-frei (`GG-AR-TABU-002`, `spec/architecture.md:285`); das
+I/O-frei ([`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest), `spec/architecture.md:285`); das
 bestehende `hexagon/core/scenario/loader.py`-Pattern bestaetigt
 das (kein `open()`-Aufruf, nur Mapping-Parsing). Welle 5b
 liefert deshalb **pure Parser ueber bereits-eingelesenen Text/
@@ -450,7 +450,7 @@ Tick") wird stochastisch — separate Open-Triggers.
 
 ## 3. Begruendung
 
-**Welle-5b-Lieferung statt M3-Verschiebung:** `GG-GRID-003`/
+**Welle-5b-Lieferung statt M3-Verschiebung:** [`GG-GRID-003`](../../../spec/lastenheft.md#gg-grid-003)/
 `004` sind MUSS-Akzeptanz im Lastenheft §11; M2 muss sie
 liefern. Eine Verschiebung auf M3 wuerde den MVP-Anspruch
 brechen. Der M3-Driftrisiko-Hinweis im M2-Slice-Plan §3

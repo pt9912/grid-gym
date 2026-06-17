@@ -26,13 +26,13 @@ ADR-Skizze mit:
 - Bewertung Encoder-Optionen (`orjson` + Decimal-Stream-Adapter,
   `msgspec`, Rust-PyO3),
 - Byte-Gleichheits-Test gegen `core.serialization.canonical`,
-- Performance-Messpunkte (Telemetrie-Pfad, `GG-RT-005`),
+- Performance-Messpunkte (Telemetrie-Pfad, [`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005)),
 - Migrations-Strategie (Feature-Flag, Vergleichslauf in CI).
 
 ## Aktivierungs-Kriterium
 
 Bei messbarem Performance-Druck auf dem Telemetrie-/Replay-Pfad
-(`GG-RT-005` SOLLTE: 10.000 Punkte/s) oder spaetestens, wenn das
+([`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005) SOLLTE: 10.000 Punkte/s) oder spaetestens, wenn das
 Demo-Szenario in CI deutlich mehr Zeit fuer Serialisierung als fuer
 Tick-Verarbeitung benoetigt.
 
@@ -59,7 +59,7 @@ Begruendung:
   belastbarer Benchmark braucht aber dedizierte Last-Generierung
   (z. B. 10.000 Points/s im Tick), die in Welle 6a-Scope nicht
   produktiv-installiert wurde.
-- **`GG-RT-005`-SOLLTE-Schwelle (10.000 Punkte/s)** ist nicht
+- **[`GG-RT-005`](../../../../spec/lastenheft.md#gg-rt-005)-SOLLTE-Schwelle (10.000 Punkte/s)** ist nicht
   fertig aktiviert. M4-Welle-7 (Closure) bringt voraussichtlich
   einen breiteren E2E-Benchmark; M5/M6 schaerft die
   Performance-Pfade systematisch (vgl. `M6 — Performance + Security

@@ -8,13 +8,13 @@ nach `done-archive/` folgt mit der M8-Meilenstein-Closure
 (`carveouts.md` §3-Konvention).
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)
-(Welle-7-Erbschaft); Lastenheft §9.4 (`GG-DEV-015..018`).
+(Welle-7-Erbschaft); Lastenheft §9.4 ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018).
 
 ---
 
 ## Trigger
 
-Lastenheft `GG-DEV-015` definiert ein **EV-Charger-Geraetemodell**
+Lastenheft [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015) definiert ein **EV-Charger-Geraetemodell**
 als SOLLTE-Item. M2 hat das aus Scope-Gruenden out-of-scope
 gehalten und nur die fuenf MVP-MUSS-Geraete implementiert
 (Battery, PV, Load, GridConnection, SmartMeter). Der MVP-Demo

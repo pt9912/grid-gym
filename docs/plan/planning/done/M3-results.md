@@ -25,8 +25,8 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | 3     | 2026-05-21  | [`ADR 0023`](../../adr/0023-agent-bus-protocol.md) `AgentBus Protocol`; `Agent`-Sub-Protocol + `AgentMessageBus` + `AgentMessage` + TickLoop-Schritt-D2-Hook; Code-Review-Folge mit 9 Findings als [`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfungen                                    | `3dbe6af..d6f66fc` (5 Kern-Commits + 8 Wording-Polish + C3-Sync) |
 | 4a    | 2026-05-21  | [`ADR 0026`](../../adr/0026-agent-drain-registry-pattern.md) `Agent Drain Registry Pattern`; TickLoop-`agents`-Kwarg + Schritt A0v/A0a + `_attach_agents()`-Lifecycle + `consume_for(...)` + Foundation-State-Snapshot + sechs neue Error-Klassen                     | `a24f733..da18c6d` |
 | 4b    | 2026-05-22  | [`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md) `Rule-Based Agent Scenario Pattern`; `RuleBasedAgent` + Scenario-`agents`-Block + bidirektionaler `agents.<type>.<id>`-Sub-Snapshot-Resume-Match + End-to-End-Demo; **`make fullbuild` cache-frei gruen ohne Override** | `8802dc0..ac7b47f` |
-| 5     | 2026-05-23  | [`ADR 0024`](../../adr/0024-observability-port-trio.md) `Observability Port Trio` (`LogPort`/`MetricsPort`/`TracePort` als Driven-Ports + `SpanContext` + Null-Adapter-Trio + additive TickLoop-Hooks); [`ADR 0029`](../../adr/0029-no-coverage-pragma-contract.md) `AC-NO-COVERAGE-PRAGMA` (Hygiene-Folge, `Accepted`); `coverage-report`-Make-Target | `7427daf..a690c02` (6 Welle-5-Kern-Commits) |
-| 6     | 2026-05-25  | OTLP-Adapter-Trio (`OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` gRPC); `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper; `deploy/compose.yml` `otel-collector`-Sibling; Integration-Smoke mit Tripel-Assert; Runbook `docs/user/observability.md`; `AC-OTLP-ADAPTER-NO-TIME` als 12. arch_check-Contract; **`make fullbuild` cache-frei gruen ohne Override mit OTLP-Collector** | `c98ce1a..46dbd6e` (C1 mit drei Review-Folgen + C2 + C3 + Code-Review-Folge inkl. Trigger-029-Fehlbefund-Closure) |
+| 5     | 2026-05-23  | [`ADR 0024`](../../adr/0024-observability-port-trio.md) `Observability Port Trio` (`LogPort`/`MetricsPort`/`TracePort` als Driven-Ports + `SpanContext` + Null-Adapter-Trio + additive TickLoop-Hooks); [`ADR 0029`](../../adr/0029-no-coverage-pragma-contract.md) [`AC-NO-COVERAGE-PRAGMA`](../../adr/0029-no-coverage-pragma-contract.md) (Hygiene-Folge, `Accepted`); `coverage-report`-Make-Target | `7427daf..a690c02` (6 Welle-5-Kern-Commits) |
+| 6     | 2026-05-25  | OTLP-Adapter-Trio (`OtlpLogAdapter`/`OtlpMetricsAdapter`/`OtlpTraceAdapter` gRPC); `build_otlp_adapters`-Factory + `flush_and_shutdown`-Helper; `deploy/compose.yml` `otel-collector`-Sibling; Integration-Smoke mit Tripel-Assert; Runbook `docs/user/observability.md`; [`AC-OTLP-ADAPTER-NO-TIME`](../../adr/0024-observability-port-trio.md) als 12. arch_check-Contract; **`make fullbuild` cache-frei gruen ohne Override mit OTLP-Collector** | `c98ce1a..46dbd6e` (C1 mit drei Review-Folgen + C2 + C3 + Code-Review-Folge inkl. Trigger-029-Fehlbefund-Closure) |
 | 7     | 2026-05-25  | Closure: sechs M3-ADRs (0022..0027) `Provisional → Accepted`; Trigger-006-Decision (verschoben mit geschaerftem Aktivierungs-Kriterium); `done/M3-results.md`; `roadmap.md` M3 → `Done`; Open-Trigger fuer RL-Adapter; S-1..S-6-Sweep; End-of-Wave-Move | `c971c6a`, `670a4df`, `d13e1f3`, `92daafc`, `2d0d0d4`, `5480937`, `d1c8aab` + dieser Commit-Stack |
 
 ## 2. Abnahme-Belege
@@ -61,8 +61,8 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 - **A-1-Contracts**: 19 (`make arch-check` zeigt
   „Contracts: 7 kept, 0 broken" import-linter + arch_check
   „all contracts kept" 12-stufig). 6 import-linter + 13
-  arch_check (inkl. `AC-NO-COVERAGE-PRAGMA` aus Welle 5 +
-  `AC-OTLP-ADAPTER-NO-TIME` aus Welle 6 + `AC-TICK-LOOP-PRIVATE-
+  arch_check (inkl. [`AC-NO-COVERAGE-PRAGMA`](../../adr/0029-no-coverage-pragma-contract.md) aus Welle 5 +
+  [`AC-OTLP-ADAPTER-NO-TIME`](../../adr/0024-observability-port-trio.md) aus Welle 6 + `AC-TICK-LOOP-PRIVATE-
   RESUME-ERRORS` aus Slice 028).
 - **`make image-audit`**: gruen
   (`trivy --ignore-unfixed` ohne HIGH/CRITICAL fuer
@@ -122,7 +122,7 @@ S-1..S-6-Items:
   Hardening-ADR noetig.
 - **S-5 (ADR-Erweiterungs-Pattern, ohne Supersedes)** — erfuellt
   durch sechs neue M3-ADRs (0022/0023/0024/0025/0026/0027) plus
-  eine Hygiene-Folge-ADR (0029 `AC-NO-COVERAGE-PRAGMA` aus Welle
+  eine Hygiene-Folge-ADR (0029 [`AC-NO-COVERAGE-PRAGMA`](../../adr/0029-no-coverage-pragma-contract.md) aus Welle
   5b/Slice 027), alle als Schaerfungen ohne Supersedes ([`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-
   Pattern konsequent fortgefuehrt). Verifikation: keine
   Supersedes-Eintraege in den sechs ADRs (manuell geprueft
@@ -130,15 +130,15 @@ S-1..S-6-Items:
   Treffer).
 - **S-6 (Lastenheft-Coverage-Sweep nach M3-Closure)** — erfuellt
   in Welle 0c (initial) + M3-Welle-7-Re-Sweep:
-  - `GG-FAULT-001..010`: erfuellt durch Welle 1+2 ([`ADR 0022`](../../adr/0022-fault-injection-protocol.md) +
+  - [`GG-FAULT-001`](../../../../spec/lastenheft.md#gg-fault-001)..010: erfuellt durch Welle 1+2 ([`ADR 0022`](../../adr/0022-fault-injection-protocol.md) +
     [`ADR 0025`](../../adr/0025-fault-recovery-pattern.md)).
-  - `GG-AGENT-001..006`: erfuellt durch Welle 3+4a+4b ([`ADR 0023`](../../adr/0023-agent-bus-protocol.md) +
-    [`ADR 0026`](../../adr/0026-agent-drain-registry-pattern.md) + [`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md)). `GG-AGENT-007` (Deadlines) und
-    `GG-AGENT-008` (Async) bleiben Welle-4c+/M5-Material.
-  - `GG-OTEL-001..004`: erfuellt durch Welle 5+6 ([`ADR 0024`](../../adr/0024-observability-port-trio.md) +
+  - [`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..006: erfuellt durch Welle 3+4a+4b ([`ADR 0023`](../../adr/0023-agent-bus-protocol.md) +
+    [`ADR 0026`](../../adr/0026-agent-drain-registry-pattern.md) + [`ADR 0027`](../../adr/0027-rule-based-agent-scenario-pattern.md)). [`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007) (Deadlines) und
+    [`GG-AGENT-008`](../../../../spec/lastenheft.md#gg-agent-008) (Async) bleiben Welle-4c+/M5-Material.
+  - [`GG-OTEL-001`](../../../../spec/lastenheft.md#gg-otel-001)..004: erfuellt durch Welle 5+6 ([`ADR 0024`](../../adr/0024-observability-port-trio.md) +
     OTLP-Adapter + Compose-Smoke).
-  - `GG-SAFE-001..006`: M6-Material (Sicherheits-Audit-Slice).
-  - **RL-Restposten**: `GG-FUTURE-001/002` (RL-Adapter) wandert
+  - [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006: M6-Material (Sicherheits-Audit-Slice).
+  - **RL-Restposten**: [`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002 (RL-Adapter) wandert
     als neuer Open-Trigger in `open/` (siehe §5 unten).
 
 ## 5. Welle-7-Erbschaft fuer M4+/M5+/M6+
@@ -146,7 +146,7 @@ S-1..S-6-Items:
 Diese Items sind explizit als M3-Closure-Restposten in `open/`
 aktiviert oder bleiben aktiv:
 
-**RL-Adapter** (`GG-FUTURE-001/002` — eigener Slice nach
+**RL-Adapter** ([`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002 — eigener Slice nach
 M3-Closure, der Multi-Agent-Bus aus Welle 3/4 ist RL-faehig,
 aber der RL-Trainings-Loop bleibt extern):
 
@@ -157,9 +157,9 @@ aber der RL-Trainings-Loop bleibt extern):
 
 **Multi-Agent-Erweiterungen** (Welle-4c+/M5):
 
-- `GG-AGENT-007` (Agent-Deadlines) — Welle 4c oder M5-Folge-
+- [`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007) (Agent-Deadlines) — Welle 4c oder M5-Folge-
   Slice.
-- `GG-AGENT-008` (Async-Multi-Agent-Bus, `AsyncRandomPort`) —
+- [`GG-AGENT-008`](../../../../spec/lastenheft.md#gg-agent-008) (Async-Multi-Agent-Bus, `AsyncRandomPort`) —
   M5 oder spaeter; [`ADR 0007`](../../adr/0007-random-port.md) §6 nennt das als bewusst
   zurueckgestellten Folge-Punkt.
 
@@ -228,7 +228,7 @@ bleiben weiterhin als eigene Slices nach M3-Closure aktiv
   `done/M1-tick-loop-spine.md` und `done/M2-devices.md`).
 - **`tool_version`-Bump**: bleibt auf `0.1.0`
   (`pyproject.toml`); ein Release-Bump kommt mit M6
-  (`GG-CICD-007` Release-Workflow + Trigger 008 SBOM-
+  ([`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007) Release-Workflow + Trigger 008 SBOM-
   Aktivierung).
 - **Snapshot-v2→v3-Lese-Migrations-Pfad**: M3 hat den Schema-
   Vertrag um Sub-Snapshots (`devices.<typ>.<id>`,
@@ -236,7 +236,7 @@ bleiben weiterhin als eigene Slices nach M3-Closure aktiv
   `pending_agent_commands`) erweitert. Schema-Bump auf v3 mit
   Lese-Migrations-Pfad bleibt M6-Material
   (`GG-PERSIST-*`-Slice analog M2-Welle-7-Erbschaft).
-- **`GG-AGENT-007` Deadlines + `GG-AGENT-008` Async**: bleiben
+- **[`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007) Deadlines + [`GG-AGENT-008`](../../../../spec/lastenheft.md#gg-agent-008) Async**: bleiben
   Welle-4c+/M5-Material (siehe §5 oben).
-- **`GG-SAFE-001..006` Sicherheits-Audit**: bleibt M6-Material
+- **[`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006 Sicherheits-Audit**: bleibt M6-Material
   (Sicherheits-Audit-Slice in der M6-Vorbelegung).

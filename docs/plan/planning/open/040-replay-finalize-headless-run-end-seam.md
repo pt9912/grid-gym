@@ -26,7 +26,7 @@ endet ein Lauf ueber `stop()`), hat aber drei Lücken:
    nicht; ein spaeterer Shutdown-`finalize()` wuerde dann einen
    **partiellen** Lauf gegen die volle Referenz diffen
    (irrefuehrender `diverged`-Status).
-3. **Headless-Runner ohne asyncio-Driver:** die `GG-MVP-003`-
+3. **Headless-Runner ohne asyncio-Driver:** die [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)-
    Abnahme-CLI (M7-Welle-2) treibt Ticks ggf. **ohne**
    `DemoTickLoopDriver`. Ein solcher Runner muss `finalize()`
    selbst aufrufen — sonst bleibt der Replay-Diff +
@@ -46,7 +46,7 @@ endet ein Lauf ueber `stop()`), hat aber drei Lücken:
 
 ## Aktivierungs-Bedingung
 
-- **`GG-MVP-003` Abnahme-CLI (M7-Welle-2)**, falls sie Replay-
+- **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI (M7-Welle-2)**, falls sie Replay-
   Validierung headless (ohne `DemoTickLoopDriver`) braucht — dann
   ist die Core-Run-End-Naht Vorbedingung.
 - ODER Einfuehrung eines Tick-Budgets / Szenario-Endes mit
@@ -64,6 +64,6 @@ ist.
 - [`../done/M7-welle-1b-b.md`](../done-archive/M7-welle-1b-b.md) —
   Replay-Lifecycle-Slice (1b-b-D-1 Terminal-Naht).
 - [`../done/M7-mvp-completion.md`](../done-archive/M7-mvp-completion.md)
-  — `GG-MVP-003`-Abnahme-CLI ist M7-Welle-2 (Headless-Konsument).
+  — [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)-Abnahme-CLI ist M7-Welle-2 (Headless-Konsument).
 - [`../../adr/0049-replay-lifecycle-finalize-hook.md`](../../adr/0049-replay-lifecycle-finalize-hook.md)
   — §2.1 Terminal-Naht (Driver triggert, Core entscheidet).

@@ -36,8 +36,8 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | 4     | 2026-05-31   | [`ADR 0033`](../../adr/0033-opcua-adapter-profile.md) `OPC-UA-Adapter-Profile` (Provisional); **Erster rein-async-Stack** via `OpcuaLoopThread`; 8 Datatypes; Polling-Read + Direct-Write; in-process `asyncua.Server`-Smoke; 81 neue Unit-Tests; Slice 032 (Review-Folge 6 HIGH + 11 MEDIUM)                                                                                                                                                                                                                                                                                                                                                                                       | `7937e70` (C0), `74ed35b` (C1 ADR), `78fdd7a` (C2 Implementation), `7ad5baf` (C3), Slice 032 feat `45bcf97` + doc `e8fc116` + Nachzug `1c2dfa3`, Self-Close `3bc015b`                                          |
 | 5a    | 2026-05-31   | [`ADR 0034`](../../adr/0034-dnp3-adapter-profile.md) `DNP3-Adapter-Profile` (Provisional); **Zwei-Library-Setup** `nfm-dnp3` (Master, MIT) + `dnp3-outstation` (Outstation, MIT, Test-Sibling); Group/Variation-Set {(1,1),(1,2),(30,1),(30,5)}; Class-0-Polling-Read mit Filter; 56 neue Unit-Tests + 4 Integration-Smokes; C2-Library-Bug-Find `AnalogInput.index` (nicht `.idx`)                                                                                                                                                                                                                                                                                              | `43d0b07` (C0), `b0fea7e` (C1 ADR), `224b370` (C2 Implementation), `6903a08` (C3), `76cbdcf` (EoD-Sync), Self-Close `9fea2be`                                                                                  |
 | 5b    | 2026-06-01   | [`ADR 0035`](../../adr/0035-iec61850-adapter-profile.md) `IEC-61850-Adapter-Profile` (Provisional); **Erstmaliger GPL-isolierter Sub-Module-Praezedenzfall** im Repo (Decision I-f via SPDX-Header pro Datei + `LICENSES/GPL-3.0.txt` + Optional-Extra `pip install grid-gym[iec61850]`); `pyiec61850-ng` als **erste SWIG-/C-native Library** im Repo; 4 Datatypes × FC `{MX,ST,SP,CF,DC}`; In-Process-Smoke unter **2c-Mock-only-Fallback** (Python-3.14-SWIG-Segfault); 75 neue Unit-Tests; Slice 033 (Review-Folge 15 Findings 10 HIGH + 5 MEDIUM)                                                                                                                                  | Pre-C0a `9fea2be`, Pre-C0b `7b5abee`, C0 `19f820a`, C1 `88c1a33`, C1-Review-Folge `da8aed9`, C2 `944bca5`, C3 `ca96bca`, Slice 033 `7e0c91b`, Self-Close `30860ed`                                             |
-| 6a    | 2026-06-01   | Cross-Adapter-Hardening Mainstream: OTel-Span-Wrap fuer alle 5 Adapter via `OtelSpanWrappedDeviceProtocolPort`-Composition-Wrapper ([`ADR 0024`](../../adr/0024-observability-port-trio.md) §4.5; Adapter-Code-Diff: NULL); Adapter-Profil-Index `spec/protocol_profiles.md`; Lastenheft §16 auf `✅ M4` × 5; `AC-ADAPTER-LIGHTWEIGHT`-Planted-Violator-Test (Welle-1-§7-Folge-Pflicht); `[tool.mypy] strict_bytes = true` (Trigger-006-Closure); compose.yml-Header-Konsolidierung; Slice 034 (Review-Folge 15 Findings 1 HIGH + 6 MEDIUM + 4 LOW-MED + 4 LOW; F13 als Welle-6b-Vorlauf)                                                                                              | Sub-Slicing `838d904`, C0 `9776dd9`, C1 `9312239`, C2 `9d3912f`, Pre-C3 `81140e2`, C3 `0a5e895`, C4 `69b37f1`, Slice 034 `bde8fdb`, Hash-Sync `b6a778d`, Self-Close `d1cb65d`, Pre-C0-Sync `7b0e3e4`           |
-| 6b    | 2026-06-01   | IEC-61850-Lizenz-und-Smoke-Hardening (Welle-5b-Erbschaft + Slice-034-F13-Vorlauf): NEU `tools/check_spdx.py` als 10. A-1-Gate `make spdx-check`; NEU `AC-IEC61850-GPL-BOUNDARY` als 14. arch_check-Contract (19 → 20 KEPT; AST-Import-Scan); NEU Top-Level `CONTRIBUTING.md` mit Dual-License-Policy; IedServer-Smoke-Reaktivierungs-Probe Pfad-A-Befund (PyPI-Stand identisch zu Welle 5b) → Pfad C aktiv mit Trigger 009; Slice-034-F13-Coverage-Schaerfung (`_is_adapter_lightweight_path` erweitert um Cross-Adapter-Helper `_protocol_*.py`); 18 neue Unit-Tests                                                                  | C0 `14d1bcb`, C1 `8947c62`, C2 `9e2bf39`, C3 `2539574`, C4 `314ccae`, Self-Close `bf23458`, Pre-C0-Sync `5b2dc24`                                                                                              |
+| 6a    | 2026-06-01   | Cross-Adapter-Hardening Mainstream: OTel-Span-Wrap fuer alle 5 Adapter via `OtelSpanWrappedDeviceProtocolPort`-Composition-Wrapper ([`ADR 0024`](../../adr/0024-observability-port-trio.md) §4.5; Adapter-Code-Diff: NULL); Adapter-Profil-Index `spec/protocol_profiles.md`; Lastenheft §16 auf `✅ M4` × 5; [`AC-ADAPTER-LIGHTWEIGHT`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Planted-Violator-Test (Welle-1-§7-Folge-Pflicht); `[tool.mypy] strict_bytes = true` (Trigger-006-Closure); compose.yml-Header-Konsolidierung; Slice 034 (Review-Folge 15 Findings 1 HIGH + 6 MEDIUM + 4 LOW-MED + 4 LOW; F13 als Welle-6b-Vorlauf)                                                                                              | Sub-Slicing `838d904`, C0 `9776dd9`, C1 `9312239`, C2 `9d3912f`, Pre-C3 `81140e2`, C3 `0a5e895`, C4 `69b37f1`, Slice 034 `bde8fdb`, Hash-Sync `b6a778d`, Self-Close `d1cb65d`, Pre-C0-Sync `7b0e3e4`           |
+| 6b    | 2026-06-01   | IEC-61850-Lizenz-und-Smoke-Hardening (Welle-5b-Erbschaft + Slice-034-F13-Vorlauf): NEU `tools/check_spdx.py` als 10. A-1-Gate `make spdx-check`; NEU [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md) als 14. arch_check-Contract (19 → 20 KEPT; AST-Import-Scan); NEU Top-Level `CONTRIBUTING.md` mit Dual-License-Policy; IedServer-Smoke-Reaktivierungs-Probe Pfad-A-Befund (PyPI-Stand identisch zu Welle 5b) → Pfad C aktiv mit Trigger 009; Slice-034-F13-Coverage-Schaerfung (`_is_adapter_lightweight_path` erweitert um Cross-Adapter-Helper `_protocol_*.py`); 18 neue Unit-Tests                                                                  | C0 `14d1bcb`, C1 `8947c62`, C2 `9e2bf39`, C3 `2539574`, C4 `314ccae`, Self-Close `bf23458`, Pre-C0-Sync `5b2dc24`                                                                                              |
 | 7     | 2026-06-01   | Closure: sechs M4-ADRs (0030..0035) `Provisional → Accepted`; `done/M4-results.md` (dieses Dokument); `roadmap.md` M4 → `Done`; S-1..S-6-Sweep; `make fullbuild`-krb5-CVE-Defer-Pfad dokumentiert; Self-Close-Move `M4-protocol-adapters.md` + Bezug-Linkpflege [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)..0035; Closure-Konsistenz-Audit (DoD-Boxen + Status-Header + AGENTS.md-Gates-Liste)                                                                                                                                                                                                                                                                            | Pre-C0a `bf23458`, Pre-C0b `5b2dc24`, C0 `af97fd7`, C0-Review `05a1417`, C1 `d2071f0` (6 ADRs → Accepted), C2 `0c644f0` (M4-results.md), C3 `121e255` (Roadmap-DoD + Top-Level-Sync), C4a `e745f10` (git mv), C4b `72e8357` (Cross-Doc-Refs + ADR-Bezug-Linkpflege), Audit-Folge (Closure-Konsistenz)               |
 
 ## 2. Abnahme-Belege
@@ -109,10 +109,10 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
   via `make coverage-gate-critical`.
 - **A-1-Contracts**: **20** (`make arch-check` 6 import-
   linter + 14 arch_check). 13 arch_check-Contracts aus
-  M3 (inkl. `AC-NO-COVERAGE-PRAGMA` aus M3-Welle-5b +
-  `AC-OTLP-ADAPTER-NO-TIME` aus M3-Welle-6 + `AC-TICK-
+  M3 (inkl. [`AC-NO-COVERAGE-PRAGMA`](../../adr/0029-no-coverage-pragma-contract.md) aus M3-Welle-5b +
+  [`AC-OTLP-ADAPTER-NO-TIME`](../../adr/0024-observability-port-trio.md) aus M3-Welle-6 + `AC-TICK-
   LOOP-PRIVATE-RESUME-ERRORS` aus M3-Slice-028) plus
-  **NEU 14. `AC-IEC61850-GPL-BOUNDARY`** aus M4-Welle-6b
+  **NEU 14. [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md)** aus M4-Welle-6b
   (Decision I-f Static-Enforcement; AST-Import-Scan ueber
   `src/grid_gym/**/*.py` ausser `protocol_iec61850/*`).
 - **`make image-audit`**: pre-existing rot (Defer-Pfad
@@ -132,9 +132,9 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
   `0a5e895`; Trigger-Doc gewandert nach
   [`006-mypy-strict-bytes.md`](../done-archive/006-mypy-strict-bytes.md).
 - **5 `DeviceProtocolPort`-Implementer produktiv** —
-  alle 5 Cluster aus Lastenheft §16 `GG-MQTT-001` /
-  `GG-MODB-001` / `GG-OPCUA-001` / `GG-DNP3-001` /
-  `GG-IEC-001` auf `✅ M4` (mit Slice-034-F15-Audit-
+  alle 5 Cluster aus Lastenheft §16 [`GG-MQTT-001`](../../../../spec/lastenheft.md#gg-mqtt-001) /
+  [`GG-MODB-001`](../../../../spec/lastenheft.md#gg-modb-001) / [`GG-OPCUA-001`](../../../../spec/lastenheft.md#gg-opcua-001) / [`GG-DNP3-001`](../../../../spec/lastenheft.md#gg-dnp3-001) /
+  [`GG-IEC-001`](../../../../spec/lastenheft.md#gg-iec-001) auf `✅ M4` (mit Slice-034-F15-Audit-
   Trail-Note „Erfuellung ueber Pfad A").
 
 ## 3. Pro-Welle-Reviews
@@ -221,32 +221,32 @@ S-1..S-6-Items:
 - **S-6 (Lastenheft-Coverage-Sweep nach M4-Closure)** —
   erfuellt in Welle 6a-C1 (initial `9312239`) +
   M4-Welle-7-Re-Sweep:
-  - `GG-MQTT-001`: erfuellt durch Welle 2 ([`ADR 0031`](../../adr/0031-mqtt-adapter-profile.md);
+  - [`GG-MQTT-001`](../../../../spec/lastenheft.md#gg-mqtt-001): erfuellt durch Welle 2 ([`ADR 0031`](../../adr/0031-mqtt-adapter-profile.md);
     `protocol_mqtt/` + Mosquitto-Smoke). **✅ M4**.
-  - `GG-MODB-001`: erfuellt durch Welle 3 + Slice 031
+  - [`GG-MODB-001`](../../../../spec/lastenheft.md#gg-modb-001): erfuellt durch Welle 3 + Slice 031
     ([`ADR 0032`](../../adr/0032-modbus-adapter-profile.md); `protocol_modbus/` + in-process
     pymodbus-Smoke). **✅ M4**.
-  - `GG-OPCUA-001`: erfuellt durch Welle 4 + Slice 032
+  - [`GG-OPCUA-001`](../../../../spec/lastenheft.md#gg-opcua-001): erfuellt durch Welle 4 + Slice 032
     ([`ADR 0033`](../../adr/0033-opcua-adapter-profile.md); `protocol_opcua/` + `OpcuaLoopThread` +
     in-process asyncua-Smoke). **✅ M4**.
-  - `GG-DNP3-001`: erfuellt durch Welle 5a ([`ADR 0034`](../../adr/0034-dnp3-adapter-profile.md);
+  - [`GG-DNP3-001`](../../../../spec/lastenheft.md#gg-dnp3-001): erfuellt durch Welle 5a ([`ADR 0034`](../../adr/0034-dnp3-adapter-profile.md);
     `protocol_dnp3/` + dnp3-outstation-Smoke). **✅ M4**
     via Pfad A (Adapter geliefert) — historische
     Akzeptanz erlaubte alternativ dokumentierten
     Out-of-Scope-Verzicht (Slice-034-F15-Audit-Trail-
     Note).
-  - `GG-IEC-001`: erfuellt durch Welle 5b + Slice 033 +
+  - [`GG-IEC-001`](../../../../spec/lastenheft.md#gg-iec-001): erfuellt durch Welle 5b + Slice 033 +
     Welle 6b ([`ADR 0035`](../../adr/0035-iec61850-adapter-profile.md) inkl. Decision I-f GPL-Boundary;
     `protocol_iec61850/` mit SPDX-Header + AC-Contract;
     Integration-Smoke unter 2c-Mock-only-Fallback mit
     Trigger 009). **✅ M4** via Pfad A (Adapter
     geliefert) — historische Akzeptanz erlaubte
     alternativ dokumentierten Out-of-Scope-Verzicht.
-  - `GG-OTEL-001..004`: bereits M3-erfuellt; M4-Welle-
+  - [`GG-OTEL-001`](../../../../spec/lastenheft.md#gg-otel-001)..004: bereits M3-erfuellt; M4-Welle-
     6a hat das OTel-Span-Wrap-Pattern fuer Adapter
     eingezogen ([`ADR 0024`](../../adr/0024-observability-port-trio.md) §4.5).
-  - **M5-Trigger** (UI-Anbindung `GG-UI-001..009`,
-    `GG-AGENT-007/008`-Deadlines/Async): bleiben fuer
+  - **M5-Trigger** (UI-Anbindung [`GG-UI-001`](../../../../spec/lastenheft.md#gg-ui-001)..009,
+    [`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007)/008-Deadlines/Async): bleiben fuer
     M5+/Welle-4c+ aktiv (siehe §5 unten).
 
 ## 5. Welle-7-Erbschaft fuer M5+/M6+
@@ -306,7 +306,7 @@ jetzt re-triaged):
   generisches Pattern; bei zukuenftigen GPL-isolierten
   Sub-Modulen (z. B. `protocol_dlms/` falls je
   notwendig) wird `_DEFAULT_GPL_PATHS` erweitert.
-- `AC-IEC61850-GPL-BOUNDARY`-Pattern ist Vorbild fuer
+- [`AC-IEC61850-GPL-BOUNDARY`](../../adr/0035-iec61850-adapter-profile.md)-Pattern ist Vorbild fuer
   zukuenftige Boundary-Contracts (z. B. `AC-DLMS-GPL-
   BOUNDARY` falls je notwendig). Anleitung „Add a new
   GPL-isolated path" in [`CONTRIBUTING.md`](../../../../CONTRIBUTING.md).
@@ -381,16 +381,16 @@ aktiv (siehe
   Pattern).
 - **`tool_version`-Bump**: bleibt auf `0.1.0`
   (`pyproject.toml`); ein Release-Bump kommt mit M6
-  (`GG-CICD-007` Release-Workflow + Trigger 008 SBOM-
+  ([`GG-CICD-007`](../../../../spec/lastenheft.md#gg-cicd-007) Release-Workflow + Trigger 008 SBOM-
   Aktivierung).
 - **Snapshot-v2→v3-Lese-Migrations-Pfad**: bleibt M6-
   Material (`GG-PERSIST-*`-Slice, M3-Welle-7-Erbschaft
   verlaengert; M4 hat den Snapshot-Vertrag nicht
   beruehrt — Adapter-Code laeuft komplett ausserhalb
   des `TickLoop.snapshot`-Pfads).
-- **`GG-AGENT-007/008`-Deadlines/Async**: bleibt Welle-
+- **[`GG-AGENT-007`](../../../../spec/lastenheft.md#gg-agent-007)/008-Deadlines/Async**: bleibt Welle-
   4c+/M5-Material (M3-Welle-7-Erbschaft).
-- **`GG-SAFE-001..006`-Sicherheits-Audit**: bleibt M6-
+- **[`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..006-Sicherheits-Audit**: bleibt M6-
   Material (M3-Welle-7-Erbschaft).
 - **M4-Status-Header in
   `M4-protocol-adapters.md`**: bleibt nach End-of-Wave-

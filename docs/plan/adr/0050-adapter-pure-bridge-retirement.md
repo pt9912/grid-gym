@@ -20,7 +20,7 @@
 - [`ADR 0040`](0040-alarm-aggregation-and-stream-port.md) —
   Stream-Port-Praezedenz fuer Driving-Port-Surfaces.
 - [`spec/architecture.md`](../../../spec/architecture.md#2-architekturprinzipien) —
-  `GG-AR-P-002`, `GG-AR-P-003`, `GG-AR-TABU-001..004` und
+  [`GG-AR-P-002`](../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-P-003`](../../../spec/architecture.md#2-architekturprinzipien), [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..004 und
   Driving-Port-Liste.
 - [`041-adapter-pure-ignore-imports-rueckbau.md`](../planning/done/041-adapter-pure-ignore-imports-rueckbau.md)
   — Umsetzungsslice (M8-Welle-0/1 aktiv).

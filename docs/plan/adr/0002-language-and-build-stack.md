@@ -9,7 +9,7 @@ Spike-0 abgeschlossen: alle vier Pflicht-Gates (`make lint`,
 `docs/plan/planning/done/spike-0-results.md §3`); zweiter
 Pre-Acceptance-Review abgearbeitet (Blocker B-A/B-B/B-C, alle zehn
 Drift-Items D-1..D-10 eingearbeitet); `make gates` als
-Abschluss-Aggregator gruen. Schliesst `GG-AR-OPEN-001`. Vorher:
+Abschluss-Aggregator gruen. Schliesst [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte). Vorher:
 2026-05-14 — `Proposed → Provisional` mit Freigabe des
 Spike-0-Vertrags; Operative Artefakte (`Dockerfile`, `Makefile`)
 lagen als Spike-0-Pfad vor (vgl. `ADR 0006`).
@@ -52,12 +52,12 @@ angepasst; `mypy --strict` als vierter Spike-0-Gate verankert.
 Die Architektur (`spec/architecture.md`) ist sprachunabhaengig
 formuliert; die Modulgrenzen (`core/`, `ports/`, `adapters/`, `ui/`)
 sind durch Dependency Rule und Architektur-Tabus festgelegt
-(`GG-AR-TABU-001..008`). Diese Entscheidung legt fest, in welcher
+([`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008). Diese Entscheidung legt fest, in welcher
 Sprache, mit welchem Build-Stack und mit welchen Querschnittsbibliotheken
 der Simulationskern und die Driving-Adapter geliefert werden.
 
 Sie betrifft **nicht** das Web-UI (`ui/`); dessen Stack wird in einer
-spaeteren ADR adressiert (vgl. `GG-AR-OPEN-007`).
+spaeteren ADR adressiert (vgl. [`GG-AR-OPEN-007`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
 
 ---
 
@@ -111,7 +111,7 @@ Versions-Anker (Stand 2026-05-14, gemaess [python.org status](https://devguide.p
 | K-OBS      | +         | `structlog`, `prometheus-client`, `opentelemetry-python` reif.                                |
 | K-TEST     | +         | `pytest`, `pytest-cov`, `hypothesis` (property-based).                                        |
 | K-CONTAIN  | o         | `python:3.14-slim` als Basis ~125 MB; mit MVP-Stack (FastAPI, pydantic, psycopg, alembic, structlog, opentelemetry) realistisch 250–400 MB. Mit `pandapower`/`pypsa`/`scipy`/ML weitere ~600–900 MB. Imagegroesse wird als CI-Messpunkt gefuehrt; offline-faehig ist sie unabhaengig davon. |
-| K-ECO      | ++        | Mit Abstand staerkstes Energie-Oekosystem fuer SOLLTE-/Folgearbeit: `pandapower`/`pypsa`/`OpenDSS`-Bindings adressieren `GG-GRID-002` (Power-Flow-Adapter), `GG-GRID-005..007` (Inselnetz/Trafo/Blindleistung), `GG-FUTURE-003`. ML/RL fuer `GG-FUTURE-001/002` zusaetzlich. |
+| K-ECO      | ++        | Mit Abstand staerkstes Energie-Oekosystem fuer SOLLTE-/Folgearbeit: `pandapower`/`pypsa`/`OpenDSS`-Bindings adressieren [`GG-GRID-002`](../../../spec/lastenheft.md#gg-grid-002) (Power-Flow-Adapter), [`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005)..007 (Inselnetz/Trafo/Blindleistung), [`GG-FUTURE-003`](../../../spec/lastenheft.md#gg-future-003). ML/RL fuer [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002 zusaetzlich. |
 | K-DEV      | +         | Hoher Output, Hexagonal idiomatisch ueber Protokolle + DI.                                     |
 
 **Hauptrisiko:** K-ARCH (Architekturtests) und K-TICK bei 10ms.
@@ -198,39 +198,39 @@ harten Auflagen, fallback Option D (Kotlin/JVM mit ArchUnit + ZGC).**
 Begruendung (MVP-getrieben — Future-Punkte sind Zusatznutzen, nicht
 Entscheidungsgrundlage):
 
-- **Schema- und Szenariovalidierung (MVP).** `GG-SCN-001/008` verlangt
-  YAML-Schema-Validierung vor erstem Tick; `GG-DATA-001..004` verlangt
+- **Schema- und Szenariovalidierung (MVP).** [`GG-SCN-001`](../../../spec/lastenheft.md#gg-scn-001)/008 verlangt
+  YAML-Schema-Validierung vor erstem Tick; [`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)..004 verlangt
   ein einheitliches Telemetriemodell mit Wertebereichs- und
-  Einheitenpruefung; `GG-BESS-008` Initialparameter-Validierung. Pydantic
+  Einheitenpruefung; [`GG-BESS-008`](../../../spec/lastenheft.md#gg-bess-008) Initialparameter-Validierung. Pydantic
   v2 ist hier deutlich vor jedem anderen Option-Stack.
-- **OpenAPI als Vertrag (MVP).** `GG-API-003` fordert maschinenlesbaren
+- **OpenAPI als Vertrag (MVP).** [`GG-API-003`](../../../spec/lastenheft.md#gg-api-003) fordert maschinenlesbaren
   Vertrag fuer alle REST-Endpunkte. FastAPI generiert OpenAPI direkt aus
   pydantic-Modellen — Schema und Implementierung koennen nicht
   auseinanderdriften.
-- **Determinismus- und Property-basierte Tests (MVP).** `GG-SIM-001..004`
-  und `GG-DATA-005` sind property-basiert pruefbar. `hypothesis` ist
-  hier Industriestandard. Replay-Diff-Klassifikation (`GG-REPLAY-007`)
+- **Determinismus- und Property-basierte Tests (MVP).** [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)..004
+  und [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005) sind property-basiert pruefbar. `hypothesis` ist
+  hier Industriestandard. Replay-Diff-Klassifikation ([`GG-REPLAY-007`](../../../spec/lastenheft.md#gg-replay-007))
   laesst sich als reine Python-Funktion mit `hypothesis`-Tests umsetzen.
-- **MVP-Geraete- und Netzmodelle (MVP).** `GG-GRID-001..004`
+- **MVP-Geraete- und Netzmodelle (MVP).** [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)..004
   (vereinfachtes Leistungs-/Spannungsmodell) sind ohne externes
-  Power-Flow-Tool erreichbar; `numpy` reicht. `GG-GRID-002` erlaubt
+  Power-Flow-Tool erreichbar; `numpy` reicht. [`GG-GRID-002`](../../../spec/lastenheft.md#gg-grid-002) erlaubt
   optional einen Power-Flow-Adapter — Python's `pandapower` ist der
   natuerliche Pfad, wenn das aus SOLLTE in MUSS wandert.
 - **Persistenz- und Migrationskette (MVP).** `psycopg` 3 (async) und
-  `alembic` decken `GG-PERSIST-001..009` vollstaendig ab; Timescale-
+  `alembic` decken [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009 vollstaendig ab; Timescale-
   und Influx-Adapter sind dort produktionsreif.
 - **Observability (MVP).** `structlog`, `prometheus-client` und
-  `opentelemetry-python` decken `GG-OTEL-001..004` ohne Eigenbau.
-- **Tick-Charakteristik (MVP).** `GG-RT-001` fordert fuer 100ms/1s
+  `opentelemetry-python` decken [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004 ohne Eigenbau.
+- **Tick-Charakteristik (MVP).** [`GG-RT-001`](../../../spec/lastenheft.md#gg-rt-001) fordert fuer 100ms/1s
   Backpressure-Freiheit und macht 10ms zum Mess-/Diagnosemodus, nicht
-  zum Echtzeitpfad. `GG-RT-004/005` (100 Geraete, 10.000 Tick-Lauf,
+  zum Echtzeitpfad. [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004)/005 (100 Geraete, 10.000 Tick-Lauf,
   10.000 Punkte/s) ist in CPython 3.13/3.14 ohne C-Extension messbar
   erreichbar; Risiko bleibt, wird aber durch Slice-M1-Benchmark
   geprueft (siehe Fallback-Trigger unten).
 
 Zusatznutzen ueber den MVP hinaus (nicht entscheidungstragend):
-ML/RL-Toolchain fuer `GG-FUTURE-001/002`, `pandapower`-Integration
-fuer `GG-FUTURE-003`, Co-Simulation-Bindings fuer `GG-FUTURE-006`.
+ML/RL-Toolchain fuer [`GG-FUTURE-001`](../../../spec/lastenheft.md#gg-future-001)/002, `pandapower`-Integration
+fuer [`GG-FUTURE-003`](../../../spec/lastenheft.md#gg-future-003), Co-Simulation-Bindings fuer [`GG-FUTURE-006`](../../../spec/lastenheft.md#gg-future-006).
 
 Schwaechstes Glied bleibt **K-ARCH** (P0): Python hat kein
 NetArchTest/ArchUnit-Pendant. Das wird durch eine konkrete und
@@ -246,16 +246,16 @@ Determinismusluecke durch Serialisierung.
 
 K-ARCH ist ein P0-Knock-out-Kriterium, in dem Python die Bewertung
 `-` traegt. Solange A-1 nicht nachweislich konfigurierbar ist,
-darf diese ADR weder als `Accepted` gefuehrt noch `GG-AR-OPEN-001`
+darf diese ADR weder als `Accepted` gefuehrt noch [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
 als geschlossen markiert werden. Der Status-Pfad nutzt die in
 [ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md) definierten Lifecycle-Stufen und
 ist hier konkret:
 
-| ADR-Status     | Bedingung                                                                 | Wirkung auf `GG-AR-OPEN-001`         |
+| ADR-Status     | Bedingung                                                                 | Wirkung auf [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)         |
 | -------------- | ------------------------------------------------------------------------- | ------------------------------------ |
 | `Proposed`     | aktueller Stand: Empfehlung samt Auflagen, ohne ausgefuehrten Nachweis    | bleibt offen                          |
 | `Provisional`  | Projektowner bestaetigt Empfehlung; Spike-0 ist freigegeben               | bleibt offen, mit Verweis auf ADR    |
-| `Accepted`     | Spike-0 ist gruen abgeschlossen (siehe Spike-0-Vertrag unten)              | wird mit „Geschlossen mit ADR 0002" in `GG-AR-OPEN-001` in `architecture.md` markiert |
+| `Accepted`     | Spike-0 ist gruen abgeschlossen (siehe Spike-0-Vertrag unten)              | wird mit „Geschlossen mit ADR 0002" in [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` markiert |
 
 **Spike-0-Vertrag (Pre-Acceptance):**
 
@@ -315,7 +315,7 @@ Ausnahmen erfuellen.
 #### A-1 — Architekturtests verbindlich automatisiert
 
 `import-linter` allein deckt nur Import- und Zyklusregeln; mehrere
-Tabus aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` sind Aufruf-, Immutability- oder
+Tabus aus die Modulgrenzen-Vertraege [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 in `architecture.md` sind Aufruf-, Immutability- oder
 Fehlerstilregeln und brauchen eine **AST-basierte** Pruefung. A-1
 ist deshalb eine Drei-Tool-Suite, deren CI-Job nur dann gruen ist,
 wenn alle drei Tools sauber laufen.
@@ -353,15 +353,15 @@ und `pyproject.toml`. Die Contracts sind:
 Operative Anforderung:
 
 - Im CI laufen drei Jobs: `lint-imports`, `ruff check`, `python tools/arch_check.py`.
-  Jeder Job mit Exit-Code != 0 bricht den Build (`GG-CICD-003`, `GG-QG-001`,
-  `GG-ARCHTEST-005`).
+  Jeder Job mit Exit-Code != 0 bricht den Build ([`GG-CICD-003`](../../../spec/lastenheft.md#gg-cicd-003), [`GG-QG-001`](../../../spec/lastenheft.md#gg-qg-001),
+  [`GG-ARCHTEST-005`](../../../spec/lastenheft.md#gg-archtest-005)).
 - `[tool.importlinter]` MUSS `include_external_packages = true` setzen,
   sobald `forbidden_modules` externe Pakete (z. B. `fastapi`, `socket`)
   enthaelt — sonst lehnt `lint-imports` die Top-Level-Konfiguration ab.
   Diese Einstellung ist Pflicht-Bestandteil der A-1-Suite.
 - Jeder Verstoss erzeugt eine maschinenlesbare Ausgabe mit
   Contract-ID, betroffenem Modul/Symbol und Verletzungsgrund
-  (`GG-QG-002`).
+  ([`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002)).
 - Hinzufuegen eines neuen Top-Level-Adapter- oder Core-Pakets ohne
   Pflege der Contract-Listen in `pyproject.toml` bricht den Build
   (Whitelist-Pflicht).
@@ -520,7 +520,7 @@ Reichweiten-Vertrag fuer ruff-Regeln:
 #### Code-Review-Auflage (Reststeuerung fuer TABU-003)
 
 `AC-ADAPTER-PURE` + `AC-ADAPTER-LIGHTWEIGHT` decken **nur Import-
-und strukturelle Aspekte** von `GG-AR-TABU-003`. Fachliche
+und strukturelle Aspekte** von [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest). Fachliche
 Entscheidungen direkt im Adaptercode (z. B. ein Adapter, der
 Wertebereiche prueft, statt das dem Kern zu ueberlassen) sind
 statisch nicht voll erkennbar.
@@ -532,7 +532,7 @@ Verbindliche Reststeuerung:
   Mapping-Funktionen.
 - Diese Review-Anforderung ist in `docs/user/code-review.md` (Folgearbeit)
   und im PR-Template verankert.
-- `GG-AR-TABU-003` gilt damit als **automatisierbar verifiziert (Import-Grenze
+- [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest) gilt damit als **automatisierbar verifiziert (Import-Grenze
   und Komplexitaets-Heuristik)** und **review-pflichtig (Logik-Grenze)**.
 
 Tabu-Abdeckungs-Matrix:
@@ -540,7 +540,7 @@ Tabu-Abdeckungs-Matrix:
 | Tabu              | Abgedeckt durch                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur)    | AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT                                      |
-| [`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-HEXAGON-PURE (Whitelist), AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW (`GG-ARCHTEST-004`) |
+| [`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-HEXAGON-PURE (Whitelist), AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW ([`GG-ARCHTEST-004`](../../../spec/lastenheft.md#gg-archtest-004)) |
 | [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-ADAPTER-PURE (Imports) + AC-ADAPTER-LIGHTWEIGHT (Heuristik) + Code-Review-Auflage (Logik)  |
 | [`GG-AR-TABU-004`](../../../spec/architecture.md#4-architekturstruktur)    | AC-NO-CYCLES (SCC-Analyse via `grimp`)                                                        |
 | [`GG-AR-TABU-005`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-NO-TIME                                                                                    |
@@ -558,12 +558,12 @@ Tabu-Abdeckungs-Matrix:
   - Integer-Sequenzen,
   - ISO-8601-UTC fuer Wall-Clock-Zeitstempel,
   - ganzzahlige Millisekunden fuer Simulationszeit
-  (`GG-DATA-005`).
+  ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)).
 - Property-basierte Tests via `hypothesis` in
   `tests/unit/hexagon/core/serialization/test_canonical.py` weisen nach: zwei
   semantisch identische Inputs erzeugen identische Bytes; Roundtrip
   Lesen → Schreiben ist stabil; alle Telemetry/Command/Event-Domain-
-  Objekte aus `GG-AR-COMP-DOMAIN` sind roundtrip-stabil.
+  Objekte aus [`GG-AR-COMP-DOMAIN`](../../../spec/architecture.md#5-komponentensicht) sind roundtrip-stabil.
 - `canonical_json` ist intern als einziges Modul von der AC-NO-JSON-
   Regel ausgenommen. Die Implementierung MUSS folgende Vor-Normalisierung
   und Encoder-Optionen einhalten:
@@ -583,7 +583,7 @@ Tabu-Abdeckungs-Matrix:
        `list[…]`, `tuple[…]`. Alle anderen Typen — insbesondere `float` —
        loesen `CanonicalSerializationError` aus.
      - `Decimal("NaN")`/`Decimal("Infinity")`/`Decimal("-Infinity")` sind in
-       kanonischen Ausgaben **nicht erlaubt** (`GG-DATA-003` markiert solche
+       kanonischen Ausgaben **nicht erlaubt** ([`GG-DATA-003`](../../../spec/lastenheft.md#gg-data-003) markiert solche
        Werte als Qualitaetsstatus `nan`/`invalid`; sie tauchen in Telemetrie
        als Qualitaetsfeld auf, nicht als numerischer Wert). Treffen sie
        dennoch ein, wirft `canonical_json` einen typisierten
@@ -790,7 +790,7 @@ Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
 
 - **Spike-0 rot (vor Acceptance):** A-1 oder A-2 lassen sich im
   Skelett nicht gruen konfigurieren. ADR 0002 geht auf `Rejected`;
-  `GG-AR-OPEN-001` bleibt offen; eine Folge-ADR (vermutlich Option
+  [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) bleibt offen; eine Folge-ADR (vermutlich Option
   D, Kotlin/JVM) tritt an die Stelle.
 - **A-1/A-2 unhaltbar nach Acceptance:** Die Contracts oder der
   Custom-Emitter erweisen sich im Hauptprojekt als nicht haltbar
@@ -800,7 +800,7 @@ Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
   ADR 0006 fuer Accepted-ADRs — sondern durch eine Nachfolge-ADR
   `Superseded`. Die Nachfolge-ADR dokumentiert: welchen
   Contract/Vertrag sie ersetzt, welche Migrationsstrategie greift
-  und ob `GG-AR-OPEN-001` wieder geoeffnet wird.
+  und ob [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) wieder geoeffnet wird.
 
 ### Wann Option D (Kotlin/JVM) gezogen wird
 
@@ -808,9 +808,9 @@ Die Fallback-Trigger sind direkt an Lastenheft-Akzeptanzkriterien
 gekoppelt, nicht an externe Schwellwerte. Tritt einer der folgenden
 Punkte ein, wird Option D aktiviert.
 
-**Hinweis zur Stufenhochstufung:** `GG-RT-001` ist `MUSS` und damit
-ein Hard-Fail-Trigger ohne Auslegungsspielraum. `GG-RT-004` und
-`GG-RT-005` sind im Lastenheft `SOLLTE`. Diese ADR stuft beide
+**Hinweis zur Stufenhochstufung:** [`GG-RT-001`](../../../spec/lastenheft.md#gg-rt-001) ist `MUSS` und damit
+ein Hard-Fail-Trigger ohne Auslegungsspielraum. [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004) und
+[`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005) sind im Lastenheft `SOLLTE`. Diese ADR stuft beide
 fuer die Sprachwahl bewusst zu **Go/No-Go-Triggern** hoch: ein
 Verstoss in der Referenzumgebung waere zwar lastenheftkonform mit
 dokumentierter Abweichung machbar, ist aber als Signal fuer
@@ -826,14 +826,14 @@ Trigger:
 - **[`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004)-Verstoss im Benchmark-Szenario** (`SOLLTE`,
   hochgestuft). Benchmark mit 100 Geraeten und 10.000 Ticks erzeugt
   verlorene Events oder nichtdeterministischen Replay-Diff
-  (`GG-REPLAY-007`, `GG-SAFE-006`).
+  ([`GG-REPLAY-007`](../../../spec/lastenheft.md#gg-replay-007), [`GG-SAFE-006`](../../../spec/lastenheft.md#gg-safe-006)).
 - **[`GG-RT-005`](../../../spec/lastenheft.md#gg-rt-005)-Verstoss im Telemetriepfad** (`SOLLTE`, hochgestuft).
   Telemetrieport-Messung unterschreitet 10.000 Punkte/s mit
   256-Byte-Payload in der Referenzumgebung dauerhaft, auch mit
   gepuffertem Persistenzpfad.
 - **A-1 nicht erfuellbar / Spike-0 rot.** Die sechzehn Contracts aus
   A-1 (`import-linter`, `ruff`, `tools/arch_check.py` inkl. `grimp`-
-  Zykluscheck) lassen sich nicht so konfigurieren, dass `GG-AR-TABU-001..008`
+  Zykluscheck) lassen sich nicht so konfigurieren, dass [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008
   reproduzierbar erfasst werden — etwa weil AST-Pruefung wesentliche
   Verletzungen verfehlt, die `grimp`-SCC-Analyse falsche Positive
   produziert oder die Whitelist-Pflege im CI nicht haltbar ist. In
@@ -841,7 +841,7 @@ Trigger:
   bevor die ADR `Accepted` werden kann.
 - **Lastenheft-Aenderung.** Eine spaetere Aenderung normiert
   < 10 ms-Tick im Produktionspfad (heute explizit nicht;
-  `GG-RT-001` macht 10 ms zum Diagnose-/Messmodus).
+  [`GG-RT-001`](../../../spec/lastenheft.md#gg-rt-001) macht 10 ms zum Diagnose-/Messmodus).
 
 ---
 
@@ -853,12 +853,12 @@ ADR-Annahme):
 
 1. **Proposed → Provisional:** Projektowner stimmt der Empfehlung
    (Option A mit Auflagen A-1/A-2) zu, gibt Spike-0 frei. ADR
-   wird auf `Provisional` gesetzt; der Eintrag fuer `GG-AR-OPEN-001`
+   wird auf `Provisional` gesetzt; der Eintrag fuer [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
    in `architecture.md` erhaelt einen Verweis auf diese ADR, wird
    aber nicht als geschlossen markiert.
 2. **Provisional → Accepted:** Spike-0 wird gegen den Spike-0-Vertrag
    aus den Auflagen-Sektionen dieser ADR abgeschlossen. Erst dann
-   wird ADR auf `Accepted` gesetzt und `GG-AR-OPEN-001` in
+   wird ADR auf `Accepted` gesetzt und [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in
    `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
 3. **Spike-0 rot (Proposed/Provisional → Rejected):** Vor Acceptance
    wird die ADR auf `Rejected` gesetzt (ADR-0006-Lifecycle); ein
@@ -876,11 +876,11 @@ _Aktueller Status: `Proposed` — kein Beschluss._
 
 **Bei Acceptance** (d. h. nach gruenem Spike-0; siehe Status-Pfad in den
 Auflagen- und Entscheidungs-Sektionen dieser ADR) schliesst diese ADR
-`GG-AR-OPEN-001` mit den folgenden
+[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) mit den folgenden
 konkreten Wahlen. Solange die ADR auf `Proposed` oder `Provisional`
 steht, sind diese Wahlen die **Absicht** der Empfehlung, aber kein
-verbindlicher Stack-Beschluss; insbesondere darf `GG-AR-OPEN-001` in `architecture.md`
-`GG-AR-OPEN-001` bis dahin **nicht** als geschlossen markieren.
+verbindlicher Stack-Beschluss; insbesondere darf [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md`
+[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) bis dahin **nicht** als geschlossen markieren.
 
 Es verbleibt **keine** „Paketmanager- oder Layout-Frage" als
 Folgearbeit; spaetere Wechsel benoetigen eine eigene ADR, die diese
@@ -891,59 +891,59 @@ hier abloest.
 | Aspekt              | Wahl                                              | Begruendung                                                                              |
 | ------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Sprache             | Python — Minimum 3.13, Referenz-Runtime 3.14       | Option A aus den Bewertungs-/Empfehlungs-Sektionen dieser ADR. Versions-Auswahl per Lifecycle-Stand (2026-05-14: 3.13 Bugfix bis 2029-10, 3.14 Bugfix bis 2030-10; 3.12 nur noch Security; 3.15 Prerelease, kein Production-Ziel). |
-| Paketmanager + Lock | `uv` mit `uv.lock`                                 | Rust-Implementierung, schnelle CI-Resolves, lockfile-first, eingebauter Python-Toolchain-Manager. Passt zu `GG-DEPLOY-002/011` (offline, reproduzierbar) und `GG-CICD-001` (reproduzierbarer Build). |
-| Dependency Groups   | `[dependency-groups]` in `pyproject.toml` nach PEP 735 (Gruppen `dev`, `test`, `lint`, `docs`) | Trennt produktive Laufzeit-Abhaengigkeiten von Test-/Lint-/Build-Toolchain (`GG-CICD-002/005/006`), ohne mehrere `pyproject.toml`-Dateien anlegen zu muessen. |
-| uv-Workspaces       | NICHT verwendet                                      | Modulgrenzen aus die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` werden durch Import-Contracts (A-1) erzwungen, nicht durch separate Distribution-Pakete. uv-Workspaces sind trigger-basierte Folgearbeit, falls einzelne `grid-gym`-Pakete extern konsumiert werden sollen. |
+| Paketmanager + Lock | `uv` mit `uv.lock`                                 | Rust-Implementierung, schnelle CI-Resolves, lockfile-first, eingebauter Python-Toolchain-Manager. Passt zu [`GG-DEPLOY-002`](../../../spec/lastenheft.md#gg-deploy-002)/011 (offline, reproduzierbar) und [`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001) (reproduzierbarer Build). |
+| Dependency Groups   | `[dependency-groups]` in `pyproject.toml` nach PEP 735 (Gruppen `dev`, `test`, `lint`, `docs`) | Trennt produktive Laufzeit-Abhaengigkeiten von Test-/Lint-/Build-Toolchain ([`GG-CICD-002`](../../../spec/lastenheft.md#gg-cicd-002)/005/006), ohne mehrere `pyproject.toml`-Dateien anlegen zu muessen. |
+| uv-Workspaces       | NICHT verwendet                                      | Modulgrenzen aus die Modulgrenzen-Vertraege [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 in `architecture.md` werden durch Import-Contracts (A-1) erzwungen, nicht durch separate Distribution-Pakete. uv-Workspaces sind trigger-basierte Folgearbeit, falls einzelne `grid-gym`-Pakete extern konsumiert werden sollen. |
 | Repository-Layout   | Monolith mit `src/grid_gym/{hexagon/{core,ports},adapters}/`-Layout und `import-linter`-Layern | Eine Distribution, eine Lock-Datei; klare Trennung `src/` (Produktion) vs. `tests/` (Tests, von A-1-Tabus teilweise ausgenommen). `hexagon/` gruppiert fachlichen Kern und Ports gemaess `architecture.md` §4.2. |
 | Project-Definition  | Ein `pyproject.toml` im Root                       | Eine Lock-Datei, eine CI-Resolve, ein Distribution-Punkt                                  |
-| Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; Override via `make <target> PYTHON_VERSION=3.13` getestet. CI-Matrix gegen `3.13` und `3.14` aktiviert sich mit erstem GitHub-Actions-Workflow (Folgewelle nach M1). | reproduzierbarer Build (`GG-CICD-001`); Floor und Referenz-Runtime sind explizit testbar |
-| HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code (`GG-API-003`), WebSocket nativ (`GG-API-002`)                            |
-| Validierung         | Pydantic v2                                        | Schema- und Wertebereichspruefung (`GG-SCN-008`, `GG-SAFE-001/008`, `GG-DATA-002/003`)     |
-| Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | `GG-PERSIST-001..009`, Migrationen (`GG-PERSIST-008`); Repository-Pattern (kein ORM) bleibt offen unter `GG-AR-OPEN-003` |
-| Strukturierte Logs  | `structlog` + stdlib `logging`                     | `GG-OTEL-002`                                                                              |
-| Metriken            | `prometheus-client`                                | `GG-OTEL-003`                                                                              |
-| Tracing (optional)  | `opentelemetry-python` mit OTLP-Exporter           | `GG-OTEL-001/004`                                                                          |
-| Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | `GG-TESTTYPE-001/002`, `GG-COV-001..005`                                                   |
-| Property-Tests      | `hypothesis`                                       | `GG-SIM-001..004`, `GG-DATA-005`                                                           |
-| Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | `GG-TESTTYPE-002`, `GG-PERSIST-005`                                                        |
-| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit sechzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | `GG-ARCHTEST-001..005`, `GG-AR-TABU-001..008`                                              |
+| Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; Override via `make <target> PYTHON_VERSION=3.13` getestet. CI-Matrix gegen `3.13` und `3.14` aktiviert sich mit erstem GitHub-Actions-Workflow (Folgewelle nach M1). | reproduzierbarer Build ([`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001)); Floor und Referenz-Runtime sind explizit testbar |
+| HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code ([`GG-API-003`](../../../spec/lastenheft.md#gg-api-003)), WebSocket nativ ([`GG-API-002`](../../../spec/lastenheft.md#gg-api-002))                            |
+| Validierung         | Pydantic v2                                        | Schema- und Wertebereichspruefung ([`GG-SCN-008`](../../../spec/lastenheft.md#gg-scn-008), [`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)/008, [`GG-DATA-002`](../../../spec/lastenheft.md#gg-data-002)/003)     |
+| Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009, Migrationen ([`GG-PERSIST-008`](../../../spec/lastenheft.md#gg-persist-008)); Repository-Pattern (kein ORM) bleibt offen unter [`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte) |
+| Strukturierte Logs  | `structlog` + stdlib `logging`                     | [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)                                                                              |
+| Metriken            | `prometheus-client`                                | [`GG-OTEL-003`](../../../spec/lastenheft.md#gg-otel-003)                                                                              |
+| Tracing (optional)  | `opentelemetry-python` mit OTLP-Exporter           | [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)/004                                                                          |
+| Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | [`GG-TESTTYPE-001`](../../../spec/lastenheft.md#gg-testtype-001)/002, [`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001)..005                                                   |
+| Property-Tests      | `hypothesis`                                       | [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)..004, [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)                                                           |
+| Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | [`GG-TESTTYPE-002`](../../../spec/lastenheft.md#gg-testtype-002), [`GG-PERSIST-005`](../../../spec/lastenheft.md#gg-persist-005)                                                        |
+| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit sechzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | [`GG-ARCHTEST-001`](../../../spec/lastenheft.md#gg-archtest-001)..005, [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008                                              |
 
 ### 6.2 Wirkung auf andere Dokumente
 
 Die folgenden Dokument-Aenderungen werden **erst bei `Accepted`**
 ausgefuehrt, nicht bei `Proposed`/`Provisional`:
 
-- die Modulgrenzen-Vertraege `GG-AR-TABU-001..008` in `architecture.md` (Verzeichnisstruktur) wird mit
+- die Modulgrenzen-Vertraege [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 in `architecture.md` (Verzeichnisstruktur) wird mit
   Python-Paketnamen aktualisiert (`src/grid_gym/hexagon/core/...`,
   `src/grid_gym/hexagon/ports/...`, `src/grid_gym/adapters/...`).
-- `GG-AR-OPEN-001` in `architecture.md` markiert `GG-AR-OPEN-001` als „Geschlossen
+- [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` markiert [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) als „Geschlossen
   mit ADR 0002".
-- `roadmap.md` Vorbedingung 1 (`GG-AR-OPEN-001`) ist erledigt.
+- `roadmap.md` Vorbedingung 1 ([`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)) ist erledigt.
 
 Bereits bei `Provisional` (Spike-0 freigegeben) erlaubt sind:
 
-- Eintrag in `GG-AR-OPEN-001` in `architecture.md` als „Verweis auf ADR 0002 (Spike-0
+- Eintrag in [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` als „Verweis auf ADR 0002 (Spike-0
   laufend)" — schliesst den Punkt **nicht**, signalisiert nur den
   laufenden Beschluss.
 
 Davon unberuehrt bleibt offen:
 
-- `GG-AR-OPEN-003` (ORM vs. leichter Treiber) — diese ADR fixiert
+- [`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte) (ORM vs. leichter Treiber) — diese ADR fixiert
   `psycopg` 3 als Treiber, aber nicht das Repository-/ORM-Muster.
 
 ---
 
 ## 7. Offene Folge-Punkte (nicht durch diese ADR geschlossen)
 
-- **`GG-AR-OPEN-002`** API/Simulation als ein oder zwei Prozesse —
+- **[`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)** API/Simulation als ein oder zwei Prozesse —
   Composition-Root-Entscheidung; eigener ADR.
-- **`GG-AR-OPEN-003`** Persistenzzugriffsmuster (Repository-Pattern
+- **[`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte)** Persistenzzugriffsmuster (Repository-Pattern
   vs. SQLAlchemy-Core vs. SQLAlchemy-ORM) — eigener ADR. `psycopg` 3
   als Treiber ist hier gesetzt, die Schicht darueber nicht.
-- **`GG-AR-OPEN-004..010`** unveraendert offen.
+- **[`GG-AR-OPEN-004`](../../../spec/architecture.md#19-offene-architektonische-punkte)..010** unveraendert offen.
 - ADR fuer `RandomPort`-Implementierung (gebondeter PRNG,
   Seeding-Kette) — Folgearbeit, schliesst keinen `GG-AR-OPEN-*`,
-  aber materiell wichtig fuer `GG-SIM-001`.
+  aber materiell wichtig fuer [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001).
 - ADR fuer Performance-/Implementierungs-Alternativen der kanonischen
   Serialisierung (`orjson`-Bridge, `msgspec`, Rust-Backend) — die
   Format-Details aus A-2 (Punkt 2) und die Standard-Implementierung

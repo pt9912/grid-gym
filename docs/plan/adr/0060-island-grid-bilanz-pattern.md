@@ -29,7 +29,7 @@ Clamp, kein neuer Constraint-Pfad in 3a),
 Pattern). Slice-Plan
 [`M8-welle-3a.md`](../planning/done/M8-welle-3a.md); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`020`](../planning/open/020-sollte-island-grid.md) (`GG-GRID-005`,
+[`020`](../planning/open/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005),
 Lastenheft §11.5).
 
 ---
@@ -44,7 +44,7 @@ Konstruktion `0` wird ([`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wir
 §2.7). Das ist das Verhalten eines **netzgekoppelten** Systems: das
 uebergeordnete Netz faengt jeden Mismatch perfekt auf.
 
-Ein **Inselnetz** (`GG-GRID-005`, Lastenheft §11.5, Trigger
+Ein **Inselnetz** ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005), Lastenheft §11.5, Trigger
 [`020`](../planning/open/020-sollte-island-grid.md)) hat **keinen
 externen Slack-Bus**. Stattdessen haelt ein internes **Grid-Forming-
 Geraet** — typisch ein Diesel-Generator
@@ -312,9 +312,9 @@ Diese ADR gilt fuer:
 Diese ADR gilt NICHT fuer:
 
 - Transformator-/Netz-Grenzen + `GridConstraintViolationEvent`
-  ([`M8-welle-3b.md`](../planning/done/M8-welle-3b.md), `GG-GRID-006`).
+  ([`M8-welle-3b.md`](../planning/done/M8-welle-3b.md), [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006)).
 - Blindleistung / Q + Snapshot-Schema-Bump
-  ([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), `GG-GRID-007`).
+  ([`M8-welle-3c.md`](../planning/done/M8-welle-3c.md), [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)).
 - Droop-/Detail-Frequenzregelung, Schwarzstart-Synchronisation,
   Lastabwurf (§7).
 

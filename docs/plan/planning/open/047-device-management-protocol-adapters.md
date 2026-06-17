@@ -3,7 +3,7 @@
 **Status:** Open — Trigger-Watch
 **Datum:** 2026-06-16
 **Quelle:** Stakeholder-Frage zu Device-Management-Protokollen; neue
-Lastenheft-IDs `GG-SNMP-001` und `GG-LWM2M-001`.
+Lastenheft-IDs [`GG-SNMP-001`](../../../../spec/lastenheft.md#gg-snmp-001) und [`GG-LWM2M-001`](../../../../spec/lastenheft.md#gg-lwm2m-001).
 
 ---
 

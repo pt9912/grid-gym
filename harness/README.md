@@ -114,7 +114,7 @@ Artefakte.
 - `grid-gym` ist eine offline-lokale Simulations- und Demo-Plattform,
   kein produktiver BESS-Controller.
 - Simulationsadapter versprechen keine reale Anlagensteuerung
-  (`GG-SAFE-007`, `GG-NONGOAL-001`).
+  ([`GG-SAFE-007`](../spec/lastenheft.md#gg-safe-007), [`GG-NONGOAL-001`](../spec/lastenheft.md#gg-nongoal-001)).
 - Hexagonale Grenzen gelten: Fachlogik bleibt in `hexagon/`, konkrete
   I/O-, HTTP-, UI-, Persistenz- und Protokollintegration bleibt in
   `adapters/` oder `deploy/`.

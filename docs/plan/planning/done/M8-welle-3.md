@@ -16,7 +16,7 @@ von M8: drei Schaerfungen des bestehenden Netzbilanzmodells
 (`GridModelBilanz`, [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md))
 aus Lastenheft §11.5, die M2 als SOLLTE markierte. Reine Core-Domain-/
 Bilanz-Erweiterung — **kein neues Geraet, kein neuer Port/Adapter-Typ**.
-`GG-GRID-005..007` komplett. Doc-Verschiebung der Sub-Wellen nach `done/`
+[`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007 komplett. Doc-Verschiebung der Sub-Wellen nach `done/`
 erfolgt als Gruppe mit dieser Welle-3-Gesamt-Closure (wie Welle 2).
 
 **Container:** Meilenstein-Scope in [`roadmap.md`](../in-progress/roadmap.md) §4 M8;
@@ -46,9 +46,9 @@ durchgehend **Bilanz-Schaerfung im Core**, kein Geraete-Submodul.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
-| 3a Inselnetz | `GG-GRID-005` | [`020`](../open/020-sollte-island-grid.md) | Slack-Wechsel | Kein externer Slack; internes Grid-Forming-Geraet haelt Frequenz; `is_islanded`/`forming_device_id` in der Config |
-| 3b Trafo-Grenzen | `GG-GRID-006` | [`021`](../open/021-sollte-transformer-limits.md) | Bilanz-Constraint | `max_apparent_power_kva` + Ueberlastkennlinie + simples Thermomodell; `GridConstraintViolationEvent` bei Verletzung |
-| 3c Blindleistung | `GG-GRID-007` | [`022`](../open/022-sollte-reactive-power.md) | Cross-cutting + Schema | `reactive_power_kvar` + Q(U)-Kennlinie pro Q-Geraet; `imbalance_kvar` parallel zu `imbalance_kw`; additive **Snapshot-Erweiterung** (multi-schema) |
+| 3a Inselnetz | [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) | [`020`](../open/020-sollte-island-grid.md) | Slack-Wechsel | Kein externer Slack; internes Grid-Forming-Geraet haelt Frequenz; `is_islanded`/`forming_device_id` in der Config |
+| 3b Trafo-Grenzen | [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006) | [`021`](../open/021-sollte-transformer-limits.md) | Bilanz-Constraint | `max_apparent_power_kva` + Ueberlastkennlinie + simples Thermomodell; `GridConstraintViolationEvent` bei Verletzung |
+| 3c Blindleistung | [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) | [`022`](../open/022-sollte-reactive-power.md) | Cross-cutting + Schema | `reactive_power_kvar` + Q(U)-Kennlinie pro Q-Geraet; `imbalance_kvar` parallel zu `imbalance_kw`; additive **Snapshot-Erweiterung** (multi-schema) |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port — die
 Schaerfungen leben in `grid_model` + `tick_loop`. Pro Sub-Welle eine
@@ -92,7 +92,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   Schema-Strategie. Sensor: `make docs-check`.
 - **Welle 3a — Inselnetz — Done 2026-06-16**
   ([`M8-welle-3a.md`](M8-welle-3a.md),
-  `GG-GRID-005`, [`020`](../open/020-sollte-island-grid.md),
+  [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005), [`020`](../open/020-sollte-island-grid.md),
   [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`):
   `is_islanded: bool` + `forming_device_id: str | None` in
   `GridModelConfig`; TickLoop-Auto-Close waehlt im Inselnetz **das
@@ -104,7 +104,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   ohne Netzanschluss); Multi-Insel-Synchronisation out-of-scope (§5).
 - **Welle 3b — Transformatorgrenzen — Done 2026-06-16**
   ([`M8-welle-3b.md`](M8-welle-3b.md),
-  `GG-GRID-006`, [`021`](../open/021-sollte-transformer-limits.md),
+  [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), [`021`](../open/021-sollte-transformer-limits.md),
   [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`):
   `max_apparent_power_kva` + simples **Single-Zonen-Thermomodell als
   Zeit-Strom-Mechanismus** (Top-Oil/Hot-Spot, `S≈|grid_connection_kw|` bis
@@ -116,7 +116,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   im Bilanzmodell.
 - **Welle 3c — Blindleistung — re-tranchiert (3c-a Done / 3c-b offen)**
   ([`M8-welle-3c.md`](M8-welle-3c.md),
-  `GG-GRID-007`, [`022`](../open/022-sollte-reactive-power.md)):
+  [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), [`022`](../open/022-sollte-reactive-power.md)):
   **3c-a Done 2026-06-16**
   ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`)
   — `imbalance_kvar` parallel zu `imbalance_kw` in `GridModelBilanz` +
@@ -148,7 +148,7 @@ Geraete-Q-Emission).
   bleibt unveraendert. Beruehrt ggf. `D-1` ([`carveouts.md`](../in-progress/carveouts.md));
   Q-Felder additiv + opt-in.
 - **Determinismus:** Q(U)-Kennlinien, Zeit-Strom-Ueberlastkennlinie und
-  Thermomodell brauchen `Decimal`-Rundungs-Disziplin (`AC-NO-RAND`,
+  Thermomodell brauchen `Decimal`-Rundungs-Disziplin ([`AC-NO-RAND`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert),
   kanonische Serialisierung) — kein Float-Drift im Snapshot.
 - **Bilanz-Default-Stabilitaet (3a):** der Inselnetz-Fork der Auto-Close-
   Logik darf den Netzanschluss-Pfad nicht veraendern — `is_islanded=False`
@@ -177,7 +177,7 @@ Geraete-Q-Emission).
 ## 6. DoD (Welle 3-C0)
 
 - [x] `M8-welle-3.md` angelegt (dieser Plan).
-- [x] Scope fixiert: alle drei (`T-020..022`/`GG-GRID-005..007`) in
+- [x] Scope fixiert: alle drei (`T-020..022`/[`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)..007) in
       Welle 3, per Stakeholder-Mandat 2026-06-15.
 - [x] Reihenfolge fixiert: **3a Inselnetz → 3b Trafo-Grenzen → 3c
       Blindleistung** (lokale Schaerfungen vor cross-cutting Q).

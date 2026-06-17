@@ -15,7 +15,7 @@ Welle aufgeloest).
 
 ## 1. Lieferziel
 
-Das EV-Ladepunkt-Modell (`GG-DEV-015`, Lastenheft §9.4) als
+Das EV-Ladepunkt-Modell ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015), Lastenheft §9.4) als
 `DeviceModel` + `FaultInjectableDevice` im Core, mit Fahrzeug-SoC,
 CC/CV-Ladekennlinie, durchgaengigem V2G und `connection_loss`-Fault
 ([`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md)). Inklusive Loader-Factory, Scenario-YAML-Coercion,

@@ -62,7 +62,7 @@ and are therefore distributed under **GPL-3.0-only**:
    aggregation). Cross-module access uses the Welle-1
    `build_protocol_ports` factory with an
    `ImportError`-tolerant plugin pattern. This is enforced
-   by the `AC-IEC61850-GPL-BOUNDARY` arch-check contract
+   by the [`AC-IEC61850-GPL-BOUNDARY`](docs/plan/adr/0035-iec61850-adapter-profile.md) arch-check contract
    (M4 Welle 6b C2).
 
 ### Adding a new GPL-isolated path

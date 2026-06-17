@@ -5,10 +5,10 @@ Lineage-Carve-out (`allow-supersede-lineage` + `supersede-fields`). Migration
 vollzogen: `D_CHECK_IMAGE` auf den v0.11.0-Digest gepinnt
 ([`Makefile`](../../../../Makefile)), `matrix.status.allow-supersede-lineage:
 true` + `supersede-fields: [Supersedes, Aenderungstyp]` in
-[`.d-check.yml`](../../../../.d-check.yml), `ADR 0006`-Bezug auf `ADR 0003`
+[`.d-check.yml`](../../../../.d-check.yml), [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Bezug auf `ADR 0003` <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 wieder als **klickbarer Link** (Inline-Code-Workaround entfernt).
 `make docs-check` gruen; **Boundary verifiziert** (Nicht-Lineage-Verweis auf
-`ADR 0003` bleibt `matrix-inactive` → Carve-out scoped, Gate nicht
+`ADR 0003` bleibt `matrix-inactive` → Carve-out scoped, Gate nicht <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 geschwaecht). Doc-Archivierung nach `done-archive/` folgt mit der
 M8-Meilenstein-Closure.
 **Datum:** 2026-06-17
@@ -29,8 +29,8 @@ Supersede-Lineage**: die abloesende ADR verweist per Definition auf die ADR,
 die sie abloest (Lab-Regelwerk Regel 2: ADR→ADR-Lineage ist normativ). Das
 `matrix`-Modul kennt heute **keinen** Carve-out dafuer.
 
-**Konkreter Fall:** `ADR 0006` (`Aenderungstyp: Supersedes ADR 0003`)
-verweist in seinem `Bezug`-Header auf `ADR 0003` — normative Lineage, wird
+**Konkreter Fall:** [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) (`Aenderungstyp: Supersedes ADR 0003`) <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+verweist in seinem `Bezug`-Header auf `ADR 0003` — normative Lineage, wird <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 aber als `matrix-inactive` gemeldet und bricht das fail-closed
 `make docs-check`.
 
@@ -39,8 +39,8 @@ aber als `matrix-inactive` gemeldet und bricht das fail-closed
 nicht** (greift nur fuer `codepaths`/`ids`). Damit fehlt aktuell *jeder*
 saubere Einzelfall-Opt-out.
 
-**Aktueller Workaround (Slice 049):** der Lineage-Link in `ADR 0006` wurde
-auf Inline-Code `ADR 0003` umgestellt (Referenz sichtbar, aber **nicht
+**Aktueller Workaround (Slice 049):** der Lineage-Link in [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) wurde
+auf Inline-Code `ADR 0003` umgestellt (Referenz sichtbar, aber **nicht <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 klickbar**) — informationsaermer als noetig.
 
 ## Erwartete Lieferung (d-check-CR)
@@ -72,15 +72,15 @@ d-check-Release mit `allow-supersede-lineage`-Option (bzw. `matrix`-faehigem
 
 - `allow-supersede-lineage: true` in [`.d-check.yml`](../../../../.d-check.yml)
   setzen,
-- in `ADR 0006` den Inline-Code `ADR 0003` wieder auf den klickbaren
+- in [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) den Inline-Code `ADR 0003` wieder auf den klickbaren <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
   `Bezug`-Link zuruecksetzen,
 - `make docs-check` gruen verifizieren.
 
 ## Akzeptanzkriterien (Migration)
 
-- **Happy:** mit aktivem Carve-out erzeugt `ADR 0006 → ADR 0003` **keinen**
-  `matrix-inactive`-Befund (weil `ADR 0006` `ADR 0003` deklariert abloest).
-- **Boundary:** eine *andere* (nicht-abloesende) Datei → `ADR 0003` bleibt
+- **Happy:** mit aktivem Carve-out erzeugt [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) → ADR 0003 **keinen** <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+  `matrix-inactive`-Befund (weil [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) `ADR 0003` deklariert abloest). <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+- **Boundary:** eine *andere* (nicht-abloesende) Datei → `ADR 0003` bleibt <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
   `matrix-inactive` (Carve-out auf die Lineage-Kante beschraenkt).
 - **Negative/Default:** ohne die Option (Default) Verhalten bit-genau wie
   heute.

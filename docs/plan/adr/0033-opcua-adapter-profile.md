@@ -68,10 +68,10 @@ asyncio-Event-Loop-Thread) + Decision 4 (Profile-
 Deklaration) + Decision 5 (Test-Sibling-Container —
 asyncua-Server-Container-Lizenz nicht relevant, weil
 in-process gewaehlt; siehe §2.5).
-Lastenheft §16 (`GG-OPCUA-001`, Z. 1149–1163 SOLLTE-Cluster:
+Lastenheft §16 ([`GG-OPCUA-001`](../../../spec/lastenheft.md#gg-opcua-001), Z. 1149–1163 SOLLTE-Cluster:
 Node-ID-Schema + Datentypen + Read/Write-Operationen +
 Fehlerverhalten + Adapter-Smoke).
-Architektur §7 (`GG-AR-PORT-DRN-007` Driven-Ports-Tabelle —
+Architektur §7 ([`GG-AR-PORT-DRN-007`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) Driven-Ports-Tabelle —
 ADR 0030 hat den Slot belegt; Welle 4 liefert dritten
 Implementer) + §8.2 (Adapter-Interfaces-Driven-Beschreibung
 — Node-ID-Schema konkretisiert die generische Beschreibung
@@ -90,7 +90,7 @@ Praezedenz** (siehe §2.5 Decision O-e).
 
 ## 1. Kontext
 
-`GG-OPCUA-001` (Lastenheft §16 Z. 1149–1163) verlangt
+[`GG-OPCUA-001`](../../../spec/lastenheft.md#gg-opcua-001) (Lastenheft §16 Z. 1149–1163) verlangt
 einen OPC-UA-Adapter als **Simulations-/Testadapter** mit
 deterministischem Adapter-Smoke-Test (mindestens ein
 Read- und ein Write-Pfad). M4-Welle-2 hat den ersten

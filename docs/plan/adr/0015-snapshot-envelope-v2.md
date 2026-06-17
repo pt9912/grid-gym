@@ -55,7 +55,7 @@ werden im M2-Code-Pfad NICHT mehr gelesen, aber die M1-ADR
 bleibt historisch intakt).
 M2-Slice-Plan
 [`done/M2-devices.md`](../planning/done-archive/M2-devices.md)
-§3 Welle 6a. Lastenheft §3 (`GG-MVP-002` End-to-End-Szenario),
+§3 Welle 6a. Lastenheft §3 ([`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002) End-to-End-Szenario),
 `GG-PERSIST-*` (M6-Lese-Migrations-Pfad).
 
 ---

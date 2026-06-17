@@ -13,7 +13,7 @@ Welle 2). DoD (§2) erfuellt.
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
-Trigger: [`020`](../open/020-sollte-island-grid.md) (`GG-GRID-005`,
+Trigger: [`020`](../open/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005),
 Lastenheft §11.5; mit dieser Welle aufzuloesen).
 
 ---

@@ -8,7 +8,7 @@
 (aktives Rauschen ohne `attach_random` → fail-loud) + Inaktiv-Regressions-Pin
 (`cell=None` byte-genau wie heute) + opt-in-Snapshot-Roundtrip inkl.
 Tuple-Kanonik + v1-backward-compat-Lesepfad).
-**Schliesst `GG-BESS-007`** (Trigger
+**Schliesst [`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007)** (Trigger
 [`024`](../planning/done/M8-welle-4b.md)).
 Additive **Schaerfung** von
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Battery-Snapshot-/Telemetrie-
@@ -29,7 +29,7 @@ Telemetrie-Pattern + `## Historie`-freie zeitlose Linie),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-Pattern).
 Slice-Plan [`M8-welle-4b.md`](../planning/done/M8-welle-4b.md);
 Container [`M8-welle-4.md`](../planning/done/M8-welle-4.md). Trigger
-[`024`](../planning/open/024-sollte-battery-cell-voltage.md) (`GG-BESS-007`,
+[`024`](../planning/open/024-sollte-battery-cell-voltage.md) ([`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007),
 Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 
 ---
@@ -37,7 +37,7 @@ Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 ## 1. Kontext
 
 [`ADR 0014`](0014-battery-snapshot-schema.md) deckt das Battery-Modell nur auf
-**Pack-Niveau** ab (SOC, Strom/Leistung, Ramp). Lastenheft `GG-BESS-007`
+**Pack-Niveau** ab (SOC, Strom/Leistung, Ramp). Lastenheft [`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007)
 (Trigger [`024`](../planning/open/024-sollte-battery-cell-voltage.md)) verlangt
 **Zellspannungs-Telemetrie**: das Pack in `n_cells` Zellen aufgeloest, je mit
 eigener Spannung, optional mit seeded Rauschen. Welle 4b ist die zweite
@@ -71,7 +71,7 @@ Frozen-Dataclass (`slots=True`) mit `__post_init__`-Validierung (Verstoss →
 
 `nominal_pack_voltage_v` ist die **neue, explizite Spannungsquelle** — die
 Bestands-`BatteryConfig` trug keinen Pack-Spannungswert; SOC-/OCV-Kennlinien
-bleiben out-of-scope (§7). Die No-float-/Typpruefung (`GG-DATA-005`) liegt —
+bleiben out-of-scope (§7). Die No-float-/Typpruefung ([`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)) liegt —
 wie im Bestands-Battery-Pattern — in den Parsern (`_cell_from_params` /
 Snapshot-`assert_*`), nicht im Konstruktor.
 
@@ -103,7 +103,7 @@ Alle Werte werden auf `Decimal("0.000001")` (`ROUND_HALF_EVEN`, im bestehenden
 ### 2.3 Telemetrie — opt-in aggregiertes `cell_voltage_delta_v`
 
 Ein zusaetzlicher `TelemetryPoint` (`metric="cell_voltage_delta_v"`,
-`unit="V"`, SI per `GG-DATA-002`) = `max(cells) - min(cells)`, **conditional**
+`unit="V"`, SI per [`GG-DATA-002`](../../../spec/lastenheft.md#gg-data-002)) = `max(cells) - min(cells)`, **conditional**
 an den `cell`-Block gebunden (kein Block → **kein** Punkt). **Aggregiert statt
 N per-Zelle-Punkte**: der Telemetrie-Strom bleibt **bounded** (ein Punkt
 unabhaengig von `n_cells`), und der Demo-Hash bliebe `n_cells`-unabhaengig.
@@ -152,7 +152,7 @@ Haupt-Port-Ziehungen). Zweite Stufe `tick-<t>`: per-Tick-Variation **ohne**
 gecachten Sub-Port-State — und damit Resume-Kontinuitaet geschenkt.
 
 **Aggregiertes `cell_voltage_delta_v` (statt N per-Zelle):** erfuellt das
-`GG-BESS-007`-Akzeptanzkriterium (Zellabweichung sichtbar) und haelt die
+[`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007)-Akzeptanzkriterium (Zellabweichung sichtbar) und haelt die
 Telemetrie-Flaeche + den Demo-Hash bounded und `n_cells`-unabhaengig.
 
 **`noise=0` ohne `RandomPort`:** der einfachste Zell-Fall (Gleichstand) bleibt
@@ -223,9 +223,9 @@ voller stand-kontinuierlicher Multi-Geraete-RNG-Resume (§7).
   Elektrochemie.
 - **Per-Zelle-Telemetrie** (`cell_voltage_v` pro Zelle) bzw.
   `min/max_cell_voltage_v` — moegliche Debug-Erweiterung; aggregiertes
-  `cell_voltage_delta_v` genuegt fuer `GG-BESS-007`.
+  `cell_voltage_delta_v` genuegt fuer [`GG-BESS-007`](../../../spec/lastenheft.md#gg-bess-007).
 - **Voller stand-kontinuierlicher Multi-Geraete-RNG-Resume** — der Snapshot
   des `RandomPort` selbst ist TickLoop-/Adapter-Material
   ([`ADR 0057`](0057-wind-turbine-device-pattern.md) §2.6).
 - **Temperatur-Telemetrie** — [`ADR 0065`](0065-battery-thermal-telemetry-pattern.md)
-  (`GG-BESS-006`), unabhaengig aktivierbar.
+  ([`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)), unabhaengig aktivierbar.

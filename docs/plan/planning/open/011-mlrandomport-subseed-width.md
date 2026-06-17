@@ -22,14 +22,14 @@ realistischen Zahlen (`< 10^4` Sub-Ports pro Lauf, etwa Geraete ×
 Faults × Agents) bleibt die Kollisions-Wahrscheinlichkeit
 `< 10^-11` — unproblematisch.
 
-Wenn aber `MLRandomPort` (`GG-FUTURE-001/002`) oder ein
-Multi-Agent-Bus (`GG-AGENT-001..008`) die Sub-Port-Zahl in den
+Wenn aber `MLRandomPort` ([`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002) oder ein
+Multi-Agent-Bus ([`GG-AGENT-001`](../../../../spec/lastenheft.md#gg-agent-001)..008) die Sub-Port-Zahl in den
 Millionen- bis Milliardenbereich treibt, wird die 64-bit-Grenze
 relevant.
 
 ## Erwartete Lieferung
 
-- ADR-Folge zu `ADR 0007 §5.2` mit der Entscheidung:
+- ADR-Folge zu [`ADR 0007`](../../adr/0007-random-port.md) §5.2 mit der Entscheidung:
   - Wortbreite auf 128 bit erhoehen (`_SUB_SEED_HEX_DIGITS = 32`)
     und Snapshot-Schema-Version bumpen, ODER
   - separate `MLRandomPort`-Schicht mit eigener Seeding-Kette

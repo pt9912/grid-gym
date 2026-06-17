@@ -30,7 +30,7 @@ Accepted` (M6-Welle-7-Closure).
 
 ADR 0037 (HTTP-API-Surface-Pattern, `Accepted` 2026-06-04)
 verankert die REST + WebSocket-Surface fuer
-`GG-API-001..004`. Drei Decisions sind dort final: §2.1
+[`GG-API-001`](../../../spec/lastenheft.md#gg-api-001)..004. Drei Decisions sind dort final: §2.1
 Action-Body-Vertrag (`POST /runs/{id}/control` mit
 `{"action": "..."}`-Body), §2.2 kein separater
 `UICommandPort`-Slot, §2.3 Roadmap-Typo `DRG-002`-Verwerfung.
@@ -47,7 +47,7 @@ Stand `src/grid_gym/adapters/driving/http_api/_schemas.py`:
 kein Request-Modell setzt `model_config` — alle Request-Bodies
 laufen unter Pydantic-Default-Mode. Das ist fuer **Response-
 Bodies** akzeptabel (Server kontrolliert die Felder), aber
-fuer **Request-Bodies** problematisch gegen `GG-SAFE-008`
+fuer **Request-Bodies** problematisch gegen [`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008)
 MUSS:
 
 - **Extra-Felder werden silent ignoriert** (Default-Pydantic-
@@ -63,7 +63,7 @@ MUSS:
   Fehler abgelehnt. Asymmetrische Strenge — was strikter sein
   sollte, ist es nicht.
 
-`GG-SAFE-008` MUSS-Akzeptanz
+[`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008) MUSS-Akzeptanz
 ([Lastenheft §20 GG-SAFE-008](../../../spec/lastenheft.md#gg-safe-008),
 Z. 1404-1408): „REST-, WebSocket- und alle implementierten
 Adapter-Eingaben werden gegen Schema, Wertebereiche und
@@ -163,7 +163,7 @@ Default-Pydantic-Mode bleibt fuer Response-Bodies, weil:
 - Strict-Mode an Response-Bodies bricht bei spaeteren Schema-
   Erweiterungen (neue Felder in Response-Modellen wuerden
   Tests brechen, die Snapshots des alten Schemas halten).
-- Lastenheft `GG-SAFE-008` adressiert Eingaben („bevor sie
+- Lastenheft [`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008) adressiert Eingaben („bevor sie
   in den Simulationskern gelangen"), nicht Ausgaben.
 
 §2.2 fixiert das explizit, damit kuenftige Reviews nicht
@@ -250,7 +250,7 @@ ADR 0045 §2.1 fuer `RunCreateRequest` nicht erfuellt
   „gegen Schema" nur mit Schwaechen; Strict-Mode +
   extra-forbid macht den Vertrag verbindlich.
 - **Schwester-Strenge zur Quality-Pipeline-Substanz** (vgl.
-  `GG-SAFE-001..004`-Audit unter
+  [`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)..004-Audit unter
   `docs/user/safe-001-004-quality-pipeline.md`): dort werden
   Quality-Statuswerte deterministisch emittiert; ADR 0045
   liefert die analoge Strenge an der Eingangs-Schicht — kein
@@ -329,7 +329,7 @@ Status-Header dieser ADR.
 
 ## 6. Konsequenzen
 
-- **Positiv:** `GG-SAFE-008`-MUSS-Akzeptanz fuer REST-
+- **Positiv:** [`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008)-MUSS-Akzeptanz fuer REST-
   Request-Bodies wird verbindlich („gegen Schema" mit
   exakter Type- und Field-Strenge). Audit-Trail durch
   zentralen `_BaseRequest`-Mixin.
@@ -350,7 +350,7 @@ Status-Header dieser ADR.
 - **Negativ:** Strict-Mode schliesst Client-Konvenienz aus
   (z. B. einen `tick_ms` als JSON-String `"100"` zu schicken
   funktioniert nicht mehr). Akzeptabel, weil
-  `GG-SAFE-008`-Vertragsstrenge ueber Client-Convenience
+  [`GG-SAFE-008`](../../../spec/lastenheft.md#gg-safe-008)-Vertragsstrenge ueber Client-Convenience
   geht.
 - **Neutral:** Response-Bodies bleiben unveraendert. Drift-
   Risiko gegen spaetere Schema-Erweiterungen wird vermieden.

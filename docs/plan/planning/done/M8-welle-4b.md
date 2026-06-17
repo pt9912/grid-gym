@@ -15,7 +15,7 @@ Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) aufgeloest.
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b — bewusst zuletzt: Tuple-Feld + Rausch-Quelle);
 [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
-[`024`](../open/024-sollte-battery-cell-voltage.md) (`GG-BESS-007`, Lastenheft
+[`024`](../open/024-sollte-battery-cell-voltage.md) ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 
 ---
@@ -28,7 +28,7 @@ das Pack wird in `n_cells` Zellen aufgeloest, jede mit eigener Spannung
 Rauschen). Heute deckt der Battery-Snapshot
 ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) nur Pack-Niveau (SOC)
 ab. Emittiert wird **aggregiert** `cell_voltage_delta_v` (`max-min`) als
-normativer `GG-BESS-007`-Akzeptanzpunkt; `min_cell_voltage_v` /
+normativer [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007)-Akzeptanzpunkt; `min_cell_voltage_v` /
 `max_cell_voltage_v` koennen als Debug-/Boundary-Kontext hinzukommen (bounded
 Telemetrie statt N Metriken). **Ohne
 aktive Zell-Config bleibt das Verhalten bit-genau wie heute** (kein Feld,
@@ -80,7 +80,7 @@ kein Punkt).
   typisiert statt nicht-deterministisch still weiterzulaufen. Kanonische
   `Decimal`-Rundung, kein Float-Drift.
 - **Telemetrie**: **aggregiert** mit `cell_voltage_delta_v = max-min` statt N
-  per-Zelle-Punkte — erfuellt das `GG-BESS-007`-Akzeptanzkriterium und haelt
+  per-Zelle-Punkte — erfuellt das [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007)-Akzeptanzkriterium und haelt
   die Telemetrie-Flaeche bounded. `min_cell_voltage_v`/`max_cell_voltage_v`
   koennen als Debug-/Boundary-Kontext ergaenzen; per-Zelle-Emission ist die
   Alternative (Design-Item; Trigger 024 laesst beide offen).
@@ -126,4 +126,4 @@ kein Punkt).
 - **Zell-Chemie-Detailmodelle** (Li-Ion / LiFePO4 / Solid-State) — Domain ist
   Spannungsverhalten, nicht Elektrochemie (Trigger 024 Out-of-scope).
 - **Temperatur-Telemetrie** — [`M8-welle-4a.md`](M8-welle-4a.md)
-  (`GG-BESS-006`), unabhaengig aktivierbar.
+  ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)), unabhaengig aktivierbar.
