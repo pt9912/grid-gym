@@ -72,6 +72,12 @@ class RunMetadata:
       Closure-Notiz traegt die Entscheidung.
     - `tool_version`: `grid_gym`-Version (Spec `GG-TERM-003`
       „Version").
+    - `replay_of`: optionale, persistente Referenz auf den
+      Lauf, dessen Replay dieser Lauf ist (Trigger 039 / ADR 0068).
+      `None` = regulaerer Lauf (kein Replay). Die Bindung haengt
+      damit auditierbar am Lauf statt nur als Runtime-Kwarg
+      (`replay_reference_run_id`, ADR 0049 §2.2). Default `None`
+      haelt bestehende Konstruktionen byte-stabil.
     """
 
     run_id: str
@@ -82,3 +88,4 @@ class RunMetadata:
     started_at: str
     ended_at: str
     tool_version: str
+    replay_of: str | None = None

@@ -65,7 +65,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Final
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import (
@@ -84,6 +84,7 @@ from grid_gym.adapters.driving.http_api._dependencies import (
     get_telemetry_stream,
 )
 from grid_gym.adapters.driving.http_api._schemas import (
+    ErrorResponse,
     RunCreateRequest,
     RunCreateResponse,
 )
@@ -392,6 +393,19 @@ def post_runs(
     `PostgresRunRepository` + alembic-Migration; bis dahin
     laeuft der Endpoint gegen die In-Memory-Test-Variante.
     """
+    # ADR 0068 §2.2 (Trigger 039): Replay-Referenz vor dem Anlegen pruefen —
+    # ein `replay_of` auf einen nicht-existenten Lauf wird abgelehnt (422
+    # `reference_run_not_found`), statt eine unaufloesbare Bindung zu
+    # persistieren (Reject vor Lauf-Start, nicht erst im finalize()-Preflight).
+    if request.replay_of is not None and not repository.exists(request.replay_of):
+        error = ErrorResponse(
+            code="reference_run_not_found",
+            message=(
+                f"Reference run '{request.replay_of}' not found; cannot create a replay of it."
+            ),
+            run_id=request.replay_of,
+        )
+        raise HTTPException(status_code=422, detail=error.model_dump())
     run_id = str(uuid.uuid4())
     metadata = RunMetadata(
         run_id=run_id,
@@ -402,6 +416,7 @@ def post_runs(
         started_at="",
         ended_at="",
         tool_version=_APP_VERSION,
+        replay_of=request.replay_of,
     )
     repository.save(metadata)
     return RunCreateResponse(
@@ -409,6 +424,7 @@ def post_runs(
         scenario_hash=request.scenario_hash,
         seed=request.seed,
         tick_ms=request.tick_ms,
+        replay_of=request.replay_of,
     )
 
 

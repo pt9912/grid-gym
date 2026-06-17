@@ -86,6 +86,15 @@ class RunCreateRequest(_BaseRequest):
         description="Schrittweite je Tick in ms (`GG-SIM-002`).",
         gt=0,
     )
+    replay_of: str | None = Field(
+        default=None,
+        description=(
+            "Optionale `run_id` eines Referenzlaufs: legt diesen Lauf als "
+            "dessen Replay an (Trigger 039 / ADR 0068). `None` = regulaerer "
+            "Lauf. Der Referenzlauf MUSS bereits existieren — sonst 422 "
+            "`reference_run_not_found`."
+        ),
+    )
 
 
 class RunCreateResponse(BaseModel):
@@ -104,6 +113,10 @@ class RunCreateResponse(BaseModel):
     scenario_hash: str = Field(description="Echo des `scenario_hash`-Eingangs.")
     seed: int = Field(description="Echo des `seed`-Eingangs.")
     tick_ms: int = Field(description="Echo des `tick_ms`-Eingangs.")
+    replay_of: str | None = Field(
+        default=None,
+        description="Echo der `replay_of`-Referenz (`None` = kein Replay).",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +135,10 @@ class RunDetailResponse(BaseModel):
     started_at: str = Field(description="ISO-8601-Start-Timestamp (leer wenn nicht gestartet).")
     ended_at: str = Field(description="ISO-8601-End-Timestamp (leer wenn aktiv).")
     tool_version: str = Field(description="`pyproject.toml`-Tool-Version zum Lauf-Start.")
+    replay_of: str | None = Field(
+        default=None,
+        description="Referenzlauf, dessen Replay dieser Lauf ist (`None` = kein Replay).",
+    )
 
 
 # ---------------------------------------------------------------------------

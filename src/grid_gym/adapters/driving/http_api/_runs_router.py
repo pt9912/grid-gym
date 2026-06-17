@@ -149,6 +149,7 @@ def get_run(
         started_at=metadata.started_at,
         ended_at=metadata.ended_at,
         tool_version=metadata.tool_version,
+        replay_of=metadata.replay_of,
     )
 
 

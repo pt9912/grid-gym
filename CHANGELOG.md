@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `partial_run`-Reject-Log). `DemoTickLoopDriver` finalisiert auf jedem
   Exit-Pfad (natuerliche Terminierung / Failure / Cancel) statt nur bei
   `stop()`. Additive Schaerfung von ADR 0049 §2.1 (ADR 0011).
+- API-Replay-Bindung (ADR 0068, Slice 039 Phase A, Trigger 039): `POST /runs`
+  nimmt ein optionales `replay_of: <run_id>`-Feld an und legt den Lauf als
+  Replay des Referenzlaufs an; die Bindung wird persistent in
+  `RunMetadata.replay_of` (nullable Postgres-Spalte, Migration
+  `0003_add_replay_of`; InMemory automatisch) gehalten + in
+  `RunCreateResponse`/`GET /runs/{id}` exponiert. Unbekannte Referenz → HTTP
+  422 `reference_run_not_found` (Reject vor Lauf-Start). Additive Schaerfung
+  von ADR 0049 §2.2 (ADR 0011). (Phase B: `finalize()`-Konsum der
+  persistierten Bindung — Folge-Schritt.)
 - `docs/plan/planning/done-archive/` — eingefrorene
   Detail-Historie abgeschlossener Meilensteine (91 Wellen-/
   Slice-/Trigger-Docs per Move; `done/` haelt dauerhaft die

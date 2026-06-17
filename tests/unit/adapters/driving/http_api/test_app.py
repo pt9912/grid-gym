@@ -90,6 +90,61 @@ def test_post_runs_returns_distinct_run_ids_for_repeated_calls(
     assert repository.exists(second["run_id"])
 
 
+# ---------------------------------------------------------------------------
+# ADR 0068 (Slice 039 Phase A): API-Replay-Bindung `replay_of`.
+# ---------------------------------------------------------------------------
+
+
+def test_post_runs_without_replay_of_defaults_none(
+    configured_app: tuple[TestClient, InMemoryRunRepository],
+) -> None:
+    # Ohne `replay_of` ist der Lauf regulaer → null in Response + Store.
+    client, repository = configured_app
+    body = client.post("/runs", json=_VALID_PAYLOAD).json()
+    assert body["replay_of"] is None
+    assert repository.get_by_id(body["run_id"]).replay_of is None
+
+
+def test_post_runs_with_valid_replay_of_persists_and_echoes(
+    configured_app: tuple[TestClient, InMemoryRunRepository],
+) -> None:
+    # ADR 0068 §2.2: ein Lauf laesst sich als Replay eines existierenden
+    # Referenzlaufs anlegen; die Bindung wird persistiert + geechot.
+    client, repository = configured_app
+    reference_id = client.post("/runs", json=_VALID_PAYLOAD).json()["run_id"]
+    response = client.post("/runs", json={**_VALID_PAYLOAD, "replay_of": reference_id})
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["replay_of"] == reference_id
+    assert repository.get_by_id(payload["run_id"]).replay_of == reference_id
+
+
+def test_post_runs_with_unknown_replay_of_rejected_422(
+    configured_app: tuple[TestClient, InMemoryRunRepository],
+) -> None:
+    # ADR 0068 §2.2: `replay_of` auf einen nicht-existenten Lauf → 422
+    # `reference_run_not_found`; es wird kein Lauf angelegt (Reject vor Save).
+    client, repository = configured_app
+    unknown = str(uuid.uuid4())
+    response = client.post("/runs", json={**_VALID_PAYLOAD, "replay_of": unknown})
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "reference_run_not_found"
+    assert not repository.exists(unknown)
+
+
+def test_get_run_exposes_replay_of(
+    configured_app: tuple[TestClient, InMemoryRunRepository],
+) -> None:
+    # ADR 0068: GET /runs/{id} gibt die persistierte `replay_of`-Bindung aus.
+    client, _ = configured_app
+    reference_id = client.post("/runs", json=_VALID_PAYLOAD).json()["run_id"]
+    replay_id = client.post("/runs", json={**_VALID_PAYLOAD, "replay_of": reference_id}).json()[
+        "run_id"
+    ]
+    detail = client.get(f"/runs/{replay_id}").json()
+    assert detail["replay_of"] == reference_id
+
+
 def test_post_runs_rejects_short_scenario_hash(
     configured_app: tuple[TestClient, InMemoryRunRepository],
 ) -> None:

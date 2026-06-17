@@ -30,7 +30,7 @@ from grid_gym.hexagon.core.errors import (
 )
 
 
-def _make_metadata(run_id: str | None = None) -> RunMetadata:
+def _make_metadata(run_id: str | None = None, *, replay_of: str | None = None) -> RunMetadata:
     return RunMetadata(
         run_id=run_id or str(uuid.uuid4()),
         scenario_hash="0" * 64,
@@ -40,6 +40,7 @@ def _make_metadata(run_id: str | None = None) -> RunMetadata:
         started_at="2026-05-17T10:00:00Z",
         ended_at="2026-05-17T10:01:00Z",
         tool_version="0.1.0",
+        replay_of=replay_of,
     )
 
 
@@ -53,6 +54,18 @@ def test_save_then_get_by_id_roundtrips_all_fields(repository: PostgresRunReposi
     repository.save(metadata)
     loaded = repository.get_by_id(metadata.run_id)
     assert loaded == metadata
+
+
+def test_save_then_get_by_id_roundtrips_replay_of(repository: PostgresRunRepository) -> None:
+    """ADR 0068 (Slice 039): die persistente Replay-Bindung roundtrippt ueber
+    die 0003-Migration `replay_of`-Spalte (NULL fuer regulaere Laeufe)."""
+    reference = _make_metadata()
+    repository.save(reference)
+    replay = _make_metadata(replay_of=reference.run_id)
+    repository.save(replay)
+    loaded = repository.get_by_id(replay.run_id)
+    assert loaded.replay_of == reference.run_id
+    assert loaded == replay
 
 
 def test_exists_returns_true_after_save(repository: PostgresRunRepository) -> None:

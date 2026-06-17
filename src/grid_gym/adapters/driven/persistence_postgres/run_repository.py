@@ -66,8 +66,8 @@ class PostgresRunRepository:
                         sql.SQL(
                             "INSERT INTO {table} ("
                             "run_id, scenario_hash, schema_version, seed, "
-                            "tick_ms, started_at, ended_at, tool_version"
-                            ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                            "tick_ms, started_at, ended_at, tool_version, replay_of"
+                            ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         ).format(table=_TABLE),
                         (
                             metadata.run_id,
@@ -78,6 +78,7 @@ class PostgresRunRepository:
                             metadata.started_at,
                             metadata.ended_at,
                             metadata.tool_version,
+                            metadata.replay_of,
                         ),
                     )
                 conn.commit()
@@ -93,7 +94,7 @@ class PostgresRunRepository:
             cursor.execute(
                 sql.SQL(
                     "SELECT run_id, scenario_hash, schema_version, seed, "
-                    "tick_ms, started_at, ended_at, tool_version "
+                    "tick_ms, started_at, ended_at, tool_version, replay_of "
                     "FROM {table} WHERE run_id = %s"
                 ).format(table=_TABLE),
                 (run_id,),
@@ -110,6 +111,7 @@ class PostgresRunRepository:
             started_at=row[5],
             ended_at=row[6],
             tool_version=row[7],
+            replay_of=row[8],
         )
 
     def exists(self, run_id: str) -> bool:
