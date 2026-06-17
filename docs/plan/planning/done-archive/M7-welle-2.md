@@ -35,7 +35,7 @@ bleibt indikativ (siehe §3-Vorspann).
   `build_tick_loop` + `diff_replay` + Stream-Hash-Pin. **Post-
   Welle-1-Begruendung verschaerft:** standalone ist die richtige
   Form fuer eine **headless** CLI (kein FastAPI/Postgres noetig)
-  und umgeht bewusst den **[Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)**-
+  und umgeht bewusst den **[Trigger 040](../in-progress/040-replay-finalize-headless-run-end-seam.md)**-
   Gap (der produktive `replay_diff_status`-`finalize()`-Hook feuert
   heute nur ueber `DemoTickLoopDriver.stop()`; ein headless-Runner
   haette keine Core-Run-End-Naht). Die Sub-Form B (E2E ueber
@@ -1137,7 +1137,7 @@ D-7 Option B (Skript startet Stack selbst), nochmals
   traegt (Standort-Beschluss D-10).
 - `src/grid_gym/hexagon/core/replay/diff.py::diff_replay`
   — Sub-Step B Substanz.
-- [Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md)
+- [Trigger 040](../in-progress/040-replay-finalize-headless-run-end-seam.md)
   — Headless-`finalize()`-Naht; Grund, warum Step B die
   standalone `diff_replay`-Form (D-2 = A) statt des produktiven
   `replay_diff_status`-Lifecycles nutzt.

@@ -2,7 +2,7 @@
 
 **Status:** Done — C0 `c193788` (Slice-Doc + Decision-Liste
 1b-b-D-0..D-9 + NEU
-[Trigger 039](../open/039-api-replay-trigger-surface.md)) + C1
+[Trigger 039](../in-progress/039-api-replay-trigger-surface.md)) + C1
 `021e8d7` (NEU ADR 0049 `Provisional` — Replay-Lifecycle) + C2
 `6476267` (Code: Core-`TickLoop.finalize()`-Naht +
 `replay_diff_status` + GG-TERM-Preflight + `InMemoryReplaySnapshot`
@@ -242,7 +242,7 @@ ist bereits gestoppt).
 ### 1b-b-D-7 — Oeffentliche API-Replay-Bedienung (Scope-Schalter)
 
 **Final: NICHT in 1b-b** → NEU
-[Trigger 039](../open/039-api-replay-trigger-surface.md). Die
+[Trigger 039](../in-progress/039-api-replay-trigger-surface.md). Die
 1b-b-Referenz-Bindung (1b-b-D-2) ist Runtime/Test/Demo-intern. Ein
 oeffentliches `POST /runs` `replay_of`-Feld + `RunMetadata`-
 `replay_of`-Spalte + Alembic-Migration + `RunCreateRequest`-Strict-
@@ -298,7 +298,7 @@ Lauf-Lifecycle, sind aber eigene SOLLTE-Substanz ohne
 ## 5. Critical Files
 
 **NEU (C0/C1/C2):** `M7-welle-1b-b.md` (C0);
-`docs/plan/planning/open/039-api-replay-trigger-surface.md` (C0);
+`docs/plan/planning/in-progress/039-api-replay-trigger-surface.md` (C0);
 `docs/plan/adr/0049-…md` (C1);
 `src/grid_gym/adapters/driven/persistence_inmemory/replay_snapshot.py`
 (C2); `docs/user/replay-determinism-e2e.md` (C2);
@@ -417,7 +417,7 @@ Severity-Stufen-Metrik, asynchroner Diff.
   — wird mit 1b-b-C3 nach `done/` aufgeloest.
 - [Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-002/003-Matrix (Carveout).
-- [Trigger 039](../open/039-api-replay-trigger-surface.md) —
+- [Trigger 039](../in-progress/039-api-replay-trigger-surface.md) —
   oeffentliche API-Replay-Bedienung (1b-b-D-7-Carveout).
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   (`GG-MVP-002`, `GG-SAFE-006`, `GG-REPLAY-002/003/007`,

@@ -1207,12 +1207,12 @@ Zwei-Lauf-E2E-Beleg, [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.
 **M7-Welle-1 komplett** (1a + 1b-a + 1b-b; Gruppenplan wandert mit
 der 1b-b-C4-Sequenz nach `done/`). Trigger 036 aufgeloest;
 oeffentliche API-Replay-Bedienung deferred via
-[Trigger 039](../open/039-api-replay-trigger-surface.md).
+[Trigger 039](039-api-replay-trigger-surface.md).
 **M7-Welle-2 Done 2026-06-10** ([`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) Abnahme-CLI;
 [`M7-welle-2.md`](../done-archive/M7-welle-2.md); `make accept` + `tools/accept.py` +
 Shared `src/grid_gym/scenario_yaml.py`, D-1..D-10 final mit D-10-
 Revision C, Replay-Step standalone wegen
-[Trigger 040](../open/040-replay-finalize-headless-run-end-seam.md);
+[Trigger 040](040-replay-finalize-headless-run-end-seam.md);
 commits `33ac255` + `92d10f5`). **[`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003) ✓ produktiv → alle vier
 `GG-MVP-*`-Punkte produktiv** (001/002/003/004). **Aktiver Slice
 jetzt: M7-Welle-3** (Safety-Closure [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003)/004; Trigger 034

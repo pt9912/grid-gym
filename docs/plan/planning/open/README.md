@@ -46,8 +46,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
 | [`038-gg-term-002-003-full-equality-matrix.md`](038-gg-term-002-003-full-equality-matrix.md) | Volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix — `platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash` (Lastenheft [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003); M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber die 5 vorhandenen `RunMetadata`-Felder | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay |
-| [`039-api-replay-trigger-surface.md`](039-api-replay-trigger-surface.md) | Oeffentliche API-Replay-Bedienung — `POST /runs` `replay_of`-Feld + `RunMetadata`-`replay_of`-Spalte + Migration + `finalize()`-Verdrahtung; M7-Welle-1b-b haelt die Referenz-Bindung per 1b-b-D-7 nur Runtime/Test/Demo-intern | Reviewer-/Stakeholder-Forderung nach API-getriggertem Replay ODER Abnahme-CLI ([`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)) ODER Compliance-Bedarf fuer persistente Referenz-Bindung |
-| [`040-replay-finalize-headless-run-end-seam.md`](040-replay-finalize-headless-run-end-seam.md) | Core-Run-End-Naht fuer `TickLoop.finalize()` — heute nur ueber `DemoTickLoopDriver.stop()` getriggert; Headless-Runner / natuerliche Terminierung / Tick-Failure-Pfad feuern den Replay-Diff nicht (M7-Welle-1b-b-C2-Review-Befund #4) | [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)-Abnahme-CLI (M7-Welle-2) mit Headless-Replay-Validierung ODER Auto-`completed`-Transition |
 
 **Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge):**
 

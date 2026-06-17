@@ -1,6 +1,6 @@
 # 040 — `finalize()`-Trigger an einer Core-Run-End-Naht (Headless-Pfad)
 
-**Status:** Open — Forward-Gap aus M7-Welle-1b-b-C2-Review-Folge
+**Status:** In Arbeit (in-progress, 2026-06-17) — aktiviert (Replay-Paar 040→039). Design freigegeben: D-1 Run-Session-Kontextmanager + `finally`-Finalize (kein Auto-`completed`), D-2 `mark_run_failed()`/Partial-Run. ADR (Schaerfung von [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)) + Implementierung folgen.
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C2-Review (Befund #4; Lifecycle-Hook-
 Trigger-Pfad).

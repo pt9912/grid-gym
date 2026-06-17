@@ -23,7 +23,7 @@ final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
 Trigger 036 aufgeloest). Carveouts: volle `GG-TERM`-Matrix
 ([Trigger 038](../open/038-gg-term-002-003-full-equality-matrix.md))
 + oeffentliche API-Replay-Bedienung
-([Trigger 039](../open/039-api-replay-trigger-surface.md)). Pattern
+([Trigger 039](../in-progress/039-api-replay-trigger-surface.md)). Pattern
 analog M6-Welle-4 → 4a/4b. **M7-Welle-1 komplett**; dieser
 Gruppenplan wandert mit der 1b-b-C4-Sequenz nach `done/`.
 **Datum:** 2026-06-07 (Scope-Skizze) · **Re-Sharpened

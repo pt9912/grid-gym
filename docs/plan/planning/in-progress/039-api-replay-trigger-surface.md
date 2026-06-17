@@ -1,6 +1,6 @@
 # 039 — Oeffentliche API-Replay-Bedienung (1b-b-Carveout)
 
-**Status:** Open — dokumentierter Scope-Carveout aus M7-Welle-1b-b
+**Status:** In Arbeit (in-progress, 2026-06-17) — aktiviert als zweiter Teil des Replay-Paars (nach 040; baut auf der Driver-unabhaengigen Run-End-Naht auf).
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C0 (Decision 1b-b-D-7;
 [`docs/plan/planning/done/M7-welle-1b-b.md`](../done-archive/M7-welle-1b-b.md)).
