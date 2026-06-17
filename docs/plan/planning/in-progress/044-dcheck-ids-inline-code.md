@@ -1,6 +1,11 @@
-# 044 — `ids`-Linkpflicht auch fuer Inline-Code-Kennungen (d-check `inline-code`-Option)
+# 044 — `ids`-Linkpflicht auch fuer Inline-Code-Kennungen (`link-policy: always`)
 
-**Status:** Open — Trigger-Watch
+**Status:** **In Arbeit (in-progress, 2026-06-17)** — der d-check-Blocker ist
+weg: v0.11.0 liefert die per-Pattern Inline-Code-Linkpflicht als
+**`link-policy: always`** (CR #3; andere Schreibweise als das urspruenglich
+vorgeschlagene `inline-code: pruefen`, funktional identisch) und ist bereits
+gepinnt (Slice 050). Offen ist die grid-gym-Seite: `.d-check.yml`-Aktivierung
++ Link-Sweep.
 **Datum:** 2026-06-12
 **Quelle:** User-Review der Zwei-Stufen-Konvention aus
 [Trigger 043](../done-archive/043-dcheck-ids-linkpflicht.md)-Lieferung
@@ -18,37 +23,36 @@ Kennungen in Code-Optik, die verlinkbar sind —
 [`GG-DEMO-006`](../../../user/gg-demo-008-abnahme.md) ist
 gerendert nahezu identisch zu `GG-DEMO-006`.
 
-**Messung (2026-06-12, lebende Doku):** 1144 verlinkte
-ID-Vorkommen vs. **1072 Backtick-Vorkommen der Klasse (b)**
-(444 ADRs, 328 planning, 170 spec, 97 docs/user, 30 READMEs);
-213 weitere sind automatisch target-exempt
-(Definitionsdatei), ~30 Wildcards behalten die Exemption als
+**Messung (frisch 2026-06-17, `link-policy: always`-Trockenlauf ueber die
+fuenf Nicht-Wildcard-Patterns):** **421 `id-unlinked`-Befunde** der Klasse (b)
+— planning 152, `spec/lastenheft.md` 119, `docs/plan/adr` 104,
+`docs/user/code-review.md` 23, READMEs 10, `spec/architecture.md` 5, Rest ~8.
+Deutlich weniger als die 1072 vom 2026-06-12 (seither viel verlinkt; zudem
+sind `done-archive/**` + `CHANGELOG.md` per `ids.scope.ignore` ausgenommen).
+Wildcards (`GG-*-*`/`AC-*-*`) behalten die Exemption (`prose`) als
 Design-Bestandteil.
 
 ## Erwartete Lieferung
 
-1. **d-check-CR #3** (uebergeben 2026-06-12): per-Pattern-
-   Option `ids.patterns[].inline-code: pruefen | exempt`
-   (Default `exempt` = Bestand byte-identisch). Bei `pruefen`
-   gilt die Linkpflicht auch in Inline-Code-Spans;
-   Fenced-Bloecke bleiben immer ausgenommen; Target-Datei-/
-   Verzeichnis-Exemption unveraendert (orts-, nicht
-   form-basiert). AK-Skizze: Happy nacktes Code-Span-Vorkommen
-   → Befund; Boundary Default unveraendert / Link-Text-Span
-   kein Befund / Target-File kein Befund; Negative ungueltiger
-   Optionswert → Exit 2. Out-of-Scope: globaler Schalter
-   (Wildcard-Muster brauchen die Exemption).
-2. **Digest-Pin-Bump** auf das Release mit der Option.
-3. **`.d-check.yml`:** numerische + benannte Muster auf
-   `pruefen`; Wildcard-Muster bleiben `exempt`.
-4. **Sweep:** ~1072 Ersetzungen in die Link-Form
-   `` [`ID`](datei#anker) `` —
-   exakt abgegrenzte Vorkommen, fertige Anker-Maps; der
-   einfachste Sweep der Serie.
+1. **d-check-Feature:** ✅ geliefert in **v0.11.0** als per-Pattern
+   `ids.patterns[].link-policy: prose | always` (Default `prose` = Bestand
+   byte-identisch). Bei `always` gilt die Linkpflicht auch in Inline-Code-
+   Spans; Fenced-Bloecke bleiben ausgenommen; die Target-Datei-/Verzeichnis-
+   Exemption ist unveraendert (orts-, nicht form-basiert); `exempt-paths`
+   ergaenzt orts-basierte Ausnahmen. Empirisch verifiziert: ein nacktes
+   `` `ADR 0099` `` → `id-unlinked`; Default `prose` unveraendert.
+2. **Digest-Pin-Bump:** ✅ erledigt — `D_CHECK_IMAGE` auf den v0.11.0-Digest
+   (Slice 050).
+3. **`.d-check.yml`:** numerische + benannte Muster auf `link-policy: always`;
+   Wildcard-Muster bleiben `prose`. (offen)
+4. **Sweep:** ~421 Ersetzungen in die Link-Form `` [`ID`](datei#anker) `` —
+   exakt abgegrenzte Vorkommen, fertige Anker-Maps; der einfachste Sweep der
+   Serie. (offen)
 
 ## Aktivierung
 
-d-check-Release mit `inline-code`-Option verfuegbar.
+✅ Tool-seitig erledigt (d-check v0.11.0 `link-policy: always`, gepinnt). Offen
+sind nur noch die grid-gym-Schritte 3 + 4.
 
 ## Konsequenz wenn ungeloest
 
