@@ -1,8 +1,10 @@
 # Lastenheft - grid-gym
 
-Version: 0.8
-Status: Draft
-Projekt: `grid-gym`
+**Projektname:** grid-gym
+**Dokumenttyp:** Lastenheft
+**Format:** Markdown
+**Version:** 0.8
+**Status:** Draft
 
 ---
 

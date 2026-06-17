@@ -409,7 +409,7 @@ Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
 Die folgenden Typen sind die internen Domaenenobjekte. Sie sind
 sprachunabhaengig beschrieben — konkrete Python-Repraesentation
 (Pydantic `FrozenModel` oder `@dataclass(frozen=True, slots=True)`)
-ist als `AC-DOMAIN-FROZEN`-Contract festgelegt.
+ist verbindlich unveraenderlich (frozen) festgelegt.
 
 ```text
 RunMetadata {
@@ -685,8 +685,7 @@ Fault.
 - TickLoop-Pre-Tick-Hook (Schritt A2) ruft
   `fault_port.apply_active_faults(...)` nach `_consume_load_inputs_into`
   und vor der ersten `_run_device_iteration`. Exception-Propagation
-  bricht den Tick atomic ab (`AC-NO-TIME`-konform, kein Wall-Clock-
-  Zugriff im Core).
+  bricht den Tick atomic ab (kein Wall-Clock-Zugriff im Core).
 - **Konkrete Fault-Adapter:** `BatteryFaultEngine`
   (`hexagon/core/faults/battery_fault.py`) mit `cell_failure` und
   `GridFaultEngine` (`hexagon/core/faults/grid_fault.py`) mit
@@ -836,10 +835,9 @@ oder Closure-Notizen.
   `agent.tick`-Span pro Agent-Tick in Schritt D2 (§14). Schritt-/
   Atomizitaets-Vertraege aus den Fault-/Agent-Sektionen bleiben
   unangetastet.
-- **`AC-OTLP-ADAPTER-NO-TIME`**-Architekturtest (`tools/arch_check.
-  py`) verbietet `time`-/`datetime`-Import unter
-  `adapters/driven/telemetry_otlp/**` — Span-Dauern liefert die
-  OTel-SDK ueber Span-Lifecycle (`StartTime`/`EndTime`), keine
+- **Keine Wall-Clock im OTLP-Adapter:** kein `time`-/`datetime`-Import
+  unter `adapters/driven/telemetry_otlp/**` — Span-Dauern liefert die
+  OTel-SDK ueber den Span-Lifecycle (`StartTime`/`EndTime`), keine
   Wall-Clock-Affordance im Adapter-Code.
 - **Compose-Smoke-Determinismus-Pattern** mit
   vier Pflichten: per-Lauf isolierter Sink + Vorab-Truncation +
@@ -866,7 +864,7 @@ oder Closure-Notizen.
 auf gRPC gepinnt), zusaetzliche Sampler-Strategien, Trace-ID-
 Determinismus per `RandomPort.sub_port("observability-trace")`,
 `tick_duration_ms` als Metric (heute bewusst nicht aus dem TickLoop
-emittiert, weil `AC-NO-TIME` Wall-Clock-Zugriff im Core verbietet).
+emittiert, weil der Core keinen Wall-Clock-Zugriff haben darf).
 Lieferzeitpunkt und Slice-Zuschnitt gehoeren in Roadmap, ADR-
 Folgepflege oder Closure-Notizen (analog zur §14-Klausel).
 
@@ -1004,7 +1002,7 @@ Referenzrichtungs-Gate (`matrix`) ausgenommen.
 
 | Surface / Komponente | ADR |
 | --- | --- |
-| Sprach-/Build-Wahl, `AC-DOMAIN-FROZEN`-Domain-Modelle | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
+| Sprach-/Build-Wahl, Domain-/No-Wall-Clock-Contracts (`AC-DOMAIN-FROZEN`, `AC-NO-TIME`, `AC-OTLP-ADAPTER-NO-TIME`) | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
 | Kennungs-Querverweis-Konvention | [`ADR 0004`](../docs/plan/adr/0004-identifier-based-cross-references.md) |
 | `RandomPort` — PRNG-Wahl + Seeding-Kette | [`ADR 0007`](../docs/plan/adr/0007-random-port.md) |
 | `SnapshotEnvelope` — additive Sub-Snapshots | [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3 |
