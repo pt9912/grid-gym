@@ -237,7 +237,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Telemetrie — **kein** Trip/Alarm/Derating (M3). **Pin-neutral**:
   Demo-Battery ohne `thermal`-Block → keine T-Telemetrie/-State,
   `EXPECTED_DEMO_*` + Scenario-Hash unberuehrt. **Trigger 023 aufgeloest.**
-  ([`M8-welle-4a.md`](docs/plan/planning/in-progress/M8-welle-4a.md))
+  ([`M8-welle-4a.md`](docs/plan/planning/done/M8-welle-4a.md))
 - **M8-Welle 4b — Battery-Zellspannung-Telemetrie (`GG-BESS-007`)**
   ([`ADR 0066`](docs/plan/adr/0066-battery-cell-voltage-telemetry-pattern.md)
   `Accepted`, Schaerfung zu `ADR 0014` ohne Supersede; Schwester-Slice zu
@@ -258,7 +258,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Telemetrie — **kein** Balancing/Abschaltung (M3). **Pin-neutral**: Demo ohne
   `cell`-Block → `EXPECTED_DEMO_*` unberuehrt. **Trigger 024 aufgeloest** —
   damit ist **M8-Welle 4 (BESS-Telemetrie, `GG-BESS-006/007`) abgeschlossen**.
-  ([`M8-welle-4b.md`](docs/plan/planning/in-progress/M8-welle-4b.md))
+  ([`M8-welle-4b.md`](docs/plan/planning/done/M8-welle-4b.md))
 - NEU `grid_gym/composition/`-Paket (Composition Root) mit
   `composition.asgi`-Entrypoint; NEU
   `hexagon/ports/driving/run_execution.py` (`RunExecutionPort`); NEU

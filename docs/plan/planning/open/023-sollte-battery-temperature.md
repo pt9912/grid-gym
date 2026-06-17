@@ -6,7 +6,7 @@
 analog [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md))
 + opt-in `temperature_celsius`-Telemetrie (`unit="degC"`) + opt-in
 Snapshot-Serialisierung ohne Versions-Bump
-([`M8-welle-4a.md`](../in-progress/M8-welle-4a.md)). Doc-Archivierung nach
+([`M8-welle-4a.md`](../done/M8-welle-4a.md)). Doc-Archivierung nach
 `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-05-20
 **Quelle:** [`done/M2-devices.md §4 Out-of-Scope`](../done-archive/M2-devices.md)

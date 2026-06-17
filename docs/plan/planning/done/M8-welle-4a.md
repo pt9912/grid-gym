@@ -11,7 +11,7 @@ aufgeloest. `make gates` + `docs-check` + `accept-pin-check` gruen
 [`M8-welle-4.md`](M8-welle-4.md) §1).
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
-Reihenfolge 4a → 4b); [`roadmap.md`](roadmap.md) §4 M8. Trigger:
+Reihenfolge 4a → 4b); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
 [`023`](../open/023-sollte-battery-temperature.md) (`GG-BESS-006`, Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 

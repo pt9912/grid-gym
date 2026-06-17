@@ -29,8 +29,8 @@ emittiert),
 Telemetrie-Emission an eine nested Config gebunden — Emission-Liste-Pattern),
 [`ADR 0013`](0013-device-model-protocol.md) §2.4 (Snapshot-`version`-Erst-
 Feld), [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-Pattern).
-Slice-Plan [`M8-welle-4a.md`](../planning/in-progress/M8-welle-4a.md);
-Container [`M8-welle-4.md`](../planning/in-progress/M8-welle-4.md). Trigger
+Slice-Plan [`M8-welle-4a.md`](../planning/done/M8-welle-4a.md);
+Container [`M8-welle-4.md`](../planning/done/M8-welle-4.md). Trigger
 [`023`](../planning/open/023-sollte-battery-temperature.md) (`GG-BESS-006`,
 Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 
@@ -160,7 +160,7 @@ Replay-Baselines, Scenario-Hash) nicht verschieben — nur ein Szenario mit
   byte-identische `temperature_celsius`-Spur ueber ≥ 100 Ticks (Hypothesis-
   Property). `RandomPort` wird **nicht** konsumiert (Temperatur ist
   deterministisch aus Last + Zeit; per-Zelle-Rauschen ist
-  [`M8-welle-4b.md`](../planning/in-progress/M8-welle-4b.md)).
+  [`M8-welle-4b.md`](../planning/done/M8-welle-4b.md)).
 
 ---
 
@@ -227,7 +227,7 @@ Emission + Params-Roundtrip), `hexagon/core/devices/battery/snapshot.py`
 
 Gilt NICHT fuer: thermisches Derating/Notabschaltung (M3), aktive
 Kuehlung/Heizung (HVAC-Slice), Zellebene-Thermodynamik bzw. Zellspannung
-([`M8-welle-4b.md`](../planning/in-progress/M8-welle-4b.md), `GG-BESS-007`),
+([`M8-welle-4b.md`](../planning/done/M8-welle-4b.md), `GG-BESS-007`),
 Alterungs-/Kalender-Zyklen-Modelle (§7).
 
 ---
@@ -257,7 +257,7 @@ Alterungs-/Kalender-Zyklen-Modelle (§7).
 - **Aktive Kuehlung-/Heizung-Logik** — HVAC-Aggregat-Modellierung, nicht
   Battery-Verhalten.
 - **Zellebene-Thermodynamik / Zellspannung** — Pack-Niveau bleibt;
-  Zellauffloesung ist [`M8-welle-4b.md`](../planning/in-progress/M8-welle-4b.md)
+  Zellauffloesung ist [`M8-welle-4b.md`](../planning/done/M8-welle-4b.md)
   (`GG-BESS-007`) bzw. eigener Slice.
 - **Alterungs-/Lebensdauer-Modelle** (T-abhaengig) — eigener Trigger.
 - **`initial_temp_c` / vorgewaermtes Pack** — Kaltstart auf `ambient` genuegt

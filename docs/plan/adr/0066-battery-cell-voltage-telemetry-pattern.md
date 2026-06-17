@@ -9,7 +9,7 @@
 (`cell=None` byte-genau wie heute) + opt-in-Snapshot-Roundtrip inkl.
 Tuple-Kanonik + v1-backward-compat-Lesepfad).
 **Schliesst `GG-BESS-007`** (Trigger
-[`024`](../planning/in-progress/M8-welle-4b.md)).
+[`024`](../planning/done/M8-welle-4b.md)).
 Additive **Schaerfung** von
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Battery-Snapshot-/Telemetrie-
 Vertrag) ohne Supersede — Erweiterungs-Pattern
@@ -27,8 +27,8 @@ Konvention — pro Zelle ein Sub-Stream),
 [`ADR 0065`](0065-battery-thermal-telemetry-pattern.md) (4a — opt-in
 Telemetrie-Pattern + `## Historie`-freie zeitlose Linie),
 [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-Pattern).
-Slice-Plan [`M8-welle-4b.md`](../planning/in-progress/M8-welle-4b.md);
-Container [`M8-welle-4.md`](../planning/in-progress/M8-welle-4.md). Trigger
+Slice-Plan [`M8-welle-4b.md`](../planning/done/M8-welle-4b.md);
+Container [`M8-welle-4.md`](../planning/done/M8-welle-4.md). Trigger
 [`024`](../planning/open/024-sollte-battery-cell-voltage.md) (`GG-BESS-007`,
 Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 

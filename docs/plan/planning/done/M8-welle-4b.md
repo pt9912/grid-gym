@@ -14,7 +14,7 @@ Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) aufgeloest.
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b — bewusst zuletzt: Tuple-Feld + Rausch-Quelle);
-[`roadmap.md`](roadmap.md) §4 M8. Trigger:
+[`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
 [`024`](../open/024-sollte-battery-cell-voltage.md) (`GG-BESS-007`, Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 

@@ -1,22 +1,22 @@
 # Welle 4 — M8 BESS-Telemetrie (`GG-BESS-006/007`)
 
-**Status:** In Arbeit (M8-Welle-4, eroeffnet 2026-06-16) — **C0-Eroeffnung**.
-Die Speicher-Welle von M8: zwei additive **Telemetrie-Schaerfungen** des
-bestehenden Battery-Modells (`BatteryDevice`,
-[`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) aus Lastenheft
-§10.6, die M2 als SOLLTE markierte. Reine Geraete-Submodul-Erweiterung in
-`devices/battery/` — **kein neues Geraet, kein neuer Port/Adapter-Typ, keine
-Bilanz-Aenderung**. Geplant: **4a (Temperatur)** → **4b (Zellspannung)**
-(§3). Der Wellen-Status bleibt offen, bis 4a/4b geliefert sind; die `[x]` in
-§6 quittieren ausschliesslich das **C0-Eroeffnungs-Gate** (Plan +
-Entscheidungen + `docs-check`), **nicht** den Wellen-Abschluss. Doc-
-Verschiebung der Sub-Wellen nach `done/` erfolgt als Gruppe mit der
-Welle-4-Gesamt-Closure (wie Welle 2/3).
+**Status:** **Done (2026-06-17)** — beide Sub-Wellen geliefert:
+**4a (Temperatur, `GG-BESS-006`)** via
+[`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) und
+**4b (Zellspannung, `GG-BESS-007`)** via
+[`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md) — beide
+`Accepted`, additive Telemetrie-Schaerfungen des Battery-Modells
+(`BatteryDevice`, [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)) aus
+Lastenheft §10.6. Reine Geraete-Submodul-Erweiterung in `devices/battery/` —
+**kein neues Geraet, kein neuer Port/Adapter-Typ, keine Bilanz-Aenderung**.
+Trigger 023/024 aufgeloest; `make gates` + `docs-check` + `accept-pin-check`
+gruen. Mit dieser Closure wandert die Welle-4-Gruppe (Container + 4a + 4b)
+nach `done/` (wie Welle 2/3).
 
-**Container:** Meilenstein-Scope in [`roadmap.md`](roadmap.md) §4 M8;
-Welle-Triage in [`M8-welle-0.md`](../done/M8-welle-0.md) §1.1 (Welle 4 =
+**Container:** Meilenstein-Scope in [`roadmap.md`](../in-progress/roadmap.md) §4 M8;
+Welle-Triage in [`M8-welle-0.md`](M8-welle-0.md) §1.1 (Welle 4 =
 `T-023/024`). Voraussetzung (Welle 3, Netz) abgeschlossen
-([`M8-welle-3.md`](../done/M8-welle-3.md)). Aufbau auf
+([`M8-welle-3.md`](M8-welle-3.md)). Aufbau auf
 [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) (Battery-Snapshot-
 Schema) als **Schaerfung ohne Abloesung** — wie
 [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) etabliert; das
@@ -90,7 +90,7 @@ explizit „unabhaengig aktivierbar") mit **distinkten** Schema-/Telemetrie-
 Flaechen (skalares `temperature_celsius` vs. `cell_voltages_v`-Tuple) und
 einer **neuen Determinismus-Flaeche in 4b** (erster Battery-`RandomPort`-
 Konsument, per-Zelle Rauschen). Auch wenn das die Sub-Slicing-Schwelle
-([`M8-welle-0.md`](../done/M8-welle-0.md) §2.4: > 2 unabhaengige Sub-Bereiche)
+([`M8-welle-0.md`](M8-welle-0.md) §2.4: > 2 unabhaengige Sub-Bereiche)
 nur **streift** (genau zwei), wird je Trigger getrancht — fuer saubere
 Einzel-Trigger-Closure und um die zwei unabhaengigen additiven Schema-
 Schritte nicht in einem Commit zu vermischen. Reihenfolge **4a → 4b**
