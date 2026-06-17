@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Driver-unabhaengige Run-End-Naht fuer `TickLoop.finalize()` (ADR 0067,
+  Slice 040, Trigger 040): NEU `run_session()`-Kontextmanager garantiert
+  `finalize()` im `finally` fuer jeden Konsumenten (Headless-Runner ohne
+  asyncio-Driver / Abnahme-CLI) + NEU `mark_run_failed()`/Partial-Run-
+  Markierung — ein per Tick-Failure abgebrochener Lauf wird nicht mehr
+  irrefuehrend als `diverged` gedifft (kein `replay_diff_status`,
+  `partial_run`-Reject-Log). `DemoTickLoopDriver` finalisiert auf jedem
+  Exit-Pfad (natuerliche Terminierung / Failure / Cancel) statt nur bei
+  `stop()`. Additive Schaerfung von ADR 0049 §2.1 (ADR 0011).
 - `docs/plan/planning/done-archive/` — eingefrorene
   Detail-Historie abgeschlossener Meilensteine (91 Wellen-/
   Slice-/Trigger-Docs per Move; `done/` haelt dauerhaft die

@@ -221,6 +221,8 @@ def test_run_loop_catches_tick_exception_and_marks_run_stopped() -> None:
         def __init__(self, run_id: str) -> None:
             self._run_id = run_id
             self._control_state = "running"
+            self.marked_failed = False
+            self.finalized = False
 
         @property
         def run_id(self) -> str:
@@ -235,6 +237,13 @@ def test_run_loop_catches_tick_exception_and_marks_run_stopped() -> None:
 
         def request(self, action: str) -> None:
             self._control_state = "stopped"
+
+        def mark_run_failed(self) -> None:
+            self.marked_failed = True
+
+        def finalize(self) -> tuple[object, ...]:
+            self.finalized = True
+            return ()
 
     fake_loop = _ExplodingTickLoop("driver-explode-1")
     driver = DemoTickLoopDriver(cast(TickLoop, fake_loop), tick_interval_s=0.01)
@@ -253,6 +262,68 @@ def test_run_loop_catches_tick_exception_and_marks_run_stopped() -> None:
     asyncio.run(_run())
     # State wurde via `request("stop")` auf `stopped` gesetzt.
     assert fake_loop._control_state == "stopped"
+    assert driver.is_running is False
+    # ADR 0067 §2.4: der Failure-Pfad markiert den Lauf als Partial und
+    # finalisiert ihn (im `finally`) — nicht nur stop().
+    assert fake_loop.marked_failed is True
+    assert fake_loop.finalized is True
+
+
+def test_run_loop_finalizes_on_natural_termination_without_marking_failed() -> None:
+    """ADR 0067 §2.4: verlaesst `_tick_forever()` den Loop bei terminalem
+    `control_state` (natuerliche Terminierung), feuert `finalize()` im
+    `finally` — nicht nur ueber stop(). Der saubere Lauf wird NICHT als
+    failed markiert (kein Partial-Run)."""
+
+    class _SelfTerminatingTickLoop:
+        def __init__(self, run_id: str) -> None:
+            self._run_id = run_id
+            self._control_state = "running"
+            self._ticks = 0
+            self.marked_failed = False
+            self.finalized = False
+
+        @property
+        def run_id(self) -> str:
+            return self._run_id
+
+        @property
+        def control_state(self) -> str:
+            return self._control_state
+
+        def tick(self) -> TickResult:
+            self._ticks += 1
+            if self._ticks >= 2:
+                self._control_state = "stopped"
+            return TickResult(
+                tick=self._ticks,
+                simulation_time=self._ticks * 1000,
+                popped_events=(),
+                emitted_telemetry=(),
+                emitted_alarms=(),
+            )
+
+        def request(self, action: str) -> None:
+            self._control_state = "stopped"
+
+        def mark_run_failed(self) -> None:
+            self.marked_failed = True
+
+        def finalize(self) -> tuple[object, ...]:
+            self.finalized = True
+            return ()
+
+    fake_loop = _SelfTerminatingTickLoop("driver-natural-1")
+    driver = DemoTickLoopDriver(cast(TickLoop, fake_loop), tick_interval_s=0.001)
+
+    async def _run() -> None:
+        driver.start()
+        assert driver._task is not None
+        await asyncio.wait_for(driver._task, timeout=2.0)
+
+    asyncio.run(_run())
+    assert fake_loop.finalized is True  # finalize() im finally
+    assert fake_loop.marked_failed is False  # sauberer Lauf, kein Partial
     assert driver.is_running is False
 
 

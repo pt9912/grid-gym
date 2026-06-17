@@ -141,27 +141,13 @@ class DemoTickLoopDriver:
         with contextlib.suppress(asyncio.CancelledError):
             await self._task
         self._task = None
-        # M7-Welle-1b-b (ADR 0049 §2.1): Run-Terminal-Hook im Core-
-        # Spine ausloesen. Der Driver TRIGGERT nur — die Diff-Logik
-        # (`diff_replay`/`replay_diff_status`/SAFE-006-Evidence) sitzt
-        # im Core. Idempotent (`_finalized`-Flag); no-op ohne
-        # Replay-Bindung. Vor dem Stop-Mirror, damit der frueh-`return`
-        # bei terminalem State die Finalisierung nicht ueberspringt.
-        #
-        # C2-Review-Folge F1: `finalize()` ist gegen einen harten Fehler
-        # (z. B. DB-Ausfall im `read_samples`) abgeschirmt — ein Crash im
-        # Replay-Diff darf den nachfolgenden Status-Mirror (gegen
-        # „Status haengt auf running", Welle-4b-Review-Fix #9) NICHT
-        # ueberspringen. `RunNotFoundError` faengt der Core bereits als
-        # sauberen Reject; dieser Guard deckt die uebrigen I/O-Fehler.
-        try:
-            self._tick_loop.finalize()
-        except Exception:
-            _logger.exception(
-                "TickLoop.finalize() failed for run_id=%r — replay diff skipped, "
-                "continuing with stop-mirror.",
-                self._tick_loop.run_id,
-            )
+        # ADR 0067 §2.4: `finalize()` laeuft jetzt im `_run_loop`-`finally`
+        # (auf JEDEM Exit-Pfad, inkl. dem Cancel durch dieses `stop()`) — der
+        # frueher hier explizite `finalize()`-Aufruf ist durch das
+        # `_finalized`-Idempotenz-Flag redundant und entfaellt. Der Stop-
+        # Status-Mirror (Welle-4b-Review-Fix #9) bleibt: er haelt den
+        # Repository-Status davon ab, auf ``running`` zu haengen, falls der
+        # Lauf nicht selbst terminal wurde.
         current = self._tick_loop.control_state
         if current not in ("stopped", "completed"):
             try:
@@ -206,7 +192,22 @@ class DemoTickLoopDriver:
                 "DemoTickLoopDriver tick loop failed for run_id=%r — stopping run.",
                 self._tick_loop.run_id,
             )
+            # ADR 0067 §2.4: Partial-Run markieren, damit `finalize()` den
+            # abgebrochenen Lauf nicht irrefuehrend als `diverged` difft.
+            self._tick_loop.mark_run_failed()
             self._force_stop_after_failure()
+        finally:
+            # ADR 0067 §2.4: Run-End-Naht auf JEDEM Exit-Pfad (natuerliche
+            # Terminierung, Failure, externer Cancel via stop()) — nicht nur
+            # stop(). Idempotent (`_finalized`-Flag); gegen harten finalize()-
+            # Fehler abgeschirmt (ADR 0049 §2.3 F1).
+            try:
+                self._tick_loop.finalize()
+            except Exception:
+                _logger.exception(
+                    "TickLoop.finalize() failed for run_id=%r — replay diff skipped.",
+                    self._tick_loop.run_id,
+                )
 
     async def _tick_forever(self) -> None:
         while True:

@@ -77,3 +77,8 @@ class RunExecutionPort(Protocol):
     def finalize(self) -> tuple[ReplayDelta, ...]:
         """Schliesst den Lauf ab und liefert die Replay-Deltas."""
         ...
+
+    def mark_run_failed(self) -> None:
+        """Markiert den Lauf als abnormal terminiert (Partial-Run, ADR 0067
+        §2.2) — `finalize()` ueberspringt danach den Replay-Diff."""
+        ...

@@ -1,6 +1,6 @@
 # 040 — `finalize()`-Trigger an einer Core-Run-End-Naht (Headless-Pfad)
 
-**Status:** In Arbeit (in-progress, 2026-06-17) — aktiviert (Replay-Paar 040→039). Design freigegeben: D-1 Run-Session-Kontextmanager + `finally`-Finalize (kein Auto-`completed`), D-2 `mark_run_failed()`/Partial-Run. ADR (Schaerfung von [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)) + Implementierung folgen.
+**Status:** **Geliefert (2026-06-17)** — [`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md) (Schaerfung von [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)) + Core (`run_session()`-Kontextmanager, `mark_run_failed()`/`_run_failed`, `finalize()`-Partial-Zweig) + `DemoTickLoopDriver` (`finalize()` im `finally` auf jedem Exit-Pfad) + Unit-Pins; `make gates` gruen. Doc-Move nach `done/` mit der Replay-Paar-Closure (nach 039).
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C2-Review (Befund #4; Lifecycle-Hook-
 Trigger-Pfad).

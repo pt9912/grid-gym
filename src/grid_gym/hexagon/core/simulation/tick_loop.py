@@ -585,6 +585,9 @@ class TickLoop:
         self._replay_snapshot: ReplaySnapshotPort | None = replay_snapshot
         self._replay_reference_run_id: str | None = replay_reference_run_id
         self._finalized: bool = False
+        # ADR 0067 §2.2: markiert abnormale Terminierung (Tick-Failure) —
+        # `finalize()` ueberspringt dann den Replay-Diff (Partial-Run, §2.3).
+        self._run_failed: bool = False
 
     def _attach_max_age(self, max_age_ms: int | None) -> None:
         """M7-Welle-3a (ADR 0052 §2.1): `max_age`-Schwelle fuer die
@@ -825,6 +828,14 @@ class TickLoop:
         if snapshot is None or reference_run_id is None or repository is None:
             self._finalized = True
             return ()
+        if self._run_failed:
+            # ADR 0067 §2.3: Partial-Run (abnormale Terminierung) → kein
+            # Replay-Diff (ein partieller gegen einen vollen Lauf ist fachlich
+            # bedeutungslos), kein `replay_diff_status`, nur strukturierter
+            # Reject-Log (wie der Preflight-Mismatch, ADR 0049 §2.3).
+            self._log_replay_reject(reference_run_id, reason="partial_run")
+            self._finalized = True
+            return ()
         try:
             mismatch = self._replay_preflight_mismatch(repository, reference_run_id)
             if mismatch is not None:
@@ -849,6 +860,45 @@ class TickLoop:
             # `_finalized` False → Retry moeglich.
             self._finalized = True
             return deltas
+
+    def mark_run_failed(self) -> None:
+        """ADR 0067 §2.2: markiert den Lauf als abnormal terminiert
+        (Tick-Failure). Idempotent. `finalize()` ueberspringt danach den
+        Replay-Diff (Partial-Run, §2.3) — ein partieller Lauf wird nicht
+        irrefuehrend als `diverged` gegen die volle Referenz gedifft.
+        Aendert `control_state` **nicht** (ADR 0039-Matrix unberuehrt).
+        """
+        self._run_failed = True
+
+    @contextmanager
+    def run_session(self) -> Iterator[TickLoop]:
+        """ADR 0067 §2.1: driver-unabhaengige Run-End-Naht. Garantiert, dass
+        `finalize()` am Session-Ende **genau einmal** laeuft — fuer jeden
+        Konsumenten (Headless-Runner, Abnahme-CLI, Test-Runner) ohne
+        asyncio-Driver::
+
+            with tick_loop.run_session():
+                while tick_loop.control_state not in ("stopped", "completed"):
+                    tick_loop.tick()
+
+        Normaler Exit → `finalize()` (Replay-Diff bei Bindung). Exception-Exit
+        → `mark_run_failed()` (Partial-Run, §2.2) **vor** dem `finalize()`,
+        dann Re-Raise. Idempotent ueber das `_finalized`-Flag: ein
+        zusaetzlicher `stop()`/`finalize()`-Aufruf erzeugt keine zweite
+        Emission.
+        """
+        completed = False
+        try:
+            yield self
+            completed = True
+        finally:
+            if not completed:
+                # Abnormaler Exit (Tick-Failure o. Ae.) → Partial-Run (§2.2),
+                # damit `finalize()` den abgebrochenen Lauf nicht als
+                # `diverged` difft. Eine etwaige Exception propagiert nach dem
+                # `finally` (kein Swallow).
+                self.mark_run_failed()
+            self.finalize()
 
     def _log_replay_reject(self, reference_run_id: str, *, reason: str) -> None:
         """ADR 0049 §2.3: strukturierter Reject-Log, wenn der Replay-Diff

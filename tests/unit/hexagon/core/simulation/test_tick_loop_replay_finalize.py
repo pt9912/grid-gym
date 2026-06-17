@@ -281,3 +281,82 @@ def test_missing_reference_metadata_is_clean_reject_not_crash() -> None:
         "reference_run_id": _REF,
         "field": "run_metadata_missing",
     }
+
+
+# ---------------------------------------------------------------------------
+# ADR 0067 (Slice 040): Run-End-Naht + Partial-Run.
+# ---------------------------------------------------------------------------
+
+
+def _clean_finalize_loop() -> tuple[TickLoop, NullMetricsAdapter, NullLogAdapter]:
+    """ADR-0067-Test-Setup: Loop mit Replay-Bindung + identischer Ref-/Cur-
+    Telemetrie. **Ohne** Partial-Run-Markierung waere der Diff `clean`
+    (`replay_diff_status = 1.0`) — die Tests verifizieren die Abweichung
+    davon (Partial → kein Diff)."""
+    sink = InMemoryTelemetrySink()
+    sink.persist([_point(run_id=_REF, simulation_time=1000, device_id="bat-1", value="1.50")])
+    sink.persist([_point(run_id=_CUR, simulation_time=1000, device_id="bat-1", value="1.50")])
+    repo = InMemoryRunRepository()
+    repo.save(_meta(_REF))
+    repo.save(_meta(_CUR))
+    metrics = NullMetricsAdapter(record_calls=True)
+    log = NullLogAdapter(record_calls=True)
+    loop = _make_finalize_loop(
+        sink=sink, repo=repo, metrics=metrics, log=log, reference_run_id=_REF
+    )
+    return loop, metrics, log
+
+
+def test_mark_run_failed_makes_finalize_skip_diff() -> None:
+    # ADR 0067 §2.2/§2.3: ein als failed markierter Lauf wird NICHT gedifft
+    # (sonst irrefuehrend `diverged`), sondern als `partial_run` rejected.
+    loop, metrics, log = _clean_finalize_loop()
+
+    loop.mark_run_failed()
+    deltas = loop.finalize()
+
+    assert deltas == ()
+    assert _gauge_calls(metrics, "replay_diff_status") == []  # kein Status
+    (reject,) = _log_calls(log, "replay_preflight_mismatch")
+    assert reject["attributes"] == {
+        "run_id": _CUR,
+        "reference_run_id": _REF,
+        "field": "partial_run",
+    }
+
+
+def test_run_session_finalizes_on_normal_exit() -> None:
+    # ADR 0067 §2.1: run_session() garantiert finalize() am Session-Ende —
+    # normaler Exit → Replay-Diff (hier clean).
+    loop, metrics, _log = _clean_finalize_loop()
+
+    with loop.run_session():
+        pass
+
+    (gauge,) = _gauge_calls(metrics, "replay_diff_status")
+    assert gauge["attributes"]["status"] == "clean"
+
+
+def test_run_session_marks_partial_on_exception_and_reraises() -> None:
+    # ADR 0067 §2.1/§2.3: Exception im Session-Body → mark_run_failed() VOR
+    # finalize() (Partial-Run, kein Diff) + Re-Raise.
+    loop, metrics, log = _clean_finalize_loop()
+
+    with pytest.raises(RuntimeError, match="tick boom"), loop.run_session():
+        raise RuntimeError("tick boom")
+
+    assert _gauge_calls(metrics, "replay_diff_status") == []  # kein Diff
+    (reject,) = _log_calls(log, "replay_preflight_mismatch")
+    assert reject["attributes"]["field"] == "partial_run"
+
+
+def test_run_session_finalize_is_idempotent_with_explicit_finalize() -> None:
+    # ADR 0067 §2.1: run_session()-finalize() + zusaetzlicher finalize()
+    # → genau EINE Emission (`_finalized`-Flag).
+    loop, metrics, _log = _clean_finalize_loop()
+
+    with loop.run_session():
+        pass
+    loop.finalize()  # zusaetzlicher expliziter Aufruf
+
+    assert len(_gauge_calls(metrics, "replay_diff_status")) == 1
