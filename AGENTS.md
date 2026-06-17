@@ -107,13 +107,22 @@ README-Bestand-Sync) landen im **unmittelbar nachfolgenden** Commit.
 Details: [`docs/plan/planning/README.md`](docs/plan/planning/README.md)
 §Wave-Self-Close-Commit-Konvention.
 
-### 2.5 Architektur ist sprach- und meilensteinfrei
+### 2.5 Spec ist Zielbild (SDP — meilenstein-, status- und ADR-frei)
 
-[`spec/architecture.md`](spec/architecture.md) referenziert ADRs und
-Modul-Pfade, aber **keine** Wellen, Slices, Commit-Hashes oder
-Closure-Daten. Die zeitliche Schicht lebt in
+Die Spec-Straten unter [`spec/`](spec/) — `lastenheft.md` (Vertrag),
+`protocol_profiles.md` (Technik), `architecture.md` (Sicht) — tragen im
+bindenden Text **ausschliesslich** die zeitlose normative Soll-Aussage:
+**keine** Statusaussagen, **keine** Wellen/Slices/Commit-Hashes/Closure-Daten
+und **keine** Abwaerts-Verweise auf ADRs oder Slice-Plaene. Normative Kanten
+zeigen strikt **aufwaerts** (Stabilitaets-Rang Vertrag › Technik › Sicht ›
+ADR › Slice); z. B. `GG-AR-*` verlinkt aufwaerts auf
+`lastenheft.md#<gg-id>`. Die Entscheidungs-/Lieferungs-Provenance (ADR, Welle,
+Status) lebt unter einer vom Gate ausgenommenen **`## Historie`**-Sektion je
+Spec-Datei (bzw. in den Traceability-Sektionen) sowie in
 [`docs/plan/planning/in-progress/roadmap.md`](docs/plan/planning/in-progress/roadmap.md)
-und den `M*-results.md`-Closure-Notizen.
+und den `M*-results.md`-Closure-Notizen. Das `matrix`-Modul in
+[`.d-check.yml`](.d-check.yml) erzwingt die Referenzrichtung in
+`make docs-check` (SDP; Trigger 048 / Slice 049).
 
 ### 2.6 Role Separation
 

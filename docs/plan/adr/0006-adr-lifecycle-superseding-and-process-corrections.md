@@ -3,7 +3,8 @@
 **Status:** Accepted
 **Datum:** 2026-05-14
 **Bezug:** [ADR 0001](0001-documentation-and-planning-structure.md),
-[ADR 0003](0003-adr-lifecycle.md),
+`ADR 0003` (abgeloest, legitime Supersede-Lineage; Inline-Code statt Link,
+da das `matrix`-Modul keinen Lineage-Carve-out kennt),
 [ADR 0004](0004-identifier-based-cross-references.md),
 [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md)

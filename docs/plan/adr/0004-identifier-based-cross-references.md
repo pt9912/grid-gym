@@ -3,7 +3,6 @@
 **Status:** Accepted
 **Datum:** 2026-05-14
 **Bezug:** [ADR 0001](0001-documentation-and-planning-structure.md),
-[ADR 0003](0003-adr-lifecycle.md),
 [ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md),
 [Lastenheft](../../../spec/lastenheft.md),
 [Architektur](../../../spec/architecture.md)

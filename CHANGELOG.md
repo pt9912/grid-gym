@@ -24,6 +24,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trigger 043 (ids-Linkpflicht) aufgeloest; NEU Trigger 044
   (Linkpflicht auch fuer Inline-Code-Kennungen; wartet auf
   d-check-`inline-code`-Option, CR #3).
+- d-check-Modul `matrix` (Referenzrichtungs-Gate, SDP) produktiv
+  in `.d-check.yml` (Trigger 048 Resolved / Slice 049, Option A
+  Voll-SDP): Stabilitaets-Rang Vertrag › Technik › Sicht › ADR ›
+  Slice; Abwaerts-Verweise im bindenden Spec-Text + Verweise auf
+  inaktive ADRs sind `make docs-check`-Befunde. Die Spec-Straten
+  (`spec/lastenheft.md`/`protocol_profiles.md`/`architecture.md`)
+  sind zeitlos umgebaut: **kein** Status/Welle/ADR-Bezug/Decision-
+  Prozess im Body, Provenance je Datei unter ausgenommener
+  `## Historie`-Sektion (bzw. Traceability-Matrizen via
+  `exclude-sections`); Aufwaerts-Refs (`GG-*`/`GG-AR-*`) verlinkt.
+  `ADR 0004`-Bezug bereinigt (redundanter `ADR 0003`-Link),
+  `ADR 0006`-Supersede-Lineage als Inline-Code (offener d-check-CR:
+  Lineage-Carve-out). `AGENTS.md` §2.5 nachgezogen.
 - `harness/conventions.md` (NEU) — formale Adoption des
   AI-Harness-Kurses als Baseline (gepinnt Tag `templates-v2`),
   Adaptions-Block `MR-000..005`, Modus-Deklaration pro Sub-Area;

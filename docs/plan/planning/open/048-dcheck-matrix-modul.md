@@ -1,6 +1,15 @@
 # 048 — d-check `matrix`-Modul einfuehren (Referenzrichtungs-Gate, SDP)
 
-**Status:** Open — Trigger-Watch (Entscheidung fuer 2026-06-17 offen)
+**Status:** **Resolved 2026-06-17** — **Option A (Voll-SDP)** gewaehlt und
+umgesetzt via Slice [`049`](../in-progress/049-sdp-matrix-doku-umbau.md): das
+`matrix`-Modul ist in [`.d-check.yml`](../../../../.d-check.yml) aktiv
+(SDP-Klassen + Abwaerts-Regeln + `status: forbidden: [superseded,
+deprecated]` + `exclude-sections` fuer die `## Historie`-/Traceability-
+Sektionen). Die Spec-Straten wurden zeitlos umgebaut (ADR-/Welle-/Status-
+Provenance in ausgenommene `## Historie`-Sektionen); `make docs-check` gruen.
+`ADR 0004`-Bezug bereinigt, `ADR 0006`-Supersede-Lineage als Inline-Code (kein
+Lineage-Carve-out im Modul → offener d-check-CR, siehe unten). Doc-
+Archivierung nach `done-archive/` folgt mit der M8-Meilenstein-Closure.
 **Datum:** 2026-06-16
 **Quelle:** User-Wunsch „matrix-Modul in `.d-check.yml` einfuehren";
 Grundlage ist das Lab-Regelwerk
@@ -46,16 +55,16 @@ Die 117 Richtungs-Befunde verteilen sich auf:
 Die 2 Status-Befunde:
 
 - `docs/plan/adr/0004-identifier-based-cross-references.md` Z. 6
-  (`**Bezug:**`) → [ADR 0003](../../adr/0003-adr-lifecycle.md)
+  (`**Bezug:**`) → `ADR 0003`
   (Status `Superseded`). **Echter Befund** — der Bezug zeigt auf eine
   abgeloeste ADR und sollte auf die abloesende
   [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
   zeigen.
 - `docs/plan/adr/0006-adr-lifecycle-superseding-and-process-corrections.md`
-  Z. 6 (`**Bezug:**`) → [ADR 0003](../../adr/0003-adr-lifecycle.md).
+  Z. 6 (`**Bezug:**`) → `ADR 0003`.
   **Grenzfall** — [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
   *ist* die abloesende ADR; ihr Verweis auf
-  [ADR 0003](../../adr/0003-adr-lifecycle.md) ist legitime
+  `ADR 0003` ist legitime
   Supersede-Lineage (Regelwerk Regel 2: ADR→ADR-Lineage ist normativ).
   Das `matrix`-Modul kennt heute keinen Lineage-Carve-out → potenzieller
   d-check-Change-Request (Supersedes-Feld als erlaubte Kante).
@@ -110,7 +119,7 @@ eigenen Doku-Umbau-Slice planen.
 3. **Bezug-Fix** in
    [ADR 0004](../../adr/0004-identifier-based-cross-references.md):
    Bezug von der abgeloesten
-   [ADR 0003](../../adr/0003-adr-lifecycle.md) auf
+   `ADR 0003` auf
    [ADR 0006](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)
    umstellen — **Achtung Pflege-Regel
    [ADR 0001](../../adr/0001-documentation-and-planning-structure.md) §4:

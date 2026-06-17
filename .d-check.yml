@@ -3,7 +3,7 @@
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
-modules: [links, anchors, ids, codepaths]
+modules: [links, anchors, ids, codepaths, matrix]
 ids:
   scope:
     roots: ["."]
@@ -47,3 +47,39 @@ codepaths:
     roots: ["."]
     ignore: ["docs/plan/planning/done-archive/**", "CHANGELOG.md", "src/**", ".github/**"]
   roots: [docs, spec, src, tests, tools, deploy, harness]
+
+# Referenzrichtungs-Gate (SDP, Trigger 048, DC-FA-MTX-001). Stabilitaets-
+# Rang: Vertrag > Technik > Sicht > ADR > Slice; normative Kanten zeigen
+# strikt aufwaerts (Abwaerts-Verweis = Befund `matrix-forbidden`).
+# Verweise auf inaktive ADRs = `matrix-inactive`.
+matrix:
+  classes:
+    - {name: contract, paths: [spec/lastenheft.md]}
+    - {name: technik, paths: [spec/protocol_profiles.md]}
+    - {name: sicht, paths: [spec/architecture.md]}
+    - {name: adr, paths: ["docs/plan/adr/[0-9]*.md"]}
+    - {name: slice, paths: ["docs/plan/planning/**/*.md"]}
+  rules:
+    # SDP: die Spec-Straten (Vertrag/Technik/Sicht) duerfen nicht abwaerts
+    # auf ADRs/Slices verweisen. ADR->Slice (Bezug-Provenance) bleibt
+    # erlaubt — die ADR-Lineage-/Slice-Kante ist nicht Gegenstand von 048.
+    - {from: contract, to: technik, allow: false}
+    - {from: contract, to: sicht, allow: false}
+    - {from: contract, to: adr, allow: false}
+    - {from: contract, to: slice, allow: false}
+    - {from: technik, to: sicht, allow: false}
+    - {from: technik, to: adr, allow: false}
+    - {from: technik, to: slice, allow: false}
+    - {from: sicht, to: adr, allow: false}
+    - {from: sicht, to: slice, allow: false}
+  status: {forbidden: [superseded, deprecated]}
+  # SDP Regel 5 (Body vs. Changelog): ADR-/Slice-Provenance lebt nur unter
+  # einer Historie-Sektion — diese Ueberschriften sind vom Richtungs-Gate
+  # ausgenommen.
+  exclude-sections:
+    - Historie
+    - "27. V-Modell-aehnliche Rueckverfolgbarkeit"
+    - "27.1 Anforderung zu Design"
+    - "27.2 Anforderung zu Implementierung"
+    - "18. Rueckverfolgbarkeit Architektur ↔ Lastenheft"
+    - "19. Offene architektonische Punkte"

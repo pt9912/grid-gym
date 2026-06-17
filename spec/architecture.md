@@ -4,7 +4,6 @@
 **Dokumenttyp:** Architekturbeschreibung
 **Format:** Markdown
 **Version:** 0.3.0
-**Status:** Lebend (M1/M2/M3 abgeschlossen; M4 in Welle-3-Vorbereitung — Welle 1 + Welle 2 `Done`, `DeviceProtocolPort` per [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) `Provisional`, MQTT-Adapter-Profile per [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional`)
 **Bezug:** [`lastenheft.md`](lastenheft.md)
 
 ---
@@ -22,19 +21,15 @@ Das Dokument ergaenzt das Lastenheft, ersetzt es nicht. Anforderungen
 referenzieren ihre `GG-*`-Kennung; Architekturkomponenten erhalten
 `GG-AR-*`-Kennungen fuer die Rueckverfolgbarkeit (Rueckverfolgbarkeits-
 tabelle weiter unten in diesem Dokument; `GG-TRACE-001` im Lastenheft).
-Querverweis-Konvention: Kennungen sind primaere Referenz; siehe
-[`ADR 0004`](../docs/plan/adr/0004-identifier-based-cross-references.md).
+Querverweis-Konvention: Kennungen sind primaere Referenz.
 
 Nicht Gegenstand dieses Dokuments:
 
-- konkrete Sprach- und Frameworkwahl: `GG-AR-OPEN-001` ist
-  geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
-  (`Accepted` 2026-05-15) — siehe §19 fuer den Closure-Eintrag.
+- konkrete Sprach- und Frameworkwahl (`GG-AR-OPEN-001`; die Festlegung
+  traegt die [Historie](#historie))
 - konkrete Modul-Versionen oder API-Pfade
-- Roadmap-Meilensteine — siehe
-  [`docs/plan/planning/in-progress/roadmap.md`](../docs/plan/planning/in-progress/roadmap.md)
-  (das Lastenheft-Kapitel mit `GG-FUTURE-*`-Anforderungen listet
-  ausschliesslich Zukunfts-/`KANN`-Punkte, nicht aktive Meilensteine)
+- Roadmap-Meilensteine (das Lastenheft-Kapitel mit `GG-FUTURE-*`-
+  Anforderungen listet ausschliesslich Zukunfts-/`KANN`-Punkte)
 
 ---
 
@@ -172,12 +167,10 @@ Persistenz, Telemetrie, HTTP, UI, Dateien, Systemzeit — lebt in Adaptern.
 
 #### Verzeichnisstruktur
 
-Die konkrete Sprach- und Build-Wahl ist mit
-[`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
-(`Accepted` 2026-05-15) geschlossen — Python 3.13+/3.14 ueber `uv`.
+Die konkrete Sprach- und Build-Wahl ist Python 3.13+/3.14 ueber `uv`.
 Die Modulgrenzen sind sprachunabhaengig festgelegt; konkrete
 Python-Paketnamen unter `src/grid_gym/{hexagon/{core,ports},adapters}/`
-sind in `ADR 0002` §6.1 verbindlich.
+sind verbindlich.
 
 ```text
 grid-gym/
@@ -246,16 +239,15 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 | GG-AR-PORT-DRN-004 | `AlarmSinkPort` — Alarme erzeugen und persistieren                                                                                                                               | [`GG-PERSIST-004`](lastenheft.md#gg-persist-004), [`GG-BESS-002`](lastenheft.md#gg-bess-002)                  |
 | GG-AR-PORT-DRN-005 | `ScenarioSourcePort` — Szenario-Datei lesen                                                                                                                                      | [`GG-SCN-001`](lastenheft.md#gg-scn-001)                                   |
 | GG-AR-PORT-DRN-006 | `ReplaySourcePort` — Replay-Samples liefern                                                                                                                                      | [`GG-REPLAY-001`](lastenheft.md#gg-replay-001)/002                            |
-| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter. Gelieferte Implementer: MQTT, Modbus, OPC-UA, DNP3, IEC 61850. Geplante Device-Management-Erweiterungen: SNMP und LwM2M (noch ohne Adapter-Profil/Implementierung). Sync-`Protocol` mit Caller-Scope-Lifecycle (`TickLoop.start_protocol_ports()` / `stop_protocol_ports()`); FIFO start, LIFO stop, Partial-Cleanup. Spezifiziert in [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1 (Sync-Charakter), §2.2 (Lifecycle), §2.3 (stateless aus Replay-Sicht), §2.4 (DNP3/IEC provisorisch Verzicht-Default). | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), GG-MQTT/MODB/OPCUA/DNP3/IEC/SNMP/LWM2M-001 |
+| GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter. Gelieferte Implementer: MQTT, Modbus, OPC-UA, DNP3, IEC 61850. Geplante Device-Management-Erweiterungen: SNMP und LwM2M (noch ohne Adapter-Profil/Implementierung). Sync-`Protocol` mit Caller-Scope-Lifecycle (`TickLoop.start_protocol_ports()` / `stop_protocol_ports()`); FIFO start, LIFO stop, Partial-Cleanup. | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), GG-MQTT/MODB/OPCUA/DNP3/IEC/SNMP/LWM2M-001 |
 | GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability                                                                                                              | [`GG-OTEL-001`](lastenheft.md#gg-otel-001)..004                             |
 | GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | [`GG-PRINC-005`](lastenheft.md#gg-princ-005)                                 |
-| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf. PRNG-Wahl und Seeding-Kette sind in [`ADR 0007`](../docs/plan/adr/0007-random-port.md) spezifiziert.                           | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-SCN-002`](lastenheft.md#gg-scn-002)                       |
-| GG-AR-PORT-DRN-011 | `FaultPort` — Fault-Injection-Adapter-Boundary (`apply_active_faults(devices, context)`). Spezifiziert in [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.4–§2.5 und [`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md) (`manual-via-command`-Recovery). | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                            |
+| GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf.                           | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-SCN-002`](lastenheft.md#gg-scn-002)                       |
+| GG-AR-PORT-DRN-011 | `FaultPort` — Fault-Injection-Adapter-Boundary (`apply_active_faults(devices, context)`). | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                            |
 
 **Hinweis — `AgentMessageBus` ist kein Driven-Port.** Das
 Multi-Agent-Subsystem (siehe §14) nutzt einen Core-internen
-`AgentMessageBus`, der per
-[`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §3
+`AgentMessageBus`, der
 bewusst **nicht** als Driven-Port modelliert ist: er kapselt
 weder einen Adapter, noch eine externe Library, noch ein
 Protokoll, sondern ist reines Domain-Orchestrierungs-Modell
@@ -335,20 +327,14 @@ Replay-Laeufe nutzen denselben Prozessor (`GG-AR-P-007`). Innerhalb eines
 Ticks werden Schritte sequenziell ausgefuehrt; parallele Berechnung ist
 auf einen Tick beschraenkt und committet deterministisch (`GG-SIM-004`).
 
-Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert
-(Quell-ADRs: [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md),
-[`ADR 0019`](../docs/plan/adr/0019-grid-model-bilanz-pattern.md),
-[`ADR 0021`](../docs/plan/adr/0021-scenario-loader-and-tick-loop-event-wiring.md),
-[`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md),
-[`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md),
-[`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md)):
+Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert:
 
 ```text
    ┌──────────────────────────────────────────────────────────────────┐
    │                       Tick (t)                                   │
    │                                                                  │
    │  A0v Pre-Clock Pending-Agent-Command-Target-Validierung          │
-   │       (ADR 0026 §2.1 — Atomizitaets-Vertrag: Exception           │
+   │       (Atomizitaets-Vertrag: Exception                           │
    │        laesst Clock/Scheduler/Buffer unangetastet)               │
    │  1.   ClockPort.advance(tick_ms); now := clock.now()             │
    │  2.   Scheduler.pop_due(now)                                     │
@@ -356,29 +342,29 @@ Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert
    │                                                                  │
    │  ┌── _tick_loop_decimal_context() — prec=28, ROUND_HALF_EVEN ──┐ │
    │  │ A0a Apply validierter Pending-Agent-Commands                │ │
-   │  │       (ADR 0026 §2.1; GridConnection-Targets ergaenzen      │ │
+   │  │       (GridConnection-Targets ergaenzen                     │ │
    │  │        manual_override_grid_ids; Buffer wird erst nach      │ │
    │  │        erfolgreichem Apply-Durchlauf geleert)               │ │
    │  │ A   Vor-Tick-Block: LoadDevice-Baseline + LoadProfile-      │ │
    │  │       Overlay + LoadEvent-Overlay → apply_command(          │ │
-   │  │       set_power_kw) (ADR 0021 §2.5)                         │ │
+   │  │       set_power_kw)                                         │ │
    │  │ A2  FaultPort.apply_active_faults(devices, context)         │ │
-   │  │       falls fault_port gesetzt (ADR 0022 §2.4)              │ │
+   │  │       falls fault_port gesetzt                              │ │
    │  │ B   Erste Geraete-Iteration (PV/Load/Battery/SmartMeter):   │ │
    │  │       für jedes Device: tick → telemetry-Sammlung +         │ │
    │  │       Bilanz-Aggregation in generation/load/storage-Buckets │ │
    │  │ C   GridConnection-Auto-Schluss: pro GridConnection ohne    │ │
    │  │       manuellen Override apply_command(set_power_kw,        │ │
-   │  │       -pre_grid_residual) (ADR 0021 §2.7)                   │ │
+   │  │       -pre_grid_residual)                                   │ │
    │  │ D   Zweite Iteration (GridConnection-Tick) → telemetry +    │ │
    │  │       grid_connection-Bucket                                │ │
    │  │ D2  Agent-Tick (optional): für jeden registrierten Agent    │ │
    │  │       agent.tick(context, bus); emittierte Commands         │ │
    │  │       landen im _pending_agent_commands-Buffer fuer A0v/    │ │
    │  │       A0a der NAECHSTEN Tick (GG-AGENT-008 Commit-          │ │
-   │  │       Reihenfolge-Invariante, ADR 0023 §2.4)                │ │
+   │  │       Reihenfolge-Invariante)                               │ │
    │  │ E   grid_model.update(generation_kw, load_kw, storage_kw,   │ │
-   │  │       grid_connection_kw) (ADR 0019 §2.2)                   │ │
+   │  │       grid_connection_kw)                                   │ │
    │  └─────────────────────────────────────────────────────────────┘ │
    │                                                                  │
    │   Persistenz-/Snapshot-Commit:                                   │
@@ -389,7 +375,7 @@ Die produktive Schrittfolge des `TickLoop.tick()` ist wie folgt fixiert
    └──────────────────────────────────────────────────────────────────┘
 ```
 
-Der Agent-Lifecycle-Hook im TickLoop-Konstruktor ([`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.3)
+Der Agent-Lifecycle-Hook im TickLoop-Konstruktor
 ruft in `_attach_agents()`
 `agent.set_run_id(run_id)` und — fuer Agents mit
 `_RandomAttachableAgent`-Sub-Protocol —
@@ -402,15 +388,14 @@ Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
 - Tie-Breaking-Reihenfolge fuer Scheduler-Events ist dokumentiert und
   getestet (`GG-ARCH-006`).
 - AgentMessageBus-Sortierung `(simulation_time, sender, sequence)` ist
-  deterministisch unabhaengig von Publish-Reihenfolge ([`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §2.2).
+  deterministisch unabhaengig von Publish-Reihenfolge.
 - A0v/A0a-Trennung garantiert, dass ein
   `AgentInvalidCommandTargetError` weder Clock noch Scheduler noch
   Devices noch Pending-Buffer mutiert — Retry/Resume bleibt sauber
-  moeglich ([`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.1).
+  moeglich.
 - Agent-Foundation-State (`_pending_agent_commands` +
-  `AgentMessageBus`) ist Sub-Snapshot-persistiert ([`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.6 +
-  [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3-additiv), damit Snapshots zwischen Agent-Tick und
-  Folgetick keine Commands verlieren.
+  `AgentMessageBus`) ist Sub-Snapshot-persistiert, damit Snapshots
+  zwischen Agent-Tick und Folgetick keine Commands verlieren.
 - Eingangswerte ohne gueltige Quelle werden mit Qualitaetsstatus
   markiert, nie ungeprueft uebernommen (`GG-SAFE-001..004`,
   `GG-AR-P-010`).
@@ -424,8 +409,7 @@ Agents ohne Stochastik bekommen keinen Sub-Port aufgezwungen.
 Die folgenden Typen sind die internen Domaenenobjekte. Sie sind
 sprachunabhaengig beschrieben — konkrete Python-Repraesentation
 (Pydantic `FrozenModel` oder `@dataclass(frozen=True, slots=True)`)
-ist via [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md)
-§A-1 [`AC-DOMAIN-FROZEN`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) festgelegt.
+ist als `AC-DOMAIN-FROZEN`-Contract festgelegt.
 
 ```text
 RunMetadata {
@@ -510,24 +494,20 @@ Simulationskern validiert (`GG-SAFE-008`).
 - `DeviceProtocolPort` — Read- und Write-Operationen mit Mapping auf
   `TelemetryPoint` / `Command`; Adapter dokumentieren Topic-, Register-,
   Node-, Point- bzw. LN/CDC-Profile (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`).
-  Spezifiziert in [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md)
-  §2.1 (Sync-Vertrag) / §2.2 (Caller-Scope-Lifecycle) / §2.3 (stateless
-  aus Replay-Sicht). **Fuenf konkrete Implementer** unter
-  `src/grid_gym/adapters/driven/protocol_*/` (M4-Welle 2..5b) — siehe
+  **Fuenf konkrete Implementer** unter
+  `src/grid_gym/adapters/driven/protocol_*/` — siehe
   Adapter-Profil-Index in [`spec/protocol_profiles.md`](protocol_profiles.md):
-  - `protocol_mqtt/` — MQTT via paho-mqtt 2.x ([`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) `Provisional`).
-  - `protocol_modbus/` — Modbus-TCP via pymodbus 3.x ([`ADR 0032`](../docs/plan/adr/0032-modbus-adapter-profile.md) `Provisional`).
+  - `protocol_mqtt/` — MQTT via paho-mqtt 2.x.
+  - `protocol_modbus/` — Modbus-TCP via pymodbus 3.x.
   - `protocol_opcua/` — OPC-UA via asyncua 1.2b2 mit eigenem
-    `OpcuaLoopThread`; **erster async-Stack** im Repo ([`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md) `Provisional`).
+    `OpcuaLoopThread`; **erster async-Stack** im Repo.
   - `protocol_dnp3/` — DNP3 via zwei-Library-Setup (`nfm-dnp3` + `dnp3-outstation`,
-    beide MIT, Pure-Python) ([`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md) `Provisional`).
+    beide MIT, Pure-Python).
   - `protocol_iec61850/` — IEC-61850 via `pyiec61850-ng` SWIG-Bindings
     (GPLv3-isoliert per SPDX-Header; **erster GPL-isolierter Sub-Module-
     Praezedenzfall** im sonst MIT-Repo; opt-in Extra
-    `pip install grid-gym[iec61850]`) ([`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) `Provisional`).
-- **OTel-Span-Wrap** (M4-Welle-6a-Pattern + Slice 034
-  Schaerfung;
-  [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5):
+    `pip install grid-gym[iec61850]`).
+- **OTel-Span-Wrap:**
   jeder `read(target)`/`write(target, command)`-Call wird in einen
   TracePort-Span mit Standard-Span-Attributen (`adapter_type`,
   `target`, `operation`; optional `reference` falls Caller eines
@@ -535,8 +515,7 @@ Simulationskern validiert (`GG-SAFE-008`).
   wird ein `latency`-Event mit Attribut `latency_ms` emittiert
   (Event-encoded statt Span-Attribut, weil `TracePort` keine
   `set_attribute`-Surface kennt und Latency erst nach Span-Open
-  bekannt ist; Slice-034-F2/F10-Schaerfung). Implementation in
-  [Welle 6a](../docs/plan/planning/done-archive/M4-welle-6a.md) ueber
+  bekannt ist). Implementation ueber
   alle 5 Adapter-Pakete via `OtelSpanWrappedDeviceProtocolPort`-
   Composition-Wrapper.
 - `TelemetrySinkPort` — Append-only, deterministische Sortierung;
@@ -563,7 +542,7 @@ Modulvertrag.
 | Mechanismus                    | Aussage                                                                                                                                                     | Bezug                       |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | Zentraler `ClockPort`          | Einzige Quelle fuer `simulation_time` im Kern; kein direkter Systemzeitzugriff                                                                              | [`GG-ARCH-007`](lastenheft.md#gg-arch-007), GG-AR-TABU-005 |
-| Seedbarer `RandomPort`         | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar (PRNG-Wahl und Seeding-Kette per [`ADR 0007`](../docs/plan/adr/0007-random-port.md)) | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-SCN-002`](lastenheft.md#gg-scn-002)      |
+| Seedbarer `RandomPort`         | Jeder Zufallsstrom haengt am Lauf-Seed und ist pro Lauf reproduzierbar | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-SCN-002`](lastenheft.md#gg-scn-002)      |
 | Stabiles Tie-Breaking          | `(time, priority, source, sequence, event_id)`                                                                                                              | [`GG-ARCH-006`](lastenheft.md#gg-arch-006)                 |
 | Kanonische Serialisierung      | Stabile Feldreihenfolge, festgelegte Numerik                                                                                                                | [`GG-DATA-005`](lastenheft.md#gg-data-005)                 |
 | Replay-Diff                    | Fachliche vs. volatile Felder werden klassifiziert                                                                                                          | [`GG-REPLAY-007`](lastenheft.md#gg-replay-007), [`GG-SAFE-006`](lastenheft.md#gg-safe-006)  |
@@ -693,17 +672,17 @@ Fault-Typen (`comm_outage`, `stale_data`, `nan`, `freq_drop`,
 `Fault`-Vertrags; jedes Geraetemodell dokumentiert sein Verhalten unter
 Fault.
 
-**Produktive Surface ([`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) + [`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md)):**
+**Produktive Surface:**
 
 - `FaultInjectableDevice(DeviceModel)`-Sub-Protocol
   (`hexagon/core/devices/_protocol.py`) traegt die Pflicht-Surface
   `inject_fault(fault_type, payload) -> None`; Implementer setzen
-  ihren eigenen State, Recovery-Tick-Counter o. ae. ([`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.1).
+  ihren eigenen State, Recovery-Tick-Counter o. ae.
 - `FaultPort`-Driven-Port (`hexagon/ports/driven/fault.py`,
   `GG-AR-PORT-DRN-011`) mit `apply_active_faults(devices, context)`-
   Surface; Adapter-Boundary trennt Domain-Orchestrierung von der
-  konkreten Fault-Auswahl-Logik ([`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.4–§2.5).
-- TickLoop-Pre-Tick-Hook (Schritt A2, [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.4) ruft
+  konkreten Fault-Auswahl-Logik.
+- TickLoop-Pre-Tick-Hook (Schritt A2) ruft
   `fault_port.apply_active_faults(...)` nach `_consume_load_inputs_into`
   und vor der ersten `_run_device_iteration`. Exception-Propagation
   bricht den Tick atomic ab (`AC-NO-TIME`-konform, kein Wall-Clock-
@@ -714,7 +693,7 @@ Fault.
   `voltage_drop`. Beide leben **nicht** unter `adapters/driven/`,
   sondern unter `hexagon/core/faults/`, weil sie Domain-
   Orchestrierung sind und kein externes Protokoll uebersetzen.
-- **Recovery-Engine** ([`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md)): zwei Modi —
+- **Recovery-Engine:** zwei Modi —
   `auto-recover-after-N-ticks` (Tick-Counter pro aktivem Fault,
   deterministisch via half-open `[start, end)`-Window) und
   `manual-via-command` (Recovery via `recover_fault(fault_id)`-
@@ -751,24 +730,24 @@ ein eigenes Kernmodul `hexagon/core/agents`, das die folgenden Verbindungen hat:
 Konkurrierende Strategien (`GG-AGENT-005`) werden durch dokumentierte
 Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 
-**Produktive Surface ([`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) + [`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) + [`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md)):**
+**Produktive Surface:**
 
 - `Agent`-Sub-Protocol (`hexagon/core/agents/_protocol.py`) fixiert
   die Pflicht-Surface (`agent_id`, `set_run_id`, `tick`, `snapshot`,
   `from_snapshot`); `_RandomAttachableAgent`-Sub-Protocol traegt den
-  optionalen `attach_random(...)`-Hook fuer stochastische Agenten
-  ([`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.3); `AgentPlugin`-Sub-Protocol traegt den
-  Decision-Hook fuer pluginbasierte Agenten ([`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) §2.3).
+  optionalen `attach_random(...)`-Hook fuer stochastische Agenten;
+  `AgentPlugin`-Sub-Protocol traegt den
+  Decision-Hook fuer pluginbasierte Agenten.
 - `AgentMessageBus`-Core-Klasse (`hexagon/core/agents/bus.py`)
   liefert `publish` / `drain_for` (nicht-destruktiv) /
-  `consume_for` (destruktive Direct-Inbox-Drain-Variante,
-  [`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.4) sowie Snapshot-Roundtrip ([`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §2.2).
+  `consume_for` (destruktive Direct-Inbox-Drain-Variante)
+  sowie Snapshot-Roundtrip.
 - Registrierung erfolgt produktiv ueber den Konstruktor-Kwarg
   `TickLoop(agents=tuple[Agent, ...])` mit Auto-Bus-Regel und
-  `AgentDuplicateIdError`-Fail-Fast ([`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) §2.2). Der `build_
+  `AgentDuplicateIdError`-Fail-Fast. Der `build_
   tick_loop(...)`-Loader reicht den Kwarg symmetrisch durch
   und defaultet ihn (Sentinel-Pattern `agents=None`) auf
-  `scenario.agents` ([`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) §2.2).
+  `scenario.agents`.
 - Command-Drain laeuft ueber Schritt A0v + A0a vor Schritt A der
   naechsten Tick (siehe §6). Agent-Commands sind also frueh im
   Folge-Tick wirksam, ohne den Scheduler oder die Device-
@@ -776,26 +755,26 @@ Priorisierung im Agent-Modul aufgeloest, nicht im Simulationskern.
 - Foundation-State (`AgentMessageBus`-Buffer +
   `_pending_agent_commands`) wird als additive Sub-Snapshots
   `agent_bus` und `pending_agent_commands` in
-  `TickLoop.snapshot()` / `from_snapshot(...)` persistiert (ADR
-  0026 §2.6 + [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3-additiv, kein Schema-Bump).
-- **Konkrete Agent-Implementer** ([`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md)):
+  `TickLoop.snapshot()` / `from_snapshot(...)` persistiert (additiv,
+  kein Schema-Bump).
+- **Konkrete Agent-Implementer:**
   `RuleBasedAgent` (`hexagon/core/agents/rule_based.py`) mit
   Hybrid Decision-Surface — Default-Pfad ist deterministische
   Threshold-Rules-Liste (first-match-wins; Metric-Whitelist
   `tick` / `simulation_time` aus `DeviceTickContext`),
   Erweiterungs-Pfad ist optionaler `plugin`-Hook ueber
-  `_AGENT_PLUGIN_FACTORIES`-Registry. Mutual Exclusivity Rules
-  ODER Plugin gelten nach [`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) §2.3.
-- **`agents`-Top-Level-Block im Scenario-Schema** ([`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md)
-  §2.1 + §2.2): nested Mapping `agents: {<agent_id>:
+  `_AGENT_PLUGIN_FACTORIES`-Registry. Rules und Plugin
+  schliessen sich gegenseitig aus.
+- **`agents`-Top-Level-Block im Scenario-Schema:**
+  nested Mapping `agents: {<agent_id>:
   {type, params}}` mit lexikographischer Sort-Iteration im
   Loader; `ScenarioAgent`-Domain (frozen dataclass);
   `_assert_agent_list(...)`-Validator mit Comparator-/Metric-
   Whitelist-Checks; `_build_agents(...)`-Factory-Dispatch
   analog `build_devices`.
 - **Konkrete Agent-Instanz-Sub-Snapshots**
-  `agents.<agent_type>.<agent_id>` ([`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) §2.4)
-  additiv per [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3 (kein Schema-Bump); bidirektionaler
+  `agents.<agent_type>.<agent_id>`
+  additiv (kein Schema-Bump); bidirektionaler
   Resume-Match-Check — jeder injizierte Agent hat einen Slot
   und jeder Slot einen injizierten Agent
   (canonical_json-Equality).
@@ -822,20 +801,20 @@ oder Closure-Notizen.
 | Healthcheck        | `healthy/degraded/unhealthy` mit Ursache, Dienste separat                                            | [`GG-DEPLOY-006`](lastenheft.md#gg-deploy-006)              |
 | Replay-Diff-Status | maschinenlesbarer Statuswert pro Lauf                                                                | [`GG-REPLAY-007`](lastenheft.md#gg-replay-007), [`GG-SAFE-006`](lastenheft.md#gg-safe-006) |
 
-**Produktive Surface ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md)):**
+**Produktive Surface:**
 
 - **Driven-Port-Trio** `LogPort` / `MetricsPort` / `TracePort`
   (`hexagon/ports/driven/observability.py`, `GG-AR-PORT-DRN-008`)
   als `@runtime_checkable` Protocols. Surface stateless, keine
   OTLP-/SDK-Typen im Port-Layer — Core bleibt OTLP-frei und
-  laeuft ohne den OTLP-Stack ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §2.1).
+  laeuft ohne den OTLP-Stack.
 - `LogEntry`-frozen-dataclass-Envelope (`level`, `message`,
   `run_id`, `module`, `event_id`, `attributes`) als Single-Object-
-  Surface fuer `LogPort.log(entry)` ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §2.2).
+  Surface fuer `LogPort.log(entry)`.
 - `SpanContext`-frozen-dataclass (`trace_id`, `span_id`,
   `parent_span_id`) mit `start_span` / `end_span` / `record_event`-
   Surface; `None`-No-Op-Fallback im `TracePort` fuer Adapter-
-  Robustheit ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §2.4).
+  Robustheit.
 - **Null-Adapter-Trio** (`hexagon/core/observability_null/`) mit
   Default-`call_count` + `last_call`-Surface und opt-in
   `record_calls=True` fuer `call_records` + `clear_calls()`. Default-
@@ -844,8 +823,8 @@ oder Closure-Notizen.
 - **OTLP-Adapter-Trio** (`adapters/driven/telemetry_otlp/`):
   `OtlpLogAdapter` / `OtlpMetricsAdapter` / `OtlpTraceAdapter`
   ueber `opentelemetry-exporter-otlp-proto-grpc`-SDK (gRPC-Transport
-  per [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5.6 auf Allow-List `{"grpc"}` gepinnt; HTTP/
-  protobuf ist explizit Out-of-Scope und braucht eine ADR-Folge).
+  auf Allow-List `{"grpc"}` gepinnt; HTTP/
+  protobuf ist explizit Out-of-Scope).
   `build_otlp_adapters(config)`-Factory liefert ein
   `OtlpAdapterBundle` mit den drei Adaptern + Provider-Handles +
   `flush_and_shutdown()`-Helper.
@@ -861,8 +840,8 @@ oder Closure-Notizen.
   py`) verbietet `time`-/`datetime`-Import unter
   `adapters/driven/telemetry_otlp/**` — Span-Dauern liefert die
   OTel-SDK ueber Span-Lifecycle (`StartTime`/`EndTime`), keine
-  Wall-Clock-Affordance im Adapter-Code ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5.5 D-4).
-- **Compose-Smoke-Determinismus-Pattern** ([`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5.7) mit
+  Wall-Clock-Affordance im Adapter-Code.
+- **Compose-Smoke-Determinismus-Pattern** mit
   vier Pflichten: per-Lauf isolierter Sink + Vorab-Truncation +
   per-Lauf eindeutige `service.instance.id` + zweischichtiges
   Flush-Protokoll (SDK-Side `force_flush()` + `shutdown()` plus
@@ -924,9 +903,7 @@ Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
 
 ## 17. Testarchitektur
 
-**Kennung:** `GG-AR-TEST-001` — Testarchitektur als Ganzes (eingefuehrt
-gemaess `ADR 0004` §2.2; loest die zuvor positionsabhaengige
-`§17`-Referenz ab).
+**Kennung:** `GG-AR-TEST-001` — Testarchitektur als Ganzes.
 
 | Testart            | Verortung                                         | Bezug                                 |
 | ------------------ | ------------------------------------------------- | ------------------------------------- |
@@ -1015,3 +992,33 @@ Diese Trennung wird durch klare Schichten, einheitliche interne Modelle
 (`Telemetry`, `Command`, `Event`, `Quality`, `Snapshot`), einen zentralen
 `ClockPort` und durch per Architekturtest erzwungene Modulgrenzen
 getragen.
+
+---
+
+## Historie
+
+Entscheidungs-Provenance (SDP Regel 5: Body vs. Changelog). Der Body oben
+traegt die zeitlose Architektur-Festlegung; diese Sektion bindet jede
+Surface/Komponente an die ADR, die sie spezifiziert. Sie ist vom
+Referenzrichtungs-Gate (`matrix`) ausgenommen.
+
+| Surface / Komponente | ADR |
+| --- | --- |
+| Sprach-/Build-Wahl, `AC-DOMAIN-FROZEN`-Domain-Modelle | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
+| Kennungs-Querverweis-Konvention | [`ADR 0004`](../docs/plan/adr/0004-identifier-based-cross-references.md) |
+| `RandomPort` — PRNG-Wahl + Seeding-Kette | [`ADR 0007`](../docs/plan/adr/0007-random-port.md) |
+| `SnapshotEnvelope` — additive Sub-Snapshots | [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3 |
+| `grid_model.update(...)` — Netz-Bilanz | [`ADR 0019`](../docs/plan/adr/0019-grid-model-bilanz-pattern.md) §2.2 |
+| Scenario-Loader + Tick-Loop-Wiring (LoadEvent/Auto-Schluss) | [`ADR 0021`](../docs/plan/adr/0021-scenario-loader-and-tick-loop-event-wiring.md) §2.5/§2.7 |
+| `FaultPort` / `FaultInjectableDevice` / Pre-Tick-Hook | [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.1/§2.4–§2.5 |
+| Fault-Recovery-Engine (`auto-recover` / `manual-via-command`) | [`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md) |
+| `AgentMessageBus` — deterministischer In-Memory-Bus | [`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §2.2/§3 |
+| Agent-Drain-Registry + Lifecycle-Hook | [`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) |
+| `RuleBasedAgent` + `agents`-Scenario-Block | [`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) |
+| `DeviceProtocolPort` — Sync-Surface + Lifecycle | [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1–2.4 |
+| Observability-Port-Trio (`LogPort`/`MetricsPort`/`TracePort`) + OTLP | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) |
+
+Der **Status** der Architektur (gelieferte Meilensteine, Wellen-Stand) und
+die ADR-Lifecycle-Stati leben in
+[`roadmap.md`](../docs/plan/planning/in-progress/roadmap.md) und den
+`M*-results.md`-Closure-Notizen, nicht in diesem zeitlosen Dokument.
