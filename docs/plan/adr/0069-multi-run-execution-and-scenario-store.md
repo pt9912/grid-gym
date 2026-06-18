@@ -9,6 +9,10 @@ Entwurf schaerfbar — offener A1/A3-Punkt (§3, noch **kein** immutable Beschlu
 **Datum:** 2026-06-18
 **Status geaendert am:** 2026-06-18 — `Proposed → Provisional` (S0; Owner-
 Mittragung der A1-/Expliziter-Start-Richtung).
+**Letzte inhaltliche Aenderung:** 2026-06-18 — §2.3 verfeinert (Telemetrie-Sink
+**geteilt**, keyed by `run_id`, statt separater Sink-Objekte; Seed-Quelle
+praezisiert) + §2.5 In-Memory-vs-Postgres-Replay-Realisierung ergaenzt. Pre-
+Acceptance-Schaerfung ([`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §4), vor S4.
 **Bezug:**
 
 - [`ADR 0039`](0039-run-control-and-status-tracking.md) Decision 13 —
@@ -81,11 +85,23 @@ garantiert.
 
 ### §2.3 Per-Run-Isolation (Determinismus)
 
-Jeder Lauf bekommt **eigenen** Clock + Random-Root (`seed` aus der Metadata) +
-Telemetrie-Sink; **kein** geteilter State zwischen parallelen Laeufen
-([`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)/[`GG-SEED-001`](../../../spec/lastenheft.md#gg-seed-001)).
-`build_tick_loop` wird pro Lauf aufgerufen (Tick-Wall-Clock-Intervall entkoppelt
-von `simulation.tick_ms`, [`GG-SIM-002`](../../../spec/lastenheft.md#gg-sim-002)).
+Jeder Lauf bekommt **eigenen** Clock + Random-Root; **kein** geteilter
+Determinismus-State zwischen parallelen Laeufen
+([`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)). Der `RandomPort`-
+Wurzelseed kommt aus `scenario.simulation.seed` — das Scenario (hash-
+identifiziert) ist die Quelle der Sim-Parameter (wie `tick_ms`,
+[`GG-SIM-002`](../../../spec/lastenheft.md#gg-sim-002)); `RunMetadata.seed`
+([`GG-SEED-001`](../../../spec/lastenheft.md#gg-seed-001)) ist der protokollierte
+Request-Wert. `build_tick_loop` wird pro Lauf aufgerufen.
+
+**Telemetrie-Sink: geteilt, keyed by `run_id`** (S4-Verfeinerung). Der
+Telemetrie-Sink + die `ReplaySnapshotPort`-Sicht darueber sind **nicht** separate
+Objekte je Lauf, sondern ein **gemeinsamer** Store, der pro `run_id` isoliert
+liest (`read_ordered(run_id)`). Grund: der Replay-Diff (§2.5) liest in **einer**
+`replay_snapshot`-Instanz die Samples **beider** Laeufe (`reference_run_id` +
+eigener `run_id`); separate Sink-Objekte je Lauf machten den Cross-Run-Diff
+unmoeglich. Die Isolation bleibt ueber den `run_id`-Key gewahrt; nur Clock und
+Random-Root sind objekt-getrennt je Lauf.
 
 ### §2.4 Run-Start-Semantik — explizit
 
@@ -105,6 +121,13 @@ der `run_session()`-Naht. Der Runtime-Kwarg `replay_reference_run_id` bleibt
 konsumiert `finalize()` die **persistierte** Bindung end-to-end →
 [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md) Phase B
 erfuellt; das Replay-Paar 039+040 schliesst.
+
+**Sample-Quelle der Referenz.** In-Memory (diese Welle): die Referenz-Samples
+liegen im **geteilten** Telemetrie-Sink (§2.3, keyed by `run_id`) — der
+Referenzlauf muss im selben Prozess gelaufen sein. Deployment-Pfad: der
+Postgres-`ReplaySnapshotAdapter` ([`ADR 0048`](0048-replay-snapshot-port-reconstruction.md))
+rekonstruiert die Referenz aus der persistierten Telemetrie — **deferred** (kein
+Postgres-Adapter in dieser Welle).
 
 ### §2.6 Hexagonal-Reinheit
 
