@@ -1,7 +1,8 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
 **Status:** Geplant (`next/`) — Architektur in [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
-(`Proposed`). Aktivierung pro Welle-X-C0; Acceptance der ADR ist S0.
+(`Provisional`, S0 vollzogen 2026-06-18). Aktivierung pro Welle-X-C0; ADR-`Accepted`
+folgt mit der Implementierungs-Closure (gates gruen).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -38,7 +39,7 @@ Alternativen (Inline-Body / Server-Library) verworfen.
 
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
-| **S0** | [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Proposed → Accepted`; Scenario-Aufloesung (A1) + Start-Semantik fixiert | Architect / ADR |
+| **S0** | [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Proposed → Provisional` ✓ (2026-06-18); Scenario-Aufloesung (A1) + Start-Semantik mitgetragen. `Accepted` folgt bei Implementierungs-Closure | Architect / ADR |
 | **S1** | `ScenarioStorePort` + InMemory + `POST /scenarios` + Hash-Mismatch-Reject (Happy/Boundary/Negative) | Implementation |
 | **S2** | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all | Implementation |
 | **S3** | `POST /runs/{id}/start` + 409/404/422-Semantik + per-Run-Telemetrie-Sink | Implementation |

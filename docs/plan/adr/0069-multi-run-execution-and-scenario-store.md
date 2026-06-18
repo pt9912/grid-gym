@@ -1,11 +1,14 @@
-# ADR 0069 — Multi-Run-Execution: per-Run-Driver + Scenario-Store (Proposed)
+# ADR 0069 — Multi-Run-Execution: per-Run-Driver + Scenario-Store (Provisional)
 
-**Status:** Proposed — Architect-Entwurf zum
-[`next/`-Slice-Plan](../planning/next/multi-run-execution-path.md). Acceptance
-(`Proposed → Provisional → Accepted`, [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md))
-ist der S0-Schritt dieses Plans — kein Code mit diesem Entwurf; er fixiert die
-Architektur-Decisions, bevor S1..S4 implementieren.
+**Status:** Provisional — Owner traegt die Empfehlung mit (S0,
+[`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §2); die
+Validierung laeuft ueber S1..S4 des
+[`next/`-Slice-Plans](../planning/next/multi-run-execution-path.md). `Accepted`
+folgt bei der Implementierungs-Wellen-Closure (gates gruen); bis dahin bleibt der
+Entwurf schaerfbar — offener A1/A3-Punkt (§3, noch **kein** immutable Beschluss).
 **Datum:** 2026-06-18
+**Status geaendert am:** 2026-06-18 — `Proposed → Provisional` (S0; Owner-
+Mittragung der A1-/Expliziter-Start-Richtung).
 **Bezug:**
 
 - [`ADR 0039`](0039-run-control-and-status-tracking.md) Decision 13 —

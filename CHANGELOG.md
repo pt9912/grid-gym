@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Multi-Run-Execution-Pfad geplant: NEU `ADR 0069` (`Proposed` — per-Run-Driver
-  + Scenario-Store A1 + Replay-Konsumnaht) + `next/multi-run-execution-path.md`;
+- Multi-Run-Execution-Pfad geplant: NEU `ADR 0069` (`Provisional` nach S0; per-
+  Run-Driver + Scenario-Store A1 + Replay-Konsumnaht) + `next/multi-run-execution-path.md`;
   entsperrt Slice 039 Phase B (der Run-Execution-Pfad war Anti-Scope). Slice 039
-  als blocked-by markiert. Reine Planungs-/Doku-Aenderung, kein Runtime-Delta.
+  als blocked-by markiert. `Accepted` folgt bei der Implementierungs-Closure
+  (gates gruen). Reine Planungs-/Doku-Aenderung, kein Runtime-Delta.
 - Harness-Baseline auf Kurs-Release `v1.2.0` re-gepinnt
   (`harness/conventions.md` Baseline + Quellen-URLs: `templates-v2`/`47af124`
   → `v1.2.0`/`0473cc55`) nach v1.2.0-Delta-Analyse — kein Inhaltskonflikt mit
