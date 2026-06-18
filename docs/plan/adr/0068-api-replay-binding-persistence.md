@@ -22,7 +22,7 @@ um den `replay_of`-Roundtrip ergaenzt).
 - [`ADR 0067`](0067-run-end-seam-and-partial-run.md) — Schwester-Slice (040,
   Run-End-Naht); der `finalize()`-Konsum der persistierten Bindung (Phase B)
   baut auf der dort garantierten Naht auf.
-- [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
+- [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   — Forward-Carveout (1b-b-D-7).
 
 ---

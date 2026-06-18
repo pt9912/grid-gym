@@ -1,14 +1,15 @@
-# ADR 0069 — Multi-Run-Execution: per-Run-Driver + Scenario-Store (Provisional)
+# ADR 0069 — Multi-Run-Execution: per-Run-Driver + Scenario-Store (Accepted)
 
-**Status:** Provisional — Owner traegt die Empfehlung mit (S0,
-[`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §2); die
-Validierung laeuft ueber S1..S4 des
-[`in-progress`-Slice-Plans](../planning/in-progress/multi-run-execution-path.md). `Accepted`
-folgt bei der Implementierungs-Wellen-Closure (gates gruen); bis dahin bleibt der
-Entwurf schaerfbar — offener A1/A3-Punkt (§3, noch **kein** immutable Beschluss).
+**Status:** Accepted — die Validierung lief ueber S1..S4 des
+[Slice-Plans](../planning/done/multi-run-execution-path.md) (geliefert + frischer
+Welle-Review, [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §2);
+mit der Wellen-Closure 2026-06-18 sind `make gates`/`make docs-check`/`make fullbuild`
+gruen — die A1-/Expliziter-Start-Richtung ist damit immutable beschlossen
+(A3-Fallback verworfen, §3).
 **Datum:** 2026-06-18
 **Status geaendert am:** 2026-06-18 — `Proposed → Provisional` (S0; Owner-
-Mittragung der A1-/Expliziter-Start-Richtung).
+Mittragung der A1-/Expliziter-Start-Richtung), dann `Provisional → Accepted`
+(Wellen-Closure; S1..S4 geliefert + Review-Findings adressiert, gates gruen).
 **Letzte inhaltliche Aenderung:** 2026-06-18 — §2.3 verfeinert (Telemetrie-Sink
 **geteilt**, keyed by `run_id`, statt separater Sink-Objekte; Seed-Quelle
 praezisiert) + §2.5 In-Memory-vs-Postgres-Replay-Realisierung ergaenzt. Pre-
@@ -33,8 +34,8 @@ Acceptance-Schaerfung ([`ADR 0006`](0006-adr-lifecycle-superseding-and-process-c
   Mode fuer die neuen Request-Bodies.
 - [`ADR 0002`](0002-language-and-build-stack.md) — Architektur-Gates
   (`make arch-check`, Hexagonal-Reinheit).
-- [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
-  (entsperrt) + [Trigger 040](../planning/in-progress/040-replay-finalize-headless-run-end-seam.md)
+- [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
+  (entsperrt) + [Trigger 040](../planning/done/040-replay-finalize-headless-run-end-seam.md)
   (Schwester-Slice).
 
 ---
@@ -119,7 +120,7 @@ verdrahtet er `replay_reference_run_id = metadata.replay_of` + `replay_snapshot`
 der `run_session()`-Naht. Der Runtime-Kwarg `replay_reference_run_id` bleibt
 **expliziter Override** (Test/Demo; byte-stabil: `replay_of=None` → no-op). Damit
 konsumiert `finalize()` die **persistierte** Bindung end-to-end →
-[Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md) Phase B
+[Trigger 039](../planning/done/039-api-replay-trigger-surface.md) Phase B
 erfuellt; das Replay-Paar 039+040 schliesst.
 
 **Sample-Quelle der Referenz.** In-Memory (diese Welle): die Referenz-Samples

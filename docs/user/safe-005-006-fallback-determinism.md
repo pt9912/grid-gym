@@ -155,7 +155,7 @@ jetzt produktiv im Lauf-Lifecycle verankert:
 [Trigger 036](../plan/planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
 ist damit aufgeloest (→ `done/` mit M7-Welle-1b-b-C3). Die
 **oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`)
-bleibt separater Scope ([Trigger 039](../plan/planning/in-progress/039-api-replay-trigger-surface.md)).
+bleibt separater Scope ([Trigger 039](../plan/planning/done/039-api-replay-trigger-surface.md)).
 
 ---
 

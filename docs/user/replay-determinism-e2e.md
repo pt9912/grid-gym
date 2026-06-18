@@ -70,7 +70,7 @@ persistiert beide nach Postgres und belegt ueber den
   [Trigger 038](../plan/planning/open/038-gg-term-002-003-full-equality-matrix.md).
 - **Oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`-
   Feld + persistente `RunMetadata`-Bindung) ist deferred —
-  [Trigger 039](../plan/planning/in-progress/039-api-replay-trigger-surface.md).
+  [Trigger 039](../plan/planning/done/039-api-replay-trigger-surface.md).
   Der Determinismus-Beleg laeuft ueber den Zwei-Lauf-E2E-Smoke;
   die Referenz-Bindung ist heute Runtime/Test/Demo-intern.
 - **[`GG-REPLAY-004`](../../spec/lastenheft.md#gg-replay-004)..006** (beschleunigtes Replay / Replay-Pause-

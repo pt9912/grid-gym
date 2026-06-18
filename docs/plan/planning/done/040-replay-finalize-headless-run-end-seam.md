@@ -1,6 +1,6 @@
 # 040 — `finalize()`-Trigger an einer Core-Run-End-Naht (Headless-Pfad)
 
-**Status:** **Geliefert (2026-06-17)** — [`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md) (Schaerfung von [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)) + Core (`run_session()`-Kontextmanager, `mark_run_failed()`/`_run_failed`, `finalize()`-Partial-Zweig) + `DemoTickLoopDriver` (`finalize()` im `finally` auf jedem Exit-Pfad) + Unit-Pins; `make gates` gruen. Doc-Move nach `done/` mit der Replay-Paar-Closure (nach 039).
+**Status:** **Abgeschlossen (`done/`, 2026-06-18)** — **Geliefert 2026-06-17** ([`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md), Schaerfung von [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)) + Core (`run_session()`-Kontextmanager, `mark_run_failed()`/`_run_failed`, `finalize()`-Partial-Zweig) + `DemoTickLoopDriver` (`finalize()` im `finally` auf jedem Exit-Pfad) + Unit-Pins. Replay-Paar-Closure mit 039 ([`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Accepted`); `make gates`/`make docs-check`/`make fullbuild` gruen.
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C2-Review (Befund #4; Lifecycle-Hook-
 Trigger-Pfad).

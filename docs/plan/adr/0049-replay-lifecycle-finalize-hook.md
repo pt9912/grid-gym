@@ -34,7 +34,7 @@
   — wird mit 1b-b-C3 aufgeloest (`done/`).
 - [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-Matrix (Carveout).
-- [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
+- [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   — oeffentliche API-Replay-Bedienung (Carveout).
 
 ---
@@ -124,7 +124,7 @@ actual   = replay_snapshot.read_samples(run_id)
 - Die Bindung ist in 1b-b **Runtime/Test/Demo-intern** (Core-
   Kwarg); die **oeffentliche API-Replay-Bedienung** (POST /runs
   `replay_of` + `RunMetadata`-Spalte + Migration) ist
-  [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
+  [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   (§7).
 
 ### §2.3 `GG-TERM-002/003`-MVP-Preflight (1b-b-D-3)
@@ -294,7 +294,7 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
 
 - **Oeffentliche API-Replay-Bedienung** (POST /runs `replay_of` +
   `RunMetadata`-Spalte + Migration + `RunCreateRequest`-Strict-
-  Schaerfung) — [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
+  Schaerfung) — [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   (1b-b-D-7).
 - **Volle [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) —
@@ -306,7 +306,7 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
 - **Driver-unabhaengige Core-Run-End-Naht** fuer `finalize()`
   (Headless-Runner / natuerliche Terminierung / Tick-Failure-
   Pfad) — heute triggert nur `DemoTickLoopDriver.stop()`;
-  [Trigger 040](../planning/in-progress/040-replay-finalize-headless-run-end-seam.md)
+  [Trigger 040](../planning/done/040-replay-finalize-headless-run-end-seam.md)
   (C2-Review-Folge #4; Vorbedingung fuer [`GG-MVP-003`](../../../spec/lastenheft.md#gg-mvp-003)-Headless-
   Abnahme-CLI).
 - **Severity-Stufen** des `replay_diff_status` (ordinal/`yellow`/

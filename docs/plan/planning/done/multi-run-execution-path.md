@@ -1,11 +1,10 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1–S4 geliefert + Welle-Review
-durchgefuehrt, HIGH/MEDIUM-Findings adressiert** (2026-06-18); Architektur
-[`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
-(`Provisional`). **Acceptance-reif** (Residuen dokumentiert, §Risiken). ADR-
-`Accepted` + Replay-Paar-Closure (039+040 → `done/`) + Plan-Move nach `done/`
-folgen mit der Wellen-Closure (`make fullbuild`).
+**Status:** **Abgeschlossen (`done/`, 2026-06-18)** — S0..S4 geliefert + frischer
+Welle-Review (HIGH/MEDIUM-Findings adressiert, danach statisch re-verifiziert);
+Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
+`Accepted`. Replay-Paar 039+040 mit-geschlossen (→ `done/`); `make gates`/`make
+docs-check`/`make fullbuild` gruen. Residuen dokumentiert (§Risiken).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -106,5 +105,5 @@ Boundary/Negative).
 ## Aktivierung
 
 Aktiviert 2026-06-18 (S0 + S1) — Plan nach `in-progress/` verschoben (rename-only).
-Folge-Slices S2–S4 laufen hier; die Welle-Closure (alle Slices Done + `make
-fullbuild`) bewegt den Plan nach `done/`.
+Folge-Slices S2–S4 geliefert; die Welle-Closure (alle Slices Done + `make fullbuild`
+gruen) hat den Plan 2026-06-18 nach `done/` bewegt.

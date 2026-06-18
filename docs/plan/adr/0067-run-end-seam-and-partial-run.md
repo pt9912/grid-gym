@@ -19,9 +19,9 @@ Finalize-genau-einmal, Idempotenz).
   `request(...)`-Transition-Matrix; diese ADR aendert sie **nicht**.
 - [`ADR 0024`](0024-observability-port-trio.md) — `LogPort` (Partial-Run-Reject
   nutzt den bestehenden strukturierten Reject-Log-Pfad).
-- [Trigger 040](../planning/in-progress/040-replay-finalize-headless-run-end-seam.md)
+- [Trigger 040](../planning/done/040-replay-finalize-headless-run-end-seam.md)
   — Forward-Gap (M7-Welle-1b-b-C2-Review-Befund #4).
-- [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md)
+- [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   — API-Replay-Surface (Folge-Slice; konsumiert die Naht).
 
 ---
@@ -170,7 +170,7 @@ Praezedenz ADR 0049 §2.1).
 - **Auto-`completed`-Transition** (Tick-Budget/Szenario-Ende) — eigener
   spaeterer Scope (ADR 0049 §7).
 - **Oeffentliche API-Replay-Bedienung** (`POST /runs` `replay_of` +
-  `RunMetadata`-Spalte + Migration) — [Trigger 039](../planning/in-progress/039-api-replay-trigger-surface.md).
+  `RunMetadata`-Spalte + Migration) — [Trigger 039](../planning/done/039-api-replay-trigger-surface.md).
 - **`started_at`/`ended_at`-Timestamp-Setzen** — eigener Scope (ADR 0049 §7).
 - **Asynchroner/entkoppelter Diff** — additive Schaerfung bei Last-Druck
   (ADR 0049 §2.6).
