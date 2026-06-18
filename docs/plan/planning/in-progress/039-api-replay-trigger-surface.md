@@ -1,6 +1,6 @@
 # 039 — Oeffentliche API-Replay-Bedienung (1b-b-Carveout)
 
-**Status:** **Phase A geliefert (2026-06-17)** — [`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md): `POST /runs` `replay_of`-Feld + persistente `RunMetadata.replay_of`-Spalte (Migration `0003_add_replay_of`) + 422-`reference_run_not_found`-Reject + Response-/Detail-Exposure; `make gates` gruen. **Phase B offen**: `finalize()`-Konsum der persistierten Bindung (haengt am Run-Execution-Pfad — baut auf der Naht aus [`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md) auf).
+**Status:** **Phase A geliefert (2026-06-17)** — [`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md): `POST /runs` `replay_of`-Feld + persistente `RunMetadata.replay_of`-Spalte (Migration `0003_add_replay_of`) + 422-`reference_run_not_found`-Reject + Response-/Detail-Exposure; `make gates` gruen. **Phase B offen**: `finalize()`-Konsum der persistierten Bindung (haengt am Run-Execution-Pfad — baut auf der Naht aus [`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md) auf). **Phase B blocked-by:** der per-Run-Execution-Pfad fehlt (kein per-Run-`TickLoop`; nur der Single-Demo-Lauf tickt) — geplant in [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) (`Proposed`) / [`next/multi-run-execution-path`](../next/multi-run-execution-path.md), dessen S4 dieses Replay-Paar (039+040) schliesst.
 **Datum:** 2026-06-09
 **Quelle:** M7-Welle-1b-b-C0 (Decision 1b-b-D-7;
 [`docs/plan/planning/done/M7-welle-1b-b.md`](../done-archive/M7-welle-1b-b.md)).
