@@ -151,6 +151,20 @@ class ScenarioCreateResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# POST /runs/{run_id}/start (Multi-Run-Execution S3, ADR 0069 §2.4)
+# ---------------------------------------------------------------------------
+
+
+class RunStartResponse(BaseModel):
+    """Antwort von `POST /runs/{run_id}/start`."""
+
+    run_id: str = Field(description="UUIDv4-Identitaet des gestarteten Laufs.")
+    status: str = Field(
+        description="Lauf-Status nach erfolgreichem Start (`running`).",
+    )
+
+
+# ---------------------------------------------------------------------------
 # GET /runs/{run_id}
 # ---------------------------------------------------------------------------
 

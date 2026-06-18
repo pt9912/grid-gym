@@ -59,7 +59,7 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     _TickLoopRegistryNotConfiguredError,
 )
 from grid_gym.hexagon.core.domain.run import RunMetadata
-from grid_gym.hexagon.core.domain.scenario import ScenarioFault
+from grid_gym.hexagon.core.domain.scenario import Scenario, ScenarioFault
 from grid_gym.hexagon.core.faults import ScenarioFaultEngine
 from grid_gym.hexagon.core.faults.types import (
     FAULT_TYPE_CELL_FAILURE,
@@ -237,6 +237,46 @@ def configure_scenario_demo_run(
     # M7-Welle-1a (ADR 0047): persistierte Zeitreihen lesbar machen
     # (Welle-1b-ReplaySource-Quelle + Demo-Persistenz-Beleg).
     app_.state.telemetry_sink = telemetry_sink
+
+
+def build_run_driver(
+    scenario: Scenario,
+    run_id: str,
+    repository: RunRepositoryPort,
+) -> DemoTickLoopDriver:
+    """Multi-Run-Execution S3 (ADR 0069 §2.4): baut einen per-Run-`TickLoop`
+    + `DemoTickLoopDriver` aus einem bereits kanonisierten `Scenario`.
+
+    Spiegelt die Konstruktion in `configure_scenario_demo_run`, aber **ohne**
+    `app.state`-/Registry-Wiring — der Aufrufer (`POST /runs/{id}/start`)
+    registriert den Driver in der `RunDriverRegistry` (S2). Per-Run-Isolation
+    (ADR 0069 §2.3): eigener Clock + Random-Root + Telemetrie-Sink je Lauf.
+
+    Der `RandomPort`-Wurzelseed kommt aus `scenario.simulation.seed` — das
+    Scenario (hash-identifiziert) ist die Quelle der Sim-Parameter (wie
+    `tick_ms`, siehe `build_tick_loop`); `RunMetadata.seed` ist der
+    protokollierte Request-Wert.
+    """
+    clock = _DemoSimulationClock()
+    random_root = MersenneTwisterRandomPort(seed=scenario.simulation.seed)
+    fault_port = _compose_fault_port(scenario.faults)
+    telemetry_sink = InMemoryTelemetrySink()
+    wiring = TickLoopWiring(
+        run_repository=repository,
+        alarm_id_source=_alarm_id_source(),
+        fault_port=fault_port,
+        telemetry_sink=telemetry_sink,
+        replay_snapshot=InMemoryReplaySnapshot(telemetry_sink),
+    )
+    tick_loop = build_tick_loop(
+        scenario,
+        run_id=run_id,
+        clock=clock,
+        random_root=random_root,
+        wiring=wiring,
+    )
+    resolved_tick_interval_s = min(_DEFAULT_TICK_INTERVAL_S, scenario.simulation.tick_ms / 1000.0)
+    return DemoTickLoopDriver(tick_loop, tick_interval_s=resolved_tick_interval_s)
 
 
 class _ScenarioDemoTickLoopDriverAlreadyConfiguredError(RuntimeError):

@@ -15,7 +15,9 @@ die Registry mit echten Drivern ueber `POST /runs/{id}/start`).
 
 from __future__ import annotations
 
-from typing import Final, Protocol
+from typing import Final, Protocol, cast
+
+from fastapi import Request
 
 from grid_gym.hexagon.core.errors import (
     RunAlreadyActiveError,
@@ -87,3 +89,33 @@ class RunDriverRegistry:
     def active_count(self) -> int:
         """Anzahl aktuell aktiver Driver."""
         return len(self._drivers)
+
+
+class _RunDriverRegistryNotConfiguredError(RuntimeError):
+    """Konfigurations-Fehler: HTTP-API ohne `RunDriverRegistry` gestartet
+    (Multi-Run-Execution S2/S3, ADR 0069 §2.2/§2.4).
+
+    Erbt von `RuntimeError`, damit FastAPI das auf `500 Internal Server
+    Error` mappt — analog `_TickLoopRegistryNotConfiguredError`.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "RunDriverRegistry is not configured. Call "
+            "grid_gym.adapters.driving.http_api._run_driver_setup."
+            "configure_run_driver_registry before serving requests."
+        )
+
+
+def get_run_driver_registry(request: Request) -> RunDriverRegistry:
+    """Dependency-Provider fuer die `RunDriverRegistry` (Multi-Run-Execution
+    S3, ADR 0069 §2.4). Pattern analog `get_tick_loop_registry`.
+
+    Wirft `_RunDriverRegistryNotConfiguredError`, wenn die App nicht
+    konfiguriert ist — der `POST /runs/{id}/start`-Endpoint benoetigt die
+    Registry.
+    """
+    registry = getattr(request.app.state, "run_driver_registry", None)
+    if registry is None:
+        raise _RunDriverRegistryNotConfiguredError
+    return cast(RunDriverRegistry, registry)

@@ -454,6 +454,9 @@ from grid_gym.adapters.driving.http_api._ready_router import ready_router
 from grid_gym.adapters.driving.http_api._runs_action_router import (
     runs_action_router,
 )
+from grid_gym.adapters.driving.http_api._run_start_router import (
+    runs_start_router,
+)
 from grid_gym.adapters.driving.http_api._runs_router import runs_router
 from grid_gym.adapters.driving.http_api._scenarios_router import (
     scenarios_router,
@@ -462,6 +465,7 @@ from grid_gym.adapters.driving.http_api._scenarios_router import (
 app.include_router(runs_router)
 app.include_router(runs_action_router)
 app.include_router(scenarios_router)
+app.include_router(runs_start_router)
 # M6-Welle-4b-c: NEU Backpressure-Healthcheck-Endpoint (GG-RT-001
 # 10ms-Modus). Separates Sub-Modul gegen `_runs_router.py`-Wuchs
 # (AC-NO-GOD-UTILS; C0-Review-Folge F6).

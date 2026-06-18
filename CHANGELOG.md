@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `POST /runs/{run_id}/start` — startet einen persistierten Lauf (Multi-Run-
+  Execution **S3**, ADR 0069 §2.4): loest das Scenario per `scenario_hash` aus
+  dem Store (S1) auf, baut den per-Run-`TickLoop` ueber die Composition-Bridge
+  `build_run_driver` (Hook-Inversion, ADR 0054 — der Adapter importiert
+  `core.scenario` nicht) und startet ihn in der `RunDriverRegistry` (S2).
+  Fehlerbild: 404 `run_not_found`, 422 `scenario_content_not_found`/
+  `scenario_build_failed`, 409 `run_already_active`, 429 `run_concurrency_limit`.
+  NEU `RunStartResponse`; Endpoint/Setup in `_run_start_router.py`
+  (`AC-NO-GOD-UTILS`). Damit ist ein API-Lauf ausfuehrbar — Voraussetzung fuer
+  S4 (Replay-Konsumnaht). Seed treibt aus `scenario.simulation.seed`
+  (Scenario = Quelle der Sim-Parameter); `RunMetadata.seed` ist protokolliert.
 - `RunDriverRegistry` — per-`run_id` Driver-Lifecycle mit bounded concurrency
   (Multi-Run-Execution **S2**, ADR 0069 §2.2): `register_and_start` (Reject vor
   Start → `RunConcurrencyLimitError` bei Limit, `RunAlreadyActiveError` bei

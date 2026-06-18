@@ -1,9 +1,9 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 + S2 geliefert**
+**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 + S2 + S3 geliefert**
 (2026-06-18); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
 (`Provisional`). ADR-`Accepted` folgt mit der Implementierungs-Wellen-Closure
-(S3–S4, gates gruen).
+(S4, gates gruen).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -43,7 +43,7 @@ Alternativen (Inline-Body / Server-Library) verworfen.
 | **S0** | [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Proposed → Provisional` ✓ (2026-06-18); Scenario-Aufloesung (A1) + Start-Semantik mitgetragen. `Accepted` folgt bei Implementierungs-Closure | Architect / ADR |
 | **S1** ✓ | `ScenarioStorePort` + InMemory-Store + `POST /scenarios` + Hash-Mismatch-Reject — **geliefert 2026-06-18** (commit `4f3a8b2`): Intake-Bridge im Composition-Root (Hook-Inversion), Endpoint/Setup in dedizierten Sub-Modulen (God-Modul-Vermeidung, max 5 public Funktionen). Happy/Boundary/Negative-Pins, `make gates` gruen. | Implementation |
 | **S2** ✓ | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all — **geliefert 2026-06-18**: `register_and_start`/`stop`/`stop_all`, `RunConcurrencyLimitError`/`RunAlreadyActiveError`, Lifespan-Naht (`finalize()`-garantiert). Pins inkl. Shutdown. | Implementation |
-| **S3** | `POST /runs/{id}/start` + 409/404/422-Semantik + per-Run-Telemetrie-Sink | Implementation |
+| **S3** ✓ | `POST /runs/{id}/start` + 404/422/409/429-Semantik + per-Run-Telemetrie-Sink — **geliefert 2026-06-18**: Scenario aus Store (S1) → Composition-Bridge `build_run_driver` (Hook-Inversion) → `RunDriverRegistry` (S2). NEU `RunStartResponse`; Pins inkl. Build-Failure-422. | Implementation |
 | **S4** | **Replay-Konsumnaht (039 Phase B):** `replay_of`-from-Metadata → `finalize()` difft; Pins; **schliesst 039+040** | Implementation |
 
 Postgres-Paritaet + Integration-Smoke je Slice (Replay-Disziplin: Happy/
@@ -75,6 +75,12 @@ Boundary/Negative).
 - **Ressourcen/Concurrency** (viele Laeufe) → Cap + Reject ([`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)).
 - **Determinismus** unter parallelen Drivern → strikte Per-Run-Isolation
   (Clock/Random/Sink).
+- **S3-Decisions fuer Welle-Review:** (a) RNG-Seed kommt aus
+  `scenario.simulation.seed` (Scenario = Quelle der Sim-Parameter wie `tick_ms`);
+  `RunMetadata.seed` ist protokolliert, treibt aber nicht die Execution —
+  Reconcile/Override ist offen. (b) Asymmetrie load-valid vs. build-valid: ein
+  Scenario kann `POST /scenarios` bestehen (`load_scenario`), aber am Start nicht
+  baubar sein (`build_devices`) → 422 `scenario_build_failed` statt 500.
 
 ## Bezug
 
