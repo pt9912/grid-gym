@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Replay-Konsumnaht (Multi-Run-Execution **S4**, ADR 0069 §2.5): `build_run_driver`
+  liest `metadata.replay_of` und verdrahtet `replay_reference_run_id` +
+  `replay_snapshot` → `finalize()` difft einen API-Replay-Lauf gegen seinen
+  Referenzlauf an der `run_session()`-Naht (ADR 0067). Referenz-Samples aus einem
+  **geteilten** In-Memory-Telemetrie-Sink (keyed by `run_id`, prozess-weit in
+  `composition.asgi`) — verfeinert ADR 0069 §2.3 (Isolation per `run_id`-Key statt
+  separater Sink-Objekte; Postgres-Reconstruction nach ADR 0048 = deferred
+  Deployment-Pfad). **Schliesst Slice 039 Phase B** (finalize-Konsum der
+  persistierten Bindung); das Replay-Paar 039+040 ist closure-reif (Move +
+  Welle-Review folgen). Pin: echter Cross-Run-Diff (Lauf B replays Lauf A,
+  leerer Diff).
 - `POST /runs/{run_id}/start` — startet einen persistierten Lauf (Multi-Run-
   Execution **S3**, ADR 0069 §2.4): loest das Scenario per `scenario_hash` aus
   dem Store (S1) auf, baut den per-Run-`TickLoop` ueber die Composition-Bridge

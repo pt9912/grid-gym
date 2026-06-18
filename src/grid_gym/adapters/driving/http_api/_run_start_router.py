@@ -43,11 +43,12 @@ from grid_gym.hexagon.ports.driven.scenario_store import ScenarioStorePort
 runs_start_router = APIRouter(tags=["runs"])
 
 
-RunDriverBuilder = Callable[[Scenario, str, RunRepositoryPort], RunDriver]
+RunDriverBuilder = Callable[[Scenario, str, RunRepositoryPort, str | None], RunDriver]
 """Signatur der per-Run-Driver-Bau-Bridge (Composition: baut `TickLoop` +
-`DemoTickLoopDriver` aus einem Scenario). Per `_register_run_driver_builder`
-injiziert (Hook-Inversion, ADR 0054) — dieser Router importiert
-`build_tick_loop` (`core.scenario`) nicht (`AC-ADAPTER-PURE`)."""
+`DemoTickLoopDriver` aus Scenario + `replay_of`). Per `_register_run_driver_builder`
+injiziert (Hook-Inversion, ADR 0054) — dieser Router importiert `build_tick_loop`
+(`core.scenario`) nicht (`AC-ADAPTER-PURE`). Der geteilte Telemetrie-Sink (S4,
+ADR 0069 §2.3) ist im registrierten Builder gebunden, nicht hier."""
 
 
 class _RunDriverBuilderNotRegisteredError(RuntimeError):
@@ -64,7 +65,10 @@ class _RunDriverBuilderNotRegisteredError(RuntimeError):
 
 
 def _raise_run_driver_builder_unregistered(
-    _scenario: Scenario, _run_id: str, _repository: RunRepositoryPort
+    _scenario: Scenario,
+    _run_id: str,
+    _repository: RunRepositoryPort,
+    _replay_of: str | None,
 ) -> RunDriver:
     """Fail-closed Default — aktiv, solange der Composition-Root keine Bridge
     registriert hat."""
@@ -127,7 +131,7 @@ async def post_run_start(
         raise HTTPException(status_code=422, detail=error.model_dump())
 
     try:
-        driver = _run_driver_builder(scenario, run_id, repository)
+        driver = _run_driver_builder(scenario, run_id, repository, metadata.replay_of)
     except (ScenarioError, SnapshotFormatError) as exc:
         # Das Scenario laedt (POST /scenarios), laesst sich aber nicht in einen
         # TickLoop bauen (z. B. unvollstaendige Device-Params) — Client-Daten-

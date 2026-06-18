@@ -25,6 +25,7 @@ from grid_gym.adapters.driving.http_api._run_driver_setup import (
 from grid_gym.adapters.driving.http_api._scenario_setup import configure_scenario_store
 from grid_gym.adapters.driving.http_api.app import app, configure_run_repository
 from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.errors import ScenarioError
 from grid_gym.hexagon.core.scenario.loader import load_scenario
 
 _RAW = {
@@ -50,8 +51,19 @@ class _FakeDriver:
         self.stopped = True
 
 
-def _fake_builder(_scenario: object, _run_id: str, _repository: object) -> _FakeDriver:
+def _fake_builder(
+    _scenario: object, _run_id: str, _repository: object, _replay_of: str | None
+) -> _FakeDriver:
     return _FakeDriver()
+
+
+def _build_failing_builder(
+    _scenario: object, _run_id: str, _repository: object, _replay_of: str | None
+) -> object:
+    # Simuliert einen load-valid-aber-build-invalid-Scenario (z. B. unvollstaendige
+    # Device-Params): der echte build_run_driver wuerde hier eine SnapshotFormatError-
+    # /ScenarioError-Familie werfen.
+    raise ScenarioError("simulated scenario build failure")
 
 
 def _metadata(run_id: str, scenario_hash: str) -> RunMetadata:
@@ -184,12 +196,10 @@ def test_start_builder_not_registered_500() -> None:
         _reset_app_state()
 
 
-def test_start_unbuildable_scenario_422() -> None:
-    """Scenario laedt (load_scenario), baut aber nicht (grid_connection ohne
-    Pflicht-Params) — echter Builder → 422 `scenario_build_failed`."""
-    from grid_gym.composition._demo_scenario_setup import build_run_driver
-
-    loaded = load_scenario(_RAW)  # _RAW: grid_connection mit leeren params
+def test_start_build_failure_422() -> None:
+    """Builder wirft `ScenarioError`/`SnapshotFormatError` (Scenario load-valid,
+    aber nicht baubar) → 422 `scenario_build_failed`."""
+    loaded = load_scenario(_RAW)
     run_id = "run-5"
     repository = InMemoryRunRepository()
     repository.save(_metadata(run_id, loaded.scenario_hash))
@@ -199,7 +209,7 @@ def test_start_unbuildable_scenario_422() -> None:
     configure_scenario_store(store)
     configure_run_driver_registry(RunDriverRegistry())
     saved = start_router._run_driver_builder
-    start_router._register_run_driver_builder(build_run_driver)
+    start_router._register_run_driver_builder(_build_failing_builder)
     try:
         client = TestClient(app, raise_server_exceptions=False)
         resp = client.post(f"/runs/{run_id}/start")

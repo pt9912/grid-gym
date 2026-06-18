@@ -1,9 +1,10 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 + S2 + S3 geliefert**
+**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1–S4 geliefert**
 (2026-06-18); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
-(`Provisional`). ADR-`Accepted` folgt mit der Implementierungs-Wellen-Closure
-(S4, gates gruen).
+(`Provisional`). **Alle Slices ✓ — Welle ist review-/closure-reif.** ADR-`Accepted`
++ Replay-Paar-Closure (039+040 → `done/`) + Plan-Move nach `done/` folgen mit der
+Wellen-Closure (Review der ganzen Welle + `make fullbuild`).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -44,7 +45,7 @@ Alternativen (Inline-Body / Server-Library) verworfen.
 | **S1** ✓ | `ScenarioStorePort` + InMemory-Store + `POST /scenarios` + Hash-Mismatch-Reject — **geliefert 2026-06-18** (commit `4f3a8b2`): Intake-Bridge im Composition-Root (Hook-Inversion), Endpoint/Setup in dedizierten Sub-Modulen (God-Modul-Vermeidung, max 5 public Funktionen). Happy/Boundary/Negative-Pins, `make gates` gruen. | Implementation |
 | **S2** ✓ | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all — **geliefert 2026-06-18**: `register_and_start`/`stop`/`stop_all`, `RunConcurrencyLimitError`/`RunAlreadyActiveError`, Lifespan-Naht (`finalize()`-garantiert). Pins inkl. Shutdown. | Implementation |
 | **S3** ✓ | `POST /runs/{id}/start` + 404/422/409/429-Semantik + per-Run-Telemetrie-Sink — **geliefert 2026-06-18**: Scenario aus Store (S1) → Composition-Bridge `build_run_driver` (Hook-Inversion) → `RunDriverRegistry` (S2). NEU `RunStartResponse`; Pins inkl. Build-Failure-422. | Implementation |
-| **S4** | **Replay-Konsumnaht (039 Phase B):** `replay_of`-from-Metadata → `finalize()` difft; Pins; **schliesst 039+040** | Implementation |
+| **S4** ✓ | **Replay-Konsumnaht (039 Phase B):** `build_run_driver` verdrahtet `replay_of` → `finalize()` difft gegen den Referenzlauf (geteilter Sink, §2.3-Verfeinerung) — **geliefert 2026-06-18**. Pin: echter Cross-Run-Diff. Schliesst 039 Phase B; Paar-Closure 039+040 mit der Wellen-Closure. | Implementation |
 
 Postgres-Paritaet + Integration-Smoke je Slice (Replay-Disziplin: Happy/
 Boundary/Negative).
