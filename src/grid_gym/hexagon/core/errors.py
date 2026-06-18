@@ -742,6 +742,19 @@ class ScenarioUnknownFaultTargetError(ScenarioError):
         super().__init__(f"scenario fault targets unknown device: {target!r}")
 
 
+class ScenarioUnknownCommandTargetError(ScenarioError):
+    """Ein scenario-geplanter Command referenziert eine Geraete-ID, die
+    nicht in `devices` definiert ist (ADR 0070, Trigger 046).
+
+    Spiegelt `ScenarioUnknownFaultTargetError`: Fail-fast im Scenario-
+    Validator (`_assert_command_list`), bevor der TickLoop einen Command
+    auf ein nicht-existierendes Device zustellen koennte.
+    """
+
+    def __init__(self, target: str) -> None:
+        super().__init__(f"scenario command targets unknown device: {target!r}")
+
+
 class ScenarioInvalidLoadTargetError(ScenarioError):
     """Welle-6b-Review M-6 (ADR 0021 §2.5 + §2.7):
     `LoadEvent.target_device_id` bzw. `LoadProfile.target_device_id`

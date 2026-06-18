@@ -100,6 +100,13 @@ LOAD_EVENT_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset({"start_s", "durati
 # bleiben int-typed.
 RULE_PAYLOAD_DECIMAL_KEYS: Final[frozenset[str]] = frozenset({"value", "power_kw"})
 
+# ADR 0070 (Trigger 046): scenario-`commands`-Block. `payload.value` ist nur fuer
+# numerische Command-Typen ein Decimal-kW-Wert; `set_plug_state` traegt einen
+# String-Enum-Wert (z. B. "plugged") und wird bewusst NICHT coerced (sonst
+# `Decimal("plugged")` -> InvalidOperation). Typ-bewusste Allowlist.
+COMMAND_DECIMAL_VALUE_TYPES: Final[frozenset[str]] = frozenset({"set_charge_power", "set_power_kw"})
+_COMMAND_PAYLOAD_DECIMAL_KEYS: Final[frozenset[str]] = frozenset({"value", "power_kw"})
+
 
 class ScenarioYamlError(ValueError):
     """Wurzel fuer YAML-Lade-/Koercions-Fehler dieses Helpers."""
@@ -186,6 +193,10 @@ def _coerce_decimals(raw: Mapping[str, Any]) -> dict[str, Any]:
             agent_id: _coerce_agent(agent_def) for agent_id, agent_def in agents.items()
         }
 
+    commands = result.get("commands")
+    if isinstance(commands, list):
+        result["commands"] = [_coerce_command(entry) for entry in commands]
+
     return result
 
 
@@ -245,6 +256,28 @@ def _coerce_agent_params(params: Mapping[str, Any]) -> dict[str, Any]:
     rules = result.get("rules")
     if isinstance(rules, list):
         result["rules"] = [_coerce_rule(rule) for rule in rules]
+    return result
+
+
+def _coerce_command(entry: Any) -> Any:
+    """ADR 0070 (Trigger 046): coerced `payload.value`/`power_kw` (str -> Decimal)
+    nur fuer numerische Command-Typen (`COMMAND_DECIMAL_VALUE_TYPES`).
+    `set_plug_state` o. Ae. bleibt unangetastet (String-Enum-Wert)."""
+    if not isinstance(entry, Mapping):
+        return entry
+    result = dict(entry)
+    if result.get("type") not in COMMAND_DECIMAL_VALUE_TYPES:
+        return result
+    payload = result.get("payload")
+    if isinstance(payload, Mapping):
+        result["payload"] = {
+            key: (
+                _safe_decimal(value, f"commands.payload.{key}")
+                if key in _COMMAND_PAYLOAD_DECIMAL_KEYS and isinstance(value, str)
+                else value
+            )
+            for key, value in payload.items()
+        }
     return result
 
 

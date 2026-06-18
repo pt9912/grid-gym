@@ -114,6 +114,23 @@ class ScenarioFault:
 
 
 @dataclass(frozen=True, slots=True)
+class ScenarioCommand:
+    """Scenario-deklarierter, tick-genau geplanter Steuerbefehl an ein
+    Geraet (ADR 0070; Trigger 046).
+
+    Punkt-in-der-Zeit (kein Fenster/Recovery wie `ScenarioFault`): am Tick,
+    dessen Span `simulation_time` (ms) enthaelt, wird `Command(type, payload)`
+    an `target` zugestellt (`apply_command`, ADR 0013 §2.3). Strukturell wie
+    `ScenarioEvent`, aber dediziert fuer den Command-Pfad.
+    """
+
+    simulation_time: int
+    target: str
+    type: str
+    payload: Mapping[str, object]
+
+
+@dataclass(frozen=True, slots=True)
 class ScenarioAgent:
     """Agent-Definition im Szenario (M3 Welle 4b, ADR 0027 §2.2).
 
@@ -150,6 +167,9 @@ class Scenario:
     - `agents` (M3-Welle-4b, ADR 0027 §2.1): optionaler nested
       `agents`-Block; Default leer fuer Welle-1..6-Szenarien
       ohne Agenten.
+    - `commands` (ADR 0070, Trigger 046): optionaler `commands`-Block;
+      tick-genau geplante Steuerbefehle an Geraete, Default leer
+      (opt-in aus der `scenario_hash`-Form, siehe Loader).
 
     `scenario_hash` wird vom Loader berechnet (nicht hier) per
     `canonical_json(asdict(scenario))` + SHA-256 — siehe
@@ -169,3 +189,6 @@ class Scenario:
     load_profiles: "tuple[LoadProfile, ...]" = ()
     # M3-Welle-4b (ADR 0027 §2.1): optionaler nested agents-Block.
     agents: tuple[ScenarioAgent, ...] = ()
+    # ADR 0070 (Trigger 046): optionaler scenario-scheduled Command-Block
+    # (opt-in aus der scenario_hash-Form, pin-neutral wenn leer).
+    commands: tuple[ScenarioCommand, ...] = ()

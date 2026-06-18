@@ -52,6 +52,7 @@ from grid_gym.hexagon.core.devices.wind_turbine import WindTurbineDevice
 from grid_gym.hexagon.core.domain.scenario import (
     Scenario,
     ScenarioAgent,
+    ScenarioCommand,
     ScenarioDevice,
     ScenarioEvent,
     ScenarioFault,
@@ -176,6 +177,12 @@ def _scenario_hash_payload(scenario: Scenario) -> dict[str, object]:
                 == DEFAULT_VOLTAGE_SENSITIVITY_V_PER_KVAR
             ):
                 config_payload.pop("voltage_sensitivity_v_per_kvar", None)
+    # ADR 0070 (Trigger 046): der `commands`-Block ist opt-in — im Default
+    # (leer) aus der Hash-Form entfernen, damit der additive Schema-Zuwachs
+    # den scenario_hash eines Bestands-Szenarios NICHT verschiebt
+    # (EXPECTED_DEMO_*-Pins + Replay-Baselines stabil).
+    if not scenario.commands:
+        payload.pop("commands", None)
     return payload
 
 
@@ -213,6 +220,8 @@ def _build_scenario(raw: Mapping[str, object]) -> Scenario:
         load_profiles=parse_load_profiles(raw),
         # M3-Welle-4b (ADR 0027 §2.1): optionaler nested agents-Block.
         agents=_parse_agents(raw),
+        # ADR 0070 (Trigger 046): optionaler scenario-scheduled Command-Block.
+        commands=_build_commands(raw),
     )
 
 
@@ -273,6 +282,23 @@ def _build_fault(entry: object) -> ScenarioFault:
         type=cast(str, mapping["type"]),
         payload=cast(Mapping[str, object], mapping["payload"]),
         recovery=cast(str, mapping["recovery"]),
+    )
+
+
+def _build_commands(raw: Mapping[str, object]) -> tuple[ScenarioCommand, ...]:
+    if "commands" not in raw:
+        return ()
+    commands = cast(list[object], raw["commands"])
+    return tuple(_build_command(entry) for entry in commands)
+
+
+def _build_command(entry: object) -> ScenarioCommand:
+    mapping = cast(Mapping[str, object], entry)
+    return ScenarioCommand(
+        simulation_time=cast(int, mapping["simulation_time"]),
+        target=cast(str, mapping["target"]),
+        type=cast(str, mapping["type"]),
+        payload=cast(Mapping[str, object], mapping["payload"]),
     )
 
 

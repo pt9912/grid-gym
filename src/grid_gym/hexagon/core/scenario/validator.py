@@ -35,6 +35,7 @@ from grid_gym.hexagon.core.errors import (
     ScenarioInvalidRuleComparatorError,
     ScenarioInvalidRuleMetricError,
     ScenarioMissingKeysError,
+    ScenarioUnknownCommandTargetError,
     ScenarioUnknownEventTargetError,
     ScenarioUnknownFaultTargetError,
     ScenarioUnsupportedReplayFormatError,
@@ -76,6 +77,11 @@ _REQUIRED_REPLAY: Final[frozenset[str]] = frozenset(
 )
 _REQUIRED_FAULT: Final[frozenset[str]] = frozenset(
     {"start_simulation_time", "duration_ms", "target", "type", "payload", "recovery"}
+)
+# ADR 0070 (Trigger 046): scenario-scheduled Commands — Punkt-in-der-Zeit
+# (kein duration/recovery wie bei Faults).
+_REQUIRED_COMMAND: Final[frozenset[str]] = frozenset(
+    {"simulation_time", "target", "type", "payload"}
 )
 
 # Welle-6b (ADR 0021 §2.3): optionale Welle-6b-Top-Level-Sektionen.
@@ -150,6 +156,8 @@ def validate_scenario_mapping(raw: Mapping[str, object]) -> None:
     _assert_event_list(raw, devices)
     _assert_replay_reference(raw)
     _assert_fault_list(raw, devices)
+    # ADR 0070 (Trigger 046): optionaler scenario-scheduled `commands`-Block.
+    _assert_command_list(raw, devices)
     # Welle-6b (ADR 0021 §2.3): drei optionale Top-Level-Sektionen.
     _assert_grid_model_block(raw)
     _assert_load_events_block(raw, devices)
@@ -313,6 +321,42 @@ def _assert_fault_list(
         target = entry["target"]
         if isinstance(target, str) and target not in device_ids:
             raise ScenarioUnknownFaultTargetError(target)
+
+
+def _assert_command_list(
+    raw: Mapping[str, object],
+    devices: list[Mapping[str, object]],
+) -> None:
+    """Validiert den optionalen `commands`-Block (ADR 0070, Trigger 046).
+
+    Scenario-deklarierte, tick-genau geplante Steuerbefehle an Geraete.
+    Strukturvertrag (Pflicht-Felder, Typen, Payload-Canonical-Check) +
+    Target-Existenz-Check analog `_assert_fault_list`/`_assert_event_list`.
+    Punkt-in-der-Zeit: `simulation_time` statt `start_simulation_time`/
+    `duration_ms`, kein `recovery`.
+    """
+    if "commands" not in raw:
+        return
+    raw_commands = raw["commands"]
+    if not isinstance(raw_commands, list):
+        raise ScenarioWrongTypeError("commands", "list", type(raw_commands).__name__)
+    device_ids: set[str] = {cast(str, device["id"]) for device in devices}
+    for index, entry in enumerate(raw_commands):
+        if not isinstance(entry, Mapping):
+            raise ScenarioWrongTypeError(f"commands[{index}]", "Mapping", type(entry).__name__)
+        _assert_required_keys(f"commands[{index}]", entry, _REQUIRED_COMMAND)
+        _assert_int(entry, f"commands[{index}].simulation_time")
+        _assert_str(entry, f"commands[{index}].target")
+        _assert_str(entry, f"commands[{index}].type")
+        payload = entry["payload"]
+        if not isinstance(payload, Mapping):
+            raise ScenarioWrongTypeError(
+                f"commands[{index}].payload", "Mapping", type(payload).__name__
+            )
+        assert_payload_canonical_compatible(payload, "scenario", f"commands[{index}].payload")
+        target = entry["target"]
+        if isinstance(target, str) and target not in device_ids:
+            raise ScenarioUnknownCommandTargetError(target)
 
 
 # ---------------------------------------------------------------------------
