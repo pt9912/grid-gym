@@ -44,6 +44,11 @@ class RunDriver(Protocol):
         """Stoppt den Driver + garantiert `finalize()` (ADR 0067)."""
         ...
 
+    @property
+    def is_running(self) -> bool:
+        """`True`, solange der Lauf aktiv getrieben wird (Task laeuft)."""
+        ...
+
 
 class RunDriverRegistry:
     """Adapter-internes `{run_id: RunDriver}`-Mapping mit bounded concurrency
@@ -56,16 +61,29 @@ class RunDriverRegistry:
     def register_and_start(self, run_id: str, driver: RunDriver) -> None:
         """Registriert + startet einen Driver fuer `run_id`.
 
-        Wirft `RunAlreadyActiveError`, wenn fuer `run_id` schon ein Driver
-        laeuft; `RunConcurrencyLimitError`, wenn das Maximum aktiver Laeufe
-        erreicht ist — Reject **vor** dem Start (kein verwaister Task).
+        Wirft `RunAlreadyActiveError`, wenn fuer `run_id` schon ein **laufender**
+        Driver registriert ist; `RunConcurrencyLimitError`, wenn das Maximum
+        gleichzeitig **aktiver** Laeufe erreicht ist — Reject **vor** dem Start
+        (kein verwaister Task). Terminierte Laeufe werden zuvor evakuiert (ihr
+        Slot ist frei + ihr `run_id` neu startbar).
         """
+        self._evict_terminated()
         if run_id in self._drivers:
             raise RunAlreadyActiveError(run_id)
         if len(self._drivers) >= self._max_active_runs:
             raise RunConcurrencyLimitError(self._max_active_runs)
         driver.start()
         self._drivers[run_id] = driver
+
+    def _evict_terminated(self) -> None:
+        """Entfernt Driver, deren Lauf terminiert ist (`is_running` False) — gibt
+        ihren Concurrency-Slot frei. Ohne das zaehlte der Cap registrierte statt
+        aktive Laeufe (Review-MEDIUM); ein API-Lauf terminiert mangels Tick-Budget
+        zwar selten von selbst, aber `stop()` + natuerliche Terminierung sollen
+        den Slot freigeben."""
+        self._drivers = {
+            run_id: driver for run_id, driver in self._drivers.items() if driver.is_running
+        }
 
     async def stop(self, run_id: str) -> None:
         """Stoppt + entfernt den Driver fuer `run_id`; no-op, wenn keiner
@@ -82,13 +100,14 @@ class RunDriverRegistry:
         self._drivers.clear()
 
     def is_active(self, run_id: str) -> bool:
-        """`True`, wenn fuer `run_id` ein Driver aktiv registriert ist."""
-        return run_id in self._drivers
+        """`True`, wenn fuer `run_id` ein **laufender** Driver registriert ist."""
+        driver = self._drivers.get(run_id)
+        return driver is not None and driver.is_running
 
     @property
     def active_count(self) -> int:
-        """Anzahl aktuell aktiver Driver."""
-        return len(self._drivers)
+        """Anzahl aktuell **laufender** Driver (terminierte zaehlen nicht)."""
+        return sum(1 for driver in self._drivers.values() if driver.is_running)
 
 
 class _RunDriverRegistryNotConfiguredError(RuntimeError):

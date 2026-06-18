@@ -1,10 +1,11 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1–S4 geliefert**
-(2026-06-18); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
-(`Provisional`). **Alle Slices ✓ — Welle ist review-/closure-reif.** ADR-`Accepted`
-+ Replay-Paar-Closure (039+040 → `done/`) + Plan-Move nach `done/` folgen mit der
-Wellen-Closure (Review der ganzen Welle + `make fullbuild`).
+**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1–S4 geliefert + Welle-Review
+durchgefuehrt, HIGH/MEDIUM-Findings adressiert** (2026-06-18); Architektur
+[`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
+(`Provisional`). **Acceptance-reif** (Residuen dokumentiert, §Risiken). ADR-
+`Accepted` + Replay-Paar-Closure (039+040 → `done/`) + Plan-Move nach `done/`
+folgen mit der Wellen-Closure (`make fullbuild`).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -76,12 +77,24 @@ Boundary/Negative).
 - **Ressourcen/Concurrency** (viele Laeufe) → Cap + Reject ([`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)).
 - **Determinismus** unter parallelen Drivern → strikte Per-Run-Isolation
   (Clock/Random/Sink).
-- **S3-Decisions fuer Welle-Review:** (a) RNG-Seed kommt aus
-  `scenario.simulation.seed` (Scenario = Quelle der Sim-Parameter wie `tick_ms`);
-  `RunMetadata.seed` ist protokolliert, treibt aber nicht die Execution —
-  Reconcile/Override ist offen. (b) Asymmetrie load-valid vs. build-valid: ein
-  Scenario kann `POST /scenarios` bestehen (`load_scenario`), aber am Start nicht
-  baubar sein (`build_devices`) → 422 `scenario_build_failed` statt 500.
+- **Welle-Review (durchgefuehrt, frischer Reviewer-Kontext) — Findings + Resolution:**
+  - **HIGH (geloest):** Start-Endpoint-`except` fing nur
+    `ScenarioError`/`SnapshotFormatError`, **nicht** die Device-Config-Fehler
+    (`*ConfigError` = `GridGymError`) → 500 statt 422. Fix: `except GridGymError`
+    + repraesentativer Pin (`grid_connection max_import_kw=0` → 422
+    `scenario_build_failed`).
+  - **MEDIUM (geloest):** (a) Execution-Seed jetzt aus `RunMetadata.seed`
+    (`build_run_driver` liest die Metadata; deckt sich mit dem Replay-Preflight-
+    Feld). (b) `RunDriverRegistry`-Cap zaehlt jetzt **aktive** statt registrierte
+    Driver (`_evict_terminated` + `is_running`); terminierte Laeufe geben ihren
+    Slot frei + sind neu startbar. (c) LOW: terminale Laeufe → 409
+    `run_already_terminal`; Start-Echo `status="accepted"`.
+  - **Residuen (dokumentiert, deferred):** der geteilte In-Memory-Sink ist
+    unbounded + prozess-weit (Showcase; Postgres-`ReplaySnapshot` nach ADR 0048 =
+    Deployment-Fix), `read_ordered` ist O(n·m); **kein** Runtime-`POST /runs/{id}/
+    stop` auf die `RunDriverRegistry` — Slots frei nur bei natuerlicher Termination
+    / Lifespan-Shutdown (API-Laeufe haben mangels Tick-Budget kein Auto-Ende).
+    Beide vor ADR-0069-Acceptance bewusst zu tragen (oder Folge-Slice).
 
 ## Bezug
 

@@ -46,15 +46,14 @@ def _build_run_driver_with_shared_sink(
     scenario: Scenario,
     run_id: str,
     repository: RunRepositoryPort,
-    replay_of: str | None,
 ) -> RunDriver:
     """Hook-Inversion-Wrapper: bindet den prozess-weiten geteilten Sink an
-    `build_run_driver` (S4, ADR 0069 §2.3/§2.5)."""
+    `build_run_driver` (S4, ADR 0069 §2.3/§2.5). Seed + `replay_of` liest
+    `build_run_driver` aus der `RunMetadata`."""
     return build_run_driver(
         scenario,
         run_id,
         repository,
-        replay_of=replay_of,
         telemetry_sink=_RUN_TELEMETRY_SINK,
     )
 

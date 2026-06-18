@@ -31,11 +31,10 @@ from grid_gym.adapters.driving.http_api._run_driver_registry import (
 from grid_gym.adapters.driving.http_api._schemas import ErrorResponse, RunStartResponse
 from grid_gym.hexagon.core.domain.scenario import Scenario
 from grid_gym.hexagon.core.errors import (
+    GridGymError,
     RunAlreadyActiveError,
     RunConcurrencyLimitError,
     RunNotFoundError,
-    ScenarioError,
-    SnapshotFormatError,
 )
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driven.scenario_store import ScenarioStorePort
@@ -43,12 +42,13 @@ from grid_gym.hexagon.ports.driven.scenario_store import ScenarioStorePort
 runs_start_router = APIRouter(tags=["runs"])
 
 
-RunDriverBuilder = Callable[[Scenario, str, RunRepositoryPort, str | None], RunDriver]
+RunDriverBuilder = Callable[[Scenario, str, RunRepositoryPort], RunDriver]
 """Signatur der per-Run-Driver-Bau-Bridge (Composition: baut `TickLoop` +
-`DemoTickLoopDriver` aus Scenario + `replay_of`). Per `_register_run_driver_builder`
-injiziert (Hook-Inversion, ADR 0054) — dieser Router importiert `build_tick_loop`
-(`core.scenario`) nicht (`AC-ADAPTER-PURE`). Der geteilte Telemetrie-Sink (S4,
-ADR 0069 §2.3) ist im registrierten Builder gebunden, nicht hier."""
+`DemoTickLoopDriver`). Per `_register_run_driver_builder` injiziert (Hook-
+Inversion, ADR 0054) — dieser Router importiert `build_tick_loop`
+(`core.scenario`) nicht (`AC-ADAPTER-PURE`). Seed + `replay_of` liest der Builder
+aus der persistierten `RunMetadata`; der geteilte Telemetrie-Sink (S4, ADR 0069
+§2.3) ist im registrierten Builder gebunden."""
 
 
 class _RunDriverBuilderNotRegisteredError(RuntimeError):
@@ -65,10 +65,7 @@ class _RunDriverBuilderNotRegisteredError(RuntimeError):
 
 
 def _raise_run_driver_builder_unregistered(
-    _scenario: Scenario,
-    _run_id: str,
-    _repository: RunRepositoryPort,
-    _replay_of: str | None,
+    _scenario: Scenario, _run_id: str, _repository: RunRepositoryPort
 ) -> RunDriver:
     """Fail-closed Default — aktiv, solange der Composition-Root keine Bridge
     registriert hat."""
@@ -103,10 +100,14 @@ async def post_run_start(
     `RunDriverRegistry`.
 
     - Lauf nicht persistiert → HTTP 404 `run_not_found`.
+    - Lauf bereits terminiert (`stopped`/`completed`) → HTTP 409 `run_already_terminal`.
     - kein Scenario-Content im Store → HTTP 422 `scenario_content_not_found`.
     - Scenario load-valid, aber nicht baubar → HTTP 422 `scenario_build_failed`.
     - Lauf laeuft bereits → HTTP 409 `run_already_active`.
     - Concurrency-Limit erreicht → HTTP 429 `run_concurrency_limit`.
+
+    Antwort 202 mit `status="accepted"` — der Driver startet asynchron; der
+    persistierte Lauf-Status flippt `pending → running` beim ersten Tick.
     """
     try:
         metadata = repository.get_by_id(run_id)
@@ -117,6 +118,17 @@ async def post_run_start(
             run_id=run_id,
         )
         raise HTTPException(status_code=404, detail=error.model_dump()) from exc
+
+    run_status = repository.get_status(run_id)
+    if run_status in ("stopped", "completed"):
+        error = ErrorResponse(
+            code="run_already_terminal",
+            message=(
+                f"Run {run_id!r} has already terminated (status {run_status!r}); cannot restart."
+            ),
+            run_id=run_id,
+        )
+        raise HTTPException(status_code=409, detail=error.model_dump())
 
     scenario = scenario_store.get(metadata.scenario_hash)
     if scenario is None:
@@ -131,8 +143,8 @@ async def post_run_start(
         raise HTTPException(status_code=422, detail=error.model_dump())
 
     try:
-        driver = _run_driver_builder(scenario, run_id, repository, metadata.replay_of)
-    except (ScenarioError, SnapshotFormatError) as exc:
+        driver = _run_driver_builder(scenario, run_id, repository)
+    except GridGymError as exc:
         # Das Scenario laedt (POST /scenarios), laesst sich aber nicht in einen
         # TickLoop bauen (z. B. unvollstaendige Device-Params) — Client-Daten-
         # Problem, kein Server-Fehler.
@@ -153,4 +165,4 @@ async def post_run_start(
         error = ErrorResponse(code="run_concurrency_limit", message=str(exc), run_id=run_id)
         raise HTTPException(status_code=429, detail=error.model_dump()) from exc
 
-    return RunStartResponse(run_id=run_id, status="running")
+    return RunStartResponse(run_id=run_id, status="accepted")

@@ -160,7 +160,11 @@ class RunStartResponse(BaseModel):
 
     run_id: str = Field(description="UUIDv4-Identitaet des gestarteten Laufs.")
     status: str = Field(
-        description="Lauf-Status nach erfolgreichem Start (`running`).",
+        description=(
+            "`accepted` — der Driver startet asynchron; der persistierte Lauf-"
+            "Status (`GET /runs/{id}/status`) flippt `pending → running` beim "
+            "ersten Tick."
+        ),
     )
 
 

@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Welle-Review (Multi-Run S1–S4, frischer Reviewer-Kontext) durchgefuehrt;
+  HIGH/MEDIUM-Findings adressiert: (1) `POST /runs/{id}/start` faengt jetzt
+  `GridGymError` → ein load-valides-aber-build-invalides Scenario (z. B.
+  `grid_connection max_import_kw=0`) gibt **422 `scenario_build_failed`** statt 500.
+  (2) Execution-Seed aus `RunMetadata.seed` (deckt sich mit dem Replay-Preflight-
+  Vergleichsfeld; `build_run_driver` liest die `RunMetadata`). (3)
+  `RunDriverRegistry`-Cap zaehlt **aktive** statt registrierte Driver
+  (`_evict_terminated`/`is_running`; terminierte Slots werden frei + neu startbar).
+  (4) terminale Laeufe → 409 `run_already_terminal`; Start-Echo `status="accepted"`.
+  Residuen (unbounded geteilter Sink, kein Runtime-`POST /runs/{id}/stop`)
+  dokumentiert (`next/`-Plan §Risiken).
 - Replay-Konsumnaht (Multi-Run-Execution **S4**, ADR 0069 §2.5): `build_run_driver`
   liest `metadata.replay_of` und verdrahtet `replay_reference_run_id` +
   `replay_snapshot` → `finalize()` difft einen API-Replay-Lauf gegen seinen
@@ -25,12 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dem Store (S1) auf, baut den per-Run-`TickLoop` ueber die Composition-Bridge
   `build_run_driver` (Hook-Inversion, ADR 0054 — der Adapter importiert
   `core.scenario` nicht) und startet ihn in der `RunDriverRegistry` (S2).
-  Fehlerbild: 404 `run_not_found`, 422 `scenario_content_not_found`/
-  `scenario_build_failed`, 409 `run_already_active`, 429 `run_concurrency_limit`.
-  NEU `RunStartResponse`; Endpoint/Setup in `_run_start_router.py`
-  (`AC-NO-GOD-UTILS`). Damit ist ein API-Lauf ausfuehrbar — Voraussetzung fuer
-  S4 (Replay-Konsumnaht). Seed treibt aus `scenario.simulation.seed`
-  (Scenario = Quelle der Sim-Parameter); `RunMetadata.seed` ist protokolliert.
+  Fehlerbild: 404 `run_not_found`, 409 `run_already_terminal`/`run_already_active`,
+  422 `scenario_content_not_found`/`scenario_build_failed`, 429
+  `run_concurrency_limit`. NEU `RunStartResponse` (`status="accepted"`); Endpoint/
+  Setup in `_run_start_router.py` (`AC-NO-GOD-UTILS`). Damit ist ein API-Lauf
+  ausfuehrbar — Voraussetzung fuer S4. Execution-Seed aus `RunMetadata.seed`
+  (deckt sich mit dem Replay-Preflight).
 - `RunDriverRegistry` — per-`run_id` Driver-Lifecycle mit bounded concurrency
   (Multi-Run-Execution **S2**, ADR 0069 §2.2): `register_and_start` (Reject vor
   Start → `RunConcurrencyLimitError` bei Limit, `RunAlreadyActiveError` bei

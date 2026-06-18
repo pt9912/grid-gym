@@ -2,8 +2,9 @@
 ADR 0069 §2.4/§2.5).
 
 S3: baut aus einem kanonisierten Scenario einen ungestarteten per-Run-Driver.
-S4: bei gesetztem `replay_of` difft `finalize()` den Lauf gegen seinen
+S4: bei gesetztem `metadata.replay_of` difft `finalize()` den Lauf gegen seinen
 Referenzlauf — Samples aus dem **geteilten** Telemetrie-Sink (§2.3-Verfeinerung).
+Seed + `replay_of` liest `build_run_driver` aus der persistierten `RunMetadata`.
 """
 
 from __future__ import annotations
@@ -46,28 +47,31 @@ def _scenario() -> Scenario:
     return _loaded().scenario
 
 
-def _metadata(run_id: str, scenario_hash: str, replay_of: str | None = None) -> RunMetadata:
-    return RunMetadata(
-        run_id=run_id,
-        scenario_hash=scenario_hash,
-        schema_version="grid-gym.scenario.v1",
-        seed=42,
-        tick_ms=100,
-        started_at="",
-        ended_at="",
-        tool_version="0.1.0",
-        replay_of=replay_of,
+def _save(repository: InMemoryRunRepository, run_id: str, replay_of: str | None = None) -> str:
+    """Persistiert RunMetadata (build_run_driver liest Seed + replay_of daraus);
+    gibt den scenario_hash zurueck."""
+    loaded = _loaded()
+    repository.save(
+        RunMetadata(
+            run_id=run_id,
+            scenario_hash=loaded.scenario_hash,
+            schema_version="grid-gym.scenario.v1",
+            seed=42,
+            tick_ms=100,
+            started_at="",
+            ended_at="",
+            tool_version="0.1.0",
+            replay_of=replay_of,
+        )
     )
+    return loaded.scenario_hash
 
 
 def test_build_run_driver_returns_unstarted_driver_for_run() -> None:
     repository = InMemoryRunRepository()
+    _save(repository, "run-xyz")
     driver = build_run_driver(
-        _scenario(),
-        "run-xyz",
-        repository,
-        replay_of=None,
-        telemetry_sink=InMemoryTelemetrySink(),
+        _scenario(), "run-xyz", repository, telemetry_sink=InMemoryTelemetrySink()
     )
     assert isinstance(driver, DemoTickLoopDriver)
     assert driver.tick_loop_run_id == "run-xyz"
@@ -75,24 +79,21 @@ def test_build_run_driver_returns_unstarted_driver_for_run() -> None:
 
 
 def test_replay_run_diffs_against_reference_via_shared_sink() -> None:
-    """Lauf B (`replay_of=A`) difft beim `finalize()` gegen A — Referenz-Samples
-    aus dem **geteilten** Sink. Identische Laeufe → leerer Diff."""
-    loaded = _loaded()
-    scenario, scenario_hash = loaded.scenario, loaded.scenario_hash
+    """Lauf B (`metadata.replay_of=A`) difft beim `finalize()` gegen A —
+    Referenz-Samples aus dem **geteilten** Sink. Identische Laeufe → leerer Diff."""
+    scenario = _scenario()
     sink = InMemoryTelemetrySink()  # geteilt ueber beide Laeufe
     repository = InMemoryRunRepository()
-    repository.save(_metadata("run-a", scenario_hash))
-    repository.save(_metadata("run-b", scenario_hash, replay_of="run-a"))
+    _save(repository, "run-a")
+    _save(repository, "run-b", replay_of="run-a")
 
-    driver_a = build_run_driver(scenario, "run-a", repository, replay_of=None, telemetry_sink=sink)
+    driver_a = build_run_driver(scenario, "run-a", repository, telemetry_sink=sink)
     loop_a = driver_a._tick_loop
     for _ in range(3):
         loop_a.tick()
     loop_a.finalize()  # A ohne Referenz → no-op; A-Samples liegen im geteilten Sink
 
-    driver_b = build_run_driver(
-        scenario, "run-b", repository, replay_of="run-a", telemetry_sink=sink
-    )
+    driver_b = build_run_driver(scenario, "run-b", repository, telemetry_sink=sink)
     loop_b = driver_b._tick_loop
     for _ in range(3):
         loop_b.tick()
@@ -102,16 +103,11 @@ def test_replay_run_diffs_against_reference_via_shared_sink() -> None:
 
 
 def test_no_replay_diff_when_replay_of_none() -> None:
-    """`replay_of=None` → `finalize()` ist no-op (kein Referenzlauf)."""
-    loaded = _loaded()
+    """`metadata.replay_of=None` → `finalize()` ist no-op (kein Referenzlauf)."""
     repository = InMemoryRunRepository()
-    repository.save(_metadata("run-solo", loaded.scenario_hash))
+    _save(repository, "run-solo")
     driver = build_run_driver(
-        loaded.scenario,
-        "run-solo",
-        repository,
-        replay_of=None,
-        telemetry_sink=InMemoryTelemetrySink(),
+        _scenario(), "run-solo", repository, telemetry_sink=InMemoryTelemetrySink()
     )
     loop = driver._tick_loop
     loop.tick()
@@ -124,6 +120,7 @@ def test_asgi_shared_sink_builder_builds_driver() -> None:
     from grid_gym.composition.asgi import _build_run_driver_with_shared_sink
 
     repository = InMemoryRunRepository()
-    driver = _build_run_driver_with_shared_sink(_scenario(), "run-asgi", repository, None)
+    _save(repository, "run-asgi")
+    driver = _build_run_driver_with_shared_sink(_scenario(), "run-asgi", repository)
     assert isinstance(driver, DemoTickLoopDriver)
     assert driver.tick_loop_run_id == "run-asgi"

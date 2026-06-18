@@ -27,7 +27,7 @@ from grid_gym.hexagon.core.errors import (
 
 
 class _FakeDriver:
-    """Minimaler `RunDriver`-Stub (start sync, stop async)."""
+    """Minimaler `RunDriver`-Stub (start sync, stop async, is_running)."""
 
     def __init__(self) -> None:
         self.started = False
@@ -38,6 +38,10 @@ class _FakeDriver:
 
     async def stop(self) -> None:
         self.stopped = True
+
+    @property
+    def is_running(self) -> bool:
+        return self.started and not self.stopped
 
 
 def test_register_and_start_starts_and_tracks() -> None:

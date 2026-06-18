@@ -245,7 +245,6 @@ def build_run_driver(
     run_id: str,
     repository: RunRepositoryPort,
     *,
-    replay_of: str | None,
     telemetry_sink: TelemetrySinkPort,
 ) -> DemoTickLoopDriver:
     """Multi-Run-Execution S3/S4 (ADR 0069 §2.4/§2.5): baut einen per-Run-
@@ -253,22 +252,25 @@ def build_run_driver(
 
     Spiegelt die Konstruktion in `configure_scenario_demo_run`, aber **ohne**
     `app.state`-/Registry-Wiring — der Aufrufer (`POST /runs/{id}/start`)
-    registriert den Driver in der `RunDriverRegistry` (S2).
+    registriert den Driver in der `RunDriverRegistry` (S2). Der Lauf MUSS bereits
+    persistiert sein (`POST /runs`); Seed + `replay_of` liest dieser Builder aus
+    der `RunMetadata` (Single Source — Review-MEDIUM: so deckt sich der
+    Execution-Seed mit dem Replay-Preflight-Vergleichsfeld `RunMetadata.seed`).
 
     Per-Run-Isolation (ADR 0069 §2.3): eigener Clock + Random-Root je Lauf; der
-    `RandomPort`-Wurzelseed kommt aus `scenario.simulation.seed` (Scenario =
-    Quelle der Sim-Parameter wie `tick_ms`); `RunMetadata.seed` ist der
-    protokollierte Request-Wert. Der **Telemetrie-Sink ist GETEILT** (keyed by
-    `run_id`, vom Aufrufer gereicht), damit ein Replay-Lauf die Samples seines
-    Referenzlaufs lesen kann (§2.3-Verfeinerung).
+    `RandomPort`-Wurzelseed kommt aus `metadata.seed` (= Lauf-Identitaet
+    `(scenario_hash, seed)`, `GG-SEED-001`). Der **Telemetrie-Sink ist GETEILT**
+    (keyed by `run_id`, vom Aufrufer gereicht), damit ein Replay-Lauf die Samples
+    seines Referenzlaufs lesen kann (§2.3-Verfeinerung).
 
-    Replay-Konsumnaht (S4, §2.5): ist `replay_of` gesetzt, wird es als
+    Replay-Konsumnaht (S4, §2.5): ist `metadata.replay_of` gesetzt, wird es als
     `replay_reference_run_id` verdrahtet — `finalize()` difft den Lauf dann gegen
     den Referenzlauf (Samples aus dem geteilten Sink). `replay_of=None` → kein
     Diff (no-op); der Lauf persistiert nur seine eigenen Samples.
     """
+    metadata = repository.get_by_id(run_id)
     clock = _DemoSimulationClock()
-    random_root = MersenneTwisterRandomPort(seed=scenario.simulation.seed)
+    random_root = MersenneTwisterRandomPort(seed=metadata.seed)
     fault_port = _compose_fault_port(scenario.faults)
     wiring = TickLoopWiring(
         run_repository=repository,
@@ -276,7 +278,7 @@ def build_run_driver(
         fault_port=fault_port,
         telemetry_sink=telemetry_sink,
         replay_snapshot=InMemoryReplaySnapshot(telemetry_sink),
-        replay_reference_run_id=replay_of,
+        replay_reference_run_id=metadata.replay_of,
     )
     tick_loop = build_tick_loop(
         scenario,
