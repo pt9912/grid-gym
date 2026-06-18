@@ -90,11 +90,12 @@ Boundary/Negative).
     Slot frei + sind neu startbar. (c) LOW: terminale Laeufe → 409
     `run_already_terminal`; Start-Echo `status="accepted"`.
   - **Residuen (dokumentiert, deferred):** der geteilte In-Memory-Sink ist
-    unbounded + prozess-weit (Showcase; Postgres-`ReplaySnapshot` nach ADR 0048 =
+    unbounded + prozess-weit (Showcase; Postgres-`ReplaySnapshot` nach
+    [`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md) =
     Deployment-Fix), `read_ordered` ist O(n·m); **kein** Runtime-`POST /runs/{id}/
     stop` auf die `RunDriverRegistry` — Slots frei nur bei natuerlicher Termination
     / Lifespan-Shutdown (API-Laeufe haben mangels Tick-Budget kein Auto-Ende).
-    Beide vor ADR-0069-Acceptance bewusst zu tragen (oder Folge-Slice).
+    Beide vor [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)-Acceptance bewusst zu tragen (oder Folge-Slice).
 
 ## Bezug
 
