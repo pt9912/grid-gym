@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `RunDriverRegistry` — per-`run_id` Driver-Lifecycle mit bounded concurrency
+  (Multi-Run-Execution **S2**, ADR 0069 §2.2): `register_and_start` (Reject vor
+  Start → `RunConcurrencyLimitError` bei Limit, `RunAlreadyActiveError` bei
+  Doppel-Start), `stop`/`stop_all`. Lifespan-Shutdown stoppt alle aktiven Driver
+  (`finalize()`-garantiert, ADR 0067). `configure_run_driver_registry`
+  (`_run_driver_setup.py`, `AC-NO-GOD-UTILS`); NEU typisierte `RunDriverError`-
+  Familie (`core.errors`). Folge-Schritt S3 (`POST /runs/{id}/start`) fuettert
+  die Registry.
 - `POST /scenarios` + `ScenarioStorePort` + InMemory-Store + Composition-
   Intake-Bridge (Multi-Run-Execution **S1**, ADR 0069 §2.1): ein kanonisiertes
   Szenario wird unter seinem `scenario_hash` abgelegt (Variante A — Decimal-

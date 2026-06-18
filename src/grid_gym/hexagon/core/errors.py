@@ -869,6 +869,43 @@ class RunAlreadyExistsError(RunRepositoryError):
 
 
 # ---------------------------------------------------------------------------
+# Run-Driver-Registry (Multi-Run-Execution S2, ADR 0069 §2.2)
+# ---------------------------------------------------------------------------
+
+
+class RunDriverError(GridGymError):
+    """Wurzel der Multi-Run-Driver-Registry-Fehler (ADR 0069 §2.2)."""
+
+
+class RunAlreadyActiveError(RunDriverError):
+    """Fuer diese `run_id` laeuft bereits ein Driver in der
+    `RunDriverRegistry` (Doppel-Start).
+
+    Abgegrenzt von `RunAlreadyExistsError` (Persistenz): hier geht es um den
+    **aktiven Treiber**, nicht um die persistierte Lauf-Metadaten-Zeile.
+    """
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__(f"run driver already active: {run_id!r}")
+
+
+class RunConcurrencyLimitError(RunDriverError):
+    """Die `RunDriverRegistry` hat ihr Maximum gleichzeitig aktiver Laeufe
+    erreicht (bounded concurrency, ADR 0069 §2.2 / `GG-RT-001`).
+
+    Ein weiterer Start wird typisiert abgelehnt, statt unbounded einen
+    asyncio-Task zu spawnen.
+    """
+
+    def __init__(self, max_active_runs: int) -> None:
+        self.max_active_runs = max_active_runs
+        super().__init__(
+            f"run concurrency limit reached: at most {max_active_runs} "
+            "concurrent run(s) may be active"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Fault-Injection (M3 Welle 2, ADR 0022 §2.4 / ADR 0025 §2.1)
 # ---------------------------------------------------------------------------
 

@@ -83,6 +83,9 @@ from grid_gym.adapters.driving.http_api._dependencies import (
     get_run_repository,
     get_telemetry_stream,
 )
+from grid_gym.adapters.driving.http_api._run_driver_registry import (
+    RunDriverRegistry,
+)
 from grid_gym.adapters.driving.http_api._schemas import (
     ErrorResponse,
     RunCreateRequest,
@@ -231,6 +234,13 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
     finally:
         if isinstance(driver, DemoTickLoopDriver):
             await driver.stop()
+        # ADR 0069 §2.2 (Multi-Run-Execution S2): alle per-Run-Driver der
+        # RunDriverRegistry sauber stoppen (jeder finalize()-garantiert,
+        # ADR 0067). Registry ist leer, solange kein Lauf gestartet wurde
+        # (S3) — dann no-op.
+        run_driver_registry = getattr(app_.state, "run_driver_registry", None)
+        if isinstance(run_driver_registry, RunDriverRegistry):
+            await run_driver_registry.stop_all()
         if isinstance(generator, DemoTelemetryGenerator):
             await generator.stop()
 

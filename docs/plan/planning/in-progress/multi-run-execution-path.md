@@ -1,9 +1,9 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 geliefert** (2026-06-18,
-commit `4f3a8b2`); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
+**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 + S2 geliefert**
+(2026-06-18); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
 (`Provisional`). ADR-`Accepted` folgt mit der Implementierungs-Wellen-Closure
-(S2–S4, gates gruen).
+(S3–S4, gates gruen).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -42,7 +42,7 @@ Alternativen (Inline-Body / Server-Library) verworfen.
 | --- | --- | --- |
 | **S0** | [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Proposed → Provisional` ✓ (2026-06-18); Scenario-Aufloesung (A1) + Start-Semantik mitgetragen. `Accepted` folgt bei Implementierungs-Closure | Architect / ADR |
 | **S1** ✓ | `ScenarioStorePort` + InMemory-Store + `POST /scenarios` + Hash-Mismatch-Reject — **geliefert 2026-06-18** (commit `4f3a8b2`): Intake-Bridge im Composition-Root (Hook-Inversion), Endpoint/Setup in dedizierten Sub-Modulen (God-Modul-Vermeidung, max 5 public Funktionen). Happy/Boundary/Negative-Pins, `make gates` gruen. | Implementation |
-| **S2** | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all | Implementation |
+| **S2** ✓ | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all — **geliefert 2026-06-18**: `register_and_start`/`stop`/`stop_all`, `RunConcurrencyLimitError`/`RunAlreadyActiveError`, Lifespan-Naht (`finalize()`-garantiert). Pins inkl. Shutdown. | Implementation |
 | **S3** | `POST /runs/{id}/start` + 409/404/422-Semantik + per-Run-Telemetrie-Sink | Implementation |
 | **S4** | **Replay-Konsumnaht (039 Phase B):** `replay_of`-from-Metadata → `finalize()` difft; Pins; **schliesst 039+040** | Implementation |
 
