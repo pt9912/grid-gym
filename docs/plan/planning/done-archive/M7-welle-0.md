@@ -46,7 +46,7 @@ Arbeit plus die offenen Trigger.
 | Trigger 035 (`GG-SAFE-003` Comm-Failure) | [`open/035-…`](035-safe-003-comm-failure-missing-quality.md) | Safety-Partial-Lücke (Adapter-Comm-Failure → `MISSING`/`STALE` + Alarm) — M7-Closure-Substanz. |
 | Trigger 036 (`GG-SAFE-006` replay_diff_status) | [`open/036-…`](036-safe-006-replay-diff-status-replay-source-integration.md) | Wird durch `GG-MVP-002` aufgeloest (gekoppelt). |
 | Trigger 037 (`GG-DEPLOY-007..010` Multi-Node) | [`open/037-…`](../open/037-deploy-007-010-multi-node-deployment.md) | **Bleibt Trigger-Gated** — Stakeholder-/Skalierungs-getrieben; kein MVP-Pflicht-Item. |
-| Trigger 033 (OTel-Collector-CVE) | [`open/033-…`](../open/033-otel-collector-go-stdlib-cve-bump.md) | **Bleibt Stable-Watch** — Temp-Deferral via vulnignore (ADR 0044); loest sich bei Upstream-Stable-Release unabhaengig von M7-Wellen. |
+| Trigger 033 (OTel-Collector-CVE) | [`open/033-…`](../done/033-otel-collector-go-stdlib-cve-bump.md) | **Bleibt Stable-Watch** — Temp-Deferral via vulnignore (ADR 0044); loest sich bei Upstream-Stable-Release unabhaengig von M7-Wellen. |
 
 ### 1.2 Existierende Substanz im Repo
 

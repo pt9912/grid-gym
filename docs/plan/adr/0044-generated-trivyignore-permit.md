@@ -21,7 +21,7 @@ M6-Welle-4a-C1).
 - [`ADR 0028`](0028-link-maintenance-accepted-adr-bezug.md)
   — Link-Maintenance-Pattern fuer den ADR-Index-Update an
   der ADR-0043-Zeile.
-- [Trigger 033](../planning/open/033-otel-collector-go-stdlib-cve-bump.md)
+- [Trigger 033](../planning/done/033-otel-collector-go-stdlib-cve-bump.md)
   — Erst-Anwendungsfall (CVE-2026-42504 Go-stdlib MIME-
   Header-DoS im OTel-Collector-Image); bleibt offen als
   Stable-Watch, vulnignore-Pattern ist Temp-Deferral.

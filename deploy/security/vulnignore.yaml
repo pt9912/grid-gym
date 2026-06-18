@@ -47,47 +47,12 @@
 #     Quelle.
 
 trivy:
-  ignore:
-    # CVE-2026-42504 (Go stdlib): Decoding a maliciously-crafted
-    # MIME header containing many invalid encoded-words triggers
-    # quadratic complexity in net/textproto.MIMEHeader parsing —
-    # potential DoS. NVD HIGH (CVSS 3.1 7.5 AV:N/AC:L/PR:N/UI:N).
-    # Affected Versions: Go stdlib bis 1.25.10 und 1.26.0..1.26.3;
-    # fixed in 1.25.11 und 1.26.4.
-    # Betrifft `otel/opentelemetry-collector-contrib:0.153.0`
-    # (gobinary `otelcol-contrib` linked gegen `go1.26.3`). Latest
-    # Stable OTel-Collector-Release ist 0.153.0 (2026-05-26); kein
-    # Stable-Tag mit go1.26.4+ verfuegbar; erwarteter 0.154.0-
-    # Stable-Korridor 2026-06-09 bis 2026-06-12 per ~14-Tage-
-    # Release-Kadenz.
-    #
-    # Vektor im grid-gym-Compose-Stack nicht erreichbar als
-    # Internet-DoS-Pfad: OTel-Collector ist Compose-internes
-    # Sibling (Service `otel-collector` in `deploy/compose.yml`
-    # hinter Docker-Bridge-Netzwerk), nicht Port-mapped auf den
-    # Host. OTLP-Inputs kommen ueber die `gridgym`-Service-zu-
-    # Service-Brueck (gRPC 4317 / HTTP 4318 intern); keine MIME-
-    # Header-Quellen aus dem externen Internet.
-    # Akzeptierte Restexposition: ein Angreifer mit lokalem Compose-
-    # Bridge-Zugriff (Host-Compromise oder Docker-Socket-Access)
-    # koennte das Collector-Sibling DoS-en — dasselbe Bedrohungs-
-    # modell, in dem auch der `gridgym`-Service direkt erreichbar
-    # waere; der OTel-Collector-DoS ist nicht der primaere Vektor.
-    #
-    # Temp-Deferral-Form per ADR 0044 §2.1 Pfad B. Begleit-Trigger
-    # 033 (open/033-otel-collector-go-stdlib-cve-bump.md) bleibt
-    # offen als Stable-Watch; echte Aufloesung erfolgt bei OTel-
-    # Stable-Release 0.154.0+ mit go1.26.4+-Build (separater Slice
-    # oder Welle-4a-Post-Closure-Korrektur).
-    #
-    # `expires: 2026-06-20` = 2-Wochen-Safety-Margin gegenueber dem
-    # erwarteten Stable-Korridor 2026-06-09..2026-06-12; bei Drift
-    # ueber `expires` wird der Eintrag in einem Folge-Commit
-    # erneuert ODER der OTel-Bump erfolgt ohne weitere Verlaengerung.
-    - id: CVE-2026-42504
-      reason: "Go stdlib net/textproto.MIMEHeader DoS via maliciously-crafted MIME header (HIGH, fix in go1.26.4); otel/opentelemetry-collector-contrib:0.153.0 gobinary linked gegen go1.26.3; OTel-Collector ist Compose-internes Sibling ohne externen MIME-Quellen-Pfad; Temp-Deferral bis OTel-Stable-Release 0.154.0+ (erwartet 2026-06-09..2026-06-12)."
-      expires: 2026-06-20
-      scope: "otel-collector"
+  # Keine aktiven Ignore-Eintraege. Der vorige Eintrag CVE-2026-42504
+  # (OTel-Collector Go-stdlib-MIME-Header-DoS) wurde am 2026-06-18
+  # durch den Bump von otel/opentelemetry-collector-contrib auf
+  # 0.154.0 (gobinary gegen go1.26.4+) aufgeloest — Trivy-Re-Scan
+  # meldet 0 HIGH/CRITICAL; Begleit-Trigger 033 nach `done/`.
+  ignore: []
 
 govulncheck:
   ignore: []

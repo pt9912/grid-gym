@@ -77,14 +77,12 @@ development gate is `make gates`.
 > mandatory `id`/`reason`/`expires`/`scope` fields) and rendered
 > to `deploy/security/.trivyignore` via `make render-trivyignore`
 > (see [`ADR 0044`](docs/plan/adr/0044-generated-trivyignore-permit.md)). Expired entries break the build, forcing
-> maintenance without external reminders. Current single entry:
-> CVE-2026-42504 (Go stdlib MIME header DoS) in the pinned
-> `otel/opentelemetry-collector-contrib:0.153.0` sibling image
-> with `expires: 2026-06-20` as a temporary deferral. The
-> upstream resolution lands with OTel collector >0.153.0 built
-> against go1.26.4+ (tracked in `docs/plan/planning/open/
-> 033-otel-collector-go-stdlib-cve-bump.md`; trigger stays open
-> as the canonical stable-watch).
+> maintenance without external reminders. There are currently no
+> active ignore entries. (The previous entry CVE-2026-42504 — Go
+> stdlib MIME header DoS in the OTel collector sibling image — was
+> resolved on 2026-06-18 by bumping
+> `otel/opentelemetry-collector-contrib` to 0.154.0, built against
+> go1.26.4+; Trivy re-scan reports 0 HIGH/CRITICAL.)
 
 Current release: **v0.1.0** (2026-06-12) — see
 [Releases](https://github.com/pt9912/grid-gym/releases).

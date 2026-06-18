@@ -406,6 +406,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `fastapi` bleibt `0.136.1` (akzeptiert `starlette 1.3.1`). Verifiziert:
   `dep-audit`/`typecheck`/`test-unit` (2108)/`openapi-validate`/
   `image-audit` gruen.
+- OTel-Collector-Image `otel/opentelemetry-collector-contrib:0.153.0 → 0.154.0`
+  (Trigger 033): die Stable-Release 0.154.0 ist gegen `go1.26.4+` gebaut und
+  behebt CVE-2026-42504 (Go-stdlib `net/textproto.MIMEHeader`-DoS) im Collector-
+  Sibling-Image. Der Temp-Deferral nach ADR 0044 entfaellt — `deploy/security/
+  vulnignore.yaml` hat jetzt 0 aktive Ignore-Eintraege. Verifiziert:
+  containerisierter Trivy-Re-Scan von 0.154.0 ohne `.trivyignore` (0 HIGH/
+  CRITICAL) + `make fullbuild` cache-frei gruen (`image-audit` + Compose-Smoke
+  mit dem neuen Collector).
 
 ## [0.1.0] - 2026-06-12
 

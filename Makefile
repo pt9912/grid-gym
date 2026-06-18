@@ -32,7 +32,7 @@ COMPOSE_FILE ?= deploy/compose.yml
 # sichtbar; gleichzeitig deckt der `:-default`-Fallback im Compose-
 # YAML Aufrufe ohne Makefile (`docker compose -f deploy/compose.yml
 # up`) ab.
-OTEL_COLLECTOR_IMAGE ?= otel/opentelemetry-collector-contrib:0.153.0
+OTEL_COLLECTOR_IMAGE ?= otel/opentelemetry-collector-contrib:0.154.0
 export OTEL_COLLECTOR_IMAGE
 
 DOCKER_BUILD = $(DOCKER) build $(BUILD_CONTEXT) \

@@ -31,8 +31,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md) | ADR fuer pyright als Pre-Commit-Hook | bei Editor-Parity-Druck |
 | [`048-dcheck-matrix-modul.md`](048-dcheck-matrix-modul.md) | d-check-`matrix`-Modul (Referenzrichtungs-Gate, SDP) — **Resolved 2026-06-17**: Option A (Voll-SDP) via Slice [`049`](../done/049-sdp-matrix-doku-umbau.md); `matrix` aktiv, Spec-Straten zeitlos, `make docs-check` gruen | **Resolved** (Doc-Archiv mit M8-Closure) |
 | [`050-dcheck-matrix-supersede-lineage.md`](050-dcheck-matrix-supersede-lineage.md) | d-check-`matrix`-Supersede-Lineage-Carve-out (CR, Folge aus Slice 049) — **Resolved 2026-06-17**: d-check v0.11.0 liefert `allow-supersede-lineage`; Pin + `.d-check.yml`-Config + [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Lineage-Link migriert, `make docs-check` gruen (Boundary verifiziert) | **Resolved** (Doc-Archiv mit M8-Closure) |
-| [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump ([`ADR-0043`](../../adr/0043-image-audit-strategy.md)-konformer Defer-Pfad ueber [`ADR-0044`](../../adr/0044-generated-trivyignore-permit.md)-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
-
 **Harness-Regelwerk-Adoption (v1.2.0-Delta):**
 
 | Datei | Trigger | Aktivierung |

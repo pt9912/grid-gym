@@ -70,7 +70,7 @@ Substanz.
   **ADR-Schaerfungs-Material**: „Bleibt out-of-scope, auch
   wenn ein zukuenftiges Compliance-Audit das verlangt
   (waere dann ADR-Schaerfungs-Material)."
-- **`open/033-otel-collector-go-stdlib-cve-bump.md`** —
+- **`done/033-otel-collector-go-stdlib-cve-bump.md`** —
   Trigger-Watch mit Aktivierungs-Bedingung „OTel-Collector-
   Release > 0.153.0 mit `go1.26.4+`-Build". Erwarteter
   Release-Korridor 2026-06-09 bis 2026-06-12 per ~14-Tage-
@@ -396,7 +396,7 @@ Code-Merge mit:
 - `M6-perf-security-cicd.md §3.1` Welle-4a-Zeile `In
   Progress → Done` mit Closure-Hash + §3 Aktive-Welle-
   Block auf Welle 4b (Performance-Bench).
-- `open/033-otel-collector-go-stdlib-cve-bump.md` Status-
+- `done/033-otel-collector-go-stdlib-cve-bump.md` Status-
   Block um „Temp-Deferral via Welle-4a-vulnignore-Pattern
   (Hash `<C2-Hash>`); echte Aufloesung weiter bei OTel-
   Stable-Release 0.154.0+ mit go1.26.4+ (per
@@ -735,7 +735,7 @@ nach `f46e789`):
 - [`M6-perf-security-cicd.md §3.2 Welle 4`](M6-perf-security-cicd.md)
   — M6-Slice-Plan Welle-4-Vorbelegung (Performance-Bench;
   wird durch Welle-4a-Subdivision in 4a/4b gespalten).
-- [`../open/033-otel-collector-go-stdlib-cve-bump.md`](../open/033-otel-collector-go-stdlib-cve-bump.md)
+- [`../done/033-otel-collector-go-stdlib-cve-bump.md`](../done/033-otel-collector-go-stdlib-cve-bump.md)
   — Trigger 033 mit Aktivierungs-Substanz; bleibt OFFEN.
 - [`../../adr/0011-schaerfung-ohne-abloesung.md §2`](../../adr/0011-schaerfung-ohne-abloesung.md)
   — Schaerfungs-Pattern-Vertrag (ADR-0044 folgt diesem

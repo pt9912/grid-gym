@@ -12,7 +12,7 @@
 #   fuer die telemetry_otlp-Adapter (`OtlpLogAdapter`/
 #   `OtlpMetricsAdapter`/`OtlpTraceAdapter`). Image-Pin via
 #   `${OTEL_COLLECTOR_IMAGE}`-Env-Var (Makefile-Default
-#   `otel/opentelemetry-collector-contrib:0.153.0`). Image ist
+#   `otel/opentelemetry-collector-contrib:0.154.0`). Image ist
 #   distroless (`gcr.io/distroless/static-debian12:nonroot`) —
 #   kein in-container healthcheck-Block, weil weder wget noch
 #   nc noch shell vorhanden sind. Statt dessen lauscht der
@@ -44,7 +44,7 @@ services:
     # Env-Var moeglich. Compose interpoliert `${VAR:-default}`
     # selbst, damit `docker compose -f deploy/compose.yml up`
     # ohne Makefile auch funktioniert.
-    image: ${OTEL_COLLECTOR_IMAGE:-otel/opentelemetry-collector-contrib:0.153.0}
+    image: ${OTEL_COLLECTOR_IMAGE:-otel/opentelemetry-collector-contrib:0.154.0}
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro

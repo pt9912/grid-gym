@@ -79,7 +79,7 @@ make runtime
 faehrt `deploy/compose.yml` hoch (postgres + api + simulation +
 otel-collector), pollt API-`/health` und Collector-`:13133`, und
 faehrt den Stack wieder runter. Default-Image ist
-`otel/opentelemetry-collector-contrib:0.153.0` (pinning via
+`otel/opentelemetry-collector-contrib:0.154.0` (pinning via
 `OTEL_COLLECTOR_IMAGE`-Env oder Makefile-Default).
 
 ### 2.2 Stack laufen lassen + Output inspizieren
