@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `POST /scenarios` + `ScenarioStorePort` + InMemory-Store + Composition-
+  Intake-Bridge (Multi-Run-Execution **S1**, ADR 0069 §2.1): ein kanonisiertes
+  Szenario wird unter seinem `scenario_hash` abgelegt (Variante A — Decimal-
+  Felder als Strings), Client/Server-Hash-Mismatch → 422 `scenario_hash_mismatch`,
+  invalides Szenario (inkl. `float` an Decimal-Stelle) → 422 `invalid_scenario`.
+  Die Kanonisierung + Hash laeuft per Hook-Inversion (ADR 0054) ueber den
+  Composition-Root (`composition.scenario_intake`); der HTTP-Adapter importiert
+  `core.scenario` nicht (`AC-ADAPTER-PURE`). Endpoint/Setup in
+  `_scenarios_router.py`/`_scenario_setup.py` (`AC-NO-GOD-UTILS`). Entsperrt
+  Slice 039 Phase B (Konsum der persistierten Bindung) Schritt fuer Schritt.
 - Multi-Run-Execution-Pfad geplant: NEU `ADR 0069` (`Provisional` nach S0; per-
   Run-Driver + Scenario-Store A1 + Replay-Konsumnaht) + `next/multi-run-execution-path.md`;
   entsperrt Slice 039 Phase B (der Run-Execution-Pfad war Anti-Scope). Slice 039

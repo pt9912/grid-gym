@@ -620,6 +620,25 @@ class ScenarioError(GridGymError):
     (`GG-SCN-008`)."""
 
 
+class ScenarioHashMismatchError(GridGymError):
+    """Der vom Client behauptete `scenario_hash` weicht vom server-
+    berechneten Hash der kanonisierten Form ab (`POST /scenarios`,
+    Multi-Run-Execution S1, ADR 0069 §2.1).
+
+    Bewusst **kein** `ScenarioError` (das Szenario ist schema-valide) —
+    eine Integritaets-/Intake-Verletzung. Der HTTP-Adapter mappt sie auf
+    HTTP 422 `scenario_hash_mismatch`.
+    """
+
+    def __init__(self, claimed: str, computed: str) -> None:
+        self.claimed = claimed
+        self.computed = computed
+        super().__init__(
+            f"claimed scenario_hash {claimed!r} does not match the "
+            f"server-computed hash {computed!r} of the canonicalized scenario"
+        )
+
+
 class ScenarioSchemaError(ScenarioError, SnapshotFormatError):
     """Wurzel der Schema-Format-Verstoesse beim Loader-Eingang.
 

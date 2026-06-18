@@ -120,6 +120,37 @@ class RunCreateResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# POST /scenarios (Multi-Run-Execution S1, ADR 0069 §2.1)
+# ---------------------------------------------------------------------------
+
+
+class ScenarioCreateRequest(_BaseRequest):
+    """Eingehender Request fuer `POST /scenarios` (Multi-Run-Execution S1,
+    ADR 0069 §2.1)."""
+
+    scenario_hash: str = Field(
+        description="Erwarteter SHA-256-Hash des kanonisierten Szenarios (`GG-SCN-003`/`GG-SCN-004`).",
+        min_length=64,
+        max_length=64,
+    )
+    scenario: dict[str, object] = Field(
+        description=(
+            "Kanonischer Szenario-Body (`GG-SCN-001`). Numerische Decimal-Felder "
+            "werden als Strings uebertragen (ADR 0069 §2.1 Variante A); `float` "
+            "wird typisiert abgelehnt."
+        ),
+    )
+
+
+class ScenarioCreateResponse(BaseModel):
+    """Antwort von `POST /scenarios`."""
+
+    scenario_hash: str = Field(
+        description="Server-berechneter SHA-256-Hash (== Request-Hash) des abgelegten Szenarios.",
+    )
+
+
+# ---------------------------------------------------------------------------
 # GET /runs/{run_id}
 # ---------------------------------------------------------------------------
 

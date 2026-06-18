@@ -28,6 +28,7 @@ from fastapi import Request
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
+from grid_gym.hexagon.ports.driven.scenario_store import ScenarioStorePort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
@@ -135,3 +136,33 @@ def get_alarm_history_buffer(request: Request) -> AlarmHistoryBuffer:
     if buffer is None:
         raise _AlarmHistoryBufferNotConfiguredError
     return cast(AlarmHistoryBuffer, buffer)
+
+
+class _ScenarioStoreNotConfiguredError(RuntimeError):
+    """Konfigurations-Fehler: HTTP-API ohne `ScenarioStorePort` gestartet
+    (Multi-Run-Execution S1, ADR 0069 §2.1).
+
+    Erbt von `RuntimeError`, damit FastAPI das auf `500 Internal Server
+    Error` mappt — analog `_RunRepositoryNotConfiguredError`.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            "ScenarioStorePort is not configured. Call "
+            "grid_gym.adapters.driving.http_api.app.configure_scenario_store "
+            "before serving requests."
+        )
+
+
+def get_scenario_store(request: Request) -> ScenarioStorePort:
+    """Dependency-Provider fuer `ScenarioStorePort` (Multi-Run-Execution S1,
+    ADR 0069 §2.1).
+
+    Wirft `_ScenarioStoreNotConfiguredError`, wenn die App nicht
+    konfiguriert ist — der `POST /scenarios`-Endpoint benoetigt einen
+    aktiven Store.
+    """
+    store = getattr(request.app.state, "scenario_store", None)
+    if store is None:
+        raise _ScenarioStoreNotConfiguredError
+    return cast(ScenarioStorePort, store)

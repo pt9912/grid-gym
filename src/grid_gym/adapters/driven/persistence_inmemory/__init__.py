@@ -27,9 +27,17 @@ from grid_gym.adapters.driven.persistence_inmemory.replay_snapshot import (
 from grid_gym.adapters.driven.persistence_inmemory.run_repository import (
     InMemoryRunRepository,
 )
+from grid_gym.adapters.driven.persistence_inmemory.scenario_store import (
+    InMemoryScenarioStore,
+)
 from grid_gym.adapters.driven.persistence_inmemory.telemetry_sink import (
     InMemoryTelemetrySink,
 )
 
 
-__all__ = ["InMemoryReplaySnapshot", "InMemoryRunRepository", "InMemoryTelemetrySink"]
+__all__ = [
+    "InMemoryReplaySnapshot",
+    "InMemoryRunRepository",
+    "InMemoryScenarioStore",
+    "InMemoryTelemetrySink",
+]

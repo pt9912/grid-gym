@@ -141,6 +141,19 @@ def read_scenario_yaml(path: Path) -> dict[str, Any]:
     return _coerce_decimals(raw)
 
 
+def coerce_scenario_mapping(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Public `str → Decimal`-Koercion fuer ein Scenario-Mapping aus einer
+    Nicht-YAML-Quelle (z. B. ein `POST /scenarios`-JSON-Body, ADR 0069
+    §2.1 Variante A).
+
+    Gleiche allowlist-basierte Koercion wie `read_scenario_yaml`, aber ohne
+    Datei-I/O — der Aufrufer (Composition-Root) reicht das Ergebnis an den
+    I/O-freien Core-Loader `load_scenario(raw)`. `float`-Werte bleiben
+    **unveraendert**; der Scenario-Validator lehnt sie anschliessend
+    typisiert ab (`ScenarioWrongTypeError`, `GG-DATA-005`)."""
+    return _coerce_decimals(raw)
+
+
 def _safe_decimal(value: str, field: str) -> Decimal:
     try:
         return Decimal(value)

@@ -15,12 +15,17 @@ schlaegt fail-closed fehl.
 
 from __future__ import annotations
 
+from grid_gym.adapters.driving.http_api._scenarios_router import (
+    _register_scenario_intake,
+)
 from grid_gym.adapters.driving.http_api.app import (
     app,
     _register_scenario_configurator,
 )
 from grid_gym.composition._demo_scenario_setup import configure_scenario_demo_run
+from grid_gym.composition.scenario_intake import intake_scenario
 
 _register_scenario_configurator(configure_scenario_demo_run)
+_register_scenario_intake(intake_scenario)
 
 __all__ = ["app"]
