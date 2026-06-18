@@ -39,6 +39,7 @@ from grid_gym.hexagon.core.agents.rule_based import (
     RuleAction,
     RuleCondition,
 )
+from grid_gym.hexagon.core.commands import ScenarioCommandEngine
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.devices.diesel_generator import DieselGeneratorDevice
@@ -594,6 +595,9 @@ def build_tick_loop(
     # explizit out-of-scope. Der Scheduler wird leer initialisiert;
     # M1-Scheduler-Events bleiben in `scenario.events` und werden
     # in Welle 6c / M3 in das Event-Surface uebersetzt.
+    # ADR 0070 (Trigger 046): ScenarioCommandEngine aus scenario.commands; leer
+    # -> None (skippt den TickLoop-A0s-Hook, Bestands-Szenarien bit-genau).
+    command_engine = ScenarioCommandEngine(scenario.commands) if scenario.commands else None
     scheduler = Scheduler()
     return TickLoop(
         run_id=run_id,
@@ -606,6 +610,7 @@ def build_tick_loop(
         active_load_events=scenario.load_events,
         active_load_profiles=scenario.load_profiles,
         fault_port=w.fault_port,
+        command_engine=command_engine,
         agent_bus=w.agent_bus,
         agents=resolved_agents,
         log_port=w.log_port,

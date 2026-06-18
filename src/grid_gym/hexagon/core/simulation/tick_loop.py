@@ -50,6 +50,7 @@ from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from typing import Final
 
 from grid_gym.hexagon.core.agents import Agent, AgentMessageBus, _RandomAttachableAgent
+from grid_gym.hexagon.core.commands import ScenarioCommandEngine
 from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.devices.load import LoadDevice
@@ -275,6 +276,7 @@ class TickLoop:
         active_load_events: tuple[LoadEvent, ...] = (),
         active_load_profiles: tuple[LoadProfile, ...] = (),
         fault_port: FaultPort | None = None,
+        command_engine: ScenarioCommandEngine | None = None,
         agent_bus: AgentMessageBus | None = None,
         agents: tuple[Agent, ...] = (),
         log_port: LogPort | None = None,
@@ -315,6 +317,10 @@ class TickLoop:
         # skippt den Hook in `tick()`; Welle-1-Code liefert noch
         # keinen produktiven Adapter (Welle 2).
         self._fault_port: FaultPort | None = fault_port
+        # ADR 0070 (Trigger 046): optionale ScenarioCommandEngine fuer
+        # scenario-geplante Commands im Vor-Tick-Block-Schritt A0s. `None`
+        # skippt den Hook (Bestands-Szenarien ohne `commands` bit-genau).
+        self._command_engine: ScenarioCommandEngine | None = command_engine
         # M7-Welle-1a telemetry_sink wird in `_attach_control_state`
         # neben `run_repository` gehalten (Driven-Persistenz-Sibling) —
         # haelt `__init__` unter dem PLR0915-Statement-Limit.
@@ -1203,9 +1209,9 @@ class TickLoop:
         Slice 027 Paket D: Schritt-A0a/A2/D2 in eigene Helper-Methoden
         extrahiert (`_apply_pending_agent_commands`,
         `_apply_fault_injection`, `_run_agent_tick_phase`); PLR0915-Drop.
-        Reihenfolge bleibt zwingend A0a → A → A2 → B → C → D → D2 → E
-        (ADR 0026 §2.1; Determinismus-Vertrag aus M3-Welle-2-Property-
-        Tests).
+        Reihenfolge bleibt zwingend A0s → A0a → A → A2 → B → C → D → D2 → E
+        (ADR 0026 §2.1 + ADR 0070 §2.3 fuer A0s; Determinismus-Vertrag aus
+        M3-Welle-2-Property-Tests).
         """
         self._obs_log(
             "info",
@@ -1256,6 +1262,10 @@ class TickLoop:
         unknown_count = 0
 
         with _tick_loop_decimal_context():
+            # Schritt A0s — scenario-scheduled Commands (ADR 0070 §2.3) VOR den
+            # Agent-Commands: scenario-Commands sind externe geplante Inputs
+            # (wie Faults), Agents reagieren auf den resultierenden Zustand.
+            self._apply_scenario_commands(context, manual_override_grid_ids)
             # Schritt A0a — Apply der in A0v validierten Pending-Agent-Commands.
             self._apply_pending_agent_commands(commands_to_apply, manual_override_grid_ids)
             # Schritt A — Vor-Tick-Block (ADR 0021 §2.5).
@@ -1391,6 +1401,32 @@ class TickLoop:
         # laesst den Buffer ungeleert, damit Resume die Pending-Commands
         # nochmal sehen kann.
         self._pending_agent_commands.clear()
+
+    def _apply_scenario_commands(
+        self,
+        context: DeviceTickContext,
+        manual_override_grid_ids: list[str],
+    ) -> None:
+        """Schritt A0s (ADR 0070 §2.3, Trigger 046) — scenario-scheduled Commands.
+
+        Stellt die im aktuellen Tick faelligen scenario-geplanten Commands an
+        ihre Target-Devices zu (`device.apply_command`), VOR den Agent-Commands
+        (A0a): scenario-Commands sind externe geplante Inputs (wie Faults),
+        Agents reagieren auf den resultierenden Zustand. Targets sind beim
+        Scenario-Load gegen `devices` validiert (`_assert_command_list`), daher
+        direkter `_device_by_id`-Lookup. Commands auf GridConnection-IDs zaehlen
+        wie Agent-Commands als manueller Auto-Close-Override. `None`-Engine
+        skippt sauber (Bestands-Szenarien bit-genau)."""
+        if self._command_engine is None:
+            return
+        for command in self._command_engine.due_commands(context):
+            target = self._device_by_id[command.target_device_id]
+            target.apply_command(command)
+            if (
+                isinstance(target, GridConnectionDevice)
+                and target.device_id not in manual_override_grid_ids
+            ):
+                manual_override_grid_ids.append(target.device_id)
 
     def _apply_fault_injection(
         self,
