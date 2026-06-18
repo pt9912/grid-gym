@@ -3,7 +3,7 @@
 **Status:** Provisional — Owner traegt die Empfehlung mit (S0,
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §2); die
 Validierung laeuft ueber S1..S4 des
-[`next/`-Slice-Plans](../planning/next/multi-run-execution-path.md). `Accepted`
+[`in-progress`-Slice-Plans](../planning/in-progress/multi-run-execution-path.md). `Accepted`
 folgt bei der Implementierungs-Wellen-Closure (gates gruen); bis dahin bleibt der
 Entwurf schaerfbar — offener A1/A3-Punkt (§3, noch **kein** immutable Beschluss).
 **Datum:** 2026-06-18

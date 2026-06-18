@@ -1,8 +1,9 @@
 # Multi-Run-Execution-Pfad (entsperrt Slice 039 Phase B)
 
-**Status:** Geplant (`next/`) — Architektur in [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
-(`Provisional`, S0 vollzogen 2026-06-18). Aktivierung pro Welle-X-C0; ADR-`Accepted`
-folgt mit der Implementierungs-Closure (gates gruen).
+**Status:** Aktiv (`in-progress/`) — S0 vollzogen, **S1 geliefert** (2026-06-18,
+commit `4f3a8b2`); Architektur [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md)
+(`Provisional`). ADR-`Accepted` folgt mit der Implementierungs-Wellen-Closure
+(S2–S4, gates gruen).
 **Datum:** 2026-06-18
 **Quelle:** Delta aus der 039/040-Replay-Paar-Analyse — Phase B
 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) §2.4) haengt am
@@ -14,7 +15,7 @@ Run-Execution-/Multi-Run-Driver-Pfad, der bisher Anti-Scope war.
 
 `POST /runs`-erzeugte Laeufe **ausfuehrbar** machen (per-Run-`TickLoop` +
 Driver), sodass ein API-Replay-Lauf gebaut, getickt und von `finalize()` ueber
-die persistierte `replay_of`-Bindung gedifft wird → [Trigger 039](../in-progress/039-api-replay-trigger-surface.md)
+die persistierte `replay_of`-Bindung gedifft wird → [Trigger 039](039-api-replay-trigger-surface.md)
 Phase B end-to-end schliessbar.
 
 ## Kontext / Ist
@@ -40,7 +41,7 @@ Alternativen (Inline-Body / Server-Library) verworfen.
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
 | **S0** | [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) `Proposed → Provisional` ✓ (2026-06-18); Scenario-Aufloesung (A1) + Start-Semantik mitgetragen. `Accepted` folgt bei Implementierungs-Closure | Architect / ADR |
-| **S1** | `ScenarioStorePort` + InMemory + `POST /scenarios` + Hash-Mismatch-Reject (Happy/Boundary/Negative) | Implementation |
+| **S1** ✓ | `ScenarioStorePort` + InMemory-Store + `POST /scenarios` + Hash-Mismatch-Reject — **geliefert 2026-06-18** (commit `4f3a8b2`): Intake-Bridge im Composition-Root (Hook-Inversion), Endpoint/Setup in dedizierten Sub-Modulen (God-Modul-Vermeidung, max 5 public Funktionen). Happy/Boundary/Negative-Pins, `make gates` gruen. | Implementation |
 | **S2** | `RunDriverRegistry` (Generalisierung `TickLoopRegistry`) + per-Run-Driver + concurrency-Cap + Lifespan-Shutdown-all | Implementation |
 | **S3** | `POST /runs/{id}/start` + 409/404/422-Semantik + per-Run-Telemetrie-Sink | Implementation |
 | **S4** | **Replay-Konsumnaht (039 Phase B):** `replay_of`-from-Metadata → `finalize()` difft; Pins; **schliesst 039+040** | Implementation |
@@ -63,7 +64,7 @@ Boundary/Negative).
 
 ## Entsperrt
 
-[Trigger 039](../in-progress/039-api-replay-trigger-surface.md) Phase B (S4)
+[Trigger 039](039-api-replay-trigger-surface.md) Phase B (S4)
 + Replay-Paar-Closure 039+040. Profitiert: Headless-Abnahme-CLI
 ([`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003)).
 
@@ -79,9 +80,10 @@ Boundary/Negative).
 
 - [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) (Architektur).
 - [`ADR 0037`](../../adr/0037-http-api-surface-pattern.md)/[`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)/[`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md)/[`ADR 0048`](../../adr/0048-replay-snapshot-port-reconstruction.md)/[`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)/[`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md)/[`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md).
-- [Trigger 039](../in-progress/039-api-replay-trigger-surface.md) + [Trigger 040](../in-progress/040-replay-finalize-headless-run-end-seam.md).
+- [Trigger 039](039-api-replay-trigger-surface.md) + [Trigger 040](040-replay-finalize-headless-run-end-seam.md).
 
 ## Aktivierung
 
-Pro Welle-X-C0 (M8-Material). Bei Start: nach [`../in-progress/`](../in-progress/)
-verschieben (rename-only), `next/`-Bestand-Zeile entfernen.
+Aktiviert 2026-06-18 (S0 + S1) — Plan nach `in-progress/` verschoben (rename-only).
+Folge-Slices S2–S4 laufen hier; die Welle-Closure (alle Slices Done + `make
+fullbuild`) bewegt den Plan nach `done/`.
