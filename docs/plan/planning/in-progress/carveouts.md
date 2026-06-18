@@ -61,10 +61,10 @@ Trigger Watch` → `Active in M{N}-Welle-X` → `Resolved`;
 ## 2. Aktive Carveouts
 
 **Lesefuehrung (Neuordnung 2026-06-12):** §2.1 ist **eine**
-Tabelle aller aktivierbaren Carveouts — 7 `Deferred`/
-`Pattern-Forward` (Aktivierung per Mandat, `D-n`) + 22
-`Trigger-Gated` (`T-nnn` = `open/`-Trigger-Nummer; zusammen
-deckungsgleich mit dem `open/`-Bestand). Begruendungen sind per
+Tabelle aller aktivierbaren Carveouts — 6 `Deferred`
+(Aktivierung per Mandat, `D-n`) + 11 `Trigger-Gated`
+(`T-nnn` = `open/`-Trigger-Nummer; deckungsgleich mit dem
+`open/`-Bestand). Begruendungen sind per
 ID nach §2.2 ausgelagert; fuer `T-nnn` traegt das Trigger-Doc
 Begruendung + erwartete Lieferung. **Keine Status-Spalte**:
 alles in §2 ist per Definition offen (Aufgeloestes → §3, dort
@@ -73,7 +73,7 @@ auch die Nummern-Historie-Map). §2.7 (Permanent
 „§2.7-Auflage" ist repo-weit als normativer Anker zitiert;
 daher die bewusste Nummern-Luecke §2.3..§2.6.
 
-### 2.1 Aktivierbare Carveouts (6 per Mandat + 22 per Trigger)
+### 2.1 Aktivierbare Carveouts (6 per Mandat + 11 per Trigger)
 
 | ID | Item | Cluster | Typ | Quelle | Aktivierungs-Bedingung | Trigger-Doc |
 | -- | ---- | ------- | --- | ------ | ---------------------- | ----------- |
@@ -83,24 +83,17 @@ daher die bewusste Nummern-Luecke §2.3..§2.6.
 | D-4 | Dynamische Fault-Activation ueber `POST /faults` | M5-Erbschaft | `Deferred` | M5-Welle 6a Decision 19 | Bedarf an Laufzeit-Fault-Injection jenseits der Szenario-YAML | — |
 | D-5 | URL-Versionierung `/api/v1`-Mount-Prefix | M5-Erbschaft | `Deferred` | M5-Welle 6b §10.1 URL-Realization-Note | vor der naechsten URL-Kollision / dem naechsten Endpoint-Schub | — |
 | D-6 | WebSocket-Live-Stream `/devices` | M5-Erbschaft | `Deferred` | M5-Welle 6b §1.3 | UX-Beschwerde ueber 1s-Polling-Latenz oder Live-Demo-Mandat | — |
-| T-020 | Inselnetz-Bilanzmodell ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`020`](../open/020-sollte-island-grid.md) |
-| T-021 | Transformatorgrenzen im Netzbilanzmodell ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006)) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`021`](../open/021-sollte-transformer-limits.md) |
-| T-022 | Blindleistung im Netzbilanzmodell ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007)) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`022`](../open/022-sollte-reactive-power.md) |
-| T-023 | Battery-Temperatur-Telemetry ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`023`](../open/023-sollte-battery-temperature.md) |
-| T-024 | Battery-Zellspannung-Telemetry ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007)) | SOLLTE-Geraete/Netz | `Trigger-Gated` | M2-Erbschaft | konkreter Bedarf — eigener Slice | [`024`](../open/024-sollte-battery-cell-voltage.md) |
 | T-004 | Canonical-Encoder-Alternative-ADR (orjson, msgspec) | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei messbarem Perf-Druck am Telemetrie-Pfad | [`004`](../open/004-canonical-encoder-alternative-adr.md) |
 | T-005 | Pyright-vs-mypy-Re-Eval | Tooling/Build | `Trigger-Gated` | M1-Tooling | sobald `ports/*` Generic-Protocols einfuehrt | [`005`](../open/005-pyright-vs-mypy-reeval.md) |
 | T-007 | Pyright-als-Pre-Commit-Hook-ADR | Tooling/Build | `Trigger-Gated` | M1-Tooling | bei Editor-Parity-Druck | [`007`](../open/007-pyright-precommit-adr.md) |
 | T-011 | `MLRandomPort` Sub-Seed-Wortbreite ([`ADR 0007`](../../adr/0007-random-port.md) §5.2/§6) | Tooling/Build | `Trigger-Gated` | M2-Tooling | bei `> 10⁶` Sub-Ports / hochskalierter Multi-Agent-Welle | [`011`](../open/011-mlrandomport-subseed-width.md) |
-| T-033 | OTel-Collector Go-stdlib CVE-2026-42504-Bump — **Resolved 2026-06-18** (Pin `0.153.0 -> 0.154.0` = `go1.26.4+`; Trivy-Re-Scan 0 HIGH/CRITICAL; vulnignore-Eintrag entfernt, [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md)) | Tooling/Build | `Resolved` | M6-Welle-3-Post-Push | **Resolved 2026-06-18** (OTel-Bump auf 0.154.0; Doc nach `done/`) | [`033`](../done/033-otel-collector-go-stdlib-cve-bump.md) |
-| T-044 | d-check-`ids`-Linkpflicht auch fuer Inline-Code-Kennungen — **Geliefert 2026-06-17** (`link-policy: always` aktiv, 1519 Inline-Code-IDs verlinkt) | Tooling/Build | `Trigger-Gated` | Trigger-043-Folge (User-Review der Zwei-Stufen-Konvention) | **Resolved 2026-06-17** (Doc nach `done/`; §3-Migration mit M-Closure) | [`044`](../done/044-dcheck-ids-inline-code.md) |
 | T-030 | Reinforcement-Learning-Agent-Adapter (`RL-Adapter`) | Forschung/Spike | `Trigger-Gated` | M3-Welle-7 Decision (C3) | RL-Forschungs-Bedarf oder Stakeholder-Aktivierung | [`030`](../open/030-rl-adapter.md) |
 | T-026 | BESS-Simulation Reserve-Market-Spike | Forschung/Spike | `Trigger-Gated` (optionaler Spike) | M4-Erbschaft | bei Reserve-Market-Agent / BESS-SOC-Management / LER-Demo | [`026`](../open/026-bess-simulation-reserve-market-spike.md) |
 | T-037 | [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 Kubernetes-Manifeste, Rolling Updates, Zero-Downtime-Grenzen, Rollback-Strategie | Multi-Node | `Trigger-Gated` | M6-Welle-6-Audit | Stakeholder-Bedarf fuer Multi-Node-/K8s-Deployment ODER Skalierungs-/Compliance-Druck | [`037`](../open/037-deploy-007-010-multi-node-deployment.md) |
 | T-038 | Volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix (M7 liefert MVP-Preflight ueber 5 `RunMetadata`-Felder) | M7-Erbschaft | `Trigger-Gated` | M7-Welle-1b-a-D-6 | Compliance-/Audit-Bedarf ODER Multi-Plattform-/Multi-Adapter-Replay | [`038`](../open/038-gg-term-002-003-full-equality-matrix.md) |
-| T-039 | Oeffentliche API-Replay-Bedienung — **Phase A geliefert 2026-06-17** ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md): `POST /runs` `replay_of` + Persistenz/Migration + 422-Reject + Response-Exposure); **Phase B geliefert 2026-06-18** (Multi-Run-Execution S4, [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md): `build_run_driver` verdrahtet persistiertes `replay_of` → `finalize()`-Diff gegen den Referenzlauf) | M7-Erbschaft | `Resolved` | M7-Welle-1b-b-D-7 | **Resolved 2026-06-18** (Phase B + Paar-Closure 039+040; Doc nach `done/`) | [`039`](../done/039-api-replay-trigger-surface.md) |
-| T-040 | Core-Run-End-Naht fuer `TickLoop.finalize()` — **Geliefert 2026-06-17** ([`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md): `run_session()`-Kontextmanager + `mark_run_failed()`/Partial-Run; `finalize()` auf jedem Driver-Exit-Pfad) | M7-Erbschaft | `Resolved` | M7-W1b-b-Review F4 / Welle 2 | **Resolved 2026-06-18** (Paar-Closure mit 039; Doc nach `done/`) | [`040`](../done/040-replay-finalize-headless-run-end-seam.md) |
-| T-046 | Command-getriebener Integration-E2E fuer die SOLLTE-Geraete — **Resolved 2026-06-18** als Scenario-Scheduled-Commands-Welle ([`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Accepted`, [`Slice-Plan`](../done/scenario-scheduled-device-commands.md); S0..S3 geliefert: `commands`-Block + ScenarioCommandEngine + A0s-Naht + 4 SOLLTE-E2E) | SOLLTE-Geraete/Netz | `Resolved` | M8-Welle-2a..2d-Anti-Scope ([`M8-welle-2a.md`](../done/M8-welle-2a.md) §5) | **Resolved 2026-06-18** (Doc nach `done/`) | [`046`](../done/046-command-driven-integration-e2e.md) |
+| T-047 | SNMP/LwM2M Device-Management-Protokolladapter ([`GG-SNMP-001`](../../../../spec/lastenheft.md#gg-snmp-001)/[`GG-LWM2M-001`](../../../../spec/lastenheft.md#gg-lwm2m-001)) | Protokolladapter | `Trigger-Gated` | M6-Welle-6-Audit | Stakeholder-Bedarf SNMP-/LwM2M-Demo ODER Integrationspartner-Mapping | [`047`](../open/047-device-management-protocol-adapters.md) |
+| T-051 | Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett (v1.2.0) | Harness/Regelwerk | `Trigger-Gated` | v1.2.0-Regelwerk-Delta | Steering-Loop >= 3x Handoff-/Docker-only-Drift ODER bewusste Harness-Haertung | [`051`](../open/051-durchsetzungsschicht-enforcement-layer.md) |
+| T-052 | Carveout-Disziplin Modul 07: per-Welle-Audit-Slice + Werkzeug-Wahl-Trichter (v1.2.0) | Harness/Regelwerk | `Trigger-Gated` | v1.2.0-Regelwerk-Delta | naechste Welle-/M8-Closure mit faelligem Carveout-Audit ODER `carveouts.md` >= 50 Eintraege | [`052`](../open/052-carveout-modul07-audit-trichter.md) |
 
 ### 2.2 Begruendungen (per ID)
 
@@ -196,6 +189,16 @@ Lebenszyklus monoton neu nummeriert; Alt-Referenzen in
 | T-019 Diesel-Device ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018)) | M8-Welle-2d (NEU `hexagon/core/devices/diesel_generator/` als `DeviceModel`+`FaultInjectableDevice`, Hysterese+Kraftstoff+`genset_fault`, [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`; [`M8-welle-2d.md`](../done/M8-welle-2d.md)) — **schliesst die Welle-2-Geraete-Reihe ab** | `make gates` gruen; Trigger-Doc [`019`](../open/019-sollte-diesel-device.md) (Archivierung nach `done-archive/` mit M8-Closure) |
 | D-7 Pre-init-Defense-Pattern verallgemeinern (M5-Erbschaft, `Pattern-Forward`) | M8-Welle-2a adoptiert: erster neuer device-iterierender Konsument von `device.snapshot()` (NEU `_extract_ev_charger_state` in `_runs_router._STATE_EXTRACTORS`) folgt dem None-on-pre-init-Vertrag des Dispatch-Mechanismus | [`M8-welle-2a.md`](../done/M8-welle-2a.md) §3 |
 | D-8 Scenario-/runtime-getriebene Fault-Engines + `_KNOWN_FAULT_TYPES` fuer `connection_loss`/`winding_fault`/`genset_fault` | M8-Welle-2-D8 (Cross-Cutting-Review-Folge): generische [`ScenarioFaultEngine`](../../../../src/grid_gym/hexagon/core/faults/scenario_fault_engine.py) generalisiert Battery/Grid-Engine; `_compose_fault_port` = Single-Engine, `_KNOWN_FAULT_TYPES` auf 5 Typen — die drei neuen Typen wirken end-to-end ohne per-Typ-Engine-Code, [`ADR 0059`](../../adr/0059-generic-scenario-fault-engine.md) `Accepted` | `make gates`/`docs-check`/`test-integration` gruen; [`M8-welle-2-d8.md`](../done/M8-welle-2-d8.md) |
+| T-020 Inselnetz-Bilanzmodell ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005)) | M8-Welle-3a ([`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`) | [`M8-welle-3a.md`](../done/M8-welle-3a.md); Trigger-Doc [`020`](../open/020-sollte-island-grid.md) (Archiv mit M8-Closure) |
+| T-021 Transformatorgrenzen im Netzbilanzmodell ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006)) | M8-Welle-3b ([`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`) | [`M8-welle-3b.md`](../done/M8-welle-3b.md); [`021`](../open/021-sollte-transformer-limits.md) |
+| T-022 Blindleistung im Netzbilanzmodell ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007)) | M8-Welle-3c ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md)/[`ADR 0063`](../../adr/0063-pv-volt-var-q-emission-pattern.md)/[`ADR 0064`](../../adr/0064-grid-connection-q-transformer-apparent-power.md) `Accepted`) | [`M8-welle-3c.md`](../done/M8-welle-3c.md); [`022`](../open/022-sollte-reactive-power.md) |
+| T-023 Battery-Temperatur-Telemetry ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006)) | M8-Welle-4a ([`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) `Accepted`) | [`M8-welle-4.md`](../done/M8-welle-4.md); [`023`](../open/023-sollte-battery-temperature.md) |
+| T-024 Battery-Zellspannung-Telemetry ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007)) | M8-Welle-4b ([`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md) `Accepted`) | [`M8-welle-4.md`](../done/M8-welle-4.md); [`024`](../open/024-sollte-battery-cell-voltage.md) |
+| T-044 d-check-`ids`-Linkpflicht fuer Inline-Code-Kennungen | 2026-06-17 (`link-policy: always`, 1519 Inline-Code-IDs verlinkt) | [`044`](../done/044-dcheck-ids-inline-code.md) |
+| T-033 OTel-Collector Go-stdlib CVE-2026-42504-Bump | 2026-06-18 (Pin `0.153.0 -> 0.154.0` = `go1.26.4+`, vulnignore-Eintrag entfernt, [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md)) | [`033`](../done/033-otel-collector-go-stdlib-cve-bump.md) |
+| T-040 Core-Run-End-Naht fuer `TickLoop.finalize()` | 2026-06-17 ([`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md): `run_session()` + Partial-Run) | [`040`](../done/040-replay-finalize-headless-run-end-seam.md) |
+| T-039 Oeffentliche API-Replay-Bedienung (Phase A+B) | 2026-06-17/18 ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) + [`ADR 0069`](../../adr/0069-multi-run-execution-and-scenario-store.md) Multi-Run-S4) | [`039`](../done/039-api-replay-trigger-surface.md) |
+| T-046 Command-getriebener Integration-E2E SOLLTE-Geraete | 2026-06-18 Scenario-Scheduled-Commands-Welle ([`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Accepted`; `commands`-Block + ScenarioCommandEngine + 4 E2E) | [`046`](../done/046-command-driven-integration-e2e.md) |
 
 (Liste nicht erschoepfend; volle Resolution-Historie pro M
 in `done/M{N}-results.md §5` + §8.)

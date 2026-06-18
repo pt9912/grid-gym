@@ -1249,7 +1249,7 @@ Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
 2026-06-13 als M8 eroeffnet (unten).**
 
-### M8 — SOLLTE-Geraete & Netz (`In Progress` seit 2026-06-13 — Welle 1+2 Done inkl. D-8, Welle 3 naechste) → Release v0.2.0
+### M8 — SOLLTE-Geraete & Netz (`In Progress` seit 2026-06-13 — Welle 1-4 Done inkl. D-8; Post-MVP-Trigger-Watch, seither 033/039/040/044/046 aufgeloest) → Release v0.2.0
 
 **Slice-Plan:** entsteht in M8-Welle-0 (Pattern analog M6/M7-Welle-0:
 Slice-Plan-Eroeffnung + Trigger-Triage). M8 ist der **erste
