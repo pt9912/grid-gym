@@ -78,12 +78,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`023-sollte-battery-temperature.md`](023-sollte-battery-temperature.md) | Battery-Temperatur-Telemetry ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), Lastenheft §10.6) | wenn konkreter Bedarf — eigener Slice |
 | [`024-sollte-battery-cell-voltage.md`](024-sollte-battery-cell-voltage.md) | Battery-Zellspannung-Telemetry ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), Lastenheft §10.6) | wenn konkreter Bedarf — eigener Slice |
 
-**SOLLTE-Geraete — M8-Welle-2-Test-Erbschaft:**
-
-| Datei | Trigger | Aktivierung |
-| ----- | ------- | ----------- |
-| [`046-command-driven-integration-e2e.md`](046-command-driven-integration-e2e.md) | Command-getriebener Integration-E2E fuer die SOLLTE-Geraete ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015)..018) — die vier Szenario-Smokes fahren idle, das generische Command-Routing ist via `test_agents_demo_e2e.py` + Battery gedeckt; kein scenario-scheduled-Command-Mechanismus im `devices`-Block (M8-Welle-2a..2d Anti-Scope) | scenario-scheduled-Command-Mechanismus im `devices`-Block ODER Bedarf an geraetespezifischer Command-Routing-Abdeckung jenseits Agents/Battery |
-
 Architektonische offene Punkte ([`GG-AR-OPEN-002`](../../../../spec/architecture.md#19-offene-architektonische-punkte)..010) leben weiterhin
 in `architecture.md` §19 und sind dort die kanonische Liste. Wenn
 einer dieser Punkte einen konkreten Scope-Trigger erhaelt, wandert

@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Scenario-Scheduled Device Commands (ADR 0070, Trigger 046): ein optionaler
+  Top-Level-`commands`-Block plant tick-genau Steuerbefehle an Geraete (analog
+  der `faults`-Planung). Loader/Validator/`scenario_hash`-Abdeckung (opt-in,
+  pin-neutral wenn leer); `ScenarioCommandEngine` + TickLoop-Schritt A0s stellen
+  die im Tick-Span faelligen Commands vor den Agent-Commands zu. Damit fuehren
+  die vier SOLLTE-Geraete nicht-idle Command-E2E (EV/Transformer/Diesel
+  reagieren; Wind = IGNORED). Determinismus + Replay (GG-SIM-001/004,
+  GG-MVP-002) gewahrt; Bestands-Szenarien ohne `commands` bit-genau unveraendert.
 - Welle-Review (Multi-Run S1–S4, frischer Reviewer-Kontext) durchgefuehrt;
   HIGH/MEDIUM-Findings adressiert: (1) `POST /runs/{id}/start` faengt jetzt
   `GridGymError` → ein load-valides-aber-build-invalides Scenario (z. B.

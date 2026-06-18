@@ -113,4 +113,4 @@ den Welle-2a-Diff. **Adressiert:**
   ([`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §6); 2a
   liefert Device-Surface + HTTP-Fault-Pfad, der Smoke faehrt idle.
   Command-E2E-Teil getrackt als Trigger
-  [`046`](../open/046-command-driven-integration-e2e.md).
+  [`046`](046-command-driven-integration-e2e.md).

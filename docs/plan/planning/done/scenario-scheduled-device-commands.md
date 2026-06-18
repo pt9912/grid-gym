@@ -1,11 +1,12 @@
 # Scenario-Scheduled Device Commands (schliesst Trigger 046)
 
-**Status:** Aktiv (`in-progress/`) — **S0 vollzogen** (2026-06-18):
-[`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Proposed →
-Provisional` (Owner-Mandat „Voller Mechanismus"). S1..S3 folgen; ADR-`Accepted`
-+ Trigger-046-Closure (→ `done/`) mit der Wellen-Closure (`make fullbuild`).
+**Status:** **Abgeschlossen (`done/`, 2026-06-18)** — S0..S3 geliefert;
+[`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Accepted`.
+`commands`-Block + ScenarioCommandEngine + TickLoop-A0s-Naht + 4 nicht-idle
+SOLLTE-E2E; Trigger 046 mit-geschlossen. `make gates`/`make docs-check`/`make
+fullbuild` gruen.
 **Datum:** 2026-06-18
-**Quelle:** [Trigger 046](../open/046-command-driven-integration-e2e.md) (Forward-Gap
+**Quelle:** [Trigger 046](046-command-driven-integration-e2e.md) (Forward-Gap
 aus M8-Welle-2a..2d): die vier SOLLTE-Geraete fahren idle, weil der `devices`-Layer
 keinen scenario-scheduled-Command-Mechanismus kennt.
 
@@ -41,9 +42,9 @@ Agent-Commands), `scenario_hash` deckt `commands` ab (Variante A, Decimal-String
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
 | **S0** ✓ | [`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Proposed → Provisional` (2026-06-18); Schema/Platzierung/Determinismus-Reihenfolge mitgetragen. `Accepted` bei Closure | Architect / ADR |
-| **S1** | `commands`-Schema + `ScenarioCommand`-Domain + `Scenario.commands` + Loader (`_build_commands`/`_build_command`) + Validator-Strang + `scenario_yaml`-Decimal-Coercion der Payloads + `canonical_json`/`scenario_hash`-Abdeckung. Pins: Happy/Boundary/Negative (inkl. unbekanntes `target` → Reject; pin-neutral ohne `commands`) | Implementation |
-| **S2** | `ScenarioCommandEngine` (`due_commands(context)`) + `TickLoop`-Vor-Tick-Naht (faellige Commands → Apply-Pfad, scenario-vor-Agent-Reihenfolge) + `build_tick_loop`-Verdrahtung aus `scenario.commands`. Pins: tick-genaue Zustellung, Reihenfolge-Determinismus, Resume-Kontinuitaet | Implementation |
-| **S3** | **Nicht-idle Integration-E2E je SOLLTE-Geraet** (Trigger-046-Closure): EV (`set_charge_power` → `power_kw`), Transformer (`set_power_kw` → `primary_power_kw`), Diesel (`set_power_kw` → `power_kw`/`running`), Wind (`IGNORED`-Beleg). Bestehende Idle-Smokes bleiben (pin-neutral) | Implementation |
+| **S1** ✓ | `commands`-Schema + `ScenarioCommand`-Domain + `Scenario.commands` + Loader (`_build_commands`/`_build_command`) + Validator-Strang + `scenario_yaml`-Decimal-Coercion der Payloads + `canonical_json`/`scenario_hash`-Abdeckung. Pins: Happy/Boundary/Negative (inkl. unbekanntes `target` → Reject; pin-neutral ohne `commands`) | Implementation |
+| **S2** ✓ | `ScenarioCommandEngine` (`due_commands(context)`) + `TickLoop`-Vor-Tick-Naht (faellige Commands → Apply-Pfad, scenario-vor-Agent-Reihenfolge) + `build_tick_loop`-Verdrahtung aus `scenario.commands`. Pins: tick-genaue Zustellung, Reihenfolge-Determinismus, Resume-Kontinuitaet | Implementation |
+| **S3** ✓ | **Nicht-idle Integration-E2E je SOLLTE-Geraet** (Trigger-046-Closure): EV (`set_charge_power` → `power_kw`), Transformer (`set_power_kw` → `primary_power_kw`), Diesel (`set_power_kw` → `power_kw`/`running`), Wind (`IGNORED`-Beleg). Bestehende Idle-Smokes bleiben (pin-neutral) | Implementation |
 
 ## DoD
 
@@ -58,7 +59,7 @@ Agent-Commands), `scenario_hash` deckt `commands` ab (Variante A, Decimal-String
 
 ## Entsperrt
 
-[Trigger 046](../open/046-command-driven-integration-e2e.md) (S3-Closure → `done/`).
+[Trigger 046](046-command-driven-integration-e2e.md) (S3-Closure → `done/`).
 
 ## Risiken
 
@@ -82,6 +83,6 @@ Agent-Commands), `scenario_hash` deckt `commands` ab (Variante A, Decimal-String
 
 ## Aktivierung
 
-Aktiviert 2026-06-18 (S0). Folge-Slices S1..S3 laufen hier; die Wellen-Closure
-(alle Slices Done + `make fullbuild` gruen) bewegt den Plan + Trigger 046 nach
-`done/`.
+Aktiviert 2026-06-18 (S0). S1..S3 geliefert; die Wellen-Closure (alle Slices Done
++ `make fullbuild` gruen) hat den Plan + Trigger 046 am 2026-06-18 nach `done/`
+bewegt.

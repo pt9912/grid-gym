@@ -1,15 +1,14 @@
-# ADR 0070 — Scenario-Scheduled Device Commands: `commands`-Block + ScenarioCommandEngine (Provisional)
+# ADR 0070 — Scenario-Scheduled Device Commands: `commands`-Block + ScenarioCommandEngine (Accepted)
 
-**Status:** Provisional — Owner traegt die Empfehlung mit (S0, full-Mechanismus-
-Mandat; [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §2); die
-Validierung laeuft ueber S1..S3 des
-[`in-progress`-Slice-Plans](../planning/in-progress/scenario-scheduled-device-commands.md).
-`Accepted` folgt bei der Implementierungs-Wellen-Closure (gates gruen); bis dahin
-bleibt der Entwurf schaerfbar — offener Platzierungs-Punkt (§2.1 top-level vs.
-nested) ist begruendet entschieden, aber noch **kein** immutable Beschluss.
+**Status:** Accepted — die Validierung lief ueber S1..S3 des
+[Slice-Plans](../planning/done/scenario-scheduled-device-commands.md) (geliefert);
+mit der Wellen-Closure 2026-06-18 sind `make gates`/`make docs-check`/`make fullbuild`
+gruen (4 SOLLTE-E2E + Pin-Neutralitaet) — die Top-Level-`commands`-/A0s-Richtung ist
+damit immutable beschlossen (Nested-per-Device + Agents-only-Deckung verworfen, §3).
 **Datum:** 2026-06-18
 **Status geaendert am:** 2026-06-18 — `Proposed → Provisional` (S0; Owner-
-Mittragung des Voll-Mechanismus statt der schlanken Agents-Deckung).
+Mittragung des Voll-Mechanismus), dann `Provisional → Accepted` (Wellen-Closure;
+S1..S3 geliefert, gates gruen).
 **Bezug:**
 
 - [`ADR 0022`](0022-fault-injection-protocol.md) + [`ADR 0059`](0059-generic-scenario-fault-engine.md) —
@@ -26,7 +25,7 @@ Mittragung des Voll-Mechanismus statt der schlanken Agents-Deckung).
   das `commands`-Schema + die Engine-Naht setzen genau hier an.
 - [`ADR 0051`](0051-fault-engine-location-and-naming.md) — Placement-/Naming-
   Konvention der Scenario-Engines (Vorbild fuer `ScenarioCommandEngine`).
-- [Trigger 046](../planning/open/046-command-driven-integration-e2e.md) —
+- [Trigger 046](../planning/done/046-command-driven-integration-e2e.md) —
   der aufloesende Trigger (Command-E2E der SOLLTE-Geraete).
 
 ---

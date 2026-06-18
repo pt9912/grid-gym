@@ -111,7 +111,7 @@ Schaerfung):
   der Transformer-`apply_command` ist Unit-gepinnt. Kein
   scenario-scheduled-Command-Mechanismus im `devices`-Block — wie 2a
   faehrt der Smoke idle. Getrackt als Trigger
-  [`046`](../open/046-command-driven-integration-e2e.md).
+  [`046`](046-command-driven-integration-e2e.md).
 - `abs(primary)`/`abs(secondary)`-Mehrfachberechnung pro Tick
   (vernachlaessigbar; die Staticmethod-Aufteilung favorisiert
   Lesbarkeit).

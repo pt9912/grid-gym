@@ -1,9 +1,11 @@
 # 046 — Command-getriebener Integration-E2E fuer die SOLLTE-Geraete
 
-**Status:** **In-Arbeit (aktiviert 2026-06-18)** — Voll-Mechanismus-Welle
-[`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Provisional`
-+ [`Slice-Plan`](../in-progress/scenario-scheduled-device-commands.md) (S0
-vollzogen). Vormals: Forward-Gap aus M8-Welle-2a..2d ("Bewusst deferred")
+**Status:** **Resolved 2026-06-18 (`done/`)** — Voll-Mechanismus-Welle
+[`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Accepted`
++ [`Slice-Plan`](scenario-scheduled-device-commands.md) (S0..S3 geliefert):
+`commands`-Block + ScenarioCommandEngine + A0s-Naht + 4 nicht-idle SOLLTE-E2E
+(EV/Transformer/Diesel reagieren, Wind `IGNORED`). `make fullbuild` gruen.
+Vormals: Forward-Gap aus M8-Welle-2a..2d ("Bewusst deferred")
 **Datum:** 2026-06-15
 **Quelle:** M8-Welle-2a..2d Anti-Scope; erstmals als Folge-Slice in
 [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §6 vermerkt
@@ -68,11 +70,11 @@ Command-E2E fuehrt (Snapshot-Assertion auf die Command-Reaktion).
 
 ## References
 
-- [`../done/M8-welle-2a.md`](../done/M8-welle-2a.md) §5 — erste „Bewusst
+- [`../done/M8-welle-2a.md`](M8-welle-2a.md) §5 — erste „Bewusst
   deferred"-Notiz (EV-Charger; Smoke faehrt idle).
-- [`../done/M8-welle-2b.md`](../done/M8-welle-2b.md) /
-  [`../done/M8-welle-2c.md`](../done/M8-welle-2c.md) /
-  [`../done/M8-welle-2d.md`](../done/M8-welle-2d.md) — identische
+- [`../done/M8-welle-2b.md`](M8-welle-2b.md) /
+  [`../done/M8-welle-2c.md`](M8-welle-2c.md) /
+  [`../done/M8-welle-2d.md`](M8-welle-2d.md) — identische
   Wiederholung (Transformer/Wind/Diesel).
 - [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §6 —
   kanonische Folge-Slice-Notiz (Scenario-Fault-Engine + Command-E2E).

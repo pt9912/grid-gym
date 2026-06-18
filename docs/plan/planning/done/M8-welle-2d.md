@@ -110,4 +110,4 @@ Loop ist via Agents/Battery-Integration gedeckt) + `_clamp_power`-
 Unterschranke (defensiv, per Sign-Konvention `power_kw >= 0`); Snapshot-
 State-Range-Validierung (etabliertes Geraete-Muster: Devices vertrauen
 eigenen Snapshots). Der Command-E2E-Teil ist als Trigger
-[`046`](../open/046-command-driven-integration-e2e.md) getrackt.
+[`046`](046-command-driven-integration-e2e.md) getrackt.
