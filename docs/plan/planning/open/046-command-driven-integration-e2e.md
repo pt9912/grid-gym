@@ -1,6 +1,9 @@
 # 046 — Command-getriebener Integration-E2E fuer die SOLLTE-Geraete
 
-**Status:** Open — Forward-Gap aus M8-Welle-2a..2d ("Bewusst deferred")
+**Status:** **In-Arbeit (aktiviert 2026-06-18)** — Voll-Mechanismus-Welle
+[`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) `Provisional`
++ [`Slice-Plan`](../in-progress/scenario-scheduled-device-commands.md) (S0
+vollzogen). Vormals: Forward-Gap aus M8-Welle-2a..2d ("Bewusst deferred")
 **Datum:** 2026-06-15
 **Quelle:** M8-Welle-2a..2d Anti-Scope; erstmals als Folge-Slice in
 [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §6 vermerkt
