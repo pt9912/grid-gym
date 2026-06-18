@@ -29,8 +29,13 @@ sich weiterentwickelt.
 
 - **Konvention:** AI-Harness-Kurs (`pt9912/ai-harness-course`) — das
   operative Agenten-Regelwerk und die verkoerperten Lab-Templates.
-- **Stand:** Kurs-Welle 18 · 2026-06-11 (Regelwerk-Stand-Zeile).
+- **Stand:** Release `v1.2.0` · 2026-06-16 (Tag-gepinnt; Commit
+  `0473cc55ff5df8afc4b473635f3ef78de25f2714`).
 - **Datum der Adoption:** 2026-06-13.
+- **Baseline-Update:** 2026-06-18 — Pin `templates-v2`/`47af124` →
+  `v1.2.0`/`0473cc55` nach Delta-Analyse (kein Inhaltskonflikt mit
+  `MR-000..005`; die konkrete Source-Precedence-Rangwahl bleibt laut v1.2.0
+  Repo-Sache, deklariert in `MR-001`/`MR-002`).
 
 ## Adoptierte Konventions-Quellen
 
@@ -38,15 +43,18 @@ Pointer auf die Baseline — **keine** Wiederholung des Inhalts. Hart auf
 den Tag/Commit gepinnt fuer Reproduzierbarkeit (nicht `main`):
 
 - **Agenten-Regelwerk (operativ, fuer Code-Agenten):**
-  [agents-regelwerk.md @ `templates-v2`](https://github.com/pt9912/ai-harness-course/blob/templates-v2/kurs/de/agents-regelwerk.md)
+  [agents-regelwerk.md @ `v1.2.0`](https://github.com/pt9912/ai-harness-course/blob/v1.2.0/kurs/de/agents-regelwerk.md)
   — Raw-Pin:
-  `https://raw.githubusercontent.com/pt9912/ai-harness-course/47af124f14e7a688b762c92e852df2f3f5b0db6d/kurs/de/agents-regelwerk.md`.
-  Derivativ — bei Konflikt gilt das Lehrmaterial.
-- **Lehrmaterial (Module 00–05 + grundlagen):**
-  [`kurs/de/` @ `templates-v2`](https://github.com/pt9912/ai-harness-course/tree/templates-v2/kurs/de).
+  `https://raw.githubusercontent.com/pt9912/ai-harness-course/0473cc55ff5df8afc4b473635f3ef78de25f2714/kurs/de/agents-regelwerk.md`.
+  Modul-aufgeteiltes Bundle:
+  [`lab-regelwerk.zip` @ Release `v1.2.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.2.0/lab-regelwerk.zip)
+  (17 Module + 3 Grundlagen-Digeste). Derivativ — bei Konflikt gilt das
+  Lehrmaterial.
+- **Lehrmaterial (Module 00–16 + grundlagen):**
+  [`kurs/de/` @ `v1.2.0`](https://github.com/pt9912/ai-harness-course/tree/v1.2.0/kurs/de).
 - **Verkoerperte Form (Templates):**
-  [`lab-templates.zip` @ Release `templates-v2`](https://github.com/pt9912/ai-harness-course/releases/download/templates-v2/lab-templates.zip)
-  (Commit `47af124f14e7a688b762c92e852df2f3f5b0db6d`).
+  [`lab-templates.zip` @ Release `v1.2.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.2.0/lab-templates.zip)
+  (Commit `0473cc55ff5df8afc4b473635f3ef78de25f2714`).
 
 ## Adaptions-Block
 

@@ -33,6 +33,13 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`050-dcheck-matrix-supersede-lineage.md`](050-dcheck-matrix-supersede-lineage.md) | d-check-`matrix`-Supersede-Lineage-Carve-out (CR, Folge aus Slice 049) — **Resolved 2026-06-17**: d-check v0.11.0 liefert `allow-supersede-lineage`; Pin + `.d-check.yml`-Config + [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Lineage-Link migriert, `make docs-check` gruen (Boundary verifiziert) | **Resolved** (Doc-Archiv mit M8-Closure) |
 | [`033-otel-collector-go-stdlib-cve-bump.md`](033-otel-collector-go-stdlib-cve-bump.md) | OTel-Collector Go-stdlib CVE-2026-42504-Bump ([`ADR-0043`](../../adr/0043-image-audit-strategy.md)-konformer Defer-Pfad ueber [`ADR-0044`](../../adr/0044-generated-trivyignore-permit.md)-vulnignore-Pattern) | OTel-Collector-Release > 0.153.0 mit `go1.26.4+`-Build ODER Compliance-Druck |
 
+**Harness-Regelwerk-Adoption (v1.2.0-Delta):**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`051-durchsetzungsschicht-enforcement-layer.md`](051-durchsetzungsschicht-enforcement-layer.md) | Durchsetzungsschicht (Tool-Call-Gate + Handoff-Gate + Workflow-Skelett) — v1.2.0-Mechanik, im Repo abwesend (nur `.claude/settings.local.json`-Allowlist, keine Hooks); harte Regeln nur inferential feedforward in `AGENTS.md` | Steering-Loop ≥ 3× Handoff-/Docker-only-Drift ODER bewusste Harness-Haertung vor M8-Closure |
+| [`052-carveout-modul07-audit-trichter.md`](052-carveout-modul07-audit-trichter.md) | Carveout-Disziplin Modul 07: Audit-Slice pro Welle-Closure + Werkzeug-Wahl-Trichter (Granularitaet vor Temporalitaet) — v1.2.0-Schaerfung ueber `MR-003` hinaus | Naechste Welle-/M8-Closure mit faelligem Carveout-Audit ODER `carveouts.md` ≥ 50 Eintraege (`MR-003` §4) |
+
 **M3-/Multi-Agent-Folge:**
 
 | Datei | Trigger | Aktivierung |

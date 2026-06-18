@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Harness-Baseline auf Kurs-Release `v1.2.0` re-gepinnt
+  (`harness/conventions.md` Baseline + Quellen-URLs: `templates-v2`/`47af124`
+  → `v1.2.0`/`0473cc55`) nach v1.2.0-Delta-Analyse — kein Inhaltskonflikt mit
+  den Adaptionen `MR-000..005` (die konkrete Source-Precedence-Rangwahl bleibt
+  laut v1.2.0 Repo-Sache). Reine Doku-Aktualisierung.
+- Trigger-Watch 051 (Durchsetzungsschicht: Tool-Call-/Handoff-Gate) + 052
+  (Carveout-Audit-Slice pro Welle + Werkzeug-Wahl-Trichter) unter
+  `docs/plan/planning/open/` — zwei neue v1.2.0-Mechaniken als Folgearbeit
+  verankert (nicht umgesetzt).
 - Driver-unabhaengige Run-End-Naht fuer `TickLoop.finalize()` (ADR 0067,
   Slice 040, Trigger 040): NEU `run_session()`-Kontextmanager garantiert
   `finalize()` im `finally` fuer jeden Konsumenten (Headless-Runner ohne
@@ -62,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Boundary verifiziert: Nicht-Lineage-Verweise auf inaktive ADRs bleiben
   `matrix-inactive`.
 - `harness/conventions.md` (NEU) — formale Adoption des
-  AI-Harness-Kurses als Baseline (gepinnt Tag `templates-v2`),
+  AI-Harness-Kurses als Baseline (gepinnt Tag `v1.2.0`),
   Adaptions-Block `MR-000..005`, Modus-Deklaration pro Sub-Area;
   plus `docs/reviews/`-Review-Report-Template.
 - M8-ADRs: NEU `ADR 0050` (AC-ADAPTER-PURE-Bridge-Rueckbau),
