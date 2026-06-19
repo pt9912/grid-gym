@@ -178,6 +178,7 @@ D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:6ec1c463b5276b3314881839bd800b5e9
 
 docs-check:
 	docker run --rm -v "$(CURDIR)":/repo:ro $(D_CHECK_IMAGE)
+	@bash tools/harness/record-gates.sh docs-check || echo "[record-gates] WARN: Quittung 'docs-check' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
 
 # `tools/check_spdx.py` — SPDX-License-Identifier-Lint fuer die
 # IEC-61850-GPL-Boundary (ADR 0035 Decision I-f, M4 Welle 6b C1).
@@ -423,6 +424,7 @@ static-gates: lint format-check typecheck arch-check noqa-gate spdx-check
 
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
 	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
+	@bash tools/harness/record-gates.sh gates || echo "[record-gates] WARN: Quittung 'gates' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
 
 # M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen
 # heute ein explizites `CRITICAL_COV_TARGETS`-Override, weil der

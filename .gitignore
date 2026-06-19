@@ -1,6 +1,21 @@
 .agents/
 .codex/
-.claude/
+
+# Claude-Code-Workspace: lokales standardmaessig ignorieren, aber die
+# versionierte Durchsetzungsschicht (ADR 0071, Slice 051) selektiv
+# re-includen. Verzeichnis-Exclude (`.claude/`) liesse sich nicht per
+# einfacher Negation aufheben — daher `dir/*` + Negationen.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/commands/
+# .claude/settings.local.json bleibt ignoriert (lokale Permission-Allowlist).
+
+# Harness-Durchsetzungsschicht-State (ADR 0071, Slice 051): host-seitige
+# Gate-Lauf-Quittungen (`gates-<tree-hash>.json`). Maschinen-Output, kein
+# Source; `git ls-files --others --exclude-standard` haelt sie damit auch
+# aus dem Working-Tree-Hash heraus (kein Selbst-Referenz-Churn).
+.harness-state/
 
 # Python-Build-/Test-Artefakte.
 # Projekt-Policy: alle Builds und Tests laufen ueber das
