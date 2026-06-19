@@ -18,6 +18,9 @@ LOCK_PREFIX="/tmp/grid-gym-handoff"
 
 # block <lock-key> <stderr-reason>: blockt (exit 2) ODER gibt frei, wenn fuer
 # diesen Stand schon einmal geblockt wurde (Loop-Guard; Lock bleibt liegen).
+# Hinweis: fail-closed-Keys ohne session_id ("noparse"/"nosid") sind global
+# (cross-session) — unvermeidbar ohne session_id, aber nur im Degenerat-Fall
+# (python3 fehlt / Stop-Input unparsebar) ueberhaupt erreichbar.
 block() {
   local lock="${LOCK_PREFIX}-${1}.lock"
   if [ -f "$lock" ]; then
@@ -43,7 +46,10 @@ try:
 except Exception:
     sys.exit(3)' 2>/dev/null
 )" || session_id=""
-[ -n "$session_id" ] || block "noparse" "[handoff-gate] BLOCKED (fail-closed): Stop-Input nicht lesbar (kein session_id)."
+# Leeres session_id heisst hier: python3 brach ab (Input unparsebar) — NICHT
+# bloss ein fehlendes Feld. Valides JSON ohne session_id faellt oben auf "nosid"
+# zurueck und wird unter globalem Key weiter gegatet (nicht durchgewunken).
+[ -n "$session_id" ] || block "noparse" "[handoff-gate] BLOCKED (fail-closed): Stop-Input nicht parsebar."
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || repo_root=""
 [ -n "$repo_root" ] || block "${session_id}-nogit" "[handoff-gate] BLOCKED (fail-closed): kein git-Repo — Tree-Hash nicht pruefbar."

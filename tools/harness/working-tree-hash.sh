@@ -8,7 +8,7 @@
 # (inkl. `.harness-state/`) fallen via `--exclude-standard` heraus, sodass
 # die Gate-Quittung den Hash nicht selbst veraendert (kein Self-Referenz-Churn).
 #
-# Deterministisch (NUL-sichere, sortierte, deduplizierte Dateiliste),
+# Deterministisch (NUL-sichere, LC_ALL=C-sortierte, deduplizierte Dateiliste),
 # commit-stabil (inhalts- statt diff-/status-basiert). Gibt einen
 # sha256-Hex-Hash auf stdout aus. Fail-loud: fehlt git/sha256sum oder ist
 # kein Repo da, bricht das Skript ab (der Stop-Hook wertet das fail-closed).
@@ -22,7 +22,7 @@ cd "$repo_root"
 {
   git ls-files -z
   git ls-files -z --others --exclude-standard
-} | sort -z -u | {
+} | LC_ALL=C sort -z -u | {
   while IFS= read -r -d '' path; do
     # Tracked-aber-geloeschte Dateien (im Index, nicht auf Platte) werden
     # uebersprungen — ihre Abwesenheit aendert den Hash korrekt mit.

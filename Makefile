@@ -422,6 +422,11 @@ perf-baseline-update:
 static-gates: lint format-check typecheck arch-check noqa-gate spdx-check
 	@echo "[static-gates] static code gates green: lint, format-check, typecheck, arch-check, noqa-gate, spdx-check (kein pytest; test-unit/coverage/dep-audit separat via 'make gates')"
 
+# `gates`/`docs-check` haengen nach Erfolg host-seitig `record-gates.sh` an
+# (ADR 0071, Slice 051): Quittung NUR am Aggregat-Target, und non-fatal — ein
+# Quittungs-Fehler faerbt den Gate-Lauf nicht rot. Das Handoff-Gate ist
+# fail-closed; ein dauerhaft kaputtes record-gates degradiert den Handoff daher
+# zu "warnt pro Closure einmal" (fail-safe — nie ein stilles Durchwinken).
 gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
 	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
 	@bash tools/harness/record-gates.sh gates || echo "[record-gates] WARN: Quittung 'gates' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
