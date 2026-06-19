@@ -7,6 +7,6 @@ aktive** Arbeit.
 
 | Datei                                                                 | Gegenstand |
 | --------------------------------------------------------------------- | ---------- |
-| — | *(zur Zeit keine `next/`-Plaene — alle aktiviert)* |
+| [`051-durchsetzungsschicht-enforcement-layer.md`](051-durchsetzungsschicht-enforcement-layer.md) | Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett (Scope-Skizze, **Review ausstehend**). Trigger [`open/051`](../open/051-durchsetzungsschicht-enforcement-layer.md). |
 
 *(`041`/`042` sind mit M8-Welle-0 2026-06-13 nach [`../in-progress/`](../in-progress/) aktiviert — [`AC-ADAPTER-PURE`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau + Fault-Engine-Naming. `replay-source-integration.md` ist mit M7-Welle-1-C0 nach `../done-archive/M7-welle-1.md` aktiviert — [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002), sub-sliced 1a/1b, **Done 2026-06-09**. `abnahme-cli.md` ist mit M7-Welle-2-C0 nach `../done-archive/M7-welle-2.md` aktiviert — [`GG-MVP-003`](../../../../spec/lastenheft.md#gg-mvp-003).)*
