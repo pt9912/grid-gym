@@ -29,9 +29,13 @@ sich weiterentwickelt.
 
 - **Konvention:** AI-Harness-Kurs (`pt9912/ai-harness-course`) — das
   operative Agenten-Regelwerk und die verkoerperten Lab-Templates.
-- **Stand:** Release `v1.2.0` · 2026-06-16 (Tag-gepinnt; Commit
-  `0473cc55ff5df8afc4b473635f3ef78de25f2714`).
+- **Stand:** Release `v1.3.0` · 2026-06-18 (Tag-gepinnt; Commit
+  `d278c260cda0408dd3d2b7982b6c2752ce0cc152`).
 - **Datum der Adoption:** 2026-06-13.
+- **Baseline-Update:** 2026-06-19 — Pin `v1.2.0`/`0473cc55` →
+  `v1.3.0`/`d278c260` nach Delta-Analyse: die einzige normative Baseline-
+  Aenderung sind durchgaengig 4-stellige ADR-IDs (`ADR-<NNNN>`), die `MR-000`
+  bereits fuehrt — kein Inhaltskonflikt mit `MR-000..005`.
 - **Baseline-Update:** 2026-06-18 — Pin `templates-v2`/`47af124` →
   `v1.2.0`/`0473cc55` nach Delta-Analyse (kein Inhaltskonflikt mit
   `MR-000..005`; die konkrete Source-Precedence-Rangwahl bleibt laut v1.2.0
@@ -43,18 +47,18 @@ Pointer auf die Baseline — **keine** Wiederholung des Inhalts. Hart auf
 den Tag/Commit gepinnt fuer Reproduzierbarkeit (nicht `main`):
 
 - **Agenten-Regelwerk (operativ, fuer Code-Agenten):**
-  [agents-regelwerk.md @ `v1.2.0`](https://github.com/pt9912/ai-harness-course/blob/v1.2.0/kurs/de/agents-regelwerk.md)
+  [agents-regelwerk.md @ `v1.3.0`](https://github.com/pt9912/ai-harness-course/blob/v1.3.0/kurs/de/agents-regelwerk.md)
   — Raw-Pin:
-  `https://raw.githubusercontent.com/pt9912/ai-harness-course/0473cc55ff5df8afc4b473635f3ef78de25f2714/kurs/de/agents-regelwerk.md`.
+  `https://raw.githubusercontent.com/pt9912/ai-harness-course/d278c260cda0408dd3d2b7982b6c2752ce0cc152/kurs/de/agents-regelwerk.md`.
   Modul-aufgeteiltes Bundle:
-  [`lab-regelwerk.zip` @ Release `v1.2.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.2.0/lab-regelwerk.zip)
-  (17 Module + 3 Grundlagen-Digeste). Derivativ — bei Konflikt gilt das
+  [`lab-regelwerk.zip` @ Release `v1.3.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.3.0/lab-regelwerk.zip)
+  (17 Module + 3 Grundlagen-Abschnitte). Derivativ — bei Konflikt gilt das
   Lehrmaterial.
 - **Lehrmaterial (Module 00–16 + grundlagen):**
-  [`kurs/de/` @ `v1.2.0`](https://github.com/pt9912/ai-harness-course/tree/v1.2.0/kurs/de).
+  [`kurs/de/` @ `v1.3.0`](https://github.com/pt9912/ai-harness-course/tree/v1.3.0/kurs/de).
 - **Verkoerperte Form (Templates):**
-  [`lab-templates.zip` @ Release `v1.2.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.2.0/lab-templates.zip)
-  (Commit `0473cc55ff5df8afc4b473635f3ef78de25f2714`).
+  [`lab-templates.zip` @ Release `v1.3.0`](https://github.com/pt9912/ai-harness-course/releases/download/v1.3.0/lab-templates.zip)
+  (Commit `d278c260cda0408dd3d2b7982b6c2752ce0cc152`).
 
 ## Adaptions-Block
 

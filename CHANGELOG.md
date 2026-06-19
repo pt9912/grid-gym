@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Harness-Baseline auf Kurs-Release `v1.3.0` re-gepinnt
+  (`harness/conventions.md` Baseline + Quellen-URLs: `v1.2.0`/`0473cc55`
+  → `v1.3.0`/`d278c260`) nach v1.3.0-Delta-Analyse (Bundle + Templates) — kein
+  Inhaltskonflikt mit den Adaptionen `MR-000..005`. Einzige normative Baseline-
+  Aenderung: ADR-IDs durchgaengig 4-stellig (`ADR-<NNNN>`), deckt sich mit dem
+  hier seit M1 gefuehrten 4-stelligen ADR-Schema — also bereits erfuellt. Reine
+  Doku-Aktualisierung.
 - Scenario-Scheduled Device Commands (ADR 0070, Trigger 046): ein optionaler
   Top-Level-`commands`-Block plant tick-genau Steuerbefehle an Geraete (analog
   der `faults`-Planung). Loader/Validator/`scenario_hash`-Abdeckung (opt-in,
