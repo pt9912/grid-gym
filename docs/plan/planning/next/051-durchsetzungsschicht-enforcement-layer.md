@@ -42,6 +42,13 @@ v2 nach Reviewer-Findings (1 Blocker, 2 HIGH, 5 MEDIUM, 3 Nits). Adressiert:
 - **Nits** — Self-Application von „uneindeutig" auf **entschieden** (Hot-Reload
   belegt) hochgezogen; Workflow-Skelett als „im Trigger optional, hier in-scope"
   benannt (§3).
+- **Re-Review (Zweitrunde)** — neuer Befund: `tracked+staged`-Hash erfasste
+  untracked-Source nicht, die der Docker-Build-Context (`docker build .`) real
+  testet. **Fix (Option b, getightet):** Hash über `git ls-files` +
+  `git ls-files --others --exclude-standard`; `.harness-state/` fällt via
+  `--exclude-standard` raus (kein Selbst-Referenz-Churn) (§3, §5, §6). `.dockerignore`
+  schließt `.claude/` bereits aus → Hooks bleiben korrekt aus dem Image (verifiziert,
+  kein Handlungsbedarf).
 
 ## 1. Ziel
 
@@ -94,9 +101,15 @@ Steering-Loop. (Geplante Nummer: 0071.)
   durch). So **re-armt** der Guard bei jeder Inhaltsänderung: er blockt **einmal
   pro distinktem Tree-Stand** und terminiert weiterhin garantiert. `session_id`
   ist in der aktuellen Stop-stdin vorhanden (statt eines evtl. fehlenden Flags).
-- **Inhalts-Nachweis (host-seitig):** ein inhaltsbasierter Working-Tree-Hash
-  (tracked+staged Content, commit-stabil). Die `make`-Targets fahren die Gates
-  *im Container* — die Quittung wird daher **host-seitig** geschrieben (der
+- **Inhalts-Nachweis (host-seitig):** ein inhaltsbasierter Working-Tree-Hash über
+  **tracked + staged + untracked-nicht-ignoriert** (`git ls-files` plus
+  `git ls-files --others --exclude-standard`). Damit deckt der Hash genau das ab,
+  *was committbar ist bzw. was der Docker-Build-Context testet* — `docker build .`
+  zieht das **Dateisystem**, nicht den git-Index, also zählt auch eine neue, noch
+  nicht `git add`-de Quelldatei mit (schließt den Re-Review-Spalt). `--exclude-
+  standard` lässt `.harness-state/` (und alles Gitignorte) automatisch fallen →
+  **kein Selbst-Referenz-Churn** durch die Quittung selbst. Die `make`-Targets
+  fahren die Gates *im Container* — die Quittung wird daher **host-seitig** geschrieben (der
   Stop-Hook liest host-seitig) und trägt den **Host**-Tree-Hash + Gate-Namen +
   Timestamp. Als Recipe-Zeile **nach** dem Docker-Target und **nur am
   Aggregat-Target** (`gates`, `docs-check`), nicht je Sub-Gate (sonst verfrühte
@@ -169,7 +182,7 @@ lässt sich nicht per simpler Negation re-includen; es braucht das `dir/*`-Muste
 Dateien dieser Tranche:
 
 ```text
-tools/harness/working-tree-hash.sh   # NEU — inhaltsbasierter Tree-Hash (Host)
+tools/harness/working-tree-hash.sh   # NEU — Tree-Hash (Host): tracked+staged+untracked-non-ignored
 tools/harness/record-gates.sh        # NEU — Gate-Lauf-Quittung (Host, am Aggregat-Target)
 .gitignore                           # .claude/-Re-Include (s. o.) + .harness-state/ ergänzen
 Makefile                             # gates/docs-check: record-gates.sh NACH dem Docker-Target, nur am Aggregat
@@ -216,8 +229,10 @@ Slice-Move nach `done/` (reiner `git mv`). Memory-Eintrag.
 - [ ] **`.gitignore` umgebaut** (Blocker): `.claude/settings.json`/`hooks/`/`commands/`
       versioniert, `.claude/settings.local.json` bleibt ignoriert — belegt via
       `git check-ignore`.
-- [ ] Working-Tree-Hash-Skript deterministisch (gleicher Content → gleicher
-      Hash; Edit → anderer Hash), standalone getestet.
+- [ ] Working-Tree-Hash-Skript deterministisch über **tracked+staged+untracked-
+      nicht-ignoriert** (`git ls-files` + `--others --exclude-standard`): gleicher
+      Content → gleicher Hash; Edit **oder** neue untracked Quelldatei → anderer
+      Hash; eine `.harness-state/`-Quittung ändert den Hash **nicht**. Standalone getestet.
 - [ ] Gate-Quittungs-Skript schreibt valide Quittung **host-seitig** (Host-Tree-
       Hash), nur bei Gate-Erfolg, nur am Aggregat-Target (`gates`/`docs-check`).
 - [ ] Tool-Call-Gate: denyt venv-Befehle außerhalb Docker/make (exit 2), lässt
@@ -233,8 +248,10 @@ Slice-Move nach `done/` (reiner `git mv`). Memory-Eintrag.
 
 ## 6. Verification (Skizze)
 
-- **Skript-Ebene (Docker-frei):** Tree-Hash zweimal → identisch; nach Edit →
-  verschieden. Quittung valide im lokalen State-Verzeichnis.
+- **Skript-Ebene (Docker-frei):** Tree-Hash zweimal → identisch; nach Edit **oder**
+  neuer untracked-nicht-ignorierter Quelldatei → verschieden; eine `.harness-state/`-
+  Quittung ändert den Hash **nicht** (via `--exclude-standard`). Quittung valide im
+  lokalen State-Verzeichnis.
 - **Hook-Ebene (standalone):** Sample-stdin-JSON in beide Hooks pipen.
   Tool-Call-Gate: deny-Match (exit 2), allow (`make`/`docker`), **fail-open** bei
   kaputtem/unlesbarem Input (exit 0 — Session bleibt am Leben). Handoff-Gate:
