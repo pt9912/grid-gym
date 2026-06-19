@@ -1,7 +1,7 @@
 # ADR 0071 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett via Claude-Code-Hooks (Accepted)
 
 **Status:** Accepted — die Durchsetzungsschicht ist als
-[`Slice-Plan 051`](../planning/in-progress/051-durchsetzungsschicht-enforcement-layer.md)
+[`Slice-Plan 051`](../planning/done/051-durchsetzungsschicht-enforcement-layer.md)
 vollständig geliefert (S2/S3 Skripte + Hooks, S4 Public-Contract-Sync, S5 Closure).
 Die Mechanik (drei Bindepunkte, bindepunkt-spezifisches fail-Verhalten,
 inhaltsbasierter Nachweis) ist umgesetzt; `make gates`/`make docs-check` grün und

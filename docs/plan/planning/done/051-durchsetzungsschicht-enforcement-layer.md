@@ -6,7 +6,7 @@ v1 → v2 (Review) → v3 (Re-Review); mit S1 von `next/` nach `in-progress/` ak
 `open/051`-Trigger aufgelöst, mit S5 nach `done/` geschlossen.)
 **Datum:** 2026-06-19
 **Quelle:** aktivierter Trigger-Watch 051 (v1.2.0/v1.3.0-Regelwerk-Delta — Grundlagen
-*Durchsetzungsschicht* + Modul 11); im Carveout-Index als [`T-051`](carveouts.md)
+*Durchsetzungsschicht* + Modul 11); im Carveout-Index als [`T-051`](../in-progress/carveouts.md)
 geführt. Aktivierung durch das zweite Trigger-Kriterium: **bewusste Harness-Härtung**
 (User-Mandat).
 **Bezug:**

@@ -1259,7 +1259,7 @@ vorbereiteten Architektur-Cleanups. **Release-Ziel: v0.2.0**
 (Minor-Bump — neue Gerätemodelle sind additive Features).
 
 **Harness-Haertung (parallel, keine Feature-Welle):** Slice
-[`051`](051-durchsetzungsschicht-enforcement-layer.md) — Durchsetzungsschicht
+[`051`](../done/051-durchsetzungsschicht-enforcement-layer.md) — Durchsetzungsschicht
 (Tool-Call-/Handoff-Gate + Workflow-Skelett, [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md)
 `Accepted`) — ist **Done** (Closure 2026-06-19, alle Tranchen S0–S5 geliefert;
 Carveout `T-051` Resolved). Kein Geraete-/Netz-Scope.
