@@ -1,15 +1,15 @@
-# ADR 0071 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett via Claude-Code-Hooks (Provisional)
+# ADR 0071 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett via Claude-Code-Hooks (Accepted)
 
-**Status:** Provisional — Architektur-Entwurf zum
+**Status:** Accepted — die Durchsetzungsschicht ist als
 [`Slice-Plan 051`](../planning/in-progress/051-durchsetzungsschicht-enforcement-layer.md)
-(aktivierter Trigger 051, mit S1 nach `in-progress/` gezogen).
+vollständig geliefert (S2/S3 Skripte + Hooks, S4 Public-Contract-Sync, S5 Closure).
 Die Mechanik (drei Bindepunkte, bindepunkt-spezifisches fail-Verhalten,
-inhaltsbasierter Nachweis) ist beschlossen; `Provisional → Accepted` folgt mit
-der Slice-Closure (S5), sobald `make gates`/`make docs-check` grün sind und die
-Hooks standalone verifiziert wurden.
+inhaltsbasierter Nachweis) ist umgesetzt; `make gates`/`make docs-check` grün und
+beide Hooks standalone verifiziert (19 Checks).
 **Datum:** 2026-06-19
 **Status geaendert am:** 2026-06-19 — `Proposed → Provisional` (S0; Plan v3 nach
-zwei Review-Runden freigegeben, Owner-Mittragung des Voll-Mechanismus).
+zwei Review-Runden freigegeben, Owner-Mittragung des Voll-Mechanismus);
+`Provisional → Accepted` (S5-Closure; Gates grün, Hooks standalone verifiziert).
 **Bezug:**
 
 - v1.3.0-Regelwerk-Grundlagen *Durchsetzungsschicht* (drei Bindepunkte; vier
@@ -21,8 +21,8 @@ zwei Review-Runden freigegeben, Owner-Mittragung des Voll-Mechanismus).
 - [`harness/conventions.md`](../../../harness/conventions.md) `MR-005` — die
   Sensors-Bindung läuft heute per ADR-Link in der Sensors-Tabelle; diese Schicht
   ergänzt die **mechanische** Bindung (additive Ergänzung, kein Konflikt).
-- [`harness/README.md`](../../../harness/README.md) — bekommt mit der Closure (S4)
-  die Enforcement-Layer-Sektion + Pointer auf diese ADR.
+- [`harness/README.md`](../../../harness/README.md) — trägt seit S4 die
+  Enforcement-Layer-Sektion + Pointer auf diese ADR.
 
 ---
 
@@ -168,5 +168,5 @@ tools/harness/record-gates.sh        # Gate-Lauf-Quittung (Host, am Aggregat-Tar
 - Out-of-Scope (CI-gedeckt): Sandbox-Härte (Interpreter-Umwege), Frischer-Klon-
   Lücke. Selbst Harness-Code → unterliegt dem Steering-Loop (Härtung am Wächter
   in Folge-Wellen).
-- Status: `Provisional`; `Accepted` mit der Slice-051-Closure (S5), wenn
-  `make gates`/`make docs-check` grün sind und beide Hooks standalone verifiziert.
+- Status: `Accepted` (S5-Closure: `make gates`/`make docs-check` grün, beide Hooks
+  standalone verifiziert — 19 Checks).

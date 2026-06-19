@@ -1,8 +1,9 @@
 # 051 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett
 
-**Status:** **In Progress** (Slice aktiv seit 2026-06-19; **S0 geliefert** — Folge-ADR
-`Provisional`. Plan-Historie: v1 → v2 (Review) → v3 (Re-Review); mit S1 von `next/`
-nach `in-progress/` aktiviert, `open/051`-Trigger aufgelöst.)
+**Status:** **Done** (Closure 2026-06-19; alle Tranchen S0–S5 geliefert. Folge-ADR
+[`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) `Accepted`. Plan-Historie:
+v1 → v2 (Review) → v3 (Re-Review); mit S1 von `next/` nach `in-progress/` aktiviert,
+`open/051`-Trigger aufgelöst, mit S5 nach `done/` geschlossen.)
 **Datum:** 2026-06-19
 **Quelle:** aktivierter Trigger-Watch 051 (v1.2.0/v1.3.0-Regelwerk-Delta — Grundlagen
 *Durchsetzungsschicht* + Modul 11); im Carveout-Index als [`T-051`](carveouts.md)
@@ -232,27 +233,27 @@ Slice-Move nach `done/` (reiner `git mv`). Memory-Eintrag.
 
 ## 5. Definition of Done
 
-- [ ] Folge-ADR geschrieben + akzeptiert (Bindepunkte, vier Eigenschaften,
+- [x] Folge-ADR geschrieben + akzeptiert (Bindepunkte, vier Eigenschaften,
       bindepunkt-spezifisches fail-Verhalten, Grenzen ehrlich benannt); im ADR-Index.
-- [ ] **`.gitignore` umgebaut** (Blocker): `.claude/settings.json`/`hooks/`/`commands/`
+- [x] **`.gitignore` umgebaut** (Blocker): `.claude/settings.json`/`hooks/`/`commands/`
       versioniert, `.claude/settings.local.json` bleibt ignoriert — belegt via
       `git check-ignore`.
-- [ ] Working-Tree-Hash-Skript deterministisch über **tracked+staged+untracked-
+- [x] Working-Tree-Hash-Skript deterministisch über **tracked+staged+untracked-
       nicht-ignoriert** (`git ls-files` + `--others --exclude-standard`): gleicher
       Content → gleicher Hash; Edit **oder** neue untracked Quelldatei → anderer
       Hash; eine `.harness-state/`-Quittung ändert den Hash **nicht**. Standalone getestet.
-- [ ] Gate-Quittungs-Skript schreibt valide Quittung **host-seitig** (Host-Tree-
+- [x] Gate-Quittungs-Skript schreibt valide Quittung **host-seitig** (Host-Tree-
       Hash), nur bei Gate-Erfolg, nur am Aggregat-Target (`gates`/`docs-check`).
-- [ ] Tool-Call-Gate: denyt venv-Befehle außerhalb Docker/make (exit 2), lässt
+- [x] Tool-Call-Gate: denyt venv-Befehle außerhalb Docker/make (exit 2), lässt
       `make …`/`docker …`/`python3 -m py_compile` durch; **fail-open** bei
       Eigenfehler/fehlendem Parser (kein Loop-Guard ⇒ darf die Session nie killen).
-- [ ] Handoff-Gate: blockt ohne passende Quittung (exit 2, **fail-closed**), Lock
+- [x] Handoff-Gate: blockt ohne passende Quittung (exit 2, **fail-closed**), Lock
       auf `session_id`+Tree-Hash (re-armt pro Tree-Stand), gibt beim zweiten Stop
       desselben Stands frei (Loop-Guard), passt Quittung↔Tree-Hash, bootstrap-aware.
-- [ ] Workflow-Skelett-Slash-Command vorhanden, d-check-clean.
-- [ ] `.claude/settings.json` versioniert; mit `/hooks` verifizierbar.
-- [ ] `harness/README.md` + `AGENTS.md`-Pointer + CHANGELOG nachgezogen.
-- [ ] `make gates` + `make docs-check` grün; Verification-Evidence im Slice.
+- [x] Workflow-Skelett-Slash-Command vorhanden, d-check-clean.
+- [x] `.claude/settings.json` versioniert; mit `/hooks` verifizierbar.
+- [x] `harness/README.md` + `AGENTS.md`-Pointer + CHANGELOG nachgezogen.
+- [x] `make gates` + `make docs-check` grün; Verification-Evidence im Slice.
 
 ## 6. Verification (Skizze)
 
@@ -277,14 +278,70 @@ Slice-Move nach `done/` (reiner `git mv`). Memory-Eintrag.
 - [`open/052`](../open/052-carveout-modul07-audit-trichter.md) (Carveout-Modul-07)
   bleibt separater Trigger-Watch.
 
-## 8. Verification-Evidence (wird bei S5-Closure gefüllt)
+## 8. Verification-Evidence (S5-Closure)
 
-Schema nach [`harness/verification.md`](../../../../harness/verification.md):
-Scope · DoD-Abgleich · Sensors (`make gates`/`make docs-check` + Hook-Standalone-
-Tests) · Traceability ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) /
-`MR-005`) · Carveouts (`T-051` → Resolved) · Nicht ausgeführt · Commit/Artefakt.
+Schema nach [`harness/verification.md`](../../../../harness/verification.md).
 
-**Status:** offen — Tranche S5 ausstehend.
+**Scope:**
+- Slice: `051` (Durchsetzungsschicht / Enforcement Layer)
+- IDs: [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) `Accepted`; `MR-005`
+  (mechanische Bindungs-Ebene, additive Ergänzung); `T-051` → Resolved.
+- Artefakte: `.gitignore` (`.claude`-Re-Include + `.harness-state/`),
+  `tools/harness/working-tree-hash.sh`, `tools/harness/record-gates.sh`, `Makefile`
+  (record-gates am Aggregat-Target), `.claude/hooks/tool-call-gate.sh`,
+  `.claude/hooks/handoff-gate.sh`, `.claude/commands/slice.md`,
+  `.claude/settings.json`, `harness/README.md`, `AGENTS.md` §2.1/§3, `CHANGELOG.md`.
+
+**DoD-Abgleich:** alle neun DoD-Punkte (§5) erfüllt:
+- [x] Folge-ADR `Accepted`, im Index — `1d17da5` (Provisional) → S5 (Accepted).
+- [x] `.gitignore` umgebaut — `git check-ignore`: `.claude/{settings.json,hooks/,commands/}`
+      trackbar, `settings.local.json` + `.harness-state/` ignoriert (`99f833e`).
+- [x] Working-Tree-Hash deterministisch (option-b) — Standalone: identisch×2,
+      untracked-Quelldatei → Δ, `.harness-state/`-Quittung → kein Δ.
+- [x] record-gates host-seitig, nur Aggregat-Target, nur bei Erfolg — live beim
+      `make gates`/`docs-check`-Lauf bestätigt (Quittung `.harness-state/gates-<hash>.json`).
+- [x] Tool-Call-Gate fail-open — Standalone: deny `uv`/`pip`/`python -m pip` (exit 2,
+      auch nach `&&`/`VAR=`/absolutem Pfad), allow `make`/`docker`/`py_compile`/`python -c`,
+      fail-open bei kaputtem/leerem Input.
+- [x] Handoff-Gate fail-closed + Loop-Guard — Standalone: block(2) ohne Quittung,
+      Release(0) gleicher Stand, Re-arm bei Tree-Δ, fail-closed bei kaputtem Input.
+- [x] Workflow-Skelett-Slash-Command vorhanden, d-check-clean.
+- [x] `.claude/settings.json` versioniert (S5); `/hooks`-Smoke manuell (nächste Session).
+- [x] `make gates` + `make docs-check` grün; Evidence hier.
+
+**Sensors:**
+| Sensor | Ergebnis | Evidence |
+| --- | --- | --- |
+| `make gates` | pass | 10 A-1-Gates grün (Closure-Pflicht laut DoD trotz docs-only-Diff) |
+| `make docs-check` | pass | d-check 254 Dateien, 0 Befunde |
+| Hook-Standalone (19 Checks) | pass | Hash-Determinismus + option-b; Tool-Call deny/allow/fail-open; Handoff block/release/re-arm |
+| `make static-gates` | pass | lint/format-check/typecheck/arch-check/noqa-gate/spdx-check grün |
+
+**Traceability:**
+| ID | Beleg |
+| --- | --- |
+| [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) | drei Bindepunkte + bindepunkt-spezifisches fail-Verhalten in `.claude/hooks/` + `tools/harness/`; Standalone-Tests |
+| `MR-005` | mechanische Bindungs-Ebene ergänzt die ADR-Link-Bindung der Sensors-Tabelle (additiv) |
+| `AGENTS.md` §2.1/§3 | Pointer-Sätze auf Tool-Call-Gate / Handoff-Gate (S4) |
+
+**Replay / Golden:** nicht betroffen — keine Simulation/Replay/Fault/Demo-Änderung
+(reine Harness-/Tooling-Ebene).
+
+**Carveouts:**
+- Neu: keine.
+- Gelöst: `T-051` → Resolved (Durchsetzungsschicht geliefert).
+- Unverändert: [`open/052`](../open/052-carveout-modul07-audit-trichter.md)
+  (Carveout-Modul-07) bleibt separater Trigger-Watch.
+
+**Nicht ausgeführt:**
+- `make fullbuild`/`make ci` — kein Runtime-/Image-Delta (Harness-/Tooling-only);
+  CI bleibt das Netz.
+- Live-`/hooks`-Integrationssmoke — Hot-Reload-Aktivierung manuell in der nächsten
+  Session; der Loop-Guard schließt einen Self-Lockout aus.
+
+**Commit / Artefakt:** S0 `1d17da5`, S2 `99f833e`, S3 `3992d3a`, Review-Nits
+`ec2a6ba`, S4 `9159294`; S5 = dieser Closure-Commit + `git mv` nach `done/`
++ `.claude/settings.json`-Verdrahtung.
 
 ### Tranchen-Fortschritt
 
@@ -293,4 +350,4 @@ Tests) · Traceability ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) 
 - [x] **S2** — Nachweis-Skripte + `.gitignore`-Umbau (`99f833e`).
 - [x] **S3** — Hooks + Workflow-Skelett (`3992d3a`).
 - [x] **S4** — Public-Contract-Sync (`harness/README.md`, `AGENTS.md`, CHANGELOG).
-- [ ] **S5** — Closure (`settings.json`, gates grün, Evidence, ADR → Accepted, `done/`).
+- [x] **S5** — Closure (`settings.json`, gates grün, Evidence, ADR → Accepted, `done/`).
