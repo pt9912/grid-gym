@@ -1,8 +1,8 @@
 # ADR 0071 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett via Claude-Code-Hooks (Provisional)
 
 **Status:** Provisional — Architektur-Entwurf zum
-[`Slice-Plan 051`](../planning/next/051-durchsetzungsschicht-enforcement-layer.md)
-(Trigger [`open/051`](../planning/open/051-durchsetzungsschicht-enforcement-layer.md)).
+[`Slice-Plan 051`](../planning/in-progress/051-durchsetzungsschicht-enforcement-layer.md)
+(aktivierter Trigger 051, mit S1 nach `in-progress/` gezogen).
 Die Mechanik (drei Bindepunkte, bindepunkt-spezifisches fail-Verhalten,
 inhaltsbasierter Nachweis) ist beschlossen; `Provisional → Accepted` folgt mit
 der Slice-Closure (S5), sobald `make gates`/`make docs-check` grün sind und die

@@ -34,9 +34,7 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 **Harness-Regelwerk-Adoption (v1.2.0-Delta):**
 
 | Datei | Trigger | Aktivierung |
-| ----- | ------- | ----------- |
-| [`051-durchsetzungsschicht-enforcement-layer.md`](051-durchsetzungsschicht-enforcement-layer.md) | Durchsetzungsschicht (Tool-Call-Gate + Handoff-Gate + Workflow-Skelett) — v1.2.0-Mechanik, im Repo abwesend (nur `.claude/settings.local.json`-Allowlist, keine Hooks); harte Regeln nur inferential feedforward in `AGENTS.md` | Steering-Loop ≥ 3× Handoff-/Docker-only-Drift ODER bewusste Harness-Haertung vor M8-Closure |
-| [`052-carveout-modul07-audit-trichter.md`](052-carveout-modul07-audit-trichter.md) | Carveout-Disziplin Modul 07: Audit-Slice pro Welle-Closure + Werkzeug-Wahl-Trichter (Granularitaet vor Temporalitaet) — v1.2.0-Schaerfung ueber `MR-003` hinaus | Naechste Welle-/M8-Closure mit faelligem Carveout-Audit ODER `carveouts.md` ≥ 50 Eintraege (`MR-003` §4) |
+| ----- | ------- | ----------- || [`052-carveout-modul07-audit-trichter.md`](052-carveout-modul07-audit-trichter.md) | Carveout-Disziplin Modul 07: Audit-Slice pro Welle-Closure + Werkzeug-Wahl-Trichter (Granularitaet vor Temporalitaet) — v1.2.0-Schaerfung ueber `MR-003` hinaus | Naechste Welle-/M8-Closure mit faelligem Carveout-Audit ODER `carveouts.md` ≥ 50 Eintraege (`MR-003` §4) |
 
 **M3-/Multi-Agent-Folge:**
 

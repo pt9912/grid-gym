@@ -1258,6 +1258,12 @@ Cluster aus dem [`carveouts.md`](carveouts.md)-Index plus die zwei
 vorbereiteten Architektur-Cleanups. **Release-Ziel: v0.2.0**
 (Minor-Bump — neue Gerätemodelle sind additive Features).
 
+**Harness-Haertung (parallel, keine Feature-Welle):** Slice
+[`051`](051-durchsetzungsschicht-enforcement-layer.md) — Durchsetzungsschicht
+(Tool-Call-/Handoff-Gate + Workflow-Skelett, [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md)
+`Provisional`) — ist **In Progress** (bewusste Harness-Haertung, S0/S1 geliefert;
+Carveout `T-051` aktiviert). Kein Geraete-/Netz-Scope.
+
 **Vorbelegter Scope** (Wellen-Skizze; konkrete Slice-Plaene wandern bei
 Aktivierung `open/` → `in-progress/`):
 

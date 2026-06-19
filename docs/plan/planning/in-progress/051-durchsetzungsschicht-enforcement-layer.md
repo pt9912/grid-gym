@@ -1,16 +1,17 @@
 # 051 — Durchsetzungsschicht: Tool-Call-Gate + Handoff-Gate + Workflow-Skelett
 
-**Status:** Next (Scope skizziert — **v2, überarbeitet nach Review** 2026-06-19;
-bereit zum Slice-Start nach Freigabe)
+**Status:** **In Progress** (Slice aktiv seit 2026-06-19; **S0 geliefert** — Folge-ADR
+`Provisional`. Plan-Historie: v1 → v2 (Review) → v3 (Re-Review); mit S1 von `next/`
+nach `in-progress/` aktiviert, `open/051`-Trigger aufgelöst.)
 **Datum:** 2026-06-19
-**Quelle:** Trigger-Watch [`open/051`](../open/051-durchsetzungsschicht-enforcement-layer.md)
-(v1.2.0/v1.3.0-Regelwerk-Delta — Grundlagen *Durchsetzungsschicht* + Modul 11).
-Aktivierung durch das zweite Trigger-Kriterium: **bewusste Harness-Härtung**
+**Quelle:** aktivierter Trigger-Watch 051 (v1.2.0/v1.3.0-Regelwerk-Delta — Grundlagen
+*Durchsetzungsschicht* + Modul 11); im Carveout-Index als [`T-051`](carveouts.md)
+geführt. Aktivierung durch das zweite Trigger-Kriterium: **bewusste Harness-Härtung**
 (User-Mandat).
 **Bezug:**
 
-- [`open/051`](../open/051-durchsetzungsschicht-enforcement-layer.md) — der
-  auslösende Trigger-Watch (erwartete Lieferung + Out-of-scope).
+- [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) — die in S0 geschriebene
+  Folge-ADR (Enforcement-Mechanik); sie trägt die maßgebliche Entscheidung.
 - [`AGENTS.md`](../../../../AGENTS.md) §2.1 (Docker-only), §3 (Gates vor Push),
   §7 (10-Schritt-Workflow) — die heute nur *inferential* gebundenen Regeln.
 - [`harness/conventions.md`](../../../../harness/conventions.md) `MR-005` — die
@@ -19,7 +20,7 @@ Aktivierung durch das zweite Trigger-Kriterium: **bewusste Harness-Härtung**
 - [`harness/verification.md`](../../../../harness/verification.md) — Evidence-
   Schema für die Closure.
 - [`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) — Format-
-  Vorbild für die zu schreibende Folge-ADR.
+  Vorbild der in S0 geschriebenen Folge-ADR.
 
 ---
 
@@ -49,6 +50,10 @@ v2 nach Reviewer-Findings (1 Blocker, 2 HIGH, 5 MEDIUM, 3 Nits). Adressiert:
   `--exclude-standard` raus (kein Selbst-Referenz-Churn) (§3, §5, §6). `.dockerignore`
   schließt `.claude/` bereits aus → Hooks bleiben korrekt aus dem Image (verifiziert,
   kein Handlungsbedarf).
+- **Aktivierung (S1, 2026-06-19)** — Plan freigegeben; `next/` → `in-progress/`
+  (reiner `git mv`, Review-Historie erhalten), der `open/051`-Trigger-Watch
+  aufgelöst, Carveout-Index `T-051` → in Arbeit. **S0 geliefert**
+  ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) `Provisional`).
 
 ## 1. Ziel
 
@@ -144,24 +149,27 @@ Steering-Loop. (Geplante Nummer: 0071.)
 
 ## 4. Tranchierung (je eigener Commit, Auto-Push)
 
-### S0 — Folge-ADR (Vorbedingung) · `docs`
+### S0 — Folge-ADR (Vorbedingung) · `docs` — ✅ **erledigt** 2026-06-19 (`1d17da5`)
 
 Architekturentscheidung für die Enforcement-Mechanik (Status `Proposed →
 Provisional`): drei Bindepunkte, vier Design-Eigenschaften, Block-/Loop-/Hash-
 Mechanik, ehrlich benannte Grenzen, Self-Application-Note. Eintrag in den
-ADR-Index.
+ADR-Index. **Geliefert:** [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md)
+`Provisional` + Index-Zeile.
 
 ```text
 docs/plan/adr/0071-enforcement-layer-hooks.md   # NEU
 docs/plan/adr/README.md                         # + Index-Zeile
 ```
 
-### S1 — Slice-Aktivierung · `docs`
+### S1 — Slice-Aktivierung · `docs` — ✅ **erledigt** 2026-06-19
 
-Move des Trigger-Docs (reiner `git mv`, eigener Commit — Rename-Detection) nach
-`in-progress/`, dann Rewrite zu vollem Slice-Plan (Status `In Progress`, DoD,
-Tranchen, Evidence-Platzhalter). Roadmap- + Carveout-Index-Zeile (`T-051`) auf
-„in Arbeit" zeigen.
+Aktivierung: reiner `git mv` `next/` → `in-progress/` (Rename-Detection, erhält
+die v1→v3-Review-Historie) — statt des ursprünglich geplanten `open/` →
+`in-progress/`, weil der ausgearbeitete Plan in `next/` lag; der redundante
+`open/051`-Trigger-Watch wurde aufgelöst (gleiche Intention, kein Duplikat).
+Dann Inhalts-Rewrite (Status `In Progress`, Evidence-Platzhalter §8). Roadmap-
++ Carveout-Index-Zeile (`T-051`) auf „in Arbeit" gezogen.
 
 ### S2 — Nachweis-Skripte + `.gitignore`-Umbau (Voraussetzung für S3/S5) · `feat`
 
@@ -268,3 +276,21 @@ Slice-Move nach `done/` (reiner `git mv`). Memory-Eintrag.
 - Frischer-Klon-Lücke (kein State → kein Nachweis prüfbar) — CI-gedeckt.
 - [`open/052`](../open/052-carveout-modul07-audit-trichter.md) (Carveout-Modul-07)
   bleibt separater Trigger-Watch.
+
+## 8. Verification-Evidence (wird bei S5-Closure gefüllt)
+
+Schema nach [`harness/verification.md`](../../../../harness/verification.md):
+Scope · DoD-Abgleich · Sensors (`make gates`/`make docs-check` + Hook-Standalone-
+Tests) · Traceability ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) /
+`MR-005`) · Carveouts (`T-051` → Resolved) · Nicht ausgeführt · Commit/Artefakt.
+
+**Status:** offen — Tranchen S2–S5 ausstehend.
+
+### Tranchen-Fortschritt
+
+- [x] **S0** — [`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) `Provisional` (`1d17da5`).
+- [x] **S1** — Aktivierung `next/` → `in-progress/`, `open/051` aufgelöst.
+- [ ] **S2** — Nachweis-Skripte + `.gitignore`-Umbau.
+- [ ] **S3** — Hooks + Workflow-Skelett.
+- [ ] **S4** — Public-Contract-Sync (`harness/README.md`, `AGENTS.md`, CHANGELOG).
+- [ ] **S5** — Closure (`settings.json`, gates grün, Evidence, ADR → Accepted, `done/`).
