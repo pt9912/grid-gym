@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Durchsetzungsschicht (Enforcement Layer; ADR 0071, Slice 051): drei Bindepunkte
+  binden harte Regeln mechanisch statt bloss dokumentiert. Tool-Call-Gate
+  (`PreToolUse`, fail-open) blockt venv-erzeugende Befehle ausserhalb
+  `docker`/`make`; Handoff-Gate (`Stop`, fail-closed mit Loop-Guard) blockt das
+  Beenden, bis `make gates` + `make docs-check` auf genau diesem inhaltsbasierten
+  Working-Tree-Stand quittiert sind; Workflow-Skelett (Slash-Command) gibt den
+  10-Schritt-Slice-Workflow vor. Versioniert unter `.claude/`
+  (`.gitignore`-Re-Include) + `tools/harness/`. Stolperdraht, keine Sandbox — CI
+  bleibt das Netz. Reine Harness-/Tooling-Aenderung (kein Runtime-Delta).
 - Harness-Baseline auf Kurs-Release `v1.3.0` re-gepinnt
   (`harness/conventions.md` Baseline + Quellen-URLs: `v1.2.0`/`0473cc55`
   → `v1.3.0`/`d278c260`) nach v1.3.0-Delta-Analyse (Bundle + Templates) — kein

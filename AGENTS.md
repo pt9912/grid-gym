@@ -80,6 +80,11 @@ Falsch: `uv run python tools/foo.py` (legt lokal `.venv/` an).
 Richtig: `docker compose -f tests/integration/compose.yml run --rm
 test-runner uv run python tools/foo.py`.
 
+Mechanisch gestuetzt (Stolperdraht) durch das **Tool-Call-Gate**
+([`.claude/hooks/tool-call-gate.sh`](.claude/hooks/tool-call-gate.sh),
+[`ADR 0071`](docs/plan/adr/0071-enforcement-layer-hooks.md)): venv-erzeugende
+Befehle ausserhalb `docker`/`make` werden geblockt (fail-open; CI bleibt das Netz).
+
 ### 2.2 `# noqa` ist verboten (Slice 027)
 
 Inline-`# noqa`-Marker brechen das `noqa-gate` in `make gates`.
@@ -169,6 +174,13 @@ Negative-Pins oder eine begruendete Carveout-/Folge-Slice-Notiz.
 gruen. Vor Welle-/Meilenstein-Closure zusaetzlich `make fullbuild`.
 Wenn ein naheliegender Sensor wegen Docker, Sandbox oder Umgebung nicht
 gelaufen ist, muss der Handoff den Grund nennen.
+
+Mechanisch gestuetzt durch das **Handoff-Gate**
+([`.claude/hooks/handoff-gate.sh`](.claude/hooks/handoff-gate.sh),
+[`ADR 0071`](docs/plan/adr/0071-enforcement-layer-hooks.md)): der `Stop`-Hook
+blockt das Beenden, bis `make gates` und `make docs-check` auf genau diesem
+Working-Tree-Stand quittiert sind (fail-closed mit Loop-Guard). Stolperdraht,
+kein Ersatz fuer CI.
 
 ---
 

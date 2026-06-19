@@ -125,6 +125,29 @@ Artefakte.
 - Quality-Gates, Coverage-Schwellen, Architekturregeln und Suppression-
   Verbote duerfen nicht still gelockert werden.
 
+## Durchsetzungsschicht (Enforcement Layer)
+
+Drei Bindepunkte an der Agent-Schleife binden harte Regeln *mechanisch* statt
+bloss dokumentiert ([`ADR 0071`](../docs/plan/adr/0071-enforcement-layer-hooks.md),
+Slice 051). Versioniert unter `.claude/` und `tools/harness/`:
+
+| Bindepunkt | Hook | Wirkung |
+| --- | --- | --- |
+| Tool-Call-Gate | `PreToolUse` ([`tool-call-gate.sh`](../.claude/hooks/tool-call-gate.sh)) | denyt venv-erzeugende Befehle (`uv`/`pip`/`python -m venv`) in Befehlsposition ausserhalb `docker`/`make`; **fail-open** (kein Loop-Guard, darf die Session nie killen) |
+| Handoff-Gate | `Stop` ([`handoff-gate.sh`](../.claude/hooks/handoff-gate.sh)) | blockt das Beenden, bis `make gates` **und** `make docs-check` auf genau diesem Working-Tree-Stand quittiert sind; **fail-closed** mit Loop-Guard (ein Block je Tree-Stand, re-armt bei Inhaltsaenderung) |
+| Workflow-Skelett | Slash-Command ([`slice.md`](../.claude/commands/slice.md)) | gibt den 10-Schritt-Slice-Workflow als feste Folge vor (leitend, nicht erzwingend) |
+
+Der Nachweis ist inhaltsbasiert: [`working-tree-hash.sh`](../tools/harness/working-tree-hash.sh)
+hasht tracked + staged + untracked-nicht-ignorierte Dateien (= was `docker build .`
+aus dem Dateisystem zieht); [`record-gates.sh`](../tools/harness/record-gates.sh)
+schreibt host-seitig pro erfolgreichem Aggregat-Gate eine Quittung unter
+`.harness-state/` (gitignored, kein Self-Referenz-Churn).
+
+Ehrlich benannte Grenze: **Stolperdraht, keine Sandbox.** Interpreter-Umwege
+(`bash -c`/`python -c`) faengt das Tool-Call-Gate nicht, und ein frischer Klon
+ohne lokalen State kann keinen Nachweis pruefen — **CI bleibt das Netz**. Die
+Hook-Bindung lebt in `.claude/settings.json` (als letzter Slice-Schritt verdrahtet).
+
 ## Minimal Agent Workflow
 
 1. Diese Datei und [`AGENTS.md`](../AGENTS.md) lesen.

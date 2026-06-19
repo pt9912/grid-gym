@@ -284,7 +284,7 @@ Scope · DoD-Abgleich · Sensors (`make gates`/`make docs-check` + Hook-Standalo
 Tests) · Traceability ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) /
 `MR-005`) · Carveouts (`T-051` → Resolved) · Nicht ausgeführt · Commit/Artefakt.
 
-**Status:** offen — Tranchen S4–S5 ausstehend.
+**Status:** offen — Tranche S5 ausstehend.
 
 ### Tranchen-Fortschritt
 
@@ -292,5 +292,5 @@ Tests) · Traceability ([`ADR 0071`](../../adr/0071-enforcement-layer-hooks.md) 
 - [x] **S1** — Aktivierung `next/` → `in-progress/`, `open/051` aufgelöst.
 - [x] **S2** — Nachweis-Skripte + `.gitignore`-Umbau (`99f833e`).
 - [x] **S3** — Hooks + Workflow-Skelett (`3992d3a`).
-- [ ] **S4** — Public-Contract-Sync (`harness/README.md`, `AGENTS.md`, CHANGELOG).
+- [x] **S4** — Public-Contract-Sync (`harness/README.md`, `AGENTS.md`, CHANGELOG).
 - [ ] **S5** — Closure (`settings.json`, gates grün, Evidence, ADR → Accepted, `done/`).
