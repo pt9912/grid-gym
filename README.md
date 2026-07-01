@@ -195,7 +195,9 @@ skips are IEC-61850-on-Python-3.13 only, covered by the dedicated
 `make gates` 10-stage cache-free green without override;
 `make fullbuild` incl. `accept-pin-check` green.
 
-**Pointers:** demo acceptance steps [`GG-DEMO-008`](spec/lastenheft.md#gg-demo-008) →
+**Pointers:** user handbook →
+[`docs/user/anwenderhandbuch.md`](docs/user/anwenderhandbuch.md);
+demo acceptance steps [`GG-DEMO-008`](spec/lastenheft.md#gg-demo-008) →
 [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
 quality-pipeline audit [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004 →
 [`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md);
