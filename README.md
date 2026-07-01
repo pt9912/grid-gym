@@ -161,9 +161,9 @@ As of **2026-07-01**:
 
 | Milestone / item | Status | Date | Details |
 | --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | MVP delivered (M7) + SOLLTE devices & grid (M8); 69 of 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
-| **M8 — SOLLTE devices & grid** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. All four SOLLTE devices ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV charger, transformer, wind turbine, diesel generator), the SOLLTE grid model ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: island grid, transformer limits, reactive power) and BESS telemetry ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: temperature, cell voltage) are productive; M8 ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel post-MVP waves folded in: replay pair 039/040, multi-run execution, scenario-scheduled commands (046), harness enforcement layer (051) |
-| **Release v0.2.0** | released | 2026-07-01 | Second release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-identical `:latest`), GitHub release with SBOM (CycloneDX, digest-bound), JUnit XML, coverage HTML, OpenAPI JSON and demo acceptance doc. (v0.1.0 remains the MVP baseline; the docs-only v0.1.1 cut was deliberately discarded) |
+| **M1..M8** | `Done` | — | core platform delivered (M7) + SOLLTE devices & grid (M8); 69 of 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M8 — SOLLTE devices & grid** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. All four SOLLTE devices ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV charger, transformer, wind turbine, diesel generator), the SOLLTE grid model ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: island grid, transformer limits, reactive power) and BESS telemetry ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: temperature, cell voltage) are productive; M8 ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel post-M7 waves folded in: replay pair 039/040, multi-run execution, scenario-scheduled commands (046), harness enforcement layer (051) |
+| **Release v0.2.0** | released | 2026-07-01 | Second release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-identical `:latest`), GitHub release with SBOM (CycloneDX, digest-bound), JUnit XML, coverage HTML, OpenAPI JSON and demo acceptance doc. (v0.1.0 is the previous release; the docs-only v0.1.1 cut was deliberately discarded) |
 | **Post-M8 mode** | trigger watch | — | No successor milestone is auto-opened. Open triggers 037 (multi-node deployment), 038 (full [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003 equality matrix), 047 (SNMP/LwM2M adapters) plus the tooling/spike backlog carry documented activation conditions. A new milestone opens on trigger activation or stakeholder mandate |
 
 **Test balance:** 139 integration passed + 4 skipped (remaining
@@ -201,8 +201,9 @@ make perf-baseline-update # maintainer-only: regenerate tests/perf/baseline.json
 
 ## Optional / Roadmap Extensions
 
-The following extensions are intentionally held out of the MVP scope
-and tracked as optional additions in the normative requirements
+The following extensions are intentionally out of the current
+delivery scope and tracked as optional additions in the normative
+requirements
 ([`spec/lastenheft.md`](spec/lastenheft.md)):
 
 - additional time-series storage adapters
@@ -278,7 +279,7 @@ and tracked as optional additions in the normative requirements
 │   ├── unit/                    ← pytest unit tests (1796 as of 2026-06-12)
 │   └── unit/_arch_check_*       ← architecture tests (7 lint + 13 custom = 20 contracts)
 └── tools/
-    ├── accept.py                    ← `make accept` acceptance CLI (GG-MVP-003)
+    ├── accept.py                    ← `make accept` acceptance CLI
     ├── arch_check.py                ← AST / graph architecture checks (ADR 0002 §A-1)
     ├── check_core_determinism.py    ← core determinism sweep
     ├── check_demo_scenario_pin.py   ← demo scenario-hash pin lint (`accept-pin-check`)
