@@ -162,35 +162,12 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 Stand **2026-07-01**:
 
-- **M1..M8 · `Done`** — **der MVP ist geliefert (M7); SOLLTE-Geraete
-  & Netz sind geliefert (M8)**. 69 von 71 ADRs `Accepted` (1
-  `Provisional`, 1 `Superseded`). Closure-Artefakte:
-  [`docs/plan/planning/done/M8-results.md`](docs/plan/planning/done/M8-results.md)
-  +
-  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md).
-- **M8 — SOLLTE-Geraete & Netz** · `Done` (2026-07-01; Welle 1..5)
-  → **Release v0.2.0**. Alle vier SOLLTE-Geraete
-  ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV-Charger,
-  Transformer, Wind-Turbine, Diesel-Generator), das SOLLTE-Netzmodell
-  ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: Inselnetz,
-  Trafo-Grenzen, Blindleistung) und die BESS-Telemetrie
-  ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: Temperatur,
-  Zellspannung) sind produktiv; M8-ADRs 0050/0051/0054/0055..0071
-  `Accepted`. Parallel eingefaltet: Replay-Paar 039/040,
-  Multi-Run-Execution, Scenario-Scheduled-Commands (046),
-  Harness-Durchsetzungsschicht (051).
-- **v0.2.0 released** (2026-07-01): zweiter Release-Workflow-Lauf —
-  GHCR-Image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-gleiches
-  `:latest`), GitHub-Release mit SBOM (CycloneDX, digest-gebunden),
-  JUnit-XML, Coverage-HTML, OpenAPI-JSON und Abnahme-Doku. (v0.1.0
-  bleibt die MVP-Basislinie; der Doku-only-Cut v0.1.1 wurde bewusst
-  verworfen.)
-- **Post-M8-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
-  automatisch eroeffnet. Offene Trigger 037 (Multi-Node-Deployment),
-  038 (volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix),
-  047 (SNMP/LwM2M-Adapter) plus der Tooling-/Spike-Bestand tragen
-  dokumentierte Aktivierungs-Bedingungen. Ein neuer Meilenstein
-  entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
+| Meilenstein / Punkt | Status | Datum | Details |
+| --- | --- | --- | --- |
+| **M1..M8** | `Done` | — | MVP geliefert (M7) + SOLLTE-Geraete & Netz (M8); 69 von 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M8 — SOLLTE-Geraete & Netz** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. Alle vier SOLLTE-Geraete ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV-Charger, Transformer, Wind-Turbine, Diesel-Generator), das SOLLTE-Netzmodell ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: Inselnetz, Trafo-Grenzen, Blindleistung) und die BESS-Telemetrie ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: Temperatur, Zellspannung) sind produktiv; M8-ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel eingefaltet: Replay-Paar 039/040, Multi-Run-Execution, Scenario-Scheduled-Commands (046), Harness-Durchsetzungsschicht (051) |
+| **Release v0.2.0** | released | 2026-07-01 | Zweiter Release-Workflow-Lauf — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-gleiches `:latest`), GitHub-Release mit SBOM (CycloneDX, digest-gebunden), JUnit-XML, Coverage-HTML, OpenAPI-JSON und Abnahme-Doku. (v0.1.0 bleibt die MVP-Basislinie; der Doku-only-Cut v0.1.1 wurde bewusst verworfen) |
+| **Post-M8-Modus** | Trigger-Watch | — | Kein Folge-Meilenstein wird automatisch eroeffnet. Offene Trigger 037 (Multi-Node-Deployment), 038 (volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix), 047 (SNMP/LwM2M-Adapter) plus der Tooling-/Spike-Bestand tragen dokumentierte Aktivierungs-Bedingungen. Ein neuer Meilenstein entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat |
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte
