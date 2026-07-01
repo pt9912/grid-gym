@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Planungsmodell auf **slice-getrieben** umgestellt (ADR 0072, Slice 053): die
+  Meilenstein-Ebene (`M1..M8`) entfaellt als forward-Planungseinheit —
+  Wellen/Slices sind die oberste Einheit, neue Docs heissen `NNN-slug.md`, und
+  die **Release-Entscheidung faellt pro Slice** (Slice-DoD-Feld +
+  CHANGELOG-Sammeln). Die `M{N}`-Historie (`done/`-Closure-Docs,
+  GG-TRACE-§27.2, `protocol_profiles.md`, `persistence-schema.yaml`) bleibt
+  eingefroren. Reine Prozess-/Doku-Aenderung (kein Runtime-Delta). Die Roadmap
+  ist auf slice-first umgebaut (Historie als Pointer-Tabelle); ADR 0001 §3
+  geschaerft (Schaerfung-ohne-Supersedes, ADR 0011).
+
 ## [0.2.0] - 2026-07-01
 
 **M8 — SOLLTE-Geraete & Netz.** Alle vier SOLLTE-Geraete
