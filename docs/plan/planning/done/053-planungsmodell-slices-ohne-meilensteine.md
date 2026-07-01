@@ -1,14 +1,16 @@
 # Slice 053 — Planungsmodell: Slices statt Meilensteine
 
-**Status:** Geplant — Slice-Plan zur Review (Umsetzung C0..C4 nach Freigabe).
+**Status:** Done 2026-07-01 — Slice-Closure C4 (slice-first-Umstellung
+geliefert; [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)
+`Accepted`).
 **Datum:** 2026-07-01.
 **Release-Entscheidung:** **nein** — reine Prozess-/Doku-Aenderung ohne
 Runtime-Delta; Delta sammelt unter [`CHANGELOG.md`](../../../../CHANGELOG.md)
 `[Unreleased]` (Regel „kein Doku-only-Release").
 **Bezug:** [`ADR 0001`](../../adr/0001-documentation-and-planning-structure.md)
 (Planungsstruktur; wird geschaerft), [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md)
-(Schaerfung-ohne-Abloesung), [`roadmap.md`](roadmap.md),
-[`carveouts.md`](carveouts.md), [`../README.md`](../README.md) (Lifecycle),
+(Schaerfung-ohne-Abloesung), [`roadmap.md`](../in-progress/roadmap.md),
+[`carveouts.md`](../in-progress/carveouts.md), [`../README.md`](../README.md) (Lifecycle),
 [`harness/conventions.md`](../../../../harness/conventions.md),
 [`AGENTS.md`](../../../../AGENTS.md), [`done/M8-results.md`](../done/M8-results.md)
 (letzte Meilenstein-Closure).
@@ -113,7 +115,7 @@ Directory-Lifecycle unveraendert). Status `Proposed` (C0) → `Accepted` (C4).
   [`adr/README.md`](../../adr/README.md)-Index: NEU-Zeile 0072 **und** Eintrag
   von 0072 in der „Schaerfungen/Folge-ADRs"-Spalte der 0001-Zeile
   ([`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) §2.5).
-- **C1** `docs(plan)`: [`roadmap.md`](roadmap.md) slice-first-Umbau — §3
+- **C1** `docs(plan)`: [`roadmap.md`](../in-progress/roadmap.md) slice-first-Umbau — §3
   (MVP-Abnahmescope) + §4 (Meilenstein-Detail M1..M8) → **kompakte
   „Gelieferte Historie"-Tabelle** mit Pointern auf die `M{N}-results.md`-Docs
   unter [`done/`](../done/) (Detail bleibt dort eingefroren); NEU Abschnitte
@@ -121,7 +123,7 @@ Directory-Lifecycle unveraendert). Status `Proposed` (C0) → `Accepted` (C4).
   Markern praezisiert.
 - **C2** `docs(harness/plan)`: [`harness/conventions.md`](../../../../harness/conventions.md)
   + [`AGENTS.md`](../../../../AGENTS.md) + [`../README.md`](../README.md) +
-  [`carveouts.md`](carveouts.md) — Rahmung „Cross-Meilenstein"/„Welle-/
+  [`carveouts.md`](../in-progress/carveouts.md) — Rahmung „Cross-Meilenstein"/„Welle-/
   Meilenstein-Closure"/`M{N}`-Praefix-Naming auf slice-first umstellen;
   Historie-Verweise bleiben.
 - **C3** `docs`: [`../../../../README.md`](../../../../README.md) +
@@ -138,7 +140,7 @@ Jeder Commit sofort nach `origin/main` (Auto-Push, kein History-Rewrite).
 ## 5. Critical Files
 
 **NEU:** dieser Slice-Plan; die neue ADR (0072).
-**MODIFY:** [`roadmap.md`](roadmap.md), [`carveouts.md`](carveouts.md),
+**MODIFY:** [`roadmap.md`](../in-progress/roadmap.md), [`carveouts.md`](../in-progress/carveouts.md),
 [`../README.md`](../README.md),
 [`harness/conventions.md`](../../../../harness/conventions.md),
 [`AGENTS.md`](../../../../AGENTS.md),
@@ -194,16 +196,16 @@ bewusste Pro-Slice-Entscheidung.
 
 ## 9. DoD-Checkliste (mit C4 abzuhaken)
 
-- [ ] C0: Slice-Plan 053 + Bestand-Zeile + ADR (0072, `Proposed`) + ADR-Index.
-- [ ] C1: [`roadmap.md`](roadmap.md) slice-first (Historie-Tabelle + Pointer);
+- [x] C0: Slice-Plan 053 + Bestand-Zeile + ADR (0072, `Proposed`) + ADR-Index.
+- [x] C1: [`roadmap.md`](../in-progress/roadmap.md) slice-first (Historie-Tabelle + Pointer);
       `make docs-check` gruen.
-- [ ] C2: Konventionen ([`harness/conventions.md`](../../../../harness/conventions.md),
+- [x] C2: Konventionen ([`harness/conventions.md`](../../../../harness/conventions.md),
       [`AGENTS.md`](../../../../AGENTS.md), [`../README.md`](../README.md)) +
-      [`carveouts.md`](carveouts.md) auf slice-first.
-- [ ] C3: READMEs reframe + `CHANGELOG.md` `[Unreleased]`-Notiz.
-- [ ] C4: ADR (0072) `Accepted`; Slice-Plan `git mv` → [`done/`](../done/).
-- [ ] `make gates` + `make docs-check` cache-frei gruen am Closure-Stand.
-- [ ] **Release-Entscheidung: nein** — kein Tag; Delta unter `[Unreleased]`.
+      [`carveouts.md`](../in-progress/carveouts.md) auf slice-first.
+- [x] C3: READMEs reframe + `CHANGELOG.md` `[Unreleased]`-Notiz.
+- [x] C4: ADR (0072) `Accepted`; Slice-Plan `git mv` → [`done/`](../done/).
+- [x] `make gates` + `make docs-check` cache-frei gruen am Closure-Stand.
+- [x] **Release-Entscheidung: nein** — kein Tag; Delta unter `[Unreleased]`.
 
 ---
 
@@ -214,5 +216,5 @@ bewusste Pro-Slice-Entscheidung.
 - [`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) — Schaerfung-ohne-
   Abloesung.
 - [`done/M8-results.md`](../done/M8-results.md) — letzte Meilenstein-Closure.
-- [`roadmap.md`](roadmap.md) + [`carveouts.md`](carveouts.md) +
+- [`roadmap.md`](../in-progress/roadmap.md) + [`carveouts.md`](../in-progress/carveouts.md) +
   [`../README.md`](../README.md) — betroffene living Planungsdocs.

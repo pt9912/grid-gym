@@ -3,9 +3,9 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
-Kein aktiver Feature-Slice; laufend: [`Slice 053`](053-planungsmodell-slices-ohne-meilensteine.md)
-(Umstellung Meilenstein → slice-first). Trigger-getriebene Folgearbeit unter
-[`../open/`](../open/).
+Kein aktiver Slice; die slice-first-Umstellung
+([`Slice 053`](../done/053-planungsmodell-slices-ohne-meilensteine.md)) ist
+abgeschlossen. Trigger-getriebene Folgearbeit unter [`../open/`](../open/).
 **Stand:** 2026-07-01
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -74,9 +74,9 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-| Slice | Gegenstand | Status |
-| ----- | ---------- | ------ |
-| [`053`](053-planungsmodell-slices-ohne-meilensteine.md) | Planungsmodell: Slices statt Meilensteine (dieser Umbau) | in-progress |
+**Kein aktiver Slice.** Zuletzt abgeschlossen:
+[`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
+Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
 Kein weiterer aktiver Slice. Trigger-getriebene Folgearbeit + Aktivierungs-
 Bedingungen: [`../open/`](../open/) (Trigger-Watch). Cross-Slice-Carveouts

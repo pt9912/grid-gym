@@ -1,8 +1,12 @@
-# ADR 0072 — Slice-getriebenes Planungsmodell: Meilenstein-Ebene entfernt + Release pro Slice (Proposed)
+# ADR 0072 — Slice-getriebenes Planungsmodell: Meilenstein-Ebene entfernt + Release pro Slice (Accepted)
 
-**Status:** Proposed — Umsetzung ueber
-[`Slice-Plan 053`](../planning/in-progress/053-planungsmodell-slices-ohne-meilensteine.md).
+**Status:** Accepted — umgesetzt via
+[`Slice-Plan 053`](../planning/done/053-planungsmodell-slices-ohne-meilensteine.md)
+(C0..C4: Roadmap/Konventionen/README auf slice-first, `make gates` +
+`make docs-check` gruen).
 **Datum:** 2026-07-01
+**Status geaendert am:** 2026-07-01 — `Proposed → Accepted`
+(Slice-053-Closure C4).
 **Bezug:**
 
 - [`ADR 0001`](0001-documentation-and-planning-structure.md) — Dokumentations-
