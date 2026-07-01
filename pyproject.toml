@@ -10,7 +10,7 @@
 
 [project]
 name = "grid-gym"
-version = "0.1.0"
+version = "0.2.0"
 description = "Modulare Open-Source-Plattform zur Simulation, Validierung und Analyse elektrischer Energiesysteme"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -234,6 +234,24 @@ dev = [
     { include-group = "typecheck" },
     { include-group = "test" },
     { include-group = "audit" },
+]
+
+# ---------------------------------------------------------------------------
+# uv — transitive Security-Floors (Supply-Chain-Defense, M8-Welle-5).
+# msgpack/pydantic-settings sind rein transitive Tooling-Deps
+# (cachecontrol via pip-audit bzw. openapi-schema/spec-validator via
+# openapi-validate); das Runtime-Image zieht sie nicht. constraint-
+# dependencies pinnt die gepatchten Versionen ohne Direkt-Dep, damit
+# `make dep-audit` (pip-audit --strict) gruen bleibt. Floors auf die
+# jeweils erste Fix-Version (2026-07-01):
+#   - msgpack>=1.2.1            (GHSA-6v7p-g79w-8964)
+#   - pydantic-settings>=2.14.2 (GHSA-4xgf-cpjx-pc3j)
+# ---------------------------------------------------------------------------
+
+[tool.uv]
+constraint-dependencies = [
+    "msgpack>=1.2.1",
+    "pydantic-settings>=2.14.2",
 ]
 
 # ---------------------------------------------------------------------------

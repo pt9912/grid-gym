@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-01
+
+**M8 — SOLLTE-Geraete & Netz.** Alle vier SOLLTE-Geraete
+(EV-Charger, Transformer, Wind-Turbine, Diesel-Generator,
+`GG-DEV-015..018`), das SOLLTE-Netzmodell (Inselnetz,
+Transformatorgrenzen, Blindleistung, `GG-GRID-005..007`) und die
+BESS-Telemetrie (Temperatur, Zellspannung, `GG-BESS-006/007`) sind
+produktiv; dazu parallel abgearbeitete Post-MVP-Wellen (Replay-Paar
+039/040, Multi-Run-Execution, Scenario-Scheduled-Commands 046,
+Harness-Durchsetzungsschicht 051). Closure-Artefakt
+`docs/plan/planning/done/M8-results.md`; alle M8-ADRs
+(0050/0051/0054/0055..0071) `Accepted`. Minor-Bump — additive
+Gerätemodelle. (v0.1.0 bleibt die MVP-Basislinie; der Doku-only-Cut
+v0.1.1 wurde bewusst verworfen.)
+
+### Security
+
+- Transitive Tooling-Deps auf gepatchte Versionen gepinnt (NEU
+  `[tool.uv]` constraint-dependencies): `msgpack 1.1.2 → 1.2.1`
+  (GHSA-6v7p-g79w-8964, gezogen via cachecontrol/pip-audit) +
+  `pydantic-settings 2.14.1 → 2.14.2` (GHSA-4xgf-cpjx-pc3j, via
+  openapi-schema/spec-validator). Das Runtime-Image zieht beide nicht
+  — reine Build-/Audit-Toolchain; haelt `make dep-audit`
+  (pip-audit --strict) gruen.
+
 ### Added
 
 - Durchsetzungsschicht (Enforcement Layer; ADR 0071, Slice 051): drei Bindepunkte
