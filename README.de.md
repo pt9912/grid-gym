@@ -202,30 +202,12 @@ make perf                # GG-RT-004 + GG-RT-005 SOLLTE: pytest-benchmark gegen 
 make perf-baseline-update # nur Maintainer: regeneriert tests/perf/baseline.json
 ```
 
-## MVP-Scope
-
-Der erste abnahmefaehige Stand soll lokal auf einem Entwicklerrechner laufen und
-keine externen Cloud-Dienste, realen Feldgeraete oder Internetzugriff zur
-Laufzeit benoetigen. Nach Bereitstellung der Container-Images soll die Demo
-offline ausfuehrbar sein.
-
-Der MVP umfasst laut Lastenheft mindestens:
-
-- lokalen Single-Node-Betrieb ueber Docker Compose
-- ein End-to-End-Szenario mit Netzanschlusspunkt, PV, Lastprofil, Smart Meter
-  und Batteriespeicher
-- Live-Telemetrie, Zeitreihenpersistenz und deterministisches Replay
-- eine CLI oder ein Script fuer Abnahmepruefungen
-- maschinenlesbare Abnahmeergebnisse fuer Replay-Pruefung,
-  Szenario-Validierung und Demo-Healthcheck
-
 ## Optionale Erweiterungen / Roadmap
 
-Der oben beschriebene MVP-Scope ist umgesetzt und mit **v0.1.0**
-(2026-06-12) ausgeliefert; die folgenden
-Erweiterungen sind bewusst ausserhalb des MVP gehalten und in
-den normativen Anforderungen ([`spec/lastenheft.md`](spec/lastenheft.md)) als optionale
-Ergaenzungen gefuehrt:
+Die folgenden Erweiterungen sind bewusst ausserhalb des MVP-Scope
+gehalten und in den normativen Anforderungen
+([`spec/lastenheft.md`](spec/lastenheft.md)) als optionale Ergaenzungen
+gefuehrt:
 
 - weitere Zeitreihen-Speicheradapter
   (TimescaleDB [`GG-PERSIST-006`](spec/lastenheft.md#gg-persist-006), InfluxDB [`GG-PERSIST-007`](spec/lastenheft.md#gg-persist-007))

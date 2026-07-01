@@ -199,29 +199,11 @@ make perf                # GG-RT-004 + GG-RT-005 SOLLTE: pytest-benchmark vs tes
 make perf-baseline-update # maintainer-only: regenerate tests/perf/baseline.json
 ```
 
-## MVP Scope
-
-The first acceptance-ready state shall run locally on a developer machine
-and require no external cloud services, real field devices, or internet
-access at runtime. After provisioning the container images, the demo
-shall be executable offline.
-
-According to the requirements specification, the MVP comprises at least:
-
-- local single-node operation via Docker Compose
-- an end-to-end scenario with grid connection point, PV, load profile,
-  smart meter, and battery storage
-- live telemetry, time-series persistence, and deterministic replay
-- a CLI or script for acceptance checks
-- machine-readable acceptance results for replay verification,
-  scenario validation, and demo health check
-
 ## Optional / Roadmap Extensions
 
-The MVP scope above is implemented and shipped with **v0.1.0**
-(2026-06-12); the following extensions are
-intentionally held out of the MVP and tracked as optional
-additions in the normative requirements ([`spec/lastenheft.md`](spec/lastenheft.md)):
+The following extensions are intentionally held out of the MVP scope
+and tracked as optional additions in the normative requirements
+([`spec/lastenheft.md`](spec/lastenheft.md)):
 
 - additional time-series storage adapters
   (TimescaleDB [`GG-PERSIST-006`](spec/lastenheft.md#gg-persist-006), InfluxDB [`GG-PERSIST-007`](spec/lastenheft.md#gg-persist-007))
