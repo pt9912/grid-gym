@@ -1249,7 +1249,7 @@ Trigger-Gated-Bestand; neuer Meilenstein bei
 Trigger-Aktivierung oder Stakeholder-Mandat. **→ Mit Mandat
 2026-06-13 als M8 eroeffnet (unten).**
 
-### M8 — SOLLTE-Geraete & Netz (`In Progress` seit 2026-06-13 — Welle 1-4 Done inkl. D-8; Post-MVP-Trigger-Watch, seither 033/039/040/044/046 aufgeloest) → Release v0.2.0
+### M8 — SOLLTE-Geraete & Netz (`Done` 2026-07-01 — Welle 1-5, alle SOLLTE-Geraete/Netz/BESS produktiv) → Release v0.2.0
 
 **Slice-Plan:** entsteht in M8-Welle-0 (Pattern analog M6/M7-Welle-0:
 Slice-Plan-Eroeffnung + Trigger-Triage). M8 ist der **erste
@@ -1303,7 +1303,7 @@ Aktivierung `open/` → `in-progress/`):
   Transformatorgrenzen ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), [`021`](../done-archive/021-sollte-transformer-limits.md), 3b),
   `T-022` Blindleistung ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), [`022`](../done-archive/022-sollte-reactive-power.md), 3c;
   Snapshot-Schema v2→v3).
-- **Welle 4 — BESS-Telemetrie** ([`M8-welle-4.md`](../done/M8-welle-4.md); In Arbeit,
+- **Welle 4 — BESS-Telemetrie** ([`M8-welle-4.md`](../done/M8-welle-4.md); Done 2026-06-17,
   eroeffnet 2026-06-16). Zwei additive Telemetrie-Schaerfungen des
   Battery-Modells ([`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)),
   sub-sliced 4a → 4b: `T-023` Battery-Temperatur ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006),
@@ -1321,7 +1321,10 @@ und sind kein M8-Lieferpunkt. Diese Skizze nennt nur die Leit-Posten je
 Meilenstein; die **vollstaendige** Carveout-Zuordnung (inkl. restliche
 M5-Erbschaft `D-3`/`D-4`/`D-5`) bleibt im [`carveouts.md`](carveouts.md)-Index.
 
-**Status:** `In Progress` — Welle 1 (Architektur-Cleanup) abgeschlossen
+**Status:** `Done` 2026-07-01 — M8 abgeschlossen (Welle 1-5, Release
+v0.2.0, Closure [`M8-results.md`](../done/M8-results.md) +
+[`M8-welle-5.md`](../done/M8-welle-5.md)). Welle-Historie: Welle 1
+(Architektur-Cleanup) abgeschlossen
 2026-06-13 ([`M8-welle-0.md`](../done/M8-welle-0.md)). **041-C1+C2 Done**: Fault-Type-Surface
 nach `hexagon.core.domain.fault` + NEU `RunExecutionPort` (Driving-Port),
 `ControlAction` nach `hexagon.core.domain.run`; **C3a/C3b** NEU
