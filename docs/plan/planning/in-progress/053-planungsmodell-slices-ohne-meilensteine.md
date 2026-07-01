@@ -27,10 +27,13 @@ pro Slice**, nicht pro Meilenstein.
 
 Der Verzeichnis-Lifecycle (`open → next → in-progress → done`) und die
 Wellen/Slice-Mechanik bleiben unveraendert. Die Spec ist per SDP ohnehin
-meilensteinfrei ([`AGENTS.md`](../../../../AGENTS.md) §2.5); nur die
-historische [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Matrix
-([`spec/lastenheft.md §27.2`](../../../../spec/lastenheft.md#gg-trace-001))
-traegt `M{N}`-Statusmarker.
+meilensteinfrei ([`AGENTS.md`](../../../../AGENTS.md) §2.5). `M{N}`-Marker tragen
+nur einzelne Straten **historisch**: primaer die
+[`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Matrix
+([`spec/lastenheft.md §27.2`](../../../../spec/lastenheft.md#gg-trace-001)),
+daneben die Adapter-Provenienz-Tabelle in
+[`spec/protocol_profiles.md`](../../../../spec/protocol_profiles.md) und einige
+Kommentar-Marker in `spec/persistence-schema.yaml` — alle eingefroren.
 
 ---
 
@@ -42,9 +45,11 @@ slice-first + Formalisierung per neuer ADR (Schaerfung von
 
 **Anti-Scope (bewusst nicht):** Umschreiben der **Historie** — alle
 `done/`/`done-archive/`-Closure-Docs (`M{N}-results.md`, `M{N}-welle-*.md`) und
-die `M{N}`-Marker in `spec/lastenheft.md §27.2` bleiben eingefroren (sie sind
-die Aufzeichnung dessen, was passiert ist). Kein Code, keine Spec-Straten-
-Aenderung (ausser ggf. einer Praezisierung der §27.2-Legende — s. D-4).
+**alle** `M{N}`-Marker in den Spec-Straten (`spec/lastenheft.md §27.2`, die
+`spec/protocol_profiles.md`-Provenienz-Tabelle, `spec/persistence-schema.yaml`-
+Kommentare) bleiben eingefroren (sie sind die Aufzeichnung dessen, was passiert
+ist). Kein Code, keine Spec-Straten-Aenderung (ausser ggf. einer Praezisierung
+der §27.2-Legende — s. D-4).
 
 ---
 
@@ -77,11 +82,19 @@ Jeder Slice-Plan traegt ein DoD-Feld **„Release-Entscheidung: ja/nein
 
 ### D-4 — Historie friert ein; `M{N}`-Marker bleiben
 
-`done/`/`done-archive/`-Closure-Docs und die [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-§27.2-`M{N}`-Marker
-werden **nicht** umgeschrieben (Aufzeichnung). Es werden keine neuen `M{N}`
-vergeben; neue Anforderungs-Erfuellung wird per Slice/Release-Version
-referenziert. Die §27.2-Legende bleibt; hoechstens eine minimale Praezisierung
-„`M{N}` historisch, neue Arbeit slice-referenziert" (kein Marker-Rewrite).
+`done/`/`done-archive/`-Closure-Docs und **alle** `M{N}`-Marker in den Spec-
+Straten werden **nicht** umgeschrieben (Aufzeichnung): die
+[`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-§27.2-Matrix, die
+Adapter-Provenienz-Tabelle in
+[`spec/protocol_profiles.md`](../../../../spec/protocol_profiles.md) und die
+`M{N}`-Kommentar-Marker in `spec/persistence-schema.yaml`. Es werden keine neuen
+`M{N}` vergeben; neue Anforderungs-Erfuellung wird per Slice/Release-Version
+referenziert. **Konkret fuer kuenftige Adapter-Slices** (z. B.
+[`open/047`](../open/047-device-management-protocol-adapters.md)): der neue
+Adapter traegt seine Provenienz in der `protocol_profiles.md`-Status-Tabelle als
+**Slice-Referenz** statt `M{N}`. Die §27.2-Legende bleibt; hoechstens eine
+minimale Praezisierung „`M{N}` historisch, neue Arbeit slice-referenziert"
+(kein Marker-Rewrite).
 
 ### D-5 — Formalisierung als Schaerfung von ADR 0001
 
@@ -97,7 +110,9 @@ Directory-Lifecycle unveraendert). Status `Proposed` (C0) → `Accepted` (C4).
 
 - **C0** `docs(plan)`: dieser Slice-Plan (053) + `in-progress/README.md`-
   Bestand-Zeile + die neue ADR (Nummer 0072, `Proposed`) +
-  [`adr/README.md`](../../adr/README.md)-Index.
+  [`adr/README.md`](../../adr/README.md)-Index: NEU-Zeile 0072 **und** Eintrag
+  von 0072 in der „Schaerfungen/Folge-ADRs"-Spalte der 0001-Zeile
+  ([`ADR 0011`](../../adr/0011-schaerfung-ohne-abloesung.md) §2.5).
 - **C1** `docs(plan)`: [`roadmap.md`](roadmap.md) slice-first-Umbau — §3
   (MVP-Abnahmescope) + §4 (Meilenstein-Detail M1..M8) → **kompakte
   „Gelieferte Historie"-Tabelle** mit Pointern auf die `M{N}-results.md`-Docs
@@ -132,8 +147,9 @@ Jeder Commit sofort nach `origin/main` (Auto-Push, kein History-Rewrite).
 [`CHANGELOG.md`](../../../../CHANGELOG.md),
 [`adr/README.md`](../../adr/README.md).
 **UNBERUEHRT (eingefroren):** [`done/`](../done/) + `done-archive/` (alle
-`M{N}-results.md`/`M{N}-welle-*.md`), `spec/lastenheft.md §27.2`-Marker,
-`spec/architecture.md`, aller Code.
+`M{N}-results.md`/`M{N}-welle-*.md`), alle `M{N}`-Marker in den Spec-Straten
+(`spec/lastenheft.md §27.2`, `spec/protocol_profiles.md`,
+`spec/persistence-schema.yaml`), `spec/architecture.md`, aller Code.
 
 ---
 
@@ -157,8 +173,10 @@ Jeder Commit sofort nach `origin/main` (Auto-Push, kein History-Rewrite).
   C1; Pointer auf die `done/`-Results-Docs statt Loeschen.
 - **R2 Konsistenz zu [`ADR 0001`](../../adr/0001-documentation-and-planning-structure.md)**
   — die neue ADR (0072) ist Schaerfung, kein Supersede; der ADR-Body bleibt
-  unveraendert, nur Bezug/Lineage-Link. Mitigation: `matrix`-Supersede-Lineage-
-  Gate + explizite Schaerfungs-Formulierung.
+  unveraendert, nur Bezug/Lineage-Link. Mitigation: 0001 bleibt **aktiv** (kein
+  `matrix-inactive`; der d-check-`allow-supersede-lineage`-Carve-out greift hier
+  gar nicht, da 0001 nicht inaktiv wird) + explizite Schaerfungs-Formulierung +
+  Index-Eintrag.
 - **R3 Naming-Luecke** — ohne `M{N}`-Praefix braucht neue Arbeit ein eindeutiges
   Schema. Mitigation: repo-weite `NNN-slug`-Nummern (bereits etabliert) in D-2
   fixiert.
