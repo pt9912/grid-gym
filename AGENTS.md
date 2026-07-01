@@ -171,7 +171,8 @@ Negative-Pins oder eine begruendete Carveout-/Folge-Slice-Notiz.
 | `make docs-check`       | Markdown-Referenz-Validator (d-check, digest-gepinnt; `.d-check.yml`). Prueft alle Bezuege im Repo. |
 
 **Vor jedem Push:** mindestens `make gates` + `make docs-check`
-gruen. Vor Welle-/Meilenstein-Closure zusaetzlich `make fullbuild`.
+gruen. Vor einem Release (Tag) bzw. groesserer Slice-Closure
+zusaetzlich `make fullbuild`.
 Wenn ein naheliegender Sensor wegen Docker, Sandbox oder Umgebung nicht
 gelaufen ist, muss der Handoff den Grund nennen.
 
@@ -199,9 +200,10 @@ kein Ersatz fuer CI.
   in `next/`, aktive Slices in `in-progress/`, abgeschlossene in
   `done/`. Sehe
   [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
-- **Slice-Naming:** Welle-Slice-Begleit als `M{N}-welle-{X}.md`
-  (z. B. `M3-welle-6.md`). Verhindert Kollisionen ueber
-  Meilensteine.
+- **Slice-Naming:** repo-weit fortlaufend `NNN-slug.md` (z. B.
+  `053-...`); grosse Slices sub-gesliced `NNN-a`/`NNN-b`
+  ([ADR 0072](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)).
+  Historisch: `M{N}-welle-{X}.md` (Meilenstein-Zuordnung, eingefroren).
 
 ---
 

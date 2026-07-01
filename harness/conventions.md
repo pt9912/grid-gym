@@ -123,7 +123,7 @@ nur durch neue `MR-<NNN>` aufgehoben.
 - **Aufloesungs-Trigger:** permanent (Re-Eval, falls technische
   Festlegungen jenseits der Protokollprofile entstehen).
 
-### MR-003 — Carveout-Form: ein Cross-Meilenstein-Index statt Datei-pro-Carveout
+### MR-003 — Carveout-Form: ein Cross-Slice-Index statt Datei-pro-Carveout
 
 - **Datum:** 2026-06-13
 - **Geltungsbereich:** Carveout-Disziplin
@@ -138,7 +138,7 @@ nur durch neue `MR-<NNN>` aufgehoben.
   Per-Welle-Anti-Scope und Pro-Meilenstein-Erbschaft leben in den
   jeweiligen [`done/`](../docs/plan/planning/done/)-Wellendocs.
 - **Begruendung:** Carveout-Form ist laut Baseline Repo-Wahl. Bei
-  Dutzenden meilenstein-uebergreifender Scope-Entscheidungen gibt ein
+  Dutzenden slice-uebergreifender Scope-Entscheidungen gibt ein
   einziger Index die geforderte „rot dokumentieren, nicht verstecken"-
   Sicht, ohne dass Reviewer drei `M-results`-Docs und 20+ Trigger-Docs
   querverlinken muessen. Aufloesungs-Trigger und Folge-Slice bleiben pro
@@ -226,4 +226,4 @@ Nur Begriffe, die das Kurs-Glossar nicht traegt:
 |---|---|
 | Welle-Self-Close | Konvention, dass eine Welle ihre eigene Closure traegt (Slice-Lifecycle, [`docs/plan/planning/README.md`](../docs/plan/planning/README.md)). |
 | Trigger-Doc | Formal akzeptierter Carveout-Watch unter [`open/`](../docs/plan/planning/open/) (Datei `NNN-*.md`) mit Aktivierungs-Bedingung; im Carveout-Index per ID `T-nnn` referenziert (siehe `MR-003`). |
-| M{N}-Erbschaft | Pro-Meilenstein aggregierte Carveout-/Scope-Erbschaft in den `done/M{N}-results.md §5/§8`. |
+| M{N}-Erbschaft (historisch) | Pro-Meilenstein aggregierte Carveout-/Scope-Erbschaft in den `done/M{N}-results.md §5/§8`. |

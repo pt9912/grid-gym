@@ -1,9 +1,9 @@
 # Carveout-Index
 
 **Status:** Lebend ab 2026-06-04 (M5-Closure-Folge-Sync).
-**Zweck:** Eine **einzige Cross-Meilenstein-Sicht** auf alle
-Scope-Entscheidungen, die bewusst auf spaetere Meilensteine /
-spaetere Wellen verschoben wurden. Ergaenzt — ersetzt nicht —
+**Zweck:** Eine **einzige Cross-Slice-Sicht** auf alle
+Scope-Entscheidungen, die bewusst auf spaetere Slices / Wellen (bzw.
+historisch spaetere Meilensteine) verschoben wurden. Ergaenzt — ersetzt nicht —
 die vier bestehenden Carveout-Surfaces des Repos:
 
 | Surface | Granularitaet | Wo |
