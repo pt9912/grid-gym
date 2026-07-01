@@ -229,7 +229,7 @@ requirements
 ├── docs/
 │   ├── archive/                 ← discarded / historical drafts
 │   ├── plan/
-│   │   ├── adr/                 ← Architecture Decision Records (0001..0053)
+│   │   ├── adr/                 ← Architecture Decision Records
 │   │   └── planning/
 │   │       ├── done/            ← completed slices + closure notes
 │   │       ├── in-progress/     ← active roadmap + slice plans

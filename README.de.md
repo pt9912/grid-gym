@@ -232,7 +232,7 @@ gefuehrt:
 ├── docs/
 │   ├── archive/                 ← verworfene / historische Skizzen
 │   ├── plan/
-│   │   ├── adr/                 ← Architecture Decision Records (0001..0053)
+│   │   ├── adr/                 ← Architecture Decision Records
 │   │   └── planning/
 │   │       ├── done/            ← abgeschlossene Slices + Closure-Notizen
 │   │       ├── in-progress/     ← aktive Roadmap + Slice-Plaene
