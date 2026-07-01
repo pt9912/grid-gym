@@ -31,8 +31,11 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`004-canonical-encoder-alternative-adr.md`](004-canonical-encoder-alternative-adr.md) | ADR fuer Performance-/Implementierungs-Alternativen (orjson, msgspec) | bei messbarem Perf-Druck am Telemetrie-Pfad |
 | [`005-pyright-vs-mypy-reeval.md`](005-pyright-vs-mypy-reeval.md) | Re-Eval mypy vs. pyright bei generischen Protocols | sobald `ports/*` Generic-Protocols einfuehrt |
 | [`007-pyright-precommit-adr.md`](007-pyright-precommit-adr.md) | ADR fuer pyright als Pre-Commit-Hook | bei Editor-Parity-Druck |
-| [`048-dcheck-matrix-modul.md`](048-dcheck-matrix-modul.md) | d-check-`matrix`-Modul (Referenzrichtungs-Gate, SDP) — **Resolved 2026-06-17**: Option A (Voll-SDP) via Slice [`049`](../done/049-sdp-matrix-doku-umbau.md); `matrix` aktiv, Spec-Straten zeitlos, `make docs-check` gruen | **Resolved** (Doc-Archiv mit M8-Closure) |
-| [`050-dcheck-matrix-supersede-lineage.md`](050-dcheck-matrix-supersede-lineage.md) | d-check-`matrix`-Supersede-Lineage-Carve-out (CR, Folge aus Slice 049) — **Resolved 2026-06-17**: d-check v0.11.0 liefert `allow-supersede-lineage`; Pin + `.d-check.yml`-Config + [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md)-Lineage-Link migriert, `make docs-check` gruen (Boundary verifiziert) | **Resolved** (Doc-Archiv mit M8-Closure) |
+
+*(Trigger 048/050 (d-check-`matrix`) — **Resolved 2026-06-17** via Slice
+[`049`](../done/049-sdp-matrix-doku-umbau.md), mit der M8-Closure nach
+[`../done-archive/`](../done-archive/) archiviert; nicht mehr hier.)*
+
 **Harness-Regelwerk-Adoption (v1.2.0-Delta):**
 
 | Datei | Trigger | Aktivierung |

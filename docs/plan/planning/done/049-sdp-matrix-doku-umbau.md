@@ -1,7 +1,7 @@
 # 049 — Voll-SDP-Doku-Umbau: `matrix`-Gate aktivieren (Trigger 048, Option A)
 
 **Status:** **Done (2026-06-17).** Umsetzung von Trigger
-[`048`](../open/048-dcheck-matrix-modul.md) **Option A (Voll-SDP)**: das
+[`048`](../done-archive/048-dcheck-matrix-modul.md) **Option A (Voll-SDP)**: das
 d-check `matrix`-Modul (Referenzrichtungs-Gate, `DC-FA-MTX-001`) ist in
 `.d-check.yml` aktiv (volle Abwaerts-Regeln + Status-Regel +
 `exclude-sections`); die Spec-Straten sind zeitlos umgebaut, `make docs-check`
@@ -12,7 +12,7 @@ oder „ADR X §Y verbindlich"), **keine** Status-/Wellen-/Decision-Prozess-
 Angaben; Provenance vollstaendig in `## Historie`. Aufwaerts-Refs werden
 **verlinkt** (`GG-AR-*`/`GG-*` → Definitions-`#anchor`).
 
-**Container:** Trigger [`048`](../open/048-dcheck-matrix-modul.md) (Messung,
+**Container:** Trigger [`048`](../done-archive/048-dcheck-matrix-modul.md) (Messung,
 Optionen, Empfehlung). Quelle: Lab-Regelwerk §Referenz-Richtung (SDP),
 Stabilitaets-Rang **Vertrag › Technik › Sicht › ADR › Slice**.
 
@@ -38,7 +38,7 @@ verweisen; Verweise auf inaktive (superseded/deprecated) ADRs sind Befunde.
 `matrix-inactive` (6): [`ADR 0004`](../../adr/0004-identifier-based-cross-references.md) Z. 6 → `ADR 0003` (**echter Fix**: auf <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) umstellen); [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) Z. 6 → `ADR 0003` (**legitime <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 Supersede-Lineage** → `d-check:ignore` + CR-Notiz); 4× in Trigger
-[`048`](../open/048-dcheck-matrix-modul.md) selbst (diskutiert `ADR 0003` <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
+[`048`](../done-archive/048-dcheck-matrix-modul.md) selbst (diskutiert `ADR 0003` <!-- d-check:ignore (ADR 0003 superseded — nur vom Supersedeer ADR 0006 verlinkbar) -->
 bewusst → `d-check:ignore`).
 
 ## 3. Fix-Mechanismus (Option Y, validiert)
