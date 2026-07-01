@@ -41,8 +41,8 @@ Zellspannungsfelder werden gar nicht geschrieben.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
-| 4a Temperatur | [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006) | [`023`](../open/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
-| 4b Zellspannung | [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007) | [`024`](../open/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `nominal_pack_voltage_v` + `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
+| 4a Temperatur | [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006) | [`023`](../done-archive/023-sollte-battery-temperature.md) | Stateful-Telemetry | `temperature_celsius` aus normalisiertem Lastfaktor (`load_pu²`) + Umgebung + Zeitkonstante; opt-in Thermo-Config; analog dem Top-Oil-Thermomodell aus [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) |
+| 4b Zellspannung | [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007) | [`024`](../done-archive/024-sollte-battery-cell-voltage.md) | Schema (tuple) + `RandomPort` | `nominal_pack_voltage_v` + `n_cells` + `cell_voltages_v: tuple[Decimal, ...]`; opt-in per-Zelle Rauschen via `RandomPort.sub_port("cell-<idx>")`; normative aggregierte `cell_voltage_delta_v`-Telemetrie, optional ergaenzt um `min/max_cell_voltage_v` |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port und **keine
 Bilanz-Beruehrung** — Temperatur/Zellspannung sind Geraete-interne Groessen,
@@ -102,7 +102,7 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), Reihenfolge,
   opt-in/Pin-neutral-Strategie. Sensor: `make docs-check`.
 - **Welle 4a — Battery-Temperatur** ([`M8-welle-4a.md`](M8-welle-4a.md),
-  [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), [`023`](../open/023-sollte-battery-temperature.md), NEU ADR):
+  [`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), [`023`](../done-archive/023-sollte-battery-temperature.md), NEU ADR):
   `temperature_celsius` als Geraete-State + Telemetrie. T-Modell als
   **stateful Single-Zonen-Thermomodell** (analog dem Top-Oil-Euler aus
   [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md):
@@ -113,7 +113,7 @@ Telemetrie-Aggregations-Frage zuletzt). Jede Sub-Welle aktiviert ihren
   eingebettete Config additiv opt-in (kein Bump, fehlende neue Config-Keys =
   inaktiv). Derating/thermische Constraints **out-of-scope** (§5, M3-Material).
 - **Welle 4b — Battery-Zellspannung** ([`M8-welle-4b.md`](M8-welle-4b.md),
-  [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), [`024`](../open/024-sollte-battery-cell-voltage.md), NEU ADR):
+  [`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), [`024`](../done-archive/024-sollte-battery-cell-voltage.md), NEU ADR):
   `nominal_pack_voltage_v: Decimal` + `n_cells: int` +
   `cell_voltages_v: tuple[Decimal, ...]`. Vereinfacht alle Zellen identisch
   (`nominal_pack_voltage_v / n_cells`); erweitert per-Zelle mit seeded

@@ -29,7 +29,7 @@ Clamp, kein neuer Constraint-Pfad in 3a),
 Pattern). Slice-Plan
 [`M8-welle-3a.md`](../planning/done/M8-welle-3a.md); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`020`](../planning/open/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005),
+[`020`](../planning/done-archive/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005),
 Lastenheft §11.5).
 
 ---
@@ -45,7 +45,7 @@ Konstruktion `0` wird ([`ADR 0021`](0021-scenario-loader-and-tick-loop-event-wir
 uebergeordnete Netz faengt jeden Mismatch perfekt auf.
 
 Ein **Inselnetz** ([`GG-GRID-005`](../../../spec/lastenheft.md#gg-grid-005), Lastenheft §11.5, Trigger
-[`020`](../planning/open/020-sollte-island-grid.md)) hat **keinen
+[`020`](../planning/done-archive/020-sollte-island-grid.md)) hat **keinen
 externen Slack-Bus**. Stattdessen haelt ein internes **Grid-Forming-
 Geraet** — typisch ein Diesel-Generator
 ([`ADR 0058`](0058-diesel-generator-device-pattern.md)) oder ein
@@ -376,7 +376,7 @@ Diese ADR gilt NICHT fuer:
 ## 7. Nicht Gegenstand dieser ADR
 
 - **Schwarzstart-Synchronisation** zwischen mehreren Inselnetzen — eigener
-  Trigger ([`020`](../planning/open/020-sollte-island-grid.md) Out-of-scope).
+  Trigger ([`020`](../planning/done-archive/020-sollte-island-grid.md) Out-of-scope).
 - **Droop-/Detail-Regelung** der Frequenzhaltung (Polradwinkel,
   Sekundaerregelung) — die vereinfachte proportionale Bilanz
   ([`ADR 0019`](0019-grid-model-bilanz-pattern.md) §3) bleibt.

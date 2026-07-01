@@ -21,7 +21,7 @@ Reihenfolge 3a → 3b → 3c — bewusst zuletzt); [`roadmap.md`](../in-progress
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md)) + Q-Emission als
 Folge zu [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) (PV) /
 [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md). Trigger:
-[`022`](../open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), Lastenheft
+[`022`](../done-archive/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), Lastenheft
 §11.5; mit dieser Welle aufzuloesen).
 
 ---

@@ -46,9 +46,9 @@ durchgehend **Bilanz-Schaerfung im Core**, kein Geraete-Submodul.
 
 | Sub-Welle | ID | Trigger | Wesen | Charakteristik |
 |---|---|---|---|---|
-| 3a Inselnetz | [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) | [`020`](../open/020-sollte-island-grid.md) | Slack-Wechsel | Kein externer Slack; internes Grid-Forming-Geraet haelt Frequenz; `is_islanded`/`forming_device_id` in der Config |
-| 3b Trafo-Grenzen | [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006) | [`021`](../open/021-sollte-transformer-limits.md) | Bilanz-Constraint | `max_apparent_power_kva` + Ueberlastkennlinie + simples Thermomodell; `GridConstraintViolationEvent` bei Verletzung |
-| 3c Blindleistung | [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) | [`022`](../open/022-sollte-reactive-power.md) | Cross-cutting + Schema | `reactive_power_kvar` + Q(U)-Kennlinie pro Q-Geraet; `imbalance_kvar` parallel zu `imbalance_kw`; additive **Snapshot-Erweiterung** (multi-schema) |
+| 3a Inselnetz | [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005) | [`020`](../done-archive/020-sollte-island-grid.md) | Slack-Wechsel | Kein externer Slack; internes Grid-Forming-Geraet haelt Frequenz; `is_islanded`/`forming_device_id` in der Config |
+| 3b Trafo-Grenzen | [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006) | [`021`](../done-archive/021-sollte-transformer-limits.md) | Bilanz-Constraint | `max_apparent_power_kva` + Ueberlastkennlinie + simples Thermomodell; `GridConstraintViolationEvent` bei Verletzung |
+| 3c Blindleistung | [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007) | [`022`](../done-archive/022-sollte-reactive-power.md) | Cross-cutting + Schema | `reactive_power_kvar` + Q(U)-Kennlinie pro Q-Geraet; `imbalance_kvar` parallel zu `imbalance_kw`; additive **Snapshot-Erweiterung** (multi-schema) |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port — die
 Schaerfungen leben in `grid_model` + `tick_loop`. Pro Sub-Welle eine
@@ -92,7 +92,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   Schema-Strategie. Sensor: `make docs-check`.
 - **Welle 3a — Inselnetz — Done 2026-06-16**
   ([`M8-welle-3a.md`](M8-welle-3a.md),
-  [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005), [`020`](../open/020-sollte-island-grid.md),
+  [`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005), [`020`](../done-archive/020-sollte-island-grid.md),
   [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`):
   `is_islanded: bool` + `forming_device_id: str | None` in
   `GridModelConfig`; TickLoop-Auto-Close waehlt im Inselnetz **das
@@ -104,7 +104,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   ohne Netzanschluss); Multi-Insel-Synchronisation out-of-scope (§5).
 - **Welle 3b — Transformatorgrenzen — Done 2026-06-16**
   ([`M8-welle-3b.md`](M8-welle-3b.md),
-  [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), [`021`](../open/021-sollte-transformer-limits.md),
+  [`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), [`021`](../done-archive/021-sollte-transformer-limits.md),
   [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md) `Accepted`):
   `max_apparent_power_kva` + simples **Single-Zonen-Thermomodell als
   Zeit-Strom-Mechanismus** (Top-Oil/Hot-Spot, `S≈|grid_connection_kw|` bis
@@ -116,7 +116,7 @@ ihren `open/`-Trigger und loest ihn bei Closure auf.
   im Bilanzmodell.
 - **Welle 3c — Blindleistung — re-tranchiert (3c-a Done / 3c-b offen)**
   ([`M8-welle-3c.md`](M8-welle-3c.md),
-  [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), [`022`](../open/022-sollte-reactive-power.md)):
+  [`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), [`022`](../done-archive/022-sollte-reactive-power.md)):
   **3c-a Done 2026-06-16**
   ([`ADR 0062`](../../adr/0062-reactive-power-bilanz-pattern.md) `Accepted`)
   — `imbalance_kvar` parallel zu `imbalance_kw` in `GridModelBilanz` +
@@ -163,7 +163,7 @@ Geraete-Q-Emission).
 ## 5. Nicht-Ziele
 
 - Schwarzstart-**Synchronisation** zwischen mehreren Inselnetzen — eigener
-  Trigger ([`020`](../open/020-sollte-island-grid.md) Out-of-scope).
+  Trigger ([`020`](../done-archive/020-sollte-island-grid.md) Out-of-scope).
 - Lastabwurfschemata / Load-Shedding — Multi-Agent-Kontext, separater
   Trigger.
 - Schutzgeraete-Logik (Distanz-/Differentialschutz) — M4-Material

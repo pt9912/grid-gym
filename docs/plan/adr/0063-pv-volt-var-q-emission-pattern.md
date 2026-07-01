@@ -19,7 +19,7 @@ Q-Spannungskopplung — 3c-b-1 speist den `reactive_power_kvar`-Eingang),
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) §2.7 (Determinismus).
 Slice-Plan [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) §4
 (Re-Tranche 3c-b-1/3c-b-2). Trigger
-[`022`](../planning/open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007);
+[`022`](../planning/done-archive/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007);
 **teilweise** — schliesst mit 3c-b-2).
 
 ---

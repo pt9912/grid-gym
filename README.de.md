@@ -86,7 +86,7 @@ Entwicklungsgate ist `make gates`.
 > (gebaut gegen go1.26.4+) aufgeloest; Trivy-Re-Scan meldet
 > 0 HIGH/CRITICAL.)
 
-Aktuelles Release: **v0.1.0** (2026-06-12) — siehe
+Aktuelles Release: **v0.2.0** (2026-07-01) — siehe
 [Releases](https://github.com/pt9912/grid-gym/releases).
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
@@ -125,10 +125,9 @@ und `release.yml` (Tag-Push oder workflow_dispatch).
   IEC-61850-Boundary) — alles cache-frei gruen ohne lokalen Override.
 - **ADR-getriebene Entscheidungen.** Jede tragende Entscheidung wird
   als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
-  alle Meilenstein-Closure-ADRs bis M7 sind `Accepted` (49 von 53),
+  alle Meilenstein-Closure-ADRs bis M8 sind `Accepted` (69 von 71),
   Wellen-ADRs landen als `Provisional` und werden mit Meilenstein-
-  Closure `Accepted` ([`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 bleiben `Proposed` bis zu ihren
-  Umsetzungsslices).
+  Closure `Accepted` (M8-ADRs 0050/0051/0054/0055..0071 alle `Accepted`).
 - **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
   `lint-imports`-, `ruff check`-, `tools/arch_check.py`- und
   `mypy --strict`-Gates auf jedem Pull Request und `main`-Push
@@ -161,35 +160,37 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-06-12**:
+Stand **2026-07-01**:
 
-- **M1..M7 · `Done`** — **der MVP ist geliefert** (49 ADRs
-  `Accepted` ueber M1..M7, plus [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 `Proposed`). Closure-
-  Artefakte:
-  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md)
+- **M1..M8 · `Done`** — **der MVP ist geliefert (M7); SOLLTE-Geraete
+  & Netz sind geliefert (M8)**. 69 von 71 ADRs `Accepted` (1
+  `Provisional`, 1 `Superseded`). Closure-Artefakte:
+  [`docs/plan/planning/done/M8-results.md`](docs/plan/planning/done/M8-results.md)
   +
-  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md).
-- **M7 — MVP-Abschluss** · `Done` (2026-06-12; Welle 0..X). Alle
-  vier `GG-MVP-*`-Punkte (ReplaySource-Integration [`GG-MVP-002`](spec/lastenheft.md#gg-mvp-002),
-  Abnahme-CLI `make accept` [`GG-MVP-003`](spec/lastenheft.md#gg-mvp-003)) und alle vier
-  [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004-MUSS-IDs sind produktiv. Fuenf M7-ADRs
-  (0047/0048/0049/0052/0053) `Accepted` mit Welle-X-Closure;
-  [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 bleiben `Proposed` (eigene Lifecycle-Bedingungen).
-- **v0.1.0 released** (2026-06-12): erster realer Lauf des
-  Release-Workflows — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.1.0`
-  (+ digest-gleiches `:latest`), GitHub-Release mit SBOM
-  (CycloneDX, digest-gebunden), JUnit-XML, Coverage-HTML,
-  OpenAPI-JSON und Abnahme-Doku; Trigger 032 aufgeloest.
-- **Post-MVP-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
-  automatisch eroeffnet. Offene Trigger 033 (OTel-Collector-CVE
-  Stable-Watch), 037 (Multi-Node-Deployment), 038/039/040
-  (Bedarfs-getrieben), 044 (d-check-Inline-Code-Linkpflicht) plus
-  der Trigger-Gated-Bestand tragen
-  dokumentierte Aktivierungs-Bedingungen; zwei vorbereitete
-  `planning/next/`-Plaene (041 [`AC-ADAPTER-PURE`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Rueckbau, 042
-  Fault-Engine-Naming — Umsetzungsslices fuer [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051)
-  warten auf ein Mandat. Ein neuer Meilenstein entsteht bei
-  Trigger-Aktivierung oder Stakeholder-Mandat.
+  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md).
+- **M8 — SOLLTE-Geraete & Netz** · `Done` (2026-07-01; Welle 1..5)
+  → **Release v0.2.0**. Alle vier SOLLTE-Geraete
+  ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV-Charger,
+  Transformer, Wind-Turbine, Diesel-Generator), das SOLLTE-Netzmodell
+  ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: Inselnetz,
+  Trafo-Grenzen, Blindleistung) und die BESS-Telemetrie
+  ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: Temperatur,
+  Zellspannung) sind produktiv; M8-ADRs 0050/0051/0054/0055..0071
+  `Accepted`. Parallel eingefaltet: Replay-Paar 039/040,
+  Multi-Run-Execution, Scenario-Scheduled-Commands (046),
+  Harness-Durchsetzungsschicht (051).
+- **v0.2.0 released** (2026-07-01): zweiter Release-Workflow-Lauf —
+  GHCR-Image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-gleiches
+  `:latest`), GitHub-Release mit SBOM (CycloneDX, digest-gebunden),
+  JUnit-XML, Coverage-HTML, OpenAPI-JSON und Abnahme-Doku. (v0.1.0
+  bleibt die MVP-Basislinie; der Doku-only-Cut v0.1.1 wurde bewusst
+  verworfen.)
+- **Post-M8-Modus: Trigger-Watch** — kein Folge-Meilenstein wird
+  automatisch eroeffnet. Offene Trigger 037 (Multi-Node-Deployment),
+  038 (volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix),
+  047 (SNMP/LwM2M-Adapter) plus der Tooling-/Spike-Bestand tragen
+  dokumentierte Aktivierungs-Bedingungen. Ein neuer Meilenstein
+  entsteht bei Trigger-Aktivierung oder Stakeholder-Mandat.
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte

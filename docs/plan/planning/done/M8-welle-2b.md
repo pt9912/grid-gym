@@ -8,7 +8,7 @@ Erweiterung + die acht Verdrahtungs-Naehte (Checkliste aus
 **Container:** [`M8-welle-2.md`](M8-welle-2.md) (Welle-2-C0-Plan);
 [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 [`ADR 0056`](../../adr/0056-transformer-device-pattern.md) `Accepted`.
-Trigger: [`017`](../open/017-sollte-transformer-device.md) (mit dieser
+Trigger: [`017`](../done-archive/017-sollte-transformer-device.md) (mit dieser
 Welle aufgeloest).
 
 ---

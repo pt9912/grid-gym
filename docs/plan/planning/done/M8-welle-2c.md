@@ -6,7 +6,7 @@ Geraet aus [`M8-welle-2.md`](M8-welle-2.md) §3.
 **Container:** [`M8-welle-2.md`](M8-welle-2.md); [`roadmap.md`](../in-progress/roadmap.md)
 §4 M8. Design (C1):
 [`ADR 0057`](../../adr/0057-wind-turbine-device-pattern.md) `Accepted`.
-Trigger: [`018`](../open/018-sollte-wind-device.md) (mit dieser Welle
+Trigger: [`018`](../done-archive/018-sollte-wind-device.md) (mit dieser Welle
 aufgeloest).
 
 ---

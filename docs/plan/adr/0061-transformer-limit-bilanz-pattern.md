@@ -27,7 +27,7 @@ Transformer-Block + Thermo-State),
 Pattern). Slice-Plan
 [`M8-welle-3b.md`](../planning/done/M8-welle-3b.md); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`021`](../planning/open/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006),
+[`021`](../planning/done-archive/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006),
 Lastenheft §11.5).
 
 ---
@@ -37,7 +37,7 @@ Lastenheft §11.5).
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) kennt im Netzbilanzmodell
 nur Frequenz-/Spannungs-Clamps — **keine Wandlungs-/Belastungsgrenze**.
 Lastenheft [`GG-GRID-006`](../../../spec/lastenheft.md#gg-grid-006) (Trigger
-[`021`](../planning/open/021-sollte-transformer-limits.md)) verlangt
+[`021`](../planning/done-archive/021-sollte-transformer-limits.md)) verlangt
 **Transformatorgrenzen auf Bilanz-Ebene**: eine Scheinleistungs-Grenze
 mit Ueberlast-Zeit-Strom-Verhalten und einem vereinfachten Thermomodell
 (Top-Oil/Hot-Spot).

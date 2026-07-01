@@ -6,7 +6,7 @@ Konsument. Geliefert via
 [`ADR 0066`](../../adr/0066-battery-cell-voltage-telemetry-pattern.md)
 `Accepted` (Schaerfung zu
 [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), kein Supersede).
-Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) aufgeloest.
+Trigger [`024`](../done-archive/024-sollte-battery-cell-voltage.md) aufgeloest.
 `make gates` + `docs-check` + `accept-pin-check` gruen
 (`coverage-gate-critical` 96 % auf `devices/battery`). Doc-Verschiebung nach
 `done/` erfolgt als Gruppe mit der Welle-4-Gesamt-Closure (siehe
@@ -15,7 +15,7 @@ Trigger [`024`](../open/024-sollte-battery-cell-voltage.md) aufgeloest.
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b — bewusst zuletzt: Tuple-Feld + Rausch-Quelle);
 [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
-[`024`](../open/024-sollte-battery-cell-voltage.md) ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), Lastenheft
+[`024`](../done-archive/024-sollte-battery-cell-voltage.md) ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 
 ---

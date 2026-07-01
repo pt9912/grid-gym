@@ -24,7 +24,7 @@ Pattern). Slice-Plan
 [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) (§4 Re-Tranche
 3c-a/3c-b); Container
 [`M8-welle-3.md`](../planning/done/M8-welle-3.md). Trigger
-[`022`](../planning/open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007),
+[`022`](../planning/done-archive/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007),
 Lastenheft §11.5; **teilweise** — Geraete-Q-Emission in 3c-b).
 
 ---
@@ -34,7 +34,7 @@ Lastenheft §11.5; **teilweise** — Geraete-Q-Emission in 3c-b).
 [`ADR 0019`](0019-grid-model-bilanz-pattern.md) modelliert nur
 **Wirkleistung**: `imbalance_kw` treibt Frequenz und Spannung proportional;
 Blindleistung (`Q`) ist explizit out-of-scope (§7). Lastenheft [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)
-(Trigger [`022`](../planning/open/022-sollte-reactive-power.md)) verlangt
+(Trigger [`022`](../planning/done-archive/022-sollte-reactive-power.md)) verlangt
 **Blindleistung im Netzbilanzmodell**: `reactive_power_kvar` pro
 Q-emittierendem Geraet (PV-Wechselrichter mit Q(U)-Kennlinie, GridConnection),
 `imbalance_kvar` parallel zu `imbalance_kw`, plus die Schein­leistungs-Basis

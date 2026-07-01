@@ -5,7 +5,7 @@
 `grid_model`/`devices/grid_connection` + `docs-check` + `accept-pin-check`
 gruen; `S=sqrt(P²)==|P|`-Q=0-Regressionspin + Q≠0-Boundary-Pins +
 Q-Absorptions-/Pin-Neutralitaets-Pins). **Schliesst [`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007)**
-(Trigger [`022`](../planning/open/022-sollte-reactive-power.md)). Folge zu
+(Trigger [`022`](../planning/done-archive/022-sollte-reactive-power.md)). Folge zu
 [`ADR 0017`](0017-grid-connection-device-pattern.md) (GridConnection) +
 Schaerfung zu [`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)
 (Transformer-Grenze) / [`ADR 0062`](0062-reactive-power-bilanz-pattern.md)
@@ -21,7 +21,7 @@ Schaerfung zu [`ADR 0061`](0061-transformer-limit-bilanz-pattern.md)
 Aggregation — der GridConnection ist die zweite Q-Quelle/-Senke).
 Slice-Plan [`M8-welle-3c.md`](../planning/done/M8-welle-3c.md) §4
 (Re-Tranche 3c-b-2). Trigger
-[`022`](../planning/open/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007);
+[`022`](../planning/done-archive/022-sollte-reactive-power.md) ([`GG-GRID-007`](../../../spec/lastenheft.md#gg-grid-007);
 **mit dieser ADR aufgeloest**).
 
 ---

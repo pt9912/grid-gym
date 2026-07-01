@@ -7,7 +7,7 @@ Welle-2-Geraete-Reihe ab.**
 **Container:** [`M8-welle-2.md`](M8-welle-2.md); [`roadmap.md`](../in-progress/roadmap.md)
 §4 M8. Design (C1):
 [`ADR 0058`](../../adr/0058-diesel-generator-device-pattern.md) `Accepted`.
-Trigger: [`019`](../open/019-sollte-diesel-device.md) (mit dieser Welle
+Trigger: [`019`](../done-archive/019-sollte-diesel-device.md) (mit dieser Welle
 aufgeloest).
 
 ---

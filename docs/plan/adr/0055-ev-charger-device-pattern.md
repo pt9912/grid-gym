@@ -16,7 +16,7 @@
   [`ADR 0025`](0025-fault-recovery-pattern.md) — `FaultInjectableDevice` +
   Recovery-Muster (Vorbild fuer den EV-Fault).
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md) — [`GG-DEV-015`](../../../spec/lastenheft.md#gg-dev-015).
-- [`016-sollte-ev-charger-device.md`](../planning/open/016-sollte-ev-charger-device.md)
+- [`016-sollte-ev-charger-device.md`](../planning/done-archive/016-sollte-ev-charger-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
 ---

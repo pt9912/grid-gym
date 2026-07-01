@@ -84,7 +84,7 @@ development gate is `make gates`.
 > `otel/opentelemetry-collector-contrib` to 0.154.0, built against
 > go1.26.4+; Trivy re-scan reports 0 HIGH/CRITICAL.)
 
-Current release: **v0.1.0** (2026-06-12) — see
+Current release: **v0.2.0** (2026-07-01) — see
 [Releases](https://github.com/pt9912/grid-gym/releases).
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
@@ -122,10 +122,9 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   override.
 - **ADR-driven decisions.** Every load-bearing decision is recorded as
   an [Architecture Decision Record](docs/plan/adr/); all
-  milestone-closure ADRs through M7 are `Accepted` (49 of 53), wave
+  milestone-closure ADRs through M8 are `Accepted` (69 of 71), wave
   ADRs land as `Provisional` and become `Accepted` at milestone
-  closure ([`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 stay `Proposed` until their implementation
-  slices).
+  closure (M8 ADRs 0050/0051/0054/0055..0071 all `Accepted`).
 - **CI mirrors local.** GitHub Actions runs the same `lint-imports`,
   `ruff check`, `tools/arch_check.py`, and `mypy --strict` gates on
   every pull request and `main` push
@@ -158,33 +157,36 @@ logic.
 
 ## Status
 
-As of **2026-06-12**:
+As of **2026-07-01**:
 
-- **M1..M7 · `Done`** — **the MVP is delivered** (49 ADRs
-  `Accepted` across M1..M7, plus [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 `Proposed`). Closure
-  artefacts:
-  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md)
+- **M1..M8 · `Done`** — **the MVP is delivered (M7); SOLLTE devices
+  & grid are delivered (M8)**. 69 of 71 ADRs `Accepted` (1
+  `Provisional`, 1 `Superseded`). Closure artefacts:
+  [`docs/plan/planning/done/M8-results.md`](docs/plan/planning/done/M8-results.md)
   +
-  [`docs/plan/planning/done/M6-results.md`](docs/plan/planning/done/M6-results.md).
-- **M7 — MVP completion** · `Done` (2026-06-12; Welle 0..X). All
-  four `GG-MVP-*` items (replay-source integration [`GG-MVP-002`](spec/lastenheft.md#gg-mvp-002),
-  acceptance CLI `make accept` [`GG-MVP-003`](spec/lastenheft.md#gg-mvp-003)) and all four
-  [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004 MUSS IDs are productive. Five M7 ADRs
-  (0047/0048/0049/0052/0053) `Accepted` at Welle-X closure;
-  [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051 stay `Proposed` (own lifecycle conditions).
-- **v0.1.0 released** (2026-06-12): first real run of the release
-  workflow — GHCR image `ghcr.io/pt9912/grid-gym:v0.1.0` (+
-  digest-identical `:latest`), GitHub release with SBOM (CycloneDX,
-  digest-bound), JUnit XML, coverage HTML, OpenAPI JSON and demo
-  acceptance doc; trigger 032 resolved.
-- **Post-MVP mode: trigger watch** — no successor milestone is
-  auto-opened. Open triggers 033 (OTel-collector CVE stable watch),
-  037 (multi-node deployment), 038/039/040 (demand-driven), 044
-  (d-check inline-code id linking) plus the
-  trigger-gated backlog carry documented activation conditions; two
-  prepared `planning/next/` plans (041 [`AC-ADAPTER-PURE`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) bridge
-  retirement, 042 fault-engine naming — implementation slices for
-  [`ADR 0050`](docs/plan/adr/0050-adapter-pure-bridge-retirement.md)/0051) await a mandate. A new milestone opens on trigger
+  [`docs/plan/planning/done/M7-results.md`](docs/plan/planning/done/M7-results.md).
+- **M8 — SOLLTE devices & grid** · `Done` (2026-07-01; Welle 1..5)
+  → **Release v0.2.0**. All four SOLLTE devices
+  ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV charger,
+  transformer, wind turbine, diesel generator), the SOLLTE grid model
+  ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: island grid,
+  transformer limits, reactive power) and BESS telemetry
+  ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: temperature,
+  cell voltage) are productive; M8 ADRs 0050/0051/0054/0055..0071
+  `Accepted`. Parallel post-MVP waves folded in: replay pair 039/040,
+  multi-run execution, scenario-scheduled commands (046), harness
+  enforcement layer (051).
+- **v0.2.0 released** (2026-07-01): second release-workflow run —
+  GHCR image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-identical
+  `:latest`), GitHub release with SBOM (CycloneDX, digest-bound),
+  JUnit XML, coverage HTML, OpenAPI JSON and demo acceptance doc.
+  (v0.1.0 remains the MVP baseline; the docs-only v0.1.1 cut was
+  deliberately discarded.)
+- **Post-M8 mode: trigger watch** — no successor milestone is
+  auto-opened. Open triggers 037 (multi-node deployment), 038 (full
+  [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003 equality matrix), 047
+  (SNMP/LwM2M adapters) plus the tooling/spike backlog carry
+  documented activation conditions. A new milestone opens on trigger
   activation or stakeholder mandate.
 
 **Test balance:** 139 integration passed + 4 skipped (remaining

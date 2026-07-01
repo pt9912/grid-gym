@@ -4,7 +4,7 @@
 additive Schaerfung des Battery-Modells. Geliefert via
 [`ADR 0065`](../../adr/0065-battery-thermal-telemetry-pattern.md) `Accepted`
 (Schaerfung zu [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md), kein
-Supersede). Trigger [`023`](../open/023-sollte-battery-temperature.md)
+Supersede). Trigger [`023`](../done-archive/023-sollte-battery-temperature.md)
 aufgeloest. `make gates` + `docs-check` + `accept-pin-check` gruen
 (`coverage-gate-critical` 96 % auf `devices/battery`). Doc-Verschiebung nach
 `done/` erfolgt als Gruppe mit der Welle-4-Gesamt-Closure (siehe
@@ -12,7 +12,7 @@ aufgeloest. `make gates` + `docs-check` + `accept-pin-check` gruen
 
 **Container:** [`M8-welle-4.md`](M8-welle-4.md) §3 (Welle-4-C0-Plan,
 Reihenfolge 4a → 4b); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Trigger:
-[`023`](../open/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), Lastenheft
+[`023`](../done-archive/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), Lastenheft
 §10.6; mit dieser Welle aufzuloesen).
 
 ---

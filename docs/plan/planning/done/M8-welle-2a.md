@@ -8,7 +8,7 @@ Verdrahtungs- und Validierungs-Naehte.
 **Container:** [`M8-welle-2.md`](M8-welle-2.md) (Welle-2-C0-Plan, Sub-
 Slicing 2a..2d); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) `Accepted`.
-Trigger: [`016`](../open/016-sollte-ev-charger-device.md) (mit dieser
+Trigger: [`016`](../done-archive/016-sollte-ev-charger-device.md) (mit dieser
 Welle aufgeloest).
 
 ---
@@ -50,7 +50,7 @@ Visualization-State-Subset und `CRITICAL_COV_TARGETS`-Erweiterung.
   `fault_state`-Block, damit der UI-`_snap_fault_flag`-Extractor und
   die Backward-Compat-Defaults uniform greifen.
 - **Param-Validierung am Config-Rand**: [`ADR 0055`](../../adr/0055-ev-charger-device-pattern.md) §4 /
-  [`016`](../open/016-sollte-ev-charger-device.md) sprechen von einer
+  [`016`](../done-archive/016-sollte-ev-charger-device.md) sprechen von einer
   Validator-Schaerfung; analog zu allen fuenf Bestandsgeraeten lebt die
   `params`-Pruefung im `EvChargerConfig.__post_init__` +
   `_config_from_params` (struktureller Validator bleibt typ-generisch).

@@ -16,7 +16,7 @@
   Familie (M8 Welle 2), gleiche Integrations-Naht-Checkliste.
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-017) —
   [`GG-DEV-017`](../../../spec/lastenheft.md#gg-dev-017) (Geraetetyp `wind_turbine`).
-- [`018-sollte-wind-device.md`](../planning/open/018-sollte-wind-device.md)
+- [`018-sollte-wind-device.md`](../planning/done-archive/018-sollte-wind-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
 ---

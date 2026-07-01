@@ -35,10 +35,10 @@ Scenario-Validator-Schaerfung der neuen `params`-Felder,
 
 | Geraet | ID | Trigger | Muster-ADR | Charakteristik |
 |---|---|---|---|---|
-| EV-Charger | [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015) | [`016`](../open/016-sollte-ev-charger-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Lade-/Entlade-Curves, `plug_state`, optional bidirektional (V2G) |
-| Transformer | [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) | [`017`](../open/017-sollte-transformer-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Wandlungsverhaeltnis, Kupfer-/Eisenverluste, Saettigung |
-| Wind | [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017) | [`018`](../open/018-sollte-wind-device.md) | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) | Wind-Leistungs-Kurve (kubisch), cut-in/-out/rated |
-| Diesel | [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018) | [`019`](../open/019-sollte-diesel-device.md) | [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) | Kraftstoff-Vorrat (l), Verbrauch (l/kWh), Ramp-Limits, Start-/Stop-Hysterese |
+| EV-Charger | [`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015) | [`016`](../done-archive/016-sollte-ev-charger-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Lade-/Entlade-Curves, `plug_state`, optional bidirektional (V2G) |
+| Transformer | [`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016) | [`017`](../done-archive/017-sollte-transformer-device.md) | [`ADR 0017`](../../adr/0017-grid-connection-device-pattern.md) | Wandlungsverhaeltnis, Kupfer-/Eisenverluste, Saettigung |
+| Wind | [`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017) | [`018`](../done-archive/018-sollte-wind-device.md) | [`ADR 0016`](../../adr/0016-pv-load-device-pattern.md) | Wind-Leistungs-Kurve (kubisch), cut-in/-out/rated |
+| Diesel | [`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018) | [`019`](../done-archive/019-sollte-diesel-device.md) | [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md) | Kraftstoff-Vorrat (l), Verbrauch (l/kWh), Ramp-Limits, Start-/Stop-Hysterese |
 
 **Architektur-Erbschaft:** kein neuer Driving-/Driven-Port, keine neue
 Adapter-Familie — die Geraete sind `DeviceModel`-Implementierungen im Core
@@ -69,13 +69,13 @@ loest ihn bei Closure auf.
 
 - **Welle 2-C0 — Eroeffnung** (dieser Plan): Muster-Bestaetigung gegen
   [`ADR 0014`](../../adr/0014-battery-snapshot-schema.md)/`0016`/`0017`, Reihenfolge-Entscheidung. Sensor: `make docs-check`.
-- **Welle 2a — EV-Charger** ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015), [`016`](../open/016-sollte-ev-charger-device.md)):
+- **Welle 2a — EV-Charger** ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015), [`016`](../done-archive/016-sollte-ev-charger-device.md)):
   NEU ADR + `devices/ev_charger/`.
-- **Welle 2b — Transformer** ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), [`017`](../open/017-sollte-transformer-device.md)):
+- **Welle 2b — Transformer** ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), [`017`](../done-archive/017-sollte-transformer-device.md)):
   NEU ADR + `devices/transformer/`.
-- **Welle 2c — Wind** ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), [`018`](../open/018-sollte-wind-device.md)):
+- **Welle 2c — Wind** ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), [`018`](../done-archive/018-sollte-wind-device.md)):
   NEU ADR + `devices/wind/`.
-- **Welle 2d — Diesel** ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), [`019`](../open/019-sollte-diesel-device.md)):
+- **Welle 2d — Diesel** ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), [`019`](../done-archive/019-sollte-diesel-device.md)):
   NEU ADR + `devices/diesel/`.
 
 **Reihenfolge-Vorschlag:** nach Muster-Naehe — 2a/2b (GridConnection-Muster,

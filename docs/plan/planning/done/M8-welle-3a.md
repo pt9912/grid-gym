@@ -5,7 +5,7 @@ lokale Schaerfung des `GridModelBilanz`. Geliefert via
 [`ADR 0060`](../../adr/0060-island-grid-bilanz-pattern.md) `Accepted`
 (`is_islanded`/`forming_device_id` + Forming-Geraet als Slack + opt-in
 Snapshot-/Scenario-Hash). Trigger
-[`020`](../open/020-sollte-island-grid.md) aufgeloest. Doc-Verschiebung nach
+[`020`](../done-archive/020-sollte-island-grid.md) aufgeloest. Doc-Verschiebung nach
 `done/` folgt mit der **Welle-3-Gesamt-Closure** (3a/3b/3c als Gruppe, wie
 Welle 2). DoD (§2) erfuellt.
 
@@ -13,7 +13,7 @@ Welle 2). DoD (§2) erfuellt.
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
-Trigger: [`020`](../open/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005),
+Trigger: [`020`](../done-archive/020-sollte-island-grid.md) ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005),
 Lastenheft §11.5; mit dieser Welle aufzuloesen).
 
 ---
@@ -94,7 +94,7 @@ absorbiert.
 ## 5. Nicht-Ziele (dieser Slice)
 
 - Schwarzstart-Synchronisation zwischen mehreren Inselnetzen — eigener
-  Trigger ([`020`](../open/020-sollte-island-grid.md) Out-of-scope).
+  Trigger ([`020`](../done-archive/020-sollte-island-grid.md) Out-of-scope).
 - Droop-/Detail-Regelung der Frequenzhaltung — vereinfachte Bilanz bleibt.
 - Lastabwurf / Load-Shedding — Multi-Agent-Kontext, separater Trigger.
 - Blindleistungs-Spannungshaltung — [`M8-welle-3c.md`](M8-welle-3c.md).

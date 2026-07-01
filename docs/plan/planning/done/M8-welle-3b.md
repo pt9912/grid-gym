@@ -4,7 +4,7 @@
 Geliefert via [`ADR 0061`](../../adr/0061-transformer-limit-bilanz-pattern.md)
 `Accepted` (`TransformerLimitConfig` + Single-Zonen-Thermomodell +
 `GridConstraintViolationEvent`). Trigger
-[`021`](../open/021-sollte-transformer-limits.md) aufgeloest. Doc-Verschiebung
+[`021`](../done-archive/021-sollte-transformer-limits.md) aufgeloest. Doc-Verschiebung
 nach `done/` folgt mit der Welle-3-Gesamt-Closure (3a/3b/3c als Gruppe).
 DoD (§2) erfuellt.
 
@@ -12,7 +12,7 @@ DoD (§2) erfuellt.
 Reihenfolge 3a → 3b → 3c); [`roadmap.md`](../in-progress/roadmap.md) §4 M8. Design (C1):
 NEU ADR-Folge (Schaerfung zu
 [`ADR 0019`](../../adr/0019-grid-model-bilanz-pattern.md), kein Supersede).
-Trigger: [`021`](../open/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006),
+Trigger: [`021`](../done-archive/021-sollte-transformer-limits.md) ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006),
 Lastenheft §11.5; mit dieser Welle aufzuloesen).
 
 ---

@@ -8,7 +8,7 @@
 Inaktiv-Regressions-Pin (`thermal=None` byte-genau wie heute) +
 opt-in-Snapshot-Roundtrip inkl. backward-compat-Lesepfad).
 **Schliesst [`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)** (Trigger
-[`023`](../planning/open/023-sollte-battery-temperature.md)).
+[`023`](../planning/done-archive/023-sollte-battery-temperature.md)).
 Additive **Schaerfung** von
 [`ADR 0014`](0014-battery-snapshot-schema.md) (Battery-Snapshot-/Telemetrie-
 Vertrag) ohne Supersede — Erweiterungs-Pattern
@@ -31,7 +31,7 @@ Telemetrie-Emission an eine nested Config gebunden — Emission-Liste-Pattern),
 Feld), [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) (Schaerfung-Pattern).
 Slice-Plan [`M8-welle-4a.md`](../planning/done/M8-welle-4a.md);
 Container [`M8-welle-4.md`](../planning/done/M8-welle-4.md). Trigger
-[`023`](../planning/open/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006),
+[`023`](../planning/done-archive/023-sollte-battery-temperature.md) ([`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006),
 Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 
 ---
@@ -41,7 +41,7 @@ Lastenheft §10.6; **mit dieser ADR aufgeloest**).
 [`ADR 0014`](0014-battery-snapshot-schema.md) deckt im Battery-Modell SOC,
 Strom/Leistung, Ramp und (per [`ADR 0025`](0025-fault-recovery-pattern.md))
 den `fault_state`-Block ab — **keine Temperatur**. Lastenheft [`GG-BESS-006`](../../../spec/lastenheft.md#gg-bess-006)
-(Trigger [`023`](../planning/open/023-sollte-battery-temperature.md)) verlangt
+(Trigger [`023`](../planning/done-archive/023-sollte-battery-temperature.md)) verlangt
 **Temperatur-Telemetrie** als SOLLTE-Erweiterung. Der Trigger nennt zwei
 Modell-Optionen: zustandsfrei (`power² · R_internal + ambient`) **oder**
 stateful (thermische Masse + Kuehlpfad).
@@ -167,7 +167,7 @@ Replay-Baselines, Scenario-Hash) nicht verschieben — nur ein Szenario mit
 ## 3. Begruendung
 
 **Stateful statt zustandsfrei:** der Trigger
-[`023`](../planning/open/023-sollte-battery-temperature.md) nennt beide
+[`023`](../planning/done-archive/023-sollte-battery-temperature.md) nennt beide
 Optionen. Ein zustandsfreies `power² · R + ambient` springt bei jedem
 Lastwechsel instantan — physikalisch falsch fuer eine thermische Masse und
 ohne Aussagekraft fuer spaetere Derating-/Alterungs-Slices. Die thermische
@@ -252,7 +252,7 @@ Alterungs-/Kalender-Zyklen-Modelle (§7).
 
 - **Thermisches Derating / Sicherheits-Abschaltung** bei Ueber-/
   Untertemperatur — Constraint-/Fault-Logik (M3), nicht diese Telemetrie-
-  Welle (Trigger [`023`](../planning/open/023-sollte-battery-temperature.md)
+  Welle (Trigger [`023`](../planning/done-archive/023-sollte-battery-temperature.md)
   Aktivierungs-Kriterium nennt den M3-Fault-Slice separat).
 - **Aktive Kuehlung-/Heizung-Logik** — HVAC-Aggregat-Modellierung, nicht
   Battery-Verhalten.

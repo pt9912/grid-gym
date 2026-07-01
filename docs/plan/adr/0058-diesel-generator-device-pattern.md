@@ -18,7 +18,7 @@
   Familie (M8 Welle 2).
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-018) —
   [`GG-DEV-018`](../../../spec/lastenheft.md#gg-dev-018) (Geraetetyp `diesel_generator`).
-- [`019-sollte-diesel-device.md`](../planning/open/019-sollte-diesel-device.md)
+- [`019-sollte-diesel-device.md`](../planning/done-archive/019-sollte-diesel-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
 ---

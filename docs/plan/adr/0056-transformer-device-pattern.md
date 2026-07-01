@@ -16,7 +16,7 @@
   gleiche Sub-Welle-Familie, gleiche 8-Naht-Integration.
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md#gg-dev-016) —
   [`GG-DEV-016`](../../../spec/lastenheft.md#gg-dev-016).
-- [`017-sollte-transformer-device.md`](../planning/open/017-sollte-transformer-device.md)
+- [`017-sollte-transformer-device.md`](../planning/done-archive/017-sollte-transformer-device.md)
   — Trigger; [`M8-welle-2.md`](../planning/done/M8-welle-2.md) — Plan.
 
 ---

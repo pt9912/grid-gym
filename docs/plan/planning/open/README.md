@@ -11,8 +11,10 @@ Eintraege wandern entweder:
 - nach `archive/`, wenn sie bewusst verworfen werden.
 
 Aufgeloeste Trigger werden mit der aufloesenden Slice-Closure
-nach [`../done/`](../done/) verschoben (rename-only) und sind
-dort in der `done/`-Bestand-Tabelle gelistet — nicht hier.
+(rename-only) nach [`../done/`](../done/) verschoben — bei
+gebuendelter Meilenstein-Closure nach
+[`../done-archive/`](../done-archive/) — und sind dort gelistet,
+nicht hier.
 
 ---
 
@@ -62,19 +64,12 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | ----- | ------- | ----------- |
 | [`047-device-management-protocol-adapters.md`](047-device-management-protocol-adapters.md) | SNMP/LwM2M als Device-Management- und Telemetry-Simulationsadapter ([`GG-SNMP-001`](../../../../spec/lastenheft.md#gg-snmp-001), [`GG-LWM2M-001`](../../../../spec/lastenheft.md#gg-lwm2m-001)) — noch ohne Profil-ADR, Adapter-Code oder Smoke-Test | Stakeholder-Bedarf fuer SNMP-/LwM2M-Demo ODER Integrationspartner-Mapping ODER Validation-Befund zu Device-Management-Protokollen |
 
-**SOLLTE — M2-Welle-7-Erbschaft** (Quelle: [`../done/M2-devices.md`](../done-archive/M2-devices.md) §4 Out-of-Scope):
-
-| Datei | Trigger | Aktivierung |
-| ----- | ------- | ----------- |
-| [`016-sollte-ev-charger-device.md`](016-sollte-ev-charger-device.md) | EV-Charger-Device ([`GG-DEV-015`](../../../../spec/lastenheft.md#gg-dev-015), Lastenheft §9.4) | wenn konkreter Bedarf — eigener Slice |
-| [`017-sollte-transformer-device.md`](017-sollte-transformer-device.md) | Transformer-Device ([`GG-DEV-016`](../../../../spec/lastenheft.md#gg-dev-016), Lastenheft §9.4) | wenn konkreter Bedarf — eigener Slice |
-| [`018-sollte-wind-device.md`](018-sollte-wind-device.md) | Wind-Device ([`GG-DEV-017`](../../../../spec/lastenheft.md#gg-dev-017), Lastenheft §9.4) | wenn konkreter Bedarf — eigener Slice |
-| [`019-sollte-diesel-device.md`](019-sollte-diesel-device.md) | Diesel-Device ([`GG-DEV-018`](../../../../spec/lastenheft.md#gg-dev-018), Lastenheft §9.4) | wenn konkreter Bedarf — eigener Slice |
-| [`020-sollte-island-grid.md`](020-sollte-island-grid.md) | Inselnetz-Bilanzmodell ([`GG-GRID-005`](../../../../spec/lastenheft.md#gg-grid-005), Lastenheft §11.5) | wenn konkreter Bedarf — eigener Slice |
-| [`021-sollte-transformer-limits.md`](021-sollte-transformer-limits.md) | Transformatorgrenzen im Netzbilanzmodell ([`GG-GRID-006`](../../../../spec/lastenheft.md#gg-grid-006), Lastenheft §11.5) | wenn konkreter Bedarf — eigener Slice |
-| [`022-sollte-reactive-power.md`](022-sollte-reactive-power.md) | Blindleistung im Netzbilanzmodell ([`GG-GRID-007`](../../../../spec/lastenheft.md#gg-grid-007), Lastenheft §11.5) | wenn konkreter Bedarf — eigener Slice |
-| [`023-sollte-battery-temperature.md`](023-sollte-battery-temperature.md) | Battery-Temperatur-Telemetry ([`GG-BESS-006`](../../../../spec/lastenheft.md#gg-bess-006), Lastenheft §10.6) | wenn konkreter Bedarf — eigener Slice |
-| [`024-sollte-battery-cell-voltage.md`](024-sollte-battery-cell-voltage.md) | Battery-Zellspannung-Telemetry ([`GG-BESS-007`](../../../../spec/lastenheft.md#gg-bess-007), Lastenheft §10.6) | wenn konkreter Bedarf — eigener Slice |
+**SOLLTE — M2-Welle-7-Erbschaft (mit M8 aufgeloest):** die neun
+SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
+(Welle 2/3/4) auf `Resolved` gesetzt und mit der M8-Closure
+(Welle 5, [`M8-welle-5.md`](../done/M8-welle-5.md)) nach
+[`../done-archive/`](../done-archive/) archiviert — dort gelistet,
+nicht mehr hier. Belege: [`M8-results.md`](../done/M8-results.md) §2.
 
 Architektonische offene Punkte ([`GG-AR-OPEN-002`](../../../../spec/architecture.md#19-offene-architektonische-punkte)..010) leben weiterhin
 in `architecture.md` §19 und sind dort die kanonische Liste. Wenn
