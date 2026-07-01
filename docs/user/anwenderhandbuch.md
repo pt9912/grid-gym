@@ -68,8 +68,11 @@ Quelle.
 ### Voraussetzungen
 
 - Ein Rechner mit **Docker** (inkl. `docker compose`) und **make**.
-- Kein lokales Python und kein `uv` erforderlich — grid-gym ist
-  **Docker-only**.
+- Für Demo-Betrieb und Weboberfläche ist **kein lokales Python und
+  kein `uv`** nötig — dieser Teil ist **Docker-only**. Nur die
+  Abnahme `make accept`
+  ([Abschnitt 4.9](#49-abnahme-und-deterministisches-replay-prüfen))
+  braucht zusätzlich eine lokale `uv`-Installation.
 - Ca. 2 GB freier Speicher für Images und das Postgres-Datenvolume.
 - Beim ersten Start Internetzugang zum Laden der Container-Images
   (danach läuft die Demo offline).
@@ -353,11 +356,19 @@ kennen die Geräte-ID des Zielgeräts (z. B. `battery-1`).
    - `grid_model` — Netzbilanz-Parameter.
    - optional `faults`, `load_events`, `load_profiles`, `agents`,
      `commands`.
-3. Notieren Sie **alle Zahlenwerte als Zeichenketten** (z. B.
-   `"50"`), damit sie exakt (als Dezimalzahl) übernommen werden.
-4. Setzen Sie die Umgebungsvariable `GRID_GYM_DEMO_SCENARIO_PATH` auf
-   Ihren Dateipfad (oder ersetzen Sie die Demo-Datei) und starten Sie
-   den Stack neu.
+3. Notieren Sie **Dezimal-Felder** (Geräte-Parameter, Leistungen) als
+   **Zeichenketten** (z. B. `"50"`), damit die Zahl exakt übernommen
+   wird. **Ganzzahlige Steuerfelder** (`tick_ms`, `duration_s`,
+   `seed`, Fault-Zeiten) notieren Sie als **echte Zahlen ohne
+   Anführungszeichen** — genau wie im Demo-Szenario.
+4. Legen Sie Ihre Datei in `deploy/scenarios/` ab (dieses Verzeichnis
+   wird in den Container eingebunden). Am einfachsten **bearbeiten oder
+   ersetzen Sie [`deploy/scenarios/gg-demo.yaml`](../../deploy/scenarios/gg-demo.yaml)**,
+   da der `make demo`-Stack fest auf diese Datei zeigt. Für einen
+   anderen Dateinamen passen Sie zusätzlich
+   `GRID_GYM_DEMO_SCENARIO_PATH` in
+   [`deploy/compose.yml`](../../deploy/compose.yml) an. Starten Sie den
+   Stack anschließend neu (`make demo-stop` und `make demo`).
 
 **Ergebnis:** Ihr Szenario wird beim Start geladen und ausgeführt.
 
@@ -402,11 +413,15 @@ Szenario samt `scenario_hash` (SHA-256).
 
 ### 4.9 Abnahme und deterministisches Replay prüfen
 
-**Voraussetzung:** Docker + make; Projektverzeichnis.
+**Voraussetzung:** ein **laufender Demo-Stack** (`make demo`), eine
+lokale **`uv`-Installation** und `make`. Anders als der übrige
+Demo-Betrieb ruft `make accept` `uv` auf dem Host auf und prüft den
+laufenden Stack (Details in [`docs/user/abnahme-cli.md`](abnahme-cli.md)).
 
 **Vorgehen:**
 
 ```bash
+make demo      # falls der Stack noch nicht läuft
 make accept
 ```
 
@@ -456,8 +471,13 @@ enthält:
 | `agents` | regelbasierte Steuerung (z. B. BESS-Regler) |
 | `commands` | tick-genau geplante Steuerbefehle an Geräte |
 
-**Dezimalfelder als Zeichenketten notieren** (z. B. `"50"`, nicht
-`50.0`). Dadurch bleibt die Zahl exakt.
+**Dezimal-Felder als Zeichenketten** notieren (z. B. Geräte-Parameter
+und Leistungen: `"50"`, nicht `50.0`) — so bleibt die Zahl exakt.
+**Ganzzahlige Felder als echte Zahlen** (ohne Anführungszeichen):
+`simulation.tick_ms`, `simulation.duration_s`, `simulation.seed`, die
+Fault-Zeiten (`start_simulation_time`, `duration_ms`) sowie das
+`tick_ms` in `load_profiles`. Als Vorlage dient
+[`deploy/scenarios/gg-demo.yaml`](../../deploy/scenarios/gg-demo.yaml).
 
 ### 5.3 Verfügbare Gerätetypen
 
@@ -637,8 +657,10 @@ und starten Sie erneut.
 ## 8. FAQ
 
 **Brauche ich Python oder eine Datenbank-Installation?**
-Nein. grid-gym ist Docker-only; der Host braucht nur `docker` und
-`make`. Postgres läuft im Compose-Stack.
+Für Demo-Betrieb und Weboberfläche nein — der Host braucht nur
+`docker` und `make` (Postgres läuft im Compose-Stack). Nur die
+Abnahme `make accept` braucht zusätzlich eine lokale
+`uv`-Installation.
 
 **Steuert grid-gym reale Anlagen?**
 Nein. grid-gym ist ausschließlich Simulation
