@@ -17,6 +17,9 @@ from __future__ import annotations
 
 from grid_gym.adapters.driven.persistence_inmemory import InMemoryTelemetrySink
 from grid_gym.adapters.driving.http_api._run_driver_registry import RunDriver
+from grid_gym.adapters.driving.http_api._run_execution_profile import (
+    _register_run_execution_profile,
+)
 from grid_gym.adapters.driving.http_api._run_start_router import (
     _register_run_driver_builder,
 )
@@ -31,6 +34,7 @@ from grid_gym.composition._demo_scenario_setup import (
     build_run_driver,
     configure_scenario_demo_run,
 )
+from grid_gym.composition._execution_profile import default_run_execution_profile
 from grid_gym.composition.scenario_intake import intake_scenario
 from grid_gym.hexagon.core.domain.scenario import Scenario
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -61,5 +65,8 @@ def _build_run_driver_with_shared_sink(
 _register_scenario_configurator(configure_scenario_demo_run)
 _register_scenario_intake(intake_scenario)
 _register_run_driver_builder(_build_run_driver_with_shared_sink)
+# Slice 038 (ADR 0073 §2.3): statisches Adapter-Profil dieses
+# Composition Root — POST /runs erbt daraus die GG-TERM-Vollfelder.
+_register_run_execution_profile(default_run_execution_profile())
 
 __all__ = ["app"]

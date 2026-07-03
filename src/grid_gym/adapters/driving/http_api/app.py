@@ -94,11 +94,14 @@ from grid_gym.adapters.driving.http_api._schemas import (
 from grid_gym.adapters.driving.http_api._tick_loop_driver import (
     DemoTickLoopDriver,
 )
+from grid_gym.adapters.driving.http_api._run_execution_profile import (
+    get_run_execution_profile,
+)
 from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     _TickLoopRegistryNotConfiguredError,
 )
-from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.hexagon.core.domain.run import SIM_START_TIME_ORIGIN, RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
@@ -417,6 +420,11 @@ def post_runs(
         )
         raise HTTPException(status_code=422, detail=error.model_dump())
     run_id = str(uuid.uuid4())
+    # Slice 038 (ADR 0073 §2.3): die GG-TERM-Vollfelder erbt jede neue
+    # RunMetadata aus dem statischen Composition-Root-Profil; ohne
+    # registrierten Composition Root bleibt das Profil leer und der
+    # Replay-Preflight rejected solche Laeufe fail-closed (§2.6).
+    profile = get_run_execution_profile()
     metadata = RunMetadata(
         run_id=run_id,
         scenario_hash=request.scenario_hash,
@@ -427,6 +435,10 @@ def post_runs(
         ended_at="",
         tool_version=_APP_VERSION,
         replay_of=request.replay_of,
+        platform_arch=profile.platform_arch,
+        enabled_adapters=profile.enabled_adapters,
+        sim_start_time=SIM_START_TIME_ORIGIN,
+        config_hash=profile.config_hash,
     )
     repository.save(metadata)
     return RunCreateResponse(

@@ -38,6 +38,20 @@ _UNIQUE_VIOLATION_SQLSTATE: Final[str] = "23505"
 _TABLE: Final[sql.Identifier] = sql.Identifier("runs")
 
 
+def _encode_enabled_adapters(names: tuple[str, ...]) -> str:
+    """Kanonisches Tupel → komma-separierter Persistenz-String
+    (Slice 038 / ADR 0073 §2.3). Leeres Tupel → ``""`` (fehlend)."""
+    return ",".join(names)
+
+
+def _decode_enabled_adapters(raw: str) -> tuple[str, ...]:
+    """Komma-separierter Persistenz-String → Tupel. ``""`` → ``()``
+    (fehlend; Round-Trip-Symmetrie zu `_encode_enabled_adapters`)."""
+    if not raw:
+        return ()
+    return tuple(raw.split(","))
+
+
 class PostgresRunRepository:
     """`RunRepositoryPort`-Implementation auf `psycopg`-Basis.
 
@@ -66,8 +80,9 @@ class PostgresRunRepository:
                         sql.SQL(
                             "INSERT INTO {table} ("
                             "run_id, scenario_hash, schema_version, seed, "
-                            "tick_ms, started_at, ended_at, tool_version, replay_of"
-                            ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                            "tick_ms, started_at, ended_at, tool_version, replay_of, "
+                            "platform_arch, enabled_adapters, sim_start_time, config_hash"
+                            ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         ).format(table=_TABLE),
                         (
                             metadata.run_id,
@@ -79,6 +94,10 @@ class PostgresRunRepository:
                             metadata.ended_at,
                             metadata.tool_version,
                             metadata.replay_of,
+                            metadata.platform_arch,
+                            _encode_enabled_adapters(metadata.enabled_adapters),
+                            metadata.sim_start_time,
+                            metadata.config_hash,
                         ),
                     )
                 conn.commit()
@@ -94,7 +113,8 @@ class PostgresRunRepository:
             cursor.execute(
                 sql.SQL(
                     "SELECT run_id, scenario_hash, schema_version, seed, "
-                    "tick_ms, started_at, ended_at, tool_version, replay_of "
+                    "tick_ms, started_at, ended_at, tool_version, replay_of, "
+                    "platform_arch, enabled_adapters, sim_start_time, config_hash "
                     "FROM {table} WHERE run_id = %s"
                 ).format(table=_TABLE),
                 (run_id,),
@@ -112,6 +132,10 @@ class PostgresRunRepository:
             ended_at=row[6],
             tool_version=row[7],
             replay_of=row[8],
+            platform_arch=row[9],
+            enabled_adapters=_decode_enabled_adapters(row[10]),
+            sim_start_time=row[11],
+            config_hash=row[12],
         )
 
     def exists(self, run_id: str) -> bool:

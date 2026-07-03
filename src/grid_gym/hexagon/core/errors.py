@@ -881,6 +881,20 @@ class RunAlreadyExistsError(RunRepositoryError):
         super().__init__(f"run already exists: {run_id!r}")
 
 
+class InvalidAdapterNameError(GridGymError):
+    """Adapter-Name ausserhalb des kanonischen Namensraums
+    ``[a-z0-9_]+`` (Slice 038 / ADR 0073 §2.3).
+
+    `canonical_enabled_adapters` validiert jeden Namen des
+    Composition-Root-Profils typisiert; der Namensraum-Ausschluss
+    von Kommata haelt die komma-separierte Persistenz-Form
+    eindeutig.
+    """
+
+    def __init__(self, name: str) -> None:
+        super().__init__(f"invalid canonical adapter name: {name!r}")
+
+
 # ---------------------------------------------------------------------------
 # Run-Driver-Registry (Multi-Run-Execution S2, ADR 0069 §2.2)
 # ---------------------------------------------------------------------------

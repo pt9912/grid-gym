@@ -31,7 +31,8 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     _TickLoopRegistryNotConfiguredError,
 )
 from grid_gym.adapters.driving.http_api.app import _APP_VERSION, app
-from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.composition._execution_profile import default_run_execution_profile
+from grid_gym.hexagon.core.domain.run import SIM_START_TIME_ORIGIN, RunMetadata
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
@@ -135,6 +136,9 @@ def configure_demo_run(
         raise _DemoTickLoopDriverAlreadyConfiguredError(existing_driver.tick_loop_run_id, run_id)
     if repository.exists(run_id):
         return
+    # Slice 038 (ADR 0073 §2.3): GG-TERM-Vollfelder aus dem statischen
+    # Composition-Root-Profil.
+    profile = default_run_execution_profile()
     metadata = RunMetadata(
         run_id=run_id,
         scenario_hash="0" * 64,
@@ -144,6 +148,10 @@ def configure_demo_run(
         started_at="",
         ended_at="",
         tool_version=_APP_VERSION,
+        platform_arch=profile.platform_arch,
+        enabled_adapters=profile.enabled_adapters,
+        sim_start_time=SIM_START_TIME_ORIGIN,
+        config_hash=profile.config_hash,
     )
     repository.save(metadata)
     clock = _DemoSimulationClock()

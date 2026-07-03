@@ -20,8 +20,12 @@ nicht durch mutable Status-Felder gebrochen wird.
 
 from __future__ import annotations
 
+import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Final, Literal
+
+from grid_gym.hexagon.core.errors import InvalidAdapterNameError
 
 
 RunStatus = Literal["pending", "running", "paused", "stopped", "completed"]
@@ -78,6 +82,26 @@ class RunMetadata:
       damit auditierbar am Lauf statt nur als Runtime-Kwarg
       (`replay_reference_run_id`, ADR 0049 §2.2). Default `None`
       haelt bestehende Konstruktionen byte-stabil.
+    - `platform_arch`: normalisierte Plattformarchitektur des
+      ausfuehrenden Prozesses (Slice 038 / ADR 0073 §2.5;
+      `canonical_platform_arch`, z. B. ``"x86_64"``). ``""`` =
+      fehlend — der Replay-Preflight rejected fehlende Werte
+      (ADR 0073 §2.6).
+    - `enabled_adapters`: kanonisches Adapter-Profil des
+      Composition Root (ADR 0073 §2.3;
+      `canonical_enabled_adapters`: dedupliziert + lexikografisch
+      sortiert). ``()`` = fehlend (Preflight-Reject, ADR 0073
+      §2.6).
+    - `sim_start_time`: Startzeit im Simulationszeitmodell in ms
+      (ADR 0073 §2.2). Im heutigen tick-indizierten Modell
+      strukturell die Konstante ``0`` (`simulation_time` ist „ms
+      ab Lauf-Start"); variabel erst mit einem spaeteren
+      Kalenderzeit-Modell (eigene Folge-ADR + Scenario-Schema-
+      Bump).
+    - `config_hash`: SHA-256-Hexdigest der versionierten
+      ConfigView (ADR 0073 §2.4; `config_hash_for` in
+      `core/serialization/config_view.py`). ``""`` = fehlend
+      (Preflight-Reject, ADR 0073 §2.6).
     """
 
     run_id: str
@@ -89,3 +113,67 @@ class RunMetadata:
     ended_at: str
     tool_version: str
     replay_of: str | None = None
+    platform_arch: str = ""
+    enabled_adapters: tuple[str, ...] = ()
+    sim_start_time: int = 0
+    config_hash: str = ""
+
+
+SIM_START_TIME_ORIGIN: Final[int] = 0
+"""Startzeit im Simulationszeitmodell (ms) des tick-indizierten
+Zeitmodells (Slice 038 / ADR 0073 §2.2): `simulation_time` ist
+definiert als „ms ab Lauf-Start", einen Kalenderzeit-Anker gibt es
+nicht — die Startzeit ist damit strukturell ``0``. Konstruktions-
+Stellen referenzieren diese Konstante statt eines Magic-Literals;
+ein spaeteres Kalenderzeit-Modell macht den Wert per Folge-ADR
+variabel."""
+
+
+_ADAPTER_NAME_PATTERN: Final[re.Pattern[str]] = re.compile(r"[a-z0-9_]+\Z")
+"""Namensraum kanonischer Adapter-Namen (ADR 0073 §2.3): Package-
+Namen unter `adapters/driven/` bzw. `adapters/driving/`. Der
+Ausschluss von Kommata macht die komma-separierte Persistenz-Form
+eindeutig."""
+
+
+def canonical_platform_arch(raw: str) -> str:
+    """Normalform der Plattformarchitektur (ADR 0073 §2.5).
+
+    Trim + Lowercase ueber dem Rohwert (typisch
+    ``platform.machine()`` des Composition Root — der Core selbst
+    liest keine Umgebung). Ein leeres Ergebnis bedeutet „fehlend"
+    und fuehrt im Replay-Preflight zum `missing`-Reject.
+    """
+    return raw.strip().lower()
+
+
+def canonical_enabled_adapters(names: Iterable[str]) -> tuple[str, ...]:
+    """Kanonisches Adapter-Profil (ADR 0073 §2.3).
+
+    Validiert jeden Namen gegen ``[a-z0-9_]+`` (typisierter
+    `InvalidAdapterNameError` sonst), dedupliziert und sortiert
+    lexikografisch. Das leere Tupel ist zulaessig und bedeutet
+    „fehlend" (Preflight-Reject, ADR 0073 §2.6).
+    """
+    for name in names:
+        if _ADAPTER_NAME_PATTERN.fullmatch(name) is None:
+            raise InvalidAdapterNameError(name)
+    return tuple(sorted(set(names)))
+
+
+@dataclass(frozen=True, slots=True)
+class RunExecutionProfile:
+    """Statisches Ausfuehrungs-Profil eines Composition Root
+    (Slice 038 / ADR 0073 §2.3-§2.5).
+
+    Traegt die drei composition-deklarierten `GG-TERM-002/003`-
+    Vollfelder, die jede `RunMetadata`-Konstruktion dieses
+    Entrypoints erbt. Der Default ist das **leere Profil**
+    (Bare-Adapter-Entrypoint ohne Composition): dessen Laeufe
+    werden im Replay-Preflight fail-closed rejected statt
+    falsch-gruen verglichen.
+    """
+
+    platform_arch: str = ""
+    enabled_adapters: tuple[str, ...] = ()
+    config_hash: str = ""

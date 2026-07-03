@@ -58,7 +58,8 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     _TickLoopRegistryNotConfiguredError,
 )
-from grid_gym.hexagon.core.domain.run import RunMetadata
+from grid_gym.composition._execution_profile import default_run_execution_profile
+from grid_gym.hexagon.core.domain.run import SIM_START_TIME_ORIGIN, RunMetadata
 from grid_gym.hexagon.core.domain.scenario import Scenario, ScenarioFault
 from grid_gym.hexagon.core.faults import ScenarioFaultEngine
 from grid_gym.hexagon.core.faults.types import (
@@ -181,6 +182,9 @@ def configure_scenario_demo_run(
         random_root=random_root,
         wiring=wiring,
     )
+    # Slice 038 (ADR 0073 §2.3): GG-TERM-Vollfelder aus dem statischen
+    # Composition-Root-Profil.
+    profile = default_run_execution_profile()
     metadata = RunMetadata(
         run_id=run_id,
         scenario_hash=loaded.scenario_hash,
@@ -190,6 +194,10 @@ def configure_scenario_demo_run(
         started_at="",
         ended_at="",
         tool_version=_APP_VERSION,
+        platform_arch=profile.platform_arch,
+        enabled_adapters=profile.enabled_adapters,
+        sim_start_time=SIM_START_TIME_ORIGIN,
+        config_hash=profile.config_hash,
     )
     repository.save(metadata)
     registry.register(tick_loop)
