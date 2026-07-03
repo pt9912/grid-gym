@@ -32,7 +32,7 @@
   [`GG-MVP-002`](../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (D-2/D-3).
 - [Trigger 036](../planning/done-archive/036-safe-006-replay-diff-status-replay-source-integration.md)
   — wird mit 1b-b-C3 aufgeloest (`done/`).
-- [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
+- [Trigger 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-Matrix (Carveout).
 - [Trigger 039](../planning/done/039-api-replay-trigger-surface.md)
   — oeffentliche API-Replay-Bedienung (Carveout).
@@ -155,7 +155,7 @@ aktuellem Lauf (via `run_repository.get_by_id(...)`):
 - Die **volle** [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Matrix (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) ist
   **NICHT** Gegenstand — Carveout
-  [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
+  [Trigger 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
   (1b-a-D-6). Das ist eine bewusste Teil-Operationalisierung von
   [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003, nicht der volle Vertrag.
 
@@ -298,7 +298,7 @@ M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0048).
   (1b-b-D-7).
 - **Volle [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) —
-  [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md).
+  [Trigger 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md).
 - **`started_at`/`ended_at`-Timestamp-Setzen** + `RunMetadata`-
   Mutations-Pfad — eigener spaeterer Scope.
 - **Auto-`completed`-Transition** im Core (Tick-Budget/Szenario-

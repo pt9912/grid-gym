@@ -1,9 +1,12 @@
 # 038 — Volle `GG-TERM-002/003`-Equality-Matrix (1b-Carveout)
 
-**Status:** Open — dokumentierter Scope-Carveout aus M7-Welle-1b
+**Status:** **In Progress** (aktiviert 2026-07-03 per Maintainer-
+Beauftragung: Compliance-/Audit-Vollstaendigkeit der
+Reproduzierbarkeits-Metadaten). Historischer Trigger-Stand: Open —
+dokumentierter Scope-Carveout aus M7-Welle-1b.
 **Datum:** 2026-06-09 (aktualisiert 2026-07-03: Stand nach Slice
 039/040 nachgezogen, C0-Entscheidungspunkte ergaenzt, DoD-Feld
-per [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3 nachgeruestet)
+per [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3 nachgeruestet; aktiviert + Tranchen-Plan §T)
 **Release-Entscheidung:** **ja** (SemVer-Ziel: minor) — echtes
 Runtime-Delta (`RunMetadata`-Felder + Alembic-Migration +
 Preflight-Erweiterung); finale Bestaetigung im aufloesenden C0
@@ -124,6 +127,34 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
   Mismatch-Test reicht nicht).
 - [`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md) (additiv zum Preflight-
   Vertrag, kein Bruch).
+
+## §T Tranchen-Plan (aktiviert 2026-07-03)
+
+| Tranche | Rolle | Inhalt | Status |
+| ------- | ----- | ------ | ------ |
+| C0 | Architect | Entscheidungen E-1/E-2 + `config_hash`-Gegenstand + Speicherort (`RunMetadata` vs. Envelope); Folge-ADR ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)); ADR-Index | offen |
+| C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | offen |
+| C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS`-Erweiterung + Reject-Semantik + parametrisierte Boundary-Tests pro Vollfeld | offen |
+| C3 | Verifier | Public-Contract-Sync (Traceability, `persistence-schema.yaml`, CHANGELOG) + Replay-/Verification-Evidence | offen |
+| C4 | Planner | DoD-Checkliste, Release-Entscheidung (ja, minor), `make fullbuild`, Tag, Self-Move nach `done/` | offen |
+
+## DoD-Checkliste (mit C4 abzuhaken)
+
+- [ ] Alle 4 Vollfelder strukturiert in `RunMetadata` + Persistenz
+      (Alembic-Migration, beide Repository-Adapter).
+- [ ] Kanonisierungs-Regeln implementiert und im Folge-ADR fixiert;
+      Reject-Semantik fuer fehlende/abweichende Werte **vor**
+      Diff-Klassifikation.
+- [ ] Preflight vergleicht 9 Felder; parametrisierte Boundary-Tests
+      pro Vollfeld gruen.
+- [ ] Folge-ADR `Accepted`; ADR-Index aktualisiert.
+- [ ] Replay-Evidence ([`harness/replay.md`](../../../../harness/replay.md)) +
+      Verification-Evidence ([`harness/verification.md`](../../../../harness/verification.md)) festgehalten.
+- [ ] `make gates` + `make docs-check` gruen; vor Tag `make fullbuild`.
+- [ ] Release-Entscheidung vollzogen (ja, minor: `pyproject`-Bump +
+      CHANGELOG-Finalisierung + `v*.*.*`-Tag) — Runtime-Delta-Pflicht
+      erfuellt.
+- [ ] Self-Move nach `done/` (reiner `git mv`) + Link-/Bestand-Pflege.
 
 ## Wandert nach
 

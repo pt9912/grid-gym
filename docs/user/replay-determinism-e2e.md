@@ -67,7 +67,7 @@ persistiert beide nach Postgres und belegt ueber den
 - **[`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003 volle Equality-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, separater `config_hash`)
   ist nicht Teil des MVP-Preflights —
-  [Trigger 038](../plan/planning/open/038-gg-term-002-003-full-equality-matrix.md).
+  [Trigger 038](../plan/planning/in-progress/038-gg-term-002-003-full-equality-matrix.md).
 - **Oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`-
   Feld + persistente `RunMetadata`-Bindung) ist deferred —
   [Trigger 039](../plan/planning/done/039-api-replay-trigger-surface.md).

@@ -264,7 +264,7 @@ mit M7-Welle-X-C1 (gebuendelt mit ADR 0047 + ADR 0049).
   `RunMetadata`-Felder) — Welle 1b-b, ADR 0049.
 - **Volle [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix** (`platform_arch`,
   `enabled_adapters`, `sim_start_time`, `config_hash`) —
-  Carveout [Trigger 038](../planning/open/038-gg-term-002-003-full-equality-matrix.md)
+  Carveout [Trigger 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
   (1b-a-D-6).
 - **`ReplaySnapshotPort`-Wiring in den Lauf-Lifecycle** — Welle
   1b-b (1b-a liefert nur Port + Adapter + Smoke).

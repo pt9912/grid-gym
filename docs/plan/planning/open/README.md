@@ -49,12 +49,6 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 | [`026-bess-simulation-reserve-market-spike.md`](026-bess-simulation-reserve-market-spike.md) | Lokale BESS-Simulation als Vorlage fuer Reserve-Market-/LER-Strategien | bei Reserve-Market-Agent, BESS-SOC-Management-Agent oder LER-Demo |
 | [`030-rl-adapter.md`](030-rl-adapter.md) | RL-Adapter ueber den Multi-Agent-Bus ([`GG-FUTURE-001`](../../../../spec/lastenheft.md#gg-future-001)/002) | bei konkreter RL-Stakeholder-Anforderung (M7+-Material) |
 
-**Quality-/Determinismus-Lücken (M6-Welle-5a/5c-Audit-Folge):**
-
-| Datei | Trigger | Aktivierung |
-| ----- | ------- | ----------- |
-| [`038-gg-term-002-003-full-equality-matrix.md`](038-gg-term-002-003-full-equality-matrix.md) | Volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix — `platform_arch`, `enabled_adapters`, `sim_start_time`, separater `config_hash` (Lastenheft [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003); M7-Welle-1b liefert per 1b-a-D-6 nur den MVP-Preflight ueber die 5 vorhandenen `RunMetadata`-Felder | Compliance-/Audit-Bedarf fuer vollstaendige Reproduzierbarkeits-Metadaten ODER Multi-Plattform-/Multi-Adapter-Replay |
-
 **Multi-Node-Deployment-Familie (M6-Welle-6-Audit-Folge):**
 
 | Datei | Trigger | Aktivierung |
