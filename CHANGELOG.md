@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-03
+
+**Slice 038 — Volle `GG-TERM-002/003`-Equality-Matrix.** Erster Release
+unter dem slice-getriebenen Planungsmodell (ADR 0072): Release-Entscheidung
+**ja/minor** aus dem Slice-DoD (additives Runtime-Delta: Domain-Felder +
+Alembic-Migration + Preflight-Erweiterung + API-Profil-Vererbung).
+
 ### Added
 
 - **Volle `GG-TERM-002/003`-Equality-Matrix** (Slice 038, ADR 0073, schaerft
