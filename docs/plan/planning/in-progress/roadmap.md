@@ -88,7 +88,16 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-Trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
+**Naechster Aktivierungs-Kandidat** (Planner-Notiz 2026-07-03):
+Hygiene-Buendel aus
+[`054`](../open/054-pytest-marker-drift-sensor-targets.md)
+(pytest-Marker-Sweep `determinism`/`fault`) +
+[`056`](../open/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
++ [`057`](../open/057-app-version-single-source.md)
+(`_APP_VERSION`-Single-Sourcing) — als ein Slice oder drei kleine;
+057 traegt das einzige Runtime-Delta (Release-Entscheidung dort).
+
+Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
 [`../open/`](../open/) (Trigger-Watch). Cross-Slice-Carveouts
 (Anti-Scope + Erbschaft): [`carveouts.md`](carveouts.md).
 
