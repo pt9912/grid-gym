@@ -97,22 +97,27 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 - ✗ **Separater kanonischer Konfigurations-Hash** (`config_hash`)
   ueber `scenario_hash` hinaus.
 
-## C0-Entscheidungspunkte (bei Aufloesung zu treffen)
+## C0-Entscheidungspunkte (entschieden 2026-07-03, [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md))
 
-- **E-1 `sim_start_time`-Quelle:** entweder (a) Run-Level-
-  Startzeit als Feld im Szenario-Schema einfuehren — das ist ein
-  `schema_version`-Bump, und `schema_version` ist selbst
-  Preflight-Feld (Kaskadeneffekt auf bestehende Preflight-Pins
-  und Referenzlaeufe), oder (b) `sim_start_time := 0` als
-  dokumentierte Konstante des tick-indizierten Zeitmodells
-  festschreiben (kein Schema-Bump; Feld wird erst mit einem
-  spaeteren Kalenderzeit-Modell variabel). Die Entscheidung ist
-  groesser als eine Format-Kanonik und gehoert in den C0.
-- **E-2 `enabled_adapters`-Quelle:** Ableitung aus der
-  Composition-Root-Verdrahtung (kanonische Adapter-Namen) vs.
-  explizites Adapter-Profil in der Konfiguration. Die
-  Sortier-Kanonik (siehe Substanz-Skizze) haengt an dieser
-  Quellen-Entscheidung.
+- **E-0 Speicherort → `RunMetadata`-Erweiterung** (kein Envelope;
+  Praezedenz `replay_of`) — [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.1.
+- **E-1 `sim_start_time` → Option (b), Konstante `0`** (ms;
+  `simulation_time` ist definiert als „ms ab Lauf-Start", kein
+  Kalenderzeit-Anker; Scenario-Feld waere `schema_version`-Kaskade)
+  — [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.2.
+- **E-2 `enabled_adapters` → statische Composition-Root-
+  Deklaration** (kanonische Package-Namen, dedupliziert +
+  lexikografisch sortiert, komma-separiert persistiert; NICHT
+  Wiring-Introspection, da API-Laeufe die Metadata vor dem Wiring
+  persistieren) — [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.3.
+- **E-3 `config_hash` → versionierte ConfigView v1**
+  (`sha256(canonical_json({config_view: 1, max_age_ms}))`;
+  Aufnahme-Pflicht fuer neue determinismus-relevante Runtime-
+  Knobs) — [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.4.
+- **NEU Fehlend-Reject:** leere Vollfelder (`""`/`()`) sind auf
+  beiden Seiten Reject-Grund `missing` — leer==leer ist KEIN
+  valider Vergleich (Legacy-/Bare-Adapter-Laeufe fail-closed) —
+  [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.6.
 
 ## Substanz-Skizze (bei Aufloesung)
 
@@ -132,7 +137,7 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 
 | Tranche | Rolle | Inhalt | Status |
 | ------- | ----- | ------ | ------ |
-| C0 | Architect | Entscheidungen E-1/E-2 + `config_hash`-Gegenstand + Speicherort (`RunMetadata` vs. Envelope); Folge-ADR ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)); ADR-Index | offen |
+| C0 | Architect | Entscheidungen E-0..E-3 + Fehlend-Reject; NEU [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Provisional` ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md) §2.3); ADR-Index + 0049-Schaerfungs-Vermerk | **done** 2026-07-03 |
 | C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | offen |
 | C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS`-Erweiterung + Reject-Semantik + parametrisierte Boundary-Tests pro Vollfeld | offen |
 | C3 | Verifier | Public-Contract-Sync (Traceability, `persistence-schema.yaml`, CHANGELOG) + Replay-/Verification-Evidence | offen |
