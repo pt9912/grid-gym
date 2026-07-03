@@ -17,9 +17,9 @@ laengst `Accepted` sind — die Meilenstein-ADR-Sweeps (M3-/M5-Closure)
 haben die **Dateien** gezogen, aber die **Index-Spalte** nicht
 nachgezogen. Stichproben-verifiziert 2026-07-03:
 
-- Index `Provisional`, Datei **`Accepted`**: [`ADR 0022`](../../adr/0022-fault-port-tick-hook.md)
+- Index `Provisional`, Datei **`Accepted`**: [`ADR 0022`](../../adr/0022-fault-injection-protocol.md)
   (M3-Welle-7-Closure), [`ADR 0024`](../../adr/0024-observability-port-trio.md)
-  (M3-Welle-7-Closure), [`ADR 0036`](../../adr/0036-runtime-image-and-release-workflow.md)
+  (M3-Welle-7-Closure), [`ADR 0036`](../../adr/0036-ui-stack-choice.md)
   (M5-Welle-7), [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)
   (M5-Welle-7-C1).
 - Betroffene Index-Zeilen insgesamt: `0008`, `0022`..`0027`,

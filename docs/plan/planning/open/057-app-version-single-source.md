@@ -32,7 +32,7 @@ Korrektheits-/Doku-Problem, kein Determinismus-Bruch.
 - **Single-Sourcing** der Version aus den Paket-Metadaten
   (`importlib.metadata.version("grid-gym")` mit Sentinel-Fallback;
   Praezedenzmuster existiert in
-  `tests/integration/_constants.py::_resolve_tool_version`), statt
+  `_resolve_tool_version` in `tests/integration/_constants.py`), statt
   Release-manueller Pin-Pflege an zwei Stellen.
 - Duplikat-Pin in `composition/_demo_scenario_setup.py` entfernen
   (eine Quelle statt „per Konvention synchron").
