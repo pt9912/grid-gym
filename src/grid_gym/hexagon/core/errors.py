@@ -895,6 +895,37 @@ class InvalidAdapterNameError(GridGymError):
         super().__init__(f"invalid canonical adapter name: {name!r}")
 
 
+class NonCanonicalPlatformArchError(GridGymError):
+    """`platform_arch` ist nicht in Normalform (Slice-038-Review-Folge;
+    ADR 0073 §2.5).
+
+    `RunExecutionProfile` erzwingt die Kanonik im `__post_init__`:
+    ein unkanonischer Wert (Whitespace, Grossschreibung) wuerde
+    sonst semantisch identische Laeufe im Replay-Preflight als
+    False-Reject trennen.
+    """
+
+    def __init__(self, value: str) -> None:
+        super().__init__(f"platform_arch is not canonical (expected trim+lowercase): {value!r}")
+
+
+class NonCanonicalEnabledAdaptersError(GridGymError):
+    """`enabled_adapters` ist nicht in kanonischer Form
+    (Slice-038-Review-Folge; ADR 0073 §2.3).
+
+    Kanonisch = validierte Namen (``[a-z0-9_]+``), dedupliziert,
+    lexikografisch sortiert. Erzwungen im
+    `RunExecutionProfile.__post_init__` und an der Persistenz-
+    Grenze (`PostgresRunRepository`-Encode/Decode): eine
+    unkanonische Form braeche die Eindeutigkeit des
+    komma-separierten Persistenz-Strings bzw. produzierte
+    False-Rejects im Preflight.
+    """
+
+    def __init__(self, value: object) -> None:
+        super().__init__(f"enabled_adapters is not canonical (dedup + sorted): {value!r}")
+
+
 # ---------------------------------------------------------------------------
 # Run-Driver-Registry (Multi-Run-Execution S2, ADR 0069 §2.2)
 # ---------------------------------------------------------------------------

@@ -106,6 +106,11 @@ def test_replay_run_diffs_against_reference_via_shared_sink() -> None:
     loop_b = driver_b._tick_loop
     for _ in range(3):
         loop_b.tick()
+    # Slice-038-Review-Folge: `finalize()` gibt AUCH bei Preflight-Reject `()`
+    # zurueck — ohne diese Probe waere ein Reject (z. B. kuenftiges 10. Feld
+    # ohne _save-Nachzug) von einem echten leeren Diff nicht unterscheidbar
+    # und der ADR-0069-§2.5-Pin liefe still-gruen ins Leere.
+    assert loop_b._replay_preflight_mismatch(repository, "run-a") is None
     deltas = loop_b.finalize()  # liest A + B aus dem geteilten Sink → Diff
 
     assert deltas == ()  # identische Laeufe → leerer Replay-Diff (verifiziert)

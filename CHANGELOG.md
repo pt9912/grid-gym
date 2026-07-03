@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Kanonik-Enforcement fuer die GG-TERM-Vollfelder** (Slice-038-Review-Folge,
+  3 MEDIUM + 2 LOW aus dem unabhaengigen Post-Release-Review):
+  `RunExecutionProfile.__post_init__` erzwingt jetzt die ADR-0073-Normalformen
+  fail-fast (NEU typisierte `NonCanonicalPlatformArchError`/
+  `NonCanonicalEnabledAdaptersError`); die Postgres-Persistenz-Grenze
+  validiert `enabled_adapters` beim Encode (Schreiber-Konvention) und Decode
+  (korrupter DB-Bestand wird typisiert rejected statt still in die Domain
+  gehoben). Der Zwei-Lauf-Replay-Diff-Test traegt eine Preflight-Probe, die
+  einen stillen Reject von einem echten leeren Diff unterscheidet. Kein
+  Verhaltens-Delta fuer kanonische (= alle produktiven) Pfade.
+
 ## [0.3.0] - 2026-07-03
 
 **Slice 038 — Volle `GG-TERM-002/003`-Equality-Matrix.** Erster Release

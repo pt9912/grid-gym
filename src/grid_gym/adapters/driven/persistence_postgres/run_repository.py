@@ -26,8 +26,13 @@ from typing import Final
 import psycopg
 from psycopg import sql
 
-from grid_gym.hexagon.core.domain.run import RunMetadata, RunStatus
+from grid_gym.hexagon.core.domain.run import (
+    RunMetadata,
+    RunStatus,
+    canonical_enabled_adapters,
+)
 from grid_gym.hexagon.core.errors import (
+    NonCanonicalEnabledAdaptersError,
     RunAlreadyExistsError,
     RunNotFoundError,
 )
@@ -40,16 +45,33 @@ _TABLE: Final[sql.Identifier] = sql.Identifier("runs")
 
 def _encode_enabled_adapters(names: tuple[str, ...]) -> str:
     """Kanonisches Tupel → komma-separierter Persistenz-String
-    (Slice 038 / ADR 0073 §2.3). Leeres Tupel → ``""`` (fehlend)."""
+    (Slice 038 / ADR 0073 §2.3). Leeres Tupel → ``""`` (fehlend).
+
+    Slice-038-Review-Folge: validiert die Kanonik an der
+    Persistenz-Grenze (typisierter Reject statt stiller
+    Round-Trip-Asymmetrie), falls ein Schreiber die
+    `canonical_enabled_adapters`-Konvention umgeht.
+    """
+    if canonical_enabled_adapters(names) != names:
+        raise NonCanonicalEnabledAdaptersError(names)
     return ",".join(names)
 
 
 def _decode_enabled_adapters(raw: str) -> tuple[str, ...]:
     """Komma-separierter Persistenz-String → Tupel. ``""`` → ``()``
-    (fehlend; Round-Trip-Symmetrie zu `_encode_enabled_adapters`)."""
+    (fehlend; Round-Trip-Symmetrie zu `_encode_enabled_adapters`).
+
+    Slice-038-Review-Folge: unkanonischer DB-Bestand (unsortiert,
+    Duplikate, Leersegmente, ungueltige Namen — nur via Fremd-
+    Schreiber/manuelles SQL erreichbar) wird typisiert rejected
+    statt still in die Core-Domain gehoben.
+    """
     if not raw:
         return ()
-    return tuple(raw.split(","))
+    names = tuple(raw.split(","))
+    if canonical_enabled_adapters(names) != names:
+        raise NonCanonicalEnabledAdaptersError(raw)
+    return names
 
 
 class PostgresRunRepository:

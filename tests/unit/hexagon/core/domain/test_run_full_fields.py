@@ -19,7 +19,11 @@ from grid_gym.hexagon.core.domain.run import (
     canonical_enabled_adapters,
     canonical_platform_arch,
 )
-from grid_gym.hexagon.core.errors import InvalidAdapterNameError
+from grid_gym.hexagon.core.errors import (
+    InvalidAdapterNameError,
+    NonCanonicalEnabledAdaptersError,
+    NonCanonicalPlatformArchError,
+)
 
 
 def _metadata(**overrides: object) -> RunMetadata:
@@ -149,3 +153,46 @@ def test_run_execution_profile_is_frozen() -> None:
     profile = RunExecutionProfile(platform_arch="x86_64")
     with pytest.raises(FrozenInstanceError):
         profile.platform_arch = "aarch64"  # type: ignore[misc]
+
+
+@pytest.mark.parametrize("raw", ["X86_64", " x86_64", "x86_64 "])
+def test_run_execution_profile_rejects_non_canonical_platform_arch(raw: str) -> None:
+    """Slice-038-Review-Folge: unkanonisches `platform_arch` faellt
+    fail-fast bei der Konstruktion — sonst wuerde ein Composition
+    Root mit Roh-`platform.machine()` False-Rejects im Preflight
+    produzieren."""
+    with pytest.raises(NonCanonicalPlatformArchError):
+        RunExecutionProfile(platform_arch=raw)
+
+
+@pytest.mark.parametrize(
+    "names",
+    [
+        ("persistence_inmemory", "http_api"),
+        ("http_api", "http_api"),
+    ],
+)
+def test_run_execution_profile_rejects_non_canonical_adapters(
+    names: tuple[str, ...],
+) -> None:
+    """Unsortierte oder duplizierte Adapter-Namen sind unkanonisch
+    (ADR 0073 §2.3) und werden typisiert abgewiesen."""
+    with pytest.raises(NonCanonicalEnabledAdaptersError):
+        RunExecutionProfile(enabled_adapters=names)
+
+
+def test_run_execution_profile_rejects_invalid_adapter_name() -> None:
+    """Ungueltige Namen fallen bereits in der Namens-Validierung
+    (`InvalidAdapterNameError` ist praeziser als die Form-Pruefung)."""
+    with pytest.raises(InvalidAdapterNameError):
+        RunExecutionProfile(enabled_adapters=("Http-Api",))
+
+
+def test_run_execution_profile_accepts_canonical_values() -> None:
+    """Kanonische Werte (und das leere Profil) bleiben gueltig."""
+    profile = RunExecutionProfile(
+        platform_arch="x86_64",
+        enabled_adapters=("http_api", "persistence_inmemory"),
+        config_hash="c" * 64,
+    )
+    assert profile.enabled_adapters == ("http_api", "persistence_inmemory")

@@ -3,9 +3,10 @@
 `RunMetadata` haelt die Reproduzierbarkeits-Metadaten eines
 Simulationslaufs. Die Akzeptanz aus `GG-TERM-003` verlangt mindestens
 Version, Szenario-Hash, Konfiguration, Startzeit im Simulationszeit-
-modell, Seed, Tick-Groesse und aktivierte Adapter — Welle 1 deckt
-den Spine ab; aktive Adapter folgen, sobald die Adapter-Schicht in
-Welle 6 entsteht.
+modell, Seed, Tick-Groesse und aktivierte Adapter — seit Slice 038
+(ADR 0073) sind alle Felder strukturiert: die vier Vollfelder
+`platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash`
+ergaenzen den Welle-1-Spine.
 
 `started_at`/`ended_at` sind Wall-Clock-Zeiten in ISO-8601-UTC
 (`GG-DATA-005`), nicht Simulationszeit. Simulationszeit wird in
@@ -25,7 +26,11 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Final, Literal
 
-from grid_gym.hexagon.core.errors import InvalidAdapterNameError
+from grid_gym.hexagon.core.errors import (
+    InvalidAdapterNameError,
+    NonCanonicalEnabledAdaptersError,
+    NonCanonicalPlatformArchError,
+)
 
 
 RunStatus = Literal["pending", "running", "paused", "stopped", "completed"]
@@ -172,8 +177,21 @@ class RunExecutionProfile:
     (Bare-Adapter-Entrypoint ohne Composition): dessen Laeufe
     werden im Replay-Preflight fail-closed rejected statt
     falsch-gruen verglichen.
+
+    Kanonik-Zwang (Slice-038-Review-Folge): `__post_init__`
+    validiert, dass `platform_arch` und `enabled_adapters` bereits
+    in Normalform vorliegen — ein Composition Root, der die
+    Kanonik-Funktionen umgeht, faellt fail-fast bei der
+    Registrierung statt spaeter als False-Reject im Preflight.
+    Das leere Profil bleibt gueltig (leer = fehlend).
     """
 
     platform_arch: str = ""
     enabled_adapters: tuple[str, ...] = ()
     config_hash: str = ""
+
+    def __post_init__(self) -> None:
+        if self.platform_arch != canonical_platform_arch(self.platform_arch):
+            raise NonCanonicalPlatformArchError(self.platform_arch)
+        if self.enabled_adapters != canonical_enabled_adapters(self.enabled_adapters):
+            raise NonCanonicalEnabledAdaptersError(self.enabled_adapters)
