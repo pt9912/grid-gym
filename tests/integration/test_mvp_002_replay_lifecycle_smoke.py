@@ -89,6 +89,9 @@ def _meta(
     tick_ms: int = 1000,
     tool_version: str = "0.1.0",
 ) -> RunMetadata:
+    """Preflight-valide Metadaten: die GG-TERM-Vollfelder sind
+    befuellt (Slice 038 / ADR 0073 §2.6), sonst endete der
+    `finalize()`-Preflight im `missing`-Reject statt im Diff."""
     return RunMetadata(
         run_id=run_id,
         scenario_hash=scenario_hash,
@@ -98,6 +101,10 @@ def _meta(
         started_at="",
         ended_at="",
         tool_version=tool_version,
+        platform_arch="x86_64",
+        enabled_adapters=("http_api", "persistence_inmemory"),
+        sim_start_time=0,
+        config_hash="c" * 64,
     )
 
 

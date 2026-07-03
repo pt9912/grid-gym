@@ -56,6 +56,33 @@ def test_save_then_get_by_id_roundtrips_all_fields(repository: PostgresRunReposi
     assert loaded == metadata
 
 
+def test_save_then_get_by_id_roundtrips_gg_term_full_fields(
+    repository: PostgresRunRepository,
+) -> None:
+    """Slice 038 (ADR 0073 §2.7): die vier GG-TERM-Vollfelder
+    roundtrippen ueber die 0004-Migration — inklusive des
+    Tupel ↔ komma-separierter-String-Mappings fuer
+    `enabled_adapters`."""
+    metadata = RunMetadata(
+        run_id=str(uuid.uuid4()),
+        scenario_hash="0" * 64,
+        schema_version="grid-gym.scenario.v1",
+        seed=42,
+        tick_ms=100,
+        started_at="2026-07-03T10:00:00Z",
+        ended_at="2026-07-03T10:01:00Z",
+        tool_version="0.1.0",
+        platform_arch="x86_64",
+        enabled_adapters=("http_api", "persistence_inmemory"),
+        sim_start_time=0,
+        config_hash="c" * 64,
+    )
+    repository.save(metadata)
+    loaded = repository.get_by_id(metadata.run_id)
+    assert loaded == metadata
+    assert loaded.enabled_adapters == ("http_api", "persistence_inmemory")
+
+
 def test_save_then_get_by_id_roundtrips_replay_of(repository: PostgresRunRepository) -> None:
     """ADR 0068 (Slice 039): die persistente Replay-Bindung roundtrippt ueber
     die 0003-Migration `replay_of`-Spalte (NULL fuer regulaere Laeufe)."""

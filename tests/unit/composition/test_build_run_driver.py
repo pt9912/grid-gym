@@ -49,7 +49,12 @@ def _scenario() -> Scenario:
 
 def _save(repository: InMemoryRunRepository, run_id: str, replay_of: str | None = None) -> str:
     """Persistiert RunMetadata (build_run_driver liest Seed + replay_of daraus);
-    gibt den scenario_hash zurueck."""
+    gibt den scenario_hash zurueck.
+
+    Die GG-TERM-Vollfelder sind befuellt (Slice 038 / ADR 0073 §2.6):
+    leere Vollfelder wuerden den `finalize()`-Preflight in den
+    `missing`-Reject schicken und der Replay-Diff-Test liefe
+    still-gruen ohne echten Diff."""
     loaded = _loaded()
     repository.save(
         RunMetadata(
@@ -62,6 +67,10 @@ def _save(repository: InMemoryRunRepository, run_id: str, replay_of: str | None 
             ended_at="",
             tool_version="0.1.0",
             replay_of=replay_of,
+            platform_arch="x86_64",
+            enabled_adapters=("http_api", "persistence_inmemory"),
+            sim_start_time=0,
+            config_hash="c" * 64,
         )
     )
     return loaded.scenario_hash

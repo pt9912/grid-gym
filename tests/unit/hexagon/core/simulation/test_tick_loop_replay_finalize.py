@@ -10,7 +10,11 @@ Pinnt den Core-Spine-Vertrag mit In-Memory-Fakes:
   lesbare `GG-SAFE-006`-Detail-Logs (path/expected/actual/tick/
   device_id/classification).
 - **Preflight-Mismatch:** ungleiches `RunMetadata`-Feld → kein
-  `replay_diff_status`, strukturierter Reject-Log (per-Feld).
+  `replay_diff_status`, strukturierter Reject-Log (per-Feld; volle
+  9-Felder-Matrix seit Slice 038 / ADR 0073 §2.6).
+- **Preflight-Missing:** leeres Vollfeld (`""`/`()`) auf einer oder
+  beiden Seiten → `<feld>_missing`-Reject VOR der
+  Gleichheitspruefung (ADR 0073 §2.6).
 - **No-op** ohne Replay-Bindung; **Idempotenz** bei Doppelaufruf.
 """
 
@@ -39,6 +43,13 @@ from tests.unit.hexagon.ports.driven._fakes import (
     InMemoryRunRepository,
 )
 
+pytestmark = pytest.mark.replay
+"""`make test-replay`-Sensor-Zuordnung (GG-REPLAY-007): dieses Modul
+pinnt den Replay-Diff-Lifecycle inkl. `GG-TERM-002/003`-Preflight.
+Slice 038: erster Traeger des `replay`-Markers — die uebrigen
+Replay-/Determinismus-Suiten laufen bislang nur ueber `test-unit`
+(Marker-Drift, siehe Trigger-Notiz)."""
+
 _REF = "run-a"
 _CUR = "run-b"
 
@@ -66,7 +77,15 @@ def _meta(
     seed: int = 42,
     tick_ms: int = 1000,
     tool_version: str = "0.1.0",
+    platform_arch: str = "x86_64",
+    enabled_adapters: tuple[str, ...] = ("http_api", "persistence_inmemory"),
+    sim_start_time: int = 0,
+    config_hash: str = "c" * 64,
 ) -> RunMetadata:
+    """Preflight-valide Metadaten: die Vollfelder (Slice 038 /
+    ADR 0073 §2.6) sind default-befuellt, damit Clean-/Diverged-
+    Pfade nicht im Missing-Reject enden; Boundary-Tests
+    ueberschreiben gezielt pro Feld."""
     return RunMetadata(
         run_id=run_id,
         scenario_hash=scenario_hash,
@@ -76,6 +95,10 @@ def _meta(
         started_at="",
         ended_at="",
         tool_version=tool_version,
+        platform_arch=platform_arch,
+        enabled_adapters=enabled_adapters,
+        sim_start_time=sim_start_time,
+        config_hash=config_hash,
     )
 
 
@@ -191,6 +214,16 @@ def test_diverged_replay_emits_status_zero_and_safe_006_details() -> None:
         ("seed", {"seed": 1}, {"seed": 2}),
         ("tick_ms", {"tick_ms": 1000}, {"tick_ms": 100}),
         ("tool_version", {"tool_version": "0.1.0"}, {"tool_version": "0.2.0"}),
+        # Slice 038 (ADR 0073 §2.6): Vollfeld-Mismatches — beide Seiten
+        # befuellt, aber ungleich.
+        ("platform_arch", {"platform_arch": "x86_64"}, {"platform_arch": "aarch64"}),
+        (
+            "enabled_adapters",
+            {"enabled_adapters": ("http_api",)},
+            {"enabled_adapters": ("http_api", "persistence_inmemory")},
+        ),
+        ("sim_start_time", {"sim_start_time": 0}, {"sim_start_time": 1}),
+        ("config_hash", {"config_hash": "c" * 64}, {"config_hash": "d" * 64}),
     ],
 )
 def test_preflight_mismatch_skips_diff_and_logs_field(
@@ -219,6 +252,85 @@ def test_preflight_mismatch_skips_diff_and_logs_field(
         "run_id": _CUR,
         "reference_run_id": _REF,
         "field": field,
+    }
+
+
+@pytest.mark.parametrize(
+    ("field", "empty_kwargs"),
+    [
+        ("platform_arch", {"platform_arch": ""}),
+        ("enabled_adapters", {"enabled_adapters": ()}),
+        ("config_hash", {"config_hash": ""}),
+    ],
+)
+@pytest.mark.parametrize("missing_side", ["reference", "current"])
+def test_preflight_missing_full_field_rejects_before_equality(
+    field: str,
+    empty_kwargs: dict[str, object],
+    missing_side: str,
+) -> None:
+    """Slice 038 (ADR 0073 §2.6): leeres Vollfeld auf EINER Seite →
+    `<feld>_missing`-Reject VOR der Gleichheitspruefung, kein
+    `replay_diff_status`. Deckt beide Seiten ab — auch leer==leer
+    waere kein valider Vergleich (die andere Seite bleibt hier
+    befuellt, der leer==leer-Fall ist unten separat gepinnt)."""
+    sink = InMemoryTelemetrySink()
+    sink.persist([_point(run_id=_REF, simulation_time=1000, device_id="bat-1", value="1.50")])
+    sink.persist([_point(run_id=_CUR, simulation_time=1000, device_id="bat-1", value="1.50")])
+    repo = InMemoryRunRepository()
+    ref_kwargs = empty_kwargs if missing_side == "reference" else {}
+    cur_kwargs = empty_kwargs if missing_side == "current" else {}
+    repo.save(_meta(_REF, **ref_kwargs))  # type: ignore[arg-type]
+    repo.save(_meta(_CUR, **cur_kwargs))  # type: ignore[arg-type]
+    metrics = NullMetricsAdapter(record_calls=True)
+    log = NullLogAdapter(record_calls=True)
+    loop = _make_finalize_loop(
+        sink=sink, repo=repo, metrics=metrics, log=log, reference_run_id=_REF
+    )
+
+    deltas = loop.finalize()
+
+    assert deltas == ()
+    assert _gauge_calls(metrics, "replay_diff_status") == []
+    (reject,) = _log_calls(log, "replay_preflight_mismatch")
+    assert reject["attributes"] == {
+        "run_id": _CUR,
+        "reference_run_id": _REF,
+        "field": f"{field}_missing",
+    }
+
+
+def test_preflight_missing_on_both_sides_is_still_rejected() -> None:
+    """Slice 038 (ADR 0073 §2.6): leer==leer ist KEIN valider
+    Vergleich — Legacy-Laeufe (Backfill ``''``) und Bare-Adapter-
+    Laeufe sind als Replay-Referenz unzulaessig (fail-closed statt
+    falsch-gruen)."""
+    sink = InMemoryTelemetrySink()
+    sink.persist([_point(run_id=_REF, simulation_time=1000, device_id="bat-1", value="1.50")])
+    sink.persist([_point(run_id=_CUR, simulation_time=1000, device_id="bat-1", value="1.50")])
+    repo = InMemoryRunRepository()
+    legacy_kwargs: dict[str, object] = {
+        "platform_arch": "",
+        "enabled_adapters": (),
+        "config_hash": "",
+    }
+    repo.save(_meta(_REF, **legacy_kwargs))  # type: ignore[arg-type]
+    repo.save(_meta(_CUR, **legacy_kwargs))  # type: ignore[arg-type]
+    metrics = NullMetricsAdapter(record_calls=True)
+    log = NullLogAdapter(record_calls=True)
+    loop = _make_finalize_loop(
+        sink=sink, repo=repo, metrics=metrics, log=log, reference_run_id=_REF
+    )
+
+    deltas = loop.finalize()
+
+    assert deltas == ()
+    assert _gauge_calls(metrics, "replay_diff_status") == []
+    (reject,) = _log_calls(log, "replay_preflight_mismatch")
+    assert reject["attributes"] == {
+        "run_id": _CUR,
+        "reference_run_id": _REF,
+        "field": "platform_arch_missing",
     }
 
 

@@ -212,12 +212,33 @@ _REPLAY_PREFLIGHT_FIELDS: Final[tuple[str, ...]] = (
     "seed",
     "tick_ms",
     "tool_version",
+    "platform_arch",
+    "enabled_adapters",
+    "sim_start_time",
+    "config_hash",
 )
-"""M7-Welle-1b-b (ADR 0049 §2.3): die 5 bereits strukturierten
-`RunMetadata`-Felder des `GG-TERM-002/003`-MVP-Replay-Preflights.
-Bei Ungleichheit eines Felds wird der Replay-Diff verworfen (kein
-`replay_diff_status`). Die volle Matrix (`platform_arch` etc.)
-bleibt Carveout Trigger 038."""
+"""Volle `GG-TERM-002/003`-Equality-Matrix des Replay-Preflights
+(ADR 0049 §2.3, geschaerft durch ADR 0073 §2.6 / Slice 038): die 9
+strukturierten `RunMetadata`-Felder. Bei Ungleichheit eines Felds
+wird der Replay-Diff verworfen (kein `replay_diff_status`). Fuer
+die Vollfelder mit Fehlend-Semantik gilt zusaetzlich der
+Missing-Reject VOR der Gleichheitspruefung
+(`_REPLAY_PREFLIGHT_MISSING_REJECT_FIELDS`)."""
+
+_REPLAY_PREFLIGHT_MISSING_REJECT_FIELDS: Final[tuple[str, ...]] = (
+    "platform_arch",
+    "enabled_adapters",
+    "config_hash",
+)
+"""ADR 0073 §2.6: Vollfelder mit Fehlend-Semantik (``""`` bzw.
+``()`` = fehlend). Ist der Wert auf einer der beiden Seiten leer,
+wird VOR der Gleichheitspruefung rejected (`<feld>_missing`) —
+leer==leer ist KEIN valider Vergleich; Laeufe ohne Voll-Metadaten
+(Legacy-Bestand vor Migration `0004`, Bare-Adapter-Entrypoint)
+sind als Replay-Referenz unzulaessig. `sim_start_time` steht
+bewusst NICHT hier: die Zeitmodell-Konstante `0` ist fuer alle
+Laeufe fachlich wahr (ADR 0073 §2.2), es gibt keinen
+Fehlend-Zustand."""
 
 _BILANZ_SOURCE_BUCKETS: Final[Mapping[str, str]] = {
     "pv": "generation",
@@ -928,12 +949,24 @@ class TickLoop:
         repository: RunRepositoryPort,
         reference_run_id: str,
     ) -> str | None:
-        """`GG-TERM-002/003`-MVP-Preflight (ADR 0049 §2.3): erstes
-        ungleiches der 5 strukturierten `RunMetadata`-Felder zwischen
-        Referenz- und aktuellem Lauf, sonst `None`. Ein Diff
-        ungleich-konfigurierter Laeufe ist fachlich bedeutungslos."""
+        """Volle `GG-TERM-002/003`-Equality-Matrix (ADR 0049 §2.3 +
+        ADR 0073 §2.6): Reject-Grund als String, sonst `None`.
+
+        Zwei Reject-Klassen in fester Reihenfolge:
+
+        1. **Missing** (`<feld>_missing`): ein Vollfeld mit
+           Fehlend-Semantik ist auf einer der beiden Seiten leer —
+           leer==leer ist KEIN valider Vergleich (fail-closed fuer
+           Legacy-/Bare-Adapter-Laeufe).
+        2. **Mismatch** (`<feld>`): erstes ungleiches der 9
+           strukturierten Felder. Ein Diff ungleich-konfigurierter
+           Laeufe ist fachlich bedeutungslos.
+        """
         reference = repository.get_by_id(reference_run_id)
         current = repository.get_by_id(self._run_id)
+        for field in _REPLAY_PREFLIGHT_MISSING_REJECT_FIELDS:
+            if not getattr(reference, field) or not getattr(current, field):
+                return f"{field}_missing"
         for field in _REPLAY_PREFLIGHT_FIELDS:
             if getattr(reference, field) != getattr(current, field):
                 return field
