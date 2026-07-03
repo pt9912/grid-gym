@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **E2E-Sensor fuer den produktiven Profil-Pfad** (Slice 055, Test-only):
+  Integrationstest faehrt `POST /scenarios` → `POST /runs` (erbt das real
+  registrierte Composition-Profil) → `start` → Lifespan-Shutdown-Stop und
+  pinnt die Preflight-Vergleichsbasis (ADR 0073 §2.6: 9-Felder-Gleichheit,
+  reale ConfigView-v1-/`platform.machine()`-Werte, Replay-Bindung). Traegt
+  den `replay`-pytest-Marker. Dokumentierte Grenze: kein Clean-Diff-Assert
+  ueber die API (kein Tick-Budget, ADR 0049 §7).
+
 ### Changed
 
 - **Kanonik-Enforcement fuer die GG-TERM-Vollfelder** (Slice-038-Review-Folge,
