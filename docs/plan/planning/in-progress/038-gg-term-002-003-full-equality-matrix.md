@@ -138,9 +138,9 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 | Tranche | Rolle | Inhalt | Status |
 | ------- | ----- | ------ | ------ |
 | C0 | Architect | Entscheidungen E-0..E-3 + Fehlend-Reject; NEU [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Provisional` ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md) §2.3); ADR-Index + 0049-Schaerfungs-Vermerk | **done** 2026-07-03 |
-| C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | offen |
-| C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS`-Erweiterung + Reject-Semantik + parametrisierte Boundary-Tests pro Vollfeld | offen |
-| C3 | Verifier | Public-Contract-Sync (Traceability, `persistence-schema.yaml`, CHANGELOG) + Replay-/Verification-Evidence | offen |
+| C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | **done** 2026-07-03 (`dc75d1d`) |
+| C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS` 5 → 9 + Fehlend-Reject + parametrisierte Boundary-Tests pro Vollfeld × Reject-Klasse | **done** 2026-07-03 (`e75fa04`) |
+| C3 | Verifier | Public-Contract-Sync (`persistence-schema.yaml` inkl. 039-Drift-Nachzug, `replay-determinism-e2e.md`, CHANGELOG, NEU Trigger-Notiz [`054`](../open/054-pytest-marker-drift-sensor-targets.md)) + Verification-Evidence (unten) | **done** 2026-07-03 |
 | C4 | Planner | DoD-Checkliste, Release-Entscheidung (ja, minor), `make fullbuild`, Tag, Self-Move nach `done/` | offen |
 
 ## DoD-Checkliste (mit C4 abzuhaken)
@@ -160,6 +160,80 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
       CHANGELOG-Finalisierung + `v*.*.*`-Tag) — Runtime-Delta-Pflicht
       erfuellt.
 - [ ] Self-Move nach `done/` (reiner `git mv`) + Link-/Bestand-Pflege.
+
+## Verification Evidence (C3, 2026-07-03)
+
+Scope:
+
+- Slice: `038`
+- IDs: [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/[`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003),
+  [`GG-PERSIST-003`](../../../../spec/lastenheft.md#gg-persist-003),
+  [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md)
+  (schaerft [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md) §2.3),
+  [`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md) (Migrations-Praezedenz).
+- Artefakte: `hexagon/core/domain/run.py`,
+  `hexagon/core/serialization/config_view.py`,
+  `hexagon/core/simulation/tick_loop.py`,
+  `persistence_postgres/` (Migration `0004` + Repo),
+  `http_api/_run_execution_profile.py` + `app.py`,
+  `composition/_execution_profile.py` + `asgi.py` + Demo-Setups.
+
+DoD-Abgleich: siehe DoD-Checkliste unten (C4 hakt ab; Stand C3
+sind alle Implementations-Punkte erfuellt, Release-Punkte offen).
+
+Sensors:
+
+| Sensor | Ergebnis | Evidence |
+| --- | --- | --- |
+| `make gates` | pass | C1 `dc75d1d` + C2 `e75fa04` (test-unit 2342+ passed, coverage 90/85 + critical, arch-check 20 contracts) |
+| `make test-replay` | pass | Exit 0 nach C2-Marker-Zuordnung (Finalize-/Preflight-Suite; vorher repo-weit 0 Tests selektiert) |
+| `make test-integration` | pass | 164 passed / 4 skipped — inkl. NEU Postgres-Vollfeld-Roundtrip ueber Migration `0004` |
+| `make docs-check` | pass | 261+ Dateien, 0 Befunde (C0/C3) |
+| `make test-determinism` | **not run (rot, vorbestehend)** | Marker ohne Traeger — Sensor-Drift, Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md); Determinismus-Substanz lief via `test-unit`/`gates` |
+| `make test-fault` | **not run (rot, vorbestehend)** | wie `test-determinism` (Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md)) |
+
+Traceability:
+
+| ID | Beleg |
+| --- | --- |
+| [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003 | 9-Felder-Preflight (`_REPLAY_PREFLIGHT_FIELDS`) + parametrisierte Boundary-Tests pro Vollfeld × Reject-Klasse (`test_tick_loop_replay_finalize.py`) |
+| [`GG-PERSIST-003`](../../../../spec/lastenheft.md#gg-persist-003) | Migration `0004` + `test_postgres_run_repository.py::test_save_then_get_by_id_roundtrips_gg_term_full_fields` (echtes Postgres) |
+| [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.3 | `test_run_full_fields.py` (Kanonik) + `test_run_execution_profile.py` (Hook-Inversion + POST-/runs-Vererbung) |
+| [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.4 | `test_config_view.py` (Byte-Pins der ConfigView v1) |
+| [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.6 | Missing-Reject-Tests inkl. leer==leer-Pin |
+
+Replay / Golden:
+
+- Affected flows: replay (Preflight-Erweiterung im `finalize()`-Pfad).
+- Cases added: Vollfeld-Mismatch (4 Felder), Missing-Reject
+  (3 Felder × 2 Seiten), leer==leer-Pin, Postgres-Vollfeld-Roundtrip.
+- Cases updated: `_meta`-Helper (Unit + Integrations-Smoke) und
+  `test_build_run_driver._save` auf preflight-valide Vollfelder —
+  Begruendung: ohne Befuellung liefen die bestehenden Diff-Belege
+  still-gruen in den neuen `missing`-Reject statt in den echten Diff.
+- Cases replayed: `make test-replay`, `make test-integration`
+  (Zwei-Lauf-Lifecycle-Smoke unveraendert gruen).
+- Intentional output changes: Preflight rejected jetzt Laeufe ohne
+  Voll-Metadaten (`<feld>_missing`-Log) — beabsichtigte
+  fail-closed-Verschaerfung per [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.6.
+
+Carveouts:
+
+- Neu: Sensor-Marker-Drift → Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md).
+- Geloest: M7-Carveout 1b-a-D-6 (volle Equality-Matrix) — dieser Slice.
+- Unveraendert: Kalenderzeit-Modell, Adapter-Parameter-Hashing,
+  Preflight-Whitelist ([`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §7).
+
+Nicht ausgefuehrt:
+
+- `make test-determinism`/`make test-fault` — vorbestehend rot
+  (0 Tests selektiert, Marker-Drift Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md));
+  fachliche Abdeckung lief ueber `make gates` (`test-unit`).
+- `make fullbuild` — laeuft mit C4 vor dem Release-Tag (DoD).
+
+Commit / Artefakt:
+
+- C0 `0b01132`, C1 `dc75d1d`, C2 `e75fa04`, C3 dieser Commit.
 
 ## Wandert nach
 

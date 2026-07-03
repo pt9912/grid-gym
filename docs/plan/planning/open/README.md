@@ -36,6 +36,12 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 [`049`](../done/049-sdp-matrix-doku-umbau.md), mit der M8-Closure nach
 [`../done-archive/`](../done-archive/) archiviert; nicht mehr hier.)*
 
+**Quality-Gates / Sensoren:**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`054-pytest-marker-drift-sensor-targets.md`](054-pytest-marker-drift-sensor-targets.md) | `make test-determinism`/`test-fault` sammeln 0 Tests (Marker deklariert, aber ohne Traeger; `test-replay` seit Slice 038 C2 mit erstem Traeger gruen) — Sensor-Familien sind stille No-ops | Naechster Slice mit Determinismus-/Replay-/Fault-Substanz ODER Verifier-Lauf, der einen Marker-Sensor als Closure-Beleg zitiert |
+
 **Harness-Regelwerk-Adoption (v1.2.0-Delta):**
 
 | Datei | Trigger | Aktivierung |

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Volle `GG-TERM-002/003`-Equality-Matrix** (Slice 038, ADR 0073, schaerft
+  ADR 0049 §2.3): `RunMetadata` traegt die vier Vollfelder `platform_arch`
+  (normalisierte Plattformarchitektur), `enabled_adapters` (kanonisches
+  Composition-Root-Adapter-Profil), `sim_start_time` (Startzeit im
+  Simulationszeitmodell; heute Konstante 0) und `config_hash` (SHA-256 der
+  versionierten ConfigView v1 mit `max_age_ms`). Der Replay-Preflight in
+  `TickLoop.finalize()` prueft damit **9 statt 5** Felder und rejected leere
+  Vollfelder **vor** der Gleichheitspruefung (`<feld>_missing`-Log) — Laeufe
+  ohne Voll-Metadaten (Legacy-Bestand, Bare-Adapter-Entrypoint) sind als
+  Replay-Referenz unzulaessig (fail-closed). NEU Alembic-Migration
+  `0004_add_gg_term_full_fields` (differenzierter Backfill: `''` =
+  ehrlich-fehlend, `sim_start_time=0` fachlich wahr); `POST /runs` erbt die
+  Vollfelder aus dem per Hook-Inversion registrierten
+  `RunExecutionProfile`.
+
 ### Changed
 
 - Planungsmodell auf **slice-getrieben** umgestellt (ADR 0072, Slice 053): die

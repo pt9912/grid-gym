@@ -8,7 +8,9 @@
 # kann (`d-migrate schema generate`).
 #
 # Tabellen:
-#   - runs              (Alembic 0001, M1-Welle-6c; Lauf-Metadaten, GG-PERSIST-003 / GG-TERM-003)
+#   - runs              (Alembic 0001, M1-Welle-6c; Lauf-Metadaten, GG-PERSIST-003 / GG-TERM-003;
+#                        + replay_of via Alembic 0003, Slice 039 / ADR 0068;
+#                        + GG-TERM-Vollfelder via Alembic 0004, Slice 038 / ADR 0073)
 #   - telemetry_points  (Alembic 0002, M7-Welle-1a / ADR 0047; Telemetrie-Zeitreihen, GG-PERSIST-001)
 #
 # Welle 1b-a/1b-b (ADR 0048/0049) fuegen KEINE Tabelle hinzu — der
@@ -32,11 +34,14 @@ tables:
   runs:
     description: >-
       Lauf-Metadaten (RunMetadata, hexagon/core/domain/run.py). Traegt
-      die GG-TERM-003-Reproduzierbarkeits-Felder + die 5 Felder des
-      GG-TERM-002/003-MVP-Replay-Preflights (scenario_hash,
-      schema_version, seed, tick_ms, tool_version). Append-only;
-      Status-Lifecycle haelt der In-Memory-Adapter (keine Status-Spalte
-      in Postgres bis M3-Welle-6c).
+      die GG-TERM-003-Reproduzierbarkeits-Felder + die 9 Felder der
+      vollen GG-TERM-002/003-Equality-Matrix des Replay-Preflights
+      (scenario_hash, schema_version, seed, tick_ms, tool_version,
+      platform_arch, enabled_adapters, sim_start_time, config_hash;
+      Slice 038 / ADR 0073) + die persistente Replay-Bindung
+      replay_of (Slice 039 / ADR 0068). Append-only; Status-Lifecycle
+      haelt der In-Memory-Adapter (keine Status-Spalte in Postgres
+      bis M3-Welle-6c).
     columns:
       run_id:         { type: text, description: "Lauf-ID (UUIDv4 als String)" }
       scenario_hash:  { type: text, required: true, description: "SHA-256 ueber canonical_json der Szenario-Datei" }
@@ -46,6 +51,11 @@ tables:
       started_at:     { type: text, required: true, description: "ISO-8601 Wall-Clock (heute leer befuellt)" }
       ended_at:       { type: text, required: true, description: "ISO-8601 Wall-Clock (heute leer befuellt)" }
       tool_version:   { type: text, required: true }
+      replay_of:      { type: text, description: "Referenz-Lauf der Replay-Bindung; NULL = regulaerer Lauf (Slice 039 / ADR 0068, Alembic 0003)" }
+      platform_arch:  { type: text, required: true, description: "Normalisierte Plattformarchitektur (trim+lowercase); '' = fehlend -> Preflight-missing-Reject (ADR 0073 §2.5/§2.6, Alembic 0004)" }
+      enabled_adapters: { type: text, required: true, description: "Kanonisches Adapter-Profil, komma-separiert + lexikografisch sortiert; '' = fehlend (ADR 0073 §2.3, Alembic 0004)" }
+      sim_start_time: { type: biginteger, required: true, description: "Startzeit im Simulationszeitmodell in ms; heute Konstante 0 (ADR 0073 §2.2, Alembic 0004)" }
+      config_hash:    { type: text, required: true, description: "SHA-256 ueber canonical_json der versionierten ConfigView v1; '' = fehlend (ADR 0073 §2.4, Alembic 0004)" }
     primary_key: [run_id]
 
   telemetry_points:

@@ -47,11 +47,20 @@ Persistenz, [`ADR 0047`](../plan/adr/0047-telemetry-sink-timeseries-persistence.
    idempotenten Core-Hook `TickLoop.finalize()`. Mit einer
    expliziten `replay_reference_run_id`-Bindung difft er
    `actual = read_samples(run_id)` gegen
-   `expected = read_samples(reference_run_id)` — nach einem
-   [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003-MVP-Preflight (Gleichheit von
-   `scenario_hash`, `schema_version`, `seed`, `tick_ms`,
-   `tool_version`). Ergebnis: `replay_diff_status`-Gauge
-   (`1.0` clean / `0.0` diverged) + maschinenlesbare
+   `expected = read_samples(reference_run_id)` — nach dem vollen
+   [`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003-Preflight ueber **9**
+   `RunMetadata`-Felder (Gleichheit von `scenario_hash`,
+   `schema_version`, `seed`, `tick_ms`, `tool_version`,
+   `platform_arch`, `enabled_adapters`, `sim_start_time`,
+   `config_hash`; Slice 038 /
+   [`ADR 0073`](../plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md)).
+   Leere Vollfelder (`platform_arch`/`enabled_adapters`/
+   `config_hash`) auf einer der beiden Seiten rejecten **vor** der
+   Gleichheitspruefung (`<feld>_missing`-Log) — Laeufe ohne
+   Voll-Metadaten (Legacy-Bestand, Bare-Adapter-Entrypoint) sind
+   als Replay-Referenz unzulaessig. Ergebnis bei validem
+   Vergleich: `replay_diff_status`-Gauge (`1.0` clean / `0.0`
+   diverged) + maschinenlesbare
    [`GG-SAFE-006`](../../spec/lastenheft.md#gg-safe-006)-Detail-Logs.
 
 **Zwei-Lauf-Beleg:** `test_mvp_002_replay_lifecycle_smoke.py`
@@ -64,10 +73,11 @@ persistiert beide nach Postgres und belegt ueber den
 
 ## Carveouts
 
-- **[`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003 volle Equality-Matrix** (`platform_arch`,
-  `enabled_adapters`, `sim_start_time`, separater `config_hash`)
-  ist nicht Teil des MVP-Preflights —
-  [Trigger 038](../plan/planning/in-progress/038-gg-term-002-003-full-equality-matrix.md).
+- **[`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003 volle Equality-Matrix**: **geliefert** mit
+  [Slice 038](../plan/planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
+  ([`ADR 0073`](../plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md)) —
+  der Preflight prueft alle 9 Felder inkl. Fehlend-Reject; der
+  fruehere MVP-5-Felder-Carveout (1b-a-D-6) ist aufgeloest.
 - **Oeffentliche API-Replay-Bedienung** (POST /runs `replay_of`-
   Feld + persistente `RunMetadata`-Bindung) ist deferred —
   [Trigger 039](../plan/planning/done/039-api-replay-trigger-surface.md).
