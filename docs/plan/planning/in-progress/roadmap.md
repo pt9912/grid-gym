@@ -3,10 +3,10 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
-Aktiver Slice:
-[`055`](055-profile-preflight-e2e-sensor.md) (E2E-Sensor
-produktiver Profil-Pfad → Preflight). Zuletzt abgeschlossen:
-[`Slice 038`](../done/038-gg-term-002-003-full-equality-matrix.md)
+Kein aktiver Slice; zuletzt abgeschlossen:
+[`055`](../done/055-profile-preflight-e2e-sensor.md) (E2E-Sensor
+produktiver Profil-Pfad, Test-only) und
+[`038`](../done/038-gg-term-002-003-full-equality-matrix.md)
 (volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix → **v0.3.0**).
 **Stand:** 2026-07-03
 
@@ -76,11 +76,10 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-| Slice | Gegenstand | Status |
-| ----- | ---------- | ------ |
-| [`055`](055-profile-preflight-e2e-sensor.md) | E2E-Sensor produktiver Profil-Pfad → Replay-Preflight (Slice-038-Review-INFO; Test-only, Release nein) | **In Progress** (aktiviert 2026-07-03) |
-
-Zuletzt abgeschlossen:
+**Kein aktiver Slice.** Zuletzt abgeschlossen:
+[`055`](../done/055-profile-preflight-e2e-sensor.md) (E2E-Sensor
+produktiver Profil-Pfad → Replay-Preflight; Slice-038-Review-INFO-
+Aufloesung, Test-only, Release **nein**) und
 [`038`](../done/038-gg-term-002-003-full-equality-matrix.md) (volle
 [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix,
 [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Accepted` →
