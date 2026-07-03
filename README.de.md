@@ -86,7 +86,7 @@ Entwicklungsgate ist `make gates`.
 > (gebaut gegen go1.26.4+) aufgeloest; Trivy-Re-Scan meldet
 > 0 HIGH/CRITICAL.)
 
-Aktuelles Release: **v0.2.0** (2026-07-01) — siehe
+Aktuelles Release: **v0.3.0** (2026-07-03) — siehe
 [Releases](https://github.com/pt9912/grid-gym/releases).
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
@@ -160,14 +160,16 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-07-01**:
+Stand **2026-07-03**:
 
 | Meilenstein / Punkt | Status | Datum | Details |
 | --- | --- | --- | --- |
 | **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 69 von 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
 | **M8 — SOLLTE-Geraete & Netz** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. Alle vier SOLLTE-Geraete ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV-Charger, Transformer, Wind-Turbine, Diesel-Generator), das SOLLTE-Netzmodell ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: Inselnetz, Trafo-Grenzen, Blindleistung) und die BESS-Telemetrie ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: Temperatur, Zellspannung) sind produktiv; M8-ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel eingefaltet: Replay-Paar 039/040, Multi-Run-Execution, Scenario-Scheduled-Commands (046), Harness-Durchsetzungsschicht (051) |
 | **Release v0.2.0** | released | 2026-07-01 | Zweiter Release-Workflow-Lauf — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-gleiches `:latest`), GitHub-Release mit SBOM (CycloneDX, digest-gebunden), JUnit-XML, Coverage-HTML, OpenAPI-JSON und Abnahme-Doku. (v0.1.0 ist das vorige Release; der Doku-only-Cut v0.1.1 wurde bewusst verworfen) |
-| **Planung** | slice-getrieben | — | Die Planung ist jetzt slice-getrieben ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): keine neuen Meilensteine — Wellen/Slices sind die oberste Einheit, Releases werden pro Slice entschieden. Offene Trigger 037 (Multi-Node-Deployment), 038 (volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix), 047 (SNMP/LwM2M-Adapter) plus der Tooling-/Spike-Bestand tragen dokumentierte Aktivierungs-Bedingungen; ein neuer Slice entsteht bei Trigger-Aktivierung oder Mandat |
+| **Slice 038 — volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix** → **v0.3.0** | `Done` | 2026-07-03 | Erster slice-getriebener Release-Zyklus ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): `RunMetadata` traegt die vier Vollfelder `platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash` ([`ADR 0073`](docs/plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md), schaerft [`ADR 0049`](docs/plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.3); der Replay-Preflight prueft 9 statt 5 Felder und rejected fehlende Voll-Metadaten fail-closed; Alembic `0004`; `POST /runs` erbt die Felder aus dem Composition-Root-Profil. Slice-Plan: [`038`](docs/plan/planning/done/038-gg-term-002-003-full-equality-matrix.md) |
+| **Release v0.3.0** | released | 2026-07-03 | Dritter Release-Workflow-Lauf — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.3.0` (+ digest-gleiches `:latest`) mit den ueblichen Release-Assets (SBOM, JUnit-XML, Coverage-HTML, OpenAPI-JSON, Abnahme-Doku); `make fullbuild` cache-frei gruen vor dem Tag |
+| **Planung** | slice-getrieben | — | Die Planung ist jetzt slice-getrieben ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): keine neuen Meilensteine — Wellen/Slices sind die oberste Einheit, Releases werden pro Slice entschieden. Offene Trigger 037 (Multi-Node-Deployment), 047 (SNMP/LwM2M-Adapter), 054 (pytest-Marker-Drift) plus der Tooling-/Spike-Bestand tragen dokumentierte Aktivierungs-Bedingungen; ein neuer Slice entsteht bei Trigger-Aktivierung oder Mandat. Trigger 038 wurde als erster Slice unter diesem Modell aktiviert und geliefert (v0.3.0) |
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte

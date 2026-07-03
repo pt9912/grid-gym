@@ -1,16 +1,18 @@
 # 038 — Volle `GG-TERM-002/003`-Equality-Matrix (1b-Carveout)
 
-**Status:** **In Progress** (aktiviert 2026-07-03 per Maintainer-
-Beauftragung: Compliance-/Audit-Vollstaendigkeit der
-Reproduzierbarkeits-Metadaten). Historischer Trigger-Stand: Open —
-dokumentierter Scope-Carveout aus M7-Welle-1b.
+**Status:** **Done** (Closure 2026-07-03; Tranchen C0..C4 geliefert,
+[`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md)
+`Accepted`, Release **v0.3.0** geschnitten `6b3a212`). Aktiviert
+2026-07-03 per Maintainer-Beauftragung (Compliance-/Audit-
+Vollstaendigkeit der Reproduzierbarkeits-Metadaten); historischer
+Trigger-Stand: Open — dokumentierter Scope-Carveout aus M7-Welle-1b.
 **Datum:** 2026-06-09 (aktualisiert 2026-07-03: Stand nach Slice
 039/040 nachgezogen, C0-Entscheidungspunkte ergaenzt, DoD-Feld
-per [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3 nachgeruestet; aktiviert + Tranchen-Plan §T)
-**Release-Entscheidung:** **ja** (SemVer-Ziel: minor) — echtes
-Runtime-Delta (`RunMetadata`-Felder + Alembic-Migration +
-Preflight-Erweiterung); finale Bestaetigung im aufloesenden C0
-([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3).
+per [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3 nachgeruestet; aktiviert + Tranchen-Plan §T; Closure)
+**Release-Entscheidung:** **ja, vollzogen** (minor, **v0.3.0**
+2026-07-03) — echtes Runtime-Delta (`RunMetadata`-Felder +
+Alembic-Migration + Preflight-Erweiterung); `make fullbuild` vor dem
+Tag cache-frei gruen ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3).
 **Quelle:** M7-Welle-1b-a-C0 (Decision 1b-a-D-6;
 [`docs/plan/planning/done-archive/M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md)).
 
@@ -141,25 +143,28 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 | C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | **done** 2026-07-03 (`dc75d1d`) |
 | C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS` 5 → 9 + Fehlend-Reject + parametrisierte Boundary-Tests pro Vollfeld × Reject-Klasse | **done** 2026-07-03 (`e75fa04`) |
 | C3 | Verifier | Public-Contract-Sync (`persistence-schema.yaml` inkl. 039-Drift-Nachzug, `replay-determinism-e2e.md`, CHANGELOG, NEU Trigger-Notiz [`054`](../open/054-pytest-marker-drift-sensor-targets.md)) + Verification-Evidence (unten) | **done** 2026-07-03 |
-| C4 | Planner | DoD-Checkliste, Release-Entscheidung (ja, minor), `make fullbuild`, Tag, Self-Move nach `done/` | offen |
+| C4 | Planner | DoD abgehakt, Release **v0.3.0** (`6b3a212` + Tag nach cache-frei gruenem `make fullbuild`), Self-Move `git mv` → `done/` (C4a `ed0790f`) + Link-/Bestand-Pflege + [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Accepted` (C4b) | **done** 2026-07-03 |
 
-## DoD-Checkliste (mit C4 abzuhaken)
+## DoD-Checkliste (abgehakt mit C4, 2026-07-03)
 
-- [ ] Alle 4 Vollfelder strukturiert in `RunMetadata` + Persistenz
-      (Alembic-Migration, beide Repository-Adapter).
-- [ ] Kanonisierungs-Regeln implementiert und im Folge-ADR fixiert;
-      Reject-Semantik fuer fehlende/abweichende Werte **vor**
-      Diff-Klassifikation.
-- [ ] Preflight vergleicht 9 Felder; parametrisierte Boundary-Tests
-      pro Vollfeld gruen.
-- [ ] Folge-ADR `Accepted`; ADR-Index aktualisiert.
-- [ ] Replay-Evidence ([`harness/replay.md`](../../../../harness/replay.md)) +
-      Verification-Evidence ([`harness/verification.md`](../../../../harness/verification.md)) festgehalten.
-- [ ] `make gates` + `make docs-check` gruen; vor Tag `make fullbuild`.
-- [ ] Release-Entscheidung vollzogen (ja, minor: `pyproject`-Bump +
-      CHANGELOG-Finalisierung + `v*.*.*`-Tag) — Runtime-Delta-Pflicht
-      erfuellt.
-- [ ] Self-Move nach `done/` (reiner `git mv`) + Link-/Bestand-Pflege.
+- [x] Alle 4 Vollfelder strukturiert in `RunMetadata` + Persistenz
+      (Alembic `0004`, beide Repository-Adapter) — C1 `dc75d1d` +
+      Postgres-Roundtrip-Integrationstest.
+- [x] Kanonisierungs-Regeln implementiert und in
+      [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) fixiert;
+      Fehlend-Reject **vor** der Gleichheitspruefung — C1/C2.
+- [x] Preflight vergleicht 9 Felder; parametrisierte Boundary-Tests
+      pro Vollfeld × Reject-Klasse gruen — C2 `e75fa04`.
+- [x] [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Accepted` (C4b); ADR-Index aktualisiert.
+- [x] Replay-Evidence ([`harness/replay.md`](../../../../harness/replay.md)) +
+      Verification-Evidence ([`harness/verification.md`](../../../../harness/verification.md)) festgehalten — C3 `6dd012b` (siehe Evidence-Block).
+- [x] `make gates` + `make docs-check` gruen; `make fullbuild`
+      cache-frei gruen vor dem Tag.
+- [x] Release-Entscheidung vollzogen (ja, minor: `pyproject` 0.2.0 →
+      0.3.0 + CHANGELOG-Finalisierung + Tag `v0.3.0` → `release.yml`)
+      — Runtime-Delta-Pflicht erfuellt (`6b3a212`).
+- [x] Self-Move nach `done/` (reiner `git mv`, C4a `ed0790f`) +
+      Link-/Bestand-Pflege (C4b).
 
 ## Verification Evidence (C3, 2026-07-03)
 

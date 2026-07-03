@@ -3,7 +3,7 @@
 **Status:** Open — Sensor-Drift-Befund aus Slice 038 C2
 **Datum:** 2026-07-03
 **Quelle:** Slice-038-C2-Verifikation
-([`../in-progress/038-gg-term-002-003-full-equality-matrix.md`](../in-progress/038-gg-term-002-003-full-equality-matrix.md)):
+([`../done/038-gg-term-002-003-full-equality-matrix.md`](../done/038-gg-term-002-003-full-equality-matrix.md)):
 `make test-replay` schlug mit pytest-Exit-Code 5 fehl (0 Tests
 selektiert, 2522 deselektiert).
 

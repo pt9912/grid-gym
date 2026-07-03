@@ -196,7 +196,7 @@ abweichenden Feld(ern). C2 liefert **per-Feld**-Boundary-Tests
 (ein generischer Mismatch reicht nicht). Volle Matrix
 (`platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash`)
 bleibt Carveout
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
 (1b-a-D-6). Begruendung der Reject-Semantik: ein Replay-Diff
 zwischen ungleich-konfigurierten Laeufen ist fachlich
 bedeutungslos; die binaere Metrik bleibt nur fuer **valide**
@@ -415,7 +415,7 @@ Severity-Stufen-Metrik, asynchroner Diff.
   Slice-Plan.
 - [Trigger 036](036-safe-006-replay-diff-status-replay-source-integration.md)
   — wird mit 1b-b-C3 nach `done/` aufgeloest.
-- [Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+- [Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
   — volle GG-TERM-002/003-Matrix (Carveout).
 - [Trigger 039](../done/039-api-replay-trigger-surface.md) —
   oeffentliche API-Replay-Bedienung (1b-b-D-7-Carveout).

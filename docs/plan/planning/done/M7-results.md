@@ -55,7 +55,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | [`GG-SAFE-006`](../../../../spec/lastenheft.md#gg-safe-006) | ⚠ → ✓ (Welle 1b-b): `replay_diff_status`-Per-Lauf-Marker + Detail-Evidence via `log_port` ([`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md)); Trigger 036 aufgeloest. |
 | [`GG-SAFE-004`](../../../../spec/lastenheft.md#gg-safe-004) | ✗ → ✓ (Welle 3a): `max_age`-`STALE`-Markierung im TickLoop-Spine ([`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)); Trigger 034 aufgeloest. |
 | [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) | ⚠ → ✓ (Welle 3b): Comm-Failure → `MISSING` + Alarm mit Ziel/Startzeit/Ursache ([`ADR 0053`](../../adr/0053-comm-failure-wrapper-missing-quality-alarm.md), §2.1-Scope-Lesart); Trigger 035 aufgeloest. **Alle vier [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)..004 produktiv.** |
-| [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003 | MVP-Preflight produktiv (Welle 1b-b; 5 `RunMetadata`-Felder); volle Equality-Matrix → [Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md). |
+| [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003 | MVP-Preflight produktiv (Welle 1b-b; 5 `RunMetadata`-Felder); volle Equality-Matrix → [Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md). |
 
 Audit-Dokus unter `docs/user/`: `replay-determinism-e2e.md`,
 `safe-001-004-quality-pipeline.md` (alle vier IDs ✓),

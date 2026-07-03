@@ -74,7 +74,7 @@ persistiert beide nach Postgres und belegt ueber den
 ## Carveouts
 
 - **[`GG-TERM-002`](../../spec/lastenheft.md#gg-term-002)/003 volle Equality-Matrix**: **geliefert** mit
-  [Slice 038](../plan/planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
+  [Slice 038](../plan/planning/done/038-gg-term-002-003-full-equality-matrix.md)
   ([`ADR 0073`](../plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md)) —
   der Preflight prueft alle 9 Felder inkl. Fehlend-Reject; der
   fruehere MVP-5-Felder-Carveout (1b-a-D-6) ist aufgeloest.

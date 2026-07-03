@@ -14,14 +14,14 @@ Substanz, **ADR 0048**) **— Done 2026-06-09** + **1b-b**
 0049**). `GG-MVP-002` flippt erst nach 1b-b. Decisions D-0..D-5
 final (§3); 1b-Equality-Scope auf MVP-Preflight korrigiert
 (§2.5 + R4; Carveout
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)).
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)).
 **Alle Sub-Slices geliefert (1a + 1b-a + 1b-b)** —
 [`M7-welle-1a.md`](M7-welle-1a.md) +
 [`M7-welle-1b-a.md`](M7-welle-1b-a.md) +
 [`M7-welle-1b-b.md`](M7-welle-1b-b.md) (Closure, Done 2026-06-09).
 **`GG-MVP-002` ✓ produktiv** (deterministisches Replay-E2E belegt;
 Trigger 036 aufgeloest). Carveouts: volle `GG-TERM`-Matrix
-([Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md))
+([Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md))
 + oeffentliche API-Replay-Bedienung
 ([Trigger 039](../done/039-api-replay-trigger-surface.md)). Pattern
 analog M6-Welle-4 → 4a/4b. **M7-Welle-1 komplett**; dieser
@@ -160,7 +160,7 @@ M7-Welle-0-C2-Triage; siehe §5) — liefert:
    `RunMetadata`-Felder gleich sind — `scenario_hash`,
    `schema_version`, `seed`, `tick_ms`, `tool_version`.
    **Bewusst NICHT in 1b** (dokumentierter Carveout
-   [Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)):
+   [Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)):
    Plattformarchitektur, aktivierte Adapter/Adapterprofile,
    Startzeit im Simulationszeitmodell, separater Konfigurations-
    Hash, `RunMetadata`-Migration, `ReplayComparisonMetadata`-
@@ -380,7 +380,7 @@ Lifecycle: `replay_diff_status`-Vertrag + `GG-SAFE-006`-
 Detailvertrag + `GG-TERM-002/003`-MVP-Preflight + Lifecycle-Hook-
 Pflicht im Core-Spine). Die **volle** `GG-TERM-002/003`-Matrix
 ist nicht in 0049, sondern als Carveout
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
 defert (1b-a-D-6).
 
 ## 4. Sub-Scope (Welle-Vorbelegung)
@@ -509,7 +509,7 @@ Adapter und Simulations-Startzeit sind es **nicht**
 weshalb ihr Vollausbau Migration + Canonicalization +
 Public-Contract-Schaerfung braucht und additiv per ADR-0011-
 Pattern auf
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
 defert ist. ADR 0049 (1b-b) fixiert den Preflight-Vertrag +
 die dokumentierte Carveout-Aussage; 1b-b-C2 liefert
 parametrisierte Boundary-Tests einzeln fuer die 5 Preflight-

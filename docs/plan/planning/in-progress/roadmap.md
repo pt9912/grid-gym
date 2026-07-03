@@ -3,10 +3,10 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
-Aktiver Slice:
-[`038`](038-gg-term-002-003-full-equality-matrix.md) (volle
-[`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix).
-Weitere trigger-getriebene Folgearbeit unter [`../open/`](../open/).
+Kein aktiver Slice; zuletzt abgeschlossen:
+[`Slice 038`](../done/038-gg-term-002-003-full-equality-matrix.md)
+(volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix → **v0.3.0**).
+Trigger-getriebene Folgearbeit unter [`../open/`](../open/).
 **Stand:** 2026-07-03
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -75,15 +75,16 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-| Slice | Gegenstand | Status |
-| ----- | ---------- | ------ |
-| [`038`](038-gg-term-002-003-full-equality-matrix.md) | Volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix: `platform_arch`, `enabled_adapters`, `sim_start_time`, `config_hash` in `RunMetadata` + Replay-Preflight (loest M7-Welle-1b-Carveout 1b-a-D-6 auf) | **In Progress** (aktiviert 2026-07-03) |
-
-Zuletzt abgeschlossen:
+**Kein aktiver Slice.** Zuletzt abgeschlossen:
+[`038`](../done/038-gg-term-002-003-full-equality-matrix.md) (volle
+[`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix,
+[`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Accepted` →
+Release **v0.3.0**, 2026-07-03 — erster Release-Zyklus des
+slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
+Trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
 [`../open/`](../open/) (Trigger-Watch). Cross-Slice-Carveouts
 (Anti-Scope + Erbschaft): [`carveouts.md`](carveouts.md).
 
@@ -102,4 +103,5 @@ die Release-Entscheidung **pro Slice**: jeder Slice-Plan traegt ein DoD-Feld
   „kein Doku-only-Release" (Runtime-Delta-Pflicht) + `make fullbuild` vor dem
   Tag. SemVer folgt dem Delta (Minor bei additiven Features, Patch bei Fixes).
 
-Aktuelles Release: **v0.2.0** (2026-07-01).
+Aktuelles Release: **v0.3.0** (2026-07-03, Slice 038 — erster
+Release unter dem Slice-Release-Modell).

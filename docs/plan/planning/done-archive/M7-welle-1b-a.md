@@ -3,7 +3,7 @@
 **Status:** Done — C0 `58203f1` (Slice-Doc + Decision-Liste
 1b-a-D-0..D-6 + DoD + Sub-Slicing-Beschluss 1b → 1b-a/1b-b +
 `GG-TERM-002/003`-Equality-Scope-Korrektur am Gruppenplan + NEU
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md))
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md))
 + C1 `fb965c6` (NEU ADR 0048 `Provisional` — `ReplaySnapshotPort`-
 Rekonstruktions-Pattern + 0047-Drift-Sync) + C2 `2b755d6` (Code:
 `ReplaySnapshotPort` + `PostgresReplaySnapshotAdapter` + 8
@@ -240,7 +240,7 @@ Simulationszeitmodell und aktivierte Adapter
 ([`spec/lastenheft.md` GG-TERM-002/003](../../../../spec/lastenheft.md#gg-term-002)).
 Verankert als **dokumentierter `GG-TERM-002/003`-Carveout**; die
 volle Matrix wird per ADR-0011-Pattern auf
-[Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+[Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
 (NEU, dieser C0) defert. **Scope-Korrektur am Gruppenplan
 [`M7-welle-1.md`](M7-welle-1.md) §2.5 + §3 + R4 erfolgt in diesem
 C0.** Der Preflight-Vertrag + die Carveout-Aussage landen formal
@@ -276,7 +276,7 @@ fehlende Vollfelder bleiben als dokumentierter
 ## 5. Critical Files
 
 **NEU (C0/C1/C2):** `M7-welle-1b-a.md` (C0);
-`docs/plan/planning/in-progress/038-gg-term-002-003-full-equality-matrix.md`
+`docs/plan/planning/done/038-gg-term-002-003-full-equality-matrix.md`
 (C0); `docs/plan/adr/0048-…md` (C1);
 `src/grid_gym/hexagon/ports/driven/replay_snapshot.py` (C2);
 `src/grid_gym/adapters/driven/persistence_postgres/
@@ -366,7 +366,7 @@ Flip, keine neue Alembic-Migration (alles 1b-b bzw. entfaellt).
   points`-Lese-Quelle fuer 1b-a.
 - [`M7-mvp-completion.md`](M7-mvp-completion.md) — M7-Meilenstein-
   Slice-Plan.
-- [Trigger 038](../in-progress/038-gg-term-002-003-full-equality-matrix.md)
+- [Trigger 038](../done/038-gg-term-002-003-full-equality-matrix.md)
   — volle `GG-TERM-002/003`-Equality-Matrix (1b-D-6-Carveout).
 - [`../done/036-safe-006-replay-diff-status-replay-source-integration.md`](036-safe-006-replay-diff-status-replay-source-integration.md)
   — Trigger 036 (wird in 1b-b aufgeloest).

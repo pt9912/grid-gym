@@ -1,10 +1,12 @@
 # ADR 0073 — Volle `GG-TERM-002/003`-Equality-Matrix: `RunMetadata`-Vollfelder + 9-Felder-Preflight (Slice 038)
 
-**Status:** Provisional — direkter `Proposed → Provisional`-Sprung
-mit Slice-038-C0/C1 (Muster [`ADR 0049`](0049-replay-lifecycle-finalize-hook.md));
-`Accepted` mit Slice-038-Closure (C4).
+**Status:** Accepted — gezogen 2026-07-03 mit Slice-038-Closure
+(C4; Gates + `make fullbuild` cache-frei gruen, Release v0.3.0).
+Provisional-Schritt 2026-07-03 (direkter `Proposed → Provisional`-
+Sprung mit Slice-038-C0/C1, Muster [`ADR 0049`](0049-replay-lifecycle-finalize-hook.md)).
 **Datum:** 2026-07-03
-**Status geaendert am:** 2026-07-03 — `Proposed → Provisional`.
+**Status geaendert am:** 2026-07-03 — `Proposed → Provisional`;
+2026-07-03 — `Provisional → Accepted` (Slice-038-Closure C4).
 **Bezug:**
 
 - [`ADR 0011`](0011-schaerfung-ohne-abloesung.md) — Schaerfung-ohne-
@@ -25,7 +27,7 @@ mit Slice-038-C0/C1 (Muster [`ADR 0049`](0049-replay-lifecycle-finalize-hook.md)
 - [`ADR 0054`](0054-composition-asgi-entrypoint-and-scenario-hook.md) — Hook-
   Inversion Composition → Adapter (Injektions-Pfad fuer das
   Adapter-Profil, §2.3).
-- [Slice 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
+- [Slice 038](../planning/done/038-gg-term-002-003-full-equality-matrix.md)
   — Slice-Plan (C0-Entscheidungspunkte E-1/E-2, Tranchen, DoD).
 - [`spec/lastenheft.md`](../../../spec/lastenheft.md) —
   [`GG-TERM-002`](../../../spec/lastenheft.md#gg-term-002)/[`GG-TERM-003`](../../../spec/lastenheft.md#gg-term-003)
@@ -43,7 +45,7 @@ strukturierten `RunMetadata`-Felder (`scenario_hash`,
 Lastenheft-Pflichtfelder **Plattformarchitektur**, **aktivierte
 Adapter**, **Startzeit im Simulationszeitmodell** und
 **Konfiguration** blieben als dokumentierter Carveout offen
-([Slice 038](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md),
+([Slice 038](../planning/done/038-gg-term-002-003-full-equality-matrix.md),
 1b-a-D-6).
 
 **Code-Ist-Stand (verifiziert 2026-07-03):**
@@ -281,9 +283,10 @@ Tupel ↔ komma-separierter String (§2.3).
 
 Lieferplan, Commit-Hashes + Verifikations-Gates leben im
 Slice-Plan
-[`038-gg-term-002-003-full-equality-matrix.md`](../planning/in-progress/038-gg-term-002-003-full-equality-matrix.md)
+[`038-gg-term-002-003-full-equality-matrix.md`](../planning/done/038-gg-term-002-003-full-equality-matrix.md)
 (§T Tranchen C0..C4). Status-Pfad: `Proposed → Provisional`
-(dieser Commit, C0/C1) → `Accepted` (Slice-038-Closure C4).
+(C0 `0b01132`) → `Accepted` (Slice-038-Closure C4, 2026-07-03;
+Release v0.3.0 `6b3a212`).
 
 ---
 
