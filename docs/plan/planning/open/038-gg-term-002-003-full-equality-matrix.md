@@ -1,9 +1,15 @@
 # 038 — Volle `GG-TERM-002/003`-Equality-Matrix (1b-Carveout)
 
 **Status:** Open — dokumentierter Scope-Carveout aus M7-Welle-1b
-**Datum:** 2026-06-09
+**Datum:** 2026-06-09 (aktualisiert 2026-07-03: Stand nach Slice
+039/040 nachgezogen, C0-Entscheidungspunkte ergaenzt, DoD-Feld
+per [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3 nachgeruestet)
+**Release-Entscheidung:** **ja** (SemVer-Ziel: minor) — echtes
+Runtime-Delta (`RunMetadata`-Felder + Alembic-Migration +
+Preflight-Erweiterung); finale Bestaetigung im aufloesenden C0
+([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md) D-3).
 **Quelle:** M7-Welle-1b-a-C0 (Decision 1b-a-D-6;
-[`docs/plan/planning/done/M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md)).
+[`docs/plan/planning/done-archive/M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md)).
 
 ---
 
@@ -27,7 +33,7 @@ sind normative Begriffsdefinitionen
 Der *testbare* Determinismus-Vertrag traced auf [`GG-AR-P-008`](../../../../spec/architecture.md#2-architekturprinzipien)
 ([`GG-SIM-001`](../../../../spec/lastenheft.md#gg-sim-001)/002/003, [`GG-RT-002`](../../../../spec/lastenheft.md#gg-rt-002)); [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003 liefern die
 normative Feld-/Akzeptanz-Definition (n/a in der Impl-Matrix,
-Lastenheft Z. 2203).
+Lastenheft Z. 2231, Stand 2026-07-03).
 
 ## Carveout-Stand (M7-Welle-1b-a-C0 2026-06-09)
 
@@ -47,6 +53,22 @@ Vergleichsmetadaten gleich sind; fehlende Vollfelder bleiben als
 dokumentierter [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Carveout offen." Boundary-Pins
 einzeln fuer die 5 Felder (1b-b).
 
+**Stand-Update (2026-07-03, nach Slice 039/040):**
+
+- `RunMetadata` traegt inzwischen zusaetzlich `replay_of`
+  ([`ADR 0068`](../../adr/0068-api-replay-binding-persistence.md), Slice 039); die zugehoerige Alembic-Migration
+  `0003_add_replay_of.py` ist das Vorbild fuer den
+  Add-Column-Pfad dieses Slices.
+- `finalize()` feuert seit Slice 040 auch auf der
+  Headless-Run-End-Naht ([`ADR 0067`](../../adr/0067-run-end-seam-and-partial-run.md), `run_session()`-
+  Kontextmanager) — der Preflight greift damit auf beiden
+  Exit-Pfaden.
+- Der Vergleichspunkt selbst bleibt zentral:
+  `_REPLAY_PREFLIGHT_FIELDS` in
+  `src/grid_gym/hexagon/core/simulation/tick_loop.py` — die
+  Feld-Erweiterung ist ein Single-Point-Change, die Hauptarbeit
+  liegt in Quellen-Anbindung, Kanonik und Boundary-Tests.
+
 ## Offene Vollfelder (dieser Trigger)
 
 Die folgenden Lastenheft-Pflichtfelder sind **noch nicht**
@@ -54,13 +76,40 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 1b-Preflight:
 
 - ✗ **Plattformarchitektur** (`platform_arch`).
-- ✗ **Aktivierte Adapter / Adapterprofile** (`enabled_adapters`).
+- ✗ **Aktivierte Adapter / Adapterprofile** (`enabled_adapters`) —
+  **Quellen-Luecke:** es gibt keinen Adapter-Registry-/Profil-
+  Begriff im Code; der Wert muss aus der Composition-Root-
+  Verdrahtung oder einer expliziten Profil-Konfiguration
+  abgeleitet werden (C0-Entscheidungspunkt E-2).
 - ✗ **Startzeit im Simulationszeitmodell** (`sim_start_time`) —
   heute nur Wall-Clock `started_at`/`ended_at`
   (`src/grid_gym/hexagon/core/domain/run.py`), nicht
-  Simulationszeit.
+  Simulationszeit. **Quellen-Luecke:** das Szenario-Schema
+  (`ScenarioSimulation`: `tick_ms`/`duration_s`/`seed`) kennt
+  keine Run-Level-Startzeit; Simulationszeit ist tick-indiziert
+  und startet implizit bei 0 (`start_simulation_time` existiert
+  nur als Fault-Eintrags-Feld). Der Wert kann also nirgends
+  „strukturiert" werden — er muss erst definiert werden
+  (C0-Entscheidungspunkt E-1).
 - ✗ **Separater kanonischer Konfigurations-Hash** (`config_hash`)
   ueber `scenario_hash` hinaus.
+
+## C0-Entscheidungspunkte (bei Aufloesung zu treffen)
+
+- **E-1 `sim_start_time`-Quelle:** entweder (a) Run-Level-
+  Startzeit als Feld im Szenario-Schema einfuehren — das ist ein
+  `schema_version`-Bump, und `schema_version` ist selbst
+  Preflight-Feld (Kaskadeneffekt auf bestehende Preflight-Pins
+  und Referenzlaeufe), oder (b) `sim_start_time := 0` als
+  dokumentierte Konstante des tick-indizierten Zeitmodells
+  festschreiben (kein Schema-Bump; Feld wird erst mit einem
+  spaeteren Kalenderzeit-Modell variabel). Die Entscheidung ist
+  groesser als eine Format-Kanonik und gehoert in den C0.
+- **E-2 `enabled_adapters`-Quelle:** Ableitung aus der
+  Composition-Root-Verdrahtung (kanonische Adapter-Namen) vs.
+  explizites Adapter-Profil in der Konfiguration. Die
+  Sortier-Kanonik (siehe Substanz-Skizze) haengt an dieser
+  Quellen-Entscheidung.
 
 ## Substanz-Skizze (bei Aufloesung)
 
@@ -84,9 +133,9 @@ verankert ist.
 
 ## References
 
-- [`../done/M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md)
+- [`../done-archive/M7-welle-1b-a.md`](../done-archive/M7-welle-1b-a.md)
   — 1b-a-D-6 (Equality-Scope-Beschluss + Carveout-Begruendung).
-- [`../done/M7-welle-1.md`](../done-archive/M7-welle-1.md)
+- [`../done-archive/M7-welle-1.md`](../done-archive/M7-welle-1.md)
   — [`GG-MVP-002`](../../../../spec/lastenheft.md#gg-mvp-002)-Gruppenplan (§2.5 + R4 auf Preflight korrigiert).
 - [`../../../../spec/lastenheft.md`](../../../../spec/lastenheft.md#gg-mvp-002)
   — [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/[`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003) normative Definitionen.
