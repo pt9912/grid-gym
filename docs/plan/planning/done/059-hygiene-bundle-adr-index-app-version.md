@@ -19,7 +19,7 @@ Zwei aus Slice 038 zurueckgestellte Hygiene-Befunde, gebuendelt geliefert:
 **Befund:** `_APP_VERSION` war doppelt hart auf `"0.1.0"` gepinnt
 (`http_api/app.py` + `composition/_demo_scenario_setup.py`), waehrend das
 Paket seit v0.3.0 bei `0.3.0` steht. Folge: FastAPI-`info.version` und das
-`RunMetadata.tool_version`-Feld (`GG-TERM-003`) neuer Laeufe trugen eine
+`RunMetadata.tool_version`-Feld ([`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003)) neuer Laeufe trugen eine
 falsche Version.
 
 **Lieferung:** NEU zyklenfreies Leaf
@@ -29,14 +29,14 @@ Sentinel-Fallback `0.0.0+local` (Praezedenz: `_resolve_tool_version` in
 `tests/integration/_constants.py`). Beide Pin-Stellen lesen jetzt daraus.
 
 **Cycle-Zwang beachtet:** `app.py` importiert `_demo_scenario_setup`, deshalb
-darf keine Version-Quelle aus `app.py` lesen (`AC-NO-CYCLES`). Das Leaf hat
+darf keine Version-Quelle aus `app.py` lesen ([`AC-NO-CYCLES`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)). Das Leaf hat
 **keine** internen `grid_gym`-Importe und liegt top-level (nicht unter
 `http_api/`, dessen `__init__` `app` importiert) — beide Verbraucher
 importieren es zyklenfrei.
 
 **Konsequenz (dokumentiert):** neue Laeufe sind nicht mehr replay-vergleichbar
 mit Alt-Laeufen, deren `tool_version` `"0.1.0"` traegt — fachlich korrekt per
-`GG-TERM-002` („bei gleicher Version"), exakt die Preflight-Semantik aus
+[`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002) („bei gleicher Version"), exakt die Preflight-Semantik aus
 [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §2.6.
 
 **Release-Entscheidung:** Runtime-Delta, aber der Fix bringt die Laufzeit nur
@@ -60,7 +60,7 @@ Index-Spalte.
   M1-Welle-1-Sweep** identifiziert und auf `Accepted` nachgezogen (Datei-Header
   + Index): die Acceptance war allein an die M1-Welle-1-PR-Mergung gebunden
   (laengst erfolgt), die dritte Frozen-Form ist produktiv verankert
-  (`tools/arch_check.py` `_inherits_enum`, `AC-DOMAIN-FROZEN` gruen mit
+  (`tools/arch_check.py` `_inherits_enum`, [`AC-DOMAIN-FROZEN`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) gruen mit
   `Quality`/`CommandResult` als `StrEnum`).
 - README/README.de-ADR-Zaehlung korrigiert: **72 von 73 ADRs `Accepted`
   (1 `Superseded` = 0003, 0 `Provisional`)**.

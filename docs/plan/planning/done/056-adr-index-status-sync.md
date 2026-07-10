@@ -66,6 +66,6 @@ Geliefert im Hygiene-Buendel [`059`](059-hygiene-bundle-adr-index-app-version.md
 10 Drift-Zeilen (0022–0027, 0036, 0038–0040) im Index auf `Accepted`
 angeglichen; [`ADR 0008`](../../adr/0008-enum-as-domain-frozen-form.md) als
 vergessener M1-Welle-1-Sweep auf `Accepted` nachgezogen (Datei-Header + Index,
-Substanz `_inherits_enum`/`AC-DOMAIN-FROZEN` gruen); README/README.de melden
+Substanz `_inherits_enum`/[`AC-DOMAIN-FROZEN`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) gruen); README/README.de melden
 jetzt **72 von 73 ADRs `Accepted` (1 `Superseded`, 0 `Provisional`)**.
 `make docs-check` gruen. Details + DoD in Slice 059.

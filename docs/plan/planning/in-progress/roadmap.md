@@ -101,11 +101,14 @@ aktualisiert 2026-07-10): Hygiene-Buendel — Teil 1
 (pytest-Marker-Sweep `determinism`/`fault`) **2026-07-10 aufgeloest → `done/`**
 (alle drei Marker-Sensoren nicht-leer gruen; deferrter CI-Anker via
 [`058`](../done/058-marker-sensor-drift-guard.md) als Meta-Drift-Guard
-geschlossen). Verbleibend
-[`056`](../open/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
-+ [`057`](../open/057-app-version-single-source.md)
-(`_APP_VERSION`-Single-Sourcing) — als ein Slice oder zwei kleine;
-057 traegt das einzige Runtime-Delta (Release-Entscheidung dort).
+geschlossen). Teil 2
+[`056`](../done/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
++ [`057`](../done/057-app-version-single-source.md)
+(`_APP_VERSION`-Single-Sourcing) **2026-07-10 als Buendel
+[`059`](../done/059-hygiene-bundle-adr-index-app-version.md) geliefert → `done/`**
+(057-Runtime-Delta ohne Tag, unter `[Unreleased]`; Patch v0.3.1 =
+Maintainer-Option). **Hygiene-Buendel komplett — kein offener
+Aktivierungs-Kandidat aus der Slice-038-Session.**
 
 Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
 [`../open/`](../open/) (Trigger-Watch). Cross-Slice-Carveouts
