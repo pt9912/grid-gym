@@ -88,13 +88,14 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Naechster Aktivierungs-Kandidat** (Planner-Notiz 2026-07-03):
-Hygiene-Buendel aus
-[`054`](../open/054-pytest-marker-drift-sensor-targets.md)
-(pytest-Marker-Sweep `determinism`/`fault`) +
+**Naechster Aktivierungs-Kandidat** (Planner-Notiz 2026-07-03,
+aktualisiert 2026-07-10): Hygiene-Buendel — Teil 1
+[`054`](../done/054-pytest-marker-drift-sensor-targets.md)
+(pytest-Marker-Sweep `determinism`/`fault`) **2026-07-10 aufgeloest → `done/`**
+(alle drei Marker-Sensoren nicht-leer gruen). Verbleibend
 [`056`](../open/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
 + [`057`](../open/057-app-version-single-source.md)
-(`_APP_VERSION`-Single-Sourcing) — als ein Slice oder drei kleine;
+(`_APP_VERSION`-Single-Sourcing) — als ein Slice oder zwei kleine;
 057 traegt das einzige Runtime-Delta (Release-Entscheidung dort).
 
 Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:

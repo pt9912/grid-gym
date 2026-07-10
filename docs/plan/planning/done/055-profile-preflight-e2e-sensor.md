@@ -48,7 +48,7 @@ mit dem **real registrierten** Composition-Profil aus
      valide Vergleichsbasis (kein `missing`-/Mismatch-Reject);
    - `B.replay_of == A` (persistente Bindung).
 5. Der Test traegt den `replay`-pytest-Marker (zahlt auf die
-   [`054`](../open/054-pytest-marker-drift-sensor-targets.md)-Sensor-Familie ein).
+   [`054`](054-pytest-marker-drift-sensor-targets.md)-Sensor-Familie ein).
 
 ## Anti-Scope (dokumentierte Grenze)
 
@@ -94,7 +94,7 @@ mit dem **real registrierten** Composition-Profil aus
   (kein Runtime-/Image-Delta; Test-only).
 - Replay/Golden: neuer Case (produktiver Profil-Pfad); keine
   bestehenden Cases geaendert; Anti-Scope Clean-Diff dokumentiert.
-- Carveouts: neu keine; [`054`](../open/054-pytest-marker-drift-sensor-targets.md)
+- Carveouts: neu keine; [`054`](054-pytest-marker-drift-sensor-targets.md)
   unveraendert offen (dieser Slice liefert den zweiten
   `replay`-Marker-Traeger, nicht den Sweep).
 

@@ -52,8 +52,8 @@ Korrektheits-/Doku-Problem, kein Determinismus-Bruch.
 
 Naechster Release-Zyklus (damit die Versionsangabe ab dann stimmt)
 ODER Buendel-Aktivierung als Hygiene-Slice mit
-[`054`](054-pytest-marker-drift-sensor-targets.md) +
-[`056`](056-adr-index-status-sync.md).
+[`056`](056-adr-index-status-sync.md) (054-Marker-Sweep
+2026-07-10 erledigt → `done/`).
 
 ## Wandert nach
 

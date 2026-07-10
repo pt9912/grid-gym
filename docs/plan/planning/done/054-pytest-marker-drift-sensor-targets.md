@@ -3,7 +3,7 @@
 **Status:** Done — 2026-07-10 (Marker-Sweep geliefert; alle drei Sensoren nicht-leer gruen)
 **Datum:** 2026-07-03
 **Quelle:** Slice-038-C2-Verifikation
-([`../done/038-gg-term-002-003-full-equality-matrix.md`](../done/038-gg-term-002-003-full-equality-matrix.md)):
+([`038-gg-term-002-003-full-equality-matrix.md`](038-gg-term-002-003-full-equality-matrix.md)):
 `make test-replay` schlug mit pytest-Exit-Code 5 fehl (0 Tests
 selektiert, 2522 deselektiert).
 

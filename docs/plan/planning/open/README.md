@@ -38,16 +38,17 @@ konkreten Anlass, der eine Aktivierung ausloesen soll.
 
 **Quality-Gates / Sensoren:**
 
-| Datei | Trigger | Aktivierung |
-| ----- | ------- | ----------- |
-| [`054-pytest-marker-drift-sensor-targets.md`](054-pytest-marker-drift-sensor-targets.md) | `make test-determinism`/`test-fault` sammeln 0 Tests (Marker deklariert, aber ohne Traeger; `test-replay` seit Slice 038 C2 mit erstem Traeger gruen) — Sensor-Familien sind stille No-ops | Naechster Slice mit Determinismus-/Replay-/Fault-Substanz ODER Verifier-Lauf, der einen Marker-Sensor als Closure-Beleg zitiert |
+*(Trigger 054 (pytest-Marker-Drift `determinism`/`fault`) — **Resolved
+2026-07-10** via Slice-054-Closure; nach
+[`../done/054-pytest-marker-drift-sensor-targets.md`](../done/054-pytest-marker-drift-sensor-targets.md)
+verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 
 **Doku-/Versions-Hygiene (Slice-038-Session-Befunde):**
 
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
-| [`056-adr-index-status-sync.md`](056-adr-index-status-sync.md) | ADR-Index-Statusspalte zeigt 11× `Provisional`, obwohl die Datei-Header (kanonisch per [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §4) laengst `Accepted` sind; README-ADR-Zaehlung inkonsistent | Naechster Doku-/Hygiene-Slice (Buendel mit 054/057) ODER naechster ADR-Decision-Sweep |
-| [`057-app-version-single-source.md`](057-app-version-single-source.md) | `_APP_VERSION` doppelt auf `"0.1.0"` gepinnt (Paket: 0.3.0) — `tool_version` ([`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003) „Version") + OpenAPI-`info.version` melden falsche Version; Fix = Single-Sourcing via `importlib.metadata` | Naechster Release-Zyklus ODER Buendel-Aktivierung als Hygiene-Slice mit 054/056 |
+| [`056-adr-index-status-sync.md`](056-adr-index-status-sync.md) | ADR-Index-Statusspalte zeigt 11× `Provisional`, obwohl die Datei-Header (kanonisch per [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §4) laengst `Accepted` sind; README-ADR-Zaehlung inkonsistent | Naechster Doku-/Hygiene-Slice (Buendel mit 057; 054 erledigt) ODER naechster ADR-Decision-Sweep |
+| [`057-app-version-single-source.md`](057-app-version-single-source.md) | `_APP_VERSION` doppelt auf `"0.1.0"` gepinnt (Paket: 0.3.0) — `tool_version` ([`GG-TERM-003`](../../../../spec/lastenheft.md#gg-term-003) „Version") + OpenAPI-`info.version` melden falsche Version; Fix = Single-Sourcing via `importlib.metadata` | Naechster Release-Zyklus ODER Buendel-Aktivierung als Hygiene-Slice mit 056 (054 erledigt) |
 
 **Harness-Regelwerk-Adoption (v1.2.0-Delta):**
 

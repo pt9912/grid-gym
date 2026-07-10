@@ -142,7 +142,7 @@ strukturiert in `RunMetadata` verankert und damit **nicht** im
 | C0 | Architect | Entscheidungen E-0..E-3 + Fehlend-Reject; NEU [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Provisional` ([`ADR-0011`](../../adr/0011-schaerfung-ohne-abloesung.md)-Schaerfung an [`ADR 0049`](../../adr/0049-replay-lifecycle-finalize-hook.md) §2.3); ADR-Index + 0049-Schaerfungs-Vermerk | **done** 2026-07-03 |
 | C1 | Implementation | `RunMetadata`-Vollfelder + Kanonik-Regeln + Alembic-Migration `0004` + InMemory-/Postgres-Repos + Unit-Tests | **done** 2026-07-03 (`dc75d1d`) |
 | C2 | Implementation | `_REPLAY_PREFLIGHT_FIELDS` 5 → 9 + Fehlend-Reject + parametrisierte Boundary-Tests pro Vollfeld × Reject-Klasse | **done** 2026-07-03 (`e75fa04`) |
-| C3 | Verifier | Public-Contract-Sync (`persistence-schema.yaml` inkl. 039-Drift-Nachzug, `replay-determinism-e2e.md`, CHANGELOG, NEU Trigger-Notiz [`054`](../open/054-pytest-marker-drift-sensor-targets.md)) + Verification-Evidence (unten) | **done** 2026-07-03 |
+| C3 | Verifier | Public-Contract-Sync (`persistence-schema.yaml` inkl. 039-Drift-Nachzug, `replay-determinism-e2e.md`, CHANGELOG, NEU Trigger-Notiz [`054`](054-pytest-marker-drift-sensor-targets.md)) + Verification-Evidence (unten) | **done** 2026-07-03 |
 | C4 | Planner | DoD abgehakt, Release **v0.3.0** (`6b3a212` + Tag nach cache-frei gruenem `make fullbuild`), Self-Move `git mv` → `done/` (C4a `ed0790f`) + Link-/Bestand-Pflege + [`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) `Accepted` (C4b) | **done** 2026-07-03 |
 
 ## DoD-Checkliste (abgehakt mit C4, 2026-07-03)
@@ -194,8 +194,8 @@ Sensors:
 | `make test-replay` | pass | Exit 0 nach C2-Marker-Zuordnung (Finalize-/Preflight-Suite; vorher repo-weit 0 Tests selektiert) |
 | `make test-integration` | pass | 164 passed / 4 skipped — inkl. NEU Postgres-Vollfeld-Roundtrip ueber Migration `0004` |
 | `make docs-check` | pass | 261+ Dateien, 0 Befunde (C0/C3) |
-| `make test-determinism` | **not run (rot, vorbestehend)** | Marker ohne Traeger — Sensor-Drift, Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md); Determinismus-Substanz lief via `test-unit`/`gates` |
-| `make test-fault` | **not run (rot, vorbestehend)** | wie `test-determinism` (Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md)) |
+| `make test-determinism` | **not run (rot, vorbestehend)** | Marker ohne Traeger — Sensor-Drift, Trigger [`054`](054-pytest-marker-drift-sensor-targets.md); Determinismus-Substanz lief via `test-unit`/`gates` |
+| `make test-fault` | **not run (rot, vorbestehend)** | wie `test-determinism` (Trigger [`054`](054-pytest-marker-drift-sensor-targets.md)) |
 
 Traceability:
 
@@ -224,7 +224,7 @@ Replay / Golden:
 
 Carveouts:
 
-- Neu: Sensor-Marker-Drift → Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md).
+- Neu: Sensor-Marker-Drift → Trigger [`054`](054-pytest-marker-drift-sensor-targets.md).
 - Geloest: M7-Carveout 1b-a-D-6 (volle Equality-Matrix) — dieser Slice.
 - Unveraendert: Kalenderzeit-Modell, Adapter-Parameter-Hashing,
   Preflight-Whitelist ([`ADR 0073`](../../adr/0073-gg-term-full-equality-matrix-runmetadata.md) §7).
@@ -232,7 +232,7 @@ Carveouts:
 Nicht ausgefuehrt:
 
 - `make test-determinism`/`make test-fault` — vorbestehend rot
-  (0 Tests selektiert, Marker-Drift Trigger [`054`](../open/054-pytest-marker-drift-sensor-targets.md));
+  (0 Tests selektiert, Marker-Drift Trigger [`054`](054-pytest-marker-drift-sensor-targets.md));
   fachliche Abdeckung lief ueber `make gates` (`test-unit`).
 - `make fullbuild` — laeuft mit C4 vor dem Release-Tag (DoD).
 

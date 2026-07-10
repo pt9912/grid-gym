@@ -49,8 +49,8 @@ Datei-Stand.
 ## Aktivierungs-Kriterium
 
 Naechster Doku-/Hygiene-Slice (Buendel-Kandidat mit
-[`054`](054-pytest-marker-drift-sensor-targets.md) +
-[`057`](057-app-version-single-source.md)) ODER der naechste
+[`057`](057-app-version-single-source.md); 054-Marker-Sweep
+2026-07-10 erledigt → `done/`) ODER der naechste
 ADR-Decision-Sweep.
 
 ## Wandert nach
