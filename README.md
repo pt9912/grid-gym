@@ -84,7 +84,7 @@ development gate is `make gates`.
 > `otel/opentelemetry-collector-contrib` to 0.154.0, built against
 > go1.26.4+; Trivy re-scan reports 0 HIGH/CRITICAL.)
 
-Current release: **v0.3.0** (2026-07-03) — see
+Current release: **v0.3.1** (2026-07-10) — see
 [Releases](https://github.com/pt9912/grid-gym/releases).
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
@@ -166,6 +166,8 @@ As of **2026-07-03**:
 | **Release v0.2.0** | released | 2026-07-01 | Second release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-identical `:latest`), GitHub release with SBOM (CycloneDX, digest-bound), JUnit XML, coverage HTML, OpenAPI JSON and demo acceptance doc. (v0.1.0 is the previous release; the docs-only v0.1.1 cut was deliberately discarded) |
 | **Slice 038 — full [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003 equality matrix** → **v0.3.0** | `Done` | 2026-07-03 | First slice-driven release cycle ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): `RunMetadata` carries the four full fields `platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash` ([`ADR 0073`](docs/plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md), sharpens [`ADR 0049`](docs/plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.3); the replay preflight checks 9 instead of 5 fields and rejects missing full metadata fail-closed; Alembic `0004`; `POST /runs` inherits the fields from the composition-root profile. Slice plan: [`038`](docs/plan/planning/done/038-gg-term-002-003-full-equality-matrix.md) |
 | **Release v0.3.0** | released | 2026-07-03 | Third release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.3.0` (+ digest-identical `:latest`) with the usual release assets (SBOM, JUnit XML, coverage HTML, OpenAPI JSON, demo acceptance doc); `make fullbuild` cache-free green before the tag |
+| **Slice 059 — hygiene bundle (ADR index sync + app-version single-source)** → **v0.3.1** | `Done` | 2026-07-10 | Patch release flushing the post-v0.3.0 `[Unreleased]` work; triggered by the Slice-059 runtime delta: app-/tool-version now resolves from package metadata via the cycle-free leaf `grid_gym._app_version` (`RunMetadata.tool_version` + OpenAPI `info.version` had been pinned to `0.1.0`; trigger 057), the ADR index status column is reconciled with the canonical file headers ([`ADR 0008`](docs/plan/adr/0008-enum-as-domain-frozen-form.md) accepted; trigger 056), plus the accumulated Slice-038 review hardening and the Slice 055 E2E sensor. Slice plan: [`059`](docs/plan/planning/done/059-hygiene-bundle-adr-index-app-version.md) |
+| **Release v0.3.1** | released | 2026-07-10 | Fourth release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.3.1` (+ digest-identical `:latest`) with the usual release assets (SBOM, JUnit XML, coverage HTML, OpenAPI JSON, demo acceptance doc); `make fullbuild` cache-free green before the tag |
 | **Planning** | slice-driven | — | Planning is now slice-driven ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): no new milestones — waves/slices are the top-level unit and releases are decided per slice. Open triggers 037 (multi-node deployment), 047 (SNMP/LwM2M adapters), 054 (pytest marker drift) plus the tooling/spike backlog carry documented activation conditions; a new slice opens on trigger activation or mandate. Trigger 038 was activated and delivered as the first slice under this model (v0.3.0) |
 
 **Test balance:** 139 integration passed + 4 skipped (remaining

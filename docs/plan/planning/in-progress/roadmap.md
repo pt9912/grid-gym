@@ -79,7 +79,7 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-10):
 [`059`](../done/059-hygiene-bundle-adr-index-app-version.md) (Hygiene-Buendel
 056+057: ADR-Index-Status-Sync + App-/Tool-Version-Single-Source; Runtime-Delta
-ohne Tag) +
+→ Release **v0.3.1**) +
 [`058`](../done/058-marker-sensor-drift-guard.md) (Sensor-Marker-Drift-Guard
 Meta-Test, Follow-up zu 054, Test-only) +
 [`054`](../done/054-pytest-marker-drift-sensor-targets.md)
@@ -106,8 +106,8 @@ geschlossen). Teil 2
 + [`057`](../done/057-app-version-single-source.md)
 (`_APP_VERSION`-Single-Sourcing) **2026-07-10 als Buendel
 [`059`](../done/059-hygiene-bundle-adr-index-app-version.md) geliefert → `done/`**
-(057-Runtime-Delta ohne Tag, unter `[Unreleased]`; Patch v0.3.1 =
-Maintainer-Option). **Hygiene-Buendel komplett — kein offener
+(057-Runtime-Delta → **Release v0.3.1** 2026-07-10). **Hygiene-Buendel
+komplett — kein offener
 Aktivierungs-Kandidat aus der Slice-038-Session.**
 
 Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
