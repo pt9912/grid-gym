@@ -31,6 +31,9 @@ from grid_gym.hexagon.core.faults import FaultInjectableDevice
 from grid_gym.hexagon.core.faults.types import FAULT_TYPE_CONNECTION_LOSS
 from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 _CTX = DeviceTickContext(tick=0, simulation_time=0, tick_ms=3_600_000)
 
 

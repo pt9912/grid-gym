@@ -36,6 +36,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from decimal import Decimal
 
+import pytest
 import hypothesis.strategies as st
 from hypothesis import HealthCheck, given, settings
 
@@ -50,6 +51,9 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.grid_model import GridModelConfig
 from grid_gym.hexagon.core.scenario.loader import build_tick_loop
 from tests.unit.hexagon.ports.driven._fakes import FakeClock
+
+# Slice 054: determinism-Sensor-Traeger fuer `make test-determinism`.
+pytestmark = pytest.mark.determinism
 
 
 _TICKS: int = 20

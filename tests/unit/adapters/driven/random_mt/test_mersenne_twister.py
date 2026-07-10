@@ -34,6 +34,9 @@ from grid_gym.hexagon.core.errors import (
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
+# Slice 054: determinism-Sensor-Traeger fuer `make test-determinism`.
+pytestmark = pytest.mark.determinism
+
 # ---------------------------------------------------------------------------
 # AC1 — Protocol-Konformitaet
 # ---------------------------------------------------------------------------

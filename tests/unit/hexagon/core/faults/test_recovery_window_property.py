@@ -33,6 +33,9 @@ from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice, ScenarioFault
 from grid_gym.hexagon.core.faults import BatteryFaultEngine, GridFaultEngine
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 
 def _battery() -> BatteryDevice:
     device = BatteryDevice()

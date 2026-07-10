@@ -23,9 +23,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+import pytest
+
 from grid_gym.hexagon.core.devices import DeviceModel
 from grid_gym.hexagon.core.faults import FaultInjectableDevice
 from tests.unit.hexagon.core.devices._fakes import NullDevice
+
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
 
 
 class NullFaultInjectableDevice(NullDevice):

@@ -38,6 +38,9 @@ from grid_gym.hexagon.ports.driven.fault import FaultPort
 from tests.unit.hexagon.core.devices._fakes import NullDevice
 from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 _ALL_TYPES = frozenset(
     {
         FAULT_TYPE_CELL_FAILURE,

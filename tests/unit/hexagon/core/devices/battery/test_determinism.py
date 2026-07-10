@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -24,6 +25,9 @@ from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
+
+# Slice 054: determinism-Sensor-Traeger fuer `make test-determinism`.
+pytestmark = pytest.mark.determinism
 
 _TICKS = 100
 """Welle-2-Pflicht (`M2-devices.md §3 Welle 2`): ≥ 100 Ticks."""

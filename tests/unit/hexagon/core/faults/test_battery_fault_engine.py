@@ -25,6 +25,9 @@ from grid_gym.hexagon.core.errors import FaultUnknownReferenceError
 from grid_gym.hexagon.core.faults import BatteryFaultEngine
 from grid_gym.hexagon.ports.driven.fault import FaultPort
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 
 def _battery_device() -> BatteryDevice:
     device = BatteryDevice()

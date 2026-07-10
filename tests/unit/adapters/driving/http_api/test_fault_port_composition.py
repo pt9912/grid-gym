@@ -28,6 +28,9 @@ from grid_gym.hexagon.core.faults.types import (
     FAULT_TYPE_WINDING_FAULT,
 )
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 
 def _fault(target: str, fault_type: str) -> ScenarioFault:
     return ScenarioFault(

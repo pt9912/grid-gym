@@ -29,6 +29,9 @@ from grid_gym.hexagon.core.errors import (
 )
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 
+# Slice 054: determinism-Sensor-Traeger fuer `make test-determinism`.
+pytestmark = pytest.mark.determinism
+
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------

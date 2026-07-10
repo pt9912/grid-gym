@@ -33,6 +33,9 @@ from grid_gym.hexagon.core.serialization.canonical import (
     canonical_json,
 )
 
+# Slice 054: determinism-Sensor-Traeger fuer `make test-determinism`.
+pytestmark = pytest.mark.determinism
+
 # ---------------------------------------------------------------------------
 # Strategien
 # ---------------------------------------------------------------------------

@@ -27,6 +27,9 @@ from grid_gym.hexagon.core.faults import FaultInjectableDevice
 from grid_gym.hexagon.core.faults.types import FAULT_TYPE_GENSET_FAULT
 from tests.unit.hexagon.ports.driven._fakes import FixedSeedRandom
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 _CTX0 = DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000)
 _CTX1 = DeviceTickContext(tick=1, simulation_time=1000, tick_ms=1000)
 

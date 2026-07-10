@@ -27,6 +27,9 @@ from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
 from grid_gym.hexagon.core.errors import FaultUnsupportedTypeError
 from grid_gym.hexagon.core.faults import FaultInjectableDevice
 
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
+
 
 def _grid_device() -> GridConnectionDevice:
     device = GridConnectionDevice()

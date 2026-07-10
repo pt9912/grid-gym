@@ -12,8 +12,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import pytest
+
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.ports.driven.fault import FaultPort
+
+# Slice 054: fault-Sensor-Traeger fuer `make test-fault`.
+pytestmark = pytest.mark.fault
 
 
 class _RecordingFaultPort:
