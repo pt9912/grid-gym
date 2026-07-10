@@ -89,7 +89,6 @@ matrix:
   # einer Historie-Sektion — diese Ueberschriften sind vom Richtungs-Gate
   # ausgenommen.
   exclude-sections:
-    - Historie
     - "27. V-Modell-aehnliche Rueckverfolgbarkeit"
     - "27.1 Anforderung zu Design"
     - "27.2 Anforderung zu Implementierung"

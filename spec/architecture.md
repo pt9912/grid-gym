@@ -26,7 +26,7 @@ Querverweis-Konvention: Kennungen sind primaere Referenz.
 Nicht Gegenstand dieses Dokuments:
 
 - konkrete Sprach- und Frameworkwahl (`GG-AR-OPEN-001`; die Festlegung
-  traegt die [Historie](#historie))
+  traegt die zugehoerige Architekturentscheidung)
 - konkrete Modul-Versionen oder API-Pfade
 - Roadmap-Meilensteine (das Lastenheft-Kapitel mit `GG-FUTURE-*`-
   Anforderungen listet ausschliesslich Zukunfts-/`KANN`-Punkte)
@@ -990,33 +990,3 @@ Diese Trennung wird durch klare Schichten, einheitliche interne Modelle
 (`Telemetry`, `Command`, `Event`, `Quality`, `Snapshot`), einen zentralen
 `ClockPort` und durch per Architekturtest erzwungene Modulgrenzen
 getragen.
-
----
-
-## Historie
-
-Entscheidungs-Provenance (SDP Regel 5: Body vs. Changelog). Der Body oben
-traegt die zeitlose Architektur-Festlegung; diese Sektion bindet jede
-Surface/Komponente an die ADR, die sie spezifiziert. Sie ist vom
-Referenzrichtungs-Gate (`matrix`) ausgenommen.
-
-| Surface / Komponente | ADR |
-| --- | --- |
-| Sprach-/Build-Wahl, Domain-/No-Wall-Clock-Contracts ([`AC-DOMAIN-FROZEN`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-NO-TIME`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-OTLP-ADAPTER-NO-TIME`](../docs/plan/adr/0024-observability-port-trio.md)) | [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) §6.1 / §A-1 |
-| Kennungs-Querverweis-Konvention | [`ADR 0004`](../docs/plan/adr/0004-identifier-based-cross-references.md) |
-| `RandomPort` — PRNG-Wahl + Seeding-Kette | [`ADR 0007`](../docs/plan/adr/0007-random-port.md) |
-| `SnapshotEnvelope` — additive Sub-Snapshots | [`ADR 0015`](../docs/plan/adr/0015-snapshot-envelope-v2.md) §2.3 |
-| `grid_model.update(...)` — Netz-Bilanz | [`ADR 0019`](../docs/plan/adr/0019-grid-model-bilanz-pattern.md) §2.2 |
-| Scenario-Loader + Tick-Loop-Wiring (LoadEvent/Auto-Schluss) | [`ADR 0021`](../docs/plan/adr/0021-scenario-loader-and-tick-loop-event-wiring.md) §2.5/§2.7 |
-| `FaultPort` / `FaultInjectableDevice` / Pre-Tick-Hook | [`ADR 0022`](../docs/plan/adr/0022-fault-injection-protocol.md) §2.1/§2.4–§2.5 |
-| Fault-Recovery-Engine (`auto-recover` / `manual-via-command`) | [`ADR 0025`](../docs/plan/adr/0025-fault-recovery-pattern.md) |
-| `AgentMessageBus` — deterministischer In-Memory-Bus | [`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) §2.2/§3 |
-| Agent-Drain-Registry + Lifecycle-Hook | [`ADR 0026`](../docs/plan/adr/0026-agent-drain-registry-pattern.md) |
-| `RuleBasedAgent` + `agents`-Scenario-Block | [`ADR 0027`](../docs/plan/adr/0027-rule-based-agent-scenario-pattern.md) |
-| `DeviceProtocolPort` — Sync-Surface + Lifecycle | [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1–2.4 |
-| Observability-Port-Trio (`LogPort`/`MetricsPort`/`TracePort`) + OTLP | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) |
-
-Der **Status** der Architektur (gelieferte Meilensteine) und
-die ADR-Lifecycle-Stati leben in
-[`roadmap.md`](../docs/plan/planning/in-progress/roadmap.md) und den
-`M*-results.md`-Closure-Notizen, nicht in diesem zeitlosen Dokument.
