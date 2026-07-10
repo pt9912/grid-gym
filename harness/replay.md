@@ -46,9 +46,9 @@ stabil bleiben soll oder wenn ein Diff im Test schwer lesbar wird.
 
 | Familie | Golden-/Replay-Vertrag | Aktuelle Evidence |
 | --- | --- | --- |
-| Determinismus | Gleicher Seed + gleiche Inputs erzeugen gleiche kanonische Ausgabe | `make test-determinism` |
-| Replay | Replay-Samples, Snapshot-Fortsetzung und Diff-Klassifikation bleiben stabil | `make test-replay` |
-| Faults | Fault-Aktivierung, Recovery und Safety-Pfade bleiben deterministisch | `make test-fault` |
+| Determinismus | Gleicher Seed + gleiche Inputs erzeugen gleiche kanonische Ausgabe | `make test-determinism` — `determinism`-Marker auf Seed-/Scheduler-/Permutations-/`canonical_json`-/`RandomPort`-Property-Suiten (Slice 054) |
+| Replay | Replay-Samples, Snapshot-Fortsetzung und Diff-Klassifikation bleiben stabil | `make test-replay` — `replay`-Marker auf Replay-Diff-/Finalize- und Profil-Preflight-E2E-Suiten |
+| Faults | Fault-Aktivierung, Recovery und Safety-Pfade bleiben deterministisch | `make test-fault` — `fault`-Marker auf Fault-Engine-, Per-Device-Fault-Injection- und Fault-Port-Suiten (Slice 054) |
 | Unit/Properties | Domain-, Scenario-, Device- und Adapter-Vertraege bleiben lokal gepinnt | `make test-unit` |
 | Integration | Postgres, OTLP, API und Compose-Pfade laufen gegen echte Services | `make test-integration` |
 | Demo/Runtime | Runtime-Image, Compose-Smoke und Demo-Pfade bleiben bedienbar | `make fullbuild` oder engerer Demo-Smoke |

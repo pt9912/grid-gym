@@ -1,6 +1,6 @@
 # 054 — pytest-Marker-Drift: `test-determinism`/`test-fault`/`test-replay`-Sensoren sammeln (fast) keine Tests
 
-**Status:** Open — Sensor-Drift-Befund aus Slice 038 C2
+**Status:** Done — 2026-07-10 (Marker-Sweep geliefert; alle drei Sensoren nicht-leer gruen)
 **Datum:** 2026-07-03
 **Quelle:** Slice-038-C2-Verifikation
 ([`../done/038-gg-term-002-003-full-equality-matrix.md`](../done/038-gg-term-002-003-full-equality-matrix.md)):
@@ -60,3 +60,56 @@ Marker-Sensoren als Closure-Beleg zitieren will.
 
 - `next/`, sobald ein Slice die Zuordnungs-Sweep einplant,
 - `done/`, wenn alle drei Sensoren nicht-leer gruen laufen.
+
+---
+
+## Closure 2026-07-10
+
+Direkt aktiviert (Aktivierungs-Kriterium „Verifier-Lauf, der einen
+Marker-Sensor als Closure-Beleg zitieren will" erfuellt). Rollen:
+Implementation (Marker-Sweep) → Verifier (Sensoren + Gates).
+
+**Geliefert — Marker-Zuordnungs-Sweep nach Modul-Zweck (17 Traeger):**
+
+- `determinism` (5): `battery/test_determinism.py`,
+  `simulation/test_scheduler.py`, `simulation/test_scenario_permutation.py`,
+  `serialization/test_canonical.py`, `random_mt/test_mersenne_twister.py`.
+- `fault` (12): `core/faults/test_{battery,grid,scenario}_fault_engine.py`,
+  `core/faults/test_protocol.py`, `core/faults/test_recovery_window_property.py`,
+  `devices/{battery,diesel_generator,ev_charger,grid_connection,transformer}/test_fault_injection.py`,
+  `ports/driven/test_fault.py`,
+  `http_api/test_fault_port_composition.py`.
+- `replay` (unveraendert, 2 Traeger seit Slice 038 C2 / Slice 055):
+  `simulation/test_tick_loop_replay_finalize.py`,
+  `integration/test_slice_055_profile_preflight_e2e.py`.
+
+**Verification-Evidence:**
+
+- Sensoren nicht-leer gruen: `make test-determinism` = 117 passed
+  (vorher pytest-Exit 5), `make test-replay` = 26 passed,
+  `make test-fault` = 125 passed (vorher pytest-Exit 5).
+- `make gates` gruen (alle 10 Pflicht-Gates inkl. `format-check`/`lint`).
+- Marker sind **rein additiv**: `test-unit`/`coverage-gate` laufen
+  `pytest tests/unit/` ohne Marker-Filter — kein Test verlaesst die
+  Coverage-Erfassung durch die Marker.
+- **Leerlauf-Schutz intakt:** die Dockerfile-Stages fahren
+  `pytest -m <marker> tests/ -v`; bei 0 selektierten Tests bleibt
+  pytest-Exit 5 → Stage rot → Target rot (Drift-Detektor unmaskiert).
+
+**Harness-Sync:** [`harness/replay.md`](../../../../harness/replay.md)
+Sensor-Familien-Tabelle nennt jetzt in der Evidence-Spalte den realen
+Selektions-Scope je Marker (statt nur den Target-Namen).
+
+**CI-Anker (Original-Body „Optional CI-Anker"): bewusst deferred.**
+Die drei Marker-Targets laufen weiterhin in keiner CI-Stage — aber die
+markierten Suiten laufen vollstaendig unter `make test-unit` (ohne
+Marker-Filter), das Teil von `make gates`/`make ci`/CI ist. Die
+Coverage-/Regressions-Absicherung ist damit in CI intakt; die
+Marker-Targets sind diagnostische Sensoren, kein zusaetzlicher
+CI-Coverage-Pfad. Eine dedizierte CI-Stage bleibt eine separate,
+optionale Folgeentscheidung ohne akutes Drift-Risiko.
+
+**Nicht im Scope:** breitere Marker-Vergabe an sekundaere Suiten
+(Protocol-Codec-Roundtrips, Snapshot-Codec) — der Sweep markiert die
+Suiten mit primaerem Determinismus-/Fault-Zweck; Grenzfaelle bleiben
+`test-unit`-only.
