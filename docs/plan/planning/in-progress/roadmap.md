@@ -76,7 +76,11 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen:
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-10):
+[`058`](../done/058-marker-sensor-drift-guard.md) (Sensor-Marker-Drift-Guard
+Meta-Test, Follow-up zu 054, Test-only) +
+[`054`](../done/054-pytest-marker-drift-sensor-targets.md)
+(pytest-Marker-Sweep `determinism`/`fault`, Test-only); davor
 [`055`](../done/055-profile-preflight-e2e-sensor.md) (E2E-Sensor
 produktiver Profil-Pfad → Replay-Preflight; Slice-038-Review-INFO-
 Aufloesung, Test-only, Release **nein**) und
@@ -92,7 +96,9 @@ Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md))
 aktualisiert 2026-07-10): Hygiene-Buendel — Teil 1
 [`054`](../done/054-pytest-marker-drift-sensor-targets.md)
 (pytest-Marker-Sweep `determinism`/`fault`) **2026-07-10 aufgeloest → `done/`**
-(alle drei Marker-Sensoren nicht-leer gruen). Verbleibend
+(alle drei Marker-Sensoren nicht-leer gruen; deferrter CI-Anker via
+[`058`](../done/058-marker-sensor-drift-guard.md) als Meta-Drift-Guard
+geschlossen). Verbleibend
 [`056`](../open/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
 + [`057`](../open/057-app-version-single-source.md)
 (`_APP_VERSION`-Single-Sourcing) — als ein Slice oder zwei kleine;
