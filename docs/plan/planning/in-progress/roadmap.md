@@ -76,14 +76,11 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Aktiver Slice:** [`063`](063-traceability-doc-auslagern.md) — §27-Traceability
-aus `lastenheft.md` in ein eigenes Dokument auslagern. **Wartet auf C0-Owner-
-Entscheidung:** die Auslagerung erfordert ein Amendment der Trace-MUSS-
-Anforderung (fordert die Matrix „im Lastenheft") — Variante A (auslagern +
-Amendment) vs.
-B (Status quo, §27 bleibt excluded). C1–C4 erst nach C0=A.
-
-Zuletzt abgeschlossen (2026-07-10):
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-10):
+[`063`](../done/063-traceability-doc-auslagern.md) (§27-Traceability aus
+`lastenheft.md` nach `docs/plan/traceability.md` ausgelagert — Vertrag jetzt
+abwaerts-verweis-frei; Trace-MUSS-Anforderung amendiert, §27-`exclude-sections`
+raus) +
 [`060`](../done/060-lastenheft-traceability-resync.md) (Lastenheft §27.2-Status-
 Re-Sweep: 36 stale `🔲` → `✓`; 2 MUSS-Luecken aufgedeckt → Trigger
 [`061`](../open/061-replay-time-multipliers.md)/[`062`](../open/062-run-deletion-operation.md)) +
