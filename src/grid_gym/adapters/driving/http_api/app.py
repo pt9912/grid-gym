@@ -101,12 +101,13 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
     TickLoopRegistry,
     _TickLoopRegistryNotConfiguredError,
 )
+from grid_gym._app_version import resolve_app_version
 from grid_gym.hexagon.core.domain.run import SIM_START_TIME_ORIGIN, RunMetadata
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import TelemetryStreamPort
 
 _APP_TITLE: Final[str] = "grid-gym HTTP API"
-_APP_VERSION: Final[str] = "0.1.0"
+_APP_VERSION: Final[str] = resolve_app_version()
 _APP_DESCRIPTION: Final[str] = (
     "HTTP-Driving-Adapter fuer den `grid-gym`-Simulationskern. "
     "**Simulation only — not approved for production grid control "

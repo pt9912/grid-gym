@@ -39,6 +39,7 @@ from typing import Final, cast
 
 from fastapi import FastAPI
 
+from grid_gym._app_version import resolve_app_version
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driven.persistence_inmemory import (
     InMemoryReplaySnapshot,
@@ -89,12 +90,13 @@ und produktive UI-Bookmarks ueber beide Pfade konsistent
 sind."""
 
 
-_APP_VERSION: Final[str] = "0.1.0"
-"""Welle-5-Pin gegen `app._APP_VERSION`. Bewusste Duplikation
-zur Cycle-Vermeidung — `app.py` importiert dieses Modul, daher
-darf dieses Modul nicht aus `app.py` lesen. Pflege: Sync per
-Code-Review (zwei Worte; ein TODO im Slice-Doc §9 verankert
-ein Verschmelzen zu `_version.py` als Welle-6+ Cleanup)."""
+_APP_VERSION: Final[str] = resolve_app_version()
+"""Single-Source der Tool-Version via `grid_gym._app_version` (Slice 059).
+
+Frueher ein zweiter harter `"0.1.0"`-Pin, per Konvention synchron zu
+`app._APP_VERSION` — die Konvention hielt seit v0.2.0 nicht. `app.py`
+importiert dieses Modul, deshalb liest die Version aus dem zyklenfreien
+Leaf `grid_gym._app_version` statt aus `app.py` (Cycle-Vermeidung)."""
 
 
 _DEFAULT_TICK_INTERVAL_S: Final[float] = 0.1
