@@ -1016,7 +1016,7 @@ Referenzrichtungs-Gate (`matrix`) ausgenommen.
 | `DeviceProtocolPort` — Sync-Surface + Lifecycle | [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1–2.4 |
 | Observability-Port-Trio (`LogPort`/`MetricsPort`/`TracePort`) + OTLP | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) |
 
-Der **Status** der Architektur (gelieferte Meilensteine, Wellen-Stand) und
+Der **Status** der Architektur (gelieferte Meilensteine) und
 die ADR-Lifecycle-Stati leben in
 [`roadmap.md`](../docs/plan/planning/in-progress/roadmap.md) und den
 `M*-results.md`-Closure-Notizen, nicht in diesem zeitlosen Dokument.

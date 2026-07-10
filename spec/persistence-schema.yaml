@@ -8,12 +8,12 @@
 # kann (`d-migrate schema generate`).
 #
 # Tabellen:
-#   - runs              (Alembic 0001, M1-Welle-6c; Lauf-Metadaten, GG-PERSIST-003 / GG-TERM-003;
+#   - runs              (Alembic 0001, M1; Lauf-Metadaten, GG-PERSIST-003 / GG-TERM-003;
 #                        + replay_of via Alembic 0003, Slice 039 / ADR 0068;
 #                        + GG-TERM-Vollfelder via Alembic 0004, Slice 038 / ADR 0073)
-#   - telemetry_points  (Alembic 0002, M7-Welle-1a / ADR 0047; Telemetrie-Zeitreihen, GG-PERSIST-001)
+#   - telemetry_points  (Alembic 0002, M7 / ADR 0047; Telemetrie-Zeitreihen, GG-PERSIST-001)
 #
-# Welle 1b-a/1b-b (ADR 0048/0049) fuegen KEINE Tabelle hinzu — der
+# ADR 0048/0049 fuegen KEINE Tabelle hinzu — der
 # ReplaySnapshotPort liest `telemetry_points`, der Replay-Timestamp
 # wird aus `simulation_time` abgeleitet (nicht gespeichert).
 #
@@ -41,7 +41,7 @@ tables:
       Slice 038 / ADR 0073) + die persistente Replay-Bindung
       replay_of (Slice 039 / ADR 0068). Append-only; Status-Lifecycle
       haelt der In-Memory-Adapter (keine Status-Spalte in Postgres
-      bis M3-Welle-6c).
+      bis M3).
     columns:
       run_id:         { type: text, description: "Lauf-ID (UUIDv4 als String)" }
       scenario_hash:  { type: text, required: true, description: "SHA-256 ueber canonical_json der Szenario-Datei" }

@@ -162,21 +162,21 @@ Zusaetzliche, fuer alle 5 Adapter geltende Haertung:
 
 Entscheidungs-Provenance (SDP Regel 5: Body vs. Changelog). Der Body oben
 traegt die zeitlose normative Festlegung; diese Sektion bindet jedes
-Profil/Pattern an seine Adapter-ADR, den Lieferstand (Welle), den
+Profil/Pattern an seine Adapter-ADR, den Lieferstand, den
 Status und den DoD-/Review-Beleg. Sie ist vom Referenzrichtungs-Gate
 (`matrix`) ausgenommen.
 
-| Profil / Pattern | Adapter-ADR | Status | Lieferung (Welle) + DoD-/Review-Beleg |
+| Profil / Pattern | Adapter-ADR | Status | Lieferung + DoD-/Review-Beleg |
 | --- | --- | --- | --- |
-| **MQTT** (`protocol_mqtt`) | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) | Provisional | M4-Welle 2 — [`M4-welle-2`](../docs/plan/planning/done-archive/M4-welle-2.md) |
-| **Modbus-TCP** (`protocol_modbus`) | [`ADR 0032`](../docs/plan/adr/0032-modbus-adapter-profile.md) | Provisional | M4-Welle 3 — [`M4-welle-3`](../docs/plan/planning/done-archive/M4-welle-3.md) + [Slice 031](../docs/plan/planning/done-archive/031-modbus-adapter-review-folge.md) (FC06-Multi-Register-Guard) |
-| **OPC-UA** (`protocol_opcua`) | [`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md) | Provisional | M4-Welle 4 — [`M4-welle-4`](../docs/plan/planning/done-archive/M4-welle-4.md) + [Slice 032](../docs/plan/planning/done-archive/032-opcua-adapter-review-folge.md) (Lifecycle-Lock/Timeout) |
-| **DNP3** (`protocol_dnp3`) | [`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md) | Provisional | M4-Welle 5a — [`M4-welle-5a`](../docs/plan/planning/done-archive/M4-welle-5a.md) |
-| **IEC-61850** (`protocol_iec61850`) | [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) | Provisional | M4-Welle 5b — [`M4-welle-5b`](../docs/plan/planning/done-archive/M4-welle-5b.md) + [Slice 033](../docs/plan/planning/done-archive/033-iec61850-adapter-review-folge.md) (Lizenz-Boundary I-f) |
+| **MQTT** (`protocol_mqtt`) | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) | Provisional | M4 — [Beleg](../docs/plan/planning/done-archive/M4-welle-2.md) |
+| **Modbus-TCP** (`protocol_modbus`) | [`ADR 0032`](../docs/plan/adr/0032-modbus-adapter-profile.md) | Provisional | M4 — [Beleg](../docs/plan/planning/done-archive/M4-welle-3.md) + [Slice 031](../docs/plan/planning/done-archive/031-modbus-adapter-review-folge.md) (FC06-Multi-Register-Guard) |
+| **OPC-UA** (`protocol_opcua`) | [`ADR 0033`](../docs/plan/adr/0033-opcua-adapter-profile.md) | Provisional | M4 — [Beleg](../docs/plan/planning/done-archive/M4-welle-4.md) + [Slice 032](../docs/plan/planning/done-archive/032-opcua-adapter-review-folge.md) (Lifecycle-Lock/Timeout) |
+| **DNP3** (`protocol_dnp3`) | [`ADR 0034`](../docs/plan/adr/0034-dnp3-adapter-profile.md) | Provisional | M4 — [Beleg](../docs/plan/planning/done-archive/M4-welle-5a.md) |
+| **IEC-61850** (`protocol_iec61850`) | [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) | Provisional | M4 — [Beleg](../docs/plan/planning/done-archive/M4-welle-5b.md) + [Slice 033](../docs/plan/planning/done-archive/033-iec61850-adapter-review-folge.md) (Lizenz-Boundary I-f) |
 | **Port-Sync-Vertrag / Caller-Scope-Lifecycle / Replay-Stateless** | [`ADR 0030`](../docs/plan/adr/0030-device-protocol-port-surface.md) §2.1–2.4 | — | — |
 | **Inline-Profile-Pattern** | [`ADR 0031`](../docs/plan/adr/0031-mqtt-adapter-profile.md) §2.1 … [`ADR 0035`](../docs/plan/adr/0035-iec61850-adapter-profile.md) §2.1 | — | — |
-| **OTel-Span-Wrap / Cross-Adapter-Hardening** (inkl. [`AC-ADAPTER-LIGHTWEIGHT`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Planted-Violator-Test + `make docs-check`-Konsistenzpruefung) | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5 | — | M4-Welle 6a |
-| **ADR-Closure `Provisional → Accepted`** | Pattern [`ADR 0011`](../docs/plan/adr/0011-schaerfung-ohne-abloesung.md) | geplant (M4-Welle 7) | [M4-Slice-Plan](../docs/plan/planning/done-archive/M4-protocol-adapters.md) §3 Welle 7 |
+| **OTel-Span-Wrap / Cross-Adapter-Hardening** (inkl. [`AC-ADAPTER-LIGHTWEIGHT`](../docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)-Planted-Violator-Test + `make docs-check`-Konsistenzpruefung) | [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) §4.5 | — | M4 |
+| **ADR-Closure `Provisional → Accepted`** | Pattern [`ADR 0011`](../docs/plan/adr/0011-schaerfung-ohne-abloesung.md) | geplant (M4) | [M4-Slice-Plan](../docs/plan/planning/done-archive/M4-protocol-adapters.md) §3 |
 
 **Bibliothekswahl (Detail in den Adapter-ADRs):** MQTT `paho-mqtt>=2.0`
 (EPL-2.0/EDL-1.0); Modbus-TCP `pymodbus>=3.6,<4.0` (BSD-3-Clause); OPC-UA
@@ -184,5 +184,5 @@ Status und den DoD-/Review-Beleg. Sie ist vom Referenzrichtungs-Gate
 `dnp3-outstation>=0.2,<1.0` (MIT, Test-Sibling); IEC-61850
 `pyiec61850-ng>=1.6,<2.0` (GPLv3, optionales Extra `grid-gym[iec61850]`).
 
-**Welle-1-DNP3/IEC-Verzicht-Default:** der urspruengliche Verzicht ist durch
-die Lieferung von DNP3 (M4-Welle 5a) und IEC-61850 (M4-Welle 5b) aufgeloest.
+**DNP3/IEC-Verzicht-Default:** der urspruengliche Verzicht ist durch
+die Lieferung von DNP3 (M4) und IEC-61850 (M4) aufgeloest.
