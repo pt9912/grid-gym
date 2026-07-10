@@ -13,6 +13,7 @@ ids:
         "CHANGELOG.md",
         "src/**",
         ".github/**",
+        "docs/plan/traceability.md",
       ]
   patterns:
     - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
@@ -50,7 +51,7 @@ ids:
 codepaths:
   scope:
     roots: ["."]
-    ignore: ["docs/plan/planning/done-archive/**", "CHANGELOG.md", "src/**", ".github/**"]
+    ignore: ["docs/plan/planning/done-archive/**", "CHANGELOG.md", "src/**", ".github/**", "docs/plan/traceability.md"]
   roots: [docs, spec, src, tests, tools, deploy, harness]
 
 # Referenzrichtungs-Gate (SDP, Trigger 048, DC-FA-MTX-001). Stabilitaets-
@@ -89,8 +90,7 @@ matrix:
   # einer Historie-Sektion — diese Ueberschriften sind vom Richtungs-Gate
   # ausgenommen.
   exclude-sections:
-    - "27. V-Modell-aehnliche Rueckverfolgbarkeit"
-    - "27.1 Anforderung zu Design"
-    - "27.2 Anforderung zu Implementierung"
+    # §27-Traceability ist nach docs/plan/traceability.md ausgelagert (Slice 063);
+    # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
     - "18. Rueckverfolgbarkeit Architektur ↔ Lastenheft"
     - "19. Offene architektonische Punkte"

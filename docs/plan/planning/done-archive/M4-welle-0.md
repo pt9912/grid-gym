@@ -57,7 +57,7 @@ dokumentieren, **keine** produktive Anlagensteuerung.
   `Command`; Adapter dokumentieren Topic-, Register-, Node-
   bzw. LN/CDC-Profile.
 - `GG-AR-COMP-PROTOCOLS` (Komponentensicht; Mapping
-  [`spec/lastenheft.md §27`](../../../../spec/lastenheft.md#27-v-modell-aehnliche-rueckverfolgbarkeit)
+  [`spec/lastenheft.md §27` (ausgelagert nach `traceability.md`)](../../traceability.md)
   Z. 2166–2170).
 - **Code-Status (2026-05-26):**
   `src/grid_gym/hexagon/ports/driven/` enthaelt
