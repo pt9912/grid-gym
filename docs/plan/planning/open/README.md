@@ -75,6 +75,13 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 | ----- | ------- | ----------- |
 | [`047-device-management-protocol-adapters.md`](047-device-management-protocol-adapters.md) | SNMP/LwM2M als Device-Management- und Telemetry-Simulationsadapter ([`GG-SNMP-001`](../../../../spec/lastenheft.md#gg-snmp-001), [`GG-LWM2M-001`](../../../../spec/lastenheft.md#gg-lwm2m-001)) — noch ohne Profil-ADR, Adapter-Code oder Smoke-Test | Stakeholder-Bedarf fuer SNMP-/LwM2M-Demo ODER Integrationspartner-Mapping ODER Validation-Befund zu Device-Management-Protokollen |
 
+**Anforderungs-Luecken (MUSS — aus Slice-060-Traceability-Audit):**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`061-replay-time-multipliers.md`](061-replay-time-multipliers.md) | [`GG-RT-006`](../../../../spec/lastenheft.md#gg-rt-006) (MUSS): Replay-Zeit-Multiplikatoren `0.5x/1x/10x/unbounded` fehlen — Tick-Frequenz ist Aufrufer-Sache | Slice am Run-/Replay-Pacing ODER formelle MUSS-Abnahme |
+| [`062-run-deletion-operation.md`](062-run-deletion-operation.md) | [`GG-PERSIST-009`](../../../../spec/lastenheft.md#gg-persist-009) (MUSS): Lauf-Loeschung fehlt — kein `DELETE`-Endpoint / Repository-`delete` | Slice an der Run-Persistenz-/API-Surface ODER formelle MUSS-Abnahme |
+
 **SOLLTE — M2-Welle-7-Erbschaft (mit M8 aufgeloest):** die neun
 SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
 (Welle 2/3/4) auf `Resolved` gesetzt und mit der M8-Closure
