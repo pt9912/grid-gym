@@ -1,6 +1,6 @@
 # 056 — ADR-Index-Statusspalte: 10 Zeilen hinter den Datei-Headern (Index-Drift)
 
-**Status:** Open — Doku-Drift-Befund aus der Slice-038-Session
+**Status:** Done — 2026-07-10 (Buendel-Closure via Slice 059)
 **Datum:** 2026-07-03
 **Quelle:** Slice-038-Closure-Handoff (Befund beim README-Status-Sync
 fuer v0.3.0 verifiziert).
@@ -57,3 +57,15 @@ ADR-Decision-Sweep.
 
 `done/`, sobald Index-Spalte, Datei-Header und README-Zaehlung
 konsistent sind.
+
+---
+
+## Closure 2026-07-10 (Slice 059)
+
+Geliefert im Hygiene-Buendel [`059`](059-hygiene-bundle-adr-index-app-version.md):
+10 Drift-Zeilen (0022–0027, 0036, 0038–0040) im Index auf `Accepted`
+angeglichen; [`ADR 0008`](../../adr/0008-enum-as-domain-frozen-form.md) als
+vergessener M1-Welle-1-Sweep auf `Accepted` nachgezogen (Datei-Header + Index,
+Substanz `_inherits_enum`/`AC-DOMAIN-FROZEN` gruen); README/README.de melden
+jetzt **72 von 73 ADRs `Accepted` (1 `Superseded`, 0 `Provisional`)**.
+`make docs-check` gruen. Details + DoD in Slice 059.

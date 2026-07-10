@@ -1,6 +1,6 @@
 # 057 — `_APP_VERSION`-Drift: `tool_version`/OpenAPI melden 0.1.0 statt Paket-Version
 
-**Status:** Open — Versions-Drift-Befund aus der Slice-038-Session
+**Status:** Done — 2026-07-10 (Buendel-Closure via Slice 059)
 **Datum:** 2026-07-03
 **Quelle:** Slice-038-C1 (beim Umbau der `RunMetadata`-Konstruktions-
 stellen beobachtet); Handoff-Befund, hier repo-persistent verankert.
@@ -59,3 +59,16 @@ ODER Buendel-Aktivierung als Hygiene-Slice mit
 
 `done/`, sobald `info.version` und `tool_version` aus einer Quelle
 kommen und mit `pyproject.toml` uebereinstimmen.
+
+---
+
+## Closure 2026-07-10 (Slice 059)
+
+Geliefert im Hygiene-Buendel [`059`](059-hygiene-bundle-adr-index-app-version.md):
+NEU zyklenfreies Leaf `grid_gym._app_version.resolve_app_version()`
+(`importlib.metadata` + Sentinel-Fallback); beide `"0.1.0"`-Pin-Stellen
+(`http_api.app`, `composition._demo_scenario_setup`) lesen jetzt daraus.
+`info.version` + `tool_version` == `pyproject`-Version (0.3.0), verifiziert via
+`make gates` + `make test-integration` (Demo-Pfad matcht Resolver) +
+`make openapi-validate`. Runtime-Delta ohne Tag (unter `[Unreleased]`;
+Patch v0.3.1 = Maintainer-Option). Details + DoD in Slice 059.

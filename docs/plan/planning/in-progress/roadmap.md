@@ -77,6 +77,9 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-10):
+[`059`](../done/059-hygiene-bundle-adr-index-app-version.md) (Hygiene-Buendel
+056+057: ADR-Index-Status-Sync + App-/Tool-Version-Single-Source; Runtime-Delta
+ohne Tag) +
 [`058`](../done/058-marker-sensor-drift-guard.md) (Sensor-Marker-Drift-Guard
 Meta-Test, Follow-up zu 054, Test-only) +
 [`054`](../done/054-pytest-marker-drift-sensor-targets.md)

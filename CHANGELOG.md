@@ -29,6 +29,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   gehoben). Der Zwei-Lauf-Replay-Diff-Test traegt eine Preflight-Probe, die
   einen stillen Reject von einem echten leeren Diff unterscheidet. Kein
   Verhaltens-Delta fuer kanonische (= alle produktiven) Pfade.
+- **ADR-Index-Status-Sync + README-ADR-Zaehlung** (Slice 059 / Trigger 056,
+  Doku-only): die Statusspalte im ADR-Index lag 10 Zeilen hinter den
+  (kanonischen) Datei-Headern; ADR 0008 als vergessener M1-Welle-1-Sweep auf
+  `Accepted` nachgezogen. README/README.de melden jetzt korrekt 72 von 73
+  ADRs `Accepted` (1 `Superseded`, 0 `Provisional`).
+
+### Fixed
+
+- **App-/Tool-Version aus Paket-Metadaten** (Slice 059 / Trigger 057,
+  Runtime-Delta): `_APP_VERSION` war doppelt hart auf `"0.1.0"` gepinnt
+  (Paket seit v0.3.0 bei `0.3.0`), sodass FastAPI-`info.version` und das
+  `RunMetadata.tool_version`-Feld (`GG-TERM-003`) neuer Laeufe eine falsche
+  Version trugen. NEU zyklenfreies Leaf
+  `grid_gym._app_version.resolve_app_version()` (`importlib.metadata` +
+  Sentinel-Fallback); beide bisherigen Pin-Stellen (`http_api.app`,
+  `composition._demo_scenario_setup`) lesen jetzt daraus. Konsequenz: neue
+  Laeufe sind nicht mehr replay-vergleichbar mit Alt-Laeufen, deren
+  `tool_version` `"0.1.0"` traegt — fachlich korrekt per `GG-TERM-002`
+  (Preflight-Semantik ADR 0073 §2.6). Kein Tag geschnitten (unter
+  `[Unreleased]` gesammelt; Patch v0.3.1 ist Maintainer-Option).
 
 ## [0.3.0] - 2026-07-03
 
