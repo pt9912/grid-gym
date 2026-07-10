@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-10
+
+**Patch — Hygiene + Korrektheit.** Flush der seit v0.3.0 unter `[Unreleased]`
+aufgelaufenen Arbeit; Release ausgeloest durch das Runtime-Delta aus Slice 059
+(App-/Tool-Version-Single-Source, Trigger 057). Keine neuen Features, kein
+API-Bruch fuer valide Eingaben — Bugfix + Hardening + Doku (SemVer-Patch).
+Enthaltene Slices: 038-Review (Kanonik-Enforcement), 055 (E2E-Sensor), 059
+(056 ADR-Index-Sync + 057 Version-Fix). `make fullbuild` cache-frei gruen vor
+dem Tag.
+
 ### Added
 
 - **E2E-Sensor fuer den produktiven Profil-Pfad** (Slice 055, Test-only):

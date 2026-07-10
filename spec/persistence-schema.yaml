@@ -25,7 +25,7 @@
 
 schema_format: "1.0"
 name: "grid-gym persistence"
-version: "0.3.0"
+version: "0.3.1"
 description: >-
   Persistenz-Tabellen der grid-gym-Simulation: Lauf-Metadaten (runs)
   und append-only Telemetrie-Zeitreihen (telemetry_points).
