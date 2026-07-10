@@ -1,11 +1,18 @@
 # ADR 0008 — Enum-Subklassen als AC-DOMAIN-FROZEN-Form
 
-**Status:** Provisional — Empfehlung getragen, Acceptance synchron
-mit der M1-Welle-1-PR-Mergung.
+**Status:** Accepted — Empfehlung getragen; die an die
+M1-Welle-1-PR-Mergung gebundene Acceptance ist 2026-07-10 nachgezogen
+(vergessener Sweep, Slice 059).
 **Datum:** 2026-05-17
-**Status geaendert am:** 2026-05-17 — `Proposed → Provisional` mit
-Freigabe der Implementierung in
-`tools/arch_check.py` (`_inherits_enum`). Acceptance synchron zur
+**Status geaendert am:** 2026-07-10 — `Provisional → Accepted`:
+M1-Welle-1 ist laengst gemergt (Repo bei v0.3.0); die dritte
+Frozen-Form ist produktiv verankert (`tools/arch_check.py`
+`_inherits_enum` innerhalb `_check_domain_frozen`) und `make arch-check`
+(`AC-DOMAIN-FROZEN`) laeuft gruen mit `Quality`/`CommandResult` als
+`StrEnum` — die an die M1-Welle-1-PR gebundene Acceptance war ein
+vergessener Meilenstein-Sweep, hier nachgezogen (Slice 059). Vorher:
+2026-05-17 — `Proposed → Provisional` mit Freigabe der Implementierung
+in `tools/arch_check.py` (`_inherits_enum`). Acceptance synchron zur
 M1-Welle-1-PR; bei Mergung wird der Status auf `Accepted` gehoben.
 **Letzte inhaltliche Aenderung:** 2026-05-17 — erste Fassung.
 **Bezug:**

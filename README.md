@@ -122,7 +122,7 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   override.
 - **ADR-driven decisions.** Every load-bearing decision is recorded as
   an [Architecture Decision Record](docs/plan/adr/); all
-  milestone-closure ADRs through M8 are `Accepted` (69 of 71), wave
+  milestone-closure ADRs through M8 are `Accepted` (72 of 73), wave
   ADRs land as `Provisional` and become `Accepted` at milestone
   closure (M8 ADRs 0050/0051/0054/0055..0071 all `Accepted`).
 - **CI mirrors local.** GitHub Actions runs the same `lint-imports`,
@@ -161,7 +161,7 @@ As of **2026-07-03**:
 
 | Milestone / item | Status | Date | Details |
 | --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | core platform delivered (M7) + SOLLTE devices & grid (M8); 69 of 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M1..M8** | `Done` | — | core platform delivered (M7) + SOLLTE devices & grid (M8); 72 of 73 ADRs `Accepted` (1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
 | **M8 — SOLLTE devices & grid** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. All four SOLLTE devices ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV charger, transformer, wind turbine, diesel generator), the SOLLTE grid model ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: island grid, transformer limits, reactive power) and BESS telemetry ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: temperature, cell voltage) are productive; M8 ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel post-M7 waves folded in: replay pair 039/040, multi-run execution, scenario-scheduled commands (046), harness enforcement layer (051) |
 | **Release v0.2.0** | released | 2026-07-01 | Second release-workflow run — GHCR image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-identical `:latest`), GitHub release with SBOM (CycloneDX, digest-bound), JUnit XML, coverage HTML, OpenAPI JSON and demo acceptance doc. (v0.1.0 is the previous release; the docs-only v0.1.1 cut was deliberately discarded) |
 | **Slice 038 — full [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003 equality matrix** → **v0.3.0** | `Done` | 2026-07-03 | First slice-driven release cycle ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): `RunMetadata` carries the four full fields `platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash` ([`ADR 0073`](docs/plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md), sharpens [`ADR 0049`](docs/plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.3); the replay preflight checks 9 instead of 5 fields and rejects missing full metadata fail-closed; Alembic `0004`; `POST /runs` inherits the fields from the composition-root profile. Slice plan: [`038`](docs/plan/planning/done/038-gg-term-002-003-full-equality-matrix.md) |

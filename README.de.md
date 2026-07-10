@@ -125,7 +125,7 @@ und `release.yml` (Tag-Push oder workflow_dispatch).
   IEC-61850-Boundary) — alles cache-frei gruen ohne lokalen Override.
 - **ADR-getriebene Entscheidungen.** Jede tragende Entscheidung wird
   als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
-  alle Meilenstein-Closure-ADRs bis M8 sind `Accepted` (69 von 71),
+  alle Meilenstein-Closure-ADRs bis M8 sind `Accepted` (72 von 73),
   Wellen-ADRs landen als `Provisional` und werden mit Meilenstein-
   Closure `Accepted` (M8-ADRs 0050/0051/0054/0055..0071 alle `Accepted`).
 - **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
@@ -164,7 +164,7 @@ Stand **2026-07-03**:
 
 | Meilenstein / Punkt | Status | Datum | Details |
 | --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 69 von 71 ADRs `Accepted` (1 `Provisional`, 1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 72 von 73 ADRs `Accepted` (1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
 | **M8 — SOLLTE-Geraete & Netz** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5. Alle vier SOLLTE-Geraete ([`GG-DEV-015`](spec/lastenheft.md#gg-dev-015)..018: EV-Charger, Transformer, Wind-Turbine, Diesel-Generator), das SOLLTE-Netzmodell ([`GG-GRID-005`](spec/lastenheft.md#gg-grid-005)..007: Inselnetz, Trafo-Grenzen, Blindleistung) und die BESS-Telemetrie ([`GG-BESS-006`](spec/lastenheft.md#gg-bess-006)/007: Temperatur, Zellspannung) sind produktiv; M8-ADRs 0050/0051/0054/0055..0071 `Accepted`. Parallel eingefaltet: Replay-Paar 039/040, Multi-Run-Execution, Scenario-Scheduled-Commands (046), Harness-Durchsetzungsschicht (051) |
 | **Release v0.2.0** | released | 2026-07-01 | Zweiter Release-Workflow-Lauf — GHCR-Image `ghcr.io/pt9912/grid-gym:v0.2.0` (+ digest-gleiches `:latest`), GitHub-Release mit SBOM (CycloneDX, digest-gebunden), JUnit-XML, Coverage-HTML, OpenAPI-JSON und Abnahme-Doku. (v0.1.0 ist das vorige Release; der Doku-only-Cut v0.1.1 wurde bewusst verworfen) |
 | **Slice 038 — volle [`GG-TERM-002`](spec/lastenheft.md#gg-term-002)/003-Equality-Matrix** → **v0.3.0** | `Done` | 2026-07-03 | Erster slice-getriebener Release-Zyklus ([`ADR 0072`](docs/plan/adr/0072-slice-driven-planning-no-milestones.md)): `RunMetadata` traegt die vier Vollfelder `platform_arch`/`enabled_adapters`/`sim_start_time`/`config_hash` ([`ADR 0073`](docs/plan/adr/0073-gg-term-full-equality-matrix-runmetadata.md), schaerft [`ADR 0049`](docs/plan/adr/0049-replay-lifecycle-finalize-hook.md) §2.3); der Replay-Preflight prueft 9 statt 5 Felder und rejected fehlende Voll-Metadaten fail-closed; Alembic `0004`; `POST /runs` erbt die Felder aus dem Composition-Root-Profil. Slice-Plan: [`038`](docs/plan/planning/done/038-gg-term-002-003-full-equality-matrix.md) |
