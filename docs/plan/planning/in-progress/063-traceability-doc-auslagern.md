@@ -1,6 +1,6 @@
 # 063 — §27-Traceability aus `lastenheft.md` in ein eigenes Dokument auslagern
 
-**Status:** In Progress — Slice-Plan (Tranchen + DoD)
+**Status:** Done — 2026-07-10 (C0=A entschieden; §27 ausgelagert)
 **Datum:** 2026-07-10
 **Quelle:** Session-Entscheidung nach der SDP-Bereinigung (Welle-Removal +
 `## Historie`-Aufloesung in `protocol_profiles.md`/`architecture.md` +
@@ -62,12 +62,12 @@ Traceability-im-Vertrag bewusst gewollt ist. **C1–C4 gelten nur bei A.**
 
 ## DoD (bei A)
 
-- [ ] Amendment beschlossen + Akzeptanz umformuliert (C0/C2).
-- [ ] §27 vollstaendig im Traceability-Dokument; `lastenheft.md`-Body ohne
+- [x] Amendment beschlossen + Akzeptanz umformuliert (C0/C2).
+- [x] §27 vollstaendig im Traceability-Dokument; `lastenheft.md`-Body ohne
       Abwaerts-Verweise (kein `ADR NNNN`/Slice/Code-Link).
-- [ ] `27.*` aus `exclude-sections`; `make docs-check` + `make gates` gruen.
-- [ ] Eingehende `§27`-Verweise repo-weit gueltig (Link-Pflege).
-- [ ] Doku-only → **kein Release**.
+- [x] `27.*` aus `exclude-sections`; `make docs-check` + `make gates` gruen.
+- [x] Eingehende `§27`-Verweise repo-weit gueltig (Link-Pflege).
+- [x] Doku-only → **kein Release**.
 
 ## Betroffene Kennungen
 
@@ -83,3 +83,25 @@ Schaerfung), §27.1–27.3, `.d-check.yml` (`matrix.exclude-sections` + Klassen)
   Slices) muessen nachgezogen werden — sonst `anchor-missing`/`target-missing`.
 - **Matrix-Klassifizierung** des neuen Docs (unclassified vs. neue Klasse) —
   in C1 verifizieren.
+
+---
+
+## Closure 2026-07-10
+
+**C0 = A** (Owner-Entscheidung): auslagern + Amendment.
+
+- **C1:** NEU [`traceability.md`](../../traceability.md) — §27.1/27.1.1/27.2/27.3
+  verschoben, 146 relative Links base-uebersetzt (`spec/` → `docs/plan/`);
+  in `matrix` unclassified (keine Richtungs-Regel) + in `ids`/`codepaths`
+  `scope.ignore` (dichte ID-Matrix, analog `done-archive`).
+- **C2:** §27 aus `lastenheft.md` entfernt; die Trace-MUSS-Akzeptanz auf das
+  verlinkte Trace-Doc umgeschrieben (Intent „Traceability MUSS existieren"
+  bleibt; „Das Lastenheft" → „Das Projekt").
+- **C3:** `27.*` aus `matrix.exclude-sections`; Lastenheft-Body abwaerts-frei,
+  das SDP-Gate erzwingt es jetzt ohne Ausnahme.
+- **Link-Pflege ([`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)):**
+  [`ADR 0001`](../../adr/0001-documentation-and-planning-structure.md) +
+  `done-archive/M4-welle-0` → `traceability.md`.
+
+**Evidence:** `make docs-check` (0 Befunde) + `make gates` gruen. Doku-only,
+**kein Release**. Commit `6c7568a`.
