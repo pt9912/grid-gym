@@ -1,16 +1,12 @@
 # Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check)
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
-# Version/Integration: v0.40.0, eingebunden ueber d-check.mk (`--print-mk`);
-# Image-Pin (Digest) in der Makefile-Variable DCHECK_DIGEST.
+# Eingebunden ueber d-check.mk (`--print-mk`); Image-Digest in Makefile-Variable
+# DCHECK_DIGEST (aktuell v0.41.0).
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
-# spans (seit v0.39.0): hermetischer Span-Artefakt-Check (ungeschlossene
-# Code-Spans, verschachtelte Link-Markups) — ohne eigene Optionen.
-# hostpaths (2026-07-11): host-lokale absolute Pfade (Maschinen-Layout-Leaks) —
-# vervollstaendigt das empfohlene ai-harness-Standard-Set (links/anchors/ids/
-# matrix/codepaths/spans/hostpaths). 5 `/Development/m-trace/`-Leaks im
-# done-archive vorab sanitisiert (-> `m-trace/`).
+# Empfohlenes ai-harness-Standard-Set. spans (Span-Artefakte) + hostpaths
+# (host-lokale Pfad-Leaks): hermetisch, ohne eigene Optionen.
 modules: [links, anchors, ids, codepaths, matrix, spans, hostpaths]
 ids:
   scope:
@@ -103,31 +99,13 @@ matrix:
     - "18. Rueckverfolgbarkeit Architektur ↔ Lastenheft"
     - "19. Offene architektonische Punkte"
 
-# Requirements Traceability Matrix (--trace / make doc-trace, seit d-check v0.40.0
-# konfigurierbar). KEIN Modul — steuert nur --trace/--require-complete, nicht das
-# docs-check-Gate; rein advisory (kein Hard-Gate, siehe unten). grid-gym weicht von
-# d-checks -FA-/-QA-Default ab (zweistufiges Schema GG-<FAMILIE>-NNN) und von der
-# slice-<n>-Dateikonvention (hier NNN-titel.md).
-#
-# id-pattern = explizite Allow-List der FUNKTIONALEN/Produkt-Familien (RE2 kennt kein
-# negatives Lookahead). Drei Klassen sind bewusst AUSGENOMMEN (Abdeckung lebt jeweils
-# in traceability.md, nicht als slice/wave-"geliefertes" Feature):
-#   1) SCOPE/DEFINITORISCH (= exakt die §27.1.1-Familien „ohne Design-Artefakt"):
-#      GG-TERM (Glossar/Normbegriffe), GG-SEED (Seed-Konvention), GG-MVP (Scope-
-#      Roll-up; Auspraegung lebt in einzelnen GG-SIM/DEV/…-IDs), GG-NONGOAL
-#      ("ist KEIN …"), GG-FUTURE ("KANN …", optionale Zukunft) — keine Leaf-Anforderungen.
-#   2) ARCHITEKTUR/DESIGN-META — GG-ARCH, GG-ARCHTEST, GG-PRINC, GG-CC: "wie gebaut"-
-#      Requirements, strukturell via arch-check/lint erzwungen, auf GG-AR-* gemappt.
-#   3) TEST/QUALITAET/GATE-INFRA — GG-TEST, GG-TESTTYPE, GG-QG, GG-COV, GG-QA: "wie
-#      verifiziert" — via CI-Gates/Test-Suites/Make-Targets erfuellt, in traceability.md
-#      auf make-Targets/GG-AR-TEST-001 gemappt. (GG-CICD + GG-TRACE bleiben BEWUSST
-#      drin: GG-CICD = reale Pipeline-Features, slice/wave-geliefert; GG-TRACE = die
-#      RTM-Pflege selbst, aber mit echtem Deliverable docs/plan/traceability.md
-#      (Slice 063/066), slice-gemappt — beides keine reinen Meta-Ausschluss-Kandidaten.)
-# Das id-pattern erfasst damit die FUNKTIONALEN/Produkt-Familien. Neue solche hier ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; Rest-Waisen (Requirements
-# ohne Slice-/Wellen-Nennung, aber via ADR/traceability.md-Bereiche/Gates abgedeckt)
-# sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete) bewusst
-# NICHT verdrahtet. Kuratierte Quelle bleibt docs/plan/traceability.md.
+# RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,
+# rein advisory (`make doc-complete`/--require-complete bewusst NICHT verdrahtet).
+# id-pattern = Allow-List der funktionalen Leaf-Familien; AUSGENOMMEN (jeweils via
+# traceability.md abgedeckt, kein Feature): §27.1.1-Scope/definitorisch (TERM/SEED/MVP/
+# NONGOAL/FUTURE), Arch-/Design-Meta (ARCH/ARCHTEST/PRINC/CC), Test-/Gate-Infra (TEST/
+# TESTTYPE/QG/COV/QA). GG-CICD/GG-TRACE bleiben bewusst drin (echte Deliverables).
+# Neue funktionale Familie hier ergaenzen.
 trace:
   requirements:
     source: spec/lastenheft.md
@@ -138,26 +116,15 @@ trace:
     id-prefix: 'ADR-'
   slices:
     dir: docs/plan/planning
-    # NNN-titel.md (Slice-Ära) UND M<n>-... (eingefrorene M1..M8-Wellen im
-    # done-archive) zaehlen als Liefervehikel — sonst erscheinen ~70 wave-
-    # gelieferte Requirements faelschlich als Waisen. Owner-Label: 'Slice 061'
-    # bzw. 'Slice M6' (Welle-M6-Lieferung; advisory, Welle != Slice bleibt in
-    # der Roadmap/ADR 0072 dokumentiert).
+    # NNN-titel.md (Slices) UND M<n>-... (eingefrorene M1..M8-Wellen) zaehlen als
+    # Liefervehikel; Label 'Slice 061' bzw. 'Slice M6' (Welle != Slice, s. ADR 0072).
     file-pattern: '^(M\d+|\d+)-.*\.md$'
     id-prefix: 'Slice '
-  # Kuratierte Coverage-Quelle (d-check v0.41.0, DC-FA-COV-*): die kuratierten
-  # Design-(§27.1)/Test-(§27.3)-Mappings in docs/plan/traceability.md zaehlen
-  # range-aware (`GG-SIM-001..004` -> alle vier) als Abdeckung in EIGENER RTM-Spalte
-  # (Owner 'Trace') — keine ADR-Kontamination (explizite Datei, kein dir/pattern).
-  # NUR die zwei Tabellen-Sektionen sind Coverage-Quelle (`sections`-Whitelist statt
-  # bloss §27.1.1-Blacklist, Review-F5): Intro/Praembeln zaehlen NICHT — sonst gaelte
-  # eine narrative ID-Erwaehnung faelschlich als abgedeckt (coverage ist nicht
-  # backtick-/code-span-aware). §27.1.1 (design-artefaktlos) bleibt zusaetzlich raus.
-  # HINWEIS (Review-N1): `orphans=0` bezeugt Design-/Coverage-Mapping, NICHT Lieferung —
-  # viele Requirements haben §27.1-Design-Coverage, aber keine Slice-/Wellen-Lieferung
-  # (z. B. GG-FAULT-002..010 unimplementiert) und sind dennoch non-orphan. Der menschen-
-  # sichtbare Vorbehalt lebt in docs/plan/traceability.md (Intro). Ein Requirement ist
-  # Waise nur ohne Slice/Welle UND ohne Coverage. (§27.2 „Impl/Status" wurde in Slice 066 an `make doc-trace` delegiert.)
+  # Kuratierte Coverage-Quelle (v0.41.0): §27.1/§27.3 aus traceability.md zaehlen
+  # range-aware als eigene RTM-Spalte 'Trace' (explizite Datei = keine ADR-Kontamination).
+  # sections-Whitelist (nur die Tabellen; Intro/Praembeln zaehlen NICHT). Waise = ohne
+  # Slice/Welle UND ohne Coverage. ACHTUNG: orphans=0 = Design-Mapping, NICHT Lieferung
+  # (menschen-sichtbarer Caveat im traceability.md-Intro). §27.2 in Slice 066 delegiert.
   coverage:
     - files: [docs/plan/traceability.md]
       label: Trace
@@ -165,16 +132,9 @@ trace:
       sections: ["27.1 Anforderung zu Design", "27.3 Anforderung zu Test"]
       exclude-sections: ["27.1.1 Anforderungen ohne Design-Artefakt"]
 
-# targets (Trigger 068, Tranche C1): Deklarations-Konsistenz Doku ↔ Build-Targets.
-# KEIN modules:-Eintrag (hermetisches, separates Gate) — via `make doc-targets`
-# aufgerufen und ans lokale `docs-check`-Gate gehaengt (docs-check laeuft nicht in
-# GitHub-CI, sondern im Handoff-Stop-Hook, ADR 0071).
-# C1 = nur Richtung 1 (`gate-phantom`): jede in AGENTS.md / harness/README.md
-# dokumentierte `make X`-Regel existiert im Makefile. Richtung 2 (`gate-undocumented`,
-# via `authority:`) ist BEWUSST WEGGELASSEN — sie findet 38 undokumentierte
-# (meist Utility-)Makefile-Regeln (`clean`, `sbom`, …); deren Dokumentation/Exempt
-# ist Tranche C1b im Trigger 068. Die `doc-*`-Regeln aus `include d-check.mk` liegen
-# ausserhalb `makefiles:` und werden nicht geprueft (via `make doc-help` dokumentiert).
+# targets (Trigger 068 C1): Doku-<->Makefile-Konsistenz. KEIN Modul — via `make
+# doc-targets` ans lokale docs-check-Gate gehaengt. Nur Richtung 1 (gate-phantom);
+# Richtung 2 (`authority:`, 38 Utility-Targets) = Tranche C1b im Trigger 068.
 targets:
   makefiles: [Makefile]
   doc-tables: [AGENTS.md, harness/README.md]
