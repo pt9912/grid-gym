@@ -138,3 +138,13 @@ trace:
     # der Roadmap/ADR 0072 dokumentiert).
     file-pattern: '^(M\d+|\d+)-.*\.md$'
     id-prefix: 'Slice '
+  # Kuratierte Coverage-Quelle (d-check v0.41.0, DC-FA-COV-*): die V-Modell-Matrix
+  # docs/plan/traceability.md zaehlt range-aware (`GG-QA-001..006` -> alle sechs) als
+  # Abdeckung in EIGENER RTM-Spalte (Owner 'Trace') — keine ADR-Kontamination (explizite
+  # Datei, kein dir/pattern). §27.1.1 (Anforderungen OHNE Design-Artefakt) ist ausgenommen.
+  # Ein Requirement ist Waise nur ohne Slice/Welle UND ohne Coverage.
+  coverage:
+    - files: [docs/plan/traceability.md]
+      label: Trace
+      ranges: true
+      exclude-sections: ["27.1.1 Anforderungen ohne Design-Artefakt"]

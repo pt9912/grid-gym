@@ -9,26 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Tooling:** d-check-Doku-Gate von v0.10.0 auf **v0.40.0** angehoben. Das
+- **Tooling:** d-check-Doku-Gate von v0.10.0 auf **v0.41.0** angehoben. Das
   Gate bindet jetzt das offizielle Makefile-Fragment `d-check.mk`
   (`d-check --print-mk`) per `include` ein statt eines handgepflegten Rezepts;
-  Image-Pin via Digest in `DCHECK_DIGEST`, Tag-Default (v0.40.0) in
+  Image-Pin via Digest in `DCHECK_DIGEST`, Tag-Default (v0.41.0) in
   `d-check.mk`. `make docs-check` delegiert fail-closed an `doc-check` und
   behaelt die Gate-Quittung (ADR 0071). Neue `doc-*`-Zusatztargets verfuegbar
   (`make doc-help`). `.d-check.yml`: Modul `spans` aktiviert (Span-Artefakte).
   Kein Runtime-Delta.
 - **Tooling:** Requirements Traceability Matrix (`make doc-trace`) via d-check
-  v0.40.0 `trace:`-Block konfiguriert — **advisory**, kein Hard-Gate. Requirement-
+  v0.41.0 `trace:`-Block konfiguriert — **advisory**, kein Hard-Gate. Requirement-
   Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 29 funktionalen/
   Produkt-`GG-<FAMILIE>`-Familien (ausgenommen — als in `traceability.md` abgedeckte
   Meta-Requirements: definitorische GG-TERM/NONGOAL/FUTURE; Architektur-/Design-Meta
   GG-ARCH/ARCHTEST/PRINC/CC; Test-/Qualitaets-/Gate-Infra GG-TEST/TESTTYPE/QG/COV/QA);
   ADR-/Slice-Verlinkung ueber `docs/plan/adr` bzw. `docs/plan/planning`
-  (`NNN-titel.md`-Slices **und** `M<n>-…`-Wellen als Liefervehikel — sonst
-  erscheinen ~70 wave-gelieferte Requirements faelschlich als Waisen). RTM
-  erfasst 156 Requirements (40 Rest-Waisen, via ADR/`traceability.md`-Bereiche/
-  Gates abgedeckt). Kuratierte Quelle bleibt `docs/plan/traceability.md`
-  (GG-TRACE-001); `make doc-complete` bewusst nicht verdrahtet.
+  (`NNN-titel.md`-Slices **und** `M<n>-…`-Wellen als Liefervehikel). Zusaetzlich
+  liest der `coverage:`-Block (v0.41.0, DC-FA-COV-*) `docs/plan/traceability.md`
+  **range-aware** (`GG-QA-001..006` → alle sechs) als eigene RTM-Spalte `Trace`
+  ein (keine ADR-Kontamination; §27.1.1 „ohne Design-Artefakt" ausgenommen). RTM
+  erfasst 156 Requirements, davon **1 echte Waise** (`GG-MVP-004`, ohne
+  Design-Artefakt); 153 Trace-abgedeckt. Kuratierte Quelle bleibt
+  `docs/plan/traceability.md` (GG-TRACE-001); `make doc-complete` bewusst nicht
+  verdrahtet.
 - **Docs (Slice 064):** Die 226 RTM-Requirements in `spec/lastenheft.md` tragen
   jetzt einen Kurztitel im Heading (`make doc-trace`-`Titel`-Spalte gefuellt) plus
   einen stabilen `<a id="gg-...">`-Anker, der die bestehenden `#gg-...`-Verweise

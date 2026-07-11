@@ -86,7 +86,7 @@ help:
 	@echo "  make arch-check        import-linter + tools/arch_check.py (20 A-1-Contracts: 6 import-linter + 14 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
-	@echo "  make docs-check        d-check v0.40.0 — Markdown-Referenz-Validator (Trigger 002, .d-check.yml, include d-check.mk)"
+	@echo "  make docs-check        d-check v0.41.0 — Markdown-Referenz-Validator (Trigger 002, .d-check.yml, include d-check.mk)"
 	@echo "  make doc-help          d-check.mk — Liste der doc-* Zusatz-Targets (trace/doctor/repair/immutable/...)"
 	@echo "  make spdx-check        tools/check_spdx.py — SPDX-License-Identifier-Lint fuer IEC-61850-GPL-Boundary (ADR 0035, M4 Welle 6b)"
 	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
@@ -177,11 +177,11 @@ arch-check-custom:
 # Konfiguration in .d-check.yml. Ersetzt tools/check_refs.py und die
 # zugehoerige Dockerfile-Stage (Trigger 002 — geloescht).
 #
-# Reproduzierbarkeit: der Tag-Default (v0.40.0) lebt in d-check.mk; der
+# Reproduzierbarkeit: der Tag-Default (v0.41.0) lebt in d-check.mk; der
 # Digest-Pin sticht ihn hier ueber DCHECK_DIGEST. Die Zuweisung MUSS vor
 # dem include stehen — d-check.mk wertet den Digest beim Parsen aus
-# (ifeq -> DCHECK_REF). Digest aus den Release-Notes v0.40.0.
-DCHECK_DIGEST := sha256:e691053abd820f85e652a343f3d700ba135f2d8d66523151e1388c353af2ba75
+# (ifeq -> DCHECK_REF). Digest aus den Release-Notes v0.41.0.
+DCHECK_DIGEST := sha256:c930804146a2e14d1cfb95046532dce5881c355f39b3223e3a2ed371776f874a
 include d-check.mk
 
 # Das Repo-Gate heisst `docs-check` (Enforcement-Stop-Hook + Gate-Quittung,
