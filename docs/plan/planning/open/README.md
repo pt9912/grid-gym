@@ -88,6 +88,12 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 | ----- | ------- | ----------- |
 | [`065-otel-collector-go-1265-cve.md`](065-otel-collector-go-1265-cve.md) | [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002): `CVE-2026-39822` (Go1.26.4→1.26.5, os.Root-Traversal) im OTel-Collector-Sidecar — kein gepatchtes Image; vulnignore-Deferral bis Upstream-Fix (`expires 2026-10-09`) | OTel-Collector-Stable mit go1.26.5+ verfuegbar ODER `expires`-Ablauf |
 
+**Tooling — d-check-`doc-*`-Module (Handbuch-Review v0.41.0):**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`068-doc-modules-targets-commits-vcs.md`](068-doc-modules-targets-commits-vcs.md) | `targets`/`commits`/`vcs` scharf schalten — **C1 (`targets`, gate-phantom) erledigt**; offen: C1b (gate-undocumented, 38 Utility-Targets), C2 (`commits`, Vorwärts-Traceability), C3 (`vcs`, ADR-Immutabilität, braucht [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)-C0) | Tooling-/Disziplin-Slice; C3 als eigener Slice mit Amendment |
+
 **SOLLTE — M2-Welle-7-Erbschaft (mit M8 aufgeloest):** die neun
 SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
 (Welle 2/3/4) auf `Resolved` gesetzt und mit der M8-Closure

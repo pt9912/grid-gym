@@ -185,10 +185,12 @@ DCHECK_DIGEST := sha256:c930804146a2e14d1cfb95046532dce5881c355f39b3223e3a2ed371
 include d-check.mk
 
 # Das Repo-Gate heisst `docs-check` (Enforcement-Stop-Hook + Gate-Quittung,
-# ADR 0071). Es delegiert an das d-check.mk-Target `doc-check` (fail-closed:
-# Befund => Exit 1 => docs-check bricht ab, Quittung wird NICHT geschrieben)
-# und haengt bei Erfolg die Quittung an.
-docs-check: doc-check
+# ADR 0071). Es delegiert an die d-check.mk-Targets `doc-check` (Modul-Gate:
+# links/anchors/ids/codepaths/matrix/spans/hostpaths) und `doc-targets` (Trigger 068
+# C1: Doku-↔-Makefile-Target-Konsistenz, gate-phantom). Beide fail-closed: Befund
+# => Exit 1 => docs-check bricht ab, Quittung wird NICHT geschrieben. Die Quittung
+# haengt bei Erfolg an. (docs-check laeuft nur lokal/Handoff, nicht in GitHub-CI.)
+docs-check: doc-check doc-targets
 	@bash tools/harness/record-gates.sh docs-check || echo "[record-gates] WARN: Quittung 'docs-check' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
 
 # `tools/check_spdx.py` — SPDX-License-Identifier-Lint fuer die

@@ -155,3 +155,17 @@ trace:
       label: Trace
       ranges: true
       exclude-sections: ["27.1.1 Anforderungen ohne Design-Artefakt"]
+
+# targets (Trigger 068, Tranche C1): Deklarations-Konsistenz Doku ↔ Build-Targets.
+# KEIN modules:-Eintrag (hermetisches, separates Gate) — via `make doc-targets`
+# aufgerufen und ans lokale `docs-check`-Gate gehaengt (docs-check laeuft nicht in
+# GitHub-CI, sondern im Handoff-Stop-Hook, ADR 0071).
+# C1 = nur Richtung 1 (`gate-phantom`): jede in AGENTS.md / harness/README.md
+# dokumentierte `make X`-Regel existiert im Makefile. Richtung 2 (`gate-undocumented`,
+# via `authority:`) ist BEWUSST WEGGELASSEN — sie findet 38 undokumentierte
+# (meist Utility-)Makefile-Regeln (`clean`, `sbom`, …); deren Dokumentation/Exempt
+# ist Tranche C1b im Trigger 068. Die `doc-*`-Regeln aus `include d-check.mk` liegen
+# ausserhalb `makefiles:` und werden nicht geprueft (via `make doc-help` dokumentiert).
+targets:
+  makefiles: [Makefile]
+  doc-tables: [AGENTS.md, harness/README.md]
