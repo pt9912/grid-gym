@@ -110,9 +110,10 @@ matrix:
 # Lookahead). Ausgenommen sind die drei DEFINITORISCHEN Familien GG-TERM (Glossar/
 # Normbegriffe), GG-NONGOAL ("ist KEIN …") und GG-FUTURE ("KANN …", optionale Zukunft)
 # — sie sind keine nachverfolgbaren Anforderungen. Bei neuer Requirement-Familie hier
-# ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; die historischen (M-Wellen-)
-# Waisen sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete)
-# bewusst NICHT verdrahtet. Kuratierte Quelle bleibt docs/plan/traceability.md.
+# ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; Rest-Waisen (Requirements
+# ohne Slice-/Wellen-Nennung, aber via ADR/traceability.md-Bereiche/Gates abgedeckt)
+# sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete) bewusst
+# NICHT verdrahtet. Kuratierte Quelle bleibt docs/plan/traceability.md.
 trace:
   requirements:
     source: spec/lastenheft.md
@@ -123,5 +124,10 @@ trace:
     id-prefix: 'ADR-'
   slices:
     dir: docs/plan/planning
-    file-pattern: '^(\d+)-.*\.md$'
+    # NNN-titel.md (Slice-Ära) UND M<n>-... (eingefrorene M1..M8-Wellen im
+    # done-archive) zaehlen als Liefervehikel — sonst erscheinen ~70 wave-
+    # gelieferte Requirements faelschlich als Waisen. Owner-Label: 'Slice 061'
+    # bzw. 'Slice M6' (Welle-M6-Lieferung; advisory, Welle != Slice bleibt in
+    # der Roadmap/ADR 0072 dokumentiert).
+    file-pattern: '^(M\d+|\d+)-.*\.md$'
     id-prefix: 'Slice '
