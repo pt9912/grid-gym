@@ -19,12 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Kein Runtime-Delta.
 - **Tooling:** Requirements Traceability Matrix (`make doc-trace`) via d-check
   v0.40.0 `trace:`-Block konfiguriert — **advisory**, kein Hard-Gate. Requirement-
-  Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 38 normativen
-  `GG-<FAMILIE>`-Familien (GG-TERM/NONGOAL/FUTURE als definitorisch ausgenommen);
+  Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 29 funktionalen/
+  Produkt-`GG-<FAMILIE>`-Familien (ausgenommen — als in `traceability.md` abgedeckte
+  Meta-Requirements: definitorische GG-TERM/NONGOAL/FUTURE; Architektur-/Design-Meta
+  GG-ARCH/ARCHTEST/PRINC/CC; Test-/Qualitaets-/Gate-Infra GG-TEST/TESTTYPE/QG/COV/QA);
   ADR-/Slice-Verlinkung ueber `docs/plan/adr` bzw. `docs/plan/planning`
   (`NNN-titel.md`-Slices **und** `M<n>-…`-Wellen als Liefervehikel — sonst
   erscheinen ~70 wave-gelieferte Requirements faelschlich als Waisen). RTM
-  erfasst 226 Requirements (101 Rest-Waisen, via ADR/`traceability.md`-Bereiche/
+  erfasst 156 Requirements (40 Rest-Waisen, via ADR/`traceability.md`-Bereiche/
   Gates abgedeckt). Kuratierte Quelle bleibt `docs/plan/traceability.md`
   (GG-TRACE-001); `make doc-complete` bewusst nicht verdrahtet.
 - **Docs (Slice 064):** Die 226 RTM-Requirements in `spec/lastenheft.md` tragen

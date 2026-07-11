@@ -106,18 +106,25 @@ matrix:
 # d-checks -FA-/-QA-Default ab (zweistufiges Schema GG-<FAMILIE>-NNN) und von der
 # slice-<n>-Dateikonvention (hier NNN-titel.md).
 #
-# id-pattern = explizite Allow-List der NORMATIVEN Familien (RE2 kennt kein negatives
-# Lookahead). Ausgenommen sind die drei DEFINITORISCHEN Familien GG-TERM (Glossar/
-# Normbegriffe), GG-NONGOAL ("ist KEIN …") und GG-FUTURE ("KANN …", optionale Zukunft)
-# — sie sind keine nachverfolgbaren Anforderungen. Bei neuer Requirement-Familie hier
-# ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; Rest-Waisen (Requirements
+# id-pattern = explizite Allow-List der FUNKTIONALEN/Produkt-Familien (RE2 kennt kein
+# negatives Lookahead). Drei Klassen sind bewusst AUSGENOMMEN (Abdeckung lebt jeweils
+# in traceability.md, nicht als slice/wave-"geliefertes" Feature):
+#   1) DEFINITORISCH — GG-TERM (Glossar/Normbegriffe), GG-NONGOAL ("ist KEIN …"),
+#      GG-FUTURE ("KANN …", optionale Zukunft): keine nachverfolgbaren Anforderungen.
+#   2) ARCHITEKTUR/DESIGN-META — GG-ARCH, GG-ARCHTEST, GG-PRINC, GG-CC: "wie gebaut"-
+#      Requirements, strukturell via arch-check/lint erzwungen, auf GG-AR-* gemappt.
+#   3) TEST/QUALITAET/GATE-INFRA — GG-TEST, GG-TESTTYPE, GG-QG, GG-COV, GG-QA: "wie
+#      verifiziert" — via CI-Gates/Test-Suites/Make-Targets erfuellt, in traceability.md
+#      auf make-Targets/GG-AR-TEST-001 gemappt. (GG-CICD bleibt drin: reale Pipeline-
+#      Features, alle slice/wave-geliefert, 0 Waisen.)
+# Das id-pattern erfasst damit die FUNKTIONALEN/Produkt-Familien. Neue solche hier ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; Rest-Waisen (Requirements
 # ohne Slice-/Wellen-Nennung, aber via ADR/traceability.md-Bereiche/Gates abgedeckt)
 # sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete) bewusst
 # NICHT verdrahtet. Kuratierte Quelle bleibt docs/plan/traceability.md.
 trace:
   requirements:
     source: spec/lastenheft.md
-    id-pattern: 'GG-(ACCEPT|AGENT|API|ARCHTEST|ARCH|BESS|CICD|CC|COV|DATA|DEMO|DEPLOY|DEV|DNP3|FAULT|GRID|IEC|LWM2M|MODB|MQTT|MVP|OPCUA|OTEL|PERSIST|PRINC|QA|QG|REPLAY|RT|SAFE|SCN|SEED|SIM|SNMP|TESTTYPE|TEST|TRACE|UI)-\d{3}'
+    id-pattern: 'GG-(ACCEPT|AGENT|API|BESS|CICD|DATA|DEMO|DEPLOY|DEV|DNP3|FAULT|GRID|IEC|LWM2M|MODB|MQTT|MVP|OPCUA|OTEL|PERSIST|REPLAY|RT|SAFE|SCN|SEED|SIM|SNMP|TRACE|UI)-\d{3}'
   adrs:
     dir: docs/plan/adr
     file-pattern: '^(\d{4})-.*\.md$'
