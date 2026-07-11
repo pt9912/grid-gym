@@ -4,11 +4,10 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
 Kein aktiver Slice; zuletzt abgeschlossen:
-[`055`](../done/055-profile-preflight-e2e-sensor.md) (E2E-Sensor
-produktiver Profil-Pfad, Test-only) und
-[`038`](../done/038-gg-term-002-003-full-equality-matrix.md)
-(volle [`GG-TERM-002`](../../../../spec/lastenheft.md#gg-term-002)/003-Equality-Matrix → **v0.3.0**).
-**Stand:** 2026-07-03
+[`064`](../done/064-rtm-titel-html-anker.md) (RTM-Titel via HTML-Anker in
+`lastenheft.md`, Doku-only) und
+[`063`](../done/063-traceability-doc-auslagern.md) (§27-Traceability ausgelagert).
+**Stand:** 2026-07-11
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
 [Architektur](../../../../spec/architecture.md),
@@ -76,7 +75,10 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-10):
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-11):
+[`064`](../done/064-rtm-titel-html-anker.md) (RTM-Titel via HTML-Anker —
+`make doc-trace`-Titel-Spalte gefuellt, ohne bestehende `#gg-...`-Verweise oder
+Accepted-ADRs zu brechen; advisory, kein Release) +
 [`063`](../done/063-traceability-doc-auslagern.md) (§27-Traceability aus
 `lastenheft.md` nach `docs/plan/traceability.md` ausgelagert — Vertrag jetzt
 abwaerts-verweis-frei; Trace-MUSS-Anforderung amendiert, §27-`exclude-sections`

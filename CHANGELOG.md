@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`NNN-titel.md`). RTM erfasst 226 Requirements. Kuratierte Quelle bleibt
   `docs/plan/traceability.md` (GG-TRACE-001); `make doc-complete` bewusst nicht
   verdrahtet.
+- **Docs (Slice 064):** Die 226 RTM-Requirements in `spec/lastenheft.md` tragen
+  jetzt einen Kurztitel im Heading (`make doc-trace`-`Titel`-Spalte gefuellt) plus
+  einen stabilen `<a id="gg-...">`-Anker, der die bestehenden `#gg-...`-Verweise
+  (1388 repo-weit) unveraendert aufloest — kein Link-Bruch, keine ADR editiert,
+  ADR-0004-konform (ID-Anker titel-unabhaengig). Definitorische Familien
+  (GG-TERM/NONGOAL/FUTURE) bleiben bare. Doku-only, kein Runtime-Delta.
 
 ## [0.3.1] - 2026-07-10
 
