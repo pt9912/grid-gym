@@ -2263,17 +2263,18 @@ Alarmexport, Replay-Diff und Healthcheck-Ausgabe.
 Das Projekt MUSS eine V-Modell-aehnliche Rueckverfolgbarkeitsmatrix
 Anforderung→Design→Implementierung→Test fuehren.
 
-Akzeptanz: Die Matrix wird in einem eigenen, aus dem Lastenheft
-verlinkten Traceability-Dokument gefuehrt (`docs/plan/traceability.md`;
-ausgelagert in Slice 063, damit der Vertrag frei von Abwaerts-Verweisen
-bleibt) und fuehrt drei Tabellen — Anforderung→Design,
-Anforderung→Implementierung (inkl. Status-Marker und Meilensteinverweis)
-und Anforderung→Test (Testtyp gemaess `GG-TESTTYPE-001..007`). Jede
-normative `GG-…`-Anforderung (`MUSS`/`SOLLTE`) ist spaetestens zur Abnahme
-ihres Scopes in der Implementierungs-Tabelle mit einem
-Implementierungsartefakt und in der Test-Tabelle mit einem Testtyp
-verknuepft; offene Eintraege sind als `🔲` mit Verweis auf die Folgearbeit
-markiert. `GG-TRACE-001` ist die ID, die diese Matrix benennt.
+Akzeptanz: Die kuratierten Design- und Test-Zuordnungen werden in einem
+eigenen, aus dem Lastenheft verlinkten Traceability-Dokument gefuehrt
+(`docs/plan/traceability.md`; ausgelagert in Slice 063, damit der Vertrag
+frei von Abwaerts-Verweisen bleibt) — Anforderung→Design und
+Anforderung→Test (Testtyp gemaess `GG-TESTTYPE-001..007`). Die Liefer-/
+Implementierungs-Rueckverfolgung (Anforderung→Slice/Welle/ADR inkl.
+Abdeckungs- und Waisen-Status) wird nicht mehr handgepflegt, sondern aus
+den Slice-, Wellen- und ADR-Artefakten automatisch abgeleitet (`make
+doc-trace`; Re-Cut in Slice 066). Jede normative `GG-…`-Anforderung
+(`MUSS`/`SOLLTE`) ist damit entweder ueber eine Slice-/Wellen-/ADR-Referenz
+oder eine Coverage-Zeile nachverfolgbar. `GG-TRACE-001` ist die ID, die diese
+Rueckverfolgbarkeit benennt.
 
 ---
 

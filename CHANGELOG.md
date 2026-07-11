@@ -39,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (1388 repo-weit) unveraendert aufloest — kein Link-Bruch, keine ADR editiert,
   ADR-0004-konform (ID-Anker titel-unabhaengig). Definitorische Familien
   (GG-TERM/NONGOAL/FUTURE) bleiben bare. Doku-only, kein Runtime-Delta.
+- **Docs (Slice 066):** `docs/plan/traceability.md` §27.2 „Anforderung zu
+  Implementierung" (inkl. der drift-anfaelligen `✓`/`🔲`-Status-Matrix) entfernt
+  und an `make doc-trace` delegiert (GG-TRACE-001-Amendment). Die kuratierten,
+  stabilen Mappings §27.1 (Design → `GG-AR-*`) + §27.3 (Test) bleiben; die
+  Liefer-/Implementierungs-Rueckverfolgung (Anforderung→Slice/Welle/ADR +
+  Abdeckungs-/Waisen-Status) wird jetzt automatisch abgeleitet statt handgepflegt
+  (kein Drift). `make doc-trace` unveraendert 151 Reqs / 0 Waisen. Doku-only.
 
 ## [0.3.1] - 2026-07-10
 

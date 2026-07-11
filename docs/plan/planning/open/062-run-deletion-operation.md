@@ -31,5 +31,6 @@ formell eingefordert wird.
 
 ## Wandert nach
 
-`done/`, sobald die Loesch-Operation existiert und die zugehoerige
-§27.2-Matrix-Zeile auf `✓` steht.
+`done/`, sobald die Loesch-Operation existiert und die Anforderung via
+Slice/Welle nachverfolgbar ist (`make doc-trace`; §27.2-Status-Matrix in
+Slice 066 entfernt).

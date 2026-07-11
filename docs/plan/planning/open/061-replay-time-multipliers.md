@@ -31,5 +31,6 @@ eingefordert wird.
 
 ## Wandert nach
 
-`done/`, sobald die Multiplikatoren konfigurierbar sind und die zugehoerige
-§27.2-Matrix-Zeile auf `✓` steht.
+`done/`, sobald die Multiplikatoren konfigurierbar sind und die Anforderung
+via Slice/Welle nachverfolgbar ist (`make doc-trace`; §27.2-Status-Matrix in
+Slice 066 entfernt).

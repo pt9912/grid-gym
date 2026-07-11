@@ -4,9 +4,10 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
 Kein aktiver Slice; zuletzt abgeschlossen:
+[`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut:
+§27.2 an `make doc-trace` delegiert) und
 [`064`](../done/064-rtm-titel-html-anker.md) (RTM-Titel via HTML-Anker in
-`lastenheft.md`, Doku-only) und
-[`063`](../done/063-traceability-doc-auslagern.md) (§27-Traceability ausgelagert).
+`lastenheft.md`, Doku-only).
 **Stand:** 2026-07-11
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -76,6 +77,9 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-11):
+[`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut —
+§27.2 „Anforderung→Implementierung" inkl. Status-Matrix entfernt und an
+`make doc-trace` delegiert; [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment; §27.1/§27.3 bleiben kuratiert) +
 [`064`](../done/064-rtm-titel-html-anker.md) (RTM-Titel via HTML-Anker —
 `make doc-trace`-Titel-Spalte gefuellt, ohne bestehende `#gg-...`-Verweise oder
 Accepted-ADRs zu brechen; advisory, kein Release) +
