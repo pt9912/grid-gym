@@ -19,17 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Kein Runtime-Delta.
 - **Tooling:** Requirements Traceability Matrix (`make doc-trace`) via d-check
   v0.41.0 `trace:`-Block konfiguriert — **advisory**, kein Hard-Gate. Requirement-
-  Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 29 funktionalen/
+  Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 27 funktionalen/
   Produkt-`GG-<FAMILIE>`-Familien (ausgenommen — als in `traceability.md` abgedeckte
-  Meta-Requirements: definitorische GG-TERM/NONGOAL/FUTURE; Architektur-/Design-Meta
+  Meta-Requirements: Scope/definitorisch GG-TERM/SEED/MVP/NONGOAL/FUTURE (= exakt die
+  §27.1.1-Familien „ohne Design-Artefakt"); Architektur-/Design-Meta
   GG-ARCH/ARCHTEST/PRINC/CC; Test-/Qualitaets-/Gate-Infra GG-TEST/TESTTYPE/QG/COV/QA);
   ADR-/Slice-Verlinkung ueber `docs/plan/adr` bzw. `docs/plan/planning`
   (`NNN-titel.md`-Slices **und** `M<n>-…`-Wellen als Liefervehikel). Zusaetzlich
   liest der `coverage:`-Block (v0.41.0, DC-FA-COV-*) `docs/plan/traceability.md`
   **range-aware** (`GG-QA-001..006` → alle sechs) als eigene RTM-Spalte `Trace`
   ein (keine ADR-Kontamination; §27.1.1 „ohne Design-Artefakt" ausgenommen). RTM
-  erfasst 156 Requirements, davon **1 echte Waise** (`GG-MVP-004`, ohne
-  Design-Artefakt); 153 Trace-abgedeckt. Kuratierte Quelle bleibt
+  erfasst 151 Requirements (Leaf-Funktionsanforderungen), **0 Waisen** — jede via
+  Slice/Welle/ADR oder `Trace`-Coverage abgedeckt. Kuratierte Quelle bleibt
   `docs/plan/traceability.md` (GG-TRACE-001); `make doc-complete` bewusst nicht
   verdrahtet.
 - **Docs (Slice 064):** Die 226 RTM-Requirements in `spec/lastenheft.md` tragen
