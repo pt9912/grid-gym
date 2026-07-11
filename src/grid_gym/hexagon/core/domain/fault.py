@@ -23,7 +23,15 @@ FAULT_TYPE_CELL_FAILURE: Final[str] = "cell_failure"
 
 FAULT_TYPE_VOLTAGE_DROP: Final[str] = "voltage_drop"
 """GridConnection-Fault: Spannungs-Einbruch ohne Power-Flow-Mutation
-(ADR 0025 §2.1 + ADR 0022 §2.4 GridConnection-Constraint)."""
+(ADR 0025 §2.1 + ADR 0022 §2.4 GridConnection-Constraint). Erfuellt
+GG-FAULT-005 (Spannungseinbrueche)."""
+
+FAULT_TYPE_FREQUENCY_DROP: Final[str] = "frequency_drop"
+"""GridConnection-Fault: Netz-Frequenzabfall ohne Power-Flow-Mutation —
+Frequenz-Zwilling zu `voltage_drop` (ADR 0025 §2.1 + ADR 0022 §2.4
+GridConnection-Constraint). Payload traegt `frequency_hz` (Absolutwert)
+oder `delta_hz` (Abzug vom Nennwert). Erfuellt GG-FAULT-004
+(Frequenzabfaelle): Grid-Telemetrie `frequency_hz` + Alarm."""
 
 FAULT_TYPE_CONNECTION_LOSS: Final[str] = "connection_loss"
 """EV-Charger-Fault: Verbindungsabriss waehrend der Session — solange

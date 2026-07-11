@@ -14,6 +14,7 @@ from __future__ import annotations
 from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_CELL_FAILURE,
     FAULT_TYPE_CONNECTION_LOSS,
+    FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
@@ -22,6 +23,7 @@ from grid_gym.hexagon.core.domain.fault import (
 __all__ = [
     "FAULT_TYPE_CELL_FAILURE",
     "FAULT_TYPE_CONNECTION_LOSS",
+    "FAULT_TYPE_FREQUENCY_DROP",
     "FAULT_TYPE_GENSET_FAULT",
     "FAULT_TYPE_VOLTAGE_DROP",
     "FAULT_TYPE_WINDING_FAULT",

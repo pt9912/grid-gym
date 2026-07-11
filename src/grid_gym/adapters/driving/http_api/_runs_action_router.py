@@ -51,6 +51,7 @@ from grid_gym.adapters.driving.http_api._tick_loop_registry import (
 from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_CELL_FAILURE,
     FAULT_TYPE_CONNECTION_LOSS,
+    FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
@@ -143,6 +144,7 @@ def post_run_control(
 _FAULT_TYPE_TO_DEVICE_TYPE: Final[Mapping[str, str]] = {
     FAULT_TYPE_CELL_FAILURE: "battery",
     FAULT_TYPE_VOLTAGE_DROP: "grid_connection",
+    FAULT_TYPE_FREQUENCY_DROP: "grid_connection",
     FAULT_TYPE_CONNECTION_LOSS: "ev_charger",
     FAULT_TYPE_WINDING_FAULT: "transformer",
     FAULT_TYPE_GENSET_FAULT: "diesel_generator",

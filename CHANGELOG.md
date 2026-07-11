@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Fault-Injection (Slice 070, GG-FAULT-004):** Dedizierter `frequency_drop`-
+  Fault-Typ auf dem `grid_connection`-Geraet (Frequenz-Zwilling zu `voltage_drop`
+  = GG-FAULT-005). Ein Frequenzabfall wird mit Startzeit, Dauer, Zielnetz und
+  Payload `frequency_hz` (Absolutwert) **oder** `delta_hz` (Abzug vom Nennwert
+  50 Hz) definiert, mutiert `_pending_frequency_hz` (kein Power-Flow-Mutate,
+  ADR 0022 §2.4), recovert bei `clear_fault` auf den Nennwert, emittiert opt-in
+  `frequency_hz`-Grid-Telemetrie und hebt einen `grid_fault_frequency_drop`-Alarm
+  ueber die bestehende `drain_alarms`-Pipeline. Registriert in `GridFaultEngine`,
+  im produktiven `ScenarioFaultEngine` (`_KNOWN_FAULT_TYPES`) und in der HTTP-
+  Fault-Whitelist (`frequency_drop → grid_connection`). Determinismus: alle
+  Erweiterungen (Telemetrie/Snapshot/Alarm) sind opt-in — Szenarien ohne
+  `frequency_drop` bleiben byte-identisch.
+
 ### Changed
 
 - **Tooling:** d-check-Doku-Gate von v0.10.0 auf **v0.41.0** angehoben. Das

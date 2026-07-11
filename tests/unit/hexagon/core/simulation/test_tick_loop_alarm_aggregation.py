@@ -20,6 +20,7 @@ from collections.abc import Iterator
 from decimal import Decimal
 
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
+from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
@@ -100,6 +101,71 @@ def test_tick_without_devices_yields_empty_emitted_alarms() -> None:
     loop = _make_loop_with_devices()
     result = loop.tick()
     assert result.emitted_alarms == ()
+
+
+def _make_grid(device_id: str = "grid-1") -> GridConnectionDevice:
+    grid = GridConnectionDevice()
+    grid.initialize(
+        ScenarioDevice(
+            id=device_id,
+            type="grid_connection",
+            params={
+                "nominal_voltage_v": Decimal("400"),
+                "max_import_kw": Decimal("1000"),
+                "max_export_kw": Decimal("1000"),
+            },
+        ),
+        FixedSeedRandom(seed=0),
+    )
+    return grid
+
+
+def test_frequency_drop_fault_emits_grid_fault_alarm_in_tick_result() -> None:
+    """GG-FAULT-004 Akzeptanz „erzeugt ... einen Alarm": ein aktiver
+    `frequency_drop` (via GridFaultEngine als fault_port) hebt einen
+    `GridConnectionFaultAlarm`, den der TickLoop drainst + auf den
+    Unified-`Alarm` (`grid_fault_frequency_drop`) mapped."""
+    from grid_gym.hexagon.core.domain.scenario import ScenarioFault
+    from grid_gym.hexagon.core.faults import GridFaultEngine
+
+    grid = _make_grid()
+    fault = ScenarioFault(
+        start_simulation_time=0,
+        duration_ms=5000,
+        target="grid-1",
+        type="frequency_drop",
+        payload={"delta_hz": Decimal("2")},
+        recovery="auto-recover-after-N-ticks",
+    )
+    alarm_id_iterator = _counting_alarm_id_source()
+    loop = TickLoop(
+        run_id="run-freq-drop",
+        tick_ms=1000,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=42),
+        scheduler=Scheduler(),
+        devices=(grid,),
+        fault_port=GridFaultEngine(faults=(fault,)),
+        alarm_id_source=lambda: next(alarm_id_iterator),
+    )
+    # Erster Tick: now=1000 liegt im Fault-Window [0, 5000).
+    result = loop.tick()
+    fault_alarms = [a for a in result.emitted_alarms if a.code == "grid_fault_frequency_drop"]
+    assert len(fault_alarms) == 1
+    alarm = fault_alarms[0]
+    assert alarm.target == "grid-1"
+    assert alarm.severity == "warning"
+    assert alarm.status == "active"
+    assert alarm.run_id == "run-freq-drop"
+    assert "48" in alarm.message  # 50 - 2 Hz
+    # Grid-Telemetrie traegt den gedroppten frequency_hz-Punkt.
+    freq_points = [p for p in result.emitted_telemetry if p.metric == "frequency_hz"]
+    assert len(freq_points) == 1
+    assert freq_points[0].value == Decimal("48.000000")
+    # Idempotenz: der zweite Tick (weiterhin im Window) hebt keinen
+    # zweiten Alarm (inject_fault laeuft nur beim inactive→active-Uebergang).
+    result2 = loop.tick()
+    assert [a for a in result2.emitted_alarms if a.code == "grid_fault_frequency_drop"] == []
 
 
 # ---------------------------------------------------------------------------

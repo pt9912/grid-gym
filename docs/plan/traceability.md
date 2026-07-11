@@ -178,6 +178,7 @@ Lastenheft ableitbar ist; weitere Eintraege folgen mit der Implementierung.
 | GG-REPLAY-001      | Replay-Diff Test                 |
 | GG-REPLAY-003      | Replay-Diff Test                 |
 | GG-FAULT-001       | Integration Test                 |
+| GG-FAULT-004       | Unit Test                        |
 | GG-FAULT-005       | Integration Test                 |
 | GG-AGENT-001       | Unit Test                        |
 | GG-AGENT-004       | Integration Test                 |

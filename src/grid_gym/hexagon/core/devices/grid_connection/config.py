@@ -18,9 +18,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
+from typing import Final
+
 from grid_gym.hexagon.core.errors import GridGymError
 
 _ZERO = Decimal(0)
+
+NOMINAL_FREQUENCY_HZ: Final[Decimal] = Decimal("50")
+"""GG-FAULT-004: Nenn-Netzfrequenz am Anschlusspunkt (50 Hz). Single-
+Source-Baseline fuer den `frequency_drop`-Fault — die GridConnection-
+Config traegt (Welle-4a) keine Frequenz-Felder; der Fault droppt von
+diesem Nennwert (Payload `delta_hz`) bzw. auf einen Payload-
+`frequency_hz`-Absolutwert und stellt bei `clear_fault` hierher wieder
+her. Modell- und Snapshot-Schicht teilen diese Konstante."""
 
 
 class GridConnectionConfigError(GridGymError):
@@ -62,6 +72,7 @@ class GridConnectionConfig:
 
 
 __all__ = [
+    "NOMINAL_FREQUENCY_HZ",
     "GridConnectionConfig",
     "GridConnectionConfigError",
     "GridConnectionConfigInvalidValueError",

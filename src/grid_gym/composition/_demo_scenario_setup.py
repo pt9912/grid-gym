@@ -66,6 +66,7 @@ from grid_gym.hexagon.core.faults import ScenarioFaultEngine
 from grid_gym.hexagon.core.faults.types import (
     FAULT_TYPE_CELL_FAILURE,
     FAULT_TYPE_CONNECTION_LOSS,
+    FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
@@ -341,6 +342,7 @@ _KNOWN_FAULT_TYPES: Final[frozenset[str]] = frozenset(
     {
         FAULT_TYPE_CELL_FAILURE,
         FAULT_TYPE_VOLTAGE_DROP,
+        FAULT_TYPE_FREQUENCY_DROP,
         FAULT_TYPE_CONNECTION_LOSS,
         FAULT_TYPE_WINDING_FAULT,
         FAULT_TYPE_GENSET_FAULT,

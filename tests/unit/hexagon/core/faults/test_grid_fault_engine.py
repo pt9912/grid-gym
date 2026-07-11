@@ -60,9 +60,55 @@ def _voltage_drop_fault(
     )
 
 
+def _frequency_drop_fault(
+    start_simulation_time: int = 0,
+    duration_ms: int = 5000,
+    payload: dict[str, object] | None = None,
+) -> ScenarioFault:
+    return ScenarioFault(
+        start_simulation_time=start_simulation_time,
+        duration_ms=duration_ms,
+        target="grid-1",
+        type="frequency_drop",
+        payload={} if payload is None else payload,
+        recovery="auto-recover-after-N-ticks",
+    )
+
+
 def test_adapter_satisfies_fault_port_protocol() -> None:
     adapter = GridFaultEngine(faults=())
     assert isinstance(adapter, FaultPort)
+
+
+def test_adapter_activates_frequency_drop_in_window() -> None:
+    """GG-FAULT-004: GridFaultEngine schedule't `frequency_drop`
+    (supported_types erweitert um den Frequenz-Zwilling)."""
+    device = _grid_device()
+    adapter = GridFaultEngine(faults=(_frequency_drop_fault(payload={"delta_hz": Decimal("2")}),))
+    adapter.apply_active_faults(
+        (device,),
+        DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),
+    )
+    assert device._frequency_drop_active is True
+    assert device._pending_frequency_hz == Decimal("48")
+
+
+def test_adapter_auto_recovers_frequency_drop_after_window() -> None:
+    """GG-FAULT-004 Recovery: nach dem Window restauriert die Engine
+    den Nennwert (50 Hz)."""
+    device = _grid_device()
+    adapter = GridFaultEngine(faults=(_frequency_drop_fault(duration_ms=2000),))
+    adapter.apply_active_faults(
+        (device,),
+        DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000),
+    )
+    assert device._frequency_drop_active is True
+    adapter.apply_active_faults(
+        (device,),
+        DeviceTickContext(tick=2, simulation_time=2000, tick_ms=1000),
+    )
+    assert device._frequency_drop_active is False
+    assert device._pending_frequency_hz == Decimal("50")
 
 
 def test_adapter_activates_fault_in_window() -> None:

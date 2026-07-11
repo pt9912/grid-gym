@@ -4,10 +4,12 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
 Kein aktiver Slice; zuletzt abgeschlossen:
+[`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
+`frequency_drop`-Fault →
+[`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
+Runtime-Delta, Release `[Unreleased]`) und
 [`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut:
-§27.2 an `make doc-trace` delegiert) und
-[`064`](../done/064-rtm-titel-html-anker.md) (RTM-Titel via HTML-Anker in
-`lastenheft.md`, Doku-only).
+§27.2 an `make doc-trace` delegiert).
 **Stand:** 2026-07-11
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -79,6 +81,12 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-11):
+[`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
+`frequency_drop`-Fault auf dem `grid_connection`-Geraet →
+[`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) „Frequenzabfaelle"
+erfuellt: Payload `frequency_hz`/`delta_hz`, opt-in Grid-Telemetrie + Alarm,
+byte-identisch fuer Szenarien ohne den Fault; Runtime-Delta → Release
+`[Unreleased]`) +
 [`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut —
 §27.2 „Anforderung→Implementierung" inkl. Status-Matrix entfernt und an
 `make doc-trace` delegiert; [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment; §27.1/§27.3 bleiben kuratiert) +

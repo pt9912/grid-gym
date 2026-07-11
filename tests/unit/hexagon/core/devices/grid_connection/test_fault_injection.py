@@ -237,3 +237,165 @@ def test_clear_fault_pre_init_is_safe_noop() -> None:
     assert device._voltage_drop_active is False
     # _pending_voltage_v bleibt Default `_ZERO` (config noch None).
     assert device._pending_voltage_v == Decimal(0)
+
+
+# ---------------------------------------------------------------------------
+# GG-FAULT-004 (Slice 070): frequency_drop
+# ---------------------------------------------------------------------------
+
+
+def test_inject_frequency_drop_sets_active_flag_and_default_delta() -> None:
+    """GG-FAULT-004: leerer Payload → Default-Delta 1 Hz unter Nominal
+    (50 → 49 Hz)."""
+    device = _grid_device()
+    assert device._frequency_drop_active is False
+    assert device._pending_frequency_hz == Decimal("50")
+    device.inject_fault("frequency_drop", {})
+    assert device._frequency_drop_active is True
+    assert device._pending_frequency_hz == Decimal("49")
+
+
+def test_inject_frequency_drop_with_absolute_value() -> None:
+    """GG-FAULT-004 Akzeptanz „Frequenzwert": Payload `frequency_hz`
+    setzt den Absolutwert."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"frequency_hz": Decimal("48.5")})
+    assert device._pending_frequency_hz == Decimal("48.5")
+
+
+def test_inject_frequency_drop_with_delta() -> None:
+    """GG-FAULT-004 Akzeptanz „oder Delta": Payload `delta_hz` zieht vom
+    Nennwert ab (50 - 2 = 48)."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"delta_hz": Decimal("2")})
+    assert device._pending_frequency_hz == Decimal("48")
+
+
+def test_inject_frequency_drop_value_takes_precedence_over_delta() -> None:
+    """`frequency_hz` hat Vorrang vor `delta_hz`."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"frequency_hz": Decimal("47"), "delta_hz": Decimal("5")})
+    assert device._pending_frequency_hz == Decimal("47")
+
+
+def test_inject_frequency_drop_raises_alarm() -> None:
+    """GG-FAULT-004 Akzeptanz „erzeugt ... einen Alarm": inject_fault
+    hebt einen `GridConnectionFaultAlarm`."""
+    from grid_gym.hexagon.core.devices.grid_connection.commands import (
+        GridConnectionFaultAlarm,
+    )
+
+    device = _grid_device()
+    assert device.alarms == ()
+    device.inject_fault("frequency_drop", {"delta_hz": Decimal("1")})
+    alarms = device.drain_alarms()
+    assert len(alarms) == 1
+    alarm = alarms[0]
+    assert isinstance(alarm, GridConnectionFaultAlarm)
+    assert alarm.target_device_id == "grid-1"
+    assert alarm.fault_type == "frequency_drop"
+    # Destruktiver Drain: zweiter Read ist leer.
+    assert device.drain_alarms() == ()
+
+
+def test_clear_frequency_drop_resets_to_nominal() -> None:
+    """GG-FAULT-004 Recovery: clear_fault restauriert 50 Hz."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"delta_hz": Decimal("3")})
+    assert device._pending_frequency_hz == Decimal("47")
+    device.clear_fault("frequency_drop")
+    assert device._frequency_drop_active is False
+    assert device._pending_frequency_hz == Decimal("50")
+
+
+def test_clear_frequency_drop_is_idempotent() -> None:
+    """ADR 0025 §2.4: wiederholte `clear_fault`-Aufrufe sind No-Op."""
+    device = _grid_device()
+    device.clear_fault("frequency_drop")  # pre-fault clear
+    device.inject_fault("frequency_drop", {})
+    device.clear_fault("frequency_drop")
+    device.clear_fault("frequency_drop")  # zweiter clear — No-Op
+    assert device._frequency_drop_active is False
+    assert device._pending_frequency_hz == Decimal("50")
+
+
+def test_tick_without_frequency_drop_omits_frequency_telemetry() -> None:
+    """Determinismus: ohne aktiven frequency_drop bleibt die
+    Metrik-Liste byte-identisch (kein `frequency_hz`)."""
+    device = _grid_device()
+    outcome = device.tick(DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000))
+    metrics = [p.metric for p in outcome.telemetry]
+    assert metrics == ["export_kwh", "import_kwh", "power_kw", "voltage_v"]
+
+
+def test_tick_with_active_frequency_drop_emits_frequency_telemetry() -> None:
+    """GG-FAULT-004 Akzeptanz „erzeugt Grid-Telemetrie": bei aktivem
+    Fault emittiert tick() `frequency_hz` (alphabetisch zwischen
+    export_kwh und import_kwh)."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"frequency_hz": Decimal("48")})
+    outcome = device.tick(DeviceTickContext(tick=0, simulation_time=0, tick_ms=1000))
+    metrics = [p.metric for p in outcome.telemetry]
+    assert metrics == ["export_kwh", "frequency_hz", "import_kwh", "power_kw", "voltage_v"]
+    assert metrics == sorted(metrics), "Telemetrie muss alphabetisch sortiert bleiben"
+    frequency = next(p for p in outcome.telemetry if p.metric == "frequency_hz")
+    assert frequency.value == Decimal("48.000000")
+    assert frequency.unit == "Hz"
+
+
+def test_inject_frequency_drop_does_not_mutate_pending_power_kw() -> None:
+    """ADR 0022 §2.4 GridConnection-Constraint: frequency_drop darf
+    `_pending_power_kw`/`_current_power_kw` NICHT veraendern."""
+    device = _grid_device()
+    pending_before = device._pending_power_kw
+    current_before = device._current_power_kw
+    device.inject_fault("frequency_drop", {})
+    assert device._pending_power_kw == pending_before
+    assert device._current_power_kw == current_before
+
+
+def test_frequency_drop_and_voltage_drop_coexist() -> None:
+    """Beide Netz-Faults sind unabhaengige Flags; ein aktiver
+    frequency_drop laesst voltage_drop unberuehrt und umgekehrt."""
+    device = _grid_device()
+    device.inject_fault("voltage_drop", {})
+    device.inject_fault("frequency_drop", {"delta_hz": Decimal("1")})
+    assert device._voltage_drop_active is True
+    assert device._frequency_drop_active is True
+    assert device._pending_voltage_v == Decimal("200")
+    assert device._pending_frequency_hz == Decimal("49")
+    device.clear_fault("frequency_drop")
+    assert device._voltage_drop_active is True  # unberuehrt
+    assert device._frequency_drop_active is False
+
+
+def test_snapshot_roundtrip_preserves_frequency_state_and_flag() -> None:
+    """GG-FAULT-004: Snapshot-Roundtrip ist byte-stabil inkl. Frequenz-
+    State + fault_state (Muster voltage_drop)."""
+    device = _grid_device()
+    device.inject_fault("frequency_drop", {"frequency_hz": Decimal("47.5")})
+    state = device.snapshot()
+    # Opt-in: Frequenz-Keys sind bei aktivem Fault praesent.
+    assert state["pending_frequency_hz"] == Decimal("47.5")
+    assert state["fault_state"]["frequency_drop_active"] is True  # type: ignore[index]
+    restored = GridConnectionDevice.from_snapshot(state)
+    assert restored._frequency_drop_active is True
+    assert restored._pending_frequency_hz == Decimal("47.5")
+    assert restored._current_frequency_hz == Decimal("50")  # tick not yet
+    assert restored == device
+
+
+def test_snapshot_without_frequency_drop_omits_keys() -> None:
+    """Determinismus: ohne aktiven frequency_drop enthaelt der Snapshot
+    keine Frequenz-Keys und kein frequency_drop_active-Flag (byte-
+    identisch fuer Szenarien ohne Frequenz-Fault)."""
+    device = _grid_device()
+    state = device.snapshot()
+    assert "current_frequency_hz" not in state
+    assert "pending_frequency_hz" not in state
+    assert "frequency_drop_active" not in state["fault_state"]  # type: ignore[operator]
+    # Roundtrip defaultet auf nominal / False.
+    restored = GridConnectionDevice.from_snapshot(state)
+    assert restored._frequency_drop_active is False
+    assert restored._pending_frequency_hz == Decimal("50")
+    assert restored._current_frequency_hz == Decimal("50")

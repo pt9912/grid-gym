@@ -22,6 +22,7 @@ from decimal import Decimal
 from typing import Final, Self
 
 from grid_gym.hexagon.core.devices.grid_connection.config import (
+    NOMINAL_FREQUENCY_HZ,
     GridConnectionConfig,
     GridConnectionConfigError,
 )
@@ -72,6 +73,12 @@ _PENDING_VOLTAGE_V_KEY: Final[str] = "pending_voltage_v"
 # M8-Welle-3c-b-2 (ADR 0064 §2.3): opt-in Q-State-Keys.
 _CURRENT_REACTIVE_POWER_KVAR_KEY: Final[str] = "current_reactive_power_kvar"
 _PENDING_REACTIVE_POWER_KVAR_KEY: Final[str] = "pending_reactive_power_kvar"
+# GG-FAULT-004 (Slice 070): opt-in Frequenz-State-Keys + fault_state-Flag.
+# Nur bei aktivem `frequency_drop` serialisiert (Default nominal → keine
+# Keys → byte-identisch fuer Szenarien ohne Frequenz-Fault).
+_CURRENT_FREQUENCY_HZ_KEY: Final[str] = "current_frequency_hz"
+_PENDING_FREQUENCY_HZ_KEY: Final[str] = "pending_frequency_hz"
+_FREQUENCY_DROP_ACTIVE_FLAG: Final[str] = "frequency_drop_active"
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,6 +111,12 @@ class GridConnectionSnapshot:
     # Versions-Bump). Alt-Snapshots ohne die Keys lesen als 0.
     current_reactive_power_kvar: Decimal = Decimal(0)
     pending_reactive_power_kvar: Decimal = Decimal(0)
+    # GG-FAULT-004 (Slice 070): Frequenz-State + Fault-Flag, additiv +
+    # opt-in serialisiert (Default nominal / False → byte-identisch, kein
+    # Versions-Bump). Alt-Snapshots ohne die Keys lesen als nominal / False.
+    current_frequency_hz: Decimal = NOMINAL_FREQUENCY_HZ
+    pending_frequency_hz: Decimal = NOMINAL_FREQUENCY_HZ
+    frequency_drop_active: bool = False
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -126,10 +139,14 @@ class GridConnectionSnapshot:
             # ohne diese Keys bleiben roundtrip-faehig.
             _CURRENT_VOLTAGE_V_KEY: self.current_voltage_v,
             _PENDING_VOLTAGE_V_KEY: self.pending_voltage_v,
-            _FAULT_STATE_KEY: {
-                "voltage_drop_active": self.voltage_drop_active,
-            },
         }
+        # `fault_state` traegt `voltage_drop_active` immer; das GG-FAULT-004-
+        # `frequency_drop_active`-Flag ist opt-in (nur bei True → Szenarien
+        # ohne Frequenz-Fault byte-identisch).
+        fault_state: dict[str, object] = {"voltage_drop_active": self.voltage_drop_active}
+        if self.frequency_drop_active:
+            fault_state[_FREQUENCY_DROP_ACTIVE_FLAG] = self.frequency_drop_active
+        payload[_FAULT_STATE_KEY] = fault_state
         # M8-Welle-3c-b-2 (ADR 0064 §2.3): Q-State opt-in (Default 0 → kein
         # Key → byte-identisch).
         if self.current_reactive_power_kvar != Decimal(0) or self.pending_reactive_power_kvar != (
@@ -137,6 +154,13 @@ class GridConnectionSnapshot:
         ):
             payload[_CURRENT_REACTIVE_POWER_KVAR_KEY] = self.current_reactive_power_kvar
             payload[_PENDING_REACTIVE_POWER_KVAR_KEY] = self.pending_reactive_power_kvar
+        # GG-FAULT-004 (Slice 070): Frequenz-State opt-in — nur bei aktivem
+        # Fault (dann tragen current/pending den gedroppten Wert und muessen
+        # den Roundtrip ueberleben; sonst nominal → keine Keys → byte-
+        # identisch).
+        if self.frequency_drop_active:
+            payload[_CURRENT_FREQUENCY_HZ_KEY] = self.current_frequency_hz
+            payload[_PENDING_FREQUENCY_HZ_KEY] = self.pending_frequency_hz
         return payload
 
     @classmethod
@@ -199,6 +223,21 @@ class GridConnectionSnapshot:
         voltage_drop_active = assert_optional_fault_flag(
             state, _FAULT_STATE_KEY, "voltage_drop_active", SUBSYSTEM
         )
+        # GG-FAULT-004 (Slice 070): opt-in Frequenz-Fault-Flag + State
+        # (fehlt → False / nominal; Backward-Compat + Szenarien ohne Fault).
+        frequency_drop_active = assert_optional_fault_flag(
+            state, _FAULT_STATE_KEY, _FREQUENCY_DROP_ACTIVE_FLAG, SUBSYSTEM
+        )
+        current_frequency_hz = (
+            assert_decimal(state[_CURRENT_FREQUENCY_HZ_KEY], _CURRENT_FREQUENCY_HZ_KEY, SUBSYSTEM)
+            if _CURRENT_FREQUENCY_HZ_KEY in state
+            else NOMINAL_FREQUENCY_HZ
+        )
+        pending_frequency_hz = (
+            assert_decimal(state[_PENDING_FREQUENCY_HZ_KEY], _PENDING_FREQUENCY_HZ_KEY, SUBSYSTEM)
+            if _PENDING_FREQUENCY_HZ_KEY in state
+            else NOMINAL_FREQUENCY_HZ
+        )
         # M8-Welle-3c-b-2 (ADR 0064 §2.3): opt-in Q-State (fehlt → 0).
         current_reactive_power_kvar = (
             assert_decimal(
@@ -230,6 +269,9 @@ class GridConnectionSnapshot:
             voltage_drop_active=voltage_drop_active,
             current_reactive_power_kvar=current_reactive_power_kvar,
             pending_reactive_power_kvar=pending_reactive_power_kvar,
+            current_frequency_hz=current_frequency_hz,
+            pending_frequency_hz=pending_frequency_hz,
+            frequency_drop_active=frequency_drop_active,
         )
 
 

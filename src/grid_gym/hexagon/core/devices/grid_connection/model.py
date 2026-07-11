@@ -29,9 +29,11 @@ from typing import Self, cast, override
 
 from grid_gym.hexagon.core.devices.grid_connection.commands import (
     GridConnectionAlarm,
+    GridConnectionFaultAlarm,
     validate_set_power_command,
 )
 from grid_gym.hexagon.core.devices.grid_connection.config import (
+    NOMINAL_FREQUENCY_HZ,
     GridConnectionConfig,
 )
 from grid_gym.hexagon.core.devices.grid_connection.snapshot import (
@@ -55,7 +57,10 @@ from grid_gym.hexagon.core.errors import (
     MissingKeysError,
     WrongTypeError,
 )
-from grid_gym.hexagon.core.faults.types import FAULT_TYPE_VOLTAGE_DROP
+from grid_gym.hexagon.core.faults.types import (
+    FAULT_TYPE_FREQUENCY_DROP,
+    FAULT_TYPE_VOLTAGE_DROP,
+)
 from grid_gym.hexagon.ports.driven.random import RandomPort
 
 _ZERO = Decimal(0)
@@ -72,6 +77,17 @@ die Spannung auf `_VOLTAGE_DROP_FRACTION * nominal_voltage_v`
 konfigurierbar machen. Hard-Clamp in der jeweiligen Tick;
 Auto-Schluss (`_pending_power_kw`) wird NICHT beruehrt
 (ADR 0022 §2.4 GridConnection-Constraint)."""
+
+_FREQUENCY_PAYLOAD_VALUE_KEY = "frequency_hz"
+_FREQUENCY_PAYLOAD_DELTA_KEY = "delta_hz"
+_DEFAULT_FREQUENCY_DROP_HZ = Decimal("1")
+"""GG-FAULT-004 (Slice 070): faellt der `frequency_drop`-Payload ohne
+`frequency_hz`- **und** `delta_hz`-Angabe aus, droppt die Frequenz um
+diesen Default-Delta unter den Nennwert (50 → 49 Hz). Mit `frequency_hz`
+wird ein Absolutwert gesetzt, mit `delta_hz` ein Abzug vom Nennwert —
+`frequency_hz` hat Vorrang (Akzeptanz „Frequenzwert oder Delta").
+Auto-Schluss (`_pending_power_kw`) wird NICHT beruehrt (ADR 0022 §2.4
+GridConnection-Constraint), spiegelbildlich zu `voltage_drop`."""
 
 _RUN_ID_UNSET = ""
 """Marker fuer den Pre-`set_run_id`-Zustand (Welle-3-Review-M-4-
@@ -121,8 +137,14 @@ class GridConnectionDevice:
         self._current_voltage_v: Decimal = _ZERO
         self._pending_voltage_v: Decimal = _ZERO
         self._voltage_drop_active: bool = False
+        # GG-FAULT-004 (Slice 070): Frequenz-State + Fault-Flag, spiegelbildlich
+        # zum Voltage-State. Default = `NOMINAL_FREQUENCY_HZ`; Fault mutiert
+        # `_pending_frequency_hz`, `tick()` committed in `_current_frequency_hz`.
+        self._current_frequency_hz: Decimal = NOMINAL_FREQUENCY_HZ
+        self._pending_frequency_hz: Decimal = NOMINAL_FREQUENCY_HZ
+        self._frequency_drop_active: bool = False
         self._last_telemetry: tuple[TelemetryPoint, ...] = ()
-        self._alarms: list[GridConnectionAlarm] = []
+        self._alarms: list[GridConnectionAlarm | GridConnectionFaultAlarm] = []
         self._run_id: str = _RUN_ID_UNSET
         self._sequence: int = 0
 
@@ -133,12 +155,12 @@ class GridConnectionDevice:
         return self._scenario_device.id
 
     @property
-    def alarms(self) -> tuple[GridConnectionAlarm, ...]:
+    def alarms(self) -> tuple[GridConnectionAlarm | GridConnectionFaultAlarm, ...]:
         """Unveraenderliches Snapshot-Tupel; siehe `drain_alarms()`
         fuer destruktiven Read (ADR 0014 §2.5-Spiegel)."""
         return tuple(self._alarms)
 
-    def drain_alarms(self) -> tuple[GridConnectionAlarm, ...]:
+    def drain_alarms(self) -> tuple[GridConnectionAlarm | GridConnectionFaultAlarm, ...]:
         drained = tuple(self._alarms)
         self._alarms = []
         return drained
@@ -176,6 +198,10 @@ class GridConnectionDevice:
         self._current_voltage_v = config.nominal_voltage_v
         self._pending_voltage_v = config.nominal_voltage_v
         self._voltage_drop_active = False
+        # GG-FAULT-004 (Slice 070): Frequenz-Default = NOMINAL_FREQUENCY_HZ.
+        self._current_frequency_hz = NOMINAL_FREQUENCY_HZ
+        self._pending_frequency_hz = NOMINAL_FREQUENCY_HZ
+        self._frequency_drop_active = False
 
     def apply_command(self, command: Command) -> CommandResult:
         if self._scenario_device is None or self._config is None:
@@ -214,6 +240,11 @@ class GridConnectionDevice:
         # beruehrt diese Felder NICHT.
         new_voltage_v = self._pending_voltage_v
         self._current_voltage_v = new_voltage_v
+        # GG-FAULT-004 (Slice 070): Frequenz-State-Commit (analog Voltage).
+        # Der Fault hat `_pending_frequency_hz` bereits gemutated; der
+        # Auto-Schluss-Schritt beruehrt diese Felder NICHT.
+        new_frequency_hz = self._pending_frequency_hz
+        self._current_frequency_hz = new_frequency_hz
         # M8-Welle-3c-b-2 (ADR 0064 §2.1): Q-State-Commit (analog Power).
         self._current_reactive_power_kvar = self._pending_reactive_power_kvar
 
@@ -226,7 +257,7 @@ class GridConnectionDevice:
         elif new_power_kw < _ZERO:
             self._export_kwh += delta_kwh
 
-        telemetry = self._emit_telemetry(context, new_power_kw, new_voltage_v)
+        telemetry = self._emit_telemetry(context, new_power_kw, new_voltage_v, new_frequency_hz)
         self._last_telemetry = telemetry
         return DeviceTickOutcome(telemetry=telemetry)
 
@@ -242,50 +273,73 @@ class GridConnectionDevice:
         """Wendet einen Fault auf das Device an
         (`FaultInjectableDevice`-Vertrag aus ADR 0022 §2.1).
 
-        Welle-2-Closed-Set (ADR 0025 §2.1): unterstuetzt
-        ausschliesslich `fault_type=FAULT_TYPE_VOLTAGE_DROP`
-        (`"voltage_drop"`). Andere Typen werfen typisiert
+        Closed-Set (ADR 0025 §2.1): unterstuetzt die beiden
+        GridConnection-Netz-Faults `FAULT_TYPE_VOLTAGE_DROP`
+        (`"voltage_drop"`, GG-FAULT-005) und
+        `FAULT_TYPE_FREQUENCY_DROP` (`"frequency_drop"`,
+        GG-FAULT-004). Andere Typen werfen typisiert
         `FaultUnsupportedTypeError`.
 
-        Effekt: setzt `_voltage_drop_active = True` + senkt
-        `_pending_voltage_v` auf
-        `_VOLTAGE_DROP_FRACTION * nominal_voltage_v` (Welle-2-
-        Default 50 %). Die naechste `tick()` committed das in
-        `_current_voltage_v` und emittiert das gesenkte
-        `voltage_v`-Telemetry.
+        `voltage_drop`-Effekt: `_voltage_drop_active = True` + senkt
+        `_pending_voltage_v` auf `_VOLTAGE_DROP_FRACTION *
+        nominal_voltage_v` (Welle-2-Default 50 %; `payload` ignoriert).
 
-        **GridConnection-Constraint** (ADR 0022 §2.4): der Fault
-        mutiert KEINE `_pending_power_kw` — der Welle-6b-Auto-
-        Schluss wuerde sie sonst in derselben Tick ueberschreiben.
+        `frequency_drop`-Effekt (GG-FAULT-004): `_frequency_drop_active
+        = True` + senkt `_pending_frequency_hz` auf den Payload-Wert
+        (`frequency_hz`) bzw. `NOMINAL_FREQUENCY_HZ - delta_hz`
+        (`delta_hz`), sonst Default-Delta; hebt zusaetzlich einen
+        `GridConnectionFaultAlarm` (Akzeptanz „erzeugt ... einen
+        Alarm"). Die naechste `tick()` committed den Wert und
+        emittiert das opt-in `frequency_hz`-Grid-Telemetry.
 
-        **Welle-2-Payload-Vertrag**: `payload` wird vollstaendig
-        ignoriert (keine Schema-Validierung, kein konfigurierbarer
-        `drop_fraction`-Override). Welle-3+ kann das schaerfen.
+        **GridConnection-Constraint** (ADR 0022 §2.4): beide Faults
+        mutieren KEINE `_pending_power_kw` — der Welle-6b-Auto-Schluss
+        wuerde sie sonst in derselben Tick ueberschreiben.
         """
-        _ = payload  # Welle 2 ignoriert Payload (siehe Docstring + ADR 0025 §2.1).
         if fault_type == FAULT_TYPE_VOLTAGE_DROP:
             config = cast(GridConnectionConfig, self._config)
             self._voltage_drop_active = True
             self._pending_voltage_v = config.nominal_voltage_v * _VOLTAGE_DROP_FRACTION
             return
+        if fault_type == FAULT_TYPE_FREQUENCY_DROP:
+            self._inject_frequency_drop(payload)
+            return
         raise FaultUnsupportedTypeError("grid_connection", fault_type)
+
+    def _inject_frequency_drop(self, payload: Mapping[str, object]) -> None:
+        """GG-FAULT-004: droppt die Frequenz auf den Payload-Zielwert +
+        hebt einen `GridConnectionFaultAlarm`."""
+        target_hz = _resolve_frequency_target(payload)
+        self._frequency_drop_active = True
+        self._pending_frequency_hz = target_hz
+        self._alarms.append(
+            GridConnectionFaultAlarm(
+                target_device_id=cast(ScenarioDevice, self._scenario_device).id,
+                fault_type=FAULT_TYPE_FREQUENCY_DROP,
+                detail=f"grid frequency drop to {target_hz} Hz",
+            )
+        )
 
     def clear_fault(self, fault_type: str) -> None:
         """Recovery-Surface (Welle-2-Review-Folge H-2,
-        ADR 0025 §2.2): setzt den Voltage-Drop-Flag zurueck und
-        restauriert `_pending_voltage_v` auf `nominal_voltage_v`.
-        Symmetrisch zu `inject_fault`.
+        ADR 0025 §2.2): setzt den jeweiligen Fault-Flag zurueck und
+        restauriert den Nennwert. Symmetrisch zu `inject_fault`.
 
-        Welle-2-Closed-Set: nur `voltage_drop`. Unbekannter
+        Closed-Set: `voltage_drop` (→ `nominal_voltage_v`) und
+        `frequency_drop` (→ `NOMINAL_FREQUENCY_HZ`). Unbekannter
         `fault_type` wirft `FaultUnsupportedTypeError`.
         Idempotenz-Vertrag (ADR 0025 §2.4): wiederholte Aufrufe
-        sind No-Op (Voltage stays nominal).
+        sind No-Op (Wert bleibt nominal).
         """
         if fault_type == FAULT_TYPE_VOLTAGE_DROP:
             config = cast(GridConnectionConfig, self._config)
             self._voltage_drop_active = False
             if config is not None:
                 self._pending_voltage_v = config.nominal_voltage_v
+            return
+        if fault_type == FAULT_TYPE_FREQUENCY_DROP:
+            self._frequency_drop_active = False
+            self._pending_frequency_hz = NOMINAL_FREQUENCY_HZ
             return
         raise FaultUnsupportedTypeError("grid_connection", fault_type)
 
@@ -310,6 +364,9 @@ class GridConnectionDevice:
             voltage_drop_active=self._voltage_drop_active,
             current_reactive_power_kvar=self._current_reactive_power_kvar,
             pending_reactive_power_kvar=self._pending_reactive_power_kvar,
+            current_frequency_hz=self._current_frequency_hz,
+            pending_frequency_hz=self._pending_frequency_hz,
+            frequency_drop_active=self._frequency_drop_active,
         )
         return snap.to_dict()
 
@@ -333,6 +390,9 @@ class GridConnectionDevice:
         device._voltage_drop_active = snap.voltage_drop_active
         device._current_reactive_power_kvar = snap.current_reactive_power_kvar
         device._pending_reactive_power_kvar = snap.pending_reactive_power_kvar
+        device._current_frequency_hz = snap.current_frequency_hz
+        device._pending_frequency_hz = snap.pending_frequency_hz
+        device._frequency_drop_active = snap.frequency_drop_active
         device._run_id = snap.run_id
         device._sequence = snap.sequence
         return device
@@ -352,6 +412,9 @@ class GridConnectionDevice:
             and self._voltage_drop_active == other._voltage_drop_active
             and self._current_reactive_power_kvar == other._current_reactive_power_kvar
             and self._pending_reactive_power_kvar == other._pending_reactive_power_kvar
+            and self._current_frequency_hz == other._current_frequency_hz
+            and self._pending_frequency_hz == other._pending_frequency_hz
+            and self._frequency_drop_active == other._frequency_drop_active
             and self._device_id_or_none() == other._device_id_or_none()
             and self._run_id == other._run_id
             and self._sequence == other._sequence
@@ -371,6 +434,9 @@ class GridConnectionDevice:
                 self._voltage_drop_active,
                 self._current_reactive_power_kvar,
                 self._pending_reactive_power_kvar,
+                self._current_frequency_hz,
+                self._pending_frequency_hz,
+                self._frequency_drop_active,
                 self._device_id_or_none(),
                 self._run_id,
                 self._sequence,
@@ -385,6 +451,7 @@ class GridConnectionDevice:
         context: DeviceTickContext,
         new_power_kw: Decimal,
         new_voltage_v: Decimal,
+        new_frequency_hz: Decimal,
     ) -> tuple[TelemetryPoint, ...]:
         device_id = cast(ScenarioDevice, self._scenario_device).id
         export_kwh = self._export_kwh.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
@@ -398,9 +465,16 @@ class GridConnectionDevice:
         # zwischen power_kw und voltage_v → Q-frei byte-identisch.
         emissions: list[tuple[str, Decimal, str]] = [
             ("export_kwh", export_kwh, "kWh"),
-            ("import_kwh", import_kwh, "kWh"),
-            ("power_kw", power_kw, "kW"),
         ]
+        # GG-FAULT-004 (Slice 070): opt-in `frequency_hz`-Grid-Telemetry, nur
+        # bei aktivem `frequency_drop` (Muster reactive_power_kvar). Liegt
+        # alphabetisch zwischen export_kwh und import_kwh → Szenarien ohne
+        # Frequenz-Fault bleiben byte-identisch.
+        if self._frequency_drop_active:
+            frequency_hz = new_frequency_hz.quantize(_QUANTUM, rounding=ROUND_HALF_EVEN)
+            emissions.append(("frequency_hz", frequency_hz, "Hz"))
+        emissions.append(("import_kwh", import_kwh, "kWh"))
+        emissions.append(("power_kw", power_kw, "kW"))
         if self._current_reactive_power_kvar != _ZERO:
             emissions.append(
                 (
@@ -451,3 +525,26 @@ def _config_from_params(params: Mapping[str, object]) -> GridConnectionConfig:
 
 def _config_to_params(config: GridConnectionConfig) -> Mapping[str, Decimal]:
     return {key: getattr(config, key) for key in _PARAM_KEYS}
+
+
+def _resolve_frequency_target(payload: Mapping[str, object]) -> Decimal:
+    """GG-FAULT-004: leitet den Ziel-Frequenzwert aus dem Fault-Payload ab
+    (Akzeptanz „Frequenzwert oder Delta").
+
+    Praezedenz:
+    1. `frequency_hz` (Decimal) → Absolutwert.
+    2. `delta_hz` (Decimal) → `NOMINAL_FREQUENCY_HZ - delta_hz`.
+    3. sonst → `NOMINAL_FREQUENCY_HZ - _DEFAULT_FREQUENCY_DROP_HZ`.
+
+    Nicht-`Decimal`-Werte werden ignoriert (GG-DATA-005 no-float; die
+    Szenario-Payload-Kanonisierung garantiert Decimals an der Grenze —
+    ein abweichender Typ faellt konservativ auf die naechste Regel
+    zurueck).
+    """
+    raw_value = payload.get(_FREQUENCY_PAYLOAD_VALUE_KEY)
+    if isinstance(raw_value, Decimal):
+        return raw_value
+    raw_delta = payload.get(_FREQUENCY_PAYLOAD_DELTA_KEY)
+    if isinstance(raw_delta, Decimal):
+        return NOMINAL_FREQUENCY_HZ - raw_delta
+    return NOMINAL_FREQUENCY_HZ - _DEFAULT_FREQUENCY_DROP_HZ

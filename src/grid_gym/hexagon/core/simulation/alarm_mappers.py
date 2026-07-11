@@ -33,7 +33,10 @@ from __future__ import annotations
 from grid_gym.hexagon.core.devices.battery.commands import BatteryAlarm
 from grid_gym.hexagon.core.devices.diesel_generator.commands import DieselGeneratorAlarm
 from grid_gym.hexagon.core.devices.ev_charger.commands import EvChargerAlarm
-from grid_gym.hexagon.core.devices.grid_connection.commands import GridConnectionAlarm
+from grid_gym.hexagon.core.devices.grid_connection.commands import (
+    GridConnectionAlarm,
+    GridConnectionFaultAlarm,
+)
 from grid_gym.hexagon.core.devices.load.commands import LoadAlarm
 from grid_gym.hexagon.core.devices.pv.commands import PvAlarm
 from grid_gym.hexagon.core.devices.smart_meter.commands import SmartMeterAlarm
@@ -146,6 +149,35 @@ def alarm_from_smart_meter_alarm(
     )
 
 
+def alarm_from_grid_connection_fault_alarm(
+    raw: GridConnectionFaultAlarm,
+    *,
+    run_id: str,
+    simulation_time_ms: int,
+    alarm_id: str,
+) -> Alarm:
+    """Mapped einen raw `GridConnectionFaultAlarm` (Netz-Fault, GG-FAULT-004
+    `frequency_drop`) auf einen Unified `Alarm`.
+
+    Getrennt vom Power-Clamp-Mapper, weil ein Netz-Fault keinen
+    Command-Kontext (`limit`/`result`) hat. Code ist stabil aus dem
+    Fault-Typ abgeleitet (`grid_fault_frequency_drop`), Severity
+    `warning` (Netz-Groesse ausserhalb Nennwert, aber kein Command-
+    Reject); `detail` fliesst in die `message`.
+    """
+    return Alarm(
+        alarm_id=alarm_id,
+        run_id=run_id,
+        simulation_time_ms=simulation_time_ms,
+        target=raw.target_device_id,
+        code=f"grid_fault_{raw.fault_type}",
+        severity="warning",
+        message=raw.detail,
+        status="active",
+        fault_id=None,
+    )
+
+
 def dispatch_alarm_mapper(
     raw: object,
     *,
@@ -156,12 +188,19 @@ def dispatch_alarm_mapper(
     """Dispatcht raw device-Alarms auf die passende Mapper-Funktion
     (M5 Welle 4b, ADR 0040 Decision 15 + Decision 16).
 
-    isinstance-Chain ueber die 5 device-spezifischen Alarm-Typen.
-    Forward-Compat-Defensive: ein nicht-erkannter Typ wirft
-    `TypeError` — Welle-7+/M3-Geraete muessen sich hier eintragen
-    (Pattern analog `_DEVICE_TYPE_BY_CLASS_NAME` im Snapshot-
-    Schema).
+    isinstance-Chain ueber die device-spezifischen Alarm-Typen (Power-
+    Clamp-Union, SmartMeter, GG-FAULT-004-Netz-Fault). Forward-Compat-
+    Defensive: ein nicht-erkannter Typ wirft `TypeError` — Welle-7+/
+    M3-Geraete muessen sich hier eintragen (Pattern analog
+    `_DEVICE_TYPE_BY_CLASS_NAME` im Snapshot-Schema).
     """
+    if isinstance(raw, GridConnectionFaultAlarm):
+        return alarm_from_grid_connection_fault_alarm(
+            raw,
+            run_id=run_id,
+            simulation_time_ms=simulation_time_ms,
+            alarm_id=alarm_id,
+        )
     if isinstance(raw, PowerDeviceAlarm):
         return alarm_from_power_device_alarm(
             raw,
@@ -194,6 +233,7 @@ class UnknownRawAlarmTypeError(TypeError):
 __all__ = [
     "PowerDeviceAlarm",
     "UnknownRawAlarmTypeError",
+    "alarm_from_grid_connection_fault_alarm",
     "alarm_from_power_device_alarm",
     "alarm_from_smart_meter_alarm",
     "dispatch_alarm_mapper",

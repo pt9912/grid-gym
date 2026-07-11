@@ -66,6 +66,28 @@ class GridConnectionAlarm:
 
 
 @dataclass(frozen=True, slots=True)
+class GridConnectionFaultAlarm:
+    """GridConnection-Netz-Fault-Alarm (M8/GG-FAULT-004).
+
+    Getrennt vom Power-Clamp-`GridConnectionAlarm` (5-Feld-Schema mit
+    `limit`/`result`), weil ein Netz-Fault (`frequency_drop`,
+    perspektivisch `voltage_drop`) keinen Command-Kontext hat. Der Alarm
+    wird beim Fault-Beginn (`inject_fault`) in die Device-`_alarms`-Liste
+    gehoben und ueber die bestehende `drain_alarms`-Pipeline vom TickLoop
+    gemapped (`alarm_from_grid_connection_fault_alarm`).
+
+    Felder:
+    - `target_device_id` — Zielgeraet (= Zielnetz-Anschlusspunkt).
+    - `fault_type` — kanonischer Fault-Typ (`frequency_drop`).
+    - `detail` — mensch-lesbare Beschreibung (fliesst in `Alarm.message`).
+    """
+
+    target_device_id: str
+    fault_type: str
+    detail: str
+
+
+@dataclass(frozen=True, slots=True)
 class CommandValidationOutcome:
     """Ergebnis von `validate_set_power_command`."""
 
@@ -132,5 +154,6 @@ __all__ = [
     "COMMAND_TYPE_SET_POWER_KW",
     "CommandValidationOutcome",
     "GridConnectionAlarm",
+    "GridConnectionFaultAlarm",
     "validate_set_power_command",
 ]
