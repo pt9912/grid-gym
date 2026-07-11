@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Tooling:** d-check-Doku-Gate von v0.10.0 auf **v0.40.0** angehoben. Das
+  Gate bindet jetzt das offizielle Makefile-Fragment `d-check.mk`
+  (`d-check --print-mk`) per `include` ein statt eines handgepflegten Rezepts;
+  Image-Pin via Digest in `DCHECK_DIGEST`, Tag-Default (v0.40.0) in
+  `d-check.mk`. `make docs-check` delegiert fail-closed an `doc-check` und
+  behaelt die Gate-Quittung (ADR 0071). Neue `doc-*`-Zusatztargets verfuegbar
+  (`make doc-help`). `.d-check.yml`: Modul `spans` aktiviert (Span-Artefakte).
+  Kein Runtime-Delta.
+- **Tooling:** Requirements Traceability Matrix (`make doc-trace`) via d-check
+  v0.40.0 `trace:`-Block konfiguriert — **advisory**, kein Hard-Gate. Requirement-
+  Quelle `spec/lastenheft.md`, `id-pattern` als Allow-List der 38 normativen
+  `GG-<FAMILIE>`-Familien (GG-TERM/NONGOAL/FUTURE als definitorisch ausgenommen);
+  ADR-/Slice-Verlinkung ueber `docs/plan/adr` bzw. `docs/plan/planning`
+  (`NNN-titel.md`). RTM erfasst 226 Requirements. Kuratierte Quelle bleibt
+  `docs/plan/traceability.md` (GG-TRACE-001); `make doc-complete` bewusst nicht
+  verdrahtet.
+
 ## [0.3.1] - 2026-07-10
 
 **Patch — Hygiene + Korrektheit.** Flush der seit v0.3.0 unter `[Unreleased]`

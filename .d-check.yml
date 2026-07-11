@@ -1,9 +1,14 @@
 # Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check)
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
+# Version/Integration: v0.40.0, eingebunden ueber d-check.mk (`--print-mk`);
+# Image-Pin (Digest) in der Makefile-Variable DCHECK_DIGEST.
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
-modules: [links, anchors, ids, codepaths, matrix]
+# spans (seit v0.39.0): hermetischer Span-Artefakt-Check (ungeschlossene
+# Code-Spans, verschachtelte Link-Markups) — ohne eigene Optionen, grün
+# gegen den Bestand, deckt die dokumentierten Code-Span-Stolpersteine ab.
+modules: [links, anchors, ids, codepaths, matrix, spans]
 ids:
   scope:
     roots: ["."]
@@ -94,3 +99,29 @@ matrix:
     # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
     - "18. Rueckverfolgbarkeit Architektur ↔ Lastenheft"
     - "19. Offene architektonische Punkte"
+
+# Requirements Traceability Matrix (--trace / make doc-trace, seit d-check v0.40.0
+# konfigurierbar). KEIN Modul — steuert nur --trace/--require-complete, nicht das
+# docs-check-Gate; rein advisory (kein Hard-Gate, siehe unten). grid-gym weicht von
+# d-checks -FA-/-QA-Default ab (zweistufiges Schema GG-<FAMILIE>-NNN) und von der
+# slice-<n>-Dateikonvention (hier NNN-titel.md).
+#
+# id-pattern = explizite Allow-List der NORMATIVEN Familien (RE2 kennt kein negatives
+# Lookahead). Ausgenommen sind die drei DEFINITORISCHEN Familien GG-TERM (Glossar/
+# Normbegriffe), GG-NONGOAL ("ist KEIN …") und GG-FUTURE ("KANN …", optionale Zukunft)
+# — sie sind keine nachverfolgbaren Anforderungen. Bei neuer Requirement-Familie hier
+# ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; die historischen (M-Wellen-)
+# Waisen sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete)
+# bewusst NICHT verdrahtet. Kuratierte Quelle bleibt docs/plan/traceability.md.
+trace:
+  requirements:
+    source: spec/lastenheft.md
+    id-pattern: 'GG-(ACCEPT|AGENT|API|ARCHTEST|ARCH|BESS|CICD|CC|COV|DATA|DEMO|DEPLOY|DEV|DNP3|FAULT|GRID|IEC|LWM2M|MODB|MQTT|MVP|OPCUA|OTEL|PERSIST|PRINC|QA|QG|REPLAY|RT|SAFE|SCN|SEED|SIM|SNMP|TESTTYPE|TEST|TRACE|UI)-\d{3}'
+  adrs:
+    dir: docs/plan/adr
+    file-pattern: '^(\d{4})-.*\.md$'
+    id-prefix: 'ADR-'
+  slices:
+    dir: docs/plan/planning
+    file-pattern: '^(\d+)-.*\.md$'
+    id-prefix: 'Slice '

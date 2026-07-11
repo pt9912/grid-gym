@@ -86,7 +86,8 @@ help:
 	@echo "  make arch-check        import-linter + tools/arch_check.py (20 A-1-Contracts: 6 import-linter + 14 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
-	@echo "  make docs-check        d-check — Markdown-Referenz-Validator (Trigger 002, .d-check.yml)"
+	@echo "  make docs-check        d-check v0.40.0 — Markdown-Referenz-Validator (Trigger 002, .d-check.yml, include d-check.mk)"
+	@echo "  make doc-help          d-check.mk — Liste der doc-* Zusatz-Targets (trace/doctor/repair/immutable/...)"
 	@echo "  make spdx-check        tools/check_spdx.py — SPDX-License-Identifier-Lint fuer IEC-61850-GPL-Boundary (ADR 0035, M4 Welle 6b)"
 	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
 	@echo "  make noqa-gate         tools/check_noqa.py --fail-on-noqa (Plan §4 hart in 'make gates'; FILES=... fuer paketweise Scope-Eingrenzung)"
@@ -170,14 +171,24 @@ arch-check-imports:
 arch-check-custom:
 	$(DOCKER_BUILD) --target arch-check-custom -t $(IMAGE_PREFIX)-arch-check-custom:latest
 
-# Doku-Referenz-Checks via d-check (Digest-Pin auf v0.10.0, siehe
-# https://github.com/pt9912/d-check/releases/tag/v0.10.0); Konfiguration
-# in .d-check.yml. Ersetzt tools/check_refs.py und die zugehoerige
-# Dockerfile-Stage (Trigger 002 — geloescht).
-D_CHECK_IMAGE ?= ghcr.io/pt9912/d-check@sha256:6ec1c463b5276b3314881839bd800b5e9aab12fa624a35d31618cecb62f17795
+# Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check). Integration
+# ueber das offizielle Makefile-Fragment `d-check.mk` (erzeugt via
+# `d-check --print-mk`, DC-FA-CLI-010) — kein handgepflegtes Rezept mehr.
+# Konfiguration in .d-check.yml. Ersetzt tools/check_refs.py und die
+# zugehoerige Dockerfile-Stage (Trigger 002 — geloescht).
+#
+# Reproduzierbarkeit: der Tag-Default (v0.40.0) lebt in d-check.mk; der
+# Digest-Pin sticht ihn hier ueber DCHECK_DIGEST. Die Zuweisung MUSS vor
+# dem include stehen — d-check.mk wertet den Digest beim Parsen aus
+# (ifeq -> DCHECK_REF). Digest aus den Release-Notes v0.40.0.
+DCHECK_DIGEST := sha256:e691053abd820f85e652a343f3d700ba135f2d8d66523151e1388c353af2ba75
+include d-check.mk
 
-docs-check:
-	docker run --rm -v "$(CURDIR)":/repo:ro $(D_CHECK_IMAGE)
+# Das Repo-Gate heisst `docs-check` (Enforcement-Stop-Hook + Gate-Quittung,
+# ADR 0071). Es delegiert an das d-check.mk-Target `doc-check` (fail-closed:
+# Befund => Exit 1 => docs-check bricht ab, Quittung wird NICHT geschrieben)
+# und haengt bei Erfolg die Quittung an.
+docs-check: doc-check
 	@bash tools/harness/record-gates.sh docs-check || echo "[record-gates] WARN: Quittung 'docs-check' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
 
 # `tools/check_spdx.py` — SPDX-License-Identifier-Lint fuer die
