@@ -47,3 +47,19 @@ FAULT_TYPE_GENSET_FAULT: Final[str] = "genset_fault"
 """Diesel-Generator-Fault: Schutzausloesung — solange aktiv ist der
 Genset gestoppt, `power_kw` hart `0`, kein Kraftstoffverbrauch
 (M8-Welle-2d, ADR 0058 §2.7)."""
+
+FAULT_TYPE_NAN_INJECTION: Final[str] = "nan_injection"
+"""Metrik-adressierter Quality-Fault (ADR 0074 §2.1, Slice 071 /
+GG-FAULT-003): erzeugt fuer ein (Ziel, Metrik)-Paar einen nicht
+numerischen Eingangswert. **Kein** Geraete-Physik-Effekt — der Fault
+laeuft den parallelen, spine-internen Quality-Fault-Pfad
+(`QualityFaultRuntime` + `_apply_quality_fault_stage`, ADR 0074 §2.2),
+**nicht** ueber `device.inject_fault`. Die Metrik reist im `payload`
+(`{"metric": <str>}`; ADR 0074 §2.1 — bewusst kein
+`ScenarioFault.metric`-Schema-Feld, das den `scenario_hash` aller
+Szenarien flippen wuerde). Aktiv → der emittierte Punkt traegt den
+endlichen Sentinel `Decimal("0")` + `quality=nan` (ADR 0074 §2.4;
+kein numerischer NaN, `canonical.py`-Reject bleibt) + einmaligen
+`quality_fault_nan_injection`-Alarm beim inactive→active-Uebergang
+(ADR 0074 §2.5). Nicht in den `supported_types` des physik-adressierten
+`ScenarioFaultEngine`."""

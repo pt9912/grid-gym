@@ -29,6 +29,7 @@ from collections.abc import Mapping
 from decimal import Decimal
 from typing import Final, cast
 
+from grid_gym.hexagon.core.domain.fault import FAULT_TYPE_NAN_INJECTION
 from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
     ScenarioInvalidAgentParamsError,
@@ -316,11 +317,32 @@ def _assert_fault_list(
             )
         assert_payload_canonical_compatible(payload, "scenario", f"faults[{index}].payload")
         _assert_str(entry, f"faults[{index}].recovery")
+        # ADR 0074 §2.1 (Slice 071): metrik-adressierte Quality-Faults
+        # tragen ihre Metrik im `payload`; `nan_injection` MUSS ein
+        # `payload["metric"]: str` haben (fehlend/fehltypisiert →
+        # typisierter Validator-Fehler, kein stiller Unsinn).
+        if entry["type"] == FAULT_TYPE_NAN_INJECTION:
+            _assert_nan_injection_payload(payload, f"faults[{index}]")
         # M3-Welle-1 (ADR 0022 §2.3): Target-Existenz-Check
         # analog `_assert_event_list`.
         target = entry["target"]
         if isinstance(target, str) and target not in device_ids:
             raise ScenarioUnknownFaultTargetError(target)
+
+
+def _assert_nan_injection_payload(payload: Mapping[str, object], path: str) -> None:
+    """ADR 0074 §2.1: `nan_injection`-Faults MUESSEN `payload["metric"]:
+    str` tragen (die metrik-adressierte Zielgroesse; `target` ist die
+    device-ID, `metric` reist bewusst im Payload statt als Schema-Feld,
+    das den `scenario_hash` aller Szenarien flippen wuerde).
+
+    Fehlender Key → `ScenarioMissingKeysError`; fehltypisierter Wert →
+    `ScenarioWrongTypeError` (Pattern analog `_assert_str`)."""
+    if "metric" not in payload:
+        raise ScenarioMissingKeysError(f"{path}.payload", ["metric"])
+    metric = payload["metric"]
+    if not isinstance(metric, str):
+        raise ScenarioWrongTypeError(f"{path}.payload.metric", "str", type(metric).__name__)
 
 
 def _assert_command_list(

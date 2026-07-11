@@ -43,6 +43,7 @@ from grid_gym.hexagon.core.devices.smart_meter.commands import SmartMeterAlarm
 from grid_gym.hexagon.core.devices.transformer.commands import TransformerAlarm
 from grid_gym.hexagon.core.domain.alarm import Alarm, AlarmSeverity
 from grid_gym.hexagon.core.domain.command_result import CommandResult
+from grid_gym.hexagon.core.simulation.quality_fault import QualityFaultNanInjectionAlarm
 
 
 def _power_clamp_message(limit: object, limit_unit: str) -> str:
@@ -178,6 +179,36 @@ def alarm_from_grid_connection_fault_alarm(
     )
 
 
+def alarm_from_quality_fault_nan_injection_alarm(
+    raw: QualityFaultNanInjectionAlarm,
+    *,
+    run_id: str,
+    simulation_time_ms: int,
+    alarm_id: str,
+) -> Alarm:
+    """Mapped einen raw `QualityFaultNanInjectionAlarm` (metrik-
+    adressierter Quality-Fault, GG-FAULT-003 `nan_injection`) auf einen
+    Unified `Alarm` (ADR 0074 §2.5).
+
+    Spine-erzeugt statt device-erzeugt (der Fault manipuliert die Quality
+    emittierter Telemetrie, keinen Geraete-Physik-State). Stabiler Code
+    `quality_fault_nan_injection`, Severity `warning` (ADR 0040 §2.1;
+    `critical` bleibt dem Command-Reject vorbehalten). `message` nennt die
+    betroffene Metrik maschinenlesbar.
+    """
+    return Alarm(
+        alarm_id=alarm_id,
+        run_id=run_id,
+        simulation_time_ms=simulation_time_ms,
+        target=raw.target_device_id,
+        code="quality_fault_nan_injection",
+        severity="warning",
+        message=f"nan injection on metric {raw.metric}",
+        status="active",
+        fault_id=None,
+    )
+
+
 def dispatch_alarm_mapper(
     raw: object,
     *,
@@ -185,15 +216,23 @@ def dispatch_alarm_mapper(
     simulation_time_ms: int,
     alarm_id: str,
 ) -> Alarm:
-    """Dispatcht raw device-Alarms auf die passende Mapper-Funktion
-    (M5 Welle 4b, ADR 0040 Decision 15 + Decision 16).
+    """Dispatcht raw device-/spine-Alarms auf die passende Mapper-Funktion
+    (M5 Welle 4b, ADR 0040 Decision 15 + Decision 16; ADR 0074 §2.5).
 
     isinstance-Chain ueber die device-spezifischen Alarm-Typen (Power-
-    Clamp-Union, SmartMeter, GG-FAULT-004-Netz-Fault). Forward-Compat-
-    Defensive: ein nicht-erkannter Typ wirft `TypeError` — Welle-7+/
-    M3-Geraete muessen sich hier eintragen (Pattern analog
-    `_DEVICE_TYPE_BY_CLASS_NAME` im Snapshot-Schema).
+    Clamp-Union, SmartMeter, GG-FAULT-004-Netz-Fault) + den spine-
+    erzeugten GG-FAULT-003-Quality-Fault-Alarm. Forward-Compat-Defensive:
+    ein nicht-erkannter Typ wirft `TypeError` — Welle-7+/M3-Geraete
+    muessen sich hier eintragen (Pattern analog `_DEVICE_TYPE_BY_CLASS_
+    NAME` im Snapshot-Schema).
     """
+    if isinstance(raw, QualityFaultNanInjectionAlarm):
+        return alarm_from_quality_fault_nan_injection_alarm(
+            raw,
+            run_id=run_id,
+            simulation_time_ms=simulation_time_ms,
+            alarm_id=alarm_id,
+        )
     if isinstance(raw, GridConnectionFaultAlarm):
         return alarm_from_grid_connection_fault_alarm(
             raw,
@@ -235,6 +274,7 @@ __all__ = [
     "UnknownRawAlarmTypeError",
     "alarm_from_grid_connection_fault_alarm",
     "alarm_from_power_device_alarm",
+    "alarm_from_quality_fault_nan_injection_alarm",
     "alarm_from_smart_meter_alarm",
     "dispatch_alarm_mapper",
 ]

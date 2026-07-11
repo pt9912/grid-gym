@@ -53,6 +53,7 @@ from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_CONNECTION_LOSS,
     FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
+    FAULT_TYPE_NAN_INJECTION,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
 )
@@ -149,11 +150,21 @@ _FAULT_TYPE_TO_DEVICE_TYPE: Final[Mapping[str, str]] = {
     FAULT_TYPE_WINDING_FAULT: "transformer",
     FAULT_TYPE_GENSET_FAULT: "diesel_generator",
 }
-"""M5-Welle-6a (Decision 20): Whitelist Fault-Typ ↔ Device-Typ.
-Welle-7+/M3-Fault-Typen muessen sich hier eintragen oder eine
-Plugin-Form an ADR 0022 §2.2 verankern. Welle-6a-Review F9:
-Keys sind `FAULT_TYPE_*`-Konstanten aus
+"""M5-Welle-6a (Decision 20): Whitelist **device-adressierter Physik-
+Fault-Typen** ↔ Device-Typ. Welle-7+/M3-Fault-Typen muessen sich hier
+eintragen oder eine Plugin-Form an ADR 0022 §2.2 verankern. Welle-6a-
+Review F9: Keys sind `FAULT_TYPE_*`-Konstanten aus
 `hexagon/core/faults/types.py` (Single-Source-of-Truth)."""
+
+_METRIC_ADDRESSED_FAULT_TYPES: Final[frozenset[str]] = frozenset({FAULT_TYPE_NAN_INJECTION})
+"""ADR 0074 §2.1/§2.7 (Slice 071): metrik-adressierte Quality-Fault-
+Typen (`nan_injection`; Slice B ergaenzt `stale_data`). Bewusst NICHT
+in `_FAULT_TYPE_TO_DEVICE_TYPE`: der Fault adressiert ein
+**(Ziel, Metrik)**-Paar, nicht einen Device-**Physik**-Typ — das Ziel
+darf JEDES Geraet sein, das die Metrik emittiert. Der
+device-Typ-Match-Check greift daher nicht; die Cross-Field-Validierung
+prueft nur die Target-Existenz (der Typ gilt als bekannt → kein
+`fault_type_unknown`-Reject)."""
 
 
 @runs_action_router.post(
@@ -221,6 +232,17 @@ def post_run_faults(
             run_id=run_id,
         )
         raise HTTPException(status_code=422, detail=error.model_dump())
+    if request.fault_type in _METRIC_ADDRESSED_FAULT_TYPES:
+        # ADR 0074 §2.1/§2.7: metrik-adressierter Quality-Fault
+        # (`nan_injection`). Das Ziel darf jedes Geraet sein, das die
+        # Metrik emittiert — der device-Physik-Typ-Match (unten) gilt
+        # nicht; die Target-Existenz (oben) ist der einzige Cross-Field-
+        # Check. Der Typ ist bekannt → kein `fault_type_unknown`-Reject.
+        return FaultInjectionResponse(
+            run_id=run_id,
+            fault_id=str(uuid.uuid4()),
+            accepted=True,
+        )
     expected_device_type = _FAULT_TYPE_TO_DEVICE_TYPE.get(request.fault_type)
     if expected_device_type is None:
         # Welle-6a-Review F5: separater Code fuer „unbekannter Typ"

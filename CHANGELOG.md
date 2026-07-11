@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Quality-Fault-Injection (Slice 071, GG-FAULT-003):** Neuer metrik-
+  adressierter `nan_injection`-Quality-Fault (ADR 0074, Slice A). Ein Fault
+  aktiviert fuer ein (Ziel, Metrik)-Paar — Metrik im `payload` (`{"metric":
+  <str>}`, kein Scenario-Schema-Feld, damit der `scenario_hash` pin-neutral
+  bleibt) — einen nicht numerischen Eingangswert: der emittierte
+  Telemetriepunkt traegt den endlichen Sentinel `Decimal("0")` +
+  `quality=nan` (kein numerischer NaN — der `canonical.py`-Reject bleibt
+  unangetastet) und einen einmaligen `quality_fault_nan_injection`-Alarm
+  (`warning`) beim inactive→active-Uebergang. Umgesetzt als spine-interner
+  `QualityFaultRuntime` + `_apply_quality_fault_stage` (Geschwister der
+  `max_age`-STALE-Stage; **nicht** ueber `device.inject_fault` — das Geraet
+  bleibt unberuehrt), parallel zum device-adressierten `ScenarioFaultEngine`.
+  Severity-Override ueber `QUALITY_SEVERITY` (`nan` ersetzt nur niedrigere
+  Severity; `missing` dominiert); Aktiv-Fenster half-open `[start,
+  start+duration)`; nur Sim-Zeit (AC-NO-TIME). Validator-Schaerfung: fuer
+  `nan_injection` ist `payload.metric: str` Pflicht. Determinismus: alles
+  opt-in — Szenarien ohne `nan_injection` bleiben byte-identisch (Demo-Hash-
+  Pins + `scenario_hash` unberuehrt). Der Last-Value-Cache + `stale_data`
+  (GG-FAULT-002) folgt in Slice B.
 - **Fault-Injection (Slice 070, GG-FAULT-004):** Dedizierter `frequency_drop`-
   Fault-Typ auf dem `grid_connection`-Geraet (Frequenz-Zwilling zu `voltage_drop`
   = GG-FAULT-005). Ein Frequenzabfall wird mit Startzeit, Dauer, Zielnetz und

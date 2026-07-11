@@ -4,12 +4,15 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
 Kein aktiver Slice; zuletzt abgeschlossen:
+[`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
+`nan_injection`-Quality-Fault →
+[`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) erfuellt;
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) `Accepted`,
+Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
 [`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
-Runtime-Delta, Release `[Unreleased]`) und
-[`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut:
-§27.2 an `make doc-trace` delegiert).
+Runtime-Delta, Release `[Unreleased]`).
 **Stand:** 2026-07-11
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -81,6 +84,17 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-11):
+[`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
+`nan_injection`-Quality-Fault →
+[`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) „NaN-Injection"
+erfuellt: spine-interner `QualityFaultRuntime` + `_apply_quality_fault_stage`
+markiert matchende `(Ziel, Metrik)`-Punkte mit Sentinel `Decimal("0")` +
+`quality=nan` + einmaligem `quality_fault_nan_injection`-Alarm — kein
+numerischer NaN, Geraet unberuehrt;
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) `Accepted`
+(Slice A = Foundation + NaN; Last-Value-Cache + `stale_data`/[`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) =
+Slice B); opt-in, byte-identisch fuer Szenarien ohne den Fault; Runtime-Delta →
+Release `[Unreleased]`) +
 [`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
 `frequency_drop`-Fault auf dem `grid_connection`-Geraet →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) „Frequenzabfaelle"

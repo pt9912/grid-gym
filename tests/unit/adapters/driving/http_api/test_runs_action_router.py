@@ -305,6 +305,56 @@ def test_post_run_faults_returns_fault_id_with_201(
     uuid.UUID(body["fault_id"])
 
 
+def test_post_run_faults_accepts_metric_addressed_nan_injection_on_any_device(
+    configured_app: tuple[
+        TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
+    ],
+) -> None:
+    """ADR 0074 §2.1/§2.7 (Slice 071): `nan_injection` ist
+    metrik-adressiert — das Ziel darf jedes existierende Geraet sein
+    (hier Battery). Der device-Physik-Typ-Match wird uebersprungen; die
+    Target-Existenz reicht → 201 accepted (kein
+    `fault_invalid_type_for_target`/`fault_type_unknown`-Reject)."""
+    client, repository, _, registry = configured_app
+    metadata, _ = _seed_run_with_tick_loop_and_devices(repository, registry)
+    response = client.post(
+        f"/runs/{metadata.run_id}/faults",
+        json={
+            "fault_type": "nan_injection",
+            "target": "battery-1",
+            "start_at_tick": 10,
+            "duration_ticks": 20,
+            "recovery": "auto-recover-after-N-ticks",
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["accepted"] is True
+
+
+def test_post_run_faults_rejects_metric_addressed_fault_on_unknown_target(
+    configured_app: tuple[
+        TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
+    ],
+) -> None:
+    """ADR 0074 §2.7: die Target-Existenz bleibt auch fuer den
+    metrik-adressierten Fault der einzige harte Cross-Field-Check →
+    unbekanntes Ziel weiterhin 422 `fault_unknown_target`."""
+    client, repository, _, registry = configured_app
+    metadata, _ = _seed_run_with_tick_loop_and_devices(repository, registry)
+    response = client.post(
+        f"/runs/{metadata.run_id}/faults",
+        json={
+            "fault_type": "nan_injection",
+            "target": "ghost-99",
+            "start_at_tick": 10,
+            "duration_ticks": 20,
+            "recovery": "auto-recover-after-N-ticks",
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "fault_unknown_target"
+
+
 def test_post_run_faults_rejects_invalid_body(
     configured_app: tuple[
         TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry

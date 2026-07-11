@@ -59,7 +59,7 @@ from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
 from grid_gym.hexagon.core.domain.quality import QUALITY_SEVERITY, Quality
 from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassification
-from grid_gym.hexagon.core.domain.event import GridConstraintViolationEvent
+from grid_gym.hexagon.core.domain.event import Event, GridConstraintViolationEvent
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
@@ -67,6 +67,7 @@ from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.run import ControlAction, RunStatus
 from grid_gym.hexagon.core.simulation.alarm_mappers import dispatch_alarm_mapper
+from grid_gym.hexagon.core.simulation.quality_fault import QualityFaultRuntime
 from grid_gym.hexagon.core.errors import (
     AgentDuplicateIdError,
     AgentInvalidCommandTargetError,
@@ -309,6 +310,7 @@ class TickLoop:
         replay_snapshot: ReplaySnapshotPort | None = None,
         replay_reference_run_id: str | None = None,
         max_age_ms: int | None = None,
+        quality_fault_runtime: QualityFaultRuntime | None = None,
         alarm_id_source: Callable[[], str] | None = None,
     ) -> None:
         if tick_ms <= 0:
@@ -422,7 +424,10 @@ class TickLoop:
         # M7-Welle-3a (ADR 0052 §2.1): optionale `max_age`-Schwelle
         # fuer die STALE-Stage in `tick()`. `None` (Default) = Stage
         # aus; nicht-positive Werte sind ein Konstruktor-Fehler.
-        self._attach_max_age(max_age_ms)
+        # ADR 0074 §2.2 (Slice 071): optionaler spine-interner
+        # `QualityFaultRuntime` fuer die metrik-adressierte Quality-
+        # Fault-Stage; `None` = Stage aus (byte-identisch).
+        self._attach_quality_stages(max_age_ms, quality_fault_runtime)
 
     def _init_drift_counters(self) -> None:
         """Welle-6a-Review M-3 + Welle-4b-Review-Fix #4: Forward-
@@ -616,14 +621,31 @@ class TickLoop:
         # `finalize()` ueberspringt dann den Replay-Diff (Partial-Run, §2.3).
         self._run_failed: bool = False
 
-    def _attach_max_age(self, max_age_ms: int | None) -> None:
-        """M7-Welle-3a (ADR 0052 §2.1): `max_age`-Schwelle fuer die
-        STALE-Stage. `None` (Default) = Stage aus (byte-identischer
-        Bestands-Pfad); `<= 0` ist Format-Fehler am Konstruktor
-        (Pattern analog `TickLoopInvalidTickMsError`)."""
+    def _attach_quality_stages(
+        self,
+        max_age_ms: int | None,
+        quality_fault_runtime: QualityFaultRuntime | None,
+    ) -> None:
+        """M7-Welle-3a (ADR 0052 §2.1) + ADR 0074 §2.2 (Slice 071):
+        wiring der zwei Quality-Spine-Stages in `tick()`.
+
+        `max_age_ms` ist die `max_age`-`STALE`-Schwelle: `None` (Default)
+        = Stage aus (byte-identischer Bestands-Pfad); `<= 0` ist
+        Format-Fehler am Konstruktor (Pattern analog
+        `TickLoopInvalidTickMsError`).
+
+        `quality_fault_runtime` ist der spine-interne, pro Lauf aus
+        `scenario.faults` gebaute `QualityFaultRuntime` fuer metrik-
+        adressierte Quality-Faults (`nan_injection`); `None` (Default) =
+        Stage aus. Byte-identisch fuer Szenarien ohne Quality-Fault
+        (ADR 0074 §2.7). Der Runtime wird — wie der `max_age_ms`-Wert und
+        der device-adressierte `fault_port` — bewusst **nicht** im
+        Snapshot serialisiert, sondern vom Aufrufer re-injiziert
+        (`from_snapshot`-Symmetrie)."""
         if max_age_ms is not None and max_age_ms <= 0:
             raise TickLoopInvalidMaxAgeMsError(max_age_ms)
         self._max_age_ms: int | None = max_age_ms
+        self._quality_fault_runtime: QualityFaultRuntime | None = quality_fault_runtime
 
     def _attach_agents(self) -> None:
         """M3-Welle-4a (ADR 0026 §2.3): Lifecycle-Hook fuer Agents.
@@ -1336,17 +1358,12 @@ class TickLoop:
             grid_events = self._update_grid_model(bucket_sums, now)
         self._unknown_source_count += unknown_count
 
-        # M7-Welle-3a (ADR 0052 §2.2): max_age-STALE-Stage VOR dem
-        # TickResult-Bau — eine Stelle, drei Konsumenten (Stream +
-        # Persistenz + Replay sehen identisch markierte Punkte).
-        result = TickResult(
-            tick=self._tick_count,
-            simulation_time=now,
-            popped_events=popped,
-            emitted_telemetry=tuple(self._apply_max_age_stage(emitted, now)),
-            emitted_alarms=self._drain_and_map_device_alarms(now),
-            emitted_grid_events=grid_events,
-        )
+        # M7-Welle-3a (ADR 0052 §2.2) + ADR 0074 §2.2 (Slice 071): die
+        # Quality-Spine-Stages laufen auf `emitted` VOR dem TickResult-Bau
+        # — eine Stelle, drei Konsumenten (Stream + Persistenz + Replay
+        # sehen identisch markierte Punkte). In `_build_tick_result`
+        # gebuendelt (haelt `_run_tick_body` unter dem PLR0915-Limit).
+        result = self._build_tick_result(emitted, popped, grid_events, now)
         self._tick_count += 1
         self._persist_emitted_telemetry(result)
         # M3-Welle-5 (ADR 0024 §2.6) + Review-Folge L-1: Observability-
@@ -1392,6 +1409,72 @@ class TickLoop:
             else point
             for point in emitted
         ]
+
+    def _build_tick_result(
+        self,
+        emitted: list[TelemetryPoint],
+        popped: tuple[Event, ...],
+        grid_events: tuple[GridConstraintViolationEvent, ...],
+        now: int,
+    ) -> TickResult:
+        """Baut das `TickResult` aus den gesammelten `emitted`-Punkten,
+        Events und Grid-Events (ADR 0052 §2.2 + ADR 0074 §2.2).
+
+        Reihenfolge der Quality-Spine-Stages auf `emitted`: erst die
+        metrik-adressierte Quality-Fault-Stage (`nan_injection`-Rewrite +
+        Transitions-Alarms, ADR 0074), dann die `max_age`-`STALE`-Stage
+        ([`ADR 0052`]). Beide Overrides sind severity-monoton
+        (`NAN` (6) > `STALE` (3)) — die Reihenfolge ist verhaltensneutral,
+        ein NaN-markierter Punkt bleibt NaN. Alarm-Reihenfolge in
+        `emitted_alarms`: Device-Alarms zuerst, dann die Quality-Fault-
+        Alarms (deterministisch, Fault-Index-Reihenfolge); die
+        Alarm-ID-Allokation folgt derselben Reihenfolge (Device vor
+        Quality), damit eine zaehlende `alarm_id_source` positions-monotone
+        IDs vergibt (Slice-071-Review LOW-1)."""
+        # Device-Alarms zuerst drainen/mappen (ID-Allokation = Tupel-
+        # Position), DANN die Quality-Fault-Stage — die zwei Aufrufe sind
+        # unabhaengig (Device-Alarm-Puffer vs. Telemetrie-Rewrite), die
+        # Reihenfolge beruehrt nur die ID-Vergabe, nicht die Telemetrie.
+        device_alarms = self._drain_and_map_device_alarms(now)
+        emitted_after_quality, quality_alarms = self._apply_quality_fault_stage(emitted, now)
+        return TickResult(
+            tick=self._tick_count,
+            simulation_time=now,
+            popped_events=popped,
+            emitted_telemetry=tuple(self._apply_max_age_stage(emitted_after_quality, now)),
+            emitted_alarms=device_alarms + quality_alarms,
+            emitted_grid_events=grid_events,
+        )
+
+    def _apply_quality_fault_stage(
+        self,
+        emitted: list[TelemetryPoint],
+        now: int,
+    ) -> tuple[list[TelemetryPoint], tuple[Alarm, ...]]:
+        """ADR 0074 §2.2/§2.4/§2.5 (Slice 071): metrik-adressierte
+        Quality-Fault-Stage — Geschwister der `max_age`-STALE-Stage.
+
+        `None`-Runtime (Default) ist der no-op-Pfad: gibt `emitted`
+        unveraendert + kein Alarm zurueck (byte-identisch fuer Szenarien
+        ohne Quality-Fault, ADR 0074 §2.7). Sonst rewritet der Runtime die
+        matchenden Punkte aktiver `nan_injection`-Faults (Sentinel `0` +
+        `quality=NAN`) und liefert die inactive→active-Transitions-Alarms,
+        die hier ueber `dispatch_alarm_mapper` mit Run-Kontext (`run_id` +
+        `now` als Sim-Zeit + `alarm_id_source`) auf den Unified `Alarm`
+        gemappt werden (Dispatch fail-fast bei unbekanntem Typ)."""
+        if self._quality_fault_runtime is None:
+            return emitted, ()
+        rewritten, raw_alarms = self._quality_fault_runtime.apply_stage(emitted, now)
+        mapped = tuple(
+            dispatch_alarm_mapper(
+                raw,
+                run_id=self._run_id,
+                simulation_time_ms=now,
+                alarm_id=self._alarm_id_source(),
+            )
+            for raw in raw_alarms
+        )
+        return rewritten, mapped
 
     def _persist_emitted_telemetry(self, result: TickResult) -> None:
         """M7-Welle-1a (ADR 0047 §2.3): append-only Zeitreihen-
@@ -1876,6 +1959,7 @@ class TickLoop:
         protocol_ports: tuple[DeviceProtocolPort, ...] | None = None,
         run_repository: RunRepositoryPort | None = None,
         max_age_ms: int | None = None,
+        quality_fault_runtime: QualityFaultRuntime | None = None,
         alarm_id_source: Callable[[], str] | None = None,
         control_state: RunStatus | None = None,
     ) -> TickLoop:
@@ -1937,6 +2021,14 @@ class TickLoop:
         und divergierte im Quality-Verhalten vom Original-Lauf.
         Der Snapshot persistiert die Schwelle (wie alle
         injizierten Runtime-Deps) bewusst nicht.
+
+        ADR 0074 §2.2 (Slice 071) ergaenzt ``quality_fault_runtime``:
+        Resume-Symmetrie zum Konstruktor-Kwarg — der spine-interne
+        `QualityFaultRuntime` (metrik-adressierte Quality-Faults) wird wie
+        der device-adressierte `fault_port` re-injiziert, **nicht** aus dem
+        Snapshot rekonstruiert. Der Alarm-Transitions-State startet damit
+        auf Resume leer (Praezedenz `ScenarioFaultEngine._active_faults`);
+        ohne den Kwarg laeuft ein resumed Lauf still mit der Stage aus.
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:
@@ -1979,6 +2071,7 @@ class TickLoop:
             protocol_ports=protocol_ports,
             run_repository=run_repository,
             max_age_ms=max_age_ms,
+            quality_fault_runtime=quality_fault_runtime,
             alarm_id_source=alarm_id_source,
         )
         # `_pending_agent_commands` muss nach Konstruktor-Init

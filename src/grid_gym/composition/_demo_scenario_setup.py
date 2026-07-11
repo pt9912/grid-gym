@@ -68,6 +68,7 @@ from grid_gym.hexagon.core.faults.types import (
     FAULT_TYPE_CONNECTION_LOSS,
     FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
+    FAULT_TYPE_NAN_INJECTION,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
 )
@@ -348,13 +349,30 @@ _KNOWN_FAULT_TYPES: Final[frozenset[str]] = frozenset(
         FAULT_TYPE_GENSET_FAULT,
     }
 )
-"""ADR 0059: single source of truth der vom Demo-FaultPort
-unterstuetzten Fault-Typen — zugleich die `supported_types` der
-produktiven `ScenarioFaultEngine`. Neue fault-faehige Geraete
-tragen ihren `FAULT_TYPE_*` hier ein (mehr braucht es nicht: die
-generische Engine reicht den Typ an das Ziel-Geraet durch, das ihn
-validiert). YAML-faults mit einem Typ ausserhalb dieser Menge
-werden per `_DemoScenarioUnknownFaultTypeError` rejected statt
+"""ADR 0059: single source of truth der **device-adressierten Physik-
+Fault-Typen** — zugleich die `supported_types` der produktiven
+`ScenarioFaultEngine`. Neue fault-faehige Geraete tragen ihren
+`FAULT_TYPE_*` hier ein (mehr braucht es nicht: die generische Engine
+reicht den Typ an das Ziel-Geraet durch, das ihn validiert)."""
+
+_QUALITY_FAULT_TYPES: Final[frozenset[str]] = frozenset({FAULT_TYPE_NAN_INJECTION})
+"""ADR 0074 §2.1/§2.2 (Slice 071): metrik-adressierte Quality-Fault-
+Typen (`nan_injection`; Slice B ergaenzt `stale_data`). Sie laufen den
+parallelen, spine-internen `QualityFaultRuntime`-Pfad (verdrahtet in
+`build_tick_loop`), **nicht** den device-adressierten
+`ScenarioFaultEngine` — sie duerfen deshalb NICHT in dessen
+`supported_types` (`_KNOWN_FAULT_TYPES`), sonst wuerde die Engine ein
+`device.inject_fault("nan_injection", …)` versuchen (kein Geraete-
+Handler → `FaultUnsupportedTypeError`). Bewusst getrennt gehalten,
+aber im „bekannter Fault-Typ"-Check (`_compose_fault_port`)
+mitgezaehlt, damit eine Demo-YAML mit `nan_injection` nicht als
+unbekannter Typ rejected wird."""
+
+_ALL_KNOWN_FAULT_TYPES: Final[frozenset[str]] = _KNOWN_FAULT_TYPES | _QUALITY_FAULT_TYPES
+"""Vereinigung fuer den Demo-YAML-„bekannter Fault-Typ"-Check: Physik-
+Faults (`_KNOWN_FAULT_TYPES`) + metrik-adressierte Quality-Faults
+(`_QUALITY_FAULT_TYPES`). YAML-faults mit einem Typ ausserhalb dieser
+Menge werden per `_DemoScenarioUnknownFaultTypeError` rejected statt
 silent gedroppt (Welle-6a-Review F13)."""
 
 
@@ -399,8 +417,16 @@ def _compose_fault_port(
     if not faults:
         return None
     for fault in faults:
-        if fault.type not in _KNOWN_FAULT_TYPES:
-            raise _DemoScenarioUnknownFaultTypeError(fault.type, tuple(sorted(_KNOWN_FAULT_TYPES)))
+        if fault.type not in _ALL_KNOWN_FAULT_TYPES:
+            raise _DemoScenarioUnknownFaultTypeError(
+                fault.type, tuple(sorted(_ALL_KNOWN_FAULT_TYPES))
+            )
+    # ADR 0074 §2.2: metrik-adressierte Quality-Faults (`_QUALITY_FAULT_
+    # TYPES`) sind bewusst NICHT in den `supported_types` — sie laufen den
+    # spine-internen `QualityFaultRuntime`-Pfad (aus `build_tick_loop`),
+    # nicht diese device-adressierte Engine. Ein Szenario mit AUSSCHLIESS-
+    # lich Quality-Faults bekommt hier eine Engine ohne aktive Physik-Typen
+    # (No-Op-Filter), was korrekt ist; der Quality-Pfad ist separat.
     return ScenarioFaultEngine(faults, supported_types=_KNOWN_FAULT_TYPES, subsystem="demo")
 
 

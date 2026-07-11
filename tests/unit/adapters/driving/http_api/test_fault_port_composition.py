@@ -82,3 +82,26 @@ def test_compose_fault_port_accepts_new_welle2_fault_types(target: str, fault_ty
     `_DemoScenarioUnknownFaultTypeError` beim `make demo`-Startup)."""
     engine = _compose_fault_port((_fault(target, fault_type),))
     assert isinstance(engine, ScenarioFaultEngine)
+
+
+def test_compose_fault_port_accepts_nan_injection_as_known_but_not_supported() -> None:
+    """ADR 0074 §2.2 (Slice 071): der metrik-adressierte `nan_injection`-
+    Quality-Fault gilt als BEKANNT (kein
+    `_DemoScenarioUnknownFaultTypeError`), ist aber bewusst NICHT in den
+    `supported_types` der device-adressierten Engine — er laeuft den
+    parallelen spine-internen `QualityFaultRuntime`-Pfad."""
+    nan_fault = ScenarioFault(
+        start_simulation_time=0,
+        duration_ms=5000,
+        target="meter-1",
+        type="nan_injection",
+        payload={"metric": "voltage_v"},
+        recovery="auto",
+    )
+    engine = _compose_fault_port((nan_fault,))
+    assert isinstance(engine, ScenarioFaultEngine)
+    # Der Physik-Engine-`supported_types`-Filter droppt den Quality-Fault
+    # (keine `inject_fault`-Weiterreichung) — der Quality-Pfad ist separat
+    # in `build_tick_loop` verdrahtet, die device-adressierte Engine haelt
+    # KEINEN aktiven Fault.
+    assert engine._faults == []

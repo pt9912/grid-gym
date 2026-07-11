@@ -25,8 +25,11 @@ from grid_gym.hexagon.core.domain.alarm import Alarm, AlarmSeverity, AlarmStatus
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.simulation.alarm_mappers import (
     alarm_from_power_device_alarm,
+    alarm_from_quality_fault_nan_injection_alarm,
     alarm_from_smart_meter_alarm,
+    dispatch_alarm_mapper,
 )
+from grid_gym.hexagon.core.simulation.quality_fault import QualityFaultNanInjectionAlarm
 
 
 # ---------------------------------------------------------------------------
@@ -190,3 +193,29 @@ def test_mapper_is_deterministic_same_inputs_same_output() -> None:
     a = alarm_from_power_device_alarm(raw, run_id="r-1", simulation_time_ms=100, alarm_id="alarm-1")
     b = alarm_from_power_device_alarm(raw, run_id="r-1", simulation_time_ms=100, alarm_id="alarm-1")
     assert a == b
+
+
+def test_quality_fault_nan_injection_alarm_maps_to_warning() -> None:
+    """ADR 0074 §2.5: der spine-erzeugte `QualityFaultNanInjectionAlarm`
+    mappt auf Code `quality_fault_nan_injection`, Severity `warning`, mit
+    der Metrik in der Message."""
+    raw = QualityFaultNanInjectionAlarm(target_device_id="meter-1", metric="voltage_v")
+    alarm = alarm_from_quality_fault_nan_injection_alarm(
+        raw, run_id="r-1", simulation_time_ms=1000, alarm_id="alarm-9"
+    )
+    assert alarm.code == "quality_fault_nan_injection"
+    assert alarm.severity == "warning"
+    assert alarm.target == "meter-1"
+    assert alarm.message == "nan injection on metric voltage_v"
+    assert alarm.status == "active"
+    assert alarm.fault_id is None
+    assert alarm.alarm_id == "alarm-9"
+
+
+def test_dispatch_routes_quality_fault_nan_injection_alarm() -> None:
+    """ADR 0074 §2.5: `dispatch_alarm_mapper` erkennt den neuen
+    Raw-Alarm-Typ (fail-fast-Dispatch bleibt fuer unbekannte Typen)."""
+    raw = QualityFaultNanInjectionAlarm(target_device_id="meter-1", metric="freq_hz")
+    alarm = dispatch_alarm_mapper(raw, run_id="r-1", simulation_time_ms=1000, alarm_id="alarm-0")
+    assert alarm.code == "quality_fault_nan_injection"
+    assert alarm.message == "nan injection on metric freq_hz"

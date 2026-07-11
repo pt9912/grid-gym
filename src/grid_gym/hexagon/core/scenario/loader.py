@@ -80,6 +80,7 @@ from grid_gym.hexagon.core.grid_model.config import (
 from grid_gym.hexagon.core.grid_model.loads import LoadEvent, LoadProfile
 from grid_gym.hexagon.core.scenario.validator import validate_scenario_mapping
 from grid_gym.hexagon.core.serialization.canonical import canonical_json
+from grid_gym.hexagon.core.simulation.quality_fault import build_quality_fault_runtime
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import ClockPort
@@ -598,6 +599,11 @@ def build_tick_loop(
     # ADR 0070 (Trigger 046): ScenarioCommandEngine aus scenario.commands; leer
     # -> None (skippt den TickLoop-A0s-Hook, Bestands-Szenarien bit-genau).
     command_engine = ScenarioCommandEngine(scenario.commands) if scenario.commands else None
+    # ADR 0074 §2.2 (Slice 071): spine-interner QualityFaultRuntime aus den
+    # metrik-adressierten Quality-Faults (`nan_injection`) in scenario.faults;
+    # `None` ohne Quality-Fault -> Spine-Stage aus (byte-identisch, §2.7).
+    # Der device-adressierte `fault_port` (physik-Faults) bleibt unberuehrt.
+    quality_fault_runtime = build_quality_fault_runtime(scenario.faults)
     scheduler = Scheduler()
     return TickLoop(
         run_id=run_id,
@@ -622,6 +628,7 @@ def build_tick_loop(
         replay_snapshot=w.replay_snapshot,
         replay_reference_run_id=w.replay_reference_run_id,
         max_age_ms=w.max_age_ms,
+        quality_fault_runtime=quality_fault_runtime,
         alarm_id_source=w.alarm_id_source,
     )
 
