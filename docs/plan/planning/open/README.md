@@ -82,6 +82,12 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 | [`061-replay-time-multipliers.md`](061-replay-time-multipliers.md) | [`GG-RT-006`](../../../../spec/lastenheft.md#gg-rt-006) (MUSS): Replay-Zeit-Multiplikatoren `0.5x/1x/10x/unbounded` fehlen — Tick-Frequenz ist Aufrufer-Sache | Slice am Run-/Replay-Pacing ODER formelle MUSS-Abnahme |
 | [`062-run-deletion-operation.md`](062-run-deletion-operation.md) | [`GG-PERSIST-009`](../../../../spec/lastenheft.md#gg-persist-009) (MUSS): Lauf-Loeschung fehlt — kein `DELETE`-Endpoint / Repository-`delete` | Slice an der Run-Persistenz-/API-Surface ODER formelle MUSS-Abnahme |
 
+**Security-Temp-Deferral (vulnignore, [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md)):**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`065-otel-collector-go-1265-cve.md`](065-otel-collector-go-1265-cve.md) | [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002): `CVE-2026-39822` (Go1.26.4→1.26.5, os.Root-Traversal) im OTel-Collector-Sidecar — kein gepatchtes Image; vulnignore-Deferral bis Upstream-Fix (`expires 2026-10-09`) | OTel-Collector-Stable mit go1.26.5+ verfuegbar ODER `expires`-Ablauf |
+
 **SOLLTE — M2-Welle-7-Erbschaft (mit M8 aufgeloest):** die neun
 SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
 (Welle 2/3/4) auf `Resolved` gesetzt und mit der M8-Closure

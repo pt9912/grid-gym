@@ -47,12 +47,17 @@
 #     Quelle.
 
 trivy:
-  # Keine aktiven Ignore-Eintraege. Der vorige Eintrag CVE-2026-42504
-  # (OTel-Collector Go-stdlib-MIME-Header-DoS) wurde am 2026-06-18
-  # durch den Bump von otel/opentelemetry-collector-contrib auf
-  # 0.154.0 (gobinary gegen go1.26.4+) aufgeloest — Trivy-Re-Scan
-  # meldet 0 HIGH/CRITICAL; Begleit-Trigger 033 nach `done/`.
-  ignore: []
+  # Aktiver Temp-Deferral (ADR 0044): CVE-2026-39822 im OTel-Collector-
+  # Sidecar (Go-stdlib go1.26.4, fix in go1.26.5) — kein gepatchtes
+  # Collector-Image upstream (0.155/0.156 weiter go1.26.4). Aufloesungs-
+  # Pfad = Trigger 065 (Bump auf erste Stable mit go1.26.5, dann Eintrag
+  # entfernen). Historie: der vorige Eintrag CVE-2026-42504 wurde
+  # 2026-06-18 durch den 0.154.0-Bump aufgeloest (Trigger 033 -> done/).
+  ignore:
+    - id: CVE-2026-39822
+      reason: "Go stdlib os.Root Symlink-Following / Directory-Traversal (HIGH, fix in go1.26.5); otel/opentelemetry-collector-contrib:0.154.0 gobinary linked gegen go1.26.4; OTel-Collector ist Compose-internes Sibling ohne untrusted-Filesystem-/os.Root-Pfad; Temp-Deferral bis OTel-Stable mit go1.26.5+ (0.155/0.156 weiter go1.26.4, 0.157.0 bislang nur nightly). Begleit-Trigger 065."
+      expires: 2026-10-09
+      scope: "otel-collector"
 
 govulncheck:
   ignore: []
