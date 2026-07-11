@@ -28,12 +28,14 @@ Planungsmodell **slice-getrieben**: Wellen/Slices sind die oberste Einheit, es
 werden **keine neuen Meilensteine (`M{N}`)** mehr eroeffnet, und die
 Release-Entscheidung faellt **pro Slice** (§5).
 
-**`M{N}`-Marker sind historisch.** Die bestehenden `M{N}`-Statusmarker in der
-[`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Matrix
-(Lastenheft §27.2), in `spec/protocol_profiles.md` (Adapter-Provenienz) und in
+**`M{N}`-Marker sind historisch.** Die bestehenden `M{N}`-Statusmarker in
+`spec/protocol_profiles.md` (Adapter-Provenienz) und in
 `spec/persistence-schema.yaml` bleiben als Aufzeichnung eingefroren; neue
 Anforderungs-Erfuellung wird per **Slice-Referenz** (bzw. Release-Version)
-eingetragen.
+eingetragen. Die frueher `M{N}`-markierte
+[`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Implementierungs-Matrix
+(§27.2 in `docs/plan/traceability.md`, seit Slice 063 dort) wurde in Slice 066
+entfernt und an `make doc-trace` delegiert.
 
 ---
 

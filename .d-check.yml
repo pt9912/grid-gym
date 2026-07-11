@@ -120,8 +120,10 @@ matrix:
 #      Requirements, strukturell via arch-check/lint erzwungen, auf GG-AR-* gemappt.
 #   3) TEST/QUALITAET/GATE-INFRA — GG-TEST, GG-TESTTYPE, GG-QG, GG-COV, GG-QA: "wie
 #      verifiziert" — via CI-Gates/Test-Suites/Make-Targets erfuellt, in traceability.md
-#      auf make-Targets/GG-AR-TEST-001 gemappt. (GG-CICD bleibt drin: reale Pipeline-
-#      Features, alle slice/wave-geliefert, 0 Waisen.)
+#      auf make-Targets/GG-AR-TEST-001 gemappt. (GG-CICD + GG-TRACE bleiben BEWUSST
+#      drin: GG-CICD = reale Pipeline-Features, slice/wave-geliefert; GG-TRACE = die
+#      RTM-Pflege selbst, aber mit echtem Deliverable docs/plan/traceability.md
+#      (Slice 063/066), slice-gemappt — beides keine reinen Meta-Ausschluss-Kandidaten.)
 # Das id-pattern erfasst damit die FUNKTIONALEN/Produkt-Familien. Neue solche hier ergaenzen. Advisory-Nutzung: `make doc-trace` on-demand; Rest-Waisen (Requirements
 # ohne Slice-/Wellen-Nennung, aber via ADR/traceability.md-Bereiche/Gates abgedeckt)
 # sind sichtbar, brechen aber nichts. `make doc-complete` (--require-complete) bewusst
@@ -147,13 +149,20 @@ trace:
   # Design-(§27.1)/Test-(§27.3)-Mappings in docs/plan/traceability.md zaehlen
   # range-aware (`GG-SIM-001..004` -> alle vier) als Abdeckung in EIGENER RTM-Spalte
   # (Owner 'Trace') — keine ADR-Kontamination (explizite Datei, kein dir/pattern).
-  # §27.1.1 (Anforderungen OHNE Design-Artefakt) ist ausgenommen. Ein Requirement ist
-  # Waise nur ohne Slice/Welle UND ohne Coverage. (§27.2 „Impl/Status" wurde in
-  # Slice 066 an `make doc-trace` delegiert — nicht mehr in dieser Datei.)
+  # NUR die zwei Tabellen-Sektionen sind Coverage-Quelle (`sections`-Whitelist statt
+  # bloss §27.1.1-Blacklist, Review-F5): Intro/Praembeln zaehlen NICHT — sonst gaelte
+  # eine narrative ID-Erwaehnung faelschlich als abgedeckt (coverage ist nicht
+  # backtick-/code-span-aware). §27.1.1 (design-artefaktlos) bleibt zusaetzlich raus.
+  # HINWEIS (Review-N1): `orphans=0` bezeugt Design-/Coverage-Mapping, NICHT Lieferung —
+  # 39/151 Requirements haben keinen Slice/Welle (z. B. GG-FAULT-002..010 unimplementiert),
+  # sind aber via §27.1-Design-Mapping non-orphan. Die advisory-RTM deckt „spezifiziert +
+  # designt, aber nie gebaut" NICHT auf. Ein Requirement ist Waise nur ohne Slice/Welle
+  # UND ohne Coverage. (§27.2 „Impl/Status" wurde in Slice 066 an `make doc-trace` delegiert.)
   coverage:
     - files: [docs/plan/traceability.md]
       label: Trace
       ranges: true
+      sections: ["27.1 Anforderung zu Design", "27.3 Anforderung zu Test"]
       exclude-sections: ["27.1.1 Anforderungen ohne Design-Artefakt"]
 
 # targets (Trigger 068, Tranche C1): Deklarations-Konsistenz Doku ↔ Build-Targets.

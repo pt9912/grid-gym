@@ -87,6 +87,7 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
 | [`065-otel-collector-go-1265-cve.md`](065-otel-collector-go-1265-cve.md) | [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002): `CVE-2026-39822` (Go1.26.4→1.26.5, os.Root-Traversal) im OTel-Collector-Sidecar — kein gepatchtes Image; vulnignore-Deferral bis Upstream-Fix (`expires 2026-10-09`) | OTel-Collector-Stable mit go1.26.5+ verfuegbar ODER `expires`-Ablauf |
+| [`069-vulnignore-expires-max-enforce.md`](069-vulnignore-expires-max-enforce.md) | `tools/render_trivyignore.py` erzwingt nur `expires >= heute`, nicht den [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md)-`+90-Tage`-**Max** (Review-N3a) | Nächster Security-/Tooling-Slice ODER zweiter vulnignore-Eintrag |
 
 **Tooling — d-check-`doc-*`-Module (Handbuch-Review v0.41.0):**
 

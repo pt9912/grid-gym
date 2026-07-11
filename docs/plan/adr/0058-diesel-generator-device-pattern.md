@@ -33,7 +33,7 @@ und **Anfahr-/Abstell-Hysterese**. Stakeholder-Entscheidung
 (M8-Welle-2d): zusaetzlich ein **Schutz-Fault** (`genset_fault`) fuer die
 Notstrom-/Resilienz-Szenarien aus Trigger 019 (Diesel als Backup-Quelle).
 
-Geraetetyp-String **`diesel_generator`** (Lastenheft §27.2-kanonisch);
+Geraetetyp-String **`diesel_generator`** (Lastenheft-kanonisch);
 Submodul + Klasse folgen der dir==type-Konvention
 (`diesel_generator/` + `DieselGeneratorDevice`).
 

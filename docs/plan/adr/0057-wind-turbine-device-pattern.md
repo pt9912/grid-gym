@@ -32,7 +32,7 @@ Schaltzustaenden unter/im/ueber Nennbereich. Stakeholder-Entscheidung
 pro Tick aus einer seeded `RandomPort`-Verteilung gezogen
 (deterministisch via Seed), nicht command- oder profilgetrieben.
 
-Der Geraetetyp-String ist **`wind_turbine`** (Lastenheft §27.2-kanonisch);
+Der Geraetetyp-String ist **`wind_turbine`** (Lastenheft-kanonisch);
 Submodul + Klasse folgen der dir==type-Konvention der Welle-2-Geraete
 (`wind_turbine/` + `WindTurbineDevice`).
 

@@ -190,6 +190,6 @@ Lastenheft ableitbar ist; weitere Eintraege folgen mit der Implementierung.
 | GG-DEPLOY-001      | Container Test                   |
 | GG-DEMO-001        | E2E Test                         |
 | GG-ACCEPT-001      | Acceptance/Documentation Test    |
-| GG-TRACE-001       | Documentation Test (Self-Verification — Existenz und Pflege der drei Trace-Tabellen, Folgearbeit: `make docs-check` (d-check)) |
+| GG-TRACE-001       | Documentation Test (Self-Verification — Existenz und Pflege der zwei kuratierten Trace-Tabellen §27.1/§27.3 + der `make doc-trace`-Liefer-Rueckverfolgung, Folgearbeit: `make docs-check` (d-check)) |
 
 ---

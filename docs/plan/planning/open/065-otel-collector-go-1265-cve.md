@@ -35,6 +35,13 @@ Upstream-Fix. Pflicht-Begleit-Trigger dieses Eintrags
 ([`ADR 0043`](../../adr/0043-image-audit-strategy.md) §2.2 /
 [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md) §2.1).
 
+**Invarianten-Vorbehalt (Review-N3):** Die Nicht-Exploitierbarkeit gilt, SOLANGE
+die Collector-Config **network-ingress + static-path-output** bleibt (`deploy/
+otel-collector-config.yaml`: `receivers: [otlp]`, `file`-Exporter mit statischem
+Pfad). Wird vor `expires` ein pfad-aus-Payload-Komponente ergaenzt (`filelog`-
+Receiver, `filestorage`-Extension, path-templated Exporter), ist die Traversal
+u. U. erreichbar → dann Deferral SOFORT neu bewerten, nicht bis `expires` warten.
+
 ## Aufloesung (Wandert nach `done/`)
 
 Bump `OTEL_COLLECTOR_IMAGE` (`Makefile` + `deploy/compose.yml`) auf die erste

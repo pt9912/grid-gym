@@ -46,6 +46,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Liefer-/Implementierungs-Rueckverfolgung (Anforderung→Slice/Welle/ADR +
   Abdeckungs-/Waisen-Status) wird jetzt automatisch abgeleitet statt handgepflegt
   (kein Drift). `make doc-trace` unveraendert 151 Reqs / 0 Waisen. Doku-only.
+- **Security:** `make image-audit` (Fullbuild-Gate, `GG-QG-002`) brach durch die
+  frische **CVE-2026-39822** (HIGH, Go-stdlib `os.Root` Symlink-Traversal) im
+  OTel-Collector-Sidecar (`otel/opentelemetry-collector-contrib:0.154.0`,
+  go1.26.4; fix in go1.26.5). Kein gepatchtes Collector-Image upstream → befristeter
+  vulnignore-Temp-Deferral (`deploy/security/vulnignore.yaml`, `scope: otel-collector`,
+  `expires 2026-10-09`, ADR 0044) + Begleit-Trigger 065 (Bump auf go1.26.5-Stable).
+  grid-gyms eigenes Runtime-Image nicht betroffen (Python). CI-Fullbuild wieder gruen.
+- **Tooling:** d-check-Modul-Set vervollstaendigt — **`hostpaths`** aktiviert
+  (host-lokale Pfad-Leaks; empfohlenes ai-harness-Standard-Set; 5 `m-trace/`-Leaks im
+  `done-archive` vorab sanitisiert) und **`targets`** scharf (Trigger 068 C1,
+  `gate-phantom`: dokumentierte `make X` existieren; `make docs-check` haengt jetzt
+  `doc-check`+`doc-targets`). Kein Runtime-Delta.
 
 ## [0.3.1] - 2026-07-10
 

@@ -379,9 +379,10 @@ eigenstaendiger Slice oder eine M7-Welle-Vorbelegung:
   [`GG-DEPLOY-006`](../../../../spec/lastenheft.md#gg-deploy-006) (`/ready`-Endpoint) ist die Vorbedingung
   fuer K8s-Readiness-Probe; [`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010 bleiben dort
   als M7+-Folgearbeit verankert.
-- `spec/lastenheft.md` Z. 1881-1911 + §27.2 Z. 2308
-  (Traceability) — Akzeptanz-Quelle und „Post-MVP"-Defer-
-  Vermerk.
+- `spec/lastenheft.md` Z. 1881-1911 ([`GG-DEPLOY-007`](../../../../spec/lastenheft.md#gg-deploy-007)..010)
+  — Akzeptanz-Quelle. Der Traceability-/„Post-MVP"-Defer-Status kommt seit
+  Slice 066 aus `make doc-trace` (die fruehere §27.2-Impl-Matrix in
+  `docs/plan/traceability.md` wurde delegiert; Design-Mapping in §27.1).
 - `spec/architecture.md` §16 Z. 915-917 — Architektur-
   Vorgabe „Trigger-getriebene Folgearbeit".
 - [`carveouts.md §2.7 Row 2 (Multi-User + Auth im UI-Layer)`](../in-progress/carveouts.md)
