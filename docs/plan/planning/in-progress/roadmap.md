@@ -13,6 +13,12 @@ Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
 Runtime-Delta, Release `[Unreleased]`).
+**Naechster Kandidat (direkt aktivierbar):**
+[`072`](../next/072-gg-fault-002-stale-data.md) — dedizierter `stale_data`-
+Quality-Fault ([`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002),
+MUSS; Slice B der GG-FAULT-Konsolidierung), Design entschieden in
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3,
+Foundation aus [`071`](../done/071-gg-fault-003-nan-injection.md).
 **Stand:** 2026-07-11
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -132,20 +138,23 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Naechster Aktivierungs-Kandidat** (Planner-Notiz 2026-07-03,
-aktualisiert 2026-07-10): Hygiene-Buendel — Teil 1
-[`054`](../done/054-pytest-marker-drift-sensor-targets.md)
-(pytest-Marker-Sweep `determinism`/`fault`) **2026-07-10 aufgeloest → `done/`**
-(alle drei Marker-Sensoren nicht-leer gruen; deferrter CI-Anker via
-[`058`](../done/058-marker-sensor-drift-guard.md) als Meta-Drift-Guard
-geschlossen). Teil 2
-[`056`](../done/056-adr-index-status-sync.md) (ADR-Index-Status-Sync)
-+ [`057`](../done/057-app-version-single-source.md)
-(`_APP_VERSION`-Single-Sourcing) **2026-07-10 als Buendel
-[`059`](../done/059-hygiene-bundle-adr-index-app-version.md) geliefert → `done/`**
-(057-Runtime-Delta → **Release v0.3.1** 2026-07-10). **Hygiene-Buendel
-komplett — kein offener
-Aktivierungs-Kandidat aus der Slice-038-Session.**
+**Naechster Aktivierungs-Kandidat** (2026-07-11): **Slice B der GG-FAULT-
+Konsolidierung** —
+[`072`](../next/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
+Quality-Fault → [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002)
+„Stale Data", MUSS). **Direkt aktivierbar:** Design vollstaendig entschieden in
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3, die
+Quality-Fault-Foundation (`QualityFaultRuntime` + Spine-Stage + Validator-Muster
++ Whitelist-Entkopplung) steht aus
+[`071`](../done/071-gg-fault-003-nan-injection.md); dieser Slice ergaenzt nur den
+stateful per-`(Ziel, Metrik)`-Last-Value-Cache + dessen opt-in Snapshot-
+Serialisierung. **Morgen-Einstieg direkt am Slice-Plan** (Tranchen C1..C8 + DoD +
+Verifikationspfad + Risiken).
+
+**Vorheriger Kandidat erledigt:** das Hygiene-Buendel der Slice-038-Session
+([`054`](../done/054-pytest-marker-drift-sensor-targets.md)/[`058`](../done/058-marker-sensor-drift-guard.md)
++ [`059`](../done/059-hygiene-bundle-adr-index-app-version.md) = 056+057) ist
+komplett geliefert (057-Runtime-Delta → **Release v0.3.1**).
 
 Weitere trigger-getriebene Folgearbeit + Aktivierungs-Bedingungen:
 [`../open/`](../open/) (Trigger-Watch). Cross-Slice-Carveouts
