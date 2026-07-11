@@ -24,13 +24,19 @@ abgeleitet (d-check `trace`; kein Handpflege-Artefakt, kein Drift). Die
 Meilensteine `M1..Mn` leben in
 [`docs/plan/planning/in-progress/roadmap.md`](planning/in-progress/roadmap.md).
 
-> **Wichtig — Coverage ≠ Lieferung:** Eine Anforderung gilt in `make doc-trace`
-> als *nicht* verwaist, sobald sie hier design-/test-gemappt ist (§27.1/§27.3).
-> `orphans=0` bezeugt damit **Design-/Coverage-Zuordnung, nicht Implementierung**.
-> Anforderungen mit §27.1-Design-Mapping, aber **ohne** Slice-/Wellen-Lieferung
-> (z. B. `GG-FAULT-002..010`) erscheinen non-orphan, obwohl noch nicht gebaut. Der
-> **Liefer-Status** ist an den Slice-/Wellen-Referenzen bzw. der Release-Version
-> abzulesen (nicht an der Waisen-Zahl der advisory-RTM).
+> **Wichtig — `make doc-trace` ist advisory und in _beide_ Richtungen unscharf:**
+> 1. **`orphans=0` ≠ „alles geliefert".** Ein Requirement ist non-orphan, sobald es
+>    hier design-/test-gemappt ist (§27.1/§27.3) — die `Coverage`-Spalte bezeugt
+>    **Design-Zuordnung, nicht Implementierung**.
+> 2. **Leere `Slices`-Spalte ≠ „ungebaut".** Die M-Wellen-Docs nennen nicht jede
+>    Einzel-ID. Beispiel: `GG-FAULT-001..010` sind alle als **eine gebaute Suite**
+>    geliefert (`src/…/core/faults`, M3), aber nur `GG-FAULT-001` ist in den Wellen-
+>    Docs namentlich verankert → nur es traegt Slice-Links; `002..010` erscheinen
+>    link-los, obwohl gebaut. Die `Slices`-Spalte spiegelt „welche ID ein Autor in ein
+>    Slice-/Wellen-Doc getippt hat", nicht Lieferung.
+>
+> Der **belastbare Liefer-Status steht im Code / in den Tests**, nicht in dieser
+> advisory-RTM. Weder die Waisen-Zahl noch die `Slices`-Spalte sind dafuer autoritativ.
 
 ---
 
