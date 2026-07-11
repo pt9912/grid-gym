@@ -6,9 +6,12 @@ scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
 # spans (seit v0.39.0): hermetischer Span-Artefakt-Check (ungeschlossene
-# Code-Spans, verschachtelte Link-Markups) — ohne eigene Optionen, grün
-# gegen den Bestand, deckt die dokumentierten Code-Span-Stolpersteine ab.
-modules: [links, anchors, ids, codepaths, matrix, spans]
+# Code-Spans, verschachtelte Link-Markups) — ohne eigene Optionen.
+# hostpaths (2026-07-11): host-lokale absolute Pfade (Maschinen-Layout-Leaks) —
+# vervollstaendigt das empfohlene ai-harness-Standard-Set (links/anchors/ids/
+# matrix/codepaths/spans/hostpaths). 5 `/Development/m-trace/`-Leaks im
+# done-archive vorab sanitisiert (-> `m-trace/`).
+modules: [links, anchors, ids, codepaths, matrix, spans, hostpaths]
 ids:
   scope:
     roots: ["."]

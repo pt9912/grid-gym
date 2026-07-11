@@ -87,8 +87,8 @@ Substanz.
   vorgeschriebene Pfad fuer additive Erweiterungen an einer
   bestehenden Accepted-/Provisional-ADR ohne Aufhebung der
   Originalsubstanz.
-- **m-trace-Pattern** (`/Development/m-trace/scripts/render-
-  trivyignore.sh` + `/Development/m-trace/.security/
+- **m-trace-Pattern** (`m-trace/scripts/render-
+  trivyignore.sh` + `m-trace/.security/
   vulnignore.yaml`) — externes Schwester-Repo verankert
   bereits die Source-of-Truth-Pattern-Form mit
   Pflicht-`expires`/`reason`/`scope`-Feldern und automatischer
@@ -341,7 +341,7 @@ Code-Merge mit:
   - Datei-Header-Schema-Block analog m-trace (Trivy-Format
     + govulncheck-Stub + Wartungsregel-Block).
 - NEU `tools/render_trivyignore.py`:
-  - Logik adaptiert aus `/Development/m-trace/scripts/
+  - Logik adaptiert aus `m-trace/scripts/
     render-trivyignore.sh` (m-trace nutzt bash+awk; grid-
     gym-Form nutzt Python+PyYAML, weil PyYAML bereits
     grid-gym-Dep ist und das `tools/`-Konvention auf
@@ -745,8 +745,8 @@ nach `f46e789`):
   additiv ohne §2.2-Verbote zu beruehren.
 - [`../../adr/0028-link-maintenance-accepted-adr-bezug.md`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)
   — Link-Maintenance-Pattern fuer ADR-Index-Pflege.
-- m-trace-Schwester-Repo `/Development/m-trace/scripts/
-  render-trivyignore.sh` + `/Development/m-trace/.security/
+- m-trace-Schwester-Repo `m-trace/scripts/
+  render-trivyignore.sh` + `m-trace/.security/
   vulnignore.yaml` — externe Source-of-Truth-Form-Quelle.
 - https://avd.aquasec.com/nvd/cve-2026-42504 — CVE-Detail
   (Go-stdlib MIME-Header-DoS).
