@@ -24,6 +24,14 @@ abgeleitet (d-check `trace`; kein Handpflege-Artefakt, kein Drift). Die
 Meilensteine `M1..Mn` leben in
 [`docs/plan/planning/in-progress/roadmap.md`](planning/in-progress/roadmap.md).
 
+> **Wichtig — Coverage ≠ Lieferung:** Eine Anforderung gilt in `make doc-trace`
+> als *nicht* verwaist, sobald sie hier design-/test-gemappt ist (§27.1/§27.3).
+> `orphans=0` bezeugt damit **Design-/Coverage-Zuordnung, nicht Implementierung**.
+> Anforderungen mit §27.1-Design-Mapping, aber **ohne** Slice-/Wellen-Lieferung
+> (z. B. `GG-FAULT-002..010`) erscheinen non-orphan, obwohl noch nicht gebaut. Der
+> **Liefer-Status** ist an den Slice-/Wellen-Referenzen bzw. der Release-Version
+> abzulesen (nicht an der Waisen-Zahl der advisory-RTM).
+
 ---
 
 ## 27.1 Anforderung zu Design

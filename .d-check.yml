@@ -154,10 +154,10 @@ trace:
   # eine narrative ID-Erwaehnung faelschlich als abgedeckt (coverage ist nicht
   # backtick-/code-span-aware). §27.1.1 (design-artefaktlos) bleibt zusaetzlich raus.
   # HINWEIS (Review-N1): `orphans=0` bezeugt Design-/Coverage-Mapping, NICHT Lieferung —
-  # 39/151 Requirements haben keinen Slice/Welle (z. B. GG-FAULT-002..010 unimplementiert),
-  # sind aber via §27.1-Design-Mapping non-orphan. Die advisory-RTM deckt „spezifiziert +
-  # designt, aber nie gebaut" NICHT auf. Ein Requirement ist Waise nur ohne Slice/Welle
-  # UND ohne Coverage. (§27.2 „Impl/Status" wurde in Slice 066 an `make doc-trace` delegiert.)
+  # viele Requirements haben §27.1-Design-Coverage, aber keine Slice-/Wellen-Lieferung
+  # (z. B. GG-FAULT-002..010 unimplementiert) und sind dennoch non-orphan. Der menschen-
+  # sichtbare Vorbehalt lebt in docs/plan/traceability.md (Intro). Ein Requirement ist
+  # Waise nur ohne Slice/Welle UND ohne Coverage. (§27.2 „Impl/Status" wurde in Slice 066 an `make doc-trace` delegiert.)
   coverage:
     - files: [docs/plan/traceability.md]
       label: Trace
