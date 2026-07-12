@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-12
+
+**Minor — GG-FAULT-Konsolidierung: drei dedizierte Fault-Typen.** Flush der seit
+v0.3.1 unter `[Unreleased]` aufgelaufenen Arbeit; Release ausgeloest durch das
+Runtime-Delta aus den Slices 070/071/072 — drei neue, **opt-in** Fault-Typen:
+`frequency_drop` (GG-FAULT-004), `nan_injection` (GG-FAULT-003) und `stale_data`
+(GG-FAULT-002), letztere zwei als metrik-adressierte Quality-Faults (ADR 0074).
+Additive Features, kein API-Bruch; alle Szenarien **ohne** die neuen Fault-Typen
+bleiben byte-identisch (Demo-Hash-Pins + `scenario_hash` unberuehrt) — SemVer-
+Minor. Begleitend die aufgelaufene Tooling-/Docs-/Security-Arbeit (d-check
+v0.41.0 inkl. `doc-trace`-RTM, Slice 064/066-Traceability, CVE-2026-39822-
+vulnignore-Deferral). `make fullbuild` cache-frei gruen vor dem Tag.
+
 ### Added
 
 - **Quality-Fault-Injection (Slice 072, GG-FAULT-002):** Neuer metrik-

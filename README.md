@@ -84,7 +84,7 @@ development gate is `make gates`.
 > `otel/opentelemetry-collector-contrib` to 0.154.0, built against
 > go1.26.4+; Trivy re-scan reports 0 HIGH/CRITICAL.)
 
-Current release: **v0.3.1** (2026-07-10) — see
+Current release: **v0.4.0** (2026-07-12) — see
 [Releases](https://github.com/pt9912/grid-gym/releases).
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
@@ -157,7 +157,7 @@ logic.
 
 ## Status
 
-As of **2026-07-10**:
+As of **2026-07-12**:
 
 | Milestone / item | Status | Date | Details |
 | --- | --- | --- | --- |
@@ -166,6 +166,7 @@ As of **2026-07-10**:
 | **Release v0.2.0** | released | 2026-07-01 | Minor: the M8 SOLLTE devices and grid model. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.0** | released | 2026-07-03 | Minor: the full run-metadata equality matrix — the replay preflight now checks 9 instead of 5 fields. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.1** | released | 2026-07-10 | Patch: app-/tool-version is now reported correctly from the package metadata (it was pinned to `0.1.0`), the ADR index status column is reconciled with the file headers, plus accumulated review hardening and a test-only E2E sensor. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.4.0** | released | 2026-07-12 | Minor: GG-FAULT consolidation — three dedicated fault types (`frequency_drop`/[`GG-FAULT-004`](spec/lastenheft.md#gg-fault-004), `nan_injection`/[`GG-FAULT-003`](spec/lastenheft.md#gg-fault-003), `stale_data`/[`GG-FAULT-002`](spec/lastenheft.md#gg-fault-002); [`ADR 0074`](docs/plan/adr/0074-metric-quality-fault-stage-stale-nan.md)), all opt-in and byte-identical for scenarios without them. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 
 **Test balance:** 139 integration passed + 4 skipped (remaining
 skips are IEC-61850-on-Python-3.13 only, covered by the dedicated

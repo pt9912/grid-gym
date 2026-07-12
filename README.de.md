@@ -86,7 +86,7 @@ Entwicklungsgate ist `make gates`.
 > (gebaut gegen go1.26.4+) aufgeloest; Trivy-Re-Scan meldet
 > 0 HIGH/CRITICAL.)
 
-Aktuelles Release: **v0.3.1** (2026-07-10) — siehe
+Aktuelles Release: **v0.4.0** (2026-07-12) — siehe
 [Releases](https://github.com/pt9912/grid-gym/releases).
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
@@ -160,7 +160,7 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-07-10**:
+Stand **2026-07-12**:
 
 | Meilenstein / Punkt | Status | Datum | Details |
 | --- | --- | --- | --- |
@@ -169,6 +169,7 @@ Stand **2026-07-10**:
 | **Release v0.2.0** | released | 2026-07-01 | Minor: die M8-SOLLTE-Geraete und das Netzmodell. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.0** | released | 2026-07-03 | Minor: die volle Run-Metadaten-Equality-Matrix — der Replay-Preflight prueft jetzt 9 statt 5 Felder. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.1** | released | 2026-07-10 | Patch: App-/Tool-Version wird jetzt korrekt aus den Paket-Metadaten gemeldet (vorher auf `0.1.0` gepinnt), die ADR-Index-Statusspalte ist gegen die Datei-Header abgeglichen, plus aufgelaufene Review-Haertung und ein Test-only-E2E-Sensor. Details im [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.4.0** | released | 2026-07-12 | Minor: GG-FAULT-Konsolidierung — drei dedizierte Fault-Typen (`frequency_drop`/[`GG-FAULT-004`](spec/lastenheft.md#gg-fault-004), `nan_injection`/[`GG-FAULT-003`](spec/lastenheft.md#gg-fault-003), `stale_data`/[`GG-FAULT-002`](spec/lastenheft.md#gg-fault-002); [`ADR 0074`](docs/plan/adr/0074-metric-quality-fault-stage-stale-nan.md)), alle opt-in und byte-identisch fuer Szenarien ohne sie. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte
