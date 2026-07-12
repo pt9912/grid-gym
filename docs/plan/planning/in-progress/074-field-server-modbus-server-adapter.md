@@ -5,7 +5,7 @@
 nutzt die Kompositions-Schicht-Naht + das Integrationsgeschirr. Zieht
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) mit
 **Closure** auf `Accepted` (Pull-Seite belegt).
-**Fortschritt:** C0 ✓ · C1a ✓ · C1b/C2 offen.
+**Fortschritt:** C0 ✓ · C1a ✓ · C1b ✓ · C2 offen.
 **Datum:** 2026-07-12
 **Quelle:** [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §5 — die **Pull-Seite** (echtes bind/listen/serve), die die driving-Rolle
@@ -57,8 +57,8 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 | --- | --- | --- |
 | **C0** ✓ | **Server-Profil-Sektion** in [`spec/protocol_profiles.md`](../../../../spec/protocol_profiles.md) angelegt (**Server-Profile — `DeviceServerPort`**, getrennt vom driven-Master-Index): Register-Map `(device_id,metric)`→Adresse, `float32`-Datatype (2 Register), Quality→Discrete-Input, Read-only FC03/FC04, Unit-ID Default 1. **Encode-Oracle** festgezurrt: Vergleich gegen die **deterministische `float32`-Quantisierung** (`struct.pack/unpack('>f', float(decimal))`) statt `Decimal==decoded` (Praezisionsgrenze explizit). [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) bleibt `Provisional` (Accepted bei Closure) | Architect / Profil |
 | **C1a** ✓ | `hexagon/ports/driving/device_server.py` (`DeviceServerPort`, bind/listen/serve + `*Error`) + `adapters/driving/_field_current_value.py` (`CurrentValueProjection`: last-write-wins pro `(device_id, metric)`, **lock-frei tick-frame-atomar** via Referenz-Swap, aus `emitted_telemetry`) + Driver-Wiring (`device_server_provider`/`current_value_projection`-Kwargs; `_start/_stop_device_server` via `asyncio.to_thread`, **Bind-in-use propagiert hart**; `_update_projection` pro Tick). Unit: Port-Shape, Projektion-Semantik/Atomizitaet, Lifecycle + Bind-Failure + Stop-Fehler-Swallow | Implementation |
-| **C1b** | `adapters/driving/device_server_modbus/` — `pymodbus`-Server (Datastore aus Projektion), adapter-interner Loop-Thread, Register-Encode (`Decimal→float→16-bit` mit definiertem Oracle), Quality→Discrete-Input/Flag-Mapping, typisierte Fehler, Sim-/Test-Docstring + Nur-Sim-Netz-Note | Implementation |
-| **C2** | **Read-Pfad-E2E:** externer Modbus-Master (testcontainers) pollt Holding/Input-Register; Werte matchen die emittierte Telemetrie tick-genau **gemaess definiertem Oracle**; Quality-Marker ([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)) korrekt exponiert. **Closure → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`** | Implementation |
+| **C1b** ✓ | `adapters/driving/device_server_modbus/` — **pymodbus-freier Kern + Adapter-Shell**: `_config` (`ModbusServerConfig`/`RegisterMapping`, fail-fast + Overlap-Check), `_register_map` (`encode_float32` = Encode-Oracle `struct.pack('>f', float(v))` + on-demand-`RegisterMap` aus der Projektion: Holding = `float32`-2-Register-Big-Endian, Discrete-Input = Quality-`VALID`-Flag), `_errors` (typisiert, `DeviceServerPort`-Subklassen), `_adapter` (`ModbusDeviceServerAdapter` via **Runner-Injektion** + `_preflight_bind` = synchroner Bind-in-use-Hard-Error, [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.4). **Kern + Lifecycle + Bind-Fehler unit-getestet** (Fake-Runner, echter Socket fuer Preflight). **Befund:** pymodbus 3.13 hat den Datastore auf `SimData`/`SimDevice` umgebaut — der alte `ModbusServerContext`/`ModbusDeviceContext`-Shim serviert **nur statisch** (`async_setValues` → `DEVICE_BUSY`, kein Live-Update). Der reale, dynamisch aus der Projektion gespeiste pymodbus-Server ist darum nur mit echtem pollenden Master verifizierbar → nach **C2** verschoben; `_default_server_runner` faehrt den realen Bind-Check + verweist fuers Serving auf C2 | Implementation |
+| **C2** | **Realer pymodbus-Server + Read-Pfad-E2E:** `_default_server_runner` verdrahtet den pymodbus-3.13-`SimData`/`SimDevice`-Server (adapter-interner Loop-Thread; Projektion→Datastore-Sync; Adress-Offset + `float32`-Register + Quality→Discrete-Input); externer Modbus-Master (testcontainers) pollt; Werte matchen die emittierte Telemetrie tick-genau **gemaess Encode-Oracle**; Quality-Marker ([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)) korrekt exponiert. **Closure → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`** | Implementation |
 
 ## DoD
 
@@ -101,6 +101,12 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
   Tick-Frame sehen; last-write-wins pro `(target, metric)`, atomarer Frame-Swap.
 - **Auth/Security** — Modbus-TCP hat keine; Nur-Sim-Netz-Deployment-Note
   ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
+- **pymodbus-3.13-Datastore-Rewrite (C1b-Befund)** — der alte
+  `ModbusServerContext`/`ModbusDeviceContext`/`ModbusSequentialDataBlock`-Shim
+  ist deprecated (Entfernung in v4) und serviert nur statisch
+  (`async_setValues` → `DEVICE_BUSY`). C2 muss das neue `SimData`/`SimDevice`-
+  Modell (ggf. `SimAction`/`ModbusSimulatorContext`) nutzen; der Adress-Offset
+  (kein `zero_mode` mehr) ist per Master-E2E zu pinnen.
 
 ## Aktivierung
 

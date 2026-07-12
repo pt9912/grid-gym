@@ -25,6 +25,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Nur-Sim-Netz). ADR 0075 auf `Provisional` (Pull-Seite `DeviceServerPort`
   folgt). **Release deferred** bis die Pull-Seite geliefert ist (gemeinsamer
   Field-Server-Release).
+- **Field-Server Pull-Seite — Kern (Slice 074 C1b, ADR 0075 §2.1):** Neuer
+  `device_server_modbus`-Adapter (pymodbus-freier Kern + Adapter-Shell):
+  `ModbusServerConfig`/`RegisterMapping` (fail-fast + Register-Overlap-Check),
+  `RegisterMap` (on-demand-Berechnung aus der Current-Value-Projektion:
+  Holding-Register = `float32`/2-Register-Big-Endian via Encode-Oracle
+  `struct.pack('>f', float(v))`, Discrete-Input = Quality-`VALID`-Flag),
+  typisierte `DeviceServerPort`-Fehler und `ModbusDeviceServerAdapter`
+  (Runner-Injektion; `_preflight_bind` macht Bind-in-use zu einem synchronen
+  harten Fehler vor dem ersten Tick, ADR 0075 §2.4). Kern/Lifecycle/Bind-Fehler
+  unit-getestet. Der **reale pymodbus-Server** ist nach Slice 074 C2 verschoben:
+  pymodbus 3.13 hat den Datastore auf `SimData`/`SimDevice` umgebaut (der alte
+  Shim serviert nur statisch — `async_setValues` → `DEVICE_BUSY`), das
+  dynamische Serving ist nur mit echtem pollenden Master (Read-E2E) verifizierbar.
+  Nur Sim-/Testadapter (keine produktive Anlagensteuerung; Nur-Sim-Netz).
 
 ## [0.4.0] - 2026-07-12
 
