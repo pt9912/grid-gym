@@ -7,12 +7,14 @@ zwei adversarialen Reviews (Design + Plan), die den ersten Entwurf (ein
 geteilter `DeviceEndpointPort` am Kern-`TickLoop`) gegen Code widerlegten.
 Owner-Sign-off der revidierten Marschrichtung 2026-07-12: **zwei Schwester-Ports
 in der Kompositions-Schicht**, Inbound-Writes ausgegliedert.
-Status-Pfad: Proposed → Provisional mit
-[`Slice 073`](../planning/next/073-field-server-mqtt-publish-bridge.md)
-(`FieldPublishPort` + Kompositions-Schicht-Naht + Integrationsgeschirr) →
-Accepted mit der **Closure** von
-[`Slice 074`](../planning/next/074-field-server-modbus-server-adapter.md)
-(`DeviceServerPort` Read-Serving belegt die driving/bind-listen-Seite).
+Status-Pfad (ADR 0006 §4, **kapazitaetsbasiert** — liefer-agnostisch): Proposed →
+**Provisional**, sobald die Push-Seite (`FieldPublishPort`) mit einem ersten
+Adapter + der Kompositions-Schicht-Naht produktiv belegt ist → **Accepted**,
+sobald die Pull-Seite (`DeviceServerPort`, bind/listen/serve) mit Read-Serving
+belegt ist. Das Delivery-Mapping (welche Slices/Wellen die Transitionen liefern)
+lebt im **ADR-Index + Roadmap**, **nicht** im ADR-Body — ADRs bleiben
+liefer-agnostisch (die bestehenden delivery-koppelnden ADRs zieht ein
+Folge-Trigger auf dieselbe Konvention nach).
 **Datum:** 2026-07-12
 **Bezug:**
 
@@ -105,11 +107,11 @@ ADR 0075 legt zwei Schwester-Ports in der **Kompositions-/Driver-Schicht** fest
   `start()` (Broker-Connect) / `publish(point: TelemetryPoint) -> None` (ein
   emittierter Punkt) / `stop()` (Disconnect, idempotent). Push zu einem Broker;
   verhaltensnah zu `telemetry_sink.persist()` + `DeviceProtocolPort`-Lifecycle,
-  aber **driver-getrieben** (nicht `TickLoop`). Adapter Slice 073:
+  aber **driver-getrieben** (nicht `TickLoop`). Erster Adapter:
   `adapters/driven/field_publish_mqtt/` (paho-mqtt).
 - **`DeviceServerPort`** (driving), `hexagon/ports/driving/device_server.py`:
   `start()`/`stop()` = bind/listen/serve. Ein externer Master pollt; der Adapter
-  serviert Register aus der Current-Value-Projektion. Adapter Slice 074:
+  serviert Register aus der Current-Value-Projektion. Erster Pull-Adapter:
   `adapters/driving/device_server_modbus/` (`pymodbus`-Server).
 - Beide teilen die **Current-Value-Projektion** (§2.2) als **Helper-Modul** —
   **keinen** Port-Vertrag ([`ADR 0011`](0011-schaerfung-ohne-abloesung.md)-
@@ -130,15 +132,16 @@ Projektion ist **tick-frame-atomar**: sie wird pro Tick als geschlossener Frame
 aktualisiert (ein Poll sieht nie einen halb-aktualisierten Frame).
 
 - **Push-Seite (`FieldPublishPort`)** braucht die Projektion **nicht** — sie
-  leitet jeden emittierten Punkt direkt weiter (deshalb ist Slice 073 leichter
-  und baut sie **nicht**; der „073 macht 074 duenn"-Anspruch des ersten Entwurfs
-  entfaellt bewusst).
+  leitet jeden emittierten Punkt direkt weiter (deshalb ist die Push-Seite
+  leichter und baut sie **nicht**; der frueher angenommene „Push-Adapter macht
+  den Pull-Adapter duenn"-Anspruch entfaellt bewusst).
 - **Pull-Seite (`DeviceServerPort`)** materialisiert die Projektion — sie ist
   die Foundation, die **jeder** kuenftige Pull-Server (Modbus jetzt; DNP3-
-  Outstation/OPC-UA-Server/IEC-Server spaeter) teilt. Erstmalig in Slice 074.
+  Outstation/OPC-UA-Server/IEC-Server spaeter) teilt. Erstmalig mit dem ersten
+  Pull-Server gebaut.
 - **Quality-Marker** ([`ADR 0074`](0074-metric-quality-fault-stage-stale-nan.md):
   `STALE`/`NAN`) reisen im `TelemetryPoint`; der Server mappt sie protokoll-
-  spezifisch (Slice 074 auf Modbus-Discrete-Inputs/Flags).
+  spezifisch (der Modbus-Server mappt sie auf Discrete-Inputs/Flags).
 
 ### §2.3 Placement: Kompositions-/Driver-Schicht, kein Kern-`TickLoop`-Kwarg
 
@@ -216,35 +219,35 @@ erste Entwurf hatte sie nur auf der Pull-Seite).
 - **A3 (verworfen) — Pull-Server direkt aus dem `TelemetryStreamPort`.**
   Fire-and-forget + Drop-Oldest-FIFO kann „letzter Wert JETZT" nicht liefern;
   ein Master-Poll saehe Luecken/stale Register. Deshalb die eigene Projektion.
-- **A4 (verworfen) — Inbound-Write in Slice 074 mit „bis Tick-Grenze puffern".**
+- **A4 (verworfen) — Inbound-Write als Teil der Pull-Server-Lieferung mit „bis Tick-Grenze puffern".**
   Ein Live-Master-Write ist exogener Input zu Wall-Clock-Zeit; die Tick-
   Zuordnung ist im Live-Run genau die reale Ankunft → nicht replaybar. Gehoert
-  in eine eigene Slice + Folge-ADR mit Exogen-Input-Recording (§7).
+  in ein eigenes Kapazitaets-Inkrement + eine Folge-ADR mit
+  Exogen-Input-Recording (§7).
 
 ---
 
-## 5. Lieferung
+## 5. Lieferschnitt (kapazitaetsbasiert)
 
-Design-first (diese ADR), dann Slices:
+Design-first (diese ADR), dann in drei Kapazitaets-Inkrementen — bewusst
+**liefer-agnostisch** beschrieben; welche Slices/Wellen sie liefern, steht im
+**ADR-Index + Roadmap**, nicht hier:
 
-- **[`Slice 073`](../planning/next/073-field-server-mqtt-publish-bridge.md) —
-  MQTT-Publish-Bridge (`FieldPublishPort`, Push):** liefert den Port + die
-  Kompositions-Schicht-Naht (Driver-Lifecycle + Fan-out-Entrypoint gegen den
-  Produkt-Surface) + das grid-gym↔`bess-ems`-Integrationsgeschirr (Compose mit
-  Broker). Zieht ADR 0075 auf `Provisional`. Baut die Current-Value-Projektion
-  **nicht** (reiner Push).
-- **[`Slice 074`](../planning/next/074-field-server-modbus-server-adapter.md) —
-  Modbus-Server (`DeviceServerPort`, Pull, Read-Serving):** liefert den Port +
-  die geteilte Current-Value-Projektion + Register-Map-Encode + Read-E2E. Zieht
-  ADR 0075 mit **Closure** auf `Accepted`. **Ohne** Inbound-Write.
-- **[`Slice 075`](../planning/next/075-field-server-inbound-write-command.md) —
-  Inbound-Write→Command (ausgegliedert):** loest das Exogen-Input-Recording und
-  bringt eine **dedizierte Folge-ADR** (Nummer bei Aktivierung); versoehnt
-  Live-Writes mit dem geschlossenen Self-Replay-Modell.
+1. **Push-Seite (`FieldPublishPort`):** der Port + die Kompositions-Schicht-Naht
+   (Driver-Lifecycle + Fan-out-Entrypoint gegen den Produkt-Surface) + das
+   grid-gym↔`bess-ems`-Integrationsgeschirr (Compose mit Broker). Baut die
+   Current-Value-Projektion **nicht** (reiner Push). → zieht die ADR auf
+   `Provisional`.
+2. **Pull-Seite (`DeviceServerPort`, Read-Serving):** der Port + die geteilte
+   Current-Value-Projektion + Register-Map-Encode + Read-E2E. **Ohne**
+   Inbound-Write. → zieht die ADR (mit Closure) auf `Accepted`.
+3. **Inbound-Write→Command (ausgegliedert):** loest das Exogen-Input-Recording
+   und bringt eine **dedizierte Folge-ADR** (§7); versoehnt Live-Writes mit dem
+   geschlossenen Self-Replay-Modell.
 
-Jede Slice traegt Akzeptanzkriterien, Verifikationspfad und Release-Feld;
-Verifikation (`make gates`/`make docs-check`/`make fullbuild`) lebt in der
-Slice-Closure.
+Jedes Inkrement traegt Akzeptanzkriterien, Verifikationspfad und Release-Feld im
+liefernden Slice; die Verifikation (`make gates`/`make docs-check`/`make
+fullbuild`) lebt in dessen Closure.
 
 ---
 
@@ -259,15 +262,15 @@ Slice-Closure.
   `adapters/driving/device_server_*/`; `AC-ADAPTER-PURE`/`AC-ADAPTER-LIGHTWEIGHT`
   greifen.
 - **Bewusste Grenze:** Live-Inbound-Steuerung ist **nicht** replaybar und darum
-  ausgegliedert (§7); bis Slice 075 ist der Field-Server **read-serving-only**.
+  ausgegliedert (§7); bis der Inbound-Write-Pfad geliefert ist, ist der
+  Field-Server **read-serving-only**.
 
 ---
 
 ## 7. Nicht Gegenstand dieser ADR / offene Punkte
 
-- **Inbound-Write→Command** — ausgegliedert in
-  [`Slice 075`](../planning/next/075-field-server-inbound-write-command.md) +
-  eine dedizierte Folge-ADR. Grund: ein Live-Master-Write ist exogener Input
+- **Inbound-Write→Command** — ausgegliedert in ein eigenes Kapazitaets-Inkrement
+  (§5) + eine dedizierte Folge-ADR. Grund: ein Live-Master-Write ist exogener Input
   ohne `simulation_time`; grid-gyms geschlossenes Self-Replay
   (`(Szenario, Seed, tick_ms)`) hat keinen Exogen-Input-Recording-Pfad, und §2.5
   verbietet Server-State im Snapshot. Die Folge-ADR loest Record/Replay
@@ -285,7 +288,7 @@ Slice-Closure.
   `DeviceServerPort` + geteilter Projektion; eigene Slices bei Bedarf.
 - **Register-Map-/Encode-Genauigkeit** — der `Decimal→float`-DTO-Verlust plus
   `Decimal→16-bit`-Register-Verlust braucht einen definierten Gleichheits-Oracle
-  (Slice 074).
+  (mit der Pull-Seite, §5).
 - **Auth/Security** — Deployment-/Profil-Thema je Slice (Nur-Sim-Netz).
 - **`bess-ems`-Seite** — liegt im Schwesterprojekt; ADR 0075 liefert die
   grid-gym-Seite + das Integrationsgeschirr.

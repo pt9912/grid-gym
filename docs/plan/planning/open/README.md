@@ -95,6 +95,12 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 | ----- | ------- | ----------- |
 | [`068-doc-modules-targets-commits-vcs.md`](068-doc-modules-targets-commits-vcs.md) | `targets`/`commits`/`vcs` scharf schalten — **C1 (`targets`, gate-phantom) erledigt**; offen: C1b (gate-undocumented, 38 Utility-Targets), C2 (`commits`, Vorwärts-Traceability), C3 (`vcs`, ADR-Immutabilität, braucht [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)-C0) | Tooling-/Disziplin-Slice; C3 als eigener Slice mit Amendment |
 
+**ADR-Konvention / Doku-Hygiene:**
+
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`076-adr-delivery-agnostic-convention.md`](076-adr-delivery-agnostic-convention.md) | ADRs liefer-agnostisch halten (keine spezifischen `[Slice NNN]`-Refs im ADR-Body; Delivery-Mapping in ADR-Index/Roadmap). [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) folgt es bereits; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)/[`ADR 0030`](../../adr/0030-device-protocol-port-surface.md) nachziehen | Naechste ADR-Hygiene-/Doku-Runde ODER neuer ADR wirft die Frage erneut auf |
+
 **SOLLTE — M2-Welle-7-Erbschaft (mit M8 aufgeloest):** die neun
 SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
 (Welle 2/3/4) auf `Resolved` gesetzt und mit der M8-Closure
