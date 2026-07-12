@@ -267,11 +267,14 @@ Slice-Closure.
   verbietet Server-State im Snapshot. Die Folge-ADR loest Record/Replay
   (Write→Journal mit erfasstem Sim-Tick → deterministische Re-Injektion) oder
   scopt HIL-Live-Runs explizit als record-only/nicht-replaybar.
-- **Anforderungs-Verankerung** — haengt an
-  [`GG-TEST-004`](../../../spec/lastenheft.md#gg-test-004) (HIL, SOLLTE). Ob eine
-  eigene `GG-*`-ID (z. B. `GG-FSRV-*`) gezogen wird oder es HIL-Konkretisierung
-  bleibt, ist eine **Owner-Entscheidung** (bewusst offen; nicht stillschweigend
-  eine ID erfunden).
+- **Anforderungs-Verankerung (entschieden 2026-07-12):** die Field-Server-
+  Surface ist eine **HIL-Konkretisierung von**
+  [`GG-TEST-004`](../../../spec/lastenheft.md#gg-test-004) (SOLLTE) — **keine**
+  eigene `GG-*`-ID. Die liefernden Slices dokumentieren die vier
+  [`GG-TEST-004`](../../../spec/lastenheft.md#gg-test-004)-Akzeptanz-Aspekte
+  (Testgrenzen, Simulationsadapter, erwartete Signale, deterministisches
+  Replay-Verhalten); **kein** neuer normativer Anforderungs-Eintrag, **kein**
+  `lastenheft.md`-Edit.
 - **DNP3-Outstation / OPC-UA-Server / IEC-Server** — weitere Pull-Server auf
   `DeviceServerPort` + geteilter Projektion; eigene Slices bei Bedarf.
 - **Register-Map-/Encode-Genauigkeit** — der `Decimal→float`-DTO-Verlust plus

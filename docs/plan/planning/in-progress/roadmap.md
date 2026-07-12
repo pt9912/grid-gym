@@ -32,11 +32,12 @@ externes EMS (`bess-ems`) als System-under-Test anbindbar
 ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) HIL). Architektur:
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 (`Proposed`) — **zwei Schwester-Ports** in der Kompositions-Schicht (nach zwei
-adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Aktivierung
-haengt an einer Owner-Vorabentscheidung (Anforderungs-ID;
-[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
-Offene Trigger (OTel-Bump, Vorwaerts-Traceability, `a-check`) sind noch nicht als
-Slice geschnitten.
+adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Die
+Anforderungs-Verankerung ist entschieden — **HIL-Konkretisierung von**
+[`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004), keine eigene
+`GG-*`-ID; die Slices sind vollstaendig spezifiziert und liegen
+aktivierungsbereit in `next/`. Offene Trigger (OTel-Bump, Vorwaerts-
+Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -181,10 +182,10 @@ Kern-`TickLoop`-Port auf **zwei Schwester-Ports in der Kompositions-Schicht**
 revidiert (Fan-out lebt im API-Prozess-Driver, nicht im Kern-Loop,
 [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)). Motivation ist die
 HIL/SUT-Anbindung ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)).
-**Aktivierung haengt an** einer Owner-Vorabentscheidung zur Anforderungs-ID
-(eigene `GG-FSRV-*`-Familie vs. HIL-Konkretisierung;
-[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7 /
-Slice 073 C0). Die
+**Anforderungs-Verankerung entschieden (2026-07-12):** HIL-Konkretisierung von
+[`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene
+`GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+§7) — die Slices liegen aktivierungsbereit in `next/`. Die
 GG-FAULT-Konsolidierung (002/003/004) ist mit
 [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)/[`072`](../done/072-gg-fault-002-stale-data.md)
 vollstaendig geliefert; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)

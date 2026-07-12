@@ -7,9 +7,11 @@ aktive** Arbeit.
 
 Field-Server-Surface ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
 `Proposed`; **zwei Schwester-Ports** in der Kompositions-Schicht, nach zwei
-adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Aktivierung
-haengt an Owner-Anforderungs-ID-Entscheidung
-([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7):
+adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Anforderungs-
+Verankerung entschieden: **HIL-Konkretisierung von**
+[`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene
+`GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+§7). Aktivierungsbereit:
 
 - [`073-field-server-mqtt-publish-bridge.md`](073-field-server-mqtt-publish-bridge.md)
   — `FieldPublishPort` (driven, Push): MQTT-Publish-Adapter + Kompositions-

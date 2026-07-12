@@ -55,7 +55,7 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
-| **C0** | [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Proposed → Provisional`; `FieldPublishPort`-Signatur + Driver-Placement bestaetigt. Owner-Vorabentscheidung Anforderungs-ID (eigene `GG-FSRV-*` vs. HIL-Konkretisierung von [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004), [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7) | Architect / ADR |
+| **C0** | [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Proposed → Provisional`; `FieldPublishPort`-Signatur + Driver-Placement bestaetigt. Anforderungs-Verankerung entschieden: **HIL-Konkretisierung von** [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene `GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7) | Architect / ADR |
 | **C1** | `hexagon/ports/driven/field_publish.py` (`FieldPublishPort`-Protocol, Stub-Form Docstring + `...` eigene Zeile) + `*Error`-Hierarchie. Unit: Protocol-Surface + Coverage-Exclude-Konformitaet | Implementation |
 | **C2** | **Produktions-Driver-Verdrahtung:** Field-Publish-Fan-out + Lifecycle-Caller im http_api-Driver (analog `_publish_emitted_telemetry`), Field-Server-Entrypoint in der App-Komposition. Pins: `None`-Skip byte-identisch, Lifecycle-Start/Stop im echten Run-Pfad (nicht nur test-lokal) | Implementation |
 | **C3** | `adapters/driven/field_publish_mqtt/` — MQTT-Publish-Adapter (paho-mqtt, adapter-interner Loop/Queue), Topic-Schema, typisierte Fehler, Sim-/Test-Docstring + Nur-Sim-Netz-Note ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)). Unit: Publish-Mapping, Fehleruebersetzung | Implementation |
@@ -107,10 +107,9 @@ selbst).
   wird produktiv nie gerufen; C2 baut echten Run-Pfad-Code, nicht Copy-Paste.
 - **Security der exponierten Surface** — Broker-Exposure ohne Auth; Nur-Sim-
   Netz-Note in C3 ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
-- **Anforderungs-ID offen** — Owner-Entscheidung vor C1 (C0).
 
 ## Aktivierung
 
-Owner-Go (Anforderungs-ID, C0). Bis dahin `next/`. Bei Aktivierung →
-[`../in-progress/`](../in-progress/); nach C4-Closure + `make fullbuild` →
-[`../done/`](../done/).
+Owner-Go (Slice scharf schalten; Anforderungs-Verankerung entschieden). Bis
+dahin `next/`. Bei Aktivierung → [`../in-progress/`](../in-progress/); nach
+C4-Closure + `make fullbuild` → [`../done/`](../done/).
