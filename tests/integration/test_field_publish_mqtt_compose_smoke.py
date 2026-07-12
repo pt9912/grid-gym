@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import time
 from collections.abc import Iterator
+from dataclasses import replace
 from decimal import Decimal
 from typing import Final
 
@@ -129,21 +130,47 @@ def test_field_publish_reaches_external_subscriber(_mosquitto: DockerContainer) 
             topic_prefix=_TOPIC_PREFIX,
         )
     )
-    point = _sample_point()
+    point1 = _sample_point()
+    point2 = replace(
+        _sample_point(),
+        device_id="meter-2",
+        metric="current_a",
+        value=Decimal("11.25"),
+        unit="A",
+        sequence=5,
+    )
     try:
         adapter.start()
-        adapter.publish(point)
-        _poll_until(lambda: len(received) >= 1)
+        adapter.publish(point1)
+        adapter.publish(point2)
+        _poll_until(lambda: len(received) >= 2)
     finally:
         adapter.stop()
         subscriber.loop_stop()
         subscriber.disconnect()
 
-    message = received[0]
-    assert message.topic == f"{_TOPIC_PREFIX}/meter-1/voltage_v"
-    decoded = json.loads(message.payload, parse_float=Decimal)
-    assert decoded["device_id"] == "meter-1"
-    assert decoded["metric"] == "voltage_v"
-    # Decimal-Fidelity ueber den ganzen Pfad (canonical_json -> Broker -> Decode).
-    assert decoded["value"] == Decimal("230.5")
-    assert decoded["quality"] == Quality.VALID.value
+    by_topic = {m.topic: m for m in received}
+    # Beide Punkte auf ihren eigenen `{prefix}/{device_id}/{metric}`-Topics.
+    assert set(by_topic) == {
+        f"{_TOPIC_PREFIX}/meter-1/voltage_v",
+        f"{_TOPIC_PREFIX}/meter-2/current_a",
+    }
+    # QoS des Publish (Config-Default 0).
+    assert all(m.qos == 0 for m in received)
+    # Alle 10 `GG-DATA-001`-Felder + `Decimal`-Fidelity ueber den ganzen Pfad
+    # (canonical_json -> Broker -> Decode mit parse_float=Decimal).
+    decoded = json.loads(
+        by_topic[f"{_TOPIC_PREFIX}/meter-1/voltage_v"].payload, parse_float=Decimal
+    )
+    assert decoded == {
+        "run_id": "fp-smoke-1",
+        "tick": 2,
+        "simulation_time": 2000,
+        "device_id": "meter-1",
+        "metric": "voltage_v",
+        "value": Decimal("230.5"),
+        "unit": "V",
+        "quality": Quality.VALID.value,
+        "source": "smart_meter.meter-1",
+        "sequence": 4,
+    }

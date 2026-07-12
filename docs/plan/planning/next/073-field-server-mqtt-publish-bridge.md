@@ -5,8 +5,9 @@ Closure → dann Self-Move nach `done/` (Muster Slice 070/071/072, kein
 `in-progress/`-Zwischenstopp). Liefert die Field-Server-Push-Seite aus
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 (`Proposed`); ADR wird bei **073-Closure** auf `Provisional` gezogen.
-**Fortschritt:** C0–C4 ✓ — **Slice code-komplett** (166 integration passed inkl.
-Field-Publish-Smoke). Reif fuer adversarialen Review + Closure
+**Fortschritt:** C0–C4 ✓ + **adversarialer Code-Review + Hardening ✓**
+(2026-07-12; 2 unabhaengige Reviewer, 11 Funde adressiert — s.u.). Reif fuer
+Closure
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) →
 `Provisional`, `next/`→`done/`, Release v0.5.0).
 **Datum:** 2026-07-12
@@ -83,6 +84,40 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 - **Release-Entscheidung:** ja (Minor — additive Feature-Surface); SemVer-Ziel
   **v0.5.0** (v0.4.0 = GG-FAULT-Release 2026-07-12). Gebunden an „kein
   Doku-only-Release" + `make fullbuild` vor Tag.
+
+## Code-Review + Hardening (2026-07-12)
+
+Zwei unabhaengige, adversariale Reviewer (Concurrency/Lifecycle + Vertrag/
+Korrektheit/Coverage) gegen die C0–C4-Implementierung; 4 Hypothesen wurden
+adversarial **widerlegt** (Cancel-Race, Doppel-Stop, Connect-Leak, Determinismus
+— sauber). Adressierte Funde (Owner-Beschluss: alles fixen inkl. Multi-Run):
+
+- **#1 (HIGH) Blocking-I/O auf dem Event-Loop:** `start()`/`stop()` (paho
+  connect/disconnect) laufen jetzt via `asyncio.to_thread` — kein Event-Loop-
+  Stall bei unerreichbarem Broker.
+- **#2 (HIGH) env-Port-Parse:** typisierter `MqttFieldPublishConfigEndpointError`
+  statt bare `ValueError` (kein Lifespan-Crash); `[ipv6]:port`-Support.
+- **#3 (HIGH/MED) Multi-Run:** `build_run_driver` (`POST /runs/{id}/start`)
+  verdrahtet Field-Publish jetzt mit **run-eindeutiger `client_id`** (kein
+  Shared-Client-Session-Kick).
+- **#4 (MED) F2-Ordering:** Field-Publish-Wiring VOR `repository.save`.
+- **#5 (MED) Topic-Injection:** `device_id`/`metric` mit `/`,`+`,`#` oder leer →
+  typisierter Reject (kein Fehlrouting / stiller Verlust).
+- **#6 (MED) Lifecycle:** `_start_field_publish` IM `try/finally` (Provider-
+  Exception ueberspringt `finalize()` nicht mehr).
+- **#7 (MED) Log-Rate-Limit + Reconnect-Backoff:** Publish-Fehler pro Run
+  gezaehlt (Summe am Ende) statt pro Punkt geloggt; `reconnect_delay_set`.
+- **#8 (MED) Degrade-Status:** `DemoTickLoopDriver.field_publish_status`
+  (`off`/`active`/`degraded`) macht einen stillen HIL-Feed-Ausfall beobachtbar.
+- **#9/#10/#11:** Coverage (`stop()`-Disconnect-Fehler), staerkeres Integrations-
+  Assert (2 Punkte, alle 10 Felder, QoS), `_encode_point`-Parity-Test gegen
+  `protocol_mqtt.encode_telemetry`.
+- **#13 (LOW):** stop-Reihenfolge `disconnect()` vor `loop_stop()` (graceful
+  drain).
+
+Offen (bewusst, niedrige Prio): #13 last-frame-Verlust bei QoS>0 (Default 0
+fire-and-forget); #12 resolve-once-Asymmetrie (dokumentiert). Full-Endpoint-
+Surfacing des Degrade-Status (`/healthcheck`-JSON) ist Folge-Kandidat.
 
 ## Bezug
 

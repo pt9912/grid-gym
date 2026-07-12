@@ -41,7 +41,10 @@ from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelem
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
-from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPortStartError
+from grid_gym.hexagon.ports.driven.field_publish import (
+    FieldPublishPortStartError,
+    FieldPublishPortStopError,
+)
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from tests.unit.hexagon.ports.driven._fakes import (
     FakeClock,
@@ -376,12 +379,19 @@ def test_configure_demo_run_orphan_guard_rejects_second_run_id() -> None:
 class _RecordingFieldPublish:
     """Inline-Stub: zeichnet start/publish/stop auf; optional werfen."""
 
-    def __init__(self, *, start_raises: bool = False, publish_raises: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        start_raises: bool = False,
+        publish_raises: bool = False,
+        stop_raises: bool = False,
+    ) -> None:
         self.start_calls = 0
         self.stop_calls = 0
         self.published: list[DomainTelemetryPoint] = []
         self._start_raises = start_raises
         self._publish_raises = publish_raises
+        self._stop_raises = stop_raises
 
     def start(self) -> None:
         self.start_calls += 1
@@ -395,6 +405,8 @@ class _RecordingFieldPublish:
 
     def stop(self) -> None:
         self.stop_calls += 1
+        if self._stop_raises:
+            raise FieldPublishPortStopError("disconnect boom")
 
 
 def _domain_point(seq: int = 0) -> DomainTelemetryPoint:
@@ -428,7 +440,7 @@ def test_field_publish_fans_out_each_emitted_domain_point() -> None:
     port = _RecordingFieldPublish()
     loop = _make_tick_loop_with_battery_alarm()
     driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
-    driver._start_field_publish()
+    asyncio.run(driver._start_field_publish())
     assert port.start_calls == 1
     driver._publish_field(_telemetry_result(_domain_point(0), _domain_point(1)))
     assert len(port.published) == 2
@@ -441,10 +453,10 @@ def test_field_publish_noop_without_configured_port() -> None:
     (byte-identisch)."""
     loop = _make_tick_loop_with_battery_alarm()
     driver = DemoTickLoopDriver(loop)  # kein field_publish_provider
-    driver._start_field_publish()
+    asyncio.run(driver._start_field_publish())
     assert driver._active_field_publish is None
     driver._publish_field(_telemetry_result(_domain_point()))  # kein Fehler
-    driver._stop_field_publish()  # idempotent, kein Fehler
+    asyncio.run(driver._stop_field_publish())  # idempotent, kein Fehler
 
 
 def test_field_publish_degrades_on_start_failure() -> None:
@@ -453,7 +465,7 @@ def test_field_publish_degrades_on_start_failure() -> None:
     port = _RecordingFieldPublish(start_raises=True)
     loop = _make_tick_loop_with_battery_alarm()
     driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
-    driver._start_field_publish()  # start() wirft → gefangen, degrade
+    asyncio.run(driver._start_field_publish())  # start() wirft → gefangen, degrade
     assert port.start_calls == 1
     assert driver._active_field_publish is None
     driver._publish_field(_telemetry_result(_domain_point()))
@@ -466,7 +478,7 @@ def test_field_publish_survives_publish_exception() -> None:
     port = _RecordingFieldPublish(publish_raises=True)
     loop = _make_tick_loop_with_battery_alarm()
     driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
-    driver._start_field_publish()
+    asyncio.run(driver._start_field_publish())
     driver._publish_field(_telemetry_result(_domain_point()))  # kein Raise
     assert port.published == []
 
@@ -524,3 +536,53 @@ def test_field_publish_lifecycle_start_publish_stop_via_run_loop() -> None:
     assert len(port.published) >= 1  # mind. ein Tick emittierte vor Stop
     assert port.stop_calls == 1  # im finally gestoppt
     assert fake_loop.finalized is True
+
+
+def test_field_publish_stop_swallows_disconnect_error() -> None:
+    """Review-Fix #9: ein harter Disconnect-Fehler in `stop()` wird gefangen +
+    geloggt — kippt nicht den `_run_loop`-`finally`/`finalize()`-Pfad; der
+    aktive Port wird trotzdem zurueckgesetzt (Best-Effort-Cleanup)."""
+    port = _RecordingFieldPublish(stop_raises=True)
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
+    asyncio.run(driver._start_field_publish())
+    assert driver._active_field_publish is port
+    asyncio.run(driver._stop_field_publish())  # wirft NICHT (gefangen)
+    assert port.stop_calls == 1
+    assert driver._active_field_publish is None
+
+
+def test_field_publish_status_off_when_unconfigured() -> None:
+    """Review-Fix #8: ohne Port → `off` (kein Feed erwartet)."""
+    driver = DemoTickLoopDriver(_make_tick_loop_with_battery_alarm())
+    assert driver.field_publish_status == "off"
+
+
+def test_field_publish_status_active_after_successful_start() -> None:
+    port = _RecordingFieldPublish()
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), field_publish_provider=lambda: port
+    )
+    asyncio.run(driver._start_field_publish())
+    assert driver.field_publish_status == "active"
+
+
+def test_field_publish_status_degraded_after_start_failure() -> None:
+    """Review-Fix #8: konfiguriert, aber Connect fehlgeschlagen → `degraded`
+    (nicht `off`) — der leere Feed ist beobachtbar."""
+    port = _RecordingFieldPublish(start_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), field_publish_provider=lambda: port
+    )
+    asyncio.run(driver._start_field_publish())
+    assert driver.field_publish_status == "degraded"
+
+
+def test_field_publish_status_degraded_after_publish_failure() -> None:
+    port = _RecordingFieldPublish(publish_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), field_publish_provider=lambda: port
+    )
+    asyncio.run(driver._start_field_publish())
+    driver._publish_field(_telemetry_result(_domain_point()))
+    assert driver.field_publish_status == "degraded"

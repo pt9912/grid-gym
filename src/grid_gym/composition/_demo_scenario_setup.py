@@ -45,6 +45,7 @@ from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driven.field_publish_mqtt import (
     MqttFieldPublishAdapter,
     MqttFieldPublishConfig,
+    MqttFieldPublishConfigEndpointError,
 )
 from grid_gym.adapters.driven.persistence_inmemory import (
     InMemoryReplaySnapshot,
@@ -122,30 +123,70 @@ _FIELD_PUBLISH_CLIENT_ID: Final[str] = "grid-gym-field-publish"
 _FIELD_PUBLISH_DEFAULT_PORT: Final[int] = 1883
 
 
-def _configure_field_publish_from_env(app_: FastAPI) -> None:
-    """Opt-in Field-Publish-Wiring (ADR 0075 §2.1/§2.3).
+def _parse_broker_endpoint(raw: str) -> tuple[str, int]:
+    """Parst ``host``, ``host:port`` oder ``[ipv6]:port`` → ``(host, port)``.
+
+    Review-Fix #2: ein nicht-numerischer Port oder eine unklammerte IPv6-Adresse
+    wirft einen **typisierten** `MqttFieldPublishConfigError` (nicht den bare
+    `ValueError` von `int()`, der den FastAPI-Lifespan crashen wuerde).
+    """
+    if raw.startswith("["):
+        close = raw.find("]")
+        if close == -1:
+            raise MqttFieldPublishConfigEndpointError(raw)
+        host = raw[1:close]
+        rest = raw[close + 1 :]
+        if not rest:
+            return host, _FIELD_PUBLISH_DEFAULT_PORT
+        if not rest.startswith(":"):
+            raise MqttFieldPublishConfigEndpointError(raw)
+        port_str = rest[1:]
+    else:
+        host, sep, port_str = raw.rpartition(":")
+        if not sep:
+            return raw, _FIELD_PUBLISH_DEFAULT_PORT
+        if ":" in host:
+            raise MqttFieldPublishConfigEndpointError(raw)
+    if not port_str:
+        return host, _FIELD_PUBLISH_DEFAULT_PORT
+    try:
+        port = int(port_str)
+    except ValueError as exc:
+        raise MqttFieldPublishConfigEndpointError(raw) from exc
+    return host, port
+
+
+def _field_publish_adapter_from_env(run_id: str) -> MqttFieldPublishAdapter | None:
+    """Opt-in Field-Publish-Adapter (ADR 0075 §2.1/§2.3).
 
     Ist ``GRID_GYM_FIELD_PUBLISH_MQTT_BROKER=host[:port]`` gesetzt, konstruiert
-    einen `MqttFieldPublishAdapter` (Push-Seite) und legt ihn auf
-    ``app.state.field_publish``. Der `DemoTickLoopDriver` resolved ihn am
-    Run-Start (`_field_publish_provider`, getattr) und ruft `start`/`publish`/
-    `stop` driver-getrieben (ADR 0075 §2.4).
-
-    Unset → No-op: ``app.state.field_publish`` bleibt ungesetzt → der Provider
-    liefert `None` → **byte-identisch** (kein Broker-Connect). Fehlkonfig (Port
-    ausserhalb Range etc.) → typed `MqttFieldPublishConfigError` fail-fast.
+    einen `MqttFieldPublishAdapter` (Push-Seite) mit **run-eindeutiger**
+    `client_id` (Review-Fix #3: verhindert paho-Session-Kick, wenn mehrere
+    parallele Runs publizieren). Unset → `None` → der Driver skippt den Fan-out
+    (byte-identisch). Fehlkonfig → typed `MqttFieldPublishConfigError` fail-fast.
     """
     raw = os.environ.get(_FIELD_PUBLISH_MQTT_BROKER_ENV_VAR, "").strip()
     if not raw:
-        return
-    host, _, port_str = raw.partition(":")
+        return None
+    host, port = _parse_broker_endpoint(raw)
     config = MqttFieldPublishConfig(
         broker_host=host,
-        broker_port=int(port_str) if port_str else _FIELD_PUBLISH_DEFAULT_PORT,
-        client_id=_FIELD_PUBLISH_CLIENT_ID,
+        broker_port=port,
+        client_id=f"{_FIELD_PUBLISH_CLIENT_ID}-{run_id}",
         topic_prefix=_FIELD_PUBLISH_TOPIC_PREFIX,
     )
-    app_.state.field_publish = MqttFieldPublishAdapter(config)
+    return MqttFieldPublishAdapter(config)
+
+
+def _wire_field_publish_state(app_: FastAPI, run_id: str) -> None:
+    """Setzt `app.state.field_publish` aus dem env-Adapter (falls konfiguriert).
+
+    Ein-Statement-Wrapper fuer den Lifespan-Pfad (haelt
+    `configure_scenario_demo_run` unter dem PLR0915-Statement-Limit).
+    """
+    adapter = _field_publish_adapter_from_env(run_id)
+    if adapter is not None:
+        app_.state.field_publish = adapter
 
 
 def configure_scenario_demo_run(
@@ -242,6 +283,10 @@ def configure_scenario_demo_run(
         sim_start_time=SIM_START_TIME_ORIGIN,
         config_hash=profile.config_hash,
     )
+    # ADR 0075 §2.3 (Review-Fix #4): Field-Publish VOR repository.save wiren
+    # (Validation-First, F2) — eine env-Fehlkonfig darf die Repository nicht
+    # befuellt zuruecklassen. Run-eindeutige client_id (Review-Fix #3).
+    _wire_field_publish_state(app_, run_id)
     repository.save(metadata)
     registry.register(tick_loop)
     # M6-Welle-6: Healthcheck-Adapter am produktiven TickLoop
@@ -256,8 +301,6 @@ def configure_scenario_demo_run(
     # Demo-Stack.
     healthcheck_adapter = TickLoopHealthcheckAdapter(tick_loop)
     registry.register_healthcheck_adapter(run_id, healthcheck_adapter)
-
-    _configure_field_publish_from_env(app_)
 
     def _alarm_stream_provider() -> AlarmStreamPort | None:
         return cast(AlarmStreamPort | None, getattr(app_.state, "alarm_stream", None))
@@ -351,7 +394,18 @@ def build_run_driver(
         wiring=wiring,
     )
     resolved_tick_interval_s = min(_DEFAULT_TICK_INTERVAL_S, scenario.simulation.tick_ms / 1000.0)
-    return DemoTickLoopDriver(tick_loop, tick_interval_s=resolved_tick_interval_s)
+    # ADR 0075 §2.3 (Review-Fix #3): Field-Publish auch auf dem Multi-Run-Pfad
+    # (POST /runs/{id}/start) — per-Run-Adapter mit run-eindeutiger client_id.
+    field_publish = _field_publish_adapter_from_env(run_id)
+
+    def _field_publish_provider() -> FieldPublishPort | None:
+        return field_publish
+
+    return DemoTickLoopDriver(
+        tick_loop,
+        tick_interval_s=resolved_tick_interval_s,
+        field_publish_provider=_field_publish_provider,
+    )
 
 
 class _ScenarioDemoTickLoopDriverAlreadyConfiguredError(RuntimeError):

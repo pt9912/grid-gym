@@ -72,6 +72,19 @@ class MqttFieldPublishConfigInvalidQosError(MqttFieldPublishConfigError):
         self.value: int = value
 
 
+class MqttFieldPublishConfigEndpointError(MqttFieldPublishConfigError):
+    """Der Broker-Endpoint-String (env `host[:port]` / `[ipv6]:port`) ist nicht
+    parsebar (Review-Fix #2: typisiert statt bare `ValueError`, der den
+    FastAPI-Lifespan crashen wuerde)."""
+
+    def __init__(self, raw: str) -> None:
+        super().__init__(
+            f"Broker-Endpoint {raw!r} nicht parsebar — erwartet 'host', "
+            "'host:port' oder '[ipv6]:port' (Port numerisch)."
+        )
+        self.raw: str = raw
+
+
 @dataclass(frozen=True, slots=True)
 class MqttFieldPublishConfig:
     """Field-Publish-Adapter-Profil (Push-Seite, ADR 0075 §2.1).

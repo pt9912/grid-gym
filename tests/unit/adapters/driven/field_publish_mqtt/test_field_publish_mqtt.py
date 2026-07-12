@@ -7,7 +7,7 @@ Muster analog `protocol_mqtt`-Tests.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 from typing import cast
 
@@ -23,10 +23,15 @@ from grid_gym.adapters.driven.field_publish_mqtt import (
     MqttFieldPublishConfigInvalidQosError,
     MqttFieldPublishConnectError,
     MqttFieldPublishDisconnectError,
+    MqttFieldPublishInvalidTopicError,
     MqttFieldPublishNotStartedError,
     MqttFieldPublishPublishFailedError,
 )
-from grid_gym.adapters.driven.field_publish_mqtt._adapter import _default_client_factory
+from grid_gym.adapters.driven.field_publish_mqtt._adapter import (
+    _default_client_factory,
+    _encode_point,
+)
+from grid_gym.adapters.driven.protocol_mqtt import encode_telemetry
 from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.ports.driven.field_publish import (
@@ -61,6 +66,10 @@ class _FakeClient:
         self._connect_raises = connect_raises
         self._publish_rc = publish_rc
         self._disconnect_raises = disconnect_raises
+        self.reconnect_delay: tuple[int, int] | None = None
+
+    def reconnect_delay_set(self, *, min_delay: int, max_delay: int) -> None:
+        self.reconnect_delay = (min_delay, max_delay)
 
     def connect(self, host: str, port: int) -> None:
         self.connect_calls.append((host, port))
@@ -243,3 +252,34 @@ def test_default_client_factory_builds_paho_client() -> None:
     """Deckt die Default-Factory (kein Connect — nur Konstruktion)."""
     client = _default_client_factory(_config())
     assert isinstance(client, mqtt.Client)
+
+
+@pytest.mark.parametrize("field_name", ["device_id", "metric"])
+@pytest.mark.parametrize("bad", ["a/b", "a+b", "a#b", ""])
+def test_publish_rejects_invalid_topic_segment(field_name: str, bad: str) -> None:
+    """Review-Fix #5: MQTT-Sonderzeichen (`/`, `+`, `#`) oder leer in
+    `device_id`/`metric` → typed Reject, KEIN Publish (kein Fehlrouting /
+    stiller Verlust)."""
+    fake = _FakeClient()
+    adapter = _adapter_with(fake)
+    adapter.start()
+    bad_point = replace(_point(), **{field_name: bad})
+    with pytest.raises(MqttFieldPublishInvalidTopicError):
+        adapter.publish(bad_point)
+    assert fake.published == []
+
+
+def test_start_sets_reconnect_backoff() -> None:
+    """Review-Fix #7: `start()` konfiguriert einen Reconnect-Backoff."""
+    fake = _FakeClient()
+    adapter = _adapter_with(fake)
+    adapter.start()
+    assert fake.reconnect_delay is not None
+
+
+def test_encode_point_matches_protocol_mqtt_encode_telemetry() -> None:
+    """Review-Fix #11: der Field-Publish-Payload ist byte-identisch zu
+    `protocol_mqtt.encode_telemetry` (gemeinsames canonical-Schema; Drift-Guard,
+    falls ein Feld im einen Encoder auftaucht, im anderen nicht)."""
+    point = _point()
+    assert _encode_point(point) == encode_telemetry(point)

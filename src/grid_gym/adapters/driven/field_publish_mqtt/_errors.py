@@ -39,6 +39,25 @@ class MqttFieldPublishNotStartedError(FieldPublishPortPublishError):
         )
 
 
+class MqttFieldPublishInvalidTopicError(FieldPublishPortPublishError):
+    """`device_id`/`metric` ist als MQTT-Topic-Segment ungueltig (leer oder
+    enthaelt `/`, `+`, `#`) — Review-Fix #5.
+
+    Ungeprueft wuerde ein `/` die Topic-Hierarchie verschieben (Fehlrouting an
+    SUT-Wildcard-Subscribes) und `+`/`#` von paho als ungueltiges Publish-Topic
+    mit `ValueError` abgelehnt (der dann still im Driver-`_publish_field`
+    verschluckt wuerde). Der Adapter lehnt darum fail-fast typisiert ab.
+    """
+
+    def __init__(self, segment_name: str, value: str) -> None:
+        super().__init__(
+            f"MqttFieldPublishAdapter: {segment_name}={value!r} ist als "
+            "MQTT-Topic-Segment ungueltig (leer oder enthaelt '/', '+', '#')."
+        )
+        self.segment_name: str = segment_name
+        self.value: str = value
+
+
 class MqttFieldPublishPublishFailedError(FieldPublishPortPublishError):
     """paho-mqtt `publish()` lieferte einen Non-Success-Returncode."""
 

@@ -24,6 +24,7 @@ from grid_gym.adapters.driven.field_publish_mqtt._adapter import (
 from grid_gym.adapters.driven.field_publish_mqtt._config import (
     MqttFieldPublishConfig,
     MqttFieldPublishConfigEmptyFieldError,
+    MqttFieldPublishConfigEndpointError,
     MqttFieldPublishConfigError,
     MqttFieldPublishConfigInvalidPortError,
     MqttFieldPublishConfigInvalidQosError,
@@ -31,6 +32,7 @@ from grid_gym.adapters.driven.field_publish_mqtt._config import (
 from grid_gym.adapters.driven.field_publish_mqtt._errors import (
     MqttFieldPublishConnectError,
     MqttFieldPublishDisconnectError,
+    MqttFieldPublishInvalidTopicError,
     MqttFieldPublishNotStartedError,
     MqttFieldPublishPublishFailedError,
 )
@@ -40,11 +42,13 @@ __all__ = [
     "MqttFieldPublishAdapter",
     "MqttFieldPublishConfig",
     "MqttFieldPublishConfigEmptyFieldError",
+    "MqttFieldPublishConfigEndpointError",
     "MqttFieldPublishConfigError",
     "MqttFieldPublishConfigInvalidPortError",
     "MqttFieldPublishConfigInvalidQosError",
     "MqttFieldPublishConnectError",
     "MqttFieldPublishDisconnectError",
+    "MqttFieldPublishInvalidTopicError",
     "MqttFieldPublishNotStartedError",
     "MqttFieldPublishPublishFailedError",
 ]

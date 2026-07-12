@@ -31,6 +31,7 @@ from grid_gym.adapters.driven.field_publish_mqtt._config import MqttFieldPublish
 from grid_gym.adapters.driven.field_publish_mqtt._errors import (
     MqttFieldPublishConnectError,
     MqttFieldPublishDisconnectError,
+    MqttFieldPublishInvalidTopicError,
     MqttFieldPublishNotStartedError,
     MqttFieldPublishPublishFailedError,
 )
@@ -74,6 +75,15 @@ def _encode_point(point: TelemetryPoint) -> bytes:
     return canonical_json(payload)
 
 
+def _validate_topic_segment(segment_name: str, value: str) -> None:
+    """Review-Fix #5: ein Topic-Segment (`device_id`/`metric`) darf nicht leer
+    sein und keine MQTT-Sonderzeichen (`/`, `+`, `#`) enthalten — sonst
+    Fehlrouting (verschobene Hierarchie) bzw. paho-`ValueError` (Wildcard im
+    Publish-Topic)."""
+    if not value or any(char in value for char in ("/", "+", "#")):
+        raise MqttFieldPublishInvalidTopicError(segment_name, value)
+
+
 class MqttFieldPublishAdapter:
     """MQTT-Publish-Adapter (Simulations-/Testadapter; keine produktive
     Anlagensteuerung).
@@ -99,6 +109,9 @@ class MqttFieldPublishAdapter:
         if self._started:
             return
         client = self._client_factory(self._config)
+        # Review-Fix #7: kontrollierter Reconnect-Backoff bei unerwartetem
+        # Verbindungsverlust (paho auto-reconnect im loop_start-Thread).
+        client.reconnect_delay_set(min_delay=1, max_delay=30)
         try:
             client.connect(self._config.broker_host, self._config.broker_port)
         except OSError as exc:
@@ -119,6 +132,8 @@ class MqttFieldPublishAdapter:
         client = self._client
         if client is None:
             raise MqttFieldPublishNotStartedError
+        _validate_topic_segment("device_id", point.device_id)
+        _validate_topic_segment("metric", point.metric)
         topic = f"{self._config.topic_prefix}/{point.device_id}/{point.metric}"
         info = client.publish(topic, _encode_point(point), qos=self._config.qos)
         if info.rc != mqtt.MQTT_ERR_SUCCESS:
@@ -134,7 +149,10 @@ class MqttFieldPublishAdapter:
         self._client = None
         self._started = False
         try:
-            client.loop_stop()
+            # Review-Fix #13: disconnect() VOR loop_stop() — der Netz-Loop
+            # flusht DISCONNECT + noch gequeue-te Publish-Nachrichten, bevor der
+            # Thread gestoppt wird (graceful drain; relevant bei QoS > 0).
             client.disconnect()
+            client.loop_stop()
         except OSError as exc:
             raise MqttFieldPublishDisconnectError(exc) from exc

@@ -24,7 +24,7 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Callable
-from typing import cast
+from typing import Literal, cast
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
@@ -130,6 +130,13 @@ class DemoTickLoopDriver:
             field_publish_provider if field_publish_provider is not None else _none_provider
         )
         self._active_field_publish: FieldPublishPort | None = None
+        # Review-Fix #7: Publish-Fehler pro Run zaehlen statt pro Punkt loggen
+        # (Log-Flut-Schutz bei Broker-Ausfall); Summe in `_stop_field_publish`.
+        self._field_publish_failures: int = 0
+        # Review-Fix #8: True, sobald der Provider am Run-Start einen Port
+        # lieferte (konfiguriert) — trennt `off` (nicht konfiguriert) von
+        # `degraded` (konfiguriert, aber Connect-/Publish-Fehler).
+        self._field_publish_configured: bool = False
 
     def start(self) -> None:
         """Startet den Driver-Task (idempotent)."""
@@ -196,8 +203,12 @@ class DemoTickLoopDriver:
         loggen + `request("stop")` (Repository-Mirror), dann
         Task sauber beenden.
         """
-        self._start_field_publish()
         try:
+            # ADR 0075 §2.4 (Review-Fix #6): Field-Publish-Start IM try — eine
+            # Provider-/Connect-Exception darf `_stop_field_publish` + `finalize()`
+            # (finally) nicht ueberspringen (sonst haengt der Repository-Status
+            # auf `running`).
+            await self._start_field_publish()
             await self._tick_forever()
         except asyncio.CancelledError:
             raise
@@ -214,7 +225,7 @@ class DemoTickLoopDriver:
             # ADR 0075 §2.4: Field-Publish-Broker am Run-Ende schliessen
             # (auf JEDEM Exit-Pfad — natuerliche Terminierung, Failure,
             # externer Cancel), bevor die Run-End-Naht laeuft.
-            self._stop_field_publish()
+            await self._stop_field_publish()
             # ADR 0067 §2.4: Run-End-Naht auf JEDEM Exit-Pfad (natuerliche
             # Terminierung, Failure, externer Cancel via stop()) — nicht nur
             # stop(). Idempotent (`_finalized`-Flag); gegen harten finalize()-
@@ -359,26 +370,39 @@ class DemoTickLoopDriver:
             try:
                 port.publish(point)
             except Exception:
-                _logger.exception(
-                    "Failed to field-publish telemetry point for run_id=%r device_id=%r",
-                    point.run_id,
-                    point.device_id,
-                )
+                # Rate-Limit (Review-Fix #7): bei anhaltendem Broker-Ausfall
+                # wuerde sonst pro Punkt/Tick ein Stacktrace geloggt (Flut).
+                # Ersten Fehler voll loggen, danach nur zaehlen; Summe in
+                # `_stop_field_publish`.
+                if self._field_publish_failures == 0:
+                    _logger.exception(
+                        "Field-publish failed for run_id=%r device_id=%r — weitere "
+                        "Fehler werden gezaehlt (nicht einzeln geloggt).",
+                        point.run_id,
+                        point.device_id,
+                    )
+                self._field_publish_failures += 1
 
-    def _start_field_publish(self) -> None:
-        """ADR 0075 §2.4: Field-Publish-Port EINMAL am Run-Start resolven
-        + `start()` (Broker-Connect).
+    async def _start_field_publish(self) -> None:
+        """ADR 0075 §2.4: Field-Publish-Port EINMAL am Run-Start resolven +
+        `start()` (Broker-Connect).
 
-        Graceful Degrade: schlaegt `start()` fehl (Broker unerreichbar),
-        wird geloggt und Field-Publish fuer diesen Run deaktiviert — die
-        Simulation ist primaer, die Field-Exposure ein optionaler Add-on.
-        `None`-Provider → No-op (kein Broker-Connect).
+        Review-Fix #1: der blockierende `start()` (paho-`connect()`) laeuft in
+        einem Worker-Thread (`asyncio.to_thread`) — er darf den FastAPI-Event-
+        Loop nicht stallen (sonst wuerde ein unerreichbarer Broker alle
+        HTTP-Requests/Health/Cancellation fuer die TCP-Timeout-Dauer blockieren).
+
+        Graceful Degrade: schlaegt `start()` fehl (Broker unerreichbar), wird
+        geloggt und Field-Publish fuer diesen Run deaktiviert — die Simulation
+        ist primaer, die Field-Exposure ein optionaler Add-on. `None`-Provider →
+        No-op (kein Broker-Connect).
         """
         port = self._field_publish_provider()
         if port is None:
             return
+        self._field_publish_configured = True
         try:
-            port.start()
+            await asyncio.to_thread(port.start)
         except Exception:
             _logger.exception(
                 "FieldPublishPort.start() failed for run_id=%r — "
@@ -388,20 +412,50 @@ class DemoTickLoopDriver:
             return
         self._active_field_publish = port
 
-    def _stop_field_publish(self) -> None:
+    async def _stop_field_publish(self) -> None:
         """ADR 0075 §2.4: Field-Publish-Broker am Run-Ende schliessen
-        (idempotent; nur wenn `start()` erfolgreich war)."""
+        (idempotent; nur wenn `start()` erfolgreich war).
+
+        Review-Fix #1: der blockierende `stop()` (loop_stop-Join + disconnect)
+        laeuft im Worker-Thread. Review-Fix #7: eine Publish-Fehler-Summe des
+        Runs wird hier einmal geloggt.
+        """
+        failures = self._field_publish_failures
+        if failures > 0:
+            _logger.warning(
+                "Field-publish: %d Punkt(e) fuer run_id=%r konnten nicht "
+                "publiziert werden (Broker-Ausfall; QoS-0 verworfen).",
+                failures,
+                self._tick_loop.run_id,
+            )
         port = self._active_field_publish
         if port is None:
             return
         self._active_field_publish = None
         try:
-            port.stop()
+            await asyncio.to_thread(port.stop)
         except Exception:
             _logger.exception(
                 "FieldPublishPort.stop() failed for run_id=%r.",
                 self._tick_loop.run_id,
             )
+
+    @property
+    def field_publish_status(self) -> Literal["off", "active", "degraded"]:
+        """Review-Fix #8: beobachtbarer Field-Publish-Zustand (fuer HIL/Health).
+
+        - ``off``: nicht konfiguriert (kein Port) → kein Feed erwartet.
+        - ``active``: Port konfiguriert, verbunden, keine Publish-Fehler.
+        - ``degraded``: Port konfiguriert, aber Broker-Connect fehlgeschlagen
+          ODER Publish-Fehler aufgetreten — der HIL/SUT-Feed kann still leer
+          sein, obwohl die Sim `running` ist (macht den Falsch-Negativ
+          beobachtbar statt ihn zu verstecken).
+        """
+        if not self._field_publish_configured:
+            return "off"
+        if self._active_field_publish is None or self._field_publish_failures > 0:
+            return "degraded"
+        return "active"
 
 
 def _to_port_telemetry_point(point: DomainTelemetryPoint) -> PortTelemetryPoint:
