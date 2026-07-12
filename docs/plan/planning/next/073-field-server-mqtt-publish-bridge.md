@@ -5,7 +5,10 @@ Closure → dann Self-Move nach `done/` (Muster Slice 070/071/072, kein
 `in-progress/`-Zwischenstopp). Liefert die Field-Server-Push-Seite aus
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 (`Proposed`); ADR wird bei **073-Closure** auf `Provisional` gezogen.
-**Fortschritt:** C0 ✓ · C1 ✓ · C2 ✓ · C3 ✓ · C4 offen (Injektions-Wiring + Integrationsgeschirr).
+**Fortschritt:** C0–C4 ✓ — **Slice code-komplett** (166 integration passed inkl.
+Field-Publish-Smoke). Reif fuer adversarialen Review + Closure
+([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) →
+`Provisional`, `next/`→`done/`, Release v0.5.0).
 **Datum:** 2026-07-12
 **Quelle:** Architektur-Sichtung 2026-07-12 (alle fuenf Protokolladapter sind
 Client/Master, [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) +
@@ -61,7 +64,7 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 | **C1** ✓ | `hexagon/ports/driven/field_publish.py` (`FieldPublishPort`-Protocol `start`/`publish`/`stop`, Stub-Form Docstring + `...` eigene Zeile) + `*Error`-Hierarchie (`FieldPublishPortError`-Familie). Domaenen-`TelemetryPoint` (kein driving-Import) | Implementation |
 | **C2** ✓ | **Produktions-Driver-Verdrahtung:** Field-Publish-Fan-out (`_publish_field`, Domaenen-Point direkt) + `start`/`stop`-Lifecycle im `_run_loop` (`_start_field_publish`/`_stop_field_publish`, resolve-once + graceful Degrade bei Start-Failure) im `_tick_loop_driver`; Kompositions-Seam = `_field_publish_provider`-Closure liest `app.state.field_publish` (getattr; fehlt → `None`). **Der public Setter/Adapter-Injektion folgt mit C3** ([`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert): `app.py`-Public-Surface bleibt bei 5). Pins: `None`-Skip byte-identisch, Fan-out je Punkt, Lifecycle-Start/Stop im echten Run-Pfad, Start-Failure-Degrade, Publish-Exception-Survival | Implementation |
 | **C3** ✓ | `adapters/driven/field_publish_mqtt/` — publish-only MQTT-Adapter (`MqttFieldPublishAdapter` impl. `FieldPublishPort`; paho-mqtt, `ClientFactory`-Injektion, `loop_start`; Topic `{prefix}/{device_id}/{metric}`; Payload via `canonical_json` (Domaenen-`TelemetryPoint`, `Decimal`-Fidelity, [`AC-NO-JSON`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)); `MqttFieldPublish*`-Fehler als `FieldPublishPort`-Vertragsfehler-Subklassen; Config-Validierung; Sim-/Nur-Sim-Netz-Doku [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)). Unit: Lifecycle/idempotent, Publish-Mapping, Connect-/Publish-/Disconnect-Fehler, Config-Validierung | Implementation |
-| **C4** | **Injektions-Wiring + Integrationsgeschirr gegen den Produkt-Surface:** env-gated Konstruktion `MqttFieldPublishAdapter` → `app.state.field_publish` (opt-in; default aus → `None` → byte-identisch) + Compose mit Broker (Mosquitto-Sibling) + grid-gym-API-Container + Subscriber-Assert-Loop (Platzhalter fuer `bess-ems`) — externer Konsument empfaengt die exponierte Telemetrie. testcontainers | Implementation |
+| **C4** ✓ | **Injektions-Wiring:** `GRID_GYM_FIELD_PUBLISH_MQTT_BROKER=host[:port]` → `_configure_field_publish_from_env` konstruiert `MqttFieldPublishAdapter` → `app.state.field_publish` (opt-in; unset → `None` → byte-identisch); Unit-Test env set/unset. **Integrationsgeschirr:** testcontainers-Smoke `MqttFieldPublishAdapter` → Mosquitto-Sibling → paho-Subscriber (`bess-ems`-Platzhalter) empfaengt die exponierte Telemetrie (`Decimal`-Fidelity ueber den ganzen Pfad). Adapter-Level-Smoke (Muster `test_mqtt_compose_smoke`), nicht Full-API-Container-E2E. **166 integration passed** | Implementation |
 
 ## DoD
 

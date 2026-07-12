@@ -32,6 +32,7 @@ Komposition-Root-Hinweis: importiert `load_scenario` +
 
 from __future__ import annotations
 
+import os
 import uuid
 from collections.abc import Callable
 from pathlib import Path
@@ -41,6 +42,10 @@ from fastapi import FastAPI
 
 from grid_gym._app_version import resolve_app_version
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driven.field_publish_mqtt import (
+    MqttFieldPublishAdapter,
+    MqttFieldPublishConfig,
+)
 from grid_gym.adapters.driven.persistence_inmemory import (
     InMemoryReplaySnapshot,
     InMemoryTelemetrySink,
@@ -109,6 +114,38 @@ vom Scenario-`simulation.tick_ms`, damit ein Stunden-Profil
 (`tick_ms=3600000`) nicht eine Stunde Wall-Clock pro Tick
 bedeutet. Aequivalent zum `DemoTickLoopDriver._DEFAULT_TICK_
 INTERVAL_S` aus Welle 4a."""
+
+
+_FIELD_PUBLISH_MQTT_BROKER_ENV_VAR: Final[str] = "GRID_GYM_FIELD_PUBLISH_MQTT_BROKER"
+_FIELD_PUBLISH_TOPIC_PREFIX: Final[str] = "grid-gym/telemetry"
+_FIELD_PUBLISH_CLIENT_ID: Final[str] = "grid-gym-field-publish"
+_FIELD_PUBLISH_DEFAULT_PORT: Final[int] = 1883
+
+
+def _configure_field_publish_from_env(app_: FastAPI) -> None:
+    """Opt-in Field-Publish-Wiring (ADR 0075 §2.1/§2.3).
+
+    Ist ``GRID_GYM_FIELD_PUBLISH_MQTT_BROKER=host[:port]`` gesetzt, konstruiert
+    einen `MqttFieldPublishAdapter` (Push-Seite) und legt ihn auf
+    ``app.state.field_publish``. Der `DemoTickLoopDriver` resolved ihn am
+    Run-Start (`_field_publish_provider`, getattr) und ruft `start`/`publish`/
+    `stop` driver-getrieben (ADR 0075 §2.4).
+
+    Unset → No-op: ``app.state.field_publish`` bleibt ungesetzt → der Provider
+    liefert `None` → **byte-identisch** (kein Broker-Connect). Fehlkonfig (Port
+    ausserhalb Range etc.) → typed `MqttFieldPublishConfigError` fail-fast.
+    """
+    raw = os.environ.get(_FIELD_PUBLISH_MQTT_BROKER_ENV_VAR, "").strip()
+    if not raw:
+        return
+    host, _, port_str = raw.partition(":")
+    config = MqttFieldPublishConfig(
+        broker_host=host,
+        broker_port=int(port_str) if port_str else _FIELD_PUBLISH_DEFAULT_PORT,
+        client_id=_FIELD_PUBLISH_CLIENT_ID,
+        topic_prefix=_FIELD_PUBLISH_TOPIC_PREFIX,
+    )
+    app_.state.field_publish = MqttFieldPublishAdapter(config)
 
 
 def configure_scenario_demo_run(
@@ -219,6 +256,8 @@ def configure_scenario_demo_run(
     # Demo-Stack.
     healthcheck_adapter = TickLoopHealthcheckAdapter(tick_loop)
     registry.register_healthcheck_adapter(run_id, healthcheck_adapter)
+
+    _configure_field_publish_from_env(app_)
 
     def _alarm_stream_provider() -> AlarmStreamPort | None:
         return cast(AlarmStreamPort | None, getattr(app_.state, "alarm_stream", None))
