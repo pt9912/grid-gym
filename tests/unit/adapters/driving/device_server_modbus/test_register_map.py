@@ -7,7 +7,9 @@ on-demand-Register-Berechnung aus der Current-Value-Projektion.
 
 from __future__ import annotations
 
+import math
 import struct
+from collections.abc import Mapping
 from decimal import Decimal
 
 import pytest
@@ -47,17 +49,19 @@ def _point(
     )
 
 
+def _tick(*points: TelemetryPoint) -> TickResult:
+    return TickResult(
+        tick=0,
+        simulation_time=0,
+        popped_events=(),
+        emitted_telemetry=points,
+        emitted_alarms=(),
+    )
+
+
 def _projection(*points: TelemetryPoint) -> CurrentValueProjection:
     proj = CurrentValueProjection()
-    proj.update_from_tick(
-        TickResult(
-            tick=0,
-            simulation_time=0,
-            popped_events=(),
-            emitted_telemetry=points,
-            emitted_alarms=(),
-        )
-    )
+    proj.update_from_tick(_tick(*points))
     return proj
 
 
@@ -78,6 +82,27 @@ def test_encode_round_trips_through_float32() -> None:
     high, low = encode_float32(Decimal("230.5"))
     decoded = struct.unpack(">f", struct.pack(">HH", high, low))[0]
     assert decoded == pytest.approx(230.5)
+
+
+def _decode(words: tuple[int, int]) -> float:
+    return struct.unpack(">f", struct.pack(">HH", *words))[0]
+
+
+def test_encode_signaling_nan_does_not_raise_yields_nan() -> None:
+    # float(Decimal("sNaN")) wuerde ValueError werfen → total: NaN-Register.
+    assert math.isnan(_decode(encode_float32(Decimal("sNaN"))))
+
+
+def test_encode_quiet_nan_does_not_raise() -> None:
+    assert math.isnan(_decode(encode_float32(Decimal("NaN"))))
+
+
+@pytest.mark.parametrize(("raw", "positive"), [("1E40", True), ("-1E40", False)])
+def test_encode_overflow_saturates_to_inf(raw: str, positive: bool) -> None:
+    # struct.pack('>f', 1e40) wuerde OverflowError werfen → total: +/-inf saettigend.
+    decoded = _decode(encode_float32(Decimal(raw)))
+    assert math.isinf(decoded)
+    assert (decoded > 0) is positive
 
 
 # --- RegisterMap: Holding-Register (FC03) -----------------------------------
@@ -169,3 +194,46 @@ def test_discrete_inputs_ordinal_index_per_mapping() -> None:
         ),
     )
     assert reg_map.discrete_inputs(0, 2) == [True, False]
+
+
+# --- RegisterMap.render: konsistenter Frame (Anti-Tearing) ------------------
+
+
+def test_render_returns_holding_and_discrete_frame() -> None:
+    reg_map = RegisterMap(
+        _config(
+            RegisterMapping("meter-1", "voltage_v", 0),
+            RegisterMapping("meter-2", "power_w", 2),
+        ),
+        _projection(
+            _point(value="230.5"),
+            _point(device_id="meter-2", metric="power_w", value="-12.5", quality=Quality.STALE),
+        ),
+    )
+    holding, discrete = reg_map.render(4, 2)
+    assert tuple(holding[0:2]) == encode_float32(Decimal("230.5"))
+    assert tuple(holding[2:4]) == encode_float32(Decimal("-12.5"))
+    assert discrete == [True, False]
+
+
+def test_render_takes_exactly_one_snapshot_for_whole_frame() -> None:
+    """Anti-Tearing (Review-Fund C2): render() darf pro Frame nur EINEN Snapshot
+    ziehen — sonst koennte ein Tick-Update zwischen den zwei Registern eines
+    float32 (oder zwischen Holding und Discrete) einen fabrizierten Wert
+    erzeugen."""
+
+    class _CountingProjection(CurrentValueProjection):
+        def __init__(self) -> None:
+            super().__init__()
+            self.snapshot_calls = 0
+
+        def snapshot(self) -> Mapping[tuple[str, str], TelemetryPoint]:
+            self.snapshot_calls += 1
+            return super().snapshot()
+
+    proj = _CountingProjection()
+    proj.update_from_tick(_tick(_point(value="230.5")))
+    reg_map = RegisterMap(_config(RegisterMapping("meter-1", "voltage_v", 0)), proj)
+    holding, _discrete = reg_map.render(2, 1)
+    assert proj.snapshot_calls == 1  # EIN Snapshot fuer den ganzen Frame
+    assert tuple(holding) == encode_float32(Decimal("230.5"))

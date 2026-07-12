@@ -2,9 +2,8 @@
 (ADR 0075 §2.2; Encode-Oracle: `spec/protocol_profiles.md` „Server-Profile").
 
 Reiner, **pymodbus-freier** Kern (ohne Server testbar): rechnet die Modbus-
-Register **on-demand** aus der geteilten Current-Value-Projektion — kein
-materialisierter Datastore, keil kein Refresh-Task, keine Staleness. Ein Poll
-zu beliebiger Zeit sieht den letzten emittierten Wert pro `(device_id, metric)`.
+Register on-demand aus der geteilten Current-Value-Projektion — kein
+materialisierter Datastore im Kern, keine Duplikat-Haltung.
 
 - **Holding-Register (FC03)**: jedes `(device_id, metric)` → `float32` (2 Register,
   Big-Endian, High-Word zuerst) via `struct.pack('>f', float(value))` — die
@@ -15,16 +14,23 @@ zu beliebiger Zeit sieht den letzten emittierten Wert pro `(device_id, metric)`.
   `register_map`) — `VALID → 1`, sonst `0`; fehlender Wert → `0`. Exponiert den
   ADR-0074-Quality-Marker im Feldbus-Frame.
 
-**Nebenlaeufigkeit (ADR 0075 §2.2)**: `RegisterMap` haelt eine **Referenz** auf
-die Projektion (keine Kopie) und liest pro Poll via `latest()` — der Read greift
-die aktuelle, tick-frame-atomar getauschte Frame-Referenz ab (lock-frei,
-CPython-GIL). Der Poll kommt aus dem Server-Loop-Thread, der Tick-Update aus dem
-Driver-Thread.
+**Tick-frame-Atomizitaet (Review-Fund C2)**: ein `float32` belegt **zwei**
+Register und muss aus **einem** Projektions-Snapshot gerechnet werden — sonst
+koennte ein nebenlaeufiger Tick-Update zwischen High- und Low-Word-Read einen
+fabrizierten Wert erzeugen (halb alt, halb neu). `render()` (der Pfad des
+Refresh-Tasks) nimmt darum **genau einen** `snapshot()` und rechnet den ganzen
+Frame (alle Holding-Register **und** Discrete-Inputs) daraus. Der Snapshot ist
+tick-frame-atomar (Referenz-Swap in `CurrentValueProjection`, lock-frei).
+
+**Determinismus (ADR 0075 §2.5)**: reine Funktion der emittierten Telemetrie;
+kein Server-State.
 """
 
 from __future__ import annotations
 
+import math
 import struct
+from collections.abc import Mapping
 from decimal import Decimal
 from typing import Final
 
@@ -34,9 +40,12 @@ from grid_gym.adapters.driving.device_server_modbus._config import (
     RegisterMapping,
 )
 from grid_gym.hexagon.core.domain.quality import Quality
+from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 
 _REGISTER_ZERO: Final[int] = 0
 _WORD_HIGH: Final[int] = 0
+
+_Frame = Mapping[tuple[str, str], TelemetryPoint]
 
 
 def encode_float32(value: Decimal) -> tuple[int, int]:
@@ -44,10 +53,27 @@ def encode_float32(value: Decimal) -> tuple[int, int]:
 
     Encode-**Oracle** (C0/Slice 074): `struct.pack('>f', float(value))` — die
     deterministische `float32`-Quantisierung; Rueckgabe `(high_word, low_word)`
-    (Big-Endian, kein Word-Swap). Nicht-endliche Werte (`NaN`/`Inf` aus dem
-    nan_injection-Fault, [`GG-FAULT-003`]) fliessen als das jeweilige
-    IEEE-754-Bitmuster durch — konsistent zum Oracle."""
-    high, low = struct.unpack(">HH", struct.pack(">f", float(value)))
+    (Big-Endian, kein Word-Swap). **Total** (wirft nie), damit ein einzelner
+    pathologischer Wert weder den Refresh-Task noch den Start toetet
+    (Review-Fund C2):
+
+    - Betrags-Overflow jenseits der `float32`-Reichweite (`|value| > ~3.4e38`,
+      wo `struct.pack('>f', ...)` sonst `OverflowError` wirft) → saettigend auf
+      `±inf` (IEEE-754-Rundung eines zu grossen Endlichen).
+    - Nicht in `float` konvertierbare `Decimal` (`sNaN` → `ValueError`) → `NaN`.
+
+    `nan_injection` ([`GG-FAULT-003`]) selbst liefert **keinen** numerischen NaN
+    in die Projektion (es emittiert die endliche Sentinel `Decimal("0")` mit
+    `quality=nan`); dieser Zweig ist reine Robustheit gegen beliebige Werte."""
+    try:
+        as_float = float(value)
+    except (ValueError, OverflowError):
+        as_float = math.nan
+    try:
+        packed = struct.pack(">f", as_float)
+    except OverflowError:
+        packed = struct.pack(">f", math.copysign(math.inf, as_float))
+    high, low = struct.unpack(">HH", packed)
     return high, low
 
 
@@ -56,7 +82,7 @@ class RegisterMap:
 
     Baut bei Konstruktion die statische Adress-Topologie (Holding-Register-
     Adresse → `(mapping, word)`, Discrete-Input-Index → `mapping`); die **Werte**
-    werden pro Poll frisch aus der Projektion gerechnet.
+    werden aus einem Projektions-Snapshot gerechnet.
     """
 
     def __init__(self, config: ModbusServerConfig, projection: CurrentValueProjection) -> None:
@@ -68,32 +94,50 @@ class RegisterMap:
             self._holding[mapping.address + 1] = (mapping, 1)
             self._discrete[index] = mapping
 
-    def holding_register(self, address: int) -> int:
-        """Ein Holding-Register (`uint16`) an `address`; `0` fuer eine nicht
-        gemappte Adresse oder ein `(device_id, metric)` ohne emittierten Wert."""
+    def _holding_at(self, frame: _Frame, address: int) -> int:
         entry = self._holding.get(address)
         if entry is None:
             return _REGISTER_ZERO
         mapping, word = entry
-        point = self._projection.latest(mapping.device_id, mapping.metric)
+        point = frame.get((mapping.device_id, mapping.metric))
         if point is None:
             return _REGISTER_ZERO
         high, low = encode_float32(point.value)
         return high if word == _WORD_HIGH else low
 
+    def _discrete_at(self, frame: _Frame, address: int) -> bool:
+        mapping = self._discrete.get(address)
+        if mapping is None:
+            return False
+        point = frame.get((mapping.device_id, mapping.metric))
+        return point is not None and point.quality is Quality.VALID
+
+    def holding_register(self, address: int) -> int:
+        """Ein Holding-Register (`uint16`) an `address`; `0` fuer eine nicht
+        gemappte Adresse oder ein `(device_id, metric)` ohne emittierten Wert."""
+        return self._holding_at(self._projection.snapshot(), address)
+
     def holding_registers(self, address: int, count: int) -> list[int]:
-        """`count` Holding-Register ab `address` (FC03-Read-Serving)."""
-        return [self.holding_register(address + offset) for offset in range(count)]
+        """`count` Holding-Register ab `address` aus **einem** Snapshot (FC03)."""
+        frame = self._projection.snapshot()
+        return [self._holding_at(frame, address + offset) for offset in range(count)]
 
     def discrete_input(self, address: int) -> bool:
         """Quality-Flag an Discrete-Input-`address` (ordinaler Mapping-Index);
         `True` gdw. ein Wert emittiert wurde **und** `quality is VALID`."""
-        mapping = self._discrete.get(address)
-        if mapping is None:
-            return False
-        point = self._projection.latest(mapping.device_id, mapping.metric)
-        return point is not None and point.quality is Quality.VALID
+        return self._discrete_at(self._projection.snapshot(), address)
 
     def discrete_inputs(self, address: int, count: int) -> list[bool]:
-        """`count` Discrete-Inputs ab `address` (FC02-Read-Serving)."""
-        return [self.discrete_input(address + offset) for offset in range(count)]
+        """`count` Discrete-Inputs ab `address` aus **einem** Snapshot (FC02)."""
+        frame = self._projection.snapshot()
+        return [self._discrete_at(frame, address + offset) for offset in range(count)]
+
+    def render(self, holding_count: int, discrete_count: int) -> tuple[list[int], list[bool]]:
+        """Ein **konsistenter Frame** — `(holding_values, discrete_values)` aus
+        genau **einem** Projektions-Snapshot. Kein Tearing zwischen den zwei
+        Registern eines `float32` und keine Wert/Quality-Divergenz zwischen den
+        Bloecken (Review-Fund C2). Pfad des Refresh-Tasks."""
+        frame = self._projection.snapshot()
+        holding = [self._holding_at(frame, address) for address in range(holding_count)]
+        discrete = [self._discrete_at(frame, index) for index in range(discrete_count)]
+        return holding, discrete

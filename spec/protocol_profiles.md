@@ -153,7 +153,7 @@ pollt Holding-/Input-Register, die grid-gym aus der **Current-Value-Projektion**
 | Register-Datatype  | **`float32`** (2 Register, Big-Endian) — Default fuer fraktionale Telemetrie |
 | Quality-Mapping    | `Quality` → Discrete-Input je `(device_id, metric)` (`VALID`=1; sonst 0) |
 | Read-Pfad          | FC03 (Holding) / FC04 (Input), **Read-only** — kein Write/Inbound in 074 |
-| Unit-ID            | ein Slave-Kontext, Unit-ID konfigurierbar (Default 1)                |
+| Unit-ID            | ein Slave-Kontext, `unit_id` in `[1, 247]` (Default 1; `0` = Broadcast, unzulaessig) |
 | Lifecycle          | bind/listen im adapter-internen Loop-Thread; Bind-in-use = harter Fehler |
 
 **Encode + Gleichheits-Oracle** (Review-Fund): der Domaenen-`Decimal`-Wert wird
@@ -166,7 +166,12 @@ Toleranz-Fudge). Die Genauigkeitsgrenze ist damit explizit (`float32` ~7
 signifikante Stellen); Werte mit mehr Praezision ([`GG-DATA-005`](lastenheft.md#gg-data-005):
 max. 6 Nachkommastellen) oder ausserhalb des `float32`-Bereichs verlieren
 Genauigkeit — bewusste Grenze; ein scaled-`int32`-Encode (exakt fuer die
-6-Dezimalstellen-Quantisierung, aber range-limitiert) ist Folge-Option.
+6-Dezimalstellen-Quantisierung, aber range-limitiert) ist Folge-Option. Der
+Encode ist **total** (wirft nie, damit ein pathologischer Wert den Refresh-Task
+nicht toetet, Review-Fund): Betraege jenseits der `float32`-Reichweite saettigen
+auf `±inf`, nicht-numerische `Decimal` (`sNaN`) → `NaN`. `nan_injection`
+([`GG-FAULT-003`](lastenheft.md#gg-fault-003)) selbst liefert keinen numerischen
+NaN (endliche Sentinel + `quality=nan`).
 
 **Anti-Scope (Slice 074):** kein Write/Inbound (Folge-Slice), kein
 Modbus-RTU/ASCII, kein TLS, kein Multi-Unit-Fan-out.

@@ -18,9 +18,13 @@ from typing import Final
 
 _MIN_PORT: Final[int] = 1
 _MAX_PORT: Final[int] = 65535
-_MIN_UNIT_ID: Final[int] = 0
+_MIN_UNIT_ID: Final[int] = 1
 _MAX_UNIT_ID: Final[int] = 247
 _FLOAT32_REGISTERS: Final[int] = 2
+# Ein float32 belegt address..address+1; die hoechste zulaessige Start-Adresse
+# ist damit 65534 (das zweite Register muss noch in den 16-bit-Adressraum passen).
+_MAX_REGISTER_ADDRESS: Final[int] = 65535
+_MAX_MAPPING_ADDRESS: Final[int] = _MAX_REGISTER_ADDRESS - (_FLOAT32_REGISTERS - 1)
 
 
 class ModbusServerConfigError(ValueError):
@@ -46,13 +50,32 @@ class ModbusServerConfigInvalidPortError(ModbusServerConfigError):
 
 
 class ModbusServerConfigInvalidUnitIdError(ModbusServerConfigError):
-    """`unit_id` ausserhalb des Modbus-Unit-ID-Bereichs (0..247)."""
+    """`unit_id` ausserhalb des zulaessigen Server-Slave-Bereichs (1..247).
+
+    `0` ist die Modbus-Broadcast-Adresse; ein `SimDevice(id=0)` wuerde als
+    Catch-all fuer **jede** gepollte Unit-ID antworten — als konkrete
+    Slave-Adresse unzulaessig (Review-Fund C2)."""
 
     def __init__(self, value: int) -> None:
         super().__init__(
-            f"ModbusServerConfig.unit_id={value}: muss in [{_MIN_UNIT_ID}, {_MAX_UNIT_ID}] liegen."
+            f"ModbusServerConfig.unit_id={value}: muss in [{_MIN_UNIT_ID}, {_MAX_UNIT_ID}] liegen "
+            "(0 = Broadcast, unzulaessig)."
         )
         self.value: int = value
+
+
+class ModbusServerConfigInvalidAddressError(ModbusServerConfigError):
+    """Eine `RegisterMapping.address` liegt ausserhalb `[0, 65534]` (das zweite
+    `float32`-Register muss noch in den 16-bit-Adressraum passen)."""
+
+    def __init__(self, device_id: str, metric: str, address: int) -> None:
+        super().__init__(
+            f"ModbusServerConfig.register_map: address={address} fuer "
+            f"({device_id}, {metric}) ausserhalb [0, {_MAX_MAPPING_ADDRESS}]."
+        )
+        self.device_id: str = device_id
+        self.metric: str = metric
+        self.address: int = address
 
 
 class ModbusServerConfigEmptyRegisterMapError(ModbusServerConfigError):
@@ -106,7 +129,15 @@ class ModbusServerConfig:
             raise ModbusServerConfigInvalidUnitIdError(self.unit_id)
         if not self.register_map:
             raise ModbusServerConfigEmptyRegisterMapError
+        self._validate_addresses()
         self._validate_no_overlap()
+
+    def _validate_addresses(self) -> None:
+        for mapping in self.register_map:
+            if not (0 <= mapping.address <= _MAX_MAPPING_ADDRESS):
+                raise ModbusServerConfigInvalidAddressError(
+                    mapping.device_id, mapping.metric, mapping.address
+                )
 
     def _validate_no_overlap(self) -> None:
         occupied: set[int] = set()

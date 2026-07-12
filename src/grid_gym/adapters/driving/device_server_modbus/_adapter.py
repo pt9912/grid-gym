@@ -182,18 +182,22 @@ class _PymodbusRunningServer:
     async def _serve(self) -> None:
         from pymodbus.server import ModbusTcpServer
 
-        server = ModbusTcpServer(
-            _build_device(self._config),
-            address=(self._config.bind_host, self._config.bind_port),
-        )
-        self._server = server
         try:
+            # Device-Build + Server-Konstruktion IM try (Review-Fund C2): ein
+            # Fehler hier muss `_ready` setzen, sonst haengt `start()` bis zum
+            # Timeout. TypeError/ValueError = defensiv (Config-Validierung +
+            # totales encode_float32 schliessen die realen Trigger bereits aus).
+            server = ModbusTcpServer(
+                _build_device(self._config),
+                address=(self._config.bind_host, self._config.bind_port),
+            )
+            self._server = server
             await server.serve_forever(background=True)  # bind + listen (non-blocking)
             await self._push(server)  # initialer Push → erster Poll deterministisch
-        except (OSError, RuntimeError) as exc:
+        except (OSError, RuntimeError, TypeError, ValueError) as exc:
             # Bind-/Listen-Race (pymodbus wirft RuntimeError „Could not start
-            # listen"; OSError bei Port-Problemen) → start() meldet hart. Alles
-            # Uebrige faengt das _ready-Timeout in __init__.
+            # listen"; OSError bei Port-Problemen) bzw. Datastore-Aufbau →
+            # start() meldet hart statt zu haengen.
             self._startup_error.append(exc)
             self._ready.set()
             return
@@ -211,18 +215,21 @@ class _PymodbusRunningServer:
             await asyncio.sleep(_REFRESH_INTERVAL_S)
             try:
                 await self._push(server)
-            except (OSError, RuntimeError):
-                # Refresh ist best-effort: ein Transport-/Runtime-Fehler darf den
-                # Server nicht toeten; der naechste Tick zieht nach. (async_setValues
-                # signalisiert Datastore-Probleme ueber ExcCodes, nicht per Raise.)
+            except (OSError, RuntimeError, TypeError, ValueError):
+                # Refresh ist best-effort: ein Fehler darf den Server nicht toeten
+                # (der naechste Tick zieht nach). `server.async_setValues` wirft
+                # TypeError, falls der Datastore einen ExcCode liefert (z. B.
+                # Adress-Fehlkonfiguration) — hier abgefangen + geloggt statt den
+                # Task still sterben zu lassen (Review-Fund C2).
                 _LOGGER.exception("Modbus-Server: Projektion-Refresh fehlgeschlagen")
 
     async def _push(self, server: ModbusTcpServer) -> None:
-        """Schreibt die aktuelle Projektion (on-demand gerechnet) in den
-        Datastore: Holding-Register (`float32`) + Discrete-Inputs (Quality)."""
-        holding = self._register_map.holding_registers(0, self._holding_count)
+        """Schreibt einen **konsistenten** Projektions-Frame in den Datastore:
+        Holding-Register (`float32`) + Discrete-Inputs (Quality) aus genau einem
+        Snapshot (`render()`) — kein Tearing zwischen den Registern eines
+        `float32` (Review-Fund C2)."""
+        holding, discrete = self._register_map.render(self._holding_count, self._discrete_count)
         await server.async_setValues(self._config.unit_id, _FC_READ_HOLDING_REGISTERS, 0, holding)
-        discrete = self._register_map.discrete_inputs(0, self._discrete_count)
         await server.async_setValues(self._config.unit_id, _FC_READ_DISCRETE_INPUTS, 0, discrete)
 
     def stop(self) -> None:
