@@ -5,8 +5,9 @@
 Read-Serving, done) auf. Ausgegliedert aus dem urspruenglichen 074-Scope, weil
 der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
-**Fortschritt:** S0 (Folge-ADR) begonnen — gegroundetes A/B-Design-Assessment
-(Write-Journal-Re-Injektion vs. record-only) vor dem ADR-Lock; S1/S2 offen.
+**Fortschritt:** S0 ✓ — Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+(`Proposed`) zurrt nach gegroundetem A/B-Design-Assessment **Modell B**
+(record-only + Materialisierung; Capture Option-A-kompatibel) fest. S1/S2 offen.
 **Datum:** 2026-07-12
 **Quelle:** Design- + Plan-Review 2026-07-12 — ein Live-Master-Write ist
 **exogener** Input zu Wall-Clock-Zeit; grid-gyms geschlossenes Self-Replay
@@ -35,31 +36,33 @@ schreibt einen Sollwert (Modbus-Write-Register/-Coil) → grid-gym traegt ihn al
   verbietet Server-State im Snapshot; ein Write-Record-Pfad muss diese Grenze
   respektieren oder bewusst amendieren.
 
-## Kern-Decision (dedizierte Folge-ADR, Nummer bei Aktivierung vergeben)
+## Kern-Decision ([`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md))
 
-Eine **eigene ADR** entscheidet zwischen (mind.) zwei Optionen — der Slice-Start
-(S0) zieht sie `Proposed → Provisional`:
+S0 hat nach gegroundetem A/B-Design-Assessment **Modell B** festgezurrt
+([`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md),
+`Proposed`): **record-only + Materialisierung**, Capture-Format bewusst
+**Option-A-kompatibel** (A = Write-Journal/Runtime-Re-Injektion additiv
+nachruestbar, §2.6).
 
-- **(A) Write-Journal + deterministische Re-Injektion:** jeder Inbound-Write
-  wird mit dem **aufgeloesten Sim-Tick** in ein Lauf-Journal geschrieben; Replay
-  speist die Writes aus dem Journal statt vom Live-Master → reproduzierbar. Naht
-  in den bestehenden Vor-Tick-Command-Pfad
+- Ein angewandter Write wird als `(aufgeloester_sim_tick, target, type, payload,
+  arrival_sequence)` erfasst → in einen Szenario-`commands`-Block
+  **materialisiert** → ueber den bereits gepinnten Vor-Tick-Pfad **A0s**
   ([`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md),
-  [`ADR 0013`](../../adr/0013-device-model-protocol.md) `apply_command`).
-- **(B) HIL-Live-Run = record-only:** Live-Writes werden als nicht-replaybar
-  deklariert; ein Live-Run kann als neues Szenario/Command-Set **materialisiert**
-  werden, das dann deterministisch replaybar ist.
-
-Die ADR waehlt/kombiniert und versoehnt das mit
-[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.5.
+  [`ADR 0013`](../../adr/0013-device-model-protocol.md) `apply_command`) replayt →
+  **byte-identisch by construction** (`scenario_hash` deckt `commands`).
+- **Kein** Snapshot-Bump ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+  §2.5 gewahrt); die A0i-Faelligkeit wird statuslos re-abgeleitet.
+- **Ehrlicher Vertrag:** der Live-Lauf ist nicht aus `(Szenario, Seed, tick_ms)`
+  allein reproduzierbar (Tick-Aufloesung des Wall-Clock-Arrivals ist exogen); die
+  Capture ist die Source-of-Truth, der materialisierte Strom replayt deterministisch.
 
 ## Slice-Schnitt (rollen-getrennt)
 
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
-| **S0** | Dedizierte Folge-ADR `Proposed → Provisional`: Exogen-Input-Recording-Modell (A/B), Determinismus-Vertrag, Snapshot-Grenze | Architect / ADR |
-| **S1** | Write→`Command`-Naht: Modbus-Write-Register → Pending-Command ueber den Vor-Tick-Pfad; Sim-Tick-Aufloesung + Journal (Option A) bzw. record-only-Materialisierung (Option B) | Implementation |
-| **S2** | **Determinismus-E2E:** derselbe erfasste Write-Strom → byte-identische Telemetrie ueber zwei Laeufe; Reihenfolge scenario-vor-agent-vor-inbound (oder wie in S0 fixiert) | Implementation |
+| **S0** ✓ | Dedizierte Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) (`Proposed`): Exogen-Input-Recording-Modell **B** entschieden (record-only + Materialisierung, Capture Option-A-kompatibel), Determinismus-Vertrag + Snapshot-Grenze fixiert; gegroundetes A/B-Design-Assessment am Command-/Replay-/Snapshot-Code | Architect / ADR |
+| **S1** | Write→`Command`-Naht: Modbus-Write-Register → `Command` am Adapter-Rand; additive Vor-Tick-Stufe **A0i** (Ordnung scenario→agent→inbound, Next-Tick-Puffer fuer Mid-Tick, `arrival_sequence`-Tie-Break); Capture append-only/wall-clock-frei per `run_id` (ueberlebt die [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)-Prozessgrenze). **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** | Implementation |
+| **S2** | **Determinismus-E2E:** der erfasste Write-Strom wird in einen Szenario-`commands`-Block **materialisiert** + ueber A0s zweimal abgespielt → byte-identische Telemetrie; Ordnung scenario→agent→inbound belegt. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`** | Implementation |
 
 ## DoD
 
@@ -76,6 +79,8 @@ Die ADR waehlt/kombiniert und versoehnt das mit
 
 ## Bezug
 
+- [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+  (Kern-Entscheidung: Modell B, Determinismus-Vertrag, A0i-Ordnung, Snapshot-Grenze).
 - [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7
   (Ausgliederungs-Begruendung).
 - [`ADR 0070`](../../adr/0070-scenario-scheduled-device-commands.md) (Vor-Tick-
