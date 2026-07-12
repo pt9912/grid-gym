@@ -16,6 +16,11 @@ Implementierungswahl traegt die Sektion [Bibliothekswahl](#bibliothekswahl);
 die Entscheidungs-Provenance (Profil-ADR, Lieferung, Review-Folgen, Status)
 lebt in den jeweiligen Adapter-ADRs und im ADR-Index.
 
+Die **driving-seitigen Server-/Outstation-Profile** (`DeviceServerPort`,
+Field-Server — grid-gym als Feldbus-Server fuer ein externes EMS) fuehrt die
+eigene Sektion **Server-Profile** unten; sie sind bewusst **getrennt** vom
+driven-Master-Index oben (andere Rolle: bind/listen/serve statt connect/poll).
+
 ---
 
 ## Profil-Index-Tabelle
@@ -122,6 +127,49 @@ GOOSE-Publishing/Subscription; keine Sampled-
 Values; keine IEC-61850-Security (TLS/IEC-62351);
 kein aarch64-Wheel-Support (piwheels-Lage); kein Anschluss von
 `pyiec61850.{tase2,sv,goose}`-Submodulen.
+
+---
+
+## Server-Profile — `DeviceServerPort` (Field-Server, driving)
+
+Die **driving-seitige Server-/Outstation-Rolle** der Field-Server-Surface:
+grid-gym exponiert seine **simulierten** Geraete als Feldbus-Server, damit ein
+externes EMS (System-under-Test, z. B. `bess-ems`) sie als Master **pollt**
+(HIL-Konkretisierung von [`GG-TEST-004`](lastenheft.md#gg-test-004)). Eigenes
+Profil-Set — **nicht** Teil des driven-Master-Index oben. Simulation only; keine
+produktive Anlagensteuerung; **Nur-Sim-Netz** (kein Auth/TLS). Provenance
+(Field-Server-ADR + liefernde Slices): ADR-Index.
+
+### Modbus-Server — `device_server_modbus` (Read-Serving)
+
+**Surface:** `DeviceServerPort` (bind/listen/serve); ein externer Modbus-**Master**
+pollt Holding-/Input-Register, die grid-gym aus der **Current-Value-Projektion**
+(letzter emittierter Wert pro `(device_id, metric)`, tick-frame-atomar) fuellt.
+
+| Profil-Item        | Wert                                                                 |
+| ------------------ | -------------------------------------------------------------------- |
+| Rolle              | Modbus-TCP-**Server/Slave** (Gegenrolle zu `protocol_modbus`-Master) |
+| Register-Map       | `(device_id, metric)` → Start-Adresse, deterministisch sortiert      |
+| Register-Datatype  | **`float32`** (2 Register, Big-Endian) — Default fuer fraktionale Telemetrie |
+| Quality-Mapping    | `Quality` → Discrete-Input je `(device_id, metric)` (`VALID`=1; sonst 0) |
+| Read-Pfad          | FC03 (Holding) / FC04 (Input), **Read-only** — kein Write/Inbound in 074 |
+| Unit-ID            | ein Slave-Kontext, Unit-ID konfigurierbar (Default 1)                |
+| Lifecycle          | bind/listen im adapter-internen Loop-Thread; Bind-in-use = harter Fehler |
+
+**Encode + Gleichheits-Oracle** (Review-Fund): der Domaenen-`Decimal`-Wert wird
+als `float32` kodiert (`Decimal` → `float` → IEEE-754-`float32`, 2 Register).
+Beide Schritte sind verlustbehaftet, **aber deterministisch** — der E2E-Oracle
+vergleicht darum **nicht** `Decimal == decoded`, sondern gegen die reproduzierbare
+`float32`-Quantisierung: `erwartet = struct.unpack(">f", struct.pack(">f",
+float(wert)))[0]` und `decoded_register_float == erwartet` (exakt, kein
+Toleranz-Fudge). Die Genauigkeitsgrenze ist damit explizit (`float32` ~7
+signifikante Stellen); Werte mit mehr Praezision ([`GG-DATA-005`](lastenheft.md#gg-data-005):
+max. 6 Nachkommastellen) oder ausserhalb des `float32`-Bereichs verlieren
+Genauigkeit — bewusste Grenze; ein scaled-`int32`-Encode (exakt fuer die
+6-Dezimalstellen-Quantisierung, aber range-limitiert) ist Folge-Option.
+
+**Anti-Scope (Slice 074):** kein Write/Inbound (Folge-Slice), kein
+Modbus-RTU/ASCII, kein TLS, kein Multi-Unit-Fan-out.
 
 ---
 
