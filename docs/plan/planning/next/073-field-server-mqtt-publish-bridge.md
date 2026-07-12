@@ -5,7 +5,7 @@ Closure → dann Self-Move nach `done/` (Muster Slice 070/071/072, kein
 `in-progress/`-Zwischenstopp). Liefert die Field-Server-Push-Seite aus
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 (`Proposed`); ADR wird bei **073-Closure** auf `Provisional` gezogen.
-**Fortschritt:** C0 ✓ · C1 ✓ · C2/C3/C4 offen.
+**Fortschritt:** C0 ✓ · C1 ✓ · C2 ✓ · C3/C4 offen.
 **Datum:** 2026-07-12
 **Quelle:** Architektur-Sichtung 2026-07-12 (alle fuenf Protokolladapter sind
 Client/Master, [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) +
@@ -59,7 +59,7 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 | --- | --- | --- |
 | **C0** ✓ | [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.1 geschaerft: `FieldPublishPort.publish(point)` nutzt den **Domaenen**-`TelemetryPoint` ([`GG-DATA-001`](../../../../spec/lastenheft.md#gg-data-001), wie `DeviceProtocolPort` — kein driven→driving-Import, volle `Decimal`-Fidelity), `start()`/`stop()`-Lifecycle driver-getrieben. ADR bleibt `Proposed` (→ `Provisional` bei 073-Closure, Muster [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)). Anforderungs-Verankerung = HIL-Konkretisierung von [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene `GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7) | Architect / ADR |
 | **C1** ✓ | `hexagon/ports/driven/field_publish.py` (`FieldPublishPort`-Protocol `start`/`publish`/`stop`, Stub-Form Docstring + `...` eigene Zeile) + `*Error`-Hierarchie (`FieldPublishPortError`-Familie). Domaenen-`TelemetryPoint` (kein driving-Import) | Implementation |
-| **C2** | **Produktions-Driver-Verdrahtung:** Field-Publish-Fan-out + Lifecycle-Caller im http_api-Driver (analog `_publish_emitted_telemetry`), Field-Server-Entrypoint in der App-Komposition. Pins: `None`-Skip byte-identisch, Lifecycle-Start/Stop im echten Run-Pfad (nicht nur test-lokal) | Implementation |
+| **C2** ✓ | **Produktions-Driver-Verdrahtung:** Field-Publish-Fan-out (`_publish_field`, Domaenen-Point direkt) + `start`/`stop`-Lifecycle im `_run_loop` (`_start_field_publish`/`_stop_field_publish`, resolve-once + graceful Degrade bei Start-Failure) im `_tick_loop_driver`; Kompositions-Seam = `_field_publish_provider`-Closure liest `app.state.field_publish` (getattr; fehlt → `None`). **Der public Setter/Adapter-Injektion folgt mit C3** ([`AC-NO-GOD-UTILS`](../../adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert): `app.py`-Public-Surface bleibt bei 5). Pins: `None`-Skip byte-identisch, Fan-out je Punkt, Lifecycle-Start/Stop im echten Run-Pfad, Start-Failure-Degrade, Publish-Exception-Survival | Implementation |
 | **C3** | `adapters/driven/field_publish_mqtt/` — MQTT-Publish-Adapter (paho-mqtt, adapter-interner Loop/Queue), Topic-Schema, typisierte Fehler, Sim-/Test-Docstring + Nur-Sim-Netz-Note ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)). Unit: Publish-Mapping, Fehleruebersetzung | Implementation |
 | **C4** | **Integrationsgeschirr gegen den Produkt-Surface:** Compose mit Broker (Mosquitto-Sibling) + grid-gym-API-Container + ein Subscriber-Assert-Loop (Platzhalter fuer `bess-ems`) — externer Konsument empfaengt die exponierte Telemetrie. testcontainers | Implementation |
 

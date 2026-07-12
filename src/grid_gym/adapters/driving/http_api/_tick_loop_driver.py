@@ -33,6 +33,7 @@ from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
+from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.run_execution import RunExecutionPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import (
@@ -60,6 +61,7 @@ _logger = logging.getLogger(__name__)
 AlarmStreamProvider = Callable[[], AlarmStreamPort | None]
 AlarmHistoryBufferProvider = Callable[[], AlarmHistoryBuffer | None]
 TelemetryStreamProvider = Callable[[], TelemetryStreamPort | None]
+FieldPublishProvider = Callable[[], FieldPublishPort | None]
 
 
 class DemoTickLoopDriver:
@@ -89,6 +91,7 @@ class DemoTickLoopDriver:
         alarm_stream_provider: AlarmStreamProvider | None = None,
         alarm_history_buffer_provider: AlarmHistoryBufferProvider | None = None,
         telemetry_stream_provider: TelemetryStreamProvider | None = None,
+        field_publish_provider: FieldPublishProvider | None = None,
         healthcheck_adapter: TickLoopHealthcheckAdapter | None = None,
     ) -> None:
         self._tick_loop = tick_loop
@@ -117,6 +120,16 @@ class DemoTickLoopDriver:
         self._telemetry_stream_provider: TelemetryStreamProvider = (
             telemetry_stream_provider if telemetry_stream_provider is not None else _none_provider
         )
+        # ADR 0075 §2.1/§2.3/§2.4: Field-Server-Push-Seite. Der Driver
+        # (Kompositions-Schicht) resolved den `FieldPublishPort` EINMAL am
+        # Run-Start, ruft `start()` (Broker-Connect), publisht je
+        # emittiertem Domaenen-Punkt und `stop()` am Run-Ende. `None`-
+        # Provider → kein Field-Publish (byte-identisch). Broker-Connect
+        # degradiert graceful (Sim ist primaer, Field-Exposure optional).
+        self._field_publish_provider: FieldPublishProvider = (
+            field_publish_provider if field_publish_provider is not None else _none_provider
+        )
+        self._active_field_publish: FieldPublishPort | None = None
 
     def start(self) -> None:
         """Startet den Driver-Task (idempotent)."""
@@ -183,6 +196,7 @@ class DemoTickLoopDriver:
         loggen + `request("stop")` (Repository-Mirror), dann
         Task sauber beenden.
         """
+        self._start_field_publish()
         try:
             await self._tick_forever()
         except asyncio.CancelledError:
@@ -197,6 +211,10 @@ class DemoTickLoopDriver:
             self._tick_loop.mark_run_failed()
             self._force_stop_after_failure()
         finally:
+            # ADR 0075 §2.4: Field-Publish-Broker am Run-Ende schliessen
+            # (auf JEDEM Exit-Pfad — natuerliche Terminierung, Failure,
+            # externer Cancel), bevor die Run-End-Naht laeuft.
+            self._stop_field_publish()
             # ADR 0067 §2.4: Run-End-Naht auf JEDEM Exit-Pfad (natuerliche
             # Terminierung, Failure, externer Cancel via stop()) — nicht nur
             # stop(). Idempotent (`_finalized`-Flag); gegen harten finalize()-
@@ -220,6 +238,7 @@ class DemoTickLoopDriver:
             result = self._tick_with_healthcheck_measure()
             self._publish_emitted_alarms(result)
             self._publish_emitted_telemetry(result)
+            self._publish_field(result)
             await asyncio.sleep(self._tick_interval_s)
 
     def _tick_with_healthcheck_measure(self) -> TickResult:
@@ -321,6 +340,68 @@ class DemoTickLoopDriver:
                     point.run_id,
                     point.device_id,
                 )
+
+    def _publish_field(self, result: TickResult) -> None:
+        """ADR 0075 §2.1/§2.3: Fan-out jedes emittierten (Domaenen-)
+        `TelemetryPoint` an die Field-Publish-Push-Seite (Broker).
+
+        Domaenen-Point **direkt** — kein `Decimal`->`float`-Cast wie beim
+        Port-Stream (`_to_port_telemetry_point`), also volle Fidelity
+        (ADR 0075 §2.1). Pro-Point try/except (Muster
+        `_publish_emitted_telemetry`): ein einzelner Publish-Fehler toetet
+        nicht den Driver. Ohne aktiven Port (`None`-Provider oder
+        Start-Failure) ist es ein No-op → byte-identisch.
+        """
+        port = self._active_field_publish
+        if port is None:
+            return
+        for point in result.emitted_telemetry:
+            try:
+                port.publish(point)
+            except Exception:
+                _logger.exception(
+                    "Failed to field-publish telemetry point for run_id=%r device_id=%r",
+                    point.run_id,
+                    point.device_id,
+                )
+
+    def _start_field_publish(self) -> None:
+        """ADR 0075 §2.4: Field-Publish-Port EINMAL am Run-Start resolven
+        + `start()` (Broker-Connect).
+
+        Graceful Degrade: schlaegt `start()` fehl (Broker unerreichbar),
+        wird geloggt und Field-Publish fuer diesen Run deaktiviert — die
+        Simulation ist primaer, die Field-Exposure ein optionaler Add-on.
+        `None`-Provider → No-op (kein Broker-Connect).
+        """
+        port = self._field_publish_provider()
+        if port is None:
+            return
+        try:
+            port.start()
+        except Exception:
+            _logger.exception(
+                "FieldPublishPort.start() failed for run_id=%r — "
+                "field-publish disabled for this run.",
+                self._tick_loop.run_id,
+            )
+            return
+        self._active_field_publish = port
+
+    def _stop_field_publish(self) -> None:
+        """ADR 0075 §2.4: Field-Publish-Broker am Run-Ende schliessen
+        (idempotent; nur wenn `start()` erfolgreich war)."""
+        port = self._active_field_publish
+        if port is None:
+            return
+        self._active_field_publish = None
+        try:
+            port.stop()
+        except Exception:
+            _logger.exception(
+                "FieldPublishPort.stop() failed for run_id=%r.",
+                self._tick_loop.run_id,
+            )
 
 
 def _to_port_telemetry_point(point: DomainTelemetryPoint) -> PortTelemetryPoint:

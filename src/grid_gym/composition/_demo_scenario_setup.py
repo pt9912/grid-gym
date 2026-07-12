@@ -80,6 +80,7 @@ from grid_gym.hexagon.core.scenario.loader import (
 )
 from grid_gym.hexagon.ports.driven.clock import SimulationTime
 from grid_gym.scenario_yaml import read_scenario_yaml
+from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPort
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driven.telemetry_sink import TelemetrySinkPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
@@ -234,6 +235,15 @@ def configure_scenario_demo_run(
             getattr(app_.state, "telemetry_stream", None),
         )
 
+    def _field_publish_provider() -> FieldPublishPort | None:
+        # ADR 0075 §2.1/§2.3: Field-Server-Push-Seite (optional). Ohne
+        # `configure_field_publish(...)` bleibt `app.state.field_publish`
+        # ungesetzt → der Driver skippt den Fan-out (byte-identisch).
+        return cast(
+            FieldPublishPort | None,
+            getattr(app_.state, "field_publish", None),
+        )
+
     # Welle-5-Review F10: tick_interval_s an scenario.tick_ms koppeln,
     # mit Cap auf 0.1s damit Stunden-Profile (tick_ms=3600000) nicht
     # 1h-wall-clock pro Tick brauchen. Reine 100ms-Wall-Clock-Konstante
@@ -246,6 +256,7 @@ def configure_scenario_demo_run(
         alarm_stream_provider=_alarm_stream_provider,
         alarm_history_buffer_provider=_alarm_history_buffer_provider,
         telemetry_stream_provider=_telemetry_stream_provider,
+        field_publish_provider=_field_publish_provider,
     )
     app_.state.demo_tick_loop_driver = driver
     # M7-Welle-1a (ADR 0047): persistierte Zeitreihen lesbar machen

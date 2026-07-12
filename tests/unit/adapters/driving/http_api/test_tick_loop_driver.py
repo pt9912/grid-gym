@@ -35,10 +35,13 @@ from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.domain.alarm import Alarm
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
+from grid_gym.hexagon.core.domain.quality import Quality
 from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
+from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
+from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPortStartError
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from tests.unit.hexagon.ports.driven._fakes import (
     FakeClock,
@@ -363,3 +366,161 @@ def test_configure_demo_run_orphan_guard_rejects_second_run_id() -> None:
     # Sanity: MersenneTwister-Import war im Test gebraucht (vermeidet
     # ungenutzten Import-Lint).
     _ = MersenneTwisterRandomPort
+
+
+# ---------------------------------------------------------------------------
+# ADR 0075 §2.1/§2.3/§2.4: Field-Publish (Push-Seite) — Fan-out + Lifecycle
+# ---------------------------------------------------------------------------
+
+
+class _RecordingFieldPublish:
+    """Inline-Stub: zeichnet start/publish/stop auf; optional werfen."""
+
+    def __init__(self, *, start_raises: bool = False, publish_raises: bool = False) -> None:
+        self.start_calls = 0
+        self.stop_calls = 0
+        self.published: list[DomainTelemetryPoint] = []
+        self._start_raises = start_raises
+        self._publish_raises = publish_raises
+
+    def start(self) -> None:
+        self.start_calls += 1
+        if self._start_raises:
+            raise FieldPublishPortStartError("connect boom")
+
+    def publish(self, point: DomainTelemetryPoint) -> None:
+        if self._publish_raises:
+            raise RuntimeError("publish boom")
+        self.published.append(point)
+
+    def stop(self) -> None:
+        self.stop_calls += 1
+
+
+def _domain_point(seq: int = 0) -> DomainTelemetryPoint:
+    return DomainTelemetryPoint(
+        run_id="driver-test-1",
+        tick=0,
+        simulation_time=0,
+        device_id="meter-1",
+        metric="voltage_v",
+        value=Decimal("230.5"),
+        unit="V",
+        quality=Quality.VALID,
+        source="smart_meter.meter-1",
+        sequence=seq,
+    )
+
+
+def _telemetry_result(*points: DomainTelemetryPoint) -> TickResult:
+    return TickResult(
+        tick=0,
+        simulation_time=0,
+        popped_events=(),
+        emitted_telemetry=points,
+        emitted_alarms=(),
+    )
+
+
+def test_field_publish_fans_out_each_emitted_domain_point() -> None:
+    """ADR 0075 §2.1: der Driver publisht jeden emittierten Punkt als
+    Domaenen-`TelemetryPoint` (volle `Decimal`-Fidelity, kein float-Cast)."""
+    port = _RecordingFieldPublish()
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
+    driver._start_field_publish()
+    assert port.start_calls == 1
+    driver._publish_field(_telemetry_result(_domain_point(0), _domain_point(1)))
+    assert len(port.published) == 2
+    # Decimal-Fidelity: kein Decimal->float-Cast (Gegensatz zum Port-Stream).
+    assert port.published[0].value == Decimal("230.5")
+
+
+def test_field_publish_noop_without_configured_port() -> None:
+    """`None`-Provider → kein aktiver Port → Fan-out + Lifecycle sind No-op
+    (byte-identisch)."""
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop)  # kein field_publish_provider
+    driver._start_field_publish()
+    assert driver._active_field_publish is None
+    driver._publish_field(_telemetry_result(_domain_point()))  # kein Fehler
+    driver._stop_field_publish()  # idempotent, kein Fehler
+
+
+def test_field_publish_degrades_on_start_failure() -> None:
+    """ADR 0075 §2.4: schlaegt `start()` fehl, wird Field-Publish fuer den
+    Run deaktiviert (graceful degrade) — kein Publish, kein Crash."""
+    port = _RecordingFieldPublish(start_raises=True)
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
+    driver._start_field_publish()  # start() wirft → gefangen, degrade
+    assert port.start_calls == 1
+    assert driver._active_field_publish is None
+    driver._publish_field(_telemetry_result(_domain_point()))
+    assert port.published == []
+
+
+def test_field_publish_survives_publish_exception() -> None:
+    """Pro-Point try/except (Muster `_publish_emitted_telemetry`): ein
+    Publish-Fehler toetet nicht den Driver."""
+    port = _RecordingFieldPublish(publish_raises=True)
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop, field_publish_provider=lambda: port)
+    driver._start_field_publish()
+    driver._publish_field(_telemetry_result(_domain_point()))  # kein Raise
+    assert port.published == []
+
+
+def test_field_publish_lifecycle_start_publish_stop_via_run_loop() -> None:
+    """ADR 0075 §2.4: der Driver-`_run_loop` ruft `start()` vor dem Ticken,
+    publisht je Tick und `stop()` im `finally` (auf jedem Exit-Pfad)."""
+
+    class _TelemetryEmittingTickLoop:
+        def __init__(self, run_id: str) -> None:
+            self._run_id = run_id
+            self._control_state = "running"
+            self._ticks = 0
+            self.finalized = False
+
+        @property
+        def run_id(self) -> str:
+            return self._run_id
+
+        @property
+        def control_state(self) -> str:
+            return self._control_state
+
+        def tick(self) -> TickResult:
+            self._ticks += 1
+            if self._ticks >= 2:
+                self._control_state = "stopped"
+            return _telemetry_result(_domain_point(self._ticks))
+
+        def request(self, action: str) -> None:
+            self._control_state = "stopped"
+
+        def mark_run_failed(self) -> None:
+            pass
+
+        def finalize(self) -> tuple[object, ...]:
+            self.finalized = True
+            return ()
+
+    port = _RecordingFieldPublish()
+    fake_loop = _TelemetryEmittingTickLoop("driver-fp-1")
+    driver = DemoTickLoopDriver(
+        cast(TickLoop, fake_loop),
+        tick_interval_s=0.001,
+        field_publish_provider=lambda: port,
+    )
+
+    async def _run() -> None:
+        driver.start()
+        assert driver._task is not None
+        await asyncio.wait_for(driver._task, timeout=2.0)
+
+    asyncio.run(_run())
+    assert port.start_calls == 1
+    assert len(port.published) >= 1  # mind. ein Tick emittierte vor Stop
+    assert port.stop_calls == 1  # im finally gestoppt
+    assert fake_loop.finalized is True
