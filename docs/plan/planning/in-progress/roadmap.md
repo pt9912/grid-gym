@@ -19,9 +19,23 @@ Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
 Runtime-Delta, Release `[Unreleased]`).
-**Naechster Kandidat:** kein geschnittener Slice in `next/` offen — die
-GG-FAULT-Konsolidierung (002/003/004) ist vollstaendig geliefert. Offene
-Trigger (OTel-Bump, Vorwaerts-Traceability, `a-check`) sind noch nicht als
+**Naechster Kandidat:** die **Field-Server-Surface** —
+[`073`](../next/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
+Push + Kompositions-Schicht-Naht + Integrationsgeschirr),
+[`074`](../next/074-field-server-modbus-server-adapter.md) (`DeviceServerPort`,
+Modbus-Server, Read-Serving + geteilte Current-Value-Projektion) und
+[`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
+ausgegliedert) sind in `next/` geschnitten. Sie schliessen die Asymmetrie „alle
+Protokolladapter sind Client/Master"
+([`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) und machen ein
+externes EMS (`bess-ems`) als System-under-Test anbindbar
+([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) HIL). Architektur:
+[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+(`Proposed`) — **zwei Schwester-Ports** in der Kompositions-Schicht (nach zwei
+adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Aktivierung
+haengt an einer Owner-Vorabentscheidung (Anforderungs-ID;
+[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
+Offene Trigger (OTel-Bump, Vorwaerts-Traceability, `a-check`) sind noch nicht als
 Slice geschnitten.
 **Stand:** 2026-07-12
 
@@ -152,13 +166,31 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Naechster Aktivierungs-Kandidat** (2026-07-12): **kein geschnittener Slice in
-`next/` offen.** Die GG-FAULT-Konsolidierung (002/003/004) ist mit
+**Naechster Aktivierungs-Kandidat** (2026-07-12): **Field-Server-Surface** (drei
+Slices auf [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
+`Proposed`, Design-first) —
+[`073`](../next/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
+Push: legt die Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrations-
+geschirr → `Provisional`), [`074`](../next/074-field-server-modbus-server-adapter.md)
+(`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
+Projektion → `Accepted` bei Closure) und
+[`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
+**ausgegliedert** samt Folge-ADR, weil Live-Writes das geschlossene Self-Replay
+brechen). Der Entwurf wurde nach zwei adversarialen Reviews von einem geteilten
+Kern-`TickLoop`-Port auf **zwei Schwester-Ports in der Kompositions-Schicht**
+revidiert (Fan-out lebt im API-Prozess-Driver, nicht im Kern-Loop,
+[`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)). Motivation ist die
+HIL/SUT-Anbindung ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)).
+**Aktivierung haengt an** einer Owner-Vorabentscheidung zur Anforderungs-ID
+(eigene `GG-FSRV-*`-Familie vs. HIL-Konkretisierung;
+[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7 /
+Slice 073 C0). Die
+GG-FAULT-Konsolidierung (002/003/004) ist mit
 [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)/[`072`](../done/072-gg-fault-002-stale-data.md)
 vollstaendig geliefert; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)
-ist damit beidseitig (Slice A + B) eingeloest. Offene Trigger (OTel-Collector-
-Bump, Vorwaerts-Traceability, neues `a-check`-Tool) sind notiert, aber noch
-nicht als Slice geschnitten.
+ist beidseitig (Slice A + B) eingeloest. Offene Trigger (OTel-Collector-Bump,
+Vorwaerts-Traceability, neues `a-check`-Tool) sind notiert, aber noch nicht als
+Slice geschnitten.
 
 **Vorheriger Kandidat erledigt:** das Hygiene-Buendel der Slice-038-Session
 ([`054`](../done/054-pytest-marker-drift-sensor-targets.md)/[`058`](../done/058-marker-sensor-drift-guard.md)
