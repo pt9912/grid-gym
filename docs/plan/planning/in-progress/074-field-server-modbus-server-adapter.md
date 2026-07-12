@@ -5,7 +5,7 @@
 nutzt die Kompositions-Schicht-Naht + das Integrationsgeschirr. Zieht
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) mit
 **Closure** auf `Accepted` (Pull-Seite belegt).
-**Fortschritt:** C0 ✓ · C1a/C1b/C2 offen.
+**Fortschritt:** C0 ✓ · C1a ✓ · C1b/C2 offen.
 **Datum:** 2026-07-12
 **Quelle:** [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §5 — die **Pull-Seite** (echtes bind/listen/serve), die die driving-Rolle
@@ -56,7 +56,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
 | **C0** ✓ | **Server-Profil-Sektion** in [`spec/protocol_profiles.md`](../../../../spec/protocol_profiles.md) angelegt (**Server-Profile — `DeviceServerPort`**, getrennt vom driven-Master-Index): Register-Map `(device_id,metric)`→Adresse, `float32`-Datatype (2 Register), Quality→Discrete-Input, Read-only FC03/FC04, Unit-ID Default 1. **Encode-Oracle** festgezurrt: Vergleich gegen die **deterministische `float32`-Quantisierung** (`struct.pack/unpack('>f', float(decimal))`) statt `Decimal==decoded` (Praezisionsgrenze explizit). [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) bleibt `Provisional` (Accepted bei Closure) | Architect / Profil |
-| **C1a** | `hexagon/ports/driving/device_server.py` (`DeviceServerPort`) + Current-Value-**Projektion** (last-write-wins pro `(target, metric)`, tick-frame-atomar, aus `emitted_telemetry`) + Driver-Lifecycle-Verdrahtung (bind/listen, Bind-in-use hart, graceful Stop). Unit: Projektion-Semantik, Lifecycle-Failure | Implementation |
+| **C1a** ✓ | `hexagon/ports/driving/device_server.py` (`DeviceServerPort`, bind/listen/serve + `*Error`) + `adapters/driving/_field_current_value.py` (`CurrentValueProjection`: last-write-wins pro `(device_id, metric)`, **lock-frei tick-frame-atomar** via Referenz-Swap, aus `emitted_telemetry`) + Driver-Wiring (`device_server_provider`/`current_value_projection`-Kwargs; `_start/_stop_device_server` via `asyncio.to_thread`, **Bind-in-use propagiert hart**; `_update_projection` pro Tick). Unit: Port-Shape, Projektion-Semantik/Atomizitaet, Lifecycle + Bind-Failure + Stop-Fehler-Swallow | Implementation |
 | **C1b** | `adapters/driving/device_server_modbus/` — `pymodbus`-Server (Datastore aus Projektion), adapter-interner Loop-Thread, Register-Encode (`Decimal→float→16-bit` mit definiertem Oracle), Quality→Discrete-Input/Flag-Mapping, typisierte Fehler, Sim-/Test-Docstring + Nur-Sim-Netz-Note | Implementation |
 | **C2** | **Read-Pfad-E2E:** externer Modbus-Master (testcontainers) pollt Holding/Input-Register; Werte matchen die emittierte Telemetrie tick-genau **gemaess definiertem Oracle**; Quality-Marker ([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)) korrekt exponiert. **Closure → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`** | Implementation |
 

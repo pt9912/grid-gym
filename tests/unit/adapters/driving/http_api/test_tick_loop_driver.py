@@ -30,6 +30,7 @@ from grid_gym.adapters.driven.alarm_stream_inmemory import (
     AlarmHistoryBuffer,
     InMemoryAlarmStream,
 )
+from grid_gym.adapters.driving._field_current_value import CurrentValueProjection
 from grid_gym.adapters.driving.http_api._tick_loop_driver import DemoTickLoopDriver
 from grid_gym.hexagon.core.devices.battery import BatteryDevice
 from grid_gym.hexagon.core.domain.alarm import Alarm
@@ -46,6 +47,10 @@ from grid_gym.hexagon.ports.driven.field_publish import (
     FieldPublishPortStopError,
 )
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+from grid_gym.hexagon.ports.driving.device_server import (
+    DeviceServerPortStartError,
+    DeviceServerPortStopError,
+)
 from tests.unit.hexagon.ports.driven._fakes import (
     FakeClock,
     FixedSeedRandom,
@@ -586,3 +591,84 @@ def test_field_publish_status_degraded_after_publish_failure() -> None:
     asyncio.run(driver._start_field_publish())
     driver._publish_field(_telemetry_result(_domain_point()))
     assert driver.field_publish_status == "degraded"
+
+
+# ---------------------------------------------------------------------------
+# ADR 0075 §2.2/§2.4: Pull-Seite — DeviceServerPort-Lifecycle + Projektion
+# ---------------------------------------------------------------------------
+
+
+class _RecordingDeviceServer:
+    """Inline-Stub fuer `DeviceServerPort` (bind/listen via start, close via
+    stop); optional werfen fuer Bind-/Close-Fehler."""
+
+    def __init__(self, *, start_raises: bool = False, stop_raises: bool = False) -> None:
+        self.start_calls = 0
+        self.stop_calls = 0
+        self._start_raises = start_raises
+        self._stop_raises = stop_raises
+
+    def start(self) -> None:
+        self.start_calls += 1
+        if self._start_raises:
+            raise DeviceServerPortStartError("bind in use")
+
+    def stop(self) -> None:
+        self.stop_calls += 1
+        if self._stop_raises:
+            raise DeviceServerPortStopError("close boom")
+
+
+def test_update_projection_feeds_current_value_projection() -> None:
+    """ADR 0075 §2.2: der Driver fuettert die Projektion pro Tick aus
+    `emitted_telemetry`."""
+    proj = CurrentValueProjection()
+    driver = DemoTickLoopDriver(_make_tick_loop_with_battery_alarm(), current_value_projection=proj)
+    driver._update_projection(_telemetry_result(_domain_point(0)))
+    point = proj.latest("meter-1", "voltage_v")
+    assert point is not None
+    assert point.value == Decimal("230.5")
+
+
+def test_device_server_lifecycle_start_stop() -> None:
+    server = _RecordingDeviceServer()
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), device_server_provider=lambda: server
+    )
+    asyncio.run(driver._start_device_server())
+    assert server.start_calls == 1
+    assert driver._active_device_server is server
+    asyncio.run(driver._stop_device_server())
+    assert server.stop_calls == 1
+    assert driver._active_device_server is None
+
+
+def test_device_server_bind_failure_propagates_hard() -> None:
+    """ADR 0075 §2.4: Bind-in-use ist ein harter Fehler — `start` propagiert
+    (der Lauf startet nicht; kein graceful-Degrade wie bei der Push-Seite)."""
+    server = _RecordingDeviceServer(start_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), device_server_provider=lambda: server
+    )
+    with pytest.raises(DeviceServerPortStartError):
+        asyncio.run(driver._start_device_server())
+    assert driver._active_device_server is None
+
+
+def test_device_server_stop_swallows_close_error() -> None:
+    server = _RecordingDeviceServer(stop_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), device_server_provider=lambda: server
+    )
+    asyncio.run(driver._start_device_server())
+    asyncio.run(driver._stop_device_server())  # gefangen + geloggt, kein Raise
+    assert driver._active_device_server is None
+
+
+def test_device_server_and_projection_noop_when_unconfigured() -> None:
+    """`None`-Provider + keine Projektion → No-op (byte-identisch)."""
+    driver = DemoTickLoopDriver(_make_tick_loop_with_battery_alarm())
+    asyncio.run(driver._start_device_server())
+    assert driver._active_device_server is None
+    driver._update_projection(_telemetry_result(_domain_point()))  # keine Projektion
+    asyncio.run(driver._stop_device_server())  # No-op

@@ -27,6 +27,7 @@ from collections.abc import Callable
 from typing import Literal, cast
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driving._field_current_value import CurrentValueProjection
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
     TickLoopHealthcheckAdapter,
 )
@@ -35,6 +36,7 @@ from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
 from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
+from grid_gym.hexagon.ports.driving.device_server import DeviceServerPort
 from grid_gym.hexagon.ports.driving.run_execution import RunExecutionPort
 from grid_gym.hexagon.ports.driving.telemetry_stream import (
     TelemetryPoint as PortTelemetryPoint,
@@ -62,6 +64,7 @@ AlarmStreamProvider = Callable[[], AlarmStreamPort | None]
 AlarmHistoryBufferProvider = Callable[[], AlarmHistoryBuffer | None]
 TelemetryStreamProvider = Callable[[], TelemetryStreamPort | None]
 FieldPublishProvider = Callable[[], FieldPublishPort | None]
+DeviceServerProvider = Callable[[], DeviceServerPort | None]
 
 
 class DemoTickLoopDriver:
@@ -92,6 +95,8 @@ class DemoTickLoopDriver:
         alarm_history_buffer_provider: AlarmHistoryBufferProvider | None = None,
         telemetry_stream_provider: TelemetryStreamProvider | None = None,
         field_publish_provider: FieldPublishProvider | None = None,
+        device_server_provider: DeviceServerProvider | None = None,
+        current_value_projection: CurrentValueProjection | None = None,
         healthcheck_adapter: TickLoopHealthcheckAdapter | None = None,
     ) -> None:
         self._tick_loop = tick_loop
@@ -137,6 +142,14 @@ class DemoTickLoopDriver:
         # lieferte (konfiguriert) — trennt `off` (nicht konfiguriert) von
         # `degraded` (konfiguriert, aber Connect-/Publish-Fehler).
         self._field_publish_configured: bool = False
+        # ADR 0075 §2.2/§2.4: Pull-Seite — DeviceServerPort (bind/listen/serve,
+        # driver-getrieben) + geteilte Current-Value-Projektion (pro Tick aus
+        # `emitted_telemetry` gefuettert; der Server serviert die Register daraus).
+        self._device_server_provider: DeviceServerProvider = (
+            device_server_provider if device_server_provider is not None else _none_provider
+        )
+        self._active_device_server: DeviceServerPort | None = None
+        self._current_value_projection: CurrentValueProjection | None = current_value_projection
 
     def start(self) -> None:
         """Startet den Driver-Task (idempotent)."""
@@ -209,6 +222,7 @@ class DemoTickLoopDriver:
             # (finally) nicht ueberspringen (sonst haengt der Repository-Status
             # auf `running`).
             await self._start_field_publish()
+            await self._start_device_server()
             await self._tick_forever()
         except asyncio.CancelledError:
             raise
@@ -225,6 +239,7 @@ class DemoTickLoopDriver:
             # ADR 0075 §2.4: Field-Publish-Broker am Run-Ende schliessen
             # (auf JEDEM Exit-Pfad — natuerliche Terminierung, Failure,
             # externer Cancel), bevor die Run-End-Naht laeuft.
+            await self._stop_device_server()
             await self._stop_field_publish()
             # ADR 0067 §2.4: Run-End-Naht auf JEDEM Exit-Pfad (natuerliche
             # Terminierung, Failure, externer Cancel via stop()) — nicht nur
@@ -250,6 +265,7 @@ class DemoTickLoopDriver:
             self._publish_emitted_alarms(result)
             self._publish_emitted_telemetry(result)
             self._publish_field(result)
+            self._update_projection(result)
             await asyncio.sleep(self._tick_interval_s)
 
     def _tick_with_healthcheck_measure(self) -> TickResult:
@@ -456,6 +472,43 @@ class DemoTickLoopDriver:
         if self._active_field_publish is None or self._field_publish_failures > 0:
             return "degraded"
         return "active"
+
+    def _update_projection(self, result: TickResult) -> None:
+        """ADR 0075 §2.2: Current-Value-Projektion pro Tick aus
+        `emitted_telemetry` aktualisieren (der Pull-Server serviert die Register
+        daraus). No-op ohne Projektion → byte-identisch."""
+        if self._current_value_projection is not None:
+            self._current_value_projection.update_from_tick(result)
+
+    async def _start_device_server(self) -> None:
+        """ADR 0075 §2.4: DeviceServerPort am Run-Start binden/listen (im
+        Worker-Thread, `asyncio.to_thread` — kein Event-Loop-Stall).
+
+        **Bind-Fehler propagiert** — harter Fehler vor dem ersten Tick (der Lauf
+        startet nicht; anders als der graceful-Degrade der Push-Seite, weil ein
+        pollendes SUT ohne Server-Bind sinnlos ist). `None`-Provider → No-op.
+        """
+        port = self._device_server_provider()
+        if port is None:
+            return
+        await asyncio.to_thread(port.start)
+        self._active_device_server = port
+
+    async def _stop_device_server(self) -> None:
+        """ADR 0075 §2.4: DeviceServerPort am Run-Ende graceful schliessen (im
+        Worker-Thread; idempotent). Close-Fehler werden gefangen + geloggt —
+        der Run-End-/`finalize()`-Pfad soll nicht daran kippen."""
+        port = self._active_device_server
+        if port is None:
+            return
+        self._active_device_server = None
+        try:
+            await asyncio.to_thread(port.stop)
+        except Exception:
+            _logger.exception(
+                "DeviceServerPort.stop() failed for run_id=%r.",
+                self._tick_loop.run_id,
+            )
 
 
 def _to_port_telemetry_point(point: DomainTelemetryPoint) -> PortTelemetryPoint:
