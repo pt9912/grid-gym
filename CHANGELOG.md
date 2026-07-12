@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Field-Server Push-Seite (Slice 073, ADR 0075):** Neue driving-seitige
+  Server-Surface — `FieldPublishPort` (driven) + `MqttFieldPublishAdapter`
+  (paho-mqtt, publish-only) exponiert grid-gyms emittierte (simulierte)
+  Geraetetelemetrie an einen MQTT-Broker, damit ein externes EMS
+  (System-under-Test, z. B. `bess-ems`) sie konsumieren kann (HIL-Konkretisierung
+  von GG-TEST-004). Opt-in via `GRID_GYM_FIELD_PUBLISH_MQTT_BROKER=host[:port]`
+  → auf beiden Run-Pfaden (Demo-Lifespan + Multi-Run `POST /runs/{id}/start`) mit
+  run-eindeutiger client_id verdrahtet; unset → byte-identisch (kein
+  Broker-Connect). Payload via `canonical_json` aus dem Domaenen-`TelemetryPoint`
+  (`Decimal`-Fidelity). Broker-Lifecycle driver-getrieben ueber
+  `asyncio.to_thread` (kein Event-Loop-Stall); Publish-Fehler degradieren
+  graceful mit beobachtbarem `field_publish_status` (off/active/degraded). Nur
+  Sim-/Testadapter (keine produktive Anlagensteuerung; Broker-Exposure ist
+  Nur-Sim-Netz). ADR 0075 auf `Provisional` (Pull-Seite `DeviceServerPort`
+  folgt). **Release deferred** bis die Pull-Seite geliefert ist (gemeinsamer
+  Field-Server-Release).
+
 ## [0.4.0] - 2026-07-12
 
 **Minor — GG-FAULT-Konsolidierung: drei dedizierte Fault-Typen.** Flush der seit

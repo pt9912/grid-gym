@@ -1,7 +1,7 @@
 # 074 — Field-Server Modbus-Server-Adapter (`DeviceServerPort`, Pull, Read-Serving)
 
 **Status:** **Geplant (`next/`, 2026-07-12)** — konkret geplant, noch nicht
-aktiv; **haengt an** [`073`](073-field-server-mqtt-publish-bridge.md)
+aktiv; **haengt an** [`073`](../done/073-field-server-mqtt-publish-bridge.md)
 (Kompositions-Schicht-Naht + Integrationsgeschirr). Zieht
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) mit
 **Closure** auf `Accepted`.
@@ -27,7 +27,7 @@ Self-Replay, eigene Slice + Folge-ADR;
 
 ## Kontext / Ist
 
-- Nach [`073`](073-field-server-mqtt-publish-bridge.md) existiert die
+- Nach [`073`](../done/073-field-server-mqtt-publish-bridge.md) existiert die
   Kompositions-Schicht-Naht (Driver-Fan-out + Lifecycle) + das
   Integrationsgeschirr. Der Pull-Server baut darauf, **aber** die Current-Value-
   Projektion + Register-Map + Encode sind **neue** Foundation (nicht „duenn" —
@@ -76,7 +76,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
   gruen; Server-Stack adapter-intern gekapselt.
 - `make gates` + `make docs-check` + `make fullbuild` gruen.
 - **Release-Entscheidung:** ja (Minor — Pull-Server + geteilte Projektion);
-  SemVer-Ziel naechster Minor nach [`073`](073-field-server-mqtt-publish-bridge.md).
+  SemVer-Ziel naechster Minor nach [`073`](../done/073-field-server-mqtt-publish-bridge.md).
 
 ## Bezug
 
@@ -88,7 +88,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 - [`GG-MODB-001`](../../../../spec/lastenheft.md#gg-modb-001) (Modbus-Profil-
   Anker, driven-Seite) + [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)
   (HIL) + [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Nur-Sim).
-- Vorgaenger: [`073`](073-field-server-mqtt-publish-bridge.md); Folge:
+- Vorgaenger: [`073`](../done/073-field-server-mqtt-publish-bridge.md); Folge:
   [`075`](075-field-server-inbound-write-command.md) (Inbound-Write).
 
 ## Risiken
@@ -103,6 +103,6 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 
 ## Aktivierung
 
-**Nach** [`073`](073-field-server-mqtt-publish-bridge.md)-Closure. Bis dahin
+**Nach** [`073`](../done/073-field-server-mqtt-publish-bridge.md)-Closure. Bis dahin
 `next/`. Bei Aktivierung → [`../in-progress/`](../in-progress/); nach C2-Closure
 + `make fullbuild` → [`../done/`](../done/).

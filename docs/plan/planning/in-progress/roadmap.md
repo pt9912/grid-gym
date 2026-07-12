@@ -19,24 +19,22 @@ Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
 Runtime-Delta, Release `[Unreleased]`).
-**Naechster Kandidat:** die **Field-Server-Surface** —
-[`073`](../next/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
-Push + Kompositions-Schicht-Naht + Integrationsgeschirr),
-[`074`](../next/074-field-server-modbus-server-adapter.md) (`DeviceServerPort`,
-Modbus-Server, Read-Serving + geteilte Current-Value-Projektion) und
-[`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
-ausgegliedert) sind in `next/` geschnitten. Sie schliessen die Asymmetrie „alle
+**Aktiver Arc:** die **Field-Server-Surface**
+([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
+`Provisional`; zwei Schwester-Ports in der Kompositions-Schicht, nach zwei
+adversarialen Reviews revidiert) — schliesst die Asymmetrie „alle
 Protokolladapter sind Client/Master"
-([`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) und machen ein
+([`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) und macht ein
 externes EMS (`bess-ems`) als System-under-Test anbindbar
-([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) HIL). Architektur:
-[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-(`Proposed`) — **zwei Schwester-Ports** in der Kompositions-Schicht (nach zwei
-adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Die
-Anforderungs-Verankerung ist entschieden — **HIL-Konkretisierung von**
-[`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004), keine eigene
-`GG-*`-ID; die Slices sind vollstaendig spezifiziert und liegen
-aktivierungsbereit in `next/`. Offene Trigger (OTel-Bump, Vorwaerts-
+([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) HIL-Konkretisierung,
+keine eigene `GG-*`-ID). **Push-Seite
+[`073`](../done/073-field-server-mqtt-publish-bridge.md) done + review-gehaertet
+(2026-07-12)** → ADR `Provisional`; Runtime-Delta unter CHANGELOG `[Unreleased]`
+(**Release deferred** bis Pull-Seite). **Naechster aktiver Slice:
+[`074`](../next/074-field-server-modbus-server-adapter.md)** (`DeviceServerPort`,
+Modbus-Server Read-Serving + geteilte Current-Value-Projektion → ADR `Accepted`),
+danach [`075`](../next/075-field-server-inbound-write-command.md)
+(Inbound-Write→Command, ausgegliedert). Offene Trigger (OTel-Bump, Vorwaerts-
 Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
 
@@ -167,12 +165,14 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Naechster Aktivierungs-Kandidat** (2026-07-12): **Field-Server-Surface** (drei
-Slices auf [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
-`Proposed`, Design-first) —
-[`073`](../next/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
-Push: legt die Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrations-
-geschirr → `Provisional`), [`074`](../next/074-field-server-modbus-server-adapter.md)
+**Aktiver Arc** (2026-07-12): **Field-Server-Surface** (drei Slices auf
+[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
+`Provisional`, Design-first) —
+[`073`](../done/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
+Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) ist
+**done + review-gehaertet → ADR `Provisional`** (Release deferred, Runtime-Delta
+unter CHANGELOG `[Unreleased]`); als Naechstes
+[`074`](../next/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
 Projektion → `Accepted` bei Closure) und
 [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,

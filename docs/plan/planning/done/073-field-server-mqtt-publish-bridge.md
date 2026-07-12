@@ -1,15 +1,17 @@
 # 073 — Field-Server MQTT-Publish-Bridge (`FieldPublishPort`, Push)
 
-**Status:** **Aktiv — in Arbeit (seit 2026-07-12).** Bleibt in `next/` bis zur
-Closure → dann Self-Move nach `done/` (Muster Slice 070/071/072, kein
-`in-progress/`-Zwischenstopp). Liefert die Field-Server-Push-Seite aus
-[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-(`Proposed`); ADR wird bei **073-Closure** auf `Provisional` gezogen.
-**Fortschritt:** C0–C4 ✓ + **adversarialer Code-Review + Hardening ✓**
-(2026-07-12; 2 unabhaengige Reviewer, 11 Funde adressiert — s.u.). Reif fuer
-Closure
+**Status:** **Done — geliefert 2026-07-12** (C0–C4 + adversariales
+Code-Review-Hardening).
+[`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) auf
+`Provisional` gezogen (Push-Seite `FieldPublishPort` belegt; `Accepted` folgt mit
+der Pull-Seite/074). Runtime-Delta → CHANGELOG `[Unreleased]`; **Release
+deferred** bis die Pull-Seite da ist (gemeinsamer Field-Server-Release).
+`make gates` 10/10 + `make docs-check` 0 + `make test-integration` 166 passed
+gruen.
+**Fortschritt:** C0–C4 ✓ + adversarialer Code-Review + Hardening ✓ (2026-07-12;
+2 unabhaengige Reviewer, 11 Funde adressiert — s.u.) → **Closure 2026-07-12**
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) →
-`Provisional`, `next/`→`done/`, Release v0.5.0).
+`Provisional`; Release deferred bis Pull-Seite/074).
 **Datum:** 2026-07-12
 **Quelle:** Architektur-Sichtung 2026-07-12 (alle fuenf Protokolladapter sind
 Client/Master, [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) +
@@ -27,7 +29,7 @@ Geraetetelemetrie an einen Broker exponiert. Niedrigstes Risiko: reiner Publish,
 kein Listening-Socket, keine Register-Map.
 
 **Bewusst NICHT Ziel** (Review-Korrektur): dieser Slice baut **keine** Current-
-Value-Projektion und macht [`074`](074-field-server-modbus-server-adapter.md)
+Value-Projektion und macht [`074`](../next/074-field-server-modbus-server-adapter.md)
 **nicht** „duenn" — Push und Pull sind verschiedene Rollen (Schwester-Ports,
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.1).
 Was 073 fuer 074 vor-entlastet, ist die **Integrations-Plumbing + Driver-
@@ -130,12 +132,12 @@ Surfacing des Degrade-Status (`/healthcheck`-JSON) ist Folge-Kandidat.
 - [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (HIL) +
   [`GG-NONGOAL-001`](../../../../spec/lastenheft.md#gg-nongoal-001) /
   [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Sim/Prod).
-- Folge-Slice: [`074`](074-field-server-modbus-server-adapter.md) (Pull-Server,
+- Folge-Slice: [`074`](../next/074-field-server-modbus-server-adapter.md) (Pull-Server,
   eigene Schwester-Port-Rolle).
 
 ## Entsperrt
 
-[`074`](074-field-server-modbus-server-adapter.md) (nutzt die Kompositions-
+[`074`](../next/074-field-server-modbus-server-adapter.md) (nutzt die Kompositions-
 Schicht-Naht + das Integrationsgeschirr; baut den Pull-Port + die Projektion
 selbst).
 

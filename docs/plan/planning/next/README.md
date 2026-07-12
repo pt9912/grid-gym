@@ -6,18 +6,14 @@ aktive** Arbeit.
 ## Bestand
 
 Field-Server-Surface ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
-`Proposed`; **zwei Schwester-Ports** in der Kompositions-Schicht, nach zwei
+`Provisional`; **zwei Schwester-Ports** in der Kompositions-Schicht, nach zwei
 adversarialen Reviews vom Kern-`TickLoop`-Kwarg-Entwurf revidiert). Anforderungs-
-Verankerung entschieden: **HIL-Konkretisierung von**
+Verankerung: **HIL-Konkretisierung von**
 [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene
-`GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-§7). Aktivierungsbereit:
+`GG-*`-ID). Die Push-Seite
+([`073`](../done/073-field-server-mqtt-publish-bridge.md)) ist **2026-07-12 done
++ review-gehaertet** → ADR `Provisional`. Naechste Kandidaten:
 
-- [`073-field-server-mqtt-publish-bridge.md`](073-field-server-mqtt-publish-bridge.md)
-  — `FieldPublishPort` (driven, Push): MQTT-Publish-Adapter + Kompositions-
-  Schicht-Naht (Driver-Lifecycle + Fan-out) + grid-gym↔`bess-ems`-Integrations-
-  geschirr. Zieht [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-  auf `Provisional`. Baut **keine** Current-Value-Projektion.
 - [`074-field-server-modbus-server-adapter.md`](074-field-server-modbus-server-adapter.md)
   — `DeviceServerPort` (driving, Pull): Modbus-Server Read-Serving + die geteilte
   Current-Value-Projektion. Zieht
