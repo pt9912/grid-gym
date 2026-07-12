@@ -1,9 +1,11 @@
 # 073 — Field-Server MQTT-Publish-Bridge (`FieldPublishPort`, Push)
 
-**Status:** **Geplant (`next/`, 2026-07-12)** — konkret geplant, noch nicht
-aktiv. Aktiviert die Field-Server-Surface aus
+**Status:** **Aktiv — in Arbeit (seit 2026-07-12).** Bleibt in `next/` bis zur
+Closure → dann Self-Move nach `done/` (Muster Slice 070/071/072, kein
+`in-progress/`-Zwischenstopp). Liefert die Field-Server-Push-Seite aus
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-(`Proposed`); zieht sie mit Lieferung auf `Provisional`.
+(`Proposed`); ADR wird bei **073-Closure** auf `Provisional` gezogen.
+**Fortschritt:** C0 ✓ · C1 ✓ · C2/C3/C4 offen.
 **Datum:** 2026-07-12
 **Quelle:** Architektur-Sichtung 2026-07-12 (alle fuenf Protokolladapter sind
 Client/Master, [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) +
@@ -55,8 +57,8 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
-| **C0** | [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Proposed → Provisional`; `FieldPublishPort`-Signatur + Driver-Placement bestaetigt. Anforderungs-Verankerung entschieden: **HIL-Konkretisierung von** [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene `GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7) | Architect / ADR |
-| **C1** | `hexagon/ports/driven/field_publish.py` (`FieldPublishPort`-Protocol, Stub-Form Docstring + `...` eigene Zeile) + `*Error`-Hierarchie. Unit: Protocol-Surface + Coverage-Exclude-Konformitaet | Implementation |
+| **C0** ✓ | [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.1 geschaerft: `FieldPublishPort.publish(point)` nutzt den **Domaenen**-`TelemetryPoint` ([`GG-DATA-001`](../../../../spec/lastenheft.md#gg-data-001), wie `DeviceProtocolPort` — kein driven→driving-Import, volle `Decimal`-Fidelity), `start()`/`stop()`-Lifecycle driver-getrieben. ADR bleibt `Proposed` (→ `Provisional` bei 073-Closure, Muster [`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)). Anforderungs-Verankerung = HIL-Konkretisierung von [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene `GG-*`-ID; [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7) | Architect / ADR |
+| **C1** ✓ | `hexagon/ports/driven/field_publish.py` (`FieldPublishPort`-Protocol `start`/`publish`/`stop`, Stub-Form Docstring + `...` eigene Zeile) + `*Error`-Hierarchie (`FieldPublishPortError`-Familie). Domaenen-`TelemetryPoint` (kein driving-Import) | Implementation |
 | **C2** | **Produktions-Driver-Verdrahtung:** Field-Publish-Fan-out + Lifecycle-Caller im http_api-Driver (analog `_publish_emitted_telemetry`), Field-Server-Entrypoint in der App-Komposition. Pins: `None`-Skip byte-identisch, Lifecycle-Start/Stop im echten Run-Pfad (nicht nur test-lokal) | Implementation |
 | **C3** | `adapters/driven/field_publish_mqtt/` — MQTT-Publish-Adapter (paho-mqtt, adapter-interner Loop/Queue), Topic-Schema, typisierte Fehler, Sim-/Test-Docstring + Nur-Sim-Netz-Note ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)). Unit: Publish-Mapping, Fehleruebersetzung | Implementation |
 | **C4** | **Integrationsgeschirr gegen den Produkt-Surface:** Compose mit Broker (Mosquitto-Sibling) + grid-gym-API-Container + ein Subscriber-Assert-Loop (Platzhalter fuer `bess-ems`) — externer Konsument empfaengt die exponierte Telemetrie. testcontainers | Implementation |
@@ -76,7 +78,8 @@ Broker-Connect, byte-identisch ohne Port (§2.5); Sim-/Test-Deployment-Note
 - `make gates` + `make docs-check` gruen; Slice-Closure zusaetzlich
   `make fullbuild`.
 - **Release-Entscheidung:** ja (Minor — additive Feature-Surface); SemVer-Ziel
-  **v0.4.0**. Gebunden an „kein Doku-only-Release" + `make fullbuild` vor Tag.
+  **v0.5.0** (v0.4.0 = GG-FAULT-Release 2026-07-12). Gebunden an „kein
+  Doku-only-Release" + `make fullbuild` vor Tag.
 
 ## Bezug
 

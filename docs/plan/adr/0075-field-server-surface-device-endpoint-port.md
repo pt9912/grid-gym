@@ -102,8 +102,10 @@ ADR 0075 legt zwei Schwester-Ports in der **Kompositions-/Driver-Schicht** fest
 ### §2.1 Zwei Schwester-Ports (statt eines geteilten Ports)
 
 - **`FieldPublishPort`** (driven), `hexagon/ports/driven/field_publish.py`:
-  `publish(point: TelemetryPoint) -> None`. Push zu einem Broker; verhaltensnah
-  zu `telemetry_sink.persist()`. Adapter Slice 073:
+  `start()` (Broker-Connect) / `publish(point: TelemetryPoint) -> None` (ein
+  emittierter Punkt) / `stop()` (Disconnect, idempotent). Push zu einem Broker;
+  verhaltensnah zu `telemetry_sink.persist()` + `DeviceProtocolPort`-Lifecycle,
+  aber **driver-getrieben** (nicht `TickLoop`). Adapter Slice 073:
   `adapters/driven/field_publish_mqtt/` (paho-mqtt).
 - **`DeviceServerPort`** (driving), `hexagon/ports/driving/device_server.py`:
   `start()`/`stop()` = bind/listen/serve. Ein externer Master pollt; der Adapter
@@ -112,8 +114,12 @@ ADR 0075 legt zwei Schwester-Ports in der **Kompositions-/Driver-Schicht** fest
 - Beide teilen die **Current-Value-Projektion** (§2.2) als **Helper-Modul** —
   **keinen** Port-Vertrag ([`ADR 0011`](0011-schaerfung-ohne-abloesung.md)-
   Schwester-Muster; die zwei Rollen bleiben getrennt typisiert).
-- `TelemetryPoint` ist der bestehende driving-DTO
-  ([`ADR 0038`](0038-telemetry-stream-port.md)) — **kein** neuer Domain-Typ.
+- `TelemetryPoint` ist der **Domaenen**-Typ (`hexagon/core/domain/telemetry`,
+  [`GG-DATA-001`](../../../spec/lastenheft.md#gg-data-001)) — wie bei
+  `DeviceProtocolPort` (driven-Port → Domaenen-DTO, **kein** driven→driving-
+  Import; volle `Decimal`-Fidelity statt des `Decimal→float`-Verlusts der
+  driving-Stream-DTO). Der Driver speist `publish()` direkt aus
+  `TickResult.emitted_telemetry`.
 
 ### §2.2 Geteilter Hebel: Current-Value-Projektion (Helper, kein Port)
 
