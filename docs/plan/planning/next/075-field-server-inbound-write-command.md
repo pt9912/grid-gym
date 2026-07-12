@@ -1,7 +1,7 @@
 # 075 — Field-Server Inbound-Write→Command (Exogen-Input-Recording)
 
 **Status:** **Geplant (`next/`, 2026-07-12)** — konkret geplant, noch nicht
-aktiv; **haengt an** [`074`](../in-progress/074-field-server-modbus-server-adapter.md)
+aktiv; **haengt an** [`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort` Read-Serving). Ausgegliedert aus dem urspruenglichen
 074-Scope, weil der Determinismus-Vertrag eigenes Design + eine dedizierte
 Folge-ADR braucht ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
@@ -23,7 +23,7 @@ schreibt einen Sollwert (Modbus-Write-Register/-Coil) → grid-gym traegt ihn al
 
 ## Kontext / Ist
 
-- Read-Serving ([`074`](../in-progress/074-field-server-modbus-server-adapter.md)) ist replay-
+- Read-Serving ([`074`](../done/074-field-server-modbus-server-adapter.md)) ist replay-
   sicher (Projektion = reine Funktion der emittierten Telemetrie). **Schreiben**
   bricht das: der Command-Zeitpunkt haengt an der realen Ankunft des Live-Writes,
   nicht an gehashten Scenario-Daten.
@@ -71,7 +71,7 @@ Die ADR waehlt/kombiniert und versoehnt das mit
 - Pin-neutral ohne Inbound-Writes; `make gates` + `make docs-check` +
   `make fullbuild` gruen.
 - **Release-Entscheidung:** ja (Minor); SemVer-Ziel naechster Minor nach
-  [`074`](../in-progress/074-field-server-modbus-server-adapter.md).
+  [`074`](../done/074-field-server-modbus-server-adapter.md).
 
 ## Bezug
 
@@ -83,7 +83,7 @@ Die ADR waehlt/kombiniert und versoehnt das mit
   (Prozess-Grenze).
 - [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (HIL,
   vollstaendige SUT-Steuerbarkeit).
-- Vorgaenger: [`074`](../in-progress/074-field-server-modbus-server-adapter.md).
+- Vorgaenger: [`074`](../done/074-field-server-modbus-server-adapter.md).
 
 ## Risiken
 
@@ -98,7 +98,7 @@ Die ADR waehlt/kombiniert und versoehnt das mit
 
 ## Aktivierung
 
-**Nach** [`074`](../in-progress/074-field-server-modbus-server-adapter.md)-Closure und einem
+**Nach** [`074`](../done/074-field-server-modbus-server-adapter.md)-Closure und einem
 konkreten HIL-Steuerungs-Bedarf. Bis dahin `next/`. Bei Aktivierung →
 [`../in-progress/`](../in-progress/); nach S2-Closure + `make fullbuild` →
 [`../done/`](../done/).

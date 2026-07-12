@@ -1,11 +1,11 @@
 # 074 — Field-Server Modbus-Server-Adapter (`DeviceServerPort`, Pull, Read-Serving)
 
-**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-12).** Baut auf
-[`073`](../done/073-field-server-mqtt-publish-bridge.md) (Push-Seite, done) auf —
-nutzt die Kompositions-Schicht-Naht + das Integrationsgeschirr. Zieht
+**Status:** **Done (`done/`, 2026-07-12).** Baut auf
+[`073`](073-field-server-mqtt-publish-bridge.md) (Push-Seite, done) auf —
+nutzt die Kompositions-Schicht-Naht + das Integrationsgeschirr. Hat
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) mit
-**Closure** auf `Accepted` (Pull-Seite belegt).
-**Fortschritt:** C0 ✓ · C1a ✓ · C1b ✓ · C2 ✓ (Implementierung; adversarialer Review + Closure offen).
+**Closure** auf `Accepted` gezogen (Pull-Seite belegt).
+**Fortschritt:** C0 ✓ · C1a ✓ · C1b ✓ · C2 ✓ · adversarialer Review ✓ (1 HIGH float32-Tearing + 1 MEDIUM Robustheit + 3 LOW gefixt).
 **Datum:** 2026-07-12
 **Quelle:** [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §5 — die **Pull-Seite** (echtes bind/listen/serve), die die driving-Rolle
@@ -28,7 +28,7 @@ Self-Replay, eigene Slice + Folge-ADR;
 
 ## Kontext / Ist
 
-- Nach [`073`](../done/073-field-server-mqtt-publish-bridge.md) existiert die
+- Nach [`073`](073-field-server-mqtt-publish-bridge.md) existiert die
   Kompositions-Schicht-Naht (Driver-Fan-out + Lifecycle) + das
   Integrationsgeschirr. Der Pull-Server baut darauf, **aber** die Current-Value-
   Projektion + Register-Map + Encode sind **neue** Foundation (nicht „duenn" —
@@ -77,7 +77,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
   gruen; Server-Stack adapter-intern gekapselt.
 - `make gates` + `make docs-check` + `make fullbuild` gruen.
 - **Release-Entscheidung:** ja (Minor — Pull-Server + geteilte Projektion);
-  SemVer-Ziel naechster Minor nach [`073`](../done/073-field-server-mqtt-publish-bridge.md).
+  SemVer-Ziel naechster Minor nach [`073`](073-field-server-mqtt-publish-bridge.md).
 
 ## Bezug
 
@@ -89,7 +89,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 - [`GG-MODB-001`](../../../../spec/lastenheft.md#gg-modb-001) (Modbus-Profil-
   Anker, driven-Seite) + [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)
   (HIL) + [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Nur-Sim).
-- Vorgaenger: [`073`](../done/073-field-server-mqtt-publish-bridge.md); Folge:
+- Vorgaenger: [`073`](073-field-server-mqtt-publish-bridge.md); Folge:
   [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write).
 
 ## Risiken
@@ -110,6 +110,9 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
 
 ## Aktivierung
 
-**Nach** [`073`](../done/073-field-server-mqtt-publish-bridge.md)-Closure. Bis dahin
-`next/`. Bei Aktivierung → [`../in-progress/`](../in-progress/); nach C2-Closure
-+ `make fullbuild` → [`../done/`](../done/).
+Aktiviert nach [`073`](073-field-server-mqtt-publish-bridge.md)-Closure
+(2026-07-12), umgesetzt C0→C2 + adversarialer Review, dann nach `done/`
+verschoben. [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+auf `Accepted` gezogen (beide Schwester-Ports belegt). Gemeinsamer
+Field-Server-Release (mit [`073`](073-field-server-mqtt-publish-bridge.md))
+ausstehend — Runtime-Delta unter CHANGELOG `[Unreleased]`.

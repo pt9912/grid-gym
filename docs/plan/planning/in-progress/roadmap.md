@@ -27,13 +27,15 @@ Protokolladapter sind Client/Master"
 ([`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) und macht ein
 externes EMS (`bess-ems`) als System-under-Test anbindbar
 ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) HIL-Konkretisierung,
-keine eigene `GG-*`-ID). **Push-Seite
-[`073`](../done/073-field-server-mqtt-publish-bridge.md) done + review-gehaertet
-(2026-07-12)** → ADR `Provisional`; Runtime-Delta unter CHANGELOG `[Unreleased]`
-(**Release deferred** bis Pull-Seite). **Naechster aktiver Slice:
-[`074`](../in-progress/074-field-server-modbus-server-adapter.md)** (`DeviceServerPort`,
-Modbus-Server Read-Serving + geteilte Current-Value-Projektion → ADR `Accepted`),
-danach [`075`](../next/075-field-server-inbound-write-command.md)
+keine eigene `GG-*`-ID). **Beide Schwester-Ports done + review-gehaertet
+(2026-07-12):** Push-Seite
+[`073`](../done/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`/MQTT)
++ Pull-Seite [`074`](../done/074-field-server-modbus-server-adapter.md)
+(`DeviceServerPort`/Modbus-Server Read-Serving + geteilte Current-Value-
+Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
+**`Accepted`**. Runtime-Delta unter CHANGELOG `[Unreleased]` (**gemeinsamer
+Field-Server-Release ausstehend**). **Naechster Slice:
+[`075`](../next/075-field-server-inbound-write-command.md)**
 (Inbound-Write→Command, ausgegliedert). Offene Trigger (OTel-Bump, Vorwaerts-
 Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
@@ -169,12 +171,11 @@ Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md))
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
 `Provisional`, Design-first) —
 [`073`](../done/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
-Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) ist
-**done + review-gehaertet → ADR `Provisional`** (Release deferred, Runtime-Delta
-unter CHANGELOG `[Unreleased]`); als Naechstes
-[`074`](../in-progress/074-field-server-modbus-server-adapter.md)
+Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) und
+[`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
-Projektion → `Accepted` bei Closure) und
+Projektion) sind **done + review-gehaertet → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`**
+(Release ausstehend, Runtime-Delta unter CHANGELOG `[Unreleased]`); als Naechstes
 [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
 **ausgegliedert** samt Folge-ADR, weil Live-Writes das geschlossene Self-Replay
 brechen). Der Entwurf wurde nach zwei adversarialen Reviews von einem geteilten

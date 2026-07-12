@@ -13,7 +13,7 @@ Verankerung: **HIL-Konkretisierung von**
 `GG-*`-ID). Die Push-Seite
 ([`073`](../done/073-field-server-mqtt-publish-bridge.md)) ist **2026-07-12 done
 + review-gehaertet** → ADR `Provisional`; die Pull-Seite
-([`074`](../in-progress/074-field-server-modbus-server-adapter.md),
+([`074`](../done/074-field-server-modbus-server-adapter.md),
 `DeviceServerPort`/Modbus Read-Serving) ist **aktiv in `in-progress/`**. In
 `next/` verbleibt:
 

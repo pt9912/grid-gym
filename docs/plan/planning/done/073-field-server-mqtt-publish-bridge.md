@@ -29,7 +29,7 @@ Geraetetelemetrie an einen Broker exponiert. Niedrigstes Risiko: reiner Publish,
 kein Listening-Socket, keine Register-Map.
 
 **Bewusst NICHT Ziel** (Review-Korrektur): dieser Slice baut **keine** Current-
-Value-Projektion und macht [`074`](../in-progress/074-field-server-modbus-server-adapter.md)
+Value-Projektion und macht [`074`](074-field-server-modbus-server-adapter.md)
 **nicht** „duenn" — Push und Pull sind verschiedene Rollen (Schwester-Ports,
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §2.1).
 Was 073 fuer 074 vor-entlastet, ist die **Integrations-Plumbing + Driver-
@@ -132,12 +132,12 @@ Surfacing des Degrade-Status (`/healthcheck`-JSON) ist Folge-Kandidat.
 - [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (HIL) +
   [`GG-NONGOAL-001`](../../../../spec/lastenheft.md#gg-nongoal-001) /
   [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Sim/Prod).
-- Folge-Slice: [`074`](../in-progress/074-field-server-modbus-server-adapter.md) (Pull-Server,
+- Folge-Slice: [`074`](074-field-server-modbus-server-adapter.md) (Pull-Server,
   eigene Schwester-Port-Rolle).
 
 ## Entsperrt
 
-[`074`](../in-progress/074-field-server-modbus-server-adapter.md) (nutzt die Kompositions-
+[`074`](074-field-server-modbus-server-adapter.md) (nutzt die Kompositions-
 Schicht-Naht + das Integrationsgeschirr; baut den Pull-Port + die Projektion
 selbst).
 

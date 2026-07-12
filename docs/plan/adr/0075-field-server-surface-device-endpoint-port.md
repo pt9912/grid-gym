@@ -1,8 +1,9 @@
 # ADR 0075 — Field-Server-Surface: Schwester-Ports `FieldPublishPort` (Push) + `DeviceServerPort` (Pull), Kompositions-Schicht
 
-**Status:** Provisional (2026-07-12) — die Push-Seite (`FieldPublishPort`) ist
-geliefert + review-gehaertet; `Accepted` folgt, sobald die Pull-Seite
-(`DeviceServerPort`, bind/listen/serve) belegt ist. Zuvor Proposed — Design-first,
+**Status:** Accepted (2026-07-12) — **beide** Schwester-Ports belegt: die
+Push-Seite (`FieldPublishPort`, MQTT) und die Pull-Seite (`DeviceServerPort`,
+Modbus-TCP-Server mit Read-Serving, bind/listen/serve), je review-gehaertet.
+Zuvor Provisional (Push-Seite geliefert) und davor Proposed — Design-first,
 gezogen 2026-07-12 aus einer Architektur-
 Sichtung (README-Intro „stellt fuer ein EMS wie `bess-ems` simulierte Geraete
 bereit" vs. Ist-Stand „alle fuenf Protokolladapter sind Client/Master") und
