@@ -2,27 +2,30 @@
 
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
-abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
-Kein aktiver Slice; zuletzt abgeschlossen:
+abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
+(MVP-Linie); aktuelles Release **v0.5.0** (2026-07-12, Field-Server-Surface).
+**Aktiver Slice:**
+[`075`](075-field-server-inbound-write-command.md) (Field-Server
+Inbound-Write→`Command`). Zuletzt abgeschlossen 074/073 (Field-Server, v0.5.0),
+davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
 Quality-Fault →
 [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) erfuellt;
 [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3,
-Slice B = Last-Value-Cache + opt-in Snapshot; Runtime-Delta, Release
-`[Unreleased]`),
+Slice B = Last-Value-Cache + opt-in Snapshot; released **v0.4.0**),
 [`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
 `nan_injection`-Quality-Fault →
 [`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) erfuellt;
 [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) `Accepted`,
-Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
+Slice A = Foundation + NaN; released **v0.4.0**) und
 [`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
-Runtime-Delta, Release `[Unreleased]`).
+released **v0.4.0**).
 **Aktiver Arc:** die **Field-Server-Surface**
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
-`Provisional`; zwei Schwester-Ports in der Kompositions-Schicht, nach zwei
-adversarialen Reviews revidiert) — schliesst die Asymmetrie „alle
+`Accepted`, released **v0.5.0**; zwei Schwester-Ports in der Kompositions-Schicht,
+nach zwei adversarialen Reviews revidiert) — schliesst die Asymmetrie „alle
 Protokolladapter sind Client/Master"
 ([`ADR 0030`](../../adr/0030-device-protocol-port-surface.md)) und macht ein
 externes EMS (`bess-ems`) als System-under-Test anbindbar
@@ -33,9 +36,8 @@ keine eigene `GG-*`-ID). **Beide Schwester-Ports done + review-gehaertet
 + Pull-Seite [`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`/Modbus-Server Read-Serving + geteilte Current-Value-
 Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-**`Accepted`**. Runtime-Delta unter CHANGELOG `[Unreleased]` (**gemeinsamer
-Field-Server-Release ausstehend**). **Naechster Slice:
-[`075`](../next/075-field-server-inbound-write-command.md)**
+**`Accepted`**, released als **v0.5.0** (2026-07-12). **Aktiver Slice:
+[`075`](075-field-server-inbound-write-command.md)**
 (Inbound-Write→Command, ausgegliedert). Offene Trigger (OTel-Bump, Vorwaerts-
 Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
@@ -108,7 +110,11 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-12):
+**Aktiver Slice:** [`075`](075-field-server-inbound-write-command.md)
+(Field-Server Inbound-Write→`Command`, S0 = dedizierte Folge-ADR). Zuletzt
+abgeschlossen (2026-07-12) die Field-Server-Pull-/Push-Seite
+[`074`](../done/074-field-server-modbus-server-adapter.md)/[`073`](../done/073-field-server-mqtt-publish-bridge.md)
+(→ **v0.5.0**), davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
 Quality-Fault →
 [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) „Stale Data"
@@ -117,8 +123,7 @@ Value-Cache und liefert aktiv den letzten gueltigen Wert weiter, bis `max_age`
 ueberschritten ist → `quality=stale` — **kein** Alarm; der Cache ueberlebt den
 Snapshot opt-in (byte-identisch ohne Vorwert);
 [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3
-(Slice B, obenauf der Slice-071-Foundation); Runtime-Delta → Release
-`[Unreleased]`); davor
+(Slice B, obenauf der Slice-071-Foundation); released **v0.4.0**); davor
 [`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
 `nan_injection`-Quality-Fault →
 [`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) „NaN-Injection"
@@ -128,14 +133,13 @@ markiert matchende `(Ziel, Metrik)`-Punkte mit Sentinel `Decimal("0")` +
 numerischer NaN, Geraet unberuehrt;
 [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) `Accepted`
 (Slice A = Foundation + NaN; Last-Value-Cache + `stale_data`/[`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) =
-Slice B); opt-in, byte-identisch fuer Szenarien ohne den Fault; Runtime-Delta →
-Release `[Unreleased]`) +
+Slice B); opt-in, byte-identisch fuer Szenarien ohne den Fault; released
+**v0.4.0**) +
 [`070`](../done/070-gg-fault-004-frequency-drop.md) (dedizierter
 `frequency_drop`-Fault auf dem `grid_connection`-Geraet →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) „Frequenzabfaelle"
 erfuellt: Payload `frequency_hz`/`delta_hz`, opt-in Grid-Telemetrie + Alarm,
-byte-identisch fuer Szenarien ohne den Fault; Runtime-Delta → Release
-`[Unreleased]`) +
+byte-identisch fuer Szenarien ohne den Fault; released **v0.4.0**) +
 [`066`](../done/066-traceability-recut-delegate-27-2.md) (traceability.md-Re-Cut —
 §27.2 „Anforderung→Implementierung" inkl. Status-Matrix entfernt und an
 `make doc-trace` delegiert; [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment; §27.1/§27.3 bleiben kuratiert) +
@@ -169,14 +173,14 @@ Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md))
 
 **Aktiver Arc** (2026-07-12): **Field-Server-Surface** (drei Slices auf
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
-`Provisional`, Design-first) —
+`Accepted`, Design-first) —
 [`073`](../done/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
 Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) und
 [`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
-Projektion) sind **done + review-gehaertet → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`**
-(Release ausstehend, Runtime-Delta unter CHANGELOG `[Unreleased]`); als Naechstes
-[`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
+Projektion) sind **done + review-gehaertet → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`**,
+**released als v0.5.0** (2026-07-12); **aktiv** ist jetzt
+[`075`](075-field-server-inbound-write-command.md) (Inbound-Write→Command,
 **ausgegliedert** samt Folge-ADR, weil Live-Writes das geschlossene Self-Replay
 brechen). Der Entwurf wurde nach zwei adversarialen Reviews von einem geteilten
 Kern-`TickLoop`-Port auf **zwei Schwester-Ports in der Kompositions-Schicht**
@@ -218,5 +222,5 @@ die Release-Entscheidung **pro Slice**: jeder Slice-Plan traegt ein DoD-Feld
   „kein Doku-only-Release" (Runtime-Delta-Pflicht) + `make fullbuild` vor dem
   Tag. SemVer folgt dem Delta (Minor bei additiven Features, Patch bei Fixes).
 
-Aktuelles Release: **v0.3.0** (2026-07-03, Slice 038 — erster
-Release unter dem Slice-Release-Modell).
+Aktuelles Release: **v0.5.0** (2026-07-12, Field-Server-Surface —
+Slices 073/074 auf [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)).

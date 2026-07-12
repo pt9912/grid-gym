@@ -1,11 +1,12 @@
 # 075 — Field-Server Inbound-Write→Command (Exogen-Input-Recording)
 
-**Status:** **Geplant (`next/`, 2026-07-12)** — konkret geplant, noch nicht
-aktiv; **haengt an** [`074`](../done/074-field-server-modbus-server-adapter.md)
-(`DeviceServerPort` Read-Serving). Ausgegliedert aus dem urspruenglichen
-074-Scope, weil der Determinismus-Vertrag eigenes Design + eine dedizierte
-Folge-ADR braucht ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-§7).
+**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-12).** Baut auf
+[`074`](../done/074-field-server-modbus-server-adapter.md) (`DeviceServerPort`
+Read-Serving, done) auf. Ausgegliedert aus dem urspruenglichen 074-Scope, weil
+der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
+([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
+**Fortschritt:** S0 (Folge-ADR) begonnen — gegroundetes A/B-Design-Assessment
+(Write-Journal-Re-Injektion vs. record-only) vor dem ADR-Lock; S1/S2 offen.
 **Datum:** 2026-07-12
 **Quelle:** Design- + Plan-Review 2026-07-12 — ein Live-Master-Write ist
 **exogener** Input zu Wall-Clock-Zeit; grid-gyms geschlossenes Self-Replay
@@ -98,7 +99,6 @@ Die ADR waehlt/kombiniert und versoehnt das mit
 
 ## Aktivierung
 
-**Nach** [`074`](../done/074-field-server-modbus-server-adapter.md)-Closure und einem
-konkreten HIL-Steuerungs-Bedarf. Bis dahin `next/`. Bei Aktivierung →
-[`../in-progress/`](../in-progress/); nach S2-Closure + `make fullbuild` →
+Aktiviert nach [`074`](../done/074-field-server-modbus-server-adapter.md)-Closure
+(2026-07-12) → `in-progress/`. Nach S2-Closure + `make fullbuild` →
 [`../done/`](../done/).

@@ -22,7 +22,7 @@ Holding-/Input-Register. **Read-Serving only.** Traeger der geteilten
 die driving/bind-listen-Rolle belegt → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) wird bei Closure `Accepted`.
 
 **Bewusst NICHT Ziel:** Inbound-Write→Command — ausgegliedert in
-[`075`](../next/075-field-server-inbound-write-command.md) (bricht das geschlossene
+[`075`](../in-progress/075-field-server-inbound-write-command.md) (bricht das geschlossene
 Self-Replay, eigene Slice + Folge-ADR;
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
 
@@ -90,7 +90,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
   Anker, driven-Seite) + [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)
   (HIL) + [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Nur-Sim).
 - Vorgaenger: [`073`](073-field-server-mqtt-publish-bridge.md); Folge:
-  [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write).
+  [`075`](../in-progress/075-field-server-inbound-write-command.md) (Inbound-Write).
 
 ## Risiken
 
