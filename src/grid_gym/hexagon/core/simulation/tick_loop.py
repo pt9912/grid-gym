@@ -104,6 +104,7 @@ from grid_gym.hexagon.ports.driven.device_protocol import (
     DeviceProtocolPortError,
 )
 from grid_gym.hexagon.ports.driven.fault import FaultPort
+from grid_gym.hexagon.ports.driven.inbound_command import InboundCommandPort
 from grid_gym.hexagon.ports.driven.observability import (
     LogEntry,
     LogPort,
@@ -306,6 +307,7 @@ class TickLoop:
         active_load_profiles: tuple[LoadProfile, ...] = (),
         fault_port: FaultPort | None = None,
         command_engine: ScenarioCommandEngine | None = None,
+        inbound_source: InboundCommandPort | None = None,
         agent_bus: AgentMessageBus | None = None,
         agents: tuple[Agent, ...] = (),
         log_port: LogPort | None = None,
@@ -351,6 +353,9 @@ class TickLoop:
         # scenario-geplante Commands im Vor-Tick-Block-Schritt A0s. `None`
         # skippt den Hook (Bestands-Szenarien ohne `commands` bit-genau).
         self._command_engine: ScenarioCommandEngine | None = command_engine
+        # ADR 0076 (Slice 075): der optionale InboundCommandPort (Vor-Tick-
+        # Schritt A0i) wird in `_attach_control_state` gehalten — haelt `__init__`
+        # unter dem PLR0915-Statement-Limit (Muster wie `telemetry_sink`).
         # M7-Welle-1a telemetry_sink wird in `_attach_control_state`
         # neben `run_repository` gehalten (Driven-Persistenz-Sibling) —
         # haelt `__init__` unter dem PLR0915-Statement-Limit.
@@ -427,6 +432,7 @@ class TickLoop:
             replay_snapshot,
             replay_reference_run_id,
             alarm_id_source,
+            inbound_source,
         )
         # M7-Welle-3a (ADR 0052 §2.1): optionale `max_age`-Schwelle
         # fuer die STALE-Stage in `tick()`. `None` (Default) = Stage
@@ -565,6 +571,7 @@ class TickLoop:
         replay_snapshot: ReplaySnapshotPort | None,
         replay_reference_run_id: str | None,
         alarm_id_source: Callable[[], str] | None,
+        inbound_source: InboundCommandPort | None = None,
     ) -> None:
         """Run-Lifecycle-State-Setup-Bundle (Welle-4a Control-State +
         M7-Welle-1a Telemetrie-Sink + M7-Welle-1b-b Replay-Snapshot +
@@ -574,7 +581,11 @@ class TickLoop:
         Alarm-Aggregation), alle lesen optional `app.state`-Parameter
         aus dem Konstruktor."""
         self._attach_control_state(
-            run_repository, telemetry_sink, replay_snapshot, replay_reference_run_id
+            run_repository,
+            telemetry_sink,
+            replay_snapshot,
+            replay_reference_run_id,
+            inbound_source,
         )
         self._attach_alarm_id_source(alarm_id_source)
 
@@ -596,6 +607,7 @@ class TickLoop:
         telemetry_sink: TelemetrySinkPort | None,
         replay_snapshot: ReplaySnapshotPort | None,
         replay_reference_run_id: str | None,
+        inbound_source: InboundCommandPort | None = None,
     ) -> None:
         """M5-Welle-4a (ADR 0039 Decisions 12+13): Run-Control-State-
         Mirror + optionale Repository-Persistenz. `_control_state`
@@ -615,6 +627,9 @@ class TickLoop:
         # `run_repository` — append-only Telemetrie-Zeitreihen-Sink,
         # pro Tick aus dem Spine bedient (`None` → No-op-Skip).
         self._telemetry_sink: TelemetrySinkPort | None = telemetry_sink
+        # ADR 0076 (Slice 075): Field-Server-Inbound-Command-Quelle fuer den
+        # Vor-Tick-Schritt A0i (`None` → No-op, Bestands-Laeufe byte-identisch).
+        self._inbound_source: InboundCommandPort | None = inbound_source
         # M7-Welle-1b-b (ADR 0049 §2.1/§2.2): Replay-Lifecycle-State.
         # `replay_snapshot` rekonstruiert `expected`/`actual`-
         # ReplaySample-Sequenzen; `replay_reference_run_id` ist die
@@ -1271,9 +1286,9 @@ class TickLoop:
         Slice 027 Paket D: Schritt-A0a/A2/D2 in eigene Helper-Methoden
         extrahiert (`_apply_pending_agent_commands`,
         `_apply_fault_injection`, `_run_agent_tick_phase`); PLR0915-Drop.
-        Reihenfolge bleibt zwingend A0s → A0a → A → A2 → B → C → D → D2 → E
-        (ADR 0026 §2.1 + ADR 0070 §2.3 fuer A0s; Determinismus-Vertrag aus
-        M3-Welle-2-Property-Tests).
+        Reihenfolge bleibt zwingend A0s → A0a → A0i → A → A2 → B → C → D → D2 → E
+        (ADR 0026 §2.1 + ADR 0070 §2.3 fuer A0s; ADR 0076 §2.3 fuer A0i;
+        Determinismus-Vertrag aus M3-Welle-2-Property-Tests).
         """
         self._obs_log(
             "info",
@@ -1330,6 +1345,10 @@ class TickLoop:
             self._apply_scenario_commands(context, manual_override_grid_ids)
             # Schritt A0a — Apply der in A0v validierten Pending-Agent-Commands.
             self._apply_pending_agent_commands(commands_to_apply, manual_override_grid_ids)
+            # Schritt A0i — Field-Server-Inbound-Writes (ADR 0076 §2.3) NACH den
+            # Agent-Commands: der externe Master hat das letzte Wort (last-wins,
+            # ADR 0013), Ordnung scenario→agent→inbound.
+            self._apply_inbound_commands(context, manual_override_grid_ids)
             # Schritt A — Vor-Tick-Block (ADR 0021 §2.5).
             # Welle-6b-Review H-3: Event-Window-Check nutzt die
             # Tick-Start-Zeit (`now - tick_ms`).
@@ -1544,6 +1563,36 @@ class TickLoop:
             return
         for command in self._command_engine.due_commands(context):
             target = self._device_by_id[command.target_device_id]
+            target.apply_command(command)
+            if (
+                isinstance(target, GridConnectionDevice)
+                and target.device_id not in manual_override_grid_ids
+            ):
+                manual_override_grid_ids.append(target.device_id)
+
+    def _apply_inbound_commands(
+        self,
+        context: DeviceTickContext,
+        manual_override_grid_ids: list[str],
+    ) -> None:
+        """Schritt A0i (ADR 0076 §2.3) — Field-Server-Inbound-Writes.
+
+        Zieht die im aktuellen Tick faelligen Inbound-Writes aus dem
+        `InboundCommandPort` (auf `context.simulation_time` aufgeloest, stabile
+        `arrival_sequence`-Reihenfolge) und stellt sie an ihre Target-Devices zu
+        (`device.apply_command`), **nach** den Agent-Commands (A0a): der externe
+        Master ueberschreibt (last-wins, ADR 0013). Anders als bei A0s/A0a
+        stammt das Target von einem externen Write — ein unbekanntes Ziel wird
+        **defensiv uebersprungen** (kein `KeyError`). Commands auf
+        GridConnection-IDs zaehlen wie Agent-Commands als manueller
+        Auto-Close-Override. `None`-Port skippt sauber (Bestands-Laeufe
+        byte-identisch)."""
+        if self._inbound_source is None:
+            return
+        for command in self._inbound_source.drain_due(context):
+            target = self._device_by_id.get(command.target_device_id)
+            if target is None:
+                continue
             target.apply_command(command)
             if (
                 isinstance(target, GridConnectionDevice)

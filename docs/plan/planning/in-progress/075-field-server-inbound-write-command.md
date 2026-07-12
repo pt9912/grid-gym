@@ -5,9 +5,10 @@
 Read-Serving, done) auf. Ausgegliedert aus dem urspruenglichen 074-Scope, weil
 der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
-**Fortschritt:** S0 ✓ — Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-(`Proposed`) zurrt nach gegroundetem A/B-Design-Assessment **Modell B**
-(record-only + Materialisierung; Capture Option-A-kompatibel) fest. S1/S2 offen.
+**Fortschritt:** S0 ✓ (Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+`Proposed`, **Modell B**) · **S1a ✓** (Kern-Naht: Vor-Tick-Schritt A0i +
+`InboundCommandPort` + `InboundCommandBuffer`/Capture, unit-getestet) · S1b/S2
+offen (Modbus-Write-Handler + Driver-Wiring + Materialisierung).
 **Datum:** 2026-07-12
 **Quelle:** Design- + Plan-Review 2026-07-12 — ein Live-Master-Write ist
 **exogener** Input zu Wall-Clock-Zeit; grid-gyms geschlossenes Self-Replay
@@ -61,7 +62,8 @@ nachruestbar, §2.6).
 | Slice | Inhalt | Rolle / Artefakt |
 | --- | --- | --- |
 | **S0** ✓ | Dedizierte Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) (`Proposed`): Exogen-Input-Recording-Modell **B** entschieden (record-only + Materialisierung, Capture Option-A-kompatibel), Determinismus-Vertrag + Snapshot-Grenze fixiert; gegroundetes A/B-Design-Assessment am Command-/Replay-/Snapshot-Code | Architect / ADR |
-| **S1** | Write→`Command`-Naht: Modbus-Write-Register → `Command` am Adapter-Rand; additive Vor-Tick-Stufe **A0i** (Ordnung scenario→agent→inbound, Next-Tick-Puffer fuer Mid-Tick, `arrival_sequence`-Tie-Break); Capture append-only/wall-clock-frei per `run_id` (ueberlebt die [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)-Prozessgrenze). **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** | Implementation |
+| **S1a** ✓ | **Kern-Naht (pymodbus-frei, unit-getestet):** driven `InboundCommandPort` (`hexagon/ports/driven/inbound_command.py`; Kern *pullt* pro Tick) + additive Vor-Tick-Stufe **A0i** im `TickLoop` (Ordnung scenario→agent→inbound, `None`-Skip → Bestands-Laeufe byte-identisch, defensiver Skip fuer unbekannte Targets) + `InboundCommandBuffer` (`adapters/driving/_inbound_command_buffer.py`: thread-sicherer Puffer, `arrival_sequence`, Next-Tick-Aufloesung auf `context.simulation_time`, `InboundWriteCapture`-Aufzeichnung). Buffer/Capture volatil (kein Snapshot-Slot) | Implementation |
+| **S1b** | **Modbus-Write + Wiring + Materialisierung:** Modbus-Write-Register (FC06/FC16) am Server-Adapter-Rand → dekodieren → `InboundCommandBuffer.enqueue` (Cross-Thread); Driver-/Composition-Wiring (Buffer als `inbound_source` in den `TickLoop` **und** in den Server-Adapter injiziert); Capture append-only/wall-clock-frei per `run_id` (ueberlebt die [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)-Prozessgrenze) + Materialisierung in einen Szenario-`commands`-Block. **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** | Implementation |
 | **S2** | **Determinismus-E2E:** der erfasste Write-Strom wird in einen Szenario-`commands`-Block **materialisiert** + ueber A0s zweimal abgespielt → byte-identische Telemetrie; Ordnung scenario→agent→inbound belegt. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`** | Implementation |
 
 ## DoD
