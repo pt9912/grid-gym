@@ -31,7 +31,7 @@ keine eigene `GG-*`-ID). **Push-Seite
 [`073`](../done/073-field-server-mqtt-publish-bridge.md) done + review-gehaertet
 (2026-07-12)** → ADR `Provisional`; Runtime-Delta unter CHANGELOG `[Unreleased]`
 (**Release deferred** bis Pull-Seite). **Naechster aktiver Slice:
-[`074`](../next/074-field-server-modbus-server-adapter.md)** (`DeviceServerPort`,
+[`074`](../in-progress/074-field-server-modbus-server-adapter.md)** (`DeviceServerPort`,
 Modbus-Server Read-Serving + geteilte Current-Value-Projektion → ADR `Accepted`),
 danach [`075`](../next/075-field-server-inbound-write-command.md)
 (Inbound-Write→Command, ausgegliedert). Offene Trigger (OTel-Bump, Vorwaerts-
@@ -172,7 +172,7 @@ Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md))
 Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) ist
 **done + review-gehaertet → ADR `Provisional`** (Release deferred, Runtime-Delta
 unter CHANGELOG `[Unreleased]`); als Naechstes
-[`074`](../next/074-field-server-modbus-server-adapter.md)
+[`074`](../in-progress/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
 Projektion → `Accepted` bei Closure) und
 [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write→Command,

@@ -1,10 +1,10 @@
 # 074 — Field-Server Modbus-Server-Adapter (`DeviceServerPort`, Pull, Read-Serving)
 
-**Status:** **Geplant (`next/`, 2026-07-12)** — konkret geplant, noch nicht
-aktiv; **haengt an** [`073`](../done/073-field-server-mqtt-publish-bridge.md)
-(Kompositions-Schicht-Naht + Integrationsgeschirr). Zieht
+**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-12).** Baut auf
+[`073`](../done/073-field-server-mqtt-publish-bridge.md) (Push-Seite, done) auf —
+nutzt die Kompositions-Schicht-Naht + das Integrationsgeschirr. Zieht
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) mit
-**Closure** auf `Accepted`.
+**Closure** auf `Accepted` (Pull-Seite belegt).
 **Datum:** 2026-07-12
 **Quelle:** [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §5 — die **Pull-Seite** (echtes bind/listen/serve), die die driving-Rolle
@@ -21,7 +21,7 @@ Holding-/Input-Register. **Read-Serving only.** Traeger der geteilten
 die driving/bind-listen-Rolle belegt → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) wird bei Closure `Accepted`.
 
 **Bewusst NICHT Ziel:** Inbound-Write→Command — ausgegliedert in
-[`075`](075-field-server-inbound-write-command.md) (bricht das geschlossene
+[`075`](../next/075-field-server-inbound-write-command.md) (bricht das geschlossene
 Self-Replay, eigene Slice + Folge-ADR;
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
 
@@ -89,7 +89,7 @@ Current-Value-Projektion (last-write-wins, tick-frame-atomar, §2.2).
   Anker, driven-Seite) + [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)
   (HIL) + [`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007) (Nur-Sim).
 - Vorgaenger: [`073`](../done/073-field-server-mqtt-publish-bridge.md); Folge:
-  [`075`](075-field-server-inbound-write-command.md) (Inbound-Write).
+  [`075`](../next/075-field-server-inbound-write-command.md) (Inbound-Write).
 
 ## Risiken
 

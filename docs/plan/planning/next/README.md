@@ -12,13 +12,11 @@ Verankerung: **HIL-Konkretisierung von**
 [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (keine eigene
 `GG-*`-ID). Die Push-Seite
 ([`073`](../done/073-field-server-mqtt-publish-bridge.md)) ist **2026-07-12 done
-+ review-gehaertet** → ADR `Provisional`. Naechste Kandidaten:
++ review-gehaertet** → ADR `Provisional`; die Pull-Seite
+([`074`](../in-progress/074-field-server-modbus-server-adapter.md),
+`DeviceServerPort`/Modbus Read-Serving) ist **aktiv in `in-progress/`**. In
+`next/` verbleibt:
 
-- [`074-field-server-modbus-server-adapter.md`](074-field-server-modbus-server-adapter.md)
-  — `DeviceServerPort` (driving, Pull): Modbus-Server Read-Serving + die geteilte
-  Current-Value-Projektion. Zieht
-  [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) bei
-  Closure auf `Accepted`. Haengt an `073`. **Read-serving only.**
 - [`075-field-server-inbound-write-command.md`](075-field-server-inbound-write-command.md)
   — Inbound-Write→Command, **ausgegliedert** samt dedizierter Folge-ADR: ein
   Live-Master-Write ist exogener Input und bricht das geschlossene Self-Replay.
