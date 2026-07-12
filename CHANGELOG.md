@@ -25,20 +25,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Nur-Sim-Netz). ADR 0075 auf `Provisional` (Pull-Seite `DeviceServerPort`
   folgt). **Release deferred** bis die Pull-Seite geliefert ist (gemeinsamer
   Field-Server-Release).
-- **Field-Server Pull-Seite — Kern (Slice 074 C1b, ADR 0075 §2.1):** Neuer
-  `device_server_modbus`-Adapter (pymodbus-freier Kern + Adapter-Shell):
-  `ModbusServerConfig`/`RegisterMapping` (fail-fast + Register-Overlap-Check),
-  `RegisterMap` (on-demand-Berechnung aus der Current-Value-Projektion:
-  Holding-Register = `float32`/2-Register-Big-Endian via Encode-Oracle
-  `struct.pack('>f', float(v))`, Discrete-Input = Quality-`VALID`-Flag),
-  typisierte `DeviceServerPort`-Fehler und `ModbusDeviceServerAdapter`
-  (Runner-Injektion; `_preflight_bind` macht Bind-in-use zu einem synchronen
-  harten Fehler vor dem ersten Tick, ADR 0075 §2.4). Kern/Lifecycle/Bind-Fehler
-  unit-getestet. Der **reale pymodbus-Server** ist nach Slice 074 C2 verschoben:
-  pymodbus 3.13 hat den Datastore auf `SimData`/`SimDevice` umgebaut (der alte
-  Shim serviert nur statisch — `async_setValues` → `DEVICE_BUSY`), das
-  dynamische Serving ist nur mit echtem pollenden Master (Read-E2E) verifizierbar.
-  Nur Sim-/Testadapter (keine produktive Anlagensteuerung; Nur-Sim-Netz).
+- **Field-Server Pull-Seite (Slice 074, ADR 0075 §2.1):** Neuer
+  `device_server_modbus`-Adapter — grid-gym als Modbus-TCP-**Server/Slave**, den
+  ein externes EMS (System-under-Test) als **Master** pollt (HIL-Konkretisierung
+  von GG-TEST-004). `ModbusDeviceServerAdapter` implementiert den driving-seitigen
+  `DeviceServerPort` (Schwester zu `FieldPublishPort`/Push aus Slice 073); geteilter
+  Hebel = die Current-Value-Projektion (last-write-wins pro `(device_id, metric)`,
+  tick-frame-atomar, aus `TickResult.emitted_telemetry`). Holding-Register =
+  `float32`/2-Register-Big-Endian via Encode-Oracle `struct.pack('>f', float(v))`,
+  Quality als Discrete-Input (`VALID`-Flag). Server läuft im adapter-internen
+  Loop-Thread über ein pymodbus-3.13-`SimDevice`/`SimCore`; ein Refresh-Task pusht
+  die on-demand aus der Projektion gerechneten Register via `async_setValues`
+  (initialer Push vor `start()` → erster Poll deterministisch). Bind-in-use =
+  synchroner harter Fehler vor dem ersten Tick (`_preflight_bind`, ADR 0075 §2.4);
+  `stop()` idempotent + graceful. **Read-E2E** verifiziert mit echtem
+  pymodbus-Master gegen das Encode-Oracle. Determinismus/Replay: Server-State
+  volatil (kein Snapshot-Slot, ADR 0075 §2.5); ohne konfigurierten Server
+  byte-identisch. Nur Sim-/Testadapter (keine produktive Anlagensteuerung;
+  Modbus-TCP ohne Auth/TLS → Nur-Sim-Netz). **Release deferred** bis Closure
+  (gemeinsamer Field-Server-Release mit Slice 073).
 
 ## [0.4.0] - 2026-07-12
 

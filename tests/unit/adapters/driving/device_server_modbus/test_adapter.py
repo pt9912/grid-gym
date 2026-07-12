@@ -180,24 +180,7 @@ def test_preflight_bind_occupied_port_raises() -> None:
         occupant.close()
 
 
-# --- Default-Runner: Bind-Check real, Serving nach C2 verwiesen -------------
-
-
-def test_default_runner_binds_then_defers_serving_to_c2() -> None:
-    # Freier Port → Preflight-Bind passiert, dann NotImplementedError
-    # (reale pymodbus-3.13-SimData/SimDevice-Verdrahtung ist Slice 074 C2).
-    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    probe.bind(("127.0.0.1", 0))
-    port = probe.getsockname()[1]
-    probe.close()
-    config = ModbusServerConfig(
-        bind_host="127.0.0.1",
-        bind_port=port,
-        register_map=(RegisterMapping("meter-1", "voltage_v", 0),),
-    )
-    register_map = RegisterMap(config, CurrentValueProjection())
-    with pytest.raises(NotImplementedError):
-        _default_server_runner(config, register_map)
+# --- Default-Runner: synchroner Bind-in-use-Hard-Error ----------------------
 
 
 def test_default_runner_bind_in_use_is_hard_error() -> None:
