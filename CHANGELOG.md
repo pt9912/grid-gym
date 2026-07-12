@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-12
+
+**Minor — Field-Server-Surface: die driving-seitige Server-/Outstation-Gegenrolle.**
+Flush der seit v0.4.0 unter `[Unreleased]` aufgelaufenen Arbeit; Release
+ausgeloest durch das Runtime-Delta der Field-Server-Surface
+([`ADR 0075`](docs/plan/adr/0075-field-server-surface-device-endpoint-port.md),
+`Accepted`): **zwei Schwester-Ports**, damit ein externes EMS (System-under-Test,
+z. B. `bess-ems`) grid-gyms simulierte Geraete als HIL/SUT konsumieren kann —
+`FieldPublishPort`/MQTT-Push (Slice 073) + `DeviceServerPort`/Modbus-TCP-Server
+mit Read-Serving (Slice 074), je adversarial review-gehaertet. Additiv + opt-in:
+ohne konfigurierten Broker/Server byte-identisch (Demo-Hash-Pins +
+`scenario_hash` unberuehrt) — SemVer-Minor. Nur Sim-/Testadapter (keine
+produktive Anlagensteuerung; Nur-Sim-Netz). Inbound-Write→`Command` ist
+ausgegliedert (Slice 075, offen). `make fullbuild` cache-frei gruen vor dem Tag.
+
 ### Added
 
 - **Field-Server Push-Seite (Slice 073, ADR 0075):** Neue driving-seitige
@@ -22,9 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `asyncio.to_thread` (kein Event-Loop-Stall); Publish-Fehler degradieren
   graceful mit beobachtbarem `field_publish_status` (off/active/degraded). Nur
   Sim-/Testadapter (keine produktive Anlagensteuerung; Broker-Exposure ist
-  Nur-Sim-Netz). ADR 0075 auf `Provisional` (Pull-Seite `DeviceServerPort`
-  folgt). **Release deferred** bis die Pull-Seite geliefert ist (gemeinsamer
-  Field-Server-Release).
+  Nur-Sim-Netz). ADR 0075 mit dieser Push-Seite auf `Provisional` gezogen
+  (Pull-Seite `DeviceServerPort` → `Accepted`, s. u.).
 - **Field-Server Pull-Seite (Slice 074, ADR 0075 §2.1):** Neuer
   `device_server_modbus`-Adapter — grid-gym als Modbus-TCP-**Server/Slave**, den
   ein externes EMS (System-under-Test) als **Master** pollt (HIL-Konkretisierung
@@ -42,8 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pymodbus-Master gegen das Encode-Oracle. Determinismus/Replay: Server-State
   volatil (kein Snapshot-Slot, ADR 0075 §2.5); ohne konfigurierten Server
   byte-identisch. Nur Sim-/Testadapter (keine produktive Anlagensteuerung;
-  Modbus-TCP ohne Auth/TLS → Nur-Sim-Netz). **Release deferred** bis Closure
-  (gemeinsamer Field-Server-Release mit Slice 073).
+  Modbus-TCP ohne Auth/TLS → Nur-Sim-Netz). Adversarialer Review bei Closure fing
+  1 HIGH (float32-Tearing → `RegisterMap.render()` rechnet den Frame aus einem
+  Snapshot) + 1 MEDIUM (robustes, totales `encode_float32`) + 3 LOW. Mit dieser
+  Pull-Seite ist ADR 0075 `Accepted` (beide Schwester-Ports belegt).
 
 ## [0.4.0] - 2026-07-12
 
