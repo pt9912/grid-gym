@@ -54,6 +54,7 @@ from grid_gym.hexagon.core.domain.fault import (
     FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
     FAULT_TYPE_NAN_INJECTION,
+    FAULT_TYPE_STALE_DATA,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
 )
@@ -156,10 +157,12 @@ eintragen oder eine Plugin-Form an ADR 0022 §2.2 verankern. Welle-6a-
 Review F9: Keys sind `FAULT_TYPE_*`-Konstanten aus
 `hexagon/core/faults/types.py` (Single-Source-of-Truth)."""
 
-_METRIC_ADDRESSED_FAULT_TYPES: Final[frozenset[str]] = frozenset({FAULT_TYPE_NAN_INJECTION})
-"""ADR 0074 §2.1/§2.7 (Slice 071): metrik-adressierte Quality-Fault-
-Typen (`nan_injection`; Slice B ergaenzt `stale_data`). Bewusst NICHT
-in `_FAULT_TYPE_TO_DEVICE_TYPE`: der Fault adressiert ein
+_METRIC_ADDRESSED_FAULT_TYPES: Final[frozenset[str]] = frozenset(
+    {FAULT_TYPE_NAN_INJECTION, FAULT_TYPE_STALE_DATA}
+)
+"""ADR 0074 §2.1/§2.7 (Slice 071/072): metrik-adressierte Quality-Fault-
+Typen (`nan_injection`, `stale_data`). Bewusst NICHT in
+`_FAULT_TYPE_TO_DEVICE_TYPE`: der Fault adressiert ein
 **(Ziel, Metrik)**-Paar, nicht einen Device-**Physik**-Typ — das Ziel
 darf JEDES Geraet sein, das die Metrik emittiert. Der
 device-Typ-Match-Check greift daher nicht; die Cross-Field-Validierung

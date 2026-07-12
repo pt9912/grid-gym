@@ -742,6 +742,22 @@ class ScenarioUnknownFaultTargetError(ScenarioError):
         super().__init__(f"scenario fault targets unknown device: {target!r}")
 
 
+class ScenarioInvalidStaleDataMaxAgeError(ScenarioError):
+    """Ein `stale_data`-Fault traegt ein `payload["max_age_ms"]`, das
+    kein positiver `int` ist (ADR 0074 §2.1, Slice 072).
+
+    Der Typ-Check (`int`, kein `bool`) laeuft ueber `_assert_int`; diese
+    Wert-Grenze (`> 0`) ist eine eigene Policy-Verletzung — ein
+    nicht-positives Alter-Fenster ist fachlich sinnlos (die STALE-
+    Grenze `(now - cached_time) > max_age_ms` waere sofort oder nie
+    erfuellt). Fail-fast im Scenario-Validator, bevor der
+    `QualityFaultRuntime` gebaut wird.
+    """
+
+    def __init__(self, path: str, value: int) -> None:
+        super().__init__(f"scenario {path!r}.payload.max_age_ms must be positive, got {value}")
+
+
 class ScenarioUnknownCommandTargetError(ScenarioError):
     """Ein scenario-geplanter Command referenziert eine Geraete-ID, die
     nicht in `devices` definiert ist (ADR 0070, Trigger 046).

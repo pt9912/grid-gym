@@ -1,20 +1,16 @@
 # 072 — Dedizierter `stale_data`-Fault (Stale Data)
 
-**Status:** Next — geplant, **Design entschieden** ([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3),
-noch nicht aktiv. 2026-07-11
-**Datum:** 2026-07-11
+**Status:** Done — geliefert 2026-07-12
+([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3,
+Slice B). Design entschieden 2026-07-11.
+**Datum:** 2026-07-11 (geplant) / 2026-07-12 (geschlossen)
 **Quelle:** GG-FAULT-Konsolidierung (RTM meldete 0 Waisen, verbarg die Luecke).
 [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) (MUSS) hatte keinen
-dedizierten Fault-Typ. Slice A ([`071`](../done/071-gg-fault-003-nan-injection.md),
+dedizierten Fault-Typ. Slice A ([`071`](071-gg-fault-003-nan-injection.md),
 `nan_injection`) lieferte die **Foundation** (metrik-adressierte Quality-Fault-
 Spine-Stage `QualityFaultRuntime` + `_apply_quality_fault_stage`, Validator-Muster,
-Whitelist-Entkopplung). **Dieser Slice B** ergaenzt nur das **stateful
+Whitelist-Entkopplung). **Dieser Slice B** ergaenzte nur das **stateful
 stale-Verhalten** obenauf.
-
-> **Einstieg morgen:** Die Architektur ist komplett in
-> [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3
-> entschieden — dieser Plan operationalisiert sie. Foundation steht (Slice 071).
-> Direkt mit C1 starten; Verifikationspfad + DoD unten.
 
 ---
 
@@ -60,7 +56,7 @@ reservierte, jetzt konkret geforderte additive Schaerfung.
     [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3).
 - **C4 — Snapshot:** Last-Value-Cache **opt-in** im `TickLoop`-Snapshot
   serialisieren (leer/abwesend ohne aktiven Quality-Fault → byte-identisch, kein
-  Versions-Bump; Muster [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)-Opt-in).
+  Versions-Bump; Muster [`070`](070-gg-fault-004-frequency-drop.md)/[`071`](071-gg-fault-003-nan-injection.md)-Opt-in).
   **Neu ggue. Slice A** (dort war der Runtime-State rein transient — hier muss der
   Cache den Roundtrip ueberleben, damit Resume mitten im Stale-Fenster den
   letzten gueltigen Wert nicht verliert).
@@ -80,19 +76,61 @@ reservierte, jetzt konkret geforderte additive Schaerfung.
 
 ## DoD
 
-- [ ] `stale_data` als dedizierter Fault-Typ; letzter gueltiger Wert wird
+- [x] `stale_data` als dedizierter Fault-Typ; letzter gueltiger Wert wird
       weitergeliefert, bis `max_age` ueberschritten → `quality=STALE`.
-- [ ] Last-Value-Cache **opt-in** im Snapshot (byte-identisch ohne Quality-Fault,
+- [x] Last-Value-Cache **opt-in** im Snapshot (byte-identisch ohne Quality-Fault,
       kein Versions-Bump); Resume mitten im Fenster verliert den Vorwert nicht.
-- [ ] `make gates`, `make docs-check`, `make doc-trace`, `make test-determinism`,
+- [x] `make gates`, `make docs-check`, `make doc-trace`, `make test-determinism`,
       `make accept-pin-check` gruen; `doc-trace` zeigt
       [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) abgedeckt.
-- [ ] `traceability.md` §27.3 + CHANGELOG `[Unreleased]`.
-- [ ] Adversarialer statischer Review (read-only, kein uv/pip/python) vor Commit.
+- [x] `traceability.md` §27.3 + CHANGELOG `[Unreleased]`.
+- [x] Adversarialer statischer Review (read-only, kein uv/pip/python) vor Commit.
 
 **Release-Entscheidung:** nein — Sammlung unter `[Unreleased]` zusammen mit
-[`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)
+[`070`](070-gg-fault-004-frequency-drop.md)/[`071`](071-gg-fault-003-nan-injection.md)
 (SemVer-Ziel Minor, additiv). Kein eigener Tag.
+
+## Verification-Evidence (2026-07-12)
+
+**Rolle:** Implementation → Verifier. **Geliefert (Tranchen C1..C8):**
+
+- **C1** `FAULT_TYPE_STALE_DATA = "stale_data"` (Single Source `hexagon/core/domain/fault.py`
+  + Re-Export `hexagon/core/faults/types.py`).
+- **C2** Validator `_assert_stale_data_payload`: `payload.metric: str` + `max_age_ms:
+  int > 0` Pflicht (`ScenarioMissingKeysError`/`ScenarioWrongTypeError`/NEU
+  `ScenarioInvalidStaleDataMaxAgeError`).
+- **C3** `QualityFaultRuntime` um `stale_data` erweitert: per-`(device_id, metric)`-
+  Last-Valid-Value-Cache; Cache-Update **vor** Rewrite (echter Vorwert); Forwarding
+  + STALE-Grenze `(now − cached_time) > max_age_ms` (strikt); kein-Vorwert-Pfad
+  (ehrliche Grenze via eigener Sim-Zeit); Severity-Override.
+- **C4** Opt-in `quality_fault_last_value_cache`-Sub-Snapshot (`cache_snapshot`/
+  `restore_cache`), Helper `_append_quality_fault_cache_snapshot` (C901-Budget);
+  Restore in `TickLoop.from_snapshot` in den re-injizierten Runtime.
+- **C5** Whitelists: `_QUALITY_FAULT_TYPES` (`_demo_scenario_setup.py`) +
+  `_METRIC_ADDRESSED_FAULT_TYPES` (`_runs_action_router.py`).
+- **C6** Kein Alarm ([`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.5) — testgepinnt.
+- **C7** Tests: `tests/unit/hexagon/core/simulation/test_tick_loop_quality_fault_stale.py`
+  (Forwarding/Fenster/`>`-`==`-frisch-Grenze/kein-Vorwert/Severity/kein-Alarm/
+  Snapshot-Roundtrip mit+ohne Fault/Determinismus/Koexistenz `max_age`-Stage) +
+  `tests/unit/hexagon/core/scenario/test_validator_stale_data_payload.py`.
+- **C8** `traceability.md` §27.3 ([`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002)
+  = Unit Test) + CHANGELOG `[Unreleased]` + Roadmap-Nachzug + Self-Move
+  `next/ → done/`.
+
+**Ausgefuehrte Sensoren (Docker/make, alle gruen):** `make gates` (lint,
+format-check, typecheck `--strict`, arch-check 20 Contracts, test-unit,
+coverage-gate 90/85, coverage-gate-critical 90, dep-audit, noqa-gate, spdx-check),
+`make test-fault` (185 passed), `make test-determinism`, `make accept-pin-check`
+(Demo-Pins **unveraendert** → byte-identisch bestaetigt), `make docs-check`
+(0 Befunde), `make doc-trace` (151 Reqs / 0 Waisen;
+[`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) →
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md),
+Slice 071+072, ok). **Adversarialer statischer Review:** read-only durchgefuehrt
+(kein uv/pip/python).
+
+**Nicht ausgefuehrt:** `make ci`/`make fullbuild` (Integration/Image-Audit) — kein
+Adapter-/Runtime-Image-/Persistenz-Delta in diesem Slice (rein Core-Spine +
+Validator + Whitelist-Konstanten); CI bleibt das Netz.
 
 ## Betroffene Kennungen
 
@@ -112,7 +150,7 @@ Praezedenz + Grenzsemantik), [`ADR 0053`](../../adr/0053-comm-failure-wrapper-mi
 
 - **Snapshot-Determinismus:** der Cache muss den Roundtrip ueberleben, aber
   **opt-in** bleiben (kein Versions-Bump). Muster
-  [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)
+  [`070`](070-gg-fault-004-frequency-drop.md)/[`071`](071-gg-fault-003-nan-injection.md)
   folgen (leer → keine Keys → byte-identisch). **STOP-und-melden**, falls
   korrektes Resume mehr als ein opt-in-Feld braucht.
 - **Cache-Update-Timing:** sicherstellen, dass der Cache mit dem *echten* Vorwert
@@ -121,3 +159,27 @@ Praezedenz + Grenzsemantik), [`ADR 0053`](../../adr/0053-comm-failure-wrapper-mi
 - **Koexistenz mit der `max_age`-Stage** ([`ADR 0052`](../../adr/0052-max-age-stale-quality-stage.md)):
   beide setzen `STALE`; severity-idempotent, aber Testabdeckung fuer die
   Reihenfolge (Quality-Fault-Stage vor `max_age`-Stage).
+
+## Review-Folge (adversarialer statischer Review, 2026-07-12)
+
+Keine HIGH-Findings; Kern (Cache-Timing, Grenzsemantik, Severity, Determinismus,
+NaN-Regression) bestaetigt. Adressiert:
+
+- **MEDIUM-1 (behoben):** der Last-Value-Cache wurde fuer *jeden* VALID-Punkt
+  eines Szenarios mit `stale_data`-Fault gefuehrt (Snapshot-Bloat, gegen die
+  §2.7-Minimal-Intent). Fix: `QualityFaultRuntime._stale_targets` scoped den
+  Cache auf die tatsaechlich adressierten `(device, metric)`-Paare (Test
+  `test_cache_only_holds_stale_target_pairs`).
+- **MEDIUM-2 / LOW-4 / LOW-5 (Test-Luecken geschlossen):** NaN+Stale auf
+  demselben Key (NaN dominiert), Severity-Gate mit gefuelltem Cache (schlechtere
+  Quality wird nicht wert-ersetzt), nan-only-Snapshot byte-identisch.
+- **LOW-3 (dokumentiert):** die Wert-Weiterlieferung ist an den §2.6-Severity-Gate
+  gebunden — ein Live-Punkt schlechterer Quality wird nicht durch den
+  eingefrorenen Vorwert maskiert (Code-Kommentar in `_rewrite_point`).
+
+**Bekannte Grenze (kein Slice-072-Regress, Slice-A-Muster):** der HTTP-Runtime-
+Fault-Injection-Pfad (`POST /runs/{id}/faults`) validiert fuer metrik-adressierte
+Quality-Faults **kein** `metric`/`max_age_ms` (nur Target-Existenz) — die
+Payload-Schaerfung lebt allein im Scenario-Validator. Geteilt mit `nan_injection`
+(Slice 071); ein Runtime-Payload-Vertrag waere additive Folgearbeit (Trigger-
+Kandidat), nicht Gegenstand dieses Slices.

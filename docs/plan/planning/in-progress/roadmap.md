@@ -4,6 +4,12 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**.
 Kein aktiver Slice; zuletzt abgeschlossen:
+[`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
+Quality-Fault →
+[`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) erfuellt;
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3,
+Slice B = Last-Value-Cache + opt-in Snapshot; Runtime-Delta, Release
+`[Unreleased]`),
 [`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
 `nan_injection`-Quality-Fault →
 [`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) erfuellt;
@@ -13,13 +19,11 @@ Slice A = Foundation + NaN; Runtime-Delta, Release `[Unreleased]`) und
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
 Runtime-Delta, Release `[Unreleased]`).
-**Naechster Kandidat (direkt aktivierbar):**
-[`072`](../next/072-gg-fault-002-stale-data.md) — dedizierter `stale_data`-
-Quality-Fault ([`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002),
-MUSS; Slice B der GG-FAULT-Konsolidierung), Design entschieden in
-[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3,
-Foundation aus [`071`](../done/071-gg-fault-003-nan-injection.md).
-**Stand:** 2026-07-11
+**Naechster Kandidat:** kein geschnittener Slice in `next/` offen — die
+GG-FAULT-Konsolidierung (002/003/004) ist vollstaendig geliefert. Offene
+Trigger (OTel-Bump, Vorwaerts-Traceability, `a-check`) sind noch nicht als
+Slice geschnitten.
+**Stand:** 2026-07-12
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
 [Architektur](../../../../spec/architecture.md),
@@ -89,7 +93,17 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-11):
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-12):
+[`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
+Quality-Fault →
+[`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002) „Stale Data"
+erfuellt: der `QualityFaultRuntime` fuehrt einen per-`(Ziel, Metrik)`-Last-
+Value-Cache und liefert aktiv den letzten gueltigen Wert weiter, bis `max_age`
+ueberschritten ist → `quality=stale` — **kein** Alarm; der Cache ueberlebt den
+Snapshot opt-in (byte-identisch ohne Vorwert);
+[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3
+(Slice B, obenauf der Slice-071-Foundation); Runtime-Delta → Release
+`[Unreleased]`); davor
 [`071`](../done/071-gg-fault-003-nan-injection.md) (metrik-adressierter
 `nan_injection`-Quality-Fault →
 [`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003) „NaN-Injection"
@@ -138,18 +152,13 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Naechster Aktivierungs-Kandidat** (2026-07-11): **Slice B der GG-FAULT-
-Konsolidierung** —
-[`072`](../next/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
-Quality-Fault → [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002)
-„Stale Data", MUSS). **Direkt aktivierbar:** Design vollstaendig entschieden in
-[`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md) §2.3, die
-Quality-Fault-Foundation (`QualityFaultRuntime` + Spine-Stage + Validator-Muster
-+ Whitelist-Entkopplung) steht aus
-[`071`](../done/071-gg-fault-003-nan-injection.md); dieser Slice ergaenzt nur den
-stateful per-`(Ziel, Metrik)`-Last-Value-Cache + dessen opt-in Snapshot-
-Serialisierung. **Morgen-Einstieg direkt am Slice-Plan** (Tranchen C1..C8 + DoD +
-Verifikationspfad + Risiken).
+**Naechster Aktivierungs-Kandidat** (2026-07-12): **kein geschnittener Slice in
+`next/` offen.** Die GG-FAULT-Konsolidierung (002/003/004) ist mit
+[`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)/[`072`](../done/072-gg-fault-002-stale-data.md)
+vollstaendig geliefert; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)
+ist damit beidseitig (Slice A + B) eingeloest. Offene Trigger (OTel-Collector-
+Bump, Vorwaerts-Traceability, neues `a-check`-Tool) sind notiert, aber noch
+nicht als Slice geschnitten.
 
 **Vorheriger Kandidat erledigt:** das Hygiene-Buendel der Slice-038-Session
 ([`054`](../done/054-pytest-marker-drift-sensor-targets.md)/[`058`](../done/058-marker-sensor-drift-guard.md)

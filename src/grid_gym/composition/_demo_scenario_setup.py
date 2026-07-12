@@ -69,6 +69,7 @@ from grid_gym.hexagon.core.faults.types import (
     FAULT_TYPE_FREQUENCY_DROP,
     FAULT_TYPE_GENSET_FAULT,
     FAULT_TYPE_NAN_INJECTION,
+    FAULT_TYPE_STALE_DATA,
     FAULT_TYPE_VOLTAGE_DROP,
     FAULT_TYPE_WINDING_FAULT,
 )
@@ -355,18 +356,20 @@ Fault-Typen** — zugleich die `supported_types` der produktiven
 `FAULT_TYPE_*` hier ein (mehr braucht es nicht: die generische Engine
 reicht den Typ an das Ziel-Geraet durch, das ihn validiert)."""
 
-_QUALITY_FAULT_TYPES: Final[frozenset[str]] = frozenset({FAULT_TYPE_NAN_INJECTION})
-"""ADR 0074 §2.1/§2.2 (Slice 071): metrik-adressierte Quality-Fault-
-Typen (`nan_injection`; Slice B ergaenzt `stale_data`). Sie laufen den
-parallelen, spine-internen `QualityFaultRuntime`-Pfad (verdrahtet in
+_QUALITY_FAULT_TYPES: Final[frozenset[str]] = frozenset(
+    {FAULT_TYPE_NAN_INJECTION, FAULT_TYPE_STALE_DATA}
+)
+"""ADR 0074 §2.1/§2.2 (Slice 071/072): metrik-adressierte Quality-Fault-
+Typen (`nan_injection`, `stale_data`). Sie laufen den parallelen,
+spine-internen `QualityFaultRuntime`-Pfad (verdrahtet in
 `build_tick_loop`), **nicht** den device-adressierten
 `ScenarioFaultEngine` — sie duerfen deshalb NICHT in dessen
 `supported_types` (`_KNOWN_FAULT_TYPES`), sonst wuerde die Engine ein
-`device.inject_fault("nan_injection", …)` versuchen (kein Geraete-
+`device.inject_fault("stale_data", …)` versuchen (kein Geraete-
 Handler → `FaultUnsupportedTypeError`). Bewusst getrennt gehalten,
 aber im „bekannter Fault-Typ"-Check (`_compose_fault_port`)
-mitgezaehlt, damit eine Demo-YAML mit `nan_injection` nicht als
-unbekannter Typ rejected wird."""
+mitgezaehlt, damit eine Demo-YAML mit `nan_injection`/`stale_data` nicht
+als unbekannter Typ rejected wird."""
 
 _ALL_KNOWN_FAULT_TYPES: Final[frozenset[str]] = _KNOWN_FAULT_TYPES | _QUALITY_FAULT_TYPES
 """Vereinigung fuer den Demo-YAML-„bekannter Fault-Typ"-Check: Physik-

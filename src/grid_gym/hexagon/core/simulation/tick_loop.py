@@ -117,6 +117,13 @@ _SNAPSHOT_VERSION: Final[int] = 2
 """Schema-Version des TickLoop-Snapshots. Welle-6a-Bump 1->2 ueber
 ADR 0015. Erhoehung -> Folge-ADR."""
 
+_QUALITY_FAULT_CACHE_KEY: Final[str] = "quality_fault_last_value_cache"
+"""ADR 0074 §2.3/§2.7 (Slice 072): opt-in Sub-Snapshot-Key fuer den
+`stale_data`-Last-Value-Cache. Nur eingehaengt, wenn der
+`QualityFaultRuntime` einen nicht-leeren Cache haelt → Szenarien ohne
+`stale_data`-Vorwert bleiben byte-identisch (kein Snapshot-Versions-Bump,
+Muster Slice 070/071-Opt-in)."""
+
 _ZERO = Decimal(0)
 _TICK_LOOP_DECIMAL_PRECISION: Final[int] = 28
 
@@ -1863,6 +1870,21 @@ class TickLoop:
                 )
             )
 
+    def _append_quality_fault_cache_snapshot(
+        self, sub_snapshots: dict[str, Mapping[str, object]]
+    ) -> None:
+        """ADR 0074 §2.3/§2.7 (Slice 072): haengt den opt-in Last-Value-
+        Cache-Sub-Snapshot fuer `stale_data` ein. `cache_snapshot()`
+        liefert `None`, solange kein gueltiger Vorwert gecacht wurde → kein
+        Key → byte-identisch (Slice-A-only-/faultlose Szenarien
+        unberuehrt). Der Alarm-Transitions-State des Runtimes bleibt
+        bewusst transient (nicht serialisiert; Praezedenz `fault_port`)."""
+        if self._quality_fault_runtime is None:
+            return
+        cache = self._quality_fault_runtime.cache_snapshot()
+        if cache is not None:
+            sub_snapshots[_QUALITY_FAULT_CACHE_KEY] = cache
+
     def snapshot(self) -> Mapping[str, object]:
         """Liefert den TickLoop-State als `SnapshotEnvelope`-konformes
         Mapping (`GG-SIM-005`).
@@ -1901,6 +1923,10 @@ class TickLoop:
             sub_snapshots[key] = device.snapshot()
         if self._grid_model is not None:
             sub_snapshots["grid_model"] = self._grid_model.snapshot()
+        # ADR 0074 §2.3/§2.7 (Slice 072): opt-in Last-Value-Cache-Anteil
+        # fuer `stale_data` (in einen Helper ausgelagert, damit `snapshot`
+        # unter der C901-Komplexitaetsschwelle bleibt).
+        self._append_quality_fault_cache_snapshot(sub_snapshots)
         # M3-Welle-4a (ADR 0026 §2.6): Agent-Foundation-State-
         # Sub-Snapshots. `agent_bus` und `pending_agent_commands`
         # werden nur eingehaengt, wenn sie nicht-trivial sind —
@@ -2029,6 +2055,14 @@ class TickLoop:
         Snapshot rekonstruiert. Der Alarm-Transitions-State startet damit
         auf Resume leer (Praezedenz `ScenarioFaultEngine._active_faults`);
         ohne den Kwarg laeuft ein resumed Lauf still mit der Stage aus.
+
+        ADR 0074 §2.3 (Slice 072) liest zusaetzlich den **opt-in
+        Last-Value-Cache** (`stale_data`) aus dem Sub-Snapshot in den
+        re-injizierten Runtime zurueck (`restore_cache`) — anders als der
+        transiente Alarm-State ueberlebt der Cache den Roundtrip, damit ein
+        Resume mitten im Stale-Fenster den letzten gueltigen Wert nicht
+        verliert. Fehlt der Runtime-Kwarg, wird ein persistierter Cache
+        verworfen (die Stage laeuft ohne Runtime ohnehin nicht).
         """
         parsed = _validate_tick_loop_snapshot(state)
         if parsed.version != _SNAPSHOT_VERSION:
@@ -2077,6 +2111,14 @@ class TickLoop:
         # `_pending_agent_commands` muss nach Konstruktor-Init
         # gefuellt werden — der Konstruktor initialisiert es leer.
         loop._pending_agent_commands.extend(pending_commands)
+        # ADR 0074 §2.3 (Slice 072): den opt-in Last-Value-Cache in den
+        # re-injizierten `QualityFaultRuntime` zuruecklesen, damit ein
+        # Resume mitten im Stale-Fenster den letzten gueltigen Wert nicht
+        # verliert. Ohne re-injizierten Runtime (Caller-Pflicht, wie
+        # `fault_port`) gibt es nichts zu befuellen — der persistierte
+        # Cache wird dann verworfen (die Stage laeuft ohnehin nicht).
+        if quality_fault_runtime is not None:
+            quality_fault_runtime.restore_cache(parsed.sub_snapshots.get(_QUALITY_FAULT_CACHE_KEY))
         loop._tick_count = parsed.tick_count
         # Welle-4b-Review-Fix #3: Run-Control-State explizit aus
         # dem Caller (RunRepository.get_status) — sonst startet der

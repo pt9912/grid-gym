@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Quality-Fault-Injection (Slice 072, GG-FAULT-002):** Neuer metrik-
+  adressierter `stale_data`-Quality-Fault (ADR 0074 §2.3, Slice B — Zwilling zu
+  `nan_injection`, obenauf der Slice-071-Foundation). Ein aktiver Fault liefert
+  fuer ein (Ziel, Metrik)-Paar den zuletzt gecachten **gueltigen** Wert weiter
+  (Last-Value-Cache pro `(device_id, metric)`); solange `(now - cached_sim_time)
+  ≤ max_age_ms` bleibt die Quality unveraendert, sobald strikt `>` (ADR 0052
+  §2.5-Grenzsemantik) → `quality=stale`. Ohne gueltigen Vorwert (Fault ab Tick 0)
+  wird nichts weitergeliefert, nur ab `max_age` STALE markiert (ehrliche Grenze).
+  Metrik + `max_age_ms` reisen im `payload` (`{"metric": <str>, "max_age_ms":
+  <int > 0>}`, kein Scenario-Schema-Feld → `scenario_hash` pin-neutral).
+  **Kein** Alarm (Zwilling-Unterschied zu `nan_injection`; Alarm-bei-STALE ist
+  GG-SAFE-003-Scope). Severity-Override ueber `QUALITY_SEVERITY` (`stale` (3)
+  ersetzt nur Niedrigeres). Der Last-Value-Cache ueberlebt den `TickLoop`-
+  Snapshot **opt-in** (leer/abwesend ohne Vorwert → byte-identisch, kein
+  Snapshot-Versions-Bump), damit Resume mitten im Stale-Fenster den Vorwert
+  nicht verliert. Validator-Schaerfung: fuer `stale_data` sind `payload.metric:
+  str` + `payload.max_age_ms: int > 0` Pflicht. Determinismus: alles opt-in —
+  Szenarien ohne `stale_data` bleiben byte-identisch.
 - **Quality-Fault-Injection (Slice 071, GG-FAULT-003):** Neuer metrik-
   adressierter `nan_injection`-Quality-Fault (ADR 0074, Slice A). Ein Fault
   aktiviert fuer ein (Ziel, Metrik)-Paar — Metrik im `payload` (`{"metric":

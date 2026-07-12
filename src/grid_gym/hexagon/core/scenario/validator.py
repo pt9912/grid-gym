@@ -29,12 +29,16 @@ from collections.abc import Mapping
 from decimal import Decimal
 from typing import Final, cast
 
-from grid_gym.hexagon.core.domain.fault import FAULT_TYPE_NAN_INJECTION
+from grid_gym.hexagon.core.domain.fault import (
+    FAULT_TYPE_NAN_INJECTION,
+    FAULT_TYPE_STALE_DATA,
+)
 from grid_gym.hexagon.core.errors import (
     ScenarioDuplicateDeviceIdError,
     ScenarioInvalidAgentParamsError,
     ScenarioInvalidRuleComparatorError,
     ScenarioInvalidRuleMetricError,
+    ScenarioInvalidStaleDataMaxAgeError,
     ScenarioMissingKeysError,
     ScenarioUnknownCommandTargetError,
     ScenarioUnknownEventTargetError,
@@ -317,12 +321,15 @@ def _assert_fault_list(
             )
         assert_payload_canonical_compatible(payload, "scenario", f"faults[{index}].payload")
         _assert_str(entry, f"faults[{index}].recovery")
-        # ADR 0074 §2.1 (Slice 071): metrik-adressierte Quality-Faults
-        # tragen ihre Metrik im `payload`; `nan_injection` MUSS ein
-        # `payload["metric"]: str` haben (fehlend/fehltypisiert →
-        # typisierter Validator-Fehler, kein stiller Unsinn).
+        # ADR 0074 §2.1 (Slice 071/072): metrik-adressierte Quality-
+        # Faults tragen ihre Metrik im `payload`; `nan_injection` MUSS
+        # ein `payload["metric"]: str` haben, `stale_data` zusaetzlich
+        # ein `max_age_ms: int > 0` (fehlend/fehltypisiert/nicht-positiv
+        # → typisierter Validator-Fehler, kein stiller Unsinn).
         if entry["type"] == FAULT_TYPE_NAN_INJECTION:
             _assert_nan_injection_payload(payload, f"faults[{index}]")
+        elif entry["type"] == FAULT_TYPE_STALE_DATA:
+            _assert_stale_data_payload(payload, f"faults[{index}]")
         # M3-Welle-1 (ADR 0022 §2.3): Target-Existenz-Check
         # analog `_assert_event_list`.
         target = entry["target"]
@@ -343,6 +350,30 @@ def _assert_nan_injection_payload(payload: Mapping[str, object], path: str) -> N
     metric = payload["metric"]
     if not isinstance(metric, str):
         raise ScenarioWrongTypeError(f"{path}.payload.metric", "str", type(metric).__name__)
+
+
+def _assert_stale_data_payload(payload: Mapping[str, object], path: str) -> None:
+    """ADR 0074 §2.1 (Slice 072): `stale_data`-Faults MUESSEN
+    `payload["metric"]: str` **und** `payload["max_age_ms"]: int > 0`
+    tragen (die metrik-adressierte Zielgroesse + das Alter-Fenster; beide
+    reisen bewusst im Payload statt als Schema-Feld, das den
+    `scenario_hash` aller Szenarien flippen wuerde).
+
+    Fehlender Key → `ScenarioMissingKeysError`; fehltypisierter Wert →
+    `ScenarioWrongTypeError`; nicht-positives `max_age_ms` →
+    `ScenarioInvalidStaleDataMaxAgeError` (Policy-Grenze, ein
+    Alter-Fenster ≤ 0 ist fachlich sinnlos)."""
+    missing = [key for key in ("metric", "max_age_ms") if key not in payload]
+    if missing:
+        raise ScenarioMissingKeysError(f"{path}.payload", missing)
+    metric = payload["metric"]
+    if not isinstance(metric, str):
+        raise ScenarioWrongTypeError(f"{path}.payload.metric", "str", type(metric).__name__)
+    max_age_ms = payload["max_age_ms"]
+    if isinstance(max_age_ms, bool) or not isinstance(max_age_ms, int):
+        raise ScenarioWrongTypeError(f"{path}.payload.max_age_ms", "int", type(max_age_ms).__name__)
+    if max_age_ms <= 0:
+        raise ScenarioInvalidStaleDataMaxAgeError(path, max_age_ms)
 
 
 def _assert_command_list(

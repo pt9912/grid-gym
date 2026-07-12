@@ -63,3 +63,18 @@ kein numerischer NaN, `canonical.py`-Reject bleibt) + einmaligen
 `quality_fault_nan_injection`-Alarm beim inactive→active-Uebergang
 (ADR 0074 §2.5). Nicht in den `supported_types` des physik-adressierten
 `ScenarioFaultEngine`."""
+
+FAULT_TYPE_STALE_DATA: Final[str] = "stale_data"
+"""Metrik-adressierter Quality-Fault (ADR 0074 §2.3, Slice 072 /
+GG-FAULT-002): liefert fuer ein (Ziel, Metrik)-Paar den letzten
+gueltigen Wert weiter, bis `max_age` ueberschritten ist — danach
+`quality=stale`. Zwilling zu `nan_injection`, aber **stateful**: der
+`QualityFaultRuntime` fuehrt einen per-(device_id, metric)-Last-Valid-
+Value-Cache (ADR 0074 §2.3, die von ADR 0053 §7 reservierte additive
+Schaerfung). **Kein** Geraete-Physik-Effekt — laeuft den parallelen,
+spine-internen Quality-Fault-Pfad, **nicht** ueber `device.inject_fault`.
+Payload traegt `metric: str` **und** `max_age_ms: int > 0` (ADR 0074
+§2.1 — bewusst kein `ScenarioFault.metric`-Schema-Feld). Anders als
+`nan_injection` **kein** Alarm (ADR 0074 §2.5; Alarm-bei-STALE ist
+GG-SAFE-003-Scope). Nicht in den `supported_types` des physik-
+adressierten `ScenarioFaultEngine`."""
