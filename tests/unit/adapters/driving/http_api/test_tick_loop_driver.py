@@ -594,6 +594,107 @@ def test_field_publish_status_degraded_after_publish_failure() -> None:
 
 
 # ---------------------------------------------------------------------------
+# ADR 0078: bess-ems-Feldvertrags-Publisher (zweite Push-Seite) — Fan-out + Lifecycle
+# ---------------------------------------------------------------------------
+
+
+class _RecordingBessEms:
+    """Inline-Stub fuer `BessEmsFieldPublishAdapter` (start/publish_tick/stop);
+    optional werfen."""
+
+    def __init__(
+        self,
+        *,
+        start_raises: bool = False,
+        publish_raises: bool = False,
+        stop_raises: bool = False,
+    ) -> None:
+        self.start_calls = 0
+        self.stop_calls = 0
+        self.published: list[TickResult] = []
+        self._start_raises = start_raises
+        self._publish_raises = publish_raises
+        self._stop_raises = stop_raises
+
+    def start(self) -> None:
+        self.start_calls += 1
+        if self._start_raises:
+            raise RuntimeError("connect boom")
+
+    def publish_tick(self, result: TickResult) -> None:
+        if self._publish_raises:
+            raise RuntimeError("publish boom")
+        self.published.append(result)
+
+    def stop(self) -> None:
+        self.stop_calls += 1
+        if self._stop_raises:
+            raise OSError("disconnect boom")
+
+
+def test_bess_ems_publishes_each_tick_result() -> None:
+    """ADR 0078 §2.1: der Driver reicht je Tick das **vollstaendige** `TickResult`
+    an den bess-ems-Aggregator (nicht per Punkt)."""
+    adapter = _RecordingBessEms()
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop, bess_ems_publish_provider=lambda: adapter)
+    asyncio.run(driver._start_bess_ems())
+    assert adapter.start_calls == 1
+    result = _telemetry_result(_domain_point())
+    driver._publish_bess_ems(result)
+    assert adapter.published == [result]
+
+
+def test_bess_ems_noop_without_configured_adapter() -> None:
+    loop = _make_tick_loop_with_battery_alarm()
+    driver = DemoTickLoopDriver(loop)  # kein bess_ems_publish_provider
+    asyncio.run(driver._start_bess_ems())
+    assert driver._active_bess_ems is None
+    driver._publish_bess_ems(_telemetry_result(_domain_point()))  # kein Fehler
+    asyncio.run(driver._stop_bess_ems())  # idempotent
+
+
+def test_bess_ems_degrades_on_start_failure() -> None:
+    adapter = _RecordingBessEms(start_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), bess_ems_publish_provider=lambda: adapter
+    )
+    asyncio.run(driver._start_bess_ems())  # start() wirft → gefangen, degrade
+    assert driver._active_bess_ems is None
+    driver._publish_bess_ems(_telemetry_result(_domain_point()))
+    assert adapter.published == []
+
+
+def test_bess_ems_survives_publish_exception() -> None:
+    adapter = _RecordingBessEms(publish_raises=True)
+    driver = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(), bess_ems_publish_provider=lambda: adapter
+    )
+    asyncio.run(driver._start_bess_ems())
+    driver._publish_bess_ems(_telemetry_result(_domain_point()))  # kein Raise
+    assert adapter.published == []
+
+
+def test_bess_ems_status_reflects_lifecycle() -> None:
+    off = DemoTickLoopDriver(_make_tick_loop_with_battery_alarm())
+    assert off.bess_ems_publish_status == "off"
+
+    active = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(),
+        bess_ems_publish_provider=lambda: _RecordingBessEms(),
+    )
+    asyncio.run(active._start_bess_ems())
+    assert active.bess_ems_publish_status == "active"
+
+    degraded = DemoTickLoopDriver(
+        _make_tick_loop_with_battery_alarm(),
+        bess_ems_publish_provider=lambda: _RecordingBessEms(start_raises=True),
+    )
+    asyncio.run(degraded._start_bess_ems())
+    assert degraded.bess_ems_publish_status == "degraded"
+
+
+# ---------------------------------------------------------------------------
 # ADR 0075 §2.2/§2.4: Pull-Seite — DeviceServerPort-Lifecycle + Projektion
 # ---------------------------------------------------------------------------
 

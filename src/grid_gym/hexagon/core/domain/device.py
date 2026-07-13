@@ -69,3 +69,28 @@ class DeviceTickOutcome:
     """
 
     telemetry: tuple[TelemetryPoint, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class DeviceStatus:
+    """Operativer Fault-Status eines Geraets fuer einen Tick (Slice 077 S2,
+    ADR 0077 §2.5).
+
+    Reine Daten-Projektion der `FaultSurfaceDevice`-Read-Properties
+    (`available`/`fault_status`) — **kein** `TelemetryPoint` (die
+    Fault-Surface ist bewusst kein Telemetrie-Punkt, ADR 0077 §2.5).
+    Der `TickLoop` sammelt je Tick einen `DeviceStatus` pro
+    fault-surface-faehigem Geraet in `TickResult.emitted_device_status`;
+    der bess-ems-Feldvertrags-Encoder (ADR 0078 §2.2) liest daraus die
+    Envelope-Felder `available`/`fault_status`.
+
+    Felder:
+    - `device_id` — Geraete-Identitaet (`DeviceModel.device_id`).
+    - `available` — `True` gdw. kein Fault aus dem `available`-Closed-Set
+      aktiv ist.
+    - `fault_status` — aktiver Fault-Typ-String, sonst `"ok"`.
+    """
+
+    device_id: str
+    available: bool
+    fault_status: str

@@ -24,6 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grid_gym.hexagon.core.domain.alarm import Alarm
+from grid_gym.hexagon.core.domain.device import DeviceStatus
 from grid_gym.hexagon.core.domain.event import Event, GridConstraintViolationEvent
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 
@@ -58,6 +59,15 @@ class TickResult:
       Netzbilanzmodell (M8 Welle 3b, ADR 0061 §2.4 — Transformer-
       Hot-Spot-Ueberlast). Default `()` — Bestands-Konstruktionen +
       der Inaktiv-Pfad (kein `transformer_limit`) bleiben kompatibel.
+    - `emitted_device_status`: pro-Tick gesammelte `DeviceStatus`-
+      Eintraege (`available`/`fault_status`) der fault-surface-faehigen
+      Geraete (`FaultSurfaceDevice`, Slice 077 S2, ADR 0077 §2.5). Die
+      Fault-Surface ist bewusst **kein** `TelemetryPoint` (fliesst nicht
+      durch Quality-Spine/Persistenz), daher ein separater Slot. Default
+      `()` — Bestands-Konstruktionen + Szenarien ohne fault-surface-
+      faehiges Geraet bleiben kompatibel; der Slot wird **nicht**
+      persistiert/gehasht (pin-neutral, nur der bess-ems-Publisher [ADR
+      0078] konsumiert ihn im Driver).
     """
 
     tick: int
@@ -67,6 +77,7 @@ class TickResult:
     paused: bool = False
     emitted_alarms: tuple[Alarm, ...] = ()
     emitted_grid_events: tuple[GridConstraintViolationEvent, ...] = ()
+    emitted_device_status: tuple[DeviceStatus, ...] = ()
 
     @classmethod
     def paused_result(

@@ -42,6 +42,13 @@ from fastapi import FastAPI
 
 from grid_gym._app_version import resolve_app_version
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driven.field_publish_bess_ems import (
+    REQUIRED_FIELD_BLOCKS,
+    BessEmsFieldPublishAdapter,
+    BessEmsFieldPublishConfig,
+    BessEmsFieldPublishConfigEndpointError,
+    BessEmsFieldPublishConfigMissingFieldBlocksError,
+)
 from grid_gym.adapters.driven.field_publish_mqtt import (
     MqttFieldPublishAdapter,
     MqttFieldPublishConfig,
@@ -123,36 +130,42 @@ _FIELD_PUBLISH_CLIENT_ID: Final[str] = "grid-gym-field-publish"
 _FIELD_PUBLISH_DEFAULT_PORT: Final[int] = 1883
 
 
-def _parse_broker_endpoint(raw: str) -> tuple[str, int]:
+def _parse_broker_endpoint(
+    raw: str,
+    *,
+    error_factory: Callable[[str], Exception] = MqttFieldPublishConfigEndpointError,
+) -> tuple[str, int]:
     """Parst ``host``, ``host:port`` oder ``[ipv6]:port`` → ``(host, port)``.
 
     Review-Fix #2: ein nicht-numerischer Port oder eine unklammerte IPv6-Adresse
-    wirft einen **typisierten** `MqttFieldPublishConfigError` (nicht den bare
-    `ValueError` von `int()`, der den FastAPI-Lifespan crashen wuerde).
+    wirft einen **typisierten** Fehler (nicht den bare `ValueError` von `int()`, der
+    den FastAPI-Lifespan crashen wuerde). `error_factory` waehlt die Fehler-Familie —
+    Default Push-Seite (`MqttFieldPublishConfigEndpointError`); der bess-ems-Publisher
+    reicht `BessEmsFieldPublishConfigEndpointError` durch.
     """
     if raw.startswith("["):
         close = raw.find("]")
         if close == -1:
-            raise MqttFieldPublishConfigEndpointError(raw)
+            raise error_factory(raw)
         host = raw[1:close]
         rest = raw[close + 1 :]
         if not rest:
             return host, _FIELD_PUBLISH_DEFAULT_PORT
         if not rest.startswith(":"):
-            raise MqttFieldPublishConfigEndpointError(raw)
+            raise error_factory(raw)
         port_str = rest[1:]
     else:
         host, sep, port_str = raw.rpartition(":")
         if not sep:
             return raw, _FIELD_PUBLISH_DEFAULT_PORT
         if ":" in host:
-            raise MqttFieldPublishConfigEndpointError(raw)
+            raise error_factory(raw)
     if not port_str:
         return host, _FIELD_PUBLISH_DEFAULT_PORT
     try:
         port = int(port_str)
     except ValueError as exc:
-        raise MqttFieldPublishConfigEndpointError(raw) from exc
+        raise error_factory(raw) from exc
     return host, port
 
 
@@ -187,6 +200,68 @@ def _wire_field_publish_state(app_: FastAPI, run_id: str) -> None:
     adapter = _field_publish_adapter_from_env(run_id)
     if adapter is not None:
         app_.state.field_publish = adapter
+
+
+_BESS_EMS_BROKER_ENV_VAR: Final[str] = "GRID_GYM_BESS_EMS_MQTT_BROKER"
+_BESS_EMS_TOPIC_PREFIX: Final[str] = "battery"
+_BESS_EMS_CLIENT_ID: Final[str] = "grid-gym-bess-ems"
+
+
+def _assert_bess_ems_field_blocks(scenario: Scenario) -> None:
+    """ADR 0078 §2.5-Fail-fast: jede Battery im Szenario MUSS die vollen
+    Field-Envelope-Bloecke (`REQUIRED_FIELD_BLOCKS`) tragen, sonst waere kein konformer
+    10-Feld-`telemetry`-Frame bildbar. Fehlt einem Battery-Geraet ein Block → typed
+    `BessEmsFieldPublishConfigMissingFieldBlocksError` (kein Adapter-Default fuer
+    Pflicht-Physik). Wird nur aufgerufen, wenn der Publisher aktiv ist."""
+    for device in scenario.devices:
+        if device.type != "battery":
+            continue
+        missing = REQUIRED_FIELD_BLOCKS - device.params.keys()
+        if missing:
+            raise BessEmsFieldPublishConfigMissingFieldBlocksError(
+                device.id, tuple(sorted(missing))
+            )
+
+
+def _bess_ems_adapter_from_env(
+    run_id: str, scenario: Scenario
+) -> BessEmsFieldPublishAdapter | None:
+    """Opt-in bess-ems-Feldvertrags-Publisher (ADR 0078).
+
+    Ist ``GRID_GYM_BESS_EMS_MQTT_BROKER=host[:port]`` gesetzt, prueft §2.5-fail-fast die
+    Battery-Feldbloecke und konstruiert einen `BessEmsFieldPublishAdapter` mit
+    **run-eindeutiger** `client_id` (kein paho-Session-Kick bei parallelen Runs). Unset
+    → `None` → der Driver skippt den bess-ems-Fan-out (byte-identisch). `asset_id`-
+    Mapping bleibt hier Identitaet (ADR 0078 §2.3, Default); Fehlkonfig → typed
+    `BessEmsFieldPublishConfigError` fail-fast."""
+    raw = os.environ.get(_BESS_EMS_BROKER_ENV_VAR, "").strip()
+    if not raw:
+        return None
+    _assert_bess_ems_field_blocks(scenario)
+    host, port = _parse_broker_endpoint(raw, error_factory=BessEmsFieldPublishConfigEndpointError)
+    config = BessEmsFieldPublishConfig(
+        broker_host=host,
+        broker_port=port,
+        client_id=f"{_BESS_EMS_CLIENT_ID}-{run_id}",
+        topic_prefix=_BESS_EMS_TOPIC_PREFIX,
+    )
+    return BessEmsFieldPublishAdapter(config)
+
+
+def _wire_bess_ems_state(app_: FastAPI, run_id: str, scenario: Scenario) -> None:
+    """Setzt `app.state.bess_ems_publish` aus dem env-Adapter (falls konfiguriert).
+    Ein-Statement-Wrapper fuer den Lifespan-Pfad (Muster `_wire_field_publish_state`)."""
+    adapter = _bess_ems_adapter_from_env(run_id, scenario)
+    if adapter is not None:
+        app_.state.bess_ems_publish = adapter
+
+
+def _wire_push_sides(app_: FastAPI, run_id: str, scenario: Scenario) -> None:
+    """Verdrahtet beide opt-in Push-Seiten (Field-Publish/ADR 0075 + bess-ems/ADR 0078)
+    VOR `repository.save` (Validation-First, F2): eine env-Fehlkonfig darf die
+    Repository nicht befuellt zuruecklassen. Run-eindeutige `client_id`."""
+    _wire_field_publish_state(app_, run_id)
+    _wire_bess_ems_state(app_, run_id, scenario)
 
 
 def configure_scenario_demo_run(
@@ -286,7 +361,10 @@ def configure_scenario_demo_run(
     # ADR 0075 §2.3 (Review-Fix #4): Field-Publish VOR repository.save wiren
     # (Validation-First, F2) — eine env-Fehlkonfig darf die Repository nicht
     # befuellt zuruecklassen. Run-eindeutige client_id (Review-Fix #3).
-    _wire_field_publish_state(app_, run_id)
+    # ADR 0075/0078 §2.3/§2.5: beide Push-Seiten VOR repository.save wiren
+    # (Validation-First, F2) — eine env-Fehlkonfig / fehlende Feldbloecke darf die
+    # Repository nicht befuellt zuruecklassen. Run-eindeutige client_id.
+    _wire_push_sides(app_, run_id, loaded.scenario)
     repository.save(metadata)
     registry.register(tick_loop)
     # M6-Welle-6: Healthcheck-Adapter am produktiven TickLoop
@@ -326,6 +404,15 @@ def configure_scenario_demo_run(
             getattr(app_.state, "field_publish", None),
         )
 
+    def _bess_ems_publish_provider() -> BessEmsFieldPublishAdapter | None:
+        # ADR 0078: bess-ems-Feldvertrags-Push-Seite (optional). Ohne env-Broker
+        # bleibt `app.state.bess_ems_publish` ungesetzt → der Driver skippt den
+        # Tick-Frame-Fan-out (byte-identisch).
+        return cast(
+            BessEmsFieldPublishAdapter | None,
+            getattr(app_.state, "bess_ems_publish", None),
+        )
+
     # Welle-5-Review F10: tick_interval_s an scenario.tick_ms koppeln,
     # mit Cap auf 0.1s damit Stunden-Profile (tick_ms=3600000) nicht
     # 1h-wall-clock pro Tick brauchen. Reine 100ms-Wall-Clock-Konstante
@@ -339,6 +426,7 @@ def configure_scenario_demo_run(
         alarm_history_buffer_provider=_alarm_history_buffer_provider,
         telemetry_stream_provider=_telemetry_stream_provider,
         field_publish_provider=_field_publish_provider,
+        bess_ems_publish_provider=_bess_ems_publish_provider,
     )
     app_.state.demo_tick_loop_driver = driver
     # M7-Welle-1a (ADR 0047): persistierte Zeitreihen lesbar machen
@@ -401,10 +489,18 @@ def build_run_driver(
     def _field_publish_provider() -> FieldPublishPort | None:
         return field_publish
 
+    # ADR 0078: bess-ems-Publisher auch auf dem Multi-Run-Pfad (per-Run-Adapter,
+    # run-eindeutige client_id; §2.5-Fail-fast gegen die Battery-Feldbloecke).
+    bess_ems_publish = _bess_ems_adapter_from_env(run_id, scenario)
+
+    def _bess_ems_publish_provider() -> BessEmsFieldPublishAdapter | None:
+        return bess_ems_publish
+
     return DemoTickLoopDriver(
         tick_loop,
         tick_interval_s=resolved_tick_interval_s,
         field_publish_provider=_field_publish_provider,
+        bess_ems_publish_provider=_bess_ems_publish_provider,
     )
 
 

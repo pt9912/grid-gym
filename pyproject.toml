@@ -356,6 +356,7 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 "src/grid_gym/adapters/driving/http_api/error_translation.py" = ["BLE001"]
 "src/grid_gym/adapters/driven/protocol_*/error_translation.py" = ["BLE001"]
 "src/grid_gym/adapters/driven/persistence_*/error_translation.py" = ["BLE001"]
+"src/grid_gym/adapters/driven/field_publish_bess_ems/error_translation.py" = ["BLE001"]
 "src/grid_gym/adapters/**" = ["DTZ", "TID"]
 # DeviceModel-Implementationen tragen die Protocol-Surface (7 Member)
 # plus Welle-2-Review-Hooks (drain_alarms/set_run_id/alarms-Property)
@@ -677,6 +678,7 @@ typed-errors-exempt = [
     "src/grid_gym/adapters/driving/http_api/error_translation.py",
     "src/grid_gym/adapters/driven/protocol_*/error_translation.py",
     "src/grid_gym/adapters/driven/persistence_*/error_translation.py",
+    "src/grid_gym/adapters/driven/field_publish_bess_ems/error_translation.py",
     # M5-Welle-4b-Review-Fix #2 (2026-06-02): der asyncio-TickLoop-
     # Driver ist ein Task-Boundary — ein unhandled Exception killt
     # den Task stillschweigend und laesst den Repository-Status auf

@@ -1,0 +1,33 @@
+feat(field-server): Slice 077 S2 — bess-ems-Feldvertrags-Publisher (ADR 0078 Provisional)
+
+Zweiter opt-in driven Push-Adapter (field_publish_bess_ems) neben field_publish_mqtt:
+aggregiert je Tick grid-gyms per-Punkt-Battery-Telemetrie + Fault-Surface zu den breiten
+bess-ems-Envelope-Frames (telemetry/status/fault) und published sie an MQTT, damit ein
+unveraendertes bess-ems grid-gym als simuliertes Feld konsumiert (HIL, GG-TEST-004).
+
+Naht (ADR 0077 §2.5): additiver TickResult.emitted_device_status-Slot + FaultSurfaceDevice-
+Sub-Protocol (DeviceModel-Erweiterung, ADR 0013 §2.8); der TickLoop sammelt available/
+fault_status der fault-surface-Geraete als DeviceStatus-Projektion — kein Telemetrie-Punkt,
+nicht persistiert/gehasht (pin-neutral).
+
+Adapter (ADR 0078): reiner Encoder (Flip active_power_kw=-power_kw, dc_current abgeleitet
+P=V*I, offset_millis<-simulation_time; gegen vendored bess-ems-Schema + Golden strukturell
+getestet) + paho-Lifecycle + Frame-Aggregation (telemetry/status retained, fault non-retained
++ suppressed bei fault_status in {ok,""}) + command_ack-Empfangs-Echo (§2.9, Wall-Clock
+dispatched_at exogen; Echo != Feldeffekt, Sollwert-Pfad bleibt Modbus/075) + fail-fast (§2.5).
+
+Wiring: DemoTickLoopDriver start/publish_tick/stop (graceful degrade + bess_ems_publish_status);
+Composition env-opt-in GRID_GYM_BESS_EMS_MQTT_BROKER + §2.5-Composition-fail-fast (Battery ohne
+volle Feldbloecke thermal/health/dc_bus/reactive -> typisierter Konfig-Fehler) auf beiden
+Run-Pfaden. Ohne env byte-identisch (Invariante 073/074/075).
+
+Review vor Commit (2 adversariale Reviewer, rein-statisch): keine HIGH/MEDIUM. 2 LOW gefaltet —
+LOW-1 (Startfenster-Race: Ack ueber Callback-Client statt self._client), LOW-2 (per-Asset-
+Isolation: ein Asset-Fehler unterdrueckt nicht die status/fault-Frames der Geschwister, erster
+Fehler re-raised fuer Driver-Degrade). LOW-3 (asset_id-Kollision, nur via Direkt-Config)
+dokumentiert.
+
+ADR 0078 -> Provisional (Accepted bei S3-Abnahme). 2715 unit passed, coverage 96.25% line /
+92.58% critical-branch. make gates + make docs-check gruen.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>

@@ -1,9 +1,12 @@
 # ADR 0078 — bess-ems-konformer Field-Publisher: Tick-Frame-Aggregation + Feldvertrags-Encoder
 
-**Status:** Proposed (2026-07-13) — die **Richtung** ist entschieden (ein zweiter,
-opt-in tick-frame-aggregierender Encoder in der Driver-Schicht, der grid-gyms
-Battery-Telemetrie in den bess-ems-Feldenvelope uebersetzt), die Implementierung steht
-aus. Konsumiert die Emissionen aus [`ADR 0077`](0077-battery-field-envelope-completeness.md).
+**Status:** Provisional (2026-07-13) — in [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S2
+implementiert (driven `field_publish_bess_ems`-Publisher: Encoder + Frame-Aggregation
+aus `TickResult.emitted_telemetry` + `emitted_device_status` + Topics/Retain/Suppression
++ `command_ack`-Echo + fail-fast-Wiring), gegen den vendored bess-ems-Vertrag (Schema +
+Golden-Vektoren) strukturell testbar. **Accepted** bei S3-Closure (Schema-Validate +
+Golden-Vergleich + bess-ems-MQTT-only-E2E). Konsumiert die Emissionen aus
+[`ADR 0077`](0077-battery-field-envelope-completeness.md).
 **Datum:** 2026-07-13
 **Bezug:**
 

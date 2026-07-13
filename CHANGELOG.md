@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **bess-ems-konformer Field-Publisher (Slice 077 S2, ADR 0078 `Provisional`).** Ein
+  zweiter, opt-in **driven** Push-Adapter (`field_publish_bess_ems`) neben dem schmalen
+  `field_publish_mqtt`: er aggregiert je Tick grid-gyms per-Punkt-Battery-Telemetrie +
+  Fault-Surface zu den **breiten** bess-ems-Envelope-Frames (`telemetry`/`status`/
+  `fault`, 10-Feld-`$defs.telemetry`) und published sie an einen MQTT-Broker, damit ein
+  externes, **unveraendertes** EMS (`bess-ems`) grid-gym als simuliertes Feld konsumiert
+  (HIL, `GG-TEST-004`). Feld-Mapping gegen den vendored bess-ems-Vertrag (Schema +
+  Golden-Vektoren) gepinnt: `active_power_kw = -power_kw` (Vorzeichen-Flip), `dc_current`
+  abgeleitet (P=V·I, Frame-Spannung), `offset_millis`←`simulation_time`, Rest 1:1.
+  Topics retained (telemetry/status) bzw. non-retained + suppressed bei `fault_status ∈
+  {ok,""}` (fault). **`command_ack`-Empfangs-Echo** (§2.9): subscribe `{prefix}/+/command`,
+  always-accept-Ack auf `{prefix}/{asset}/command/ack` (Wall-Clock `dispatched_at`,
+  exogen) — haelt bess-ems' `MqttCommandSink` vom `ack-timeout`→Safe-Stop ab; **Echo ≠
+  Feldeffekt** (Sollwert-Effekt bleibt Modbus/Slice 075).
+- **`TickResult.emitted_device_status`-Naht (ADR 0077 §2.5).** Additiver Slot +
+  `FaultSurfaceDevice`-Sub-Protocol (`DeviceModel`-Erweiterung, ADR 0013 §2.8): der
+  `TickLoop` sammelt je Tick `available`/`fault_status` der fault-surface-faehigen
+  Geraete (heute Batterien) als `DeviceStatus`-Projektion — **kein** Telemetrie-Punkt,
+  **nicht** persistiert/gehasht (pin-neutral). Der bess-ems-Publisher liest daraus die
+  Envelope-Felder `available`/`fault_status`.
+- **Opt-in-Wiring + §2.5-Fail-fast.** `GRID_GYM_BESS_EMS_MQTT_BROKER=host[:port]`
+  aktiviert den Publisher (run-eindeutige `client_id`, Driver-Lifecycle mit graceful
+  Degrade wie die Push-Seite); der Composition-Root lehnt bei Konstruktion **typisiert**
+  ab, wenn eine Battery nicht die vollen Field-Envelope-Bloecke (thermal/health/dc_bus/
+  reactive, ADR 0077) traegt (kein Adapter-Default fuer Pflicht-Physik). Ohne die env-var
+  byte-identisch (Invariante 073/074/075).
+
 ## [0.6.1] - 2026-07-13
 
 **Patch — Closure-Review-Haertung des Inbound-Write-Pfads (Slice 075).** Zwei

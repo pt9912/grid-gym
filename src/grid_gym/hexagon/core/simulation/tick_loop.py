@@ -52,11 +52,12 @@ from typing import Final
 from grid_gym.hexagon.core.agents import Agent, AgentMessageBus, _RandomAttachableAgent
 from grid_gym.hexagon.core.commands import ScenarioCommandEngine
 from grid_gym.hexagon.core.devices import DeviceModel
+from grid_gym.hexagon.core.devices._status_surface import FaultSurfaceDevice
 from grid_gym.hexagon.core.devices.grid_connection import GridConnectionDevice
 from grid_gym.hexagon.core.devices.load import LoadDevice
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
-from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.device import DeviceStatus, DeviceTickContext
 from grid_gym.hexagon.core.domain.quality import QUALITY_SEVERITY, Quality
 from grid_gym.hexagon.core.domain.replay import ReplayDelta, ReplayDeltaClassification
 from grid_gym.hexagon.core.domain.event import Event, GridConstraintViolationEvent
@@ -1470,6 +1471,30 @@ class TickLoop:
             emitted_telemetry=tuple(self._apply_max_age_stage(emitted_after_quality, now)),
             emitted_alarms=device_alarms + quality_alarms,
             emitted_grid_events=grid_events,
+            emitted_device_status=self._collect_device_status(),
+        )
+
+    def _collect_device_status(self) -> tuple[DeviceStatus, ...]:
+        """Sammelt je Tick einen `DeviceStatus` pro fault-surface-faehigem
+        Geraet (`FaultSurfaceDevice`, ADR 0077 §2.5) — heute nur `BatteryDevice`.
+
+        Reihenfolge = `self._devices` (dieselbe deterministische Device-
+        Reihenfolge wie die Telemetrie-Iteration). Der Slot wird **nicht**
+        persistiert/gehasht — ohne fault-surface-faehiges Geraet leer, also
+        pin-neutral (byte-identische Demo-/`scenario_hash`-Pins). Konsument ist
+        allein der bess-ems-Publisher im Driver (ADR 0078 §2.2).
+
+        Die Read-Properties sind nebenwirkungsfrei (Projektion der
+        `_<fault>_active`-Flags); der Aufruf liegt am Tick-Ende, also **nach**
+        `initialize()` — kein `device_id`-Pre-init-Pfad."""
+        return tuple(
+            DeviceStatus(
+                device_id=device.device_id,
+                available=device.available,
+                fault_status=device.fault_status,
+            )
+            for device in self._devices
+            if isinstance(device, FaultSurfaceDevice)
         )
 
     def _apply_quality_fault_stage(

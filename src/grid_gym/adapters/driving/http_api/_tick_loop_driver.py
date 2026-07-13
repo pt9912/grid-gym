@@ -27,6 +27,7 @@ from collections.abc import Callable
 from typing import Literal, cast
 
 from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.adapters.driven.field_publish_bess_ems import BessEmsFieldPublishAdapter
 from grid_gym.adapters.driving._field_current_value import CurrentValueProjection
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
     TickLoopHealthcheckAdapter,
@@ -65,6 +66,7 @@ AlarmHistoryBufferProvider = Callable[[], AlarmHistoryBuffer | None]
 TelemetryStreamProvider = Callable[[], TelemetryStreamPort | None]
 FieldPublishProvider = Callable[[], FieldPublishPort | None]
 DeviceServerProvider = Callable[[], DeviceServerPort | None]
+BessEmsPublishProvider = Callable[[], BessEmsFieldPublishAdapter | None]
 
 
 class DemoTickLoopDriver:
@@ -96,6 +98,7 @@ class DemoTickLoopDriver:
         telemetry_stream_provider: TelemetryStreamProvider | None = None,
         field_publish_provider: FieldPublishProvider | None = None,
         device_server_provider: DeviceServerProvider | None = None,
+        bess_ems_publish_provider: BessEmsPublishProvider | None = None,
         current_value_projection: CurrentValueProjection | None = None,
         healthcheck_adapter: TickLoopHealthcheckAdapter | None = None,
     ) -> None:
@@ -150,6 +153,17 @@ class DemoTickLoopDriver:
         )
         self._active_device_server: DeviceServerPort | None = None
         self._current_value_projection: CurrentValueProjection | None = current_value_projection
+        # ADR 0078: bess-ems-Feldvertrags-Publisher (zweite, opt-in Push-Seite neben
+        # `field_publish`). Der Driver resolved den Adapter EINMAL am Run-Start, ruft
+        # `start()` (Broker-Connect + Command-Subscribe), aggregiert je Tick den breiten
+        # Envelope-Frame (`publish_tick`) und `stop()` am Run-Ende. `None`-Provider →
+        # kein bess-ems-Feed (byte-identisch). Graceful Degrade wie die Push-Seite.
+        self._bess_ems_publish_provider: BessEmsPublishProvider = (
+            bess_ems_publish_provider if bess_ems_publish_provider is not None else _none_provider
+        )
+        self._active_bess_ems: BessEmsFieldPublishAdapter | None = None
+        self._bess_ems_failures: int = 0
+        self._bess_ems_configured: bool = False
 
     def start(self) -> None:
         """Startet den Driver-Task (idempotent)."""
@@ -222,6 +236,7 @@ class DemoTickLoopDriver:
             # (finally) nicht ueberspringen (sonst haengt der Repository-Status
             # auf `running`).
             await self._start_field_publish()
+            await self._start_bess_ems()
             await self._start_device_server()
             await self._tick_forever()
         except asyncio.CancelledError:
@@ -240,6 +255,7 @@ class DemoTickLoopDriver:
             # (auf JEDEM Exit-Pfad — natuerliche Terminierung, Failure,
             # externer Cancel), bevor die Run-End-Naht laeuft.
             await self._stop_device_server()
+            await self._stop_bess_ems()
             await self._stop_field_publish()
             # ADR 0067 §2.4: Run-End-Naht auf JEDEM Exit-Pfad (natuerliche
             # Terminierung, Failure, externer Cancel via stop()) — nicht nur
@@ -265,6 +281,7 @@ class DemoTickLoopDriver:
             self._publish_emitted_alarms(result)
             self._publish_emitted_telemetry(result)
             self._publish_field(result)
+            self._publish_bess_ems(result)
             self._update_projection(result)
             await asyncio.sleep(self._tick_interval_s)
 
@@ -470,6 +487,86 @@ class DemoTickLoopDriver:
         if not self._field_publish_configured:
             return "off"
         if self._active_field_publish is None or self._field_publish_failures > 0:
+            return "degraded"
+        return "active"
+
+    def _publish_bess_ems(self, result: TickResult) -> None:
+        """ADR 0078 §2.1: aggregiert je Tick den breiten bess-ems-Envelope-Frame
+        (`telemetry`/`status`/`fault`) aus dem **vollstaendigen** `TickResult`
+        (`emitted_telemetry` + `emitted_device_status`) und published ihn.
+
+        Tick-weiter try/except (Muster `_publish_field`): ein Publish-Fehler
+        (Broker-Ausfall) toetet nicht den Driver; ersten Fehler voll loggen, danach
+        zaehlen (Summe in `_stop_bess_ems`). Ohne aktiven Adapter No-op →
+        byte-identisch."""
+        adapter = self._active_bess_ems
+        if adapter is None:
+            return
+        try:
+            adapter.publish_tick(result)
+        except Exception:
+            if self._bess_ems_failures == 0:
+                _logger.exception(
+                    "bess-ems-publish failed for run_id=%r — weitere Fehler werden "
+                    "gezaehlt (nicht einzeln geloggt).",
+                    self._tick_loop.run_id,
+                )
+            self._bess_ems_failures += 1
+
+    async def _start_bess_ems(self) -> None:
+        """ADR 0078 §2.4: bess-ems-Publisher EINMAL am Run-Start resolven + `start()`
+        (Broker-Connect + Command-Subscribe) im Worker-Thread (`asyncio.to_thread` —
+        kein Event-Loop-Stall, wie die Push-Seite). Graceful Degrade: schlaegt
+        `start()` fehl, wird geloggt + der Feed fuer diesen Run deaktiviert. `None`-
+        Provider → No-op."""
+        adapter = self._bess_ems_publish_provider()
+        if adapter is None:
+            return
+        self._bess_ems_configured = True
+        try:
+            await asyncio.to_thread(adapter.start)
+        except Exception:
+            _logger.exception(
+                "BessEmsFieldPublishAdapter.start() failed for run_id=%r — "
+                "bess-ems-publish disabled for this run.",
+                self._tick_loop.run_id,
+            )
+            return
+        self._active_bess_ems = adapter
+
+    async def _stop_bess_ems(self) -> None:
+        """ADR 0078 §2.4: bess-ems-Broker am Run-Ende schliessen (im Worker-Thread;
+        idempotent, nur wenn `start()` erfolgreich war). Eine Publish-Fehler-Summe des
+        Runs wird hier einmal geloggt."""
+        failures = self._bess_ems_failures
+        if failures > 0:
+            _logger.warning(
+                "bess-ems-publish: %d Tick-Frame(s) fuer run_id=%r konnten nicht "
+                "publiziert werden (Broker-Ausfall; QoS-0 verworfen).",
+                failures,
+                self._tick_loop.run_id,
+            )
+        adapter = self._active_bess_ems
+        if adapter is None:
+            return
+        self._active_bess_ems = None
+        try:
+            await asyncio.to_thread(adapter.stop)
+        except Exception:
+            _logger.exception(
+                "BessEmsFieldPublishAdapter.stop() failed for run_id=%r.",
+                self._tick_loop.run_id,
+            )
+
+    @property
+    def bess_ems_publish_status(self) -> Literal["off", "active", "degraded"]:
+        """Beobachtbarer bess-ems-Publish-Zustand (fuer HIL/Health, Muster
+        `field_publish_status`): ``off`` (nicht konfiguriert), ``active`` (verbunden,
+        keine Fehler), ``degraded`` (Connect-/Publish-Fehler → der SUT-Feed kann still
+        leer sein, obwohl die Sim laeuft)."""
+        if not self._bess_ems_configured:
+            return "off"
+        if self._active_bess_ems is None or self._bess_ems_failures > 0:
             return "degraded"
         return "active"
 
