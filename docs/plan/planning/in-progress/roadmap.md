@@ -5,8 +5,9 @@
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
 (MVP-Linie); aktuelles Release **v0.7.1** (2026-07-13, Slice-078-Closure — UI-Vervollstaendigung
 + Dashboard-Live-Feed-Fix). **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
-[`078`](../done/078-gg-ui-004-006-completion.md) (UI: GG-UI-006 SVG-Geraete-Diagramm +
-GG-UI-004 Start-Knopf + GG-UI-002/003 Dashboard-Live-Feed-Bugfix — fehlende HTMX-ws-Extension;
+[`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:
+SVG-Einlinien-Geraete-Diagramm + Start-Knopf fuer pending-Runs +
+Dashboard/Alarms-Live-Feed-Bugfix [fehlende HTMX-2.x-ws-Extension];
 released **v0.7.1**), davor
 [`077`](../done/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
 Feld-Publisher; ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
@@ -120,9 +121,9 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
-[`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung: GG-UI-006
-SVG-Einlinien-Geraete-Diagramm + GG-UI-004 Start-Knopf + Bugfix des im Browser kaputten
-Dashboard-/Alarms-Live-Feeds [GG-UI-002/003, HTMX-2.x-ws-Extension war nicht vendored];
+[`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:
+SVG-Einlinien-Geraete-Diagramm + Start-Knopf fuer pending-Runs + Bugfix des im Browser kaputten
+Dashboard-/Alarms-Live-Feeds [HTMX-2.x-ws-Extension war nicht vendored];
 released **v0.7.1**). Davor (2026-07-13)
 [`077`](../done/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
 Feld-Publisher — breiter Feldenvelope-Snapshot je Tick; ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
