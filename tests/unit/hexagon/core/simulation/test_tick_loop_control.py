@@ -77,6 +77,44 @@ def test_control_state_default_is_pending() -> None:
 # ---------------------------------------------------------------------------
 
 
+def test_request_start_from_pending_flips_to_running() -> None:
+    """Slice 078 (`GG-UI-004`): `start` aus `pending` → `running`."""
+    loop = _make_loop()
+    assert loop.control_state == "pending"
+    loop.request("start")
+    assert loop.control_state == "running"
+
+
+def test_request_start_from_running_is_idempotent_noop() -> None:
+    """Slice 078 (`GG-UI-004`): `start` auf einem bereits laufenden Lauf ist ein
+    idempotenter No-op (`current == target == running` → kein State-Wechsel, kein
+    Fehler; derselbe No-op-Pfad wie `resume`/`pause`/`stop` auf ihrem Zielstate)."""
+    loop = _make_loop()
+    loop.request("resume")  # pending → running
+    loop.request("start")  # No-op
+    assert loop.control_state == "running"
+
+
+def test_request_start_from_paused_raises_invalid_transition() -> None:
+    """Slice 078 (`GG-UI-004`): `start` ist **nur** aus `pending` gueltig — aus
+    `paused` (≠ Zielstate `running`, nicht in `allowed_from`) eine Invalid-Transition
+    (409). Unterscheidet `start` klar von `resume` (das aus `paused` erlaubt ist)."""
+    loop = _make_loop()
+    loop.request("pause")  # pending → paused
+    with pytest.raises(TickLoopInvalidTransitionError) as exc_info:
+        loop.request("start")
+    assert exc_info.value.current_state == "paused"
+    assert exc_info.value.target_state == "running"
+
+
+def test_request_start_mirrors_to_run_repository() -> None:
+    """Slice 078: der `start`-Flip persistiert ueber den Repository-Mirror."""
+    repo = _seeded_repo()
+    loop = _make_loop(run_repository=repo)
+    loop.request("start")
+    assert repo.get_status("welle-4a-control-test") == "running"
+
+
 def test_request_pause_from_pending_flips_state() -> None:
     loop = _make_loop()
     loop.request("pause")

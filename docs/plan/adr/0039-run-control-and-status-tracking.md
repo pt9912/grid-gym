@@ -325,7 +325,7 @@ class TickLoop:
 
 | Aus / Nach   | `pending` | `running` | `paused` | `stopped` | `completed` |
 | ------------ | ------ | --------- | -------- | --------- | ------- |
-| `pending`       | —      | auto via `tick()` | `request_pause` | `request_stop` | (kein) |
+| `pending`       | —      | auto via `tick()` **oder `start`** (Slice 078) | `request_pause` | `request_stop` | (kein) |
 | `running`    | —      | —         | `request_pause` | `request_stop` | auto bei Tick-Loop-Ende |
 | `paused`     | —      | `request_resume` | —    | `request_stop` | (kein) |
 | `stopped`    | —      | (Invalid) | (Invalid) | (idempotent no-op) | (kein) |
@@ -336,6 +336,18 @@ class TickLoop:
 run_id)`; der HTTP-Adapter mapped das auf **409 Conflict**
 mit `ErrorResponse(code="invalid_transition", ...)` (siehe
 ADR 0037 §2 Error-Format [`GG-API-004`](../../../spec/lastenheft.md#gg-api-004)).
+
+**Amendment (Slice 078, 2026-07-13; [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004)).**
+Die `ControlAction` bekommt eine vierte Aktion **`start`** (der von der
+`ControlRequest`-Docstring sanktionierte Literal-Erweiterungs-Pfad): `pending →
+running`, **nur** aus `pending` gueltig (Matrix-Zelle oben). Damit schliesst die
+Control-UI die [`GG-UI-004`](../../../spec/lastenheft.md#gg-ui-004)-Luecke „bietet
+mindestens Start …" — der Start-Button ist ausserhalb von `pending` disabled, ein
+Race-Klick auf einen laufenden Lauf ist eine Invalid-Transition (409). `start`
+unterscheidet sich bewusst von `resume` (das auch aus `paused`/`running` erlaubt ist):
+`start` ist die semantisch klare Erst-Startung eines noch nicht gestarteten Laufs.
+Der Auto-Flip via erstem `tick()` bleibt fuer den auto-startenden Demo-Lauf unveraendert
+(dort ist der Button daher praktisch immer disabled).
 
 **Begruendung gegen Alternativen:**
 

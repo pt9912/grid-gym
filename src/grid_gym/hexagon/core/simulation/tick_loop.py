@@ -207,6 +207,7 @@ def _default_alarm_id_source() -> str:
 _CONTROL_ACTION_TRANSITIONS: Final[
     Mapping[ControlAction, tuple[RunStatus, tuple[RunStatus, ...]]]
 ] = {
+    "start": ("running", ("pending",)),
     "pause": ("paused", ("pending", "running", "paused")),
     "resume": ("running", ("pending", "paused", "running")),
     "stop": ("stopped", ("pending", "running", "paused", "stopped")),
@@ -214,7 +215,11 @@ _CONTROL_ACTION_TRANSITIONS: Final[
 """ADR 0039 Decision 13 Transitions-Matrix: pro ControlAction die
 ``(target_state, allowed_from_states)``-Paarung. Idempotenter
 No-op-Pfad ist im Caller (`TickLoop.request`) — der Target-State
-ist in `allowed_from` enthalten."""
+ist in `allowed_from` enthalten. `start` (Slice 078, `GG-UI-004`):
+`pending → running`, **nur** aus `pending` gueltig (im Gegensatz zu
+`resume`, das auch aus `paused`/`running` erlaubt ist) — ein Start-Klick
+auf einen bereits laufenden Lauf ist damit eine Invalid-Transition (409),
+und der UI-Start-Button ist ausserhalb von `pending` disabled."""
 
 _REPLAY_PREFLIGHT_FIELDS: Final[tuple[str, ...]] = (
     "scenario_hash",
@@ -835,10 +840,12 @@ class TickLoop:
         """Setzt `_control_state` gemaess Welle-4a-Transition-Matrix
         (M5 Welle 4a, ADR 0039 Decision 13).
 
-        ``action`` ist eines von ``"pause"``/``"resume"``/``"stop"``
-        — gespiegelt aus dem HTTP-`ControlRequest`-Body (ADR 0037
+        ``action`` ist eines von ``"start"``/``"pause"``/``"resume"``/
+        ``"stop"`` — gespiegelt aus dem HTTP-`ControlRequest`-Body (ADR 0037
         Decision API-1). Erlaubte Transitions:
 
+        - ``start`` aus ``pending`` → ``running`` (Slice 078, `GG-UI-004`;
+          **nur** aus ``pending``).
         - ``pause`` aus ``pending``/``running`` → ``paused``.
         - ``resume`` aus ``pending``/``paused`` → ``running``.
         - ``stop`` aus ``pending``/``running``/``paused`` →

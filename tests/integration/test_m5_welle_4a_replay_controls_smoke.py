@@ -141,3 +141,8 @@ def test_replay_controls_full_lifecycle_workflow(
     assert "Replay Controls" in html
     assert run_id in html
     assert 'hx-trigger="every 1s"' in html
+    # Slice 078 (GG-UI-004): der Start-Knopf ist vorhanden (initial disabled;
+    # per Status-Poll-JS nur bei `pending` aktiv) + postet die `start`-Action.
+    assert 'class="btn btn-start"' in html
+    assert '{"action": "start"}' in html
+    assert "startBtn.disabled" in html  # Status-getriebene Enable/Disable-Logik

@@ -236,15 +236,19 @@ class RunStatusResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-ControlAction = Literal["pause", "resume", "stop"]
+# HTTP-Wire-Vokabel der Control-Action; spiegelt das Domain-`ControlAction`
+# (`hexagon.core.domain.run`). Slice 078 (`GG-UI-004`): `start` ergaenzt (der von
+# der `ControlRequest`-Docstring sanktionierte Literal-Erweiterungs-Pfad).
+ControlAction = Literal["start", "pause", "resume", "stop"]
 
 
 class ControlRequest(_BaseRequest):
     """Steuerungs-Action fuer einen Lauf (ADR 0037 Decision API-1).
 
-    Action-Set: `pause` / `resume` / `stop`. Erweiterungen
+    Action-Set: `start` / `pause` / `resume` / `stop`. Erweiterungen
     (z. B. `restart`, `replay-step`) erfolgen per Literal-
-    Erweiterung; keine neuen Endpunkte noetig.
+    Erweiterung; keine neuen Endpunkte noetig. `start` (Slice 078,
+    `GG-UI-004`): `pending → running`, nur aus `pending` gueltig.
 
     Strict-Mode + extra-forbid (ADR 0045 §2.1) per `_BaseRequest`.
     """

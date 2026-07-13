@@ -51,13 +51,16 @@ UI-CSS-Klassen).
 """
 
 
-ControlAction = Literal["pause", "resume", "stop"]
+ControlAction = Literal["start", "pause", "resume", "stop"]
 """Control-Action-Vokabel (M5-Welle-4a, ADR 0037 Decision API-1 + ADR
 0039 Decision 13), gespiegelt aus dem HTTP-`ControlRequest`-Body.
 Verschoben aus `core.simulation.tick_loop` in 041-C2 (ADR 0050 §2.3),
 damit der `RunExecutionPort` sie ohne `core.simulation`-Import
 referenzieren kann (`AC-ADAPTER-PURE`). `RunExecutionPort.request(action)`
-und `TickLoop.request(action)` dispatchen ueber diesen Literal."""
+und `TickLoop.request(action)` dispatchen ueber diesen Literal.
+`start` (Slice 078, `GG-UI-004`): `pending → running`, nur aus `pending`
+gueltig — schliesst die UI-„Start"-Luecke (der sanktionierte Literal-
+Erweiterungs-Pfad, `ControlRequest`-Docstring)."""
 
 
 @dataclass(frozen=True, slots=True)

@@ -14,6 +14,17 @@
     <h2>Actions</h2>
     <div class="control-buttons">
         <button type="button"
+                class="btn btn-start"
+                hx-post="/runs/{{ run_id }}/control"
+                hx-ext="json-enc"
+                hx-vals='{"action": "start"}'
+                hx-target="#control-feedback"
+                hx-swap="innerHTML"
+                title="Nur fuer noch nicht gestartete (pending) Laeufe"
+                disabled>
+            Start
+        </button>
+        <button type="button"
                 class="btn btn-pause"
                 hx-post="/runs/{{ run_id }}/control"
                 hx-ext="json-enc"
@@ -70,6 +81,17 @@
                 payload = JSON.parse(event.detail.serverResponse);
             } catch (err) {
                 return;
+            }
+            // Slice 078 (GG-UI-004): der Start-Knopf ist nur fuer einen noch
+            // nicht gestarteten Lauf (`pending`) aktiv; sonst disabled mit
+            // erklaerendem Titel (der Demo-Lauf auto-startet → „laeuft bereits").
+            const startBtn = document.querySelector(".control[data-run-id] .btn-start");
+            if (startBtn) {
+                const pending = payload.state === "pending";
+                startBtn.disabled = !pending;
+                startBtn.title = pending
+                    ? "Lauf starten"
+                    : "Lauf laeuft bereits (Start nur fuer pending-Laeufe)";
             }
             event.detail.serverResponse = `
                 <p class="status-line">

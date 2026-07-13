@@ -168,16 +168,16 @@ def _seed_run_with_tick_loop_and_devices(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("action", ["pause", "resume", "stop"])
+@pytest.mark.parametrize("action", ["start", "pause", "resume", "stop"])
 def test_post_run_control_accepts_valid_action(
     configured_app: tuple[
         TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
     ],
     action: str,
 ) -> None:
-    """Welle-4a-Wiring: jede der drei Actions wird durch den
-    TickLoop verarbeitet und mit `accepted=True` quittiert
-    (ADR 0037 Decision API-1 + ADR 0039 Decision 13)."""
+    """Welle-4a-Wiring + Slice 078 (`GG-UI-004`): jede Action (inkl. `start` aus
+    `pending`) wird durch den TickLoop verarbeitet und mit `accepted=True`
+    quittiert (ADR 0037 Decision API-1 + ADR 0039 Decision 13)."""
     client, repository, _, registry = configured_app
     metadata, _ = _seed_run_with_tick_loop(repository, registry)
     response = client.post(
@@ -189,6 +189,23 @@ def test_post_run_control_accepts_valid_action(
     assert body["run_id"] == metadata.run_id
     assert body["action"] == action
     assert body["accepted"] is True
+
+
+def test_post_run_control_start_on_paused_returns_409(
+    configured_app: tuple[
+        TestClient, InMemoryRunRepository, InMemoryTelemetryStream, TickLoopRegistry
+    ],
+) -> None:
+    """Slice 078 (`GG-UI-004`): `start` ist nur aus `pending` gueltig — auf einem
+    pausierten Lauf antwortet der Endpoint 409 `invalid_transition` (der UI-Start-Button
+    ist ausserhalb von `pending` disabled, ein Race-Klick wird sauber abgelehnt).
+    (`start` auf einem bereits laufenden Lauf ist dagegen ein idempotenter No-op.)"""
+    client, repository, _, registry = configured_app
+    metadata, _ = _seed_run_with_tick_loop(repository, registry)
+    client.post(f"/runs/{metadata.run_id}/control", json={"action": "pause"})  # → paused
+    response = client.post(f"/runs/{metadata.run_id}/control", json={"action": "start"})
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "invalid_transition"
 
 
 def test_post_run_control_pause_mirrors_state_to_repository(
