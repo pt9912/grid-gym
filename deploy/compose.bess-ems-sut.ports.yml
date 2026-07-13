@@ -14,16 +14,22 @@
 #   - grid-gym Web-UI (HTMX):        http://localhost:8000
 #       Dashboard: http://localhost:8000/runs/demo-run-0001/dashboard
 #       (Szenario `bess-ems-sut.yaml` → Batterie `single-bess-1`)
-#   - bess-ems API (EMS-Backend):    http://localhost:8081
-#       Health: http://localhost:8081/health   (verifiziert: HTTP 200)
-#     Hinweis: bess-ems ist ein headless EMS-Backend (kein HTMX-UI wie grid-gym) —
-#     erreichbar ist die REST-/Health-API. Der Basis-Compose laesst bess-ems'
-#     `ApiTokens` bewusst weg (kein Dev-Token committet); token-geschuetzte
-#     Operator-Endpunkte antworten ohne konfigurierten Operator-Token ggf. 401.
+#   - bess-ems Operator-Konsole:      http://localhost:8080/operator/
+#       Health: http://localhost:8080/health
+#     Der Basis-Compose (E2E-Harness) laeuft headless und braucht KEINEN Token.
+#     Fuer die Konsole schaltet dieser Override den in bess-ems' eigenem
+#     `deploy/compose.yml` + Anwenderhandbuch (§2) dokumentierten **oeffentlichen
+#     Dev-Token** `dev-operator-token` (Rolle `operator`) frei — nur damit die
+#     schreibende Aktion „Operator-Stop" nutzbar ist (Feld **Operator token** in der
+#     Konsole). Nur-Sim, kein echtes Secret (steht so in bess-ems' Repo/Doku).
 services:
   grid-gym:
     ports:
       - "8000:8080"
   bess-ems:
     ports:
-      - "8081:8080"
+      - "8080:8080"
+    environment:
+      ApiTokens__Tokens__0__Token: dev-operator-token
+      ApiTokens__Tokens__0__Operator: operator-1
+      ApiTokens__Tokens__0__Role: operator

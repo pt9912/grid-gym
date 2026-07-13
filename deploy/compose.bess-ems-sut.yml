@@ -58,7 +58,7 @@ services:
   # SUT: unveraenderte bess-ems-EMS im MQTT-only-Modus (Config aus bess-ems'
   # deploy/compose.sut.yml, Broker → mosquitto). HilSimulator-Profil + Plaintext-Gate.
   bess-ems:
-    image: ghcr.io/pt9912/bess-ems@sha256:07931149790ec62772088b12a71b65e4c244801dcbaa3440a9eb7c0a526aa89f
+    image: ghcr.io/pt9912/bess-ems@sha256:67e266ff3b6cd075e320e0e1d06bc5c11f18141a3de680bc1f8ede0add83a7f2
     pull_policy: missing
     depends_on:
       postgres:
