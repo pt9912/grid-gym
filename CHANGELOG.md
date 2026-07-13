@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-13
+
+**Minor — Field-Server Inbound-Write→`Command` (die Schreib-Gegenrolle der
+Field-Server-Surface).** Flush der seit v0.5.0 unter `[Unreleased]` aufgelaufenen
+Arbeit; Release ausgeloest durch das Runtime-Delta des Inbound-Write-Pfads
+([`ADR 0076`](docs/plan/adr/0076-inbound-write-exogenous-input-recording.md),
+`Accepted`, Modell B): ein externes EMS (System-under-Test) kann grid-gyms
+simulierte Geraete jetzt nicht nur pollen (Read-Serving, v0.5.0), sondern auch
+**Sollwerte schreiben** — volle HIL/SUT-Steuerbarkeit (GG-TEST-004). Der
+Determinismus bleibt gewahrt: der erfasste Write-Strom ist materialisierbar +
+zweimal byte-identisch replaybar (E2E-belegt). Additiv + opt-in: ohne
+`write_map`/injizierten Puffer byte-identisch (Demo-Hash-Pins + `scenario_hash`
+unberuehrt) — SemVer-Minor. Nur Sim-/Testadapter (beschreibbarer Feldbus ohne Auth
+= Nur-Sim-Netz, GG-SAFE-007). `make fullbuild` grün vor dem Tag.
+
 ### Added
 
 - **Field-Server Inbound-Write→`Command` (Slice 075, ADR 0076 → `Accepted`):**
