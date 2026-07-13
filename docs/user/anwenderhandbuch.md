@@ -195,6 +195,8 @@ Voraussetzung, Vorgehen, Ergebnis und Hinweise.
 
 ### 4.1 Live-Telemetrie ansehen (Dashboard)
 
+![Das Live-Dashboard mit der Telemetry-Feed-Tabelle und dem Time-Series-Diagramm.](img/dashboard.png)
+
 **Voraussetzung:** Der Demo-Stack läuft (`make demo`), die UI ist
 geöffnet.
 
@@ -220,6 +222,8 @@ Diagramm die Zeitreihe.
 
 ### 4.2 Gerätezustände prüfen (Devices)
 
+![Die Devices-Seite mit dem Live-Zustand je Gerät (Spalten ID, Type, State, Quality).](img/devices.png)
+
 **Voraussetzung:** Ein Lauf ist aktiv.
 
 **Vorgehen:**
@@ -239,6 +243,8 @@ jede Sekunde.
   kein Lauf zu dieser `run_id`.
 
 ### 4.3 Alarme beobachten (Alarms)
+
+![Die Alarms-Seite mit der Alarm-Tabelle (Zeit, Ziel, Schweregrad, Code, Nachricht, Status).](img/alarms.png)
 
 **Voraussetzung:** Ein Lauf ist aktiv.
 
@@ -262,6 +268,8 @@ Der Schweregrad ist `info`, `warning` oder `critical`.
 
 ### 4.4 System- und Dienststatus prüfen (System, Health)
 
+![Die System-Seite mit Run-Status (RUNNING, Simulationszeit, Tick-Zähler) und Service-Health.](img/system.png)
+
 **Voraussetzung:** Der Stack läuft.
 
 **Vorgehen:**
@@ -277,6 +285,8 @@ Der Schweregrad ist `info`, `warning` oder `critical`.
 und der Dienst antwortet.
 
 ### 4.5 Einen Lauf steuern (Control)
+
+![Die Control-Seite mit Status-Block und den Aktionen Pause / Resume / Stop.](img/control.png)
 
 **Voraussetzung:** Ein aktiver Lauf mit laufendem Tick-Loop.
 
@@ -303,6 +313,8 @@ Status-Block erscheint eine Bestätigung.
   [Fehlerbehebung](#7-fehlerbehebung)).
 
 ### 4.6 Einen Fehler (Fault) über die Oberfläche anfragen (Faults)
+
+![Das Fault-Injection-Formular (Fault-Typ, Ziel-Gerät-ID, Start-Tick, Dauer, Recovery).](img/faults.png)
 
 **Voraussetzung:** Ein aktiver Lauf mit registriertem Tick-Loop; Sie
 kennen die Geräte-ID des Zielgeräts (z. B. `battery-1`).
@@ -450,6 +462,14 @@ maschinenlesbaren `AbnahmeReport` als JSON aus. Der Exit-Code ist
 | `GRID_GYM_DEMO_HOST_BIND` | Host-Adresse, an die die UI gebunden wird | `127.0.0.1` (nur lokal) |
 | `GRID_GYM_PORT` | interner Port des Dienstes im Container | `8080` |
 | `GRID_GYM_DATABASE_URL` | Postgres-Verbindung für die Persistenz | (im Compose-Stack gesetzt) |
+| `GRID_GYM_FIELD_PUBLISH_MQTT_BROKER` | Optional: exponiert die (simulierte) Telemetrie **je Punkt** an einen MQTT-Broker, damit ein externes System sie konsumiert | `host` bzw. `host:1883` (Nur-Sim-Netz) |
+| `GRID_GYM_BESS_EMS_MQTT_BROKER` | Optional: publisht je Tick den **breiten bess-ems-Feldenvelope** (`battery/{assetId}/…`), damit ein unverändertes `bess-ems`-EMS grid-gym als simuliertes Feld konsumiert (HIL/SUT) | `host` bzw. `host:1883` (Nur-Sim-Netz) |
+
+Die beiden `…_MQTT_BROKER`-Variablen sind **opt-in** — ohne sie verhält
+sich grid-gym unverändert. Sie sprechen ausschließlich simulierte/Test-Broker
+an; **keine** produktive Anlagensteuerung ([`GG-SAFE-007`](../../spec/lastenheft.md#gg-safe-007)).
+Der bess-ems-Publisher verlangt, dass die Batterie im Szenario die vollen
+Field-Envelope-Blöcke trägt (siehe [Abschnitt 5.2](#52-szenario-datei-yaml)).
 
 Die Zuordnung Host-Port `8000` → Container-Port `8080` ist in
 [`deploy/compose.yml`](../../deploy/compose.yml) festgelegt.
@@ -478,6 +498,15 @@ und Leistungen: `"50"`, nicht `50.0`) — so bleibt die Zahl exakt.
 Fault-Zeiten (`start_simulation_time`, `duration_ms`) sowie das
 `tick_ms` in `load_profiles`. Als Vorlage dient
 [`deploy/scenarios/gg-demo.yaml`](../../deploy/scenarios/gg-demo.yaml).
+
+**Optionale Batterie-Feldblöcke (für den bess-ems-Publisher).** Damit
+grid-gym den vollständigen bess-ems-Feldenvelope publizieren kann (siehe
+[Abschnitt 5.1](#51-umgebungsvariablen)), trägt die Batterie im `params`-
+Block vier verschachtelte Unterblöcke — `thermal`, `health`, `dc_bus`,
+`reactive` (jeweils Dezimal-Felder als Zeichenketten). Ohne diese Blöcke
+lehnt grid-gym den bess-ems-Publisher beim Start mit einer klaren Meldung
+ab. Als vollständige Vorlage dient
+[`deploy/scenarios/bess-ems-sut.yaml`](../../deploy/scenarios/bess-ems-sut.yaml).
 
 ### 5.3 Verfügbare Gerätetypen
 
@@ -522,6 +551,11 @@ passt.
 - **Observability** — strukturierte Logs, Metriken und Traces über
   einen OTLP-Adapter (siehe
   [`docs/user/observability.md`](observability.md)).
+- **MQTT-Feld-Publish (optional, HIL/SUT)** — grid-gym kann die
+  simulierte Telemetrie an einen MQTT-Broker exponieren, damit ein
+  externes EMS sie konsumiert — je Punkt oder als breiter
+  bess-ems-Feldenvelope je Tick (siehe die `…_MQTT_BROKER`-Variablen in
+  [Abschnitt 5.1](#51-umgebungsvariablen); Nur-Sim-Netz).
 
 ### 5.6 Import und Export
 
@@ -779,3 +813,4 @@ Alle Fehlerantworten haben die Felder `code`, `message` und optional
 | Handbuch-Version | Datum | Software-Version | Änderung |
 | --- | --- | --- | --- |
 | 1.0 | 2026-07-01 | v0.2.0 | Erstfassung nach [`benutzerhandbuch-standard.md`](benutzerhandbuch-standard.md); deckt Weboberfläche, REST-/WebSocket-API, Szenario-Konfiguration, Fehlerbehebung und Abnahme ab. |
+| 1.1 | 2026-07-13 | v0.7.0 | Screenshots der Weboberfläche zu den Aufgaben §4.1–4.6 ergänzt ([`img/`](img/)); MQTT-Feld-Publish dokumentiert (§5.1 `…_MQTT_BROKER`-Variablen inkl. bess-ems-Feldenvelope, §5.2 Batterie-Feldblöcke, §5.5 Schnittstelle). |
