@@ -3,8 +3,11 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
-(MVP-Linie); aktuelles Release **v0.7.0** (2026-07-13, Slice-077-Closure — bess-ems-Feldvertrags-Kopplung).
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+(MVP-Linie); aktuelles Release **v0.7.1** (2026-07-13, Slice-078-Closure — UI-Vervollstaendigung
++ Dashboard-Live-Feed-Fix). **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+[`078`](../done/078-gg-ui-004-006-completion.md) (UI: GG-UI-006 SVG-Geraete-Diagramm +
+GG-UI-004 Start-Knopf + GG-UI-002/003 Dashboard-Live-Feed-Bugfix — fehlende HTMX-ws-Extension;
+released **v0.7.1**), davor
 [`077`](../done/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
 Feld-Publisher; ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
 `Accepted`, released **v0.7.0**), davor
@@ -117,10 +120,13 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 ## 4. Aktive / geplante Slices
 
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+[`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung: GG-UI-006
+SVG-Einlinien-Geraete-Diagramm + GG-UI-004 Start-Knopf + Bugfix des im Browser kaputten
+Dashboard-/Alarms-Live-Feeds [GG-UI-002/003, HTMX-2.x-ws-Extension war nicht vendored];
+released **v0.7.1**). Davor (2026-07-13)
 [`077`](../done/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
 Feld-Publisher — breiter Feldenvelope-Snapshot je Tick; ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
-`Accepted`; realer bess-ems-MQTT-only-E2E — die unveraenderte EMS verlaesst den
-Safety-Fallback, released **v0.7.0**). Davor (2026-07-13)
+`Accepted`; realer bess-ems-MQTT-only-E2E, released **v0.7.0**). Davor (2026-07-13)
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Field-Server Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
 `Accepted`; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Davor (2026-07-12) die Field-Server-Pull-/Push-Seite
