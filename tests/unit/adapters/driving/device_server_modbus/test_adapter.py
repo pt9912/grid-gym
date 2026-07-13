@@ -13,6 +13,7 @@ import socket
 import pytest
 
 from grid_gym.adapters.driving._field_current_value import CurrentValueProjection
+from grid_gym.adapters.driving._inbound_command_buffer import InboundCommandBuffer
 from grid_gym.adapters.driving.device_server_modbus._adapter import (
     ModbusDeviceServerAdapter,
     _default_server_runner,
@@ -21,6 +22,7 @@ from grid_gym.adapters.driving.device_server_modbus._adapter import (
 from grid_gym.adapters.driving.device_server_modbus._config import (
     ModbusServerConfig,
     RegisterMapping,
+    WritableRegisterMapping,
 )
 from grid_gym.adapters.driving.device_server_modbus._errors import (
     ModbusServerBindError,
@@ -49,13 +51,18 @@ class _RecordingRunner:
         start_error: Exception | None = None,
         stop_error: Exception | None = None,
     ) -> None:
-        self.calls: list[tuple[ModbusServerConfig, RegisterMap]] = []
+        self.calls: list[tuple[ModbusServerConfig, RegisterMap, InboundCommandBuffer | None]] = []
         self._start_error = start_error
         self._stop_error = stop_error
         self.server: _FakeRunningServer | None = None
 
-    def __call__(self, config: ModbusServerConfig, register_map: RegisterMap) -> _FakeRunningServer:
-        self.calls.append((config, register_map))
+    def __call__(
+        self,
+        config: ModbusServerConfig,
+        register_map: RegisterMap,
+        inbound_buffer: InboundCommandBuffer | None = None,
+    ) -> _FakeRunningServer:
+        self.calls.append((config, register_map, inbound_buffer))
         if self._start_error is not None:
             raise self._start_error
         self.server = _FakeRunningServer(stop_error=self._stop_error)
@@ -81,8 +88,25 @@ def test_start_invokes_runner_with_register_map() -> None:
     runner = _RecordingRunner()
     _adapter(runner).start()
     assert len(runner.calls) == 1
-    _config_arg, register_map = runner.calls[0]
+    _config_arg, register_map, inbound_buffer = runner.calls[0]
     assert isinstance(register_map, RegisterMap)
+    assert inbound_buffer is None  # ohne injizierten Puffer → reines Read-Serving
+
+
+def test_start_threads_inbound_buffer_to_runner() -> None:
+    # ADR 0076 §2.1: ein injizierter Puffer erreicht den Runner (Write-Callback).
+    runner = _RecordingRunner()
+    buffer = InboundCommandBuffer()
+    config = ModbusServerConfig(
+        bind_host="127.0.0.1",
+        bind_port=5020,
+        register_map=(RegisterMapping("meter-1", "voltage_v", 0),),
+        write_map=(WritableRegisterMapping(2, "battery-1", "set_power_kw"),),
+    )
+    ModbusDeviceServerAdapter(
+        config, CurrentValueProjection(), server_runner=runner, inbound_buffer=buffer
+    ).start()
+    assert runner.calls[0][2] is buffer
 
 
 def test_double_start_is_noop() -> None:

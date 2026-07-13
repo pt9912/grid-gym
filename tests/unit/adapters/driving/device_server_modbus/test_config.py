@@ -11,11 +11,14 @@ from grid_gym.adapters.driving.device_server_modbus._config import (
     ModbusServerConfig,
     ModbusServerConfigEmptyFieldError,
     ModbusServerConfigEmptyRegisterMapError,
+    ModbusServerConfigEmptyWriteFieldError,
     ModbusServerConfigInvalidAddressError,
     ModbusServerConfigInvalidPortError,
     ModbusServerConfigInvalidUnitIdError,
+    ModbusServerConfigInvalidWriteAddressError,
     ModbusServerConfigRegisterOverlapError,
     RegisterMapping,
+    WritableRegisterMapping,
 )
 
 
@@ -100,3 +103,87 @@ def test_adjacent_registers_do_not_overlap() -> None:
         register_map=(_mapping(0), RegisterMapping("meter-2", "power_w", 2)),
     )
     assert len(config.register_map) == 2
+
+
+# --- write_map (Inbound-Write, ADR 0076) ------------------------------------
+
+
+def test_default_write_map_is_empty() -> None:
+    # Ohne write_map → reines Read-Serving (byte-identisch/pin-neutral).
+    config = ModbusServerConfig(bind_host="0.0.0.0", bind_port=5020, register_map=(_mapping(),))
+    assert config.write_map == ()
+
+
+def test_valid_write_map_holds_fields() -> None:
+    config = ModbusServerConfig(
+        bind_host="0.0.0.0",
+        bind_port=5020,
+        register_map=(_mapping(0),),
+        write_map=(WritableRegisterMapping(10, "battery-1", "set_power_kw"),),
+    )
+    assert config.write_map[0].target_device_id == "battery-1"
+    assert config.write_map[0].command_type == "set_power_kw"
+
+
+@pytest.mark.parametrize("address", [-1, 65535, 70000])
+def test_write_address_out_of_range_rejected(address: int) -> None:
+    with pytest.raises(ModbusServerConfigInvalidWriteAddressError):
+        ModbusServerConfig(
+            bind_host="0.0.0.0",
+            bind_port=5020,
+            register_map=(_mapping(0),),
+            write_map=(WritableRegisterMapping(address, "battery-1", "set_power_kw"),),
+        )
+
+
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        WritableRegisterMapping(10, "", "set_power_kw"),
+        WritableRegisterMapping(10, "battery-1", ""),
+    ],
+)
+def test_empty_write_field_rejected(mapping: WritableRegisterMapping) -> None:
+    with pytest.raises(ModbusServerConfigEmptyWriteFieldError):
+        ModbusServerConfig(
+            bind_host="0.0.0.0",
+            bind_port=5020,
+            register_map=(_mapping(0),),
+            write_map=(mapping,),
+        )
+
+
+def test_write_window_overlapping_read_window_rejected() -> None:
+    # Jede Holding-Adresse hat genau eine Rolle: read@0 → {0,1}, write@1 → {1,2}
+    # → Kollision bei Register 1.
+    with pytest.raises(ModbusServerConfigRegisterOverlapError):
+        ModbusServerConfig(
+            bind_host="0.0.0.0",
+            bind_port=5020,
+            register_map=(_mapping(0),),
+            write_map=(WritableRegisterMapping(1, "battery-1", "set_power_kw"),),
+        )
+
+
+def test_two_write_windows_overlapping_rejected() -> None:
+    with pytest.raises(ModbusServerConfigRegisterOverlapError):
+        ModbusServerConfig(
+            bind_host="0.0.0.0",
+            bind_port=5020,
+            register_map=(_mapping(0),),
+            write_map=(
+                WritableRegisterMapping(10, "battery-1", "set_power_kw"),
+                WritableRegisterMapping(11, "battery-2", "set_power_kw"),
+            ),
+        )
+
+
+def test_disjoint_read_and_write_windows_accepted() -> None:
+    config = ModbusServerConfig(
+        bind_host="0.0.0.0",
+        bind_port=5020,
+        register_map=(_mapping(0),),
+        write_map=(WritableRegisterMapping(2, "battery-1", "set_power_kw"),),
+    )
+    assert len(config.register_map) == 1
+    assert len(config.write_map) == 1

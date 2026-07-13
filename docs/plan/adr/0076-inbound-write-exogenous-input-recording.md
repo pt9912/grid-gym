@@ -1,15 +1,16 @@
 # ADR 0076 — Exogen-Input-Recording: Inbound-Write→`Command` als record-only + materialisierbares Szenario
 
-**Status:** Proposed (2026-07-12) — die **Richtung ist entschieden** (Modell B,
-record-only + Materialisierung; Capture-Format bewusst Option-A-kompatibel), die
-Implementierung steht aus. Status-Pfad (kapazitaetsbasiert,
+**Status:** Provisional (2026-07-13) — die Write→`Command`-Naht ist belegt: ein
+Master-Write wird am Adapter-Rand in einen `Command` uebersetzt (Modell B,
+record-only) und mit Capture eines **aufgeloesten Sim-Ticks** festgehalten, der
+materialisierbar ist. Status-Pfad (kapazitaetsbasiert,
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §4,
-liefer-agnostisch): Proposed → **Provisional**, sobald die Write→`Command`-Naht
-mit Capture eines aufgeloesten Sim-Ticks belegt ist → **Accepted**, sobald der
-Determinismus-E2E (materialisierter Write-Strom, zweimal byte-identisch) belegt
-ist. Das Delivery-Mapping (welche Slices die Transitionen liefern) lebt im
-**ADR-Index + Roadmap**, nicht im ADR-Body.
-**Datum:** 2026-07-12
+liefer-agnostisch): Proposed → **Provisional** (Write→`Command`-Naht mit Capture,
+**erreicht**) → **Accepted**, sobald der Determinismus-E2E (materialisierter
+Write-Strom, zweimal byte-identisch) belegt ist. Das Delivery-Mapping (welche
+Slices die Transitionen liefern) lebt im **ADR-Index + Roadmap**, nicht im
+ADR-Body.
+**Datum:** 2026-07-13 (Provisional; Proposed 2026-07-12)
 **Bezug:**
 
 - [`ADR 0075`](0075-field-server-surface-device-endpoint-port.md) §7 — hat den

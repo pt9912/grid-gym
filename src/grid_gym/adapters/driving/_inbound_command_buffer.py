@@ -31,6 +31,7 @@ from dataclasses import dataclass
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.scenario import ScenarioCommand
 
 _INBOUND_VALIDATION_STATUS = "inbound"
 
@@ -127,3 +128,30 @@ class InboundCommandBuffer:
         Materialisierung in einen Szenario-`commands`-Block, ADR 0076 §2.1)."""
         with self._lock:
             return tuple(self._capture)
+
+
+def materialize_inbound_writes(
+    captures: tuple[InboundWriteCapture, ...],
+) -> tuple[ScenarioCommand, ...]:
+    """Materialisiert eine Inbound-Write-Capture in einen Szenario-`commands`-Block
+    (ADR 0076 §2.1/§2.2).
+
+    Jeder `InboundWriteCapture` mappt **1:1** auf einen `ScenarioCommand`
+    (`simulation_time = resolved_sim_tick`, `target`/`type`/`payload`) — ein
+    Inbound-Write ist strukturgleich zu einem scenario-scheduled Command
+    ([`ADR 0070`](0070)). Die Reihenfolge ist deterministisch nach
+    `(resolved_sim_tick, arrival_sequence)`; damit spielt der materialisierte Strom
+    ueber den Vor-Tick-Pfad A0s **byte-identisch** ab (S2, `scenario_hash` deckt
+    `commands`), unabhaengig von der nicht-deterministischen Cross-Thread-
+    Ankunftsordnung des Live-Laufs.
+    """
+    ordered = sorted(captures, key=lambda write: (write.resolved_sim_tick, write.arrival_sequence))
+    return tuple(
+        ScenarioCommand(
+            simulation_time=write.resolved_sim_tick,
+            target=write.target_device_id,
+            type=write.command_type,
+            payload=write.payload,
+        )
+        for write in ordered
+    )

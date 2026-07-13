@@ -12,9 +12,11 @@ from decimal import Decimal
 from grid_gym.adapters.driving._inbound_command_buffer import (
     InboundCommandBuffer,
     InboundWriteCapture,
+    materialize_inbound_writes,
 )
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext
+from grid_gym.hexagon.core.domain.scenario import ScenarioCommand
 
 
 def _ctx(simulation_time: int) -> DeviceTickContext:
@@ -85,3 +87,40 @@ def test_capture_accumulates_across_ticks() -> None:
     capture = buffer.capture()
     assert [entry.resolved_sim_tick for entry in capture] == [1000, 2000]
     assert [entry.arrival_sequence for entry in capture] == [0, 1]
+
+
+# --- Materialisierung (ADR 0076 §2.1/§2.2) ----------------------------------
+
+
+def test_materialize_maps_captures_1to1_to_scenario_commands() -> None:
+    buffer = InboundCommandBuffer()
+    buffer.enqueue("battery-1", "set_power_kw", {"value": Decimal("42.5")})
+    buffer.drain_due(_ctx(3000))
+    assert materialize_inbound_writes(buffer.capture()) == (
+        ScenarioCommand(
+            simulation_time=3000,
+            target="battery-1",
+            type="set_power_kw",
+            payload={"value": Decimal("42.5")},
+        ),
+    )
+
+
+def test_materialize_orders_by_tick_then_arrival_sequence() -> None:
+    # Materialisierung ist von der Capture-Reihenfolge unabhaengig deterministisch:
+    # sortiert nach (resolved_sim_tick, arrival_sequence) → byte-identischer Replay.
+    captures = (
+        InboundWriteCapture(2000, "d1", "b", {}, arrival_sequence=1),
+        InboundWriteCapture(1000, "d1", "a", {}, arrival_sequence=0),
+        InboundWriteCapture(2000, "d2", "c", {}, arrival_sequence=2),
+    )
+    commands = materialize_inbound_writes(captures)
+    assert [(c.simulation_time, c.type) for c in commands] == [
+        (1000, "a"),
+        (2000, "b"),
+        (2000, "c"),
+    ]
+
+
+def test_materialize_empty_capture_is_empty() -> None:
+    assert materialize_inbound_writes(()) == ()

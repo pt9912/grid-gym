@@ -6,10 +6,13 @@ Read-Serving, done) auf. Ausgegliedert aus dem urspruenglichen 074-Scope, weil
 der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
 **Fortschritt:** S0 ✓ (Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Proposed`, **Modell B**) · **S1a ✓** (Kern-Naht: Vor-Tick-Schritt A0i +
-`InboundCommandPort` + `InboundCommandBuffer`/Capture, unit-getestet) · S1b/S2
-offen (Modbus-Write-Handler + Driver-Wiring + Materialisierung).
-**Datum:** 2026-07-12
+**Modell B**) · **S1a ✓** (Kern-Naht: Vor-Tick-Schritt A0i +
+`InboundCommandPort` + `InboundCommandBuffer`/Capture, unit-getestet) · **S1b ✓**
+(Modbus-Write→`Command`-Naht [`SimAction`/FC06/FC16] + `write_map`/`InboundWrite
+Decoder` + `TickLoopWiring.inbound_source` + Materialisierungs-Helper +
+Real-pymodbus-Write-E2E → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+**`Provisional`**) · S2 offen (Determinismus-E2E via Materialisierung).
+**Datum:** 2026-07-13 (S1b; aktiviert 2026-07-12)
 **Quelle:** Design- + Plan-Review 2026-07-12 — ein Live-Master-Write ist
 **exogener** Input zu Wall-Clock-Zeit; grid-gyms geschlossenes Self-Replay
 (`(Szenario, Seed, tick_ms)`, rekonstruiert aus persistierter Telemetrie) kennt
@@ -63,46 +66,71 @@ nachruestbar, §2.6).
 | --- | --- | --- |
 | **S0** ✓ | Dedizierte Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) (`Proposed`): Exogen-Input-Recording-Modell **B** entschieden (record-only + Materialisierung, Capture Option-A-kompatibel), Determinismus-Vertrag + Snapshot-Grenze fixiert; gegroundetes A/B-Design-Assessment am Command-/Replay-/Snapshot-Code | Architect / ADR |
 | **S1a** ✓ | **Kern-Naht (pymodbus-frei, unit-getestet):** driven `InboundCommandPort` (`hexagon/ports/driven/inbound_command.py`; Kern *pullt* pro Tick) + additive Vor-Tick-Stufe **A0i** im `TickLoop` (Ordnung scenario→agent→inbound, `None`-Skip → Bestands-Laeufe byte-identisch, defensiver Skip fuer unbekannte Targets) + `InboundCommandBuffer` (`adapters/driving/_inbound_command_buffer.py`: thread-sicherer Puffer, `arrival_sequence`, Next-Tick-Aufloesung auf `context.simulation_time`, `InboundWriteCapture`-Aufzeichnung). Buffer/Capture volatil (kein Snapshot-Slot) | Implementation |
-| **S1b** | **Modbus-Write + Wiring + Materialisierung:** Modbus-Write-Register (FC06/FC16) am Server-Adapter-Rand → dekodieren → `InboundCommandBuffer.enqueue` (Cross-Thread); Driver-/Composition-Wiring (Buffer als `inbound_source` in den `TickLoop` **und** in den Server-Adapter injiziert); Capture append-only/wall-clock-frei per `run_id` (ueberlebt die [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)-Prozessgrenze) + Materialisierung in einen Szenario-`commands`-Block. **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** | Implementation |
+| **S1b** ✓ | **Modbus-Write + Wiring + Materialisierung:** Modbus-Write-Register (FC06/FC16) am Server-Adapter-Rand via pymodbus-`SimAction`-Hook → `InboundWriteDecoder` (`write_map`, `float32`→`Decimal`, pymodbus-frei) → `InboundCommandBuffer.enqueue` (Cross-Thread, Diskriminator gegen FC03-Refresh); Wiring: **ein** geteilter Buffer als `inbound_source` (via `TickLoopWiring`/`build_tick_loop`) **und** in den `ModbusDeviceServerAdapter` injiziert; `materialize_inbound_writes(capture())` → Szenario-`commands`-Block. Real-pymodbus-Write-E2E (Master-`write_registers` → Command am Zielgeraet) + Config-/Decoder-/Materialisierungs-Unit-Tests. **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** (`make gates` + `make docs-check` gruen) | Implementation |
 | **S2** | **Determinismus-E2E:** der erfasste Write-Strom wird in einen Szenario-`commands`-Block **materialisiert** + ueber A0s zweimal abgespielt → byte-identische Telemetrie; Ordnung scenario→agent→inbound belegt. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`** | Implementation |
 
-## Naechster Schritt (S1b — Resume 2026-07-13)
+## S1b — Ist-Stand (done 2026-07-13)
 
-Stand: **S0 + S1a done + gepusht** (Kern-Naht komplett, unit-getestet); der
-`TickLoop` zieht bereits pro Tick aus einem `InboundCommandPort` (Schritt A0i),
-und `InboundCommandBuffer.enqueue(...)`/`capture()` stehen bereit. **S1b
-verdrahtet nur noch** — kein Kern-Determinismus-Risiko mehr offen.
+Geliefert (`make gates` + `make docs-check` gruen):
 
-Konkrete Aufgaben (in Reihenfolge):
+- **Write-Intercept** (`_adapter.py`): pymodbus-3.13-`SimDevice(action=...)`-Hook
+  (`_make_write_action`). Signatur verifiziert **am realen Server** (`simruntime.
+  __check_block` ruft `action` bei jedem Register-Zugriff). **Diskriminator:** nur
+  `function_code ∈ {FC06, FC16}` **und** `set_values is not None` → Inbound-Write;
+  der interne Refresh-Push nutzt FC03 (`async_setValues` mit dem Read-Code als
+  Block-Selektor), Reads liefern `set_values is None` → beide fallen durch. Der
+  Hook gibt **immer `None`** zurueck (erlaubt den Write, stoert den Refresh nicht).
+- **Reverse-Map** (`_write_map.py`, pymodbus-frei): `WritableRegisterMapping`
+  (`address → target_device_id, command_type`) in `ModbusServerConfig.write_map`
+  (getrennt vom Read-`register_map`; jede Holding-Adresse eine Rolle).
+  `InboundWriteDecoder.decode(...)` + totales `decode_float32` (nicht-endliche
+  Bitmuster verworfen). `payload={"value": Decimal}`.
+- **Wiring**: **ein** geteilter `InboundCommandBuffer` → als `inbound_source` durch
+  `TickLoopWiring`/`build_tick_loop` **und** als `inbound_buffer` in den
+  `ModbusDeviceServerAdapter`/Runner. In-Process-Hoehe wie 074 (keine env-var-
+  Lifespan-Naht — siehe „Offen/Trigger" unten).
+- **Materialisierung**: `materialize_inbound_writes(capture())` → `ScenarioCommand`s
+  (sortiert nach `(resolved_sim_tick, arrival_sequence)`).
+- **Tests**: Real-pymodbus-Write-E2E (`test_write_e2e.py`: Master-`write_registers`
+  → Command am Zielgeraet; Refresh/Reads enqueuen nicht) + Decoder/Config/
+  Materialisierungs-Unit-Tests.
 
-1. **pymodbus-Write-Intercept (offene Recherche):** FC06/FC16-Master-Writes am
-   Server abfangen. Kandidat = der `SimDevice(action=SimAction)`-on-write-Callback
-   (in C2 gesehen unter `pymodbus.simulator.simdevice`; Signatur
-   `async (function_code, start_address, address, count, current_registers,
-   set_values)` — `set_values is not None` == Write). Verifikation **in-Process**
-   mit echtem `ModbusTcpClient.write_registers(...)` (analog `test_read_e2e.py`),
-   nicht per Bibliotheks-Introspektion.
-2. **Register→Command-Reverse-Map** im `device_server_modbus`-Adapter: welche
-   Register **beschreibbar** sind + auf welchen `command_type`/`payload` ein
-   `float32`-Write mappt (Read-`RegisterMap` ist die Gegenrichtung). Entscheidung
-   S1b: writable-Sub-Map + Metrik→`command_type`-Zuordnung (`payload={"value":
-   Decimal}` o. Ae.).
-3. **Enqueue**: der Write-Callback dekodiert (`struct.unpack('>f', ...)` →
-   `Decimal`) und ruft `InboundCommandBuffer.enqueue(target, type, payload)`.
-4. **Wiring** (in-Process-Pfad): **ein** geteilter `InboundCommandBuffer` →
-   sowohl als `inbound_source` in den `TickLoop` (via Loader/`TickLoopWiring` bzw.
-   Driver-Injektion) **als auch** in den `ModbusDeviceServerAdapter` (für den
-   Write-Callback). Muster wie die `CurrentValueProjection`-Injektion aus 074.
-5. **Materialisierung**: `buffer.capture()` → `ScenarioCommand`s → Szenario-
-   `commands`-Block (Helper). Zieht [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-   auf `Provisional`.
+## Naechster Schritt (S2 — Determinismus-E2E → `Accepted`)
 
-Einstiegs-Dateien: `src/grid_gym/adapters/driving/device_server_modbus/_adapter.py`
-(Write-Callback + Reverse-Map), `src/grid_gym/adapters/driving/_inbound_command_buffer.py`
-(enqueue/capture, fertig), `src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py`
-+ `src/grid_gym/composition/_demo_scenario_setup.py` (Wiring, Muster 073/074),
-`src/grid_gym/hexagon/core/domain/scenario.py` (`ScenarioCommand` für die
-Materialisierung). **Vor Push:** `make gates` + `make docs-check`.
+Ziel: den erfassten Write-Strom **materialisieren** + ueber **A0s zweimal
+abspielen** → byte-identische Telemetrie (Muster
+[`test_scenario_commands_e2e.py`](../../../../tests/integration/test_scenario_commands_e2e.py)).
+
+1. **„Live"-Lauf** (agenten-frei, z. B. Battery-Demo-Szenario): `build_tick_loop`
+   mit `wiring.inbound_source=buffer`; Writes an definierten Ticks enqueuen (kein
+   realer Socket noetig — der Determinismus-Nachweis ist von der pymodbus-Naht
+   unabhaengig, die S1b-E2E deckt Master→Buffer bereits ab); N Ticks fahren;
+   `buffer.capture()` einsammeln + Ziel-Geraet-Telemetrie sammeln.
+2. **Materialisieren**: `materialize_inbound_writes(capture())` → `commands`-Block
+   in ein neues `Scenario` (`load_scenario({**raw, "commands": [...]})`).
+3. **Replay 2×** (ohne `inbound_source`, reiner A0s-Pfad) → byte-identisch **und**
+   deckungsgleich mit der „Live"-Ziel-Telemetrie (Materialisierung faithful).
+4. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`.**
+
+### S2-Design-Entscheidung, die zu pinnen ist ([`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) §7)
+
+Die **Live**-Ordnung ist `scenario→agent→inbound` (A0i, inbound **nach** Agent,
+last-wins). Die Materialisierung legt Inbound-Writes aber in den `commands`-Block
+= **A0s** = **vor** Agent. **Konsequenz:** fuer ein Ziel-Geraet, das **kein** Agent
+im selben Tick kommandiert, sind A0i-Live und A0s-Replay identisch → Materialisierung
+**faithful**. Kommandiert ein Agent dasselbe Geraet im selben Tick, gewinnt live der
+Inbound (A0i, last), im Replay aber der Agent (A0s liegt vor A0a) → **Divergenz**.
+Das ist die von §7 offengelassene Konfliktsemantik. **S2-Vorschlag:** den faithful
+Fall (agenten-frei / disjunkte Ziele) als geliefert testen **und** die Divergenz als
+**bewusste Modell-B-Grenze** mit einem Pin-Test dokumentieren (HIL+Agent-auf-
+gleichem-Ziel ist heute kein realer Bedarf; ggf. spaeteres Inkrement). **Diese
+Wahl vor der Implementierung mit dem User bestaetigen.**
+
+Einstiegs-Dateien S2: `tests/integration/` (neuer Determinismus-E2E, Muster
+`test_scenario_commands_e2e.py`), `src/grid_gym/adapters/driving/_inbound_command_buffer.py`
+(`materialize_inbound_writes`, fertig), `src/grid_gym/hexagon/core/scenario/loader.py`
+(`TickLoopWiring.inbound_source`, fertig). **Vor Push:** `make gates` +
+`make docs-check` (+ `make fullbuild` vor Slice-Closure/Release).
 
 ## DoD
 

@@ -86,6 +86,7 @@ from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
 from grid_gym.hexagon.ports.driven.clock import ClockPort
 from grid_gym.hexagon.ports.driven.device_protocol import DeviceProtocolPort
 from grid_gym.hexagon.ports.driven.fault import FaultPort
+from grid_gym.hexagon.ports.driven.inbound_command import InboundCommandPort
 from grid_gym.hexagon.ports.driven.observability import LogPort, MetricsPort, TracePort
 from grid_gym.hexagon.ports.driven.random import RandomPort
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
@@ -512,6 +513,11 @@ class TickLoopWiring:
     # TickLoop-Konstruktor-Kwarg).
     max_age_ms: int | None = None
     alarm_id_source: AlarmIdSource | None = None
+    # ADR 0076 §2.3 (Slice 075): optionale Field-Server-Inbound-Command-Quelle
+    # (Vor-Tick-Schritt A0i). `None` (Default) → Schritt A0i No-op, Bestands-
+    # Laeufe byte-identisch. Diese ADR (0076) ist die Folge-ADR, die die
+    # Builder-Symmetrie fuer diesen Slot deckt.
+    inbound_source: InboundCommandPort | None = None
 
 
 def build_tick_loop(
@@ -630,6 +636,7 @@ def build_tick_loop(
         max_age_ms=w.max_age_ms,
         quality_fault_runtime=quality_fault_runtime,
         alarm_id_source=w.alarm_id_source,
+        inbound_source=w.inbound_source,
     )
 
 

@@ -85,13 +85,41 @@ class ModbusServerConfigEmptyRegisterMapError(ModbusServerConfigError):
         super().__init__("ModbusServerConfig.register_map darf nicht leer sein.")
 
 
+class ModbusServerConfigInvalidWriteAddressError(ModbusServerConfigError):
+    """Eine `WritableRegisterMapping.address` liegt ausserhalb `[0, 65534]` (das
+    zweite `float32`-Register muss noch in den 16-bit-Adressraum passen)."""
+
+    def __init__(self, target_device_id: str, command_type: str, address: int) -> None:
+        super().__init__(
+            f"ModbusServerConfig.write_map: address={address} fuer "
+            f"({target_device_id}, {command_type}) ausserhalb [0, {_MAX_MAPPING_ADDRESS}]."
+        )
+        self.target_device_id: str = target_device_id
+        self.command_type: str = command_type
+        self.address: int = address
+
+
+class ModbusServerConfigEmptyWriteFieldError(ModbusServerConfigError):
+    """`WritableRegisterMapping.target_device_id`/`command_type` ist leer."""
+
+    def __init__(self, field_name: str) -> None:
+        super().__init__(f"ModbusServerConfig.write_map: {field_name} darf nicht leer sein.")
+        self.field_name: str = field_name
+
+
 class ModbusServerConfigRegisterOverlapError(ModbusServerConfigError):
-    """Zwei Register-Mappings ueberlappen (jeder `float32` belegt 2 Register)."""
+    """Zwei Register-Mappings (Read und/oder Write) belegen dieselbe Adresse.
+
+    Jeder `float32` belegt 2 aufeinanderfolgende Register; **jede** Holding-Adresse
+    hat genau eine Rolle — entweder ein Messwert (`register_map`, Read) oder ein
+    Sollwert (`write_map`, Inbound-Write). Read- und Write-Fenster duerfen sich
+    darum weder untereinander noch gegenseitig ueberlappen."""
 
     def __init__(self, address: int) -> None:
         super().__init__(
-            f"ModbusServerConfig.register_map: Register-Adresse {address} ist doppelt "
-            "belegt (jedes float32 belegt 2 aufeinanderfolgende Register)."
+            f"ModbusServerConfig: Register-Adresse {address} ist doppelt belegt "
+            "(jedes float32 belegt 2 aufeinanderfolgende Register; jede Adresse ist "
+            "entweder Read-Messwert oder Write-Sollwert, nie beides)."
         )
         self.address: int = address
 
@@ -109,8 +137,31 @@ class RegisterMapping:
 
 
 @dataclass(frozen=True, slots=True)
+class WritableRegisterMapping:
+    """Ein **beschreibbares** Holding-Register-Fenster (Inbound-Write→`Command`,
+    ADR 0076 §2.1).
+
+    `address` ist das erste von **zwei** Registern (`float32`, Big-Endian). Ein
+    Master-Write an dieses Fenster dekodiert den `float32` zu einem `Decimal` und
+    stellt `Command(type=command_type, payload={"value": Decimal})` an
+    `target_device_id` zu (Gegenrichtung zum lesenden `RegisterMapping`). `command_
+    type` ist der fachliche Kommando-Typ des Zielgeraets (z. B. `"set_power_kw"`),
+    **nicht** ein Metrik-Name — Mess- und Sollwert sind getrennte Register.
+    """
+
+    address: int
+    target_device_id: str
+    command_type: str
+
+
+@dataclass(frozen=True, slots=True)
 class ModbusServerConfig:
-    """Modbus-Server-Profil (Field-Server Pull-Seite, Read-Serving).
+    """Modbus-Server-Profil (Field-Server Pull-Seite).
+
+    `register_map` = **Read**-Messwerte (Holding-Register, `float32`).
+    `write_map` = optionale **Inbound-Write**-Sollwerte (ADR 0076); leer (Default)
+    → reines Read-Serving, byte-identisch/pin-neutral. Jede Holding-Adresse hat
+    genau eine Rolle (Read **oder** Write, nie beides).
 
     Konstruktor validiert fail-fast (typed `ModbusServerConfigError`-Subclass).
     """
@@ -119,6 +170,7 @@ class ModbusServerConfig:
     bind_port: int
     register_map: tuple[RegisterMapping, ...]
     unit_id: int = 1
+    write_map: tuple[WritableRegisterMapping, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.bind_host:
@@ -130,6 +182,7 @@ class ModbusServerConfig:
         if not self.register_map:
             raise ModbusServerConfigEmptyRegisterMapError
         self._validate_addresses()
+        self._validate_write_map()
         self._validate_no_overlap()
 
     def _validate_addresses(self) -> None:
@@ -139,11 +192,27 @@ class ModbusServerConfig:
                     mapping.device_id, mapping.metric, mapping.address
                 )
 
+    def _validate_write_map(self) -> None:
+        for mapping in self.write_map:
+            if not mapping.target_device_id:
+                raise ModbusServerConfigEmptyWriteFieldError("target_device_id")
+            if not mapping.command_type:
+                raise ModbusServerConfigEmptyWriteFieldError("command_type")
+            if not (0 <= mapping.address <= _MAX_MAPPING_ADDRESS):
+                raise ModbusServerConfigInvalidWriteAddressError(
+                    mapping.target_device_id, mapping.command_type, mapping.address
+                )
+
     def _validate_no_overlap(self) -> None:
+        # Read- und Write-Fenster teilen sich den Holding-Adressraum; jede Adresse
+        # ist entweder Messwert oder Sollwert. Ein gemeinsamer `occupied`-Set faengt
+        # Read/Read-, Write/Write- **und** Read/Write-Kollisionen in einem Durchlauf.
         occupied: set[int] = set()
-        for mapping in self.register_map:
+        addresses = [mapping.address for mapping in self.register_map]
+        addresses += [mapping.address for mapping in self.write_map]
+        for address in addresses:
             for offset in range(_FLOAT32_REGISTERS):
-                address = mapping.address + offset
-                if address in occupied:
-                    raise ModbusServerConfigRegisterOverlapError(address)
-                occupied.add(address)
+                occupied_address = address + offset
+                if occupied_address in occupied:
+                    raise ModbusServerConfigRegisterOverlapError(occupied_address)
+                occupied.add(occupied_address)

@@ -375,6 +375,14 @@ banned-module-level-imports = ["random", "secrets", "numpy.random"]
 # (max-args=5) ist hier nicht haltbar; per-File-Ignore mit Wiring-
 # Begruendung.
 "src/grid_gym/adapters/driving/http_api/_tick_loop_driver.py" = ["PLR0913"]
+# Slice 075 (ADR 0076): der Inbound-Write-`SimAction`-Hook ist an die
+# pymodbus-3.13-ABI gebunden — 6 positionale Argumente (`function_code,
+# start_address, address, count, current_registers, set_values`, PLR0913) und
+# **muss** eine Coroutine sein (pymodbus prueft `inspect.iscoroutinefunction`),
+# obwohl der Body synchron ist (RUF029: async ohne await). Beides ist von der
+# Bibliotheks-Naht erzwungen, nicht haltbar per Umbau; per-File-Ignore mit
+# Begruendung statt cargo-cult-noqa (der noqa-Gate verbietet inline-noqa).
+"src/grid_gym/adapters/driving/device_server_modbus/_adapter.py" = ["PLR0913", "RUF029"]
 # GridModelBilanz traegt analog zur Geraete-API eine breite Property-/
 # Methoden-Surface (Welle-5b-Erweiterung um active_load_events +
 # active_load_profiles bringt die Zahl ueber den Default-Schwellenwert).
