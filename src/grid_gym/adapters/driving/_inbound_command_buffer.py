@@ -125,7 +125,15 @@ class InboundCommandBuffer:
 
     def capture(self) -> tuple[InboundWriteCapture, ...]:
         """Aufzeichnung der bisher aufgeloesten Inbound-Writes (fuer die
-        Materialisierung in einen Szenario-`commands`-Block, ADR 0076 §2.1)."""
+        Materialisierung in einen Szenario-`commands`-Block, ADR 0076 §2.1).
+
+        **Lebensdauer = Run-Session** (Review-Fund Slice 075): der Puffer ist
+        append-only fuer die Dauer des Laufs (kein Pruning) — die Aufzeichnung ist
+        die Source-of-Truth und muss bis zur Materialisierung am Run-Ende
+        vollstaendig bleiben. Der Puffer ist volatil (kein Snapshot-Slot); ein
+        resumierter Live-Lauf startet leer. Fuer eine unbegrenzt lange Live-Session
+        mit sehr vielen Writes waere ein Roll-off nach Materialisierung ein additiver
+        Folgeschritt (heute: Session-scoped, HIL-Laeufe sind begrenzt)."""
         with self._lock:
             return tuple(self._capture)
 

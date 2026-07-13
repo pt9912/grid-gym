@@ -42,7 +42,10 @@ def _words(value: str) -> list[int]:
 # --- decode_float32 (Decode-Oracle) ----------------------------------------
 
 
-@pytest.mark.parametrize("raw", ["42.5", "-12.5", "0", "230.5", "1000000.0"])
+# "0.1"/"-0.333" sind in float32 **nicht** exakt darstellbar → decode liefert den
+# vollpraezisen float32-Wert (nicht-rund); der Test pinnt, dass auch dieser Edge
+# deterministisch + byte-stabil ist (Review-Fund Slice 075 LOW-3).
+@pytest.mark.parametrize("raw", ["42.5", "-12.5", "0", "230.5", "1000000.0", "0.1", "-0.333"])
 def test_decode_reencode_roundtrip_is_stable(raw: str) -> None:
     # decode(encode(x)) muss byte-stabil zurueck-encodieren (float32 ist idempotent
     # quantisiert): encode(decode(encode(x))) == encode(x).

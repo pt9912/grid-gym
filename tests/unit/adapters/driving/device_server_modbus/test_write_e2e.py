@@ -221,6 +221,57 @@ def test_master_write_reaches_target_device_via_tick_loop(
     assert delivered.payload == {"value": Decimal("-7.5")}
 
 
+def test_master_write_via_fc23_lands_as_inbound_command(
+    write_ctx: tuple[ModbusServerConfig, InboundCommandBuffer],
+) -> None:
+    # Review-Fund Slice 075: FC23 (Read/Write-Multiple) mappt auch auf den Holding-
+    # Block; ein float32-Sollwert-Write per FC23 muss ebenso erfasst werden.
+    config, buffer = write_ctx
+    client = _connect(config)
+    try:
+        rr = client.readwrite_registers(
+            read_address=0,
+            read_count=1,
+            write_address=_SETPOINT_ADDRESS,
+            values=list(encode_float32(Decimal("42.5"))),
+            device_id=_UNIT_ID,
+        )
+        assert not rr.isError()
+        commands = _drain_until(buffer, _ctx(1000))
+    finally:
+        client.close()
+
+    assert len(commands) == 1
+    assert commands[0].target_device_id == "battery-1"
+    assert commands[0].type == "set_power_kw"
+    assert commands[0].payload == {"value": Decimal("42.5")}
+
+
+def test_master_written_setpoint_persists_across_refresh(
+    write_ctx: tuple[ModbusServerConfig, InboundCommandBuffer],
+) -> None:
+    # Review-Fund Slice 075: der Refresh-Task darf ein Master-geschriebenes Sollwert-
+    # Register NICHT nullen (er pusht nur die Read-Messwert-Fenster). Ein Master, der
+    # seinen Sollwert zurueckliest, sieht ihn erhalten — nicht auf 0.
+    config, _buffer = write_ctx
+    client = _connect(config)
+    try:
+        expected = encode_float32(Decimal("42.5"))
+        rr = client.write_registers(_SETPOINT_ADDRESS, list(expected), device_id=_UNIT_ID)
+        assert not rr.isError()
+        # Sofort lesbar...
+        rr = client.read_holding_registers(_SETPOINT_ADDRESS, count=2, device_id=_UNIT_ID)
+        assert not rr.isError()
+        assert tuple(rr.registers[0:2]) == expected
+        # ...und bleibt es ueber mehrere Refresh-Zyklen (>> 50ms Refresh-Intervall).
+        time.sleep(0.2)
+        rr = client.read_holding_registers(_SETPOINT_ADDRESS, count=2, device_id=_UNIT_ID)
+        assert not rr.isError()
+        assert tuple(rr.registers[0:2]) == expected  # nicht genullt
+    finally:
+        client.close()
+
+
 class _CommandRecordingDevice:
     """Test-Double (`DeviceModel`): zeichnet jeden `apply_command` auf."""
 

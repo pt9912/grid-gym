@@ -162,6 +162,29 @@ der Folge-ADR).
 - **Sicherheit** — beschreibbarer Feldbus ohne Auth; Nur-Sim-Netz-Note
   ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
 
+## Closure-Review (2026-07-13, → v0.6.1)
+
+Zwei unabhaengige adversariale Reviews (Concurrency/Protokoll + Korrektheit/Edge)
+nach dem 073/074-Muster fanden reale Befunde (die Concurrency-/Determinismus-Naht
+war sauber). Gehaertet in **v0.6.1**:
+
+- **FC23-Diskriminator-Gap (MED):** `{6,16}` verpasste FC23 (Read/Write-Multiple,
+  `SimRuntime._fx_mapper` mappt `{3,6,16,22,23}` → Holding) → ein FC23-Sollwert-Write
+  wurde still gedroppt. Fix: `{6,16,23}` (FC22 = 1 Register, kann nie ein `float32`-
+  Fenster bilden → bewusst draussen).
+- **Refresh nullt Sollwert-Register (MED):** der Refresh pushte den ganzen Holding-
+  Block (Write-only-Adressen → 0) → ein Master sah seinen Sollwert nach ≤50ms auf
+  `0` zuruecksetzen. Fix: `RegisterMap.refresh_frame()` pusht **nur** Read-Fenster;
+  `write_map`-Register bleiben unangetastet.
+- **Wiring-Guard (LOW):** `write_map` ohne `inbound_buffer` → `ModbusServerWiringError`
+  (fail-fast statt still verworfener Writes).
+- **YAML-Round-Trip-Hash-Stabilitaet (MED, Test-Gap):** neuer E2E-Test belegt, dass
+  ein realer decodierter `float32`-Wert ueber Persist→Reload (`Decimal`→String→
+  `_safe_decimal`) hash-stabil bleibt.
+- **Nicht-quantisiert (LOW):** bewusst **nicht** gefixt — `_safe_decimal` quantisiert
+  Szenario-Command-Werte auch nicht; der decodierte Wert ist wire-treu + deterministisch
+  (Pin-Test mit nicht-rundem Wert). Plus Doku: `_capture` ist Session-scoped; FC06 inert.
+
 ## Offen / Trigger-Kandidaten
 
 - **Env-var-Lifespan-Naht (Read + Write).** Der Modbus-Server (Read aus 074 **und**

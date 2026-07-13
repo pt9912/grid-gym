@@ -17,10 +17,12 @@ materialisierter Datastore im Kern, keine Duplikat-Haltung.
 **Tick-frame-Atomizitaet (Review-Fund C2)**: ein `float32` belegt **zwei**
 Register und muss aus **einem** Projektions-Snapshot gerechnet werden — sonst
 koennte ein nebenlaeufiger Tick-Update zwischen High- und Low-Word-Read einen
-fabrizierten Wert erzeugen (halb alt, halb neu). `render()` (der Pfad des
-Refresh-Tasks) nimmt darum **genau einen** `snapshot()` und rechnet den ganzen
-Frame (alle Holding-Register **und** Discrete-Inputs) daraus. Der Snapshot ist
-tick-frame-atomar (Referenz-Swap in `CurrentValueProjection`, lock-frei).
+fabrizierten Wert erzeugen (halb alt, halb neu). Der Refresh-Pfad `refresh_frame()`
+(und die vollflaechige Sicht `render()`) nimmt darum **genau einen** `snapshot()`
+und rechnet den ganzen Frame daraus. Der Snapshot ist tick-frame-atomar
+(Referenz-Swap in `CurrentValueProjection`, lock-frei). `refresh_frame()` pusht
+dabei **nur** die Read-Fenster (Review-Fund Slice 075: write_map-Sollwert-Register
+bleiben unangetastet, sonst wuerde ein Master-Write genullt).
 
 **Determinismus (ADR 0075 §2.5)**: reine Funktion der emittierten Telemetrie;
 kein Server-State.
@@ -87,6 +89,7 @@ class RegisterMap:
 
     def __init__(self, config: ModbusServerConfig, projection: CurrentValueProjection) -> None:
         self._projection: CurrentValueProjection = projection
+        self._read_mappings: tuple[RegisterMapping, ...] = tuple(config.register_map)
         self._holding: dict[int, tuple[RegisterMapping, int]] = {}
         self._discrete: dict[int, RegisterMapping] = {}
         for index, mapping in enumerate(config.register_map):
@@ -136,8 +139,39 @@ class RegisterMap:
         """Ein **konsistenter Frame** — `(holding_values, discrete_values)` aus
         genau **einem** Projektions-Snapshot. Kein Tearing zwischen den zwei
         Registern eines `float32` und keine Wert/Quality-Divergenz zwischen den
-        Bloecken (Review-Fund C2). Pfad des Refresh-Tasks."""
+        Bloecken (Review-Fund C2).
+
+        Vollflaechig ueber `[0, holding_count)` — der **Refresh-Task** nutzt statt
+        dieser Methode `refresh_frame(...)` (nur Read-Fenster, laesst write_map-
+        Register unangetastet, Review-Fund Slice 075). `render` bleibt als
+        vollflaechige Snapshot-Sicht (Encode-Oracle-Pin, `test_register_map`)."""
         frame = self._projection.snapshot()
         holding = [self._holding_at(frame, address) for address in range(holding_count)]
         discrete = [self._discrete_at(frame, index) for index in range(discrete_count)]
         return holding, discrete
+
+    def _window_words(self, frame: _Frame, mapping: RegisterMapping) -> list[int]:
+        """`[high, low]` eines Read-Mappings aus `frame`; `[0, 0]` ohne Wert."""
+        point = frame.get((mapping.device_id, mapping.metric))
+        if point is None:
+            return [_REGISTER_ZERO, _REGISTER_ZERO]
+        high, low = encode_float32(point.value)
+        return [high, low]
+
+    def refresh_frame(
+        self, discrete_count: int
+    ) -> tuple[tuple[tuple[int, list[int]], ...], list[bool]]:
+        """Refresh-Push-Frame aus genau **einem** Snapshot (ADR 0075 §2.2):
+        je Read-Mapping ein `(address, [high, low])`-`float32`-Fenster + die
+        Discrete-Inputs.
+
+        Deckt **nur** die `register_map`-Read-Fenster — die `write_map`-Sollwert-
+        Register werden bewusst **nicht** angefasst, damit ein Master-geschriebener
+        Sollwert im Datastore erhalten bleibt (Review-Fund Slice 075; siehe
+        `_adapter._push`). Ein Snapshot fuer den ganzen Frame → kein Tearing."""
+        frame = self._projection.snapshot()
+        windows = tuple(
+            (mapping.address, self._window_words(frame, mapping)) for mapping in self._read_mappings
+        )
+        discrete = [self._discrete_at(frame, index) for index in range(discrete_count)]
+        return windows, discrete

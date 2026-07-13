@@ -29,6 +29,8 @@ from grid_gym.adapters.driving._inbound_command_buffer import (
     InboundCommandBuffer,
     materialize_inbound_writes,
 )
+from grid_gym.adapters.driving.device_server_modbus._register_map import encode_float32
+from grid_gym.adapters.driving.device_server_modbus._write_map import decode_float32
 from grid_gym.hexagon.core.domain.scenario import Scenario, ScenarioCommand
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.scenario.loader import (
@@ -36,7 +38,7 @@ from grid_gym.hexagon.core.scenario.loader import (
     build_tick_loop,
     load_scenario,
 )
-from grid_gym.scenario_yaml import read_scenario_yaml
+from grid_gym.scenario_yaml import coerce_scenario_mapping, read_scenario_yaml
 
 from tests.integration._constants import (
     EV_CHARGER_DEMO_SCENARIO_PATH,
@@ -145,6 +147,42 @@ def test_captured_inbound_stream_replays_byte_identical_and_faithful() -> None:
     # Faithful: die Telemetrie des kommandierten (agenten-freien) Geraets ist im
     # Replay deckungsgleich mit dem „Live"-Lauf (A0i-Effekt == A0s-Effekt).
     assert _device_telemetry(replay_1, _TARGET) == _device_telemetry(live, _TARGET)
+
+
+def test_materialized_decoded_value_is_yaml_roundtrip_hash_stable() -> None:
+    # Review-Fund Slice 075 (MEDIUM-2 + LOW-3): ein **realer** decodierter float32-
+    # Wert (nicht-rund, volle Praezision) muss ueber den Persist->Reload-Pfad
+    # (Decimal -> YAML-String -> `_safe_decimal`) **hash-stabil** bleiben — sonst
+    # divergierte der `scenario_hash` zwischen Live-Materialisierung und dem
+    # reloadeten Szenario, und ADR 0076 §2.2 („commands ist im scenario_hash
+    # erfasst, byte-identisch") haette ein Loch.
+    raw = read_scenario_yaml(EV_CHARGER_DEMO_SCENARIO_PATH)
+    decoded = decode_float32(*encode_float32(Decimal("0.1")))
+    assert decoded is not None
+    assert decoded != Decimal("0.1")  # der WAHRE float32-Wert, nicht-rund (LOW-3-Edge)
+
+    command = ScenarioCommand(
+        simulation_time=2000, target=_TARGET, type=_COMMAND_TYPE, payload={"value": decoded}
+    )
+    # In-memory (Decimal-Payload) ...
+    in_memory_hash = load_scenario(
+        {**raw, "commands": [{**_command_meta(command), "payload": {"value": decoded}}]}
+    ).scenario_hash
+    # ... vs. wie persistiert: value als String, dann durch die Decimal-Koercion.
+    reloaded_hash = load_scenario(
+        coerce_scenario_mapping(
+            {**raw, "commands": [{**_command_meta(command), "payload": {"value": str(decoded)}}]}
+        )
+    ).scenario_hash
+    assert in_memory_hash == reloaded_hash
+
+
+def _command_meta(command: ScenarioCommand) -> dict[str, object]:
+    return {
+        "simulation_time": command.simulation_time,
+        "target": command.target,
+        "type": command.type,
+    }
 
 
 def test_no_inbound_write_is_pin_neutral() -> None:

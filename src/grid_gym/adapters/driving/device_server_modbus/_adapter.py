@@ -59,6 +59,7 @@ from grid_gym.adapters.driving.device_server_modbus._config import ModbusServerC
 from grid_gym.adapters.driving.device_server_modbus._errors import (
     ModbusServerBindError,
     ModbusServerStopError,
+    ModbusServerWiringError,
 )
 from grid_gym.adapters.driving.device_server_modbus._register_map import RegisterMap
 from grid_gym.adapters.driving.device_server_modbus._write_map import InboundWriteDecoder
@@ -75,12 +76,25 @@ _FC_READ_HOLDING_REGISTERS: Final[int] = 3
 _FC_READ_DISCRETE_INPUTS: Final[int] = 2
 _FLOAT32_REGISTERS: Final[int] = 2
 
-# Master-Write-Funktions-Codes fuer Holding-Register (FC06 = Write-Single,
-# FC16 = Write-Multiple). **Diskriminator** in der SimAction: nur diese Codes sind
-# echte Inbound-Master-Writes — der interne Refresh-Push nutzt FC03
-# (`async_setValues` mit dem Read-Code als Block-Selektor), Reads liefern
-# `set_values is None`. Damit loest der Refresh nie einen Inbound-`Command` aus.
-_FC_WRITE_HOLDING: Final[frozenset[int]] = frozenset({6, 16})
+# Master-Write-Funktions-Codes, die pymodbus auf den Holding-Block routet und die
+# ein vollstaendiges `float32`-Sollwert-Fenster (2 Register) schreiben koennen:
+# FC06 (Write-Single), FC16 (Write-Multiple), FC23 (Read/Write-Multiple).
+# **Diskriminator** in der SimAction: nur diese Codes sind echte Inbound-Master-
+# Writes — der interne Refresh-Push nutzt FC03 (`async_setValues` mit dem Read-Code
+# als Block-Selektor), Reads liefern `set_values is None`. Damit loest der Refresh
+# nie einen Inbound-`Command` aus.
+#
+# Vollstaendigkeit ggue. `SimRuntime._fx_mapper` (`{3,6,16,22,23}` → Holding):
+# - **FC23** MUSS rein (Review-Fund Slice 075): ein Master kann einen `float32`-
+#   Sollwert per Read/Write-Multiple schreiben; ohne FC23 wuerde der Write still
+#   gedroppt (pymodbus quittiert Erfolg, aber kein `Command` wird erfasst).
+# - **FC22** (Mask-Write) bleibt bewusst draussen: er schreibt nur **ein** Register
+#   und kann nie ein 2-Register-`float32`-Fenster bilden (der
+#   `InboundWriteDecoder` wuerde es ohnehin ueberspringen).
+# - **FC06** deckt selbst nie ein volles Fenster (1 Register); er steht als
+#   Vollstaendigkeits-Marker im Set (ein FC06-Teil-Write wird vom Decoder
+#   uebersprungen), schadet aber nicht.
+_FC_WRITE_HOLDING: Final[frozenset[int]] = frozenset({6, 16, 23})
 
 # pymodbus-`SimAction`-Signatur (async): wird bei jedem Register-Zugriff gerufen.
 # `set_values is None` == Read; sonst die zu schreibenden Werte. Rueckgabe `None`
@@ -231,7 +245,6 @@ class _PymodbusRunningServer:
     ) -> None:
         self._config: ModbusServerConfig = config
         self._register_map: RegisterMap = register_map
-        self._holding_count: int = _holding_register_count(config)
         self._discrete_count: int = len(config.register_map)
         # ADR 0076 §2.1: Inbound-Write-Hook nur bauen, wenn ein Puffer da ist UND
         # ein beschreibbares Fenster konfiguriert ist — sonst kein `action` (reines
@@ -321,11 +334,23 @@ class _PymodbusRunningServer:
 
     async def _push(self, server: ModbusTcpServer) -> None:
         """Schreibt einen **konsistenten** Projektions-Frame in den Datastore:
-        Holding-Register (`float32`) + Discrete-Inputs (Quality) aus genau einem
-        Snapshot (`render()`) — kein Tearing zwischen den Registern eines
-        `float32` (Review-Fund C2)."""
-        holding, discrete = self._register_map.render(self._holding_count, self._discrete_count)
-        await server.async_setValues(self._config.unit_id, _FC_READ_HOLDING_REGISTERS, 0, holding)
+        je Read-Fenster ein `float32` (2 Register) + die Discrete-Inputs (Quality)
+        aus genau **einem** Snapshot — kein Tearing zwischen den Registern eines
+        `float32` (Review-Fund C2).
+
+        **Nur Read-Fenster** (Review-Fund Slice 075): der Refresh pusht die
+        `register_map`-Messwerte **fenster-weise** und laesst die `write_map`-
+        Sollwert-Register **unangetastet**. Wuerde er (wie zuvor) den ganzen
+        Holding-Block als Nullen-gefuellten Frame schreiben, ueberschriebe er einen
+        gerade von einem Master geschriebenen Sollwert nach ≤ Refresh-Intervall mit
+        `0` — ein pollender Master saehe seinen Sollwert stumm auf `0` zuruecksetzen.
+        Der Command-Pfad ist davon unberuehrt (der Write wird beim Eintreffen vom
+        `SimAction`-Hook erfasst, nicht ueber Readback)."""
+        holding_windows, discrete = self._register_map.refresh_frame(self._discrete_count)
+        for address, values in holding_windows:
+            await server.async_setValues(
+                self._config.unit_id, _FC_READ_HOLDING_REGISTERS, address, values
+            )
         await server.async_setValues(self._config.unit_id, _FC_READ_DISCRETE_INPUTS, 0, discrete)
 
     def stop(self) -> None:
@@ -371,6 +396,11 @@ class ModbusDeviceServerAdapter:
         server_runner: ServerRunner | None = None,
         inbound_buffer: InboundCommandBuffer | None = None,
     ) -> None:
+        # ADR 0076 §2.1 (Review-Fund Slice 075): beschreibbare Sollwert-Fenster
+        # (`write_map`) ohne injizierten Puffer sind eine Fehlkonfiguration — der
+        # Write-Hook wuerde nicht gebaut, Master-Writes still verworfen. Fail-fast.
+        if config.write_map and inbound_buffer is None:
+            raise ModbusServerWiringError
         self._config: ModbusServerConfig = config
         self._projection: CurrentValueProjection = projection
         self._server_runner: ServerRunner = server_runner or _default_server_runner

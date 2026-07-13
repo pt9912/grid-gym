@@ -37,3 +37,20 @@ class ModbusServerStopError(DeviceServerPortStopError):
     def __init__(self, cause: Exception) -> None:
         super().__init__(f"ModbusDeviceServerAdapter: stop/close fehlgeschlagen: {cause}")
         self.cause: Exception = cause
+
+
+class ModbusServerWiringError(ValueError):
+    """Fehlkonfiguration der Inbound-Write-Verdrahtung (ADR 0076; Review-Fund
+    Slice 075): `config.write_map` deklariert beschreibbare Sollwert-Fenster, aber
+    es ist **kein** `inbound_buffer` injiziert.
+
+    Ohne Puffer wird der Write-`SimAction`-Hook nicht gebaut — ein Master-Write auf
+    ein Sollwert-Fenster landet im Datastore und wird **still verworfen** (nie zu
+    einem `Command` geroutet). Fail-fast bei Konstruktion statt stillem No-op."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "ModbusDeviceServerAdapter: config.write_map ist gesetzt, aber kein "
+            "inbound_buffer injiziert — Master-Writes wuerden akzeptiert, aber nie zu "
+            "einem Command geroutet. Entweder inbound_buffer reichen oder write_map leeren."
+        )

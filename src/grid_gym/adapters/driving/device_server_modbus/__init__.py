@@ -46,6 +46,7 @@ from grid_gym.adapters.driving.device_server_modbus._config import (
 from grid_gym.adapters.driving.device_server_modbus._errors import (
     ModbusServerBindError,
     ModbusServerStopError,
+    ModbusServerWiringError,
 )
 from grid_gym.adapters.driving.device_server_modbus._register_map import (
     RegisterMap,
@@ -73,6 +74,7 @@ __all__ = [
     "ModbusServerConfigInvalidWriteAddressError",
     "ModbusServerConfigRegisterOverlapError",
     "ModbusServerStopError",
+    "ModbusServerWiringError",
     "RegisterMap",
     "RegisterMapping",
     "RunningServer",

@@ -18,6 +18,7 @@ from grid_gym.adapters.driving._field_current_value import CurrentValueProjectio
 from grid_gym.adapters.driving.device_server_modbus._config import (
     ModbusServerConfig,
     RegisterMapping,
+    WritableRegisterMapping,
 )
 from grid_gym.adapters.driving.device_server_modbus._register_map import (
     RegisterMap,
@@ -237,3 +238,43 @@ def test_render_takes_exactly_one_snapshot_for_whole_frame() -> None:
     holding, _discrete = reg_map.render(2, 1)
     assert proj.snapshot_calls == 1  # EIN Snapshot fuer den ganzen Frame
     assert tuple(holding) == encode_float32(Decimal("230.5"))
+
+
+# --- RegisterMap.refresh_frame: nur Read-Fenster (Review-Fund Slice 075) -----
+
+
+def _read_write_config() -> ModbusServerConfig:
+    return ModbusServerConfig(
+        bind_host="127.0.0.1",
+        bind_port=5020,
+        register_map=(RegisterMapping("meter-1", "voltage_v", 0),),
+        write_map=(WritableRegisterMapping(10, "battery-1", "set_power_kw"),),
+    )
+
+
+def test_refresh_frame_covers_only_read_windows() -> None:
+    # Der Refresh-Push darf NUR die Read-Messwert-Fenster liefern — die
+    # write_map-Sollwert-Register (Adresse 10) bleiben unberuehrt, damit ein
+    # Master-geschriebener Sollwert nicht genullt wird.
+    reg_map = RegisterMap(_read_write_config(), _projection(_point(value="230.5")))
+    holding_windows, discrete = reg_map.refresh_frame(1)
+    assert holding_windows == ((0, list(encode_float32(Decimal("230.5")))),)
+    assert all(address != 10 for address, _ in holding_windows)  # Sollwert nicht gepusht
+    assert discrete == [True]
+
+
+def test_refresh_frame_takes_exactly_one_snapshot() -> None:
+    class _CountingProjection(CurrentValueProjection):
+        def __init__(self) -> None:
+            super().__init__()
+            self.snapshot_calls = 0
+
+        def snapshot(self) -> Mapping[tuple[str, str], TelemetryPoint]:
+            self.snapshot_calls += 1
+            return super().snapshot()
+
+    proj = _CountingProjection()
+    proj.update_from_tick(_tick(_point(value="230.5")))
+    reg_map = RegisterMap(_read_write_config(), proj)
+    reg_map.refresh_frame(1)
+    assert proj.snapshot_calls == 1  # EIN Snapshot → kein Tearing
