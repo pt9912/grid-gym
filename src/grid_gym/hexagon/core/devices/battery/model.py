@@ -32,9 +32,15 @@ from grid_gym.hexagon.core.devices.battery.commands import (
     validate_set_power_command,
 )
 from grid_gym.hexagon.core.devices.battery.config import (
+    DC_BUS_FIELD_NAMES,
+    HEALTH_FIELD_NAMES,
+    REACTIVE_FIELD_NAMES,
     THERMAL_FIELD_NAMES,
     BatteryConfig,
     CellConfig,
+    DcBusConfig,
+    HealthConfig,
+    ReactiveConfig,
     ThermalConfig,
 )
 from grid_gym.hexagon.core.devices.battery.snapshot import (
@@ -88,8 +94,13 @@ _ZERO = Decimal(0)
 _ONE = Decimal(1)
 _TWO = Decimal(2)
 _HUNDRED = Decimal(100)
+_THOUSAND = Decimal(1000)
+_HALF = Decimal("0.5")
 _QUANTUM = Decimal("0.000001")
 """GG-DATA-005-Soll: max. 6 Nachkommastellen in Telemetrie."""
+
+_FAULT_STATUS_OK = "ok"
+"""Slice 077 S1 (ADR 0077 §2.5): `fault_status`-String ohne aktiven Fault."""
 
 _SUBSYSTEM = "battery"
 _BATTERY_SOURCE = "battery"
@@ -166,6 +177,12 @@ class BatteryDevice:
         # (bit-genau heutiges Verhalten); pro Tick aus Basis + seeded Rauschen
         # neu berechnet (derived, nicht akkumuliert).
         self._cell_voltages: tuple[Decimal, ...] = ()
+        # Slice 077 S1 (ADR 0077 §2.2): akkumulierter Equivalent-Full-Cycle-
+        # Zaehler des opt-in Health-Modells. `_ZERO` ohne `health`-Block (nie
+        # akkumuliert, nicht gesnapshottet → bit-genau heutiges Verhalten);
+        # `soh_percent` ist eine reine Funktion aus `_efc` + Config (kein zweiter
+        # State-Slot). `dc_voltage`/`reactive_power_kvar` sind zustandslos.
+        self._efc: Decimal = _ZERO
 
     # ------------------------------------------------------------------
     # Pflicht-Property (ADR 0013 §2.7)
@@ -237,6 +254,8 @@ class BatteryDevice:
         self._temperature_celsius = (
             config.thermal.ambient_temp_c if config.thermal is not None else None
         )
+        # Slice 077 S1 (ADR 0077 §2.2): EFC-Zaehler kaltgestartet (SOH = initial).
+        self._efc = _ZERO
 
     def apply_command(self, command: Command) -> CommandResult:
         if self._scenario_device is None or self._config is None:
@@ -359,6 +378,14 @@ class BatteryDevice:
             self._soc_kwh + energy_delta_kwh, new_power_kw, config
         )
 
+        # Slice 077 S1 (ADR 0077 §2.2): EFC-Akkumulation auf dem **tatsaechlich**
+        # geflossenen Energie-Durchsatz (`new_soc - old_soc`, post-Clamp) — VOR der
+        # SOC-Zuweisung, damit `self._soc_kwh` noch der Vorwert ist (kein Extra-
+        # Statement). Review-Fund: bei SOC-Saturation ist die tatsaechliche Energie
+        # kleiner als das intendierte `energy_delta_kwh`; konsistent mit dem
+        # post-Clamp-Thermomodell (kein Ghost-Cycling). No-op ohne `health`-Block.
+        self._update_soh(new_soc_kwh - self._soc_kwh, config)
+
         self._soc_kwh = new_soc_kwh
         self._current_power_kw = new_power_kw
 
@@ -443,8 +470,50 @@ class BatteryDevice:
             voltages.append((base + noise).quantize(_QUANTUM, rounding=ROUND_HALF_EVEN))
         self._cell_voltages = tuple(voltages)
 
+    def _update_soh(self, soc_delta_kwh: Decimal, config: BatteryConfig) -> None:
+        """ADR 0077 §2.2: akkumuliert den Equivalent-Full-Cycle-Zaehler aus dem
+        **tatsaechlich geflossenen** Energie-Durchsatz dieses Ticks (`new_soc -
+        old_soc`, post-Clamp). No-op ohne `health`-Block (`_efc` bleibt `_ZERO` —
+        kein State, kein Punkt, bit-identisch).
+
+            efc += |soc_delta_kwh| / (2·capacity_kwh)
+
+        `soh_percent` selbst ist eine reine Funktion aus `_efc` + Config und wird
+        erst in `_emit_telemetry` gerechnet (kein zweiter State-Slot)."""
+        if config.health is None:
+            return
+        self._efc += abs(soc_delta_kwh) / (_TWO * config.capacity_kwh)
+
     def telemetry(self) -> tuple[TelemetryPoint, ...]:
         return self._last_telemetry
+
+    # ------------------------------------------------------------------
+    # Fault-Status-Surface (Slice 077 S1, ADR 0077 §2.5)
+    # ------------------------------------------------------------------
+
+    @property
+    def fault_status(self) -> str:
+        """ADR 0077 §2.5: aktiver device-Fault-Typ-String, sonst `"ok"`. Projektion
+        der `_<fault>_active`-Flags (kein Telemetrie-Punkt). Heute nur
+        `cell_failure`; neue device-Fault-Typen tragen sich additiv mit fixer
+        Prioritaets-Reihenfolge ein."""
+        if self._cell_failure_active:
+            return FAULT_TYPE_CELL_FAILURE
+        return _FAULT_STATUS_OK
+
+    @property
+    def available(self) -> bool:
+        """ADR 0077 §2.5: `False` gdw. ein Fault aus dem `available`-Closed-Set
+        aktiv ist (heute `cell_failure`); sonst `True`.
+
+        **Bewusste Grenze (Review-Fund):** `cell_failure` deratet physikalisch nur
+        die `max_discharge` um 50 % (das Geraet laeuft weiter), meldet hier aber
+        `available=False`. Das ist Absicht: der Feldvertrag (ADR 0078 §2.6)
+        braucht einen fahrbaren `available=False`/`fault`-Pfad fuer den
+        EMS-Safe-Stop-E2E; die derate↔unavailable-Spannung ist akzeptiert (Closed-
+        Set, verfeinerbar, wenn ein device-Fault mit anderer Betriebs-Semantik
+        dazukommt)."""
+        return not self._cell_failure_active
 
     # ------------------------------------------------------------------
     # Snapshot
@@ -467,6 +536,7 @@ class BatteryDevice:
             cell_failure_active=self._cell_failure_active,
             temperature_celsius=self._temperature_celsius,
             cell_voltages_v=self._cell_voltages,
+            efc=self._efc,
         )
         return snap.to_dict()
 
@@ -500,6 +570,9 @@ class BatteryDevice:
         # Snapshot. `_random` bleibt None — aktives Zell-Rauschen braucht ein
         # `attach_random` vor dem ersten Tick (sonst fail-loud).
         device._cell_voltages = snap.cell_voltages_v
+        # Slice 077 S1 (ADR 0077 §2.6): EFC-Zaehler aus dem opt-in-Snapshot
+        # (`_ZERO` ohne Health-Block; SOH re-derived in `_emit_telemetry`).
+        device._efc = snap.efc
         return device
 
     # ------------------------------------------------------------------
@@ -526,6 +599,7 @@ class BatteryDevice:
             and self._cell_failure_active == other._cell_failure_active
             and self._temperature_celsius == other._temperature_celsius
             and self._cell_voltages == other._cell_voltages
+            and self._efc == other._efc
         )
 
     @override
@@ -542,6 +616,7 @@ class BatteryDevice:
                 self._cell_failure_active,
                 self._temperature_celsius,
                 self._cell_voltages,
+                self._efc,
             )
         )
 
@@ -599,6 +674,26 @@ class BatteryDevice:
         )
         return new_soc_kwh, _ZERO
 
+    def _dc_voltage(
+        self,
+        dc: DcBusConfig,
+        capacity_kwh: Decimal,
+        new_soc_kwh: Decimal,
+        power_kw: Decimal,
+    ) -> Decimal:
+        """ADR 0077 §2.3: `dc_voltage = ocv + i_dc·R` (zustandslos). `power_kw` ist
+        der gefahrene (quantisierte) Wert; Laden = **+** → `i_dc > 0` → Spannung
+        ueber OCV. `ocv == 0` (pathologischer Slope) → `i_dc = 0` (kein Div-by-Zero;
+        Default-Slope=0 haelt `ocv = nominal_voltage_v > 0`)."""
+        soc_frac = new_soc_kwh / capacity_kwh
+        ocv = dc.nominal_voltage_v + dc.ocv_soc_slope_v * (soc_frac - _HALF)
+        # `DcBusConfig` validiert `|slope| < 2*nominal` → `ocv > 0`; der `> _ZERO`-
+        # Guard ist Defense-in-Depth gegen Div-by-Zero (nie ein negativer i_dc).
+        i_dc = power_kw * _THOUSAND / ocv if ocv > _ZERO else _ZERO
+        return (ocv + i_dc * dc.internal_resistance_ohm).quantize(
+            _QUANTUM, rounding=ROUND_HALF_EVEN
+        )
+
     def _emit_telemetry(
         self,
         context: DeviceTickContext,
@@ -642,6 +737,35 @@ class BatteryDevice:
                 _QUANTUM, rounding=ROUND_HALF_EVEN
             )
             emissions.append(("cell_voltage_delta_v", delta, "V"))
+        # Slice 077 S1 (ADR 0077 §2.2): opt-in `soh_percent` (nur bei aktivem
+        # Health-Block). SOH = initial - degradation·efc, geklemmt `≥ 0`.
+        if config.health is not None:
+            soh = (
+                config.health.initial_soh_pct
+                - config.health.degradation_pct_per_full_cycle * self._efc
+            )
+            emissions.append(
+                (
+                    "soh_percent",
+                    max(soh, _ZERO).quantize(_QUANTUM, rounding=ROUND_HALF_EVEN),
+                    "pct",
+                )
+            )
+        # Slice 077 S1 (ADR 0077 §2.3): opt-in `dc_voltage` (zustandslos).
+        if config.dc_bus is not None:
+            emissions.append(
+                (
+                    "dc_voltage",
+                    self._dc_voltage(config.dc_bus, config.capacity_kwh, new_soc_kwh, power_kw),
+                    "V",
+                )
+            )
+        # Slice 077 S1 (ADR 0077 §2.4): opt-in `reactive_power_kvar` (zustandslos).
+        if config.reactive is not None:
+            reactive = (abs(power_kw) * config.reactive.q_factor).quantize(
+                _QUANTUM, rounding=ROUND_HALF_EVEN
+            )
+            emissions.append(("reactive_power_kvar", reactive, "kvar"))
         emissions.sort(key=lambda emission: emission[0])
         points = []
         for metric, value, unit in emissions:
@@ -682,8 +806,56 @@ def _config_from_params(params: Mapping[str, object]) -> BatteryConfig:
             raise WrongTypeError(_SUBSYSTEM, f"params.{key}", "Decimal", type(value).__name__)
         fields[key] = value
     return BatteryConfig(
-        **fields, thermal=_thermal_from_params(params), cell=_cell_from_params(params)
+        **fields,
+        thermal=_thermal_from_params(params),
+        cell=_cell_from_params(params),
+        health=_health_from_params(params),
+        dc_bus=_dc_bus_from_params(params),
+        reactive=_reactive_from_params(params),
     )
+
+
+def _decimal_block_from_params(
+    params: Mapping[str, object], block_name: str, field_names: tuple[str, ...]
+) -> dict[str, Decimal] | None:
+    """Slice 077 S1: liest einen opt-in Decimal-Block aus den Scenario-Params
+    (fehlt → `None`). Alle `field_names` sind Pflicht + `Decimal` (No-float,
+    `GG-DATA-005`); Muster `_thermal_from_params`. Der jeweilige Config-Konstruktor
+    erzwingt die Wertebereiche."""
+    if block_name not in params:
+        return None
+    block = params[block_name]
+    if not isinstance(block, Mapping):
+        raise WrongTypeError(_SUBSYSTEM, f"params.{block_name}", "Mapping", type(block).__name__)
+    fields: dict[str, Decimal] = {}
+    for key in field_names:
+        if key not in block:
+            raise MissingKeysError(_SUBSYSTEM, [f"{block_name}.{key}"])
+        value = block[key]
+        if not isinstance(value, Decimal):
+            raise WrongTypeError(
+                _SUBSYSTEM, f"params.{block_name}.{key}", "Decimal", type(value).__name__
+            )
+        fields[key] = value
+    return fields
+
+
+def _health_from_params(params: Mapping[str, object]) -> HealthConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.2): opt-in `health`-Block."""
+    fields = _decimal_block_from_params(params, "health", HEALTH_FIELD_NAMES)
+    return None if fields is None else HealthConfig(**fields)
+
+
+def _dc_bus_from_params(params: Mapping[str, object]) -> DcBusConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.3): opt-in `dc_bus`-Block."""
+    fields = _decimal_block_from_params(params, "dc_bus", DC_BUS_FIELD_NAMES)
+    return None if fields is None else DcBusConfig(**fields)
+
+
+def _reactive_from_params(params: Mapping[str, object]) -> ReactiveConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.4): opt-in `reactive`-Block."""
+    fields = _decimal_block_from_params(params, "reactive", REACTIVE_FIELD_NAMES)
+    return None if fields is None else ReactiveConfig(**fields)
 
 
 def _thermal_from_params(params: Mapping[str, object]) -> ThermalConfig | None:
@@ -753,4 +925,11 @@ def _config_to_params(config: BatteryConfig) -> Mapping[str, object]:
             "n_cells": config.cell.n_cells,
             "noise_amplitude_v": config.cell.noise_amplitude_v,
         }
+    # Slice 077 S1 (ADR 0077): opt-in Field-Envelope-Bloecke (nur bei aktivem Modell).
+    if config.health is not None:
+        params["health"] = {key: getattr(config.health, key) for key in HEALTH_FIELD_NAMES}
+    if config.dc_bus is not None:
+        params["dc_bus"] = {key: getattr(config.dc_bus, key) for key in DC_BUS_FIELD_NAMES}
+    if config.reactive is not None:
+        params["reactive"] = {key: getattr(config.reactive, key) for key in REACTIVE_FIELD_NAMES}
     return params

@@ -1,11 +1,16 @@
 # ADR 0077 — Battery-Field-Envelope-Vollstaendigkeit: soh/dc_voltage/reactive-Emissionen + Fault-Status-Surface
 
-**Status:** Proposed (2026-07-13) — die **Richtung** ist entschieden (drei additive
-opt-in Battery-Emissionen + eine Fault-Status-Surface, damit die Battery-Telemetrie
-den bess-ems-Feldenvelope-Vertrag deckt), die Modelle sind design-first fixiert, die
-Implementierung steht aus. Fundament fuer [`ADR 0078`](0078-bess-ems-field-contract-publisher.md)
-(der Publisher konsumiert diese Emissionen).
-**Datum:** 2026-07-13
+**Status:** Provisional (2026-07-13) — die Emissions-Naht ist **belegt**: die drei
+additive opt-in Bloecke (`HealthConfig`/`DcBusConfig`/`ReactiveConfig`) emittieren
+`soh_percent`/`dc_voltage`/`reactive_power_kvar`, die Fault-Status-Surface
+(`available`/`fault_status`) projiziert die Fault-Flags, additiv/pin-neutral +
+snapshot-roundtrip-stabil, unit-getestet (Slice 077 S1). Status-Pfad
+([`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §4):
+Proposed → **Provisional** (Emissionen, **erreicht**) → **Accepted** mit der
+Slice-Closure (S3, bess-ems-Abnahme). Fundament fuer
+[`ADR 0078`](0078-bess-ems-field-contract-publisher.md) (der Publisher konsumiert
+diese Emissionen).
+**Datum:** 2026-07-13 (Provisional; Proposed 2026-07-13)
 **Bezug:**
 
 - [`ADR 0075`](0075-field-server-surface-device-endpoint-port.md) §7 — die
@@ -78,15 +83,17 @@ Snapshot unveraendert) — dieselbe pin-neutrale Invariante wie 0065/0066.
 
 ### §2.2 `soh_percent` — HealthConfig (Nominal + deterministische EFC-Degradation)
 
-`HealthConfig(initial_soh_pct, degradation_pct_per_full_cycle=0)`. SOH ist
-Geraete-State (`_soh_pct`), kaltgestartet auf `initial_soh_pct`. Pro Tick akkumuliert
-ein **Equivalent-Full-Cycle**-Zaehler aus dem Energiedurchsatz
-(`efc += |energy_delta_kwh| / (2·capacity_kwh)`), und
-`soh = initial_soh_pct − degradation_pct_per_full_cycle·efc` (geklemmt `≥ 0`). Bei
-`degradation=0` (Default) ist SOH **konstant** ueber den Lauf — physikalisch ehrlich
-(reale Degradation ist ueber Sim-Laufzeiten vernachlaessigbar; der Vertrag verlangt
-nur einen plausiblen, deterministischen Wert). `_soh_pct` + `_efc` sind
-Snapshot-State.
+`HealthConfig(initial_soh_pct, degradation_pct_per_full_cycle=0)`. Pro Tick akkumuliert
+ein **Equivalent-Full-Cycle**-Zaehler aus dem **tatsaechlich geflossenen**
+Energiedurchsatz (`efc += |ΔSOC| / (2·capacity_kwh)` mit `ΔSOC = new_soc - old_soc`
+**post-Clamp** — bei SOC-Saturation zaehlt nur die real geflossene Energie, konsistent
+mit dem post-Clamp-Thermomodell). `soh = initial_soh_pct −
+degradation_pct_per_full_cycle·efc` (geklemmt `≥ 0`). Bei `degradation=0` (Default) ist
+SOH **konstant** ueber den Lauf — physikalisch ehrlich (reale Degradation ist ueber
+Sim-Laufzeiten vernachlaessigbar; der Vertrag verlangt nur einen plausiblen,
+deterministischen Wert). **Snapshot-State ist allein `_efc`** — `soh_percent` ist eine
+**reine Funktion** aus `_efc` + Config und wird im Emit/Resume re-derived (kein zweiter
+State-Slot).
 
 ### §2.3 `dc_voltage` — DcBusConfig (OCV-vs-SOC + IR-Drop) und die Zellmodell-Versoehnung
 
@@ -101,6 +108,10 @@ DC-Bus-/Pack-Klemmenspannung als deterministisches Modell:
 (Strom in die Batterie, `i_dc > 0`) **ueber** OCV, beim Entladen darunter — daher
 `+ i_dc·R` (mit grid-gyms Laden-=-**+**-Konvention). Bei `ocv_soc_slope_v=0` **und**
 `internal_resistance_ohm=0` (Default) ist `dc_voltage = nominal_voltage_v` konstant.
+**Slope-Schranke (Review-Fund):** da `soc_frac ∈ [0, 1]` ist `ocv ∈ [nominal ∓
+|slope|/2]`; `DcBusConfig` validiert `|ocv_soc_slope_v| < 2·nominal_voltage_v` →
+`ocv > 0` ueber den ganzen SOC-Bereich (fail-fast statt Div-durch-~0 / vorzeichen-
+gedrehtem `i_dc`).
 Der Golden-Vektor (`telemetry-charging.dc_voltage=798.5 < 800`) ist **strukturell/
 illustrativ**, nicht physikalisch stimmig (er senkt die Ladespannung); das Modell wird
 **nicht** darauf gefittet — der Golden-Vergleich ist wertfrei (§2.6/[`ADR 0078`](0078-bess-ems-field-contract-publisher.md) §2.6).
@@ -128,8 +139,10 @@ Wirkleistung ueber einen konstanten Leistungsfaktor:
 **Vollstaendig libm-frei (Review-Kleinigkeit a):** `tan(acos(pf))` ist identisch
 `sqrt(1 − pf²)/pf` und damit **rein in `Decimal`** rechenbar (`Decimal.sqrt()`, kein
 `float`/`math`) — passt zum [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)-Geist.
-`q_factor` wird **einmal bei Konstruktion** aus dem `Decimal`-`pf` vorgerechnet; der
-Tick multipliziert nur `|power_kw|·q_factor`. Bei `power_factor=1` (Default) ist `Q=0`.
+`q_factor` ist eine `ReactiveConfig`-**Property** (aus dem frozen `pf`, in einem
+eigenen `localcontext(prec=28)` — **kontext-unabhaengig** deterministisch, unabhaengig
+vom ambient Decimal-Context des Aufrufers); der Tick multipliziert nur
+`|power_kw|·q_factor`. Bei `power_factor=1` (Default) ist `Q=0`.
 Vorzeichenkonvention (kapazitiv/induktiv) ist im Feldenvelope nicht spezifiziert →
 positiv (Betrag), Verfeinerung deferred.
 
@@ -155,9 +168,10 @@ Telemetrie-Strom ([`GG-DATA-004`](../../../spec/lastenheft.md#gg-data-004)) unbe
 
 ### §2.6 Determinismus + Snapshot-Grenze
 
-- Neuer State (`_soh_pct`, `_efc`) ist **snapshot-erfasst** (additive Sub-Snapshot-
-  Slots, Muster 0065/0066); `dc_voltage`/`reactive` sind **zustandslos** (reine
-  Funktion aus `power_kw`/`soc`), die Fault-Surface liest bestehende Flags.
+- Neuer State ist **allein `_efc`** (ein additiver Sub-Snapshot-Slot, Muster
+  0065/0066); `soh_percent` ist eine **reine Funktion** aus `_efc` + Config (re-derived,
+  kein eigener Slot). `dc_voltage`/`reactive` sind **zustandslos** (reine Funktion aus
+  `power_kw`/`soc`), die Fault-Surface liest bestehende Flags.
 - Alle Bloecke `None` → keine neuen Punkte, kein neuer State → **pin-neutral**.
 
 ### §2.7 Quantisierung

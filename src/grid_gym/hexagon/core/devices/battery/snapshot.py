@@ -23,10 +23,16 @@ from typing import Final, Self
 
 from grid_gym.hexagon.core.devices.battery.config import (
     CELL_FIELD_NAMES,
+    DC_BUS_FIELD_NAMES,
+    HEALTH_FIELD_NAMES,
+    REACTIVE_FIELD_NAMES,
     THERMAL_FIELD_NAMES,
     BatteryConfig,
     BatteryConfigError,
     CellConfig,
+    DcBusConfig,
+    HealthConfig,
+    ReactiveConfig,
     ThermalConfig,
 )
 from grid_gym.hexagon.core.errors import (
@@ -78,6 +84,11 @@ _CONFIG_KEYS: Final[frozenset[str]] = frozenset(
 _THERMAL_KEYS: Final[frozenset[str]] = frozenset(THERMAL_FIELD_NAMES)
 # M8-Welle-4b (ADR 0066 §2.5): Pflicht-Keys des opt-in cell-Blocks.
 _CELL_KEYS: Final[frozenset[str]] = frozenset(CELL_FIELD_NAMES)
+# Slice 077 S1 (ADR 0077): Pflicht-Keys der opt-in Field-Envelope-Bloecke.
+_HEALTH_KEYS: Final[frozenset[str]] = frozenset(HEALTH_FIELD_NAMES)
+_DC_BUS_KEYS: Final[frozenset[str]] = frozenset(DC_BUS_FIELD_NAMES)
+_REACTIVE_KEYS: Final[frozenset[str]] = frozenset(REACTIVE_FIELD_NAMES)
+_ZERO: Final[Decimal] = Decimal(0)
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,6 +124,11 @@ class BatterySnapshot:
     # Modells; leeres Tuple ohne Zell-Block bzw. vor dem ersten Tick (opt-in
     # serialisiert nur bei Non-Empty, kein Versions-Bump).
     cell_voltages_v: tuple[Decimal, ...] = ()
+    # Slice 077 S1 (ADR 0077 §2.6): akkumulierter EFC-Zaehler des opt-in Health-
+    # Modells; `_ZERO` ohne Health-Block (opt-in serialisiert nur bei aktivem
+    # Block → byte-identisch ohne Block, kein Versions-Bump). SOH ist eine reine
+    # Funktion aus `efc` + Config und wird NICHT gesnapshottet (re-derived).
+    efc: Decimal = _ZERO
 
     def to_dict(self) -> Mapping[str, object]:
         """Wandelt den Snapshot in ein `Mapping[str, object]` mit
@@ -152,6 +168,20 @@ class BatterySnapshot:
                 "n_cells": self.config.cell.n_cells,
                 "noise_amplitude_v": self.config.cell.noise_amplitude_v,
             }
+        # Slice 077 S1 (ADR 0077): opt-in Field-Envelope-Config-Bloecke (nur bei
+        # aktivem Modell → byte-identisch ohne Block).
+        if self.config.health is not None:
+            config_dict["health"] = {
+                key: getattr(self.config.health, key) for key in HEALTH_FIELD_NAMES
+            }
+        if self.config.dc_bus is not None:
+            config_dict["dc_bus"] = {
+                key: getattr(self.config.dc_bus, key) for key in DC_BUS_FIELD_NAMES
+            }
+        if self.config.reactive is not None:
+            config_dict["reactive"] = {
+                key: getattr(self.config.reactive, key) for key in REACTIVE_FIELD_NAMES
+            }
         result: dict[str, object] = {
             "version": self.version,
             "device_id": self.device_id,
@@ -175,6 +205,10 @@ class BatterySnapshot:
         # kanonisch als geordnete Decimal-Liste.
         if self.cell_voltages_v:
             result["cell_voltages_v"] = list(self.cell_voltages_v)
+        # Slice 077 S1 (ADR 0077 §2.6): EFC-State opt-in — nur bei aktivem Health-
+        # Block (ohne Block byte-identisch; `efc` bleibt `_ZERO`).
+        if self.config.health is not None:
+            result["efc"] = self.efc
         return result
 
     @classmethod
@@ -222,6 +256,11 @@ class BatterySnapshot:
                 # M8-Welle-4b (ADR 0066 §2.5): opt-in cell-Block (fehlt
                 # -> None; Alt-Snapshots lesen als „kein Zell-Modell").
                 cell=_parse_cell(config_state),
+                # Slice 077 S1 (ADR 0077): opt-in Field-Envelope-Bloecke (fehlen
+                # -> None; Alt-Snapshots roundtrip-faehig).
+                health=_parse_health(config_state),
+                dc_bus=_parse_dc_bus(config_state),
+                reactive=_parse_reactive(config_state),
             )
         except BatteryConfigError as err:
             # Welle-2-Review M-5: BatteryConfigError ist nicht Teil
@@ -252,6 +291,10 @@ class BatterySnapshot:
         # (fehlt → leeres Tuple; Alt-Snapshots roundtrip-faehig).
         cell_voltages_v = _parse_cell_voltages(state)
 
+        # Slice 077 S1 (ADR 0077 §2.6): EFC-State opt-in lesen (fehlt → `_ZERO`;
+        # Alt-Snapshots roundtrip-faehig).
+        efc = assert_decimal(state["efc"], "efc", SUBSYSTEM) if "efc" in state else _ZERO
+
         return cls(
             version=version,
             device_id=device_id,
@@ -264,6 +307,7 @@ class BatterySnapshot:
             cell_failure_active=cell_failure_active,
             temperature_celsius=temperature_celsius,
             cell_voltages_v=cell_voltages_v,
+            efc=efc,
         )
 
 
@@ -313,6 +357,44 @@ def _parse_cell(config_state: Mapping[str, object]) -> CellConfig | None:
             block["noise_amplitude_v"], "config.cell.noise_amplitude_v", SUBSYSTEM
         ),
     )
+
+
+def _parse_decimal_block(
+    config_state: Mapping[str, object],
+    block_name: str,
+    keys: frozenset[str],
+    field_names: tuple[str, ...],
+) -> dict[str, Decimal] | None:
+    """Slice 077 S1: liest einen opt-in Decimal-Config-Block aus dem `config`-Sub-
+    Mapping (fehlt → `None`). Alle `field_names` sind Pflicht + `Decimal`; Muster
+    `_parse_thermal`. Der jeweilige Config-Konstruktor erzwingt die Wertebereiche
+    (sein `BatteryConfigError` wird vom Aufrufer zu `WrongTypeError` ueberfuehrt)."""
+    if block_name not in config_state:
+        return None
+    block = assert_mapping(config_state[block_name], f"config.{block_name}", SUBSYSTEM)
+    assert_required_keys(block, keys, SUBSYSTEM)
+    return {
+        key: assert_decimal(block[key], f"config.{block_name}.{key}", SUBSYSTEM)
+        for key in field_names
+    }
+
+
+def _parse_health(config_state: Mapping[str, object]) -> HealthConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.2): opt-in `health`-Block."""
+    fields = _parse_decimal_block(config_state, "health", _HEALTH_KEYS, HEALTH_FIELD_NAMES)
+    return None if fields is None else HealthConfig(**fields)
+
+
+def _parse_dc_bus(config_state: Mapping[str, object]) -> DcBusConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.3): opt-in `dc_bus`-Block."""
+    fields = _parse_decimal_block(config_state, "dc_bus", _DC_BUS_KEYS, DC_BUS_FIELD_NAMES)
+    return None if fields is None else DcBusConfig(**fields)
+
+
+def _parse_reactive(config_state: Mapping[str, object]) -> ReactiveConfig | None:
+    """Slice 077 S1 (ADR 0077 §2.4): opt-in `reactive`-Block."""
+    fields = _parse_decimal_block(config_state, "reactive", _REACTIVE_KEYS, REACTIVE_FIELD_NAMES)
+    return None if fields is None else ReactiveConfig(**fields)
 
 
 def _parse_cell_voltages(state: Mapping[str, object]) -> tuple[Decimal, ...]:

@@ -14,13 +14,17 @@ Output quantisiert auf 6 Nachkommastellen (`GG-DATA-005`).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 
 from grid_gym.hexagon.core.errors import GridGymError
 
 _ZERO = Decimal(0)
 _HUNDRED = Decimal(100)
 _ONE = Decimal(1)
+_TWO = Decimal(2)
+_QFACTOR_PRECISION = 28
+"""Decimal-`prec` fuer die `q_factor`-Berechnung (`sqrt`), kontext-unabhaengig +
+deterministisch — konsistent mit `_BATTERY_DECIMAL_PRECISION` im Model."""
 
 
 class BatteryConfigError(GridGymError):
@@ -157,6 +161,143 @@ class CellConfig:
         return self.nominal_pack_voltage_v / Decimal(self.n_cells)
 
 
+# Slice 077 S1 (ADR 0077 §2.2): Pflicht-Felder des opt-in Health-Blocks.
+HEALTH_FIELD_NAMES: tuple[str, ...] = (
+    "initial_soh_pct",
+    "degradation_pct_per_full_cycle",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class HealthConfig:
+    """State-of-Health-Modell des Battery-Packs (Slice 077 S1, ADR 0077 §2.2).
+
+    `soh_percent` als Geraete-State: kaltgestartet auf `initial_soh_pct`, pro Tick
+    linear degradierend mit dem Equivalent-Full-Cycle-Durchsatz
+    (`soh = initial_soh_pct - degradation_pct_per_full_cycle·efc`, geklemmt `≥ 0`).
+    Bei `degradation_pct_per_full_cycle=0` (Default) ist SOH ueber den Lauf konstant
+    — physikalisch ehrlich (reale Degradation ist ueber Sim-Laufzeiten
+    vernachlaessigbar).
+
+    Invarianten (Verstoss → `BatteryConfigInvalidValueError`):
+
+    - `initial_soh_pct` — Start-SOH in Prozent, `(0, 100]`.
+    - `degradation_pct_per_full_cycle` — Degradation je Vollzyklus, `≥ 0`.
+    """
+
+    initial_soh_pct: Decimal
+    degradation_pct_per_full_cycle: Decimal = _ZERO
+
+    def __post_init__(self) -> None:
+        if not (_ZERO < self.initial_soh_pct <= _HUNDRED):
+            raise BatteryConfigInvalidValueError(
+                "health.initial_soh_pct", self.initial_soh_pct, "in (0, 100]"
+            )
+        if self.degradation_pct_per_full_cycle < _ZERO:
+            raise BatteryConfigInvalidValueError(
+                "health.degradation_pct_per_full_cycle",
+                self.degradation_pct_per_full_cycle,
+                ">= 0",
+            )
+
+
+# Slice 077 S1 (ADR 0077 §2.3): Pflicht-Felder des opt-in DC-Bus-Blocks.
+DC_BUS_FIELD_NAMES: tuple[str, ...] = (
+    "nominal_voltage_v",
+    "ocv_soc_slope_v",
+    "internal_resistance_ohm",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class DcBusConfig:
+    """DC-Bus-/Pack-Klemmenspannungs-Modell (Slice 077 S1, ADR 0077 §2.3).
+
+    Zustandsloses Modell (reine Funktion aus `power_kw`/`soc`):
+
+        ocv        = nominal_voltage_v + ocv_soc_slope_v·(soc_frac - 0.5)
+        i_dc       = power_kw·1000 / ocv          # grid-gym-Vorzeichen: Laden = +
+        dc_voltage = ocv + i_dc·internal_resistance_ohm
+
+    IR-Drop-Vorzeichen: die Klemmenspannung liegt beim **Laden** (`i_dc > 0`)
+    **ueber** OCV, beim Entladen darunter — daher `+ i_dc·R`. Bei
+    `ocv_soc_slope_v=0` **und** `internal_resistance_ohm=0` (Default) ist
+    `dc_voltage = nominal_voltage_v` konstant.
+
+    **Versoehnung mit** `CellConfig.nominal_pack_voltage_v` ([`ADR 0066`]): sind
+    beide Bloecke aktiv, muessen die Nennspannungen uebereinstimmen (Validierung in
+    `BatteryConfig.__post_init__`) — eine Nennspannung, zwei Sichten.
+
+    Invarianten (Verstoss → `BatteryConfigInvalidValueError`):
+
+    - `nominal_voltage_v` — Pack-Nennspannung, `> 0`.
+    - `ocv_soc_slope_v` — SOC-Spannungs-Steigung, beliebiges `Decimal`.
+    - `internal_resistance_ohm` — Innenwiderstand, `≥ 0`.
+    """
+
+    nominal_voltage_v: Decimal
+    ocv_soc_slope_v: Decimal = _ZERO
+    internal_resistance_ohm: Decimal = _ZERO
+
+    def __post_init__(self) -> None:
+        if self.nominal_voltage_v <= _ZERO:
+            raise BatteryConfigInvalidValueError(
+                "dc_bus.nominal_voltage_v", self.nominal_voltage_v, "> 0"
+            )
+        if self.internal_resistance_ohm < _ZERO:
+            raise BatteryConfigInvalidValueError(
+                "dc_bus.internal_resistance_ohm", self.internal_resistance_ohm, ">= 0"
+            )
+        # Review-Fund: der OCV-Slope-Term ist `slope·(soc_frac - 0.5)` mit
+        # `soc_frac ∈ [0, 1]` → `ocv ∈ [nominal - |slope|/2, nominal + |slope|/2]`.
+        # `|slope| < 2·nominal` haelt `ocv > 0` ueber den ganzen SOC-Bereich — sonst
+        # koennte `ocv` auf/unter 0 fallen (Div-durch-~0 / vorzeichen-gedrehter
+        # i_dc → sinnloses dc_voltage). Fail-fast statt stiller Garbage.
+        if abs(self.ocv_soc_slope_v) >= _TWO * self.nominal_voltage_v:
+            raise BatteryConfigInvalidValueError(
+                "dc_bus.ocv_soc_slope_v",
+                self.ocv_soc_slope_v,
+                f"|slope| < 2*nominal_voltage_v={_TWO * self.nominal_voltage_v} (haelt ocv > 0)",
+            )
+
+
+# Slice 077 S1 (ADR 0077 §2.4): Pflicht-Felder des opt-in Reactive-Blocks.
+REACTIVE_FIELD_NAMES: tuple[str, ...] = ("power_factor",)
+
+
+@dataclass(frozen=True, slots=True)
+class ReactiveConfig:
+    """Blindleistungs-Modell ueber einen konstanten Leistungsfaktor (Slice 077 S1,
+    ADR 0077 §2.4).
+
+    `reactive_power_kvar = |power_kw| · q_factor` mit
+    `q_factor = sqrt(1 - pf²)/pf` (identisch `tan(acos(pf))`, aber **rein in
+    `Decimal`** — `GG-DATA-005`-konform, kein `float`/libm). Bei `power_factor=1`
+    (Default) ist `q_factor=0` → `Q=0`.
+
+    Invariante (Verstoss → `BatteryConfigInvalidValueError`):
+
+    - `power_factor` — Leistungsfaktor, `(0, 1]`.
+    """
+
+    power_factor: Decimal = _ONE
+
+    def __post_init__(self) -> None:
+        if not (_ZERO < self.power_factor <= _ONE):
+            raise BatteryConfigInvalidValueError(
+                "reactive.power_factor", self.power_factor, "in (0, 1]"
+            )
+
+    @property
+    def q_factor(self) -> Decimal:
+        """`sqrt(1 - pf²)/pf` — der Blindleistungs-Faktor, kontext-unabhaengig
+        deterministisch gerechnet (eigener `localcontext`, `prec=28`)."""
+        with localcontext() as ctx:
+            ctx.prec = _QFACTOR_PRECISION
+            ctx.rounding = ROUND_HALF_EVEN
+            return (_ONE - self.power_factor * self.power_factor).sqrt() / self.power_factor
+
+
 @dataclass(frozen=True, slots=True)
 class BatteryConfig:
     """Statische Battery-Parameter (`GG-BESS-001..005, 008`).
@@ -195,6 +336,12 @@ class BatteryConfig:
     # `None` (Default) = keine Zell-Telemetrie (kein `cell_voltage_delta_v`-
     # Punkt, kein `cell_voltages_v`-State, bit-genau heutiges Verhalten).
     cell: CellConfig | None = None
+    # Slice 077 S1 (ADR 0077): opt-in Field-Envelope-Bloecke (soh/dc_voltage/
+    # reactive). `None` (Default) = kein zusaetzlicher Punkt, bit-genau heutiges
+    # Verhalten (pin-neutral).
+    health: HealthConfig | None = None
+    dc_bus: DcBusConfig | None = None
+    reactive: ReactiveConfig | None = None
 
     def __post_init__(self) -> None:
         # Reduziert C901-Komplexitaet, indem die Pruefungen tabellarisch
@@ -245,6 +392,35 @@ class BatteryConfig:
                 "cell",
                 self.cell,
                 f"None or CellConfig (got {type(self.cell).__name__})",
+            )
+
+        # Slice 077 S1 (ADR 0077): opt-in Field-Envelope-Bloecke — defensive
+        # Typ-Guards (`None` = inaktiv) + die dc_bus↔cell-Nennspannungs-Versoehnung.
+        self._validate_field_envelope_blocks()
+
+    def _validate_field_envelope_blocks(self) -> None:
+        typed: tuple[tuple[str, object, type, str], ...] = (
+            ("health", self.health, HealthConfig, "HealthConfig"),
+            ("dc_bus", self.dc_bus, DcBusConfig, "DcBusConfig"),
+            ("reactive", self.reactive, ReactiveConfig, "ReactiveConfig"),
+        )
+        for name, value, expected, label in typed:
+            if value is not None and not isinstance(value, expected):
+                raise BatteryConfigInvalidValueError(
+                    name, value, f"None or {label} (got {type(value).__name__})"
+                )
+        # ADR 0077 §2.3: `dc_voltage` und `cell_voltage_delta_v` teilen die eine
+        # Pack-Nennspannung — sind beide Bloecke aktiv, muessen sie uebereinstimmen.
+        if (
+            self.dc_bus is not None
+            and self.cell is not None
+            and self.dc_bus.nominal_voltage_v != self.cell.nominal_pack_voltage_v
+        ):
+            raise BatteryConfigInconsistentRangeError(
+                "dc_bus.nominal_voltage_v",
+                self.dc_bus.nominal_voltage_v,
+                f"cell.nominal_pack_voltage_v={self.cell.nominal_pack_voltage_v} "
+                "(eine Pack-Nennspannung, zwei Sichten)",
             )
 
     def _validate_consistency(self) -> None:
