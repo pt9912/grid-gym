@@ -1,0 +1,29 @@
+# Optionaler Ports-Override fuer `compose.bess-ems-sut.yml` (Slice 077 S3).
+#
+# Mappt die beiden Web-UIs auf den Host, damit man sie im Browser ansehen kann —
+# der Basis-Compose ist bewusst **port-los** (der log-getriebene E2E
+# `scripts/bess-ems-sut-e2e.sh` braucht keine Host-Ports; er verifiziert ueber das
+# interne Netz + Container-Logs, und port-los vermeidet 1883/8080-Kollisionen).
+#
+# Nur fuer die manuelle Ansicht dazuschalten:
+#
+#   docker compose -f deploy/compose.bess-ems-sut.yml \
+#                  -f deploy/compose.bess-ems-sut.ports.yml up
+#
+# Dann:
+#   - grid-gym Web-UI (HTMX):        http://localhost:8000
+#       Dashboard: http://localhost:8000/runs/demo-run-0001/dashboard
+#       (Szenario `bess-ems-sut.yaml` → Batterie `single-bess-1`)
+#   - bess-ems API (EMS-Backend):    http://localhost:8081
+#       Health: http://localhost:8081/health   (verifiziert: HTTP 200)
+#     Hinweis: bess-ems ist ein headless EMS-Backend (kein HTMX-UI wie grid-gym) —
+#     erreichbar ist die REST-/Health-API. Der Basis-Compose laesst bess-ems'
+#     `ApiTokens` bewusst weg (kein Dev-Token committet); token-geschuetzte
+#     Operator-Endpunkte antworten ohne konfigurierten Operator-Token ggf. 401.
+services:
+  grid-gym:
+    ports:
+      - "8000:8080"
+  bess-ems:
+    ports:
+      - "8081:8080"
