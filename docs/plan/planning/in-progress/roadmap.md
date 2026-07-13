@@ -4,8 +4,9 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
 (MVP-Linie); aktuelles Release **v0.6.1** (2026-07-13, Slice-075-Closure-Review-Haertung).
-**Kein aktiver Slice; naechster geplanter:** [`077`](../next/077-bess-ems-conformant-field-publisher.md)
-(bess-ems-konformer Feld-Publisher, S0/ADRs done in `next/`). Zuletzt abgeschlossen
+**Aktiver Slice:** [`077`](../in-progress/077-bess-ems-conformant-field-publisher.md)
+(bess-ems-konformer Feld-Publisher; S0/ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
+done + review-gehaertet, S1/S2/S3 offen). Zuletzt abgeschlossen
 [`075`](../done/075-field-server-inbound-write-command.md) (Field-Server
 Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
 `Accepted`, done 2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1), davor 074/073 (Field-Server,
@@ -114,10 +115,11 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice; naechster geplanter:**
-[`077`](../next/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
+**Aktiver Slice:**
+[`077`](../in-progress/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
 Feld-Publisher — breiter Feldenvelope-Snapshot je Tick; S0/ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
-done in `next/`, S1/S2/S3 offen). Zuletzt abgeschlossen (2026-07-13)
+done + review-gehaertet [inkl. IR-Drop-Physik-Fix + command_ack-Echo-Entscheid], S1
+Battery-Emissionen als naechstes). Zuletzt abgeschlossen (2026-07-13)
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Field-Server Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
 `Accepted`; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Davor (2026-07-12) die Field-Server-Pull-/Push-Seite

@@ -206,7 +206,7 @@ Pacing §2.4); kein Snapshot-State. Ohne konfigurierten Encoder byte-identisch.
 
 ## 5. Lieferschnitt
 
-Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/next/077-bess-ems-conformant-field-publisher.md)-S2
+Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S2
 (Encoder + Feld-Mapping + Topics + Kadenz + Wiring) nach S1
 ([`ADR 0077`](0077-battery-field-envelope-completeness.md)-Emissionen). S3 = Abnahme
 (Schema + Golden-Vektoren + bess-ems-E2E).

@@ -204,7 +204,7 @@ Alle neuen numerischen Emissionen quantisieren auf 6 Nachkommastellen
 
 ## 5. Lieferschnitt
 
-Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/next/077-bess-ems-conformant-field-publisher.md)-S1
+Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S1
 (Battery-Emissionen + Fault-Surface, additiv/unit-getestet). Der Publisher-Konsum
 liegt in S2 ([`ADR 0078`](0078-bess-ems-field-contract-publisher.md)).
 

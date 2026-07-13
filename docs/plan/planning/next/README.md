@@ -5,9 +5,9 @@ aktive** Arbeit.
 
 ## Bestand
 
-| Datei | Gegenstand |
-| --- | --- |
-| [`077-bess-ems-conformant-field-publisher.md`](077-bess-ems-conformant-field-publisher.md) | **S0 done, S1/S2/S3 offen** (2026-07-13): grid-gym-seitige Haelfte der `bess-ems`-Kopplung (breiter Feldenvelope-Snapshot je Tick). S0 = [`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) (Battery-Emissionen soh/dc_voltage/reactive + Fault-Surface, „voll modelliert") + [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) (Tick-Frame-Aggregations-Encoder, gegen den lokal verifizierten bess-ems-Vertrag + Golden-Vektoren). Wartet auf User-Go fuer S1-Code. |
+**Kein aktiver `next/`-Eintrag.** Slice [`077`](../in-progress/077-bess-ems-conformant-field-publisher.md)
+(bess-ems-konformer Feld-Publisher) ist mit S0-Closure (ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
+done + review-gehaertet) seit 2026-07-13 **aktiv in [`../in-progress/`](../in-progress/)**.
 
 Die Field-Server-Surface
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),

@@ -1,6 +1,7 @@
 # 077 — bess-ems-konformer Feld-Publisher (breiter Snapshot je Tick)
 
-**Status:** **Next — S0 (Design/ADRs) done, S1/S2/S3 offen.** grid-gym-seitige
+**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-13). S0 (Design/ADRs)
+done, S1/S2/S3 offen.** grid-gym-seitige
 Haelfte der bess-ems-Kopplung ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §7, [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)). Aktiviert aus einem
 externen Change-Request (Schwesterprojekt `bess-ems`).
