@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-07-13
+
+**Patch — UI-Vervollstaendigung + Dashboard-Live-Feed-Reparatur (Slice 078).**
+Schliesst zwei bei der GG-UI-Traceability-Durchsicht aufgedeckte Nachzuege und einen
+im Browser kaputten Live-Feed. Kein Vertrags-/Determinismus-Delta.
+
+### Added
+
+- **Grafische Geraete-Ansicht ([`GG-UI-006`](spec/lastenheft.md#gg-ui-006)).** Die
+  Devices-Seite zeigt neben der Tabelle ein **SVG-Einlinien-Diagramm** (Sammelschiene
+  mit Netz/Batterie/PV/Last/Zaehler-Knoten, nach worst-case-Quality eingefaerbt,
+  Fault-Flag-Warnung), client-seitig aus demselben `/devices/state`-Poll gerendert
+  (XSS-sicher via `createElementNS`). Loest das bisherige Tabellen-Minimum ab.
+- **Start-Knopf ([`GG-UI-004`](spec/lastenheft.md#gg-ui-004)).** Die Control-Seite bietet
+  jetzt Start/Pause/Resume/Stop. Neue Control-Action `start` (`pending → running`, nur
+  aus `pending`; ADR 0039 Decision 13 amendiert); der Button ist ausserhalb von `pending`
+  disabled (im auto-startenden Demo „laeuft bereits").
+
+### Fixed
+
+- **Dashboard-/Alarms-Live-Feed ([`GG-UI-002`](spec/lastenheft.md#gg-ui-002)/
+  [`GG-UI-003`](spec/lastenheft.md#gg-ui-003)).** Der Live-Telemetrie-Feed + die
+  Time-Series blieben im Browser dauerhaft „Waiting for live data": (1) die
+  HTMX-WebSocket-Extension ist in HTMX 2.x aus dem Core ausgelagert und war **nicht
+  vendored** → `hx-ext="ws"` tat nichts (jetzt `static/htmx-ext-ws.min.js` vendored +
+  in `base.html` geladen; Regression-Test); (2) das Chart-`datasetIndex`-Mapping nutzte
+  `battery-1|power`/`grid-1|power` statt der echten `power_kw`/`soc_pct`/
+  `grid-connection-1` → der Chart plottete nie (Mapping korrigiert). Empirisch verifiziert.
+
 ## [0.7.0] - 2026-07-13
 
 **Minor — bess-ems-Feldvertrags-Kopplung (Slice 077, ADR 0077 + 0078 `Accepted`).**

@@ -1,7 +1,9 @@
 # 078 — UI-Vervollstaendigung (Start-Knopf + grafische Geraete-Ansicht)
 
-**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-13). S1 (SVG-Diagramm)
-done, S2 (Start-Knopf) + S3 (Handbuch/Closure/Release) offen.**
+**Status:** **Abgeschlossen (`done/`, 2026-07-13). S1 (SVG-Diagramm) + S2 (Start-Knopf)
++ S3 (Handbuch/Closure) done. Released als v0.7.1.** Der bess-ems-E2E-Rerun gegen die
+neue v2.2.0-Image + der Dashboard-Live-Feed-Bugfix ([`GG-UI-002`](../../../../spec/lastenheft.md#gg-ui-002)/[`GG-UI-003`](../../../../spec/lastenheft.md#gg-ui-003),
+fehlende HTMX-ws-Extension) fielen im Zuge der Handbuch-Screenshots an.
 **Datum:** 2026-07-13
 
 ---
@@ -29,8 +31,8 @@ Replay-Steuerung.
 | Slice | Inhalt | Rolle |
 | --- | --- | --- |
 | **S1** ✓ | **SVG-Einlinien-Diagramm ([`GG-UI-006`](../../../../spec/lastenheft.md#gg-ui-006)):** `_devices_content.html` bekommt einen `#devices-diagram`-Container; der bestehende `/devices/state`-Poll (1s) speist per `renderDiagram(payload)` zusaetzlich zur Tabelle ein SVG (Sammelschiene mit Netz/Batterie/PV/Last/Zaehler-Knoten, nach worst-case-Quality eingefaerbt, Fault-Flag-Warnung; XSS-sicher via `createElementNS`). Konsistent mit der bestehenden client-seitigen Tabelle; Integration-Smoke. | Implementation |
-| **S2** | **Start-Knopf ([`GG-UI-004`](../../../../spec/lastenheft.md#gg-ui-004)):** `ControlAction` um `start` erweitern (sanktionierter Literal-Pfad, `ControlRequest`-Docstring) + Control-POST-Handler + Control-Seite mit Start-Button (enabled nur bei `pending`; sonst disabled/„laeuft bereits"). Ggf. [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md)-Amendment. Tests. | Implementation |
-| **S3** | **Handbuch + Closure:** neue Screenshots (SVG-Grafik + Control-mit-Start) ins Anwenderhandbuch; Review vor Commit; `make gates` + `docs-check` + `fullbuild`; Release. | Implementation |
+| **S2** ✓ | **Start-Knopf ([`GG-UI-004`](../../../../spec/lastenheft.md#gg-ui-004)):** `ControlAction` (Domain + HTTP-Schema) um `start` erweitert (sanktionierter Literal-Pfad) + generischer Control-POST-Handler + Control-Seite mit Start-Button (status-poll-JS: enabled nur bei `pending`; sonst disabled/„laeuft bereits"). [`ADR 0039`](../../adr/0039-run-control-and-status-tracking.md) Decision 13 amendiert (`start`: `pending → running`, running=No-op, paused/stopped=409). Tests + empirisch verifiziert. | Implementation |
+| **S3** ✓ | **Handbuch + Closure:** Screenshots (SVG-Grafik, Control mit Start, **Dashboard mit Live-Feed+Chart**, overview, health = 8 Nav-Seiten); Closure-Review (keine HIGH/MEDIUM, 2 LOW gefaltet); **CI-Fix** (openapi-Enum-Pin) + **Dashboard-Live-Feed-Bugfix** (fehlende HTMX-ws-Extension + Chart-Metrik-Mapping). `make gates` + `docs-check` + `fullbuild` gruen. **→ Released v0.7.1.** | Implementation |
 
 ## DoD
 
