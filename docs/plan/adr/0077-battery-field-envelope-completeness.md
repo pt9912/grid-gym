@@ -1,15 +1,17 @@
 # ADR 0077 — Battery-Field-Envelope-Vollstaendigkeit: soh/dc_voltage/reactive-Emissionen + Fault-Status-Surface
 
-**Status:** Provisional (2026-07-13) — die Emissions-Naht ist **belegt**: die drei
+**Status:** Accepted (2026-07-13) — die Emissions-Naht ist **belegt**: die drei
 additive opt-in Bloecke (`HealthConfig`/`DcBusConfig`/`ReactiveConfig`) emittieren
 `soh_percent`/`dc_voltage`/`reactive_power_kvar`, die Fault-Status-Surface
 (`available`/`fault_status`) projiziert die Fault-Flags, additiv/pin-neutral +
 snapshot-roundtrip-stabil, unit-getestet (Slice 077 S1). Status-Pfad
 ([`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §4):
-Proposed → **Provisional** (Emissionen, **erreicht**) → **Accepted** mit der
-Slice-Closure (S3, bess-ems-Abnahme). Fundament fuer
-[`ADR 0078`](0078-bess-ems-field-contract-publisher.md) (der Publisher konsumiert
-diese Emissionen).
+Proposed → Provisional (Emissionen) → **Accepted** mit der Slice-Closure (S3, realer
+bess-ems-MQTT-only-E2E — die unveraenderte EMS konsumiert die Emissionen ueber den
+Publisher [`ADR 0078`](0078-bess-ems-field-contract-publisher.md) §2.6 + verlaesst den
+Safety-Fallback; die `cell_failure`-Fault-Surface treibt den `fault`-Pfad real).
+Fundament fuer [`ADR 0078`](0078-bess-ems-field-contract-publisher.md) (der Publisher
+konsumiert diese Emissionen).
 **Datum:** 2026-07-13 (Provisional; Proposed 2026-07-13)
 **Bezug:**
 
@@ -218,7 +220,7 @@ Alle neuen numerischen Emissionen quantisieren auf 6 Nachkommastellen
 
 ## 5. Lieferschnitt
 
-Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S1
+Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/done/077-bess-ems-conformant-field-publisher.md)-S1
 (Battery-Emissionen + Fault-Surface, additiv/unit-getestet). Der Publisher-Konsum
 liegt in S2 ([`ADR 0078`](0078-bess-ems-field-contract-publisher.md)).
 

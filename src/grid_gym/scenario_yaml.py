@@ -79,6 +79,22 @@ DEVICE_DECIMAL_PARAMS: Final[frozenset[str]] = frozenset(
     }
 )
 
+# Slice 077 S3 (ADR 0077 + `ThermalConfig`/ADR 0065): verschachtelte
+# `params`-Sub-Bloecke, deren Felder ALLE Decimal sind (thermal/health/dc_bus/
+# reactive). Der Coercer rekursiert in diese Bloecke und coerced jeden String-Wert
+# **block-scoped** (nicht feld-scoped) — die Bloecke tragen keine String-Enums (anders
+# als die Top-Level-`params` mit z. B. `initial_plug_state`) und keine Int-Felder,
+# darum ist block-weites Coercen sicher. Ohne diese Rekursion waeren die
+# Field-Envelope-Bloecke **nicht** via YAML ladbar (`_decimal_block_from_params` wirft
+# `WrongTypeError` auf String-Werte) — der bess-ems-E2E (Slice 077 S3) deckte die
+# Luecke auf. **Bewusst NICHT enthalten:** der `cell`-Block (`CellConfig` hat
+# `n_cells: int` → mixed-type, braucht feld-genaue Behandlung) und PV-`volt_var`
+# (anderes Geraet, ausserhalb dieses Arcs) — beide haben dieselbe latente
+# YAML-Grenze, sind aber nicht Teil des bess-ems-Feldvertrags.
+DEVICE_DECIMAL_BLOCKS: Final[frozenset[str]] = frozenset(
+    {"thermal", "health", "dc_bus", "reactive"}
+)
+
 GRID_MODEL_DECIMAL_FIELDS: Final[frozenset[str]] = frozenset(
     {
         "nominal_frequency_hz",
@@ -206,8 +222,22 @@ def _coerce_device(entry: Any) -> Any:
     result = dict(entry)
     params = result.get("params")
     if isinstance(params, Mapping):
-        result["params"] = _coerce_decimal_fields(params, DEVICE_DECIMAL_PARAMS)
+        coerced = _coerce_decimal_fields(params, DEVICE_DECIMAL_PARAMS)
+        for block_name in DEVICE_DECIMAL_BLOCKS:
+            block = coerced.get(block_name)
+            if isinstance(block, Mapping):
+                coerced[block_name] = _coerce_block_decimals(block, block_name)
+        result["params"] = coerced
     return result
+
+
+def _coerce_block_decimals(block: Mapping[str, Any], block_name: str) -> dict[str, Any]:
+    """Coerced ALLE String-Werte eines Field-Envelope-Blocks zu Decimal (block-scoped;
+    alle Block-Felder sind Decimal, s. `DEVICE_DECIMAL_BLOCKS`)."""
+    return {
+        key: _safe_decimal(value, f"{block_name}.{key}") if isinstance(value, str) else value
+        for key, value in block.items()
+    }
 
 
 def _coerce_decimal_fields(

@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-13
+
+**Minor — bess-ems-Feldvertrags-Kopplung (Slice 077, ADR 0077 + 0078 `Accepted`).**
+grid-gym publisht den breiten bess-ems-Feldenvelope je Tick; die **unveraenderte**
+bess-ems-EMS konsumiert grid-gym als simuliertes Feld ueber MQTT, verlaesst den
+Safety-Fallback und faehrt Regelzyklen (realer MQTT-only-E2E gegen die offizielle
+bess-ems-Docker-Image). Zwei Runden adversarialer Reviews (S2 pre-commit + S3 Closure)
+fanden keine HIGH/MEDIUM; die LOW-Funde sind gefaltet. `make gates` + `make docs-check`
++ `make fullbuild` gruen.
+
 ### Added
 
-- **bess-ems-konformer Field-Publisher (Slice 077 S2, ADR 0078 `Provisional`).** Ein
+- **bess-ems-konformer Field-Publisher (Slice 077 S2, ADR 0078 `Accepted`).** Ein
   zweiter, opt-in **driven** Push-Adapter (`field_publish_bess_ems`) neben dem schmalen
   `field_publish_mqtt`: er aggregiert je Tick grid-gyms per-Punkt-Battery-Telemetrie +
   Fault-Surface zu den **breiten** bess-ems-Envelope-Frames (`telemetry`/`status`/
@@ -35,6 +45,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ab, wenn eine Battery nicht die vollen Field-Envelope-Bloecke (thermal/health/dc_bus/
   reactive, ADR 0077) traegt (kein Adapter-Default fuer Pflicht-Physik). Ohne die env-var
   byte-identisch (Invariante 073/074/075).
+- **Field-Envelope-Bloecke via YAML ladbar (Slice 077 S3).** Der Scenario-YAML-Loader
+  rekursiert jetzt **block-scoped** in die verschachtelten `thermal`/`health`/`dc_bus`/
+  `reactive`-Bloecke und coerced ihre String-Werte zu `Decimal` (`DEVICE_DECIMAL_BLOCKS`) —
+  ohne das waren die S1-Field-Envelope-Bloecke **nicht** via YAML ladbar (die
+  Block-Parser erwarten `Decimal`). Vom bess-ems-E2E aufgedeckt; ein Drift-Guard pinnt die
+  „alle Block-Felder sind Decimal"-Invariante. `cell` (mixed-type `n_cells: int`) bleibt
+  bewusst feld-genau/ausserhalb.
+- **bess-ems-MQTT-only-E2E + Schema/Golden-Abnahme (Slice 077 S3, ADR 0078 §2.6).** Ein
+  reproduzierbarer cross-repo-Stack (`deploy/compose.bess-ems-sut.yml` +
+  `deploy/scenarios/bess-ems-sut.yaml` + `deploy/scripts/bess-ems-sut-e2e.sh`): die
+  **unveraenderte** bess-ems-EMS (Digest-gepinnte Image) verlaesst den Safety-Fallback
+  (`EventId 1701`, 104 Gutfall-Zyklen), das §2.9-Ack-Echo verhindert `ack-timeout`
+  (0 Warnings, 135 `command/ack`-Echos auf dem Draht), und der injizierte `cell_failure`
+  feuert den `fault`-Topic + Recovery. Dazu eine CI-Unit-Abnahme (Schema-Validate
+  `$defs.telemetry`/`$defs.command_ack` + struktureller Golden-Vergleich ueber alle Cases).
 
 ## [0.6.1] - 2026-07-13
 

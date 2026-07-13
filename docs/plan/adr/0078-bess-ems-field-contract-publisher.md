@@ -1,11 +1,11 @@
 # ADR 0078 — bess-ems-konformer Field-Publisher: Tick-Frame-Aggregation + Feldvertrags-Encoder
 
-**Status:** Provisional (2026-07-13) — in [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S2
-implementiert (driven `field_publish_bess_ems`-Publisher: Encoder + Frame-Aggregation
+**Status:** Accepted (2026-07-13) — in [`Slice 077`](../planning/done/077-bess-ems-conformant-field-publisher.md)
+implementiert (S2: driven `field_publish_bess_ems`-Publisher — Encoder + Frame-Aggregation
 aus `TickResult.emitted_telemetry` + `emitted_device_status` + Topics/Retain/Suppression
-+ `command_ack`-Echo + fail-fast-Wiring), gegen den vendored bess-ems-Vertrag (Schema +
-Golden-Vektoren) strukturell testbar. **Accepted** bei S3-Closure (Schema-Validate +
-Golden-Vergleich + bess-ems-MQTT-only-E2E). Konsumiert die Emissionen aus
++ `command_ack`-Echo + fail-fast-Wiring) **und abgenommen** (S3: Schema-Validate +
+struktureller Golden-Vergleich + **realer MQTT-only-E2E gegen die unveraenderte bess-ems-EMS**
+— §2.6). Konsumiert die Emissionen aus
 [`ADR 0077`](0077-battery-field-envelope-completeness.md).
 **Datum:** 2026-07-13
 **Bezug:**
@@ -131,14 +131,24 @@ modelliert", [`ADR 0077`](0077-battery-field-envelope-completeness.md) §1).
 ### §2.6 Abnahme
 
 - Jeder emittierte `telemetry`-Frame **validiert** gegen
-  `mqtt-telemetry-envelope.schema.json` (`$defs.telemetry`).
+  `mqtt-telemetry-envelope.schema.json` (`$defs.telemetry`) + `command_ack` gegen
+  `$defs.command_ack` (S3-Unit-Abnahme `test_field_contract_abnahme.py`, Achse 1:
+  `required` vollstaendig, JSON-Typen, **keine** Extra-Felder).
 - Frames/Nachrichten vergleichen **strukturell** (feld-normativ: Namen/Praesenz/Typen/
-  Null-Weglassung; **nicht** wertgenau/byte-Reihenfolge) gegen
-  `mqtt-golden-vectors.field.v1.json` (liegt lokal vor).
-- **E2E:** `bess-ems` im MQTT-only-SUT-Modus gegen grid-gym verlaesst den
-  Safety-Fallback + faehrt Regelzyklen (heute nur gegen dessen `bess-field-sim` belegt);
-  der `fault`-Pfad wird ueber einen injizierten Battery-Fault
-  ([`ADR 0077`](0077-battery-field-envelope-completeness.md) §2.5) real exercisiert.
+  Null-Weglassung; **nicht** wertgenau/byte-Reihenfolge) gegen alle Cases der
+  `mqtt-golden-vectors.field.v1.json` (Achse 2, dieselbe Abnahme).
+- **E2E — EINGELOEST (S3, 2026-07-13):** die **unveraenderte** `bess-ems`-EMS
+  (offizielle Docker-Image, Digest-gepinnt) konsumiert grid-gym im MQTT-only-SUT-Modus
+  ueber MQTT (`deploy/compose.bess-ems-sut.yml` + `deploy/scripts/bess-ems-sut-e2e.sh`)
+  und **verlaesst den Safety-Fallback** (`EventId 1701` „Control cycle emitted command",
+  104 Gutfall-Zyklen). Der injizierte `cell_failure`
+  ([`ADR 0077`](0077-battery-field-envelope-completeness.md) §2.5) feuert den `fault`-Topic
+  (auf dem Draht mitgeschnitten) + treibt bess-ems in `decision=asset-unavailable`; nach
+  der Recovery kehrt bess-ems in den Gutfall zurueck. **Das Ack-Echo (§2.9) wirkt:**
+  **null** `ack-timeout`-Warnings (EventId 1903), 135 `command/ack`-Echos auf dem Draht.
+  Damit ist der in bess-ems' Feldvertrags-Doc als „offen" markierte reale
+  Feld-Endpoint-E2E belegt. (Verifiziert gegen das v2.2.0-Image; das MQTT-Envelope-Schema
+  + die Golden-Vektoren sind seit dem vendored v2.1.0-Stand unveraendert.)
 
 ### §2.7 Determinismus + Snapshot-Grenze
 
@@ -209,7 +219,7 @@ Pacing §2.4); kein Snapshot-State. Ohne konfigurierten Encoder byte-identisch.
 
 ## 5. Lieferschnitt
 
-Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/in-progress/077-bess-ems-conformant-field-publisher.md)-S2
+Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/done/077-bess-ems-conformant-field-publisher.md)-S2
 (Encoder + Feld-Mapping + Topics + Kadenz + Wiring) nach S1
 ([`ADR 0077`](0077-battery-field-envelope-completeness.md)-Emissionen). S3 = Abnahme
 (Schema + Golden-Vektoren + bess-ems-E2E).

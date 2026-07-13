@@ -1,0 +1,83 @@
+# ============================================================
+# SIMULATION ONLY — NOT APPROVED FOR PRODUCTION GRID CONTROL.
+# Nur Simulation — nicht fuer produktive Anlagensteuerung
+# freigegeben (`GG-SAFE-007`, `GG-NONGOAL-001`).
+# ============================================================
+#
+# Slice 077 S3 — bess-ems-MQTT-only-E2E-Szenario (ADR 0078 §2.6).
+#
+# grid-gym publisht hier den breiten bess-ems-Feldenvelope je Tick fuer die
+# Battery `single-bess-1` (== `asset_id` der bess-ems-Asset-Config
+# `config/examples/asset.single-bess.json`; Identitaets-Mapping, ADR 0078 §2.3).
+# Die Battery traegt ALLE vier Field-Envelope-Bloecke (thermal/health/dc_bus/
+# reactive, ADR 0077 §2.5) — Pflicht fuer einen konformen 10-Feld-`telemetry`-Frame.
+#
+# Kadenz: tick_ms=1000, tick_interval=0.1s Wall (min(0.1, tick_ms/1000)) → grid-gym
+# publisht ~alle 100 ms, weit innerhalb bess-ems' 10-s-Freshness-Fenster
+# (`Bess__SnapshotMaxAge`) → bess-ems verlaesst den Safety-Fallback (EventId 1701).
+# duration_s=3600 (≈360 s Wall) haelt die kontinuierliche Kadenz ueber das
+# Beobachtungsfenster.
+#
+# Fault-Pfad (ADR 0078 §2.6): ein `cell_failure` auf `single-bess-1` feuert erst NACH
+# einem langen Gutfall-Fenster (600 s Sim ≈ 60 s Wall bei ~10x), bleibt 300 s Sim aktiv
+# und recovert dann → grid-gyms Fault-Surface meldet `available=false`/
+# `fault_status=cell_failure` (non-retained `fault`-Topic feuert), bess-ems geht in
+# `decision=asset-unavailable`-Safe-Stop und kehrt nach der Recovery in den Gutfall
+# (`EventId 1701`) zurueck — der End-Zustand ist damit der Gutfall.
+
+schema_version: "grid-gym.scenario.v1"
+
+metadata:
+  id: "bess-ems-sut"
+  name: "bess-ems MQTT-only SUT E2E"
+
+simulation:
+  tick_ms: 1000
+  duration_s: 3600
+  seed: 42
+
+devices:
+  - id: "single-bess-1"
+    type: "battery"
+    params:
+      capacity_kwh: "100"
+      initial_soc_pct: "50"
+      min_soc_pct: "0"
+      max_soc_pct: "100"
+      max_charge_kw: "50"
+      max_discharge_kw: "50"
+      charge_efficiency: "1"
+      discharge_efficiency: "1"
+      ramp_kw_per_s: "100"
+      # Field-Envelope-Bloecke (ADR 0077) — Pflicht fuer den bess-ems-Publisher.
+      thermal:
+        ambient_temp_c: "25"
+        thermal_rise_c_at_full_load: "15"
+        thermal_time_constant_s: "600"
+      health:
+        initial_soh_pct: "99"
+        degradation_pct_per_full_cycle: "0"
+      dc_bus:
+        nominal_voltage_v: "800"
+        ocv_soc_slope_v: "40"
+        internal_resistance_ohm: "0.05"
+      reactive:
+        power_factor: "0.95"
+  - id: "grid-connection-1"
+    type: "grid_connection"
+    params:
+      nominal_voltage_v: "400"
+      max_import_kw: "100"
+      max_export_kw: "100"
+  - id: "load-1"
+    type: "load"
+    params:
+      rated_power_kw: "30"
+
+faults:
+  - start_simulation_time: 600000
+    duration_ms: 300000
+    target: "single-bess-1"
+    type: "cell_failure"
+    payload: {}
+    recovery: "auto-recover-after-N-ticks"

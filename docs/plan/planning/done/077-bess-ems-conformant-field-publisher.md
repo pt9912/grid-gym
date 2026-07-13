@@ -1,9 +1,9 @@
 # 077 — bess-ems-konformer Feld-Publisher (breiter Snapshot je Tick)
 
-**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-13). S0 + S1 + S2 done
+**Status:** **Abgeschlossen (`done/`, 2026-07-13). S0 + S1 + S2 + S3 done
 ([`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) +
-[`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) beide `Provisional`),
-S3 (Abnahme) offen.** grid-gym-seitige
+[`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) beide `Accepted`).
+Released als v0.7.0.** grid-gym-seitige
 Haelfte der bess-ems-Kopplung ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §7, [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)). Aktiviert aus einem
 externen Change-Request (Schwesterprojekt `bess-ems`).
@@ -64,7 +64,7 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 | **S0** ✓ | [`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) + [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) (`Proposed`): Physik-Modelle + Feldvertrags-Encoder design-first, gegroundet gegen den lokal verifizierten bess-ems-Vertrag (Schema + Golden-Vektoren) | Architect / ADR |
 | **S1** ✓ | **Battery-Emissionen ([`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md)):** `HealthConfig`/`DcBusConfig`/`ReactiveConfig`-Bloecke + `soh_percent`/`dc_voltage`/`reactive_power_kvar`-Emissionen + `fault_status`/`available`-Properties; **ein** Snapshot-Slot `efc` (SOH re-derived); `dc_bus`↔`cell`-Validierung; `q_factor = sqrt(1-pf²)/pf` (libm-frei); IR-Drop `ocv + i_dc·R`. Additiv/opt-in (pin-neutral, 2650 Unit + 169 Integration gruen), snapshot-roundtrip-stabil. **→ [`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) `Provisional`** ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md)/Publisher bleibt `Proposed` bis S2) | Implementation |
 | **S2** ✓ | **Field-Contract-Publisher ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md)):** driven `field_publish_bess_ems`-Adapter — reiner Encoder (Flip/derive/rename, gegen Schema + Golden strukturell getestet) + Frame-Aggregation je Tick aus `TickResult.emitted_telemetry` **+ additivem `emitted_device_status`-Slot** (`FaultSurfaceDevice`-Naht, [`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) §2.5 — Fault-Surface ist kein Telemetrie-Punkt) + `telemetry`/`status`/`fault`-Topics (Retain + Suppression) + `device_id↔asset_id`-Config + Wall-Clock-`command_ack`-Echo (subscribe `{prefix}/+/command`, always-accept; §2.9) + Driver-Wiring (start/publish_tick/stop, graceful degrade) + **§2.5-fail-fast** (Composition lehnt ab, wenn eine Battery nicht die vollen 0077-Feldbloecke traegt). Opt-in via `GRID_GYM_BESS_EMS_MQTT_BROKER`, ohne env byte-identisch (pin-neutral). **→ [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) `Provisional`** | Implementation |
-| **S3** | **Abnahme:** JSON-Schema-Validate je Frame (`mqtt-telemetry-envelope.schema.json`) + **struktureller** Golden-Vektor-Vergleich (`mqtt-golden-vectors.field.v1.json`) + bess-ems-MQTT-only-E2E (EMS verlaesst Safety-Fallback, `fault`-Pfad via injiziertem Battery-Fault). **Closure → ADRs `Accepted`** | Implementation |
+| **S3** ✓ | **Abnahme (eingeloest):** CI-Unit-Abnahme (JSON-Schema-Validate `$defs.telemetry`/`$defs.command_ack` + **struktureller** Golden-Vergleich ueber alle Cases, `test_field_contract_abnahme.py`) + **realer MQTT-only-E2E** (`deploy/compose.bess-ems-sut.yml` + `scripts/bess-ems-sut-e2e.sh`): die **unveraenderte** bess-ems-EMS (Digest-gepinnte Image) verlaesst den Safety-Fallback (`EventId 1701`, 104 Gutfall-Zyklen), 0 `ack-timeout` (§2.9-Echo wirkt, 135 `command/ack`-Echos), injizierter `cell_failure` feuert den `fault`-Topic + Recovery. **Vom E2E aufgedeckt + gefixt:** die S1-Feld-Envelope-Bloecke waren nicht via YAML ladbar (`scenario_yaml`-block-scoped-Coercion + Drift-Guard). Closure-Review (2 adversariale Reviewer): keine HIGH/MEDIUM, LOWs gefaltet. **→ ADRs 0077 + 0078 `Accepted`, Released v0.7.0** | Implementation |
 
 ## DoD
 

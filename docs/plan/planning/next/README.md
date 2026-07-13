@@ -5,9 +5,10 @@ aktive** Arbeit.
 
 ## Bestand
 
-**Kein aktiver `next/`-Eintrag.** Slice [`077`](../in-progress/077-bess-ems-conformant-field-publisher.md)
-(bess-ems-konformer Feld-Publisher) ist mit S0-Closure (ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
-done + review-gehaertet) seit 2026-07-13 **aktiv in [`../in-progress/`](../in-progress/)**.
+**Kein aktiver `next/`-Eintrag.** Slice [`077`](../done/077-bess-ems-conformant-field-publisher.md)
+(bess-ems-konformer Feld-Publisher) ist **abgeschlossen + released als v0.7.0** (ADRs
+[`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
+`Accepted`, realer bess-ems-MQTT-only-E2E) und liegt in [`../done/`](../done/README.md).
 
 Die Field-Server-Surface
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),

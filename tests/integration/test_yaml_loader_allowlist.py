@@ -23,7 +23,13 @@ from dataclasses import fields
 from decimal import Decimal
 from typing import get_type_hints
 
-from grid_gym.hexagon.core.devices.battery.config import BatteryConfig
+from grid_gym.hexagon.core.devices.battery.config import (
+    BatteryConfig,
+    DcBusConfig,
+    HealthConfig,
+    ReactiveConfig,
+    ThermalConfig,
+)
 from grid_gym.hexagon.core.devices.diesel_generator.config import DieselGeneratorConfig
 from grid_gym.hexagon.core.devices.ev_charger.config import EvChargerConfig
 from grid_gym.hexagon.core.devices.grid_connection.config import GridConnectionConfig
@@ -33,7 +39,17 @@ from grid_gym.hexagon.core.devices.smart_meter.config import SmartMeterConfig
 from grid_gym.hexagon.core.devices.transformer.config import TransformerConfig
 from grid_gym.hexagon.core.devices.wind_turbine.config import WindTurbineConfig
 
-from grid_gym.scenario_yaml import DEVICE_DECIMAL_PARAMS
+from grid_gym.scenario_yaml import DEVICE_DECIMAL_BLOCKS, DEVICE_DECIMAL_PARAMS
+
+# Slice 077 S3: die nested Field-Envelope-Bloecke, die der Loader **block-scoped**
+# (jeder String-Wert) zu Decimal coerced — nur sicher, solange JEDES Feld dieser
+# Configs Decimal ist. Mapping Block-Name → Config-Klasse fuer den Drift-Guard.
+_BLOCK_CONFIG_BY_NAME: dict[str, type] = {
+    "thermal": ThermalConfig,
+    "health": HealthConfig,
+    "dc_bus": DcBusConfig,
+    "reactive": ReactiveConfig,
+}
 
 
 _DEVICE_CONFIG_CLASSES = (
@@ -69,6 +85,31 @@ def test_yaml_loader_allowlist_covers_all_device_decimal_fields() -> None:
         "nicht und der MVP-Demo-Test knallt mit irrefuehrendem "
         "WrongTypeError."
     )
+
+
+def test_decimal_blocks_map_to_all_decimal_configs() -> None:
+    """Slice-077-S3-Closure-Review (borderline MEDIUM): die block-scoped YAML-Coercion
+    (`scenario_yaml.DEVICE_DECIMAL_BLOCKS`) coerced JEDEN String-Wert dieser Bloecke —
+    sicher **nur**, solange jedes Feld der zugehoerigen Config Decimal ist. Faellt
+    fail-fast, wenn eine Folge-Welle ein `int`/Enum-Feld ergaenzt (dann waere der Block
+    feld-genau zu behandeln oder aus `DEVICE_DECIMAL_BLOCKS` zu entfernen — Muster
+    `cell`, das wegen `n_cells: int` bewusst draussen ist)."""
+    assert set(DEVICE_DECIMAL_BLOCKS) == set(_BLOCK_CONFIG_BY_NAME), (
+        "scenario_yaml.DEVICE_DECIMAL_BLOCKS und der Test-Mapping sind auseinander — "
+        f"blocks={sorted(DEVICE_DECIMAL_BLOCKS)} mapped={sorted(_BLOCK_CONFIG_BY_NAME)}"
+    )
+    for block_name, config_cls in _BLOCK_CONFIG_BY_NAME.items():
+        non_decimal = _non_decimal_field_names(config_cls)
+        assert not non_decimal, (
+            f"{config_cls.__name__} (Block {block_name!r}) hat Nicht-Decimal-Felder "
+            f"{sorted(non_decimal)} — block-scoped YAML-Coercion wuerde sie korrumpieren. "
+            "Feld-genau behandeln oder den Block aus DEVICE_DECIMAL_BLOCKS entfernen."
+        )
+
+
+def _non_decimal_field_names(config_cls: type) -> set[str]:
+    hints = get_type_hints(config_cls)
+    return {field.name for field in fields(config_cls) if hints.get(field.name) is not Decimal}
 
 
 def test_yaml_loader_allowlist_has_no_orphan_entries() -> None:

@@ -219,19 +219,25 @@ class BessEmsFieldPublishAdapter:
         """Baut + published die drei Envelope-Frames eines Assets (ADR 0078 §2.3).
 
         `status` traegt die Fault-Surface (`available`/`fault_status`); `metrics` die
-        per-Punkt-Battery-Emissionen des Assets."""
+        per-Punkt-Battery-Emissionen des Assets.
+
+        **Reihenfolge (Closure-Review LOW):** `status`/`fault` ZUERST — sie haengen nur
+        an der Fault-Surface und koennen nicht an einer fehlenden Metrik scheitern;
+        `telemetry` (das fail-fast wirft, wenn ein Pflichtfeld fehlt) zuletzt. So
+        propagiert `available`/`fault_status` auch dann, wenn `encode_telemetry` raist —
+        das Safe-Stop-Signal (ADR 0078 §2.6) haengt nicht an der Telemetrie-Naht."""
         prefix = self._config.topic_prefix
         available = status.available
         fault_status = status.fault_status
-        telemetry = encode_telemetry(
-            asset_id, offset_millis, metrics, available=available, fault_status=fault_status
-        )
-        self._publish(client, f"{prefix}/{asset_id}/telemetry", telemetry, retain=True)
         status_frame = encode_status(offset_millis, available=available, fault_status=fault_status)
         self._publish(client, f"{prefix}/{asset_id}/status", status_frame, retain=True)
         fault_frame = encode_fault(offset_millis, fault_status=fault_status)
         if fault_frame is not None:
             self._publish(client, f"{prefix}/{asset_id}/fault", fault_frame, retain=False)
+        telemetry = encode_telemetry(
+            asset_id, offset_millis, metrics, available=available, fault_status=fault_status
+        )
+        self._publish(client, f"{prefix}/{asset_id}/telemetry", telemetry, retain=True)
 
     def _publish(
         self,

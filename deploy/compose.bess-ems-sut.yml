@@ -1,0 +1,98 @@
+# Slice 077 S3 — bess-ems-MQTT-only-E2E (ADR 0078 §2.6).
+#
+# Der REALE cross-repo-Abnahme-Stack: grid-gym publisht den breiten
+# bess-ems-Feldenvelope je Tick; die **unveraenderte** bess-ems-EMS (offizielle
+# Image, Digest-gepinnt) konsumiert ihn im MQTT-only-SUT-Modus und verlaesst den
+# Safety-Fallback (Gutfall-Signal `EventId 1701` in den bess-ems-Logs). Ersetzt den
+# Go-`bess-field-sim` aus bess-ems' `deploy/compose.field.yml` durch grid-gym.
+#
+#   Broker (mosquitto) + Postgres (bess-ems-Persistenz) + bess-ems (SUT) + grid-gym.
+#
+# Nur-Sim-Netz (GG-SAFE-007): anonymes Plaintext-MQTT, keine produktive
+# Anlagensteuerung. Verifikation: `deploy/scripts/bess-ems-sut-e2e.sh`.
+#
+# bess-ems-Config (`asset.single-bess.json` mit `asset_id: single-bess-1`,
+# `mqtt.simulator.json`, Schema) ist ins bess-ems-Image gebacken (`/app/config`) —
+# nichts zu mounten. `single-bess-1` == grid-gyms Battery-`device_id`
+# (Identitaets-Mapping, ADR 0078 §2.3).
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./mosquitto.bess-ems-sut.conf:/mosquitto/config/mosquitto.conf:ro
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-p", "1883", "-t", "healthcheck", "-m", "ping"]
+      interval: 2s
+      timeout: 1s
+      retries: 15
+    networks: [bess-sut-e2e]
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: bessems
+      POSTGRES_USER: bessems
+      POSTGRES_PASSWORD: bessems
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bessems -d bessems"]
+      interval: 2s
+      timeout: 1s
+      retries: 15
+    networks: [bess-sut-e2e]
+
+  # Feld-Seite: grid-gym publisht den bess-ems-konformen Envelope je Tick.
+  grid-gym:
+    image: grid-gym-runtime:latest
+    pull_policy: never
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      GRID_GYM_DEMO_SCENARIO_PATH: /scenarios/bess-ems-sut.yaml
+      GRID_GYM_BESS_EMS_MQTT_BROKER: mosquitto:1883
+    volumes:
+      - ./scenarios:/scenarios:ro
+    networks: [bess-sut-e2e]
+
+  # SUT: unveraenderte bess-ems-EMS im MQTT-only-Modus (Config aus bess-ems'
+  # deploy/compose.sut.yml, Broker → mosquitto). HilSimulator-Profil + Plaintext-Gate.
+  bess-ems:
+    image: ghcr.io/pt9912/bess-ems@sha256:fd9409a796fb769265aa26dc4990d27efb38d9cf73fe224693c73e7a225d1a21
+    pull_policy: missing
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      Bess__SchemaDirectory: /app/config/schema
+      Bess__AssetConfigPath: /app/config/examples/asset.single-bess.json
+      Bess__PersistenceConnectionString: Host=postgres;Port=5432;Database=bessems;Username=bessems;Password=bessems;Include Error Detail=true
+      Bess__ScheduleSolver__Backend: or_tools
+      Bess__MqttMappingPath: /app/config/examples/adapters/mqtt.simulator.json
+      Bess__MqttBrokerHost: mosquitto
+      Bess__MqttBrokerPort: "1883"
+      Bess__MqttClientId: bess-ems-sut
+      Bess__MqttRuntimeProfile: HilSimulator
+      Bess__MqttAllowPlaintext: "true"
+      Bess__MqttAllowPlaintextReason: Slice-077-S3-E2E on a sim-only bridge network
+      Worker__CycleInterval: "00:00:01"
+    networks: [bess-sut-e2e]
+
+  # Draht-Mitschnitt: faengt ALLE `battery/single-bess-1/#`-Topics (telemetry/status/
+  # fault + der `command`→`command/ack`-Roundtrip) in die eigenen Container-Logs, damit
+  # das Verify-Skript den fault-Topic + das Ack-Echo auf dem Draht belegen kann.
+  capture:
+    image: eclipse-mosquitto:2
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    command: ["mosquitto_sub", "-h", "mosquitto", "-t", "battery/single-bess-1/#", "-v"]
+    networks: [bess-sut-e2e]
+
+networks:
+  bess-sut-e2e:
+    driver: bridge
