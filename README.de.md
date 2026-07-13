@@ -36,6 +36,13 @@ ausfuehrbar. Die aktuelle Implementierung umfasst:
 - einen OTLP-Adapter mit lokalem OpenTelemetry-Collector-Smoke-Test
 - fuenf Protokolladapter (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) mit
   container-basierten Integration-Tests
+- eine Field-Server-Surface, die die simulierten Geraete an ein externes
+  EMS / System-under-Test exponiert (HIL, [`GG-TEST-004`](spec/lastenheft.md#gg-test-004)):
+  eine MQTT-Telemetrie-Push-Seite, ein Modbus-TCP-**Server**, den ein Master
+  pollen kann (Read-Serving), und ein **Inbound-Write**-Pfad, der Master-
+  Sollwert-Writes (FC06/FC16) in deterministische, replaybare Commands
+  zurueckuebersetzt — alles opt-in und byte-identisch ohne Konfiguration
+  (Simulations-/Testadapter, Nur-Sim-Netz)
 - eine HTTP-API (FastAPI, REST + WebSocket) mit server-gerenderter
   Web-UI (HTMX + Chart.js): Live-Telemetrie, Replay-Controls, Alarme
 - Zeitreihen-Persistenz (Postgres) und deterministisches
@@ -86,7 +93,7 @@ Entwicklungsgate ist `make gates`.
 > (gebaut gegen go1.26.4+) aufgeloest; Trivy-Re-Scan meldet
 > 0 HIGH/CRITICAL.)
 
-Aktuelles Release: **v0.4.0** (2026-07-12) — siehe
+Aktuelles Release: **v0.6.1** (2026-07-13) — siehe
 [Releases](https://github.com/pt9912/grid-gym/releases).
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
@@ -160,16 +167,19 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-07-12**:
+Stand **2026-07-13**:
 
 | Meilenstein / Punkt | Status | Datum | Details |
 | --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 72 von 73 ADRs `Accepted` (1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 75 von 76 ADRs `Accepted` (1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
 | **M8 — SOLLTE-Geraete & Netz** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5: die vier SOLLTE-Geraete, das SOLLTE-Netzmodell und die BESS-Telemetrie. Details in [`M8-results.md`](docs/plan/planning/done/M8-results.md). |
 | **Release v0.2.0** | released | 2026-07-01 | Minor: die M8-SOLLTE-Geraete und das Netzmodell. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.0** | released | 2026-07-03 | Minor: die volle Run-Metadaten-Equality-Matrix — der Replay-Preflight prueft jetzt 9 statt 5 Felder. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.1** | released | 2026-07-10 | Patch: App-/Tool-Version wird jetzt korrekt aus den Paket-Metadaten gemeldet (vorher auf `0.1.0` gepinnt), die ADR-Index-Statusspalte ist gegen die Datei-Header abgeglichen, plus aufgelaufene Review-Haertung und ein Test-only-E2E-Sensor. Details im [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.4.0** | released | 2026-07-12 | Minor: GG-FAULT-Konsolidierung — drei dedizierte Fault-Typen (`frequency_drop`/[`GG-FAULT-004`](spec/lastenheft.md#gg-fault-004), `nan_injection`/[`GG-FAULT-003`](spec/lastenheft.md#gg-fault-003), `stale_data`/[`GG-FAULT-002`](spec/lastenheft.md#gg-fault-002); [`ADR 0074`](docs/plan/adr/0074-metric-quality-fault-stage-stale-nan.md)), alle opt-in und byte-identisch fuer Szenarien ohne sie. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.5.0** | released | 2026-07-12 | Minor: die Field-Server-Surface ([`ADR 0075`](docs/plan/adr/0075-field-server-surface-device-endpoint-port.md)) — zwei Schwester-Ports, damit ein externes EMS (System-under-Test) grid-gyms simulierte Geraete als HIL/SUT konsumieren kann: eine `FieldPublishPort`/MQTT-Push-Seite (Slice 073) und ein `DeviceServerPort`/Modbus-TCP-Server mit Read-Serving (Slice 074), beide adversarial review-gehaertet. Additiv + opt-in; byte-identisch ohne Broker/Server. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.6.0** | released | 2026-07-13 | Minor: Field-Server Inbound-Write→Command ([`ADR 0076`](docs/plan/adr/0076-inbound-write-exogenous-input-recording.md), Modell B) — ein Modbus-Master kann jetzt Sollwerte schreiben (FC06/FC16), die erfasst, in einen Szenario-`commands`-Block materialisiert und byte-identisch replayt werden (deterministisch trotz des exogenen Live-Writes); volle HIL/SUT-Steuerbarkeit ([`GG-TEST-004`](spec/lastenheft.md#gg-test-004)). Additiv + opt-in; byte-identisch ohne `write_map`. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.6.1** | released | 2026-07-13 | Patch: Closure-Review-Haertung des Inbound-Write-Pfads — Inbound-Writes per Modbus FC23 (Read/Write-Multiple) werden jetzt ebenfalls erfasst (vorher still gedroppt); der Refresh-Task nullt keine Master-geschriebenen Sollwert-Register mehr (Write-then-Read-back bleibt konsistent); und eine `write_map` ohne Inbound-Buffer schlaegt jetzt fail-fast fehl. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 
 **Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
 Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte

@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-07-13
+
+**Patch — Closure-Review-Haertung des Inbound-Write-Pfads (Slice 075).** Zwei
+unabhaengige adversariale Closure-Reviews (Concurrency/Protokoll +
+Korrektheit/Edge, Muster 073/074) fanden reale Befunde in der v0.6.0-Naht; die
+Concurrency-/Determinismus-Naht selbst war sauber. `make fullbuild` gruen vor dem
+Tag.
+
+### Fixed
+
+- **FC23-Writes werden erfasst (ADR 0076):** der Inbound-Write-`SimAction`-Hook
+  filterte `function_code ∈ {6,16}`, aber pymodbus routet `{3,6,16,22,23}` auf den
+  Holding-Block. Ein protokollkonformer `float32`-Sollwert-Write per **FC23**
+  (Read/Write-Multiple) wurde still gedroppt (der Server quittierte Erfolg, aber
+  kein `Command` wurde erfasst). Jetzt `{6,16,23}` (FC22/Mask-Write bleibt bewusst
+  draussen — schreibt nur 1 Register, kann nie ein 2-Register-`float32`-Fenster
+  bilden).
+- **Refresh nullt keine Sollwert-Register mehr:** der Refresh-Task pushte den
+  gesamten Holding-Block; Write-only-Sollwert-Adressen (kein Read-Mapping) wurden
+  dabei mit `0` ueberschrieben — ein pollender Master sah seinen gerade
+  geschriebenen Sollwert nach ≤ 50 ms auf `0` zuruecksetzen. Der Refresh pusht jetzt
+  **nur** die Read-Messwert-Fenster (`RegisterMap.refresh_frame()`); `write_map`-
+  Register bleiben unangetastet. Der Command-Pfad war nie betroffen (Erfassung laeuft
+  ueber den Write-Hook, nicht ueber Readback).
+- **Fail-fast bei unvollstaendiger Verdrahtung:** eine `write_map` **ohne**
+  injizierten `inbound_buffer` wirft jetzt `ModbusServerWiringError` bei Konstruktion
+  (statt Master-Writes still zu akzeptieren und nie zu einem `Command` zu routen).
+
+### Tested
+
+- Neuer E2E-Beleg, dass ein realer decodierter `float32`-Wert ueber den
+  Persist→Reload-Pfad (`Decimal`→String→Koercion) **hash-stabil** bleibt
+  (`scenario_hash` deckt `commands`, ADR 0076 §2.2). Diskriminator-Unit-Tests
+  (FC06/16/23 + FC03/Read-Ausschluss + Teil-Write-Skip), Real-pymodbus-FC23-Write-
+  E2E, Sollwert-persistiert-ueber-Refresh-E2E, `refresh_frame`-nur-Read-Fenster.
+
 ## [0.6.0] - 2026-07-13
 
 **Minor — Field-Server Inbound-Write→`Command` (die Schreib-Gegenrolle der

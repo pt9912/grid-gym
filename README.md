@@ -36,6 +36,12 @@ environment. The current implementation includes:
 - an OTLP adapter with a local OpenTelemetry Collector smoke test
 - five protocol adapters (MQTT, Modbus, OPC-UA, DNP3, IEC-61850) with
   container-based integration tests
+- a field-server surface that exposes the simulated devices to an external
+  EMS / system-under-test (HIL, [`GG-TEST-004`](spec/lastenheft.md#gg-test-004)):
+  an MQTT telemetry push side, a Modbus-TCP **server** a master can poll
+  (read-serving), and an **inbound-write** path that turns master setpoint
+  writes (FC06/FC16) back into deterministic, replayable commands — all opt-in
+  and byte-identical when unconfigured (simulation-/test-only, sim-net)
 - an HTTP API (FastAPI, REST + WebSocket) with a server-rendered web UI
   (HTMX + Chart.js): live telemetry, replay controls, alarms
 - time-series persistence (Postgres) and a deterministic two-run replay
@@ -84,7 +90,7 @@ development gate is `make gates`.
 > `otel/opentelemetry-collector-contrib` to 0.154.0, built against
 > go1.26.4+; Trivy re-scan reports 0 HIGH/CRITICAL.)
 
-Current release: **v0.4.0** (2026-07-12) — see
+Current release: **v0.6.1** (2026-07-13) — see
 [Releases](https://github.com/pt9912/grid-gym/releases).
 A release is triggered by pushing a `v*.*.*` git tag (or via
 manual `workflow_dispatch` in the GitHub UI). The release workflow
@@ -157,16 +163,19 @@ logic.
 
 ## Status
 
-As of **2026-07-12**:
+As of **2026-07-13**:
 
 | Milestone / item | Status | Date | Details |
 | --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | core platform delivered (M7) + SOLLTE devices & grid (M8); 72 of 73 ADRs `Accepted` (1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **M1..M8** | `Done` | — | core platform delivered (M7) + SOLLTE devices & grid (M8); 75 of 76 ADRs `Accepted` (1 `Superseded`). Closure artefacts: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
 | **M8 — SOLLTE devices & grid** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5: the four SOLLTE devices, the SOLLTE grid model, and BESS telemetry. Details in [`M8-results.md`](docs/plan/planning/done/M8-results.md). |
 | **Release v0.2.0** | released | 2026-07-01 | Minor: the M8 SOLLTE devices and grid model. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.0** | released | 2026-07-03 | Minor: the full run-metadata equality matrix — the replay preflight now checks 9 instead of 5 fields. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.3.1** | released | 2026-07-10 | Patch: app-/tool-version is now reported correctly from the package metadata (it was pinned to `0.1.0`), the ADR index status column is reconciled with the file headers, plus accumulated review hardening and a test-only E2E sensor. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 | **Release v0.4.0** | released | 2026-07-12 | Minor: GG-FAULT consolidation — three dedicated fault types (`frequency_drop`/[`GG-FAULT-004`](spec/lastenheft.md#gg-fault-004), `nan_injection`/[`GG-FAULT-003`](spec/lastenheft.md#gg-fault-003), `stale_data`/[`GG-FAULT-002`](spec/lastenheft.md#gg-fault-002); [`ADR 0074`](docs/plan/adr/0074-metric-quality-fault-stage-stale-nan.md)), all opt-in and byte-identical for scenarios without them. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.5.0** | released | 2026-07-12 | Minor: the field-server surface ([`ADR 0075`](docs/plan/adr/0075-field-server-surface-device-endpoint-port.md)) — two sister ports so an external EMS (system-under-test) can consume grid-gym's simulated devices as HIL/SUT: a `FieldPublishPort`/MQTT push side (Slice 073) and a `DeviceServerPort`/Modbus-TCP server with read-serving (Slice 074), both adversarially review-hardened. Additive + opt-in; byte-identical without a broker/server. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.6.0** | released | 2026-07-13 | Minor: field-server inbound-write→command ([`ADR 0076`](docs/plan/adr/0076-inbound-write-exogenous-input-recording.md), model B) — a Modbus master can now write setpoints (FC06/FC16) that are recorded, materialized into a scenario `commands` block, and replayed byte-identically (deterministic despite the exogenous live write); full HIL/SUT controllability ([`GG-TEST-004`](spec/lastenheft.md#gg-test-004)). Additive + opt-in; byte-identical without a `write_map`. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| **Release v0.6.1** | released | 2026-07-13 | Patch: closure-review hardening of the inbound-write path — inbound writes via Modbus FC23 (read/write-multiple) are now captured too (were silently dropped); the refresh task no longer zeroes master-written setpoint registers (write-then-read-back stays consistent); and a `write_map` without an inbound buffer now fails fast. Details in [`CHANGELOG.md`](CHANGELOG.md). |
 
 **Test balance:** 139 integration passed + 4 skipped (remaining
 skips are IEC-61850-on-Python-3.13 only, covered by the dedicated
