@@ -258,6 +258,23 @@ def test_get_devices_xss_payload_in_device_id_is_escaped(
     assert "renderError" in html
 
 
+def test_get_devices_page_includes_svg_single_line_diagram(
+    demo_client: TestClient,
+) -> None:
+    """Slice 078 (`GG-UI-006`): die Devices-Page traegt das SVG-Einlinien-
+    Diagramm — den `#devices-diagram`-Container + den `renderDiagram`-Hook, der
+    es aus demselben `/devices/state`-Poll fuellt (Sammelschiene + Geraeteknoten).
+    Das SVG wird XSS-sicher via SVG-DOM-API (`createElementNS`) gebaut, nicht per
+    innerHTML-String-Concat (dieselbe Invariante wie die Tabelle)."""
+    response = demo_client.get(f"/runs/{_DEMO_RUN_ID}/devices")
+    assert response.status_code == 200
+    html = response.text
+    assert 'id="devices-diagram"' in html
+    assert "renderDiagram" in html
+    assert "Sammelschiene" in html  # Busbar-Label des Einlinien-Diagramms
+    assert "createElementNS" in html  # SVG-DOM-API (escape-by-construction)
+
+
 def test_get_devices_state_silent_drops_pre_init_device(
     demo_client: TestClient,
 ) -> None:

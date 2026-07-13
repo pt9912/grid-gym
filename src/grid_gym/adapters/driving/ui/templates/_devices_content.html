@@ -2,10 +2,18 @@
     <h1>Devices — {{ run_id }}</h1>
 
     <p class="page-intro">
-        Welle-6b (Decision 21/22): Geraete-Grafik per HTMX-Polling-
-        Tabelle. Pflicht-Subset pro Device-Typ; Quality-Marker ist
-        die worst-case-Quality der letzten Tick-Telemetrie.
+        Grafische Geraete-Ansicht (Slice 078, `GG-UI-006`): SVG-Einlinien-
+        Diagramm (Sammelschiene mit Geraeteknoten, nach Quality eingefaerbt) plus
+        die Detail-Tabelle. Beide pollen `GET /devices/state` (1s); der
+        Quality-Marker ist die worst-case-Quality der letzten Tick-Telemetrie.
     </p>
+
+    <!-- Slice 078 (GG-UI-006): SVG-Einlinien-Diagramm. Wird vom selben
+         `/devices/state`-Poll gefuellt wie die Tabelle (der beforeSwap-Handler
+         aktualisiert dieses Element direkt per DOM, bevor er die Tabelle swappt). -->
+    <div id="devices-diagram" class="devices-diagram" aria-label="Geraete-Einlinien-Diagramm">
+        <p class="status-line">Loading diagram…</p>
+    </div>
 
     <div id="devices-table"
          class="devices-table"
@@ -18,25 +26,168 @@
 
     <script>
     (function () {
-        // Welle-6b-Decision-22: Page-spezifischer Inline-JS-Handler
-        // rendert die JSON-Antwort des `GET /devices/state`-Endpunkts
-        // als 4-Spalten-Tabelle. Idempotenz-Guard analog Welle-6a-
-        // Faults (HTMX re-evaluiert <script>-Tags in geswappten
-        // Partials).
+        // Welle-6b-Decision-22 / Slice-078: Page-spezifischer Inline-JS-Handler
+        // rendert die JSON-Antwort des `GET /devices/state`-Endpunkts als
+        // SVG-Einlinien-Diagramm (`#devices-diagram`, GG-UI-006) UND als
+        // 4-Spalten-Tabelle (`#devices-table`). Idempotenz-Guard analog Welle-6a.
         if (document.body.dataset.devicesTableListenersAttached === "true") {
             return;
         }
         document.body.dataset.devicesTableListenersAttached = "true";
+
+        const SVG_NS = "http://www.w3.org/2000/svg";
+        // Quality → Farbe (worst-case-Quality des Geraets). Fallback fuer
+        // unbekannte Quality-Werte (Forward-Compat analog Welle-6b-Review F5).
+        const QUALITY_COLOR = {
+            valid: "#2e7d32", stale: "#f9a825", invalid: "#c62828",
+            nan: "#c62828", missing: "#9e9e9e", fault_injected: "#ef6c00",
+        };
+        const TYPE_LABEL = {
+            battery: "Batterie", pv: "PV", load: "Last",
+            grid_connection: "Netz", smart_meter: "Zaehler",
+        };
+
+        function qualityColor(q) {
+            return QUALITY_COLOR[String(q)] || "#607d8b";
+        }
 
         function isDevicesTableRequest(event) {
             return event.detail && event.detail.target
                 && event.detail.target.id === "devices-table";
         }
 
-        // Welle-6b-Review F1: textContent + DOM-API statt
-        // innerHTML-String-Concat — escape-by-construction gegen
-        // XSS in Device-IDs / Quality / State-Keys. Pattern analog
-        // _alarms_content.html (Welle-4b textContent-Invariante).
+        function svgEl(name, attrs) {
+            const el = document.createElementNS(SVG_NS, name);
+            for (const key in attrs) {
+                el.setAttribute(key, String(attrs[key]));
+            }
+            return el;
+        }
+
+        // Primaerer Zustandswert je Geraetetyp (kurz fuer den Knoten). Werte sind
+        // Strings/Bools aus dem State-Subset; textContent haelt XSS raus.
+        function primaryLabel(device) {
+            const s = device.state || {};
+            if ("current_power_kw" in s) {
+                return String(s.current_power_kw) + " kW";
+            }
+            if ("soc_kwh" in s) {
+                return String(s.soc_kwh) + " kWh";
+            }
+            return "—";
+        }
+
+        // True, wenn ein `*_active`-Fault-Flag im State gesetzt ist (Knoten
+        // bekommt dann eine Warn-Markierung).
+        function hasActiveFault(device) {
+            const s = device.state || {};
+            for (const key in s) {
+                if (key.endsWith("_active") && s[key] === true) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function nodeGroup(device, x, busY, nodeY) {
+            const g = svgEl("g", {});
+            const cx = x + 60;
+            // Abzweig von der Sammelschiene zum Knoten.
+            g.appendChild(svgEl("line", {
+                x1: cx, y1: busY, x2: cx, y2: nodeY,
+                stroke: "#555", "stroke-width": 2,
+            }));
+            const color = qualityColor(device.quality);
+            const rect = svgEl("rect", {
+                x: x, y: nodeY, width: 120, height: 62, rx: 6,
+                fill: "#fafafa", stroke: color, "stroke-width": 3,
+            });
+            g.appendChild(rect);
+            // Typ-Titel.
+            const title = svgEl("text", {
+                x: cx, y: nodeY + 20, "text-anchor": "middle",
+                "font-weight": "bold", "font-size": 13, fill: "#222",
+            });
+            title.textContent = TYPE_LABEL[String(device.device_type)]
+                || String(device.device_type);
+            g.appendChild(title);
+            // Device-ID (klein).
+            const id = svgEl("text", {
+                x: cx, y: nodeY + 36, "text-anchor": "middle",
+                "font-size": 10, fill: "#666",
+            });
+            id.textContent = String(device.device_id);
+            g.appendChild(id);
+            // Primaerwert.
+            const val = svgEl("text", {
+                x: cx, y: nodeY + 52, "text-anchor": "middle",
+                "font-size": 12, fill: "#111",
+            });
+            val.textContent = primaryLabel(device);
+            g.appendChild(val);
+            // Quality-Punkt oben rechts.
+            g.appendChild(svgEl("circle", {
+                cx: x + 110, cy: nodeY + 10, r: 5, fill: color,
+            }));
+            // Warn-Markierung bei aktivem Fault-Flag.
+            if (hasActiveFault(device)) {
+                const warn = svgEl("text", {
+                    x: x + 12, y: nodeY + 14, "font-size": 13, fill: "#c62828",
+                });
+                warn.textContent = "⚠"; // ⚠
+                g.appendChild(warn);
+            }
+            return g;
+        }
+
+        function renderDiagram(payload) {
+            const container = document.getElementById("devices-diagram");
+            if (!container) {
+                return;
+            }
+            container.textContent = "";
+            const devices = (payload && Array.isArray(payload.devices))
+                ? payload.devices : [];
+            if (devices.length === 0) {
+                const p = document.createElement("p");
+                p.className = "status-line";
+                p.textContent = "No devices registered for this run.";
+                container.appendChild(p);
+                return;
+            }
+            // Netzanschluss zuerst (links) — dann die uebrigen Geraete; sonst
+            // Reihenfolge der Antwort (deterministische Tick-Iteration).
+            const ordered = devices.slice().sort(function (a, b) {
+                const ga = a.device_type === "grid_connection" ? 0 : 1;
+                const gb = b.device_type === "grid_connection" ? 0 : 1;
+                return ga - gb;
+            });
+            const step = 140, marginX = 20, busY = 40, nodeY = 80;
+            const width = marginX * 2 + ordered.length * step;
+            const height = nodeY + 62 + 20;
+            const svg = svgEl("svg", {
+                viewBox: "0 0 " + width + " " + height,
+                width: "100%", role: "img",
+            });
+            // Sammelschiene (Busbar).
+            const busX2 = marginX + (ordered.length - 1) * step + 60;
+            svg.appendChild(svgEl("line", {
+                x1: marginX + 60, y1: busY, x2: busX2, y2: busY,
+                stroke: "#333", "stroke-width": 4,
+            }));
+            const busLabel = svgEl("text", {
+                x: marginX + 60, y: busY - 8, "font-size": 11, fill: "#333",
+            });
+            busLabel.textContent = "Sammelschiene";
+            svg.appendChild(busLabel);
+            ordered.forEach(function (device, i) {
+                svg.appendChild(nodeGroup(device, marginX + i * step, busY, nodeY));
+            });
+            container.appendChild(svg);
+        }
+
+        // Welle-6b-Review F1: textContent + DOM-API statt innerHTML-String-Concat
+        // — escape-by-construction gegen XSS in Device-IDs / Quality / State-Keys.
         function renderStateCell(state, td) {
             const keys = Object.keys(state);
             if (keys.length === 0) {
@@ -138,6 +289,9 @@
                 );
                 return;
             }
+            // Slice 078: dasselbe Payload speist das SVG-Diagramm (direkter
+            // DOM-Update von `#devices-diagram`) UND die getauschte Tabelle.
+            renderDiagram(payload);
             event.detail.serverResponse = renderTable(payload);
         });
     })();
