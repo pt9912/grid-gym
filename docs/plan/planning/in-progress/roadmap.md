@@ -3,11 +3,12 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
-(MVP-Linie); aktuelles Release **v0.5.0** (2026-07-12, Field-Server-Surface).
-**Kein aktiver Slice.** Zuletzt abgeschlossen
+(MVP-Linie); aktuelles Release **v0.6.1** (2026-07-13, Slice-075-Closure-Review-Haertung).
+**Kein aktiver Slice; naechster geplanter:** [`077`](../next/077-bess-ems-conformant-field-publisher.md)
+(bess-ems-konformer Feld-Publisher, S0/ADRs done in `next/`). Zuletzt abgeschlossen
 [`075`](../done/075-field-server-inbound-write-command.md) (Field-Server
 Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Accepted`, done 2026-07-13; Release ausstehend), davor 074/073 (Field-Server,
+`Accepted`, done 2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1), davor 074/073 (Field-Server,
 v0.5.0),
 davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
@@ -41,7 +42,7 @@ Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint
 **`Accepted`**, released als **v0.5.0** (2026-07-12). Danach
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Inbound-Write→Command, ausgegliedert) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Accepted`** (2026-07-13; Release ausstehend). Offene Trigger (OTel-Bump,
+`Accepted`** (2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Offene Trigger (OTel-Bump,
 Vorwaerts-Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
 
@@ -113,10 +114,13 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+**Kein aktiver Slice; naechster geplanter:**
+[`077`](../next/077-bess-ems-conformant-field-publisher.md) (bess-ems-konformer
+Feld-Publisher — breiter Feldenvelope-Snapshot je Tick; S0/ADRs [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
+done in `next/`, S1/S2/S3 offen). Zuletzt abgeschlossen (2026-07-13)
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Field-Server Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Accepted`; Release ausstehend). Davor (2026-07-12) die Field-Server-Pull-/Push-Seite
+`Accepted`; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Davor (2026-07-12) die Field-Server-Pull-/Push-Seite
 [`074`](../done/074-field-server-modbus-server-adapter.md)/[`073`](../done/073-field-server-mqtt-publish-bridge.md)
 (→ **v0.5.0**), davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
@@ -187,7 +191,7 @@ Projektion) sind **done + review-gehaertet → [`ADR 0075`](../../adr/0075-field
 [`075`](../done/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
 **ausgegliedert** samt Folge-ADR, weil Live-Writes das geschlossene Self-Replay
 brechen) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Accepted`** (2026-07-13; Release ausstehend). Der Entwurf wurde nach zwei
+`Accepted`** (2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Der Entwurf wurde nach zwei
 adversarialen Reviews von einem geteilten
 Kern-`TickLoop`-Port auf **zwei Schwester-Ports in der Kompositions-Schicht**
 revidiert (Fan-out lebt im API-Prozess-Driver, nicht im Kern-Loop,
