@@ -242,9 +242,11 @@ def test_openapi_schema_contains_welle_1_endpoints(
     control_post = paths["/runs/{run_id}/control"]["post"]
     schemas = spec["components"]["schemas"]
     control_request_schema = schemas["ControlRequest"]
-    # Pydantic v2 serialisiert Literal als enum
+    # Pydantic v2 serialisiert Literal als enum. `start` seit Slice 078
+    # (`GG-UI-004`; pending → running).
     assert "enum" in control_request_schema["properties"]["action"]
     assert set(control_request_schema["properties"]["action"]["enum"]) == {
+        "start",
         "pause",
         "resume",
         "stop",

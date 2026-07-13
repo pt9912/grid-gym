@@ -40,6 +40,25 @@ def test_templates_render_base_partial_without_crash() -> None:
     assert "grid-gym" in rendered
 
 
+def test_base_html_loads_htmx_websocket_extension() -> None:
+    """Slice 078 (Regression): die HTMX-WebSocket-Extension ist in HTMX 2.x aus
+    dem Core ausgelagert; `base.html` MUSS sie laden **und** das Asset MUSS im
+    Static-Verzeichnis liegen. Ohne sie tut `hx-ext="ws"` nichts und der
+    Dashboard-/Alarms-Live-Feed bleibt dauerhaft „Waiting for live data"
+    (`GG-UI-002`/`003`/`005`-Regression, im Browser nicht von den TestClient-
+    Smokes erfassbar)."""
+    from grid_gym.adapters.driving.ui import _templates as templates_module
+
+    ui_dir = Path(templates_module.__file__).parent
+    base_html = (ui_dir / "templates" / "base.html").read_text(encoding="utf-8")
+    assert "htmx-ext-ws.min.js" in base_html
+    ws_ext = ui_dir / "static" / "htmx-ext-ws.min.js"
+    assert ws_ext.is_file()
+    # Die Extension registriert sich als htmx-`ws`-Extension (Sanity gegen ein
+    # leeres/falsches Asset).
+    assert 'defineExtension("ws"' in ws_ext.read_text(encoding="utf-8")
+
+
 def test_navigation_exposes_all_welle_5_and_6a_pages() -> None:
     """Welle-6a-Review F15: Navigation muss alle 5 UI-Pages
     sichtbar als Link tragen. Ohne diesen Assertion-Pin koennte

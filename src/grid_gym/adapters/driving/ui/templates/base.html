@@ -6,6 +6,10 @@
     <title>{% block title %}grid-gym{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/htmx.min.js" defer></script>
+    <!-- HTMX-WebSocket-Extension: in HTMX 2.x aus dem Core ausgelagert; ohne sie
+         tut `hx-ext="ws"` nichts (Dashboard-/Alarms-Live-Feed blieb „Waiting for
+         live data"). `defer` erhaelt die Reihenfolge (nach htmx.min.js). -->
+    <script src="/static/htmx-ext-ws.min.js" defer></script>
     <script src="/static/chart.umd.min.js" defer></script>
 </head>
 <body>

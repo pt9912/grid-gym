@@ -47,9 +47,9 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: "battery-1.power (kW)", data: [], borderColor: "#1f7a1f", tension: 0.2 },
-                        { label: "battery-1.soc (%)", data: [], borderColor: "#1a4fa6", tension: 0.2 },
-                        { label: "grid-1.power (kW)", data: [], borderColor: "#a64a1f", tension: 0.2 },
+                        { label: "battery-1.power_kw", data: [], borderColor: "#1f7a1f", tension: 0.2 },
+                        { label: "battery-1.soc_pct", data: [], borderColor: "#1a4fa6", tension: 0.2 },
+                        { label: "grid-connection-1.power_kw", data: [], borderColor: "#a64a1f", tension: 0.2 },
                     ],
                 },
                 options: {
@@ -99,9 +99,9 @@
                 return;
             }
             const datasetIndex = {
-                "battery-1|power": 0,
-                "battery-1|soc": 1,
-                "grid-1|power": 2,
+                "battery-1|power_kw": 0,
+                "battery-1|soc_pct": 1,
+                "grid-connection-1|power_kw": 2,
             }[`${point.device_id}|${point.metric}`];
             if (datasetIndex === undefined) {
                 return;

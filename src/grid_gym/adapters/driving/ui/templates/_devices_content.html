@@ -68,6 +68,11 @@
         // Strings/Bools aus dem State-Subset; textContent haelt XSS raus.
         function primaryLabel(device) {
             const s = device.state || {};
+            // Batterie: SOC (kWh) ist die aussagekraeftige Kern-Groesse (die
+            // Leistung ist im Ruhezustand oft 0); sonst die Momentanleistung.
+            if (device.device_type === "battery" && "soc_kwh" in s) {
+                return String(s.soc_kwh) + " kWh";
+            }
             if ("current_power_kw" in s) {
                 return String(s.current_power_kw) + " kW";
             }
@@ -289,10 +294,17 @@
                 );
                 return;
             }
-            // Slice 078: dasselbe Payload speist das SVG-Diagramm (direkter
-            // DOM-Update von `#devices-diagram`) UND die getauschte Tabelle.
-            renderDiagram(payload);
+            // Slice 078: dasselbe Payload speist die getauschte Tabelle UND das
+            // SVG-Diagramm (direkter DOM-Update von `#devices-diagram`).
+            // Closure-Review LOW: die (XSS-sichere) Tabelle ZUERST zuweisen, dann
+            // das Diagramm in try/catch — ein Diagramm-Fehler darf nie den
+            // Tabellen-Swap auf rohes JSON (innerHTML) zurueckfallen lassen.
             event.detail.serverResponse = renderTable(payload);
+            try {
+                renderDiagram(payload);
+            } catch (err) {
+                // Diagramm-Update ist nicht-fatal; die Tabelle bleibt gueltig.
+            }
         });
     })();
     </script>

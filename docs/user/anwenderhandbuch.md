@@ -140,6 +140,8 @@ unbeaufsichtigt im Netz — es gibt keine Anmeldung (siehe
 
 ### Überblick über die Oberfläche
 
+![Die Startseite mit dem Navigationsmenü (Demo, Health, Dashboard, Control, Alarms, Faults, Devices, System).](img/overview.png)
+
 Am oberen Rand jeder Seite finden Sie das Navigationsmenü. Es enthält
 in dieser Reihenfolge:
 
@@ -222,18 +224,24 @@ Diagramm die Zeitreihe.
 
 ### 4.2 Gerätezustände prüfen (Devices)
 
-![Die Devices-Seite mit dem Live-Zustand je Gerät (Spalten ID, Type, State, Quality).](img/devices.png)
+![Die Devices-Seite: oben das SVG-Einlinien-Diagramm (Sammelschiene mit Geräteknoten, nach Qualität eingefärbt), darunter die Detail-Tabelle.](img/devices.png)
 
 **Voraussetzung:** Ein Lauf ist aktiv.
 
 **Vorgehen:**
 
 1. Klicken Sie im Menü auf **Devices**.
-2. Lesen Sie die Tabelle mit den Spalten *ID, Type, State, Quality*.
+2. Oben sehen Sie das **grafische Einlinien-Diagramm**: eine
+   Sammelschiene mit den Geräten (Netz, Batterie, PV, Last, Zähler) als
+   Knoten. Jeder Knoten zeigt Typ, ID und den wichtigsten Wert und ist
+   nach dem Qualitätsstatus eingefärbt (grün = valid, gelb = stale,
+   rot = invalid/nan); ein aktiver Gerätefehler wird mit ⚠ markiert.
+3. Darunter lesen Sie die **Detail-Tabelle** mit den Spalten
+   *ID, Type, State, Quality*.
 
-**Ergebnis:** Für jedes Gerät sehen Sie den wichtigsten Zustand und
-den zusammengefassten Qualitätsstatus. Die Tabelle aktualisiert sich
-jede Sekunde.
+**Ergebnis:** Diagramm und Tabelle zeigen für jedes Gerät den
+wichtigsten Zustand und den zusammengefassten Qualitätsstatus und
+aktualisieren sich jede Sekunde.
 
 **Hinweise:**
 
@@ -281,12 +289,14 @@ Der Schweregrad ist `info`, `warning` oder `critical`.
    alle 5 Sekunden), z. B. „Service: OK".
 4. Für eine reine Lebt-der-Dienst-Anzeige klicken Sie auf **Health**.
 
+![Die Health-Seite: eine schlanke Lebt-der-Dienst-Anzeige.](img/health.png)
+
 **Ergebnis:** Sie erkennen auf einen Blick, ob der Lauf fortschreitet
 und der Dienst antwortet.
 
 ### 4.5 Einen Lauf steuern (Control)
 
-![Die Control-Seite mit Status-Block und den Aktionen Pause / Resume / Stop.](img/control.png)
+![Die Control-Seite mit Status-Block und den Aktionen Start / Pause / Resume / Stop (Start ist bei bereits laufendem Lauf ausgegraut).](img/control.png)
 
 **Voraussetzung:** Ein aktiver Lauf mit laufendem Tick-Loop.
 
@@ -296,6 +306,7 @@ und der Dienst antwortet.
 2. Der Block **Status** zeigt fortlaufend Zustand, Simulationszeit und
    Tick-Zahl.
 3. Nutzen Sie im Block **Actions** die Schaltflächen:
+   - **Start** — einen noch nicht gestarteten (`pending`) Lauf starten.
    - **Pause** — den Lauf anhalten.
    - **Resume** — einen pausierten Lauf fortsetzen.
    - **Stop** — den Lauf beenden.
@@ -305,8 +316,10 @@ Status-Block erscheint eine Bestätigung.
 
 **Hinweise:**
 
-- Es gibt in der Oberfläche **keinen Start-Knopf**. Das Starten eines
-  Laufs erfolgt über die HTTP-Schnittstelle (siehe
+- **Start** ist nur aktiv, solange der Lauf im Zustand `pending` ist.
+  Der Demo-Lauf startet automatisch beim Hochfahren — dort ist **Start**
+  daher ausgegraut („läuft bereits"); die Erst-Startung eines eigenen
+  Laufs erfolgt sonst über die HTTP-Schnittstelle (siehe
   [Abschnitt 4.8](#48-einen-lauf-über-die-api-anlegen-und-starten)).
 - Ein unerlaubter Übergang (z. B. **Pause** bei bereits gestopptem
   Lauf) wird mit einer Meldung abgelehnt (siehe
@@ -814,3 +827,4 @@ Alle Fehlerantworten haben die Felder `code`, `message` und optional
 | --- | --- | --- | --- |
 | 1.0 | 2026-07-01 | v0.2.0 | Erstfassung nach [`benutzerhandbuch-standard.md`](benutzerhandbuch-standard.md); deckt Weboberfläche, REST-/WebSocket-API, Szenario-Konfiguration, Fehlerbehebung und Abnahme ab. |
 | 1.1 | 2026-07-13 | v0.7.0 | Screenshots der Weboberfläche zu den Aufgaben §4.1–4.6 ergänzt ([`img/`](img/)); MQTT-Feld-Publish dokumentiert (§5.1 `…_MQTT_BROKER`-Variablen inkl. bess-ems-Feldenvelope, §5.2 Batterie-Feldblöcke, §5.5 Schnittstelle). |
+| 1.2 | 2026-07-13 | v0.7.1 | Grafische Geräte-Ansicht (SVG-Einlinien-Diagramm) in §4.2 ergänzt; §4.5 um den **Start**-Knopf erweitert und den veralteten „kein Start-Knopf"-Hinweis korrigiert. Screenshots `devices.png`/`control.png` aktualisiert. |

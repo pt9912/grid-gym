@@ -67,7 +67,7 @@ class RunExecutionPort(Protocol):
         ...
 
     def request(self, action: ControlAction) -> None:
-        """Dispatcht eine Control-Action (pause/resume/stop)."""
+        """Dispatcht eine Control-Action (start/pause/resume/stop)."""
         ...
 
     def tick(self) -> TickResult:
