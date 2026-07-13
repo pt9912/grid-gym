@@ -60,7 +60,7 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 | --- | --- | --- |
 | **S0** ✓ | [`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md) + [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) (`Proposed`): Physik-Modelle + Feldvertrags-Encoder design-first, gegroundet gegen den lokal verifizierten bess-ems-Vertrag (Schema + Golden-Vektoren) | Architect / ADR |
 | **S1** | **Battery-Emissionen ([`ADR 0077`](../../adr/0077-battery-field-envelope-completeness.md)):** `HealthConfig`/`DcBusConfig`/`ReactiveConfig`-Bloecke + `soh_percent`/`dc_voltage`/`reactive_power_kvar`-Emissionen + `fault_status`/`available`-Properties; Snapshot-Slots (`_soh_pct`/`_efc`); `dc_bus`↔`cell`-Validierung. Additiv/opt-in (pin-neutral), unit-getestet. **→ ADRs `Provisional`** | Implementation |
-| **S2** | **Field-Contract-Publisher ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md)):** tick-frame-aggregierender bess-ems-Encoder (Driver-Schicht) + Feld-Mapping (Flip/derive/rename) + `telemetry`/`status`/`fault`-Topics (Retain + Suppression) + `device_id↔asset_id`-Config + Wall-Clock-Kadenz + fail-fast-Wiring. Opt-in, ohne Config byte-identisch | Implementation |
+| **S2** | **Field-Contract-Publisher ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md)):** tick-frame-aggregierender bess-ems-Encoder (Driver-Schicht) + Feld-Mapping (Flip/derive/rename) + `telemetry`/`status`/`fault`-Topics (Retain + Suppression) + `device_id↔asset_id`-Config + Wall-Clock-Kadenz + fail-fast-Wiring + **minimales `command_ack`-Empfangs-Echo** (subscribe `command`, always-accept ack; Fund-1-Entscheid b, [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) §2.9 — Echo ≠ Feldeffekt). Opt-in, ohne Config byte-identisch | Implementation |
 | **S3** | **Abnahme:** JSON-Schema-Validate je Frame (`mqtt-telemetry-envelope.schema.json`) + **struktureller** Golden-Vektor-Vergleich (`mqtt-golden-vectors.field.v1.json`) + bess-ems-MQTT-only-E2E (EMS verlaesst Safety-Fallback, `fault`-Pfad via injiziertem Battery-Fault). **Closure → ADRs `Accepted`** | Implementation |
 
 ## DoD
@@ -88,14 +88,13 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 
 ## Risiken
 
-- **`command_ack`-Echo / S3-Bestehbarkeit (Review-Fund 1, HOECHSTE — Entscheidung
-  ausstehend).** bess-ems' `MqttCommandSink` published Commands + wartet 2 s auf ein
-  Ack → ohne Ack `Failed("ack-timeout")`; der field-authority-Golden erwartet ein
-  Always-Accept-Echo (`command-ack-accepted-echo`); bess-ems' Feldvertrags-ADR §6
-  markiert die EMS-Ack-Toleranz als **unverifiziert**. Blockiert ein Dispatch-Failure
-  die Regelzyklen, ist der S3-DoD nicht bestehbar. **Optionen:** (a) No-Ack-Smoke frueh,
-  (b) minimales Always-Accept-Echo in S2, (c) DoD abschwaechen. Muss **vor S2**
-  entschieden werden ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) §7).
+- **`command_ack`-Echo / S3-Bestehbarkeit (Review-Fund 1 — ENTSCHIEDEN: Option b).**
+  bess-ems' `MqttCommandSink` published Commands + wartet 2 s auf ein Ack → ohne Ack
+  `Failed("ack-timeout")` → Safety-Fallback; der field-authority-Golden erwartet ein
+  Always-Accept-Echo. **Loesung (S2, [`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) §2.9):**
+  minimales Always-Accept-`command_ack`-Echo (Empfangs-Ack, **kein** Feldeffekt — der
+  bleibt Modbus/075). Damit ist der S3-DoD bestehbar; Restrisiko nur, falls bess-ems
+  ausser dem Ack noch einen sichtbaren Feldeffekt erwartet (im Golden nicht der Fall).
 - **Vorzeichen + `dc_current`-Ableitung** — beides im bess-ems-Schema/ADR **nicht**
   spezifiziert, aus dem Golden abgeleitet (Laden = `−active_power_kw`; `dc_current` mit
   **Frame**-`dc_voltage`, P=V·I). Der Golden ist wertlich in sich inkonsistent
@@ -111,8 +110,10 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 
 ## Nicht-Ziele
 
-- **Kein** MQTT-`command`/`command_ack`-Konsum (bess-ems haelt den Command-Loop deferred;
-  Schreib-Richtung existiert ueber Modbus/[`075`](../done/075-field-server-inbound-write-command.md)).
+- **Kein** MQTT-command-**Wirkung** (kein Sollwert-Effekt ueber MQTT; der Effekt-Pfad
+  bleibt Modbus/[`075`](../done/075-field-server-inbound-write-command.md)). Ein
+  minimales `command_ack`-**Empfangs**-Echo ist dagegen **in Scope** (S2 §2.9,
+  Fund-1-Entscheid b) — verfeinertes Nicht-Ziel „kein command-Wirkung", nicht „kein Ack".
 - **Keine** Aenderung am schmalen Punkt-Publisher (`field_publish_mqtt`).
 - **Kein** Produktivanspruch ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
 

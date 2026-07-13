@@ -149,6 +149,28 @@ Wall-Clock-Pacing ist exogen. Ohne Konfiguration byte-identisch.
 MQTT ohne Auth/TLS → **Nur-Sim-Netz** ([`GG-SAFE-007`](../../../spec/lastenheft.md#gg-safe-007));
 keine produktive Anlagensteuerung. Der Sim-/Testcharakter steht im Adapter-Docstring.
 
+### §2.9 Minimales `command_ack`-Empfangs-Echo (Review-Fund 1, entschieden: Option b)
+
+Der bess-ems-Encoder **subscribed** `battery/{assetId}/command` und **published** auf
+`battery/{assetId}/command/ack` (non-retained) ein **Always-Accept**-`command_ack`:
+`{command_id` (aus dem empfangenen Command echoed)`, accepted: true, dispatched_at`
+(Wall-Clock)`, reason: "accepted"}` — deckt `$defs.command_ack` (required
+`command_id`/`accepted`/`dispatched_at`) + den field-authority-Golden-Case
+`command-ack-accepted-echo`.
+
+**Echo ≠ Feldeffekt (die tragende Grenze).** grid-gym **wirkt nicht** auf den
+`command` (kein Sollwert-Effekt ueber MQTT); der Sollwert-**Effekt**-Pfad bleibt
+Modbus ([`ADR 0076`](0076-inbound-write-exogenous-input-recording.md)/Slice 075). Das
+Echo ist ein reines **Empfangs-Ack**, das bess-ems' `MqttCommandSink` davon abhaelt,
+in `Failed("ack-timeout")` → Safety-Fallback zu laufen (macht den S3-DoD „EMS verlaesst
+den Fallback" bestehbar). **Warum in Scope trotz CR-Nicht-Ziel:** die Quelle (bess-ems
+wartet aktiv auf ein Ack; der publizierte Golden erwartet das Echo) widerlegt die
+CR-Annahme „telemetry-read-only"; das **verfeinerte** Nicht-Ziel ist „kein command-
+**Wirkung**", nicht „kein Ack".
+
+**Determinismus unberuehrt:** `dispatched_at` ist Wall-Clock (**exogen**, wie das
+Pacing §2.4); kein Snapshot-State. Ohne konfigurierten Encoder byte-identisch.
+
 ---
 
 ## 3. Begruendung
@@ -206,20 +228,8 @@ Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/next/077-
 
 - **MQTT-`command`-Feldeffekt** — grid-gym **wirkt** nicht auf einen MQTT-`command`
   (der Sollwert-Schreibpfad ist Modbus, [`ADR 0076`](0076-inbound-write-exogenous-input-recording.md)/Slice 075).
-- **OFFENES RISIKO — `command_ack`-Echo (Review-Fund 1, Entscheidung ausstehend).**
-  Der CR erklaerte `command`/`command_ack` zum Nicht-Ziel; die **Quelle** widerspricht
-  dem teilweise: bess-ems' `MqttCommandSink` **published Commands + wartet
-  `CommandAckTimeout` (2 s)** → ohne Ack `CommandDispatchResult.Failed("ack-timeout")`,
-  und der **field-authority-Golden** enthaelt `command-ack-accepted-echo` (der Vertrag
-  erwartet vom Feld ein Always-Accept-Echo). bess-ems' eigenes Feldvertrags-ADR §6
-  markiert die Ack-Toleranz des EMS als **unverifiziert** (im Smoke ackte
-  `bess-field-sim` jedes Command). **Damit ist der S3-DoD** („EMS verlaesst
-  Safety-Fallback + faehrt Regelzyklen") **moeglicherweise nicht bestehbar**, wenn ein
-  Dispatch-Failure die Regelung blockiert. **Entscheidung (Slice-Risiken):** (a)
-  No-Ack-Smoke frueh (empirisch belegen, ob Regelzyklen trotz Dispatch-Failure laufen),
-  (b) **minimales Always-Accept-`command_ack`-Echo in S2** (Echo ≠ Feldeffekt — die
-  Grenze „kein MQTT-Feldeffekt" bleibt ehrlich, der Golden-Case wird gedeckt), oder (c)
-  DoD abschwaechen. Bis zur Entscheidung ist der Echo-Umfang **nicht** fixiert.
+  Ein **Empfangs-Ack-Echo** (kein Effekt) ist dagegen in Scope — §2.9 (Review-Fund 1,
+  **entschieden: Option b**, damit der S3-DoD bestehbar ist).
 - **Die Emissionsmodelle** (soh/dc_voltage/reactive/Fault-Surface) —
   [`ADR 0077`](0077-battery-field-envelope-completeness.md).
 - **Aenderung am schmalen Punkt-Publisher** (`field_publish_mqtt`) — bleibt unveraendert.
