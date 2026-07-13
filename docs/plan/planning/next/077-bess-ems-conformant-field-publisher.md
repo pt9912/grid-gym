@@ -3,12 +3,15 @@
 **Status:** **Next — S0 (Design/ADRs) done, S1/S2/S3 offen.** grid-gym-seitige
 Haelfte der bess-ems-Kopplung ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
 §7, [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)). Aktiviert aus einem
-externen Change-Request (Schwesterprojekt `bess-ems` v2.0.0).
+externen Change-Request (Schwesterprojekt `bess-ems`).
 **Datum:** 2026-07-13
-**Quelle:** `bess-ems` v2.0.0 — Feldvertrag lokal verifiziert
-(`config/schema/mqtt-telemetry-envelope.schema.json` + `vectors/mqtt-golden-vectors.field.v1.json`
-+ bess-ems' Feldvertrags-ADR). „Voll modelliert" (User-Entscheid 2026-07-13): echte Battery-Emissionen
-statt Adapter-Defaults.
+**Quelle:** `bess-ems` **v2.1.0** (Envelope-Schema stabil seit v2.0.0; die Golden-
+Vektoren + das Manifest-Schema kamen erst mit v2.1.0 — der CR-Pin „v2.0.0" war stale,
+Review-Fund 2) — Feldvertrag lokal verifiziert
+(`config/schema/mqtt-telemetry-envelope.schema.json` +
+`config/schema/vectors/mqtt-golden-vectors.field.v1.json` + bess-ems' Feldvertrags-ADR).
+„Voll modelliert" (User-Entscheid 2026-07-13): echte Battery-Emissionen statt
+Adapter-Defaults.
 
 ---
 
@@ -85,11 +88,23 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 
 ## Risiken
 
-- **Vorzeichenkonvention** — im bess-ems-Schema/ADR **nicht** spezifiziert; aus dem
-  publizierten Golden-Vektor abgeleitet (Laden = `−active_power_kw`). Optionale
-  Rueckbestaetigung ans bess-ems-Team, kein Blocker.
-- **Kadenz/Wall-Clock** — der 10-s-`SnapshotMaxAge` ist in bess-ems hart kodiert (bis
-  dessen §5.1); der Publisher muss kontinuierlich pacen, sonst EMS-Dauer-Safe-Stop.
+- **`command_ack`-Echo / S3-Bestehbarkeit (Review-Fund 1, HOECHSTE — Entscheidung
+  ausstehend).** bess-ems' `MqttCommandSink` published Commands + wartet 2 s auf ein
+  Ack → ohne Ack `Failed("ack-timeout")`; der field-authority-Golden erwartet ein
+  Always-Accept-Echo (`command-ack-accepted-echo`); bess-ems' Feldvertrags-ADR §6
+  markiert die EMS-Ack-Toleranz als **unverifiziert**. Blockiert ein Dispatch-Failure
+  die Regelzyklen, ist der S3-DoD nicht bestehbar. **Optionen:** (a) No-Ack-Smoke frueh,
+  (b) minimales Always-Accept-Echo in S2, (c) DoD abschwaechen. Muss **vor S2**
+  entschieden werden ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) §7).
+- **Vorzeichen + `dc_current`-Ableitung** — beides im bess-ems-Schema/ADR **nicht**
+  spezifiziert, aus dem Golden abgeleitet (Laden = `−active_power_kw`; `dc_current` mit
+  **Frame**-`dc_voltage`, P=V·I). Der Golden ist wertlich in sich inkonsistent
+  (`−250.5/798.5≈−313.7` vs. Vektor `−313.1`) → nur Vorzeichen gepinnt (Review-Fund 4).
+  Beides mit **einer** Rueckbestaetigung ans bess-ems-Team gebuendelt; kein Blocker (S3
+  vergleicht strukturell).
+- **Kadenz/Wall-Clock** — `SnapshotMaxAge`-**Default 10 s** (seit v2.1.0 via
+  `Bess:SnapshotMaxAge` konfigurierbar, §5.1 umgesetzt — Review-Fund 3); der Publisher
+  muss kontinuierlich innerhalb des Fensters pacen, sonst EMS-Dauer-Safe-Stop.
 - **opt-in/Pflicht-Spannung** — der Envelope verlangt alle 10 Felder; grid-gyms Physik
   ist opt-in → fail-fast-Wiring statt Schema-invalider Frames
   ([`ADR 0078`](../../adr/0078-bess-ems-field-contract-publisher.md) §2.5).
@@ -103,5 +118,5 @@ Zwei ADRs (Buendelung der Physik, getrennt vom Publisher — User-Entscheid):
 
 ## Aktivierung
 
-Change-Request extern (bess-ems v2.0.0). S0 (ADRs) done 2026-07-13. Nach ADR-Runde +
+Change-Request extern (bess-ems v2.1.0). S0 (ADRs) done 2026-07-13. Nach ADR-Runde +
 User-Go → `in-progress/` (S1 Battery-Emissionen zuerst, dann S2 Publisher, S3 Abnahme).

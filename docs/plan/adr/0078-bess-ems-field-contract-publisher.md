@@ -17,7 +17,8 @@ aus. Konsumiert die Emissionen aus [`ADR 0077`](0077-battery-field-envelope-comp
 - [`ADR 0012`](0012-api-simulation-two-processes.md) (Fan-out im Driver, Persistenz-Bus)
   + [`ADR 0038`](0038-telemetry-stream-port.md) (Drop-Oldest-Stream ≠ die
   vollstaendige `TickResult.emitted_telemetry`, aus der der Frame aggregiert wird).
-- **bess-ems-Feldvertrag** (Schwesterrepo, lokal verifiziert):
+- **bess-ems-Feldvertrag** (Schwesterrepo, lokal verifiziert, **Stand v2.1.0** —
+  Envelope-Schema stabil seit v2.0.0, Golden-Vektoren + Manifest-Schema seit v2.1.0):
   `config/schema/mqtt-telemetry-envelope.schema.json` (`$defs.telemetry`, 10 required
   Felder) + `config/schema/vectors/mqtt-golden-vectors.field.v1.json` (struktureller
   Abnahme-Vektor) + bess-ems' Feldvertrags-ADR (Topic-/Retain-/Suppression-/Kadenz-Semantik).
@@ -80,9 +81,16 @@ Adapter-seitige Uebersetzung je `battery`-Device und Tick:
 kompatibel; `Decimal`-als-String waere ein Typ-Bruch gegen das Schema); `offset_millis`
 als JSON-**integer**. `available` als JSON-`boolean`, `fault_status` als String.
 
-**`dc_current`-Vorzeichenprobe (Golden):** `−250.5 kW·1000 / 800 V = −313.1 A` = der
-Vektorwert `telemetry-charging.dc_current`. Die Ableitung ist damit gegen den
-publizierten Vektor gepinnt.
+**`dc_current`-Ableitung + Golden (Review-Fund, praezisiert).** Die Ableitung nutzt
+die **Frame-eigene** `dc_voltage` (die momentane Klemmenspannung, nicht die nominale) —
+`dc_current = active_power_kw·1000 / dc_voltage`. **Gegen den Golden ist nur das
+Vorzeichen gepinnt, nicht der Wert:** der `telemetry-charging`-Vektor ist in sich
+**nicht** konsistent (`−250.5 kW·1000 / 798.5 V ≈ −313.7 A`, der Vektor nennt aber
+`−313.1`; `−313.1` ergibt sich nur aus **800 V nominal**, auf eine Dezimale gerundet).
+Da S3 nur **strukturell** vergleicht (§2.6), bricht das keinen Test — aber der ADR
+behauptet **nicht** Wertgleichheit. Die offene Frage „Frame-`dc_voltage` vs. nominal in
+der Ableitung" (Antwort hier: **Frame**, P=V·I mit momentaner Spannung) wird mit der
+Vorzeichen-Rueckbestaetigung ans bess-ems-Team gebuendelt (§6/Slice-Risiken).
 
 ### §2.3 Topic-Schema + ID-Mapping
 
@@ -96,7 +104,9 @@ publizierten Vektor gepinnt.
 ### §2.4 Kadenz (Wall-Clock-Pacing)
 
 bess-ems misst Telemetrie-Frische **beim Empfang** (`InMemorySnapshotStore`,
-Default-Fenster **10 s**, in bess-ems bis dessen §5.1 hart kodiert). Der Publisher muss
+**Default 10 s**, seit bess-ems v2.1.0 via `Bess:SnapshotMaxAge` konfigurierbar —
+§5.1 umgesetzt; das Risiko bleibt der 10-s-Default, nicht mehr eine Hartkodierung).
+Der Publisher muss
 **kontinuierlich innerhalb des Fensters** publizieren (Wall-Clock-getaktet, wie der
 Driver-Tick-Loop bereits laeuft), sonst laeuft das EMS in Dauer-Safe-Stop. Das Pacing
 ist **exogen** (Wall-Clock) — es geht **nicht** in den Determinismus-Vertrag ein
@@ -194,10 +204,22 @@ Design-first (diese ADR); Implementierung im [`Slice 077`](../planning/next/077-
 
 ## 7. Nicht Gegenstand dieser ADR
 
-- **MQTT-`command`/`command_ack`-Konsum** — bess-ems haelt den Command-Closed-Loop
-  bewusst deferred; die MQTT-Kopplung ist telemetry-read-only. Die Schreib-Richtung
-  existiert bereits ueber Modbus ([`ADR 0076`](0076-inbound-write-exogenous-input-recording.md),
-  Slice 075) und ist hier nicht Gegenstand.
+- **MQTT-`command`-Feldeffekt** — grid-gym **wirkt** nicht auf einen MQTT-`command`
+  (der Sollwert-Schreibpfad ist Modbus, [`ADR 0076`](0076-inbound-write-exogenous-input-recording.md)/Slice 075).
+- **OFFENES RISIKO — `command_ack`-Echo (Review-Fund 1, Entscheidung ausstehend).**
+  Der CR erklaerte `command`/`command_ack` zum Nicht-Ziel; die **Quelle** widerspricht
+  dem teilweise: bess-ems' `MqttCommandSink` **published Commands + wartet
+  `CommandAckTimeout` (2 s)** → ohne Ack `CommandDispatchResult.Failed("ack-timeout")`,
+  und der **field-authority-Golden** enthaelt `command-ack-accepted-echo` (der Vertrag
+  erwartet vom Feld ein Always-Accept-Echo). bess-ems' eigenes Feldvertrags-ADR §6
+  markiert die Ack-Toleranz des EMS als **unverifiziert** (im Smoke ackte
+  `bess-field-sim` jedes Command). **Damit ist der S3-DoD** („EMS verlaesst
+  Safety-Fallback + faehrt Regelzyklen") **moeglicherweise nicht bestehbar**, wenn ein
+  Dispatch-Failure die Regelung blockiert. **Entscheidung (Slice-Risiken):** (a)
+  No-Ack-Smoke frueh (empirisch belegen, ob Regelzyklen trotz Dispatch-Failure laufen),
+  (b) **minimales Always-Accept-`command_ack`-Echo in S2** (Echo ≠ Feldeffekt — die
+  Grenze „kein MQTT-Feldeffekt" bleibt ehrlich, der Golden-Case wird gedeckt), oder (c)
+  DoD abschwaechen. Bis zur Entscheidung ist der Echo-Umfang **nicht** fixiert.
 - **Die Emissionsmodelle** (soh/dc_voltage/reactive/Fault-Surface) —
   [`ADR 0077`](0077-battery-field-envelope-completeness.md).
 - **Aenderung am schmalen Punkt-Publisher** (`field_publish_mqtt`) — bleibt unveraendert.

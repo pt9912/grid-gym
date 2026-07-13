@@ -95,10 +95,15 @@ DC-Bus-/Pack-Klemmenspannung als deterministisches Modell:
 
     ocv    = nominal_voltage_v + ocv_soc_slope_v·(soc_frac − 0.5)
     i_dc   = power_kw·1000 / ocv        # grid-gym-Vorzeichen: Laden = +
-    dc_voltage = ocv − i_dc·internal_resistance_ohm
+    dc_voltage = ocv + i_dc·internal_resistance_ohm
 
-Bei `ocv_soc_slope_v=0` **und** `internal_resistance_ohm=0` (Default) ist
-`dc_voltage = nominal_voltage_v` konstant — deckt den quasi-statischen Golden-Vektor.
+**IR-Drop-Vorzeichen (Review-Fund):** die Klemmenspannung liegt beim **Laden**
+(Strom in die Batterie, `i_dc > 0`) **ueber** OCV, beim Entladen darunter — daher
+`+ i_dc·R` (mit grid-gyms Laden-=-**+**-Konvention). Bei `ocv_soc_slope_v=0` **und**
+`internal_resistance_ohm=0` (Default) ist `dc_voltage = nominal_voltage_v` konstant.
+Der Golden-Vektor (`telemetry-charging.dc_voltage=798.5 < 800`) ist **strukturell/
+illustrativ**, nicht physikalisch stimmig (er senkt die Ladespannung); das Modell wird
+**nicht** darauf gefittet — der Golden-Vergleich ist wertfrei (§2.6/[`ADR 0078`](0078-bess-ems-field-contract-publisher.md) §2.6).
 
 **Versoehnung mit [`ADR 0066`](0066-battery-cell-voltage-telemetry-pattern.md) (Review-Punkt).**
 `CellConfig` traegt bereits `nominal_pack_voltage_v` (die Summen-Nennspannung des
@@ -118,13 +123,15 @@ Um **kein zweites Spannungskonzept** einzufuehren:
 `ReactiveConfig(power_factor=1)` mit `0 < power_factor ≤ 1`. Blindleistung aus der
 Wirkleistung ueber einen konstanten Leistungsfaktor:
 
-    reactive_power_kvar = |power_kw| · tan(acos(power_factor))
+    reactive_power_kvar = |power_kw| · q_factor,   q_factor = sqrt(1 − pf²) / pf
 
-Bei `power_factor=1` (Default) ist `Q=0`. **Determinismus-Randnote:** `tan(acos(pf))`
-ist **einmal bei Konstruktion** aus dem `Decimal`-`pf` zu einem `Decimal`-Faktor
-`q_factor` vorzurechnen (kein `float`-`math`-Aufruf im Tick, [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)); der
-Tick multipliziert nur `|power_kw|·q_factor`. Vorzeichenkonvention (kapazitiv/induktiv)
-ist im Feldenvelope nicht spezifiziert → positiv (Betrag), Verfeinerung deferred.
+**Vollstaendig libm-frei (Review-Kleinigkeit a):** `tan(acos(pf))` ist identisch
+`sqrt(1 − pf²)/pf` und damit **rein in `Decimal`** rechenbar (`Decimal.sqrt()`, kein
+`float`/`math`) — passt zum [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)-Geist.
+`q_factor` wird **einmal bei Konstruktion** aus dem `Decimal`-`pf` vorgerechnet; der
+Tick multipliziert nur `|power_kw|·q_factor`. Bei `power_factor=1` (Default) ist `Q=0`.
+Vorzeichenkonvention (kapazitiv/induktiv) ist im Feldenvelope nicht spezifiziert →
+positiv (Betrag), Verfeinerung deferred.
 
 ### §2.5 Fault-Status-Surface — `available` / `fault_status` aus aktiven Faults
 
