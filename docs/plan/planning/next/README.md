@@ -11,7 +11,7 @@ aktive** Arbeit.
 Push-Seite [`073`](../done/073-field-server-mqtt-publish-bridge.md) +
 Pull-Seite [`074`](../done/074-field-server-modbus-server-adapter.md)
 **geliefert + review-gehaertet → v0.5.0 (2026-07-12)**. Der Folge-Slice
-[`075`](../in-progress/075-field-server-inbound-write-command.md)
+[`075`](../done/075-field-server-inbound-write-command.md)
 (Inbound-Write→Command, **ausgegliedert** samt dedizierter Folge-ADR — ein
 Live-Master-Write ist exogener Input und bricht das geschlossene Self-Replay)
 ist seit 2026-07-12 **aktiv in [`../in-progress/`](../in-progress/)**.

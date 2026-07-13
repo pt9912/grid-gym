@@ -4,9 +4,11 @@
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
 (MVP-Linie); aktuelles Release **v0.5.0** (2026-07-12, Field-Server-Surface).
-**Aktiver Slice:**
-[`075`](075-field-server-inbound-write-command.md) (Field-Server
-Inbound-Write→`Command`). Zuletzt abgeschlossen 074/073 (Field-Server, v0.5.0),
+**Kein aktiver Slice.** Zuletzt abgeschlossen
+[`075`](../done/075-field-server-inbound-write-command.md) (Field-Server
+Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+`Accepted`, done 2026-07-13; Release ausstehend), davor 074/073 (Field-Server,
+v0.5.0),
 davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
 Quality-Fault →
@@ -36,10 +38,11 @@ keine eigene `GG-*`-ID). **Beide Schwester-Ports done + review-gehaertet
 + Pull-Seite [`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`/Modbus-Server Read-Serving + geteilte Current-Value-
 Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md)
-**`Accepted`**, released als **v0.5.0** (2026-07-12). **Aktiver Slice:
-[`075`](075-field-server-inbound-write-command.md)**
-(Inbound-Write→Command, ausgegliedert). Offene Trigger (OTel-Bump, Vorwaerts-
-Traceability, `a-check`) sind noch nicht als Slice geschnitten.
+**`Accepted`**, released als **v0.5.0** (2026-07-12). Danach
+[`075`](../done/075-field-server-inbound-write-command.md)
+(Inbound-Write→Command, ausgegliedert) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+`Accepted`** (2026-07-13; Release ausstehend). Offene Trigger (OTel-Bump,
+Vorwaerts-Traceability, `a-check`) sind noch nicht als Slice geschnitten.
 **Stand:** 2026-07-12
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -110,9 +113,10 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Aktiver Slice:** [`075`](075-field-server-inbound-write-command.md)
-(Field-Server Inbound-Write→`Command`, S0 = dedizierte Folge-ADR). Zuletzt
-abgeschlossen (2026-07-12) die Field-Server-Pull-/Push-Seite
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+[`075`](../done/075-field-server-inbound-write-command.md)
+(Field-Server Inbound-Write→`Command`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+`Accepted`; Release ausstehend). Davor (2026-07-12) die Field-Server-Pull-/Push-Seite
 [`074`](../done/074-field-server-modbus-server-adapter.md)/[`073`](../done/073-field-server-mqtt-publish-bridge.md)
 (→ **v0.5.0**), davor:
 [`072`](../done/072-gg-fault-002-stale-data.md) (dedizierter `stale_data`-
@@ -179,10 +183,12 @@ Push + Kompositions-Schicht-Naht + grid-gym↔`bess-ems`-Integrationsgeschirr) u
 [`074`](../done/074-field-server-modbus-server-adapter.md)
 (`DeviceServerPort`, Modbus-Server Read-Serving + geteilte Current-Value-
 Projektion) sind **done + review-gehaertet → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) `Accepted`**,
-**released als v0.5.0** (2026-07-12); **aktiv** ist jetzt
-[`075`](075-field-server-inbound-write-command.md) (Inbound-Write→Command,
+**released als v0.5.0** (2026-07-12); danach
+[`075`](../done/075-field-server-inbound-write-command.md) (Inbound-Write→Command,
 **ausgegliedert** samt Folge-ADR, weil Live-Writes das geschlossene Self-Replay
-brechen). Der Entwurf wurde nach zwei adversarialen Reviews von einem geteilten
+brechen) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+`Accepted`** (2026-07-13; Release ausstehend). Der Entwurf wurde nach zwei
+adversarialen Reviews von einem geteilten
 Kern-`TickLoop`-Port auf **zwei Schwester-Ports in der Kompositions-Schicht**
 revidiert (Fan-out lebt im API-Prozess-Driver, nicht im Kern-Loop,
 [`ADR 0012`](../../adr/0012-api-simulation-two-processes.md)). Motivation ist die

@@ -15,12 +15,16 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Self
 
+from collections.abc import Sequence
+
 from grid_gym.adapters.driving._inbound_command_buffer import InboundCommandBuffer
+from grid_gym.hexagon.core.agents import AgentMessageBus
+from grid_gym.hexagon.core.commands.scenario_command_engine import ScenarioCommandEngine
 from grid_gym.hexagon.core.devices._protocol import DeviceModel
 from grid_gym.hexagon.core.domain.command import Command
 from grid_gym.hexagon.core.domain.command_result import CommandResult
 from grid_gym.hexagon.core.domain.device import DeviceTickContext, DeviceTickOutcome
-from grid_gym.hexagon.core.domain.scenario import ScenarioDevice
+from grid_gym.hexagon.core.domain.scenario import ScenarioCommand, ScenarioDevice
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint
 from grid_gym.hexagon.core.simulation.scheduler import Scheduler
 from grid_gym.hexagon.core.simulation.tick_loop import TickLoop
@@ -132,3 +136,91 @@ def test_multiple_inbound_applied_in_arrival_order() -> None:
     loop.tick()
 
     assert [command.type for command in recorder.received] == ["first", "second"]
+
+
+class _OneShotAgent:
+    """Test-Double (`Agent`): emittiert **einmal** einen Command, dann nichts.
+
+    Der Command wird im D2-Schritt gesammelt und im **naechsten** Tick (A0a)
+    angewandt (GG-AGENT-008 Commit-Reihenfolge)."""
+
+    def __init__(self, agent_id: str, command: Command) -> None:
+        self._agent_id = agent_id
+        self._command = command
+        self._emitted = False
+
+    @property
+    def agent_id(self) -> str:
+        return self._agent_id
+
+    def set_run_id(self, run_id: str) -> None:
+        _ = run_id
+
+    def tick(self, context: DeviceTickContext, bus: AgentMessageBus) -> Sequence[Command]:
+        _ = (context, bus)
+        if self._emitted:
+            return ()
+        self._emitted = True
+        return (self._command,)
+
+    def snapshot(self) -> Mapping[str, object]:
+        return {"emitted": self._emitted}
+
+    @classmethod
+    def from_snapshot(cls, state: Mapping[str, object]) -> Self:
+        _ = state
+        raise NotImplementedError
+
+
+def _command(command_type: str, *, simulation_time: int = 0) -> Command:
+    return Command(
+        command_id=f"{command_type}-0",
+        simulation_time=simulation_time,
+        target_device_id="rec-1",
+        type=command_type,
+        payload={},
+        validation_status="test",
+        result=CommandResult.IGNORED,
+    )
+
+
+def test_pre_tick_command_order_is_scenario_then_agent_then_inbound() -> None:
+    """Pin der Vor-Tick-Ordnung **A0s → A0a → A0i** (ADR 0076 §2.3) — und damit
+    der **Materialisierungs-Grenze** (Modell-B, ADR 0076 §7).
+
+    Drei Quellen kommandieren `rec-1` im **selben** Tick (now=2000):
+    scenario-scheduled (A0s), Agent (A0a), Inbound-Write (A0i). Der Recorder
+    empfaengt sie in genau dieser Reihenfolge → der Inbound-Write ist **zuletzt**
+    (ueberschreibt den Agenten live, last-wins).
+
+    **Konsequenz fuer die Materialisierung**: `materialize_inbound_writes` legt den
+    Inbound-Write in den scenario-`commands`-Block = **A0s** = **vor** den Agenten.
+    Fuer ein Ziel **ohne** Agent im selben Tick ist der Replay byte-treu (A0s == der
+    Live-A0i-Effekt). Kommandiert aber ein Agent dasselbe Ziel im selben Tick, wuerde
+    der Replay den Agenten **nach** dem materialisierten Inbound anwenden → der Agent
+    gewinnt (statt live der Inbound). Diese Divergenz ist die **bewusste Modell-B-
+    Grenze** (HIL+Agent-auf-gleichem-Ziel ist heute kein realer Bedarf; ADR 0076 §7).
+    """
+    recorder = _CommandRecordingDevice("rec-1")
+    buffer = InboundCommandBuffer()
+    agent = _OneShotAgent("agent-1", _command("agt"))
+    command_engine = ScenarioCommandEngine(
+        (ScenarioCommand(simulation_time=2000, target="rec-1", type="scn", payload={}),)
+    )
+    loop = TickLoop(
+        run_id="slice-075-order-pin",
+        tick_ms=1000,
+        clock=FakeClock(),
+        random=FixedSeedRandom(seed=42),
+        scheduler=Scheduler(),
+        devices=(recorder,),
+        command_engine=command_engine,
+        agents=(agent,),
+        inbound_source=buffer,
+    )
+
+    loop.tick()  # now=1000: Agent emittiert "agt" (D2) → pending fuer Tick 2.
+    buffer.enqueue("rec-1", "inb", {})  # Inbound faellig im naechsten Tick (A0i).
+    loop.tick()  # now=2000: A0s "scn" → A0a "agt" → A0i "inb".
+
+    assert [command.type for command in recorder.received] == ["scn", "agt", "inb"]

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Field-Server Inbound-Write→`Command` (Slice 075 S1b, ADR 0076 → `Provisional`):**
+- **Field-Server Inbound-Write→`Command` (Slice 075, ADR 0076 → `Accepted`):**
   Der `device_server_modbus`-Server nimmt jetzt **Master-Writes** (Modbus FC06/
   FC16) auf konfigurierte Sollwert-Fenster (`ModbusServerConfig.write_map`) an und
   traegt sie als `Command` in den Simulations-Kern zurueck — die Schreib-
@@ -20,13 +20,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   zieht den geteilten Puffer pro Tick als `inbound_source` (Vor-Tick-Schritt A0i,
   Ordnung scenario→agent→inbound). **Determinismus (ADR 0076, Modell B):** ein
   angewandter Write wird als `(aufgeloester_sim_tick, target, type, payload,
-  arrival_sequence)` erfasst und ist ueber `materialize_inbound_writes(...)` in
-  einen Szenario-`commands`-Block materialisierbar (Replay via A0s); der
-  Live-Lauf bleibt exogen (ehrlicher Vertrag). Additiv + opt-in: ohne
-  `write_map`/injizierten Puffer bleibt es reines Read-Serving (byte-identisch/
-  pin-neutral). Nur Sim-/Testadapter (ein beschreibbarer Feldbus ohne Auth ist
-  Nur-Sim-Netz, GG-SAFE-007). Determinismus-E2E (materialisierter Strom, zweimal
-  byte-identisch → ADR 0076 `Accepted`) folgt in S2.
+  arrival_sequence)` erfasst und ueber `materialize_inbound_writes(...)` in einen
+  Szenario-`commands`-Block materialisiert; der Strom spielt ueber den A0s-Pfad
+  **zweimal byte-identisch** ab und ist deckungsgleich mit dem „Live"-Lauf des
+  kommandierten (agenten-freien) Geraets (E2E-belegt). Der Live-Lauf selbst bleibt
+  exogen (ehrlicher Vertrag: die Tick-Aufloesung des Wall-Clock-Arrivals ist die
+  Source-of-Truth). Die **Materialisierungs-Grenze** (ein Agent, der dasselbe Ziel
+  im selben Tick kommandiert, divergiert zwischen A0i-Live und A0s-Replay) ist als
+  bewusste Modell-B-Grenze mit Pin-Test dokumentiert (ADR 0076 §7). Additiv +
+  opt-in: ohne `write_map`/injizierten Puffer bleibt es reines Read-Serving
+  (byte-identisch/pin-neutral). Nur Sim-/Testadapter (ein beschreibbarer Feldbus
+  ohne Auth ist Nur-Sim-Netz, GG-SAFE-007).
 
 ## [0.5.0] - 2026-07-12
 

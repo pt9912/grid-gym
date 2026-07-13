@@ -1,16 +1,15 @@
 # ADR 0076 — Exogen-Input-Recording: Inbound-Write→`Command` als record-only + materialisierbares Szenario
 
-**Status:** Provisional (2026-07-13) — die Write→`Command`-Naht ist belegt: ein
-Master-Write wird am Adapter-Rand in einen `Command` uebersetzt (Modell B,
-record-only) und mit Capture eines **aufgeloesten Sim-Ticks** festgehalten, der
-materialisierbar ist. Status-Pfad (kapazitaetsbasiert,
+**Status:** Accepted (2026-07-13) — der Determinismus-Nachweis ist belegt: der
+erfasste Write-Strom wird materialisiert (`commands`-Block) und **zweimal
+byte-identisch** ueber den A0s-Pfad abgespielt, deckungsgleich mit dem „Live"-Lauf
+des kommandierten (agenten-freien) Geraets. Status-Pfad (kapazitaetsbasiert,
 [`ADR 0006`](0006-adr-lifecycle-superseding-and-process-corrections.md) §4,
 liefer-agnostisch): Proposed → **Provisional** (Write→`Command`-Naht mit Capture,
-**erreicht**) → **Accepted**, sobald der Determinismus-E2E (materialisierter
-Write-Strom, zweimal byte-identisch) belegt ist. Das Delivery-Mapping (welche
-Slices die Transitionen liefern) lebt im **ADR-Index + Roadmap**, nicht im
+erreicht) → **Accepted** (Determinismus-E2E, **erreicht**). Das Delivery-Mapping
+(welche Slices die Transitionen liefern) lebt im **ADR-Index + Roadmap**, nicht im
 ADR-Body.
-**Datum:** 2026-07-13 (Provisional; Proposed 2026-07-12)
+**Datum:** 2026-07-13 (Accepted; Provisional 2026-07-13; Proposed 2026-07-12)
 **Bezug:**
 
 - [`ADR 0075`](0075-field-server-surface-device-endpoint-port.md) §7 — hat den
@@ -227,10 +226,19 @@ fullbuild`) lebt in dessen Closure.
 
 ## 7. Nicht Gegenstand dieser ADR / offene Punkte
 
-- **Finale Ordnungs-Semantik** (scenario→agent→inbound, §2.3) — die Richtung ist
-  gesetzt; die genaue Konfliktbehandlung (z. B. ob ein Inbound-Write eine
-  agenten-erzeugte Command desselben Ticks/Geraets wirklich verdraengt) pinnt die
-  S1-Design-Notiz mit Test.
+- **Ordnungs-Semantik + Materialisierungs-Grenze (gepinnt).** Live gilt
+  scenario→agent→inbound (A0i **nach** A0a): der Inbound-Write **verdraengt** eine
+  agenten-erzeugte Command desselben Ticks/Geraets (last-wins) — belegt in
+  `test_tick_loop_inbound_commands.py` (`test_pre_tick_command_order_is_scenario_
+  then_agent_then_inbound`). **Folge fuer die Materialisierung:** ein Inbound-Write
+  wird in den `commands`-Block = **A0s** = **vor** den Agenten materialisiert. Fuer
+  ein Ziel **ohne** Agent im selben Tick ist der Replay damit **byte-treu** (A0s ==
+  Live-A0i-Effekt) — belegt in `test_inbound_write_determinism_e2e.py`.
+  Kommandiert ein Agent dasselbe Ziel im selben Tick, wuerde der Replay den Agenten
+  **nach** dem materialisierten Inbound anwenden (Agent gewinnt) → Divergenz zum
+  Live-Lauf (Inbound gewinnt). Das ist eine **bewusste, akzeptierte Modell-B-
+  Grenze** (HIL+Agent-auf-gleichem-Ziel/Tick ist heute kein realer Bedarf); eine
+  A0i-treue Materialisierung waere Option-A-Territorium (§2.6, additiv nachruestbar).
 - **Option A** (Write-Journal, Runtime-Re-Injektion, originale `run_id`) — §2.6:
   additiv nachruestbar, hier bewusst nicht geliefert.
 - **Auth/Autorisierung** auf dem Write-Pfad — out of scope; Nur-Sim-Netz

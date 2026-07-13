@@ -1,7 +1,7 @@
 # 075 — Field-Server Inbound-Write→Command (Exogen-Input-Recording)
 
-**Status:** **Aktiv — in Arbeit (`in-progress/`, seit 2026-07-12).** Baut auf
-[`074`](../done/074-field-server-modbus-server-adapter.md) (`DeviceServerPort`
+**Status:** **Done (`done/`, 2026-07-13).** Baut auf
+[`074`](074-field-server-modbus-server-adapter.md) (`DeviceServerPort`
 Read-Serving, done) auf. Ausgegliedert aus dem urspruenglichen 074-Scope, weil
 der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md) §7).
@@ -11,8 +11,10 @@ der Determinismus-Vertrag eigenes Design + eine dedizierte Folge-ADR braucht
 (Modbus-Write→`Command`-Naht [`SimAction`/FC06/FC16] + `write_map`/`InboundWrite
 Decoder` + `TickLoopWiring.inbound_source` + Materialisierungs-Helper +
 Real-pymodbus-Write-E2E → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-**`Provisional`**) · S2 offen (Determinismus-E2E via Materialisierung).
-**Datum:** 2026-07-13 (S1b; aktiviert 2026-07-12)
+**`Provisional`**) · **S2 ✓** (Determinismus-E2E: materialisierter Strom 2x
+byte-identisch + faithful; Agent-Konflikt-Grenze gepinnt → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
+**`Accepted`**).
+**Datum:** 2026-07-13 (done; aktiviert 2026-07-12)
 **Quelle:** Design- + Plan-Review 2026-07-12 — ein Live-Master-Write ist
 **exogener** Input zu Wall-Clock-Zeit; grid-gyms geschlossenes Self-Replay
 (`(Szenario, Seed, tick_ms)`, rekonstruiert aus persistierter Telemetrie) kennt
@@ -29,7 +31,7 @@ schreibt einen Sollwert (Modbus-Write-Register/-Coil) → grid-gym traegt ihn al
 
 ## Kontext / Ist
 
-- Read-Serving ([`074`](../done/074-field-server-modbus-server-adapter.md)) ist replay-
+- Read-Serving ([`074`](074-field-server-modbus-server-adapter.md)) ist replay-
   sicher (Projektion = reine Funktion der emittierten Telemetrie). **Schreiben**
   bricht das: der Command-Zeitpunkt haengt an der realen Ankunft des Live-Writes,
   nicht an gehashten Scenario-Daten.
@@ -67,7 +69,7 @@ nachruestbar, §2.6).
 | **S0** ✓ | Dedizierte Folge-[`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) (`Proposed`): Exogen-Input-Recording-Modell **B** entschieden (record-only + Materialisierung, Capture Option-A-kompatibel), Determinismus-Vertrag + Snapshot-Grenze fixiert; gegroundetes A/B-Design-Assessment am Command-/Replay-/Snapshot-Code | Architect / ADR |
 | **S1a** ✓ | **Kern-Naht (pymodbus-frei, unit-getestet):** driven `InboundCommandPort` (`hexagon/ports/driven/inbound_command.py`; Kern *pullt* pro Tick) + additive Vor-Tick-Stufe **A0i** im `TickLoop` (Ordnung scenario→agent→inbound, `None`-Skip → Bestands-Laeufe byte-identisch, defensiver Skip fuer unbekannte Targets) + `InboundCommandBuffer` (`adapters/driving/_inbound_command_buffer.py`: thread-sicherer Puffer, `arrival_sequence`, Next-Tick-Aufloesung auf `context.simulation_time`, `InboundWriteCapture`-Aufzeichnung). Buffer/Capture volatil (kein Snapshot-Slot) | Implementation |
 | **S1b** ✓ | **Modbus-Write + Wiring + Materialisierung:** Modbus-Write-Register (FC06/FC16) am Server-Adapter-Rand via pymodbus-`SimAction`-Hook → `InboundWriteDecoder` (`write_map`, `float32`→`Decimal`, pymodbus-frei) → `InboundCommandBuffer.enqueue` (Cross-Thread, Diskriminator gegen FC03-Refresh); Wiring: **ein** geteilter Buffer als `inbound_source` (via `TickLoopWiring`/`build_tick_loop`) **und** in den `ModbusDeviceServerAdapter` injiziert; `materialize_inbound_writes(capture())` → Szenario-`commands`-Block. Real-pymodbus-Write-E2E (Master-`write_registers` → Command am Zielgeraet) + Config-/Decoder-/Materialisierungs-Unit-Tests. **→ [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Provisional`** (`make gates` + `make docs-check` gruen) | Implementation |
-| **S2** | **Determinismus-E2E:** der erfasste Write-Strom wird in einen Szenario-`commands`-Block **materialisiert** + ueber A0s zweimal abgespielt → byte-identische Telemetrie; Ordnung scenario→agent→inbound belegt. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`** | Implementation |
+| **S2** ✓ | **Determinismus-E2E:** der erfasste Write-Strom wird in einen Szenario-`commands`-Block **materialisiert** + ueber A0s **zweimal byte-identisch** abgespielt (`test_inbound_write_determinism_e2e.py`) + deckungsgleich mit dem „Live"-Lauf des kommandierten (agenten-freien) Geraets. Ordnung scenario→agent→inbound + die **Materialisierungs-Grenze** (Agent-auf-gleichem-Ziel divergiert → bewusste Modell-B-Grenze) gepinnt (`test_pre_tick_command_order_...`, [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) §7). **Closure → `Accepted`** | Implementation |
 
 ## S1b — Ist-Stand (done 2026-07-13)
 
@@ -95,42 +97,32 @@ Geliefert (`make gates` + `make docs-check` gruen):
   → Command am Zielgeraet; Refresh/Reads enqueuen nicht) + Decoder/Config/
   Materialisierungs-Unit-Tests.
 
-## Naechster Schritt (S2 — Determinismus-E2E → `Accepted`)
+## S2 — Ist-Stand (done 2026-07-13)
 
-Ziel: den erfassten Write-Strom **materialisieren** + ueber **A0s zweimal
-abspielen** → byte-identische Telemetrie (Muster
-[`test_scenario_commands_e2e.py`](../../../../tests/integration/test_scenario_commands_e2e.py)).
+Determinismus-E2E geliefert (`tests/integration/test_inbound_write_determinism_e2e.py`,
+Muster `test_scenario_commands_e2e.py`):
 
-1. **„Live"-Lauf** (agenten-frei, z. B. Battery-Demo-Szenario): `build_tick_loop`
-   mit `wiring.inbound_source=buffer`; Writes an definierten Ticks enqueuen (kein
-   realer Socket noetig — der Determinismus-Nachweis ist von der pymodbus-Naht
-   unabhaengig, die S1b-E2E deckt Master→Buffer bereits ab); N Ticks fahren;
-   `buffer.capture()` einsammeln + Ziel-Geraet-Telemetrie sammeln.
-2. **Materialisieren**: `materialize_inbound_writes(capture())` → `commands`-Block
-   in ein neues `Scenario` (`load_scenario({**raw, "commands": [...]})`).
-3. **Replay 2×** (ohne `inbound_source`, reiner A0s-Pfad) → byte-identisch **und**
-   deckungsgleich mit der „Live"-Ziel-Telemetrie (Materialisierung faithful).
-4. **Closure → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) `Accepted`.**
+- **„Live"-Lauf** (agenten-freie EV-Charger-Demo): `build_tick_loop` mit
+  `wiring.inbound_source=buffer`, Write an definiertem Tick gepuffert (A0i); kein
+  realer Socket (die S1b-E2E deckt Master→Buffer bereits ab).
+- **Materialisieren**: `materialize_inbound_writes(capture())` → `commands`-Block
+  → neues `Scenario`.
+- **Replay 2x** (reiner A0s-Pfad, kein `inbound_source`) → **byte-identisch** +
+  deckungsgleich mit der „Live"-Ziel-Telemetrie (Materialisierung **faithful**).
+- **Pin-neutral** ohne Inbound-Write (leerer Buffer → A0i No-op).
 
-### S2-Design-Entscheidung, die zu pinnen ist ([`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) §7)
+### Gepinnte Design-Entscheidung: Materialisierungs-Grenze ([`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md) §7)
 
 Die **Live**-Ordnung ist `scenario→agent→inbound` (A0i, inbound **nach** Agent,
-last-wins). Die Materialisierung legt Inbound-Writes aber in den `commands`-Block
-= **A0s** = **vor** Agent. **Konsequenz:** fuer ein Ziel-Geraet, das **kein** Agent
-im selben Tick kommandiert, sind A0i-Live und A0s-Replay identisch → Materialisierung
-**faithful**. Kommandiert ein Agent dasselbe Geraet im selben Tick, gewinnt live der
-Inbound (A0i, last), im Replay aber der Agent (A0s liegt vor A0a) → **Divergenz**.
-Das ist die von §7 offengelassene Konfliktsemantik. **S2-Vorschlag:** den faithful
-Fall (agenten-frei / disjunkte Ziele) als geliefert testen **und** die Divergenz als
-**bewusste Modell-B-Grenze** mit einem Pin-Test dokumentieren (HIL+Agent-auf-
-gleichem-Ziel ist heute kein realer Bedarf; ggf. spaeteres Inkrement). **Diese
-Wahl vor der Implementierung mit dem User bestaetigen.**
-
-Einstiegs-Dateien S2: `tests/integration/` (neuer Determinismus-E2E, Muster
-`test_scenario_commands_e2e.py`), `src/grid_gym/adapters/driving/_inbound_command_buffer.py`
-(`materialize_inbound_writes`, fertig), `src/grid_gym/hexagon/core/scenario/loader.py`
-(`TickLoopWiring.inbound_source`, fertig). **Vor Push:** `make gates` +
-`make docs-check` (+ `make fullbuild` vor Slice-Closure/Release).
+last-wins) — gepinnt in `test_pre_tick_command_order_is_scenario_then_agent_then_
+inbound`. Die Materialisierung legt Inbound-Writes in den `commands`-Block = **A0s**
+= **vor** Agent. **Konsequenz:** fuer ein Ziel **ohne** Agent im selben Tick ist der
+Replay **faithful** (A0i-Live == A0s-Replay). Kommandiert ein Agent dasselbe Ziel im
+selben Tick, gewinnt live der Inbound, im Replay der Agent → **Divergenz**.
+**Entscheidung (mit User bestaetigt 2026-07-13):** als **bewusste Modell-B-Grenze**
+akzeptiert + mit Pin-Test dokumentiert (HIL+Agent-auf-gleichem-Ziel ist heute kein
+realer Bedarf; eine A0i-treue Materialisierung waere Option-A-Territorium, §2.6/§7
+der Folge-ADR).
 
 ## DoD
 
@@ -143,7 +135,7 @@ Einstiegs-Dateien S2: `tests/integration/` (neuer Determinismus-E2E, Muster
 - Pin-neutral ohne Inbound-Writes; `make gates` + `make docs-check` +
   `make fullbuild` gruen.
 - **Release-Entscheidung:** ja (Minor); SemVer-Ziel naechster Minor nach
-  [`074`](../done/074-field-server-modbus-server-adapter.md).
+  [`074`](074-field-server-modbus-server-adapter.md).
 
 ## Bezug
 
@@ -157,7 +149,7 @@ Einstiegs-Dateien S2: `tests/integration/` (neuer Determinismus-E2E, Muster
   (Prozess-Grenze).
 - [`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004) (HIL,
   vollstaendige SUT-Steuerbarkeit).
-- Vorgaenger: [`074`](../done/074-field-server-modbus-server-adapter.md).
+- Vorgaenger: [`074`](074-field-server-modbus-server-adapter.md).
 
 ## Risiken
 
@@ -170,8 +162,24 @@ Einstiegs-Dateien S2: `tests/integration/` (neuer Determinismus-E2E, Muster
 - **Sicherheit** — beschreibbarer Feldbus ohne Auth; Nur-Sim-Netz-Note
   ([`GG-SAFE-007`](../../../../spec/lastenheft.md#gg-safe-007)).
 
+## Offen / Trigger-Kandidaten
+
+- **Env-var-Lifespan-Naht (Read + Write).** Der Modbus-Server (Read aus 074 **und**
+  der Write-Pfad aus S1b) ist auf **In-Process-Naht-Hoehe** verdrahtet
+  (`ModbusDeviceServerAdapter` + `DemoTickLoopDriver.device_server_provider` +
+  `TickLoopWiring.inbound_source`), aber **nicht** als env-var-Opt-in im
+  Composition-Root (`_demo_scenario_setup.py`) wie die Push-Seite
+  (`GRID_GYM_FIELD_PUBLISH_MQTT_BROKER`). 074 hat das fuer Read bewusst nicht
+  geliefert; S1b haelt die Symmetrie. Eine gemeinsame Read+Write-Lifespan-Naht
+  (inkl. `write_map`-Config-Parsing) ist ein **Trigger-Kandidat**, wenn ein
+  End-to-End-`make demo`-Master-Write gebraucht wird.
+- **Quality-Fault-artige Payload-Validierung** am Write-Rand: der Decoder verwirft
+  nicht-endliche `float32`, validiert aber keinen fachlichen Wertebereich (das
+  Geraet klemmt/ignoriert selbst, `apply_command`-Vertrag). Analog zur bekannten
+  HTTP-Runtime-Injection-Grenze.
+
 ## Aktivierung
 
-Aktiviert nach [`074`](../done/074-field-server-modbus-server-adapter.md)-Closure
-(2026-07-12) → `in-progress/`. Nach S2-Closure + `make fullbuild` →
-[`../done/`](../done/).
+Aktiviert nach [`074`](074-field-server-modbus-server-adapter.md)-Closure
+(2026-07-12) → `in-progress/`. **S2-Closure + `make fullbuild` gruen (2026-07-13)
+→ `done/`.**
