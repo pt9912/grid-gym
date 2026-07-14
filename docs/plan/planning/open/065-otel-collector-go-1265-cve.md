@@ -1,6 +1,7 @@
 # 065 — OTel-Collector CVE-2026-39822: Temp-Deferral bis go1.26.5-Stable
 
 **Status:** Open — vulnignore-Temp-Deferral aktiv, wartet auf Upstream-Fix
+(zuletzt re-geprueft **2026-07-14**, weiter blockiert — siehe Re-Checks)
 **Datum:** 2026-07-11
 **Quelle:** Fullbuild-CI rot (`make image-audit`) auf `c11ca51`; CVE-Drift analog
 [`033`](../done/033-otel-collector-go-stdlib-cve-bump.md).
@@ -53,3 +54,21 @@ erwartet), Trivy-Re-Scan 0 HIGH/CRITICAL, vulnignore-Eintrag entfernt — analog
 ## Aktivierungs-Kriterium
 
 Verfuegbarkeit einer OTel-Collector-Stable mit go1.26.5+ ODER `expires`-Ablauf.
+
+## Re-Checks
+
+- **2026-07-14** (Trigger-Bearbeitung): Aktivierungs-Kriterium weiter NICHT
+  erfuellt. Neueste Stable `0.156.0` (2026-07-07) ist gobinary-verifiziert gegen
+  `go1.26.4` gebaut → CVE-2026-39822 unveraendert HIGH (containerisierter
+  Trivy-`0.71.1`-Scan, `--severity HIGH,CRITICAL --ignore-unfixed`; Trivy nennt
+  `1.25.12, 1.26.5, 1.27.0-rc.2` als Fixed-Versions). Ein Bump auf 0.156.0 loest
+  es NICHT; `0.157.0` weiter nur nightly. **Deferral-Invariant (Review-N3)
+  re-bestaetigt:** `deploy/otel-collector-config.yaml` ist unveraendert reiner
+  OTLP-gRPC-Ingress (`receivers: [otlp]`) + statischer `file`-Exporter (kein
+  `filelog`-Receiver, keine `filestorage`-Extension, kein path-templated
+  Exporter) → kein os.Root-/Traversal-Pfad erreichbar; Deferral bleibt sachlich
+  gueltig, `expires 2026-10-09` unkritisch (~3 Monate). **Forecast (belastbar):**
+  `0.157.0-nightly.5db62cf` ist gobinary-verifiziert gegen `go1.26.5` gebaut und
+  Trivy-clean (0 HIGH/CRITICAL) → sobald 0.157.0 **stable** erscheint, ist die
+  Aufloesung ein sauberer 1:1-Bump analog
+  [`033`](../done/033-otel-collector-go-stdlib-cve-bump.md).
