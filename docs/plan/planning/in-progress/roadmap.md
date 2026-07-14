@@ -48,9 +48,11 @@ Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint
 **`Accepted`**, released als **v0.5.0** (2026-07-12). Danach
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Inbound-Write→Command, ausgegliedert) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
-`Accepted`** (2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Offene Trigger (OTel-Bump,
-Vorwaerts-Traceability, `a-check`) sind noch nicht als Slice geschnitten.
-**Stand:** 2026-07-12
+`Accepted`** (2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Das
+`a-check`-Tool ist als [`Slice 079`](079-a-check-hexagon-arch-gate.md) aktiv
+(Hexagon-Architektur-Gate + Port-Extraktion, [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md)).
+Offene Trigger (OTel-Bump, Vorwaerts-Traceability) sind noch nicht als Slice geschnitten.
+**Stand:** 2026-07-14
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
 [Architektur](../../../../spec/architecture.md),
@@ -214,8 +216,9 @@ HIL/SUT-Anbindung ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)).
 GG-FAULT-Konsolidierung (002/003/004) ist mit
 [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)/[`072`](../done/072-gg-fault-002-stale-data.md)
 vollstaendig geliefert; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)
-ist beidseitig (Slice A + B) eingeloest. Offene Trigger (OTel-Collector-Bump,
-Vorwaerts-Traceability, neues `a-check`-Tool) sind notiert, aber noch nicht als
+ist beidseitig (Slice A + B) eingeloest. Das neue `a-check`-Tool ist als
+[`Slice 079`](079-a-check-hexagon-arch-gate.md) aktiv geschnitten. Offene Trigger
+(OTel-Collector-Bump, Vorwaerts-Traceability) sind notiert, aber noch nicht als
 Slice geschnitten.
 
 **Vorheriger Kandidat erledigt:** das Hygiene-Buendel der Slice-038-Session

@@ -1,0 +1,55 @@
+# .a-check.yml — Hexagon-Architektur-Regeln fuer a-check (ghcr.io/pt9912/a-check).
+# ENTWURF (a-check-Integration) — noch NICHT als Gate verdrahtet.
+#
+# Komplementaer zu import-linter (pyproject [tool.importlinter]) + tools/arch_check.py.
+# Schicht-Mapping leitet sich aus grid-gyms eigener domain/app-Grenze ab: die
+# import-linter-Listen AC-PORTS-NO-OUT / AC-ADAPTER-PURE verbieten exakt die
+# Kern-Subpakete {simulation, devices, scenario, replay, faults, agents} als
+# Import-Ziel fuer Ports/Adapter — das sind die *app*-Rolle (Use-Cases/Entitaeten,
+# die driven Ports konsumieren). Der Rest des Kerns ist der pure *domain*-Kernel
+# (domain/commands/grid_model/serialization/errors), den Ports & Adapter
+# referenzieren duerfen.
+version: 1
+languages:
+  python: ["src/grid_gym/**/*.py"]
+resolution:
+  python:
+    mode: fixed-root
+    roots: ["src/grid_gym"]
+    package_base: grid_gym
+layers:
+  # Pure Wert-/Typ-Kernel — importiert keine Ports (DIP-frei).
+  domain:
+    globs:
+      - "src/grid_gym/hexagon/core/domain/**"
+      - "src/grid_gym/hexagon/core/commands/**"
+      - "src/grid_gym/hexagon/core/grid_model/**"
+      - "src/grid_gym/hexagon/core/serialization/**"
+      - "src/grid_gym/hexagon/core/errors.py"
+    role: domain
+  # Use-Cases/Entitaeten — duerfen (driven) Ports + domain importieren, keine Adapter/Tech.
+  app:
+    globs:
+      - "src/grid_gym/hexagon/core/simulation/**"
+      - "src/grid_gym/hexagon/core/devices/**"
+      - "src/grid_gym/hexagon/core/scenario/**"
+      - "src/grid_gym/hexagon/core/replay/**"
+      - "src/grid_gym/hexagon/core/faults/**"
+      - "src/grid_gym/hexagon/core/agents/**"
+    role: app
+  ports:
+    globs: ["src/grid_gym/hexagon/ports/**"]
+    role: port
+  adapters:
+    globs: ["src/grid_gym/adapters/**"]
+    role: adapter
+edges:
+  - {from: app,      to: ports}
+  - {from: app,      to: domain}
+  - {from: ports,    to: domain}
+  - {from: adapters, to: ports}
+  - {from: adapters, to: domain}
+composition_root: ["src/grid_gym/composition/**"]
+exclude:
+  - "**/__pycache__/**"
+  - "**/*_test.py"
