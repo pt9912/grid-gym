@@ -26,7 +26,7 @@ from typing import cast
 
 from fastapi import Request
 
-from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
+from grid_gym.hexagon.ports.driven.alarm_history import AlarmHistoryPort
 from grid_gym.hexagon.ports.driven.run_repository import RunRepositoryPort
 from grid_gym.hexagon.ports.driven.scenario_store import ScenarioStorePort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
@@ -125,17 +125,20 @@ class _AlarmHistoryBufferNotConfiguredError(RuntimeError):
         )
 
 
-def get_alarm_history_buffer(request: Request) -> AlarmHistoryBuffer:
-    """Dependency-Provider fuer den `AlarmHistoryBuffer` (M5 Welle
-    4b, ADR 0040 Decision 17). Der Buffer ist adapter-internes
-    Helper-Konzept (kein Driven-Port-Vertrag — M3-Welle-6c
-    ersetzt durch `PostgresAlarmRepository`); Adapter-zu-Adapter-
-    Import ist daher legal.
+def get_alarm_history_buffer(request: Request) -> AlarmHistoryPort:
+    """Dependency-Provider fuer die Alarm-History (M5 Welle 4b, ADR 0040
+    Decision 17; Port-Typisierung ADR 0079 §2.3 Decision A).
+
+    Typisiert gegen den interim `AlarmHistoryPort` statt gegen den
+    konkreten `AlarmHistoryBuffer`-Adapter (kein Adapter→Adapter-Import
+    mehr; a-check `lateral-adapter`-konform). Die produktive Postgres-
+    Persistenz (M3-Welle-6c, `AlarmRepositoryPort`) subsumiert diesen
+    Lese-/Append-Vertrag.
     """
     buffer = getattr(request.app.state, "alarm_history_buffer", None)
     if buffer is None:
         raise _AlarmHistoryBufferNotConfiguredError
-    return cast(AlarmHistoryBuffer, buffer)
+    return cast(AlarmHistoryPort, buffer)
 
 
 class _ScenarioStoreNotConfiguredError(RuntimeError):

@@ -26,8 +26,6 @@ import logging
 from collections.abc import Callable
 from typing import Literal, cast
 
-from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
-from grid_gym.adapters.driven.field_publish_bess_ems import BessEmsFieldPublishAdapter
 from grid_gym.adapters.driving._field_current_value import CurrentValueProjection
 from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
     TickLoopHealthcheckAdapter,
@@ -35,6 +33,8 @@ from grid_gym.adapters.driving.http_api._tick_loop_healthcheck import (
 from grid_gym.hexagon.core.domain.tick_result import TickResult
 from grid_gym.hexagon.core.errors import TickLoopInvalidTransitionError
 from grid_gym.hexagon.core.domain.telemetry import TelemetryPoint as DomainTelemetryPoint
+from grid_gym.hexagon.ports.driven.alarm_history import AlarmHistoryPort
+from grid_gym.hexagon.ports.driven.field_frame_publish import FieldFramePublishPort
 from grid_gym.hexagon.ports.driven.field_publish import FieldPublishPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 from grid_gym.hexagon.ports.driving.device_server import DeviceServerPort
@@ -62,11 +62,11 @@ _logger = logging.getLogger(__name__)
 
 
 AlarmStreamProvider = Callable[[], AlarmStreamPort | None]
-AlarmHistoryBufferProvider = Callable[[], AlarmHistoryBuffer | None]
+AlarmHistoryBufferProvider = Callable[[], AlarmHistoryPort | None]
 TelemetryStreamProvider = Callable[[], TelemetryStreamPort | None]
 FieldPublishProvider = Callable[[], FieldPublishPort | None]
 DeviceServerProvider = Callable[[], DeviceServerPort | None]
-BessEmsPublishProvider = Callable[[], BessEmsFieldPublishAdapter | None]
+BessEmsPublishProvider = Callable[[], FieldFramePublishPort | None]
 
 
 class DemoTickLoopDriver:
@@ -161,7 +161,7 @@ class DemoTickLoopDriver:
         self._bess_ems_publish_provider: BessEmsPublishProvider = (
             bess_ems_publish_provider if bess_ems_publish_provider is not None else _none_provider
         )
-        self._active_bess_ems: BessEmsFieldPublishAdapter | None = None
+        self._active_bess_ems: FieldFramePublishPort | None = None
         self._bess_ems_failures: int = 0
         self._bess_ems_configured: bool = False
 

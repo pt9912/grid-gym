@@ -9,14 +9,14 @@ gerissen wird. Pattern analog Welle-4a-`_demo_setup.py`.
 
 from __future__ import annotations
 
-from grid_gym.adapters.driven.alarm_stream_inmemory import AlarmHistoryBuffer
 from grid_gym.adapters.driving.http_api.app import app
+from grid_gym.hexagon.ports.driven.alarm_history import AlarmHistoryPort
 from grid_gym.hexagon.ports.driving.alarm_stream import AlarmStreamPort
 
 
 def configure_alarm_stream(
     stream: AlarmStreamPort,
-    history_buffer: AlarmHistoryBuffer,
+    history_buffer: AlarmHistoryPort,
 ) -> None:
     """Setzt den `AlarmStreamPort` + den `AlarmHistoryBuffer` fuer
     die laufende App (M5 Welle 4b, ADR 0040 Decision 17).

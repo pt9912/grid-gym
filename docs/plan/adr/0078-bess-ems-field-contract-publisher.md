@@ -28,6 +28,13 @@ struktureller Golden-Vergleich + **realer MQTT-only-E2E gegen die unveraenderte 
 - [`GG-TEST-004`](../../../spec/lastenheft.md#gg-test-004) (HIL/SUT-Konsum) +
   [`GG-SAFE-007`](../../../spec/lastenheft.md#gg-safe-007) (Nur-Sim-Netz).
 
+**Schaerfung ([`ADR 0079`](0079-a-check-arch-gate-and-port-extraction.md) §2.4 Decision B,
+Muster [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)):** Der `BessEmsFieldPublishAdapter`
+(`start`/`publish_tick`/`stop`) erfuellt jetzt einen generischen `FieldFramePublishPort`
+(Schwester zum per-Punkt-`FieldPublishPort`), damit der Driver ihn gegen einen Port statt
+gegen den konkreten driven-Adapter typisiert (a-check-`lateral-adapter`-konform). Rein
+additive Typ-Abstraktion; das Feld-Mapping-/Frame-Verhalten bleibt unveraendert.
+
 ---
 
 ## 1. Kontext

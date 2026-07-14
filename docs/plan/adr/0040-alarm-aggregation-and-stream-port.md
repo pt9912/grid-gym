@@ -159,6 +159,14 @@ Commit)
     `/runs/{id}/status`-Endpoint (`f1284c4`+`9c188e0`)
     produktiv etabliert.
 
+**Schaerfung ([`ADR 0079`](0079-a-check-arch-gate-and-port-extraction.md) §2.3 Decision A,
+Muster [`ADR 0011`](0011-schaerfung-ohne-abloesung.md)):** Decision 17s „bewusst kein Port"
+fuer den `AlarmHistoryBuffer` wird praezisiert — es gibt jetzt einen interim
+`AlarmHistoryPort` (`append`/`get_recent`), damit der HTTP-Driving-Adapter die History
+gegen einen Port statt gegen den konkreten driven-Adapter typisiert
+(a-check-`lateral-adapter`-konform). Die Welle-6c-`AlarmRepositoryPort`-Zielrichtung
+(§3.3) bleibt unberuehrt; der Original-Text bleibt gueltig.
+
 ---
 
 ## 1. Kontext
