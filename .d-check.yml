@@ -1,7 +1,7 @@
 # Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check)
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 # Eingebunden ueber d-check.mk (`--print-mk`); Image-Digest in Makefile-Variable
-# DCHECK_DIGEST (aktuell v0.41.0).
+# DCHECK_DIGEST (aktuell v0.42.0).
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
@@ -110,6 +110,12 @@ trace:
   requirements:
     source: spec/lastenheft.md
     id-pattern: 'GG-(ACCEPT|AGENT|API|BESS|CICD|DATA|DEMO|DEPLOY|DEV|DNP3|FAULT|GRID|IEC|LWM2M|MODB|MQTT|OPCUA|OTEL|PERSIST|REPLAY|RT|SAFE|SCN|SIM|SNMP|TRACE|UI)-\d{3}'
+    # RFC-2119-Modalitaet als RTM-Spalte (seit d-check v0.42.0). `{}` = Built-in
+    # DE+EN-Defaults (MUSS->must, SOLLTE->should, KANN->may, DARF NICHT->must,
+    # MUSS NICHT->may); klassifiziert per laengstem Wortgrenzen-Treffer im
+    # normalisierten Body. Rein advisory (`make doc-trace`); `require-levels`
+    # bleibt Default `[must]`, `make doc-complete` bewusst NICHT verdrahtet.
+    modality: {}
   adrs:
     dir: docs/plan/adr
     file-pattern: '^(\d{4})-.*\.md$'
