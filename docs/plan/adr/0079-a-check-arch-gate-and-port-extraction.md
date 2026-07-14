@@ -142,10 +142,15 @@ Composition-Root `grid_gym.composition.asgi` verlagert. `app.py` importiert dana
 driven-Adapter mehr; der Default-Konfigurator ist fail-closed (kein registrierter
 Composition-Root → klare Diagnose, wie schon beim Scenario-Konfigurator).
 
-Die `isinstance`-Lifespan-Guards auf konkrete Demo-Typen (`DemoTelemetryGenerator`) werden
-mit-invertiert: der Composition-Root registriert den Start-/Stop-Lifecycle statt `app.py`
-die konkreten driven-Typen zu prüfen. Verhalten (inkl. der Welle-5-Review-Guards F5/F9/F11:
-Pfad-Validierung vor Setup, Sentinel-Skip-Guard, Leerstring-env) bleibt identisch.
+Die verbliebene `app.py`-Kopplung an `telemetry_stream_inmemory` stammte aus dem
+**toten** Welle-3-`DemoTelemetryGenerator`-Producer-Wiring (`isinstance`-Lifespan-Guards
++ optionaler `configure_telemetry_stream(demo_generator=…)`-Pfad). Seit Welle 5 publisht
+der `DemoTickLoopDriver` reale Telemetrie; **kein Aufrufer** setzte je `demo_generator`,
+der Guard war immer False. Statt diesen toten Pfad zu invertieren, wird er **entfernt**
+(die `DemoTelemetryGenerator`-Adapterklasse + ihr Unit-Test bleiben; nur das app.py-Wiring
+entfaellt). Der Verhaltensvertrag ist damit identisch (der Guard lief nie); die
+Welle-5-Review-Guards F5/F9/F11 (Pfad-Validierung vor Setup, Sentinel-Skip-Guard,
+Leerstring-env) bleiben unveraendert.
 
 ---
 

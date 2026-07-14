@@ -68,15 +68,6 @@ from typing import Annotated, Final
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from grid_gym.adapters.driven.alarm_stream_inmemory import (
-    AlarmHistoryBuffer,
-    InMemoryAlarmStream,
-)
-from grid_gym.adapters.driven.persistence_inmemory import InMemoryRunRepository
-from grid_gym.adapters.driven.telemetry_stream_inmemory import (
-    DemoTelemetryGenerator,
-    InMemoryTelemetryStream,
-)
 from grid_gym.adapters.driving.http_api._dependencies import (
     _RunRepositoryNotConfiguredError,
     _TelemetryStreamNotConfiguredError,
@@ -177,6 +168,46 @@ def _register_scenario_configurator(configurator: ScenarioConfigurator) -> None:
     _scenario_configurator = configurator
 
 
+DemoStackBuilder = Callable[[FastAPI], None]
+"""Signatur des Default-In-Memory-Stack-Setups (ADR 0079 §2.5 Decision C). Per
+`_register_demo_stack_builder` aus dem Composition-Root
+(`grid_gym.composition.asgi`) injiziert — `app.py` instanziiert die driven-In-
+Memory-Adapter (`InMemoryRunRepository`/`InMemoryTelemetryStream`/`InMemoryAlarmStream`
++ `AlarmHistoryBuffer`) nicht mehr selbst (sonst Adapter->driven-Adapter,
+a-check-`lateral-adapter`)."""
+
+
+class _DemoStackBuilderNotRegisteredError(RuntimeError):
+    """`GRID_GYM_DEMO_SCENARIO_PATH` gesetzt, aber kein Demo-Stack-Builder
+    registriert: die App lief ueber den reinen Adapter-Entrypoint statt
+    `grid_gym.composition.asgi:app` (ADR 0079 §2.5)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "GRID_GYM_DEMO_SCENARIO_PATH is set but no demo stack builder is "
+            "registered. Start the app via the composition entrypoint "
+            "`grid_gym.composition.asgi:app`, not the bare adapter "
+            "`grid_gym.adapters.driving.http_api:app`."
+        )
+
+
+def _raise_demo_stack_builder_unregistered(_app: FastAPI) -> None:
+    """Fail-closed Default-Builder — aktiv, solange der Composition-Root keinen
+    registriert hat (Muster `_raise_scenario_configurator_unregistered`)."""
+    raise _DemoStackBuilderNotRegisteredError
+
+
+_demo_stack_builder: DemoStackBuilder = _raise_demo_stack_builder_unregistered
+
+
+def _register_demo_stack_builder(builder: DemoStackBuilder) -> None:
+    """Injiziert den Default-In-Memory-Stack-Builder (Composition Root,
+    `grid_gym.composition.asgi`, ADR 0079 §2.5). Der Lifespan-Env-Branch ruft ihn
+    **vor** dem Scenario-Konfigurator."""
+    global _demo_stack_builder
+    _demo_stack_builder = builder
+
+
 """M5-Welle-5 (Slice-Doc Decision 6): Pfad-zur-Demo-YAML-Datei.
 Wenn gesetzt, verdrahtet `_lifespan` beim Startup den
 produktiven Demo-Stack (Repository + Telemetry + Registry +
@@ -199,14 +230,13 @@ class HealthResponse(BaseModel):
 
 @asynccontextmanager
 async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
-    """FastAPI-Lifespan: startet/stoppt Welle-3-Demo-Generator und
-    Welle-4a-Demo-TickLoop-Driver, sofern konfiguriert.
+    """FastAPI-Lifespan: startet/stoppt den Welle-4a-Demo-TickLoop-Driver,
+    sofern konfiguriert.
 
-    Welle 3 (ADR 0038 §3.1): `DemoTelemetryGenerator`-Singleton +
-    `InMemoryTelemetryStream` werden via
-    `configure_telemetry_stream(stream, demo_generator=...)`
-    gesetzt; der Generator startet hier seinen periodischen
-    Producer-Task.
+    Welle 3 (ADR 0038 §3.1): der synthetische `DemoTelemetryGenerator`-
+    Producer-Pfad ist mit ADR 0079 §2.5 entfallen — seit Welle 5 publisht der
+    `DemoTickLoopDriver` reale Telemetrie; das Generator-Wiring war tot
+    (kein Aufrufer setzte `demo_generator`).
 
     Welle 4a (ADR 0039 Decision 13): wenn ein
     `DemoTickLoopDriver` ueber `configure_demo_run(...)` auf
@@ -224,12 +254,6 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
     no-op Lifespan.
     """
     _configure_scenario_demo_from_env_if_requested(app_)
-    generator = getattr(app_.state, "demo_telemetry_generator", None)
-    stream = getattr(app_.state, "telemetry_stream", None)
-    if isinstance(generator, DemoTelemetryGenerator) and isinstance(
-        stream, InMemoryTelemetryStream
-    ):
-        generator.start(stream)
     driver = getattr(app_.state, "demo_tick_loop_driver", None)
     if isinstance(driver, DemoTickLoopDriver):
         driver.start()
@@ -245,8 +269,6 @@ async def _lifespan(app_: FastAPI) -> AsyncIterator[None]:
         run_driver_registry = getattr(app_.state, "run_driver_registry", None)
         if isinstance(run_driver_registry, RunDriverRegistry):
             await run_driver_registry.stop_all()
-        if isinstance(generator, DemoTelemetryGenerator):
-            await generator.stop()
 
 
 def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
@@ -288,19 +310,13 @@ def _configure_scenario_demo_from_env_if_requested(app_: FastAPI) -> None:
     scenario_path = Path(scenario_path_raw)
     if not scenario_path.is_file():
         raise _DemoScenarioPathNotFoundError(scenario_path_raw)
-    # 041-C3b: `app.py` importiert das Scenario-Bootstrap NICHT mehr
-    # (sonst Adapter → composition → core.scenario/faults, indirekte
-    # AC-ADAPTER-PURE-Verletzung). Der Composition-Root
-    # `grid_gym.composition.asgi` registriert den Konfigurator via
-    # `_register_scenario_configurator`; der Default ist fail-closed.
-    configure_run_repository(InMemoryRunRepository())
-    configure_telemetry_stream(InMemoryTelemetryStream())
-    configure_tick_loop_registry(TickLoopRegistry())
-    # `app.state.alarm_*` direkt gesetzt statt ueber
-    # `_alarm_setup.configure_alarm_stream`, weil `_alarm_setup`
-    # `app` importiert (Cycle).
-    app_.state.alarm_stream = InMemoryAlarmStream()
-    app_.state.alarm_history_buffer = AlarmHistoryBuffer()
+    # 041-C3b + ADR 0079 §2.5 Decision C: `app.py` instanziiert weder das
+    # Scenario-Bootstrap noch die driven-In-Memory-Adapter selbst. Der
+    # Composition-Root `grid_gym.composition.asgi` registriert den
+    # Stack-Builder (`_register_demo_stack_builder` → Repository + Telemetry
+    # + Registry + Alarm) UND den Scenario-Konfigurator
+    # (`_register_scenario_configurator`); beide Defaults sind fail-closed.
+    _demo_stack_builder(app_)
     _scenario_configurator(app_, scenario_path)
     # Welle-5-Review F9: Sentinel-Attr erst NACH erfolgreichem
     # `configure_scenario_demo_run` setzen — sonst blockt der Skip-
@@ -329,24 +345,16 @@ def configure_run_repository(repository: RunRepositoryPort) -> None:
     app.state.run_repository = repository
 
 
-def configure_telemetry_stream(
-    stream: TelemetryStreamPort,
-    *,
-    demo_generator: DemoTelemetryGenerator | None = None,
-) -> None:
-    """Setzt den Telemetry-Stream + optional einen Demo-Generator
-    fuer die laufende App (M5 Welle 3, ADR 0038).
+def configure_telemetry_stream(stream: TelemetryStreamPort) -> None:
+    """Setzt den Telemetry-Stream fuer die laufende App (M5 Welle 3, ADR 0038).
 
-    ``demo_generator`` ist optional: wenn gesetzt **und** der
-    Stream eine ``InMemoryTelemetryStream``-Instanz ist, startet
-    der FastAPI-Lifespan-Hook den Generator als Background-Task
-    (Welle-3-Demo-Producer). Tests koennen den Generator
-    weglassen oder den Stream direkt mit synthetischen Points
-    fuettern.
+    Aufrufer (uvicorn-Entry, Tests, Composition-Root-Stack-Builder) injizieren die
+    Implementation vor dem ersten Request. Der optionale Welle-3-
+    `DemoTelemetryGenerator`-Producer-Pfad ist mit ADR 0079 §2.5 entfallen (seit
+    Welle 5 publisht der `DemoTickLoopDriver` reale Telemetrie; das synthetische
+    Generator-Wiring war tot — kein Aufrufer setzte `demo_generator`).
     """
     app.state.telemetry_stream = stream
-    if demo_generator is not None:
-        app.state.demo_telemetry_generator = demo_generator
 
 
 def configure_tick_loop_registry(registry: TickLoopRegistry) -> None:

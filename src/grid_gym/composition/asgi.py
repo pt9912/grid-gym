@@ -28,12 +28,14 @@ from grid_gym.adapters.driving.http_api._scenarios_router import (
 )
 from grid_gym.adapters.driving.http_api.app import (
     app,
+    _register_demo_stack_builder,
     _register_scenario_configurator,
 )
 from grid_gym.composition._demo_scenario_setup import (
     build_run_driver,
     configure_scenario_demo_run,
 )
+from grid_gym.composition._demo_stack import configure_demo_stack
 from grid_gym.composition._execution_profile import default_run_execution_profile
 from grid_gym.composition.scenario_intake import intake_scenario
 from grid_gym.hexagon.core.domain.scenario import Scenario
@@ -62,6 +64,7 @@ def _build_run_driver_with_shared_sink(
     )
 
 
+_register_demo_stack_builder(configure_demo_stack)
 _register_scenario_configurator(configure_scenario_demo_run)
 _register_scenario_intake(intake_scenario)
 _register_run_driver_builder(_build_run_driver_with_shared_sink)
