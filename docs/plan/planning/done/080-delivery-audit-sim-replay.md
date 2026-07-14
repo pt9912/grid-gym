@@ -16,8 +16,16 @@ hier, sodass `make doc-trace` sie als geliefert attribuiert (aus „—" wird �
 gemappt (non-orphan), aber **ohne Liefervehikel** in der `Slices`-Spalte — weil die
 eingefrorenen M1..M8-Docs die IDs nicht namentlich nennen (`docs/plan/traceability.md`
 §27-Caveat: die `Slices`-Spalte ist advisory, „belastbarer Liefer-Status steht im Code/
-Tests"). Das ist genau das Muster, das bei [`GG-FAULT-002`](../../../../spec/lastenheft.md#gg-fault-002)/[`GG-FAULT-003`](../../../../spec/lastenheft.md#gg-fault-003)/[`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004)
-drei echte MUSS-Lücken verbarg.
+Tests"). Das ist genau das Muster, das bei den Quality-Faults
+([`070`](070-gg-fault-004-frequency-drop.md)/[`071`](071-gg-fault-003-nan-injection.md)/[`072`](072-gg-fault-002-stale-data.md))
+drei echte MUSS-Lücken verbarg — **dort** war es eine echte Feature-Lücke, nicht bloss
+eine fehlende Attribution.
+
+> **Konventions-Warnung (dieser Slice-Typ):** `doc-trace` attribuiert **jede** in einem
+> Slice-Doc genannte Requirement-ID an diesen Slice — es kann „geliefert" nicht von „als
+> Beispiel erwähnt" unterscheiden. Ein Verifikations-Slice darf deshalb **nur** die IDs
+> nennen, die er tatsächlich verifiziert; Beispiele/Referenzen laufen über **Slice-Nummern**
+> (deren Dateinamen sind lowercase und matchen das Uppercase-ID-Pattern nicht).
 
 **Vehikel = Slice, kein neues Dokument** (slice-getrieben, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)):
 ein Verifikations-Slice geht einen Requirement-Cluster gegen Code+Test durch. Findet er
