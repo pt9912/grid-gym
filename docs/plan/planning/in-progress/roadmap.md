@@ -6,6 +6,9 @@ abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
 (MVP-Linie); **aktuelles Release v0.8.0** (2026-07-14, Slice-079 — a-check-Architektur-Gate
 + Port-Extraktion; davor v0.7.1 Slice-078 UI-Vervollstaendigung + Dashboard-Live-Feed-Fix).
 **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-14)
+[`080`](../done/080-delivery-audit-sim-replay.md) (**Verifikations-Slice**-Muster etabliert:
+stellt für einen `— | Trace`-MUSS-Cluster fest, ob geliefert; verankert IDs → doc-trace-
+Attribution; Sim-/Replay-Familie 6/6 erfüllt, doku-only), davor
 [`079`](../done/079-a-check-hexagon-arch-gate.md) (a-check-Hexagon-Gate + 2 neue Driven-Ports),
 davor (2026-07-13)
 [`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:
