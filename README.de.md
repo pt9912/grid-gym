@@ -28,9 +28,11 @@ Feldgeraete, Cloud-Dienste oder Internetzugriff zur Laufzeit.
 ausfuehrbar. Die aktuelle Implementierung umfasst:
 
 - einen deterministischen Tick-Loop mit Snapshot- und Replay-Unterstuetzung
-- produktive Geraetemodelle fuer Batterie, PV, Last, Netzanschluss und
-  Smart Meter
-- Fault-Injection- und Recovery-Flows
+- neun produktive Geraetemodelle: Batterie, PV, Last, Netzanschluss und
+  Smart Meter (MVP) plus EV-Ladepunkt, Transformator, Windturbine und
+  Dieselgenerator (SOLLTE-Geraete, M8)
+- Fault-Injection- und Recovery-Flows (Geraete-Faults plus dedizierte
+  Metrik-Quality-Faults: Frequenzeinbruch, NaN-Injection, Stale-Data)
 - Multi-Agent-Szenarien mit einem regelbasierten Agenten
 - strukturierte Logs, Metriken und Traces via Observability-Port-Trio
 - einen OTLP-Adapter mit lokalem OpenTelemetry-Collector-Smoke-Test

@@ -28,9 +28,11 @@ cloud services, or internet access at runtime.
 environment. The current implementation includes:
 
 - a deterministic tick loop with snapshot and replay support
-- productive device models for battery, PV, load, grid connection, and
-  smart meter
-- fault injection and recovery flows
+- nine productive device models: battery, PV, load, grid connection, and
+  smart meter (MVP) plus EV charger, transformer, wind turbine, and diesel
+  generator (SOLLTE devices, M8)
+- fault injection and recovery flows (device faults plus dedicated
+  metric-quality faults: frequency drop, NaN injection, stale data)
 - multi-agent scenarios with a rule-based agent
 - structured logs, metrics, and traces via the observability port trio
 - an OTLP adapter with a local OpenTelemetry Collector smoke test
