@@ -3,8 +3,11 @@
 **Status:** Slice-getrieben
 ([`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)). **M1..M8
 abgeschlossen** — die MUSS-/SOLLTE-Roadmap ist geliefert, **v0.2.0 released**
-(MVP-Linie); aktuelles Release **v0.7.1** (2026-07-13, Slice-078-Closure — UI-Vervollstaendigung
-+ Dashboard-Live-Feed-Fix). **Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+(MVP-Linie); **aktuelles Release v0.8.0** (2026-07-14, Slice-079 — a-check-Architektur-Gate
++ Port-Extraktion; davor v0.7.1 Slice-078 UI-Vervollstaendigung + Dashboard-Live-Feed-Fix).
+**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-14)
+[`079`](../done/079-a-check-hexagon-arch-gate.md) (a-check-Hexagon-Gate + 2 neue Driven-Ports),
+davor (2026-07-13)
 [`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:
 SVG-Einlinien-Geraete-Diagramm + Start-Knopf fuer pending-Runs +
 Dashboard/Alarms-Live-Feed-Bugfix [fehlende HTMX-2.x-ws-Extension];
@@ -49,9 +52,10 @@ Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint
 [`075`](../done/075-field-server-inbound-write-command.md)
 (Inbound-Write→Command, ausgegliedert) **done → [`ADR 0076`](../../adr/0076-inbound-write-exogenous-input-recording.md)
 `Accepted`** (2026-07-13; released als v0.6.0 + Review-Haertung v0.6.1, 2026-07-13). Das
-`a-check`-Tool ist als [`Slice 079`](079-a-check-hexagon-arch-gate.md) aktiv
-(Hexagon-Architektur-Gate + Port-Extraktion, [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md)).
-Offene Trigger (OTel-Bump, Vorwaerts-Traceability) sind noch nicht als Slice geschnitten.
+`a-check`-Tool ist mit [`Slice 079`](../done/079-a-check-hexagon-arch-gate.md) geliefert
+(Hexagon-Architektur-Gate + Port-Extraktion, [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md)
+`Accepted`, released **v0.8.0**). Offene Trigger (OTel-Bump, Vorwaerts-Traceability) sind
+noch nicht als Slice geschnitten.
 **Stand:** 2026-07-14
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
@@ -216,10 +220,10 @@ HIL/SUT-Anbindung ([`GG-TEST-004`](../../../../spec/lastenheft.md#gg-test-004)).
 GG-FAULT-Konsolidierung (002/003/004) ist mit
 [`070`](../done/070-gg-fault-004-frequency-drop.md)/[`071`](../done/071-gg-fault-003-nan-injection.md)/[`072`](../done/072-gg-fault-002-stale-data.md)
 vollstaendig geliefert; [`ADR 0074`](../../adr/0074-metric-quality-fault-stage-stale-nan.md)
-ist beidseitig (Slice A + B) eingeloest. Das neue `a-check`-Tool ist als
-[`Slice 079`](079-a-check-hexagon-arch-gate.md) aktiv geschnitten. Offene Trigger
-(OTel-Collector-Bump, Vorwaerts-Traceability) sind notiert, aber noch nicht als
-Slice geschnitten.
+ist beidseitig (Slice A + B) eingeloest. Das neue `a-check`-Tool ist mit
+[`Slice 079`](../done/079-a-check-hexagon-arch-gate.md) geliefert (released **v0.8.0**).
+Offene Trigger (OTel-Collector-Bump, Vorwaerts-Traceability) sind notiert, aber noch
+nicht als Slice geschnitten.
 
 **Vorheriger Kandidat erledigt:** das Hygiene-Buendel der Slice-038-Session
 ([`054`](../done/054-pytest-marker-drift-sensor-targets.md)/[`058`](../done/058-marker-sensor-drift-guard.md)

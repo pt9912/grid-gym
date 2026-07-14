@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-**Architektur-Gate + Port-Extraktion (Slice 079,
+## [0.8.0] - 2026-07-14
+
+**Minor — a-check-Architektur-Gate + Port-Extraktion (Slice 079,
 [`ADR 0079`](docs/plan/adr/0079-a-check-arch-gate-and-port-extraction.md)).** Adoptiert
 das sprachagnostische Hexagon-Architektur-Gate `a-check` und zieht als Folge zwei
 bisher port-lose Adapter-Kopplungen in explizite Driven-Ports; rein additiv/verhaltensgleich

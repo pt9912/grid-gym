@@ -1,9 +1,9 @@
 # 079 — a-check Hexagon-Architektur-Gate adoptieren (+ Port-Extraktion)
 
-**Status:** **T1–T4 abgeschlossen (2026-07-14).** a-check als Gate verdrahtet (**0 Befunde**);
-`make gates` grün, **volle Integration-Suite 171 passed / 4 skip** (IEC-61850-Python-Skips).
+**Status:** **Abgeschlossen (`done/`, 2026-07-14). Released als v0.8.0.** T1–T4 done; a-check
+als Gate verdrahtet (**0 Befunde**); `make gates` grün (11 Gates inkl. a-check), **volle
+Integration-Suite 171 passed / 4 skip** (IEC-61850-Python-Skips), `make fullbuild` grün.
 [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md) `Accepted`.
-**Release-Kandidat — Entscheidung + `done/`-Move bei Release-Freigabe** (siehe Verification).
 **Datum:** 2026-07-14
 **Quelle:** Roadmap-Trigger „neues `a-check`-Tool" (sprachagnostischer Hexagon-
 Architektur-Validator, [`ghcr.io/pt9912/a-check`](https://github.com/pt9912/a-check),

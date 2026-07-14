@@ -1,6 +1,6 @@
 # ADR 0079 — a-check Hexagon-Architektur-Gate + Port-Extraktion (AlarmHistory / FieldFrame)
 
-**Status:** Accepted (2026-07-14) — in [`Slice 079`](../planning/in-progress/079-a-check-hexagon-arch-gate.md)
+**Status:** Accepted (2026-07-14) — in [`Slice 079`](../planning/done/079-a-check-hexagon-arch-gate.md)
 umgesetzt (T1 `AlarmHistoryPort`, T2 `FieldFramePublishPort`, T3 Composition-Root-
 Extraktion, T4 Gate-Verdrahtung); `make gates` + volle Integration-Suite grün, a-check
 0 Befunde. Adoptiert das sprachagnostische Hexagon-Gate
