@@ -180,14 +180,13 @@ Volle Release-Historie (v0.2.0 → v0.8.0) → [`CHANGELOG.md`](CHANGELOG.md).
 
 **Quality-Pipeline:** `make gates` 11-stufig cache-frei gruen; `make fullbuild` (inkl. `accept-pin-check`) gruen. Die Integration-Suite ist gruen; die verbleibenden Skips sind nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte `make test-iec61850`-Stage ([`ADR 0046`](docs/plan/adr/0046-multi-python-test-stage-pattern.md)).
 
-**Pointer:** Anwenderhandbuch →
-[`docs/user/anwenderhandbuch.md`](docs/user/anwenderhandbuch.md);
-Abnahmereihenfolge [`GG-DEMO-008`](spec/lastenheft.md#gg-demo-008) →
-[`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md);
-Quality-Pipeline-Audit [`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004 →
-[`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md);
-ADRs → [`docs/plan/adr/README.md`](docs/plan/adr/README.md);
-AI-Agent-Briefing → [`AGENTS.md`](AGENTS.md).
+**Pointer:**
+
+- Anwenderhandbuch → [`docs/user/anwenderhandbuch.md`](docs/user/anwenderhandbuch.md)
+- Abnahmereihenfolge ([`GG-DEMO-008`](spec/lastenheft.md#gg-demo-008)) → [`docs/user/gg-demo-008-abnahme.md`](docs/user/gg-demo-008-abnahme.md)
+- Quality-Pipeline-Audit ([`GG-SAFE-001`](spec/lastenheft.md#gg-safe-001)..004) → [`docs/user/safe-001-004-quality-pipeline.md`](docs/user/safe-001-004-quality-pipeline.md)
+- ADR-Index → [`docs/plan/adr/README.md`](docs/plan/adr/README.md)
+- AI-Agent-Briefing → [`AGENTS.md`](AGENTS.md)
 
 ## Build, Test, Lint
 
