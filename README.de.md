@@ -56,8 +56,8 @@ Die aktuellen Gates und Szenarien laufen mit:
 
 ```bash
 make help
-make gates              # 10 Pflicht-Gates (lint, format, typecheck,
-                        # arch-check, tests, coverage, critical-coverage,
+make gates              # 11 Pflicht-Gates (lint, format, typecheck,
+                        # arch-check, a-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
 make test-unit          # Unit-Test-Suite (1796 Tests, Stand 2026-06-12,
                         # M7-Closure / v0.1.0)
@@ -125,8 +125,9 @@ und `release.yml` (Tag-Push oder workflow_dispatch).
   [`tools/arch_check.py`](tools/arch_check.py) (u. a.
   [`AC-ADAPTER-LIGHTWEIGHT`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-OTLP-ADAPTER-NO-TIME`](docs/plan/adr/0024-observability-port-trio.md),
   [`AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) und [`AC-IEC61850-GPL-BOUNDARY`](docs/plan/adr/0035-iec61850-adapter-profile.md)).
-- **Zehnstufiges Pflicht-Gate.** `make gates` laeuft Lint, Format-Check,
-  `mypy --strict`, Arch-Check, Unit-Tests, Coverage (90 % Line pro
+- **Elfstufiges Pflicht-Gate.** `make gates` laeuft Lint, Format-Check,
+  `mypy --strict`, Arch-Check, a-check (sprachagnostischer Hexagon-Schicht-/
+  Richtungs-Validator), Unit-Tests, Coverage (90 % Line pro
   Modul / 85 % kritisch), Critical-Coverage, Dependency-Audit, ein
   `# noqa`-Verbot und `spdx-check` (GPL-3.0-only-Header-Lint fuer die
   IEC-61850-Boundary) — alles cache-frei gruen ohne lokalen Override.

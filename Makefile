@@ -184,6 +184,16 @@ arch-check-custom:
 DCHECK_DIGEST := sha256:c930804146a2e14d1cfb95046532dce5881c355f39b3223e3a2ed371776f874a
 include d-check.mk
 
+# Architektur-Gate via a-check (ghcr.io/pt9912/a-check, Schwester-Werkzeug zu
+# d-check; ADR 0079). Sprachagnostischer Hexagon-Validator (Schicht-/Richtungs-
+# Reinheit), komplementaer zu import-linter + tools/arch_check.py (ADR 0002 §A-1).
+# Konfiguration in .a-check.yml. Das Fragment `a-check.mk` (erzeugt via
+# `a-check --print-mk`) ist bereits digest-gepinnt (A_CHECK_IMAGE ?= ...@sha256),
+# daher kein separater DIGEST-Override noetig. `make a-check` haengt in `gates`
+# am arch-check-Verbund (ADR 0079 §2.1); hermetischer Docker-Lauf (--network none,
+# read-only) => CI-tauglich.
+include a-check.mk
+
 # Das Repo-Gate heisst `docs-check` (Enforcement-Stop-Hook + Gate-Quittung,
 # ADR 0071). Es delegiert an die d-check.mk-Targets `doc-check` (Modul-Gate:
 # links/anchors/ids/codepaths/matrix/spans/hostpaths) und `doc-targets` (Trigger 068
@@ -440,8 +450,8 @@ static-gates: lint format-check typecheck arch-check noqa-gate spdx-check
 # Quittungs-Fehler faerbt den Gate-Lauf nicht rot. Das Handoff-Gate ist
 # fail-closed; ein dauerhaft kaputtes record-gates degradiert den Handoff daher
 # zu "warnt pro Closure einmal" (fail-safe — nie ein stilles Durchwinken).
-gates: lint format-check typecheck arch-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
-	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
+gates: lint format-check typecheck arch-check a-check test-unit coverage-gate coverage-gate-critical dep-audit noqa-gate spdx-check
+	@echo "[gates] mandatory A-1 gates green: lint, format-check, typecheck (mypy --strict, ADR 0005), arch-check (20 contracts), a-check (Hexagon-Schicht-/Richtungs-Reinheit, ADR 0079), test-unit, coverage-gate ($(COVERAGE_THRESHOLD)% line / $(COVERAGE_BRANCH_THRESHOLD)% branch), coverage-gate-critical ($(CRITICAL_COVERAGE_THRESHOLD)% critical domain), dep-audit, noqa-gate (Slice 027 — no # noqa marker), spdx-check (M4 Welle 6b — GPL-3.0-only-Header in IEC-61850-Boundary)"
 	@bash tools/harness/record-gates.sh gates || echo "[record-gates] WARN: Quittung 'gates' nicht geschrieben (non-fatal; Handoff-Gate ist fail-closed, ADR 0071)"
 
 # M1-Closure-Hinweis (2026-05-17): `ci` und `fullbuild` benoetigen

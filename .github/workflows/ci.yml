@@ -128,3 +128,15 @@ jobs:
           load: false
           cache-from: type=gha,scope=typecheck
           cache-to: type=gha,scope=typecheck,mode=max,ignore-error=true
+
+  a-check:
+    name: a-check (hexagon architecture, ADR 0079)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      # a-check ist ein `docker run` (externes, digest-gepinntes Image via
+      # a-check.mk), keine Dockerfile-Stage — daher `make a-check` statt
+      # build-push-action. Hermetisch (--network none, read-only Mount).
+      - name: Run a-check (make a-check)
+        run: make a-check

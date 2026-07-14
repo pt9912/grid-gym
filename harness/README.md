@@ -57,6 +57,7 @@ Feedback-Gates, die reale Projektzustaende messen:
 | `make format-check` | Ruff-Format ohne Auto-Fix | Vor Handoff mit Python-Diff |
 | `make typecheck` | `mypy --strict` gemaess [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) | Nach Typ-, Port- oder API-Aenderungen |
 | `make arch-check` | Import-Linter plus `tools/arch_check.py` fuer `GG-AR-TABU-*` | Nach Architektur-, Port-, Adapter- und Dependency-Aenderungen |
+| `make a-check` | Sprachagnostischer Hexagon-Schicht-/Richtungs-Validator (a-check, [`ADR 0079`](../docs/plan/adr/0079-a-check-arch-gate-and-port-extraction.md)); komplementaer zu `arch-check` | Nach Architektur-, Port-, Adapter- und Schicht-Aenderungen |
 | `make docs-check` | Markdown-Link-Validator | Nach Doku-, Spec-, ADR- oder Planning-Aenderungen |
 | `make spdx-check` | SPDX-Identifier-Gate fuer Lizenz-Boundaries | Nach IEC-61850-/License-Boundary-Aenderungen |
 | `make noqa-gate` | Hard-Gate gegen `# noqa`-Marker | Nach Python-Diff und vor `make gates` |

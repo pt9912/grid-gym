@@ -54,8 +54,8 @@ You can run the current gates and scenarios with:
 
 ```bash
 make help
-make gates              # 10 mandatory gates (lint, format, typecheck,
-                        # arch-check, tests, coverage, critical-coverage,
+make gates              # 11 mandatory gates (lint, format, typecheck,
+                        # arch-check, a-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
 make test-unit          # unit test suite (1796 tests as of 2026-06-12,
                         # M7 closure / v0.1.0)
@@ -120,8 +120,9 @@ the Compose smoke test), and `release.yml` (tag-push or workflow_dispatch).
   [`tools/arch_check.py`](tools/arch_check.py) (including
   [`AC-ADAPTER-LIGHTWEIGHT`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), [`AC-OTLP-ADAPTER-NO-TIME`](docs/plan/adr/0024-observability-port-trio.md),
   [`AC-TICK-LOOP-PRIVATE-RESUME-ERRORS`](docs/plan/adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert), and [`AC-IEC61850-GPL-BOUNDARY`](docs/plan/adr/0035-iec61850-adapter-profile.md)).
-- **Ten-stage mandatory gate.** `make gates` runs lint, format-check,
-  `mypy --strict`, arch-check, unit tests, coverage (90 % line per
+- **Eleven-stage mandatory gate.** `make gates` runs lint, format-check,
+  `mypy --strict`, arch-check, a-check (sprachagnostic hexagon layer/direction
+  validator), unit tests, coverage (90 % line per
   module / 85 % critical), critical-coverage, dependency audit,
   a `# noqa` ban, and `spdx-check` (GPL-3.0-only header lint for the
   IEC-61850 boundary) — all cache-free green without any local
@@ -180,7 +181,7 @@ As of **2026-07-13**:
 **Test balance:** 139 integration passed + 4 skipped (remaining
 skips are IEC-61850-on-Python-3.13 only, covered by the dedicated
 `make test-iec61850` stage per [`ADR 0046`](docs/plan/adr/0046-multi-python-test-stage-pattern.md)) at M7 closure (2026-06-12).
-`make gates` 10-stage cache-free green without override;
+`make gates` 11-stage cache-free green without override;
 `make fullbuild` incl. `accept-pin-check` green.
 
 **Pointers:** user handbook →

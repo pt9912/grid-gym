@@ -1,5 +1,6 @@
 # .a-check.yml — Hexagon-Architektur-Regeln fuer a-check (ghcr.io/pt9912/a-check).
-# ENTWURF (a-check-Integration) — noch NICHT als Gate verdrahtet.
+# Aktives Architektur-Gate (ADR 0079): `make a-check` haengt in `make gates` am
+# arch-check-Verbund; digest-gepinnt via a-check.mk.
 #
 # Komplementaer zu import-linter (pyproject [tool.importlinter]) + tools/arch_check.py.
 # Schicht-Mapping leitet sich aus grid-gyms eigener domain/app-Grenze ab: die

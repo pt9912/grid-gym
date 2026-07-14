@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+**Architektur-Gate + Port-Extraktion (Slice 079,
+[`ADR 0079`](docs/plan/adr/0079-a-check-arch-gate-and-port-extraction.md)).** Adoptiert
+das sprachagnostische Hexagon-Architektur-Gate `a-check` und zieht als Folge zwei
+bisher port-lose Adapter-Kopplungen in explizite Driven-Ports; rein additiv/verhaltensgleich
+(kein Vertrags-/Determinismus-Bruch; volle Integration-Suite gruen).
+
+### Added
+
+- **a-check Architektur-Gate.** `a-check` (`ghcr.io/pt9912/a-check`, Schwester-Werkzeug zu
+  d-check) als **drittes**, sprachagnostisches Architektur-Gate — komplementaer zu
+  import-linter + `tools/arch_check.py`. `make a-check` (digest-gepinnt via `a-check.mk`,
+  hermetisch: `--network none`, read-only) haengt in `make gates` am arch-check-Verbund +
+  eigener CI-Job. `.a-check.yml` mappt grid-gyms Schichten faithful (domain/app/ports/adapters,
+  abgeleitet aus der `AC-PORTS-NO-OUT`-Grenze). **0 Befunde.**
+- **`AlarmHistoryPort`** (`hexagon/ports/driven/alarm_history.py`) — interim Driven-Port
+  (`append`/`get_recent`), Schaerfung [`ADR 0040`](docs/plan/adr/0040-alarm-aggregation-and-stream-port.md)
+  Decision 17 („bewusst kein Port").
+- **`FieldFramePublishPort`** (`hexagon/ports/driven/field_frame_publish.py`) — Driven-Port
+  fuer die Tick-Frame-Push-Seite (`start`/`publish_tick`/`stop`), Schwester zum per-Punkt-
+  `FieldPublishPort`, Schaerfung [`ADR 0078`](docs/plan/adr/0078-bess-ems-field-contract-publisher.md).
+
+### Changed
+
+- **Composition-Root-Extraktion.** Das Default-In-Memory-Demo-Wiring wandert aus dem
+  HTTP-Adapter (`app.py`-Lifespan) per Registrier-Hook in den Composition-Root
+  (`composition/_demo_stack.py`); der `http_api`-Adapter importiert keinen driven-Adapter
+  mehr (weder Typ noch Instanz). `configure_telemetry_stream` verliert den ungenutzten
+  `demo_generator`-Parameter.
+
+### Removed
+
+- **Totes Welle-3-`DemoTelemetryGenerator`-Wiring in `app.py`.** Seit Welle 5 publisht der
+  `DemoTickLoopDriver` reale Telemetrie; kein Aufrufer setzte je `demo_generator` (der
+  Lifespan-`isinstance`-Guard war immer False). Nur das app.py-Wiring entfaellt — die
+  `DemoTelemetryGenerator`-Adapterklasse + ihr Unit-Test bleiben.
+
 ## [0.7.1] - 2026-07-13
 
 **Patch — UI-Vervollstaendigung + Dashboard-Live-Feed-Reparatur (Slice 078).**

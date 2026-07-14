@@ -1,6 +1,9 @@
 # 079 — a-check Hexagon-Architektur-Gate adoptieren (+ Port-Extraktion)
 
-**Status:** In Arbeit (`in-progress/`, 2026-07-14). T0 (Plan) angelegt; T1–T4 offen.
+**Status:** **T1–T4 abgeschlossen (2026-07-14).** a-check als Gate verdrahtet (**0 Befunde**);
+`make gates` grün, **volle Integration-Suite 171 passed / 4 skip** (IEC-61850-Python-Skips).
+[`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md) `Accepted`.
+**Release-Kandidat — Entscheidung + `done/`-Move bei Release-Freigabe** (siehe Verification).
 **Datum:** 2026-07-14
 **Quelle:** Roadmap-Trigger „neues `a-check`-Tool" (sprachagnostischer Hexagon-
 Architektur-Validator, [`ghcr.io/pt9912/a-check`](https://github.com/pt9912/a-check),
@@ -70,3 +73,31 @@ User-Entscheid **wirklich alles**: Kat. A per **zwei neuen Driven-Ports** auflö
   (bess-ems-Publisher).
 - a-check-Handbuch: `github.com/pt9912/a-check/docs/user/benutzerhandbuch.md`.
 - Muster-Vorlage: d-check-Adoption (Trigger 002 / `d-check.mk`-Include).
+
+## Verification (2026-07-14)
+
+**Role:** Verifier. **Input:** Slice-DoD, Diff T0–T4, Sensor-Ausgaben.
+
+- **a-check (Gate-Kernnachweis):** `make a-check` (digest-gepinnt `@sha256:203df7ab…` via
+  `a-check.mk`) → **0 Befunde** auf dem faithful Schicht-Mapping. Baseline 7 (`lateral-adapter`);
+  T1 → 4 (3 Alarm-Kat-A gecleart), T2 → 3 (bess-ems gecleart), T3 → 0 (app.py-Kat-B invertiert).
+- **`make gates` grün** (getrennte Läufe T1+T2 `81f67ad` und T3 `09834186`): lint, format-check,
+  typecheck (mypy --strict), arch-check (20 import-linter/`arch_check.py`-Contracts — komplementär
+  weiter grün), test-unit (2734), coverage-gate (93.86 % line / 89 % branch),
+  coverage-gate-critical, dep-audit, noqa-gate, spdx-check. **a-check ist jetzt Teil des
+  `gates`-Verbunds** (am arch-check-Verbund, [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md) §2.1)
+  + eigener CI-Job in `ci.yml`.
+- **Volle Integration-Suite grün:** 171 passed / 4 skipped (die 4 = IEC-61850-Python-Version-
+  Skips, [`ADR 0046`](../../adr/0046-multi-python-test-stage-pattern.md)). Enthält den
+  **Demo-Smoke** (`test_m5_welle_5_demo_smoke`), der den env-getriebenen Lifespan-Pfad über den
+  neuen `_demo_stack`-Builder-Hook end-to-end fährt → die Composition-Root-Inversion ist
+  **verhaltensgleich**.
+- **Port-Extraktion belegt:** `grep` bestätigt — der `http_api`-Adapter importiert keinen
+  driven-Adapter mehr (weder Typ noch Instanz); Rest-Vorkommen sind Docstrings/Fehlerklassen-Namen.
+- **`make fullbuild` grün:** „full closure: ci + runtime image + compose smoke green" (exit 0)
+  — validiert das a-check-Gate im vollen `gates`-/`ci`-Verbund + Runtime-Image + Compose-Smoke.
+
+**Open risks:** keiner offen. a-checks Richtungs-Regeln (`port-direction-mismatch` via
+explizite `direction: driving/driven`) sind bewusst **nicht** aktiviert (Schichten ohne
+`direction`) — Trigger-Kandidat ([`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md) §3).
+**Next role:** Planner (Release-Entscheidung: Runtime-Delta additiv/verhaltensgleich → Patch/Minor).

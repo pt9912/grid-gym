@@ -136,5 +136,8 @@ trace:
 # doc-targets` ans lokale docs-check-Gate gehaengt. Nur Richtung 1 (gate-phantom);
 # Richtung 2 (`authority:`, 38 Utility-Targets) = Tranche C1b im Trigger 068.
 targets:
-  makefiles: [Makefile]
+  # a-check.mk (ADR 0079) ist via `include` in Makefile eingebunden; das
+  # `make a-check`-Target lebt dort, muss aber fuer die gate-phantom-Pruefung
+  # (dokumentiert in harness/README.md) aufloesbar sein.
+  makefiles: [Makefile, a-check.mk]
   doc-tables: [AGENTS.md, harness/README.md]

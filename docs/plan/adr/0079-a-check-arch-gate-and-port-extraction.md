@@ -1,8 +1,9 @@
 # ADR 0079 — a-check Hexagon-Architektur-Gate + Port-Extraktion (AlarmHistory / FieldFrame)
 
-**Status:** Proposed (2026-07-14) — wird in [`Slice 079`](../planning/in-progress/079-a-check-hexagon-arch-gate.md)
+**Status:** Accepted (2026-07-14) — in [`Slice 079`](../planning/in-progress/079-a-check-hexagon-arch-gate.md)
 umgesetzt (T1 `AlarmHistoryPort`, T2 `FieldFramePublishPort`, T3 Composition-Root-
-Extraktion, T4 Gate-Verdrahtung); flippt bei Slice-Closure auf `Accepted`. Adoptiert das sprachagnostische Hexagon-Gate
+Extraktion, T4 Gate-Verdrahtung); `make gates` + volle Integration-Suite grün, a-check
+0 Befunde. Adoptiert das sprachagnostische Hexagon-Gate
 [`a-check`](https://github.com/pt9912/a-check) (Schwester-Werkzeug zu d-check) und
 schärft als Folge [`ADR 0040`](0040-alarm-aggregation-and-stream-port.md) Decision 17
 + [`ADR 0078`](0078-bess-ems-field-contract-publisher.md) (Muster
