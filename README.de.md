@@ -59,10 +59,10 @@ make help
 make gates              # 11 Pflicht-Gates (lint, format, typecheck,
                         # arch-check, a-check, tests, coverage, critical-coverage,
                         # dep-audit, noqa-gate, spdx-check)
-make test-unit          # Unit-Test-Suite (1796 Tests, Stand 2026-06-12,
-                        # M7-Closure / v0.1.0)
+make test-unit          # Unit- + Property-Test-Suite (2736 Tests, Stand
+                        # 2026-07-14, v0.8.0)
 make test-integration   # Compose-/testcontainers-Integration-Suite
-                        # (139 passed + 4 skipped, Stand 2026-06-12; inkl.
+                        # (171 passed + 4 skipped, Stand 2026-07-14; inkl.
                         # Protokolladapter (MQTT/Modbus/OPC-UA/DNP3/IEC-61850),
                         # OTLP, HTTP-API/UI, Persistenz + Replay-Determinismus-
                         # E2E und GG-SAFE-001..004-Quality-Pipeline-Smokes;
@@ -93,8 +93,9 @@ Entwicklungsgate ist `make gates`.
 > (gebaut gegen go1.26.4+) aufgeloest; Trivy-Re-Scan meldet
 > 0 HIGH/CRITICAL.)
 
-Aktuelles Release: **v0.6.1** (2026-07-13) — siehe
-[Releases](https://github.com/pt9912/grid-gym/releases).
+Aktuelles Release: **v0.8.0** (2026-07-14) — siehe
+[Releases](https://github.com/pt9912/grid-gym/releases) und
+[`CHANGELOG.md`](CHANGELOG.md).
 Ein Release wird durch einen `v*.*.*`-Git-Tag-Push ausgeloest
 (alternativ Manual `workflow_dispatch` in der GitHub-UI). Der
 Release-Workflow publiziert ein Container-Image nach GHCR
@@ -106,7 +107,7 @@ und das Demo-Abnahmedokument. Lokale SBOM-Erzeugung: `make sbom`
 `pyproject.toml`).
 
 CI laeuft ueber sechs GitHub-Actions-Workflows: `ci.yml` (lint /
-format-check / typecheck / arch-check; die vier Pflicht-
+format-check / typecheck / arch-check / a-check; fuenf Static-Analysis-
 Gates), `tests.yml` (test-unit auf einer Python-3.13/3.14-Matrix +
 test-integration), `coverage.yml` (coverage-gate 90/85 Line/Branch +
 coverage-gate-critical 90 % Critical-Domain), `dep-audit.yml`
@@ -132,10 +133,10 @@ und `release.yml` (Tag-Push oder workflow_dispatch).
   `# noqa`-Verbot und `spdx-check` (GPL-3.0-only-Header-Lint fuer die
   IEC-61850-Boundary) — alles cache-frei gruen ohne lokalen Override.
 - **ADR-getriebene Entscheidungen.** Jede tragende Entscheidung wird
-  als [Architecture Decision Record](docs/plan/adr/) dokumentiert;
-  alle Meilenstein-Closure-ADRs bis M8 sind `Accepted` (72 von 73),
-  Wellen-ADRs landen als `Provisional` und werden mit Meilenstein-
-  Closure `Accepted` (M8-ADRs 0050/0051/0054/0055..0071 alle `Accepted`).
+  als [Architecture Decision Record](docs/plan/adr/) dokumentiert; der
+  ADR-Index ([`docs/plan/adr/README.md`](docs/plan/adr/README.md)) ist die
+  lebende Status-Quelle — Post-Meilenstein-Slices tragen ihre ADRs bei
+  Slice-Closure `Accepted` ein (z. B. [`ADR 0079`](docs/plan/adr/0079-a-check-arch-gate-and-port-extraction.md), Slice 079).
 - **CI spiegelt lokal.** GitHub Actions faehrt die gleichen
   `lint-imports`-, `ruff check`-, `tools/arch_check.py`- und
   `mypy --strict`-Gates auf jedem Pull Request und `main`-Push
@@ -168,25 +169,16 @@ EMS-Implementierung und dupliziert keine `bess-ems`-Control-Logik.
 
 ## Status
 
-Stand **2026-07-13**:
+Stand **2026-07-14** — aktuelles Release **v0.8.0**:
 
-| Meilenstein / Punkt | Status | Datum | Details |
-| --- | --- | --- | --- |
-| **M1..M8** | `Done` | — | Kernplattform geliefert (M7) + SOLLTE-Geraete & Netz (M8); 75 von 76 ADRs `Accepted` (1 `Superseded`). Closure: [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
-| **M8 — SOLLTE-Geraete & Netz** → **v0.2.0** | `Done` | 2026-07-01 | Welle 1..5: die vier SOLLTE-Geraete, das SOLLTE-Netzmodell und die BESS-Telemetrie. Details in [`M8-results.md`](docs/plan/planning/done/M8-results.md). |
-| **Release v0.2.0** | released | 2026-07-01 | Minor: die M8-SOLLTE-Geraete und das Netzmodell. Details in [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.3.0** | released | 2026-07-03 | Minor: die volle Run-Metadaten-Equality-Matrix — der Replay-Preflight prueft jetzt 9 statt 5 Felder. Details in [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.3.1** | released | 2026-07-10 | Patch: App-/Tool-Version wird jetzt korrekt aus den Paket-Metadaten gemeldet (vorher auf `0.1.0` gepinnt), die ADR-Index-Statusspalte ist gegen die Datei-Header abgeglichen, plus aufgelaufene Review-Haertung und ein Test-only-E2E-Sensor. Details im [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.4.0** | released | 2026-07-12 | Minor: GG-FAULT-Konsolidierung — drei dedizierte Fault-Typen (`frequency_drop`/[`GG-FAULT-004`](spec/lastenheft.md#gg-fault-004), `nan_injection`/[`GG-FAULT-003`](spec/lastenheft.md#gg-fault-003), `stale_data`/[`GG-FAULT-002`](spec/lastenheft.md#gg-fault-002); [`ADR 0074`](docs/plan/adr/0074-metric-quality-fault-stage-stale-nan.md)), alle opt-in und byte-identisch fuer Szenarien ohne sie. Details in [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.5.0** | released | 2026-07-12 | Minor: die Field-Server-Surface ([`ADR 0075`](docs/plan/adr/0075-field-server-surface-device-endpoint-port.md)) — zwei Schwester-Ports, damit ein externes EMS (System-under-Test) grid-gyms simulierte Geraete als HIL/SUT konsumieren kann: eine `FieldPublishPort`/MQTT-Push-Seite (Slice 073) und ein `DeviceServerPort`/Modbus-TCP-Server mit Read-Serving (Slice 074), beide adversarial review-gehaertet. Additiv + opt-in; byte-identisch ohne Broker/Server. Details in [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.6.0** | released | 2026-07-13 | Minor: Field-Server Inbound-Write→Command ([`ADR 0076`](docs/plan/adr/0076-inbound-write-exogenous-input-recording.md), Modell B) — ein Modbus-Master kann jetzt Sollwerte schreiben (FC06/FC16), die erfasst, in einen Szenario-`commands`-Block materialisiert und byte-identisch replayt werden (deterministisch trotz des exogenen Live-Writes); volle HIL/SUT-Steuerbarkeit ([`GG-TEST-004`](spec/lastenheft.md#gg-test-004)). Additiv + opt-in; byte-identisch ohne `write_map`. Details in [`CHANGELOG.md`](CHANGELOG.md). |
-| **Release v0.6.1** | released | 2026-07-13 | Patch: Closure-Review-Haertung des Inbound-Write-Pfads — Inbound-Writes per Modbus FC23 (Read/Write-Multiple) werden jetzt ebenfalls erfasst (vorher still gedroppt); der Refresh-Task nullt keine Master-geschriebenen Sollwert-Register mehr (Write-then-Read-back bleibt konsistent); und eine `write_map` ohne Inbound-Buffer schlaegt jetzt fail-fast fehl. Details in [`CHANGELOG.md`](CHANGELOG.md). |
+| Meilenstein / Punkt | Status | Details |
+| --- | --- | --- |
+| **M1..M8 Kern-Roadmap** | `Done` | Kernplattform (M7) + SOLLTE-Geraete & Netz (M8); Closure in [`M8-results.md`](docs/plan/planning/done/M8-results.md) + [`M7-results.md`](docs/plan/planning/done/M7-results.md) |
+| **v0.8.0** (2026-07-14) | released | Minor: a-check-Hexagon-Architektur-Gate + Port-Extraktion (Slice 079, [`ADR 0079`](docs/plan/adr/0079-a-check-arch-gate-and-port-extraction.md)) — a-check als drittes, sprachagnostisches Architektur-Gate plus zwei neue Driven-Ports; additiv und verhaltensgleich. |
 
-**Testbilanz:** 139 Integration passed + 4 skipped (verbleibende
-Skips nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte
-`make test-iec61850`-Stage per [`ADR 0046`](docs/plan/adr/0046-multi-python-test-stage-pattern.md)) zum M7-Closure
-(2026-06-12). `make gates` 10-stufig cache-frei gruen ohne Override;
-`make fullbuild` inkl. `accept-pin-check` gruen.
+Volle Release-Historie (v0.2.0 → v0.8.0) → [`CHANGELOG.md`](CHANGELOG.md).
+
+**Quality-Pipeline:** `make gates` 11-stufig cache-frei gruen; `make fullbuild` (inkl. `accept-pin-check`) gruen. Die Integration-Suite ist gruen; die verbleibenden Skips sind nur IEC-61850-auf-Python-3.13, abgedeckt durch die dedizierte `make test-iec61850`-Stage ([`ADR 0046`](docs/plan/adr/0046-multi-python-test-stage-pattern.md)).
 
 **Pointer:** Anwenderhandbuch →
 [`docs/user/anwenderhandbuch.md`](docs/user/anwenderhandbuch.md);
