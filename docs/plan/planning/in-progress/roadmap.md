@@ -43,7 +43,7 @@ Slice A = Foundation + NaN; released **v0.4.0**) und
 `frequency_drop`-Fault →
 [`GG-FAULT-004`](../../../../spec/lastenheft.md#gg-fault-004) erfuellt;
 released **v0.4.0**).
-**Aktiver Arc:** die **Field-Server-Surface**
+**Zuletzt abgeschlossene Arcs:** die **Field-Server-Surface**
 ([`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
 `Accepted`, released **v0.5.0**; zwei Schwester-Ports in der Kompositions-Schicht,
 nach zwei adversarialen Reviews revidiert) — schliesst die Asymmetrie „alle
@@ -65,7 +65,9 @@ Projektion) → [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint
 (Hexagon-Architektur-Gate + Port-Extraktion, [`ADR 0079`](../../adr/0079-a-check-arch-gate-and-port-extraction.md)
 `Accepted`, released **v0.8.0**). Offene Trigger (OTel-Bump, Vorwaerts-Traceability) sind
 noch nicht als Slice geschnitten.
-**Stand:** 2026-07-14
+
+**Aktiver/geplanter Arc (ab 2026-07-15): Spec-Schichtung — [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) Dreischicht-Modell** (`Accepted`; §4-Detailentscheidungen mit Owner ratifiziert, `9e62ee2`). Zieht die fehlende mittlere **Spezifikations-Schicht** (Datei spezifikation.md, „Pflichtenheft") zwischen Vertrag und Architektur ein — Wurzel-Fix der §18/§27.1-Redundanzen (die per-Tabelle „Bezug"-Spalten ↔ traceability.md §27.1-Spiegelung). **Noch KEIN Slice geschnitten**, Specs unveraendert. Ratifizierte Vorgaben ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4): protocol_profiles → Geschwister; Abnahme-Familien (QA/QG/COV/TESTTYPE/ARCHTEST) + SEED → Spezifikation (Praefixe **bleiben**, nur `ids`-Ziel umbiegen); §27.1 **Konsistenz-Gate vor Generator** (authored→derived); neue Familie `GG-SPEC-OPEN-*`. **Zwei Prerequisites je Slice:** Residuum-Umzug in die Spezifikation + Bezug-Spalten-Drift beheben (ARCH-007/008 + SCN-006-Luecke). **Achtung** (ADR §3): ~30 gate-blinde Referenzen in src/tests/.github/pyproject/Makefile → manueller Grep-Sweep. **Morgen:** ersten Migrations-Slice zuschneiden (Vertrag zuletzt/atomar).
+**Stand:** 2026-07-15
 
 **Bezug:** [Lastenheft](../../../../spec/lastenheft.md),
 [Architektur](../../../../spec/architecture.md),
@@ -135,7 +137,9 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice.** Zuletzt abgeschlossen (2026-07-13)
+**Kein aktiver Slice; nächster Arc = Spec-Schichtung ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md), s. Kopf-Status).** Zuletzt abgeschlossen (2026-07-14): Delivery-Audit
+[`080`](../done/080-delivery-audit-sim-replay.md)/[`081`](../done/081-delivery-audit-rest-muss.md)/[`082`](../done/082-delivery-audit-sollte-rest.md)
++ a-check [`079`](../done/079-a-check-hexagon-arch-gate.md); zuvor (2026-07-13)
 [`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:
 SVG-Einlinien-Geraete-Diagramm + Start-Knopf fuer pending-Runs + Bugfix des im Browser kaputten
 Dashboard-/Alarms-Live-Feeds [HTMX-2.x-ws-Extension war nicht vendored];
@@ -204,7 +208,7 @@ slice-getriebenen Modells); davor
 [`053`](../done/053-planungsmodell-slices-ohne-meilensteine.md) (slice-first-
 Umstellung, [`ADR 0072`](../../adr/0072-slice-driven-planning-no-milestones.md)).
 
-**Aktiver Arc** (2026-07-12): **Field-Server-Surface** (drei Slices auf
+**Letzter Code-Arc (abgeschlossen)** (2026-07-12): **Field-Server-Surface** (drei Slices auf
 [`ADR 0075`](../../adr/0075-field-server-surface-device-endpoint-port.md),
 `Accepted`, Design-first) —
 [`073`](../done/073-field-server-mqtt-publish-bridge.md) (`FieldPublishPort`,
