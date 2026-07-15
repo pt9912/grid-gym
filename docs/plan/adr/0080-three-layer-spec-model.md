@@ -1,8 +1,9 @@
 # ADR 0080 — Dreischicht-Spezifikationsmodell (Lastenheft / Spezifikation / Architektur)
 
 **Status:** Accepted (2026-07-15) — Modell angenommen. **Keine Migration in diesem ADR**;
-die Umsetzung erfolgt in Folge-Slices (Vertrag zuletzt/atomar), die §4-Detailentscheidungen
-fallen in der Migrations-Planung. Adressiert die **Wurzel** der
+die Umsetzung erfolgt in Folge-Slices (Vertrag zuletzt/atomar). Die §4-Detailfragen sind mit
+dem Owner **entschieden** (§4); offen bleibt nur ihre Ausführung in den Migrations-Slices.
+Adressiert die **Wurzel** der
 wiederkehrenden Traceability-Redundanzen (das entfernte architecture.md §18, die
 „Bezug"-Spalten ↔ `traceability.md` §27.1-Spiegelung), indem die fehlende mittlere
 Spezifikations-Schicht eingezogen wird.
@@ -51,8 +52,8 @@ scharf — ein **harter Kern** ist eindeutig Spezifikation, andere Familien habe
 **Grenzfall** (auch als Kunden-Abnahmekriterium lesbar — z. B.
 [`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001) „*Mindest-Testabdeckung 90 %*",
 [`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002) „*Security-Gate*"): `GG-QA-*` /
-`GG-QG-*` / `GG-COV-*` / `GG-TESTTYPE-*` / `GG-ARCHTEST-*`. Die genaue Grenze zieht die
-Migration (§4.2), nicht dieser ADR.
+`GG-QG-*` / `GG-COV-*` / `GG-TESTTYPE-*` / `GG-ARCHTEST-*`. Die genaue Grenze entscheidet
+§4.2; die Migration führt sie aus.
 
 **(2) Ihre Realisierung ist heimatlos.** Weil diese Familien im Vertrag als „Anforderung"
 stehen, aber kein Architektur-Artefakt sind, landet ihre Realisierung (z. B.
@@ -90,23 +91,35 @@ wird Teil dieser Schicht (Detail → §4).
 Spezifikations-Schicht. Ihre Realisierung (Durchsetzungs-Werkzeug, Gate) wird **dort
 erstklassig** dokumentiert — nicht mehr als RTM-Residuum. Reine Scope-/Definitions-Familien
 (`GG-TERM-*`, `GG-MVP-*`, `GG-NONGOAL-*`, `GG-FUTURE-*`) bleiben im Vertrag (Scope ist
-Kundensache) — Grenzfall, in der Migration final zu ziehen (§4).
+Kundensache) — final entschieden in §4.2 (`GG-SEED-*` ausgenommen: → Spezifikation).
 
 **(c) SDP-Rang** wird `contract > spezifikation > architektur > adr > slice`. Jede Schicht
 verfeinert die darüber und verweist **aufwärts** (SDP-konform). `architecture.md` verweist
 künftig auf die Spezifikations-Schicht statt direkt auf den Vertrag, wo es Spec-Ebene betrifft.
 
-**(d) Traceability wird Schicht-Verfeinerung.** Weil jede Spezifikation aufwärts auf ihre
-Anforderung und jedes Architektur-Artefakt aufwärts auf seine Spezifikation zeigt, wird die
-Anforderung→Design-Kette aus den Aufwärts-Zeigern **ableitbar** — **sofern** die
-architecture.md-Bezug-Spalten dafür zuvor vollständig und korrekt gemacht werden (heute
-nicht: ARCH-007/008-Drift + die SCN-006-Lücke); diese Vorarbeit ist Teil der Migration.
-Damit hört §27.1 auf, eine handgepflegte Parallel-Karte zu sein — es wird abgeleitet oder
-gegen die Schicht-Zeiger gegated (Generator vs. Gate → §4). Die 3 falsch platzierten
-§27.1-Annotationen aus Commit `0318ce1` (2 redundant, 1 fehlplatziert) sind **bereits
-zurückgenommen** (eigener Commit, unabhängig von diesem ADR); die eine echte Lücke
-(Szenario-Fault-Injection → Fault-Komponente, heute nur sekundär und unverzeichnet) wird in
-der Migration **normativ in architecture.md** geschlossen —
+**(d) Traceability wird Schicht-Verfeinerung — §27.1 wechselt von `authored` zu `derived`.**
+Weil jede Spezifikation aufwärts auf ihre Anforderung und jedes Architektur-Artefakt aufwärts
+auf seine Spezifikation zeigt, wird die Anforderung→Design-Kette aus den Aufwärts-Zeigern
+**ableitbar** — **sofern** die architecture.md-Bezug-Spalten dafür zuvor vollständig und
+korrekt gemacht werden (heute nicht: ARCH-007/008-Drift + die SCN-006-Lücke); diese Vorarbeit
+ist Teil der Migration. Damit hört §27.1 auf, eine **handgepflegte Quelle** zu sein.
+
+Die requirement-indizierte **Sicht** selbst bleibt jedoch nötig und wird **nicht gelöscht**
+(Löschen verletzte [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001), s. §5): eine
+Verfeinerungs-**Schicht** ist kein Vollständigkeits-**Index**. Die Schicht-Zeiger zeigen
+*aufwärts* (Design→Anforderung); Abnahme/Audit und Waisen-Erkennung brauchen das *Inverse*
+(Anforderung→Design + „welche Anforderung hat *gar kein* Design"), das erst durch Aufzählen
+der Anforderungsliste sichtbar wird. `spezifikation.md` liefert diese Sicht daher nicht — es
+ist die Schicht, nicht ihr Index. §27.1 überlebt folglich als **Ableitung/Gate** gegen die
+Schicht-Zeiger (Ausbaustufe → §4.4). **§27.1.1** („Anforderungen ohne Design-Artefakt") bleibt
+hingegen **kuratiert**: dass eine Waise *gewollt* ist (`GG-TERM-*` / `GG-NONGOAL-*` mappen
+bewusst auf nichts), ist menschliches Urteil, kein invertierter Zeiger — ein Werkzeug erkennt
+Waisen, erklärt sie aber nicht.
+
+Die 3 falsch platzierten §27.1-Annotationen aus Commit `0318ce1` (2 redundant, 1
+fehlplatziert) sind **bereits zurückgenommen** (eigener Commit, unabhängig von diesem ADR);
+die eine echte Lücke (Szenario-Fault-Injection → Fault-Komponente, heute nur sekundär und
+unverzeichnet) wird in der Migration **normativ in architecture.md** geschlossen —
 [`GG-SCN-006`](../../../spec/lastenheft.md#gg-scn-006) bleibt via
 [`GG-AR-COMP-SCENARIO`](../../../spec/architecture.md#5-komponentensicht) gedeckt, kein Orphan.
 
@@ -143,23 +156,62 @@ der Migration **normativ in architecture.md** geschlossen —
 - Zwei d-check-Anpassungen nötig: neue `matrix`-Klasse `spezifikation`; ggf. neue
   Ableitungs-/Gate-Fähigkeit für §27.1.
 
-## 4. Offene Detailfragen (in der Migrations-Planung zu entscheiden)
+## 4. Detailentscheidungen (2026-07-15, mit Owner ratifiziert; Ausführung in den Migrations-Slices)
 
-1. **`protocol_profiles.md`**: als Abschnitt in die Spezifikations-Schicht einschmelzen oder
-   Geschwister-Dokument innerhalb der Schicht? (Beeinflusst die
-   `technik`→`spezifikation`-Klassen-Umbenennung.)
-2. **Familien-Grenzziehung.** (a) Scope-Familien (`GG-TERM-*` / `GG-MVP-*` /
-   `GG-NONGOAL-*` / `GG-FUTURE-*`): Vertrag oder Spezifikation? Vorschlag: Vertrag (Scope =
-   Kundensache), außer `GG-SEED-*` (Test-Konvention → Spezifikation). (b) Abnahmekriterium-
-   Familien (`GG-QA-*` / `GG-QG-*` / `GG-COV-*` / `GG-TESTTYPE-*` / `GG-ARCHTEST-*`, §1):
-   ganz in die Spezifikation, oder Abnahme-*Schwelle* im Vertrag + Durchsetzungs-*Mechanik*
-   in der Spezifikation? Der harte Kern `GG-PRINC-*` / `GG-CC-*` ist unstrittig Spezifikation.
-3. **Kennungs-Präfixe**: bestehende IDs (`GG-PRINC-*` …) beibehalten und nur umziehen
-   (weniger Churn) vs. neues `GG-SPEC-*`-Schema. Vorschlag: beibehalten.
-4. **§27.1-Ausbaustufe**: voller Generator (§27.1 wird Build-Artefakt) vs. Konsistenz-Gate
-   (kuratiert, aber gegen die Schicht-Zeiger gepinnt).
-5. **Offene Spec-Punkte**: analog `GG-AR-OPEN-*` (Architektur) eine offene-Punkte-Sektion in
-   der Spezifikations-Schicht.
+Die bei Annahme offenen Detailfragen sind entschieden. Reihenfolge/Atomarität regelt §6; die
+Entscheidungen hier sind die Vorgaben, an denen sich die Migrations-Slices ausrichten.
+
+1. **`protocol_profiles.md` → Geschwister-Dokument** (nicht einschmelzen). Die
+   Spezifikations-SDP-Klasse wird mehrpfadig: die neue `spezifikation.md` + `protocol_profiles.md`
+   (in place, unverändert). Grund: protocol_profiles ist reife, eigen-versionierte
+   Wire-Level-Interface-Spec **anderen Wesens** als die Disziplin-/QS-Familien; ein Merge
+   erzeugte ein thematisch inkohärentes God-Dokument (nahe `GG-CC-*` „keine God-Utility") bei
+   unnötigem Anker-/Link-Churn. `spezifikation.md` verweist *seitwärts* darauf (schicht-intern
+   SDP-konform). **d-check:** `matrix`-Klasse `technik` → `spezifikation` mit **beiden** Pfaden
+   (`spec/protocol_profiles.md` + die neue `spec`-Datei).
+2. **Familien-Grenze.**
+   **(a) Scope-Familien:** `GG-TERM-*` / `GG-MVP-*` / `GG-NONGOAL-*` / `GG-FUTURE-*` bleiben
+   **Vertrag** (Vokabular + Scope = Kundensache; kein Design-Artefakt, keine Mechanik).
+   **Ausnahme `GG-SEED-*` → Spezifikation** — interne Determinismus-/Test-Konvention, Wesen wie
+   `GG-CC-*`; der *Kundenwunsch* Determinismus liegt in `GG-SIM-*` / `GG-RT-*`, SEED ist das
+   *Wie*. Einziger Grenzfall; ein ID, geringer Churn (§27.1.1-Eintrag entfällt für SEED).
+   **(b) Abnahme-Familien** (`GG-QA-*` / `GG-QG-*` / `GG-COV-*` / `GG-TESTTYPE-*` /
+   `GG-ARCHTEST-*`): **ganz in die Spezifikation, inkl. Schwellwert — kein per-ID-Split.** Ein
+   Split klonte jeden ID über zwei Schichten und reproduzierte exakt die in §1 benannte Wurzel
+   (jede Spec-Sache gespalten → Drift) — verworfen. Der Kunden-**Abnahme-Anker** bleibt via
+   `GG-ACCEPT-*` + `GG-MVP-*` (E2E-Referenzszenario + Abnahme-CLI) im Vertrag; die verschobenen
+   Familien verfeinern ihn aufwärts. Harter Kern `GG-PRINC-*` / `GG-CC-*` ohnehin Spezifikation.
+3. **Kennungs-Präfixe: beibehalten** (kein neues `GG-SPEC-*`-Schema). Ein Rename klonte ~30
+   **gate-blinde** Referenzen (src/tests/.github/pyproject/Makefile — d-check-`scan.ignore`) für
+   null semantischen Gewinn; §3 markiert genau diesen Sweep als teuerste Kosten. Das Präfix
+   trägt die Familie; Schicht-Zugehörigkeit = **Datei + `matrix`-Klasse**, nicht Präfix.
+   **d-check-Arbeitspaket:** die generische `ids`-Regel `GG-…-NNN` → `lastenheft.md` gilt für
+   die verschobenen Präfixe nicht mehr → höher-priorisierte Muster (bzw. eine Alternation) mit
+   Ziel `spezifikation.md` für PRINC/CC/QA/QG/COV/TESTTYPE/ARCHTEST/SEED.
+4. **§27.1-Ausbaustufe: Konsistenz-Gate zuerst, Generator/Report als Endzustand** (§27.1
+   wechselt `authored → derived`, §2d). Reihenfolge: (i) Residuum-Umzug nach `spezifikation.md`;
+   (ii) Bezug-Spalten-Drift beheben (ARCH-007/008 + SCN-006-Lücke); (iii) **Konsistenz-Gate** —
+   jede §27.1-Zeile ↔ ein Schicht-Zeiger (killt Drift, den *eigentlichen* Defekt); (iv)
+   *optional* Promotion zum **Generator/Report** — Positivtabelle nicht mehr gespeichert, sondern
+   von `doc-trace` aus den Bezug-Spalten erzeugt (Präzedenz: §27.2-Delegation, Slice 066).
+   **Warum Gate zuerst:** die Bezug-Spalten driften heute; ein Generator auf driftender Quelle
+   produzierte selbstbewusst Falsches — das Gate erzwingt die Quelle sauber und verdient sich
+   damit das Recht zu generieren. **§27.1.1 bleibt kuratiert** (§2d). **d-check:** neue
+   Ableitungs-/Gate-Fähigkeit erst für Stufe (iii)/(iv).
+5. **Offene Spec-Punkte: neue Familie `GG-SPEC-OPEN-*`** analog `GG-AR-OPEN-*` (architecture.md
+   §19): Sektion „Offene Spezifikationspunkte" in `spezifikation.md` (Tabelle ID | Frage |
+   Status; geschlossene Zeilen zitieren die auflösende ADR). Muss in `.d-check.yml`
+   `matrix.exclude-sections` (wie „19. Offene architektonische Punkte"), damit geschlossene
+   Zeilen ihre ADR *abwärts* zitieren dürfen. **Sofort seeden** mit den hier vertagten
+   *Ausführungs*-Punkten (z. B. §27.1-Generator-Promotion nach Bezug-Stabilisierung →
+   `GG-SPEC-OPEN-001`). Neuer Präfix ist hier gerechtfertigt (Kontrast zu §4.3): brandneue
+   Artefakte **ohne** zu erhaltende Referenzen — wie `GG-AR-OPEN-*` schicht-nativ. In `ids`
+   aufnehmen (Ziel `spezifikation.md`); als Meta **außerhalb** des `trace`-`id-pattern` (wie
+   ARCH/OPEN heute).
+
+**Zwei durchgehende Prerequisites** (Voraussetzung für *jeden* Slice, insbesondere §4.4):
+Residuum-Umzug nach `spezifikation.md` und Behebung der Bezug-Spalten-Drift (ARCH-007/008 +
+SCN-006-Lücke) — zugleich das, was das Konsistenz-Gate erzwingt.
 
 ## 5. Alternativen (verworfen)
 
@@ -179,6 +231,6 @@ der Migration **normativ in architecture.md** geschlossen —
 ## 6. Umsetzung
 
 In Folge-Slices (nicht in diesem ADR), Vertrag atomar/zuletzt. Reihenfolge und
-§27.1-Ausbaustufe gemäß §4 in der Slice-Planung. Der Status ist **Accepted**
+§27.1-Ausbaustufe gemäß den §4-Entscheidungen in der Slice-Planung. Der Status ist **Accepted**
 (Modell-Entscheidung); die Specs `lastenheft.md`/`architecture.md`/`traceability.md` bleiben
 unverändert, bis die Migrations-Slices greifen.
