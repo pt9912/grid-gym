@@ -31,8 +31,12 @@ MUSS (ihr „—" ist irreführend); die werden verifiziert + attribuiert.
 
 ## Teil B — bewusst deferred (5, bleiben korrekt „—")
 
-Diese SOLLTE sind **nicht gebaut** — und das ist legitim (optional). Ihr `— | should` in
-der RTM ist **korrekt und ehrlich**; sie werden **nicht** attribuiert (kein Feature).
+Diese SOLLTE sind **nicht gebaut** — und das ist **spec-sanktioniert**, nicht bloss
+unterlassen: alle fünf tragen eine **konditionale Akzeptanz** im Lastenheft („**Wenn**
+[der Adapter / das Feature] implementiert ist, [dann diese Eigenschaften]"). Das RFC-2119-
+SOLLTE-Muster sanktioniert Nicht-Implementierung durch die Anforderung selbst (nicht
+gebaut → Akzeptanz leer-erfüllt). Ihr `— | should` in der RTM ist damit **korrekt**; sie
+werden **nicht** attribuiert (kein Feature).
 Referenziert per Feature-Namen (nicht per ID), damit `doc-trace` sie nicht faelschlich
 Slice 082 zuschreibt (Footgun aus [`080`](080-delivery-audit-sim-replay.md)):
 
