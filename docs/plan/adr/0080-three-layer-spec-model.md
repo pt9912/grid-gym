@@ -1,7 +1,8 @@
 # ADR 0080 — Dreischicht-Spezifikationsmodell (Lastenheft / Spezifikation / Architektur)
 
-**Status:** Proposed (2026-07-15) — Entscheidungsvorlage. **Keine Migration in diesem
-ADR**; die Umsetzung erfolgt nach Annahme in Folge-Slices. Adressiert die **Wurzel** der
+**Status:** Accepted (2026-07-15) — Modell angenommen. **Keine Migration in diesem ADR**;
+die Umsetzung erfolgt in Folge-Slices (Vertrag zuletzt/atomar), die §4-Detailentscheidungen
+fallen in der Migrations-Planung. Adressiert die **Wurzel** der
 wiederkehrenden Traceability-Redundanzen (das entfernte architecture.md §18, die
 „Bezug"-Spalten ↔ `traceability.md` §27.1-Spiegelung), indem die fehlende mittlere
 Spezifikations-Schicht eingezogen wird.
@@ -177,6 +178,7 @@ der Migration **normativ in architecture.md** geschlossen —
 
 ## 6. Umsetzung
 
-Nach Annahme in Folge-Slices (nicht in diesem ADR), Vertrag atomar/zuletzt. Reihenfolge und
-§27.1-Ausbaustufe gemäß §4 in der Slice-Planung. Bis dahin bleibt der Status **Proposed**;
-`lastenheft.md`/`architecture.md`/`traceability.md` sind unverändert.
+In Folge-Slices (nicht in diesem ADR), Vertrag atomar/zuletzt. Reihenfolge und
+§27.1-Ausbaustufe gemäß §4 in der Slice-Planung. Der Status ist **Accepted**
+(Modell-Entscheidung); die Specs `lastenheft.md`/`architecture.md`/`traceability.md` bleiben
+unverändert, bis die Migrations-Slices greifen.
