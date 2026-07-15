@@ -96,7 +96,6 @@ matrix:
   exclude-sections:
     # §27-Traceability ist nach docs/plan/traceability.md ausgelagert (Slice 063);
     # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
-    - "18. Rueckverfolgbarkeit Architektur ↔ Lastenheft"
     - "19. Offene architektonische Punkte"
 
 # RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,

@@ -64,7 +64,7 @@ keine eigene Kennung traegt.
 | GG-PRINC-002       | SRP — `ruff` `PLR0902` (max-attributes), `PLR0904` (max-public-methods), `C901` (McCabe), `PLR0915` (max-statements); Restanteil bleibt Code-Review |
 | GG-PRINC-003       | OCP — primaer Code-Review; AST-Heuristik (Verbot von `isinstance(x, ConcreteType)` in `core/*`) ist Folgearbeit |
 | GG-PRINC-004       | LSP — `mypy --strict` Type-Check-Gate ([`ADR 0005`](adr/0005-type-check-gate.md)) prueft Variance-Verstoesse in Subtypen; Restanteil Code-Review |
-| GG-PRINC-005       | ISP — `ruff` `PLR0904` (max-public-methods, Schwelle 12), `PLR0903` (too-few-public-methods); mypy-Protocol-Konformitaet via [`ADR 0005`](adr/0005-type-check-gate.md); Restanteil Code-Review |
+| GG-PRINC-005       | ISP — `ruff` `PLR0904` (max-public-methods, Schwelle 12), `PLR0903` (too-few-public-methods); mypy-Protocol-Konformitaet via [`ADR 0005`](adr/0005-type-check-gate.md); Restanteil Code-Review; Konfiguration [`GG-AR-P-013`](../../spec/architecture.md#2-architekturprinzipien)/[`GG-AR-PORT-DRN-009`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (migriert aus entferntem §18; Zuordnung owner-pruefen) |
 | GG-PRINC-006       | DIP — [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)/002 + [`AC-CORE-NO-ADAPTERS`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-CORE-NO-DRIVING`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-NO-FW`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-PORTS-NO-FW`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (vier von fuenfzehn A-1-Contracts in [`ADR 0002`](adr/0002-language-and-build-stack.md)) |
 | GG-CC-002          | [`GG-AR-TABU-003`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (Adapter-Logikverbot)                                                            |
 | GG-CC-003          | [`GG-AR-TABU-002`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (Domain ohne Framework-Imports)                                                  |
@@ -93,7 +93,7 @@ keine eigene Kennung traegt.
 | GG-DEV-010..018    | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (MVP- und SOLLTE-Modelle)                                                     |
 | GG-BESS-001..008   | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (Batteriemodell) + [`GG-AR-P-010`](../../spec/architecture.md#2-architekturprinzipien) Eingabe-Sicherheit                           |
 | GG-GRID-001..007   | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (Netzmodell)                                                                  |
-| GG-SCN-001..008    | [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Validierungs-Pipeline                                                        |
+| GG-SCN-001..008    | [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Validierungs-Pipeline (GG-SCN-006 zusaetzlich [`GG-AR-COMP-FAULTS`](../../spec/architecture.md#5-komponentensicht); migriert aus §18) |
 | GG-REPLAY-001..006 | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-PORT-DRV-003`](../../spec/architecture.md#driving-ports-vom-kern-angeboten)                                                         |
 | GG-REPLAY-007      | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) Diff-Klassifikation                                                            |
 | GG-FAULT-001..010  | [`GG-AR-COMP-FAULTS`](../../spec/architecture.md#5-komponentensicht) Fault-Injection-Architektur                                                    |
@@ -121,17 +121,17 @@ keine eigene Kennung traegt.
 | GG-SAFE-006        | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) Diff + [`GG-AR-COMP-OBS`](../../spec/architecture.md#5-komponentensicht) Replay-Diff-Status                                      |
 | GG-SAFE-007        | [`GG-AR-P-011`](../../spec/architecture.md#2-architekturprinzipien) Trennung Simulation/Produktion                                                        |
 | GG-SAFE-008        | [`GG-AR-COMP-API`](../../spec/architecture.md#5-komponentensicht) Eingabe-Validierung + [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Scenario-Validator                     |
-| GG-TESTTYPE-001..007 | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft)                                                                                  |
-| GG-ARCHTEST-001..005 | [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 + [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft)                                                          |
-| GG-CICD-001..007   | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht)                                                              |
-| GG-DEPLOY-001..011 | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht)                                                                                 |
-| GG-DEMO-001..008   | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (Compose-Demo) + [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) (E2E/Demo-Abnahme)                            |
-| GG-ACCEPT-001..003 | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) + `GG-TRACE-001`                                                                   |
+| GG-TESTTYPE-001..007 | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur)                                                                                  |
+| GG-ARCHTEST-001..005 | [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 + [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur)                                                          |
+| GG-CICD-001..007   | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht)                                                              |
+| GG-DEPLOY-001..011 | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (GG-DEPLOY-006 zusaetzlich [`GG-AR-PORT-DRV-001`](../../spec/architecture.md#driving-ports-vom-kern-angeboten)..007 + [`GG-AR-COMP-OBS`](../../spec/architecture.md#5-komponentensicht); migriert aus §18) |
+| GG-DEMO-001..008   | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (Compose-Demo) + [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (E2E/Demo-Abnahme)                            |
+| GG-ACCEPT-001..003 | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + `GG-TRACE-001`                                                                   |
 | GG-TRACE-001       | Rueckverfolgbarkeitstabelle in `architecture.md` (§18) — Quelle fuer diese §27.1-Tabelle             |
-| GG-TEST-001..008   | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) (Replay-/Fault-/Determinismus-Tests)                                               |
-| GG-COV-001..005    | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) (Coverage-Block und Quality Gates)                                                 |
-| GG-QG-001..007     | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) (Quality Gates) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (CI-Gating)                                   |
-| GG-QA-001..006     | [`GG-AR-TEST-001`](../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) + [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 (statische Pruefungen)                                     |
+| GG-TEST-001..008   | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Replay-/Fault-/Determinismus-Tests)                                               |
+| GG-COV-001..005    | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Coverage-Block und Quality Gates)                                                 |
+| GG-QG-001..007     | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Quality Gates) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (CI-Gating)                                   |
+| GG-QA-001..006     | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 (statische Pruefungen)                                     |
 
 ### 27.1.1 Anforderungen ohne Design-Artefakt
 

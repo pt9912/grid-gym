@@ -74,7 +74,7 @@ Hat das Referenzziel keine etablierte Kennung (z. B.
 `architecture.md` §17 „Testarchitektur"), gilt folgende Reihenfolge:
 
 1. **Bevorzugt:** Eine Kennung im passenden Raum **anlegen**
-   (Beispielname: [`GG-AR-TEST-001`](../../../spec/architecture.md#18-rueckverfolgbarkeit-architektur--lastenheft) fuer Testarchitektur als
+   (Beispielname: [`GG-AR-TEST-001`](../../../spec/architecture.md#17-testarchitektur) fuer Testarchitektur als
    Ganzes — die konkrete Familie und Nummerierung wird beim
    erstmaligen Anlegen in `architecture.md` normiert). Das ist im
    Rahmen der naechsten inhaltlichen Aenderung des betroffenen
