@@ -5,7 +5,15 @@ aktive** Arbeit.
 
 ## Bestand
 
-**Kein aktiver `next/`-Eintrag.** Der erste Slice des Spec-Schichtungs-Arcs
+**Aktiver `next/`-Eintrag: [`087`](087-architecture-open-points-to-planning.md)**
+— erster Umsetzungs-Slice von
+[`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md) (Soll-Specs frei von
+offenen Punkten): `architecture.md` §19 (`GG-AR-OPEN-*`) auflösen → offene Punkte in
+die Planung, geschlossene raus (Provenienz in den ADRs). Aktivierungsbereit;
+Design-Knackpunkt = Anker-Web der geschlossenen Punkte (s. Slice-Plan). Doku-only,
+kein Release.
+
+Der erste Slice des Spec-Schichtungs-Arcs
 ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)),
 [`083`](../done/083-spezifikation-layer-discipline-core-move.md)
 (Spezifikations-Schicht anlegen + Disziplin-Kern-Umzug `GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`),
