@@ -358,7 +358,7 @@ M1 selbst die erste Welle mit Zufallsverbrauch ist.
 - Wahl der ML/RL-Bibliothek (PyTorch vs. JAX) — siehe [`GG-FUTURE-002`](../../../spec/lastenheft.md#gg-future-002).
 - Kryptographisch sichere Zufallsquellen (`secrets`) — werden in
   `hexagon/core` nicht benoetigt; Authentifizierung ist
-  [`GG-AR-OPEN-010`](../../../spec/architecture.md#19-offene-architektonische-punkte) und kommt mit eigener Slice.
+  [`GG-AR-OPEN-010`](../planning/open/architecture-open-points.md#gg-ar-open-010) und kommt mit eigener Slice.
 - Quasi-zufaellige Sequenzen (Halton/Sobol) fuer Sampling-MPC —
   spaeter, eigene ADR.
 - Konkrete `random.Random`-Subclassing-Strategien (das ist

@@ -1,12 +1,28 @@
 # 087 — architecture.md §19 auflösen: offene Punkte in die Planung (`GG-AR-OPEN-*`)
 
-**Status:** Geplant (`next/`) — **erster Umsetzungs-Slice von
-[`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md)** (Soll-Specs frei
-von offenen Punkten).
+**Status:** **Abgeschlossen (`done/`, 2026-07-16).** Erster Umsetzungs-Slice von
+[`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md) (Soll-Specs frei von
+offenen Punkten): `architecture.md` §19 aufgelöst. **Doku-/Config-only → kein Release.**
 **Datum:** 2026-07-16
-**Quelle:** [`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md) §4 —
-`architecture.md` §19 (`GG-AR-OPEN-*`) ist die verbliebene „Offene Punkte"-Sektion
-in einer Soll-Spec und aufzulösen.
+**Quelle:** [`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md) §4.
+
+> **Closure / Verifikation (2026-07-16).** Owner-Entscheidung: **Split** (nicht ein
+> gemeinsames Register). Umgesetzt: §19 aus `architecture.md` entfernt (23 Zeilen; §17→§20
+> sauber) + die 2 §19-fremden GG-AR-OPEN-Prosa-Refs bereinigt (inkl. stale „ist offen"-Aussage
+> zur Prozess-Topologie → Soll „zwei Prozesse"). **Die 5 offenen** (`GG-AR-OPEN-*`, 005/006/007/009/010)
+> → neues Trigger-Watch-Register `planning/open/architecture-open-points.md` (im `open/README`
+> indexiert). **Die 5 geschlossenen** (`001/002/003/004/008`) → Provenienz-Sektion im
+> ADR-Index (`adr/README.md`) mit Ankern + auflösender ADR. **40 Links** (37 geschlossen →
+> ADR-Index, 3 offen → Register) per-ID geroutet, **per [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md)**
+> (nur Link-Targets, keine ADR-Prosa; [`ADR 0002`](../../adr/0002-language-and-build-stack.md) ×22, 0012 ×8 u. a.). `.d-check.yml`:
+> zwei höher-priorisierte `GG-AR-OPEN`-`ids`-Regeln (offen→Register, geschlossen→Index) +
+> `matrix.exclude-sections` geleert (§19 weg). **`done-archive/` + `CHANGELOG` unangetastet**
+> (Backtick/Text in `ids.scope.ignore`, brechen nicht). **`make docs-check` + `make gates` grün.**
+>
+> **Lehre/Grenze des Splits:** Der `ids`-Ziel-Split ist ID-hartcodiert (offen- vs.
+> geschlossen-Set) — beim Schließen eines offenen Punkts wandert seine ID aus der ersten
+> in die zweite `ids`-Regel + Register→Index + Repoint. Das ist der korrekte Lebenszyklus
+> (offen→ADR→geschlossen), kein Defekt.
 
 ---
 

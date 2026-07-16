@@ -121,7 +121,8 @@ SOLLTE-Geraete-/Netz-/BESS-Trigger `016`..`024` sind mit M8
 [`../done-archive/`](../done-archive/) archiviert — dort gelistet,
 nicht mehr hier. Belege: [`M8-results.md`](../done/M8-results.md) §2.
 
-Architektonische offene Punkte ([`GG-AR-OPEN-002`](../../../../spec/architecture.md#19-offene-architektonische-punkte)..010) leben weiterhin
-in `architecture.md` §19 und sind dort die kanonische Liste. Wenn
-einer dieser Punkte einen konkreten Scope-Trigger erhaelt, wandert
-eine Notiz auch hier nach `open/`.
+Architektonische offene Punkte (`GG-AR-OPEN-*`) leben seit
+[`Slice 087`](../done/087-architecture-open-points-to-planning.md) im Register
+[`architecture-open-points.md`](architecture-open-points.md) (offen) bzw. als
+Provenienz im [ADR-Index](../../adr/README.md) (geschlossen) — **nicht** mehr in
+`architecture.md`. Neue offene Punkte werden direkt im Register angelegt.

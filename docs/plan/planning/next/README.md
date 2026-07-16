@@ -5,13 +5,12 @@ aktive** Arbeit.
 
 ## Bestand
 
-**Aktiver `next/`-Eintrag: [`087`](087-architecture-open-points-to-planning.md)**
-— erster Umsetzungs-Slice von
-[`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md) (Soll-Specs frei von
-offenen Punkten): `architecture.md` §19 (`GG-AR-OPEN-*`) auflösen → offene Punkte in
-die Planung, geschlossene raus (Provenienz in den ADRs). Aktivierungsbereit;
-Design-Knackpunkt = Anker-Web der geschlossenen Punkte (s. Slice-Plan). Doku-only,
-kein Release.
+**Kein aktiver `next/`-Eintrag.**
+[`087`](../done/087-architecture-open-points-to-planning.md) (`architecture.md` §19
+auflösen, erster [`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md)-Slice)
+ist **abgeschlossen** (`done/`, 2026-07-16): die 5 offenen `GG-AR-OPEN-*` in ein
+Planungs-Register, die 5 geschlossenen als Provenienz in den ADR-Index, §19 aus
+`architecture.md` entfernt (40 Links per [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md) repointet). Doku-only, kein Release.
 
 Der erste Slice des Spec-Schichtungs-Arcs
 ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)),

@@ -9,7 +9,7 @@ de-facto-Entscheidung nachtraeglich. Direkter
 **Datum:** 2026-05-17
 **Status geaendert am:** 2026-05-17 — `Proposed → Accepted`.
 **Bezug:**
-[Architektur](../../../spec/architecture.md#19-offene-architektonische-punkte) §19 ([`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte),
+[Architektur](README.md#gg-ar-open-002) §19 ([`GG-AR-OPEN-002`](README.md#gg-ar-open-002),
 bei Acceptance dieser ADR von `Offen` auf `Geschlossen` zu setzen),
 [Architektur](../../../spec/architecture.md#16-deployment-sicht) §16 (API/Simulation/UI
 mit getrennten Healthchecks),
@@ -24,7 +24,7 @@ mit getrennten Healthchecks),
 
 ## 1. Kontext
 
-`spec/architecture.md` §19 fuehrt [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) als offene
+`spec/architecture.md` §19 fuehrt [`GG-AR-OPEN-002`](README.md#gg-ar-open-002) als offene
 architektonische Frage: API-Service und Simulationsdienst als
 ein Prozess oder zwei. `roadmap.md` §4 Vorbedingungen listet
 denselben Punkt als „offen, eigene Folge-ADR".
@@ -35,7 +35,7 @@ In M1 Welle 6c ist die Topologie de-facto fixiert worden:
 TickLoop-Runner) als zwei separate Services. Beide teilen sich
 den `postgres`-Service als gemeinsame Persistenzschicht.
 
-Diese ADR formalisiert den Pattern, damit [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+Diese ADR formalisiert den Pattern, damit [`GG-AR-OPEN-002`](README.md#gg-ar-open-002)
 geschlossen ist und M2-Geraetemodelle auf einer fixierten
 Topologie aufsetzen koennen.
 
@@ -110,13 +110,13 @@ abgewogen:
 - `deploy/compose.yml` bleibt strukturell unveraendert; M2
   ersetzt nur den `simulation`-Stub-Container-Command durch den
   produktiven TickLoop-Runner.
-- `spec/architecture.md` §19 muss [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) von `Offen`
+- `spec/architecture.md` §19 muss [`GG-AR-OPEN-002`](README.md#gg-ar-open-002) von `Offen`
   auf „Geschlossen durch ADR 0012" umstellen — das ist eine
   zulaessige Aenderung am normativen Dokument
   (`ADR 0006 §5` operative Artefakte; `spec/architecture.md`
   ist normativ, aber `GG-AR-OPEN-*`-Eintraege duerfen bei
   Acceptance einer Folge-ADR geschlossen werden).
-- `roadmap.md §4` Vorbedingungen: [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)-Checkbox
+- `roadmap.md §4` Vorbedingungen: [`GG-AR-OPEN-002`](README.md#gg-ar-open-002)-Checkbox
   abgehakt mit Verweis auf diese ADR.
 - M3 Multi-Agent kann eine Message-Queue als zusaetzlichen
   IPC-Pfad zwischen api und sim einfuehren — diese ADR
@@ -132,14 +132,14 @@ abgewogen:
 - `Dockerfile` `runtime`-Stage: gemeinsames Image fuer beide
   Services; Trennung erfolgt nur ueber `command` + `entrypoint`
   im Compose.
-- `spec/architecture.md` §19 [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte): Status auf
+- `spec/architecture.md` §19 [`GG-AR-OPEN-002`](README.md#gg-ar-open-002): Status auf
   `Geschlossen` mit ADR-0012-Verweis.
 
 ---
 
 ## 6. Konsequenzen
 
-- **Positiv:** [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte) geschlossen — M2 hat keine
+- **Positiv:** [`GG-AR-OPEN-002`](README.md#gg-ar-open-002) geschlossen — M2 hat keine
   Topologie-Drift mehr als Risiko.
 - **Positiv:** Failure-/Skalierungs-Isolation strukturell
   belegt.

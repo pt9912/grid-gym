@@ -101,8 +101,8 @@ Wird ein Eintrag verworfen, wandert er nach `docs/archive/`.
 ## 5. Nicht Gegenstand dieser ADR
 
 - Wahl der Programmiersprache und des Build-Systems
-  ([`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte), eigene Folge-ADR).
-- Trennung von API- und Simulationsdienst ([`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
-- Persistenzzugriffsmuster ([`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
+  ([`GG-AR-OPEN-001`](README.md#gg-ar-open-001), eigene Folge-ADR).
+- Trennung von API- und Simulationsdienst ([`GG-AR-OPEN-002`](README.md#gg-ar-open-002)).
+- Persistenzzugriffsmuster ([`GG-AR-OPEN-003`](README.md#gg-ar-open-003)).
 - Konkrete Pfade fuer Test-Artefakte, Container-Images oder
   Release-Pipelines.

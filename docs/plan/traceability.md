@@ -45,7 +45,9 @@ Meilensteine `M1..Mn` leben in
 Design-Artefakte beziehen sich auf [`spec/architecture.md`](../../spec/architecture.md);
 `GG-AR-*`-Kennungen sind dort definiert: Prinzipien `GG-AR-P-*`, Ports
 `GG-AR-PORT-DRV-*` / `GG-AR-PORT-DRN-*`, Komponenten `GG-AR-COMP-*`,
-Architektur-Tabus `GG-AR-TABU-*`, offene Punkte `GG-AR-OPEN-*`.
+Architektur-Tabus `GG-AR-TABU-*`. (Offene architektonische Punkte `GG-AR-OPEN-*`
+sind seit der §19-Aufloesung nicht mehr in `architecture.md`, sondern in der
+Planung [offen] bzw. im ADR-Index [geschlossen].)
 Querverweise nutzen Kennungen als primaere Referenz (siehe [`ADR 0004`](adr/0004-identifier-based-cross-references.md));
 `§…`-Hinweise sind nur Lesehilfen in Klammern, wo eine Sektion noch
 keine eigene Kennung traegt.

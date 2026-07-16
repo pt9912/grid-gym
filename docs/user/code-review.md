@@ -221,4 +221,4 @@ GitHub-Actions-Workflow), muss der Reviewer den lokalen
   Zweifel an „beruehrt die PR den Vertrag?": Folge-ADR schreiben
   (im Zweifel mehr Dokumentation, nicht weniger).
 - **Architektur-Frage**: an Architekt eskalieren; ggf. `GG-AR-OPEN-*`-
-  Eintrag in `architecture.md §19` oeffnen.
+  Eintrag im Planungs-Register `planning/open/architecture-open-points.md` oeffnen.

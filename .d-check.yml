@@ -20,6 +20,15 @@ ids:
         "docs/plan/traceability.md",
       ]
   patterns:
+    # Offene Punkte aus architecture.md §19 ausgelagert (Soll-Specs frei von offenen
+    # Punkten): offene -> Planungs-Register, geschlossene -> ADR-Index-Provenienz.
+    # MUSS ueber der generischen GG-AR-...-Regel stehen (erstes Match gewinnt).
+    - regex: 'GG-AR-OPEN-(005|006|007|009|010)'
+      target: docs/plan/planning/open/architecture-open-points.md
+      link-policy: always
+    - regex: 'GG-AR-OPEN-(001|002|003|004|008)'
+      target: docs/plan/adr/README.md
+      link-policy: always
     - regex: 'GG-AR-[A-Z0-9-]+-\d{3}'
       target: spec/architecture.md
       link-policy: always
@@ -98,10 +107,11 @@ matrix:
   # SDP Regel 5 (Body vs. Changelog): ADR-/Slice-Provenance lebt nur unter
   # einer Historie-Sektion — diese Ueberschriften sind vom Richtungs-Gate
   # ausgenommen.
-  exclude-sections:
-    # §27-Traceability ist nach docs/plan/traceability.md ausgelagert (Slice 063);
-    # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
-    - "19. Offene architektonische Punkte"
+  # Leer seit Slice 087: architecture.md §19 (Offene architektonische Punkte)
+  # aufgeloest (Offene-Punkte-in-die-Planung-Prinzip); §27-Traceability ist nach
+  # docs/plan/traceability.md ausgelagert (Slice 063). Kein Soll-Spec-/ADR-
+  # Abschnitt zitiert mehr abwaerts -> keine Ausnahme noetig.
+  exclude-sections: []
 
 # RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,
 # rein advisory (`make doc-complete`/--require-complete bewusst NICHT verdrahtet).

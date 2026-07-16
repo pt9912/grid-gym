@@ -9,7 +9,7 @@ Spike-0 abgeschlossen: alle vier Pflicht-Gates (`make lint`,
 `docs/plan/planning/done/spike-0-results.md §3`); zweiter
 Pre-Acceptance-Review abgearbeitet (Blocker B-A/B-B/B-C, alle zehn
 Drift-Items D-1..D-10 eingearbeitet); `make gates` als
-Abschluss-Aggregator gruen. Schliesst [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte). Vorher:
+Abschluss-Aggregator gruen. Schliesst [`GG-AR-OPEN-001`](README.md#gg-ar-open-001). Vorher:
 2026-05-14 — `Proposed → Provisional` mit Freigabe des
 Spike-0-Vertrags; Operative Artefakte (`Dockerfile`, `Makefile`)
 lagen als Spike-0-Pfad vor (vgl. `ADR 0006`).
@@ -43,7 +43,7 @@ angepasst; `mypy --strict` als vierter Spike-0-Gate verankert.
 [ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md) (Statuswerte und Uebergaenge),
 [ADR 0005](0005-type-check-gate.md) (Type-Check als vierter Gate)
 **Schliesst (bei Annahme):**
-[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+[`GG-AR-OPEN-001`](README.md#gg-ar-open-001)
 
 ---
 
@@ -57,7 +57,7 @@ Sprache, mit welchem Build-Stack und mit welchen Querschnittsbibliotheken
 der Simulationskern und die Driving-Adapter geliefert werden.
 
 Sie betrifft **nicht** das Web-UI (`ui/`); dessen Stack wird in einer
-spaeteren ADR adressiert (vgl. [`GG-AR-OPEN-007`](../../../spec/architecture.md#19-offene-architektonische-punkte)).
+spaeteren ADR adressiert (vgl. [`GG-AR-OPEN-007`](../planning/open/architecture-open-points.md#gg-ar-open-007)).
 
 ---
 
@@ -246,16 +246,16 @@ Determinismusluecke durch Serialisierung.
 
 K-ARCH ist ein P0-Knock-out-Kriterium, in dem Python die Bewertung
 `-` traegt. Solange A-1 nicht nachweislich konfigurierbar ist,
-darf diese ADR weder als `Accepted` gefuehrt noch [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+darf diese ADR weder als `Accepted` gefuehrt noch [`GG-AR-OPEN-001`](README.md#gg-ar-open-001)
 als geschlossen markiert werden. Der Status-Pfad nutzt die in
 [ADR 0006](0006-adr-lifecycle-superseding-and-process-corrections.md) definierten Lifecycle-Stufen und
 ist hier konkret:
 
-| ADR-Status     | Bedingung                                                                 | Wirkung auf [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)         |
+| ADR-Status     | Bedingung                                                                 | Wirkung auf [`GG-AR-OPEN-001`](README.md#gg-ar-open-001)         |
 | -------------- | ------------------------------------------------------------------------- | ------------------------------------ |
 | `Proposed`     | aktueller Stand: Empfehlung samt Auflagen, ohne ausgefuehrten Nachweis    | bleibt offen                          |
 | `Provisional`  | Projektowner bestaetigt Empfehlung; Spike-0 ist freigegeben               | bleibt offen, mit Verweis auf ADR    |
-| `Accepted`     | Spike-0 ist gruen abgeschlossen (siehe Spike-0-Vertrag unten)              | wird mit „Geschlossen mit ADR 0002" in [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` markiert |
+| `Accepted`     | Spike-0 ist gruen abgeschlossen (siehe Spike-0-Vertrag unten)              | wird mit „Geschlossen mit ADR 0002" in [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) in `architecture.md` markiert |
 
 **Spike-0-Vertrag (Pre-Acceptance):**
 
@@ -790,7 +790,7 @@ Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
 
 - **Spike-0 rot (vor Acceptance):** A-1 oder A-2 lassen sich im
   Skelett nicht gruen konfigurieren. ADR 0002 geht auf `Rejected`;
-  [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) bleibt offen; eine Folge-ADR (vermutlich Option
+  [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) bleibt offen; eine Folge-ADR (vermutlich Option
   D, Kotlin/JVM) tritt an die Stelle.
 - **A-1/A-2 unhaltbar nach Acceptance:** Die Contracts oder der
   Custom-Emitter erweisen sich im Hauptprojekt als nicht haltbar
@@ -800,7 +800,7 @@ Zwei Versagensszenarien mit unterschiedlichem Lifecycle-Effekt
   ADR 0006 fuer Accepted-ADRs — sondern durch eine Nachfolge-ADR
   `Superseded`. Die Nachfolge-ADR dokumentiert: welchen
   Contract/Vertrag sie ersetzt, welche Migrationsstrategie greift
-  und ob [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) wieder geoeffnet wird.
+  und ob [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) wieder geoeffnet wird.
 
 ### Wann Option D (Kotlin/JVM) gezogen wird
 
@@ -853,12 +853,12 @@ ADR-Annahme):
 
 1. **Proposed → Provisional:** Projektowner stimmt der Empfehlung
    (Option A mit Auflagen A-1/A-2) zu, gibt Spike-0 frei. ADR
-   wird auf `Provisional` gesetzt; der Eintrag fuer [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+   wird auf `Provisional` gesetzt; der Eintrag fuer [`GG-AR-OPEN-001`](README.md#gg-ar-open-001)
    in `architecture.md` erhaelt einen Verweis auf diese ADR, wird
    aber nicht als geschlossen markiert.
 2. **Provisional → Accepted:** Spike-0 wird gegen den Spike-0-Vertrag
    aus den Auflagen-Sektionen dieser ADR abgeschlossen. Erst dann
-   wird ADR auf `Accepted` gesetzt und [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in
+   wird ADR auf `Accepted` gesetzt und [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) in
    `architecture.md` mit „Geschlossen mit ADR 0002" markiert.
 3. **Spike-0 rot (Proposed/Provisional → Rejected):** Vor Acceptance
    wird die ADR auf `Rejected` gesetzt (ADR-0006-Lifecycle); ein
@@ -876,11 +876,11 @@ _Aktueller Status: `Proposed` — kein Beschluss._
 
 **Bei Acceptance** (d. h. nach gruenem Spike-0; siehe Status-Pfad in den
 Auflagen- und Entscheidungs-Sektionen dieser ADR) schliesst diese ADR
-[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) mit den folgenden
+[`GG-AR-OPEN-001`](README.md#gg-ar-open-001) mit den folgenden
 konkreten Wahlen. Solange die ADR auf `Proposed` oder `Provisional`
 steht, sind diese Wahlen die **Absicht** der Empfehlung, aber kein
-verbindlicher Stack-Beschluss; insbesondere darf [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md`
-[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) bis dahin **nicht** als geschlossen markieren.
+verbindlicher Stack-Beschluss; insbesondere darf [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) in `architecture.md`
+[`GG-AR-OPEN-001`](README.md#gg-ar-open-001) bis dahin **nicht** als geschlossen markieren.
 
 Es verbleibt **keine** „Paketmanager- oder Layout-Frage" als
 Folgearbeit; spaetere Wechsel benoetigen eine eigene ADR, die diese
@@ -899,7 +899,7 @@ hier abloest.
 | Toolchain-Pinning   | `.python-version` (uv-kompatibel) auf `3.14`; Override via `make <target> PYTHON_VERSION=3.13` getestet. CI-Matrix gegen `3.13` und `3.14` aktiviert sich mit erstem GitHub-Actions-Workflow (Folgewelle nach M1). | reproduzierbarer Build ([`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001)); Floor und Referenz-Runtime sind explizit testbar |
 | HTTP/WebSocket      | FastAPI + `uvicorn`                                | OpenAPI aus Code ([`GG-API-003`](../../../spec/lastenheft.md#gg-api-003)), WebSocket nativ ([`GG-API-002`](../../../spec/lastenheft.md#gg-api-002))                            |
 | Validierung         | Pydantic v2                                        | Schema- und Wertebereichspruefung ([`GG-SCN-008`](../../../spec/lastenheft.md#gg-scn-008), [`GG-SAFE-001`](../../../spec/lastenheft.md#gg-safe-001)/008, [`GG-DATA-002`](../../../spec/lastenheft.md#gg-data-002)/003)     |
-| Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009, Migrationen ([`GG-PERSIST-008`](../../../spec/lastenheft.md#gg-persist-008)); Repository-Pattern (kein ORM) bleibt offen unter [`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte) |
+| Persistenz-Treiber  | `psycopg` 3 (async) + `alembic`                    | [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009, Migrationen ([`GG-PERSIST-008`](../../../spec/lastenheft.md#gg-persist-008)); Repository-Pattern (kein ORM) bleibt offen unter [`GG-AR-OPEN-003`](README.md#gg-ar-open-003) |
 | Strukturierte Logs  | `structlog` + stdlib `logging`                     | [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)                                                                              |
 | Metriken            | `prometheus-client`                                | [`GG-OTEL-003`](../../../spec/lastenheft.md#gg-otel-003)                                                                              |
 | Tracing (optional)  | `opentelemetry-python` mit OTLP-Exporter           | [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)/004                                                                          |
@@ -916,31 +916,31 @@ ausgefuehrt, nicht bei `Proposed`/`Provisional`:
 - die Modulgrenzen-Vertraege [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 in `architecture.md` (Verzeichnisstruktur) wird mit
   Python-Paketnamen aktualisiert (`src/grid_gym/hexagon/core/...`,
   `src/grid_gym/hexagon/ports/...`, `src/grid_gym/adapters/...`).
-- [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` markiert [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) als „Geschlossen
+- [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) in `architecture.md` markiert [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) als „Geschlossen
   mit ADR 0002".
-- `roadmap.md` Vorbedingung 1 ([`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)) ist erledigt.
+- `roadmap.md` Vorbedingung 1 ([`GG-AR-OPEN-001`](README.md#gg-ar-open-001)) ist erledigt.
 
 Bereits bei `Provisional` (Spike-0 freigegeben) erlaubt sind:
 
-- Eintrag in [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte) in `architecture.md` als „Verweis auf ADR 0002 (Spike-0
+- Eintrag in [`GG-AR-OPEN-001`](README.md#gg-ar-open-001) in `architecture.md` als „Verweis auf ADR 0002 (Spike-0
   laufend)" — schliesst den Punkt **nicht**, signalisiert nur den
   laufenden Beschluss.
 
 Davon unberuehrt bleibt offen:
 
-- [`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte) (ORM vs. leichter Treiber) — diese ADR fixiert
+- [`GG-AR-OPEN-003`](README.md#gg-ar-open-003) (ORM vs. leichter Treiber) — diese ADR fixiert
   `psycopg` 3 als Treiber, aber nicht das Repository-/ORM-Muster.
 
 ---
 
 ## 7. Offene Folge-Punkte (nicht durch diese ADR geschlossen)
 
-- **[`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)** API/Simulation als ein oder zwei Prozesse —
+- **[`GG-AR-OPEN-002`](README.md#gg-ar-open-002)** API/Simulation als ein oder zwei Prozesse —
   Composition-Root-Entscheidung; eigener ADR.
-- **[`GG-AR-OPEN-003`](../../../spec/architecture.md#19-offene-architektonische-punkte)** Persistenzzugriffsmuster (Repository-Pattern
+- **[`GG-AR-OPEN-003`](README.md#gg-ar-open-003)** Persistenzzugriffsmuster (Repository-Pattern
   vs. SQLAlchemy-Core vs. SQLAlchemy-ORM) — eigener ADR. `psycopg` 3
   als Treiber ist hier gesetzt, die Schicht darueber nicht.
-- **[`GG-AR-OPEN-004`](../../../spec/architecture.md#19-offene-architektonische-punkte)..010** unveraendert offen.
+- **[`GG-AR-OPEN-004`](README.md#gg-ar-open-004)..010** unveraendert offen.
 - ADR fuer `RandomPort`-Implementierung (gebondeter PRNG,
   Seeding-Kette) — Folgearbeit, schliesst keinen `GG-AR-OPEN-*`,
   aber materiell wichtig fuer [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001).

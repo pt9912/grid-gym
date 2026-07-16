@@ -63,7 +63,7 @@ Beispiele:
 | Statt                              | Besser                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------ |
 | „siehe `architecture.md §4.2`"      | „siehe Tabu-Familie [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008" (optional: „in `architecture.md` §4.2") |
-| „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „[`GG-AR-OPEN-007`](../../../spec/architecture.md#19-offene-architektonische-punkte) (UI-Architektur)" — §19 listet [`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)..010, ein pauschaler §19-Verweis ist mehrdeutig |
+| „`architecture.md §19`"              | die konkret gemeinte Kennung, z. B. „[`GG-AR-OPEN-007`](../planning/open/architecture-open-points.md#gg-ar-open-007) (UI-Architektur)" — §19 listet [`GG-AR-OPEN-001`](README.md#gg-ar-open-001)..010, ein pauschaler §19-Verweis ist mehrdeutig |
 | „`lastenheft.md §27.1`"              | „[`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) (§27.1-Tabelle)"                                                |
 | „Komponente in §5"                   | „[`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht)"                                                          |
 | „Driving-Port in §4.2"               | „[`GG-AR-PORT-DRV-003`](../../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`ReplayPort`)"                                            |
@@ -111,7 +111,7 @@ Markdown-Hyperlinks auf Dateien sind weiterhin erlaubt und
 erwuenscht, sofern sie die Kennung im Linktext fuehren:
 
 ```markdown
-[`GG-AR-OPEN-001`](../../../spec/architecture.md#19-offene-architektonische-punkte)
+[`GG-AR-OPEN-001`](README.md#gg-ar-open-001)
 ```
 
 Der URL-Anker ist Konvention, nicht Vertrag — Verweis-Identitaet

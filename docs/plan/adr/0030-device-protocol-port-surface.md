@@ -211,7 +211,7 @@ Schleifen.
   oder uebergibt keine `protocol_ports` — der Replay-Pfad
   laeuft, ohne dass MQTT-Verbindungen oder Modbus-Polls
   aufgemacht werden.
-- Konsistenz mit [`GG-AR-OPEN-002`](../../../spec/architecture.md#19-offene-architektonische-punkte)-Entscheidung
+- Konsistenz mit [`GG-AR-OPEN-002`](README.md#gg-ar-open-002)-Entscheidung
   ([`ADR 0012`](0012-api-simulation-two-processes.md)):
   der `simulation`-Worker kann mehrere Runs hintereinander
   fahren, ohne dass Protokoll-Verbindungen zwischen

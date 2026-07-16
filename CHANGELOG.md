@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Werkzeug-Durchsetzung (`ruff`/`mypy`/Architektur-Gates) als erstklassige
   Spezifikation statt Traceability-Residuum. Präfixe unverändert; reine
   Doku-/Config-/Traceability-Umstrukturierung, kein Runtime-Delta.
+- **Offene Punkte gehören in die Planung, nicht in die Soll-Spec — Slice 087
+  ([`ADR 0081`](docs/plan/adr/0081-open-points-belong-in-planning.md)).**
+  `architecture.md` §19 „Offene architektonische Punkte" (`GG-AR-OPEN-*`) aufgelöst:
+  die 5 offenen Punkte in ein Planungs-Register
+  (`docs/plan/planning/open/architecture-open-points.md`), die 5 geschlossenen als
+  Provenienz in den ADR-Index; 40 Referenzen per
+  [`ADR 0028`](docs/plan/adr/0028-link-maintenance-accepted-adr-bezug.md) repointet.
+  Damit enthalten die Soll-Specs (Rang 1–3) nur noch Entschiedenes. Kein Runtime-Delta.
 
 ## [0.8.0] - 2026-07-14
 

@@ -25,8 +25,8 @@ Querverweis-Konvention: Kennungen sind primaere Referenz.
 
 Nicht Gegenstand dieses Dokuments:
 
-- konkrete Sprach- und Frameworkwahl (`GG-AR-OPEN-001`; die Festlegung
-  traegt die zugehoerige Architekturentscheidung)
+- konkrete Sprach- und Frameworkwahl (die Festlegung traegt die zugehoerige
+  Architekturentscheidung)
 - konkrete Modul-Versionen oder API-Pfade
 - Roadmap-Meilensteine (das Lastenheft-Kapitel mit `GG-FUTURE-*`-
   Anforderungen listet ausschliesslich Zukunfts-/`KANN`-Punkte)
@@ -894,8 +894,8 @@ Vertraege:
   ([`GG-DEPLOY-007`](lastenheft.md#gg-deploy-007)..010).
 
 API, Simulation und UI MUESSEN getrennte Healthchecks liefern; die
-Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
-(siehe `GG-AR-OPEN-002`).
+Topologie API/Simulation ist als zwei getrennte Prozesse ausgelegt
+(Composition-Root-Entscheidung, Persistenz-Bus).
 
 ---
 
@@ -917,29 +917,6 @@ Topologie API/Simulation als ein Prozess oder zwei Prozesse ist offen
 
 Architekturtests sind ein **Quality Gate**: Verletzungen brechen den
 Build (`GG-AR-TABU-001..008`, [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005).
-
----
-
-## 19. Offene architektonische Punkte
-
-| Kennung        | Frage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Status                   |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| GG-AR-OPEN-001 | Welche Sprache und welcher Build-Stack? (Python, Go, Rust, Kotlin, .NET?) — legt Sprache und Runtime des Simulationskerns, der Adapter und der Build-Toolchain fest. Modulgrenzen aus `GG-AR-P-002` und den Tabus `GG-AR-TABU-001..008` bleiben sprachunabhaengig; betroffen sind Implementierungspakete, Querschnittsbibliotheken und Test-/Architekturtest-Tooling. **Geschlossen mit [`ADR 0002`](../docs/plan/adr/0002-language-and-build-stack.md) (`Accepted` 2026-05-15)** und der synchronen [`ADR 0005`](../docs/plan/adr/0005-type-check-gate.md) (Type-Check-Gate via `mypy --strict`). | Geschlossen (2026-05-15) |
-| GG-AR-OPEN-002 | API-Service und Simulationsdienst als ein Prozess oder zwei? — Composition-Root-Entscheidung. **Geschlossen mit [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md) (`Accepted` 2026-05-17): zwei Prozesse, Postgres als Persistenz-Bus.**                                                                                                                                                                                                                                                                                                                                         | Geschlossen (2026-05-17) |
-| GG-AR-OPEN-003 | Persistenzzugriff: Repository-Pattern + leichtgewichtiger Treiber, oder ORM? — **Geschlossen** mit dem produktiven `PostgresRunRepository` (`hexagon/adapters/driven/persistence_postgres/`): Repository-Pattern + `psycopg`-Treiber (kein ORM), Alembic-Migrationen, Postgres als Persistenz-Bus per [`ADR 0012`](../docs/plan/adr/0012-api-simulation-two-processes.md). Driven-Port `RunRepositoryPort` (`GG-AR-PORT-DRN-001`).                                                                                                                                                                                                                                                                                                                                                                                  | Geschlossen (2026-05-17) |
-| GG-AR-OPEN-004 | Wird der `AgentMessageBus` als In-Process-Bus oder als Adapter (z. B. NATS) implementiert? — **Geschlossen** mit [`ADR 0023`](../docs/plan/adr/0023-agent-bus-protocol.md) (`Accepted`): In-Process-Bus als Core-Klasse `AgentMessageBus` (`hexagon/core/agents/bus.py`), kein Driven-Port. Architektur §14 schreibt eigenes Kernmodul vor; der Bus hat keine externe Adapter-Boundary.                                                                                                                                                                                                                                                                                                                                                                                                                          | Geschlossen (2026-05-21) |
-| GG-AR-OPEN-005 | Replay-Diff-Klassifikation: Liste fachlich vs. volatil als Konfiguration oder hartcodiert?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Offen                    |
-| GG-AR-OPEN-006 | Snapshot-Format: einheitlich JSON-kanonisch, binaer, oder hybrid?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Offen                    |
-| GG-AR-OPEN-007 | UI-Architektur: SSR vs. SPA; eigene REST-Konsumentenschicht oder direkte WebSocket-Anbindung?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Offen                    |
-| GG-AR-OPEN-008 | OpenTelemetry-Pflicht ab welcher Reifestufe? Heute SOLLTE ([`GG-OTEL-001`](lastenheft.md#gg-otel-001)) — **Geschlossen** mit [`ADR 0024`](../docs/plan/adr/0024-observability-port-trio.md) (`Accepted`): Port-Trio `LogPort`/`MetricsPort`/`TracePort` ist Pflicht-Surface (Default-Verkabelung Null-Adapter, keine externer Side-Effekt ohne explizite Injektion). OTLP-Adapter-Trio (`adapters/driven/telemetry_otlp/`) ist produktiv; `otel-collector`-Sibling in `deploy/compose.yml` und Compose-Smoke-Determinismus-Pattern fixiert. [`GG-OTEL-001`](lastenheft.md#gg-otel-001) bleibt formal SOLLTE — die Architektur stellt die Pflicht-Surface, die Adapter-Wahl ist Deployment-Entscheidung.                                                                                                                                                                                                                                                  | Geschlossen (2026-05-25) |
-| GG-AR-OPEN-009 | Welche Protokolladapter sind ab MVP enthalten? Heute alle SOLLTE (`GG-MQTT/MODB/OPCUA/DNP3/IEC-001`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Offen                    |
-| GG-AR-OPEN-010 | Authentifizierung der API — heute nicht im Lastenheft normiert; spaetere `GG-SAFE-…`-Erweiterung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Offen                    |
-
-Geschlossene Punkte erhalten einen Verweis auf ein ADR-Dokument unter
-[`docs/plan/adr/`](../docs/plan/adr/). Die Dokumentations- und
-Planungsstruktur ist in
-[`ADR 0001`](../docs/plan/adr/0001-documentation-and-planning-structure.md)
-festgelegt.
 
 ---
 
