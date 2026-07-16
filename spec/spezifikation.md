@@ -208,12 +208,3 @@ wiederverwendet.
 **Durchsetzung:** interne Test-/Setup-Konvention; der *Kundenwunsch* Determinismus
 liegt aufwärts im Vertrag (`GG-SIM-*` / `GG-RT-*`), `GG-SEED-001` ist das *Wie*.
 `make test-determinism` deckt Seed-/Scheduler-/Ausgabe-Determinismus ab.
-
-## 5. Offene Spezifikationspunkte (`GG-SPEC-OPEN-*`)
-
-Offene Punkte dieser Schicht (analog „Offene architektonische Punkte" in
-`architecture.md`). Geschlossene Zeilen zitieren die auflösende Entscheidung.
-
-| Kennung | Frage / offener Punkt | Status |
-| ------- | --------------------- | ------ |
-| <a id="gg-spec-open-001"></a>`GG-SPEC-OPEN-001` | §27.1-Positivtabelle von einer handgepflegten/gegateten Tabelle zum **Generator/Report** promoten (von `doc-trace` aus den Bezug-Spalten erzeugt), sobald das Konsistenz-Gate die Bezug-Quelle sauber erzwingt | Offen — Ausführung in einem Folge-Slice des Spec-Schichtungs-Arcs (Traceability-Finalisierung) |

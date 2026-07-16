@@ -198,7 +198,16 @@ Entscheidungen hier sind die Vorgaben, an denen sich die Migrations-Slices ausri
    produzierte selbstbewusst Falsches — das Gate erzwingt die Quelle sauber und verdient sich
    damit das Recht zu generieren. **§27.1.1 bleibt kuratiert** (§2d). **d-check:** neue
    Ableitungs-/Gate-Fähigkeit erst für Stufe (iii)/(iv).
-5. **Offene Spec-Punkte: neue Familie `GG-SPEC-OPEN-*`** analog `GG-AR-OPEN-*` (architecture.md
+5. **[ZURÜCKGENOMMEN — Owner-Entscheidung 2026-07-16 bei der §4.4-i-Umsetzung:**
+   `spezifikation.md` beschreibt (wie `lastenheft.md`/`architecture.md`) das *Soll*;
+   offene Prozess-/Werkzeug-/Traceability-Punkte gehören in die Planung
+   (Roadmap/Slice/Trigger), **nicht** in die normative Spec. Daher `GG-SPEC-OPEN-*`
+   + Sektion „Offene Spezifikationspunkte" **nicht eingeführt**; der als Seed
+   vorgesehene §27.1-Generator-Punkt ist Traceability-Tooling und wird in der
+   Traceability-Finalisierung geführt. Die zugrunde liegende `GG-AR-OPEN-*`/
+   architecture.md-§19-Analogie ist aus demselben Grund als aufzulösen markiert
+   (eigener Bereinigungs-Slice). Der ursprüngliche §4.5-Text bleibt als Historie
+   stehen.]** Offene Spec-Punkte: neue Familie `GG-SPEC-OPEN-*` analog `GG-AR-OPEN-*` (architecture.md
    §19): Sektion „Offene Spezifikationspunkte" in `spezifikation.md` (Tabelle ID | Frage |
    Status; geschlossene Zeilen zitieren die auflösende ADR). Muss in `.d-check.yml`
    `matrix.exclude-sections` (wie „19. Offene architektonische Punkte"), damit geschlossene

@@ -25,8 +25,11 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 
 - [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001) (Vertrag) —
   Amendment (letzter Vertrag-Eingriff des Arcs).
-- `GG-SPEC-OPEN-001` (Generator-Promotion, aus 083 geseedet) — Auflösung oder
-  Fortschreibung.
+- §27.1-Generator-Promotion + Konsistenz-Gate — als **offene Tooling-/
+  Traceability-Punkte** hier bzw. in der Roadmap geführt (**nicht** als
+  `GG-SPEC-OPEN`-Eintrag in `spezifikation.md`: die Spezifikations-Schicht
+  beschreibt das *Ziel*, keine Prozess-/Werkzeug-Offenpunkte — Owner-Korrektur zu
+  [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.5).
 - §27.1 / §27.1.1 (`traceability.md`) — Modell-Umstellung.
 
 ## Umfang / Erwartete Lieferung
@@ -50,13 +53,13 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
    (ghcr.io/pt9912/d-check; nicht repo-lokal, Doku-Check-Features gehören
    dorthin). Ist die Fähigkeit **verfügbar** → hier verdrahten (`make`-Target).
    Ist sie **noch nicht verfügbar** → §27.1 bleibt *authored-aber-konsistent*
-   (durch 084 sauber), und das Gate wandert als `GG-SPEC-OPEN-002` in die
-   Offen-Sektion (Aktivierung bei d-check-Feature-Release).
+   (durch 084 sauber), und das Gate wird als offener Punkt hier/in der Roadmap
+   vertagt (Aktivierung bei d-check-Feature-Release).
 3. **Generator/Report (ADR §4.4 iv, optional/Endzustand):** Positivtabelle nicht
    mehr gespeichert, sondern von `doc-trace` aus den Bezug-Spalten erzeugt
-   (Präzedenz §27.2-Delegation, Slice 066). Bleibt **`GG-SPEC-OPEN-001`**
-   (deferred), bis das Konsistenz-Gate die Quelle sauber erzwingt — „das Gate
-   verdient sich das Recht zu generieren" (ADR §4.4).
+   (Präzedenz §27.2-Delegation, Slice 066). Bleibt **vertagt**, bis das
+   Konsistenz-Gate die Quelle sauber erzwingt — „das Gate verdient sich das Recht
+   zu generieren" (ADR §4.4).
 4. **§27.1.1 bleibt kuratiert** (ADR §2d): gewollte Waisen (`GG-TERM-*` /
    `GG-NONGOAL-*`) sind menschliches Urteil, kein invertierter Zeiger — nicht
    automatisieren.
@@ -66,8 +69,8 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 - **Warum Gate vor Generator:** ein Generator auf driftender Quelle produzierte
   selbstbewusst Falsches; erst das Gate erzwingt die Quelle sauber (ADR §4.4).
   084 hat die Quelle bereits gerichtet — dieser Slice zementiert das per Gate.
-- **d-check-Feature-Risiko:** ob (iii) hier landet oder als `GG-SPEC-OPEN-002`
-  vertagt wird, hängt allein am externen Tool-Stand. Beim Aktivieren prüfen.
+- **d-check-Feature-Risiko:** ob (iii) hier landet oder vertagt wird, hängt allein
+  am externen Tool-Stand. Beim Aktivieren prüfen.
 - **ADR-Immutabilität:**
   [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment folgt
   dem Slice-066-Muster (Akzeptanz-Fortschreibung, kein Neu-ADR).
@@ -84,9 +87,9 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 
 - [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001) amendiert
   (Dreischicht + derived/gated §27.1).
-- §27.1 auf `derived`/gegatet umgestellt **oder** `GG-SPEC-OPEN-002` als
-  Vertagung mit Aktivierungs-Bedingung gesetzt; `GG-SPEC-OPEN-001`
-  (Generator) fortgeschrieben.
+- §27.1 auf `derived`/gegatet umgestellt **oder** als offener Punkt (mit
+  Aktivierungs-Bedingung) vertagt; §27.1-Generator-Promotion als Endzustand
+  festgehalten (in Roadmap/Slice, nicht in `spezifikation.md`).
 - §27.1.1 unverändert kuratiert.
 - **Release-Entscheidung: nein.** Doku/Config, kein Runtime-Delta → `[Unreleased]`.
   **Hinweis:** der **gesamte** Arc (083–086) ist doku-/config-/kommentar-only →

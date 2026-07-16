@@ -42,6 +42,16 @@ die neue Schicht an. **Doku-/Config-only → kein Release.**
 > akzeptierte Immutabilitäts-Historie (gleiche Klasse wie nach Slice 063). Gilt auch
 > für die Präsens-Motivationsprosa in
 > [`ADR 0080`](../../adr/0080-three-layer-spec-model.md).
+>
+> **Nachtrag (Owner-Korrektur, 2026-07-16):** Die anfangs angelegte Sektion „5. Offene
+> Spezifikationspunkte" (`GG-SPEC-OPEN-*`, Schritt 1 / ADR §4.5) wurde **wieder
+> entfernt** — `spezifikation.md` beschreibt das *Soll*; offene Prozess-/Tooling-Punkte
+> gehören in die Planung, nicht in die Spec. Betroffen: `spezifikation.md` (§5 raus),
+> `.d-check.yml` (`GG-SPEC-OPEN`-`ids`-Regel + exclude-section raus), Slice 086
+> (§27.1-Generator/Gate als eigene Vertagung statt `GG-SPEC-OPEN`),
+> [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.5 (zurückgenommen-annotiert).
+> `architecture.md`-§19 (`GG-AR-OPEN-*`) folgt aus demselben Prinzip als eigener
+> Bereinigungs-Slice.
 
 ---
 

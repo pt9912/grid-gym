@@ -32,8 +32,6 @@ ids:
     - regex: 'GG-(PRINC|CC|SEED)-\d{3}'
       target: spec/spezifikation.md
       link-policy: always
-    - regex: 'GG-SPEC-OPEN-[A-Z0-9-]+'
-      target: spec/spezifikation.md
     - regex: 'GG-[A-Z][A-Z0-9]*-\d{3}'
       target: spec/lastenheft.md
       link-policy: always
@@ -104,9 +102,6 @@ matrix:
     # §27-Traceability ist nach docs/plan/traceability.md ausgelagert (Slice 063);
     # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
     - "19. Offene architektonische Punkte"
-    # spezifikation.md-Offen-Sektion (Spec-Schichtung): GG-SPEC-OPEN-Zeilen duerfen
-    # ihre aufloesende Entscheidung abwaerts zitieren.
-    - "5. Offene Spezifikationspunkte"
 
 # RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,
 # rein advisory (`make doc-complete`/--require-complete bewusst NICHT verdrahtet).
