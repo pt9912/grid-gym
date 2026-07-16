@@ -5,7 +5,17 @@ aktive** Arbeit.
 
 ## Bestand
 
-**Kein aktiver `next/`-Eintrag.** Slice [`077`](../done/077-bess-ems-conformant-field-publisher.md)
+**Aktiver `next/`-Eintrag: [`083`](083-spezifikation-layer-discipline-core-move.md)**
+— erster Slice des Migrations-Arcs zur Spec-Schichtung
+([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)): Spezifikations-Schicht
+anlegen + Disziplin-Kern (`GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`) umziehen, Vertrag
+atomar/zuletzt. Aktivierungsbereit. Danach in `open/`:
+[`084`](../open/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix),
+[`085`](../open/085-spezifikation-layer-qs-families-move.md) (QS-Familien),
+[`086`](../open/086-traceability-derived-27-1-finalization.md)
+(Traceability-Finalisierung). Der gesamte Arc ist doku-/config-only → kein Release.
+
+Slice [`077`](../done/077-bess-ems-conformant-field-publisher.md)
 (bess-ems-konformer Feld-Publisher) ist **abgeschlossen + released als v0.7.0** (ADRs
 [`0077`](../../adr/0077-battery-field-envelope-completeness.md)/[`0078`](../../adr/0078-bess-ems-field-contract-publisher.md)
 `Accepted`, realer bess-ems-MQTT-only-E2E) und liegt in [`../done/`](../done/README.md).

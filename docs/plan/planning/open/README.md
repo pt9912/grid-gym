@@ -24,6 +24,19 @@ Alle Eintraege sind Trigger-Watch-Notizen (`Status: Open`) ohne
 harten Aktivierungs-Zwang. Die `Aktivierung`-Spalte beschreibt den
 konkreten Anlass, der eine Aktivierung ausloesen soll.
 
+**Spec-Schichtung — Migrations-Arc ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)):**
+
+Diese drei sind **geschnittene Arc-Slices** (nicht trigger-getrieben; s.
+[`roadmap.md`](../in-progress/roadmap.md) Kopf-Status), sequenziell nach
+[`083`](../next/083-spezifikation-layer-discipline-core-move.md) (in `next/`).
+Der gesamte Arc 083–086 ist doku-/config-/kommentar-only → **kein Release**.
+
+| Datei | Inhalt | Aktivierung |
+| ----- | ------ | ----------- |
+| [`084-architecture-bezug-drift-fix.md`](084-architecture-bezug-drift-fix.md) | Bezug-Drift-Fix (ARCH-007/008-Vollstaendigkeit + SCN-006-Luecke), [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 (ii) | nach [`083`](../next/083-spezifikation-layer-discipline-core-move.md) |
+| [`085-spezifikation-layer-qs-families-move.md`](085-spezifikation-layer-qs-families-move.md) | QS-/Abnahme-Familien-Umzug (`GG-QA-*`/`GG-QG-*`/`GG-COV-*`/`GG-TESTTYPE-*`/`GG-ARCHTEST-*`), groesster Cut | nach 084 |
+| [`086-traceability-derived-27-1-finalization.md`](086-traceability-derived-27-1-finalization.md) | [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment + §27.1 authored→derived + Konsistenz-Gate (Cross-Repo-Abh. d-check) | nach 085 |
+
 **Tooling / Build / Type-System:**
 
 | Datei | Trigger | Aktivierung |
