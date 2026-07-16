@@ -118,7 +118,7 @@ keine eigene Kennung traegt.
 | GG-DEPLOY-001..011 | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) |
 | GG-DEMO-001..008   | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (Compose-Demo) + [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (E2E/Demo-Abnahme)                            |
 | GG-ACCEPT-001..003 | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + `GG-TRACE-001`                                                                   |
-| GG-TRACE-001       | Rueckverfolgbarkeitstabelle in `architecture.md` (§18) — Quelle fuer diese §27.1-Tabelle             |
+| GG-TRACE-001       | Konsolidierte RTM hier (§27.1/§27.3) + verteilte `Bezug`-Spalten in [`architecture.md`](../../spec/architecture.md) (Komponenten/Ports); §27.2 delegiert an `doc-trace` (Slice 066)             |
 | GG-TEST-001..008   | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Replay-/Fault-/Determinismus-Tests)                                               |
 
 ### 27.1.1 Anforderungen ohne Design-Artefakt

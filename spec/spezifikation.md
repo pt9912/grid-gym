@@ -4,10 +4,12 @@
 > Vertrag (`lastenheft.md`, `WAS`) und der Architektur (`architecture.md`,
 > `WIE-strukturell`). Sie verfeinert den Vertrag **aufwärts** und wird von der
 > Architektur strukturell umgesetzt. Inhalt: interne Entwicklungs- und
-> QS-Disziplin (SOLID-Prinzipien, Clean-Code-Konventionen, Determinismus-/
-> Test-Konventionen) **samt ihrer Werkzeug-Durchsetzung** (`ruff`, `mypy`,
-> Architektur-Gates). Die Kennungs-Präfixe (`GG-PRINC-*`, `GG-CC-*`, `GG-SEED-*`)
-> bleiben unverändert; ihre Schicht-Zugehörigkeit ist diese Datei.
+> QS-Disziplin (SOLID-Prinzipien, Clean-Code-Konventionen, Determinismus-,
+> Testarten-, Coverage-, Quality-Gate- und Codeanalyse-/Architekturtest-
+> Konventionen) **samt ihrer Werkzeug-Durchsetzung** (`ruff`, `mypy`,
+> Architektur-Gates). Die Kennungs-Präfixe (`GG-PRINC-*`, `GG-CC-*`, `GG-SEED-*`,
+> `GG-TESTTYPE-*`, `GG-COV-*`, `GG-QG-*`, `GG-QA-*`, `GG-ARCHTEST-*`) bleiben
+> unverändert; ihre Schicht-Zugehörigkeit ist diese Datei.
 
 **Bezug (aufwärts):** [`lastenheft.md`](lastenheft.md) — der normative Vertrag.
 **Geschwister-Dokument (schicht-intern):** [`protocol_profiles.md`](protocol_profiles.md)

@@ -39,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Provenienz in den ADR-Index; 40 Referenzen per
   [`ADR 0028`](docs/plan/adr/0028-link-maintenance-accepted-adr-bezug.md) repointet.
   Damit enthalten die Soll-Specs (Rang 1–3) nur noch Entschiedenes. Kein Runtime-Delta.
+- **ADR-0080-Arc — Closure-Review-Härtung.** Ein adversarialer Abschluss-Review über
+  den Endzustand fand vier Rest-Defekte, die die Slice-Gates nicht prüfen: zwei nicht
+  nachgezogene Referenzen auf das in Slice 087 gelöschte `architecture.md` §18 (die
+  `GG-TRACE-001`-§27.1-Zeile und die Architektur-Intro-„Tabelle weiter unten"), die
+  veraltete Familien-Aufzählung im `spezifikation.md`-Intro (nur PRINC/CC/SEED statt
+  aller acht) und eine §27.1-Über-Behauptung in Trigger 088. Alle korrigiert; keine
+  Runtime-Änderung.
 
 ## [0.8.0] - 2026-07-14
 

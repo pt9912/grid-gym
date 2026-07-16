@@ -19,8 +19,9 @@ Injection, Agenten und Telemetrie strukturell verankert werden.
 
 Das Dokument ergaenzt das Lastenheft, ersetzt es nicht. Anforderungen
 referenzieren ihre `GG-*`-Kennung; Architekturkomponenten erhalten
-`GG-AR-*`-Kennungen fuer die Rueckverfolgbarkeit (Rueckverfolgbarkeits-
-tabelle weiter unten in diesem Dokument; [`GG-TRACE-001`](lastenheft.md#gg-trace-001) im Lastenheft).
+`GG-AR-*`-Kennungen fuer die Rueckverfolgbarkeit (sie erscheinen in den
+`Bezug`-Spalten der Komponenten- und Port-Abschnitte; die konsolidierte
+Rueckverfolgbarkeitstabelle fuehrt [`GG-TRACE-001`](lastenheft.md#gg-trace-001) im Lastenheft).
 Querverweis-Konvention: Kennungen sind primaere Referenz.
 
 Nicht Gegenstand dieses Dokuments:

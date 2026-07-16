@@ -12,9 +12,11 @@ weil sie ein neues `d-check`-Feature braucht (nicht repo-lokal baubar).
 ## Kontext
 
 Nach 084 (ARCH-007/008 + SCN-006) und 086 (ARCH-006) ist die
-[`traceability.md`](../../traceability.md) §27.1-Design-Tabelle **authored-aber-
-konsistent**: jede Anforderungs-Zeile nennt die vollständige Menge der aufwärts
-zeigenden `architecture.md`-Bezug-Zeiger. Das
+[`traceability.md`](../../traceability.md) §27.1-Design-Tabelle eine **kuratierte,
+gegroundete Vorwärts-Map** (Anforderung → implementierende `GG-AR-*`-Artefakte) —
+**kein** vollständiger Spiegel der aufwärts zeigenden `architecture.md`-Bezug-Kanten
+(Rest-Drift z. B. ARCH-005/P-005). **Genau diese** formale Set-Konsistenz zwischen
+§27.1 und den Bezug-Kanten herzustellen ist die Aufgabe dieses Gates. Das
 [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment (086)
 beschreibt §27.1 bereits als Verfeinerung des Dreischicht-Modells.
 
