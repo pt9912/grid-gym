@@ -66,9 +66,18 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 
 ## Design-Entscheidungen / Risiken
 
+- **§27.1-Quelle vervollständigen (Rest aus 084 — Nebenbefund).** 084 richtete die
+  Drift für ARCH-007/008 + SCN-006; **ARCH-006 trägt dieselbe Drift-Klasse**: die
+  §5-COMP-CORE-Bezug-Spalte nennt 006, aber die §27.1-ARCH-006-Zeile nennt nur
+  COMP-SCHED + P-008 (COMP-CORE fehlt). Als Teil des Konsistenz-Gates hier die
+  §27.1-ARCH-006-Zeile um COMP-CORE ergänzen (1-Zeilen-Fix, gleiches Muster wie 084) —
+  sonst flaggt das Gate sie zu Recht. Befund aus der
+  [`084`](../done/084-architecture-bezug-drift-fix.md)-Closure; bewusst hier statt als
+  eigener Slice geführt.
 - **Warum Gate vor Generator:** ein Generator auf driftender Quelle produzierte
   selbstbewusst Falsches; erst das Gate erzwingt die Quelle sauber (ADR §4.4).
-  084 hat die Quelle bereits gerichtet — dieser Slice zementiert das per Gate.
+  084 hat die Quelle weitgehend gerichtet (bis auf den ARCH-006-Rest oben) — dieser
+  Slice zementiert das per Gate.
 - **d-check-Feature-Risiko:** ob (iii) hier landet oder vertagt wird, hängt allein
   am externen Tool-Stand. Beim Aktivieren prüfen.
 - **ADR-Immutabilität:**
