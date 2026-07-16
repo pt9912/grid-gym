@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Werkzeug-Durchsetzung (`ruff`/`mypy`/Architektur-Gates) als erstklassige
   Spezifikation statt Traceability-Residuum. Präfixe unverändert; reine
   Doku-/Config-/Traceability-Umstrukturierung, kein Runtime-Delta.
+- **Spec-Schichtung Slice 085 — QS-/Abnahme-Familien.** `GG-QA-*`, `GG-QG-*`,
+  `GG-COV-*`, `GG-TESTTYPE-*`, `GG-ARCHTEST-*` (30 IDs) aus `lastenheft.md`
+  §21.2–§21.5 nach `spec/spezifikation.md` §5–§8 verschoben (inkl. Schwellwerte +
+  Gate-/Werkzeug-Durchsetzung). Der Vertrag enthält damit nur noch echte
+  Anforderungen; Testbarkeit (`GG-TEST-*`) und Abnahme-Anker
+  (`GG-ACCEPT-*`/`GG-MVP-*`) bleiben im Vertrag. Kein Runtime-Delta.
 - **Offene Punkte gehören in die Planung, nicht in die Soll-Spec — Slice 087
   ([`ADR 0081`](docs/plan/adr/0081-open-points-belong-in-planning.md)).**
   `architecture.md` §19 „Offene architektonische Punkte" (`GG-AR-OPEN-*`) aufgelöst:

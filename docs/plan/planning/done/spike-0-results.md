@@ -148,7 +148,7 @@ XML-Checks) waere moeglich, aber unnoetig — der Mehraufwand ist
 
 Der `coverage-gate-critical`-Stage akzeptiert jetzt
 `ARG CRITICAL_COV_TARGETS` (Default: kritische Domain laut
-[`GG-COV-003`](../../../../spec/lastenheft.md#gg-cov-003) — Simulation, Battery, Scenario, Replay). Wellen, die
+[`GG-COV-003`](../../../../spec/spezifikation.md#gg-cov-003) — Simulation, Battery, Scenario, Replay). Wellen, die
 nur einen Teilbereich implementieren, ueberschreiben per
 `--build-arg`. Beispiel Welle 2:
 

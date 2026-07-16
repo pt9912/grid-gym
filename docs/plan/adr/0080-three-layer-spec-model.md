@@ -50,8 +50,8 @@ scharf — ein **harter Kern** ist eindeutig Spezifikation, andere Familien habe
 
 **Harter Kern** (klar Spezifikation, interne Disziplin): `GG-PRINC-*`, `GG-CC-*`.
 **Grenzfall** (auch als Kunden-Abnahmekriterium lesbar — z. B.
-[`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001) „*Mindest-Testabdeckung 90 %*",
-[`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002) „*Security-Gate*"): `GG-QA-*` /
+[`GG-COV-001`](../../../spec/spezifikation.md#gg-cov-001) „*Mindest-Testabdeckung 90 %*",
+[`GG-QG-002`](../../../spec/spezifikation.md#gg-qg-002) „*Security-Gate*"): `GG-QA-*` /
 `GG-QG-*` / `GG-COV-*` / `GG-TESTTYPE-*` / `GG-ARCHTEST-*`. Die genaue Grenze entscheidet
 §4.2; die Migration führt sie aus.
 

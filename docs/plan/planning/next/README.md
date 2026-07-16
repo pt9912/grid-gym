@@ -18,7 +18,7 @@ Der erste Slice des Spec-Schichtungs-Arcs
 (Spezifikations-Schicht anlegen + Disziplin-Kern-Umzug `GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`),
 ist **abgeschlossen** (`done/`, 2026-07-16). Der Arc setzt sich in `open/` fort:
 [`084`](../done/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix, **done**),
-[`085`](../open/085-spezifikation-layer-qs-families-move.md) (QS-Familien),
+[`085`](../done/085-spezifikation-layer-qs-families-move.md) (QS-Familien, **done**),
 [`086`](../open/086-traceability-derived-27-1-finalization.md)
 (Traceability-Finalisierung). Der gesamte Arc ist doku-/config-only → kein Release.
 

@@ -150,7 +150,7 @@ frei gruen), erfolgt im selben Slice-Closure-Commit:
   [ADR 0002](0002-language-and-build-stack.md) §A-1 listet
   die A-1-Gates, ohne `make image-audit` als eigenen Vertrag
   zu fuehren — `image-audit` ist
-  [`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002)
+  [`GG-QG-002`](../../../spec/spezifikation.md#gg-qg-002)
   `SOLLTE` per Lastenheft und in der A-1-Welt ueber
   `make ci`/`make fullbuild` verankert, nicht in der
   10-Contracts-Tabelle. ADR 0043 fixiert den Image-Audit-

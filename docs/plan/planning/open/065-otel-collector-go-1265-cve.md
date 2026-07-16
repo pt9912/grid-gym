@@ -10,7 +10,7 @@
 
 ## Befund
 
-`make image-audit` (Fullbuild-Gate, [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002))
+`make image-audit` (Fullbuild-Gate, [`GG-QG-002`](../../../../spec/spezifikation.md#gg-qg-002))
 meldet im gepinnten `OTEL_COLLECTOR_IMAGE` (`otel/opentelemetry-collector-contrib:0.154.0`,
 `Makefile` Z.35 / `deploy/compose.yml`):
 

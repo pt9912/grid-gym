@@ -295,7 +295,7 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 | GG-AR-TABU-008 | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt | [`GG-CC-008`](spezifikation.md#gg-cc-008)                 |
 
 Diese Tabus werden durch Architekturtests erzwungen
-([`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005; siehe `GG-AR-TEST-001` — Testarchitektur).
+([`GG-ARCHTEST-001`](spezifikation.md#gg-archtest-001)..005; siehe `GG-AR-TEST-001` — Testarchitektur).
 
 ---
 
@@ -905,18 +905,18 @@ Topologie API/Simulation ist als zwei getrennte Prozesse ausgelegt
 
 | Testart            | Verortung                                         | Bezug                                 |
 | ------------------ | ------------------------------------------------- | ------------------------------------- |
-| Unit Tests         | je Modul, `tests/unit/...`                        | [`GG-TESTTYPE-001`](lastenheft.md#gg-testtype-001), [`GG-TEST-006`](lastenheft.md#gg-test-006)          |
-| Integration Tests  | `tests/integration/...`                           | [`GG-TESTTYPE-002`](lastenheft.md#gg-testtype-002), [`GG-TEST-007`](lastenheft.md#gg-test-007)          |
-| Architekturtests   | `tests/arch/...` — erzwingt `GG-AR-TABU-001..008` | [`GG-TESTTYPE-003`](lastenheft.md#gg-testtype-003), [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005 |
-| Contract Tests     | OpenAPI / WebSocket / Adapter                     | [`GG-TESTTYPE-004`](lastenheft.md#gg-testtype-004), [`GG-API-003`](lastenheft.md#gg-api-003)           |
-| E2E / Demo-Abnahme | `tests/e2e/demo`                                  | [`GG-TESTTYPE-005`](lastenheft.md#gg-testtype-005), `GG-DEMO-*`            | <!-- d-check:ignore (geplant: E2E-Verzeichnis nicht angelegt; Demo-Abnahme via make accept, `GG-MVP-003`) -->
+| Unit Tests         | je Modul, `tests/unit/...`                        | [`GG-TESTTYPE-001`](spezifikation.md#gg-testtype-001), [`GG-TEST-006`](lastenheft.md#gg-test-006)          |
+| Integration Tests  | `tests/integration/...`                           | [`GG-TESTTYPE-002`](spezifikation.md#gg-testtype-002), [`GG-TEST-007`](lastenheft.md#gg-test-007)          |
+| Architekturtests   | `tests/arch/...` — erzwingt `GG-AR-TABU-001..008` | [`GG-TESTTYPE-003`](spezifikation.md#gg-testtype-003), [`GG-ARCHTEST-001`](spezifikation.md#gg-archtest-001)..005 |
+| Contract Tests     | OpenAPI / WebSocket / Adapter                     | [`GG-TESTTYPE-004`](spezifikation.md#gg-testtype-004), [`GG-API-003`](lastenheft.md#gg-api-003)           |
+| E2E / Demo-Abnahme | `tests/e2e/demo`                                  | [`GG-TESTTYPE-005`](spezifikation.md#gg-testtype-005), `GG-DEMO-*`            | <!-- d-check:ignore (geplant: E2E-Verzeichnis nicht angelegt; Demo-Abnahme via make accept, `GG-MVP-003`) -->
 | Replay-Diff-Tests  | Golden-File-Vergleich (Referenzlauf)              | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-REPLAY-007`](lastenheft.md#gg-replay-007)             |
 | Fault-Tests        | scenario-driven                                   | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                     |
-| Performance-Tests  | Referenzumgebung aus [`GG-RT-001`](lastenheft.md#gg-rt-001)-Akzeptanz        | [`GG-TESTTYPE-006`](lastenheft.md#gg-testtype-006), [`GG-RT-004`](lastenheft.md#gg-rt-004)/005        |
-| Security-Tests     | Dependency-/Schwachstellen-Scan                   | [`GG-TESTTYPE-007`](lastenheft.md#gg-testtype-007), [`GG-CICD-005`](lastenheft.md#gg-cicd-005)/006      |
+| Performance-Tests  | Referenzumgebung aus [`GG-RT-001`](lastenheft.md#gg-rt-001)-Akzeptanz        | [`GG-TESTTYPE-006`](spezifikation.md#gg-testtype-006), [`GG-RT-004`](lastenheft.md#gg-rt-004)/005        |
+| Security-Tests     | Dependency-/Schwachstellen-Scan                   | [`GG-TESTTYPE-007`](spezifikation.md#gg-testtype-007), [`GG-CICD-005`](lastenheft.md#gg-cicd-005)/006      |
 
 Architekturtests sind ein **Quality Gate**: Verletzungen brechen den
-Build (`GG-AR-TABU-001..008`, [`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005).
+Build (`GG-AR-TABU-001..008`, [`GG-ARCHTEST-001`](spezifikation.md#gg-archtest-001)..005).
 
 ---
 

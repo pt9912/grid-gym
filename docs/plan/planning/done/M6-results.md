@@ -52,7 +52,7 @@ Roadmap [`../in-progress/roadmap.md`](../in-progress/roadmap.md)
 | Lastenheft-Kategorie | Stand nach M6 |
 | -------------------- | ------------- |
 | [`GG-CICD-002`](../../../../spec/lastenheft.md#gg-cicd-002)/003/005/006/007 | ✓ produktiv (Welle 2+3): GitHub-Actions-Matrix-CI + SBOM + Release-Workflow + `make fullbuild`-CI-Gate. |
-| [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002) (Image-Audit) | ✓ produktiv (Welle 1): `make image-audit` (Trivy) als verankerter Pflicht-Gate-Vertrag ([`ADR 0043`](../../adr/0043-image-audit-strategy.md)). |
+| [`GG-QG-002`](../../../../spec/spezifikation.md#gg-qg-002) (Image-Audit) | ✓ produktiv (Welle 1): `make image-audit` (Trivy) als verankerter Pflicht-Gate-Vertrag ([`ADR 0043`](../../adr/0043-image-audit-strategy.md)). |
 | [`GG-RT-001`](../../../../spec/lastenheft.md#gg-rt-001)/004/005 | ✓ produktiv (Welle 4b): Backpressure-Healthcheck + Tick-Loop-Bench + Telemetry-Port-Bench ([`ADR 0041`](../../adr/0041-performance-bench-pattern.md)). |
 | [`GG-SAFE-001`](../../../../spec/lastenheft.md#gg-safe-001)/002/005/007/008 | ✓ produktiv (Welle 5): Quality-Pipeline + Fallback + Sim/Prod-Marker + strikte Input-Validation ([`ADR 0045`](../../adr/0045-http-api-request-strict-validation.md)). |
 | [`GG-SAFE-003`](../../../../spec/lastenheft.md#gg-safe-003) | ⚠ partial Lücke → [Trigger 035](../done-archive/035-safe-003-comm-failure-missing-quality.md). |

@@ -110,17 +110,12 @@ keine eigene Kennung traegt.
 | GG-SAFE-006        | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) Diff + [`GG-AR-COMP-OBS`](../../spec/architecture.md#5-komponentensicht) Replay-Diff-Status                                      |
 | GG-SAFE-007        | [`GG-AR-P-011`](../../spec/architecture.md#2-architekturprinzipien) Trennung Simulation/Produktion                                                        |
 | GG-SAFE-008        | [`GG-AR-COMP-API`](../../spec/architecture.md#5-komponentensicht) Eingabe-Validierung + [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Scenario-Validator                     |
-| GG-TESTTYPE-001..007 | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur)                                                                                  |
-| GG-ARCHTEST-001..005 | [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 + [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur)                                                          |
 | GG-CICD-001..007   | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht)                                                              |
 | GG-DEPLOY-001..011 | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) |
 | GG-DEMO-001..008   | [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (Compose-Demo) + [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (E2E/Demo-Abnahme)                            |
 | GG-ACCEPT-001..003 | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + `GG-TRACE-001`                                                                   |
 | GG-TRACE-001       | Rueckverfolgbarkeitstabelle in `architecture.md` (§18) — Quelle fuer diese §27.1-Tabelle             |
 | GG-TEST-001..008   | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Replay-/Fault-/Determinismus-Tests)                                               |
-| GG-COV-001..005    | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Coverage-Block und Quality Gates)                                                 |
-| GG-QG-001..007     | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) (Quality Gates) + [`GG-AR-COMP-DEPLOY`](../../spec/architecture.md#5-komponentensicht) (CI-Gating)                                   |
-| GG-QA-001..006     | [`GG-AR-TEST-001`](../../spec/architecture.md#17-testarchitektur) + [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)..008 (statische Pruefungen)                                     |
 
 ### 27.1.1 Anforderungen ohne Design-Artefakt
 

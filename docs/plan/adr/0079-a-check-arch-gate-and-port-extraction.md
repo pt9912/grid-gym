@@ -26,7 +26,7 @@ schärft als Folge [`ADR 0040`](0040-alarm-aggregation-and-stream-port.md) Decis
 - [`ADR 0054`](0054-composition-asgi-entrypoint-and-scenario-hook.md) — der Composition-Root
   `grid_gym.composition.asgi`, in den Decision C das Default-Demo-Wiring invertiert.
 - [`GG-AR-P-002`](../../../spec/architecture.md#2-architekturprinzipien) (Hexagonale
-  Architektur, Ports & Adapters), [`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002)
+  Architektur, Ports & Adapters), [`GG-QG-002`](../../../spec/spezifikation.md#gg-qg-002)
   (Container-/Toolchain-Gate).
 
 ---

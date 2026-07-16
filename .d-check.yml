@@ -38,7 +38,7 @@ ids:
       link-policy: always
     # Spec-Schichtung: Disziplin-/QS-Familien in spezifikation.md.
     # MUSS ueber der generischen GG-...-Regel stehen (erstes Match gewinnt).
-    - regex: 'GG-(PRINC|CC|SEED)-\d{3}'
+    - regex: 'GG-(PRINC|CC|SEED|QA|QG|COV|TESTTYPE|ARCHTEST)-\d{3}'
       target: spec/spezifikation.md
       link-policy: always
     - regex: 'GG-[A-Z][A-Z0-9]*-\d{3}'
@@ -116,10 +116,10 @@ matrix:
 # RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,
 # rein advisory (`make doc-complete`/--require-complete bewusst NICHT verdrahtet).
 # id-pattern = Allow-List der funktionalen Leaf-Familien; AUSGENOMMEN (kein Feature):
-# Scope/definitorisch (TERM/MVP/NONGOAL/FUTURE); Disziplin-Spec PRINC/CC/SEED — seit
-# Spec-Schichtung in spezifikation.md statt traceability.md; Arch-/QS-Meta (ARCH/
-# ARCHTEST/QG/COV/QA/TESTTYPE) via traceability.md/lastenheft (QS-Familien ziehen mit
-# dem QS-Umzug nach spezifikation.md); Test-Infra (TEST). GG-CICD/GG-TRACE bleiben
+# Scope/definitorisch (TERM/MVP/NONGOAL/FUTURE, im Vertrag); Disziplin-/QS-Spec
+# PRINC/CC/SEED + QA/QG/COV/TESTTYPE/ARCHTEST — seit Spec-Schichtung in
+# spezifikation.md (nicht mehr traceability.md/lastenheft); Arch-Meta (ARCH) +
+# Test-Infra (TEST) via architecture.md/lastenheft. GG-CICD/GG-TRACE bleiben
 # bewusst drin (echte Deliverables).
 # Neue funktionale Familie hier ergaenzen.
 trace:

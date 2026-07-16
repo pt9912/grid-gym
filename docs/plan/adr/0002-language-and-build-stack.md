@@ -70,11 +70,11 @@ Abgeleitet aus dem Lastenheft. Gewichtung: P0 (Knock-out) > P1 > P2.
 | K-DET     | Determinismus per Default; Tie-Breaking, kanonische Serialisierung machbar      | [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)..004, [`GG-ARCH-006`](../../../spec/lastenheft.md#gg-arch-006), [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)      | P0      |
 | K-REPRO   | Reproduzierbare Builds (Lockfiles, Container)                                   | [`GG-DEPLOY-002`](../../../spec/lastenheft.md#gg-deploy-002), [`GG-CICD-001`](../../../spec/lastenheft.md#gg-cicd-001)                     | P0      |
 | K-TICK    | Tick-Dauer 100ms/1s zuverlaessig; 10ms als Diagnosemodus laufbar                 | [`GG-RT-001`](../../../spec/lastenheft.md#gg-rt-001), [`GG-RT-004`](../../../spec/lastenheft.md#gg-rt-004)/005                       | P0      |
-| K-ARCH    | Architekturtest-Tooling fuer Modulgrenzen und Tabus verfuegbar                  | [`GG-ARCHTEST-001`](../../../spec/lastenheft.md#gg-archtest-001)..005, [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur)..008      | P0      |
-| K-OAS     | OpenAPI-Generierung oder -Validierung; WebSocket-Vertraege testbar              | [`GG-API-003`](../../../spec/lastenheft.md#gg-api-003), [`GG-TESTTYPE-004`](../../../spec/lastenheft.md#gg-testtype-004)                    | P1      |
+| K-ARCH    | Architekturtest-Tooling fuer Modulgrenzen und Tabus verfuegbar                  | [`GG-ARCHTEST-001`](../../../spec/spezifikation.md#gg-archtest-001)..005, [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur)..008      | P0      |
+| K-OAS     | OpenAPI-Generierung oder -Validierung; WebSocket-Vertraege testbar              | [`GG-API-003`](../../../spec/lastenheft.md#gg-api-003), [`GG-TESTTYPE-004`](../../../spec/spezifikation.md#gg-testtype-004)                    | P1      |
 | K-DB      | Stabile PostgreSQL-Treiber + Migrationswerkzeug; Timescale/Influx-Adapter moeglich | [`GG-PERSIST-001`](../../../spec/lastenheft.md#gg-persist-001)..009                           | P1      |
 | K-OBS     | Strukturierte Logs, Metriken, OpenTelemetry-Exporter                            | [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)..004                               | P1      |
-| K-TEST    | Unit/Integration/Architekturtest-Stack reif; Coverage-Reports                   | [`GG-TESTTYPE-001`](../../../spec/lastenheft.md#gg-testtype-001)..007, [`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001)..005          | P1      |
+| K-TEST    | Unit/Integration/Architekturtest-Stack reif; Coverage-Reports                   | [`GG-TESTTYPE-001`](../../../spec/spezifikation.md#gg-testtype-001)..007, [`GG-COV-001`](../../../spec/spezifikation.md#gg-cov-001)..005          | P1      |
 | K-CONTAIN | Container-Image klein und reproduzierbar; offline-faehig                        | [`GG-DEPLOY-001`](../../../spec/lastenheft.md#gg-deploy-001)/002/011                          | P1      |
 | K-ECO     | Energie-/Power-Flow-Domaene: Bibliotheken oder Bindings verfuegbar               | [`GG-GRID-001`](../../../spec/lastenheft.md#gg-grid-001)/002/007, `GG-FUTURE-*` (MPC/RL)      | P2      |
 | K-DEV     | Entwicklungs-Velocity; Hexagonal-Idiome; Team-Erfahrung                          | (Projekt-extern)                               | P2      |
@@ -337,7 +337,7 @@ und `pyproject.toml`. Die Contracts sind:
 | AC-CORE-NO-ADAPTERS | import-linter `forbidden` | `hexagon.core.*` darf NICHT `adapters.*` importieren. | [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur), [`GG-ARCH-003`](../../../spec/lastenheft.md#gg-arch-003) |
 | AC-CORE-NO-DRIVING  | import-linter `forbidden` | `hexagon.core.*` darf NICHT `hexagon.ports.driving.*` importieren (Driving-Ports werden vom Kern angeboten, nicht aufgerufen). | [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur) |
 | AC-PORTS-NO-OUT     | import-linter `forbidden` | `hexagon.ports.*` darf NICHT `adapters.*` UND NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Ports kennen nur `hexagon.core.domain`. | [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur) |
-| AC-PORTS-NO-FW      | import-linter `forbidden` | `hexagon.ports.*` darf KEINE Web-, Persistenz-, Messaging-, Datenbank- oder UI-Frameworks importieren: dieselbe Verbotsliste wie `AC-NO-FW`, ergaenzt um stdlib-IO (`socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client`). | [`GG-ARCHTEST-004`](../../../spec/lastenheft.md#gg-archtest-004) |
+| AC-PORTS-NO-FW      | import-linter `forbidden` | `hexagon.ports.*` darf KEINE Web-, Persistenz-, Messaging-, Datenbank- oder UI-Frameworks importieren: dieselbe Verbotsliste wie `AC-NO-FW`, ergaenzt um stdlib-IO (`socket`, `pathlib`, `logging.handlers`, `urllib.request`, `http.client`). | [`GG-ARCHTEST-004`](../../../spec/spezifikation.md#gg-archtest-004) |
 | AC-ADAPTER-PURE     | import-linter `forbidden` | `adapters.*` darf NICHT `hexagon.core.simulation`, `hexagon.core.devices`, `hexagon.core.scenario`, `hexagon.core.replay`, `hexagon.core.faults`, `hexagon.core.agents` importieren — Adapter sehen nur `hexagon.core.domain` und `hexagon.ports.*`. **Reichweite: Import-Grenze** (siehe `AC-ADAPTER-LIGHTWEIGHT` fuer die Logik-Reichweite). | [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest), [`GG-CC-002`](../../../spec/spezifikation.md#gg-cc-002) |
 | AC-ADAPTER-LIGHTWEIGHT | `tools/arch_check.py` (AST, heuristisch) | Module unter `adapters.driven.protocol_*`, `adapters.driven.persistence_*` und `adapters.driving.*` MUESSEN strukturell schlank bleiben: pro Modul max. eine zyklomatische Komplexitaet von 8 je Funktion, keine `if/elif`-Ketten ueber Domain-Enums (`Quality`, `CommandResult`), keine arithmetischen Operationen ueber Telemetriewerten (`+`, `-`, `*`, `/` auf Feldern von `TelemetryPoint`/`Command`). Heuristisch, **kein vollstaendiger Nachweis** — siehe Reststeuerung unter Code-Review. | [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest) (heuristischer Anteil), [`GG-CC-002`](../../../spec/spezifikation.md#gg-cc-002) |
 | AC-NO-FW            | import-linter `forbidden` | `hexagon.core.*` darf KEINE Module aus `fastapi`, `uvicorn`, `psycopg`, `sqlalchemy`, `alembic`, `httpx`, `paho.mqtt`, `pymodbus`, `asyncua` u. ae. importieren. | [`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest), [`GG-CC-003`](../../../spec/spezifikation.md#gg-cc-003) |
@@ -353,15 +353,15 @@ und `pyproject.toml`. Die Contracts sind:
 Operative Anforderung:
 
 - Im CI laufen drei Jobs: `lint-imports`, `ruff check`, `python tools/arch_check.py`.
-  Jeder Job mit Exit-Code != 0 bricht den Build ([`GG-CICD-003`](../../../spec/lastenheft.md#gg-cicd-003), [`GG-QG-001`](../../../spec/lastenheft.md#gg-qg-001),
-  [`GG-ARCHTEST-005`](../../../spec/lastenheft.md#gg-archtest-005)).
+  Jeder Job mit Exit-Code != 0 bricht den Build ([`GG-CICD-003`](../../../spec/lastenheft.md#gg-cicd-003), [`GG-QG-001`](../../../spec/spezifikation.md#gg-qg-001),
+  [`GG-ARCHTEST-005`](../../../spec/spezifikation.md#gg-archtest-005)).
 - `[tool.importlinter]` MUSS `include_external_packages = true` setzen,
   sobald `forbidden_modules` externe Pakete (z. B. `fastapi`, `socket`)
   enthaelt — sonst lehnt `lint-imports` die Top-Level-Konfiguration ab.
   Diese Einstellung ist Pflicht-Bestandteil der A-1-Suite.
 - Jeder Verstoss erzeugt eine maschinenlesbare Ausgabe mit
   Contract-ID, betroffenem Modul/Symbol und Verletzungsgrund
-  ([`GG-QG-002`](../../../spec/lastenheft.md#gg-qg-002)).
+  ([`GG-QG-002`](../../../spec/spezifikation.md#gg-qg-002)).
 - Hinzufuegen eines neuen Top-Level-Adapter- oder Core-Pakets ohne
   Pflege der Contract-Listen in `pyproject.toml` bricht den Build
   (Whitelist-Pflicht).
@@ -540,7 +540,7 @@ Tabu-Abdeckungs-Matrix:
 | Tabu              | Abgedeckt durch                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | [`GG-AR-TABU-001`](../../../spec/architecture.md#4-architekturstruktur)    | AC-CORE-NO-ADAPTERS, AC-CORE-NO-DRIVING, AC-PORTS-NO-OUT                                      |
-| [`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-HEXAGON-PURE (Whitelist), AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW ([`GG-ARCHTEST-004`](../../../spec/lastenheft.md#gg-archtest-004)) |
+| [`GG-AR-TABU-002`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-HEXAGON-PURE (Whitelist), AC-NO-FW, AC-NO-IO-MOD; in `hexagon.ports.*` zusaetzlich AC-PORTS-NO-FW ([`GG-ARCHTEST-004`](../../../spec/spezifikation.md#gg-archtest-004)) |
 | [`GG-AR-TABU-003`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-ADAPTER-PURE (Imports) + AC-ADAPTER-LIGHTWEIGHT (Heuristik) + Code-Review-Auflage (Logik)  |
 | [`GG-AR-TABU-004`](../../../spec/architecture.md#4-architekturstruktur)    | AC-NO-CYCLES (SCC-Analyse via `grimp`)                                                        |
 | [`GG-AR-TABU-005`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)    | AC-NO-TIME                                                                                    |
@@ -903,10 +903,10 @@ hier abloest.
 | Strukturierte Logs  | `structlog` + stdlib `logging`                     | [`GG-OTEL-002`](../../../spec/lastenheft.md#gg-otel-002)                                                                              |
 | Metriken            | `prometheus-client`                                | [`GG-OTEL-003`](../../../spec/lastenheft.md#gg-otel-003)                                                                              |
 | Tracing (optional)  | `opentelemetry-python` mit OTLP-Exporter           | [`GG-OTEL-001`](../../../spec/lastenheft.md#gg-otel-001)/004                                                                          |
-| Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | [`GG-TESTTYPE-001`](../../../spec/lastenheft.md#gg-testtype-001)/002, [`GG-COV-001`](../../../spec/lastenheft.md#gg-cov-001)..005                                                   |
+| Test-Framework      | `pytest`, `pytest-cov`, `pytest-asyncio`           | [`GG-TESTTYPE-001`](../../../spec/spezifikation.md#gg-testtype-001)/002, [`GG-COV-001`](../../../spec/spezifikation.md#gg-cov-001)..005                                                   |
 | Property-Tests      | `hypothesis`                                       | [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001)..004, [`GG-DATA-005`](../../../spec/lastenheft.md#gg-data-005)                                                           |
-| Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | [`GG-TESTTYPE-002`](../../../spec/lastenheft.md#gg-testtype-002), [`GG-PERSIST-005`](../../../spec/lastenheft.md#gg-persist-005)                                                        |
-| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit sechzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | [`GG-ARCHTEST-001`](../../../spec/lastenheft.md#gg-archtest-001)..005, [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008                                              |
+| Integration-Tests   | `testcontainers-python` (Postgres, ggf. Influx)    | [`GG-TESTTYPE-002`](../../../spec/spezifikation.md#gg-testtype-002), [`GG-PERSIST-005`](../../../spec/lastenheft.md#gg-persist-005)                                                        |
+| Architekturtests    | Tool-Suite aus A-1: `import-linter` + `ruff` (`BLE`, `TRY`, `DTZ`, `S`, `TID`, `B904`) + `tools/arch_check.py` (inkl. `grimp`-SCC-Zykluscheck) mit sechzehn Contracts und scope-gesteuerten ruff-Per-File-Ignores; Code-Review-Auflage fuer Logik-Anteil von TABU-003 | [`GG-ARCHTEST-001`](../../../spec/spezifikation.md#gg-archtest-001)..005, [`GG-AR-TABU-001`](../../../spec/architecture.md#architektur-tabus-build-architekturtest)..008                                              |
 
 ### 6.2 Wirkung auf andere Dokumente
 

@@ -35,7 +35,7 @@ synchron.
 
 ## 1. Kontext
 
-[`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate) sowie die Akzeptanzkriterien fuer
+[`GG-QG-005`](../../../spec/spezifikation.md#gg-qg-005) (Static-Analysis-Gate) sowie die Akzeptanzkriterien fuer
 [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004) (LSP) und [`GG-PRINC-005`](../../../spec/spezifikation.md#gg-princ-005) (ISP) sind in `ADR 0002` und
 der V-Modell-Traceability-Matrix [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) (§27.1-Tabelle in
 `spec/lastenheft.md`, Zeilen [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005) aktuell nur
@@ -58,7 +58,7 @@ das Gate ist.
 
 ## 2. Bewertungskriterien
 
-Abgeleitet aus [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005), [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005, [`GG-CC-005`](../../../spec/spezifikation.md#gg-cc-005) (formale
+Abgeleitet aus [`GG-QG-005`](../../../spec/spezifikation.md#gg-qg-005), [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005, [`GG-CC-005`](../../../spec/spezifikation.md#gg-cc-005) (formale
 Naming-Konsistenz auf Typebene) und der `uv`-getriebenen Toolchain aus
 `ADR 0002`.
 
@@ -259,7 +259,7 @@ selbst ist davon nicht zwingend betroffen — nur dieses vierte Gate.
 Bei Acceptance schliesst diese ADR die folgenden Trace-Lasten; die
 genaue Wirkung pro Lifecycle-Stand steht im Wirkungs-Abschnitt:
 
-- [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) erhaelt eine konkrete
+- [`GG-QG-005`](../../../spec/spezifikation.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) erhaelt eine konkrete
   Pflicht-Implementierung.
 - [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004) (LSP) und [`GG-PRINC-005`](../../../spec/spezifikation.md#gg-princ-005) (ISP) werden auf
   automatisierter Type-Ebene abgedeckt; Restanteil bleibt
@@ -280,7 +280,7 @@ legitimiert:
   `format-check` und `arch-check`.
 - Die [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001)-Matrix in `spec/lastenheft.md` darf auf
   diese ADR verweisen (V-Modell-Trace fuer
-  [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005), aber [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) und
+  [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005), aber [`GG-QG-005`](../../../spec/spezifikation.md#gg-qg-005) und
   [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005 bleiben formal **nicht** als
   abschliessend automatisiert markiert (siehe
   Provisional-Stufe der Lifecycle-Tabelle in `ADR 0006`).
@@ -291,7 +291,7 @@ legitimiert:
   das Type-Check-Gate als geschlossene Implementierung fuer
   [`GG-PRINC-004`](../../../spec/spezifikation.md#gg-princ-004)/005 (Variance + Protocol-Konformitaet);
   Restanteil bleibt Code-Review.
-- [`GG-QG-005`](../../../spec/lastenheft.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) traegt diese ADR
+- [`GG-QG-005`](../../../spec/spezifikation.md#gg-qg-005) (Static-Analysis-Gate, SOLLTE) traegt diese ADR
   als verbindliche Pflicht-Implementierung.
 
 ### 5.4 Migrations-Pfad

@@ -34,7 +34,7 @@ Der gesamte Arc 083–086 ist doku-/config-/kommentar-only → **kein Release**.
 | Datei | Inhalt | Aktivierung |
 | ----- | ------ | ----------- |
 | [`084-architecture-bezug-drift-fix.md`](../done/084-architecture-bezug-drift-fix.md) | Bezug-Drift-Fix (ARCH-007/008-Vollstaendigkeit + SCN-006-Luecke), [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 (ii) | nach [`083`](../done/083-spezifikation-layer-discipline-core-move.md) |
-| [`085-spezifikation-layer-qs-families-move.md`](085-spezifikation-layer-qs-families-move.md) | QS-/Abnahme-Familien-Umzug (`GG-QA-*`/`GG-QG-*`/`GG-COV-*`/`GG-TESTTYPE-*`/`GG-ARCHTEST-*`), groesster Cut | nach 084 |
+| [`085-spezifikation-layer-qs-families-move.md`](../done/085-spezifikation-layer-qs-families-move.md) | QS-/Abnahme-Familien-Umzug (`GG-QA-*`/`GG-QG-*`/`GG-COV-*`/`GG-TESTTYPE-*`/`GG-ARCHTEST-*`), groesster Cut | nach 084 |
 | [`086-traceability-derived-27-1-finalization.md`](086-traceability-derived-27-1-finalization.md) | [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment + §27.1 authored→derived + Konsistenz-Gate (Cross-Repo-Abh. d-check) | nach 085 |
 
 **Tooling / Build / Type-System:**
@@ -99,7 +99,7 @@ verschoben und dort gelistet, nicht mehr hier. Keine offenen Sensor-Trigger.)*
 
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
-| [`065-otel-collector-go-1265-cve.md`](065-otel-collector-go-1265-cve.md) | [`GG-QG-002`](../../../../spec/lastenheft.md#gg-qg-002): `CVE-2026-39822` (Go1.26.4→1.26.5, os.Root-Traversal) im OTel-Collector-Sidecar — kein gepatchtes Image; vulnignore-Deferral bis Upstream-Fix (`expires 2026-10-09`) | OTel-Collector-Stable mit go1.26.5+ verfuegbar ODER `expires`-Ablauf |
+| [`065-otel-collector-go-1265-cve.md`](065-otel-collector-go-1265-cve.md) | [`GG-QG-002`](../../../../spec/spezifikation.md#gg-qg-002): `CVE-2026-39822` (Go1.26.4→1.26.5, os.Root-Traversal) im OTel-Collector-Sidecar — kein gepatchtes Image; vulnignore-Deferral bis Upstream-Fix (`expires 2026-10-09`) | OTel-Collector-Stable mit go1.26.5+ verfuegbar ODER `expires`-Ablauf |
 | [`069-vulnignore-expires-max-enforce.md`](069-vulnignore-expires-max-enforce.md) | `tools/render_trivyignore.py` erzwingt nur `expires >= heute`, nicht den [`ADR 0044`](../../adr/0044-generated-trivyignore-permit.md)-`+90-Tage`-**Max** (Review-N3a) | Nächster Security-/Tooling-Slice ODER zweiter vulnignore-Eintrag |
 
 **Tooling — d-check-`doc-*`-Module (Handbuch-Review v0.41.0):**
