@@ -60,20 +60,6 @@ keine eigene Kennung traegt.
 | GG-ARCH-006        | [`GG-AR-COMP-SCHED`](../../spec/architecture.md#5-komponentensicht) Tie-Breaking + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                          |
 | GG-ARCH-007        | [`GG-AR-PORT-DRN-001`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`ClockPort`) + [`GG-AR-TABU-005`](../../spec/architecture.md#architektur-tabus-build-architekturtest)                                              |
 | GG-ARCH-008        | [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) Live- und Replay-Tick-Loop geteilt                                                  |
-| GG-PRINC-001       | [`GG-AR-P-001`](../../spec/architecture.md#2-architekturprinzipien)..014 Architekturprinzipien — SOLID gesamt als Architekturzusicherung; automatisierte Teilabdeckung siehe `GG-PRINC-002..006` |
-| GG-PRINC-002       | SRP — `ruff` `PLR0902` (max-attributes), `PLR0904` (max-public-methods), `C901` (McCabe), `PLR0915` (max-statements); Restanteil bleibt Code-Review |
-| GG-PRINC-003       | OCP — primaer Code-Review; AST-Heuristik (Verbot von `isinstance(x, ConcreteType)` in `core/*`) ist Folgearbeit |
-| GG-PRINC-004       | LSP — `mypy --strict` Type-Check-Gate ([`ADR 0005`](adr/0005-type-check-gate.md)) prueft Variance-Verstoesse in Subtypen; Restanteil Code-Review |
-| GG-PRINC-005       | ISP — `ruff` `PLR0904` (max-public-methods, Schwelle 12), `PLR0903` (too-few-public-methods); mypy-Protocol-Konformitaet via [`ADR 0005`](adr/0005-type-check-gate.md); Restanteil Code-Review |
-| GG-PRINC-006       | DIP — [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest)/002 + [`AC-CORE-NO-ADAPTERS`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-CORE-NO-DRIVING`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-NO-FW`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert)/[`AC-PORTS-NO-FW`](adr/0002-language-and-build-stack.md#a-1--architekturtests-verbindlich-automatisiert) (vier von fuenfzehn A-1-Contracts in [`ADR 0002`](adr/0002-language-and-build-stack.md)) |
-| GG-CC-002          | [`GG-AR-TABU-003`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (Adapter-Logikverbot)                                                            |
-| GG-CC-003          | [`GG-AR-TABU-002`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (Domain ohne Framework-Imports)                                                  |
-| GG-CC-004          | [`GG-AR-TABU-004`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (keine Zyklen)                                                                    |
-| GG-CC-006          | [`GG-AR-TABU-007`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (keine God-Utility-Classes)                                                       |
-| GG-CC-007          | [`GG-AR-TABU-006`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (immutable Domain-Objekte) + [`GG-AR-COMP-DOMAIN`](../../spec/architecture.md#5-komponentensicht)                                  |
-| GG-CC-008          | [`GG-AR-TABU-008`](../../spec/architecture.md#architektur-tabus-build-architekturtest) (explizite Fehlerbehandlung)                                                      |
-| GG-CC-001          | `ruff` `PLR0915`/`PLR0912`/`PLR0913`/`PLR0911`/`C901` mit `max-statements=30`, `max-complexity=10` ([`ADR 0002`](adr/0002-language-and-build-stack.md), A-1 `ruff`-Konfiguration); Restanteil bleibt Code-Review |
-| GG-CC-005          | `ruff` `N` (pep8-naming, formale Konsistenz von Klassen-/Funktions-/Konstantennamen); fachliche Bedeutung der Namen bleibt Code-Review |
 | GG-SIM-001..004    | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) Tick-Loop + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                              |
 | GG-SIM-005         | [`GG-AR-PORT-DRV-005`](../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`SnapshotPort`)                                                              |
 | GG-SIM-006         | [`GG-AR-PORT-DRV-003`](../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`ReplayPort`) + [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) geteilter Tick-Loop                            |
@@ -142,7 +128,6 @@ Design-Artefakt in `architecture.md`:
 | Lastenheft-Kennung      | Begruendung                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | GG-TERM-001..006        | n/a — normative Begriffsdefinition (Vokabular `MUSS`/`DARF NICHT`/`SOLLTE`/`KANN`) |
-| GG-SEED-001             | n/a — Projekt-Seed-Konvention (Test-Setup-Vorgabe, keine Architektur) |
 | GG-MVP-001..004         | n/a — Scope-Festlegung; Auspraegung lebt in einzelnen `GG-SIM/DEV/...`-IDs |
 | GG-NONGOAL-001..005     | n/a — explizite Scope-Grenzen (negativ definierte Anforderung)     |
 | GG-FUTURE-001..006      | n/a — `KANN`-Zukunftsanforderungen `GG-FUTURE-*`; Design folgt erst bei Aktivierung im Abnahmescope |

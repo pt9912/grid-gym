@@ -5,12 +5,12 @@ aktive** Arbeit.
 
 ## Bestand
 
-**Aktiver `next/`-Eintrag: [`083`](083-spezifikation-layer-discipline-core-move.md)**
-— erster Slice des Migrations-Arcs zur Spec-Schichtung
-([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)): Spezifikations-Schicht
-anlegen + Disziplin-Kern (`GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`) umziehen, Vertrag
-atomar/zuletzt. Aktivierungsbereit. Danach in `open/`:
-[`084`](../open/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix),
+**Kein aktiver `next/`-Eintrag.** Der erste Slice des Spec-Schichtungs-Arcs
+([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)),
+[`083`](../done/083-spezifikation-layer-discipline-core-move.md)
+(Spezifikations-Schicht anlegen + Disziplin-Kern-Umzug `GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`),
+ist **abgeschlossen** (`done/`, 2026-07-16). Der Arc setzt sich in `open/` fort:
+[`084`](../open/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix, nächster Schritt),
 [`085`](../open/085-spezifikation-layer-qs-families-move.md) (QS-Familien),
 [`086`](../open/086-traceability-derived-27-1-finalization.md)
 (Traceability-Finalisierung). Der gesamte Arc ist doku-/config-only → kein Release.

@@ -27,6 +27,13 @@ ids:
     - regex: 'GG-AR-COMP-[A-Z0-9]+'
       target: spec/architecture.md
       link-policy: always
+    # Spec-Schichtung: Disziplin-/QS-Familien in spezifikation.md.
+    # MUSS ueber der generischen GG-...-Regel stehen (erstes Match gewinnt).
+    - regex: 'GG-(PRINC|CC|SEED)-\d{3}'
+      target: spec/spezifikation.md
+      link-policy: always
+    - regex: 'GG-SPEC-OPEN-[A-Z0-9-]+'
+      target: spec/spezifikation.md
     - regex: 'GG-[A-Z][A-Z0-9]*-\d{3}'
       target: spec/lastenheft.md
       link-policy: always
@@ -59,27 +66,27 @@ codepaths:
   roots: [docs, spec, src, tests, tools, deploy, harness]
 
 # Referenzrichtungs-Gate (SDP, Trigger 048, DC-FA-MTX-001). Stabilitaets-
-# Rang: Vertrag > Technik > Sicht > ADR > Slice; normative Kanten zeigen
+# Rang: Vertrag > Spezifikation > Sicht > ADR > Slice; normative Kanten zeigen
 # strikt aufwaerts (Abwaerts-Verweis = Befund `matrix-forbidden`).
 # Verweise auf inaktive ADRs = `matrix-inactive`.
 matrix:
   classes:
     - {name: contract, paths: [spec/lastenheft.md]}
-    - {name: technik, paths: [spec/protocol_profiles.md]}
+    - {name: spezifikation, paths: [spec/protocol_profiles.md, spec/spezifikation.md]}
     - {name: sicht, paths: [spec/architecture.md]}
     - {name: adr, paths: ["docs/plan/adr/[0-9]*.md"]}
     - {name: slice, paths: ["docs/plan/planning/**/*.md"]}
   rules:
-    # SDP: die Spec-Straten (Vertrag/Technik/Sicht) duerfen nicht abwaerts
+    # SDP: die Spec-Straten (Vertrag/Spezifikation/Sicht) duerfen nicht abwaerts
     # auf ADRs/Slices verweisen. ADR->Slice (Bezug-Provenance) bleibt
     # erlaubt — die ADR-Lineage-/Slice-Kante ist nicht Gegenstand von 048.
-    - {from: contract, to: technik, allow: false}
+    - {from: contract, to: spezifikation, allow: false}
     - {from: contract, to: sicht, allow: false}
     - {from: contract, to: adr, allow: false}
     - {from: contract, to: slice, allow: false}
-    - {from: technik, to: sicht, allow: false}
-    - {from: technik, to: adr, allow: false}
-    - {from: technik, to: slice, allow: false}
+    - {from: spezifikation, to: sicht, allow: false}
+    - {from: spezifikation, to: adr, allow: false}
+    - {from: spezifikation, to: slice, allow: false}
     - {from: sicht, to: adr, allow: false}
     - {from: sicht, to: slice, allow: false}
   status:
@@ -97,13 +104,18 @@ matrix:
     # §27-Traceability ist nach docs/plan/traceability.md ausgelagert (Slice 063);
     # verbleibend nur die architektur-internen Traceability-/Offen-Punkte-Sektionen.
     - "19. Offene architektonische Punkte"
+    # spezifikation.md-Offen-Sektion (Spec-Schichtung): GG-SPEC-OPEN-Zeilen duerfen
+    # ihre aufloesende Entscheidung abwaerts zitieren.
+    - "5. Offene Spezifikationspunkte"
 
 # RTM (--trace / make doc-trace, seit d-check v0.40.0 konfigurierbar). KEIN Modul,
 # rein advisory (`make doc-complete`/--require-complete bewusst NICHT verdrahtet).
-# id-pattern = Allow-List der funktionalen Leaf-Familien; AUSGENOMMEN (jeweils via
-# traceability.md abgedeckt, kein Feature): §27.1.1-Scope/definitorisch (TERM/SEED/MVP/
-# NONGOAL/FUTURE), Arch-/Design-Meta (ARCH/ARCHTEST/PRINC/CC), Test-/Gate-Infra (TEST/
-# TESTTYPE/QG/COV/QA). GG-CICD/GG-TRACE bleiben bewusst drin (echte Deliverables).
+# id-pattern = Allow-List der funktionalen Leaf-Familien; AUSGENOMMEN (kein Feature):
+# Scope/definitorisch (TERM/MVP/NONGOAL/FUTURE); Disziplin-Spec PRINC/CC/SEED — seit
+# Spec-Schichtung in spezifikation.md statt traceability.md; Arch-/QS-Meta (ARCH/
+# ARCHTEST/QG/COV/QA/TESTTYPE) via traceability.md/lastenheft (QS-Familien ziehen mit
+# dem QS-Umzug nach spezifikation.md); Test-Infra (TEST). GG-CICD/GG-TRACE bleiben
+# bewusst drin (echte Deliverables).
 # Neue funktionale Familie hier ergaenzen.
 trace:
   requirements:

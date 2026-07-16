@@ -92,7 +92,7 @@ Determinismus-State zwischen parallelen Laeufen
 Wurzelseed kommt aus `scenario.simulation.seed` — das Scenario (hash-
 identifiziert) ist die Quelle der Sim-Parameter (wie `tick_ms`,
 [`GG-SIM-002`](../../../spec/lastenheft.md#gg-sim-002)); `RunMetadata.seed`
-([`GG-SEED-001`](../../../spec/lastenheft.md#gg-seed-001)) ist der protokollierte
+([`GG-SEED-001`](../../../spec/spezifikation.md#gg-seed-001)) ist der protokollierte
 Request-Wert. `build_tick_loop` wird pro Lauf aufgerufen.
 
 **Telemetrie-Sink: geteilt, keyed by `run_id`** (S4-Verfeinerung). Der

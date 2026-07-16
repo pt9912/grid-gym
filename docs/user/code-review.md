@@ -141,7 +141,7 @@ verbindlichen Konfigurations-Sektionen brauchen **Folge-ADRs**.
   / `banned-api` — Aenderung der A-1-Aufruf-Site-Verbote.
 - `[tool.ruff.lint.per-file-ignores]` — Aenderung des Reichweiten-
   Vertrags (z. B. Adapter-Boundary-Modul-Liste).
-- `[tool.ruff.lint.pylint] max-*` — Aenderung des [`GG-CC-001`](../../spec/lastenheft.md#gg-cc-001)-
+- `[tool.ruff.lint.pylint] max-*` — Aenderung des [`GG-CC-001`](../../spec/spezifikation.md#gg-cc-001)-
   Methodenlaengen-Gates.
 - `[tool.mypy] strict` / `files` / `enable_error_code` /
   `disable_error_code` — Aenderung des [`ADR-0005`](../plan/adr/0005-type-check-gate.md)-Strict-Vertrags.

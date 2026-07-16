@@ -57,7 +57,7 @@ scharf — ein **harter Kern** ist eindeutig Spezifikation, andere Familien habe
 
 **(2) Ihre Realisierung ist heimatlos.** Weil diese Familien im Vertrag als „Anforderung"
 stehen, aber kein Architektur-Artefakt sind, landet ihre Realisierung (z. B.
-[`GG-PRINC-005`](../../../spec/lastenheft.md#gg-princ-005) → „ISP wird per `ruff PLR0904`
+[`GG-PRINC-005`](../../../spec/spezifikation.md#gg-princ-005) → „ISP wird per `ruff PLR0904`
 durchgesetzt") als **Residuum** in der advisory-RTM `traceability.md` §27.1 — dem einzigen
 genuin einzigartigen Inhalt dort.
 

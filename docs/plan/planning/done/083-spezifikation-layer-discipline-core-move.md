@@ -1,12 +1,47 @@
 # 083 — Spezifikations-Schicht: Fundament + Disziplin-Kern-Umzug (PRINC/CC/SEED)
 
-**Status:** Geplant (`next/`) — erster Slice des Migrations-Arcs (Spec-Schichtung).
+**Status:** **Abgeschlossen (`done/`, 2026-07-16).** Erster Slice des
+Migrations-Arcs (Spec-Schichtung); atomarer Vertrag-Cut **ausgeführt**. Erster
+Slice führt [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 Schritt
+**(i)** „Residuum-Umzug nach spezifikation.md" für den harten Kern aus und legt
+die neue Schicht an. **Doku-/Config-only → kein Release.**
 **Datum:** 2026-07-16
 **Quelle:** [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) `Accepted`
 (Dreischicht-Spec-Modell), §4-Detailentscheidungen mit Owner ratifiziert
-(`9e62ee2`). Dieser Slice führt [`ADR 0080`](../../adr/0080-three-layer-spec-model.md)
-§4.4 Schritt **(i)** „Residuum-Umzug nach spezifikation.md" für den harten Kern
-aus und legt die neue Schicht an.
+(`9e62ee2`).
+
+> **Closure / Verifikation (2026-07-16).** Umgesetzt: `spec/spezifikation.md`
+> angelegt (V-Modell-Pflichtenheft mit `GG-PRINC-*`, `GG-CC-*`, `GG-SEED-*` +
+> Werkzeug-Durchsetzung + Sektion „5. Offene Spezifikationspunkte" mit
+> `GG-SPEC-OPEN-001`); §5.1 + `GG-SEED-*` aus `lastenheft.md` entfernt
+> (Vertrag anforderungsrein, verifiziert self-ref-frei); §27.1-PRINC/CC-Residuum
+> (14 Zeilen) + §27.1.1-SEED-Zeile aus `traceability.md` entfernt; **40**
+> Markdown-Links `lastenheft.md#…` → `spezifikation.md#…` repointet (5 ADRs +
+> `architecture.md` + `docs/user/code-review.md` + Slice-Docs); `.d-check.yml`:
+> `matrix`-Klasse `technik`→`spezifikation` (beide Pfade) **inkl.
+> `matrix.rules`-Rename**, höher-priorisiertes `ids`-Muster
+> `GG-(PRINC|CC|SEED)-\d{3}`→spezifikation.md + `GG-SPEC-OPEN`, `exclude-sections`
+> += „5. Offene Spezifikationspunkte", `trace`-Kommentar nachgezogen.
+> **SDP-Erkenntnis:** `spezifikation.md` darf weder `GG-AR-*` noch `ADR NNNN`
+> referenzieren (beides abwärts/`matrix-forbidden`); die Realisierung trägt reine
+> Werkzeug-Prosa, die GG-AR-Kopplung bleibt architecture.md-Aufwärts-Bezug.
+> **Gates:** `make docs-check` (303 Dateien, 0 Befunde) + `make gates` grün;
+> gate-blinder Sweep = 17 Refs, alle unverändert-gültig (Prefixe bleiben → kein
+> Bruch; PR-Template-§3.x zeigt auf `code-review.md`, keine Drift).
+>
+> **Review (adversarial, vor Commit):** Content-Fidelity aller 15 Anforderungstexte
+> verbatim; Cut/SDP/Repoint/`.d-check.yml`/Anker sauber, **blocker-frei**. Ein
+> gate-unsichtbarer Fund: das per
+> [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md) §2 sanktionierte
+> Link-Repointen in [`ADR 0005`](../../adr/0005-type-check-gate.md) ließ umgebende
+> Prosa stehen, die nun „§27.1-Zeilen in `lastenheft.md`" behauptet (durch 083
+> entfernt). **Bewusst nicht geglättet:**
+> [`ADR 0006`](../../adr/0006-adr-lifecycle-superseding-and-process-corrections.md) §3
+> + [`ADR 0028`](../../adr/0028-link-maintenance-accepted-adr-bezug.md) §7 verbieten
+> inhaltliche Accepted-ADR-Edits jenseits des Pfad-Links; die Prosa-Drift ist damit
+> akzeptierte Immutabilitäts-Historie (gleiche Klasse wie nach Slice 063). Gilt auch
+> für die Präsens-Motivationsprosa in
+> [`ADR 0080`](../../adr/0080-three-layer-spec-model.md).
 
 ---
 
@@ -16,7 +51,7 @@ Der Vertrag (`lastenheft.md`) vermischt echte Anforderungen mit
 Spezifikations-/Disziplin-Inhalt. Die Familien `GG-PRINC-*` (SOLID) und
 `GG-CC-*` (Clean-Code) sind der **harte Kern** — klar Spezifikation, interne
 Disziplin (ADR §1/§2b), kein Grenzfall.
-[`GG-SEED-001`](../../../../spec/lastenheft.md#gg-seed-001) ist der **einzige
+[`GG-SEED-001`](../../../../spec/spezifikation.md#gg-seed-001) ist der **einzige
 Grenzfall** der Scope-Familien: interne Determinismus-/Test-Konvention, Wesen wie
 `GG-CC-*`, entschieden nach Spezifikation (ADR §4.2a).
 
@@ -28,7 +63,7 @@ Schicht statt RTM-Beifang.
 ## Betroffene Kennungen
 
 - **Umzug (Definition + Realisierung):** `GG-PRINC-*` (001–006), `GG-CC-*`
-  (001–008), [`GG-SEED-001`](../../../../spec/lastenheft.md#gg-seed-001)
+  (001–008), [`GG-SEED-001`](../../../../spec/spezifikation.md#gg-seed-001)
   (15 IDs).
 - **Neue Datei:** die Spezifikations-Schicht (V-Modell-Pflichtenheft), neue
   `matrix`-Klasse `spezifikation` (Geschwister zu `spec/protocol_profiles.md`,
@@ -49,7 +84,7 @@ Schicht statt RTM-Beifang.
    - Sektion **„Offene Spezifikationspunkte"** (`GG-SPEC-OPEN-*`, Tabelle
      ID | Frage | Status), geseedet mit `GG-SPEC-OPEN-001`.
 2. **Umzug** von `GG-PRINC-*` / `GG-CC-*` (aus `lastenheft.md` §5.1, Z. ~281–403)
-   **+** [`GG-SEED-001`](../../../../spec/lastenheft.md#gg-seed-001) (Z. ~113,
+   **+** [`GG-SEED-001`](../../../../spec/spezifikation.md#gg-seed-001) (Z. ~113,
    separater Excision-Punkt oben im Rahmen-Teil). Definition **und** die
    §27.1-Residuum-Realisierung (`ruff PLR0904`/`mypy`/… → Prinzip) wandern als
    spezifikationseigener Inhalt mit.
@@ -112,7 +147,7 @@ Schicht statt RTM-Beifang.
    ist SDP-**oberhalb** von `architecture.md` (`contract > spezifikation >
    architektur`). Es darf **nicht** auf `GG-AR-*` verweisen (`matrix-forbidden`).
    Die architektonische Durchsetzung eines Prinzips (z. B.
-   [`GG-CC-004`](../../../../spec/lastenheft.md#gg-cc-004) „keine Zyklen" ↔
+   [`GG-CC-004`](../../../../spec/spezifikation.md#gg-cc-004) „keine Zyklen" ↔
    [`GG-AR-TABU-004`](../../../../spec/architecture.md#architektur-tabus-build-architekturtest))
    wird als **architecture.md-Bezug nach oben** auf die Spezifikations-ID
    ausgedrückt (ADR §2c). In der Spezifikation steht nur die **Werkzeug**-
@@ -134,7 +169,7 @@ Schicht statt RTM-Beifang.
 ## DoD
 
 - spezifikation.md existiert, `matrix`-Klasse `spezifikation` (beide Pfade) aktiv;
-  `GG-PRINC-*`/`GG-CC-*`/[`GG-SEED-001`](../../../../spec/lastenheft.md#gg-seed-001)
+  `GG-PRINC-*`/`GG-CC-*`/[`GG-SEED-001`](../../../../spec/spezifikation.md#gg-seed-001)
   **nur** dort definiert, aus `lastenheft.md` entfernt.
 - Alle Doku-Links + gate-blinden Refs repointet; `make docs-check` grün + Sweep sauber.
 - `GG-SPEC-OPEN-*`-Sektion angelegt + `GG-SPEC-OPEN-001` geseedet.

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Spec-Schichtung — Dreischicht-Modell, Slice 083
+  ([`ADR 0080`](docs/plan/adr/0080-three-layer-spec-model.md)).** Neue mittlere
+  Spezifikations-Schicht `spec/spezifikation.md` (Pflichtenheft) zwischen Vertrag
+  (`lastenheft.md`) und Architektur (`architecture.md`). Die Disziplin-/
+  Konventions-Familien `GG-PRINC-*` (SOLID), `GG-CC-*` (Clean-Code) und
+  `GG-SEED-001` sind aus dem Vertrag dorthin verschoben — inkl. ihrer
+  Werkzeug-Durchsetzung (`ruff`/`mypy`/Architektur-Gates) als erstklassige
+  Spezifikation statt Traceability-Residuum. Präfixe unverändert; reine
+  Doku-/Config-/Traceability-Umstrukturierung, kein Runtime-Delta.
+
 ## [0.8.0] - 2026-07-14
 
 **Minor — a-check-Architektur-Gate + Port-Extraktion (Slice 079,

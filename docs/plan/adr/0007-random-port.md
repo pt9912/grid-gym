@@ -27,7 +27,7 @@ from_snapshot`). Vorher 2026-05-15 — erste Fassung.
 ## 1. Kontext
 
 [`GG-SIM-001`](../../../spec/lastenheft.md#gg-sim-001) (Determinismus), [`GG-SCN-002`](../../../spec/lastenheft.md#gg-scn-002) (deterministische
-Szenarien), [`GG-SEED-001`](../../../spec/lastenheft.md#gg-seed-001) (Seeds explizit seedbar) und
+Szenarien), [`GG-SEED-001`](../../../spec/spezifikation.md#gg-seed-001) (Seeds explizit seedbar) und
 [`GG-AR-PORT-DRN-010`](../../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`RandomPort` als Driven-Port) verlangen einen
 deterministisch-reproduzierbaren Zufallsstrom je Simulationslauf.
 `ADR 0002 §A-1 AC-NO-RAND` verbietet direkte Aufrufe von `random.*`,

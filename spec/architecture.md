@@ -39,7 +39,7 @@ Nicht Gegenstand dieses Dokuments:
 | ----------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | GG-AR-P-001 | Modulare Plattform: Simulationskern, Geraetemodelle, Adapter, Persistenz, UI sind getrennt    | [`GG-ARCH-001`](lastenheft.md#gg-arch-001)                                    |
 | GG-AR-P-002 | Hexagonale Architektur fuer den Simulationskern (Ports & Adapters)                            | [`GG-ARCH-002`](lastenheft.md#gg-arch-002)                                    |
-| GG-AR-P-003 | Simulationslogik kennt keine Kommunikationsadapter; Abhaengigkeiten zeigen nach innen         | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), [`GG-PRINC-006`](lastenheft.md#gg-princ-006)                      |
+| GG-AR-P-003 | Simulationslogik kennt keine Kommunikationsadapter; Abhaengigkeiten zeigen nach innen         | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), [`GG-PRINC-006`](spezifikation.md#gg-princ-006)                      |
 | GG-AR-P-004 | Geraetemodelle sind ueber gemeinsame Schnittstelle austauschbar                               | [`GG-ARCH-004`](lastenheft.md#gg-arch-004), [`GG-DEV-001`](lastenheft.md#gg-dev-001)                        |
 | GG-AR-P-005 | Interne Kommunikation ist eventbasiert mit deterministischem Scheduler                        | [`GG-ARCH-005`](lastenheft.md#gg-arch-005), [`GG-ARCH-006`](lastenheft.md#gg-arch-006)                       |
 | GG-AR-P-006 | Zeitmodell ist zentralisiert; Fachlogik liest Zeit nur ueber den Clock-Port                   | [`GG-ARCH-007`](lastenheft.md#gg-arch-007)                                    |
@@ -50,7 +50,7 @@ Nicht Gegenstand dieses Dokuments:
 | GG-AR-P-011 | Simulationsadapter sind als solche gekennzeichnet und versprechen keine produktive Steuerung  | [`GG-SAFE-007`](lastenheft.md#gg-safe-007), [`GG-NONGOAL-001`](lastenheft.md#gg-nongoal-001)                    |
 | GG-AR-P-012 | Plattform laeuft offline lokal in Docker Compose; PostgreSQL ist Pflicht-Persistenz           | [`GG-DEPLOY-001`](lastenheft.md#gg-deploy-001)/002/011, [`GG-PERSIST-005`](lastenheft.md#gg-persist-005)          |
 | GG-AR-P-013 | Konfiguration statt Code: Geraete, Szenarien, Faults, Replays sind YAML-deklariert            | [`GG-SCN-001`](lastenheft.md#gg-scn-001), [`GG-ARCH-004`](lastenheft.md#gg-arch-004)                        |
-| GG-AR-P-014 | Architektur-Tabus werden per Build-/Architekturtest erzwungen                                 | [`GG-PRINC-006`](lastenheft.md#gg-princ-006), [`GG-CC-002`](lastenheft.md#gg-cc-002)/003/004, `GG-ARCHTEST-*` |
+| GG-AR-P-014 | Architektur-Tabus werden per Build-/Architekturtest erzwungen                                 | [`GG-PRINC-006`](spezifikation.md#gg-princ-006), [`GG-CC-002`](spezifikation.md#gg-cc-002)/003/004, `GG-ARCHTEST-*` |
 
 ---
 
@@ -241,7 +241,7 @@ nach innen, `hexagon/core/*` darf weder `adapters/*` noch
 | GG-AR-PORT-DRN-006 | `ReplaySourcePort` — Replay-Samples liefern                                                                                                                                      | [`GG-REPLAY-001`](lastenheft.md#gg-replay-001)/002                            |
 | GG-AR-PORT-DRN-007 | `DeviceProtocolPort` — externe Protokolladapter. Gelieferte Implementer: MQTT, Modbus, OPC-UA, DNP3, IEC 61850. Geplante Device-Management-Erweiterungen: SNMP und LwM2M (noch ohne Adapter-Profil/Implementierung). Sync-`Protocol` mit Caller-Scope-Lifecycle (`TickLoop.start_protocol_ports()` / `stop_protocol_ports()`); FIFO start, LIFO stop, Partial-Cleanup. | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), GG-MQTT/MODB/OPCUA/DNP3/IEC/SNMP/LWM2M-001 |
 | GG-AR-PORT-DRN-008 | `LogPort`, `MetricsPort`, `TracePort` — strukturierte Observability                                                                                                              | [`GG-OTEL-001`](lastenheft.md#gg-otel-001)..004                             |
-| GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | [`GG-PRINC-005`](lastenheft.md#gg-princ-005)                                 |
+| GG-AR-PORT-DRN-009 | `ConfigPort` — Konfigurationsquelle (Datei, ENV)                                                                                                                                 | [`GG-PRINC-005`](spezifikation.md#gg-princ-005)                                 |
 | GG-AR-PORT-DRN-010 | `RandomPort` — gebondener PRNG, seedbar pro Lauf.                           | [`GG-SIM-001`](lastenheft.md#gg-sim-001), [`GG-SCN-002`](lastenheft.md#gg-scn-002)                       |
 | GG-AR-PORT-DRN-011 | `FaultPort` — Fault-Injection-Adapter-Boundary (`apply_active_faults(devices, context)`). | [`GG-FAULT-001`](lastenheft.md#gg-fault-001)..010                            |
 
@@ -285,14 +285,14 @@ duerfen keine Adapter, Frameworks oder Transport-Bibliotheken importieren.
 
 | Tabu-ID        | Regel                                                                                   | Bezug                     |
 | -------------- | --------------------------------------------------------------------------------------- | ------------------------- |
-| GG-AR-TABU-001 | `hexagon/core/*` darf keine `adapters/*`-Symbole importieren                            | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), [`GG-PRINC-006`](lastenheft.md#gg-princ-006) |
-| GG-AR-TABU-002 | `hexagon/core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren  | [`GG-CC-003`](lastenheft.md#gg-cc-003)                 |
-| GG-AR-TABU-003 | `adapters/*` darf keine fachlichen Entscheidungen treffen (nur Mapping/Transport)       | [`GG-CC-002`](lastenheft.md#gg-cc-002)                 |
-| GG-AR-TABU-004 | Keine zyklischen Modulabhaengigkeiten                                                   | [`GG-CC-004`](lastenheft.md#gg-cc-004)                 |
+| GG-AR-TABU-001 | `hexagon/core/*` darf keine `adapters/*`-Symbole importieren                            | [`GG-ARCH-003`](lastenheft.md#gg-arch-003), [`GG-PRINC-006`](spezifikation.md#gg-princ-006) |
+| GG-AR-TABU-002 | `hexagon/core/*` darf keine HTTP-, DB-, Messaging-, Datei-, OS-, UI-Pakete importieren  | [`GG-CC-003`](spezifikation.md#gg-cc-003)                 |
+| GG-AR-TABU-003 | `adapters/*` darf keine fachlichen Entscheidungen treffen (nur Mapping/Transport)       | [`GG-CC-002`](spezifikation.md#gg-cc-002)                 |
+| GG-AR-TABU-004 | Keine zyklischen Modulabhaengigkeiten                                                   | [`GG-CC-004`](spezifikation.md#gg-cc-004)                 |
 | GG-AR-TABU-005 | Fachlogik liest Systemzeit nicht direkt; Zeit kommt aus `ClockPort`                     | [`GG-ARCH-007`](lastenheft.md#gg-arch-007)               |
-| GG-AR-TABU-006 | Domain-Objekte sind immutable, sofern nicht explizit und lokal begrenzt                 | [`GG-CC-007`](lastenheft.md#gg-cc-007)                 |
-| GG-AR-TABU-007 | Keine statischen God-Utility-Classes                                                    | [`GG-CC-006`](lastenheft.md#gg-cc-006)                 |
-| GG-AR-TABU-008 | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt | [`GG-CC-008`](lastenheft.md#gg-cc-008)                 |
+| GG-AR-TABU-006 | Domain-Objekte sind immutable, sofern nicht explizit und lokal begrenzt                 | [`GG-CC-007`](spezifikation.md#gg-cc-007)                 |
+| GG-AR-TABU-007 | Keine statischen God-Utility-Classes                                                    | [`GG-CC-006`](spezifikation.md#gg-cc-006)                 |
+| GG-AR-TABU-008 | Fehler werden typisiert oder als dokumentierte Exceptions signalisiert, nie verschluckt | [`GG-CC-008`](spezifikation.md#gg-cc-008)                 |
 
 Diese Tabus werden durch Architekturtests erzwungen
 ([`GG-ARCHTEST-001`](lastenheft.md#gg-archtest-001)..005; siehe `GG-AR-TEST-001` — Testarchitektur).
@@ -462,7 +462,7 @@ FaultDefinition {
 }
 ```
 
-Alle Domain-Objekte sind unveraenderlich ([`GG-CC-007`](lastenheft.md#gg-cc-007), `GG-AR-TABU-006`).
+Alle Domain-Objekte sind unveraenderlich ([`GG-CC-007`](spezifikation.md#gg-cc-007), `GG-AR-TABU-006`).
 Kanonische Serialisierung folgt [`GG-DATA-005`](lastenheft.md#gg-data-005) (stabile Feldreihenfolge,
 maximal sechs Nachkommastellen, ISO-8601-UTC oder ganzzahlige
 Simulationszeit in ms, Integer-Sequenzen).
