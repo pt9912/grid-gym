@@ -197,7 +197,7 @@ Schicht statt RTM-Beifang.
 
 - [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2/§4 (Modell +
   ratifizierte Vorgaben), §4.4 Schritt (i).
-- Nachfolge-Slices: [`084`](../open/084-architecture-bezug-drift-fix.md)
+- Nachfolge-Slices: [`084`](084-architecture-bezug-drift-fix.md)
   (Bezug-Drift-Fix, §4.4 ii), [`085`](../open/085-spezifikation-layer-qs-families-move.md)
   (QS/Abnahme-Familien), [`086`](../open/086-traceability-derived-27-1-finalization.md)
   (Traceability-Modell-Finalisierung).

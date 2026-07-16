@@ -5,7 +5,7 @@
 **Quelle:** [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2b/§4.2b —
 Umzug der Qualitäts-/Durchsetzungs-Familien in die Spezifikations-Schicht.
 Baut auf [`083`](../done/083-spezifikation-layer-discipline-core-move.md) (Datei +
-Klasse existieren) und [`084`](084-architecture-bezug-drift-fix.md) (Bezug-Quelle
+Klasse existieren) und [`084`](../done/084-architecture-bezug-drift-fix.md) (Bezug-Quelle
 sauber).
 
 ---
@@ -115,7 +115,7 @@ gespalten → Drift).
 ## Bezug
 
 - [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2b/§4.2b.
-- Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md)/[`084`](084-architecture-bezug-drift-fix.md),
+- Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md)/[`084`](../done/084-architecture-bezug-drift-fix.md),
   Nachfolger [`086`](086-traceability-derived-27-1-finalization.md).
 - [`spec/lastenheft.md`](../../../../spec/lastenheft.md) §21.2–§21.5,
   [`spec/architecture.md`](../../../../spec/architecture.md) §17,

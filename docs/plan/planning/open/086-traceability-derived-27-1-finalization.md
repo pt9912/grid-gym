@@ -105,7 +105,7 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 - Präzedenz: [`066`](../done/066-traceability-recut-delegate-27-2.md)
   (Traceability-Ableitung +
   [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment).
-- Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md)/[`084`](084-architecture-bezug-drift-fix.md)/[`085`](085-spezifikation-layer-qs-families-move.md).
+- Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md)/[`084`](../done/084-architecture-bezug-drift-fix.md)/[`085`](085-spezifikation-layer-qs-families-move.md).
 - [`docs/plan/traceability.md`](../../traceability.md) §27.1/§27.1.1,
   [`spec/lastenheft.md`](../../../../spec/lastenheft.md)
   [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001).

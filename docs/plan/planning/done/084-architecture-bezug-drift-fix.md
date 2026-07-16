@@ -1,12 +1,27 @@
 # 084 — Bezug-Drift-Fix: ARCH-007/008-Vollständigkeit + SCN-006-Lücke
 
-**Status:** Open — geplant (Migrations-Arc Spec-Schichtung, Slice 2 von 4).
-**Datum:** 2026-07-16
-**Quelle:** [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 Schritt
-**(ii)** „Bezug-Spalten-Drift beheben (ARCH-007/008 + SCN-006-Lücke)" — eine der
-**zwei durchgehenden Prerequisites** (ADR §4, Schluss). Reihenfolge nach
+**Status:** **Abgeschlossen (`done/`, 2026-07-16).** Slice 2 des Migrations-Arcs
+(Spec-Schichtung); [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 Schritt
+**(ii)** „Bezug-Spalten-Drift beheben (ARCH-007/008 + SCN-006-Lücke)". Reihenfolge nach
 Owner-Entscheidung ADR-treu **(i) vor (ii)**: nach dem Residuum-Umzug
-[`083`](../done/083-spezifikation-layer-discipline-core-move.md).
+[`083`](../done/083-spezifikation-layer-discipline-core-move.md). **Doku-only → kein Release.**
+**Datum:** 2026-07-16
+
+> **Closure / Verifikation (2026-07-16).** Umgesetzt (rank-2, nur architecture.md +
+> traceability.md): (1) COMP-FAULTS-Bezug (§5) um
+> [`GG-SCN-006`](../../../../spec/lastenheft.md#gg-scn-006) ergänzt → Szenario-Fault-
+> Injection auch fault-seitig als Bezug-Zeiger verzeichnet (bleibt via COMP-SCENARIO
+> gedeckt, **kein Orphan**). (2) §27.1-Zeilen **vollständig** gegen alle
+> architecture.md-Aufwärts-Zeiger (1:N): ARCH-007 → COMP-CORE + P-006 + PORT-DRN-001 +
+> TABU-005; ARCH-008 → COMP-CORE + P-007. (3) §27.1 um dedizierte SCN-006-Zeile
+> (COMP-SCENARIO + COMP-FAULTS) ergänzt, Range-Zeile auf `001..005, 007, 008` eingeengt
+> (keine Doppelzählung). **`make docs-check` + `make gates` grün.** Konsistenz-Prüfung
+> (Vorgriff 086): jede der drei Anforderungs-Zeilen ↔ vollständige Bezug-Menge, in
+> beide Richtungen.
+>
+> **Nebenbefund (außerhalb Scope):** ARCH-006 hat dieselbe Drift-Klasse (§5-COMP-CORE-
+> Bezug nennt 006, aber die §27.1-ARCH-006-Zeile nennt nur COMP-SCHED) — Kandidat für
+> einen Folge-Fix, in 084 bewusst **nicht** mitgezogen (084-Scope = 007/008 + SCN-006).
 
 ---
 
@@ -121,7 +136,7 @@ zu 083.
 - [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2d + §4.4 (ii),
   „Zwei durchgehende Prerequisites".
 - Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md),
-  Nachfolger [`085`](085-spezifikation-layer-qs-families-move.md) /
-  [`086`](086-traceability-derived-27-1-finalization.md).
+  Nachfolger [`085`](../open/085-spezifikation-layer-qs-families-move.md) /
+  [`086`](../open/086-traceability-derived-27-1-finalization.md).
 - [`spec/architecture.md`](../../../../spec/architecture.md) §2/§5/§9/§12.2,
   [`docs/plan/traceability.md`](../../traceability.md) §27.1.

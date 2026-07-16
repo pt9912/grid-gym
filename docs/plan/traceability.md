@@ -58,8 +58,8 @@ keine eigene Kennung traegt.
 | GG-ARCH-004        | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-PORT-DRN-007`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)                                                       |
 | GG-ARCH-005        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) Tick-Loop + Domain-Event ([`GG-AR-COMP-DOMAIN`](../../spec/architecture.md#5-komponentensicht))                                  |
 | GG-ARCH-006        | [`GG-AR-COMP-SCHED`](../../spec/architecture.md#5-komponentensicht) Tie-Breaking + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                          |
-| GG-ARCH-007        | [`GG-AR-PORT-DRN-001`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`ClockPort`) + [`GG-AR-TABU-005`](../../spec/architecture.md#architektur-tabus-build-architekturtest)                                              |
-| GG-ARCH-008        | [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) Live- und Replay-Tick-Loop geteilt                                                  |
+| GG-ARCH-007        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-P-006`](../../spec/architecture.md#2-architekturprinzipien) + [`GG-AR-PORT-DRN-001`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`ClockPort`) + [`GG-AR-TABU-005`](../../spec/architecture.md#architektur-tabus-build-architekturtest)                                              |
+| GG-ARCH-008        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) Live- und Replay-Tick-Loop geteilt                                                  |
 | GG-SIM-001..004    | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) Tick-Loop + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                              |
 | GG-SIM-005         | [`GG-AR-PORT-DRV-005`](../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`SnapshotPort`)                                                              |
 | GG-SIM-006         | [`GG-AR-PORT-DRV-003`](../../spec/architecture.md#driving-ports-vom-kern-angeboten) (`ReplayPort`) + [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) geteilter Tick-Loop                            |
@@ -79,7 +79,8 @@ keine eigene Kennung traegt.
 | GG-DEV-010..018    | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (MVP- und SOLLTE-Modelle)                                                     |
 | GG-BESS-001..008   | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (Batteriemodell) + [`GG-AR-P-010`](../../spec/architecture.md#2-architekturprinzipien) Eingabe-Sicherheit                           |
 | GG-GRID-001..007   | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) (Netzmodell)                                                                  |
-| GG-SCN-001..008    | [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Validierungs-Pipeline |
+| GG-SCN-001..005, 007, 008    | [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) Validierungs-Pipeline |
+| GG-SCN-006         | [`GG-AR-COMP-SCENARIO`](../../spec/architecture.md#5-komponentensicht) (Fault-Validierung vor Tick) + [`GG-AR-COMP-FAULTS`](../../spec/architecture.md#5-komponentensicht) (Fault-Injection-Ausführung) |
 | GG-REPLAY-001..006 | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-PORT-DRV-003`](../../spec/architecture.md#driving-ports-vom-kern-angeboten)                                                         |
 | GG-REPLAY-007      | [`GG-AR-COMP-REPLAY`](../../spec/architecture.md#5-komponentensicht) Diff-Klassifikation                                                            |
 | GG-FAULT-001..010  | [`GG-AR-COMP-FAULTS`](../../spec/architecture.md#5-komponentensicht) Fault-Injection-Architektur                                                    |
