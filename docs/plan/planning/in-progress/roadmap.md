@@ -137,7 +137,7 @@ M7/M8 erfuellt; Detail in [`M7-results.md`](../done/M7-results.md) bzw.
 
 ## 4. Aktive / geplante Slices
 
-**Kein aktiver Slice; nächster Arc = Spec-Schichtung ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md), s. Kopf-Status).** Zuletzt abgeschlossen (2026-07-14): Delivery-Audit
+**Kein aktiver Slice.** Der Spec-Schichtungs-Arc ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md), s. Kopf-Status) ist **abgeschlossen + Closure-Review-gehärtet** (2026-07-16, `d8d810c`). Einziger offener Arc-Faden: die maschinelle §27.1-Ausbaustufe ([`Trigger 088`](../open/088-27-1-consistency-gate-generator.md)) — als [`CR 089`](../open/089-dcheck-design-consistency-gate-cr.md) (v2) an d-check gestellt, **wartet auf die d-check-Feature-Umsetzung** (Cross-Repo). Zuletzt abgeschlossen (2026-07-14): Delivery-Audit
 [`080`](../done/080-delivery-audit-sim-replay.md)/[`081`](../done/081-delivery-audit-rest-muss.md)/[`082`](../done/082-delivery-audit-sollte-rest.md)
 + a-check [`079`](../done/079-a-check-hexagon-arch-gate.md); zuvor (2026-07-13)
 [`078`](../done/078-gg-ui-004-006-completion.md) (UI-Vervollstaendigung:

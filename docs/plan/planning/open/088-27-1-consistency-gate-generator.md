@@ -1,6 +1,9 @@
 # 088 — §27.1-Konsistenz-Gate + Generator (Traceability-Ausbaustufe)
 
-**Status:** Open — Trigger-Watch (Cross-Repo-Abhängigkeit).
+**Status:** Open — Trigger-Watch (Cross-Repo-Abhängigkeit). **CR gestellt:** die
+d-check-Fähigkeit ist als [`CR 089`](089-dcheck-design-consistency-gate-cr.md)
+(v2, an d-check adressiert) formuliert und wartet auf die Umsetzung — kein
+Dead-Letter mehr.
 **Datum:** 2026-07-16
 **Quelle:** [`Slice 086`](../done/086-traceability-derived-27-1-finalization.md) —
 die `§27.1 authored → derived`-Ausbaustufe aus
