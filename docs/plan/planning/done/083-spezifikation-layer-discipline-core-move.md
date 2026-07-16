@@ -199,7 +199,7 @@ Schicht statt RTM-Beifang.
   ratifizierte Vorgaben), §4.4 Schritt (i).
 - Nachfolge-Slices: [`084`](084-architecture-bezug-drift-fix.md)
   (Bezug-Drift-Fix, §4.4 ii), [`085`](085-spezifikation-layer-qs-families-move.md)
-  (QS/Abnahme-Familien), [`086`](../open/086-traceability-derived-27-1-finalization.md)
+  (QS/Abnahme-Familien), [`086`](086-traceability-derived-27-1-finalization.md)
   (Traceability-Modell-Finalisierung).
 - Präzedenz Schicht-Umzug: [`063`](../done/063-traceability-doc-auslagern.md);
   Traceability-Ableitung: [`066`](../done/066-traceability-recut-delegate-27-2.md).

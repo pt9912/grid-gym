@@ -1,10 +1,30 @@
 # 086 — Traceability-Modell-Finalisierung: GG-TRACE-001-Amendment + §27.1 authored→derived
 
-**Status:** Open — geplant (Migrations-Arc Spec-Schichtung, Slice 4 von 4, Abschluss).
+**Status:** **Abgeschlossen (`done/`, 2026-07-16) — Arc-Abschluss.** Slice 4/4 des
+Migrations-Arcs (Spec-Schichtung). [`ADR 0080`](../../adr/0080-three-layer-spec-model.md)
+§2d/§2e + §4.4. **Doku-/Config-only → kein Release.**
 **Datum:** 2026-07-16
-**Quelle:** [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2d/§2e + §4.4
-Schritte **(iii)** Konsistenz-Gate und **(iv)** Generator/Report. Setzt die
-sauberen Umzüge (083/085) und die stabile Bezug-Quelle (084) voraus.
+
+> **Closure / Verifikation (2026-07-16).** Umgesetzt: (1) **ARCH-006-§27.1-Fix** — die
+> ARCH-006-Zeile um COMP-CORE ergänzt (aus der 084-Closure verankert; COMP-CORE ist ein
+> realer Aufwärts-Zeiger für ARCH-006). §27.1 bleibt eine **kuratierte Vorwärts-Map**
+> (req→Design), **kein** vollständiger Bezug-Spiegel — die formale Set-Konsistenz gegen die
+> `Bezug`-Kanten stellt erst Trigger 088s Gate her (Rest-Drift z. B. ARCH-005/P-005). (2)
+> **[`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment** (Vertrag, rank-1, wie
+> Slice 066): die Akzeptanz beschreibt jetzt §27.1 als Verfeinerung des Dreischicht-
+> Modells (Lastenheft → Spezifikation → Architektur; ableitbar aus den Aufwärts-Zeigern,
+> konsistent gehalten). (3) §27.1-Intro nachgezogen (authored-**aber-konsistent**).
+> **Ausbaustufe vertagt (konform zu [`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md)):** das maschinelle Konsistenz-**Gate** (iii)
+> und der **Generator** (iv) brauchen ein neues d-check-Feature (`--require-complete`
+> bewusst nicht verdrahtet) → als **offener Tooling-Punkt** in die Planung ausgelagert
+> ([`Trigger 088`](../open/088-27-1-consistency-gate-generator.md)), **nicht** in die
+> Spec. §27.1.1 unverändert kuratiert. **`make docs-check` + `make gates` grün.**
+>
+> **Arc-Abschluss:** der [`ADR 0080`](../../adr/0080-three-layer-spec-model.md)-Arc (083/084/085/086 + 087) ist **komplett**. Der
+> Vertrag enthält nur noch echte Anforderungen; jede Umzugs-Familie hat **eine**
+> autoritative Heimat (spezifikation.md); die **Schicht-Struktur** für die Auflösung der
+> §18/„Bezug"↔§27.1-Redundanz steht. Die **maschinelle** Auflösung (derived/gegatete §27.1)
+> bleibt Trigger 088.
 
 ---
 
@@ -72,7 +92,7 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
   COMP-SCHED + P-008 (COMP-CORE fehlt). Als Teil des Konsistenz-Gates hier die
   §27.1-ARCH-006-Zeile um COMP-CORE ergänzen (1-Zeilen-Fix, gleiches Muster wie 084) —
   sonst flaggt das Gate sie zu Recht. Befund aus der
-  [`084`](../done/084-architecture-bezug-drift-fix.md)-Closure; bewusst hier statt als
+  [`084`](084-architecture-bezug-drift-fix.md)-Closure; bewusst hier statt als
   eigener Slice geführt.
 - **Warum Gate vor Generator:** ein Generator auf driftender Quelle produzierte
   selbstbewusst Falsches; erst das Gate erzwingt die Quelle sauber (ADR §4.4).
@@ -114,7 +134,7 @@ Zugleich muss [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)
 - Präzedenz: [`066`](../done/066-traceability-recut-delegate-27-2.md)
   (Traceability-Ableitung +
   [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment).
-- Vorgänger [`083`](../done/083-spezifikation-layer-discipline-core-move.md)/[`084`](../done/084-architecture-bezug-drift-fix.md)/[`085`](../done/085-spezifikation-layer-qs-families-move.md).
+- Vorgänger [`083`](083-spezifikation-layer-discipline-core-move.md)/[`084`](084-architecture-bezug-drift-fix.md)/[`085`](085-spezifikation-layer-qs-families-move.md).
 - [`docs/plan/traceability.md`](../../traceability.md) §27.1/§27.1.1,
   [`spec/lastenheft.md`](../../../../spec/lastenheft.md)
   [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001).

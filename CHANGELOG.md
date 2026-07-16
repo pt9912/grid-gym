@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Gate-/Werkzeug-Durchsetzung). Der Vertrag enthält damit nur noch echte
   Anforderungen; Testbarkeit (`GG-TEST-*`) und Abnahme-Anker
   (`GG-ACCEPT-*`/`GG-MVP-*`) bleiben im Vertrag. Kein Runtime-Delta.
+- **Spec-Schichtung Slice 086 — Arc-Abschluss.** `GG-TRACE-001`-Akzeptanz amendiert
+  (§27.1 als Verfeinerung des Dreischicht-Modells; Slice-066-Muster); die §27.1-
+  Design-Tabelle ist gegen `architecture.md` **kuratiert/gegroundet** (ARCH-006-Alignment) —
+  eine Vorwärts-Map, kein vollständiger Bezug-Spiegel. Die maschinelle Ableitung + formale
+  Set-Konsistenz (`derived`-Endzustand) ist als Planungs-Trigger vertagt (Cross-Repo-d-check). Der ADR-0080-Arc (Slices
+  083–086 + 087) ist damit **komplett**; der Vertrag enthält nur noch echte
+  Anforderungen. Kein Runtime-Delta.
 - **Offene Punkte gehören in die Planung, nicht in die Soll-Spec — Slice 087
   ([`ADR 0081`](docs/plan/adr/0081-open-points-belong-in-planning.md)).**
   `architecture.md` §19 „Offene architektonische Punkte" (`GG-AR-OPEN-*`) aufgelöst:

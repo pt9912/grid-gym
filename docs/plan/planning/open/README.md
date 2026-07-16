@@ -24,18 +24,20 @@ Alle Eintraege sind Trigger-Watch-Notizen (`Status: Open`) ohne
 harten Aktivierungs-Zwang. Die `Aktivierung`-Spalte beschreibt den
 konkreten Anlass, der eine Aktivierung ausloesen soll.
 
-**Spec-Schichtung — Migrations-Arc ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)):**
+**Spec-Schichtung — Migrations-Arc ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)): ABGESCHLOSSEN.**
+Alle Arc-Slices liegen in `done/`:
+[`083`](../done/083-spezifikation-layer-discipline-core-move.md) (Fundament + PRINC/CC/SEED),
+[`084`](../done/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix),
+[`085`](../done/085-spezifikation-layer-qs-families-move.md) (QS-Familien),
+[`086`](../done/086-traceability-derived-27-1-finalization.md) (Traceability-Finalisierung)
++ [`087`](../done/087-architecture-open-points-to-planning.md) (§19-Auflösung,
+[`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md)). Der Vertrag ist
+anforderungsrein; doku-/config-only → **kein Release**. Offen bleibt nur die **maschinelle**
+§27.1-Ausbaustufe (Cross-Repo-Abhängigkeit, d-check-Feature):
 
-Diese drei sind **geschnittene Arc-Slices** (nicht trigger-getrieben; s.
-[`roadmap.md`](../in-progress/roadmap.md) Kopf-Status), sequenziell nach
-[`083`](../done/083-spezifikation-layer-discipline-core-move.md) (**abgeschlossen**, `done/`).
-Der gesamte Arc 083–086 ist doku-/config-/kommentar-only → **kein Release**.
-
-| Datei | Inhalt | Aktivierung |
-| ----- | ------ | ----------- |
-| [`084-architecture-bezug-drift-fix.md`](../done/084-architecture-bezug-drift-fix.md) | Bezug-Drift-Fix (ARCH-007/008-Vollstaendigkeit + SCN-006-Luecke), [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 (ii) | nach [`083`](../done/083-spezifikation-layer-discipline-core-move.md) |
-| [`085-spezifikation-layer-qs-families-move.md`](../done/085-spezifikation-layer-qs-families-move.md) | QS-/Abnahme-Familien-Umzug (`GG-QA-*`/`GG-QG-*`/`GG-COV-*`/`GG-TESTTYPE-*`/`GG-ARCHTEST-*`), groesster Cut | nach 084 |
-| [`086-traceability-derived-27-1-finalization.md`](086-traceability-derived-27-1-finalization.md) | [`GG-TRACE-001`](../../../../spec/lastenheft.md#gg-trace-001)-Amendment + §27.1 authored→derived + Konsistenz-Gate (Cross-Repo-Abh. d-check) | nach 085 |
+| Datei | Trigger | Aktivierung |
+| ----- | ------- | ----------- |
+| [`088-27-1-consistency-gate-generator.md`](088-27-1-consistency-gate-generator.md) | §27.1-Konsistenz-Gate + Generator ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 iii/iv), aus 086 vertagt | d-check liefert requirement→design-Ableitungs-/Gate-Fähigkeit |
 
 **Tooling / Build / Type-System:**
 

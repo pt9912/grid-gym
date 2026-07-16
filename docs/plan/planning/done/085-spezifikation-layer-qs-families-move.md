@@ -133,7 +133,7 @@ gespalten → Drift).
 
 - [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §2b/§4.2b.
 - Vorgänger [`083`](083-spezifikation-layer-discipline-core-move.md)/[`084`](084-architecture-bezug-drift-fix.md),
-  Nachfolger [`086`](../open/086-traceability-derived-27-1-finalization.md).
+  Nachfolger [`086`](086-traceability-derived-27-1-finalization.md).
 - [`spec/lastenheft.md`](../../../../spec/lastenheft.md) §21.2–§21.5,
   [`spec/architecture.md`](../../../../spec/architecture.md) §17,
   [`docs/plan/traceability.md`](../../traceability.md) §27.1.

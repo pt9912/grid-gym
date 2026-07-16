@@ -16,11 +16,13 @@ Der erste Slice des Spec-Schichtungs-Arcs
 ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md)),
 [`083`](../done/083-spezifikation-layer-discipline-core-move.md)
 (Spezifikations-Schicht anlegen + Disziplin-Kern-Umzug `GG-PRINC-*`/`GG-CC-*`/`GG-SEED-*`),
-ist **abgeschlossen** (`done/`, 2026-07-16). Der Arc setzt sich in `open/` fort:
-[`084`](../done/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix, **done**),
-[`085`](../done/085-spezifikation-layer-qs-families-move.md) (QS-Familien, **done**),
-[`086`](../open/086-traceability-derived-27-1-finalization.md)
-(Traceability-Finalisierung). Der gesamte Arc ist doku-/config-only → kein Release.
+ist **abgeschlossen** (`done/`, 2026-07-16). Der **ganze [`ADR 0080`](../../adr/0080-three-layer-spec-model.md)-Arc ist abgeschlossen**
+— [`084`](../done/084-architecture-bezug-drift-fix.md) (Bezug-Drift-Fix),
+[`085`](../done/085-spezifikation-layer-qs-families-move.md) (QS-Familien),
+[`086`](../done/086-traceability-derived-27-1-finalization.md)
+(Traceability-Finalisierung) alle `done/`; der Vertrag ist anforderungsrein. Doku-/config-only
+→ kein Release. Offen bleibt nur die maschinelle §27.1-Ausbaustufe als
+[`Trigger 088`](../open/088-27-1-consistency-gate-generator.md) (Cross-Repo-d-check).
 
 Slice [`077`](../done/077-bess-ems-conformant-field-publisher.md)
 (bess-ems-konformer Feld-Publisher) ist **abgeschlossen + released als v0.7.0** (ADRs

@@ -10,8 +10,12 @@ Dieses Dokument fuehrt die **kuratierten, stabilen** Zuordnungen jeder
 Lastenheft-Anforderung zu ihrem Design- und Testartefakt. Die zwei Tabellen
 werden mit dem Projektfortschritt gepflegt:
 
-- Die Design-Tabelle (§27.1) ist gegen `spec/architecture.md` v0.1.0
-  gepflegt (`GG-AR-*`-Kennungen).
+- Die Design-Tabelle (§27.1) ist eine gegen `spec/architecture.md` **kuratierte,
+  gegroundete Vorwaerts-Zuordnung** (Anforderung → implementierende `GG-AR-*`-Artefakte)
+  — **kein** vollstaendiger Spiegel der `Bezug`-Rueckkanten (die Formen unterscheiden
+  sich legitim). Die maschinelle Ableitung + formale Set-Konsistenz gegen die
+  Bezug-Kanten (`derived`-Endzustand) ist vertagt
+  ([Trigger 088](planning/open/088-27-1-consistency-gate-generator.md), d-check-Feature).
 - Die Test-Tabelle (§27.3) ist aus dem Lastenheft ableitbar (Testtyp gemaess
   `GG-TESTTYPE-001..007`).
 
@@ -59,7 +63,7 @@ keine eigene Kennung traegt.
 | GG-ARCH-003        | Dependency Rule + [`GG-AR-TABU-001`](../../spec/architecture.md#architektur-tabus-build-architekturtest) / [`GG-AR-TABU-002`](../../spec/architecture.md#architektur-tabus-build-architekturtest)                                             |
 | GG-ARCH-004        | [`GG-AR-COMP-DEVICES`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-PORT-DRN-007`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen)                                                       |
 | GG-ARCH-005        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) Tick-Loop + Domain-Event ([`GG-AR-COMP-DOMAIN`](../../spec/architecture.md#5-komponentensicht))                                  |
-| GG-ARCH-006        | [`GG-AR-COMP-SCHED`](../../spec/architecture.md#5-komponentensicht) Tie-Breaking + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                          |
+| GG-ARCH-006        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-COMP-SCHED`](../../spec/architecture.md#5-komponentensicht) Tie-Breaking + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                          |
 | GG-ARCH-007        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-P-006`](../../spec/architecture.md#2-architekturprinzipien) + [`GG-AR-PORT-DRN-001`](../../spec/architecture.md#driven-ports-vom-kern-aufgerufen) (`ClockPort`) + [`GG-AR-TABU-005`](../../spec/architecture.md#architektur-tabus-build-architekturtest)                                              |
 | GG-ARCH-008        | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) + [`GG-AR-P-007`](../../spec/architecture.md#2-architekturprinzipien) Live- und Replay-Tick-Loop geteilt                                                  |
 | GG-SIM-001..004    | [`GG-AR-COMP-CORE`](../../spec/architecture.md#5-komponentensicht) Tick-Loop + [`GG-AR-P-008`](../../spec/architecture.md#2-architekturprinzipien) Determinismus-Invariante                              |
