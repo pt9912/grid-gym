@@ -86,7 +86,7 @@ help:
 	@echo "  make arch-check        import-linter + tools/arch_check.py (20 A-1-Contracts: 6 import-linter + 14 arch_check)"
 	@echo "  make arch-check-imports  Nur import-linter (Layer-/Forbidden-Contracts)"
 	@echo "  make arch-check-custom   Nur AST + grimp-SCC (Aufruf-Sites, Immutability, ...)"
-	@echo "  make docs-check        d-check v0.42.0 — Markdown-Referenz-Validator (Trigger 002, .d-check.yml, include d-check.mk)"
+	@echo "  make docs-check        d-check v0.45.1 — Markdown-Referenz-Validator (Trigger 002, .d-check.yml, include d-check.mk)"
 	@echo "  make doc-help          d-check.mk — Liste der doc-* Zusatz-Targets (trace/doctor/repair/immutable/...)"
 	@echo "  make spdx-check        tools/check_spdx.py — SPDX-License-Identifier-Lint fuer IEC-61850-GPL-Boundary (ADR 0035, M4 Welle 6b)"
 	@echo "  make noqa-check        tools/check_noqa.py — # noqa-Marker-Reporter (Slice 027, Exit 0)"
@@ -177,12 +177,14 @@ arch-check-custom:
 # Konfiguration in .d-check.yml. Ersetzt tools/check_refs.py und die
 # zugehoerige Dockerfile-Stage (Trigger 002 — geloescht).
 #
-# Reproduzierbarkeit: der Tag-Default (v0.42.0) lebt in d-check.mk; der
+# Reproduzierbarkeit: der Tag-Default (v0.45.1) lebt in d-check.mk; der
 # Digest-Pin sticht ihn hier ueber DCHECK_DIGEST. Die Zuweisung MUSS vor
 # dem include stehen — d-check.mk wertet den Digest beim Parsen aus
-# (ifeq -> DCHECK_REF). Digest aus den Release-Notes v0.42.0 (Bump von v0.41.0:
-# neu u. a. `trace.requirements.modality` — RFC-2119-Spalte, siehe unten).
-DCHECK_DIGEST := sha256:bdd9dad22390782ba1f5ab6c3bc09ea7720be0b1b159af6418280d69b84d8db4
+# (ifeq -> DCHECK_REF). Digest aus den Release-Notes v0.45.1 (Bump von v0.42.0:
+# `trace.cross-consistency` + `forward.req-pattern` [ADR 0080 §4.4-4, als
+# Einmal-Messinstrument, NICHT verdrahtet] sowie zwei Fixes am Range-Parser).
+# RTM byte-identisch gegen v0.42.0 verifiziert (151 Anforderungen, 0 Waisen).
+DCHECK_DIGEST := sha256:5c5cf2d669f9c1a80d8a2d89395c5922597b75bacbeb6e8bc7d24c2cee4bf5ad
 include d-check.mk
 
 # Architektur-Gate via a-check (ghcr.io/pt9912/a-check, Schwester-Werkzeug zu
