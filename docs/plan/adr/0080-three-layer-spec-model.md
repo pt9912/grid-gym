@@ -188,7 +188,75 @@ Entscheidungen hier sind die Vorgaben, an denen sich die Migrations-Slices ausri
    **d-check-Arbeitspaket:** die generische `ids`-Regel `GG-…-NNN` → `lastenheft.md` gilt für
    die verschobenen Präfixe nicht mehr → höher-priorisierte Muster (bzw. eine Alternation) mit
    Ziel `spezifikation.md` für PRINC/CC/QA/QG/COV/TESTTYPE/ARCHTEST/SEED.
-4. **§27.1-Ausbaustufe: Konsistenz-Gate zuerst, Generator/Report als Endzustand** (§27.1
+4. **[AMENDIERT — Owner-Entscheidung 2026-07-17 nach der Messung mit d-check v0.45.1:**
+   **Stufe (iii) wird als *dauerhaftes Gate* zurückgezogen, Stufe (iv) von *optional* auf
+   verbindlich vorgezogen. Der Abgleich wird stattdessen Einmal-Messinstrument für (ii).**
+   **Messung** (d-check v0.45.1, `trace.cross-consistency`, `mode: equal`, advisory —
+   Config-Block in [`Trigger 088`](../planning/open/088-27-1-consistency-gate-generator.md),
+   ohne den die Zahlen nicht reproduzierbar sind): **161 Differenzen = 86 `F\B` + 75 `B\F`.**
+   Aufgeschlüsselt (jede Zahl an den Realdaten geprüft):
+   - **`B\F` = 75:** *65* Formunterschied — Ports (40), Prinzipien (19) und 6 Komponenten, die
+     §27.1 bewusst nicht aufzählt, weil es das **Haupt**-Artefakt nennt und nicht jede
+     Berührung (Kriterium: ihr `F\B` ist leer, das Haupt-Artefakt also gematcht — die
+     Rück-Kante ist reiner Überschuss); *8* **echte Quell-Defekte** — 6× erfindet die
+     Rück-Kante von
+     [`GG-AR-COMP-DEVICES`](../../../spec/architecture.md#5-komponentensicht) per
+     [`GG-DEV-001`](../../../spec/lastenheft.md#gg-dev-001)`..018` Kanten auf die Nummern
+     004–009 dieser Familie, **die es gar nicht gibt** (der Vertrag springt von `003` auf
+     `010`; die Range überspannt die Lücke), **2× echte Drift** — Schnittmenge null nach dem
+     Kriterium aus [`CR 089`](../planning/open/089-dcheck-design-consistency-gate-cr.md) §1:
+     [`GG-ARCH-005`](../../../spec/lastenheft.md#gg-arch-005) (§27.1 nennt `COMP-CORE`/
+     `COMP-DOMAIN`, zurück verweisen nur
+     [`GG-AR-COMP-SCHED`](../../../spec/architecture.md#5-komponentensicht)/`P-005`/`P-009`)
+     und [`GG-SIM-009`](../../../spec/lastenheft.md#gg-sim-009) (§27.1 nennt `COMP-DOMAIN`/
+     `COMP-PERSIST`, zurück verweist nur `COMP-CORE` per Pauschal-Range); *2*
+     Werkzeug-Artefakt (d-check verschluckt die Komma-Aufzählung in
+     [`GG-SCN-001`](../../../spec/lastenheft.md#gg-scn-001)`..005, 007, 008` still — an
+     d-check gemeldet).
+   - **`F\B` = 86** über 62 Anforderungen: *85* echt (davon 26×, wo §27.1 auf `GG-AR-TEST-*`
+     zeigt, das in `architecture.md` keine Artefakt-Zeile trägt); *1* Config-Artefakt
+     (`GG-AR-COMP-` aus dem Wildcard `` `GG-AR-COMP-*` ``).
+   **Warum kein dauerhaftes Gate.** `mode: equal` ist unbrauchbar: 65 der 75 `B\F` sind
+   Absicht und blieben dauerhaft rot, solange §27.1 kuratiert bleibt — grün würde es erst,
+   wenn §27.1 exakter Spiegel ist, und dann ist es die Ausgabe des Generators. Ein
+   **einseitiges** `F\B`-Gate (die wörtliche Lesart des ursprünglichen (iii): „jede
+   §27.1-Zeile ↔ ein Schicht-Zeiger") *wäre* dagegen erreichbar — es würde grün, sobald die
+   85 abgearbeitet sind, und §27.1 bliebe `authored`. Es wird trotzdem **nicht** gebaut, aber
+   aus einem anderen Grund als „unmöglich": Es schützte eine Tabelle, die nach §2d ohnehin
+   verschwindet, und ließe die Kanten-Anmerkung (s. u.) weiter heimatlos — also die Ursache
+   des Drifts bestehen. (d-check bietet diesen Modus derzeit auch nicht an; `superset` gatet
+   die andere Richtung. Wir fordern ihn bewusst nicht nach.)
+   **Was die Messung dennoch belegt — und was das für (ii) heißt.** Die ursprüngliche Sorge
+   „ein Generator auf driftender Quelle produzierte selbstbewusst Falsches" ist **bestätigt**:
+   Die Quelle *hat* Defekte, der `COMP-DEVICES`-Range-Fund ist genau so einer — ein Generator
+   erzeugte daraus §27.1-Zeilen für nicht existierende Anforderungen. Deshalb bleibt (ii)
+   Vorbedingung; nur wird sie **einmalig gemessen statt dauerhaft gegatet**. Arbeitsliste des
+   `derived`-Wechsels sind daher **beide** Richtungen: die 85 echten `F\B` **und** die 8
+   echten `B\F`.
+   **Kanten-Anmerkungs-Notation (neu entschieden):** Die §27.1-Prosa zerfällt in (a)
+   Handkopien des Artefakt-Titels — ableitbar und heute schon drift-belegt (§27.1 „Live- und
+   Replay-Tick-Loop geteilt" gegen den echten Titel von
+   [`GG-AR-P-007`](../../../spec/architecture.md#2-architekturprinzipien) „Live- und
+   Replay-Simulation teilen denselben Tick-Prozessor") — und (b) echte **Kanten**-Anmerkungen
+   („Tick-Loop", „`TelemetryPoint`"), die sagen, *welcher Teil* des Artefakts die Anforderung
+   einlöst. (b) hat an der Quelle bislang **keine Heimat** — das ist die Ursache des Drifts,
+   nicht seine Folge. Künftig trägt die `Bezug`-Zelle die Anmerkung geklammert **nach** der
+   Kennung bzw. **nach** der Range-Fortsetzung:
+   `` [`GG-ARCH-005`](lastenheft.md#gg-arch-005)/006 (Tie-Breaking) ``. Gegen d-check v0.45.1
+   verifiziert: die ID-Extraktion ignoriert die Klammer-Prosa; eine Anmerkung *zwischen* Link
+   und Range bricht die Expansion. **Grenze:** die Anmerkung gilt für die ganze Range — für
+   ID-genaue Anmerkung ist die Range aufzuspalten.
+   **Abgrenzung zu §5:** „§27.1 löschen" bleibt verworfen. `derived` ist nicht gelöscht — die
+   requirement-indizierte Matrix bleibt bestehen (Akzeptanz von
+   [`GG-TRACE-001`](../../../spec/lastenheft.md#gg-trace-001) amendieren wie in
+   [`Slice 066`](../planning/done/066-traceability-recut-delegate-27-2.md)), und das
+   „einzigartige Residuum" geht nicht verloren, sondern zieht an die Kante, wo es hingehört.
+   **d-check:** Der Bedarf verschiebt sich von der Gate- auf die **Generator**-Fähigkeit
+   (Artefakt-Titel mitausgeben + Kanten-Anmerkung durchreichen). Geliefert und verifiziert
+   sind `forward.req-pattern` (v0.45.0, trennt Vergleichs- von RTM-Scope) und die
+   link-transparente Range-Fortsetzung (v0.44.1/v0.45.1). **§27.1.1 bleibt kuratiert** (§2d).
+   Der ursprüngliche Text von §4.4-4 bleibt als Historie stehen.**]**
+   **§27.1-Ausbaustufe: Konsistenz-Gate zuerst, Generator/Report als Endzustand** (§27.1
    wechselt `authored → derived`, §2d). Reihenfolge: (i) Residuum-Umzug nach `spezifikation.md`;
    (ii) Bezug-Spalten-Drift beheben (ARCH-007/008 + SCN-006-Lücke); (iii) **Konsistenz-Gate** —
    jede §27.1-Zeile ↔ ein Schicht-Zeiger (killt Drift, den *eigentlichen* Defekt); (iv)

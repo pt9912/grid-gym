@@ -1,7 +1,7 @@
 # Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check)
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 # Eingebunden ueber d-check.mk (`--print-mk`); Image-Digest in Makefile-Variable
-# DCHECK_DIGEST (aktuell v0.42.0).
+# DCHECK_DIGEST (aktuell v0.45.1).
 scan:
   roots: ["."]
   ignore: ["src/**", ".github/**"]
@@ -153,6 +153,14 @@ trace:
       ranges: true
       sections: ["27.1 Anforderung zu Design", "27.3 Anforderung zu Test"]
       exclude-sections: ["27.1.1 Anforderungen ohne Design-Artefakt"]
+  # KEIN `cross-consistency`-Block — bewusst (ADR 0080 §4.4-4, amendiert 2026-07-17).
+  # §27.1 ist per traceability.md-Praeambel KEIN Bezug-Spiegel, sondern eine kuratierte
+  # Vorwaerts-Map (Haupt-Artefakt statt jeder Beruehrung). Ein dauerhaftes `mode: equal`-
+  # Gate bliebe darum fuer immer rot: gemessen 161 Differenzen = 86 F\B + 75 B\F, davon
+  # 65 B\F = Absicht (Ports/Prinzipien/Nicht-Haupt-Komponenten). Der Abgleich wird
+  # stattdessen EINMALIG als Messinstrument fuer die Bezug-Reinigung gefahren (Config +
+  # Aufschluesselung in Trigger 088), danach wird §27.1 generiert (`derived`, §2d) — dann
+  # ist ein Gate gegenstandslos. Der Einmal-Lauf haengt den Block temporaer hier ein.
 
 # targets (Trigger 068 C1): Doku-<->Makefile-Konsistenz. KEIN Modul — via `make
 # doc-targets` ans lokale docs-check-Gate gehaengt. Nur Richtung 1 (gate-phantom);

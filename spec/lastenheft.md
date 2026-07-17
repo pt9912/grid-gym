@@ -1883,9 +1883,10 @@ frei von Abwaerts-Verweisen bleibt) — Anforderung→Design (§27.1) und
 Anforderung→Test (§27.3, Testtyp-Klassifikation). Die §27.1-Design-Zuordnung ist eine
 Verfeinerung des **Dreischicht-Modells** (Lastenheft → Spezifikation → Architektur;
 jede Schicht verweist aufwaerts): die Anforderung→Design-Zuordnung ist gegen die
-Aufwaerts-Zeiger der Schichten **kuratiert und gegroundet**. Die maschinell
-abgeleitete/gegatete Ausbaustufe (formale Set-Konsistenz gegen die `Bezug`-Kanten) ist
-in der Planung verankert (nicht im Vertrag). Die Liefer-/
+Aufwaerts-Zeiger der Schichten **kuratiert und gegroundet**. Die maschinell abgeleitete
+Ausbaustufe ist in der Planung verankert (nicht im Vertrag); eine formale
+Set-Konsistenz-Gatung gegen die `Bezug`-Kanten ist dabei kein Ziel — §27.1 ist legitim
+kein Spiegel dieser Kanten. Die Liefer-/
 Implementierungs-Rueckverfolgung (Anforderung→Slice/Welle/ADR inkl.
 Abdeckungs- und Waisen-Status) wird nicht mehr handgepflegt, sondern aus
 den Slice-, Wellen- und ADR-Artefakten automatisch abgeleitet (`make

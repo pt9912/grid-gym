@@ -46,6 +46,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   veraltete Familien-Aufzählung im `spezifikation.md`-Intro (nur PRINC/CC/SEED statt
   aller acht) und eine §27.1-Über-Behauptung in Trigger 088. Alle korrigiert; keine
   Runtime-Änderung.
+- **§27.1-Ausbaustufe amendiert — Gate gestrichen, Generator vorgezogen
+  ([`ADR 0080`](docs/plan/adr/0080-three-layer-spec-model.md) §4.4-4).** Die
+  Reihenfolge „Konsistenz-Gate zuerst, Generator optional" ist zurückgenommen: Ein
+  Set-Gate zwischen §27.1 und den `Bezug`-Spalten kann seinen erklärten Zweck nicht
+  erfüllen, weil die `Bezug`-Spalten die Quelle der Wahrheit sind und §27.1 per eigener
+  Zusage kein Spiegel, sondern eine kuratierte Vorwärts-Map ist. Messung mit d-check
+  v0.45.1: 161 Differenzen = 86 `F\B` + 75 `B\F`, wovon **65** der `B\F` Absicht sind
+  (Ports/Prinzipien/Nicht-Haupt-Komponenten, die §27.1 nicht aufführt) — ein dauerhaftes
+  `mode: equal`-Gate bliebe damit für immer rot. Die übrigen 10 sind es nicht und gehen in
+  die Arbeitsliste: 6× verweist `GG-AR-COMP-DEVICES` per `GG-DEV-001..018` zurück auf die
+  Nummern 004–009 dieser Familie, die es gar nicht gibt, 2× echte Drift
+  (`GG-ARCH-005`, `GG-SIM-009` — Schnittmenge null), 2× ein d-check-Parser-Artefakt. Der Fund bestätigt die ADR-Sorge „Generator auf driftender
+  Quelle produziert Falsches" — die Quellen-Reinigung bleibt daher Vorbedingung, wird aber
+  **einmalig gemessen statt dauerhaft gegatet**; danach wird §27.1 generiert (`derived`,
+  §2d). Ein einseitiges `F\B`-Gate wäre zwar erreichbar, schützte aber nur eine Tabelle,
+  die ohnehin verschwindet. Neu
+  entschieden: Kanten-Anmerkungen (`Tick-Loop`, `TelemetryPoint`) ziehen aus dem
+  Spiegel in die `Bezug`-Zelle, wo die Kante lebt — ihre bisherige Heimatlosigkeit war
+  die Ursache des Drifts. Kein Runtime-Delta.
+- **d-check-Pin v0.42.0 → v0.45.1.** Bringt `trace.cross-consistency` +
+  `forward.req-pattern` (v0.45.0, trennt Vergleichs- von RTM-Scope) sowie zwei Fixes am
+  Range-Parser (v0.44.1/v0.45.1: Range-Fortsetzung hinter einem Markdown-Link bzw. bei
+  Klammern im Linkziel). RTM byte-identisch gegen v0.42.0 verifiziert (151 Anforderungen,
+  0 Waisen); der `trace.coverage`-Waisen-Defekt aus v0.41.0 traf grid-gym nicht (keine
+  Klammern in Link-Zielen). `cross-consistency` bleibt bewusst **unverdrahtet** (s. o.).
+  Kein Runtime-Delta.
 
 ## [0.8.0] - 2026-07-14
 

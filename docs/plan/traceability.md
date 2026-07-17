@@ -13,9 +13,11 @@ werden mit dem Projektfortschritt gepflegt:
 - Die Design-Tabelle (§27.1) ist eine gegen `spec/architecture.md` **kuratierte,
   gegroundete Vorwaerts-Zuordnung** (Anforderung → implementierende `GG-AR-*`-Artefakte)
   — **kein** vollstaendiger Spiegel der `Bezug`-Rueckkanten (die Formen unterscheiden
-  sich legitim). Die maschinelle Ableitung + formale Set-Konsistenz gegen die
-  Bezug-Kanten (`derived`-Endzustand) ist vertagt
+  sich legitim). Die maschinelle **Ableitung** (`derived`-Endzustand) ist vertagt
   ([Trigger 088](planning/open/088-27-1-consistency-gate-generator.md), d-check-Feature).
+  Eine formale **Set-Konsistenz** gegen die Bezug-Kanten ist dagegen **kein** Ziel mehr
+  (zurueckgenommen 2026-07-17): weil §27.1 legitim kein Spiegel ist, waere ein solches
+  Gate dauerhaft rot — die Ableitung macht es gegenstandslos.
 - Die Test-Tabelle (§27.3) ist aus dem Lastenheft ableitbar (Testtyp gemaess
   `GG-TESTTYPE-001..007`).
 

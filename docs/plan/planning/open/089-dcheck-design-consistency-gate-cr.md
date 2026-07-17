@@ -1,9 +1,14 @@
 # 089 — d-check `trace`: Design-Konsistenz-Gate (Change Request an d-check)
 
-**Status:** In Arbeit / Cross-Repo — CR **v2** erstellt (6 Feedback-Punkte des
-d-check-Agenten eingearbeitet), an d-check zurückzuspielen; **wartet auf die
-d-check-Feature-Umsetzung**. Kein Code-/Spec-Delta in grid-gym.
-**Datum:** 2026-07-16
+**Status:** **Geliefert + Abnahme bestanden (2026-07-17), aber bewusst NICHT
+verdrahtet.** d-check hat die Fähigkeit als `trace.cross-consistency` umgesetzt
+(v0.44.0), plus zwei Nachbesserungen aus unseren Befunden: link-transparente
+Range-Fortsetzung (v0.44.1/v0.45.1) und `forward.req-pattern` (v0.45.0). Die
+Abnahmekriterien §9 (1)–(3) sind gegen die Realdaten **bestanden**. Der Abgleich wird
+dennoch **nicht als Gate verdrahtet**, sondern einmalig als Messinstrument benutzt —
+siehe [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4-4-Amendment und
+„Anschlussschritte" unten. Kein Code-/Spec-Delta in grid-gym.
+**Datum:** 2026-07-16 (Lieferung/Abnahme 2026-07-17)
 **Adressat:** d-check (`ghcr.io/pt9912/d-check`)
 **Quelle:** [`Trigger 088`](088-27-1-consistency-gate-generator.md) ·
 [`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 (iii)
@@ -139,15 +144,44 @@ eigener ADR-Behandlung. v1 = nur Gate.
 
 ---
 
-## grid-gym-Anschlussschritte (nach d-check-Feature-Release)
+## grid-gym-Anschlussschritte (überholt — 2026-07-17)
 
-1. **Referenz-Fixtures liefern** (kann parallel schon vorbereitet werden): die
-   realen §27.1-Zeilen + Rückkanten für ARCH-005 (Drift), ARCH-006 (Rest-Kante),
-   ARCH-007 (konsistentes 1:N) und einen Ableitungssprung (`GG-ARCHTEST-*` via
-   `spec/spezifikation.md`) als Golden-Input für d-check.
-2. **Verdrahten:** `trace.design-consistency` in `.d-check.yml`, `make`-Target
-   hängen, `require-complete` scharfstellen.
-3. Das schließt [`Trigger 088`](088-27-1-consistency-gate-generator.md) → `done/`.
+**Schritt 2/3 sind zurückgenommen.** Das Verdrahten als **dauerhaftes** Gate entfällt:
+§27.1 ist kein Spiegel der Bezug-Kanten, sondern eine kuratierte Vorwärts-Map. Gemessen:
+161 Differenzen = 86 `F\B` + 75 `B\F`, wovon **65** der `B\F` Absicht sind
+(Ports/Prinzipien/Nicht-Haupt-Komponenten) — `mode: equal` bliebe damit dauerhaft rot.
+Die übrigen 10 sind **echte** Befunde und wandern in die Arbeitsliste (6× Phantom-Kanten in
+die Nummernlücke der `GG-DEV-*`-Familie, 2× Drift —
+[`GG-ARCH-005`](../../../../spec/lastenheft.md#gg-arch-005) und
+[`GG-SIM-009`](../../../../spec/lastenheft.md#gg-sim-009) —, 2× Parser-Artefakt).
+Begründung + Aufschlüsselung:
+[`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4-4.
+
+Stattdessen, gemäß dem umgeschnittenen
+[`Trigger 088`](088-27-1-consistency-gate-generator.md):
+
+1. **Einmal-Lauf als Messinstrument** → Arbeitsliste sind **beide** Richtungen: 85 echte
+   `F\B` über 62 Anforderungen (86 minus 1 Wildcard-Phantom) **und** die 8 echten `B\F`
+   (= die §2d-Vorbedingung des `derived`-Wechsels). Fixtures für d-check erübrigen sich:
+   die Abnahme lief direkt gegen die Realdaten.
+2. **Kanten-Anmerkungen umziehen** §27.1 → `Bezug`-Zelle (Notation im §4.4-4-Amendment).
+3. **Nachfolge-CR an d-check:** der **Generator** (§10 dieser CR — „eigene spätere CR"),
+   mit den zwei Anforderungen, die erst die Messung sichtbar gemacht hat: Artefakt-Titel
+   mitausgeben und Kanten-Anmerkung durchreichen.
+
+### Abnahme-Ergebnis (§9, gegen die Realdaten statt gegen Fixtures)
+
+| Kriterium | Ergebnis |
+| --- | --- |
+| (1) flaggt ARCH-005-/ARCH-006-Drift | **bestanden** — ARCH-005 zeigt beide Richtungen (`F\B = {COMP-CORE, COMP-DOMAIN}`, `B\F = {COMP-SCHED, P-005, P-009}`), exakt die „Schnittmenge null" aus §1 |
+| (2) Mittelschicht-Familien nicht geflaggt (Ventil §6) | **bestanden** — 0 Befunde |
+| (3) konsistentes 1:N (ARCH-007) grün | **bestanden** — 0 Differenzen |
+| (4) advisory vs. Gate über `require-complete` | strukturell erfüllt; nicht verdrahtet |
+
+Anmerkung zu (1)/(3): Beide bestanden **erst** ab v0.45.0. Bis v0.44.1 filterte die
+Vorwärts-Sicht still über `trace.requirements.id-pattern` — mit unserer bewusst
+gescopten RTM (ohne Arch-Meta) war `F(R)` leer, (1) sah nur wie ein Treffer aus und (3)
+fiel durch. Der Befund führte zu `forward.req-pattern`.
 
 ## Bezug
 
