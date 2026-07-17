@@ -32,12 +32,13 @@ Alle Arc-Slices liegen in `done/`:
 [`086`](../done/086-traceability-derived-27-1-finalization.md) (Traceability-Finalisierung)
 + [`087`](../done/087-architecture-open-points-to-planning.md) (§19-Auflösung,
 [`ADR 0081`](../../adr/0081-open-points-belong-in-planning.md)). Der Vertrag ist
-anforderungsrein; doku-/config-only → **kein Release**. Offen bleibt nur die **maschinelle**
-§27.1-Ausbaustufe (Cross-Repo-Abhängigkeit, d-check-Feature):
+anforderungsrein; doku-/config-only → **kein Release**. Offen bleibt nur die
+§27.1-Ausbaustufe `authored → derived` — nach dem §4.4-4-Amendment (2026-07-17) **teils
+repo-lokal schneidbar**, nur der Generator noch cross-repo:
 
 | Datei | Trigger | Aktivierung |
 | ----- | ------- | ----------- |
-| [`088-27-1-consistency-gate-generator.md`](088-27-1-consistency-gate-generator.md) | §27.1-Konsistenz-Gate + Generator ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4 iii/iv), aus 086 vertagt | d-check liefert requirement→design-Ableitungs-/Gate-Fähigkeit |
+| [`088-27-1-consistency-gate-generator.md`](088-27-1-consistency-gate-generator.md) | §27.1 `authored → derived` ([`ADR 0080`](../../adr/0080-three-layer-spec-model.md) §4.4-4, Gate gestrichen); (1) Bezug-Reinigung + (2) Anmerkungs-Umzug repo-lokal, (3) Generator cross-repo | (1)+(2) **jetzt** als Slice schneidbar (kein Feature nötig); (3) wartet auf d-check-Generator (Titel + Kanten-Anmerkung) |
 
 **Tooling / Build / Type-System:**
 
